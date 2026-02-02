@@ -715,6 +715,8 @@ applications that come with the platform
         <permission name="android.permission.BIND_ALTERNATIVE_MESSAGE_TRANSPORT_SERVICE"/>
         <!-- Permission required for creating contacts picker sessions -->
         <permission name="android.permission.MANAGE_CONTACTS_PICKER_SESSION" />
+        <!-- Permission required for App Lock CTS tests -->
+        <permission name="android.permission.TEST_LOCK_APPS"/>
     </privapp-permissions>
 
     <privapp-permissions package="com.android.soundpicker">

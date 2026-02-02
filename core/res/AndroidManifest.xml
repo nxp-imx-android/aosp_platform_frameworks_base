@@ -2670,6 +2670,17 @@
         android:protectionLevel="internal|role|recents"
         android:featureFlag="android.security.app_lock_apis" />
 
+    <!-- @TestApi
+         Allows a test application to set App Lock enablement state for other applications.
+         Intended for test only.
+         <p>Protection level: signature
+         @hide
+         @FlaggedApi(android.security.Flags.FLAG_APP_LOCK_APIS)
+    -->
+    <permission android:name="android.permission.TEST_LOCK_APPS"
+        android:protectionLevel="signature"
+        android:featureFlag="android.security.app_lock_apis" />
+
     <!-- @SystemApi
          @hide
          @FlaggedApi("android.content.pm.quarantined_enabled")

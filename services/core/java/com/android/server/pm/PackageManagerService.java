@@ -5643,7 +5643,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             }
             return mAppLockPackageHelper.setPackageAppLockEnabled(
                     PackageManagerService.this::snapshotComputer, pkgName, userId, enabled,
-                    Binder.getCallingUid());
+                    Binder.getCallingUid(), Binder.getCallingPid());
         }
 
         @Override
