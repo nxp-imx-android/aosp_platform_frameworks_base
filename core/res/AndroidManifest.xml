@@ -9253,6 +9253,10 @@
         android:permissionFlags="allowedInPrivateComputeCore" />
 
     <!-- @SystemApi Allows an application to query AppFunction metadata stored within platform.
+
+         <p>This permission is granted to SYSTEM_UI_INTELLIGENCE and SYSTEM_VENDOR_INTELLIGENCE
+         roles.
+         <p>Protection level: internal|role
          @hide
          @FlaggedApi(android.app.appfunctions.flags.Flags.FLAG_ENABLE_APP_FUNCTION_PERMISSION_V2) -->
     <permission android:name="android.permission.DISCOVER_APP_FUNCTIONS"
@@ -9302,8 +9306,11 @@
         android:featureFlag="android.permission.flags.app_function_access_api_enabled"
         android:protectionLevel="normal" />
 
-     <!-- @SystemApi Allows recents component and certain roles to perform actions on behalf of
+     <!-- @SystemApi Allows recents component and SYSTEM_UI role to perform actions on behalf of
          users inside of applications.
+
+         <p> This permission allows the application to both execute and discover app functions.
+
          <p>Protection level: internal|recents|role
          @hide
          @FlaggedApi(android.app.appfunctions.flags.Flags.FLAG_ENABLE_APP_FUNCTION_PERMISSION_V2)
