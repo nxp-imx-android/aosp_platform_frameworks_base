@@ -14930,9 +14930,10 @@ package android.service.personalcontext {
     method @NonNull public android.graphics.Rect getViewCoordinates(@NonNull android.service.personalcontext.hint.AutofillInlineRequestHint);
     method public boolean isEnabled();
     method @NonNull public android.service.personalcontext.Token mintToken();
-    method public void publishTriggeringHint(@NonNull java.util.Collection<android.service.personalcontext.hint.ContextHint>, @NonNull java.util.Collection<android.service.personalcontext.RenderToken>, @NonNull java.util.Collection<android.service.personalcontext.hint.ContextHint>);
+    method public void publishTriggeringHint(@NonNull java.util.List<android.service.personalcontext.hint.ContextHint>, @Nullable java.util.List<android.service.personalcontext.RenderToken>);
+    method public void publishTriggeringHint(@NonNull java.util.List<android.service.personalcontext.hint.ContextHint>, @Nullable java.util.List<android.service.personalcontext.RenderToken>, @Nullable java.util.List<android.service.personalcontext.hint.ContextHint>);
     method public void setEnabled(boolean);
-    method @NonNull public android.service.personalcontext.hint.ContextHintWithSignature signHint(@NonNull android.service.personalcontext.hint.ContextHint, @NonNull java.util.Collection<android.service.personalcontext.hint.ContextHint>);
+    method @NonNull public android.service.personalcontext.hint.ContextHintWithSignature signHint(@NonNull android.service.personalcontext.hint.ContextHint, @Nullable java.util.List<android.service.personalcontext.hint.ContextHint>);
   }
 
 }
