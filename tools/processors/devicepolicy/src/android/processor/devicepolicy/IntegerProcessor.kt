@@ -53,12 +53,20 @@ class IntegerProcessor(processingEnv: ProcessingEnvironment) : PolicyProcessor<I
             )
         }
 
+        val integerMetadataBuilder =
+            TypeSpecificPolicyMetadata.IntegerPolicyMetadata.newBuilder()
+        if (integerDefinition.minValue != Integer.MIN_VALUE) {
+            integerMetadataBuilder.setMinValue(integerDefinition.minValue)
+        }
+        if (integerDefinition.maxValue != Integer.MAX_VALUE) {
+            integerMetadataBuilder.setMaxValue(integerDefinition.maxValue)
+        }
+
         val typeSpecificMetadata =
             TypeSpecificPolicyMetadata
                 .newBuilder()
-                .setIntegerMetadata(
-                    TypeSpecificPolicyMetadata.IntegerPolicyMetadata.getDefaultInstance()
-                ).build()
+                .setIntegerMetadata(integerMetadataBuilder)
+                .build()
 
         return Pair(typeSpecificMetadata, integerDefinition.base)
     }
