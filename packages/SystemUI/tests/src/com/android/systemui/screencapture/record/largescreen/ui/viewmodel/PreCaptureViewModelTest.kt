@@ -221,6 +221,25 @@ class PreCaptureViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(Flags.FLAG_LARGE_SCREEN_SCREENSHOT_APP_WINDOW)
+    fun initialize_withAppWindowRegion_loadsTasks() =
+        kosmos.runTest {
+            val task = createRunningTaskInfo(taskId = 1, bounds = Rect(0, 0, 50, 50))
+            whenever(appWindowInteractor.getAppWindowTasks(any<Int>())).thenReturn(listOf(task))
+
+            setupViewModel(
+                LargeScreenCaptureUiParameters(
+                    defaultCaptureRegion = ScreenCaptureRegion.APP_WINDOW
+                )
+            )
+            runCurrent()
+
+            // Verify that we can select the task immediately, implying tasks were loaded
+            viewModel.updateTaskSelectionFromHover(Point(25, 25))
+            assertThat(viewModel.topTask).isEqualTo(task)
+        }
+
+    @Test
     @DisableFlags(Flags.FLAG_LARGE_SCREEN_REGION_RECORDING)
     fun captureRegion_resetInvalidSelectedRegion() =
         kosmos.runTest {
