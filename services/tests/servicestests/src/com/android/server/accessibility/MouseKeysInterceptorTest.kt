@@ -588,63 +588,133 @@ class MouseKeysInterceptorTest {
         )
     }
 
+    // This test checks that the click, hold, and release keys for primary keys work when "use
+    // primary keys" is on.
     @Test
-    fun whenClickKeyIsPressed_buttonEventIsSent() {
+    fun whenClickKeyIsPressed_buttonEventIsSent_withUsePrimaryKeysOn_primaryKeys() {
         setupMouseKeysInterceptor(usePrimaryKeys = true)
-        // There should be some delay between the downTime of the key event and calling onKeyEvent
-        val downTime = clock.now() - KEYBOARD_POST_EVENT_DELAY_MILLIS
-        val keyCode =
-            MouseKeysInterceptor.MouseKeyEvent.LEFT_CLICK.getKeyCodeValue(USE_PRIMARY_KEYS)
-        val downEvent =
-            KeyEvent(downTime, downTime, KeyEvent.ACTION_DOWN, keyCode, 0, 0, DEVICE_ID, 0)
-        mouseKeysInterceptor.onKeyEvent(downEvent, 0)
-        testLooper.dispatchAll()
 
-        val actions =
-            intArrayOf(
-                VirtualMouseButtonEvent.ACTION_BUTTON_PRESS,
-                VirtualMouseButtonEvent.ACTION_BUTTON_RELEASE,
-            )
-        val buttons =
-            intArrayOf(
-                VirtualMouseButtonEvent.BUTTON_PRIMARY,
-                VirtualMouseButtonEvent.BUTTON_PRIMARY,
-            )
-        // Verify the sendButtonEvent method is called twice and capture the arguments
-        verifyButtonEvents(actions = actions, buttons = buttons)
-    }
+        // Primary keys left click
+        testClickKey(
+            keyCode =
+                MouseKeysInterceptor.MouseKeyEvent.LEFT_CLICK.getKeyCodeValue(USE_PRIMARY_KEYS),
+            deviceId = DEVICE_ID,
+            metaState = 0,
+            expectedButton = VirtualMouseButtonEvent.BUTTON_PRIMARY,
+        )
 
-    @Test
-    fun whenHoldKeyIsPressed_buttonEventIsSent() {
-        setupMouseKeysInterceptor(usePrimaryKeys = true)
-        val downTime = clock.now() - KEYBOARD_POST_EVENT_DELAY_MILLIS
-        val keyCode = MouseKeysInterceptor.MouseKeyEvent.HOLD.getKeyCodeValue(USE_PRIMARY_KEYS)
-        val downEvent =
-            KeyEvent(downTime, downTime, KeyEvent.ACTION_DOWN, keyCode, 0, 0, DEVICE_ID, 0)
-        mouseKeysInterceptor.onKeyEvent(downEvent, 0)
-        testLooper.dispatchAll()
+        // Primary keys right click
+        testClickKey(
+            keyCode =
+                MouseKeysInterceptor.MouseKeyEvent.RIGHT_CLICK.getKeyCodeValue(USE_PRIMARY_KEYS),
+            deviceId = DEVICE_ID,
+            metaState = 0,
+            expectedButton = VirtualMouseButtonEvent.BUTTON_SECONDARY,
+        )
 
-        // Verify the sendButtonEvent method is called once and capture the arguments
-        verifyButtonEvents(
-            actions = intArrayOf(VirtualMouseButtonEvent.ACTION_BUTTON_PRESS),
-            buttons = intArrayOf(VirtualMouseButtonEvent.BUTTON_PRIMARY),
+        // Primary keys hold
+        testButtonEvent(
+            keyCode = MouseKeysInterceptor.MouseKeyEvent.HOLD.getKeyCodeValue(USE_PRIMARY_KEYS),
+            deviceId = DEVICE_ID,
+            metaState = 0,
+            expectedAction = VirtualMouseButtonEvent.ACTION_BUTTON_PRESS,
+            expectedButton = VirtualMouseButtonEvent.BUTTON_PRIMARY,
+        )
+
+        // Primary keys release
+        testButtonEvent(
+            keyCode = MouseKeysInterceptor.MouseKeyEvent.RELEASE.getKeyCodeValue(USE_PRIMARY_KEYS),
+            deviceId = DEVICE_ID,
+            metaState = 0,
+            expectedAction = VirtualMouseButtonEvent.ACTION_BUTTON_RELEASE,
+            expectedButton = VirtualMouseButtonEvent.BUTTON_PRIMARY,
         )
     }
 
+    // This test checks that the click, hold, and release keys for the numpad work when "use primary
+    // keys" is on.
     @Test
-    fun whenReleaseKeyIsPressed_buttonEventIsSent() {
+    fun whenClickKeyIsPressed_buttonEventIsSent_withUsePrimaryKeysOn_numpad() {
         setupMouseKeysInterceptor(usePrimaryKeys = true)
-        val downTime = clock.now() - KEYBOARD_POST_EVENT_DELAY_MILLIS
-        val keyCode = MouseKeysInterceptor.MouseKeyEvent.RELEASE.getKeyCodeValue(USE_PRIMARY_KEYS)
-        val downEvent =
-            KeyEvent(downTime, downTime, KeyEvent.ACTION_DOWN, keyCode, 0, 0, DEVICE_ID, 0)
-        mouseKeysInterceptor.onKeyEvent(downEvent, 0)
-        testLooper.dispatchAll()
 
-        // Verify the sendButtonEvent method is called once and capture the arguments
-        verifyButtonEvents(
-            actions = intArrayOf(VirtualMouseButtonEvent.ACTION_BUTTON_RELEASE),
-            buttons = intArrayOf(VirtualMouseButtonEvent.BUTTON_PRIMARY),
+        // Numpad left click
+        testClickKey(
+            keyCode =
+                MouseKeysInterceptor.MouseKeyEvent.LEFT_CLICK.getKeyCodeValue(USE_NUMPAD_KEYS),
+            deviceId = NUMPAD_DEVICE_ID,
+            metaState = KeyEvent.META_NUM_LOCK_ON,
+            expectedButton = VirtualMouseButtonEvent.BUTTON_PRIMARY,
+        )
+
+        // Numpad right click
+        testClickKey(
+            keyCode =
+                MouseKeysInterceptor.MouseKeyEvent.RIGHT_CLICK.getKeyCodeValue(USE_NUMPAD_KEYS),
+            deviceId = NUMPAD_DEVICE_ID,
+            metaState = KeyEvent.META_NUM_LOCK_ON,
+            expectedButton = VirtualMouseButtonEvent.BUTTON_SECONDARY,
+        )
+
+        // Numpad hold
+        testButtonEvent(
+            keyCode = MouseKeysInterceptor.MouseKeyEvent.HOLD.getKeyCodeValue(USE_NUMPAD_KEYS),
+            deviceId = NUMPAD_DEVICE_ID,
+            metaState = KeyEvent.META_NUM_LOCK_ON,
+            expectedAction = VirtualMouseButtonEvent.ACTION_BUTTON_PRESS,
+            expectedButton = VirtualMouseButtonEvent.BUTTON_PRIMARY,
+        )
+
+        // Numpad release
+        testButtonEvent(
+            keyCode = MouseKeysInterceptor.MouseKeyEvent.RELEASE.getKeyCodeValue(USE_NUMPAD_KEYS),
+            deviceId = NUMPAD_DEVICE_ID,
+            metaState = KeyEvent.META_NUM_LOCK_ON,
+            expectedAction = VirtualMouseButtonEvent.ACTION_BUTTON_RELEASE,
+            expectedButton = VirtualMouseButtonEvent.BUTTON_PRIMARY,
+        )
+    }
+
+    // This test checks that the click, hold, and release keys for the numpad work when "use primary
+    // keys" is on.
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_MOUSE_KEY_ENHANCEMENT)
+    fun whenClickKeyIsPressed_buttonEventIsSent_withUsePrimaryKeysOff_numpad() {
+        setupMouseKeysInterceptor(usePrimaryKeys = false)
+
+        // Numpad left click
+        testClickKey(
+            keyCode =
+                MouseKeysInterceptor.MouseKeyEvent.LEFT_CLICK.getKeyCodeValue(USE_NUMPAD_KEYS),
+            deviceId = NUMPAD_DEVICE_ID,
+            metaState = KeyEvent.META_NUM_LOCK_ON,
+            expectedButton = VirtualMouseButtonEvent.BUTTON_PRIMARY,
+        )
+
+        // Numpad right click
+        testClickKey(
+            keyCode =
+                MouseKeysInterceptor.MouseKeyEvent.RIGHT_CLICK.getKeyCodeValue(USE_NUMPAD_KEYS),
+            deviceId = NUMPAD_DEVICE_ID,
+            metaState = KeyEvent.META_NUM_LOCK_ON,
+            expectedButton = VirtualMouseButtonEvent.BUTTON_SECONDARY,
+        )
+
+        // Numpad hold
+        testButtonEvent(
+            keyCode = MouseKeysInterceptor.MouseKeyEvent.HOLD.getKeyCodeValue(USE_NUMPAD_KEYS),
+            deviceId = NUMPAD_DEVICE_ID,
+            metaState = KeyEvent.META_NUM_LOCK_ON,
+            expectedAction = VirtualMouseButtonEvent.ACTION_BUTTON_PRESS,
+            expectedButton = VirtualMouseButtonEvent.BUTTON_PRIMARY,
+        )
+
+        // Numpad release
+        testButtonEvent(
+            keyCode = MouseKeysInterceptor.MouseKeyEvent.RELEASE.getKeyCodeValue(USE_NUMPAD_KEYS),
+            deviceId = NUMPAD_DEVICE_ID,
+            metaState = KeyEvent.META_NUM_LOCK_ON,
+            expectedAction = VirtualMouseButtonEvent.ACTION_BUTTON_RELEASE,
+            expectedButton = VirtualMouseButtonEvent.BUTTON_PRIMARY,
         )
     }
 
@@ -1131,103 +1201,6 @@ class MouseKeysInterceptorTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_MOUSE_KEY_ENHANCEMENT)
-    fun whenUsePrimaryKeysDisabled_allNumpadKeysWork() {
-        setupMouseKeysInterceptor(usePrimaryKeys = false)
-
-        for (mouseKeyEvent in MouseKeysInterceptor.MouseKeyEvent.entries) {
-            Mockito.reset(mockVirtualMouse)
-            val keyCode = mouseKeyEvent.getKeyCodeValue(USE_NUMPAD_KEYS)
-            val downTime = clock.now() - KEYBOARD_POST_EVENT_DELAY_MILLIS_FOR_MOUSE_POINTER
-            val downEvent =
-                KeyEvent(
-                    downTime,
-                    downTime,
-                    KeyEvent.ACTION_DOWN,
-                    keyCode,
-                    0,
-                    KeyEvent.META_NUM_LOCK_ON,
-                    NUMPAD_DEVICE_ID,
-                    0,
-                )
-
-            mouseKeysInterceptor.onKeyEvent(downEvent, 0)
-            testLooper.dispatchAll()
-
-            when (mouseKeyEvent) {
-                MouseKeysInterceptor.MouseKeyEvent.LEFT_CLICK ->
-                    verifyButtonEvents(
-                        actions =
-                            intArrayOf(
-                                VirtualMouseButtonEvent.ACTION_BUTTON_PRESS,
-                                VirtualMouseButtonEvent.ACTION_BUTTON_RELEASE,
-                            ),
-                        buttons =
-                            intArrayOf(
-                                VirtualMouseButtonEvent.BUTTON_PRIMARY,
-                                VirtualMouseButtonEvent.BUTTON_PRIMARY,
-                            ),
-                    )
-                MouseKeysInterceptor.MouseKeyEvent.RIGHT_CLICK ->
-                    verifyButtonEvents(
-                        actions =
-                            intArrayOf(
-                                VirtualMouseButtonEvent.ACTION_BUTTON_PRESS,
-                                VirtualMouseButtonEvent.ACTION_BUTTON_RELEASE,
-                            ),
-                        buttons =
-                            intArrayOf(
-                                VirtualMouseButtonEvent.BUTTON_SECONDARY,
-                                VirtualMouseButtonEvent.BUTTON_SECONDARY,
-                            ),
-                    )
-                MouseKeysInterceptor.MouseKeyEvent.HOLD ->
-                    verifyButtonEvents(
-                        actions = intArrayOf(VirtualMouseButtonEvent.ACTION_BUTTON_PRESS),
-                        buttons = intArrayOf(VirtualMouseButtonEvent.BUTTON_PRIMARY),
-                    )
-                MouseKeysInterceptor.MouseKeyEvent.RELEASE ->
-                    verifyButtonEvents(
-                        actions = intArrayOf(VirtualMouseButtonEvent.ACTION_BUTTON_RELEASE),
-                        buttons = intArrayOf(VirtualMouseButtonEvent.BUTTON_PRIMARY),
-                    )
-                MouseKeysInterceptor.MouseKeyEvent.SCROLL_TOGGLE -> {
-                    // Verify the toggle doesn't send mouse events directly.
-                    Mockito.verifyNoInteractions(mockVirtualMouse)
-                }
-                else -> {
-                    // Directional move or scroll.
-                    Mockito.verify(mockVirtualMouse).sendRelativeEvent(Mockito.any())
-                }
-            }
-
-            // Release the key that was pressed.
-            val upTime = clock.now()
-            val upEvent =
-                KeyEvent(
-                    downTime,
-                    upTime,
-                    KeyEvent.ACTION_UP,
-                    keyCode,
-                    0,
-                    KeyEvent.META_NUM_LOCK_ON,
-                    NUMPAD_DEVICE_ID,
-                    0,
-                )
-            mouseKeysInterceptor.onKeyEvent(upEvent, 0)
-            testLooper.dispatchAll()
-
-            // If the key was to toggle scroll mode, turn scroll mode off.
-            if (mouseKeyEvent == MouseKeysInterceptor.MouseKeyEvent.SCROLL_TOGGLE) {
-                mouseKeysInterceptor.onKeyEvent(downEvent, 0)
-                testLooper.dispatchAll()
-                mouseKeysInterceptor.onKeyEvent(upEvent, 0)
-                testLooper.dispatchAll()
-            }
-        }
-    }
-
-    @Test
     fun whenMouseKeyEventArrives_fromVirtualKeyboard_eventIsPassedToNextInterceptor() {
         setupMouseKeysInterceptor(usePrimaryKeys = true)
         for (ev in MouseKeysInterceptor.MouseKeyEvent.entries) {
@@ -1399,6 +1372,43 @@ class MouseKeysInterceptorTest {
             )
         mouseKeysInterceptor.onKeyEvent(scrollToggleOffEvent, 0)
         testLooper.dispatchAll()
+        Mockito.reset(mockVirtualMouse)
+    }
+
+    private fun testClickKey(keyCode: Int, deviceId: Int, metaState: Int, expectedButton: Int) {
+        val downTime = clock.now() - KEYBOARD_POST_EVENT_DELAY_MILLIS
+        val downEvent =
+            KeyEvent(downTime, downTime, KeyEvent.ACTION_DOWN, keyCode, 0, metaState, deviceId, 0)
+        mouseKeysInterceptor.onKeyEvent(downEvent, 0)
+        testLooper.dispatchAll()
+
+        val actions =
+            intArrayOf(
+                VirtualMouseButtonEvent.ACTION_BUTTON_PRESS,
+                VirtualMouseButtonEvent.ACTION_BUTTON_RELEASE,
+            )
+        val buttons = intArrayOf(expectedButton, expectedButton)
+        verifyButtonEvents(actions = actions, buttons = buttons)
+        Mockito.reset(mockVirtualMouse)
+    }
+
+    private fun testButtonEvent(
+        keyCode: Int,
+        deviceId: Int,
+        metaState: Int,
+        expectedAction: Int,
+        expectedButton: Int,
+    ) {
+        val downTime = clock.now() - KEYBOARD_POST_EVENT_DELAY_MILLIS
+        val event =
+            KeyEvent(downTime, downTime, KeyEvent.ACTION_DOWN, keyCode, 0, metaState, deviceId, 0)
+        mouseKeysInterceptor.onKeyEvent(event, 0)
+        testLooper.dispatchAll()
+
+        verifyButtonEvents(
+            actions = intArrayOf(expectedAction),
+            buttons = intArrayOf(expectedButton),
+        )
         Mockito.reset(mockVirtualMouse)
     }
 
