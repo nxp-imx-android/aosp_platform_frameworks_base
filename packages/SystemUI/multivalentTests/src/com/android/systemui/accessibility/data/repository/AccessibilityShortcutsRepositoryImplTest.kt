@@ -44,12 +44,14 @@ import com.android.internal.accessibility.util.ShortcutUtils
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.accessibility.shortcutchooser.shared.model.AccessibilityTargetModel
 import com.android.systemui.concurrency.fakeExecutor
+import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.advanceUntilIdle
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.settings.userTracker
+import com.android.systemui.shared.settings.data.repository.fakeSecureSettingsRepository
 import com.android.systemui.testKosmosNew
 import com.android.systemui.util.settings.fakeSettings
 import com.google.common.truth.Truth.assertThat
@@ -83,6 +85,7 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
                 packageManager,
                 userTracker,
                 fakeSettings,
+                fakeSecureSettingsRepository,
                 mainResources,
                 testDispatcher,
                 fakeExecutorHandler,
@@ -639,6 +642,19 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
     fun hsuExcludedTargets_accessingValue_doesNotThrowException() =
         kosmos.runTest {
             val unused = underTest.hsuExcludedTargets
+        }
+
+    @Test
+    fun accessibilityButtonTargetComponent_reflectsSecureSettings() =
+        kosmos.runTest {
+            val latestTarget by
+                testScope.collectLastValue(underTest.accessibilityButtonTargetComponent)
+
+            underTest.setAccessibilityButtonTargetComponent("TestService")
+            assertThat(latestTarget).isEqualTo("TestService")
+
+            underTest.setAccessibilityButtonTargetComponent("TestService2")
+            assertThat(latestTarget).isEqualTo("TestService2")
         }
 
     private fun createAccessibilityTargetModel(targetName: String) =

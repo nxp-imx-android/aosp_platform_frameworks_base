@@ -25,6 +25,7 @@ import android.content.res.Resources
 import android.database.ContentObserver
 import android.hardware.input.KeyGestureEvent
 import android.os.Handler
+import android.provider.Settings
 import android.text.BidiFormatter
 import android.text.TextUtils
 import android.view.KeyEvent
@@ -47,6 +48,7 @@ import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.keyboard.shortcut.data.repository.ShortcutHelperKeys
 import com.android.systemui.res.R
 import com.android.systemui.settings.UserTracker
+import com.android.systemui.shared.settings.data.repository.SecureSettingsRepository
 import com.android.systemui.util.settings.SecureSettings
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
@@ -154,6 +156,25 @@ interface AccessibilityShortcutsRepository {
      * shortcut chooser dialog when the current user is the Headless System User.
      */
     val hsuExcludedTargets: List<String>
+
+    /**
+     * Setting specifying the accessibility service or feature to be toggled via the accessibility
+     * button in the navigation bar. This is either a flattened [ComponentName] or the class name of
+     * a system class implementing a supported accessibility feature.
+     *
+     * See: [Settings.Secure.ACCESSIBILITY_BUTTON_TARGET_COMPONENT]
+     *
+     * Value is null if nothing is selected.
+     */
+    val accessibilityButtonTargetComponent: Flow<String?>
+
+    /**
+     * Sets the accessibility service or feature to be toggled via the accessibility button in the
+     * navigation bar.
+     *
+     * @param target The flattened [ComponentName] of the target.
+     */
+    suspend fun setAccessibilityButtonTargetComponent(target: String)
 }
 
 @SysUISingleton
@@ -164,7 +185,9 @@ constructor(
     private val accessibilityManager: AccessibilityManager,
     private val packageManager: PackageManager,
     private val userTracker: UserTracker,
+    // TODO: b/480991693 - Refactor to use SecureSettingsRepository.
     private val secureSettings: SecureSettings,
+    private val secureSettingsRepository: SecureSettingsRepository,
     @param:Main private val resources: Resources,
     @param:Background private val backgroundDispatcher: CoroutineDispatcher,
     @param:Main private val handler: Handler,
@@ -414,6 +437,19 @@ constructor(
 
     override val hsuExcludedTargets: List<String> by lazy {
         resources.getStringArray(RI.array.hsu_accessibility_targets_blocklist).toList()
+    }
+
+    override val accessibilityButtonTargetComponent =
+        secureSettingsRepository.stringSetting(
+            Settings.Secure.ACCESSIBILITY_BUTTON_TARGET_COMPONENT,
+            defaultValue = null,
+        )
+
+    override suspend fun setAccessibilityButtonTargetComponent(target: String) {
+        secureSettingsRepository.setString(
+            Settings.Secure.ACCESSIBILITY_BUTTON_TARGET_COMPONENT,
+            target,
+        )
     }
 
     private fun AccessibilityTarget.toAccessibilityTargetModel() =
