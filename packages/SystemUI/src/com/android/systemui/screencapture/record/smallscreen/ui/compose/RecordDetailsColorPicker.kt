@@ -45,11 +45,11 @@ import androidx.compose.ui.unit.dp
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ui.compose.LoadingIcon
 import com.android.systemui.screencapture.common.ui.compose.loadIcon
-import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.RecordDetailsMarkupColorPickerViewModel
+import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.RecordDetailsColorPickerViewModel
 
 @Composable
-fun RecordDetailsMarkupColorPicker(
-    viewModel: RecordDetailsMarkupColorPickerViewModel,
+fun RecordDetailsColorPicker(
+    viewModel: RecordDetailsColorPickerViewModel,
     modifier: Modifier = Modifier,
 ) {
     Surface(
@@ -63,16 +63,18 @@ fun RecordDetailsMarkupColorPicker(
             modifier = modifier.horizontalScroll(rememberScrollState()).height(56.dp),
         ) {
             LoadingIcon(
-                icon = loadIcon(viewModel, R.drawable.ic_markup, contentDescription = null).value,
+                icon =
+                    loadIcon(viewModel, R.drawable.ic_selfie_expressive, contentDescription = null)
+                        .value,
                 modifier = Modifier.size(48.dp).padding(14.dp),
             )
-            for (color in viewModel.availableColors) {
-                MarkupColorItem(
+            for (color in viewModel.availableCameraColors) {
+                RecordDetailsColorItem(
                     color = Color(color),
-                    selected = color == viewModel.color,
+                    selected = color == viewModel.cameraColor,
                     modifier =
                         Modifier.size(48.dp).clip(CircleShape).clickable {
-                            viewModel.setColor(color)
+                            viewModel.setCameraColor(color)
                         },
                 )
             }
@@ -81,7 +83,7 @@ fun RecordDetailsMarkupColorPicker(
 }
 
 @Composable
-fun MarkupColorItem(
+fun RecordDetailsColorItem(
     color: Color,
     selected: Boolean,
     modifier: Modifier = Modifier,

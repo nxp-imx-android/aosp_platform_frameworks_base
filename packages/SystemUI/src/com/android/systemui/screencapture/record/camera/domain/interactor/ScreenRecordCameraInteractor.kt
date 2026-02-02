@@ -78,7 +78,7 @@ constructor(
 
     val isCameraSupported: Flow<Boolean> =
         repository.isConnected
-            .map { repository.isCameraSupported() }
+            .map { it && repository.isCameraSupported() }
             .stateInTraced(
                 "ScreenRecordCameraInteractor#isCameraSupported",
                 coroutineScope,
@@ -87,8 +87,8 @@ constructor(
             )
             .filterNotNull()
     val isOnTapSupported: Flow<Boolean> =
-        repository.isConnected
-            .map { repository.isOnTapSupported() }
+        isCameraSupported
+            .map { it && repository.isOnTapSupported() }
             .stateInTraced(
                 "ScreenRecordCameraInteractor#isOnTapSupported",
                 coroutineScope,
@@ -97,8 +97,8 @@ constructor(
             )
             .filterNotNull()
     val isBackgroundColorSupported: Flow<Boolean> =
-        repository.isConnected
-            .map { repository.isBackgroundColorSupported() }
+        isCameraSupported
+            .map { it && repository.isBackgroundColorSupported() }
             .stateInTraced(
                 "ScreenRecordCameraInteractor#isBackgroundColorSupported",
                 coroutineScope,

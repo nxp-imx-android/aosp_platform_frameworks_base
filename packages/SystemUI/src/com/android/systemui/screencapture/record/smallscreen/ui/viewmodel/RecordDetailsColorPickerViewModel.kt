@@ -21,26 +21,40 @@ import androidx.compose.runtime.getValue
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.screencapture.common.domain.interactor.ScreenCaptureMarkupInteractor
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
+import com.android.systemui.screencapture.record.camera.domain.interactor.ScreenRecordCameraInteractor
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 
-class RecordDetailsMarkupColorPickerViewModel
+class RecordDetailsColorPickerViewModel
 @AssistedInject
 constructor(
     private val drawableLoaderViewModel: DrawableLoaderViewModel,
-    private val interactor: ScreenCaptureMarkupInteractor,
+    private val markupInteractor: ScreenCaptureMarkupInteractor,
+    private val cameraInteractor: ScreenRecordCameraInteractor,
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModel {
 
-    val availableColors: List<Int> = interactor.availableColors
-    val color: Int? by
-        interactor.color.hydratedStateOf("RecordDetailsMarkupColorPickerViewModel#color", null)
+    val availableMarkupColors: List<Int> = markupInteractor.availableColors
+    val markupColor: Int by
+        markupInteractor.color.hydratedStateOf(
+            "RecordDetailsMarkupColorPickerViewModel#markupColor"
+        )
 
-    fun setColor(@ColorInt color: Int) {
-        interactor.setColor(color)
+    fun setMarkupColor(@ColorInt color: Int) {
+        markupInteractor.setColor(color)
+    }
+
+    val availableCameraColors: List<Int> = cameraInteractor.cameraBackgroundColors
+    val cameraColor: Int by
+        cameraInteractor.cameraBackground.hydratedStateOf(
+            "RecordDetailsMarkupColorPickerViewModel#cameraColor"
+        )
+
+    fun setCameraColor(@ColorInt color: Int) {
+        cameraInteractor.setBackgroundColor(color)
     }
 
     @AssistedFactory
     interface Factory {
-        fun create(): RecordDetailsMarkupColorPickerViewModel
+        fun create(): RecordDetailsColorPickerViewModel
     }
 }
