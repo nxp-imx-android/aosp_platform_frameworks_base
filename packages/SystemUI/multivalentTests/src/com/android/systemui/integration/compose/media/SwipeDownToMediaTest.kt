@@ -42,6 +42,7 @@ import com.android.systemui.integration.SystemUiIntegrationTest
 import com.android.systemui.jank.interactionJankMonitor
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
+import com.android.systemui.media.swipeDownToOpenShade
 import com.android.systemui.media.remedia.data.repository.fakeMediaData
 import com.android.systemui.media.remedia.data.repository.setFakeCurrentMedia
 import com.android.systemui.media.remedia.data.repository.setHasMedia
@@ -122,22 +123,9 @@ class SwipeDownToMediaTest : SysuiTestCase() {
             runCurrent()
             composeTestRule.waitForIdle()
 
-            // Get the root node bounds to calculate swipe coordinates.
-            val rootBounds = composeTestRule.onRoot().getUnclippedBoundsInRoot()
-            val x = (rootBounds.left + rootBounds.right) / 2
-            val startY = rootBounds.top
-            val endY = (rootBounds.top + rootBounds.bottom) / 2
-
             // Perform a realistic swipe from the top-center edge of the screen.
-            composeTestRule.onRoot().performTouchInput {
-                swipe(
-                    start = Offset(x.toPx(), startY.toPx()),
-                    end = Offset(x.toPx(), endY.toPx()),
-                    durationMillis = 200,
-                )
-            }
+            composeTestRule.swipeDownToOpenShade()
             runCurrent()
-            composeTestRule.waitForIdle()
 
             // Verify that the QQS panel exists.
             composeTestRule.onNodeWithTag(QQS_PANEL_TAG, useUnmergedTree = true).assertExists()
