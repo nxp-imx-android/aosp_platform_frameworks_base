@@ -41,6 +41,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ContactsModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.IncludedAppsModel
@@ -65,7 +66,7 @@ fun NotificationRuleEdit(
 
     var shownDialogType: EditDialogType by remember(rule) { mutableStateOf(EditDialogType.None) }
     var selectedAction by remember(rule) { mutableStateOf(rule.action) }
-    val selectedContacts by remember(rule) { mutableStateOf(rule.contacts) }
+    var selectedContacts by remember(rule) { mutableStateOf(rule.contacts) }
     val selectedIncludedApps by remember(rule) { mutableStateOf(rule.includedApps) }
 
     val text =
@@ -92,9 +93,20 @@ fun NotificationRuleEdit(
             is EditDialogType.Contact -> {
                 ContactChoiceDialog(
                     initialSearchQuery = dialogShowing.initialQuery,
+                    initialSelection = dialogShowing.initialSelectedContacts,
+                    onContactsSaved = { newContacts ->
+                        selectedContacts =
+                            if (newContacts.isNotEmpty()) {
+                                RuleValue.Specified(ContactsModel(newContacts))
+                            } else {
+                                // Saving with no selected contacts is effectively removing
+                                // contacts from the filter.
+                                null
+                            }
+                        shownDialogType = EditDialogType.None
+                    },
                     viewModel = viewModel,
-                    scope = scope,
-                    context = LocalContext.current,
+                    context = context,
                 )
             }
             is EditDialogType.IncludedApps -> {
@@ -181,8 +193,12 @@ private sealed interface EditDialogType {
      * The contact list is being edited. See [DraftRuleModel.contacts].
      *
      * @param initialQuery the text to use as the beginning contact search query.
+     * @param initialSelectedContacts the contacts currently selected as part of the rule.
      */
-    data class Contact(val initialQuery: String = "") : EditDialogType
+    data class Contact(
+        val initialQuery: String = "",
+        val initialSelectedContacts: List<ContactModel>,
+    ) : EditDialogType
 
     data object IncludedApps : EditDialogType
     // TODO: b/478225883 - Add more edit types.
@@ -255,33 +271,53 @@ private fun AnnotatedString.Builder.createContactsText(
     editDialogShowing: EditDialogType,
     changeEditDialog: (EditDialogType) -> Unit,
 ) {
-    val text =
-        when (selectedContacts) {
-            is RuleValue.Specified -> {
-                val contacts = selectedContacts.value.contacts
-                check(contacts.isNotEmpty()) { "ContactsModel.contacts must be non-empty" }
-                val first = contacts[0].name
+    when (selectedContacts) {
+        is RuleValue.Specified -> {
+            val contacts = selectedContacts.value.contacts
+            check(contacts.isNotEmpty()) { "ContactsModel.contacts must be non-empty" }
+
+            val first = contacts[0].name
+            val text =
                 if (contacts.size > 1) {
                     "$first +${contacts.size - 1} more"
                 } else {
                     first
                 }
-            }
-            is RuleValue.Ambiguous -> {
-                selectedContacts.placeholderText
-            }
-        }
-    clickableText(
-        text = text,
-        isAmbiguous = selectedContacts is RuleValue.Ambiguous,
-        onClick = {
-            toggleEditDialogShown(
-                desiredType = EditDialogType.Contact(initialQuery = text),
-                currentEditDialogShowing = editDialogShowing,
-                changeEditDialog = changeEditDialog,
+
+            clickableText(
+                text = text,
+                isAmbiguous = false,
+                onClick = {
+                    toggleEditDialogShown(
+                        desiredType =
+                            EditDialogType.Contact(
+                                initialQuery = "",
+                                initialSelectedContacts = contacts,
+                            ),
+                        currentEditDialogShowing = editDialogShowing,
+                        changeEditDialog = changeEditDialog,
+                    )
+                },
             )
-        },
-    )
+        }
+        is RuleValue.Ambiguous -> {
+            clickableText(
+                text = selectedContacts.placeholderText,
+                isAmbiguous = true,
+                onClick = {
+                    toggleEditDialogShown(
+                        desiredType =
+                            EditDialogType.Contact(
+                                initialQuery = selectedContacts.placeholderText,
+                                initialSelectedContacts = emptyList(),
+                            ),
+                        currentEditDialogShowing = editDialogShowing,
+                        changeEditDialog = changeEditDialog,
+                    )
+                },
+            )
+        }
+    }
 }
 
 /**
