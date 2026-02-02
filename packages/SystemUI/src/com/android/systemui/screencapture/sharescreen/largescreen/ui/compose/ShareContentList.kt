@@ -40,8 +40,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.unit.dp
 import com.android.systemui.lifecycle.rememberViewModel
+import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ui.viewmodel.TargetViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.TargetsViewModel
 
@@ -99,7 +103,14 @@ private fun SelectorItem(
 ) {
     // Get the icon and label from the item's ViewModel.
     val icon = targetViewModel.icon?.getOrNull()
-    val label = targetViewModel.label?.getOrNull()
+    val label = targetViewModel.label?.getOrNull()?.toString() ?: "item"
+
+    val itemA11yDescription =
+        if (isSelected) {
+            stringResource(R.string.screen_share_a11y_item_selected, label)
+        } else {
+            stringResource(R.string.screen_share_a11y_item_unselected, label)
+        }
 
     Surface(
         shape = if (isSelected) RoundedCornerShape(20.dp) else RoundedCornerShape(4.dp),
@@ -109,8 +120,9 @@ private fun SelectorItem(
     ) {
         Row(
             modifier =
-                Modifier.padding(start = 8.dp, end = 12.dp, top = 8.dp, bottom = 8.dp)
-                    .clickable(onClick = onItemSelected),
+                Modifier.clickable(onClick = onItemSelected)
+                    .padding(start = 8.dp, end = 12.dp, top = 8.dp, bottom = 8.dp)
+                    .clearAndSetSemantics { this.contentDescription = itemA11yDescription },
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.Start),
         ) {
@@ -121,12 +133,12 @@ private fun SelectorItem(
                             .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.surfaceVariant)
                 ) {
-                    Image(bitmap = icon.asImageBitmap(), contentDescription = label?.toString())
+                    Image(bitmap = icon.asImageBitmap(), contentDescription = null)
                 }
             }
-            if (label != null) {
+            if (label.isNotEmpty()) {
                 Text(
-                    text = label.toString(),
+                    text = label,
                     style = MaterialTheme.typography.labelMedium,
                     modifier = Modifier.weight(1f),
                 )

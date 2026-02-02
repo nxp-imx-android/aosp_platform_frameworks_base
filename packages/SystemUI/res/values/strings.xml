@@ -478,6 +478,32 @@
     <string name="screen_share_a11y_stopped_sharing_tab">Stopped sharing tab: <xliff:g id="tab_title">%1$s</xliff:g>. Screen not shared with anyone.</string>
     <!-- Accessibility announcement when stopping sharing a display [CHAR LIMIT=NONE] -->
     <string name="screen_share_a11y_stopped_sharing_display">Stopped sharing display: <xliff:g id="display_name">%1$s</xliff:g>. Screen not shared with anyone.</string>
+    <!-- Accessibility string for the close button in the pre-share UI [CHAR LIMIT=NONE] -->
+    <string name="screen_share_a11y_close_button">Close button. Press enter to close pre-share dialog.</string>
+    <!-- Accessibility string for the tab sharing button when unselected [CHAR LIMIT=NONE] -->
+    <string name="screen_share_a11y_tab_button_unselected">Tab sharing button. Not selected. Press enter to share tab.</string>
+    <!-- Accessibility string for the tab sharing button when selected [CHAR LIMIT=NONE] -->
+    <string name="screen_share_a11y_tab_button_selected">Sharing tab. Navigate to see available tabs.</string>
+    <!-- Accessibility string for the app sharing button when unselected [CHAR LIMIT=NONE] -->
+    <string name="screen_share_a11y_app_button_unselected">App sharing button. Not selected. Press enter to share app.</string>
+    <!-- Accessibility string for the app sharing button when selected [CHAR LIMIT=NONE] -->
+    <string name="screen_share_a11y_app_button_selected">Sharing app. Navigate to see available apps.</string>
+    <!-- Accessibility string for the fullscreen sharing button when unselected [CHAR LIMIT=NONE] -->
+    <string name="screen_share_a11y_fullscreen_button_unselected">Fullscreen button. Not selected. Press enter to share fullscreen.</string>
+    <!-- Accessibility string for the fullscreen sharing button when selected [CHAR LIMIT=NONE] -->
+    <string name="screen_share_a11y_fullscreen_button_selected">Sharing fullscreen. Navigate to see available displays.</string>
+    <!-- Accessibility string for the share button when disabled [CHAR LIMIT=NONE] -->
+    <string name="screen_share_a11y_share_button_off">Share button. Off. Select app, tab, or display to share.</string>
+    <!-- Accessibility string for the share button when enabled [CHAR LIMIT=NONE] -->
+    <string name="screen_share_a11y_share_button_on">Sharing on. <xliff:g id="item">%1$s</xliff:g> selected. Press enter to start sharing.</string>
+    <!-- Accessibility string for an item in the sharing list when unselected [CHAR LIMIT=NONE] -->
+    <string name="screen_share_a11y_item_unselected"><xliff:g id="item_name">%1$s</xliff:g>. Not selected. Press enter to select.</string>
+    <!-- Accessibility string for an item in the sharing list when selected [CHAR LIMIT=NONE] -->
+    <string name="screen_share_a11y_item_selected"><xliff:g id="item_name">%1$s</xliff:g> selected. Navigate to share button to start sharing.</string>
+    <!-- Accessibility string for the tab audio toggle when on [CHAR LIMIT=NONE] -->
+    <string name="screen_share_a11y_tab_audio_on">Tab audio on</string>
+    <!-- Accessibility string for the tab audio toggle when off [CHAR LIMIT=NONE] -->
+    <string name="screen_share_a11y_tab_audio_off">Tab audio off</string>
     <!-- Content description for the app window screenshot button in the toolbar, when the capture mode is set to "screenshot". [CHAR LIMIT=NONE] -->
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y">Take screenshot of window</string>
     <!-- Content description for the app window screenshot button in the toolbar, when the capture mode is set to "record". [CHAR LIMIT=NONE] -->

@@ -45,6 +45,8 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ui.compose.LoadingIcon
@@ -156,6 +158,12 @@ private fun DisclaimerText(targetsViewModel: TargetsViewModel, requestingAppName
 private fun AudioSwitch(targetsViewModel: TargetsViewModel) {
     val checked by targetsViewModel.captureAudio
 
+    val audioSwitchA11yDescription =
+        stringResource(
+            if (checked) R.string.screen_share_a11y_tab_audio_on
+            else R.string.screen_share_a11y_tab_audio_off
+        )
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -182,6 +190,7 @@ private fun AudioSwitch(targetsViewModel: TargetsViewModel) {
         Switch(
             checked = checked,
             onCheckedChange = targetsViewModel::setCaptureAudio,
+            modifier = Modifier.semantics { this.contentDescription = audioSwitchA11yDescription },
             thumbContent =
                 if (checked) {
                     {
