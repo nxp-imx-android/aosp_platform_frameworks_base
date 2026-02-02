@@ -67,7 +67,7 @@ public class MessagingLayout extends FrameLayout
     public static final Interpolator FAST_OUT_LINEAR_IN = new PathInterpolator(0.4f, 0f, 1f, 1f);
     public static final Interpolator FAST_OUT_SLOW_IN = new PathInterpolator(0.4f, 0f, 0.2f, 1f);
     private static final String TAG = "MessagingLayout";
-    private static final int MAX_SUMMARIZATION_LINES = 3;
+    private static final int MAX_SUMMARIZATION_LINES = 5;
     public static final OnLayoutChangeListener MESSAGING_PROPERTY_ANIMATOR
             = new MessagingPropertyAnimator();
     private final PeopleHelper mPeopleHelper = new PeopleHelper();
