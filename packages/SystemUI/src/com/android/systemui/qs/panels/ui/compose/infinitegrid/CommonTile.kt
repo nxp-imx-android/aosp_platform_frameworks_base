@@ -261,10 +261,11 @@ fun SmallTileContent(
                 is Icon.Resource -> context.getDrawable(icon.resId)
             }
         }
+
+    // Skip initial animation, icons should animate only as the state change
+    // and not when first composed
+    var shouldSkipInitialAnimation by remember { mutableStateOf(true) }
     if (loadedDrawable is Animatable) {
-        // Skip initial animation, icons should animate only as the state change
-        // and not when first composed
-        var shouldSkipInitialAnimation by remember { mutableStateOf(true) }
         LaunchedEffect(Unit) { shouldSkipInitialAnimation = animateToEnd }
 
         val painter =
