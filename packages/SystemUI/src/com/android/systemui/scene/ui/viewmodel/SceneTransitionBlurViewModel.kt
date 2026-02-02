@@ -44,11 +44,8 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import javax.inject.Named
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 
 /**
@@ -82,23 +79,6 @@ constructor(
     private val ambientModeSupported: Boolean by
         wallpaperInteractor.wallpaperSupportsAmbientMode.hydratedStateOf(false)
 
-    private val isPersistentEarlyWakeupRequired: Flow<Boolean> =
-        windowRootViewBlurInteractor.isBlurCurrentlySupported
-            .flatMapLatest { blurSupported ->
-                if (blurSupported) {
-                    combine(
-                        deviceEntryInteractor.isDeviceEntered,
-                        shadeInteractor.isUserInteracting,
-                        shadeInteractor.isAnyExpanded,
-                    ) { isDeviceEntered, userDraggingShade, anyExpanded ->
-                        !isDeviceEntered || userDraggingShade || anyExpanded
-                    }
-                } else {
-                    flowOf(false)
-                }
-            }
-            .distinctUntilChanged()
-
     override suspend fun onActivated() {
         blurChoreographer.registerOnBlurAppliedListener { blurEffect ->
             windowRootViewBlurInteractor.onBlurApplied(blurEffect.radius.toInt())
@@ -109,7 +89,20 @@ constructor(
             applyBlur(it)
         }
 
-        isPersistentEarlyWakeupRequired.collect { blurChoreographer.setPersistentEarlyWakeup(it) }
+        combine(
+                windowRootViewBlurInteractor.isBlurCurrentlySupported,
+                deviceEntryInteractor.isDeviceEntered,
+                shadeInteractor.isUserInteracting,
+                shadeInteractor.isAnyExpanded,
+            ) { blurSupported, isDeviceEntered, userDraggingShade, anyExpanded ->
+                if (blurSupported) {
+                    !isDeviceEntered || userDraggingShade || anyExpanded
+                } else {
+                    false
+                }
+            }
+            .distinctUntilChanged()
+            .collect { blurChoreographer.setPersistentEarlyWakeup(it) }
     }
 
     override suspend fun onDeactivated() {
