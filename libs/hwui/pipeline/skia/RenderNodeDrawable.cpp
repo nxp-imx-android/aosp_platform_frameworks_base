@@ -227,7 +227,7 @@ void RenderNodeDrawable::drawContent(SkCanvas* canvas) const {
     // the RenderNode's properties during this pass. Those will all be applied
     // when the layer is composited.
     if (mComposeLayer) {
-        setViewProperties(properties, canvas, &alphaMultiplier);
+        setViewProperties(renderNode, canvas, &alphaMultiplier, false);
     }
     SkiaDisplayList* displayList = mRenderNode->getDisplayList().asSkiaDl();
     displayList->mParentMatrix = canvas->getTotalMatrix();
@@ -244,6 +244,24 @@ void RenderNodeDrawable::drawContent(SkCanvas* canvas) const {
         // composing a hardware layer
         if (renderNode->getLayerSurface() && mComposeLayer) {
             SkASSERT(properties.effectiveLayerType() == LayerType::RenderLayer);
+
+            const auto& backdropRegions = renderNode->getActiveBackdropRegions();
+            const auto* selfBackdropFilter = layerProperties.getBackdropImageFilter();
+            for (const auto& region : backdropRegions) {
+                if (selfBackdropFilter && selfBackdropFilter == region.filter.get()) {
+                    continue;
+                }
+                if (region.filter && !region.bounds.isEmpty()) {
+                    SkRect skiaFilterBounds = region.bounds.toSkRect();
+                    if (canvas->quickReject(skiaFilterBounds)) {
+                        continue;
+                    }
+                    SkAutoCanvasRestore acr(canvas, true);
+                    canvas->clipPath(region.path, true);
+                    SkCanvas::SaveLayerRec rec(&skiaFilterBounds, nullptr, region.filter.get(), 0);
+                    canvas->saveLayer(rec);
+                }
+            }
             SkPaint paint;
             layerNeedsPaint(layerProperties, alphaMultiplier, &paint);
             sk_sp<SkImage> snapshotImage;
@@ -377,8 +395,9 @@ void RenderNodeDrawable::drawContent(SkCanvas* canvas) const {
     }
 }
 
-void RenderNodeDrawable::setViewProperties(const RenderProperties& properties, SkCanvas* canvas,
+void RenderNodeDrawable::setViewProperties(const RenderNode* renderNode, SkCanvas* canvas,
                                            float* alphaMultiplier, bool ignoreLayer) {
+    const RenderProperties& properties = renderNode->properties();
     if (properties.getLeft() != 0 || properties.getTop() != 0) {
         canvas->translate(properties.getLeft(), properties.getTop());
     }
@@ -411,6 +430,24 @@ void RenderNodeDrawable::setViewProperties(const RenderProperties& properties, S
         if (CC_LIKELY(isLayer || !properties.getHasOverlappingRendering()) || ignoreLayer) {
             *alphaMultiplier = properties.getAlpha();
         } else {
+            const auto& backdropRegions = renderNode->getActiveBackdropRegions();
+            const auto* selfBackdropFilter = properties.layerProperties().getBackdropImageFilter();
+            for (const auto& region : backdropRegions) {
+                if (selfBackdropFilter && selfBackdropFilter == region.filter.get()) {
+                    continue;
+                }
+                if (region.filter && !region.bounds.isEmpty()) {
+                    SkRect skiaFilterBounds = region.bounds.toSkRect();
+                    if (canvas->quickReject(skiaFilterBounds)) {
+                        continue;
+                    }
+                    SkAutoCanvasRestore acr(canvas, true);
+                    canvas->clipPath(region.path, true);
+                    SkCanvas::SaveLayerRec rec(&skiaFilterBounds, nullptr, region.filter.get(), 0);
+                    canvas->saveLayer(rec);
+                }
+            }
+
             // savelayer needed to create an offscreen buffer
             Rect layerBounds(0, 0, properties.getWidth(), properties.getHeight());
             if (clipFlags) {

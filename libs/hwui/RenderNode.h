@@ -289,7 +289,15 @@ private:
 
     UsageHint mUsageHint = UsageHint::Unknown;
 
+    struct BackdropFilterRegion {
+        sk_sp<SkImageFilter> filter;
+        Rect bounds;
+        SkPath path;
+    };
+
     bool mHasHolePunches;
+    bool mHasBackdropFilters;
+    std::vector<BackdropFilterRegion> mActiveBackdropRegions;
     StretchMask mStretchMask;
 
     bool mIsTextureView = false;
@@ -308,6 +316,12 @@ public:
     }
 
     bool hasHolePunches() { return mHasHolePunches; }
+
+    bool hasBackdropFilters() const { return mHasBackdropFilters; }
+
+    const std::vector<BackdropFilterRegion>& getActiveBackdropRegions() const {
+        return mActiveBackdropRegions;
+    }
 
     /**
      * Attach unused displayList to this node for potential future reuse.

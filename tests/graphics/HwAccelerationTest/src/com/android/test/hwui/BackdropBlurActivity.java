@@ -50,12 +50,17 @@ public class BackdropBlurActivity extends Activity {
         final FrameLayout contentView = new FrameLayout(this);
         contentView.addView(scrollView,
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        contentView.addView(new BackdropBlurView(this), 300, 300);
+        final FrameLayout tempFrame = new FrameLayout(this);
+        tempFrame.addView(new BackdropBlurView(this), 300, 300);
+        tempFrame.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        contentView.addView(tempFrame,
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
         setContentView(contentView);
     }
 
     private static class BackdropBlurView extends View {
-        private final float mBlurRadius = 60f;
+        private final float mBlurRadius = 10f;
         private final float mSaturation = 1.8f;
 
         private float mDownOffsetX;
@@ -76,7 +81,6 @@ public class BackdropBlurActivity extends Activity {
                     new ColorMatrixColorFilter(colorMatrix), blurEffect
             );
             setBackdropRenderEffect(effect);
-
             // clip to a round outline.
             setOutlineProvider(new ViewOutlineProvider() {
                 @Override

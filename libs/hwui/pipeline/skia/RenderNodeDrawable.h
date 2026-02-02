@@ -119,7 +119,7 @@ private:
     /**
      * Applies the rendering properties of a view onto a SkCanvas.
      */
-    static void setViewProperties(const RenderProperties& properties, SkCanvas* canvas,
+    static void setViewProperties(const RenderNode* renderNode, SkCanvas* canvas,
                                   float* alphaMultiplier, bool ignoreLayer = false);
 
     /**

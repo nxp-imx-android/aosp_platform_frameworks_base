@@ -40,7 +40,7 @@ void BackdropFilterDrawable::onDraw(SkCanvas* canvas) {
     SkRect srcBounds = SkRect::MakeWH(properties.getWidth(), properties.getHeight());
 
     float alphaMultiplier = 1.0f;
-    RenderNodeDrawable::setViewProperties(properties, canvas, &alphaMultiplier, true);
+    RenderNodeDrawable::setViewProperties(mTargetRenderNode, canvas, &alphaMultiplier, true);
     SkPaint paint;
     paint.setAlpha(properties.layerProperties().alpha() * alphaMultiplier);
 
