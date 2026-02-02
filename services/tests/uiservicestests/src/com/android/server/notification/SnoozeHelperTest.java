@@ -15,8 +15,7 @@
  */
 package com.android.server.notification;
 
-import static android.app.backup.NotificationLoggingConstants.DATA_TYPE_SNOOZED;
-
+import static android.app.NotificationLoggingConstants.DATA_TYPE_SNOOZED;
 import static com.android.server.notification.SnoozeHelper.CONCURRENT_SNOOZE_LIMIT;
 import static com.android.server.notification.SnoozeHelper.EXTRA_KEY;
 

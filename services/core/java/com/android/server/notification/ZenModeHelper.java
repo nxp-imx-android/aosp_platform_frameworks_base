@@ -18,6 +18,8 @@ package com.android.server.notification;
 
 import static android.app.AutomaticZenRule.TYPE_DRIVING;
 import static android.app.AutomaticZenRule.TYPE_UNKNOWN;
+import static android.app.NotificationLoggingConstants.DATA_TYPE_ZEN_CONFIG;
+import static android.app.NotificationLoggingConstants.ERROR_XML_PARSING;
 import static android.app.NotificationManager.AUTOMATIC_RULE_STATUS_ACTIVATED;
 import static android.app.NotificationManager.AUTOMATIC_RULE_STATUS_DEACTIVATED;
 import static android.app.NotificationManager.AUTOMATIC_RULE_STATUS_DISABLED;
@@ -25,8 +27,6 @@ import static android.app.NotificationManager.AUTOMATIC_RULE_STATUS_ENABLED;
 import static android.app.NotificationManager.AUTOMATIC_RULE_STATUS_REMOVED;
 import static android.app.NotificationManager.AUTOMATIC_RULE_STATUS_UNKNOWN;
 import static android.app.NotificationManager.Policy.PRIORITY_SENDERS_ANY;
-import static android.app.backup.NotificationLoggingConstants.DATA_TYPE_ZEN_CONFIG;
-import static android.app.backup.NotificationLoggingConstants.ERROR_XML_PARSING;
 import static android.service.notification.Condition.SOURCE_UNKNOWN;
 import static android.service.notification.Condition.SOURCE_USER_ACTION;
 import static android.service.notification.Condition.STATE_FALSE;
