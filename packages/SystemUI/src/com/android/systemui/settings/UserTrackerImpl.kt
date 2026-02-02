@@ -292,6 +292,10 @@ internal constructor(
     protected open fun handleProfilesChanged() {
         Assert.isNotMainThread()
 
+        if (userManager.getAliveUsers().filter { it.id == userId }.isEmpty()) {
+            Log.w(TAG, "UserId $userId, may have been deleted, ignoring handleProfilesChanged()")
+            return
+        }
         try {
             val (_, profiles) = setUserIdInternal(userId)
             notifySubscribers { callback, _ -> callback.onProfilesChanged(profiles) }

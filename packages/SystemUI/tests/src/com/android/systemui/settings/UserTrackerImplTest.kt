@@ -108,6 +108,8 @@ class UserTrackerImplTest : SysuiTestCase() {
             val info = UserInfo(invocation.getArgument<Int>(0), "", UserInfo.FLAG_FULL)
             listOf(info)
         }
+        whenever(userManager.getAliveUsers())
+            .thenReturn(listOf(UserInfo(0, "", UserInfo.FLAG_FULL)))
 
         featureFlags.set(Flags.USER_TRACKER_BACKGROUND_CALLBACKS, isBackgroundUserTrackerEnabled)
         tracker =
@@ -238,13 +240,7 @@ class UserTrackerImplTest : SysuiTestCase() {
                 val id = invocation.getArgument<Int>(0)
                 val info = UserInfo(id, "", UserInfo.FLAG_FULL)
                 val infoProfile =
-                    UserInfo(
-                        id + 10,
-                        "",
-                        "",
-                        UserInfo.FLAG_MANAGED_PROFILE,
-                        UserManager.USER_TYPE_PROFILE_MANAGED,
-                    )
+                    UserInfo(id + 10, "", "", 0, UserManager.USER_TYPE_PROFILE_MANAGED)
                 infoProfile.profileGroupId = id
                 listOf(info, infoProfile)
             }
@@ -272,7 +268,7 @@ class UserTrackerImplTest : SysuiTestCase() {
                         id + 10,
                         "",
                         "",
-                        UserInfo.FLAG_MANAGED_PROFILE or UserInfo.FLAG_QUIET_MODE,
+                        UserInfo.FLAG_QUIET_MODE,
                         UserManager.USER_TYPE_PROFILE_MANAGED,
                     )
                 infoProfile.profileGroupId = id
@@ -298,13 +294,7 @@ class UserTrackerImplTest : SysuiTestCase() {
                 val id = invocation.getArgument<Int>(0)
                 val info = UserInfo(id, "", UserInfo.FLAG_FULL)
                 val infoProfile =
-                    UserInfo(
-                        id + 10,
-                        "",
-                        "",
-                        UserInfo.FLAG_MANAGED_PROFILE,
-                        UserManager.USER_TYPE_PROFILE_MANAGED,
-                    )
+                    UserInfo(id + 10, "", "", 0, UserManager.USER_TYPE_PROFILE_MANAGED)
                 infoProfile.profileGroupId = id
                 listOf(info, infoProfile)
             }
@@ -365,6 +355,30 @@ class UserTrackerImplTest : SysuiTestCase() {
         }
 
     @Test
+    fun testCallbackNotCalledIfUserNotAlive() =
+        testScope.runTest {
+            val userId = 0
+            tracker.initialize { userId }
+
+            val callback = TestCallback()
+            tracker.addCallback(callback, executor)
+
+            assertThat(callback.calledOnProfilesChanged).isEqualTo(0)
+
+            val intent =
+                Intent(Intent.ACTION_MANAGED_PROFILE_REMOVED)
+                    .putExtra(Intent.EXTRA_USER, UserHandle.of(userId))
+            tracker.onReceive(context, intent)
+            assertThat(callback.calledOnProfilesChanged).isEqualTo(1)
+
+            // Now mark the user as not alive
+            whenever(userManager.getAliveUsers()).thenReturn(emptyList<UserInfo>())
+            tracker.onReceive(context, intent)
+            // No change to the count
+            assertThat(callback.calledOnProfilesChanged).isEqualTo(1)
+        }
+
+    @Test
     fun testAsyncCallbackWaitsUserToChange() =
         testScope.runTest {
             // Skip this test for CountDownLatch variation. The problem is that there would be a
@@ -408,7 +422,7 @@ class UserTrackerImplTest : SysuiTestCase() {
 
             val captor = ArgumentCaptor.forClass(IUserSwitchObserver::class.java)
             verify(iActivityManager).registerUserSwitchObserver(capture(captor), anyString())
-            captor.value.onBeforeUserSwitching(newID, any())
+            captor.value.onBeforeUserSwitching(newID, null)
             captor.value.onUserSwitchComplete(newID)
             runCurrent()
 
@@ -431,13 +445,7 @@ class UserTrackerImplTest : SysuiTestCase() {
                 val id = invocation.getArgument<Int>(0)
                 val info = UserInfo(id, "", UserInfo.FLAG_FULL)
                 val infoProfile =
-                    UserInfo(
-                        id + 10,
-                        "",
-                        "",
-                        UserInfo.FLAG_MANAGED_PROFILE,
-                        UserManager.USER_TYPE_PROFILE_MANAGED,
-                    )
+                    UserInfo(id + 10, "", "", 0, UserManager.USER_TYPE_PROFILE_MANAGED)
                 infoProfile.profileGroupId = id
                 listOf(info, infoProfile)
             }
