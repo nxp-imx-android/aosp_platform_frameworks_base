@@ -516,6 +516,15 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
             // On every state change, clear any pending ask or allow-persisted.
             mPendingAskDevices.clear();
             mPendingAllowPersistedDevices.clear();
+
+            // On every screen locked, remove stale devices from persisted list. We do this on
+            // locked state specifically because a) we already clear stale entries when we read from
+            // disk (i.e. booted) and b) we don't want to trust stale devices in the lower trust
+            // state.
+            if (removeStaleFingerprintsFromPersistedLocked()) {
+                // If we removed stale fingerprints, write that back to disk.
+                scheduleWritePersistedLocked();
+            }
         }
 
         // When logged in, move all devices that are pending persistence
@@ -550,6 +559,9 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
         boolean notifyHostManager = false;
         Slog.d(TAG, TextUtils.formatSimple("Host added device %s", deviceAddress));
 
+        UsbDeviceFingerprint fingerprint =
+                mHostManager.getConnectedDeviceFingerprintForAddress(deviceAddress);
+
         synchronized (mLock) {
             AuthorizationState state = getOrCreateConnectedDeviceLocked(deviceAddress);
             state.mHostReady = true;
@@ -558,6 +570,14 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
                     && !state.mHostAuthorized) {
                 state.mHostAuthorized = true;
                 notifyHostManager = true;
+            }
+
+            // If we are persisting the fingerprint for this device, update when it was last seen so
+            // that we don't consider it stale.
+            int deviceIndex = mPersistedAuthorizedDevices.indexOf(fingerprint);
+            if (deviceIndex >= 0) {
+                mPersistedAuthorizedDevices.valueAt(deviceIndex).updateLastSeenToNow();
+                scheduleWritePersistedLocked();
             }
         }
 
@@ -1205,6 +1225,32 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
         }
     }
 
+    // Remove stale fingerprints from the list of persisted devices. This does not write back the
+    // resulting devices to disk intentionally as it is also called to clear stale fingerprints when
+    // reading.
+    //
+    // Only call this method while locked.
+    @GuardedBy("mLock")
+    @VisibleForTesting
+    boolean removeStaleFingerprintsFromPersistedLocked() {
+        int originalSize = mPersistedAuthorizedDevices.size();
+        boolean removed =
+                mPersistedAuthorizedDevices.removeIf(
+                        (f) -> {
+                            return f.isStale();
+                        });
+
+        if (removed) {
+            Slog.d(
+                    TAG,
+                    TextUtils.formatSimple(
+                            "Removed %d stale fingerprints.",
+                            (originalSize - mPersistedAuthorizedDevices.size())));
+        }
+
+        return removed;
+    }
+
     // Read from given parser. This is not thread-safe so make sure the parser is protected if
     // calling from multiple threads.
     ArraySet<UsbDeviceFingerprint> readFromParser(TypedXmlPullParser parser)
@@ -1268,7 +1314,7 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
                                         Slog.e(
                                                 TAG,
                                                 "Error reading persisted device file. Deleting to"
-                                                    + " start fresh.",
+                                                        + " start fresh.",
                                                 e);
                                         mPersistedDevicesFile.delete();
                                     }
@@ -1277,6 +1323,7 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
                                 // Store read fingerprints and unblock any waiting threads.
                                 synchronized (mLock) {
                                     mPersistedAuthorizedDevices = readFingerprints;
+                                    removeStaleFingerprintsFromPersistedLocked();
                                     mIsReadPersistedDevicesComplete = true;
                                     mLock.notifyAll();
                                 }

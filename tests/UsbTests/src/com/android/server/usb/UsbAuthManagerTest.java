@@ -21,6 +21,7 @@ import static android.hardware.usb.UsbAuthorizationStatus.DENIED;
 import static android.hardware.usb.UsbAuthorizationStatus.DENIED_AND_DEFERRED;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -139,7 +140,7 @@ public class UsbAuthManagerTest {
 
     // Create a fingerprint with a unique hash. Both device + hashcode must match for a fingerprint
     // to be considered the same so use this to create multiple fingerprints for a single device.
-    UsbDeviceFingerprint createFingerprint(UsbDevice device, int hashCode) {
+    UsbDeviceFingerprint createFingerprint(UsbDevice device, int hashCode, long lastSeen) {
         DeviceFilter df = new DeviceFilter(device);
         byte[] hashBytes =
                 new byte[] {
@@ -153,8 +154,7 @@ public class UsbAuthManagerTest {
                         Base64.getEncoder().encodeToString(hashBytes));
         UsbDeviceFingerprint.Hashcode emptyHashcode =
                 UsbDeviceFingerprint.Hashcode.createEmptyHashcode();
-        long now = System.currentTimeMillis();
-        return new UsbDeviceFingerprint(df, descriptorHash, emptyHashcode, 0, false, now);
+        return new UsbDeviceFingerprint(df, descriptorHash, emptyHashcode, 0, false, lastSeen);
     }
 
     private UsbDevice getDeviceCopy(String name, String serialNumber) {
@@ -169,7 +169,7 @@ public class UsbAuthManagerTest {
                         "Fake Product",
                         "version",
                         new UsbConfiguration[0], // configurations
-                        "", // empty serial number -- need to spy + return later
+                        "",
                         false,
                         false,
                         false,
@@ -190,6 +190,7 @@ public class UsbAuthManagerTest {
 
     private static final Integer FAKE0 = 0;
     private static final Integer FAKE1 = 1;
+    private static final Integer FAKE2 = 2;
 
     private AutoCloseable mMocks;
 
@@ -280,8 +281,12 @@ public class UsbAuthManagerTest {
     }
 
     private void createTestData() {
+        long now = System.currentTimeMillis() - 1;
+        long stale = now - UsbDeviceFingerprint.PERSIST_DURATION_WITH_SERIAL_MS;
+
         String address0 = UsbDevice.getDeviceName(1, 1);
         String address1 = UsbDevice.getDeviceName(1, 2);
+        String address2 = UsbDevice.getDeviceName(1, 3);
 
         UsbAuthDeviceInfo deviceInfo0 = new UsbAuthDeviceInfo();
         deviceInfo0.busNumber = 1;
@@ -291,15 +296,22 @@ public class UsbAuthManagerTest {
         deviceInfo1.busNumber = 1;
         deviceInfo1.deviceNumber = 2;
 
+        UsbAuthDeviceInfo deviceInfo2 = new UsbAuthDeviceInfo();
+        deviceInfo2.busNumber = 1;
+        deviceInfo2.deviceNumber = 3;
+
         UsbDevice device0 = getDeviceCopy(address0, "");
         UsbDevice device1 = getDeviceCopy(address1, "");
+        UsbDevice device2 = getDeviceCopy(address2, "SERIAL003");
 
-        UsbDeviceFingerprint fingerprint0 = createFingerprint(device0, 12345);
-        UsbDeviceFingerprint fingerprint1 = createFingerprint(device1, 34567);
+        UsbDeviceFingerprint fingerprint0 = createFingerprint(device0, 12345, now);
+        UsbDeviceFingerprint fingerprint1 = createFingerprint(device1, 34567, now);
+        UsbDeviceFingerprint fingerprint2 = createFingerprint(device2, 56789, stale);
 
         mTestData.clear();
         mTestData.put(FAKE0, new TestData(address0, deviceInfo0, device0, fingerprint0));
         mTestData.put(FAKE1, new TestData(address1, deviceInfo1, device1, fingerprint1));
+        mTestData.put(FAKE2, new TestData(address2, deviceInfo2, device2, fingerprint2));
     }
 
     private void addConnectedDevice(TestData data) {
@@ -931,5 +943,71 @@ public class UsbAuthManagerTest {
         mUsbAuthManager.readPersisted();
         mUsbAuthManager.waitForPersistedDeviceData();
         assertEquals(0, mUsbAuthManager.getPersistedFingerprintsCopyForTesting().size());
+    }
+
+    @Test
+    public void testRemovesStale_updatesLastSeenOnAdded() throws Exception {
+        TestData staleFake2 = mTestData.get(FAKE2);
+        mUsbAuthManager.addFingerprintToPersistedForTest(staleFake2.fingerprint);
+
+        assertTrue(staleFake2.fingerprint.isStale());
+
+        addConnectedDevice(staleFake2);
+        mUsbAuthManager.usbDeviceAdded(staleFake2.deviceAddress);
+
+        ArraySet<UsbDeviceFingerprint> fingerprints =
+                mUsbAuthManager.getPersistedFingerprintsCopyForTesting();
+        assertEquals(1, fingerprints.size());
+
+        // Fingerprint should no longer be stale.
+        assertFalse(
+                fingerprints.removeIf(
+                        (f) -> {
+                            return f.isStale();
+                        }));
+    }
+
+    @Test
+    public void testRemovesStale_onLoadAndLocked() throws Exception {
+        TestData fake0 = mTestData.get(FAKE0);
+        TestData fake1 = mTestData.get(FAKE1);
+        TestData staleFake2 = mTestData.get(FAKE2);
+        ArraySet<UsbDeviceFingerprint> fingerprints;
+
+        // Throw these into the persisted list temporarily.
+        mUsbAuthManager.addFingerprintToPersistedForTest(fake0.fingerprint);
+        mUsbAuthManager.addFingerprintToPersistedForTest(staleFake2.fingerprint);
+        fingerprints = mUsbAuthManager.getPersistedFingerprintsCopyForTesting();
+        assertEquals(2, fingerprints.size());
+
+        // Go into locked state
+        mUsbAuthManager.onUpdateScreenLockedState(true);
+        mUsbAuthManager.onUpdateLoggedInState(true, TEST_USER_ID_FULL_ADMIN);
+        verify(mService).setSystemState(UsbAuthorizationSystemState.SCREEN_LOCKED);
+
+        // On entering locked (from BOOTED), we should have removed the stale entry.
+        fingerprints = mUsbAuthManager.getPersistedFingerprintsCopyForTesting();
+        assertEquals(1, fingerprints.size());
+
+        // Add the stale entry back in.
+        mUsbAuthManager.addFingerprintToPersistedForTest(fake1.fingerprint);
+        mUsbAuthManager.addFingerprintToPersistedForTest(staleFake2.fingerprint);
+        fingerprints = mUsbAuthManager.getPersistedFingerprintsCopyForTesting();
+        assertEquals(3, fingerprints.size());
+
+        // Now write this to disk and read it back.
+        FileOutputStream out = mAtomicFile.startWrite();
+        TypedXmlSerializer serializer = Xml.resolveSerializer(out);
+
+        UsbDeviceFingerprint[] fpArray = fingerprints.toArray(new UsbDeviceFingerprint[0]);
+        mUsbAuthManager.writeToSerializer(serializer, fpArray);
+
+        mAtomicFile.finishWrite(out);
+        mUsbAuthManager.readPersisted();
+        mUsbAuthManager.waitForPersistedDeviceData();
+
+        // The fingerprint is gone again once loaded from disk.
+        fingerprints = mUsbAuthManager.getPersistedFingerprintsCopyForTesting();
+        assertEquals(2, fingerprints.size());
     }
 }
