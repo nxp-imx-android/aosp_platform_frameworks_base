@@ -54549,10 +54549,10 @@ package android.view {
     ctor public RoundedRectBlurRegion(@NonNull android.graphics.RectF, @NonNull float[], @FloatRange(from=0.0, to=1.0) float, float);
     method @NonNull public android.view.RoundedRectBlurRegion copy();
     method @NonNull public android.graphics.RectF getBounds();
-    method @NonNull public float[] getCornerRadius();
+    method @NonNull public float[] getCornerRadii();
     method public void setBounds(@NonNull android.graphics.RectF);
-    method public void setCornerRadius(@NonNull float[]);
-    method public void setCornerRadius(float);
+    method public void setCornerRadii(@NonNull float[]);
+    method public void setCornerRadii(float);
   }
 
   public class ScaleGestureDetector {
