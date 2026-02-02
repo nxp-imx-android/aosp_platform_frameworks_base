@@ -1,6 +1,9 @@
 package com.android.systemui.keyguard
 
 import android.app.WallpaperManager
+import android.app.WindowConfiguration
+import android.graphics.Point
+import android.graphics.Rect
 import android.graphics.RectF
 import android.os.PowerManager
 import android.platform.test.annotations.DisableFlags
@@ -10,6 +13,7 @@ import android.view.SyncRtSurfaceTransactionApplier
 import android.view.View
 import android.view.ViewRootImpl
 import android.view.WindowManager
+import android.view.WindowManager.LayoutParams.INVALID_WINDOW_TYPE
 import android.window.WindowAnimationState
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -662,6 +666,19 @@ class KeyguardUnlockAnimationControllerTest : SysuiTestCase() {
                 false /* isTranslucent */,
                 null /* taskInfo */,
                 AnimatedSurface.Mode.OTHER,
+                Rect() /* screenSpaceBounds */,
+                Rect() /* localBounds */,
+                Point() /* position */,
+                0 /* rotationChange */,
+                WindowConfiguration() /* windowConfiguration */,
+                -1 /* taskId */,
+                INVALID_WINDOW_TYPE /* windowType */,
+                null /* startLeash */,
+                Rect() /* startBounds */,
+                Rect() /* contentInsets */,
+                false /* willShowImeOnTarget */,
+                true /* isNotInRecents */,
+                false, /* allowEnterPip */
             )
         }
     }
