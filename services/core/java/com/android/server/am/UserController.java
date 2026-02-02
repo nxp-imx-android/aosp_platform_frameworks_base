@@ -1209,7 +1209,9 @@ class UserController implements Handler.Callback {
                 shouldSwitchUser = true;
             }
         }
-        logUserJourneyBegin(userId, USER_JOURNEY_USER_LOGOUT);
+        mInjector
+                .getUserJourneyLogger()
+                .logUserLifecycleEvent(userId, USER_JOURNEY_USER_LOGOUT, EVENT_STATE_NONE);
 
         if (shouldSwitchUser) {
             if (!switchUser(UserHandle.USER_SYSTEM)) {
