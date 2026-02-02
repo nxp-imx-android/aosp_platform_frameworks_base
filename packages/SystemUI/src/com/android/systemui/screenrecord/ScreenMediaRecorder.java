@@ -49,6 +49,7 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.provider.MediaStore;
+import android.text.format.DateUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.Size;
@@ -80,8 +81,9 @@ public class ScreenMediaRecorder extends MediaProjection.Callback {
     private static final int VIDEO_FRAME_RATE_TO_RESOLUTION_RATIO = 6;
     private static final int AUDIO_BIT_RATE = 196000;
     private static final int AUDIO_SAMPLE_RATE = 44100;
-    private static final int MAX_DURATION_MS = 60 * 60 * 1000;
+    private static final int MAX_DURATION_MS = (int) DateUtils.HOUR_IN_MILLIS;
     private static final long MAX_FILESIZE_BYTES = 5000000000L;
+
     private static final String TAG = "ScreenMediaRecorder";
 
     private File mTempVideoFile;
@@ -144,7 +146,7 @@ public class ScreenMediaRecorder extends MediaProjection.Callback {
         mTempVideoFile = File.createTempFile("temp", ".mp4", cacheDir);
 
         // Set up media recorder
-        mMediaRecorder = new MediaRecorder();
+        mMediaRecorder = new MediaRecorder(mContext);
 
         // Set up audio source
         if (mAudioSource == MIC) {
@@ -161,19 +163,15 @@ public class ScreenMediaRecorder extends MediaProjection.Callback {
         Display display = dm.getDisplay(mDisplayId);
         display.getRealMetrics(metrics);
         int refreshRate = (int) display.getRefreshRate();
-        int[] dimens = getSupportedSize(metrics.widthPixels, metrics.heightPixels, refreshRate);
-        int width = dimens[0];
-        int height = dimens[1];
-        refreshRate = dimens[2];
-        int vidBitRate = width * height * refreshRate / VIDEO_FRAME_RATE
-                * VIDEO_FRAME_RATE_TO_RESOLUTION_RATIO;
+        VideoParameters videoParameters = getSupportedSize(metrics.widthPixels,
+                metrics.heightPixels, refreshRate);
         mMediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
         mMediaRecorder.setVideoEncodingProfileLevel(
                 MediaCodecInfo.CodecProfileLevel.AVCProfileHigh,
                 MediaCodecInfo.CodecProfileLevel.AVCLevel3);
-        mMediaRecorder.setVideoSize(width, height);
-        mMediaRecorder.setVideoFrameRate(refreshRate);
-        mMediaRecorder.setVideoEncodingBitRate(vidBitRate);
+        mMediaRecorder.setVideoSize(videoParameters.mWidth, videoParameters.mHeight);
+        mMediaRecorder.setVideoFrameRate(videoParameters.mRefreshRate);
+        mMediaRecorder.setVideoEncodingBitRate(videoParameters.bitrate());
         mMediaRecorder.setMaxDuration(MAX_DURATION_MS);
         mMediaRecorder.setMaxFileSize(MAX_FILESIZE_BYTES);
 
@@ -191,8 +189,8 @@ public class ScreenMediaRecorder extends MediaProjection.Callback {
         mInputSurface = mMediaRecorder.getSurface();
         mVirtualDisplay = mMediaProjection.createVirtualDisplay(
                 "Recording Display",
-                width,
-                height,
+                videoParameters.mWidth,
+                videoParameters.mHeight,
                 metrics.densityDpi,
                 DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
                 mInputSurface,
@@ -224,16 +222,18 @@ public class ScreenMediaRecorder extends MediaProjection.Callback {
      * @param screenWidth  Actual pixel width of screen
      * @param screenHeight Actual pixel height of screen
      * @param refreshRate  Desired refresh rate
-     * @return array with supported width, height, and refresh rate
+     * @return returns {@link VideoParameters} for the screen recording.
      */
-    private int[] getSupportedSize(final int screenWidth, final int screenHeight, int refreshRate)
+    private VideoParameters getSupportedSize(final int screenWidth, final int screenHeight,
+            int refreshRate)
             throws IOException {
         String videoType = MediaFormat.MIMETYPE_VIDEO_AVC;
 
         // Get max size from the decoder, to ensure recordings will be playable on device
         MediaCodec decoder = MediaCodec.createDecoderByType(videoType);
-        MediaCodecInfo.VideoCapabilities vc = decoder.getCodecInfo()
-                .getCapabilitiesForType(videoType).getVideoCapabilities();
+        MediaCodecInfo.VideoCapabilities vc = decoder.getCodecInfo().getCapabilitiesForType(
+                        videoType)
+                .getVideoCapabilities();
         decoder.release();
 
         // Check if we can support screen size as-is
@@ -252,14 +252,18 @@ public class ScreenMediaRecorder extends MediaProjection.Callback {
         if (width >= screenWidthAligned && height >= screenHeightAligned
                 && vc.isSizeSupported(screenWidthAligned, screenHeightAligned)) {
             // Desired size is supported, now get the rate
-            int maxRate = vc.getSupportedFrameRatesFor(screenWidthAligned,
-                    screenHeightAligned).getUpper().intValue();
+            int maxRate = getSupportedFrameRateFor(vc, screenWidthAligned, screenHeightAligned);
 
             if (maxRate < refreshRate) {
                 refreshRate = maxRate;
             }
-            Log.d(TAG, "Screen size supported at rate " + refreshRate);
-            return new int[]{screenWidthAligned, screenHeightAligned, refreshRate};
+            VideoParameters parameters = new VideoParameters(
+                    /* mWidth= */ screenWidthAligned,
+                    /* mHeight= */ screenHeightAligned,
+                    /* mRefreshRate= */ refreshRate
+            );
+            Log.d(TAG, "Screen size supported with parameters: " + parameters);
+            return parameters;
         }
 
         // Otherwise, resize for max supported size
@@ -276,15 +280,18 @@ public class ScreenMediaRecorder extends MediaProjection.Callback {
         }
 
         // Find max supported rate for size
-        int maxRate = vc.getSupportedFrameRatesFor(scaledWidth, scaledHeight)
-                .getUpper().intValue();
+        int maxRate = getSupportedFrameRateFor(vc, scaledWidth, scaledHeight);
         if (maxRate < refreshRate) {
             refreshRate = maxRate;
         }
 
-        Log.d(TAG, "Resized by " + scale + ": " + scaledWidth + ", " + scaledHeight
-                + ", " + refreshRate);
-        return new int[]{scaledWidth, scaledHeight, refreshRate};
+        VideoParameters parameters = new VideoParameters(
+                /* mWidth= */ scaledWidth,
+                /* mHeight= */ scaledHeight,
+                /* mRefreshRate= */ refreshRate
+        );
+        Log.d(TAG, "Resized to parameters: " + parameters);
+        return parameters;
     }
 
     /**
@@ -444,6 +451,24 @@ public class ScreenMediaRecorder extends MediaProjection.Callback {
         }
     }
 
+    /**
+     * Currently, screen recording is being treated as a real time usecase which is at the same
+     * priority as any other video encoding/decoding usecases. This can result in video playback and
+     * recording failures while screen recording is in progress.
+     *
+     * Test the selfie enabled when increasing the cap because it's known to overflow the
+     * buffer when it is too high.
+     *
+     * @return frame rate that is supported by the codec and adjusted for the screen recording.
+     */
+    private int getSupportedFrameRateFor(MediaCodecInfo.VideoCapabilities vc, int width,
+            int height) {
+        int maxRate = vc.getSupportedFrameRatesFor(width,
+                height).getUpper().intValue() / 2;
+        // hard cap refresh rate at VIDEO_FRAME_RATE anyway
+        return Math.min(maxRate, VIDEO_FRAME_RATE);
+    }
+
     public interface UriReadyCallback {
 
         void onUriReady(Uri uri);
@@ -547,6 +572,14 @@ public class ScreenMediaRecorder extends MediaProjection.Callback {
 
                 throw (Error) throwable;
             }
+        }
+    }
+
+    private record VideoParameters(int mWidth, int mHeight, int mRefreshRate) {
+
+        int bitrate() {
+            return mWidth * mHeight * mRefreshRate / VIDEO_FRAME_RATE
+                    * VIDEO_FRAME_RATE_TO_RESOLUTION_RATIO;
         }
     }
 }
