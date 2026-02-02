@@ -7079,6 +7079,8 @@
     <string name="satellite_messaging_location_disabled_notification_title">Satellite messaging not available</string>
     <!-- Notification summary when location settings is disabled. [CHAR LIMIT=NONE] -->
     <string name="satellite_messaging_location_disabled_notification_summary">To check if satellite messaging is available in this country or region, turn on location settings</string>
+    <!-- The satellite indicator to be shown on the status bar, settings, quick settings, and landing pages. [CHAR LIMIT=5] -->
+    <string name="satellite_indicator">SAT</string>
 
     <!-- Fingerprint dangling notification title -->
     <string name="fingerprint_dangling_notification_title">Set up Fingerprint Unlock again</string>
