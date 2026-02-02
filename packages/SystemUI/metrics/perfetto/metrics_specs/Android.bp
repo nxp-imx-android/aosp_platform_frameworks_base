@@ -26,6 +26,7 @@ filegroup {
         "android_dmabuf_per_process_metric.textproto",
         "android_sf_critical_work_region_sampling.textproto",
         "android_gralloc_buffers_per_process_metric.textproto",
+        "android_consecutive_missed_frames_per_cuj_metric.textproto",
     ],
 }
 
@@ -52,6 +53,11 @@ prebuilt_etc {
 prebuilt_etc {
     name: "android_gralloc_buffers_per_process_metric.textproto",
     src: "android_gralloc_buffers_per_process_metric.textproto",
+}
+
+prebuilt_etc {
+    name: "android_consecutive_missed_frames_per_cuj_metric.textproto",
+    src: "android_consecutive_missed_frames_per_cuj_metric.textproto",
 }
 
 python_library_host {
