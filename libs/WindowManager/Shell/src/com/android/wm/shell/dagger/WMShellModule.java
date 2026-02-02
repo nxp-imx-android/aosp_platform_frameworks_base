@@ -548,10 +548,12 @@ public abstract class WMShellModule {
             @ShellBackgroundThread CoroutineScope bgScope,
             ShellTaskOrganizer shellTaskOrganizer,
             LauncherApps launcherApps,
-            ShellInit shellInit) {
+            ShellInit shellInit,
+            ShellController shellController,
+            ShellCommandHandler shellCommandHandler) {
         return new AppToWebRepositoryImpl(context, assistContentRequester,
                 appToWebGenericLinksParser, appToWebDatastoreRepository, mainScope, bgScope,
-                shellTaskOrganizer, launcherApps, shellInit);
+                shellTaskOrganizer, launcherApps, shellInit, shellController, shellCommandHandler);
     }
 
     @WMSingleton

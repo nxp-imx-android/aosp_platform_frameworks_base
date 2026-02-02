@@ -37,6 +37,8 @@ import com.android.wm.shell.apptoweb.data.AppToWebDatastoreRepository
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
+import com.android.wm.shell.sysui.ShellCommandHandler
+import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
 import java.io.PrintWriter
 import kotlin.coroutines.suspendCoroutine
@@ -68,7 +70,11 @@ class AppToWebRepositoryImpl(
     private val shellTaskOrganizer: ShellTaskOrganizer,
     private val launcherApps: LauncherApps,
     shellInit: ShellInit,
+    shellController: ShellController,
+    shellCommandHandler: ShellCommandHandler,
 ) : TaskVanishedListener, AppToWebRepository {
+    private val appToWebShellCommandHandler = AppToWebShellCommandHandler(this, shellController)
+
     private var appToWebDataByTask = SparseArray<TaskAppToWebData>()
     private val firstRunPromptShownByTaskId = mutableSetOf<Int>()
     private var firstRunPromptAckedPackagesByUserId: MutableMap<Int, MutableSet<String>> =
@@ -118,6 +124,7 @@ class AppToWebRepositoryImpl(
 
     init {
         shellInit.addInitCallback(::onInit, this)
+        shellCommandHandler.addCommandCallback("apptoweb", appToWebShellCommandHandler, this)
     }
 
     private fun onInit() {
@@ -290,6 +297,22 @@ class AppToWebRepositoryImpl(
                 "firstRunPromptAckedPackagesByUserId must be non-null for userId ${taskInfo.userId}"
             }
             .add(packageName)
+        persistFirstRunPromptAckedPackages()
+    }
+
+    override fun clearFirstRunPromptAckedPackages(userId: Int, packageName: String) {
+        if (!Flags.enableEnhancedAppToWebTransition()) {
+            return
+        }
+        firstRunPromptAckedPackagesByUserId[userId]?.remove(packageName)
+        persistFirstRunPromptAckedPackages()
+    }
+
+    override fun clearAllFirstRunPromptAckedPackages(userId: Int) {
+        if (!Flags.enableEnhancedAppToWebTransition()) {
+            return
+        }
+        firstRunPromptAckedPackagesByUserId[userId]?.clear()
         persistFirstRunPromptAckedPackages()
     }
 

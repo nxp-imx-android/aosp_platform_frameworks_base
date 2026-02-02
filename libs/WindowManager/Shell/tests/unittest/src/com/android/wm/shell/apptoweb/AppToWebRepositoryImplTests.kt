@@ -37,6 +37,8 @@ import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestShellExecutor
 import com.android.wm.shell.apptoweb.data.AppToWebDatastoreRepository
+import com.android.wm.shell.sysui.ShellCommandHandler
+import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.util.createTaskInfo
 import kotlin.test.assertEquals
@@ -77,6 +79,8 @@ class AppToWebRepositoryImplTests : ShellTestCase() {
     @Mock private lateinit var mockResources: Resources
     @Mock private lateinit var appToWebDatastoreRepository: AppToWebDatastoreRepository
     @Mock private lateinit var launcherApps: LauncherApps
+    @Mock private lateinit var shellController: ShellController
+    @Mock private lateinit var shellCommandHandler: ShellCommandHandler
     private val testScope = TestScope()
 
     private lateinit var mockInit: AutoCloseable
@@ -117,6 +121,8 @@ class AppToWebRepositoryImplTests : ShellTestCase() {
                 shellTaskOrganizer,
                 launcherApps,
                 shellInit,
+                shellController,
+                shellCommandHandler,
             )
         shellInit.init()
 
@@ -399,6 +405,8 @@ class AppToWebRepositoryImplTests : ShellTestCase() {
             shellTaskOrganizer,
             launcherApps,
             newShellInit,
+            shellController,
+            shellCommandHandler,
         )
         newShellInit.init()
 
@@ -425,6 +433,8 @@ class AppToWebRepositoryImplTests : ShellTestCase() {
             shellTaskOrganizer,
             launcherApps,
             newShellInit,
+            shellController,
+            shellCommandHandler,
         )
         newShellInit.init()
 

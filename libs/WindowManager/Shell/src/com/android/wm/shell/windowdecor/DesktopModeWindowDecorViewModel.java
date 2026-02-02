@@ -1239,6 +1239,24 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
      */
     @Deprecated
     @Override
+    public void clearFirstRunPromptAckedPackages(int userId, String packageName) {
+    }
+
+    /**
+     * @deprecated Actual implementation within {@link WindowDecoration}
+     * TODO: b/409648813 : to be removed when [WindowDecoration] is deprecated.
+     */
+    @Deprecated
+    @Override
+    public void clearAllFirstRunPromptAckedPackages(int userId) {
+    }
+
+    /**
+     * @deprecated Actual implementation within {@link WindowDecoration}
+     * TODO: b/409648813 : to be removed when [WindowDecoration] is deprecated.
+     */
+    @Deprecated
+    @Override
     public void onFirstRunPromptAcked(RunningTaskInfo taskInfo) {
     }
 
