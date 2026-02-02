@@ -32,7 +32,7 @@ import com.android.server.personalcontext.component.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 /**
@@ -43,7 +43,7 @@ import java.util.concurrent.Executors;
  */
 public abstract class BaseServiceClientComponent<C> implements Component {
     protected static final String TAG = "PersonalContextClient";
-    private final ExecutorService mExecutor = Executors.newSingleThreadExecutor();
+    private final Executor mExecutor;
     private final Context mContext;
     private final UUID mComponentId;
     private final Intent mServiceIntent;
@@ -80,8 +80,12 @@ public abstract class BaseServiceClientComponent<C> implements Component {
         }
     };
 
-    public BaseServiceClientComponent(
-            Context context, UUID componentId, ServiceInfo serviceInfo) {
+    public BaseServiceClientComponent(Context context, UUID componentId, ServiceInfo serviceInfo) {
+        this(context, componentId, serviceInfo, Executors.newSingleThreadExecutor());
+    }
+    protected BaseServiceClientComponent(Context context, UUID componentId, ServiceInfo serviceInfo,
+            Executor executor) {
+        mExecutor = executor;
         mContext = context;
         mComponentId = componentId;
         mComponentName = new ComponentName(serviceInfo.packageName, serviceInfo.name);
