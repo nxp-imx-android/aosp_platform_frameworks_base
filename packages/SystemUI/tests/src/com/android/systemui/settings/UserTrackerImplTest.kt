@@ -519,6 +519,52 @@ class UserTrackerImplTest : SysuiTestCase() {
             }
         }
 
+    @Test
+    fun testProfilesChangedFromBroadcast_isBeforeUserSwitching_skipsProfileChangedCallback() =
+        testScope.runTest {
+            tracker.initialize { 0 }
+            val newID = 5
+            val captor = ArgumentCaptor.forClass(IUserSwitchObserver::class.java)
+            verify(iActivityManager).registerUserSwitchObserver(capture(captor), anyString())
+            val callback = TestCallback()
+            tracker.addCallback(callback, executor)
+
+            captor.value.onBeforeUserSwitching(newID, beforeUserSwitchingReply)
+            tracker.onReceive(context, Intent(Intent.ACTION_LOCALE_CHANGED))
+            runCurrent()
+
+            assertThat(callback.calledOnProfilesChanged).isEqualTo(0)
+        }
+
+    @Test
+    fun testProfilesChangedFromBroadcast_isUserSwitching_skipsProfileChangedCallback() =
+        testScope.runTest {
+            tracker.initialize { 0 }
+            val newID = 5
+            val captor = ArgumentCaptor.forClass(IUserSwitchObserver::class.java)
+            verify(iActivityManager).registerUserSwitchObserver(capture(captor), anyString())
+            val callback = TestCallback()
+            tracker.addCallback(callback, executor)
+
+            captor.value.onUserSwitching(newID, userSwitchingReply)
+            tracker.onReceive(context, Intent(Intent.ACTION_LOCALE_CHANGED))
+            runCurrent()
+
+            assertThat(callback.calledOnProfilesChanged).isEqualTo(0)
+        }
+
+    @Test
+    fun testProfilesChangedFromBroadcast_sendsProfileChangedCallback() = testScope.runTest {
+        tracker.initialize { 0 }
+        val callback = TestCallback()
+        tracker.addCallback(callback, executor)
+
+        tracker.onReceive(context, Intent(Intent.ACTION_LOCALE_CHANGED))
+        runCurrent()
+
+        assertThat(callback.calledOnProfilesChanged).isEqualTo(1)
+    }
+
     private class TestCallback : UserTracker.Callback {
         var calledOnBeforeUserChanging = 0
         var calledOnUserChanging = 0

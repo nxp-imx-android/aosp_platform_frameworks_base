@@ -110,6 +110,8 @@ internal constructor(
     override var isUserSwitching = false
         protected set
 
+    private var isBeforeUserSwitching = false
+
     /**
      * Returns a [List<UserInfo>] of all profiles associated with the current user.
      *
@@ -197,11 +199,13 @@ internal constructor(
         iActivityManager.registerUserSwitchObserver(
             object : UserSwitchObserver() {
                 override fun onBeforeUserSwitching(newUserId: Int, reply: IRemoteCallback?) {
+                    isBeforeUserSwitching = true
                     handleBeforeUserSwitching(newUserId)
                     reply?.sendResult(null)
                 }
 
                 override fun onUserSwitching(newUserId: Int, reply: IRemoteCallback?) {
+                    isBeforeUserSwitching = false
                     isUserSwitching = true
                     if (isBackgroundUserSwitchEnabled) {
                         userSwitchingJob?.cancel()
@@ -291,7 +295,17 @@ internal constructor(
     @WorkerThread
     protected open fun handleProfilesChanged() {
         Assert.isNotMainThread()
-
+        if (isBeforeUserSwitching || isUserSwitching) {
+            // Skip the profile change notification if we're in the middle of a user switch. Doing
+            // so has the potential of sending it in the window between the new userId being set
+            // internally and the switch completing where the `onUserChanged` callback is invoked.
+            // Leading to subscribers being notified of the profiles of the new user without first
+            // having been notified of the new user change.
+            // When user switch is complete, the profiles will be updated after the user change
+            // notification is sent, so it's safe to completely skip it here. See b/459982623.
+            Log.w(TAG, "Skipping profile change notification during user switch")
+            return
+        }
         if (userManager.getAliveUsers().filter { it.id == userId }.isEmpty()) {
             Log.w(TAG, "UserId $userId, may have been deleted, ignoring handleProfilesChanged()")
             return
