@@ -7279,10 +7279,16 @@ public class Notification implements Parcelable
          */
         private record ActionButton(Action action, int originalIndex) { }
 
+        /**
+         * @param supportCustomColors whether colors set via full-width style or semantic annotation
+         *     spans in the action text will be used to color the button background (or border)
+         *     if the action is emphasized.
+         */
         private record ActionButtons(
-                List<ActionButton> actions, boolean edgeToEdge, boolean emphasized) {
+                List<ActionButton> actions, boolean edgeToEdge, boolean emphasized,
+                boolean supportCustomColors) {
             private static final ActionButtons EMPTY =
-                    new ActionButtons(List.of(), false, false);
+                    new ActionButtons(List.of(), false, false, false);
         }
 
         /**
@@ -7360,7 +7366,9 @@ public class Notification implements Parcelable
             }
 
             boolean emphasizedEdgeToEdge = isPromotedOngoing || isPseudoFsi || isCallStyle;
-            return new ActionButtons(candidates, emphasizedEdgeToEdge, emphasizedEdgeToEdge);
+            boolean supportCustomColors = isPseudoFsi || isCallStyle; // but not other RONs.
+            return new ActionButtons(candidates, emphasizedEdgeToEdge, emphasizedEdgeToEdge,
+                    supportCustomColors);
         }
 
         @FlaggedApi(Flags.FLAG_API_NOTIFICATION_ACTION_CUSTOM)
@@ -7371,7 +7379,8 @@ public class Notification implements Parcelable
                 boolean actionHasValidInput = hasValidRemoteInput(action.action);
                 validRemoteInput |= actionHasValidInput;
 
-                final RemoteViews button = createActionButtonView(action, actions.emphasized(), p);
+                final RemoteViews button = createActionButtonView(action, actions.emphasized(),
+                        actions.supportCustomColors(), p);
                 if (actionHasValidInput && !actions.emphasized()) {
                     // Clear the drawable
                     button.setInt(R.id.action0, "setBackgroundResource", 0);
@@ -7388,7 +7397,7 @@ public class Notification implements Parcelable
 
         @FlaggedApi(Flags.FLAG_API_NOTIFICATION_ACTION_CUSTOM)
         private RemoteViews createActionButtonView(ActionButton actionButton,
-                boolean emphasizedMode, StandardTemplateParams p) {
+                boolean emphasizedMode, boolean supportCustomColor, StandardTemplateParams p) {
             Action action = actionButton.action;
             final boolean tombstone = (action.actionIntent == null);
             final boolean showIcon =
@@ -7410,9 +7419,8 @@ public class Notification implements Parcelable
             if (emphasizedMode) {
                 button.setBoolean(R.id.action0, "setEnabled", !tombstone);
 
-                // TODO: b/461472579 - useColorFromActionTitle should always be true?
                 EmphasizedButtonColors colors = resolveEmphasisColors(action, p,
-                        /* useColorFromActionTitle= */ true, tombstone);
+                        supportCustomColor, tombstone);
 
                 button.setColorStateList(R.id.action0, "setButtonBackground",
                         ColorStateList.valueOf(colors.background));
@@ -7498,8 +7506,10 @@ public class Notification implements Parcelable
                 if (customColor != null) {
                     backgroundColor = Colors.ensureMinimalContrast(customColor,
                             notifBackgroundColor);
-                    textColor = Colors.ensureTextContrast(colors.getPrimaryEmphasisText(),
-                            backgroundColor);
+                    // For custom color background, use white/black-ish for text. This will also
+                    // ensure necessary contrast.
+                    textColor = ContrastColorUtil.resolvePrimaryColor(mContext,
+                            backgroundColor, mInNightMode);
                 } else {
                     backgroundColor = colors.getPrimaryEmphasisBackground();
                     textColor = colors.getPrimaryEmphasisText();
@@ -18875,7 +18885,7 @@ public class Notification implements Parcelable
 
         @FlaggedApi(Flags.FLAG_API_NOTIFICATION_ACTION_CUSTOM)
         @ColorInt
-        int getPrimaryEmphasisBackground() {
+        public int getPrimaryEmphasisBackground() {
             return mPrimaryEmphasisBackground;
         }
 
