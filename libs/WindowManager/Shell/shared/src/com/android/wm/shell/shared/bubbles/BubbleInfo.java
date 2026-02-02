@@ -23,6 +23,8 @@ import android.graphics.drawable.Icon;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.android.users.UserType;
+
 import java.util.Objects;
 
 /**

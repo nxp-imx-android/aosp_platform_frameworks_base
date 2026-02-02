@@ -20,7 +20,7 @@ import android.content.pm.UserInfo
 import android.os.UserManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.wm.shell.shared.bubbles.UserType
+import com.android.users.UserType
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
