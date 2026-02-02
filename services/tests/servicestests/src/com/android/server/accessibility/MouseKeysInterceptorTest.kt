@@ -648,120 +648,190 @@ class MouseKeysInterceptorTest {
         )
     }
 
+    // This test checks that all scroll keys for primary keys work when "use primary keys" is on.
     @Test
-    fun whenScrollToggleOn_ScrollUpKeyIsPressed_scrollEventIsSent() {
+    fun whenScrollKeyIsPressed_scrollEventIsSent_withUsePrimaryKeysOn_primaryKeys() {
         setupMouseKeysInterceptor(usePrimaryKeys = true)
-        // There should be some delay between the downTime of the key event and calling onKeyEvent
-        val downTime = clock.now() - KEYBOARD_POST_EVENT_DELAY_MILLIS
-        val keyCodeScrollToggle =
-            MouseKeysInterceptor.MouseKeyEvent.SCROLL_TOGGLE.getKeyCodeValue(USE_PRIMARY_KEYS)
-        val keyCodeScroll =
-            MouseKeysInterceptor.MouseKeyEvent.UP_MOVE_OR_SCROLL.getKeyCodeValue(USE_PRIMARY_KEYS)
 
-        val scrollToggleDownEvent =
-            KeyEvent(
-                downTime,
-                downTime,
-                KeyEvent.ACTION_DOWN,
-                keyCodeScrollToggle,
-                0,
-                0,
-                DEVICE_ID,
-                0,
-            )
-        val scrollDownEvent =
-            KeyEvent(downTime, downTime, KeyEvent.ACTION_DOWN, keyCodeScroll, 0, 0, DEVICE_ID, 0)
+        // Primary keys up
+        testScrollKey(
+            keyCodeScrollToggle =
+                MouseKeysInterceptor.MouseKeyEvent.SCROLL_TOGGLE.getKeyCodeValue(USE_PRIMARY_KEYS),
+            keyCodeScroll =
+                MouseKeysInterceptor.MouseKeyEvent.UP_MOVE_OR_SCROLL.getKeyCodeValue(
+                    USE_PRIMARY_KEYS
+                ),
+            deviceId = DEVICE_ID,
+            metaState = 0,
+            xAxisMultiplier = 0f,
+            yAxisMultiplier = 1f,
+        )
 
-        mouseKeysInterceptor.onKeyEvent(scrollToggleDownEvent, 0)
-        mouseKeysInterceptor.onKeyEvent(scrollDownEvent, 0)
-        testLooper.dispatchAll()
+        // Primary keys down
+        testScrollKey(
+            keyCodeScrollToggle =
+                MouseKeysInterceptor.MouseKeyEvent.SCROLL_TOGGLE.getKeyCodeValue(USE_PRIMARY_KEYS),
+            keyCodeScroll =
+                MouseKeysInterceptor.MouseKeyEvent.DOWN_MOVE_OR_SCROLL.getKeyCodeValue(
+                    USE_PRIMARY_KEYS
+                ),
+            deviceId = DEVICE_ID,
+            metaState = 0,
+            xAxisMultiplier = 0f,
+            yAxisMultiplier = -1f,
+        )
 
-        // Verify the sendScrollEvent method is called once and capture the arguments
-        verifyScrollEvents(
-            xAxisMovements = floatArrayOf(0f),
-            yAxisMovements = floatArrayOf(MouseKeysInterceptor.MOUSE_SCROLL_STEP),
+        // Primary keys left
+        testScrollKey(
+            keyCodeScrollToggle =
+                MouseKeysInterceptor.MouseKeyEvent.SCROLL_TOGGLE.getKeyCodeValue(USE_PRIMARY_KEYS),
+            keyCodeScroll =
+                MouseKeysInterceptor.MouseKeyEvent.LEFT_MOVE_OR_SCROLL.getKeyCodeValue(
+                    USE_PRIMARY_KEYS
+                ),
+            deviceId = DEVICE_ID,
+            metaState = 0,
+            xAxisMultiplier = 1f,
+            yAxisMultiplier = 0f,
+        )
+
+        // Primary keys right
+        testScrollKey(
+            keyCodeScrollToggle =
+                MouseKeysInterceptor.MouseKeyEvent.SCROLL_TOGGLE.getKeyCodeValue(USE_PRIMARY_KEYS),
+            keyCodeScroll =
+                MouseKeysInterceptor.MouseKeyEvent.RIGHT_MOVE_OR_SCROLL.getKeyCodeValue(
+                    USE_PRIMARY_KEYS
+                ),
+            deviceId = DEVICE_ID,
+            metaState = 0,
+            xAxisMultiplier = -1f,
+            yAxisMultiplier = 0f,
         )
     }
 
+    // This test checks that all scroll keys for the numpad work when "use primary keys" is on.
     @Test
-    fun whenScrollToggleOn_ScrollRightKeyIsPressed_scrollEventIsSent() {
+    fun whenScrollKeyIsPressed_scrollEventIsSent_withUsePrimaryKeysOn_numpad() {
         setupMouseKeysInterceptor(usePrimaryKeys = true)
-        // There should be some delay between the downTime of the key event and calling onKeyEvent
-        val downTime = clock.now() - KEYBOARD_POST_EVENT_DELAY_MILLIS
-        val keyCodeScrollToggle =
-            MouseKeysInterceptor.MouseKeyEvent.SCROLL_TOGGLE.getKeyCodeValue(USE_PRIMARY_KEYS)
-        val keyCodeScroll =
-            MouseKeysInterceptor.MouseKeyEvent.RIGHT_MOVE_OR_SCROLL.getKeyCodeValue(
-                USE_PRIMARY_KEYS
-            )
 
-        val scrollToggleDownEvent =
-            KeyEvent(
-                downTime,
-                downTime,
-                KeyEvent.ACTION_DOWN,
-                keyCodeScrollToggle,
-                0,
-                0,
-                DEVICE_ID,
-                0,
-            )
-        val scrollDownEvent =
-            KeyEvent(downTime, downTime, KeyEvent.ACTION_DOWN, keyCodeScroll, 0, 0, DEVICE_ID, 0)
+        // Numpad up
+        testScrollKey(
+            keyCodeScrollToggle =
+                MouseKeysInterceptor.MouseKeyEvent.SCROLL_TOGGLE.getKeyCodeValue(USE_NUMPAD_KEYS),
+            keyCodeScroll =
+                MouseKeysInterceptor.MouseKeyEvent.UP_MOVE_OR_SCROLL.getKeyCodeValue(
+                    USE_NUMPAD_KEYS
+                ),
+            deviceId = NUMPAD_DEVICE_ID,
+            metaState = KeyEvent.META_NUM_LOCK_ON,
+            xAxisMultiplier = 0f,
+            yAxisMultiplier = 1f,
+        )
 
-        mouseKeysInterceptor.onKeyEvent(scrollToggleDownEvent, 0)
-        mouseKeysInterceptor.onKeyEvent(scrollDownEvent, 0)
-        testLooper.dispatchAll()
+        // Numpad down
+        testScrollKey(
+            keyCodeScrollToggle =
+                MouseKeysInterceptor.MouseKeyEvent.SCROLL_TOGGLE.getKeyCodeValue(USE_NUMPAD_KEYS),
+            keyCodeScroll =
+                MouseKeysInterceptor.MouseKeyEvent.DOWN_MOVE_OR_SCROLL.getKeyCodeValue(
+                    USE_NUMPAD_KEYS
+                ),
+            deviceId = NUMPAD_DEVICE_ID,
+            metaState = KeyEvent.META_NUM_LOCK_ON,
+            xAxisMultiplier = 0f,
+            yAxisMultiplier = -1f,
+        )
 
-        // Verify the sendScrollEvent method is called once and capture the arguments
-        verifyScrollEvents(
-            xAxisMovements = floatArrayOf(-MouseKeysInterceptor.MOUSE_SCROLL_STEP),
-            yAxisMovements = floatArrayOf(0f),
+        // Numpad left
+        testScrollKey(
+            keyCodeScrollToggle =
+                MouseKeysInterceptor.MouseKeyEvent.SCROLL_TOGGLE.getKeyCodeValue(USE_NUMPAD_KEYS),
+            keyCodeScroll =
+                MouseKeysInterceptor.MouseKeyEvent.LEFT_MOVE_OR_SCROLL.getKeyCodeValue(
+                    USE_NUMPAD_KEYS
+                ),
+            deviceId = NUMPAD_DEVICE_ID,
+            metaState = KeyEvent.META_NUM_LOCK_ON,
+            xAxisMultiplier = 1f,
+            yAxisMultiplier = 0f,
+        )
+
+        // Numpad right
+        testScrollKey(
+            keyCodeScrollToggle =
+                MouseKeysInterceptor.MouseKeyEvent.SCROLL_TOGGLE.getKeyCodeValue(USE_NUMPAD_KEYS),
+            keyCodeScroll =
+                MouseKeysInterceptor.MouseKeyEvent.RIGHT_MOVE_OR_SCROLL.getKeyCodeValue(
+                    USE_NUMPAD_KEYS
+                ),
+            deviceId = NUMPAD_DEVICE_ID,
+            metaState = KeyEvent.META_NUM_LOCK_ON,
+            xAxisMultiplier = -1f,
+            yAxisMultiplier = 0f,
         )
     }
 
+    // This test checks that all scroll keys for the numpad work when "use primary keys" is off.
     @Test
     @RequiresFlagsEnabled(Flags.FLAG_ENABLE_MOUSE_KEY_ENHANCEMENT)
-    fun whenScrollToggleOn_NumpadScrollRightKeyIsPressed_scrollEventIsSent() {
+    fun whenScrollKeyIsPressed_scrollEventIsSent_withUsePrimaryKeysOff() {
         setupMouseKeysInterceptor(usePrimaryKeys = false)
-        // There should be some delay between the downTime of the key event and calling onKeyEvent
-        val downTime = clock.now() - KEYBOARD_POST_EVENT_DELAY_MILLIS
-        val keyCodeScrollToggle =
-            MouseKeysInterceptor.MouseKeyEvent.SCROLL_TOGGLE.getKeyCodeValue(USE_NUMPAD_KEYS)
-        val keyCodeScroll =
-            MouseKeysInterceptor.MouseKeyEvent.RIGHT_MOVE_OR_SCROLL.getKeyCodeValue(USE_NUMPAD_KEYS)
 
-        val scrollToggleDownEvent =
-            KeyEvent(
-                downTime,
-                downTime,
-                KeyEvent.ACTION_DOWN,
-                keyCodeScrollToggle,
-                0,
-                KeyEvent.META_NUM_LOCK_ON,
-                NUMPAD_DEVICE_ID,
-                0,
-            )
-        val scrollDownEvent =
-            KeyEvent(
-                downTime,
-                downTime,
-                KeyEvent.ACTION_DOWN,
-                keyCodeScroll,
-                0,
-                KeyEvent.META_NUM_LOCK_ON,
-                NUMPAD_DEVICE_ID,
-                0,
-            )
+        // Numpad up
+        testScrollKey(
+            keyCodeScrollToggle =
+                MouseKeysInterceptor.MouseKeyEvent.SCROLL_TOGGLE.getKeyCodeValue(USE_NUMPAD_KEYS),
+            keyCodeScroll =
+                MouseKeysInterceptor.MouseKeyEvent.UP_MOVE_OR_SCROLL.getKeyCodeValue(
+                    USE_NUMPAD_KEYS
+                ),
+            deviceId = NUMPAD_DEVICE_ID,
+            metaState = KeyEvent.META_NUM_LOCK_ON,
+            xAxisMultiplier = 0f,
+            yAxisMultiplier = 1f,
+        )
 
-        mouseKeysInterceptor.onKeyEvent(scrollToggleDownEvent, 0)
-        mouseKeysInterceptor.onKeyEvent(scrollDownEvent, 0)
-        testLooper.dispatchAll()
+        // Numpad down
+        testScrollKey(
+            keyCodeScrollToggle =
+                MouseKeysInterceptor.MouseKeyEvent.SCROLL_TOGGLE.getKeyCodeValue(USE_NUMPAD_KEYS),
+            keyCodeScroll =
+                MouseKeysInterceptor.MouseKeyEvent.DOWN_MOVE_OR_SCROLL.getKeyCodeValue(
+                    USE_NUMPAD_KEYS
+                ),
+            deviceId = NUMPAD_DEVICE_ID,
+            metaState = KeyEvent.META_NUM_LOCK_ON,
+            xAxisMultiplier = 0f,
+            yAxisMultiplier = -1f,
+        )
 
-        // Verify the sendScrollEvent method is called once and capture the arguments
-        verifyScrollEvents(
-            xAxisMovements = floatArrayOf(-MouseKeysInterceptor.MOUSE_SCROLL_STEP),
-            yAxisMovements = floatArrayOf(0f),
+        // Numpad left
+        testScrollKey(
+            keyCodeScrollToggle =
+                MouseKeysInterceptor.MouseKeyEvent.SCROLL_TOGGLE.getKeyCodeValue(USE_NUMPAD_KEYS),
+            keyCodeScroll =
+                MouseKeysInterceptor.MouseKeyEvent.LEFT_MOVE_OR_SCROLL.getKeyCodeValue(
+                    USE_NUMPAD_KEYS
+                ),
+            deviceId = NUMPAD_DEVICE_ID,
+            metaState = KeyEvent.META_NUM_LOCK_ON,
+            xAxisMultiplier = 1f,
+            yAxisMultiplier = 0f,
+        )
+
+        // Numpad right
+        testScrollKey(
+            keyCodeScrollToggle =
+                MouseKeysInterceptor.MouseKeyEvent.SCROLL_TOGGLE.getKeyCodeValue(USE_NUMPAD_KEYS),
+            keyCodeScroll =
+                MouseKeysInterceptor.MouseKeyEvent.RIGHT_MOVE_OR_SCROLL.getKeyCodeValue(
+                    USE_NUMPAD_KEYS
+                ),
+            deviceId = NUMPAD_DEVICE_ID,
+            metaState = KeyEvent.META_NUM_LOCK_ON,
+            xAxisMultiplier = -1f,
+            yAxisMultiplier = 0f,
         )
     }
 
@@ -1259,6 +1329,75 @@ class MouseKeysInterceptorTest {
         val upEvent =
             KeyEvent(downTime, clock.now(), KeyEvent.ACTION_UP, keyCode, 0, metaState, deviceId, 0)
         mouseKeysInterceptor.onKeyEvent(upEvent, 0)
+        testLooper.dispatchAll()
+        Mockito.reset(mockVirtualMouse)
+    }
+
+    private fun testScrollKey(
+        keyCodeScrollToggle: Int,
+        keyCodeScroll: Int,
+        deviceId: Int,
+        metaState: Int,
+        xAxisMultiplier: Float,
+        yAxisMultiplier: Float,
+    ) {
+        val downTime = clock.now() - KEYBOARD_POST_EVENT_DELAY_MILLIS
+        val scrollToggleDownEvent =
+            KeyEvent(
+                downTime,
+                downTime,
+                KeyEvent.ACTION_DOWN,
+                keyCodeScrollToggle,
+                0,
+                metaState,
+                deviceId,
+                0,
+            )
+        val scrollDownEvent =
+            KeyEvent(
+                downTime,
+                downTime,
+                KeyEvent.ACTION_DOWN,
+                keyCodeScroll,
+                0,
+                metaState,
+                deviceId,
+                0,
+            )
+
+        mouseKeysInterceptor.onKeyEvent(scrollToggleDownEvent, 0)
+        mouseKeysInterceptor.onKeyEvent(scrollDownEvent, 0)
+        testLooper.dispatchAll()
+
+        verifyScrollEvents(
+            xAxisMovements = floatArrayOf(xAxisMultiplier * MouseKeysInterceptor.MOUSE_SCROLL_STEP),
+            yAxisMovements = floatArrayOf(yAxisMultiplier * MouseKeysInterceptor.MOUSE_SCROLL_STEP),
+        )
+
+        val upEvent =
+            KeyEvent(
+                downTime,
+                clock.now(),
+                KeyEvent.ACTION_UP,
+                keyCodeScroll,
+                0,
+                metaState,
+                deviceId,
+                0,
+            )
+        mouseKeysInterceptor.onKeyEvent(upEvent, 0)
+        val scrollToggleOffEvent =
+            KeyEvent(
+                clock.now(),
+                clock.now(),
+                KeyEvent.ACTION_DOWN,
+                keyCodeScrollToggle,
+                0,
+                metaState,
+                deviceId,
+                0,
+            )
+        mouseKeysInterceptor.onKeyEvent(scrollToggleOffEvent, 0)
         testLooper.dispatchAll()
         Mockito.reset(mockVirtualMouse)
     }
