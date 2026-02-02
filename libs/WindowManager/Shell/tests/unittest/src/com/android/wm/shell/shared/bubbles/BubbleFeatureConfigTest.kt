@@ -37,30 +37,32 @@ class BubbleFeatureConfigTest : ShellTestCase() {
 
     private val context = mock<Context>()
     private val activityManager = mock<ActivityManager>()
+    private lateinit var bubbleFeatureConfig: BubbleFeatureConfig
 
     @Before
     fun setup() {
         whenever(context.getSystemService(Context.ACTIVITY_SERVICE)).thenReturn(activityManager)
+        bubbleFeatureConfig = BubbleFeatureConfig(context)
     }
 
     @EnableFlags(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
     @Test
     fun areAppBubblesSupported_lowRam() {
         whenever(activityManager.isLowRamDevice).thenReturn(true)
-        assertThat(BubbleFeatureConfig.areAppBubblesSupported(context)).isFalse()
+        assertThat(bubbleFeatureConfig.areAppBubblesSupported()).isFalse()
     }
 
     @DisableFlags(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
     @Test
     fun areAppBubblesSupported_noFlag() {
         whenever(activityManager.isLowRamDevice).thenReturn(false)
-        assertThat(BubbleFeatureConfig.areAppBubblesSupported(context)).isFalse()
+        assertThat(bubbleFeatureConfig.areAppBubblesSupported()).isFalse()
     }
 
     @EnableFlags(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
     @Test
     fun areAppBubblesSupported() {
         whenever(activityManager.isLowRamDevice).thenReturn(false)
-        assertThat(BubbleFeatureConfig.areAppBubblesSupported(context)).isTrue()
+        assertThat(bubbleFeatureConfig.areAppBubblesSupported()).isTrue()
     }
 }
