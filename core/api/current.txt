@@ -5263,7 +5263,7 @@ package android.app {
   }
 
   @FlaggedApi("android.app.appfunctions.flags.enable_app_interaction_api") public final class AppInteractionContract implements android.provider.BaseColumns {
-    method @NonNull public static java.util.List<java.lang.String> getDeviceAssistancePackageNames(@NonNull android.content.Context);
+    method @NonNull @RequiresPermission(anyOf={android.Manifest.permission.EXECUTE_APP_FUNCTIONS, "android.permission.EXECUTE_APP_FUNCTIONS_SYSTEM", "android.permission.READ_APP_INTERACTION"}) public static java.util.List<java.lang.String> getDeviceAssistancePackageNames(@NonNull android.content.Context);
   }
 
   public class AppOpsManager {
