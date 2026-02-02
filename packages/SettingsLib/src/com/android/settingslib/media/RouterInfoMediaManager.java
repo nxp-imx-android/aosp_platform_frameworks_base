@@ -100,7 +100,7 @@ public final class RouterInfoMediaManager extends InfoMediaManager {
                 public void onSuggestionsRequested() {} // no-op
             };
 
-    @GuardedBy("InfoMediaManager.this.fieldName")
+    @GuardedBy("mLock")
     @Nullable
     private MediaRouter2.ScanToken mScanToken;
 
@@ -147,16 +147,12 @@ public final class RouterInfoMediaManager extends InfoMediaManager {
 
     @Override
     protected void startScanOnRouter() {
-        if (Flags.enableScreenOffScanning()) {
-            synchronized (super.mLock) {
-                if (mScanToken == null) {
-                    MediaRouter2.ScanRequest request =
-                            new MediaRouter2.ScanRequest.Builder().build();
-                    mScanToken = mRouter.requestScan(request);
-                }
+        synchronized (mLock) {
+            if (mScanToken == null) {
+                MediaRouter2.ScanRequest request =
+                        new MediaRouter2.ScanRequest.Builder().build();
+                mScanToken = mRouter.requestScan(request);
             }
-        } else {
-            mRouter.startScan();
         }
     }
 
@@ -179,15 +175,11 @@ public final class RouterInfoMediaManager extends InfoMediaManager {
 
     @Override
     protected void stopScanOnRouter() {
-        if (Flags.enableScreenOffScanning()) {
-            synchronized (super.mLock) {
-                if (mScanToken != null) {
-                    mRouter.cancelScanRequest(mScanToken);
-                    mScanToken = null;
-                }
+        synchronized (mLock) {
+            if (mScanToken != null) {
+                mRouter.cancelScanRequest(mScanToken);
+                mScanToken = null;
             }
-        } else {
-            mRouter.stopScan();
         }
     }
 
