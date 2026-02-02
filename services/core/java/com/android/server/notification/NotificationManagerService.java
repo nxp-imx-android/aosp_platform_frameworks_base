@@ -718,7 +718,8 @@ public class NotificationManagerService extends SystemService {
     private PostNotificationTrackerFactory mPostNotificationTrackerFactory;
 
     private LockPatternUtils mLockUtils;
-    private AppLockInternal mAppLockInternal;
+    // TODO(b/464052878): Make mAppLockInternal @NonNull when App Lock flags are removed.
+    @Nullable private AppLockInternal mAppLockInternal;
     final AppLockInternal.PackageLockedStateListener mPackageLockedStateListener =
             new AppLockInternal.PackageLockedStateListener() {
                 @Override
@@ -3597,24 +3598,29 @@ public class NotificationManagerService extends SystemService {
             }
         } else if (phase == SystemService.PHASE_ACTIVITY_MANAGER_READY) {
             mSnoozeHelper.scheduleRepostsForPersistedNotifications(System.currentTimeMillis());
-            if (android.security.Flags.appLockCore()) {
+            if (android.security.Flags.appLockApis() && android.security.Flags.appLockCore()) {
                 Trace.beginSection(TAG + ".onBootPhase_AMReady_appLock");
                 // App Lock services gets registered by the ActivityManagerService, and then needs
                 // to initialize the map of App Lock locked states. Wait until it's ready.
                 mAppLockInternal = LocalServices.getService(AppLockInternal.class);
-                synchronized (mNotificationLock) {
-                    final SparseArray<Set<String>> appLockEnabledPackages =
-                            mAppLockInternal.getAppLockEnabledPackages();
-                    mAppLockLockedPackages.clear();
-                    for (int i = 0; i < appLockEnabledPackages.size(); i++) {
-                        final int userId = appLockEnabledPackages.keyAt(i);
-                        final Set<String> packages = appLockEnabledPackages.valueAt(i);
-                        if (packages != null) {
-                            mAppLockLockedPackages.put(userId, new ArraySet<>(packages));
+                if (mAppLockInternal == null) {
+                    Slog.wtf(TAG, "AppLockInternal is null");
+                } else {
+                    synchronized (mNotificationLock) {
+                        final SparseArray<Set<String>> appLockEnabledPackages =
+                                mAppLockInternal.getAppLockEnabledPackages();
+                        mAppLockLockedPackages.clear();
+                        for (int i = 0; i < appLockEnabledPackages.size(); i++) {
+                            final int userId = appLockEnabledPackages.keyAt(i);
+                            final Set<String> packages = appLockEnabledPackages.valueAt(i);
+                            if (packages != null) {
+                                mAppLockLockedPackages.put(userId, new ArraySet<>(packages));
+                            }
                         }
                     }
+                    mAppLockInternal.registerPackageLockedStateListener(
+                            mPackageLockedStateListener);
                 }
-                mAppLockInternal.registerPackageLockedStateListener(mPackageLockedStateListener);
                 Trace.endSection();
             }
         } else if (phase == SystemService.PHASE_DEVICE_SPECIFIC_SERVICES_READY) {
