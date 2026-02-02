@@ -153,7 +153,8 @@ public class UsbAuthManagerTest {
                         Base64.getEncoder().encodeToString(hashBytes));
         UsbDeviceFingerprint.Hashcode emptyHashcode =
                 UsbDeviceFingerprint.Hashcode.createEmptyHashcode();
-        return new UsbDeviceFingerprint(df, descriptorHash, emptyHashcode, 0, false);
+        long now = System.currentTimeMillis();
+        return new UsbDeviceFingerprint(df, descriptorHash, emptyHashcode, 0, false, now);
     }
 
     private UsbDevice getDeviceCopy(String name, String serialNumber) {

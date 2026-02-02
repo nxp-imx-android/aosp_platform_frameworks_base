@@ -105,7 +105,7 @@ public class UsbUserPermissionManagerTest {
         UsbDeviceFingerprint.Hashcode emptyHashcode =
                 UsbDeviceFingerprint.Hashcode.createEmptyHashcode();
         mUsbDeviceFingerprint =
-                new UsbDeviceFingerprint(df, emptyHashcode, emptyHashcode, 0, false);
+                new UsbDeviceFingerprint(df, emptyHashcode, emptyHashcode, 0, false, 0);
     }
 
     private UsbDevice getDeviceCopy(String serialNumber) {
