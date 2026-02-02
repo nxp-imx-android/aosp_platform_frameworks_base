@@ -95,6 +95,10 @@ class MouseKeysInterceptorTest {
         const val USER_ID = 0
         const val USE_PRIMARY_KEYS = true
         const val USE_NUMPAD_KEYS = false
+        // This multiplier is used to scale diagonal movement to match cardinal movement via
+        // computing the sides of a triangle whose hypotenuse is `1.0`. This constant was computed
+        // using `1.0f / sqrt(2.0f)`.
+        const val DIAGONAL_MULTIPLIER = 0.7071068f
     }
 
     private lateinit var mouseKeysInterceptor: MouseKeysInterceptor
@@ -273,27 +277,314 @@ class MouseKeysInterceptorTest {
         )
     }
 
+    // This test checks that all directional keys for primary keys work when "use primary keys" is
+    // on.
     @Test
     @RequiresFlagsEnabled(Flags.FLAG_ENABLE_MOUSE_KEY_ENHANCEMENT)
-    fun whenMouseDirectionalKeyIsPressedWithFlagOn_relativeEventIsSent() {
+    fun whenDirectionalKeyIsPressed_relativeEventIsSent_withUsePrimaryKeysOn_primaryKeys() {
         setupMouseKeysInterceptor(usePrimaryKeys = true)
-        // There should be some delay between the downTime of the key event and calling onKeyEvent
-        val downTime = clock.now() - KEYBOARD_POST_EVENT_DELAY_MILLIS_FOR_MOUSE_POINTER
-        val keyCode =
-            MouseKeysInterceptor.MouseKeyEvent.DIAGONAL_DOWN_LEFT_MOVE.getKeyCodeValue(
-                USE_PRIMARY_KEYS
-            )
-        val downEvent =
-            KeyEvent(downTime, downTime, KeyEvent.ACTION_DOWN, keyCode, 0, 0, DEVICE_ID, 0)
-        mouseKeysInterceptor.onKeyEvent(downEvent, 0)
-        testLooper.dispatchAll()
 
-        // Verify the sendRelativeEvent method is called once and capture the arguments
-        val expectedStepValue =
-            INITIAL_STEP_BEFORE_ACCEL * (1.0f + mouseKeysInterceptor.mAcceleration)
-        verifyRelativeEvents(
-            expectedX = floatArrayOf(-expectedStepValue / sqrt(2.0f)),
-            expectedY = floatArrayOf(expectedStepValue / sqrt(2.0f)),
+        // Primary keys up
+        testDirectionalKey(
+            keyCode =
+                MouseKeysInterceptor.MouseKeyEvent.UP_MOVE_OR_SCROLL.getKeyCodeValue(
+                    USE_PRIMARY_KEYS
+                ),
+            deviceId = DEVICE_ID,
+            metaState = 0,
+            xMultiplier = 0f,
+            yMultiplier = -1f,
+        )
+
+        // Primary keys down
+        testDirectionalKey(
+            keyCode =
+                MouseKeysInterceptor.MouseKeyEvent.DOWN_MOVE_OR_SCROLL.getKeyCodeValue(
+                    USE_PRIMARY_KEYS
+                ),
+            deviceId = DEVICE_ID,
+            metaState = 0,
+            xMultiplier = 0f,
+            yMultiplier = 1f,
+        )
+
+        // Primary keys left
+        testDirectionalKey(
+            keyCode =
+                MouseKeysInterceptor.MouseKeyEvent.LEFT_MOVE_OR_SCROLL.getKeyCodeValue(
+                    USE_PRIMARY_KEYS
+                ),
+            deviceId = DEVICE_ID,
+            metaState = 0,
+            xMultiplier = -1f,
+            yMultiplier = 0f,
+        )
+
+        // Primary keys right
+        testDirectionalKey(
+            keyCode =
+                MouseKeysInterceptor.MouseKeyEvent.RIGHT_MOVE_OR_SCROLL.getKeyCodeValue(
+                    USE_PRIMARY_KEYS
+                ),
+            deviceId = DEVICE_ID,
+            metaState = 0,
+            xMultiplier = 1f,
+            yMultiplier = 0f,
+        )
+
+        // Primary keys up-left
+        testDirectionalKey(
+            keyCode =
+                MouseKeysInterceptor.MouseKeyEvent.DIAGONAL_UP_LEFT_MOVE.getKeyCodeValue(
+                    USE_PRIMARY_KEYS
+                ),
+            deviceId = DEVICE_ID,
+            metaState = 0,
+            xMultiplier = -DIAGONAL_MULTIPLIER,
+            yMultiplier = -DIAGONAL_MULTIPLIER,
+        )
+
+        // Primary keys up-right
+        testDirectionalKey(
+            keyCode =
+                MouseKeysInterceptor.MouseKeyEvent.DIAGONAL_UP_RIGHT_MOVE.getKeyCodeValue(
+                    USE_PRIMARY_KEYS
+                ),
+            deviceId = DEVICE_ID,
+            metaState = 0,
+            xMultiplier = DIAGONAL_MULTIPLIER,
+            yMultiplier = -DIAGONAL_MULTIPLIER,
+        )
+
+        // Primary keys down-left
+        testDirectionalKey(
+            keyCode =
+                MouseKeysInterceptor.MouseKeyEvent.DIAGONAL_DOWN_LEFT_MOVE.getKeyCodeValue(
+                    USE_PRIMARY_KEYS
+                ),
+            deviceId = DEVICE_ID,
+            metaState = 0,
+            xMultiplier = -DIAGONAL_MULTIPLIER,
+            yMultiplier = DIAGONAL_MULTIPLIER,
+        )
+
+        // Primary keys down-right
+        testDirectionalKey(
+            keyCode =
+                MouseKeysInterceptor.MouseKeyEvent.DIAGONAL_DOWN_RIGHT_MOVE.getKeyCodeValue(
+                    USE_PRIMARY_KEYS
+                ),
+            deviceId = DEVICE_ID,
+            metaState = 0,
+            xMultiplier = DIAGONAL_MULTIPLIER,
+            yMultiplier = DIAGONAL_MULTIPLIER,
+        )
+    }
+
+    // This test checks that all directional keys for the numpad work when "use primary keys" is on.
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_MOUSE_KEY_ENHANCEMENT)
+    fun whenDirectionalKeyIsPressed_relativeEventIsSent_withUsePrimaryKeysOn_numpad() {
+        setupMouseKeysInterceptor(usePrimaryKeys = true)
+
+        // Numpad up
+        testDirectionalKey(
+            keyCode =
+                MouseKeysInterceptor.MouseKeyEvent.UP_MOVE_OR_SCROLL.getKeyCodeValue(
+                    USE_NUMPAD_KEYS
+                ),
+            deviceId = NUMPAD_DEVICE_ID,
+            metaState = KeyEvent.META_NUM_LOCK_ON,
+            xMultiplier = 0f,
+            yMultiplier = -1f,
+        )
+
+        // Numpad down
+        testDirectionalKey(
+            keyCode =
+                MouseKeysInterceptor.MouseKeyEvent.DOWN_MOVE_OR_SCROLL.getKeyCodeValue(
+                    USE_NUMPAD_KEYS
+                ),
+            deviceId = NUMPAD_DEVICE_ID,
+            metaState = KeyEvent.META_NUM_LOCK_ON,
+            xMultiplier = 0f,
+            yMultiplier = 1f,
+        )
+
+        // Numpad left
+        testDirectionalKey(
+            keyCode =
+                MouseKeysInterceptor.MouseKeyEvent.LEFT_MOVE_OR_SCROLL.getKeyCodeValue(
+                    USE_NUMPAD_KEYS
+                ),
+            deviceId = NUMPAD_DEVICE_ID,
+            metaState = KeyEvent.META_NUM_LOCK_ON,
+            xMultiplier = -1f,
+            yMultiplier = 0f,
+        )
+
+        // Numpad right
+        testDirectionalKey(
+            keyCode =
+                MouseKeysInterceptor.MouseKeyEvent.RIGHT_MOVE_OR_SCROLL.getKeyCodeValue(
+                    USE_NUMPAD_KEYS
+                ),
+            deviceId = NUMPAD_DEVICE_ID,
+            metaState = KeyEvent.META_NUM_LOCK_ON,
+            xMultiplier = 1f,
+            yMultiplier = 0f,
+        )
+
+        // Numpad up-left
+        testDirectionalKey(
+            keyCode =
+                MouseKeysInterceptor.MouseKeyEvent.DIAGONAL_UP_LEFT_MOVE.getKeyCodeValue(
+                    USE_NUMPAD_KEYS
+                ),
+            deviceId = NUMPAD_DEVICE_ID,
+            metaState = KeyEvent.META_NUM_LOCK_ON,
+            xMultiplier = -DIAGONAL_MULTIPLIER,
+            yMultiplier = -DIAGONAL_MULTIPLIER,
+        )
+
+        // Numpad up-right
+        testDirectionalKey(
+            keyCode =
+                MouseKeysInterceptor.MouseKeyEvent.DIAGONAL_UP_RIGHT_MOVE.getKeyCodeValue(
+                    USE_NUMPAD_KEYS
+                ),
+            deviceId = NUMPAD_DEVICE_ID,
+            metaState = KeyEvent.META_NUM_LOCK_ON,
+            xMultiplier = DIAGONAL_MULTIPLIER,
+            yMultiplier = -DIAGONAL_MULTIPLIER,
+        )
+
+        // Numpad down-left
+        testDirectionalKey(
+            keyCode =
+                MouseKeysInterceptor.MouseKeyEvent.DIAGONAL_DOWN_LEFT_MOVE.getKeyCodeValue(
+                    USE_NUMPAD_KEYS
+                ),
+            deviceId = NUMPAD_DEVICE_ID,
+            metaState = KeyEvent.META_NUM_LOCK_ON,
+            xMultiplier = -DIAGONAL_MULTIPLIER,
+            yMultiplier = DIAGONAL_MULTIPLIER,
+        )
+
+        // Numpad down-right
+        testDirectionalKey(
+            keyCode =
+                MouseKeysInterceptor.MouseKeyEvent.DIAGONAL_DOWN_RIGHT_MOVE.getKeyCodeValue(
+                    USE_NUMPAD_KEYS
+                ),
+            deviceId = NUMPAD_DEVICE_ID,
+            metaState = KeyEvent.META_NUM_LOCK_ON,
+            xMultiplier = DIAGONAL_MULTIPLIER,
+            yMultiplier = DIAGONAL_MULTIPLIER,
+        )
+    }
+
+    // This test checks that all directional keys for the numpad work when "use primary keys" is
+    // off.
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_MOUSE_KEY_ENHANCEMENT)
+    fun whenDirectionalKeyIsPressed_relativeEventIsSent_withUsePrimaryKeysOff() {
+        setupMouseKeysInterceptor(usePrimaryKeys = false)
+
+        // Numpad up
+        testDirectionalKey(
+            keyCode =
+                MouseKeysInterceptor.MouseKeyEvent.UP_MOVE_OR_SCROLL.getKeyCodeValue(
+                    USE_NUMPAD_KEYS
+                ),
+            deviceId = NUMPAD_DEVICE_ID,
+            metaState = KeyEvent.META_NUM_LOCK_ON,
+            xMultiplier = 0f,
+            yMultiplier = -1f,
+        )
+
+        // Numpad down
+        testDirectionalKey(
+            keyCode =
+                MouseKeysInterceptor.MouseKeyEvent.DOWN_MOVE_OR_SCROLL.getKeyCodeValue(
+                    USE_NUMPAD_KEYS
+                ),
+            deviceId = NUMPAD_DEVICE_ID,
+            metaState = KeyEvent.META_NUM_LOCK_ON,
+            xMultiplier = 0f,
+            yMultiplier = 1f,
+        )
+
+        // Numpad left
+        testDirectionalKey(
+            keyCode =
+                MouseKeysInterceptor.MouseKeyEvent.LEFT_MOVE_OR_SCROLL.getKeyCodeValue(
+                    USE_NUMPAD_KEYS
+                ),
+            deviceId = NUMPAD_DEVICE_ID,
+            metaState = KeyEvent.META_NUM_LOCK_ON,
+            xMultiplier = -1f,
+            yMultiplier = 0f,
+        )
+
+        // Numpad right
+        testDirectionalKey(
+            keyCode =
+                MouseKeysInterceptor.MouseKeyEvent.RIGHT_MOVE_OR_SCROLL.getKeyCodeValue(
+                    USE_NUMPAD_KEYS
+                ),
+            deviceId = NUMPAD_DEVICE_ID,
+            metaState = KeyEvent.META_NUM_LOCK_ON,
+            xMultiplier = 1f,
+            yMultiplier = 0f,
+        )
+
+        // Numpad up-left
+        testDirectionalKey(
+            keyCode =
+                MouseKeysInterceptor.MouseKeyEvent.DIAGONAL_UP_LEFT_MOVE.getKeyCodeValue(
+                    USE_NUMPAD_KEYS
+                ),
+            deviceId = NUMPAD_DEVICE_ID,
+            metaState = KeyEvent.META_NUM_LOCK_ON,
+            xMultiplier = -DIAGONAL_MULTIPLIER,
+            yMultiplier = -DIAGONAL_MULTIPLIER,
+        )
+
+        // Numpad up-right
+        testDirectionalKey(
+            keyCode =
+                MouseKeysInterceptor.MouseKeyEvent.DIAGONAL_UP_RIGHT_MOVE.getKeyCodeValue(
+                    USE_NUMPAD_KEYS
+                ),
+            deviceId = NUMPAD_DEVICE_ID,
+            metaState = KeyEvent.META_NUM_LOCK_ON,
+            xMultiplier = DIAGONAL_MULTIPLIER,
+            yMultiplier = -DIAGONAL_MULTIPLIER,
+        )
+
+        // Numpad down-left
+        testDirectionalKey(
+            keyCode =
+                MouseKeysInterceptor.MouseKeyEvent.DIAGONAL_DOWN_LEFT_MOVE.getKeyCodeValue(
+                    USE_NUMPAD_KEYS
+                ),
+            deviceId = NUMPAD_DEVICE_ID,
+            metaState = KeyEvent.META_NUM_LOCK_ON,
+            xMultiplier = -DIAGONAL_MULTIPLIER,
+            yMultiplier = DIAGONAL_MULTIPLIER,
+        )
+
+        // Numpad down-right
+        testDirectionalKey(
+            keyCode =
+                MouseKeysInterceptor.MouseKeyEvent.DIAGONAL_DOWN_RIGHT_MOVE.getKeyCodeValue(
+                    USE_NUMPAD_KEYS
+                ),
+            deviceId = NUMPAD_DEVICE_ID,
+            metaState = KeyEvent.META_NUM_LOCK_ON,
+            xMultiplier = DIAGONAL_MULTIPLIER,
+            yMultiplier = DIAGONAL_MULTIPLIER,
         )
     }
 
@@ -471,80 +762,6 @@ class MouseKeysInterceptorTest {
         verifyScrollEvents(
             xAxisMovements = floatArrayOf(-MouseKeysInterceptor.MOUSE_SCROLL_STEP),
             yAxisMovements = floatArrayOf(0f),
-        )
-    }
-
-    @Test
-    @RequiresFlagsDisabled(Flags.FLAG_ENABLE_MOUSE_KEY_ENHANCEMENT)
-    fun whenScrollToggleOff_DirectionalUpKeyIsPressed_RelativeEventIsSent() {
-        setupMouseKeysInterceptor(usePrimaryKeys = true)
-        // There should be some delay between the downTime of the key event and calling onKeyEvent
-        val downTime = clock.now() - KEYBOARD_POST_EVENT_DELAY_MILLIS
-        val keyCode =
-            MouseKeysInterceptor.MouseKeyEvent.UP_MOVE_OR_SCROLL.getKeyCodeValue(USE_PRIMARY_KEYS)
-        val downEvent =
-            KeyEvent(downTime, downTime, KeyEvent.ACTION_DOWN, keyCode, 0, 0, DEVICE_ID, 0)
-
-        mouseKeysInterceptor.onKeyEvent(downEvent, 0)
-        testLooper.dispatchAll()
-
-        // Verify the sendRelativeEvent method is called once and capture the arguments
-        verifyRelativeEvents(
-            expectedX = floatArrayOf(0f),
-            expectedY = floatArrayOf(-MouseKeysInterceptor.MOUSE_POINTER_MOVEMENT_STEP),
-        )
-    }
-
-    @Test
-    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_MOUSE_KEY_ENHANCEMENT)
-    fun whenScrollToggleOffWithFlagOn_NumpadDirectionalUpKeyIsPressed_relativeEventIsSent() {
-        setupMouseKeysInterceptor(usePrimaryKeys = false)
-        // There should be some delay between the downTime of the key event and calling onKeyEvent
-        val downTime = clock.now() - KEYBOARD_POST_EVENT_DELAY_MILLIS_FOR_MOUSE_POINTER
-        val keyCode =
-            MouseKeysInterceptor.MouseKeyEvent.UP_MOVE_OR_SCROLL.getKeyCodeValue(USE_NUMPAD_KEYS)
-        val downEvent =
-            KeyEvent(
-                downTime,
-                downTime,
-                KeyEvent.ACTION_DOWN,
-                keyCode,
-                0,
-                KeyEvent.META_NUM_LOCK_ON,
-                NUMPAD_DEVICE_ID,
-                0,
-            )
-        mouseKeysInterceptor.onKeyEvent(downEvent, 0)
-        testLooper.dispatchAll()
-
-        // Verify the sendRelativeEvent method is called once and capture the arguments
-        val expectedStepValue =
-            INITIAL_STEP_BEFORE_ACCEL * (1.0f + mouseKeysInterceptor.mAcceleration)
-        verifyRelativeEvents(
-            expectedX = floatArrayOf(0f),
-            expectedY = floatArrayOf(-expectedStepValue),
-        )
-    }
-
-    @Test
-    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_MOUSE_KEY_ENHANCEMENT)
-    fun whenScrollToggleOffWithFlagOn_directionalUpKeyIsPressed_relativeEventIsSent() {
-        setupMouseKeysInterceptor(usePrimaryKeys = true)
-        // There should be some delay between the downTime of the key event and calling onKeyEvent
-        val downTime = clock.now() - KEYBOARD_POST_EVENT_DELAY_MILLIS_FOR_MOUSE_POINTER
-        val keyCode =
-            MouseKeysInterceptor.MouseKeyEvent.UP_MOVE_OR_SCROLL.getKeyCodeValue(USE_PRIMARY_KEYS)
-        val downEvent =
-            KeyEvent(downTime, downTime, KeyEvent.ACTION_DOWN, keyCode, 0, 0, DEVICE_ID, 0)
-        mouseKeysInterceptor.onKeyEvent(downEvent, 0)
-        testLooper.dispatchAll()
-
-        // Verify the sendRelativeEvent method is called once and capture the arguments
-        val expectedStepValue =
-            INITIAL_STEP_BEFORE_ACCEL * (1.0f + mouseKeysInterceptor.mAcceleration)
-        verifyRelativeEvents(
-            expectedX = floatArrayOf(0f),
-            expectedY = floatArrayOf(-expectedStepValue),
         )
     }
 
@@ -1020,6 +1237,32 @@ class MouseKeysInterceptorTest {
         Mockito.verify(mockVirtualMouse, times(1)).sendRelativeEvent(Mockito.any())
     }
 
+    private fun testDirectionalKey(
+        keyCode: Int,
+        deviceId: Int,
+        metaState: Int,
+        xMultiplier: Float,
+        yMultiplier: Float,
+    ) {
+        val downTime = clock.now() - KEYBOARD_POST_EVENT_DELAY_MILLIS_FOR_MOUSE_POINTER
+        val downEvent =
+            KeyEvent(downTime, downTime, KeyEvent.ACTION_DOWN, keyCode, 0, metaState, deviceId, 0)
+        mouseKeysInterceptor.onKeyEvent(downEvent, 0)
+        testLooper.dispatchAll()
+
+        val stepValue = INITIAL_STEP_BEFORE_ACCEL * (1.0f + mouseKeysInterceptor.mAcceleration)
+        verifyRelativeEvents(
+            expectedX = floatArrayOf(xMultiplier * stepValue),
+            expectedY = floatArrayOf(yMultiplier * stepValue),
+        )
+
+        val upEvent =
+            KeyEvent(downTime, clock.now(), KeyEvent.ACTION_UP, keyCode, 0, metaState, deviceId, 0)
+        mouseKeysInterceptor.onKeyEvent(upEvent, 0)
+        testLooper.dispatchAll()
+        Mockito.reset(mockVirtualMouse)
+    }
+
     private fun verifyRelativeEvents(expectedX: FloatArray, expectedY: FloatArray) {
         assertThat(expectedX.size).isEqualTo(expectedY.size)
         val expectedSize = expectedX.size
@@ -1034,8 +1277,13 @@ class MouseKeysInterceptorTest {
         val actualXs = actualEvents.map { it.relativeX }
         val actualYs = actualEvents.map { it.relativeY }
 
-        assertThat(actualXs).containsExactlyElementsIn(expectedX.toList()).inOrder()
-        assertThat(actualYs).containsExactlyElementsIn(expectedY.toList()).inOrder()
+        // With certain directions there can be a discrepancy in the seventh digit of precision.
+        // This seems like it may be due to the Java `sqrt` implementation converting its argument
+        // to a `double`, and the returned value being converted back to a `float`.
+        for (i in 0 until expectedSize) {
+            assertThat(actualXs[i]).isWithin(0.0001f).of(expectedX[i])
+            assertThat(actualYs[i]).isWithin(0.0001f).of(expectedY[i])
+        }
     }
 
     private fun verifyButtonEvents(actions: IntArray, buttons: IntArray) {
@@ -1070,8 +1318,13 @@ class MouseKeysInterceptorTest {
         val actualXAxis = actualEvents.map { it.xAxisMovement }
         val actualYAxis = actualEvents.map { it.yAxisMovement }
 
-        assertThat(actualXAxis).containsExactlyElementsIn(xAxisMovements.toList()).inOrder()
-        assertThat(actualYAxis).containsExactlyElementsIn(yAxisMovements.toList()).inOrder()
+        // With certain directions there can be a discrepancy in the seventh digit of precision.
+        // This seems like it may be due to the Java `sqrt` implementation converting its argument
+        // to a `double`, and the returned value being converted back to a `float`.
+        for (i in 0 until expectedSize) {
+            assertThat(actualXAxis[i]).isWithin(0.0001f).of(xAxisMovements[i])
+            assertThat(actualYAxis[i]).isWithin(0.0001f).of(yAxisMovements[i])
+        }
     }
 
     private fun verifyKeyEventsEqual(expected: KeyEvent, received: KeyEvent) {
