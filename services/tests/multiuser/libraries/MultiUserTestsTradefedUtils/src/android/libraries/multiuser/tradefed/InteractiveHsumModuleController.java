@@ -29,7 +29,8 @@ public final class InteractiveHsumModuleController extends BaseHsumModuleControl
     protected RunStrategy shouldRun(ITestDevice device) throws DeviceNotAvailableException {
         String cmd = "cmd overlay lookup android android:bool/config_canSwitchToHeadlessSystemUser";
         String result = device.executeShellCommand(cmd).trim();
-        CLog.d("shouldRun(serial=%s): cmd %s returned %s", device.getSerialNumber(), cmd, result);
+        CLog.d("shouldRun(serial=%s): Shell command '%s' returned '%s'", device.getSerialNumber(),
+                cmd, result);
 
         if (!result.equals("true")) {
             CLog.i("Skipping module as device %s is not Interactive Headless System User Mode",
