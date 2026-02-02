@@ -19,6 +19,7 @@ package android.app.admin.metadata;
 import static android.app.admin.PolicyIdentifier.SIMPLE_BOOLEAN_POLICY;
 import static android.app.admin.PolicyIdentifier.SIMPLE_ENUM_POLICY;
 import static android.app.admin.PolicyIdentifier.SIMPLE_INTEGER_POLICY;
+import static android.app.admin.PolicyIdentifier.SIMPLE_INTEGER_POLICY_WITH_RANGE;
 import static android.app.admin.PolicyIdentifier.SIMPLE_LONG_POLICY;
 import static android.app.admin.PolicyIdentifier.SIMPLE_STRING_LIST_POLICY;
 import static android.app.admin.PolicyIdentifier.SIMPLE_STRING_POLICY;
@@ -83,7 +84,21 @@ public class Policies {
             /* affectedResource= */ 1,
             /* requiredPermission= */ null,
             /* requiredCrossUserPermission= */ null,
-            /* allowedDpcTypes= */ Set.of()
+            /* allowedDpcTypes= */ Set.of(),
+            /* minValue= */ Integer.MIN_VALUE,
+            /* maxValue= */ Integer.MAX_VALUE
+        ));
+        policies.add(new IntegerPolicyMetadata(
+            /* id= */ SIMPLE_INTEGER_POLICY_WITH_RANGE,
+            /* allowedScopes= */ Set.of(
+                1
+            ),
+            /* affectedResource= */ 1,
+            /* requiredPermission= */ null,
+            /* requiredCrossUserPermission= */ null,
+            /* allowedDpcTypes= */ Set.of(),
+            /* minValue= */ -100,
+            /* maxValue= */ 100
         ));
         policies.add(new IntegerPolicyMetadata(
             /* id= */ TEST_DEFAULT_DEVICE_OWNER_ALLOWED,
@@ -95,7 +110,9 @@ public class Policies {
             /* requiredCrossUserPermission= */ null,
             /* allowedDpcTypes= */ Set.of(
                 1  // DEVICE_OWNER
-            )
+            ),
+            /* minValue= */ Integer.MIN_VALUE,
+            /* maxValue= */ Integer.MAX_VALUE
         ));
         policies.add(new IntegerPolicyMetadata(
             /* id= */ TEST_FINANCED_DEVICE_OWNER_ALLOWED,
@@ -107,7 +124,9 @@ public class Policies {
             /* requiredCrossUserPermission= */ null,
             /* allowedDpcTypes= */ Set.of(
                 2  // FINANCED_DEVICE_OWNER
-            )
+            ),
+            /* minValue= */ Integer.MIN_VALUE,
+            /* maxValue= */ Integer.MAX_VALUE
         ));
         policies.add(new IntegerPolicyMetadata(
             /* id= */ TEST_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE_ALLOWED,
@@ -119,7 +138,9 @@ public class Policies {
             /* requiredCrossUserPermission= */ null,
             /* allowedDpcTypes= */ Set.of(
                 3  // MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE
-            )
+            ),
+            /* minValue= */ Integer.MIN_VALUE,
+            /* maxValue= */ Integer.MAX_VALUE
         ));
         policies.add(new IntegerPolicyMetadata(
             /* id= */ TEST_PROFILE_OWNER_ON_USER0_ALLOWED,
@@ -131,7 +152,9 @@ public class Policies {
             /* requiredCrossUserPermission= */ null,
             /* allowedDpcTypes= */ Set.of(
                 4  // PROFILE_OWNER_ON_USER0
-            )
+            ),
+            /* minValue= */ Integer.MIN_VALUE,
+            /* maxValue= */ Integer.MAX_VALUE
         ));
         policies.add(new IntegerPolicyMetadata(
             /* id= */ TEST_PROFILE_OWNER_ALLOWED,
@@ -143,7 +166,9 @@ public class Policies {
             /* requiredCrossUserPermission= */ null,
             /* allowedDpcTypes= */ Set.of(
                 5  // MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE
-            )
+            ),
+            /* minValue= */ Integer.MIN_VALUE,
+            /* maxValue= */ Integer.MAX_VALUE
         ));
         policies.add(new IntegerPolicyMetadata(
             /* id= */ TEST_PROFILE_OWNER_ON_USER_ALLOWED,
@@ -156,7 +181,9 @@ public class Policies {
             /* allowedDpcTypes= */ Set.of(
                 6, // UNAFFILIATED_FULL_USER_PROFILE_OWNER
                 7  // AFFILIATED_FULL_USER_PROFILE_OWNER
-            )
+            ),
+            /* minValue= */ Integer.MIN_VALUE,
+            /* maxValue= */ Integer.MAX_VALUE
         ));
         policies.add(new IntegerPolicyMetadata(
             /* id= */ TEST_AFFILIATED_PROFILE_OWNER_ON_USER_ALLOWED,
@@ -168,7 +195,9 @@ public class Policies {
             /* requiredCrossUserPermission= */ null,
             /* allowedDpcTypes= */ Set.of(
                 7  // AFFILIATED_FULL_USER_PROFILE_OWNER
-            )
+            ),
+            /* minValue= */ Integer.MIN_VALUE,
+            /* maxValue= */ Integer.MAX_VALUE
         ));
         policies.add(new IntegerPolicyMetadata(
             /* id= */ TEST_AFFILIATED_PROFILE_OWNER_ON_USER_SAME_AS_UNAFFILIATED,
@@ -181,7 +210,9 @@ public class Policies {
             /* allowedDpcTypes= */ Set.of(
                 6, // UNAFFILIATED_FULL_USER_PROFILE_OWNER
                 7  // AFFILIATED_FULL_USER_PROFILE_OWNER
-            )
+            ),
+            /* minValue= */ Integer.MIN_VALUE,
+            /* maxValue= */ Integer.MAX_VALUE
         ));
         policies.add(new IntegerPolicyMetadata(
             /* id= */ TEST_AFFILIATED_PROFILE_OWNER_ON_USER_SAME_AS_UNAFFILIATED_DISALLOWED,
@@ -191,7 +222,9 @@ public class Policies {
             /* affectedResource= */ 1,
             /* requiredPermission= */ null,
             /* requiredCrossUserPermission= */ null,
-            /* allowedDpcTypes= */ Set.of()
+            /* allowedDpcTypes= */ Set.of(),
+            /* minValue= */ Integer.MIN_VALUE,
+            /* maxValue= */ Integer.MAX_VALUE
         ));
         policies.add(new IntegerPolicyMetadata(
             /* id= */ TEST_MULTIPLE_DPC_TYPES_ALLOWED,
@@ -206,7 +239,9 @@ public class Policies {
                 3, // MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE
                 5, // MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE
                 7  // AFFILIATED_FULL_USER_PROFILE_OWNER
-            )
+            ),
+            /* minValue= */ Integer.MIN_VALUE,
+            /* maxValue= */ Integer.MAX_VALUE
         ));
         policies.add(new LongPolicyMetadata(
             /* id= */ SIMPLE_LONG_POLICY,

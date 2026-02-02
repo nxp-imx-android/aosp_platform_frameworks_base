@@ -19,6 +19,7 @@ package android.processor.devicepolicy
 import android.processor.devicepolicy.protos.PolicyMetadata
 import android.processor.devicepolicy.protos.PolicyMetadataList
 import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.EnumPolicyMetadata
+import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.IntegerPolicyMetadata
 import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.ListPolicyMetadata.ListElementMetadataCase
 import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.StringPolicyMetadata
 import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.TypeMetadataCase
@@ -279,15 +280,29 @@ object PolicyMetadataCodeGenerator {
     private fun generateIntegerPolicyMetadata(
         policy: PolicyMetadata,
         policyId: CodeBlock = policy.getPolicyIdCodeBlock(),
-    ) =
-        CodeBlock.builder()
+        integerMetadata: IntegerPolicyMetadata = policy.typeSpecificMetadata.integerMetadata,
+    ): CodeBlock {
+        val builder = CodeBlock.builder()
             .add("new \$T(\n", integerPolicyMetadataType)
             .indent()
             .addPolicyArguments(policy, policyId)
-            .add("\n")
-            .unindent()
-            .add(")")
-            .build()
+            .add(",\n")
+        val minValue = if (integerMetadata.hasMinValue()) {
+            CodeBlock.of("\$L", integerMetadata.minValue)
+        } else {
+            CodeBlock.of("Integer.MIN_VALUE")
+        }
+        val maxValue = if (integerMetadata.hasMaxValue()) {
+            CodeBlock.of("\$L", integerMetadata.maxValue)
+        } else {
+            CodeBlock.of("Integer.MAX_VALUE")
+        }
+        builder.add("/* minValue= */ \$L,\n", minValue)
+        builder.add("/* maxValue= */ \$L", maxValue)
+        builder.add("\n")
+        builder.unindent().add(")")
+        return builder.build()
+    }
 
     private val longPolicyMetadataType = ClassName.get(METADATA_PACKAGE, "LongPolicyMetadata")
 
@@ -360,7 +375,11 @@ object PolicyMetadataCodeGenerator {
                     policyId,
                 )
             ListElementMetadataCase.INTEGER_METADATA ->
-                generateIntegerPolicyMetadata(policy, policyId)
+                generateIntegerPolicyMetadata(
+                    policy,
+                    policyId,
+                    policy.typeSpecificMetadata.listMetadata.integerMetadata
+                )
             ListElementMetadataCase.STRING_METADATA ->
                 generateStringPolicyMetadata(
                     policy,

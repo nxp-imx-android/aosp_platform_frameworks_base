@@ -89,6 +89,26 @@ policy_metadata {
 }
 policy_metadata {
   identifier {
+    field_name: "SIMPLE_INTEGER_POLICY_WITH_RANGE"
+    class_name: "PolicyIdentifier"
+    package_name: "android.app.admin"
+  }
+  type {
+    class_name: "Integer"
+    package_name: "java.lang"
+  }
+  documentation: "Test policy with an integer range. "
+  type_specific_metadata {
+    integer_metadata {
+      min_value: -100
+      max_value: 100
+    }
+  }
+  allowed_scopes: POLICY_SCOPE_USER
+  affected_resource: RESOURCE_DEVICE_WIDE
+}
+policy_metadata {
+  identifier {
     field_name: "TEST_DEFAULT_DEVICE_OWNER_ALLOWED"
     class_name: "PolicyIdentifier"
     package_name: "android.app.admin"
