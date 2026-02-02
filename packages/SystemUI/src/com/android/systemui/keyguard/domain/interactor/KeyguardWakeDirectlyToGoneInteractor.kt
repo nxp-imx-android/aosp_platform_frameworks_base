@@ -56,12 +56,12 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 
 /**
@@ -108,20 +108,17 @@ constructor(
      * legacy code only queried the value in onStartedGoingToSleep and doKeyguardTimeout. Tests now
      * depend on that behavior, so for now, we'll replicate it here.
      */
-    private val shouldSuppressKeyguard =
+    val shouldSuppressKeyguard: StateFlow<Boolean> =
         merge(
                 powerInteractor.isAwake,
                 // Update only when doKeyguardTimeout is called, not on fold or other events, to
-                // match
-                // pre-existing logic.
+                // match pre-existing logic.
                 keyguardServiceShowLockscreenInteractor.showNowEvents.filter {
                     it == ShowWhileAwakeReason.KEYGUARD_TIMEOUT_WHILE_SCREEN_ON
                 },
             )
             .map { keyguardEnabledInteractor.isKeyguardSuppressed() }
-            // Default to false, so that flows that combine this one emit prior to the first
-            // wakefulness emission.
-            .onStart { emit(false) }
+            .stateIn(scope, SharingStarted.Eagerly, false)
 
     /**
      * Whether we can wake from AOD/DOZING or DREAMING directly to GONE, bypassing
@@ -186,12 +183,9 @@ constructor(
                     synchronized(this) {
                         if (timeoutCounter == sequence) {
                             // If the sequence # matches, we have not woken up or stopped dreaming
-                            // since
-                            // the alarm was set. That means this is still relevant - the lock
-                            // timeout
-                            // has elapsed, so let the repository know that we can no longer return
-                            // to
-                            // GONE without authenticating.
+                            // since the alarm was set. That means this is still relevant - the lock
+                            // timeout has elapsed, so let the repository know that we can no longer
+                            // return to GONE without authenticating.
                             repository.setCanIgnoreAuthAndReturnToGone(false)
                         }
                     }
