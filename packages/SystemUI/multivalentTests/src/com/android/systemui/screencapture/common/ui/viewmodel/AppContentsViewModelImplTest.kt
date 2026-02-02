@@ -37,6 +37,7 @@ import com.android.systemui.screencapture.common.domain.interactor.screenCapture
 import com.android.systemui.screencapture.common.domain.model.ScreenCaptureAppContent
 import com.android.systemui.screencapture.common.repository.FakeAppContentProjectionCallback
 import com.android.systemui.testKosmosNew
+import com.android.users.UserType
 import com.google.common.truth.Truth.assertThat
 import java.lang.ref.WeakReference
 import org.junit.Test
@@ -73,7 +74,7 @@ class AppContentsViewModelImplTest : SysuiTestCase() {
                 baseIntent = null,
                 colorBackground = 0x12345699,
                 isForegroundTask = true,
-                userType = RecentTask.UserType.STANDARD,
+                userType = UserType.MAIN,
                 splitBounds = null,
             )
         }
