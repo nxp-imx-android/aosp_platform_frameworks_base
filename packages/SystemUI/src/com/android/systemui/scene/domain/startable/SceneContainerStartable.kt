@@ -60,6 +60,7 @@ import com.android.systemui.keyguard.domain.interactor.TrustInteractor
 import com.android.systemui.keyguard.shared.model.BiometricUnlockMode
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.KeyguardTransitionKeys.AodToGoneTransition
+import com.android.systemui.keyguard.shared.model.KeyguardTransitionKeys.WithAnimationOverLockscreen
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.model.SceneContainerPlugin
 import com.android.systemui.model.SceneContainerPluginImpl
@@ -491,6 +492,10 @@ constructor(
                             if (isOnCommunal || isOnLockscreen || !leaveShadeOpen) {
                                 SwitchSceneCommand.SwitchToScene(
                                     targetSceneKey = Scenes.Gone,
+                                    transitionKey =
+                                        WithAnimationOverLockscreen.takeIf {
+                                            willAnimateDismissAction
+                                        },
                                     loggingReason =
                                         "device was unlocked while alternate bouncer" +
                                             " was showing and shade didn't need to be left open",
@@ -560,6 +565,10 @@ constructor(
                                     SwitchSceneCommand.SwitchToScene(
                                         targetSceneKey = Scenes.Gone,
                                         hideOverlays = HideOverlayCommand.HideAll,
+                                        transitionKey =
+                                            WithAnimationOverLockscreen.takeIf {
+                                                willAnimateDismissAction
+                                            },
                                         loggingReason = loggingReason,
                                         instantlySnapScenes = false,
                                     )
@@ -615,11 +624,14 @@ constructor(
                                     SwitchSceneCommand.SwitchToScene(
                                         targetSceneKey = Scenes.Gone,
                                         transitionKey =
-                                            AodToGoneTransition.takeIf {
+                                            when {
+                                                willAnimateDismissAction ->
+                                                    WithAnimationOverLockscreen
                                                 BiometricUnlockMode.isWakeAndDismiss(
                                                     keyguardInteractor.biometricUnlockState.value
                                                         .mode
-                                                )
+                                                ) -> AodToGoneTransition
+                                                else -> null
                                             },
                                         loggingReason =
                                             "device was unlocked while lockscreen" +
