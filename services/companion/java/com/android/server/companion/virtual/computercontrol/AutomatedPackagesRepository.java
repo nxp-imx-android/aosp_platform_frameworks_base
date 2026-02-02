@@ -17,6 +17,7 @@
 package com.android.server.companion.virtual.computercontrol;
 
 import static android.companion.virtual.computercontrol.ComputerControlSession.EXTRA_AUTOMATING_PACKAGE_NAME;
+import static android.companion.virtual.computercontrol.ComputerControlSession.RESULT_STOP_AUTOMATION;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -144,6 +145,7 @@ public final class AutomatedPackagesRepository {
                 final var resultReceiver = new StopAutomationResultReceiver(
                         deviceId, deviceOwner, () -> closeVirtualDevice.accept(deviceId));
 
+                Slog.d(TAG, "Creating AutomatedAppLaunchWarningIntent for " + packageName);
                 return new Intent()
                         .setComponent(AUTOMATED_APP_LAUNCH_WARNING_ACTIVITY)
                         .putExtra(Intent.EXTRA_PACKAGE_NAME, packageName)
@@ -301,13 +303,19 @@ public final class AutomatedPackagesRepository {
 
         @Override
         protected void onReceiveResult(int resultCode, Bundle data) {
-            if (resultCode == Activity.RESULT_OK) {
-                synchronized (mLock) {
-                    // Prevent subsequent interception. We're closing the device now, so just clear
-                    // everything that we know is running there right now.
-                    updateLocked(mDeviceId, mDeviceOwnerPackageName, new ArraySet<>());
+            switch (resultCode) {
+                case RESULT_STOP_AUTOMATION -> {
+                    // Update the list of packages running on the device to an empty list.
+                    // This is needed during intent interception of automated apps, when the app
+                    // launch should proceed and the automation closed. To prevent subsequent
+                    // interception of the launch intent, we need to clear the automated packages
+                    // repository, then launch, then close the device.
+                    synchronized (mLock) {
+                        updateLocked(mDeviceId, mDeviceOwnerPackageName, new ArraySet<>());
+                    }
                 }
-                mHandler.post(mCloseVirtualDevice);
+                case Activity.RESULT_OK -> mCloseVirtualDevice.run();
+                default -> Slog.w(TAG, "Received unexpected resultCode: " + resultCode);
             }
         }
 
