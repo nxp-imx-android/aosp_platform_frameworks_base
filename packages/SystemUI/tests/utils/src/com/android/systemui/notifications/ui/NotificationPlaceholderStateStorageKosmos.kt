@@ -19,9 +19,22 @@ package com.android.systemui.notifications.ui
 import com.android.systemui.dump.dumpManager
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
+import com.android.systemui.notifications.ui.composable.ContentZOrderSorter
 import com.android.systemui.notifications.ui.composable.HeadsUpPlaceholderContentPicker
 import com.android.systemui.notifications.ui.composable.StackPlaceholderContentPicker
 import com.android.systemui.scene.sceneContainerConfig
+
+val Kosmos.contentZOrderSorter by Fixture {
+    ContentZOrderSorter(sceneContainerConfig)
+}
+
+val Kosmos.stackPlaceholderContentPicker by Fixture {
+    StackPlaceholderContentPicker(contentZOrderSorter)
+}
+
+val Kosmos.headsUpPlaceholderContentPicker by Fixture {
+    HeadsUpPlaceholderContentPicker(contentZOrderSorter)
+}
 
 val Kosmos.notificationPlaceholderStateStorage by Fixture {
     NotificationPlaceholderStateStorage(
@@ -29,12 +42,4 @@ val Kosmos.notificationPlaceholderStateStorage by Fixture {
         stackPlaceholderContentPicker,
         dumpManager,
     )
-}
-
-val Kosmos.headsUpPlaceholderContentPicker by Fixture {
-    HeadsUpPlaceholderContentPicker(sceneContainerConfig)
-}
-
-val Kosmos.stackPlaceholderContentPicker by Fixture {
-    StackPlaceholderContentPicker(sceneContainerConfig)
 }
