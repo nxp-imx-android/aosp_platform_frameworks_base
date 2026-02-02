@@ -57,6 +57,7 @@ import androidx.compose.ui.unit.Velocity
 import com.android.compose.modifiers.thenIf
 import kotlin.math.sign
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
@@ -653,7 +654,11 @@ private class NestedDraggableNode(
             val available = delta.toFloat()
             val consumed = controller.controller.onDrag(available)
             if (controller.controller.autoStopNestedDrags && consumed != available) {
-                controller.ensureOnDragStoppedIsCalled()
+                // with autoStopNestedDrags ensure that onDragStopped is called immediately:
+                // In case where the onDrag does not consume the full available delta, since its
+                // hitting the end, but a new overdrag drag is started with the remainder, this
+                // ensures the controller sees the stop before the new start.
+                controller.ensureOnDragStoppedIsCalled(start = CoroutineStart.UNDISPATCHED)
                 this.nestedScrollController = null
             }
 
@@ -674,8 +679,10 @@ private class NestedDraggableNode(
         private val overscrollEffect: OverscrollEffect?,
         val controller: NestedDraggable.Controller,
     ) {
-        fun ensureOnDragStoppedIsCalled() {
-            nestedScrollDispatcher.coroutineScope.launch { flingWithOverscroll(Velocity.Zero) }
+        fun ensureOnDragStoppedIsCalled(start: CoroutineStart = CoroutineStart.DEFAULT) {
+            nestedScrollDispatcher.coroutineScope.launch(start = start) {
+                flingWithOverscroll(Velocity.Zero)
+            }
         }
 
         suspend fun flingWithOverscroll(velocity: Velocity): Velocity {

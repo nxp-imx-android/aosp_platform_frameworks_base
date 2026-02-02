@@ -52,7 +52,7 @@ import org.junit.runner.RunWith
 import platform.test.motion.compose.ComposeRecordingSpec
 import platform.test.motion.compose.MotionControl
 import platform.test.motion.compose.asDataPoint
-import platform.test.motion.compose.createFixedConfigurationComposeMotionTestRule
+import platform.test.motion.compose.createFixedConfigurationComposeMotionTestRuleV2
 import platform.test.motion.compose.feature
 import platform.test.motion.compose.recordMotion
 import platform.test.motion.compose.runTest
@@ -65,7 +65,8 @@ class OverscrollToDismissTest {
     private val goldenPathManager =
         createGoldenPathManager("frameworks/base/packages/SystemUI/compose/core/tests/goldens")
 
-    @get:Rule val motionTestRule = createFixedConfigurationComposeMotionTestRule(goldenPathManager)
+    @get:Rule
+    val motionTestRule = createFixedConfigurationComposeMotionTestRuleV2(goldenPathManager)
 
     @Test
     fun detachGesture_onFirstPage_swipeRightDismisses() =
@@ -142,6 +143,57 @@ class OverscrollToDismissTest {
                         }
                     ) {
                         feature(hasTestTag("Page0"), xPositionInRoot)
+                    },
+                )
+            assertThat(motion).timeSeriesMatchesGolden()
+        }
+
+    @Test
+    fun draggingBack_contentNotScrollable_overdragsInOtherDirection() =
+        motionTestRule.runTest {
+            val motion =
+                recordMotion(
+                    { UnderTest(pageCount = 1) },
+                    ComposeRecordingSpec(
+                        performGesture {
+                            val gestureDurationMillis = 300L
+                            swipe(
+                                curve = {
+                                    val progress = it / gestureDurationMillis.toFloat()
+                                    val x = sin(progress * Math.PI * 2).toFloat() * 100.dp.toPx()
+                                    Offset(centerX + x, centerY)
+                                },
+                                gestureDurationMillis,
+                            )
+                        }
+                    ) {
+                        feature(hasTestTag("Page0"), xPositionInRoot)
+                    },
+                )
+            assertThat(motion).timeSeriesMatchesGolden()
+        }
+
+    @Test
+    fun draggingBack_contentScrollable_stopsOverdrag() =
+        motionTestRule.runTest {
+            val motion =
+                recordMotion(
+                    { UnderTest(pageCount = 2) },
+                    ComposeRecordingSpec(
+                        performGesture {
+                            val gestureDurationMillis = 300L
+                            swipe(
+                                curve = {
+                                    val progress = it / gestureDurationMillis.toFloat()
+                                    val x = sin(progress * Math.PI * 2).toFloat() * 100.dp.toPx()
+                                    Offset(centerX + x, centerY)
+                                },
+                                gestureDurationMillis,
+                            )
+                        }
+                    ) {
+                        feature(hasTestTag("Page0"), xPositionInRoot, "page0")
+                        feature(hasTestTag("Page1"), xPositionInRoot, "page1")
                     },
                 )
             assertThat(motion).timeSeriesMatchesGolden()
