@@ -38,6 +38,19 @@ oneway interface IImeSwitcherMenu {
         CharSequence subtypeName;
 
         /**
+         * The subtype's short label, or {@code null} if this item doesn't have a subtype, or
+         * doesn't specify a short label.
+         */
+        @nullable
+        CharSequence subtypeShortLabel;
+
+        /**
+         * The resource ID of the subtype's icon, or {@code 0} if this item doesn't have a subtype,
+         * or doesn't specify an icon.
+         */
+        int subtypeIconResId;
+
+        /**
          * The subtype's layout name, or {@code null} if this item doesn't have a subtype, or
          * doesn't specify a layout.
          */
@@ -46,6 +59,10 @@ oneway interface IImeSwitcherMenu {
 
         /** The ID of the IME associated with this item. */
         String imeId;
+
+        /** The package name of the IME associated with this item. */
+        @nullable
+        String imePackageName;
 
         /**
          * The index of the subtype in the IME's array of subtypes, or {@code -1} if this item

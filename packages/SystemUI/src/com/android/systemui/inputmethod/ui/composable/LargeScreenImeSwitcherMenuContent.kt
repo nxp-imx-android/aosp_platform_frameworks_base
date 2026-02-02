@@ -106,7 +106,12 @@ fun LargeScreenImeSwitcherMenuContent(
                     Modifier.weight(weight = 1f, fill = false)
                         .testTag("large_screen_ime_switcher_menu")
             ) {
-                ImeSwitcherMenuList(viewModel.menuItems.toList(), viewModel, dismissAction)
+                ImeSwitcherMenuList(
+                    viewModel.menuItems.toList(),
+                    viewModel,
+                    dismissAction,
+                    useLargeScreenLayout = true,
+                )
             }
         }
     }

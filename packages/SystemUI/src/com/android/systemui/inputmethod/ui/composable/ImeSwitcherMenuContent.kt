@@ -86,7 +86,12 @@ fun ImeSwitcherMenuContent(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Column(modifier = Modifier.weight(weight = 1f, fill = false)) {
-                ImeSwitcherMenuList(viewModel.menuItems.toList(), viewModel, dismissAction)
+                ImeSwitcherMenuList(
+                    viewModel.menuItems.toList(),
+                    viewModel,
+                    dismissAction,
+                    useLargeScreenLayout = false
+                )
             }
             viewModel.settingsButtonAction.value?.let { action ->
                 SettingsFooter(
