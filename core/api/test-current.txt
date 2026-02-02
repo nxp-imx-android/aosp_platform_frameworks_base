@@ -2355,6 +2355,10 @@ package android.media {
     method @NonNull public String getOriginalId();
   }
 
+  public static final class MediaRoute2Info.Builder {
+    method @NonNull public android.media.MediaRoute2Info.Builder setSystemRoute(boolean);
+  }
+
   public class MediaRouter2.RoutingController {
     method @NonNull public String getOriginalId();
   }
