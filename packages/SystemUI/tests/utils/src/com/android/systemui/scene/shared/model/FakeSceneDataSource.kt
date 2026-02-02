@@ -36,6 +36,8 @@ class FakeSceneDataSource(initialSceneKey: SceneKey, val testScope: TestScope) :
     private val _currentScene = MutableStateFlow(initialSceneKey)
     override val currentScene: StateFlow<SceneKey> = _currentScene.asStateFlow()
 
+    var currentSceneTransitionKey: TransitionKey? = null
+
     var isPaused: Boolean by mutableStateOf(false)
 
     /**
@@ -78,6 +80,8 @@ class FakeSceneDataSource(initialSceneKey: SceneKey, val testScope: TestScope) :
     val pendingScene
         get() = testScope.currentValue { _pendingScene }
 
+    private var _pendingSceneTransitionKey: TransitionKey? = null
+
     var pendingOverlays: Set<OverlayKey>? = null
         private set
 
@@ -86,7 +90,9 @@ class FakeSceneDataSource(initialSceneKey: SceneKey, val testScope: TestScope) :
     override fun changeScene(toScene: SceneKey, transitionKey: TransitionKey?) {
         if (isPaused) {
             _pendingScene = toScene
+            _pendingSceneTransitionKey = transitionKey
         } else {
+            currentSceneTransitionKey = transitionKey
             _currentScene.value = toScene
         }
 
@@ -137,10 +143,12 @@ class FakeSceneDataSource(initialSceneKey: SceneKey, val testScope: TestScope) :
     override fun instantlyTransitionTo(scene: SceneKey?, overlays: Set<OverlayKey>?) {
         if (isPaused) {
             _pendingScene = scene
+            _pendingSceneTransitionKey = null
             pendingOverlays = overlays
         } else {
             if (scene != null) {
                 _currentScene.value = scene
+                currentSceneTransitionKey = null
             }
             if (overlays != null) {
                 _currentOverlays.value = overlays
@@ -195,8 +203,13 @@ class FakeSceneDataSource(initialSceneKey: SceneKey, val testScope: TestScope) :
         // real property and reflected back to the downstream.
         _transitionState = pausedTransitionState
         isPaused = false
-        _pendingScene?.let { _currentScene.value = it }
+        _pendingScene?.let {
+            _currentScene.value = it
+            currentSceneTransitionKey = _pendingSceneTransitionKey
+        }
+
         _pendingScene = null
+        _pendingSceneTransitionKey = null
         pendingOverlays?.let { _currentOverlays.value = it }
         pendingOverlays = null
 
