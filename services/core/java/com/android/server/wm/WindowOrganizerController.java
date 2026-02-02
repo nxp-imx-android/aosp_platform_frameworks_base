@@ -826,10 +826,16 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
             if (transition != null && transition.applyDisplayContentClearIfNeeded()) {
                 effects |= TRANSACT_EFFECTS_LIFECYCLE;
             }
-            if ((effects & TRANSACT_EFFECTS_LIFECYCLE) != 0) {
-                mService.mTaskSupervisor.setDeferRootVisibilityUpdate(false /* deferUpdate */);
+            if (Flags.deferResumeEndBeforeEnsureActivityConfigurationBugfix()) {
                 mService.mTaskSupervisor.endDeferResume();
                 deferResume = false;
+            }
+            if ((effects & TRANSACT_EFFECTS_LIFECYCLE) != 0) {
+                mService.mTaskSupervisor.setDeferRootVisibilityUpdate(false /* deferUpdate */);
+                if (!Flags.deferResumeEndBeforeEnsureActivityConfigurationBugfix()) {
+                    mService.mTaskSupervisor.endDeferResume();
+                    deferResume = false;
+                }
                 // Already calls ensureActivityConfig
                 mService.mRootWindowContainer.ensureActivitiesVisible();
                 mService.mRootWindowContainer.resumeFocusedTasksTopActivities();

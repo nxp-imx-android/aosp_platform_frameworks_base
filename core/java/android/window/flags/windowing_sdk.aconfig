@@ -221,3 +221,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    namespace: "large_screen_experiences_app_compat"
+    name: "defer_resume_end_before_ensure_activity_configuration_bugfix"
+    description: "End defer resume before ensureActivityConfiguration()."
+    bug: "477215847"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
