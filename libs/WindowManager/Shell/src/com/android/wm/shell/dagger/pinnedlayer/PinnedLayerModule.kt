@@ -28,6 +28,7 @@ import com.android.wm.shell.dagger.WMSingleton
 import com.android.wm.shell.desktopmode.DesktopTasksController
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.NormalAppLayerController
+import com.android.wm.shell.desktopmode.ShellDesktopState
 import com.android.wm.shell.desktopmode.WindowDragTransitionHandler
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerFlags
@@ -38,7 +39,6 @@ import com.android.wm.shell.pinnedlayer.phone.PinnedLayerUiState
 import com.android.wm.shell.pinnedlayer.phone.PinnedWindowRepositionAnimationHandler
 import com.android.wm.shell.shared.TransactionPool
 import com.android.wm.shell.shared.annotations.ShellMainThread
-import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
 import dagger.Module
@@ -86,7 +86,7 @@ object PinnedLayerModule {
         transitions: Transitions,
         displayController: DisplayController,
         shellTaskOrganizer: ShellTaskOrganizer,
-        desktopState: DesktopState,
+        desktopState: ShellDesktopState,
         windowDragTransitionHandler: WindowDragTransitionHandler,
         windowRepositionAnimationHandler: PinnedWindowRepositionAnimationHandler,
         transactionPool: TransactionPool,
