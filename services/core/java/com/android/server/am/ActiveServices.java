@@ -4805,7 +4805,7 @@ public final class ActiveServices {
             final ConnectionRecord r = clist.get(i);
             final long updatedFlags = r.getFlags() ^ flags;
             if (updatedFlags != (updatedFlags & Context.BIND_UPDATEABLE_FLAGS)) {
-                throw new IllegalArgumentException("Attempting to update non-updatedable flags");
+                throw new IllegalArgumentException("Attempting to update non-updatable flags");
             }
             if (mAm.mProcessStateController.updateConnectionFlags(r, flags)) {
                 final ProcessRecord app = r.binding.service.getHostProcess();
