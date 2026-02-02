@@ -130,8 +130,8 @@ public abstract class InfoMediaManager {
 
     /** Checked exception that signals the specified package is not present in the system. */
     public static class PackageNotAvailableException extends Exception {
-        public PackageNotAvailableException(String message) {
-            super(message);
+        public PackageNotAvailableException(String message, Throwable cause) {
+            super(message, cause);
         }
     }
 
@@ -215,7 +215,7 @@ public abstract class InfoMediaManager {
                     context, packageName, userHandle, localBluetoothManager, mediaController);
         } catch (PackageNotAvailableException ex) {
             // TODO: b/293578081 - Propagate this exception to callers for proper handling.
-            Log.w(TAG, "Returning a no-op InfoMediaManager for package " + packageName);
+            Log.w(TAG, "Returning a no-op InfoMediaManager for package " + packageName, ex);
             return new NoOpInfoMediaManager(
                     context, packageName, userHandle, localBluetoothManager, mediaController);
         }
