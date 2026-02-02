@@ -98,7 +98,7 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:layout_marginBottom="@dimen/dialog_padding_material">
+        android:layout_marginBottom="@dimen/preference_breadcrumbs_padding_start_material">
         <ImageView
             android:layout_height="@dimen/app_lock_icon_size_small"
             android:layout_width="@dimen/app_lock_icon_size_small"
@@ -110,6 +110,27 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/app_lock_edu_dialog_info_widgets"
+            android:layout_marginStart="@dimen/preference_breadcrumbs_padding_start_material"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="@color/materialColorOnSurface"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="@dimen/dialog_padding_material">
+        <ImageView
+            android:layout_height="@dimen/app_lock_icon_size_small"
+            android:layout_width="@dimen/app_lock_icon_size_small"
+            android:src="@drawable/ic_info_sparkle"
+            android:contentDescription="@null"
+            android:tint="@color/materialColorOnSurface"/>
+        <TextView
+            android:id="@+id/app_lock_edu_dialog_info_ai_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/preference_breadcrumbs_padding_start_material"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="@color/materialColorOnSurface"/>

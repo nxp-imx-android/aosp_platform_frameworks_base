@@ -166,6 +166,13 @@ public class AppLockUserEducationActivity extends Activity {
                     credentialType));
         }
 
+        final TextView aiDisclaimerView = mAppLockLayout.findViewById(
+                R.id.app_lock_edu_dialog_info_ai_text);
+        if (aiDisclaimerView != null) {
+            aiDisclaimerView.setText(getString(R.string.app_lock_edu_dialog_info_ai_disclaimer,
+                    packageLabel));
+        }
+
         final Button lockButton = mAppLockLayout.findViewById(
                 R.id.app_lock_edu_dialog_btn_lock_app);
         lockButton.setOnClickListener(v -> {
