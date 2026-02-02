@@ -850,6 +850,9 @@ class BroadcastQueueImpl extends BroadcastQueue {
         }
 
         final int cookie = traceBegin("enqueueBroadcast");
+        if (r.options != null && r.options.getDebugReason() != null) {
+            traceInstant("reason: " + r.options.getDebugReason());
+        }
         r.applySingletonPolicy(mService);
 
         applyDeliveryGroupPolicy(r);
