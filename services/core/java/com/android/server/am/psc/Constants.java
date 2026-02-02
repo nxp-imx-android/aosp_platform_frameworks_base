@@ -16,7 +16,12 @@
 
 package com.android.server.am.psc;
 
+import android.annotation.IntDef;
+
 import com.android.server.am.Flags;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * A central collection of constants related to the Process State Controller (PSC),
@@ -125,6 +130,18 @@ public final class Constants {
     // Special code for native processes that are not being managed by the system (so
     // don't have an oom adj assigned by the system).
     public static final int NATIVE_ADJ = -1000;
+
+    @IntDef(prefix = { "SCHED_GROUP_" }, value = {
+            SCHED_GROUP_UNDEFINED,
+            SCHED_GROUP_BACKGROUND,
+            SCHED_GROUP_RESTRICTED,
+            SCHED_GROUP_DEFAULT,
+            SCHED_GROUP_TOP_APP,
+            SCHED_GROUP_TOP_APP_BOUND,
+            SCHED_GROUP_FOREGROUND_WINDOW
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface SchedGroup {}
 
     // Activity manager's version of an undefined schedule group
     public static final int SCHED_GROUP_UNDEFINED = Integer.MIN_VALUE;

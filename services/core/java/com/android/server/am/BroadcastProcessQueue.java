@@ -42,6 +42,7 @@ import android.util.TimeUtils;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.SomeArgs;
+import com.android.server.am.psc.Constants.SchedGroup;
 
 import dalvik.annotation.optimization.NeverCompile;
 
@@ -610,7 +611,7 @@ class BroadcastProcessQueue {
         return (app != null) && (app.getOnewayThread() != null) && !app.isKilled();
     }
 
-    public int getPreferredSchedulingGroupLocked() {
+    public @SchedGroup int getPreferredSchedulingGroupLocked() {
         if (!isActive()) {
             return SCHED_GROUP_UNDEFINED;
         } else if (mCountForeground > mCountForegroundDeferred) {
