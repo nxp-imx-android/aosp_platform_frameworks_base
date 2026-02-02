@@ -371,3 +371,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "wear_use_default_max_cache_process"
+    namespace: "watch_software_performance"
+    description: "Use the default limit for max. number of cached apps (1024) instead of 32."
+    bug: "478278155"
+}

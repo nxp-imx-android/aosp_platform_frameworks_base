@@ -156,6 +156,7 @@ android_app {
     generate_product_characteristics_rro: true,
 
     flags_packages: [
+        "am_flags",
         "android.aiseal.flags-aconfig",
         "backup_flags",
         "android.systemserver.flags-aconfig",
