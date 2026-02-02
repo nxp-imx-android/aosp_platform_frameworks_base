@@ -1,0 +1,276 @@
+/*
+ * Copyright (C) 2026 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.android.wm.shell.hierarchy.utils
+
+import android.app.ActivityTaskManager.INVALID_TASK_ID
+import android.window.WindowContainerToken
+import com.android.wm.shell.hierarchy.containers.Container
+import com.android.wm.shell.hierarchy.modes.Mode
+import com.android.wm.shell.hierarchy.properties.DisplayAreaContainerProperties
+import com.android.wm.shell.hierarchy.properties.DisplayContainerProperties
+import com.android.wm.shell.hierarchy.properties.RootContainerProperties
+import com.android.wm.shell.hierarchy.properties.TaskContainerProperties
+
+/**
+ * Utility functions to support querying/manipulating the hierarchy.
+ */
+class HierarchyUtils {
+    companion object {
+        /**
+         * Returns the root container of the hierarchy given any container in the hierarchy.
+         * The root of any container hierarchy must be a container with
+         * {@link RootContainerProperties}.
+         */
+        fun getRoot(container: Container): Container {
+            var c: Container? = container
+            while (c?.parent != null) {
+                c = c.parent
+            }
+            if (c!!.props !is RootContainerProperties) {
+                throw IllegalArgumentException(
+                    "Expected root, but found a ${c.javaClass.simpleName}"
+                )
+            }
+            return c
+        }
+
+        /**
+         * Returns a container that is a descendant of root with the given token.
+         */
+        fun getContainer(root: Container, token: WindowContainerToken): Container? {
+            val containers = mutableListOf<Container>()
+            forEachContainer(
+                root,
+                {},
+                { it.token == token },
+                containers
+            )
+            return containers.firstOrNull()
+        }
+
+        /**
+         * Returns a display container that is a descendant of root with the given display id.
+         */
+        fun getDisplay(root: Container, displayId: Int): Container? {
+            val displays = mutableListOf<Container>()
+            forEachContainer(
+                root,
+                {},
+                { it.props is DisplayContainerProperties && it.props.displayId == displayId },
+                displays
+            )
+            return displays.firstOrNull()
+        }
+
+        /**
+         * Returns the ancestor display container for this container.
+         */
+        fun getAncestorDisplay(container: Container): Container? {
+            var ancestor: Container? = container
+            while (ancestor != null) {
+                if (ancestor.props is DisplayContainerProperties) {
+                    return ancestor
+                }
+                ancestor = ancestor.parent
+            }
+            return null
+        }
+
+        /**
+         * Returns a display area container that is a descendant of root with the given display id.
+         */
+        fun getTaskDisplayArea(root: Container, displayId: Int): Container? {
+            val displayAreas = mutableListOf<Container>()
+            forEachContainer(
+                root,
+                {},
+                { c ->
+                    if (c.props !is DisplayAreaContainerProperties) {
+                        return@forEachContainer false
+                    }
+                    val display = getAncestorDisplay(c)!!
+                    val displayProps = display.props<DisplayContainerProperties>()
+                    return@forEachContainer displayProps.displayId == displayId
+                },
+                displayAreas
+            )
+            return displayAreas.firstOrNull()
+        }
+
+        /**
+         * Returns a task container that is a descendant of root with the given task id.
+         */
+        fun getTask(root: Container, taskId: Int): Container? {
+            val tasks = mutableListOf<Container>()
+            forEachContainer(
+                root,
+                {},
+                { it.props is TaskContainerProperties && it.props.taskId == taskId },
+                tasks
+            )
+            return tasks.firstOrNull()
+        }
+
+        /**
+         * Returns a list of all ancestor & directly assigned modes that are associated with the
+         * given container. The returned list is in ancestor-first order.
+         */
+        fun getModes(container: Container): List<Mode> {
+            val modes = mutableListOf<Mode>()
+            var c: Container? = container
+            while (c != null) {
+                if (c.mode != null) {
+                    modes.add(0, c.mode!!)
+                }
+                c = c.parent
+            }
+            return modes
+        }
+
+        /**
+         * Returns whether the given container is associated (directly or indirectly) with the
+         * given mode.
+         */
+        fun isAttachedToMode(container: Container, mode: Mode): Boolean {
+            return mode in getModes(container)
+        }
+
+        /**
+         * Returns a list of containers in top-down breadth-first traversal order.
+         * Includes the provided root container.
+         */
+        fun toContainersList(root: Container): List<Container> {
+            val containers = mutableListOf<Container>()
+            forEachContainer(root, {}, { _ -> true }, containers)
+            return containers
+        }
+
+        /**
+         * Removes all transient containers from the container hierarchy under the given container.
+         */
+        fun removeAllTransientContainers(container: Container) {
+            val containers = toContainersList(container)
+            for (c in containers) {
+                if (c.isTransientAnimatingContainer) {
+                    c.parent = null
+                }
+            }
+        }
+
+        /**
+         * Breadth-first traversal of container hierarchy, applying the test function to each
+         * container. If the test function returns true, then it will be added to the collector
+         * list, and the consumer function will be called with that container. If no test function
+         * is specified, then every container will be added to the collector list and called on
+         * the consumer function.
+         *
+         * This can be used for things like:
+         * - Applying logic to all containers (ie. test fn always returns true, consumer applies it)
+         * - Finding containers satisfying some heuristic (ie. in the test fn)
+         * - or any combination of the above
+         *
+         * The provided consumer must NOT manipulate the hierarchy, otherwise it can lead to a
+         * concurrent modification exception since we are actively iterating the hierarchy as well.
+         */
+        @Suppress("UNCHECKED_CAST")
+        private fun <T : Container> forEachContainer(
+            container: Container,
+            consumer: (Container) -> Unit,
+            test: ((Container) -> Boolean)? = null,
+            collector: MutableList<T>? = null
+        ) {
+            if (test == null || test(container)) {
+                consumer(container)
+                collector?.add(container as T)
+            }
+            for (child in container.children) {
+                forEachContainer(child, consumer, test, collector)
+            }
+        }
+
+        /**
+         * Returns a list of removed displays in no particular order given the list of containers
+         * before and after an update.
+         */
+        fun getRemovedDisplays(
+            preUpdateContainers: List<Container>,
+            postUpdateContainers: List<Container>,
+        ): List<Container> {
+            // Look through which containers were removed
+            val removedContainers = preUpdateContainers - postUpdateContainers.toSet()
+            return removedContainers.filter { it.props is DisplayContainerProperties }
+        }
+
+        /**
+         * Returns a list of added displays in no particular order given the list of containers
+         * before and after an update.
+         */
+        fun getAddedDisplays(
+            preUpdateContainers: List<Container>,
+            postUpdateContainers: List<Container>,
+        ): List<Container> {
+            // Look through which containers were removed
+            val addedContainers = postUpdateContainers - preUpdateContainers.toSet()
+            return addedContainers.filter { it.props is DisplayContainerProperties }
+
+        }
+
+        /**
+         * Returns the expected parent of the given container.
+         */
+        fun resolveParentForContainer(
+            root: Container,
+            container: Container,
+            parentToken: WindowContainerToken?,
+            displayId: Int,
+        ): Container? {
+            when (container.props) {
+                is RootContainerProperties -> {
+                    // Root container has no parent
+                    return null
+                }
+
+                is DisplayContainerProperties -> {
+                    // Display containers are always rooted to the root container
+                    return root
+                }
+
+                is TaskContainerProperties -> {
+                    // TODO: Remove this once we always set a valid parent token in the
+                    //  TransitionInfo
+                    return if (container.props.taskInfo.parentTaskId == INVALID_TASK_ID) {
+                        getTaskDisplayArea(root, container.props.taskInfo.displayId)
+                    } else {
+                        getTask(root, container.props.taskInfo.parentTaskId)
+                    }
+                }
+
+                else -> {
+                    if (parentToken != null) {
+                        // Use the explicitly set parent token if provided
+                        return getContainer(root, parentToken)
+                    } else if (displayId >= 0) {
+                        // Fall back to the valid display otherwise
+                        return getDisplay(root, displayId)
+                    } else {
+                        // By default just return the container's current parent
+                        return container.parent
+                    }
+                }
+            }
+        }
+    }
+}
