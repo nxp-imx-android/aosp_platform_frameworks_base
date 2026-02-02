@@ -153,6 +153,13 @@ class DesktopTilingDecorViewModel(
             ?.moveTiledPairToFront(taskInfo.taskId, isFocusedOnDisplay = true) ?: false
     }
 
+    fun onTaskLaunchStarted() {
+        val activeUserHandlers = tilingHandlerByUserAndDeskId[currentUserId] ?: return
+        for (tilingHandler in activeUserHandlers.valueIterator()) {
+            tilingHandler.onTaskLaunchStarted()
+        }
+    }
+
     fun onOverviewAnimationEndedToSameDesk() {
         val activeUserHandlers = tilingHandlerByUserAndDeskId[currentUserId] ?: return
         for (tilingHandler in activeUserHandlers.valueIterator()) {

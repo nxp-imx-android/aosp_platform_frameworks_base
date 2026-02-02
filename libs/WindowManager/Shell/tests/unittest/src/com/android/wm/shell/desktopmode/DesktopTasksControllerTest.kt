@@ -6292,18 +6292,22 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    fun handleRequest_recentsAnimationRunning_relaunchActiveTask_taskBecomesUndefined() {
-        // Set up a visible freeform task
-        val freeformTask = setUpFreeformTask()
-        markTaskVisible(freeformTask)
-
-        // Mark recents animation running
+    fun onRecentsInDesktopAnimationFinishing_launchOccurred_skipsDeactivation() {
+        val activeDeskId = 1
         recentsTransitionStateListener.onTransitionStateChanged(TRANSITION_STATE_ANIMATING)
 
-        // Should become undefined as the TDA is set to fullscreen. It will inherit from the TDA.
-        val result = controller.handleRequest(Binder(), createTransition(freeformTask))
-        assertThat(result?.changes?.get(freeformTask.token.asBinder())?.windowingMode)
-            .isEqualTo(WINDOWING_MODE_UNDEFINED)
+        val task = setUpFreeformTask()
+        val request = createTransition(task, type = TRANSIT_OPEN)
+        controller.handleRequest(Binder(), request)
+
+        controller.onRecentsInDesktopAnimationFinishing(
+            transition = Binder(),
+            finishWct = WindowContainerTransaction(),
+            returnToApp = false,
+            activeDeskIdOnRecentsStart = activeDeskId,
+        )
+
+        verify(desksOrganizer, never()).deactivateDesk(any(), eq(activeDeskId), anyBoolean())
     }
 
     @Test
@@ -10946,6 +10950,20 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             verify(pipScheduler, never())
                 .scheduleExitPipViaExpand(eq(true), eq(SECOND_DISPLAY_ON_RECONNECT))
         }
+
+    @Test
+    fun startLaunchTransition_notifiesSnapEventHandler() {
+        controller.startLaunchTransition(
+            transitionType = TRANSIT_OPEN,
+            wct = WindowContainerTransaction(),
+            launchingTaskId = null,
+            deskId = 0,
+            displayId = DEFAULT_DISPLAY,
+            userId = 0,
+        )
+
+        verify(snapEventHandler).onTaskLaunchStarted()
+    }
 
     @Test
     @EnableFlags(
