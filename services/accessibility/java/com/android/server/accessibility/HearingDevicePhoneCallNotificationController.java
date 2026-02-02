@@ -324,9 +324,9 @@ public class HearingDevicePhoneCallNotificationController {
                     bundle.putString(KEY_BLUETOOTH_ADDRESS, mHearingDevice.getAddress());
                     intent.putExtra(EXTRA_SHOW_FRAGMENT_ARGUMENTS, bundle);
                     intent.addFlags(
-                            Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                            Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     return PendingIntent.getActivity(mContext, /* requestCode = */ 0, intent,
-                            PendingIntent.FLAG_IMMUTABLE);
+                            PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
                 }
             }
             return null;
