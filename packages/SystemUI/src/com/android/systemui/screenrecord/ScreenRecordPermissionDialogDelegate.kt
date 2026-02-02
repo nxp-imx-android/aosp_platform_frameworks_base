@@ -31,7 +31,6 @@ import com.android.systemui.res.R
 import com.android.systemui.screenrecord.data.repository.ScreenRecordingStartStopRepository
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.domain.interactor.ShadeDialogContextInteractor
-import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -117,12 +116,7 @@ class ScreenRecordPermissionDialogDelegate(
     }
 
     override fun createDialog(): SystemUIDialog {
-        val displayContext =
-            if (ShadeWindowGoesAround.isEnabled) {
-                shadeDialogContextInteractor.context
-            } else {
-                context
-            }
+        val displayContext = shadeDialogContextInteractor.context
         return systemUIDialogFactory.create(this, displayContext, theme)
     }
 

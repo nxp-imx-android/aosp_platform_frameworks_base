@@ -464,7 +464,6 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
     fun updateBlurCallback_shadeInExternalDisplay_doesSetZeroZoom() {
         notificationShadeDepthController.onPanelExpansionChanged(
             ShadeExpansionChangeEvent(fraction = 1f, expanded = true, tracking = false)
@@ -476,7 +475,6 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
     fun updateBlurCallback_shadeInDefaultDisplay_doesNotSetZeroZoom() {
         notificationShadeDepthController.onPanelExpansionChanged(
             ShadeExpansionChangeEvent(fraction = 1f, expanded = true, tracking = false)

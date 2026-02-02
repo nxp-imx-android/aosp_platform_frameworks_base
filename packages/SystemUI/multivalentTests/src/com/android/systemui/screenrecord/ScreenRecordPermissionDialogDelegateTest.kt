@@ -21,7 +21,6 @@ import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
 import android.hardware.display.VirtualDisplayConfig
 import android.os.UserHandle
-import android.platform.test.annotations.EnableFlags
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.CheckFlagsRule
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
@@ -47,7 +46,6 @@ import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
 import com.android.systemui.screenrecord.data.repository.screenRecordingStartStopRepository
 import com.android.systemui.shade.data.repository.shadeDialogContextInteractor
-import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.statusbar.phone.SystemUIDialogManager
 import com.android.systemui.testKosmos
@@ -316,7 +314,6 @@ class ScreenRecordPermissionDialogDelegateTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(ShadeWindowGoesAround.FLAG_NAME)
     fun createDialog_usesDisplayContextInsteadOfDefaultOne() {
         val shadeContext = context
         val displayManager = context.getSystemService(DisplayManager::class.java)!!

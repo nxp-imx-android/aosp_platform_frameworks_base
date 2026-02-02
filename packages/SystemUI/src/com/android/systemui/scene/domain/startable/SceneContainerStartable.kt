@@ -18,7 +18,6 @@ package com.android.systemui.scene.domain.startable
 
 import android.app.StatusBarManager
 import android.os.PowerManager
-import android.view.Display
 import android.view.SurfaceControl
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.OverlayKey
@@ -89,7 +88,6 @@ import com.android.systemui.scene.shared.model.isKeyguardScene
 import com.android.systemui.shade.domain.interactor.ShadeDisplaysInteractor
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
-import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.statusbar.NotificationShadeWindowController
 import com.android.systemui.statusbar.SysuiStatusBarStateController
 import com.android.systemui.statusbar.VibratorHelper
@@ -184,12 +182,7 @@ constructor(
 
     private val authInteractionProperties = AuthInteractionProperties()
 
-    private val shadePendingDisplayId: Flow<Int> =
-        if (ShadeWindowGoesAround.isEnabled) {
-            shadeDisplaysInteractor.get().pendingDisplayId
-        } else {
-            flowOf(Display.DEFAULT_DISPLAY)
-        }
+    private val shadePendingDisplayId: Flow<Int> = shadeDisplaysInteractor.get().pendingDisplayId
 
     override fun start() {
         if (SceneContainerFlag.isEnabled) {

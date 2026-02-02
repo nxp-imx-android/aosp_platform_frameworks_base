@@ -20,7 +20,6 @@ import android.annotation.ColorInt
 import android.content.res.Resources
 import android.graphics.Rect
 import android.graphics.RectF
-import android.view.Display
 import android.view.View
 import androidx.compose.runtime.getValue
 import com.android.app.tracing.FlowTracing.traceEach
@@ -57,7 +56,6 @@ import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.display.domain.interactor.ShadeExpansionTargetDisplayInteractor
 import com.android.systemui.shade.domain.interactor.ShadeDisplaysInteractor
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
-import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.statusbar.chips.mediaprojection.domain.model.MediaProjectionStopDialogModel
 import com.android.systemui.statusbar.chips.sharetoapp.ui.viewmodel.ShareToAppChipViewModel
 import com.android.systemui.statusbar.chips.ui.model.MultipleOngoingActivityChipsModel
@@ -348,17 +346,8 @@ constructor(
      * and lockscreen, among other things).
      */
     private val isShadeWindowOnThisDisplay =
-        if (ShadeWindowGoesAround.isEnabled) {
-            // Use pendingDisplayId to know where the shade is *going* to be.
-            // This allows us to hide/show the status bar immediately when the user interacts,
-            // rather than waiting for the window movement animation to finish (which can take
-            // hundreds of ms).
-            shadeDisplaysInteractor.get().pendingDisplayId.map { shadeDisplayId ->
-                thisDisplayId == shadeDisplayId
-            }
-        } else {
-            // Shade doesn't move anywhere, it is always on the default display.
-            flowOf(thisDisplayId == Display.DEFAULT_DISPLAY)
+        shadeDisplaysInteractor.get().pendingDisplayId.map { shadeDisplayId ->
+            thisDisplayId == shadeDisplayId
         }
 
     private val isShadeVisibleOnAnyDisplay =

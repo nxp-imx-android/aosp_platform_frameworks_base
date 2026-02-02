@@ -1549,13 +1549,6 @@ flag {
 }
 
 flag {
-  name: "shade_window_goes_around"
-  namespace: "systemui"
-  description: "Enables the shade window to move between displays"
-  bug: "362719719"
-}
-
-flag {
     name: "shortcut_helper_key_glyph"
     namespace: "systemui"
     description: "Allow showing key glyph in shortcut helper"

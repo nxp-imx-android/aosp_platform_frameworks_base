@@ -27,9 +27,7 @@ import com.android.systemui.display.data.repository.DeviceStateRepository.Device
 import com.android.systemui.display.data.repository.DeviceStateRepository.DeviceState.REAR_DISPLAY_OUTER_DEFAULT
 import com.android.systemui.display.shared.model.DisplayRotation
 import com.android.systemui.display.shared.model.toDisplayRotation
-import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import javax.inject.Inject
-import kotlin.math.min
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -91,11 +89,8 @@ constructor(
             .stateIn(bgDisplayScope, started = SharingStarted.Eagerly, initialValue = false)
 
     private val currentDisplayInfo: StateFlow<DisplayInfo> =
-        if (ShadeWindowGoesAround.isEnabled) {
-                displayRepository.displayChangeEvent.filter { it == context.displayId }
-            } else {
-                displayRepository.displayChangeEvent
-            }
+        displayRepository.displayChangeEvent
+            .filter { it == context.displayId }
             .map { getDisplayInfo() }
             .stateIn(
                 bgDisplayScope,
@@ -126,27 +121,13 @@ constructor(
             )
 
     override val isLargeScreen: StateFlow<Boolean> =
-        if (ShadeWindowGoesAround.isEnabled) {
-                configurationRepository.configurationValues.map {
-                    it.smallestScreenWidthDp >= LARGE_SCREEN_MIN_DPS
-                }
-            } else {
-                currentDisplayInfo.map {
-                    // copied from systemui/shared/...Utilities.java
-                    val smallestWidth = min(it.logicalWidth, it.logicalHeight).toDpi()
-                    smallestWidth >= LARGE_SCREEN_MIN_DPS
-                }
-            }
+        configurationRepository.configurationValues
+            .map { it.smallestScreenWidthDp >= LARGE_SCREEN_MIN_DPS }
             .stateIn(bgDisplayScope, started = SharingStarted.Eagerly, initialValue = false)
 
     override val isWideScreen: StateFlow<Boolean> =
-        if (ShadeWindowGoesAround.isEnabled) {
-                configurationRepository.configurationValues.map {
-                    it.screenWidthDp >= LARGE_SCREEN_MIN_DPS
-                }
-            } else {
-                currentDisplayInfo.map { it.logicalWidth.toDpi() >= LARGE_SCREEN_MIN_DPS }
-            }
+        configurationRepository.configurationValues
+            .map { it.screenWidthDp >= LARGE_SCREEN_MIN_DPS }
             .stateIn(bgDisplayScope, started = SharingStarted.Eagerly, initialValue = false)
 
     private fun getDisplayInfo(): DisplayInfo {

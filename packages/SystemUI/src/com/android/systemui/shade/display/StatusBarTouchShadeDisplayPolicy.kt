@@ -23,7 +23,6 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.display.data.repository.DisplayRepository
 import com.android.systemui.shade.domain.interactor.ShadeExpandedStateInteractor.ShadeElement
-import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
@@ -63,7 +62,6 @@ constructor(
      * be made visible upon expansion.
      */
     fun setExpansionIntentForElement(element: ShadeElement, displayId: Int) {
-        ShadeWindowGoesAround.isUnexpectedlyInLegacyMode()
 
         updateShadeDisplayIfNeeded(displayId)
         updateExpansionIntent(element)

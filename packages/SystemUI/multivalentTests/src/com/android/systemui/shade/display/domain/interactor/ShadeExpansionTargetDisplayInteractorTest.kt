@@ -16,7 +16,6 @@
 
 package com.android.systemui.shade.display.domain.interactor
 
-import android.platform.test.annotations.EnableFlags
 import android.view.Display.TYPE_EXTERNAL
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -30,7 +29,6 @@ import com.android.systemui.shade.data.repository.fakeFocusedDisplayRepository
 import com.android.systemui.shade.data.repository.statusBarTouchShadeDisplayPolicy
 import com.android.systemui.shade.domain.interactor.notificationElement
 import com.android.systemui.shade.domain.interactor.qsElement
-import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
@@ -38,7 +36,6 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@EnableFlags(ShadeWindowGoesAround.FLAG_NAME)
 class ShadeExpansionTargetDisplayInteractorTest : SysuiTestCase() {
     private val kosmos = testKosmosNew()
     private val focusedDisplayRepository = kosmos.fakeFocusedDisplayRepository

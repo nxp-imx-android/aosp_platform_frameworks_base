@@ -117,7 +117,6 @@ import com.android.systemui.shade.ShadeViewController;
 import com.android.systemui.shade.display.StatusBarTouchShadeDisplayPolicy;
 import com.android.systemui.shade.display.domain.interactor.ShadeExpansionTargetDisplayInteractor;
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor;
-import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround;
 import com.android.systemui.shared.recents.ILauncherProxy;
 import com.android.systemui.shared.recents.ISystemUiProxy;
 import com.android.systemui.shared.system.QuickStepContract;
@@ -260,21 +259,19 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
 
         @VisibleForTesting
         public void moveShadeWindowIfNeeded(MotionEvent event) {
-            if (ShadeWindowGoesAround.isEnabled()) {
-                Trace.beginSection("LauncherProxyService#moveShadeWindowIfNeeded");
-                // TODO: b/407496148 - Refactor to use DisplayMetricsRepository instead
-                final DisplayInfo displayInfo = new DisplayInfo();
-                mDisplayTracker.getDisplay(event.getDisplayId()).getDisplayInfo(displayInfo);
-                // Gestures on the launcher homescreen always open the notifications shade.
-                mShadeExpansionTargetDisplayInteractor.setExpansionIntentForNotificationElement(
-                        event.getDisplayId());
-                Trace.endSection();
-            }
+            Trace.beginSection("LauncherProxyService#moveShadeWindowIfNeeded");
+            // TODO: b/407496148 - Refactor to use DisplayMetricsRepository instead
+            final DisplayInfo displayInfo = new DisplayInfo();
+            mDisplayTracker.getDisplay(event.getDisplayId()).getDisplayInfo(displayInfo);
+            // Gestures on the launcher homescreen always open the notifications shade.
+            mShadeExpansionTargetDisplayInteractor.setExpansionIntentForNotificationElement(
+                    event.getDisplayId());
+            Trace.endSection();
         }
 
         @VisibleForTesting
         public boolean shouldIgnoreEvent(MotionEvent event) {
-            if (ShadeWindowGoesAround.isEnabled() && !SceneContainerFlag.isEnabled()) {
+            if (!SceneContainerFlag.isEnabled()) {
                 // For legacy shade case, don't attempt to handle touch events on display that
                 // doesn't have the shade. They're handled with SceneContainerFlag enabled.
                 return event.getDisplayId() != mShadeDisplayPolicy.getDisplayId().getValue();
@@ -628,12 +625,7 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
 
             // Force-update the systemui state flags
             updateSystemUiStateFlags();
-            if (ShadeWindowGoesAround.isEnabled()) {
-               notifySysUiStateFlagsForAllDisplays();
-            } else {
-                notifySystemUiStateFlags(mDefaultDisplaySysUIState.getFlags(),
-                        Display.DEFAULT_DISPLAY);
-            }
+            notifySysUiStateFlagsForAllDisplays();
             notifyConnectionChanged();
         }
 
@@ -878,13 +870,9 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
     }
 
     private void updateSysUIStateForNavbars() {
-        if (ShadeWindowGoesAround.isEnabled()) {
-            var displays = mDisplayRepository.getDisplayIds().getValue();
-            for (int displayId : displays) {
-                updateSysUIStateForNavbarWithDisplayId(displayId);
-            }
-        } else {
-            updateSysUIStateForNavbarWithDisplayId(Display.DEFAULT_DISPLAY);
+        var displays = mDisplayRepository.getDisplayIds().getValue();
+        for (int displayId : displays) {
+            updateSysUIStateForNavbarWithDisplayId(displayId);
         }
     }
 

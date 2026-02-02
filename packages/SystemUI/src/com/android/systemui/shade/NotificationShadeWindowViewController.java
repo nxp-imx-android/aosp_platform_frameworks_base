@@ -60,7 +60,6 @@ import com.android.systemui.scene.ui.view.WindowRootViewKeyEventHandler;
 import com.android.systemui.shade.domain.interactor.PanelExpansionInteractor;
 import com.android.systemui.shade.domain.interactor.ShadeAnimationInteractor;
 import com.android.systemui.shade.domain.interactor.ShadeStatusBarComponentsInteractor;
-import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround;
 import com.android.systemui.shared.animation.DisableSubpixelTextTransitionListener;
 import com.android.systemui.statusbar.DragDownHelper;
 import com.android.systemui.statusbar.LockscreenShadeTransitionController;
@@ -291,9 +290,7 @@ public class NotificationShadeWindowViewController implements Dumpable {
                             mDisableSubpixelTextTransitionListener));
         }
 
-        if (ShadeWindowGoesAround.isEnabled()) {
-            mView.setConfigurationForwarder(configurationForwarder.get());
-        }
+        mView.setConfigurationForwarder(configurationForwarder.get());
         bindWindowRootView(windowRootViewModelFactory, blurChoreographer);
         mAodInterceptingTouches = javaAdapter.stateInApp(
                 dozeTouchInteractor.getShouldInterceptTouches(),
