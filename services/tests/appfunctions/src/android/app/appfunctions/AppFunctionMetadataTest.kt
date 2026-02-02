@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 The Android Open Source Project
+ * Copyright (C) 2026 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package android.app.appfunctions
 
 import android.app.appfunctions.AppFunctionMetadata.PROPERTY_SCHEMA_CATEGORY
 import android.app.appfunctions.AppFunctionMetadata.PROPERTY_SCHEMA_NAME
 import android.app.appfunctions.AppFunctionMetadata.PROPERTY_SCHEMA_VERSION
+import android.app.appfunctions.AppFunctionMetadata.PROPERTY_SCOPE
+import android.app.appfunctions.AppFunctionMetadata.PROPERTY_VALUE_SCOPE_ACTIVITY
+import android.app.appfunctions.AppFunctionMetadata.PROPERTY_VALUE_SCOPE_GLOBAL
+import android.app.appfunctions.AppFunctionMetadata.SCOPE_GLOBAL
 import android.app.appfunctions.flags.Flags
 import android.app.appsearch.GenericDocument
 import android.os.Parcel
@@ -33,139 +38,121 @@ import org.junit.runners.JUnit4
 @RequiresFlagsEnabled(Flags.FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
 @RunWith(JUnit4::class)
 class AppFunctionMetadataTest {
-    @get:Rule val checkFlagsRule: CheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
+    @get:Rule
+    val checkFlagsRule: CheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
 
     @Test
     fun testEqualsAndHashcode() {
-        val metadata1 =
-            AppFunctionMetadata.Builder(
-                    TEST_AF_STATIC_METADATA_GD_BUILDER.build(),
-                    TEST_PACKAGE_METADATA,
-                )
-                .build()
-        val metadata2 =
-            AppFunctionMetadata.Builder(
-                    TEST_AF_STATIC_METADATA_GD_BUILDER.build(),
-                    TEST_PACKAGE_METADATA,
-                )
-                .build()
-        val metadata3 =
-            AppFunctionMetadata.Builder(
-                    TEST_AF_STATIC_METADATA_GD_BUILDER.setId("testPackage/testFunctionId2").build(),
-                    TEST_PACKAGE_METADATA,
-                )
-                .build()
-        val metadata4 =
-            AppFunctionMetadata.Builder(
-                    TEST_AF_STATIC_METADATA_GD_BUILDER.build(),
-                    TEST_PACKAGE_METADATA,
-                )
-                .build()
+        val baseDocument = BASE_AF_DOC_BUILDER
+            .setPropertyString(PROPERTY_SCHEMA_NAME, "originalName")
+            .build()
 
-        assertThat(metadata1).isEqualTo(metadata2)
-        assertThat(metadata1.hashCode()).isEqualTo(metadata2.hashCode())
-        assertThat(metadata1).isNotEqualTo(metadata3)
-        assertThat(metadata1.hashCode()).isNotEqualTo(metadata3.hashCode())
-        assertThat(metadata1).isNotEqualTo(metadata4)
-        assertThat(metadata1.hashCode()).isNotEqualTo(metadata4.hashCode())
+        val base = AppFunctionMetadata.Builder(baseDocument, TEST_PACKAGE_METADATA).build()
+
+        // 1. Identical instance
+        val identical = AppFunctionMetadata.Builder(baseDocument, TEST_PACKAGE_METADATA).build()
+        assertThat(base).isEqualTo(identical)
+        assertThat(base.hashCode()).isEqualTo(identical.hashCode())
+
+        // 2. Different ID (Part of the GenericDocument)
+        val diffId = AppFunctionMetadata.Builder(
+            BASE_AF_DOC_BUILDER.setId("different/id").build(),
+            TEST_PACKAGE_METADATA
+        ).build()
+        assertThat(base).isNotEqualTo(diffId)
+
+        // 3. Different Schema Property
+        val diffSchema = AppFunctionMetadata.Builder(
+            BASE_AF_DOC_BUILDER.setPropertyString(PROPERTY_SCHEMA_NAME, "newName").build(),
+            TEST_PACKAGE_METADATA
+        ).build()
+        assertThat(base).isNotEqualTo(diffSchema)
+
+        // 4. Different Scope
+        val diffScope = AppFunctionMetadata.Builder(
+            BASE_AF_DOC_BUILDER.setPropertyString(PROPERTY_SCOPE, PROPERTY_VALUE_SCOPE_ACTIVITY)
+                .build(),
+            TEST_PACKAGE_METADATA
+        ).build()
+        assertThat(base).isNotEqualTo(diffScope)
+
+        // 5. Different Package Metadata
+        val diffPackage = AppFunctionMetadata.Builder(
+            baseDocument,
+            AppFunctionPackageMetadata.create("different.package", emptyList())
+        ).build()
+        assertThat(base).isNotEqualTo(diffPackage)
     }
 
     @Test
-    fun testGenericDocumentConstructor() {
-        val appFunctionMetadata =
-            AppFunctionMetadata.Builder(
-                    TEST_AF_STATIC_METADATA_GD_BUILDER.build(),
-                    TEST_PACKAGE_METADATA,
-                )
-                .build()
+    fun testConstructor_propertiesCorrectlyMapped() {
+        val metadata = AppFunctionMetadata.Builder(TEST_FULL_AF_DOC, TEST_PACKAGE_METADATA).build()
 
-        assertThat(appFunctionMetadata.name)
-            .isEqualTo(AppFunctionName("testPackage", "testFunctionId"))
-        assertThat(appFunctionMetadata.schemaMetadata)
-            .isEqualTo(AppFunctionSchemaMetadata("testCategory", "testName", 1L))
-        assertThat(appFunctionMetadata.packageMetadata).isEqualTo(TEST_PACKAGE_METADATA)
-        assertThat(appFunctionMetadata.metadataDocument)
-            .isEqualTo(TEST_AF_STATIC_METADATA_GD_BUILDER.build())
+        assertThat(metadata.name).isEqualTo(AppFunctionName("testPackage", "testFunctionId"))
+        assertThat(metadata.schemaMetadata).isEqualTo(
+            AppFunctionSchemaMetadata(
+                "testCategory",
+                "testName",
+                1L
+            )
+        )
+        assertThat(metadata.packageMetadata).isEqualTo(TEST_PACKAGE_METADATA)
+        assertThat(metadata.scope).isEqualTo(SCOPE_GLOBAL)
     }
 
     @Test
     fun testParcelAndUnparcel_allFieldsSet() {
-        val originalMetadata =
-            AppFunctionMetadata.Builder(
-                    TEST_AF_STATIC_METADATA_GD_BUILDER.build(),
-                    TEST_PACKAGE_METADATA,
-                )
-                .build()
+        val original = AppFunctionMetadata.Builder(TEST_FULL_AF_DOC, TEST_PACKAGE_METADATA).build()
+        val restored = parcelAndUnparcel(original)
 
-        val restoredMetadata = parcelAndUnparcel(originalMetadata)
-
-        assertThat(restoredMetadata.name).isEqualTo(originalMetadata.name)
-        assertThat(restoredMetadata.schemaMetadata).isEqualTo(originalMetadata.schemaMetadata)
-        assertThat(restoredMetadata.metadataDocument).isEqualTo(originalMetadata.metadataDocument)
-        assertThat(restoredMetadata.packageMetadata).isEqualTo(originalMetadata.packageMetadata)
+        assertThat(restored).isEqualTo(original)
     }
 
     @Test
-    fun testParcelAndUnparcel_nullSchema() {
-        val originalMetadata =
-            AppFunctionMetadata.Builder(
-                    TEST_AF_STATIC_METADATA_GD_BUILDER_NO_SCHEMA.build(),
-                    TEST_PACKAGE_METADATA,
-                )
-                .build()
+    fun testParcelAndUnparcel_noSchema_minFieldSet() {
+        val original =
+            AppFunctionMetadata.Builder(TEST_AF_DOC_NO_SCHEMA, TEST_PACKAGE_METADATA).build()
+        val restored = parcelAndUnparcel(original)
 
-        val restoredMetadata = parcelAndUnparcel(originalMetadata)
-
-        assertThat(restoredMetadata.name).isEqualTo(originalMetadata.name)
-        assertThat(restoredMetadata.schemaMetadata).isEqualTo(originalMetadata.schemaMetadata)
-        assertThat(restoredMetadata.metadataDocument).isEqualTo(originalMetadata.metadataDocument)
-        assertThat(restoredMetadata.packageMetadata).isEqualTo(originalMetadata.packageMetadata)
-    }
-
-    private companion object {
-        val TEST_AF_STATIC_METADATA_GD_BUILDER =
-            GenericDocument.Builder<GenericDocument.Builder<*>>(
-                    "",
-                    "testPackage/testFunctionId",
-                    "",
-                )
-                .setPropertyString(PROPERTY_SCHEMA_CATEGORY, "testCategory")
-                .setPropertyString(PROPERTY_SCHEMA_NAME, "testName")
-                .setPropertyLong(PROPERTY_SCHEMA_VERSION, 1L)
-                .setPropertyBoolean(
-                    AppFunctionStaticMetadataHelper.STATIC_PROPERTY_ENABLED_BY_DEFAULT,
-                    true,
-                )
-        val TEST_PACKAGE_METADATA =
-            AppFunctionPackageMetadata.create(
-                "testPackage",
-                listOf(
-                    GenericDocument.Builder<GenericDocument.Builder<*>>("", "", "")
-                        .setPropertyString("exampleProperty", "exampleValue")
-                        .build()
-                ),
-            )
-
-        val TEST_AF_STATIC_METADATA_GD_BUILDER_NO_SCHEMA =
-            GenericDocument.Builder<GenericDocument.Builder<*>>(
-                    "",
-                    "testPackage/testFunctionId",
-                    "",
-                )
-                .setPropertyBoolean(
-                    AppFunctionStaticMetadataHelper.STATIC_PROPERTY_ENABLED_BY_DEFAULT,
-                    true,
-                )
+        assertThat(restored).isEqualTo(original)
     }
 
     private fun parcelAndUnparcel(original: AppFunctionMetadata): AppFunctionMetadata {
         val parcel = Parcel.obtain()
-        try {
+        return try {
             original.writeToParcel(parcel, 0)
             parcel.setDataPosition(0)
-            return AppFunctionMetadata.CREATOR.createFromParcel(parcel)
+            AppFunctionMetadata.CREATOR.createFromParcel(parcel)
         } finally {
             parcel.recycle()
         }
+    }
+
+    private companion object {
+        val BASE_AF_DOC_BUILDER = GenericDocument.Builder<GenericDocument.Builder<*>>(
+            "", "testPackage/testFunctionId", ""
+        )
+            .setPropertyBoolean(
+                AppFunctionStaticMetadataHelper.STATIC_PROPERTY_ENABLED_BY_DEFAULT,
+                true
+            )
+            .setPropertyString(PROPERTY_SCOPE, PROPERTY_VALUE_SCOPE_GLOBAL)
+
+        val TEST_FULL_AF_DOC = BASE_AF_DOC_BUILDER
+            .setPropertyString(PROPERTY_SCHEMA_CATEGORY, "testCategory")
+            .setPropertyString(PROPERTY_SCHEMA_NAME, "testName")
+            .setPropertyLong(PROPERTY_SCHEMA_VERSION, 1L)
+            .build()
+
+        val TEST_AF_DOC_NO_SCHEMA = BASE_AF_DOC_BUILDER.build()
+
+        val TEST_PACKAGE_METADATA = AppFunctionPackageMetadata.create(
+            "testPackage",
+            listOf(
+                GenericDocument.Builder<GenericDocument.Builder<*>>("", "", "")
+                    .setPropertyString("exampleProperty", "exampleValue")
+                    .build()
+            )
+        )
     }
 }
