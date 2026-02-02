@@ -70,6 +70,14 @@ public final class PerfettoTrace {
     private static final AtomicInteger sFlowEventId = new AtomicInteger();
 
     public static final PerfettoTrace.Category MQ_CATEGORY = new PerfettoTrace.Category("mq");
+    public static final com.android.internal.dev.perfetto.sdk.PerfettoTrace
+            .Category PROC_STATE_CATEGORY = getProcStateCategory();
+
+    @RavenwoodIgnore // Just use null on Ravenwood.
+    private static com.android.internal.dev.perfetto.sdk.PerfettoTrace
+            .Category getProcStateCategory() {
+        return new com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category("proc_state");
+    }
 
     // The same as a previous MQ_CATEGORY, but to be used with a V3 API.
     public static final com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category
@@ -489,6 +497,7 @@ public final class PerfettoTrace {
             JOB_SCHEDULER_CATEGORY.register();
             CC_CATEGORY.register();
         }
+        PROC_STATE_CATEGORY.register();
     }
 
     /**
