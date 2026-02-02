@@ -32,6 +32,7 @@ import android.os.Process
 import android.os.UserHandle
 import android.service.notification.StatusBarNotification
 import android.util.Log
+import androidx.annotation.WorkerThread
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.app.tracing.traceSection
 import com.android.internal.logging.InstanceId
@@ -665,6 +666,7 @@ class LegacyMediaDataManagerImpl(
         }
     }
 
+    @WorkerThread
     private fun createActionsFromState(
         packageName: String,
         controller: MediaController,
