@@ -51,6 +51,7 @@ import android.util.Slog;
 import android.view.SurfaceControl;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.ViewRootImpl;
 import android.window.TransitionInfo;
 import android.window.TransitionRequestInfo;
 import android.window.WindowContainerToken;
@@ -1885,7 +1886,7 @@ public class BubbleTransitions {
             for (int i = 0; i < info.getChanges().size(); ++i) {
                 final TransitionInfo.Change chg = info.getChanges().get(i);
                 if (chg.getTaskInfo() == null) continue;
-                if (chg.getMode() != TRANSIT_CHANGE) continue;
+                if (chg.getMode() != TRANSIT_CHANGE && chg.getMode() != TRANSIT_TO_FRONT) continue;
                 if (!mTaskInfo.token.equals(chg.getTaskInfo().token)) continue;
                 found = true;
                 mRepository.remove(tv);
@@ -1905,7 +1906,14 @@ public class BubbleTransitions {
             mRootLeash = info.getRoot(0).getLeash();
             mFinishCb = finishCallback;
 
-            SurfaceControl dest = getExpandedView(mBubble).getViewRootImpl().getSurfaceControl();
+            SurfaceControl dest = null;
+            final View expandedView = getExpandedView(mBubble);
+            if (expandedView != null) {
+                ViewRootImpl viewRoot = expandedView.getViewRootImpl();
+                if (viewRoot != null) {
+                    dest = viewRoot.getSurfaceControl();
+                }
+            }
             final Runnable onPlucked = () -> {
                 // Need to remove the taskview AFTER applying the startTransaction because
                 // it isn't synchronized.
@@ -1918,12 +1926,12 @@ public class BubbleTransitions {
                 cleanup();
             };
             if (dest != null) {
-                pluck(mTaskLeash, getExpandedView(mBubble), dest,
+                pluck(mTaskLeash, expandedView, dest,
                         taskChg.getStartAbsBounds().left - info.getRoot(0).getOffset().x,
                         taskChg.getStartAbsBounds().top - info.getRoot(0).getOffset().y,
                         getCornerRadius(mBubble), startTransaction,
                         onPlucked);
-                getExpandedView(mBubble).post(() -> mTransitions.dispatchTransition(
+                expandedView.post(() -> mTransitions.dispatchTransition(
                         transition, info, startTransaction, finishTransaction, finishCb,
                         null));
             } else {
