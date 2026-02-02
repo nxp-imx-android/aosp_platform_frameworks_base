@@ -33,6 +33,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryFaceAuthInteractor
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
+import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.inputdevice.data.repository.pointerDeviceRepository
 import com.android.systemui.keyguard.data.repository.FakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.data.repository.KeyguardRepository
@@ -137,6 +138,13 @@ class KeyguardTouchHandlingInteractorTest : SysuiTestCase() {
                 }
             }
         }
+
+    @Test
+    @EnableSceneContainer
+    fun onSceneClickNotifiesPulsingGestureListener() {
+        underTest.onSceneClick(1f, 2f)
+        verify(pulsingGestureListener).onSingleTapUp(1f, 2f)
+    }
 
     @Test
     fun isLongPressEnabled_alwaysFalseWhenQuickSettingsAreVisible() =
