@@ -170,4 +170,16 @@
 
     <!-- English (India) keyboard layout label. [CHAR LIMIT=35] -->
     <string name="keyboard_layout_english_india">English (India)</string>
+
+    <!-- Default game controller down button. [CHAR LIMIT=35] -->
+    <string name="default_game_controller_down_button">Down Button</string>
+
+    <!-- Default game controller left button. [CHAR LIMIT=35] -->
+    <string name="default_game_controller_left_button">Left Button</string>
+
+    <!-- Default game controller right button. [CHAR LIMIT=35] -->
+    <string name="default_game_controller_right_button">Right Button</string>
+
+    <!-- Default game controller up button. [CHAR LIMIT=35] -->
+    <string name="default_game_controller_up_button">Up Button</string>
 </resources>
