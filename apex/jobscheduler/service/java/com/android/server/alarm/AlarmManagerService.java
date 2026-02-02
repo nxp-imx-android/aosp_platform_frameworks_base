@@ -4523,6 +4523,7 @@ public class AlarmManagerService extends SystemService {
                                 PowerExemptionManager.REASON_TIME_CHANGED, "");
                         mOptsTimeBroadcast.setDeliveryGroupPolicy(
                                 BroadcastOptions.DELIVERY_GROUP_POLICY_MOST_RECENT);
+                        mOptsTimeBroadcast.setDebugReason("delta=" + (nowRTC - expectedClockTime));
                         getContext().sendBroadcastAsUser(intent, UserHandle.ALL,
                                 null /* receiverPermission */, mOptsTimeBroadcast.toBundle());
                         // The world has changed on us, so we need to re-evaluate alarms
