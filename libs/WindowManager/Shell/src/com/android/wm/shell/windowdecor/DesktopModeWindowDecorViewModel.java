@@ -1331,10 +1331,14 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
      * TODO(b/448484440): Make the method private.
      */
     public void closeTask(RunningTaskInfo task) {
+        closeTask(task, /* forceKeepDesktop= */ false);
+    }
+
+    private void closeTask(RunningTaskInfo task, Boolean forceKeepDesktop) {
         if (mPinnedLayerController != null && mPinnedLayerController.isPinned(task.taskId)) {
             closePinnedTask(task);
         } else {
-            closeDesktopTask(task);
+            closeDesktopTask(task, forceKeepDesktop);
         }
     }
 
@@ -1345,7 +1349,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
      * Must call the method on the shell main executor.
      * @param task Task to be closed.
      */
-    private void closeDesktopTask(RunningTaskInfo task) {
+    private void closeDesktopTask(RunningTaskInfo task, Boolean forceKeepDesktop) {
         if (!DesktopExperienceFlags
                 .CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT.isTrue()) {
             final WindowDecorationWrapper decoration = mWindowDecorByTaskId.get(task.taskId);
@@ -1357,7 +1361,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             }
         }
         final DesktopTasksController.CloseTaskResult result =
-                mDesktopTasksController.closeTask(task);
+                mDesktopTasksController.closeTask(task, forceKeepDesktop);
         if (result != DesktopTasksController.CloseTaskResult.CLOSED_DESKTOP) {
             return;
         }
@@ -2216,7 +2220,12 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
 
         @Override
         public void onClose(@NonNull RunningTaskInfo taskInfo) {
-            mViewModel.closeTask(taskInfo);
+            mViewModel.closeTask(taskInfo, /* forceKeepDesktop= */ false);
+        }
+
+        @Override
+        public void onClose(@NonNull RunningTaskInfo taskInfo, boolean forceKeepDesktop) {
+            mViewModel.closeTask(taskInfo, forceKeepDesktop);
         }
 
         @Override
@@ -2264,7 +2273,14 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         @Override
         public void onSwitchToBrowser(@NonNull RunningTaskInfo taskInfo, @NonNull Intent intent) {
             onOpenInBrowser(taskInfo.taskId, intent);
-            onClose(taskInfo);
+            // Launching a browser happens asynchronously, so there can be a race between the
+            // browser launch vs. the app close. We here forcefully keep the current desktop
+            // even if the app is the only task visible. Otherwise, if the launch transition delays,
+            // DTC#closeTask considers the native app as the last task on the desk so cleans up the
+            // desktop. Because the clean-up transition is queued, it can be applied after the
+            // launch transition is fully played and can close the just launched browser app
+            // unexpectedly.
+            onClose(taskInfo, /* forceKeepDesktop= */ true);
         }
 
         @Override

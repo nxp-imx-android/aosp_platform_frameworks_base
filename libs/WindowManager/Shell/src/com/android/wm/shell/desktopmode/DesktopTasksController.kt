@@ -1780,12 +1780,14 @@ class DesktopTasksController(
      *
      * @param wct transaction to modify if the last active task is closed
      * @param displayId display id of the window that's being closed
-     * @param taskId task id of the window that's being closed
+     * @param taskInfo TaskInfo of the window that's being closed
+     * @param forceKeepDesktop if true, prevents exiting desktop mode even if this is the last task
      */
     fun onDesktopWindowClose(
         wct: WindowContainerTransaction,
         displayId: Int,
         taskInfo: RunningTaskInfo,
+        forceKeepDesktop: Boolean = false,
     ): ((IBinder) -> Unit)? {
         val taskId = taskInfo.taskId
         val userId = taskInfo.userId
@@ -1802,7 +1804,7 @@ class DesktopTasksController(
                 displayId = displayId,
                 userId = userId,
                 forceExitDesktop = false,
-            )
+            ) && !forceKeepDesktop
         val desktopExitRunnable =
             if (shouldExitDesktop) {
                 val isLastTask =
@@ -2046,7 +2048,7 @@ class DesktopTasksController(
      * If it returns CLOSE_REQUESTED_SPLIT_SCREEN, SplitScreenController determined if it closed the
      * task. Otherwise, the method should be no-op.
      */
-    fun closeTask(task: RunningTaskInfo): CloseTaskResult {
+    fun closeTask(task: RunningTaskInfo, forceKeepDesktop: Boolean = false): CloseTaskResult {
         val taskId = task.taskId
         if (
             DesktopExperienceFlags.CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT.isTrue() &&
@@ -2109,7 +2111,8 @@ class DesktopTasksController(
                 return CloseTaskResult.NOT_CLOESD_MINIMIZED
             }
             val wct = WindowContainerTransaction()
-            val runOnTransitionStart = onDesktopWindowClose(wct, task.displayId, task)
+            val runOnTransitionStart =
+                onDesktopWindowClose(wct, task.displayId, task, forceKeepDesktop)
             wct.removeTask(task.token)
             val transition = freeformTaskTransitionStarter.startRemoveTransition(wct)
             if (transition != null && runOnTransitionStart != null) {
