@@ -96,7 +96,7 @@ static void addHyphenatorWithoutPatternFile(const std::string& locale, int minPr
 static void addHyphenator(const std::string& locale, int minPrefix, int minSuffix) {
 #ifdef __ANDROID__
     if (com::android::text::flags::rust_hyphenator() &&
-        com::android::text::flags::lazy_hyphenator_init()) {
+        com::android::text::flags::lazy_hyphenator_mmap_init()) {
         const std::string hyFilePath = buildFileName(locale);
         minikin::addHyphenator(locale,
                                minikin::Hyphenator::loadBinaryFromPath(hyFilePath, minPrefix,
