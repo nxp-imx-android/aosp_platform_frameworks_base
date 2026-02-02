@@ -48,6 +48,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -1973,6 +1974,51 @@ public class PowerManagerServiceTest {
         assertThat(mService.getBinderServiceInstance().forceSuspend()).isTrue();
         assertThat(wakelockMap.get(tag)).isEqualTo(flags);
 
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_REMOVE_CACHED_UIDS_FROM_WAKELOCK)
+    public void testSetWakeLockDisabledStateLocked_viaListener() {
+        final String tag = "testWakelock";
+        final String packageName = "pkg.name";
+        final IBinder token = new Binder();
+        final int flags = PowerManager.PARTIAL_WAKE_LOCK;
+
+        createService();
+        startSystem();
+
+        // Capture the listener registered with Notifier
+        ArgumentCaptor<Notifier.WakeLockChangedListener> listenerCaptor =
+                ArgumentCaptor.forClass(Notifier.WakeLockChangedListener.class);
+        verify(mNotifierMock).registerWakeLockChangedListener(listenerCaptor.capture());
+        Notifier.WakeLockChangedListener listener = listenerCaptor.getValue();
+        assertNotNull(listener);
+
+        // Acquire a wakelock
+        mService.getBinderServiceInstance().acquireWakeLock(token, flags, tag, packageName,
+                null /* workSource */, null /* historyTag */, Display.INVALID_DISPLAY,
+                null /* callback */);
+
+        // Find the wakelock in PowerManagerService
+        WakeLock wakeLock = mService.findWakeLockLocked(token);
+        assertNotNull(wakeLock);
+        assertFalse(wakeLock.mDisabled);
+
+        // Simulate Notifier invoking the listener to disable the wakelock
+        wakeLock.setAttributedUidCached(true);
+        listener.onWakeLockStateChanged(wakeLock);
+        mTestLooper.moveTimeForward(100);
+        mTestLooper.dispatchAll();
+
+        assertTrue(wakeLock.mDisabled);
+
+        // Simulate Notifier invoking the listener to enable the wakelock
+        wakeLock.setAttributedUidCached(false);
+        listener.onWakeLockStateChanged(wakeLock);
+        mTestLooper.moveTimeForward(100);
+        mTestLooper.dispatchAll();
+
+        assertFalse(wakeLock.mDisabled);
     }
 
     @Test

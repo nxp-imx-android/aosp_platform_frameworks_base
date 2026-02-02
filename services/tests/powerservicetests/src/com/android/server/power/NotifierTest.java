@@ -34,6 +34,7 @@ import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -102,7 +103,6 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Set;
@@ -542,6 +542,43 @@ public class NotifierTest {
         expectedDisplayInteractivitiesAfterChange.put(displayId1, true);
         verify(mInputManagerInternal).setDisplayInteractivities(
             expectedDisplayInteractivitiesAfterChange);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_REMOVE_CACHED_UIDS_FROM_WAKELOCK)
+    public void testOnUidGone_invokesListener() throws RemoteException {
+        createNotifier();
+
+        Notifier.WakeLockChangedListener listener =
+                mock(Notifier.WakeLockChangedListener.class);
+        mNotifier.registerWakeLockChangedListener(listener);
+
+        ArgumentCaptor<IUidObserver> uidObserverCaptor =
+                ArgumentCaptor.forClass(IUidObserver.class);
+        verify(mActivityManager).registerUidObserver(uidObserverCaptor.capture(),
+                eq(ActivityManager.UID_OBSERVER_CACHED),
+                eq(ActivityManager.PROCESS_STATE_UNKNOWN),
+                eq(null));
+        IUidObserver uidObserver = uidObserverCaptor.getValue();
+        assertNotNull(uidObserver);
+
+        PowerManagerService.WakeLock wakeLock = mock(PowerManagerService.WakeLock.class);
+        String wakelockTag = "testTag";
+        wakeLock.mFlags = PowerManager.PARTIAL_WAKE_LOCK;
+        // Worksource with size 1
+        WorkSource workSource = new WorkSource(2001);
+        wakeLock.mTag = wakelockTag;
+        wakeLock.mWorkSource = workSource;
+
+        when(mWakelockMapper.getWakeLocksForUid(2001)).thenReturn(Set.of(wakeLock));
+        when(mBatteryStatsInternal.getOwnerUid(2001)).thenReturn(2001);
+
+        // Simulate UID gone
+        uidObserver.onUidGone(2001, true);
+        mTestLooper.dispatchAll();
+
+        verify(listener).onWakeLockStateChanged(wakeLock);
+        verify(wakeLock).setAttributedUidCached(true);
     }
 
     @Test
@@ -1081,9 +1118,9 @@ public class NotifierTest {
     @Test
     public void testScreenTimeoutListener_reportsScreenTimeoutPolicyChange() throws Exception {
         createNotifier();
-        final IScreenTimeoutPolicyListener listener = Mockito.mock(
+        final IScreenTimeoutPolicyListener listener = mock(
                 IScreenTimeoutPolicyListener.class);
-        final IBinder listenerBinder = Mockito.mock(IBinder.class);
+        final IBinder listenerBinder = mock(IBinder.class);
         when(listener.asBinder()).thenReturn(listenerBinder);
         mNotifier.addScreenTimeoutPolicyListener(Display.DEFAULT_DISPLAY,
                 SCREEN_TIMEOUT_ACTIVE, listener);
@@ -1103,9 +1140,9 @@ public class NotifierTest {
     public void testScreenTimeoutListener_addAndRemoveListener_doesNotInvokeListener()
             throws Exception {
         createNotifier();
-        final IScreenTimeoutPolicyListener listener = Mockito.mock(
+        final IScreenTimeoutPolicyListener listener = mock(
                 IScreenTimeoutPolicyListener.class);
-        final IBinder listenerBinder = Mockito.mock(IBinder.class);
+        final IBinder listenerBinder = mock(IBinder.class);
         when(listener.asBinder()).thenReturn(listenerBinder);
         mNotifier.addScreenTimeoutPolicyListener(Display.DEFAULT_DISPLAY,
                 SCREEN_TIMEOUT_ACTIVE, listener);
@@ -1125,9 +1162,9 @@ public class NotifierTest {
     public void testScreenTimeoutListener_addAndClearListeners_doesNotInvokeListener()
             throws Exception {
         createNotifier();
-        final IScreenTimeoutPolicyListener listener = Mockito.mock(
+        final IScreenTimeoutPolicyListener listener = mock(
                 IScreenTimeoutPolicyListener.class);
-        final IBinder listenerBinder = Mockito.mock(IBinder.class);
+        final IBinder listenerBinder = mock(IBinder.class);
         when(listener.asBinder()).thenReturn(listenerBinder);
         mNotifier.addScreenTimeoutPolicyListener(Display.DEFAULT_DISPLAY,
                 SCREEN_TIMEOUT_ACTIVE, listener);
@@ -1148,9 +1185,9 @@ public class NotifierTest {
             throws Exception {
         createNotifier();
 
-        final IScreenTimeoutPolicyListener listener = Mockito.mock(
+        final IScreenTimeoutPolicyListener listener = mock(
                 IScreenTimeoutPolicyListener.class);
-        final IBinder listenerBinder = Mockito.mock(IBinder.class);
+        final IBinder listenerBinder = mock(IBinder.class);
         when(listener.asBinder()).thenReturn(listenerBinder);
         mNotifier.addScreenTimeoutPolicyListener(Display.DEFAULT_DISPLAY,
                 SCREEN_TIMEOUT_ACTIVE, listener);
@@ -1170,9 +1207,9 @@ public class NotifierTest {
             throws Exception {
         createNotifier();
 
-        final IScreenTimeoutPolicyListener listener = Mockito.mock(
+        final IScreenTimeoutPolicyListener listener = mock(
                 IScreenTimeoutPolicyListener.class);
-        final IBinder listenerBinder = Mockito.mock(IBinder.class);
+        final IBinder listenerBinder = mock(IBinder.class);
         when(listener.asBinder()).thenReturn(listenerBinder);
 
         mNotifier.addScreenTimeoutPolicyListener(Display.DEFAULT_DISPLAY,
@@ -1199,9 +1236,9 @@ public class NotifierTest {
             throws Exception {
         createNotifier();
 
-        final IScreenTimeoutPolicyListener listener = Mockito.mock(
+        final IScreenTimeoutPolicyListener listener = mock(
                 IScreenTimeoutPolicyListener.class);
-        final IBinder listenerBinder = Mockito.mock(IBinder.class);
+        final IBinder listenerBinder = mock(IBinder.class);
         when(listener.asBinder()).thenReturn(listenerBinder);
         doThrow(RuntimeException.class).when(listener).onScreenTimeoutPolicyChanged(anyInt());
         mNotifier.addScreenTimeoutPolicyListener(Display.DEFAULT_DISPLAY_GROUP,
@@ -1225,9 +1262,9 @@ public class NotifierTest {
         final int otherDisplayGroupId = 123_00;
         when(mDisplayManagerInternal.getGroupIdForDisplay(otherDisplayId)).thenReturn(
                 otherDisplayGroupId);
-        final IScreenTimeoutPolicyListener listener = Mockito.mock(
+        final IScreenTimeoutPolicyListener listener = mock(
                 IScreenTimeoutPolicyListener.class);
-        final IBinder listenerBinder = Mockito.mock(IBinder.class);
+        final IBinder listenerBinder = mock(IBinder.class);
         when(listener.asBinder()).thenReturn(listenerBinder);
         mNotifier.addScreenTimeoutPolicyListener(otherDisplayId,
                 SCREEN_TIMEOUT_ACTIVE, listener);
@@ -1245,9 +1282,9 @@ public class NotifierTest {
     public void testScreenTimeoutListener_timeoutPolicyTimeout_reportsTimeoutOnSubscription()
             throws Exception {
         createNotifier();
-        final IScreenTimeoutPolicyListener listener = Mockito.mock(
+        final IScreenTimeoutPolicyListener listener = mock(
                 IScreenTimeoutPolicyListener.class);
-        final IBinder listenerBinder = Mockito.mock(IBinder.class);
+        final IBinder listenerBinder = mock(IBinder.class);
         when(listener.asBinder()).thenReturn(listenerBinder);
 
         mNotifier.addScreenTimeoutPolicyListener(Display.DEFAULT_DISPLAY,
@@ -1261,9 +1298,9 @@ public class NotifierTest {
     public void testScreenTimeoutListener_policyHeld_reportsHeldOnSubscription()
             throws Exception {
         createNotifier();
-        final IScreenTimeoutPolicyListener listener = Mockito.mock(
+        final IScreenTimeoutPolicyListener listener = mock(
                 IScreenTimeoutPolicyListener.class);
-        final IBinder listenerBinder = Mockito.mock(IBinder.class);
+        final IBinder listenerBinder = mock(IBinder.class);
         when(listener.asBinder()).thenReturn(listenerBinder);
 
         mNotifier.addScreenTimeoutPolicyListener(Display.DEFAULT_DISPLAY,
@@ -1271,6 +1308,53 @@ public class NotifierTest {
         mTestLooper.dispatchAll();
 
         verify(listener).onScreenTimeoutPolicyChanged(SCREEN_TIMEOUT_KEEP_DISPLAY_ON);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_REMOVE_CACHED_UIDS_FROM_WAKELOCK)
+    public void testOnUidCachedChanged_invokesListener() throws RemoteException {
+        createNotifier();
+
+        Notifier.WakeLockChangedListener listener = mock(Notifier.WakeLockChangedListener.class);
+        mNotifier.registerWakeLockChangedListener(listener);
+
+        ArgumentCaptor<IUidObserver> uidObserverCaptor =
+                ArgumentCaptor.forClass(IUidObserver.class);
+        verify(mActivityManager).registerUidObserver(uidObserverCaptor.capture(),
+                eq(ActivityManager.UID_OBSERVER_CACHED),
+                eq(ActivityManager.PROCESS_STATE_UNKNOWN),
+                eq(null));
+        IUidObserver uidObserver = uidObserverCaptor.getValue();
+        assertNotNull(uidObserver);
+
+        PowerManagerService.WakeLock wakeLock = mock(PowerManagerService.WakeLock.class);
+        String wakelockTag = "testTag";
+        wakeLock.mFlags = PowerManager.PARTIAL_WAKE_LOCK;
+        // Worksource with size 1
+        WorkSource workSource = new WorkSource(2001);
+        wakeLock.mTag = wakelockTag;
+        wakeLock.mWorkSource = workSource;
+
+        when(mWakelockMapper.getWakeLocksForUid(2001)).thenReturn(Set.of(wakeLock));
+        when(mWakelockMapper.isUidCached(2001)).thenReturn(true);
+        when(mBatteryStatsInternal.getOwnerUid(2001)).thenReturn(2001);
+
+        // Simulate cached state change to true
+        uidObserver.onUidCachedChanged(2001, true);
+        mTestLooper.dispatchAll();
+
+        verify(listener).onWakeLockStateChanged(wakeLock);
+        verify(wakeLock).setAttributedUidCached(true);
+
+        clearInvocations(listener, wakeLock);
+
+        // Simulate cached state change to false
+        when(mWakelockMapper.isUidCached(2001)).thenReturn(false);
+        uidObserver.onUidCachedChanged(2001, false);
+        mTestLooper.dispatchAll();
+
+        verify(listener).onWakeLockStateChanged(wakeLock);
+        verify(wakeLock).setAttributedUidCached(false);
     }
 
     @Test
@@ -1287,7 +1371,7 @@ public class NotifierTest {
         IUidObserver uidObserver = uidObserverCaptor.getValue();
         assertNotNull(uidObserver);
 
-        PowerManagerService.WakeLock wakeLock = Mockito.mock(PowerManagerService.WakeLock.class);
+        PowerManagerService.WakeLock wakeLock = mock(PowerManagerService.WakeLock.class);
         String wakelockTag = "testTag";
         wakeLock.mFlags = PowerManager.PARTIAL_WAKE_LOCK;
         WorkSource workSource = new WorkSource(1001);
@@ -1336,7 +1420,7 @@ public class NotifierTest {
         IUidObserver uidObserver = uidObserverCaptor.getValue();
         assertNotNull(uidObserver);
 
-        PowerManagerService.WakeLock wakeLock = Mockito.mock(PowerManagerService.WakeLock.class);
+        PowerManagerService.WakeLock wakeLock = mock(PowerManagerService.WakeLock.class);
         String wakelockTag = "testTag";
 
         // Given wakelock.mOwnerUid is a final variable, we can't really override this value to any

@@ -228,6 +228,8 @@ public class Notifier {
     private final FrameworkStatsLogger mFrameworkStatsLogger;
     private final WakelockMapper mWakelockMapper;
 
+    private WakeLockChangedListener mWakeLockChangedListener;
+
     private final IUidObserver mUidObserver = new IUidObserver.Stub() {
         @Override
         public void onUidStateChanged(int uid, int procState, long procStateSeq, int capability) {
@@ -240,6 +242,32 @@ public class Notifier {
             }
 
             mWakelockMapper.setUidCached(uid, false);
+            synchronized (mLock) {
+                Set<PowerManagerService.WakeLock> wakeLocks = mWakelockMapper.getWakeLocksForUid(
+                        uid);
+                if (wakeLocks == null) {
+                    return;
+                }
+                for (PowerManagerService.WakeLock wakeLock : wakeLocks) {
+
+                    // We only care about changing the attribution if an associated UID is cached
+                    // in the worksource. If the owner is cached, the complete wakelock needs to
+                    // be disabled which is done via PowerManagerService
+                    if (uid == wakeLock.mOwnerUid) {
+                        continue;
+                    }
+
+                    if (wakeLock.mWorkSource.size() <= 1
+                            || (wakeLock.mWorkSource.getWorkChains() != null
+                            && wakeLock.mWorkSource.getWorkChains().size() <= 1)) {
+                        wakeLock.setAttributedUidCached(true);
+                        if (mWakeLockChangedListener != null) {
+                            final WakeLockChangedListener listener = mWakeLockChangedListener;
+                            mHandler.post(() -> listener.onWakeLockStateChanged(wakeLock));
+                        }
+                    }
+                }
+            }
         }
 
         @Override
@@ -269,6 +297,17 @@ public class Notifier {
                     // in the worksource. If the owner is cached, the complete wakelock needs to
                     // be disabled which is done via PowerManagerService
                     if (uid == wakeLock.mOwnerUid) {
+                        continue;
+                    }
+
+                    if (wakeLock.mWorkSource.size() <= 1
+                            || (wakeLock.mWorkSource.getWorkChains() != null
+                            && wakeLock.mWorkSource.getWorkChains().size() <= 1)) {
+                        wakeLock.setAttributedUidCached(cached);
+                        if (mWakeLockChangedListener != null) {
+                            final WakeLockChangedListener listener = mWakeLockChangedListener;
+                            mHandler.post(() -> listener.onWakeLockStateChanged(wakeLock));
+                        }
                         continue;
                     }
                     onWakeLockChanging(wakeLock.mFlags, wakeLock.mTag, wakeLock.mPackageName,
@@ -364,6 +403,15 @@ public class Notifier {
                 // Ignored
             }
         }
+    }
+
+    /**
+     * Registers the callback to be executed when the uid attributing a wakelock changes its proc
+     * state
+     * @param listener
+     */
+    public void registerWakeLockChangedListener(WakeLockChangedListener listener) {
+        mWakeLockChangedListener = listener;
     }
 
     /**
@@ -1685,5 +1733,9 @@ public class Notifier {
         public @Nullable IActivityManager getActivityManager() {
             return ActivityManager.getService();
         }
+    }
+
+    interface WakeLockChangedListener {
+        void onWakeLockStateChanged(PowerManagerService.WakeLock wakelock);
     }
 }

@@ -1438,6 +1438,16 @@ public final class PowerManagerService extends SystemService
                     mPolicy, mFaceDownDetector, mScreenUndimDetector,
                     BackgroundThread.getExecutor(), mFeatureFlags, mWakelockMapper);
 
+            mNotifier.registerWakeLockChangedListener(wakeLock -> {
+                mHandler.postAtTime(() -> {
+                    synchronized (mLock) {
+                        if (setWakeLockDisabledStateLocked(wakeLock)) {
+                            updatePowerStateLocked();
+                        }
+                    }
+                }, mClock.uptimeMillis());
+            });
+
             mPowerGroups.append(Display.DEFAULT_DISPLAY_GROUP,
                     new PowerGroup(WAKEFULNESS_AWAKE, mPowerGroupWakefulnessChangeListener,
                             mNotifier, mDisplayManagerInternal, mClock.uptimeMillis(),
@@ -4739,6 +4749,10 @@ public final class PowerManagerService extends SystemService
     @GuardedBy("mLock")
     private boolean setWakeLockDisabledStateLocked(WakeLock wakeLock) {
         boolean disabled = false;
+        if (wakeLock.isAttributedUidCached()) {
+            disabled = true;
+            return wakeLock.setDisabled(disabled);
+        }
         if (wakeLock.isFrozenLocked()) {
             if (DEBUG_SPEW) {
                 Slog.d(TAG, "Process frozen. Disabling the wakelock " + wakeLock.mTag);
@@ -5878,6 +5892,8 @@ public final class PowerManagerService extends SystemService
         private boolean mIsFrozen;
         public IWakeLockCallback mCallback;
 
+        private boolean mIsAttributedUidCached;
+
         public WakeLock(IBinder lock, int displayId, int flags, String tag, String packageName,
                 WorkSource workSource, String historyTag, int ownerUid, int ownerPid,
                 UidState uidState, @Nullable IWakeLockCallback callback) {
@@ -5916,6 +5932,14 @@ public final class PowerManagerService extends SystemService
 
         public void setFrozenLocked(int state) {
             mIsFrozen = (state == IBinder.FrozenStateChangeCallback.STATE_FROZEN);
+        }
+
+        public void setAttributedUidCached(boolean isCached) {
+            mIsAttributedUidCached = isCached;
+        }
+
+        public boolean isAttributedUidCached() {
+            return mIsAttributedUidCached;
         }
 
         private void linkToDeath() {
@@ -6020,6 +6044,9 @@ public final class PowerManagerService extends SystemService
 
             sb.append(" isFrozen=");
             sb.append(mIsFrozen);
+
+            sb.append(" isAttributedUidCached=");
+            sb.append(mIsAttributedUidCached);
 
             if (mOwnerPid != 0) {
                 sb.append(" pid=");
