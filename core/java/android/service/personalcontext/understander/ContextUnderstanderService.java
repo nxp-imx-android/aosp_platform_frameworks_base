@@ -146,7 +146,7 @@ public abstract class ContextUnderstanderService extends Service {
         if (mPersonalContextManager == null) {
             throw new IllegalStateException("Personal Context Manager service is not running");
         }
-        mPersonalContextManager.publishInsight(insight);
+        mPersonalContextManager.publishInsight(List.of(insight));
     }
 
     /** Override this method to receive logging events for actions taken on the insight. */
