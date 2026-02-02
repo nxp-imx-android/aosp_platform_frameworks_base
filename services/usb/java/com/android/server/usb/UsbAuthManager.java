@@ -155,6 +155,10 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
     @GuardedBy("mLock")
     private ArraySet<String> mPersistAfterLogin = new ArraySet<>();
 
+    // For devices that were used during setup, persist them after a user is logged in.
+    @GuardedBy("mLock")
+    private ArraySet<String> mPersistFromSetup = new ArraySet<>();
+
     // For devices that were deferred at the lock screen, used for notifications.
     @GuardedBy("mLock")
     private ArraySet<String> mDeferredAtLockscreen = new ArraySet<>();
@@ -952,16 +956,20 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
 
     // need to be persisted, look up their fingerprints and persist them.
     private void persistDevicesAfterLogin() {
-        String[] devicesToPersist;
+        ArraySet<String> devicesToPersist = new ArraySet<>();
         ArraySet<UsbDeviceFingerprint> fingerprintsToPersist = new ArraySet<>();
         synchronized (mLock) {
             if (mCurrentState != UsbAuthorizationSystemState.LOGGED_IN
-                    || mPersistAfterLogin.isEmpty()) {
+                    || (mPersistAfterLogin.isEmpty() && mPersistFromSetup.isEmpty())) {
                 return;
             }
 
-            devicesToPersist = mPersistAfterLogin.toArray(new String[mPersistAfterLogin.size()]);
+            devicesToPersist.addAll(mPersistAfterLogin);
             mPersistAfterLogin.clear();
+
+            // We also persist devices that may have been added during set-up here.
+            devicesToPersist.addAll(mPersistFromSetup);
+            mPersistFromSetup.clear();
         }
 
         for (String deviceAddress : devicesToPersist) {
@@ -1143,6 +1151,13 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
                     state.mHostAuthorized = false;
                 } else if (status == UsbAuthorizationStatus.DENIED_AND_DEFERRED) {
                     handleDenyDefers = true;
+                }
+
+                // All devices that were allowed during setup will be persisted once the user is set
+                // up and logged in.
+                if (status == UsbAuthorizationStatus.AUTHORIZED
+                        && mCurrentState == UsbAuthorizationSystemState.SET_UP) {
+                    mPersistFromSetup.add(deviceAddress);
                 }
 
                 // Hold authorized state for what message to send to host manager.

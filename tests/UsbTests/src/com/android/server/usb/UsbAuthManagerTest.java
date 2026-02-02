@@ -327,6 +327,46 @@ public class UsbAuthManagerTest {
     }
 
     @Test
+    public void testSetup_authorizedDevicePersistsAfterLogin() throws Exception {
+        // Put device into setup mode (but have a user ready to log in).
+        doReturn(true).when(mDeviceProvisionedListener).isDeviceInSetup();
+        mUsbAuthManager.onUpdateLoggedInState(true, TEST_USER_ID_FULL_ADMIN);
+        mUsbAuthManager.onUpdateScreenLockedState(false);
+
+        // Put all the fakes into the system
+        TestData fake0 = mTestData.get(FAKE0);
+        TestData fake1 = mTestData.get(FAKE1);
+        addConnectedDevice(fake0);
+        addConnectedDevice(fake1);
+        mUsbAuthManager.usbDeviceAdded(fake0.deviceAddress);
+        mUsbAuthManager.usbDeviceAdded(fake1.deviceAddress);
+
+        // Send an authorized and denied result.
+        mUsbAuthManager
+                .getEventsListenerForTest()
+                .onDeviceAuthorizationStatusChanged(
+                        fake0.deviceInfo, AUTHORIZED, UsbAuthorizationSystemState.SET_UP);
+        mUsbAuthManager
+                .getEventsListenerForTest()
+                .onDeviceAuthorizationStatusChanged(
+                        fake1.deviceInfo, DENIED_AND_DEFERRED, UsbAuthorizationSystemState.SET_UP);
+
+        // We should have 0 persisted so far (until we finish logging in).
+        assertEquals(0, mUsbAuthManager.getPersistedFingerprintsCopyForTesting().size());
+
+        // Now exit set-up
+        doReturn(false).when(mDeviceProvisionedListener).isDeviceInSetup();
+        mDeviceProvisionedListener.onChange(false);
+        verify(mService).setSystemState(UsbAuthorizationSystemState.LOGGED_IN);
+
+        // Now we should have only 1 (fake0 which was authorized)
+        ArraySet<UsbDeviceFingerprint> fingerprints =
+                mUsbAuthManager.getPersistedFingerprintsCopyForTesting();
+        assertEquals(1, fingerprints.size());
+        assertTrue(fingerprints.contains(fake0.fingerprint));
+    }
+
+    @Test
     public void testLoginFullUser_screenUnlocked_isLoggedIn() throws Exception {
         reset(mService);
         mUsbAuthManager.onUpdateLoggedInState(true, TEST_USER_ID_FULL_ADMIN);
