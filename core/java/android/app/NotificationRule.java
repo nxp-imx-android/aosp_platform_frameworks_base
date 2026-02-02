@@ -302,7 +302,9 @@ public final class NotificationRule implements Parcelable {
     public void writeXml(TypedXmlSerializer out, boolean forBackup, int userId,
             @Nullable Context context) throws IOException {
         out.startTag(null, RULE_TAG);
-        out.attribute(null, USER_ATTR, String.valueOf(userId));
+        if (!forBackup) {
+            out.attribute(null, USER_ATTR, String.valueOf(userId));
+        }
         out.attribute(null, ID_ATTR, String.valueOf(getId()));
         out.attribute(null, ENABLED_ATTR, String.valueOf(isEnabled()));
         out.attribute(null, NAME_ATTR, getName());
