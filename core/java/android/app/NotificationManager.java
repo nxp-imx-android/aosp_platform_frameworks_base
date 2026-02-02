@@ -22,6 +22,7 @@ import static android.app.NotificationChannel.DEFAULT_CHANNEL_ID;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.service.notification.Flags.splitSoundVibrationForNotificationBreakthrough;
 
+import android.annotation.BroadcastBehavior;
 import android.annotation.CallbackExecutor;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
@@ -142,6 +143,34 @@ import java.util.concurrent.Executor;
 public class NotificationManager {
     private static String TAG = "NotificationManager";
     private static boolean localLOGV = false;
+
+    /**
+     * Intent that is broadcast when the set of Adjustment keys the
+     * {@link android.service.notification.NotificationAssistantService} supports changes
+     *
+     * This broadcast is only sent to SystemUI
+     *
+     * Input: nothing
+     * Output: nothing
+     * @hide
+     */
+    @SdkConstant(SdkConstant.SdkConstantType.BROADCAST_INTENT_ACTION)
+    public static final String SUPPORTED_NAS_ADJUSTMENT_KEYS_CHANGED =
+            "android.app.action.SUPPORTED_NAS_ADJUSTMENT_KEYS_CHANGED";
+
+    /**
+     * Intent that is broadcast when the set of Adjustment keys the
+     * {@link android.service.notification.NotificationAssistantService} the user allows changes
+     *
+     * This broadcast is only sent to SystemUI
+     *
+     * Input: nothing
+     * Output: {@link Intent#EXTRA_USER_ID}
+     * @hide
+     */
+    @SdkConstant(SdkConstant.SdkConstantType.BROADCAST_INTENT_ACTION)
+    public static final String ALLOWED_NAS_ADJUSTMENT_KEYS_CHANGED =
+            "android.app.action.ALLOWED_NAS_ADJUSTMENT_KEYS_CHANGED";
 
     /**
      * Intent that is broadcast when a dynamic bundle has been modified.

@@ -17,6 +17,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -27,6 +28,7 @@ import android.content.pm.PackageManagerInternal;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.UserHandle;
 import android.testing.TestableContext;
 
@@ -38,9 +40,12 @@ import com.android.server.uri.UriGrantsManagerInternal;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
+import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+
+import java.util.HashSet;
 
 public class UiServiceTestCase {
     @Mock protected PackageManagerInternal mPmi;
@@ -117,5 +122,58 @@ public class UiServiceTestCase {
     @After
     public final void cleanUpMockito() {
         Mockito.framework().clearInlineMocks();
+    }
+
+    protected static Intent eqIntent(Intent wanted) {
+        return argThat(
+                new ArgumentMatcher<Intent>() {
+                    @Override
+                    public boolean matches(Intent argument) {
+                        return wanted.filterEquals(argument)
+                                && wanted.getFlags() == argument.getFlags()
+                                && equalBundles(wanted.getExtras(), argument.getExtras());
+                    }
+
+                    @Override
+                    public String toString() {
+                        return wanted.toString();
+                    }
+
+                    private boolean equalBundles(Bundle one, Bundle two) {
+                        if (one == null && two == null) {
+                            return true;
+                        }
+                        if ((one == null) != (two == null)) {
+                            return false;
+                        }
+                        if (one.size() != two.size()) {
+                            return false;
+                        }
+
+                        HashSet<String> setOne = new HashSet<>(one.keySet());
+                        setOne.addAll(two.keySet());
+
+                        for (String key : setOne) {
+                            if (!one.containsKey(key) || !two.containsKey(key)) {
+                                return false;
+                            }
+
+                            Object valueOne = one.get(key);
+                            Object valueTwo = two.get(key);
+                            if (valueOne instanceof Bundle
+                                    && valueTwo instanceof Bundle
+                                    && !equalBundles((Bundle) valueOne, (Bundle) valueTwo)) {
+                                return false;
+                            } else if (valueOne == null) {
+                                if (valueTwo != null) {
+                                    return false;
+                                }
+                            } else if (!valueOne.equals(valueTwo)) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    }
+                });
     }
 }

@@ -743,59 +743,6 @@ public class NotificationManagerServiceZenTest extends UiServiceTestCase {
         );
     }
 
-    private static Intent eqIntent(Intent wanted) {
-        return argThat(
-                new ArgumentMatcher<Intent>() {
-                    @Override
-                    public boolean matches(Intent argument) {
-                        return wanted.filterEquals(argument)
-                                && wanted.getFlags() == argument.getFlags()
-                                && equalBundles(wanted.getExtras(), argument.getExtras());
-                    }
-
-                    @Override
-                    public String toString() {
-                        return wanted.toString();
-                    }
-
-                    private boolean equalBundles(Bundle one, Bundle two) {
-                        if (one == null && two == null) {
-                            return true;
-                        }
-                        if ((one == null) != (two == null)) {
-                            return false;
-                        }
-                        if (one.size() != two.size()) {
-                            return false;
-                        }
-
-                        HashSet<String> setOne = new HashSet<>(one.keySet());
-                        setOne.addAll(two.keySet());
-
-                        for (String key : setOne) {
-                            if (!one.containsKey(key) || !two.containsKey(key)) {
-                                return false;
-                            }
-
-                            Object valueOne = one.get(key);
-                            Object valueTwo = two.get(key);
-                            if (valueOne instanceof Bundle
-                                    && valueTwo instanceof Bundle
-                                    && !equalBundles((Bundle) valueOne, (Bundle) valueTwo)) {
-                                return false;
-                            } else if (valueOne == null) {
-                                if (valueTwo != null) {
-                                    return false;
-                                }
-                            } else if (!valueOne.equals(valueTwo)) {
-                                return false;
-                            }
-                        }
-                        return true;
-                    }
-                });
-    }
-
     /** Prepares for a zen-related test that uses a mocked {@link ZenModeHelper}. */
     private ZenModeHelper setUpMockZenTest() {
         ZenModeHelper zenModeHelper = mock(ZenModeHelper.class);
