@@ -36,6 +36,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.app.Activity;
+import android.app.ActivityOptions;
 import android.app.AppLockInternal;
 import android.content.ComponentName;
 import android.content.Context;
@@ -49,6 +50,7 @@ import android.graphics.drawable.Drawable;
 import android.hardware.biometrics.BiometricManager;
 import android.hardware.biometrics.BiometricPrompt;
 import android.os.BadParcelableException;
+import android.os.Bundle;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
@@ -483,6 +485,30 @@ public class LockedAppActivityTest {
             verifyPackageNotUnlockedAndDoesNotSendTargetIntent();
             scenario.onActivity(activity -> assertThat(activity.isFinishing()).isFalse());
         }
+    }
+
+    @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
+    @Test
+    public void injector_sendTargetIntent_setsCorrectActivityOptions() throws Exception {
+        final LockedAppActivity.Injector injector = new LockedAppActivity.Injector();
+        final Activity mockActivity = mock(Activity.class);
+        final IntentSender mockIntentSender = mock(IntentSender.class);
+
+        injector.sendTargetIntent(mockActivity, mockIntentSender);
+
+        ArgumentCaptor<Bundle> bundleCaptor = ArgumentCaptor.forClass(Bundle.class);
+        verify(mockActivity).startIntentSenderForResult(
+                eq(mockIntentSender),
+                /* requestCode= */ eq(-1),
+                /* fillInIntent= */ eq(null),
+                /* flagsMask= */ eq(0),
+                /* flagsValues= */ eq(0),
+                /* extraFlags= */ eq(0),
+                bundleCaptor.capture());
+
+        final ActivityOptions options = ActivityOptions.fromBundle(bundleCaptor.getValue());
+        assertThat(options.getPendingIntentBackgroundActivityStartMode())
+                .isEqualTo(ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_IF_VISIBLE);
     }
 
     @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})

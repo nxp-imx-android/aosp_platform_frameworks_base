@@ -19,6 +19,7 @@ package com.android.internal.app;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.Activity;
+import android.app.ActivityOptions;
 import android.app.AppLockInternal;
 import android.app.AppLockInternal.PackageLockedStateListener;
 import android.content.Intent;
@@ -610,7 +611,14 @@ public final class LockedAppActivity extends Activity {
         public void sendTargetIntent(Activity activity, @NonNull IntentSender target) {
             Objects.requireNonNull(target);
             try {
-                target.sendIntent(activity, Activity.RESULT_OK, null, null, null);
+                // Use MODE_BACKGROUND_ACTIVITY_START_ALLOW_IF_VISIBLE to allow PendingIntents to
+                // be launched even if the creator app is in the background.
+                final ActivityOptions activityOptions = ActivityOptions.makeBasic()
+                        .setPendingIntentBackgroundActivityStartMode(
+                                ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_IF_VISIBLE);
+                activity.startIntentSenderForResult(target, /* requestCode= */ -1,
+                        /* fillIntIntent= */ null, /* flagsMask= */ 0, /* flagsValues= */ 0,
+                        /* extraFlags= */ 0, activityOptions.toBundle());
             } catch (IntentSender.SendIntentException e) {
                 Slog.w(TAG, "Unable to send intent", e);
             }
