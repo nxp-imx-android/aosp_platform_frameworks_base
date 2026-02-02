@@ -30,26 +30,20 @@ import java.util.Objects;
 /**
  * An identifier of an {@link android.app.Activity} an app function can be associated with.
  *
- * <p>The same app can register multiple functions using {@link
- * AppFunctionManager#registerAppFunction} with the same {@link AppFunctionName} from different
- * {@link android.app.Activity} instances, if the function's {@link AppFunctionMetadata#getScope} is
- * {@link AppFunctionMetadata#SCOPE_ACTIVITY}.
- *
- * <p>Doing so means {@link AppFunctionManager#getAppFunctionState} will return an {@link
- * AppFunctionState} with {@link AppFunctionState#getActivityIds} populated with multiple non-equal
- * instances of {@link AppFunctionActivityId}.
+ * <p>This is only relevant for app functions with {@link AppFunctionMetadata#SCOPE_ACTIVITY}.
  *
  * <p>Two instances of {@link AppFunctionActivityId} are always equal if the {@link
  * android.app.Activity} instance they are referencing are the same, even across multiple app
  * functions.
+ *
+ * @see AppFunctionMetadata#SCOPE_ACTIVITY
  */
-// TODO: b/479450424 - Verify documentation references.
 @FlaggedApi(FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
 public final class AppFunctionActivityId implements Parcelable {
-    private final IBinder mAssistToken;
+    @NonNull private final IBinder mAssistToken;
 
     /** @hide */
-    public AppFunctionActivityId(IBinder assistToken) {
+    public AppFunctionActivityId(@NonNull IBinder assistToken) {
         mAssistToken = assistToken;
     }
 
