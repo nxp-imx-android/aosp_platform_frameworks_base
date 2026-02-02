@@ -282,8 +282,7 @@ public class SystemDataTransportTest extends InstrumentationTestCase {
     private int createAssociation() {
         List<AssociationInfo> before = mCdm.getMyAssociations();
         getInstrumentation().getUiAutomation().executeShellCommand("cmd companiondevice associate "
-                + mContext.getUserId() + " " + mContext.getPackageName()
-                + " --mac-address AA:BB:CC:DD:EE:FF");
+                + mContext.getUserId() + " " + mContext.getPackageName() + " AA:BB:CC:DD:EE:FF");
         List<AssociationInfo> infos;
         for (int i = 0; i < 100; i++) {
             infos = mCdm.getMyAssociations();
