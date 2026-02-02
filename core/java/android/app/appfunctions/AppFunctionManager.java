@@ -685,6 +685,15 @@ public final class AppFunctionManager {
                     public void onPackagesChanged(List<String> packageNames) {
                         executor.execute(() -> appFunctionObserver.onPackagesChanged(packageNames));
                     }
+
+                    @Override
+                    public void onAppFunctionStatesChanged(
+                            List<AppFunctionName> changedFunctionNames) {
+                        executor.execute(
+                                () ->
+                                        appFunctionObserver.onAppFunctionStatesChanged(
+                                                changedFunctionNames));
+                    }
                 };
 
         final AppFunctionObservation observation =
