@@ -18,8 +18,10 @@ package com.android.server.personalcontext.component;
 
 import android.annotation.Nullable;
 import android.content.ComponentName;
+import android.os.Bundle;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWithSignature;
+import android.service.personalcontext.insight.ContextInsight;
 import android.service.personalcontext.insight.interaction.InsightEvent;
 
 import androidx.annotation.NonNull;
@@ -54,4 +56,7 @@ public interface Refiner extends Component {
 
     /** Reports an event for logging. */
     void handleEvent(@NonNull String packageName, @NonNull InsightEvent event);
+
+    /** Reports user feedback. */
+    void handleFeedback(@NonNull ContextInsight insight, @Nullable Bundle feedback);
 }

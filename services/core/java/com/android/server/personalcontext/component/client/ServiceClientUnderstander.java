@@ -18,6 +18,11 @@ package com.android.server.personalcontext.component.client;
 
 import android.content.Context;
 import android.content.pm.ServiceInfo;
+import android.os.Bundle;
+import android.os.RemoteException;
+import android.service.personalcontext.insight.ContextInsight;
+import android.service.personalcontext.insight.ContextInsightWrapper;
+import android.util.Slog;
 
 import java.util.UUID;
 
@@ -29,5 +34,17 @@ import java.util.UUID;
 public class ServiceClientUnderstander extends ServiceClientRefiner {
     public ServiceClientUnderstander(Context context, UUID componentId, ServiceInfo serviceInfo) {
         super(context, componentId, serviceInfo);
+    }
+
+
+    @Override
+    public void handleFeedback(ContextInsight insight, Bundle feedback) {
+        runWithBinder(binder -> {
+            try {
+                binder.handleFeedback(new ContextInsightWrapper(insight), feedback);
+            } catch (RemoteException e) {
+                Slog.w(TAG, this + " handleFeedback() failed", e);
+            }
+        });
     }
 }
