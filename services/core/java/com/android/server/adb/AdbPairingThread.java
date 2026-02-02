@@ -27,9 +27,18 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.adb.AdbDebuggingManager.AdbDebuggingHandler;
 
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
 
 class AdbPairingThread extends Thread implements AdbdServicesManager.RegistrationCallback {
     private static final String TAG = AdbPairingThread.class.getSimpleName();
+    private static final long NULL_HANDLE = 0;
+    // Each AdbPairingThread instance will have a unique id associated with it. The id,
+    // `mSessionId` is sent in the messages so AdbDebuggingManager can determine if the messages
+    // are from a stale pairing session. This AtomicLong tracks the session ID of the most recently
+    // created AdbPairingThread.
+    private static final AtomicLong LATEST_SESSION_ID = new AtomicLong(-1);
+    // The session id of this AdbPairingThread instance.
+    private final long mSessionId;
     private final Context mContext;
     private final String mPairingCode;
     private final String mGuid;
@@ -44,6 +53,8 @@ class AdbPairingThread extends Thread implements AdbdServicesManager.Registratio
     @VisibleForTesting static final String SERVICE_PROTOCOL = "adb-tls-pairing";
     private final String mServiceType = String.format("_%s._tcp.", SERVICE_PROTOCOL);
     private final AdbWifiPairingMethod mAdbWifiPairingMethod;
+    // The native handle returned from native_pairing_start.
+    private long mPairingServer;
 
     private final Handler mHandler;
 
@@ -54,6 +65,7 @@ class AdbPairingThread extends Thread implements AdbdServicesManager.Registratio
             AdbWifiPairingMethod adbWifiPairingMethod,
             Handler handler) {
         super(TAG);
+        mPairingServer = NULL_HANDLE;
         mPairingCode = pairingCode;
         mGuid = SystemProperties.get(AdbDebuggingManager.WIFI_PERSISTENT_GUID);
         mServiceName = serviceName;
@@ -63,12 +75,18 @@ class AdbPairingThread extends Thread implements AdbdServicesManager.Registratio
         mContext = context;
         mAdbWifiPairingMethod = adbWifiPairingMethod;
         mHandler = handler;
+        mSessionId = LATEST_SESSION_ID.incrementAndGet();
     }
 
     @Override
     public void run() {
+        if (mPairingServer == NULL_HANDLE) {
+            Slog.e(TAG, "Cannot run AdbPairingThread. Pairing server failed to start.");
+            return;
+        }
+
         AdbdServicesManager servicesManager = new AdbdServicesManager(mContext, "pair");
-        int port = native_pairing_get_port();
+        int port = native_pairing_get_port(mPairingServer);
         if (port <= 0) {
             Slog.e(TAG, "Pairing server has invalid port");
             return;
@@ -77,11 +95,14 @@ class AdbPairingThread extends Thread implements AdbdServicesManager.Registratio
         servicesManager.registerService(mServiceName, mServiceType, port, this);
 
         // Send pairing port to UI
-        Message msg = mHandler.obtainMessage(AdbDebuggingHandler.MSG_RESPONSE_PAIRING_PORT);
-        msg.obj = port;
+        Message msg =
+                Message.obtain(
+                        mHandler,
+                        AdbDebuggingHandler.MSG_RESPONSE_PAIRING_PORT,
+                        new AdbWifiPairingPort(mSessionId, port));
         mHandler.sendMessage(msg);
 
-        String publicKey = native_pairing_wait();
+        String publicKey = native_pairing_wait(mPairingServer);
         if (publicKey != null) {
             Slog.i(TAG, "Pairing succeeded key=" + publicKey);
         } else {
@@ -95,8 +116,13 @@ class AdbPairingThread extends Thread implements AdbdServicesManager.Registratio
                         mHandler,
                         AdbDebuggingHandler.MSG_RESPONSE_PAIRING_RESULT,
                         new AdbWifiPairingResult(
-                                Optional.ofNullable(publicKey), mAdbWifiPairingMethod));
+                                mSessionId, Optional.ofNullable(publicKey), mAdbWifiPairingMethod));
         mHandler.sendMessage(message);
+
+        synchronized (this) {
+            native_pairing_destroy(mPairingServer);
+            mPairingServer = NULL_HANDLE;
+        }
     }
 
     @Override
@@ -113,7 +139,8 @@ class AdbPairingThread extends Thread implements AdbdServicesManager.Registratio
             return;
         }
 
-        if (native_pairing_start(mGuid, mPairingCode) <= 0) {
+        mPairingServer = native_pairing_start(mGuid, mPairingCode);
+        if (mPairingServer == NULL_HANDLE) {
             Slog.e(TAG, "Unable to start pairing server");
             return;
         }
@@ -122,16 +149,33 @@ class AdbPairingThread extends Thread implements AdbdServicesManager.Registratio
     }
 
     public void cancelPairing() {
-        native_pairing_cancel();
+        synchronized (this) {
+            if (mPairingServer != NULL_HANDLE) {
+                native_pairing_cancel(mPairingServer);
+            }
+        }
     }
 
-    private native int native_pairing_start(String guid, String password);
+    /**
+     * Checks if the given message came from the current AdbPairingThread instance.
+     *
+     * @param msg The message to check.
+     * @return {@code true} if the message came from the current session id, {@code false}
+     *     otherwise.
+     */
+    public static boolean isCurrentSession(AdbPairingMessage msg) {
+        return LATEST_SESSION_ID.get() == msg.sessionId();
+    }
 
-    private native void native_pairing_cancel();
+    private native long native_pairing_start(String guid, String password);
 
-    private native String native_pairing_wait();
+    private native void native_pairing_cancel(long handle);
 
-    private native int native_pairing_get_port();
+    private native String native_pairing_wait(long handle);
+
+    private native int native_pairing_get_port(long handle);
+
+    private native void native_pairing_destroy(long handle);
 
     @Override
     public void onRegistrationFailed(NsdServiceInfo serviceInfo, int errorCode) {
@@ -143,18 +187,34 @@ class AdbPairingThread extends Thread implements AdbdServicesManager.Registratio
         // nothing to do, pairing is in progress.
     }
 
+    /** Base class for messages sent from AdbPairingThread. */
+    public interface AdbPairingMessage {
+        /** The session id of the AdbPairingThread that sent this message. */
+        long sessionId();
+    }
+
     enum AdbWifiPairingMethod {
         QR_CODE,
         PAIRING_CODE
     }
 
     /**
+     * Represents the pairing port the server is listening on.
+     *
+     * @param sessionId The session id of the AdbPairingThread.
+     * @param port The port the server is listening on.
+     */
+    record AdbWifiPairingPort(long sessionId, int port) implements AdbPairingMessage {}
+
+    /**
      * Represents the result of a pairing operation.
      *
+     * @param sessionId The session id of the AdbPairingThread.
      * @param publicKey The key of the device that was paired. If not present, then the pairing
      *     failed.
      * @param adbWifiPairingMethod The pairing method used.
      */
     record AdbWifiPairingResult(
-            Optional<String> publicKey, AdbWifiPairingMethod adbWifiPairingMethod) {}
+            long sessionId, Optional<String> publicKey, AdbWifiPairingMethod adbWifiPairingMethod)
+            implements AdbPairingMessage {}
 }

@@ -22,6 +22,7 @@ import static com.android.internal.util.dump.DumpUtils.writeStringIfNotNull;
 import static com.android.server.adb.AdbMetricsLogger.logAdbConnectionChanged;
 import static com.android.server.adb.AdbMetricsLogger.logAdbWifiPairingResult;
 import static com.android.server.adb.AdbPairingThread.AdbWifiPairingMethod;
+import static com.android.server.adb.AdbPairingThread.AdbWifiPairingPort;
 import static com.android.server.adb.AdbPairingThread.AdbWifiPairingResult;
 import static com.android.server.adb.AdbService.ADBD;
 
@@ -741,6 +742,18 @@ public class AdbDebuggingManager {
             }
         }
 
+        // Cancels the pairing in progress, if any, and starts a new pairing session.
+        private void startPairingThread(
+                String pairingCode, String serviceName, AdbWifiPairingMethod adbWifiPairingMethod) {
+            if (mAdbPairingThread != null) {
+                mAdbPairingThread.cancelPairing();
+            }
+            mAdbPairingThread =
+                    new AdbPairingThread(
+                            pairingCode, serviceName, mContext, adbWifiPairingMethod, this);
+            mAdbPairingThread.start();
+        }
+
         // AdbService/AdbDebuggingManager are always created but we only start the connection
         // with adbd thread when it is actually needed.
         private void ensureAdbDebuggingThreadAlive() {
@@ -1057,48 +1070,35 @@ public class AdbDebuggingManager {
                 }
                 case MSG_RESPONSE_PAIRING_RESULT -> {
                     AdbWifiPairingResult adbWifiPairingResult = (AdbWifiPairingResult) msg.obj;
-                    onPairingResult(adbWifiPairingResult);
-                    // Send the updated paired devices list to the UI.
-                    sendPairedDevicesToUI(getPairedDevicesForKeys(mAdbKeyStore.getKeys()));
+                    if (AdbPairingThread.isCurrentSession(adbWifiPairingResult)) {
+                        onPairingResult(adbWifiPairingResult);
+                        // Send the updated paired devices list to the UI.
+                        sendPairedDevicesToUI(getPairedDevicesForKeys(mAdbKeyStore.getKeys()));
+                        // AdbPairingThread is finished after receiving MSG_RESPONSE_PAIRING_RESULT.
+                        mAdbPairingThread = null;
+                    }
                 }
                 case MSG_RESPONSE_PAIRING_PORT -> {
-                    int port = (int) msg.obj;
-                    sendPairingPortToUI(port);
+                    AdbWifiPairingPort adbWifiPairingPort = (AdbWifiPairingPort) msg.obj;
+                    if (AdbPairingThread.isCurrentSession(adbWifiPairingPort)) {
+                        sendPairingPortToUI(adbWifiPairingPort);
+                    }
                 }
                 case MSG_PAIR_PAIRING_CODE -> {
                     String pairingCode = createPairingCode(PAIRING_CODE_LENGTH);
                     updateUIPairCode(pairingCode);
-                    mAdbPairingThread =
-                            new AdbPairingThread(
-                                    pairingCode,
-                                    null,
-                                    mContext,
-                                    AdbWifiPairingMethod.PAIRING_CODE,
-                                    this);
-                    mAdbPairingThread.start();
+                    startPairingThread(pairingCode, null, AdbWifiPairingMethod.PAIRING_CODE);
                     logAdbConnectionChanged(AdbProtoEnums.ADB_WIFI_PAIRING_CODE_STARTED);
                 }
                 case MSG_PAIR_QR_CODE -> {
                     QRPairingParams params = (QRPairingParams) msg.obj;
-                    mAdbPairingThread =
-                            new AdbPairingThread(
-                                    params.password(),
-                                    params.serviceName(),
-                                    mContext,
-                                    AdbWifiPairingMethod.QR_CODE,
-                                    this);
-                    mAdbPairingThread.start();
+                    startPairingThread(
+                            params.password(), params.serviceName(), AdbWifiPairingMethod.QR_CODE);
                     logAdbConnectionChanged(AdbProtoEnums.ADB_WIFI_QR_PAIRING_STARTED);
                 }
                 case MSG_PAIRING_CANCEL -> {
                     if (mAdbPairingThread != null) {
                         mAdbPairingThread.cancelPairing();
-                        try {
-                            mAdbPairingThread.join();
-                        } catch (InterruptedException e) {
-                            Slog.w(TAG, "Error while waiting for pairing thread to quit.");
-                            e.printStackTrace();
-                        }
                         mAdbPairingThread = null;
                         logAdbConnectionChanged(AdbProtoEnums.ADB_WIFI_PAIRING_CANCELLED);
                     }
@@ -1363,10 +1363,10 @@ public class AdbDebuggingManager {
             logAdbWifiPairingResult(adbWifiPairingResult);
         }
 
-        private void sendPairingPortToUI(int port) {
+        private void sendPairingPortToUI(AdbWifiPairingPort adbWifiPairingPort) {
             Intent intent = new Intent(AdbManager.WIRELESS_DEBUG_PAIRING_RESULT_ACTION);
             intent.putExtra(AdbManager.WIRELESS_STATUS_EXTRA, AdbManager.WIRELESS_STATUS_CONNECTED);
-            intent.putExtra(AdbManager.WIRELESS_DEBUG_PORT_EXTRA, port);
+            intent.putExtra(AdbManager.WIRELESS_DEBUG_PORT_EXTRA, adbWifiPairingPort.port());
             AdbDebuggingManager.sendBroadcastWithDebugPermission(mContext, intent, UserHandle.ALL);
         }
 
