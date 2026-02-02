@@ -9918,6 +9918,8 @@ public final class ViewRootImpl implements ViewParent,
                     Trace.traceEnd(Trace.TRACE_TAG_VIEW);
                 } else {
                     mSurfaceControl.copyFrom(cachedSurfaceControl, "VRI-from-cache");
+                    // TODO(b/479594947): The caller is responsible for resetting it.
+                    mPendingTransaction.setBackgroundBlurRadius(mSurfaceControl, 0);
                     cachedSurfaceControl.release();
                 }
                 relayoutResult |= RELAYOUT_RES_SURFACE_CHANGED | RELAYOUT_RES_FIRST_TIME;
