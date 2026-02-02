@@ -90,7 +90,7 @@ class ScreenCaptureCameraTransformationViewModelTest : SysuiTestCase() {
             fakeScreenRecordCameraRepository.setCameraRegion(Region(20, 20, 100, 100))
             underTest.onCameraScreenBoundsUpdated(cameraScreenBounds)
             underTest.state.transform {
-                transformBy(
+                transformByWithCentroid(
                     centroid = cameraScreenBounds.center,
                     zoomChange = 0.01f,
                     panChange = Offset(10f, 10f),
@@ -110,7 +110,7 @@ class ScreenCaptureCameraTransformationViewModelTest : SysuiTestCase() {
             screenRecordingServiceInteractor.stopRecording(StopReason.STOP_HOST_APP)
             underTest.onCameraScreenBoundsUpdated(cameraScreenBounds)
             underTest.state.transform {
-                transformBy(
+                transformByWithCentroid(
                     centroid = cameraScreenBounds.center,
                     zoomChange = 10f,
                     panChange = Offset(10f, 10f),
