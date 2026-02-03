@@ -28,7 +28,6 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.mediaprojection.appselector.data.RecentTask
-import com.android.systemui.mediaprojection.appselector.data.RecentTask.UserType
 import com.android.systemui.screencapture.common.data.repository.fakeScreenCaptureIconRepository
 import com.android.systemui.screencapture.common.data.repository.fakeScreenCaptureLabelRepository
 import com.android.systemui.screencapture.common.data.repository.fakeScreenCaptureRecentTaskRepository
@@ -36,6 +35,7 @@ import com.android.systemui.screencapture.common.data.repository.fakeScreenCaptu
 import com.android.systemui.screencapture.common.domain.interactor.screenCaptureRecentTaskInteractor
 import com.android.systemui.screencapture.common.domain.model.ScreenCaptureRecentTask
 import com.android.systemui.testKosmosNew
+import com.android.users.UserType
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -66,7 +66,7 @@ class RecentTasksViewModelImplTest : SysuiTestCase() {
                 baseIntent = null,
                 colorBackground = 0x99123456.toInt(),
                 isForegroundTask = true,
-                userType = UserType.STANDARD,
+                userType = UserType.MAIN,
                 splitBounds = null,
             )
         }

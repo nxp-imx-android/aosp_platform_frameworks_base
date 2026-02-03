@@ -15,6 +15,7 @@ import com.android.systemui.shared.recents.model.ThumbnailData
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.mockito.whenever
+import com.android.users.UserType
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -260,7 +261,7 @@ class MediaProjectionAppSelectorControllerTest : SysuiTestCase() {
             userId = userId,
             colorBackground = 0,
             isForegroundTask = isForegroundTask,
-            userType = RecentTask.UserType.STANDARD,
+            userType = UserType.MAIN,
             splitBounds = null,
         )
     }
