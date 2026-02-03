@@ -82,7 +82,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
-import android.os.PowerManager;
 import android.os.Process;
 import android.os.RemoteException;
 import android.os.UserHandle;
@@ -156,7 +155,6 @@ class MediaRouter2ServiceImpl {
     private final StatusBarManagerInternal mStatusBarManagerInternal;
     final AtomicInteger mNextRouterOrManagerId = new AtomicInteger(1);
     final ActivityManager mActivityManager;
-    final PowerManager mPowerManager;
 
     @GuardedBy("mLock")
     private final SparseArray<UserRecord> mUserRecords = new SparseArray<>();
@@ -243,7 +241,6 @@ class MediaRouter2ServiceImpl {
         mActivityManager = mContext.getSystemService(ActivityManager.class);
         mActivityManager.addOnUidImportanceListener(mOnUidImportanceListener,
                 REQUIRED_PACKAGE_IMPORTANCE_FOR_SCANNING);
-        mPowerManager = mContext.getSystemService(PowerManager.class);
         mUserManagerInternal = LocalServices.getService(UserManagerInternal.class);
         mAppOpsManager = mContext.getSystemService(AppOpsManager.class);
         mStatusBarManagerInternal = LocalServices.getService(StatusBarManagerInternal.class);
@@ -4555,10 +4552,6 @@ class MediaRouter2ServiceImpl {
         @NonNull
         private List<RouterRecord> getIndividuallyActiveRouters(
                 List<RouterRecord> allRouterRecords) {
-            if (!mPowerManager.isInteractive() && !Flags.enableScreenOffScanning()) {
-                return Collections.emptyList();
-            }
-
             return allRouterRecords.stream()
                     .filter(
                             record ->
@@ -4569,10 +4562,6 @@ class MediaRouter2ServiceImpl {
         }
 
         private boolean areManagersScanning(List<ManagerRecord> managerRecords) {
-            if (!mPowerManager.isInteractive() && !Flags.enableScreenOffScanning()) {
-                return false;
-            }
-
             return managerRecords.stream()
                     .anyMatch(
                             manager ->
