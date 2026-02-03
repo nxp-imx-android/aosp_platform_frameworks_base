@@ -24,7 +24,7 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * @hide
  */
-final class CamConstants {
+public final class CamConstants {
     /************************************** Host Control ******************************************/
     @IntDef({
             SESSION_INACTIVE,
