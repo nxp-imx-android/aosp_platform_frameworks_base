@@ -268,7 +268,7 @@
     <string name="apn_settings_not_available" msgid="1147111671403342300">"Tetapan Nama Titik Capaian tidak tersedia untuk pengguna ini"</string>
     <string name="enable_adb" msgid="8072776357237289039">"Penyahpepijatan USB"</string>
     <string name="enable_adb_summary" msgid="3711526030096574316">"Mod nyahpepijat apabila USB disambungkan"</string>
-    <string name="clear_adb_keys" msgid="3010148733140369917">"Batalkan kebenaran penyahpepijatan USB"</string>
+    <string name="clear_adb_keys" msgid="2696065439790970581">"Batalkan kebenaran penyahpepijatan USB"</string>
     <string name="enable_adb_wireless" msgid="6973226350963971018">"Penyahpepijatan wayarles"</string>
     <string name="enable_adb_wireless_summary" msgid="7344391423657093011">"Mod penyahpepijatan apabila Wi-Fi disambungkan"</string>
     <string name="adb_wireless_error" msgid="721958772149779856">"Ralat"</string>
@@ -293,6 +293,10 @@
     <string name="adb_wireless_verifying_qrcode_text" msgid="6123192424916029207">"Menggandingkan peranti…"</string>
     <string name="adb_qrcode_pairing_device_failed_msg" msgid="6936292092592914132">"Gagal menggandingkan peranti. Kod QR salah atau peranti tidak disambungkan kepada rangkaian yang sama."</string>
     <string name="adb_wireless_ip_addr_preference_title" msgid="8335132107715311730">"Alamat IP &amp; Port"</string>
+    <!-- no translation found for adb_wireless_unavailable_not_allowed (83310404140556806) -->
+    <skip />
+    <!-- no translation found for adb_wireless_unavailable_disconnected (8819105186435736128) -->
+    <skip />
     <string name="adb_wireless_qrcode_pairing_title" msgid="1906409667944674707">"Imbas kod QR"</string>
     <string name="adb_wireless_qrcode_pairing_description" msgid="6014121407143607851">"Gandingkan peranti melalui Wi-Fi dengan mengimbas kod QR"</string>
     <string name="adb_wireless_no_network_msg" msgid="2365795244718494658">"Sila sambungkan kepada rangkaian Wi-Fi"</string>
@@ -366,7 +370,7 @@
     <string name="adb_warning_message" msgid="8145270656419669221">"Penyahpepijatan USB adalah dimaksudkan untuk tujuan pembangunan sahaja. Gunakannya untuk menyalin data antara komputer dan peranti anda, memasang aplikasi pada peranti anda tanpa pemberitahuan, dan membaca data log."</string>
     <string name="adbwifi_warning_title" msgid="727104571653031865">"Benarkan penyahpepijatan wayarles?"</string>
     <string name="adbwifi_warning_message" msgid="8005936574322702388">"Penyahpepijatan wayarles adalah dimaksudkan untuk tujuan pembangunan sahaja. Gunakannya untuk menyalin data antara komputer dengan peranti anda, memasang apl pada peranti anda tanpa pemberitahuan dan membaca data log."</string>
-    <string name="adb_keys_warning_message" msgid="2968555274488101220">"Batalkan akses ke penyahpepijatan USB dari semua komputer yang anda berikan kebenaran sebelum ini?"</string>
+    <string name="adb_keys_warning_message" msgid="7827514623080777814">"Batalkan akses ke penyahpepijatan USB dari semua komputer yang anda berikan kebenaran sebelum ini?"</string>
     <string name="dev_settings_warning_title" msgid="8251234890169074553">"Benarkan tetapan pembangunan?"</string>
     <string name="dev_settings_warning_message" msgid="37741686486073668">"Tetapan ini adalah untuk penggunaan pembangunan sahaja. Peranti dan aplikasi yang terdapat padanya boleh rosak atau tidak berfungsi dengan betul."</string>
     <string name="verify_apps_over_usb_title" msgid="6031809675604442636">"Sahkan apl melalui USB"</string>
@@ -536,13 +540,13 @@
     <string name="battery_info_status_charging_fast" msgid="8027559755902954885">"Mengecas pantas"</string>
     <string name="battery_info_status_charging_slow" msgid="3190803837168962319">"Mengecas perlahan"</string>
     <string name="battery_info_status_charging_wireless" msgid="8924722966861282197">"Mengecas tanpa wayar"</string>
-    <string name="battery_info_status_charging_dock" msgid="8573274094093364791">"Pengecasan"</string>
+    <string name="battery_info_status_charging_dock" msgid="8573274094093364791">"Mengecas"</string>
     <string name="battery_info_status_discharging" msgid="6962689305413556485">"Tidak mengecas"</string>
     <string name="battery_info_status_not_charging" msgid="1103084691314264664">"Disambungkan tetapi tidak dicas"</string>
     <string name="battery_info_status_full" msgid="1339002294876531312">"Sudah dicas"</string>
     <string name="battery_info_status_full_charged" msgid="3536054261505567948">"Dicas Penuh"</string>
     <string name="battery_info_status_charging_on_hold" msgid="6364355145521694438">"Pengecasan ditunda"</string>
-    <string name="battery_info_status_charging_v2" msgid="6118522107222245505">"Pengecasan"</string>
+    <string name="battery_info_status_charging_v2" msgid="6118522107222245505">"Mengecas"</string>
     <string name="battery_info_status_charging_fast_v2" msgid="1825439848151256589">"Pengecasan pantas"</string>
     <string name="disabled_by_admin_summary_text" msgid="5343911767402923057">"Dikawal oleh pentadbir"</string>
     <string name="disabled_by_app_ops_text" msgid="8373595926549098012">"Dikawal oleh Tetapan Terhad"</string>
