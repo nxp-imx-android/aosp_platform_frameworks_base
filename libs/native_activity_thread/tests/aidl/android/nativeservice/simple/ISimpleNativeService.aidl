@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 The Android Open Source Project
+ * Copyright (C) 2026 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-package android.nativeservice;
+package android.nativeservice.simple;
 
-interface INativeServiceListener {
-    void onRegister();
-    void onUnbind();
-    void onRebind();
+// An interface defining methods provided by the native service used for test.
+interface ISimpleNativeService {
+    // Returns the pid of the process running this service.
+    int getPid();
+    // Returns the uid of the process running this service.
+    int getUid();
 }

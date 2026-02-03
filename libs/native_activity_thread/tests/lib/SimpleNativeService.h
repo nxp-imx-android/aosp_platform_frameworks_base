@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 The Android Open Source Project
+ * Copyright (C) 2026 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,27 +16,17 @@
 
 #pragma once
 
-#include <aidl/android/nativeservice/BnNativeServiceWrapper.h>
+#include <aidl/android/nativeservice/simple/BnSimpleNativeService.h>
 #include <android/binder_auto_utils.h>
 #include <android/binder_status.h>
 #include <android/native_service.h>
 
-#include <map>
-#include <set>
-
-using aidl::android::nativeservice::INativeServiceListener;
-
-class NativeServiceWrapper : public aidl::android::nativeservice::BnNativeServiceWrapper {
+// An implementation of ISimpleNativeService
+class SimpleNativeService : public aidl::android::nativeservice::simple::BnSimpleNativeService {
 public:
-    NativeServiceWrapper() = default;
-    virtual ~NativeServiceWrapper() = default;
+    SimpleNativeService() = default;
+    virtual ~SimpleNativeService() = default;
 
-    ndk::ScopedAStatus registerListener(
-            const std::shared_ptr<INativeServiceListener>& listener) override;
-
-    void doUnbind();
-    void doRebind();
-
-private:
-    std::shared_ptr<INativeServiceListener> listener_;
+    ndk::ScopedAStatus getPid(int32_t* pid) override;
+    ndk::ScopedAStatus getUid(int32_t* uid) override;
 };
