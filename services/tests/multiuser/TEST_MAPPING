@@ -1,5 +1,5 @@
 {
-  "desktop-postsubmit": [
+  "desktop-presubmit": [
     {
       "name": "InteractiveHsumIntegrationTests"
     }
