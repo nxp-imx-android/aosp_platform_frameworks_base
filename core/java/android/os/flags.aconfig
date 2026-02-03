@@ -3,16 +3,6 @@ container: "system"
 
 # keep-sorted start block=yes newline_separated=yes
 flag {
-    name: "adpf_25q2_metrics"
-    namespace: "game"
-    description: "Add missing metrics for ADPF 25Q2 features."
-    bug: "367803904"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "adpf_audio_performance"
     is_exported: false
     namespace: "media_audio"
