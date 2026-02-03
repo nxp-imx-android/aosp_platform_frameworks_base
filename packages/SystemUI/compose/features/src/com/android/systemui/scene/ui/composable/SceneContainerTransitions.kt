@@ -303,7 +303,7 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
             ) {
                 reversed {
                     lockscreenToSingleShadeTransition(
-                        transitionDistancePx = lockscreenToShadeTransitionDistancePx,
+                        transitionDistancePx = null,
                         singleShadeMarginHorizontalPx = singleShadeMarginHorizontalPx,
                     )
                 }
