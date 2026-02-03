@@ -1758,10 +1758,9 @@ public final class JobStatus {
     public String getWakelockTag() {
         if (mWakelockTag == null) {
             mWakelockTag = "*job*";
-            if (android.app.job.Flags.addTypeInfoToWakelockTag()) {
-                mWakelockTag += (isRequestedExpeditedJob()
-                    ? "e" : (getJob().isUserInitiated() ? "u" : "r"));
-            }
+            // Add job type info to wakelock tag.
+            mWakelockTag += isRequestedExpeditedJob() ? "e"
+                                                      : (getJob().isUserInitiated() ? "u" : "r");
             mWakelockTag += "/" + this.batteryName;
         }
         return mWakelockTag;
