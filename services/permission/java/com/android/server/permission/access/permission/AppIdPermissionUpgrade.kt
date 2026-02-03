@@ -517,7 +517,9 @@ class AppIdPermissionUpgrade(private val policy: AppIdPermissionPolicy) {
                 PermissionFlags.APP_OP_REVOKED or
                 PermissionFlags.ONE_TIME or
                 PermissionFlags.HIBERNATION or
-                PermissionFlags.USER_SELECTED
+                PermissionFlags.USER_SELECTED or
+                PermissionFlags.TRUSTED_UI_SHOWN or
+                PermissionFlags.TRUSTED_UI_CONSENTED
 
         private val LEGACY_RESTRICTED_PERMISSIONS =
             indexedSetOf(
