@@ -2503,10 +2503,8 @@ public final class JobStatus {
         if (hasConstraintFlag(constraint, CONSTRAINT_WITHIN_QUOTA)) {
             return JobScheduler.PENDING_JOB_REASON_QUOTA;
         }
-        if (android.app.job.Flags.getPendingJobReasonsApi()) {
-            if (hasConstraintFlag(constraint, CONSTRAINT_DEADLINE)) {
-                return JobScheduler.PENDING_JOB_REASON_CONSTRAINT_DEADLINE;
-            }
+        if (hasConstraintFlag(constraint, CONSTRAINT_DEADLINE)) {
+            return JobScheduler.PENDING_JOB_REASON_CONSTRAINT_DEADLINE;
         }
 
         Slog.wtf(TAG, "Unhandled constraint (" + constraint + ") in constraintToPendingJobReason");
