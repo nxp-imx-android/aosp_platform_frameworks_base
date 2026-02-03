@@ -626,6 +626,8 @@ public class OomAdjusterImpl extends OomAdjuster {
     /** A list of edges for partial graph updates in {@link #partialUpdateProcessGraphLSP}. */
     private final ArrayList<GraphEdge> mEdgesToUpdate =
             Flags.enableCapabilityControllerComputation() ? new ArrayList<>() : null;
+    private final Consumer<GraphEdge> mAddEdgeToUpdateConsumer =
+            Flags.enableCapabilityControllerComputation() ? mEdgesToUpdate::add : null;
 
     void unlinkProcessRecordFromList(@NonNull ProcessRecordInternal app) {
         mProcessRecordProcStateNodes.unlink(app);
@@ -881,9 +883,7 @@ public class OomAdjusterImpl extends OomAdjuster {
         }
 
         for (int i = 0, size = targets.size(); i < size; i++) {
-            final ProcessRecordInternal target = targets.valueAt(i);
-            // TODO(b/466961280): Add other incoming service/provider binding edges.
-            mEdgesToUpdate.add(target.getProcessEdge());
+            targets.valueAt(i).getProcessNode().forEachIncomingEdge(mAddEdgeToUpdateConsumer);
         }
 
         // Only triggers computation without using its result.
@@ -981,17 +981,16 @@ public class OomAdjusterImpl extends OomAdjuster {
      * Stream the connections with {@code app} as a client to
      * {@code connectionConsumer}.
      */
+    // LINT.IfChange(forEachConnectionLSP)
     @GuardedBy({"mServiceLock", "mProcLock"})
     private static void forEachConnectionLSP(ProcessRecordInternal app,
             BiConsumer<Connection, ProcessRecordInternal> connectionConsumer) {
         final ProcessServiceRecordInternal psr =  app.getServices();
         for (int i = psr.numberOfConnections() - 1; i >= 0; i--) {
             final ConnectionRecordInternal cr = psr.getConnectionInternalAt(i);
-            // LINT.IfChange(getServiceHost)
             ProcessRecordInternal service = cr.hasFlag(ServiceInfo.FLAG_ISOLATED_PROCESS)
                     ? cr.getService().getIsolationHostProcess()
                     : cr.getService().getHostProcessInternal();
-            // LINT.ThenChange(ServiceBindingEdge.java:getServiceHost)
             if (service == null || service == app || isSandboxAttributedConnection(cr, service)) {
                 continue;
             }
@@ -1025,6 +1024,10 @@ public class OomAdjusterImpl extends OomAdjuster {
             connectionConsumer.accept(cpc, provider);
         }
     }
+    // LINT.ThenChange(
+    //     ProcessNode.java:forEachOutgoingEdge|
+    //     ServiceBindingEdge.java:getServiceHost
+    // )
 
     /**
      * This is one of the condition that blocks the skipping of connection evaluation. This method
@@ -1064,6 +1067,7 @@ public class OomAdjusterImpl extends OomAdjuster {
      * Stream the connections from clients with {@code app} as the host to {@code
      * connectionConsumer}.
      */
+    // LINT.IfChange(forEachClientConnectionLSP)
     @GuardedBy({"mServiceLock", "mProcLock"})
     private static void forEachClientConnectionLSP(ProcessRecordInternal app,
             BiConsumer<Connection, ProcessRecordInternal> connectionConsumer) {
@@ -1077,13 +1081,11 @@ public class OomAdjusterImpl extends OomAdjuster {
                 for (int k = clist.size() - 1; k >= 0; k--) {
                     final ConnectionRecordInternal cr = clist.get(k);
                     final ProcessRecordInternal client;
-                    // LINT.IfChange(getServiceClient)
                     if (app.isSdkSandbox && cr.getAttributedClient() != null) {
                         client = cr.getAttributedClient();
                     } else {
                         client = cr.getClient();
                     }
-                    // LINT.ThenChange(ServiceBindingEdge.java:getServiceClient)
                     if (client == null || client == app) continue;
                     connectionConsumer.accept(cr, client);
                 }
@@ -1099,6 +1101,10 @@ public class OomAdjusterImpl extends OomAdjuster {
             }
         }
     }
+    // LINT.ThenChange(
+    //     ProcessNode.java:forEachIncomingEdge|
+    //     ServiceBindingEdge.java:getServiceClient
+    // )
 
     /**
      * Returns true if at least one the provided values is more important than those in {@code app}.
