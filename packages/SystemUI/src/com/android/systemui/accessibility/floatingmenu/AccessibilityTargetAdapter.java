@@ -92,12 +92,14 @@ public class AccessibilityTargetAdapter extends Adapter<ViewHolder> {
                 R.layout.accessibility_floating_menu_item, parent,
                 /* attachToRoot= */ false);
 
-        if (itemType == ItemType.FIRST_ITEM) {
-            return new TopViewHolder(root);
-        }
+        if (!com.android.systemui.Flags.floatingMenuUniformPadding()) {
+            if (itemType == ItemType.FIRST_ITEM) {
+                return new TopViewHolder(root);
+            }
 
-        if (itemType == ItemType.LAST_ITEM) {
-            return new BottomViewHolder(root);
+            if (itemType == ItemType.LAST_ITEM) {
+                return new BottomViewHolder(root);
+            }
         }
 
         return new ViewHolder(root);
@@ -285,7 +287,11 @@ public class AccessibilityTargetAdapter extends Adapter<ViewHolder> {
         }
 
         void updateItemPadding(int padding, int size) {
-            itemView.setPaddingRelative(padding, padding, padding, 0);
+            if (com.android.systemui.Flags.floatingMenuUniformPadding()) {
+                itemView.setPaddingRelative(padding, padding, padding, padding);
+            } else {
+                itemView.setPaddingRelative(padding, padding, padding, 0);
+            }
         }
     }
 

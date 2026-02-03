@@ -349,6 +349,10 @@ public class MenuViewAppearance {
     }
 
     private int calculateActualMenuHeight() {
+        if (com.android.systemui.Flags.floatingMenuUniformPadding()) {
+            return (getMenuPadding() * 2 + getMenuIconSize()) * mTargetFeaturesSize;
+        }
+
         final int menuPadding = getMenuPadding();
 
         return (menuPadding + getMenuIconSize()) * mTargetFeaturesSize + menuPadding;
