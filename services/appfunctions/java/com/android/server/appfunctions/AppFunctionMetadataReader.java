@@ -51,6 +51,7 @@ import android.os.RemoteException;
 import android.os.UserHandle;
 import android.text.TextUtils;
 import android.util.ArrayMap;
+import android.util.ArraySet;
 import android.util.Pair;
 import android.util.Slog;
 
@@ -322,7 +323,9 @@ final class AppFunctionMetadataReader {
 
             return new AppFunctionState(
                     appFunctionName,
-                    calculateEffectiveEnabledState(staticDocument, runtimeDocument, userId));
+                    calculateEffectiveEnabledState(staticDocument, runtimeDocument, userId),
+                    // TODO: b/479450424 - Populate activity IDs.
+                    new ArraySet<>());
         } catch (RuntimeException e) {
             Slog.e(TAG, "Failed to convert SearchResult to AppFunctionState.", e);
             return null;

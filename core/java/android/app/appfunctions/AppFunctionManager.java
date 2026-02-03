@@ -518,10 +518,10 @@ public final class AppFunctionManager {
                     mContext.getUserId(),
                     new IGetAppFunctionStatesCallback.Stub() {
                         @Override
-                        public void onSuccess(List<AppFunctionState> states) {
+                        public void onSuccess(AppFunctionStateList states) {
                             executor.execute(
                                     () -> {
-                                        callback.onResult(states);
+                                        callback.onResult(states.getList());
                                     });
                         }
 

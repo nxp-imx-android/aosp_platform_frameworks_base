@@ -16,11 +16,11 @@
 
 package android.app.appfunctions;
 
-import android.app.appfunctions.AppFunctionState;
+import android.app.appfunctions.AppFunctionStateList;
 import android.os.ParcelableException;
 
 /** @hide */
 oneway interface IGetAppFunctionStatesCallback {
-    void onSuccess(in List<AppFunctionState> states);
+    void onSuccess(in AppFunctionStateList states);
     void onError(in ParcelableException exception);
 }
