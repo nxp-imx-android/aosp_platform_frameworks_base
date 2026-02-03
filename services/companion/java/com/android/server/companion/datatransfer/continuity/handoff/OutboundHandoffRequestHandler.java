@@ -36,7 +36,7 @@ import com.android.server.companion.datatransfer.continuity.connectivity.TaskCon
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestMessage;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestResultMessage;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
-import com.android.server.companion.datatransfer.continuity.tasks.TaskSyncController;
+import com.android.server.companion.datatransfer.continuity.tasks.RemoteTaskListenerHolder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -55,7 +55,7 @@ public class OutboundHandoffRequestHandler {
 
     private final Context mContext;
     private final TaskContinuityMessenger mTaskContinuityMessenger;
-    private final TaskSyncController mTaskSyncController;
+    private final RemoteTaskListenerHolder mRemoteTaskListenerHolder;
     private final AtomicReference<RemoteCallbackList<IHandoffRequestCallback>> mCallbacksRef =
             new AtomicReference<>(null);
 
@@ -64,11 +64,11 @@ public class OutboundHandoffRequestHandler {
     public OutboundHandoffRequestHandler(
             @NonNull Context context,
             @NonNull TaskContinuityMessenger taskContinuityMessenger,
-            @NonNull TaskSyncController taskSyncController) {
+            @NonNull RemoteTaskListenerHolder remoteTaskListenerHolder) {
 
         mContext = Objects.requireNonNull(context);
         mTaskContinuityMessenger = Objects.requireNonNull(taskContinuityMessenger);
-        mTaskSyncController = Objects.requireNonNull(taskSyncController);
+        mRemoteTaskListenerHolder = Objects.requireNonNull(remoteTaskListenerHolder);
     }
 
     public void requestHandoff(
@@ -163,7 +163,8 @@ public class OutboundHandoffRequestHandler {
 
         finishHandoffRequest(Predicate.isEqual(cookie), statusCode);
         if (statusCode == HANDOFF_REQUEST_RESULT_SUCCESS) {
-            mTaskSyncController.removeTask(associationId, handoffRequestResultMessage.taskId());
+            mRemoteTaskListenerHolder.notifyTaskHandedOff(
+                    associationId, handoffRequestResultMessage.taskId());
         }
     }
 
