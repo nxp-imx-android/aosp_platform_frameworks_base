@@ -64,6 +64,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
@@ -234,7 +235,7 @@ final class AppFunctionMetadataReader {
     @NonNull
     AndroidFuture<List<AppFunctionState>> getAppFunctionStates(
             @NonNull FutureGlobalSearchSession futureGlobalSearchSession,
-            @NonNull List<AppFunctionName> appFunctionNames,
+            @NonNull Set<AppFunctionName> appFunctionNames,
             int userId) {
         Objects.requireNonNull(futureGlobalSearchSession);
         Objects.requireNonNull(appFunctionNames);

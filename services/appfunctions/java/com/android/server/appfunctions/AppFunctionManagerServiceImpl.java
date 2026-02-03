@@ -568,9 +568,12 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
 
         THREAD_POOL_EXECUTOR.execute(
                 () -> {
-                    List<AppFunctionName> visibleAppFunctionNames =
+                    Set<AppFunctionName> visibleAppFunctionNames =
                             mVisibilityHelper.filterVisibleAppFunctions(
-                                    appFunctionNames, callingPackageName, callingUid, callingPid);
+                                    Set.copyOf(appFunctionNames),
+                                    callingPackageName,
+                                    callingUid,
+                                    callingPid);
 
                     FutureGlobalSearchSession futureGlobalSearchSession =
                             new FutureGlobalSearchSession(

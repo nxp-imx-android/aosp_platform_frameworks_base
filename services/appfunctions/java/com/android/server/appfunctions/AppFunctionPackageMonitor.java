@@ -24,8 +24,6 @@ import android.app.appsearch.PutDocumentsRequest;
 import android.app.appsearch.SearchResult;
 import android.app.appsearch.SearchSpec;
 import android.content.Context;
-import android.os.HandlerThread;
-import android.os.Process;
 import android.os.UserHandle;
 import android.util.Slog;
 
@@ -133,8 +131,7 @@ public class AppFunctionPackageMonitor extends PackageMonitor {
         AppFunctionPackageMonitor monitor =
                 new AppFunctionPackageMonitor(context, user.getUserHandle());
 
-        monitor.register(
-                context, user.getUserHandle(), BackgroundThread.getHandler());
+        monitor.register(context, user.getUserHandle(), BackgroundThread.getHandler());
         return monitor;
     }
 }

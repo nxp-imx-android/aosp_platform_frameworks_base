@@ -83,7 +83,7 @@ class VisibilityHelperImplTest {
             AppFunctionAidlSearchSpec(
                 CALLING_PKG,
                 AppFunctionSearchSpec.Builder()
-                    .setFunctionNames(listOf(FUNC_A_1, FUNC_B_2, FUNC_HIDDEN_1))
+                    .setFunctionNames(setOf(FUNC_A_1, FUNC_B_2, FUNC_HIDDEN_1))
                     .build(),
                 TARGET_USER_ID,
             )
@@ -98,7 +98,7 @@ class VisibilityHelperImplTest {
     fun testApplyFilterWithoutFunctionNames_hasQueryAllPackages_returnsOriginalSpec() {
         setTestPermission(Manifest.permission.EXECUTE_APP_FUNCTIONS, true)
         setTestPermission(Manifest.permission.QUERY_ALL_PACKAGES, true)
-        val requested = listOf(PKG_A, PKG_B, PKG_HIDDEN)
+        val requested = setOf(PKG_A, PKG_B, PKG_HIDDEN)
         val spec =
             AppFunctionAidlSearchSpec(
                 CALLING_PKG,
@@ -116,13 +116,13 @@ class VisibilityHelperImplTest {
     fun testApplyFilterWithFunctionNames_hasQueryAllPackages_returnsOriginalSpec() {
         setTestPermission(Manifest.permission.EXECUTE_APP_FUNCTIONS, true)
         setTestPermission(Manifest.permission.QUERY_ALL_PACKAGES, true)
-        val requested = listOf(PKG_A, PKG_B, PKG_HIDDEN)
+        val requested = setOf(PKG_A, PKG_B, PKG_HIDDEN)
         val spec =
             AppFunctionAidlSearchSpec(
                 CALLING_PKG,
                 AppFunctionSearchSpec.Builder()
                     .setPackageNames(requested)
-                    .setFunctionNames(listOf(FUNC_A_1, FUNC_A_2, FUNC_B_1, FUNC_HIDDEN_1))
+                    .setFunctionNames(setOf(FUNC_A_1, FUNC_A_2, FUNC_B_1, FUNC_HIDDEN_1))
                     .build(),
                 TARGET_USER_ID,
             )
@@ -142,7 +142,7 @@ class VisibilityHelperImplTest {
         val spec =
             AppFunctionAidlSearchSpec(
                 CALLING_PKG,
-                AppFunctionSearchSpec.Builder().setPackageNames(listOf(PKG_A, PKG_HIDDEN)).build(),
+                AppFunctionSearchSpec.Builder().setPackageNames(setOf(PKG_A, PKG_HIDDEN)).build(),
                 TARGET_USER_ID,
             )
 
@@ -161,8 +161,8 @@ class VisibilityHelperImplTest {
             AppFunctionAidlSearchSpec(
                 CALLING_PKG,
                 AppFunctionSearchSpec.Builder()
-                    .setPackageNames(listOf(PKG_A, PKG_HIDDEN))
-                    .setFunctionNames(listOf(FUNC_A_1, FUNC_A_2, FUNC_HIDDEN_1, FUNC_HIDDEN_2))
+                    .setPackageNames(setOf(PKG_A, PKG_HIDDEN))
+                    .setFunctionNames(setOf(FUNC_A_1, FUNC_A_2, FUNC_HIDDEN_1, FUNC_HIDDEN_2))
                     .build(),
                 TARGET_USER_ID,
             )
@@ -182,8 +182,8 @@ class VisibilityHelperImplTest {
             AppFunctionAidlSearchSpec(
                 CALLING_PKG,
                 AppFunctionSearchSpec.Builder()
-                    .setPackageNames(listOf(PKG_A, PKG_HIDDEN))
-                    .setFunctionNames(listOf(FUNC_HIDDEN_1, FUNC_HIDDEN_2))
+                    .setPackageNames(setOf(PKG_A, PKG_HIDDEN))
+                    .setFunctionNames(setOf(FUNC_HIDDEN_1, FUNC_HIDDEN_2))
                     .build(),
                 TARGET_USER_ID,
             )
@@ -206,7 +206,7 @@ class VisibilityHelperImplTest {
         val spec =
             AppFunctionAidlSearchSpec(
                 CALLING_PKG,
-                AppFunctionSearchSpec.Builder().setPackageNames(listOf(PKG_A, PKG_HIDDEN)).build(),
+                AppFunctionSearchSpec.Builder().setPackageNames(setOf(PKG_A, PKG_HIDDEN)).build(),
                 TARGET_USER_ID,
             )
 
@@ -231,8 +231,8 @@ class VisibilityHelperImplTest {
             AppFunctionAidlSearchSpec(
                 CALLING_PKG,
                 AppFunctionSearchSpec.Builder()
-                    .setPackageNames(listOf(PKG_A, PKG_HIDDEN))
-                    .setFunctionNames(listOf(FUNC_A_1, FUNC_A_2, FUNC_HIDDEN_1, FUNC_HIDDEN_2))
+                    .setPackageNames(setOf(PKG_A, PKG_HIDDEN))
+                    .setFunctionNames(setOf(FUNC_A_1, FUNC_A_2, FUNC_HIDDEN_1, FUNC_HIDDEN_2))
                     .build(),
                 TARGET_USER_ID,
             )

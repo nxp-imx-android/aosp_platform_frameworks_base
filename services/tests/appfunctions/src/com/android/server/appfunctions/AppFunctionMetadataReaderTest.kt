@@ -353,7 +353,7 @@ class AppFunctionMetadataReaderTest {
         whenever(futureGlobalSearchSession.search(any(), any()))
             .thenReturn(AndroidFuture.completedFuture(testFutureSearchResults))
 
-        val functionNames = listOf(AppFunctionName("testPackage", "testFunctionId"))
+        val functionNames = setOf(AppFunctionName("testPackage", "testFunctionId"))
         val resultFuture =
             appFunctionMetadataReader.getAppFunctionStates(
                 futureGlobalSearchSession,
@@ -391,11 +391,9 @@ class AppFunctionMetadataReaderTest {
         whenever(futureGlobalSearchSession.search(any(), any()))
             .thenReturn(AndroidFuture.completedFuture(testFutureSearchResults))
 
-        val functionNames =
-            listOf(
-                AppFunctionName("testPackage", "testFunctionId"),
-                AppFunctionName("testPackage", "testFunctionId2"),
-            )
+        val function1 = AppFunctionName("testPackage", "testFunctionId")
+        val function2 = AppFunctionName("testPackage", "testFunctionId2")
+        val functionNames = setOf(function1, function2)
         val resultFuture =
             appFunctionMetadataReader.getAppFunctionStates(
                 futureGlobalSearchSession,
@@ -406,10 +404,10 @@ class AppFunctionMetadataReaderTest {
 
         assertThat(resultStates).hasSize(2)
         val state1 = resultStates[0]
-        assertThat(state1.functionName).isEqualTo(functionNames[0])
+        assertThat(state1.functionName).isEqualTo(function1)
         assertThat(state1.isEnabled).isTrue()
         val state2 = resultStates[1]
-        assertThat(state2.functionName).isEqualTo(functionNames[1])
+        assertThat(state2.functionName).isEqualTo(function2)
         assertThat(state2.isEnabled).isFalse()
     }
 
