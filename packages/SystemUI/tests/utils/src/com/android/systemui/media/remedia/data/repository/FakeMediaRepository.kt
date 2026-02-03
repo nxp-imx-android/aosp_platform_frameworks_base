@@ -18,9 +18,6 @@ package com.android.systemui.media.remedia.data.repository
 
 import android.annotation.SuppressLint
 import android.content.Context
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.setValue
 import com.android.internal.logging.InstanceId
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.media.remedia.data.model.MediaDataModel
@@ -50,7 +47,7 @@ constructor(
     ) {
     override var currentMedia: List<MediaDataModel> = emptyList()
     override val keysNeedRemoval = mutableListOf(InstanceId.fakeInstanceId(1))
-    override var currentCarouselIndex by mutableIntStateOf(FIRST_INDEX_OF_CAROUSEL)
+    override var currentCarouselIndex = FIRST_INDEX_OF_CAROUSEL
     override var shouldScrollToFirst = false
     override var isSwipedAway = false
     override var isUserInitiatedRemovalQueued = true
