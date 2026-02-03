@@ -21,7 +21,7 @@
     <string name="label_destination" msgid="9132510997381599275">"గమ్యం"</string>
     <string name="label_copies" msgid="3634531042822968308">"కాపీలు"</string>
     <string name="label_copies_summary" msgid="3861966063536529540">"కాపీలు:"</string>
-    <string name="label_paper_size" msgid="908654383827777759">"కాగితపు సైజ్‌"</string>
+    <string name="label_paper_size" msgid="908654383827777759">"పేపర్ సైజ్"</string>
     <string name="label_paper_size_summary" msgid="5668204981332138168">"కాగితపు సైజ్‌:"</string>
     <string name="label_color" msgid="1108690305218188969">"రంగు"</string>
     <string name="label_duplex" msgid="5370037254347072243">"రెండు వైపుల"</string>
