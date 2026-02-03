@@ -505,7 +505,7 @@ constructor(
                 // through and dismiss the modal, even when the caption touchable region is not
                 // being limited.
                 inputFeatures = inputFeatures or WindowManager.LayoutParams.INPUT_FEATURE_SPY
-            } else if (DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION.isTrue) {
+            } else {
                 if (shouldExcludeCaptionFromAppBounds) {
                     shouldSetAppBounds = true
                 } else {

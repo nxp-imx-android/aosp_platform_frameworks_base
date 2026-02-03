@@ -1208,7 +1208,6 @@ public class WindowOrganizerTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION)
     public void testAddInsetsSource_withFlags() {
         final Task rootTask = createOrganizerTask(mDisplayContent);
 
