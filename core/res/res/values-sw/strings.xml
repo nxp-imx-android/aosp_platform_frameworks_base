@@ -1123,6 +1123,7 @@
     <string name="lockscreen_access_pattern_cell_added_verbose" msgid="2931364927622563465">"Kisanduku <xliff:g id="CELL_INDEX">%1$s</xliff:g> kimeongezwa"</string>
     <string name="lockscreen_access_pattern_detected" msgid="3931150554035194012">"Ruwaza imekamilika"</string>
     <string name="lockscreen_access_pattern_area" msgid="1288780416685002841">"Eneo la ruwaza."</string>
+    <string name="lockscreen_access_pattern_cell_verbose" msgid="6670905066468035137">"Kisanduku cha <xliff:g id="CELL_INDEX">%1$s</xliff:g>"</string>
     <string name="keyguard_accessibility_widget_changed" msgid="7298011259508200234">"%1$s. Wijeti %2$d ya %3$d."</string>
     <string name="keyguard_accessibility_add_widget" msgid="8245795023551343672">"Ongeza wijeti."</string>
     <string name="keyguard_accessibility_widget_empty_slot" msgid="544239307077644480">"Tupu"</string>
@@ -2006,6 +2007,7 @@
     <string name="managed_profile_label_badge_3" msgid="6882151970556391957">"<xliff:g id="LABEL">%1$s</xliff:g> ya 3 ya Kazini"</string>
     <string name="clone_profile_label_badge" msgid="1871997694718793964">"Nakala ya <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="private_profile_label_badge" msgid="1712086003787839183">"Faragha <xliff:g id="LABEL">%1$s</xliff:g>"</string>
+    <string name="hsu_label_badge" msgid="1357272000281944932">"<xliff:g id="LABEL">%1$s</xliff:g> ya Mfumo"</string>
     <string name="lock_to_app_unlock_pin" msgid="3890940811866290782">"Itisha PIN kabla hujabandua"</string>
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Omba mchoro wa kufungua kabla hujabandua"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Omba nenosiri kabla hujabandua"</string>
@@ -2292,7 +2294,7 @@
     <string name="nas_upgrade_notification_enable_action" msgid="3046406808378726874">"Sawa"</string>
     <string name="nas_upgrade_notification_disable_action" msgid="3794833210043497982">"Zima"</string>
     <string name="nas_upgrade_notification_learn_more_action" msgid="7011130656195423947">"Pata maelezo zaidi"</string>
-    <string name="nas_upgrade_notification_learn_more_content" msgid="3735480566983530650">"Kipengele cha Arifa Zilizoboreshwa kilichukua nafasi ya Arifa Zinazojirekebisha za Android katika Android 12. Kipengele hiki kinaonyesha majibu na vitendo vinavyopendekezwa na kupanga arifa zako.\n\nKipengele cha Arifa zilizoboreshwa kinaweza kufikia maudhui ya arifa, ikiwa ni pamoja na taarifa binafsi kama vile majina ya anwani na ujumbe. Kipengele hiki kinaweza pia kuondoa au kujibu arifa, kama vile kujibu simu na kudhibiti kipengele cha Usinisumbue."</string>
+    <string name="nas_upgrade_notification_learn_more_content" msgid="3735480566983530650">"Kipengele cha Arifa zilizoboreshwa kilichukua nafasi ya Arifa Zinazojirekebisha za Android katika Android 12. Kipengele hiki kinaonyesha majibu na vitendo vinavyopendekezwa na kupanga arifa zako.\n\nKipengele cha Arifa zilizoboreshwa kinaweza kufikia maudhui ya arifa, ikiwa ni pamoja na taarifa binafsi kama vile majina ya anwani na ujumbe. Kipengele hiki kinaweza pia kuondoa au kujibu arifa, kama vile kujibu simu na kudhibiti kipengele cha Usinisumbue."</string>
     <string name="dynamic_mode_notification_channel_name" msgid="2986926422100223328">"Arifa ya maelezo ya Hali ya Kawaida"</string>
     <string name="dynamic_mode_notification_title" msgid="1388718452788985481">"Kiokoa Betri kimewashwa"</string>
     <string name="dynamic_mode_notification_summary" msgid="1639031262484979689">"Inapunguza matumizi ya betri ili kuongeza muda wa matumizi ya betri"</string>
@@ -2617,6 +2619,8 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"Ili utume ujumbe kupitia setilaiti, weka Google Messages iwe programu yako chaguomsingi ya kutuma ujumbe"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"Kipengele cha kutuma ujumbe kupitia setilaiti hakipatikani"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"Ili uangalie iwapo kipengele cha kutuma ujumbe kupitia setilaiti kinapatikana katika nchi au eneo hili, washa mipangilio ya mahali"</string>
+    <!-- no translation found for satellite_indicator (6846063647532086110) -->
+    <skip />
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"Weka tena mipangilio ya Kufungua kwa Alama ya Kidole"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"<xliff:g id="FINGERPRINT">%s</xliff:g> haitambuliki tena."</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> na <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> havitambuliki tena."</string>

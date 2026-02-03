@@ -1078,8 +1078,8 @@
     <string name="lockscreen_missing_sim_instructions_long" msgid="4403843937236648032">"SIM քարտը բացակայում է կամ ընթեռնելի չէ։ Ավելացրեք SIM քարտ։"</string>
     <string name="lockscreen_permanent_disabled_sim_message_short" msgid="1925200607820809677">"Անվավեր SIM քարտ։"</string>
     <string name="lockscreen_permanent_disabled_sim_instructions" msgid="6902979937802238429">"Ձեր SIM քարտն ընդմիշտ ապակտիվացվել է։\n Նոր SIM քարտ ձեռք բերելու համար կապվեք ձեր բջջային օպերատորի հետ։"</string>
-    <string name="lockscreen_transport_prev_description" msgid="2879469521751181478">"Նախորդը"</string>
-    <string name="lockscreen_transport_next_description" msgid="2931509904881099919">"Հաջորդը"</string>
+    <string name="lockscreen_transport_prev_description" msgid="2879469521751181478">"Նախորդ"</string>
+    <string name="lockscreen_transport_next_description" msgid="2931509904881099919">"Հաջորդ"</string>
     <string name="lockscreen_transport_pause_description" msgid="6705284702135372494">"Դադարեցնել"</string>
     <string name="lockscreen_transport_play_description" msgid="106868788691652733">"Նվագարկել"</string>
     <string name="lockscreen_transport_stop_description" msgid="1449552232598355348">"Կանգնեցնել"</string>
@@ -1123,6 +1123,7 @@
     <string name="lockscreen_access_pattern_cell_added_verbose" msgid="2931364927622563465">"<xliff:g id="CELL_INDEX">%1$s</xliff:g> դասիչով բջիջը ավելացված է"</string>
     <string name="lockscreen_access_pattern_detected" msgid="3931150554035194012">"Սխեմայի հավաքումն ավարտված է"</string>
     <string name="lockscreen_access_pattern_area" msgid="1288780416685002841">"Սխեմայի տարածք:"</string>
+    <string name="lockscreen_access_pattern_cell_verbose" msgid="6670905066468035137">"Բջիջ <xliff:g id="CELL_INDEX">%1$s</xliff:g>"</string>
     <string name="keyguard_accessibility_widget_changed" msgid="7298011259508200234">"%1$s. Վիջեթ %2$d of %3$d:"</string>
     <string name="keyguard_accessibility_add_widget" msgid="8245795023551343672">"Ավելացնել վիջեթ:"</string>
     <string name="keyguard_accessibility_widget_empty_slot" msgid="544239307077644480">"Դատարկ"</string>
@@ -1583,7 +1584,7 @@
     <string name="ime_action_go" msgid="5536744546326495436">"Առաջ"</string>
     <string name="ime_action_search" msgid="4501435960587287668">"Որոնել"</string>
     <string name="ime_action_send" msgid="8456843745664334138">"Ուղարկել"</string>
-    <string name="ime_action_next" msgid="4169702997635728543">"Հաջորդը"</string>
+    <string name="ime_action_next" msgid="4169702997635728543">"Հաջորդ"</string>
     <string name="ime_action_done" msgid="6299921014822891569">"Պատրաստ է"</string>
     <string name="ime_action_previous" msgid="6548799326860401611">"Նախորդ"</string>
     <string name="ime_action_default" msgid="8265027027659800121">"Կատարել"</string>
@@ -1624,7 +1625,7 @@
     <string name="car_mode_disable_notification_title" msgid="8450693275833142896">"Հավելվածն աշխատում է"</string>
     <string name="car_mode_disable_notification_message" msgid="8954550232288567515">"Հպեք՝ հավելվածը փակելու համար:"</string>
     <string name="back_button_label" msgid="4078224038025043387">"Հետ"</string>
-    <string name="next_button_label" msgid="6040209156399907780">"Հաջորդը"</string>
+    <string name="next_button_label" msgid="6040209156399907780">"Հաջորդ"</string>
     <string name="skip_button_label" msgid="3566599811326688389">"Բաց թողնել"</string>
     <string name="no_matches" msgid="6472699895759164599">"Համընկնում չկա"</string>
     <string name="find_on_page" msgid="5400537367077438198">"Գտեք էջում"</string>
@@ -2006,6 +2007,7 @@
     <string name="managed_profile_label_badge_3" msgid="6882151970556391957">"3-րդ աշխատանք <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="clone_profile_label_badge" msgid="1871997694718793964">"<xliff:g id="LABEL">%1$s</xliff:g>-ի կլոն"</string>
     <string name="private_profile_label_badge" msgid="1712086003787839183">"Անձնական <xliff:g id="LABEL">%1$s</xliff:g>"</string>
+    <string name="hsu_label_badge" msgid="1357272000281944932">"Համակարգ <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="lock_to_app_unlock_pin" msgid="3890940811866290782">"Հարցնել PIN կոդը"</string>
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Հարցնել ապակողպող նախշը"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Հարցնել գաղտնաբառը"</string>
@@ -2617,6 +2619,8 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"Արբանյակային կապով հաղորդագրություններ ուղարկելու համար Google Messages-ը դարձրեք հաղորդագրման ձեր կանխադրված հավելվածը"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"Արբանյակային հաղորդագրումը հասանելի չէ"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"Միացրեք տեղադրության կարգավորումները, որպեսզի ստուգեք՝ արդյոք արբանյակային հաղորդագրումը հասանելի է այս երկրում կամ տարածաշրջանում"</string>
+    <!-- no translation found for satellite_indicator (6846063647532086110) -->
+    <skip />
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"Նորից կարգավորեք մատնահետքով ապակողպումը"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"<xliff:g id="FINGERPRINT">%s</xliff:g> մատնահետքն այլևս չի կարող ճանաչվել։"</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> և <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> մատնահետքերն այլևս չեն կարող ճանաչվել։"</string>

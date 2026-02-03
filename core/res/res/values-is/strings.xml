@@ -1123,6 +1123,7 @@
     <string name="lockscreen_access_pattern_cell_added_verbose" msgid="2931364927622563465">"Hólfi <xliff:g id="CELL_INDEX">%1$s</xliff:g> bætt við"</string>
     <string name="lockscreen_access_pattern_detected" msgid="3931150554035194012">"Mynstur teiknað"</string>
     <string name="lockscreen_access_pattern_area" msgid="1288780416685002841">"Svæði mynsturs."</string>
+    <string name="lockscreen_access_pattern_cell_verbose" msgid="6670905066468035137">"Hólf <xliff:g id="CELL_INDEX">%1$s</xliff:g>"</string>
     <string name="keyguard_accessibility_widget_changed" msgid="7298011259508200234">"%1$s. Græja %2$d af %3$d."</string>
     <string name="keyguard_accessibility_add_widget" msgid="8245795023551343672">"Bæta græju við."</string>
     <string name="keyguard_accessibility_widget_empty_slot" msgid="544239307077644480">"Autt"</string>
@@ -1211,7 +1212,7 @@
     <string name="weeks" msgid="3516247214269821391">"vikur"</string>
     <string name="year" msgid="5182610307741238982">"ár"</string>
     <string name="years" msgid="5797714729103773425">"ár"</string>
-    <string name="now_string_shortest" msgid="3684914126941650330">"nú"</string>
+    <string name="now_string_shortest" msgid="3684914126941650330">"núna"</string>
     <string name="duration_minutes_shortest" msgid="5744379079540806690">"<xliff:g id="COUNT">%d</xliff:g> mín."</string>
     <string name="duration_hours_shortest" msgid="1477752094141971675">"<xliff:g id="COUNT">%d</xliff:g> klst."</string>
     <string name="duration_days_shortest" msgid="4083124701676227233">"<xliff:g id="COUNT">%d</xliff:g> d."</string>
@@ -2006,6 +2007,7 @@
     <string name="managed_profile_label_badge_3" msgid="6882151970556391957">"<xliff:g id="LABEL">%1$s</xliff:g> í vinnu (3)"</string>
     <string name="clone_profile_label_badge" msgid="1871997694718793964">"Afrit af <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="private_profile_label_badge" msgid="1712086003787839183">"Lokað: <xliff:g id="LABEL">%1$s</xliff:g>"</string>
+    <string name="hsu_label_badge" msgid="1357272000281944932">"Kerfi <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="lock_to_app_unlock_pin" msgid="3890940811866290782">"Biðja um PIN-númer til að losa"</string>
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Biðja um opnunarmynstur til að losa"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Biðja um aðgangsorð til að losa"</string>
@@ -2617,6 +2619,8 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"Til að senda skilaboð í gegnum gervihnött skaltu stilla Google Messages sem sjálfgefið skilaboðaforrit"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"Skilaboð í gegnum gervihnött eru ekki tiltæk"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"Til að athuga hvort skilaboð í gegnum gervihnött eru tiltæk í þessu landi eða á þessu svæði skaltu kveikja á staðsetningarstillingum"</string>
+    <!-- no translation found for satellite_indicator (6846063647532086110) -->
+    <skip />
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"Setja upp fingrafarskenni aftur"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"Ekki er hægt að bera kennsl á <xliff:g id="FINGERPRINT">%s</xliff:g> lengur."</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"Ekki er hægt að bera kennsl á <xliff:g id="FINGERPRINT_0">%1$s</xliff:g> og <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> lengur."</string>

@@ -1123,6 +1123,7 @@
     <string name="lockscreen_access_pattern_cell_added_verbose" msgid="2931364927622563465">"Προστέθηκε το κελί <xliff:g id="CELL_INDEX">%1$s</xliff:g>"</string>
     <string name="lockscreen_access_pattern_detected" msgid="3931150554035194012">"Το μοτίβο ολοκληρώθηκε"</string>
     <string name="lockscreen_access_pattern_area" msgid="1288780416685002841">"Περιοχή μοτίβου."</string>
+    <string name="lockscreen_access_pattern_cell_verbose" msgid="6670905066468035137">"Κελί <xliff:g id="CELL_INDEX">%1$s</xliff:g>"</string>
     <string name="keyguard_accessibility_widget_changed" msgid="7298011259508200234">"%1$s. Γραφικό στοιχείο %2$d από %3$d."</string>
     <string name="keyguard_accessibility_add_widget" msgid="8245795023551343672">"Προσθήκη γραφικού στοιχείου"</string>
     <string name="keyguard_accessibility_widget_empty_slot" msgid="544239307077644480">"Κενή"</string>
@@ -1472,7 +1473,7 @@
     <string name="usb_supplying_notification_title" msgid="5378546632408101811">"Φόρτιση συνδεδεμένης συσκευής μέσω USB"</string>
     <string name="usb_mtp_notification_title" msgid="1065989144124499810">"Η μεταφορά αρχείων μέσω USB ενεργοποιήθηκε"</string>
     <string name="usb_ptp_notification_title" msgid="5043437571863443281">"Η λειτουργία PTP μέσω USB ενεργοποιήθηκε"</string>
-    <string name="usb_tether_notification_title" msgid="8828527870612663771">"Η σύνδεση μέσω USB ενεργοποιήθηκε"</string>
+    <string name="usb_tether_notification_title" msgid="8828527870612663771">"Ο διαμοιρασμός με USB ενεργοποιήθηκε"</string>
     <string name="usb_midi_notification_title" msgid="7404506788950595557">"Η λειτουργία MIDI μέσω USB ενεργοποιήθηκε"</string>
     <string name="usb_uvc_notification_title" msgid="2030032862673400008">"Η συσκευή συνδέθηκε ως webcam"</string>
     <string name="usb_accessory_notification_title" msgid="1385394660861956980">"Συνδέθηκε αξεσουάρ USB"</string>
@@ -2006,6 +2007,7 @@
     <string name="managed_profile_label_badge_3" msgid="6882151970556391957">"<xliff:g id="LABEL">%1$s</xliff:g> εργασίας 3"</string>
     <string name="clone_profile_label_badge" msgid="1871997694718793964">"Κλώνος <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="private_profile_label_badge" msgid="1712086003787839183">"Ιδιωτικό <xliff:g id="LABEL">%1$s</xliff:g>"</string>
+    <string name="hsu_label_badge" msgid="1357272000281944932">"Σύστημα <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="lock_to_app_unlock_pin" msgid="3890940811866290782">"Να γίνεται ερώτηση για το PIN, πριν από το ξεκαρφίτσωμα"</string>
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Να γίνεται ερώτηση για το μοτίβο ξεκλειδώματος, πριν από το ξεκαρφίτσωμα"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Να γίνεται ερώτηση για τον κωδικό πρόσβασης, πριν από το ξεκαρφίτσωμα"</string>
@@ -2617,6 +2619,8 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"Για να ανταλλάζετε μηνύματα μέσω δορυφόρου, ορίστε το Google Messages ως την προεπιλεγμένη εφαρμογή ανταλλαγής μηνυμάτων"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"Η ανταλλαγή μηνυμάτων μέσω δορυφόρου δεν είναι διαθέσιμη"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"Για να ελέγξετε αν η ανταλλαγή μηνυμάτων μέσω δορυφόρου είναι διαθέσιμη σε αυτή τη χώρα ή την περιοχή, ενεργοποιήστε τις ρυθμίσεις τοποθεσίας"</string>
+    <!-- no translation found for satellite_indicator (6846063647532086110) -->
+    <skip />
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"Επαναρρύθμιση λειτουργίας Ξεκλείδωμα με δακτυλικό αποτύπωμα"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"Δεν είναι πλέον δυνατή η αναγνώριση του <xliff:g id="FINGERPRINT">%s</xliff:g>."</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"Δεν είναι πλέον δυνατή η αναγνώριση του <xliff:g id="FINGERPRINT_0">%1$s</xliff:g> και του <xliff:g id="FINGERPRINT_1">%2$s</xliff:g>."</string>

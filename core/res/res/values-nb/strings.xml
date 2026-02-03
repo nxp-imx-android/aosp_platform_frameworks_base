@@ -345,7 +345,7 @@
     <string name="permgrouplab_contacts" msgid="7443702399615347952">"Kontakter og kontoer"</string>
     <string name="permgroupdesc_contacts" msgid="2001771388402758264">"åpne kontaktene dine og se listen over kontoene dine som kan lagre kontakter på denne enheten"</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"Posisjon"</string>
-    <string name="permgroupdesc_location" msgid="1995955142118450685">"få tilgang til enhetens plassering"</string>
+    <string name="permgroupdesc_location" msgid="1995955142118450685">"se enhetens posisjon"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"Kalender"</string>
     <string name="permgroupdesc_calendar" msgid="6762751063361489379">"åpne kalenderen din"</string>
     <string name="permgrouplab_sms" msgid="795737735126084874">"SMS"</string>
@@ -1123,6 +1123,7 @@
     <string name="lockscreen_access_pattern_cell_added_verbose" msgid="2931364927622563465">"Celle <xliff:g id="CELL_INDEX">%1$s</xliff:g> er lagt til"</string>
     <string name="lockscreen_access_pattern_detected" msgid="3931150554035194012">"Mønsteret er fullført"</string>
     <string name="lockscreen_access_pattern_area" msgid="1288780416685002841">"Mønsterområde."</string>
+    <string name="lockscreen_access_pattern_cell_verbose" msgid="6670905066468035137">"Celle <xliff:g id="CELL_INDEX">%1$s</xliff:g>"</string>
     <string name="keyguard_accessibility_widget_changed" msgid="7298011259508200234">"%1$s. Modul %2$d av %3$d."</string>
     <string name="keyguard_accessibility_add_widget" msgid="8245795023551343672">"Legg til modul."</string>
     <string name="keyguard_accessibility_widget_empty_slot" msgid="544239307077644480">"Tom"</string>
@@ -2006,6 +2007,7 @@
     <string name="managed_profile_label_badge_3" msgid="6882151970556391957">"Tredje <xliff:g id="LABEL">%1$s</xliff:g> for jobben"</string>
     <string name="clone_profile_label_badge" msgid="1871997694718793964">"Klon <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="private_profile_label_badge" msgid="1712086003787839183">"Privat <xliff:g id="LABEL">%1$s</xliff:g>"</string>
+    <string name="hsu_label_badge" msgid="1357272000281944932">"System <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="lock_to_app_unlock_pin" msgid="3890940811866290782">"Krev PIN-kode for å løsne app"</string>
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Krev opplåsingsmønster for å løsne apper"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Krev passord for å løsne apper"</string>
@@ -2617,6 +2619,8 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"For å sende meldinger via satellitt må du angi Google Meldinger som standardapp for meldinger"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"Satellittmeldinger er ikke tilgjengelige"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"For å sjekke om satellittmeldinger er tilgjengelige i dette landet eller denne regionen, slå på posisjonsinnstillinger"</string>
+    <!-- no translation found for satellite_indicator (6846063647532086110) -->
+    <skip />
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"Konfigurer opplåsingen med fingeravtrykk på nytt"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"<xliff:g id="FINGERPRINT">%s</xliff:g> gjenkjennes ikke lenger."</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> og <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> gjenkjennes ikke lenger."</string>
@@ -2662,5 +2666,5 @@
     <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"Appen «<xliff:g id="APP_NAME">%1$s</xliff:g>» bruker for mye ressurser."</string>
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"Oppdatering fra forelderen din"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> er fjernet inntil videre"</string>
-    <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> er tilgjengelig nå"</string>
+    <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"Nå er <xliff:g id="APP_NAME">%1$s</xliff:g> tilgjengelig"</string>
 </resources>

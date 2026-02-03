@@ -1123,6 +1123,7 @@
     <string name="lockscreen_access_pattern_cell_added_verbose" msgid="2931364927622563465">"已添加圆点 <xliff:g id="CELL_INDEX">%1$s</xliff:g>"</string>
     <string name="lockscreen_access_pattern_detected" msgid="3931150554035194012">"图案绘制完成"</string>
     <string name="lockscreen_access_pattern_area" msgid="1288780416685002841">"图案区域。"</string>
+    <string name="lockscreen_access_pattern_cell_verbose" msgid="6670905066468035137">"单元格 <xliff:g id="CELL_INDEX">%1$s</xliff:g>"</string>
     <string name="keyguard_accessibility_widget_changed" msgid="7298011259508200234">"%1$s。%3$d的微件%2$d。"</string>
     <string name="keyguard_accessibility_add_widget" msgid="8245795023551343672">"添加微件。"</string>
     <string name="keyguard_accessibility_widget_empty_slot" msgid="544239307077644480">"空白"</string>
@@ -2006,6 +2007,7 @@
     <string name="managed_profile_label_badge_3" msgid="6882151970556391957">"第三个工作<xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="clone_profile_label_badge" msgid="1871997694718793964">"<xliff:g id="LABEL">%1$s</xliff:g>克隆"</string>
     <string name="private_profile_label_badge" msgid="1712086003787839183">"私人“<xliff:g id="LABEL">%1$s</xliff:g>”"</string>
+    <string name="hsu_label_badge" msgid="1357272000281944932">"系统<xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="lock_to_app_unlock_pin" msgid="3890940811866290782">"取消时要求输入PIN码"</string>
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"取消固定前要求绘制解锁图案"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"取消时要求输入密码"</string>
@@ -2617,6 +2619,8 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"如需通过卫星发送消息，请将 Google 信息设为默认即时通讯应用"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"不支持卫星消息功能"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"若要查看此国家/地区是否支持卫星消息功能，请开启位置信息设置"</string>
+    <!-- no translation found for satellite_indicator (6846063647532086110) -->
+    <skip />
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"重新设置指纹解锁功能"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"系统无法再识别<xliff:g id="FINGERPRINT">%s</xliff:g>。"</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"系统无法再识别<xliff:g id="FINGERPRINT_0">%1$s</xliff:g>和<xliff:g id="FINGERPRINT_1">%2$s</xliff:g>。"</string>

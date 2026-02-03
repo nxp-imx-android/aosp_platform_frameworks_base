@@ -1123,6 +1123,7 @@
     <string name="lockscreen_access_pattern_cell_added_verbose" msgid="2931364927622563465">"Engadiuse a cela <xliff:g id="CELL_INDEX">%1$s</xliff:g>"</string>
     <string name="lockscreen_access_pattern_detected" msgid="3931150554035194012">"Completouse o padrón"</string>
     <string name="lockscreen_access_pattern_area" msgid="1288780416685002841">"Zona do padrón"</string>
+    <string name="lockscreen_access_pattern_cell_verbose" msgid="6670905066468035137">"Cela <xliff:g id="CELL_INDEX">%1$s</xliff:g>"</string>
     <string name="keyguard_accessibility_widget_changed" msgid="7298011259508200234">"%1$s. Widget %2$d de %3$d."</string>
     <string name="keyguard_accessibility_add_widget" msgid="8245795023551343672">"Engadir widget."</string>
     <string name="keyguard_accessibility_widget_empty_slot" msgid="544239307077644480">"Baleiro"</string>
@@ -2006,6 +2007,7 @@
     <string name="managed_profile_label_badge_3" msgid="6882151970556391957">"3.º <xliff:g id="LABEL">%1$s</xliff:g> do traballo"</string>
     <string name="clone_profile_label_badge" msgid="1871997694718793964">"Clonar <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="private_profile_label_badge" msgid="1712086003787839183">"<xliff:g id="LABEL">%1$s</xliff:g> privado"</string>
+    <string name="hsu_label_badge" msgid="1357272000281944932">"Sistema <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="lock_to_app_unlock_pin" msgid="3890940811866290782">"Pedir PIN antes de soltar a fixación"</string>
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Pedir padrón de desbloqueo antes de soltar a fixación"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Pedir contrasinal antes de soltar a fixación"</string>
@@ -2617,6 +2619,8 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"Para intercambiar mensaxes por satélite, cómpre establecer Mensaxes de Google como aplicación de mensaxaría predeterminada"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"Mensaxaría por satélite non dispoñible"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"Para ver se está dispoñible a mensaxaría por satélite neste país ou rexión, activa a configuración de localización"</string>
+    <!-- no translation found for satellite_indicator (6846063647532086110) -->
+    <skip />
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"Configura de novo o desbloqueo dactilar"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"<xliff:g id="FINGERPRINT">%s</xliff:g> xa non se recoñece."</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> e <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> xa non se recoñecen."</string>

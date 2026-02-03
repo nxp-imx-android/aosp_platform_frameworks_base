@@ -1123,6 +1123,7 @@
     <string name="lockscreen_access_pattern_cell_added_verbose" msgid="2931364927622563465">"셀 <xliff:g id="CELL_INDEX">%1$s</xliff:g> 추가됨"</string>
     <string name="lockscreen_access_pattern_detected" msgid="3931150554035194012">"패턴 완료"</string>
     <string name="lockscreen_access_pattern_area" msgid="1288780416685002841">"패턴을 그리는 부분입니다."</string>
+    <string name="lockscreen_access_pattern_cell_verbose" msgid="6670905066468035137">"<xliff:g id="CELL_INDEX">%1$s</xliff:g> 셀"</string>
     <string name="keyguard_accessibility_widget_changed" msgid="7298011259508200234">"%1$s. %3$d의 위젯 %2$d."</string>
     <string name="keyguard_accessibility_add_widget" msgid="8245795023551343672">"위젯 추가"</string>
     <string name="keyguard_accessibility_widget_empty_slot" msgid="544239307077644480">"비어 있음"</string>
@@ -2006,6 +2007,7 @@
     <string name="managed_profile_label_badge_3" msgid="6882151970556391957">"세 번째 업무용<xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="clone_profile_label_badge" msgid="1871997694718793964">"<xliff:g id="LABEL">%1$s</xliff:g> 복사"</string>
     <string name="private_profile_label_badge" msgid="1712086003787839183">"비공개 <xliff:g id="LABEL">%1$s</xliff:g>"</string>
+    <string name="hsu_label_badge" msgid="1357272000281944932">"시스템 <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="lock_to_app_unlock_pin" msgid="3890940811866290782">"고정 해제 이전에 PIN 요청"</string>
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"고정 해제 시 잠금 해제 패턴 요청"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"고정 해제 이전에 비밀번호 요청"</string>
@@ -2120,11 +2122,11 @@
     <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"<xliff:g id="APP_NAME">%1$s</xliff:g> 잠김"</string>
     <string name="locked_app_external_display_message" msgid="5483884799685545338">"이 디스플레이에서 앱에 액세스하려면 먼저 다른 기기에서 본인 인증을 하세요."</string>
     <string name="app_lock_edu_dialog_enable_app_lock_title" msgid="283314042336592322">"<xliff:g id="APP_NAME">%1$s</xliff:g> 앱에 앱 잠금을 추가하시겠습니까?"</string>
-    <string name="app_lock_edu_dialog_description" msgid="8176807243219769518">"보안을 위해 지문 및 얼굴 인식 잠금 해제 또는 PIN으로만 이 앱에 액세스할 수 있습니다"</string>
-    <string name="app_lock_edu_dialog_description_template" msgid="8563718120753342530">"보안을 위해 %1$s 또는 %2$s(으)로만 이 앱에 액세스할 수 있습니다"</string>
-    <string name="app_lock_edu_dialog_description_template_no_biometrics" msgid="7122017109150633691">"보안을 위해 %1$s(으)로만 이 앱에 액세스할 수 있습니다"</string>
+    <string name="app_lock_edu_dialog_description" msgid="8176807243219769518">"보안을 위해 사용자 본인만 지문 및 얼굴 인식 잠금 해제 또는 PIN으로 이 앱에 액세스할 수 있습니다"</string>
+    <string name="app_lock_edu_dialog_description_template" msgid="8563718120753342530">"보안을 위해 사용자 본인만 %1$s 또는 %2$s(으)로 이 앱에 액세스할 수 있습니다"</string>
+    <string name="app_lock_edu_dialog_description_template_no_biometrics" msgid="7122017109150633691">"보안을 위해 사용자 본인만 %1$s(으)로 이 앱에 액세스할 수 있습니다"</string>
     <string name="app_lock_edu_dialog_info_header" msgid="5876120209204270990">"앱 잠금 사용"</string>
-    <string name="app_lock_edu_dialog_info_notifications" msgid="1124438392204873305">"알림 내용은 숨겨집니다"</string>
+    <string name="app_lock_edu_dialog_info_notifications" msgid="1124438392204873305">"알림 내용은 표시되지 않습니다"</string>
     <string name="app_lock_edu_dialog_info_widgets" msgid="8809009414650740872">"위젯 및 바로가기가 삭제됩니다"</string>
     <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"앱 잠금 추가"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_face" msgid="1348151645996748654">"얼굴 인식 잠금 해제"</string>
@@ -2133,7 +2135,7 @@
     <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="8487096457702445059">"비밀번호"</string>
     <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="991436996281983547">"패턴"</string>
     <string name="app_lock_edu_dialog_lockscreen_pin_name" msgid="6458607126966304795">"PIN"</string>
-    <string name="app_lock_permission_review_dialog_title" msgid="5030286398974840579">"다른 앱에서 사진이 계속 표시될 수 있습니다"</string>
+    <string name="app_lock_permission_review_dialog_title" msgid="5030286398974840579">"다른 앱에서 내 사진이 계속 표시될 수 있습니다"</string>
     <string name="app_lock_permission_review_dialog_sub_title" msgid="310758587817184145">"내 사진에 액세스할 수 있는 앱"</string>
     <string name="app_lock_permission_review_expand_app_list_button" msgid="3214809707125223273">"모두 보기"</string>
     <string name="app_lock_permission_review_continue_button" msgid="4045066724173414043">"계속"</string>
@@ -2292,7 +2294,7 @@
     <string name="nas_upgrade_notification_enable_action" msgid="3046406808378726874">"확인"</string>
     <string name="nas_upgrade_notification_disable_action" msgid="3794833210043497982">"사용 중지"</string>
     <string name="nas_upgrade_notification_learn_more_action" msgid="7011130656195423947">"자세히 알아보기"</string>
-    <string name="nas_upgrade_notification_learn_more_content" msgid="3735480566983530650">"Android 12에서는 Android 적응형 알림이 개선된 알림으로 대체됩니다. 이 기능은 추천 작업과 답장을 표시하고 알림을 정리해 줍니다.\n\n개선된 알림은 연락처 이름과 메시지 등 개인 정보가 포함된 알림 내용에 액세스할 수 있습니다. 또한 전화를 받고 방해 금지 모드를 제어하는 등 알림을 닫거나 처리하는 것도 가능합니다."</string>
+    <string name="nas_upgrade_notification_learn_more_content" msgid="3735480566983530650">"Android 12에서는 Android 적응형 알림이 개선된 알림으로 대체됩니다. 이 기능은 추천 작업과 답장을 표시하고 알림을 정리해 줍니다.\n\n개선된 알림은 연락처 이름과 메시지 등 개인 정보가 포함된 알림 내용에 액세스할 수 있습니다. 또한 전화를 받는 등 알림을 닫거나 처리하고 방해 금지 모드를 제어하는 것도 가능합니다."</string>
     <string name="dynamic_mode_notification_channel_name" msgid="2986926422100223328">"루틴 모드 정보 알림"</string>
     <string name="dynamic_mode_notification_title" msgid="1388718452788985481">"절전 모드 사용 설정됨"</string>
     <string name="dynamic_mode_notification_summary" msgid="1639031262484979689">"배터리 사용량을 줄여서 배터리 수명을 늘립니다."</string>
@@ -2617,6 +2619,8 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"위성으로 메시지를 보내려면 Google 메시지를 기본 메시지 앱으로 설정하세요."</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"위성 메시지를 사용할 수 없음"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"이 국가 또는 지역에서 위성 메시지를 사용할 수 있는지 확인하려면 위치 설정을 사용 설정하세요."</string>
+    <!-- no translation found for satellite_indicator (6846063647532086110) -->
+    <skip />
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"지문 잠금 해제 다시 설정"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"<xliff:g id="FINGERPRINT">%s</xliff:g> 지문을 더 이상 인식할 수 없습니다."</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> 및 <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> 지문을 더 이상 인식할 수 없습니다."</string>

@@ -349,7 +349,7 @@
     <string name="managed_profile_app_label" msgid="367401088383965725">"Passer à <xliff:g id="APP_NAME">%1$s</xliff:g> dans le profil professionnel"</string>
     <string name="permgrouplab_contacts" msgid="7443702399615347952">"Contacts et comptes"</string>
     <string name="permgroupdesc_contacts" msgid="2001771388402758264">"Accéder à vos contacts et consulter la liste de vos comptes qui peuvent enregistrer des contacts sur cet appareil"</string>
-    <string name="permgrouplab_location" msgid="1858277002233964394">"Position"</string>
+    <string name="permgrouplab_location" msgid="1858277002233964394">"Localisation"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"accéder à la position de cet appareil"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"Agenda"</string>
     <string name="permgroupdesc_calendar" msgid="6762751063361489379">"accéder à votre agenda"</string>
@@ -1128,6 +1128,7 @@
     <string name="lockscreen_access_pattern_cell_added_verbose" msgid="2931364927622563465">"Cellule <xliff:g id="CELL_INDEX">%1$s</xliff:g> ajoutée"</string>
     <string name="lockscreen_access_pattern_detected" msgid="3931150554035194012">"Schéma terminé."</string>
     <string name="lockscreen_access_pattern_area" msgid="1288780416685002841">"Zone du schéma"</string>
+    <string name="lockscreen_access_pattern_cell_verbose" msgid="6670905066468035137">"Cellule <xliff:g id="CELL_INDEX">%1$s</xliff:g>"</string>
     <string name="keyguard_accessibility_widget_changed" msgid="7298011259508200234">"%1$s. Widget %2$d sur %3$d."</string>
     <string name="keyguard_accessibility_add_widget" msgid="8245795023551343672">"Ajouter un widget"</string>
     <string name="keyguard_accessibility_widget_empty_slot" msgid="544239307077644480">"Vide"</string>
@@ -1839,7 +1840,7 @@
     <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"geste"</string>
     <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"paramètres rapides"</string>
     <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"toucher trois fois"</string>
-    <string name="accessibility_shortcut_label_top_row_key" msgid="1488840908672437180">"touche d\'accessibilité"</string>
+    <string name="accessibility_shortcut_label_top_row_key" msgid="1488840908672437180">"la touche d\'accessibilité"</string>
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"<xliff:g id="SERVICE_NAME">%s</xliff:g> a été désactivé"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Modifier les raccourcis"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"OK"</string>
@@ -2011,6 +2012,7 @@
     <string name="managed_profile_label_badge_3" msgid="6882151970556391957">"3e <xliff:g id="LABEL">%1$s</xliff:g> professionnel(le)"</string>
     <string name="clone_profile_label_badge" msgid="1871997694718793964">"Clone de <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="private_profile_label_badge" msgid="1712086003787839183">"<xliff:g id="LABEL">%1$s</xliff:g> privé"</string>
+    <string name="hsu_label_badge" msgid="1357272000281944932">"Système : <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="lock_to_app_unlock_pin" msgid="3890940811866290782">"Demander le NIP avant d\'annuler l\'épinglage"</string>
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Demander le schéma de déverrouillage avant d\'annuler l\'épinglage"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Demander le mot de passe avant d\'annuler l\'épinglage"</string>
@@ -2622,6 +2624,8 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"Pour envoyer des messages par satellite, définissez Messages de Google comme appli de messagerie par défaut"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"La messagerie par satellite n\'est pas accessible"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"Pour vérifier si la messagerie par satellite est accessible dans ce pays ou cette région, activez les paramètres de localisation"</string>
+    <!-- no translation found for satellite_indicator (6846063647532086110) -->
+    <skip />
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"Configurer le Déverrouillage par empreinte digitale à nouveau"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"L\'empreinte digitale <xliff:g id="FINGERPRINT">%s</xliff:g> ne peut plus être reconnue."</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"Les empreintes digitales <xliff:g id="FINGERPRINT_0">%1$s</xliff:g> et <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> ne peuvent plus être reconnues."</string>

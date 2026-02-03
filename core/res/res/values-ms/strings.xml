@@ -1123,6 +1123,7 @@
     <string name="lockscreen_access_pattern_cell_added_verbose" msgid="2931364927622563465">"Sel <xliff:g id="CELL_INDEX">%1$s</xliff:g> ditambahkan"</string>
     <string name="lockscreen_access_pattern_detected" msgid="3931150554035194012">"Corak siap"</string>
     <string name="lockscreen_access_pattern_area" msgid="1288780416685002841">"Kawasan corak."</string>
+    <string name="lockscreen_access_pattern_cell_verbose" msgid="6670905066468035137">"Sel <xliff:g id="CELL_INDEX">%1$s</xliff:g>"</string>
     <string name="keyguard_accessibility_widget_changed" msgid="7298011259508200234">"%1$s. Widget %2$d dari %3$d."</string>
     <string name="keyguard_accessibility_add_widget" msgid="8245795023551343672">"Tambah widget."</string>
     <string name="keyguard_accessibility_widget_empty_slot" msgid="544239307077644480">"Kosong"</string>
@@ -2006,6 +2007,7 @@
     <string name="managed_profile_label_badge_3" msgid="6882151970556391957">"<xliff:g id="LABEL">%1$s</xliff:g> kerja ke-3"</string>
     <string name="clone_profile_label_badge" msgid="1871997694718793964">"<xliff:g id="LABEL">%1$s</xliff:g> Klon"</string>
     <string name="private_profile_label_badge" msgid="1712086003787839183">"<xliff:g id="LABEL">%1$s</xliff:g> Peribadi"</string>
+    <string name="hsu_label_badge" msgid="1357272000281944932">"<xliff:g id="LABEL">%1$s</xliff:g> Sistem"</string>
     <string name="lock_to_app_unlock_pin" msgid="3890940811866290782">"Minta PIN sebelum menyahsemat"</string>
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Minta corak buka kunci sebelum menyahsemat"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Minta kata laluan sebelum menyahsemat"</string>
@@ -2292,7 +2294,7 @@
     <string name="nas_upgrade_notification_enable_action" msgid="3046406808378726874">"OK"</string>
     <string name="nas_upgrade_notification_disable_action" msgid="3794833210043497982">"Matikan"</string>
     <string name="nas_upgrade_notification_learn_more_action" msgid="7011130656195423947">"Ketahui lebih lanjut"</string>
-    <string name="nas_upgrade_notification_learn_more_content" msgid="3735480566983530650">"Pemberitahuan yang dipertingkatkan menggantikan Pemberitahuan Boleh Suai Android dalam Android 12. Ciri ini menunjukkan cadangan tindakan dan balasan, serta mengatur pemberitahuan anda.\n\nPemberitahuan yang dipertingkatkan dapat mengakses kandungan pemberitahuan, termasuk maklumat peribadi seperti nama kenalan dan mesej. Ciri ini juga dapat mengetepikan atau membalas pemberitahuan, seperti menjawab panggilan telefon dan mengawal Jangan Ganggu."</string>
+    <string name="nas_upgrade_notification_learn_more_content" msgid="3735480566983530650">"Pemberitahuan yang dipertingkatkan menggantikan Pemberitahuan Boleh Suai Android dalam Android 12. Ciri ini menunjukkan cadangan tindakan dan balasan, serta mengatur pemberitahuan.\n\nPemberitahuan yang dipertingkatkan dapat mengakses kandungan pemberitahuan, termasuk maklumat peribadi seperti nama kenalan dan mesej. Ciri ini juga dapat mengetepikan atau memberikan respons kepada pemberitahuan, seperti menjawab panggilan telefon dan mengawal Jangan Ganggu."</string>
     <string name="dynamic_mode_notification_channel_name" msgid="2986926422100223328">"Pemberitahuan maklumat Mod Rutin"</string>
     <string name="dynamic_mode_notification_title" msgid="1388718452788985481">"Penjimat Bateri dihidupkan"</string>
     <string name="dynamic_mode_notification_summary" msgid="1639031262484979689">"Mengurangkan penggunaan bateri untuk melanjutkan hayat bateri"</string>
@@ -2617,6 +2619,8 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"Untuk menghantar mesej melalui satelit, tetapkan Google Messages sebagai apl pemesejan lalai anda"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"Permesejan satelit tidak tersedia"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"Untuk menyemak sama ada permesejan satelit tersedia di negara atau rantau ini, hidupkan tetapan lokasi"</string>
+    <!-- no translation found for satellite_indicator (6846063647532086110) -->
+    <skip />
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"Sediakan Buka Kunci Cap Jari sekali lagi"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"<xliff:g id="FINGERPRINT">%s</xliff:g> tidak dapat dicam lagi."</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> dan <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> tidak dapat dicam lagi."</string>

@@ -598,9 +598,9 @@
     <string name="permlab_setWallpaperHints" msgid="1153485176642032714">"приспособи ја големината на твојот тапет"</string>
     <string name="permdesc_setWallpaperHints" msgid="6257053376990044668">"Дозволува апликацијата да постави сугестии за големина на системски тапет."</string>
     <string name="permlab_setTimeZone" msgid="7922618798611542432">"постави временска зона"</string>
-    <string name="permdesc_setTimeZone" product="tablet" msgid="1788868809638682503">"Дозволува апликацијата да ја промени часовната зона на таблетот."</string>
+    <string name="permdesc_setTimeZone" product="tablet" msgid="1788868809638682503">"Дозволува апликацијата да ја промени временската зона на таблетот."</string>
     <string name="permdesc_setTimeZone" product="tv" msgid="9069045914174455938">"Дозволува апликацијата да ја промени временската зона на вашиот уред Android TV."</string>
-    <string name="permdesc_setTimeZone" product="default" msgid="4611828585759488256">"Дозволува апликацијата да ја промени часовната зона на телефонот."</string>
+    <string name="permdesc_setTimeZone" product="default" msgid="4611828585759488256">"Дозволува апликацијата да ја промени временската зона на телефонот."</string>
     <string name="permlab_getAccounts" msgid="5304317160463582791">"најди сметки на уредот"</string>
     <string name="permdesc_getAccounts" product="tablet" msgid="1784452755887604512">"Овозможува апликацијата да го добие списокот со сметки познати на таблетот. Ова може да опфати кои било сметки што ги создале апликациите што сте ги инсталирале."</string>
     <string name="permdesc_getAccounts" product="tv" msgid="437604680436540822">"Дозволува апликацијата да го добие списокот со сметки познати на вашиот уред Android TV. Ова може да ги вклучува сите сметки создадени од апликациите што сте ги инсталирале."</string>
@@ -1123,6 +1123,7 @@
     <string name="lockscreen_access_pattern_cell_added_verbose" msgid="2931364927622563465">"Додадена е ќелија <xliff:g id="CELL_INDEX">%1$s</xliff:g>"</string>
     <string name="lockscreen_access_pattern_detected" msgid="3931150554035194012">"Шемата е целосна"</string>
     <string name="lockscreen_access_pattern_area" msgid="1288780416685002841">"Место за шема."</string>
+    <string name="lockscreen_access_pattern_cell_verbose" msgid="6670905066468035137">"Ќелија <xliff:g id="CELL_INDEX">%1$s</xliff:g>"</string>
     <string name="keyguard_accessibility_widget_changed" msgid="7298011259508200234">"%1$s. Виџет %2$d од %3$d."</string>
     <string name="keyguard_accessibility_add_widget" msgid="8245795023551343672">"Додај виџет."</string>
     <string name="keyguard_accessibility_widget_empty_slot" msgid="544239307077644480">"Празно"</string>
@@ -1834,7 +1835,7 @@
     <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"движење"</string>
     <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"брзи поставки"</string>
     <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"троен допир"</string>
-    <string name="accessibility_shortcut_label_top_row_key" msgid="1488840908672437180">"клуч за пристапност"</string>
+    <string name="accessibility_shortcut_label_top_row_key" msgid="1488840908672437180">"копче за пристапност"</string>
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"<xliff:g id="SERVICE_NAME">%s</xliff:g> е исклучена"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Изменете ги кратенките"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"Готово"</string>
@@ -2006,6 +2007,7 @@
     <string name="managed_profile_label_badge_3" msgid="6882151970556391957">"Трета деловна <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="clone_profile_label_badge" msgid="1871997694718793964">"Клонирајте го <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="private_profile_label_badge" msgid="1712086003787839183">"Приватен <xliff:g id="LABEL">%1$s</xliff:g>"</string>
+    <string name="hsu_label_badge" msgid="1357272000281944932">"<xliff:g id="LABEL">%1$s</xliff:g> на системот"</string>
     <string name="lock_to_app_unlock_pin" msgid="3890940811866290782">"Побарај PIN пред откачување"</string>
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Побарај шема за откл. пред откачување"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Побарај лозинка пред откачување"</string>
@@ -2617,6 +2619,8 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"За да разменувате пораки преку сателит, поставете ја Google Messages како стандардна апликација за разменување пораки"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"„Сателитска размена на пораки“ не е достапна"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"За да проверите дали е достапна „Сателитска размена на пораки“ во земјава или регионов, вклучете ги поставките за локација"</string>
+    <!-- no translation found for satellite_indicator (6846063647532086110) -->
+    <skip />
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"Поставете „Отклучување со отпечаток“ повторно"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"<xliff:g id="FINGERPRINT">%s</xliff:g> веќе не може да се препознае."</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> и <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> веќе не може да се препознаат."</string>
