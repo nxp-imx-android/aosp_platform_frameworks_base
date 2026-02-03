@@ -1502,6 +1502,16 @@ flag {
 }
 
 flag {
+    name: "screen_recording_service_fix"
+    namespace: "systemui"
+    description: "Fixes microphone access in ScreenRecordingService"
+    bug: "412572612"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "screenshot_disable_long_screenshot_for_system_shade"
     namespace: "systemui"
     description: "Disable long screenshot when the system shade is expanded."

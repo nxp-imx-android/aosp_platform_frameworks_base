@@ -179,6 +179,7 @@
     <!-- Screen Recording -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SYSTEM_EXEMPTED" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.CAPTURE_AUDIO_OUTPUT"/>
     <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
@@ -569,6 +570,7 @@
 
         <service
             android:name=".screenrecord.service.ScreenRecordingService"
+            android:foregroundServiceType="systemExempted|microphone"
             android:exported="false" />
 
         <service android:name=".screenrecord.RecordingService"
