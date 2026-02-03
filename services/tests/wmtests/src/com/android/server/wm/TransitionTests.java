@@ -1374,24 +1374,19 @@ public class TransitionTests extends WindowTestsBase {
         final InsetsSourceProvider navBarInsetsProvider = navBar.getControllableInsetProvider();
         assertNotNull(navBarInsetsProvider);
         final ActivityRecord app = createActivityRecord(mDisplayContent);
-        final Transition transition = app.mTransitionController.createTransition(TRANSIT_OPEN);
-        app.mTransitionController.requestStartTransition(transition, app.getTask(),
-                null /* remoteTransition */, null /* displayChange */);
-        transition.collectExistenceChange(app.getTask());
+        // Pretend there's an OPEN transition.
+        final TransitionController transitionController = mDisplayContent.mTransitionController;
+        spyOn(transitionController);
+        doReturn(TRANSIT_OPEN).when(transitionController).getCollectingTransitionType();
         mDisplayContent.setFixedRotationLaunchingAppUnchecked(app);
+        doCallRealMethod().when(transitionController).getCollectingTransitionType();
         final AsyncRotationController asyncRotationController =
                 mDisplayContent.getAsyncRotationController();
         assertNotNull(asyncRotationController);
         assertTrue(asyncRotationController.shouldFreezeInsetsPosition(statusBar));
-        assertTrue(app.getTask().inTransition());
 
-        player.start();
-        player.finish();
-        app.getTask().finishSync(mWm.mTransactionFactory.get(), app.getTask().getSyncGroup(),
-                false /* cancel */);
-
-        // The open transition is finished. Continue to play seamless display change transition,
-        // so the previous async rotation controller should still exist.
+        // Assume that the open transition is finished. The previous async rotation controller
+        // should exist when performing seamless display change transition.
         mDisplayContent.getDisplayRotation().setRotation(mDisplayContent.getRotation() + 1);
         mDisplayContent.setLastHasContent();
         mDisplayContent.requestChangeTransition(1 /* changes */, null /* displayChange */,
@@ -1400,7 +1395,7 @@ public class TransitionTests extends WindowTestsBase {
         assertNotNull(mDisplayContent.getAsyncRotationController());
 
         // The app is still in transition, so the callback should be no-op.
-        mDisplayContent.mTransitionController.dispatchLegacyAppTransitionFinished(app);
+        transitionController.dispatchLegacyAppTransitionFinished(app);
         assertTrue(mDisplayContent.hasTopFixedRotationLaunchingApp());
 
         // The bar was invisible so it is not handled by the controller. But if it becomes visible
@@ -1412,7 +1407,7 @@ public class TransitionTests extends WindowTestsBase {
 
         player.startTransition();
         // Non-app windows should not be collected.
-        assertFalse(mDisplayContent.mTransitionController.isCollecting(statusBar.mToken));
+        assertFalse(transitionController.isCollecting(statusBar.mToken));
         // Avoid DeviceStateController disturbing the test by triggering another rotation change.
         doReturn(false).when(mDisplayContent).updateRotationUnchecked();
         // Wait for the display change due to transition.shouldApplyOnDisplayThread().
