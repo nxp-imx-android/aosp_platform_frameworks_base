@@ -104,7 +104,7 @@ public class LockResolver {
         return symbol.getRawAttributes().stream()
                 .filter(a -> a.type.tsym.getQualifiedName().toString().equals(ANNOTATION))
                 .flatMap(a -> a.getElementValues().entrySet().stream()
-                        .filter(e -> e.getKey().getSimpleName().toString().equals("order"))
+                        .filter(e -> e.getKey().getSimpleName().toString().equals("value"))
                         .map(e -> (Integer) e.getValue().getValue()))
                 .findAny();
     }
