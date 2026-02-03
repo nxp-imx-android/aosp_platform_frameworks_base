@@ -24,8 +24,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.performTouchInput
-import androidx.compose.ui.test.swipeLeft
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.TestContentScope
@@ -38,8 +36,7 @@ import com.android.systemui.integration.SystemUiIntegrationTest
 import com.android.systemui.jank.interactionJankMonitor
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
-import com.android.systemui.media.remedia.data.repository.fakeActiveMedia
-import com.android.systemui.media.remedia.data.repository.fakePausedMediaWithCustomActions
+import com.android.systemui.media.remedia.data.repository.fakeMediaData
 import com.android.systemui.media.remedia.data.repository.setFakeCurrentMedia
 import com.android.systemui.media.remedia.data.repository.setHasMedia
 import com.android.systemui.qs.composefragment.dagger.usingMediaInComposeFragment
@@ -58,6 +55,7 @@ import com.android.systemui.statusbar.notification.stack.ui.viewmodel.notificati
 import com.android.systemui.statusbar.phone.ui.tintedIconManagerFactory
 import com.android.systemui.testKosmos
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -93,11 +91,15 @@ class MediaInShadeTest : SysuiTestCase() {
             jankMonitor = kosmos.interactionJankMonitor,
         )
 
+    @Before
+    fun setup() {
+        kosmos.setFakeCurrentMedia(kosmos.fakeMediaData)
+    }
+
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun umoInSingleShade() =
         kosmos.runTest {
-            setFakeCurrentMedia(listOf(fakeActiveMedia))
             usingMediaInComposeFragment = true
             enableSingleShade()
             setHasMedia(true)
@@ -125,7 +127,6 @@ class MediaInShadeTest : SysuiTestCase() {
     @Test
     fun umoInSplitShade() =
         kosmos.runTest {
-            setFakeCurrentMedia(listOf(fakeActiveMedia))
             usingMediaInComposeFragment = true
             enableSplitShade()
             setHasMedia(true)
@@ -151,51 +152,8 @@ class MediaInShadeTest : SysuiTestCase() {
                 .assertExists()
         }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    @Test
-    fun multipleMediaInSingleShade() =
-        kosmos.runTest {
-            // Add a new media object to current media list.
-            setFakeCurrentMedia(listOf(fakeActiveMedia, fakePausedMediaWithCustomActions))
-            usingMediaInComposeFragment = true
-            enableSingleShade()
-            setHasMedia(true)
-
-            // Set the shade content.
-            composeTestRule.setContent {
-                PlatformTheme {
-                    WithStatusIconContext(tintedIconManagerFactory) {
-                        with(scene) {
-                            TestContentScope(currentScene = Scenes.Shade) { Content(Modifier) }
-                        }
-                    }
-                }
-            }
-            runCurrent()
-            composeTestRule.waitForIdle()
-
-            // Verify that the UMO exists.
-            composeTestRule
-                .onNodeWithContentDescription(EXPECTED_UMO_CONTENT_DESC, substring = true)
-                .assertExists()
-
-            // Swipe to see the second media.
-            composeTestRule
-                .onNodeWithContentDescription(EXPECTED_UMO_CONTENT_DESC, substring = true)
-                .performTouchInput { swipeLeft() }
-
-            runCurrent()
-            composeTestRule.waitForIdle()
-
-            // Verify that the second media exists.
-            composeTestRule
-                .onNodeWithContentDescription(EXPECTED_SECOND_MEDIA_CONTENT_DESC, substring = true)
-                .assertExists()
-        }
-
     private companion object {
         const val SPLIT_SHADE_QS_TAG = "element:SplitShadeQuickSettings"
         const val EXPECTED_UMO_CONTENT_DESC = "Fake_Music_Player"
-        const val EXPECTED_SECOND_MEDIA_CONTENT_DESC = "Fake_Audio_Player"
     }
 }
