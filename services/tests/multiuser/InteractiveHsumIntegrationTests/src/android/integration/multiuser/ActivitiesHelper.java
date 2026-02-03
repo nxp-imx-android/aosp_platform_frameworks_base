@@ -46,11 +46,11 @@ public final class ActivitiesHelper {
         Log.d(TAG, "Launching activity with intent " + intent);
         Instrumentation.ActivityMonitor monitor = instrumentation.addMonitor(
                 activityClass.getName(), /* result= */ null, /* block= */ false);
-        context.startActivity(intent);
-
-        Activity activity = instrumentation.waitForMonitorWithTimeout(monitor, ACTIVITY_TIMEOUT_MS);
-        Log.d(TAG, "Activity: " + activity);
+        Activity activity = null;
         try {
+            context.startActivity(intent);
+            activity = instrumentation.waitForMonitorWithTimeout(monitor, ACTIVITY_TIMEOUT_MS);
+            Log.d(TAG, "Activity: " + activity);
             assertWithMessage("activity launched in %sms", ACTIVITY_TIMEOUT_MS).that(activity)
                     .isNotNull();
             assertWithMessage("monitor hits").that(monitor.getHits()).isEqualTo(1);
