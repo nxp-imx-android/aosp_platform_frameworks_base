@@ -74,6 +74,16 @@ flag {
 }
 
 flag {
+  name: "avoid_intermediate_destroying_state"
+  namespace: "windowing_frontend"
+  description: "Prevent intermediate destroying state from affecting visibility"
+  bug: "479716606"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "use_client_surface"
   namespace: "windowing_frontend"
   description: "Let regular windows create their own surface"

@@ -367,7 +367,23 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         assertFalse(win.mHasSurface);
         assertNull(win.mWinAnimator.mSurfaceControl);
 
+        // If the previous relayout-to-invisible comes after the next visible request, it doesn't
+        // need to destroy the surface.
+        if (com.android.window.flags.Flags.avoidIntermediateDestroyingState()) {
+            win.mActivityRecord.mAppStopped = false;
+            win.mViewVisibility = View.VISIBLE;
+            win.mHasSurface = true;
+            win.mWinAnimator.mSurfaceControl = mock(SurfaceControl.class);
+            requestTransition(win.mActivityRecord, WindowManager.TRANSIT_OPEN);
+            win.mActivityRecord.setVisibility(true);
+            mWm.relayoutWindow(win.mSession, win.mClient, win.mAttrs, w, h, View.GONE, 0, 0, 0,
+                    outRelayoutResult, outSurfaceControl);
+            assertFalse(win.mDestroying);
+            assertTrue(win.mHasSurface);
+        }
+
         // Invisible requested activity should not get the last config even if its view is visible.
+        win.mActivityRecord.setVisibleRequested(false);
         mWm.relayoutWindow(win.mSession, win.mClient, win.mAttrs, w, h, View.VISIBLE, 0, 0, 0,
                 outRelayoutResult, outSurfaceControl);
         assertEquals(0, outConfig.getMergedConfiguration().densityDpi);
