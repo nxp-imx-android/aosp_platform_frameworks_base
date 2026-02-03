@@ -17,6 +17,8 @@
 package com.android.systemui.scene.domain.interactor
 
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.snapshotFlow
 import com.android.app.tracing.coroutines.flow.stateInTraced
 import com.android.compose.animation.scene.ContentKey
@@ -190,28 +192,27 @@ constructor(
      * See the implementation to discover the full list of upstream states that affect this value
      * and the methods that ends up mutating those states.
      */
-    val isVisible: Boolean
-        get() {
-            val calculated = isVisibleWithLoggingReason()
-            if (calculated != previouslyLoggedIsVisible) {
-                if (calculated.value != previouslyLoggedIsVisible?.value) {
-                    logger.logVisibilityChange(
-                        from = previouslyLoggedIsVisible?.value ?: true,
-                        to = calculated.value,
-                        reason = calculated.loggingReason,
-                    )
-                } else {
-                    logger.logVisibilityRejection(
-                        to = calculated.value,
-                        reason = calculated.loggingReason,
-                    )
-                }
-
-                previouslyLoggedIsVisible = calculated
+    val isVisible: Boolean by derivedStateOf {
+        val calculated = isVisibleWithLoggingReason()
+        if (calculated != previouslyLoggedIsVisible) {
+            if (calculated.value != previouslyLoggedIsVisible?.value) {
+                logger.logVisibilityChange(
+                    from = previouslyLoggedIsVisible?.value ?: true,
+                    to = calculated.value,
+                    reason = calculated.loggingReason,
+                )
+            } else {
+                logger.logVisibilityRejection(
+                    to = calculated.value,
+                    reason = calculated.loggingReason,
+                )
             }
 
-            return calculated.value
+            previouslyLoggedIsVisible = calculated
         }
+
+        calculated.value
+    }
 
     @Deprecated("Prefer the more performant, non-Flow version.", ReplaceWith("isVisible"))
     val isVisibleFlow: StateFlow<Boolean> =
