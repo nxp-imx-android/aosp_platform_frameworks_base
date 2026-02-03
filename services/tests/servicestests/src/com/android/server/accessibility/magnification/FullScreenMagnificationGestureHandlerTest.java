@@ -69,10 +69,13 @@ import android.os.SystemClock;
 import android.os.UserHandle;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.testing.TestableContext;
 import android.util.DebugUtils;
@@ -162,6 +165,9 @@ public class FullScreenMagnificationGestureHandlerTest {
 
     @Rule
     public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
+
+    @Rule
+    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     public static final int STATE_IDLE = 1;
     public static final int STATE_ACTIVATED = 2;
@@ -536,6 +542,55 @@ public class FullScreenMagnificationGestureHandlerTest {
         tap();
         // no fast forward
         verify(mMgh.getNext(), times(2)).onMotionEvent(any(), any(), anyInt());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_REDUCE_INTERACTIVE_DELAY_WITH_MAGNIFICATION)
+    public void testDisablingTripleTap_whenActivated_removesInputLag() {
+        mMgh = newInstance(/* detectSingleFingerTripleTap= */ false,
+                /* detectShortcutTrigger= */ true);
+        goFromStateIdleTo(STATE_ACTIVATED);
+        allowEventDelegation();
+        tap();
+        verify(mMgh.getNext(), times(2)).onMotionEvent(any(), any(), anyInt());
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_REDUCE_INTERACTIVE_DELAY_WITH_MAGNIFICATION)
+    public void testDisablingTripleTap_whenActivated_flagDisabled_hasInputLag() {
+        mMgh = newInstance(/* detectSingleFingerTripleTap= */ false,
+                /* detectShortcutTrigger= */ true);
+        goFromStateIdleTo(STATE_ACTIVATED);
+        allowEventDelegation();
+        tap();
+
+        // verify that the event is NOT delegated immediately
+        verify(mMgh.getNext(), never()).onMotionEvent(any(), any(), anyInt());
+
+        // wait for the tap timeout
+        fastForward(MagnificationGestureMatcher.getMagnificationMultiTapTimeout(mContext));
+
+        // verify that the event IS delegated after the timeout
+        verify(mMgh.getNext(), times(2)).onMotionEvent(any(), any(), anyInt());
+    }
+
+    @Test
+    public void testDisablingTripleTap_whenActivated_simpleDown_delegatedAfterTimeout() {
+        mMgh = newInstance(/* detectSingleFingerTripleTap= */ false,
+                /* detectShortcutTrigger= */ true);
+        goFromStateIdleTo(STATE_ACTIVATED);
+        allowEventDelegation();
+
+        send(downEvent());
+
+        // verify that the event is NOT delegated immediately
+        verify(mMgh.getNext(), never()).onMotionEvent(any(), any(), anyInt());
+
+        // wait for the tap timeout
+        fastForward(MagnificationGestureMatcher.getMagnificationMultiTapTimeout(mContext));
+
+        // verify that the event IS delegated after the timeout
+        verify(mMgh.getNext()).onMotionEvent(any(), any(), anyInt());
     }
 
     @Test
