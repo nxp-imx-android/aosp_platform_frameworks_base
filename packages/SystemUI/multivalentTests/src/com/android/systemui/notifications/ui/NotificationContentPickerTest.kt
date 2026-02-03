@@ -54,7 +54,8 @@ class NotificationContentPickerTest : SysuiTestCase() {
     }
 
     private val sorter = ContentZOrderSorter(kosmos.sceneContainerConfig)
-    private val hunPicker = HeadsUpPlaceholderContentPicker(sorter)
+    private val lowestZPicker = LowestZContentPicker(sorter)
+    private val hunPicker = HeadsUpPlaceholderContentPicker(lowestZPicker)
     private val stackPicker = StackPlaceholderContentPicker(sorter)
 
     @Test
