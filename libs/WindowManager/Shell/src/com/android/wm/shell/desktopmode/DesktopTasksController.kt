@@ -3701,6 +3701,10 @@ class DesktopTasksController(
                 shouldEndUpAtHome,
             )
         }
+        if (shouldEndUpAtHome && exitReason == ExitReason.RETURN_HOME_OR_OVERVIEW) {
+            // We are going back to home, remove any effects for the maximized/snapped tasks.
+            updateTaskBarAndWallpaperDim(displayId, shouldApplyEffect = false)
+        }
         val shouldHandleWallpaperAndHome =
             (!skipWallpaperAndHomeOrdering ||
                 !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) &&
