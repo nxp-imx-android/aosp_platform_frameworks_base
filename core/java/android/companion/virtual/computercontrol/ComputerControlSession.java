@@ -560,9 +560,7 @@ public final class ComputerControlSession implements AutoCloseable {
      * display.</p>
      */
     public void tap(@IntRange(from = 0) int x, @IntRange(from = 0) int y) {
-        if (x < 0 || y < 0) {
-            throw new IllegalArgumentException("Tap coordinates must be non-negative");
-        }
+        validateTouchCoordinates(x, y);
         try {
             mSession.tap(x, y);
         } catch (RemoteException e) {
@@ -584,9 +582,8 @@ public final class ComputerControlSession implements AutoCloseable {
     public void swipe(
             @IntRange(from = 0) int fromX, @IntRange(from = 0) int fromY,
             @IntRange(from = 0) int toX, @IntRange(from = 0) int toY) {
-        if (fromX < 0 || fromY < 0 || toX < 0 || toY < 0) {
-            throw new IllegalArgumentException("Swipe coordinates must be non-negative");
-        }
+        validateTouchCoordinates(fromX, fromY);
+        validateTouchCoordinates(toX, toY);
         try {
             mSession.swipe(fromX, fromY, toX, toY);
         } catch (RemoteException e) {
@@ -602,9 +599,7 @@ public final class ComputerControlSession implements AutoCloseable {
      * display.</p>
      */
     public void longPress(@IntRange(from = 0) int x, @IntRange(from = 0) int y) {
-        if (x < 0 || y < 0) {
-            throw new IllegalArgumentException("Long press coordinates must be non-negative");
-        }
+        validateTouchCoordinates(x, y);
         try {
             mSession.longPress(x, y);
         } catch (RemoteException e) {
@@ -863,6 +858,16 @@ public final class ComputerControlSession implements AutoCloseable {
             }
             Log.d(TAG, "onScreenshotError: code=" + error + ": " + message);
             fireScreenshotCallback(it -> it.onError(new ScreenshotException(error)));
+        }
+    }
+
+    private void validateTouchCoordinates(int x, int y) {
+        if (x < 0 || y < 0) {
+            throw new IllegalArgumentException("Touch coordinates must be non-negative");
+        }
+        if (x >= mDisplaySize.getWidth() || y >= mDisplaySize.getHeight()) {
+            throw new IllegalArgumentException(
+                    "Touch coordinates must be within the display bounds");
         }
     }
 
