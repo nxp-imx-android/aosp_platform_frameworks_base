@@ -242,6 +242,16 @@ flag {
 }
 
 flag {
+    name: "remove_start_mode_from_blocked_intents"
+    namespace: "virtual_devices"
+    description: "Remove the start mode from the blocked intents list"
+    bug: "474610879"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "associated_display_id_input_api"
     namespace: "virtual_devices"
     description: "API for getting the associated display id for an input device"
