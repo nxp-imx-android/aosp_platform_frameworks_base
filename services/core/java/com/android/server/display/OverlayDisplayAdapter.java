@@ -30,6 +30,7 @@ import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Slog;
 import android.view.Display;
+import android.view.DisplayAddress;
 import android.view.DisplayShape;
 import android.view.Gravity;
 import android.view.Surface;
@@ -241,7 +242,10 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
         if (!mOverlays.isEmpty()) {
             mOverlays.clear();
         }
-
+        int maxNumber = 0;
+        for (var o : overlaysToRemove) {
+            maxNumber = Math.max(o.mNumber, maxNumber);
+        }
         int count = 0;
         for (String part : value.split(DISPLAY_SPLITTER)) {
             Matcher displayMatcher = DISPLAY_PATTERN.matcher(part);
@@ -290,7 +294,7 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
                     }
                 }
                 if (!modes.isEmpty()) {
-                    int number = ++count;
+                    int number = maxNumber + (++count);
                     OverlayFlags flags = OverlayFlags.parseFlags(flagString);
                     int gravity = flags.mGravity;
                     if (flags.mGravity == Gravity.NO_GRAVITY) {
@@ -377,6 +381,8 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
         private int mActiveMode;
         private int mUserPreferredModeId = -1;
 
+        private final int mPort;
+
         OverlayDisplayDevice(IBinder displayToken, String name,
                 List<OverlayMode> modes, int activeMode, int defaultMode,
                 float refreshRate, long presentationDeadlineNanos,
@@ -384,6 +390,7 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
             super(OverlayDisplayAdapter.this, displayToken,
                     UNIQUE_ID_PREFIX + (flags.mUniqueId != null ? flags.mUniqueId : number),
                     getContext());
+            mPort = number;
             mName = name;
             mRefreshRate = refreshRate;
             mDisplayPresentationDeadlineNanos = presentationDeadlineNanos;
@@ -441,6 +448,10 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
                 Display.Mode mode = mModes[mActiveMode];
                 OverlayMode rawMode = mRawModes.get(mActiveMode);
                 mInfo = new DisplayDeviceInfo();
+                mInfo.address = DisplayAddress.fromPhysicalDisplayId(
+                        /* physicalDisplayId= */ getUniqueId().hashCode(),
+                        /* port= */ mPort,
+                        /* stableEdidsFlag= */ true);
                 mInfo.name = mName;
                 mInfo.uniqueId = getUniqueId();
                 mInfo.width = mode.getPhysicalWidth();
@@ -475,7 +486,7 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
                         mInfo.flags |= DisplayDeviceInfo.FLAG_ALLOWS_CONTENT_MODE_SWITCH;
                     }
                 }
-                mInfo.type = Display.TYPE_OVERLAY;
+                mInfo.type = mFlags.mType;
                 mInfo.touch = DisplayDeviceInfo.TOUCH_VIRTUAL;
                 mInfo.state = mState;
                 // The display is trusted since it is created by system.
@@ -772,6 +783,14 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
         final int mGravity;
         final String mUniqueId;
 
+        /**
+         * Type of the display, one of: {@link Display#TYPE_OVERLAY},
+         * {@link Display#TYPE_EXTERNAL}, {@link Display#TYPE_INTERNAL}, {@link Display#TYPE_WIFI}.
+         * <p>
+         * Can be non {@link Display#TYPE_OVERLAY} for the test purposes only.
+         */
+        final int mType;
+
         OverlayFlags(
                 boolean secure,
                 boolean ownContentOnly,
@@ -779,7 +798,8 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
                 boolean fixedContentMode,
                 boolean disableWindowInteraction,
                 int gravity,
-                String uniqueId) {
+                String uniqueId,
+                int displayType) {
             mSecure = secure;
             mOwnContentOnly = ownContentOnly;
             mShouldShowSystemDecorations = shouldShowSystemDecorations;
@@ -787,6 +807,7 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
             mDisableWindowInteraction = disableWindowInteraction;
             mGravity = gravity;
             mUniqueId = uniqueId;
+            mType = displayType;
         }
 
         static OverlayFlags parseFlags(@Nullable String flagString) {
@@ -798,9 +819,11 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
                         false /* fixedContentMode */,
                         false /* disableWindowInteraction */,
                         Gravity.NO_GRAVITY,
-                        null /* uniqueId */);
+                        null /* uniqueId */,
+                        Display.TYPE_OVERLAY);
             }
 
+            int displayType = Display.TYPE_OVERLAY;
             String uniqueId = null;
             boolean secure = false;
             boolean ownContentOnly = false;
@@ -821,12 +844,18 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
                     disableWindowInteraction = true;
                 } else if (flag.startsWith(OVERLAY_DISPLAY_FLAG_UNIQUE_ID_PREFIX)) {
                     uniqueId = flag.substring(OVERLAY_DISPLAY_FLAG_UNIQUE_ID_PREFIX.length());
+                } else if (Display.typeToString(Display.TYPE_EXTERNAL).toLowerCase().equals(flag)) {
+                    displayType = Display.TYPE_EXTERNAL;
+                } else if (Display.typeToString(Display.TYPE_INTERNAL).toLowerCase().equals(flag)) {
+                    displayType = Display.TYPE_INTERNAL;
+                } else if (Display.typeToString(Display.TYPE_WIFI).toLowerCase().equals(flag)) {
+                    displayType = Display.TYPE_WIFI;
                 } else {
                     gravity = parseOverlayGravity(flag);
                 }
             }
             return new OverlayFlags(secure, ownContentOnly, shouldShowSystemDecorations,
-                    fixedContentMode, disableWindowInteraction, gravity, uniqueId);
+                    fixedContentMode, disableWindowInteraction, gravity, uniqueId, displayType);
         }
 
         @Override
@@ -839,6 +868,7 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
                     .append(", disableWindowInteraction=").append(mDisableWindowInteraction)
                     .append(", gravity=").append(Gravity.toString(mGravity))
                     .append(", uniqueId=").append(mUniqueId)
+                    .append(", type=").append(Display.typeToString(mType))
                     .append("}")
                     .toString();
         }
