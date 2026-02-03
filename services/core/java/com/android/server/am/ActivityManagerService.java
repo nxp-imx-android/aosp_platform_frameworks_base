@@ -3081,19 +3081,6 @@ public class ActivityManagerService extends IActivityManager.Stub
                 return true;
             }
 
-            // PCC UIDs can bypass manifest checks when accessing Trusted Apps.
-            if (android.app.privatecompute.flags.Flags.enablePccFrameworkSupport()
-                    && Process.isPrivateComputeCoreUid(sourceUid)) {
-
-                PccSandboxManagerInternal pccInternal =
-                        LocalServices.getService(PccSandboxManagerInternal.class);
-
-                if (pccInternal != null
-                        && pccInternal.isPccTrustedSystemComponent(targetUid, targetPkg)) {
-                    return true;
-                }
-            }
-
             // Egress: Source must allow Target.
             if (!isComponentAccessAllowedByPolicyLocked(
                     sourcePkg, sourceUid, targetPkg, targetUid)) {
