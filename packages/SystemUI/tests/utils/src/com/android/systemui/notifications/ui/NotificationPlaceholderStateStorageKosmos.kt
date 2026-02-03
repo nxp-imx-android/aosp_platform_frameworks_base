@@ -21,6 +21,7 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.notifications.ui.composable.ContentZOrderSorter
 import com.android.systemui.notifications.ui.composable.HeadsUpPlaceholderContentPicker
+import com.android.systemui.notifications.ui.composable.LowestZContentPicker
 import com.android.systemui.notifications.ui.composable.StackPlaceholderContentPicker
 import com.android.systemui.scene.sceneContainerConfig
 
@@ -32,8 +33,12 @@ val Kosmos.stackPlaceholderContentPicker by Fixture {
     StackPlaceholderContentPicker(contentZOrderSorter)
 }
 
+val Kosmos.lowestZContentPicker by Fixture {
+    LowestZContentPicker(contentZOrderSorter)
+}
+
 val Kosmos.headsUpPlaceholderContentPicker by Fixture {
-    HeadsUpPlaceholderContentPicker(contentZOrderSorter)
+    HeadsUpPlaceholderContentPicker(lowestZContentPicker)
 }
 
 val Kosmos.notificationPlaceholderStateStorage by Fixture {
