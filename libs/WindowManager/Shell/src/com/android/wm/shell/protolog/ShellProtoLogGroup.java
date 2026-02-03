@@ -58,6 +58,7 @@ public enum ShellProtoLogGroup implements IProtoLogGroup {
     WM_SHELL_APP_HANDLES(Consts.ENABLE_DEBUG, false, Consts.TAG_WM_APP_HANDLES),
     WM_SHELL_WINDOWING_LAYER(Consts.ENABLE_DEBUG, false, Consts.TAG_WM_WINDOWING_LAYER),
     WM_SHELL_PACKAGE_UPDATE(Consts.ENABLE_DEBUG, true, Consts.TAG_WM_PACKAGE_UPDATE),
+    WM_SHELL_INTERACTIVE_TASKS(Consts.ENABLE_DEBUG, false, Consts.TAG_WM_SHELL),
     WM_SHELL_MODES(Consts.ENABLE_DEBUG, true, "ShellModes"),
     TEST_GROUP(true, false, "WindowManagerShellProtoLogTest");
 

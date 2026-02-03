@@ -151,6 +151,7 @@ import com.android.wm.shell.taskview.TaskViewRepository;
 import com.android.wm.shell.taskview.TaskViewTransitions;
 import com.android.wm.shell.transition.FocusTransitionObserver;
 import com.android.wm.shell.transition.HomeTransitionObserver;
+import com.android.wm.shell.transition.InteractiveTasksTransitionObserver;
 import com.android.wm.shell.transition.MixedTransitionHandler;
 import com.android.wm.shell.transition.TransitionLeashManager;
 import com.android.wm.shell.transition.Transitions;
@@ -887,6 +888,23 @@ public abstract class WMShellBaseModule {
         return new FocusTransitionObserver(shellInit, shellCommandHandler);
     }
 
+    @BindsOptionalOf
+    @DynamicOverride
+    abstract InteractiveTasksTransitionObserver optionalInteractiveTasksTransitionObserver();
+
+    @WMSingleton
+    @Provides
+    static Optional<InteractiveTasksTransitionObserver>
+                provideInteractiveTasksTransitionObserver(
+            @DynamicOverride Optional<Lazy<InteractiveTasksTransitionObserver>> observer) {
+        return observer.flatMap((lazy) -> {
+            if (Flags.allowDragAndDropWhenInteractiveBugfix()) {
+                return Optional.of(lazy.get());
+            }
+            return Optional.empty();
+        });
+    }
+
     @WMSingleton
     @Provides
     static TaskViewTransitions provideTaskViewTransitions(Transitions transitions,
@@ -1278,6 +1296,7 @@ public abstract class WMShellBaseModule {
             DisplayImeController displayImeController,
             DisplayInsetsController displayInsetsController,
             ShellTaskOrganizer shellTaskOrganizer,
+            Optional<InteractiveTasksTransitionObserver> resumedTaskTransitionObserver,
             Optional<BubbleController> bubblesOptional,
             Optional<SplitScreenController> splitScreenOptional,
             FullscreenTaskListener fullscreenTaskListener,
