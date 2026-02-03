@@ -18,6 +18,7 @@ package com.android.wm.shell.dagger.desktop;
 
 import android.annotation.NonNull;
 
+import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.dagger.DynamicOverride;
 import com.android.wm.shell.dagger.WMSingleton;
@@ -46,10 +47,11 @@ public class DesktopModule {
             @NonNull DesktopConfig desktopConfig,
             @NonNull DesktopState desktopState,
             @NonNull DisplayController displayController,
-            @NonNull DesksOrganizer desksOrganizer
+            @NonNull DesksOrganizer desksOrganizer,
+            @NonNull ShellTaskOrganizer shellTaskOrganizer
     ) {
         return new DesksController(shellController, userRepositories,
-                desktopConfig, desktopState, displayController, desksOrganizer);
+                desktopConfig, desktopState, displayController, desksOrganizer, shellTaskOrganizer);
     }
 
     @WMSingleton

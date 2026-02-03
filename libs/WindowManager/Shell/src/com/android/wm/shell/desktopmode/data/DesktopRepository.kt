@@ -183,8 +183,6 @@ class DesktopRepository(
                 }
         preservedDisplay.orderedDesks.add(desk)
         if (preserveAsActive) preservedDisplay.activeDeskId = deskId
-        // The transient desk is preserved and has served its purpose, it can be removed now.
-        if (desk.transientDesk) removeDesk(deskId)
     }
 
     /** Removes the specified preserved display. */

@@ -505,6 +505,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 desktopState,
                 displayController,
                 desksOrganizer,
+                shellTaskOrganizer,
             )
 
         controller = createController()
