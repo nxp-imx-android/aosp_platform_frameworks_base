@@ -201,8 +201,7 @@ public final class BluetoothProfileConnectionInfo implements Parcelable {
     @FlaggedApi(FLAG_BLE_PERIPHERAL_DEVICES)
     public static @NonNull BluetoothProfileConnectionInfo createLeAudioPeripheralInfo(
             boolean isOutput) {
-        //TODO b/423053144: use actual LE Audio Peripheral profile ID when available
-        return new BluetoothProfileConnectionInfo(BluetoothProfile.LE_AUDIO,
-                false /*suppressNoisyIntent*/, -1, isOutput);
+        return new BluetoothProfileConnectionInfo(BluetoothProfile.LE_AUDIO_PERIPHERAL,
+                    false /*suppressNoisyIntent*/, -1, isOutput);
     }
 }
