@@ -18,6 +18,7 @@ package com.android.server.pm;
 import static android.content.ComponentName.unflattenFromString;
 
 import static com.android.server.pm.GenericAllowlist.STATUS_ALLOWED_ALLOWLISTING_DISABLED_BY_SHELL_CMD;
+import static com.android.server.pm.GenericAllowlist.STATUS_ALLOWED_ALLOWLISTING_DISABLED_WHILE_DEVICE_IS_PROVISIONING;
 
 import android.content.ComponentName;
 
@@ -66,8 +67,11 @@ public final class UserActivitiesAllowlistTest
     }
 
     @Override
-    public ImmutableSet<Integer> getOverridingStatuses() {
-        return ImmutableSet.of(STATUS_ALLOWED_ALLOWLISTING_DISABLED_BY_SHELL_CMD);
+    protected ImmutableSet<Integer> getOverridingStatuses() {
+        return ImmutableSet.of(
+                STATUS_ALLOWED_ALLOWLISTING_DISABLED_BY_SHELL_CMD,
+                STATUS_ALLOWED_ALLOWLISTING_DISABLED_WHILE_DEVICE_IS_PROVISIONING
+                );
     }
 
     @Override
