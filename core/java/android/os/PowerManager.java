@@ -47,6 +47,7 @@ import android.view.Display;
 
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.Preconditions;
 
 import java.lang.annotation.ElementType;
@@ -2178,6 +2179,7 @@ public final class PowerManager {
             mDefaultTimeoutMillis = mContext.getResources().getInteger(
                     R.integer.config_maximumPartialSleepWakeLockDuration);
             mWakelock = new WakeLock(SLEEP_LOCK, mTag, mContext.getOpPackageName(), mDisplayId);
+            mWakelock.setReferenceCounted(false);
         }
 
         /**
@@ -2214,6 +2216,7 @@ public final class PowerManager {
          *
          * @return {@code true} if the lock is held, {@code false} otherwise.
          */
+        @VisibleForTesting
         public boolean isHeld() {
             return mWakelock.isHeld();
         }
