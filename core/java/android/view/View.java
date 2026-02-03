@@ -21337,7 +21337,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
 
             // Tell mScrollCache when we should start fading. This may
             // extend the fade start time if one was already scheduled
-            long fadeStartTime = AnimationUtils.currentAnimationTimeMillis() + startDelay;
+            long fadeStartTime = SystemClock.uptimeMillis() + startDelay;
             scrollCache.fadeStartTime = fadeStartTime;
             scrollCache.state = ScrollabilityCache.ON;
 
@@ -33366,7 +33366,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         }
 
         public void run() {
-            long now = AnimationUtils.currentAnimationTimeMillis();
+            long now = SystemClock.uptimeMillis();
             if (now >= fadeStartTime) {
                 fadeScrollBarsScheduled = false;
                 handler = null;
@@ -33374,7 +33374,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                 // the animation fades the scrollbars out by changing
                 // the opacity (alpha) from fully opaque to fully
                 // transparent
-                int nextFrame = (int) now;
+                int nextFrame = (int) AnimationUtils.currentAnimationTimeMillis();
                 int framesCount = 0;
 
                 Interpolator interpolator = scrollBarInterpolator;
