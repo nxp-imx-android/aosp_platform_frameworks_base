@@ -48178,8 +48178,8 @@ package android.telephony {
     method public long getDataUsageTime();
     method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") public int getId();
     method @NonNull public int[] getNetworkTypes();
-    method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_allow_status_and_end_date") @Nullable public java.time.ZonedDateTime getPlanEndDate();
-    method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_allow_status_and_end_date") public int getSubscriptionStatus();
+    method @Nullable public java.time.ZonedDateTime getPlanEndDate();
+    method public int getSubscriptionStatus();
     method @Nullable public CharSequence getSummary();
     method @Nullable public CharSequence getTitle();
     method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") @NonNull public java.util.Set<java.lang.Integer> getTypes();
@@ -48202,11 +48202,11 @@ package android.telephony {
     field @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") public static final int PLAN_TYPE_ROAMING = 9; // 0x9
     field @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") public static final int PLAN_TYPE_SATELLITE = 2; // 0x2
     field @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") public static final int PLAN_TYPE_TETHERING = 10; // 0xa
-    field @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_allow_status_and_end_date") public static final int SUBSCRIPTION_STATUS_ACTIVE = 1; // 0x1
-    field @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_allow_status_and_end_date") public static final int SUBSCRIPTION_STATUS_INACTIVE = 2; // 0x2
-    field @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_allow_status_and_end_date") public static final int SUBSCRIPTION_STATUS_SUSPENDED = 4; // 0x4
-    field @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_allow_status_and_end_date") public static final int SUBSCRIPTION_STATUS_TRIAL = 3; // 0x3
-    field @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_allow_status_and_end_date") public static final int SUBSCRIPTION_STATUS_UNKNOWN = 0; // 0x0
+    field public static final int SUBSCRIPTION_STATUS_ACTIVE = 1; // 0x1
+    field public static final int SUBSCRIPTION_STATUS_INACTIVE = 2; // 0x2
+    field public static final int SUBSCRIPTION_STATUS_SUSPENDED = 4; // 0x4
+    field public static final int SUBSCRIPTION_STATUS_TRIAL = 3; // 0x3
+    field public static final int SUBSCRIPTION_STATUS_UNKNOWN = 0; // 0x0
     field public static final long TIME_UNKNOWN = -1L; // 0xffffffffffffffffL
     field @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") public static final int UNSPECIFIED_ID = -1; // 0xffffffff
   }
@@ -48224,7 +48224,7 @@ package android.telephony {
     method @NonNull public android.telephony.SubscriptionPlan.Builder setNetworkTypes(@NonNull int[]);
     method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") @NonNull public android.telephony.SubscriptionPlan.Builder setStreamingAppMaxDownlinkKbps(long);
     method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") @NonNull public android.telephony.SubscriptionPlan.Builder setStreamingAppMaxUplinkKbps(long);
-    method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_allow_status_and_end_date") @NonNull public android.telephony.SubscriptionPlan.Builder setSubscriptionStatus(int);
+    method @NonNull public android.telephony.SubscriptionPlan.Builder setSubscriptionStatus(int);
     method public android.telephony.SubscriptionPlan.Builder setSummary(@Nullable CharSequence);
     method public android.telephony.SubscriptionPlan.Builder setTitle(@Nullable CharSequence);
     method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") @NonNull public android.telephony.SubscriptionPlan.Builder setTypes(@NonNull int[]);

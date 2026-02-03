@@ -2757,9 +2757,7 @@ public class NetworkPolicyManagerServiceTest {
     }
 
     @Test
-    @EnableFlags({com.android.internal.telephony.flags.Flags.FLAG_SUBSCRIPTION_PLAN_ENHANCEMENT,
-            com.android.internal.telephony.flags
-                    .Flags.FLAG_SUBSCRIPTION_PLAN_ALLOW_STATUS_AND_END_DATE})
+    @EnableFlags({com.android.internal.telephony.flags.Flags.FLAG_SUBSCRIPTION_PLAN_ENHANCEMENT})
     public void testSubscriptionPlanExpiration_PersistenceAcrossReboot() throws Exception {
         final long expirationDuration = TimeUnit.HOURS.toMillis(1);
 
