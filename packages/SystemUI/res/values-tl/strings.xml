@@ -46,6 +46,8 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"Buksan ang <xliff:g id="APPLICATION">%1$s</xliff:g> upang pamahalaan ang <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>?"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"Wala sa mga na-install na app ang gumagana sa USB accessory na ito. Matuto pa tungkol sa accessory na ito sa <xliff:g id="URL">%1$s</xliff:g>"</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"USB accessory"</string>
+    <!-- no translation found for usb_device_dialog_always_allow_button (7426535342650638393) -->
+    <skip />
     <string name="usb_device_dialog_allow_only_this_time_button" msgid="3653881633944232491">"Ngayon lang"</string>
     <string name="usb_device_dialog_cancel_button" msgid="9050554648474787233">"Kanselahin"</string>
     <string name="label_view" msgid="6815442985276363364">"Tingnan"</string>
@@ -137,6 +139,8 @@
     <string name="screenrecord_ongoing_screen_and_audio" msgid="5351133763125180920">"Nire-record ang screen at audio"</string>
     <string name="screenrecord_taps_label" msgid="1595690528298857649">"Ipakita ang mga pagpindot sa screen"</string>
     <string name="screenrecord_stop_label" msgid="72699670052087989">"Ihinto"</string>
+    <string name="screenrecord_stop_description" msgid="4656717003438764637">"Huminto sa pag-record"</string>
+    <string name="screenrecord_start_description" msgid="8173864933793754995">"Magsimulang mag-record"</string>
     <string name="screenrecord_share_label" msgid="5025590804030086930">"Ibahagi"</string>
     <string name="screenrecord_save_title" msgid="1886652605520893850">"Na-save ang pag-record ng screen"</string>
     <string name="screenrecord_save_text" msgid="3008973099800840163">"I-tap para tingnan"</string>
@@ -161,7 +165,7 @@
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Na-save ang video"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"Na-delete ang video"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"I-undo"</string>
-    <string name="screen_record_take_another" msgid="8071412867905614800">"Kumuha ng isa pa"</string>
+    <string name="screen_record_take_another" msgid="5877933424208100617">"Bago"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"I-edit"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"I-delete"</string>
     <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"I-delete ang recording na ito?"</string>
@@ -178,6 +182,10 @@
     <string name="screen_capture_record_region_selection_button" msgid="3699353194755563053">"I-record ang napiling bahagi"</string>
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"Screenshot"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"I-record"</string>
+    <string name="screen_capture_region_box_top_left_handle_description" msgid="3619310281612042126">"Handle sa kaliwang bahagi sa itaas - Gamitin ang mga arrow key para mag-resize"</string>
+    <string name="screen_capture_region_box_top_right_handle_description" msgid="7732373569053287436">"Handle sa kanang bahagi sa itaas - Gamitin ang mga arrow key para mag-resize"</string>
+    <string name="screen_capture_region_box_bottom_right_handle_description" msgid="5444943380877006881">"Handle sa kanang bahagi sa ibaba - Gamitin ang mga arrow key para mag-resize"</string>
+    <string name="screen_capture_region_box_bottom_left_handle_description" msgid="6095764656409143184">"Handle sa kaliwang bahagi sa ibaba - Gamitin ang mga arrow key para mag-resize"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"I-share"</string>
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Pumili ng app na ise-share"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"I-share ang audio"</string>
@@ -188,13 +196,38 @@
     <string name="screen_share_disclaimer_tab_sharing" msgid="3811486274577713101">"Kapag nagse-share ka ng tab, makikita ng <xliff:g id="APP_NAME">%1$s</xliff:g> ang anumang nasa tab. Kaya mag-ingat sa sensitibong impormasyon."</string>
     <string name="screen_share_disclaimer_full_screen_sharing" msgid="5173795016606926338">"Kapag sine-share mo ang iyong buong screen, makikita ng <xliff:g id="APP_NAME">%1$s</xliff:g> ang kahit anong nasa screen mo. Kaya mag-ingat sa sensitibong impormasyon."</string>
     <string name="screen_share_a11y_announcement" msgid="8938007210094494367">"Piliin kung ano ang ise-share. Pumili ng tab, app, o buong screen. Pagkatapos ay pindutin ang i-share."</string>
-    <!-- no translation found for screen_share_cancel_announcement (5940879227647436383) -->
+    <string name="screen_share_cancel_announcement" msgid="5940879227647436383">"Natapos ang pagsisimula ng pag-share ng screen. Hindi na-share ang screen sa kahit na sino."</string>
+    <string name="screen_share_a11y_sharing_app" msgid="3445421300603336524">"Kasalukuyang sine-share na app: <xliff:g id="APP_NAME">%1$s</xliff:g>. Gamitin ang indicator ng privacy para tapusin ang pag-share."</string>
+    <string name="screen_share_a11y_sharing_tab" msgid="2963542572740628746">"Kasalukuyang sine-share na tab: <xliff:g id="TAB_TITLE">%1$s</xliff:g>. Gamitin ang indicator ng privacy para tapusin ang pag-share."</string>
+    <string name="screen_share_a11y_sharing_display" msgid="5919924998949424031">"Kasalukuyang sine-share na display: <xliff:g id="DISPLAY_NAME">%1$s</xliff:g>. Gamitin ang indicator ng privacy para tapusin ang pag-share."</string>
+    <string name="screen_share_a11y_stopped_sharing_app" msgid="6928492106881188404">"Inihinto ang pag-share ng app: <xliff:g id="APP_NAME">%1$s</xliff:g>. Hindi na-share ang screen sa kahit na sino."</string>
+    <string name="screen_share_a11y_stopped_sharing_tab" msgid="5929089339684027985">"Inihinto ang pag-share ng tab: <xliff:g id="TAB_TITLE">%1$s</xliff:g>. Hindi na-share ang screen sa kahit na sino."</string>
+    <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"Inihinto ang pag-share ng display: <xliff:g id="DISPLAY_NAME">%1$s</xliff:g>. Hindi na-share ang screen sa kahit na sino."</string>
+    <!-- no translation found for screen_share_a11y_close_button (8017115316741874857) -->
     <skip />
-    <!-- no translation found for screen_share_a11y_sharing_app (3445421300603336524) -->
+    <!-- no translation found for screen_share_a11y_tab_button_unselected (5363622532939787310) -->
     <skip />
-    <!-- no translation found for screen_share_a11y_sharing_tab (2963542572740628746) -->
+    <!-- no translation found for screen_share_a11y_tab_button_selected (4304681826101817704) -->
     <skip />
-    <!-- no translation found for screen_share_a11y_sharing_display (5919924998949424031) -->
+    <!-- no translation found for screen_share_a11y_app_button_unselected (4539549394242556282) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_app_button_selected (6049272377472922732) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_fullscreen_button_unselected (2492516552817892989) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_fullscreen_button_selected (6706822615908429473) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_share_button_off (2004866083045967602) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_share_button_on (1311279200212158833) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_item_unselected (7479321583507874795) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_item_selected (2538971376128528640) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_tab_audio_on (7240792268381508075) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_tab_audio_off (8545238601433952854) -->
     <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Kunan ng screenshot ang window"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"I-record ang window"</string>
@@ -213,6 +246,7 @@
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"Camera sa harap"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Ihinto ang pag-share"</string>
+    <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"Naka-on ang pag-share ng screen. Gamitin ang indicator ng privacy para tapusin ang pag-share."</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Ibinabahagi ang screen"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Pagbabahagi ng content"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"Ihinto ang pagshe-share ng screen?"</string>
@@ -398,6 +432,8 @@
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Mga Notification"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistant"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"Keyboard"</string>
+    <!-- no translation found for input_method_switcher_title_large_screen (8490419050265486980) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{May # pang notification sa loob.}one{May # pang notification sa loob.}other{May # pang notification sa loob.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Naka-lock ang screen sa pahigang oryentasyon."</string>
@@ -1800,10 +1836,8 @@
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"Eksaktong lokasyon"</string>
     <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"Gamitin ang eksaktong lokasyon"</string>
     <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"I-share ang eksaktong lokasyon"</string>
-    <!-- no translation found for location_button_text_near_my_precise_location (7590342799002942963) -->
-    <skip />
-    <!-- no translation found for location_button_text_near_your_precise_location (3792598666253599055) -->
-    <skip />
+    <string name="location_button_text_near_my_precise_location" msgid="7590342799002942963">"Malapit sa aking eksaktong lokasyon"</string>
+    <string name="location_button_text_near_your_precise_location" msgid="3792598666253599055">"Malapit sa iyong eksaktong lokasyon"</string>
     <string name="privacy_chip_use_string" msgid="979159484631969073">"Ginagamit ang <xliff:g id="SENSOR">%1$s</xliff:g>"</string>
     <string name="privacy_chip_use_string_with_app" msgid="6807216002072346877">"Ginagamit ang <xliff:g id="SENSOR">%1$s</xliff:g> ng <xliff:g id="APP">%2$s</xliff:g>"</string>
     <string name="privacy_chip_camera_and_mic_text" msgid="6254449489859255607">"Camera at mikropono"</string>
@@ -1827,8 +1861,7 @@
     <string name="av_camera_blur_light" msgid="5666055368940059418">"Maliwanag"</string>
     <string name="av_camera_blur_full" msgid="3276351992811619332">"Puno"</string>
     <string name="av_camera_improve_lighting" msgid="1540549414296669133">"Ayusin ang lighting"</string>
-    <!-- no translation found for av_camera_face_retouch (45890971969486224) -->
-    <skip />
+    <string name="av_camera_face_retouch" msgid="45890971969486224">"Portrait touch-up"</string>
     <string name="av_camera_framing" msgid="5108462267843042492">"Pag-frame ng Camera"</string>
     <string name="av_studio_mic" msgid="2614843492629357766">"Pang-studio na Mikropono"</string>
     <string name="av_studio_look" msgid="621893522645557619">"Studio Look"</string>
@@ -1840,4 +1873,18 @@
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"%1$s ng L battery"</string>
     <string name="accessibility_hearing_device_right_battery_level" msgid="7598843215226414563">"%1$s ng R battery"</string>
     <string name="accessibility_hearing_device_notification_channel_name" msgid="7365020777623709400">"Status ng Hearing Device"</string>
+    <!-- no translation found for more_options_edit (6337988646114341329) -->
+    <skip />
+    <!-- no translation found for more_options_move (2226159413422979066) -->
+    <skip />
+    <!-- no translation found for more_options_remove_all (194855000797536179) -->
+    <skip />
+    <!-- no translation found for floating_menu_more_options_label (7859269790323628599) -->
+    <skip />
+    <!-- no translation found for dream_setup_title (7996530071414508238) -->
+    <skip />
+    <!-- no translation found for dream_setup_button_not_now (8028385323668620805) -->
+    <skip />
+    <!-- no translation found for dream_setup_button_setup (4755361016017554826) -->
+    <skip />
 </resources>

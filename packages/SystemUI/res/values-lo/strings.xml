@@ -46,6 +46,8 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"ເປີດ <xliff:g id="APPLICATION">%1$s</xliff:g> ເພື່ອໃຊ້ກັບ <xliff:g id="USB_ACCESSORY">%2$s</xliff:g> ບໍ?"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"ບໍ່ມີແອັບຯໃດທີ່ຕິດຕັ້ງໄປແລ້ວ ສາມາດເຮັດວຽກຮ່ວມກັບອຸປະກອນເສີມ USB ນີ້ໄດ້. ສຶກສາເພີ່ມເຕີມກ່ຽວກັບອຸປະກອນເສີມນີ້ທີ່ <xliff:g id="URL">%1$s</xliff:g>"</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"ອຸປະກອນເສີມ USB"</string>
+    <!-- no translation found for usb_device_dialog_always_allow_button (7426535342650638393) -->
+    <skip />
     <string name="usb_device_dialog_allow_only_this_time_button" msgid="3653881633944232491">"ສະເພາະເທື່ອນີ້"</string>
     <string name="usb_device_dialog_cancel_button" msgid="9050554648474787233">"ຍົກເລີກ"</string>
     <string name="label_view" msgid="6815442985276363364">"ເບິ່ງ"</string>
@@ -137,6 +139,8 @@
     <string name="screenrecord_ongoing_screen_and_audio" msgid="5351133763125180920">"ກຳລັງບັນທຶກໜ້າຈໍ ແລະ ສຽງ"</string>
     <string name="screenrecord_taps_label" msgid="1595690528298857649">"ສະແດງການສຳຜັດຢູ່ໜ້າຈໍ"</string>
     <string name="screenrecord_stop_label" msgid="72699670052087989">"ຢຸດ"</string>
+    <string name="screenrecord_stop_description" msgid="4656717003438764637">"ຢຸດບັນທຶກ"</string>
+    <string name="screenrecord_start_description" msgid="8173864933793754995">"ເລີ່ມບັນທຶກ"</string>
     <string name="screenrecord_share_label" msgid="5025590804030086930">"ແບ່ງປັນ"</string>
     <string name="screenrecord_save_title" msgid="1886652605520893850">"ຈັດເກັບການບັນທຶກໜ້າຈໍແລ້ວ"</string>
     <string name="screenrecord_save_text" msgid="3008973099800840163">"ແຕະເພື່ອເບິ່ງ"</string>
@@ -161,7 +165,7 @@
     <string name="screen_record_video_saved" msgid="1345283626390232282">"ບັນທຶກວິດີໂອແລ້ວ"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"ລຶບວິດີໂອອອກແລ້ວ"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"ຍົກເລີກ"</string>
-    <string name="screen_record_take_another" msgid="8071412867905614800">"ລອງອີກຄັ້ງ"</string>
+    <string name="screen_record_take_another" msgid="5877933424208100617">"ໃໝ່"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"ແກ້ໄຂ"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"ລຶບ"</string>
     <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"ລຶບການບັນທຶກນີ້ອອກບໍ?"</string>
@@ -178,6 +182,10 @@
     <string name="screen_capture_record_region_selection_button" msgid="3699353194755563053">"ບັນທຶກພື້ນທີ່ທີ່ເລືອກ"</string>
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"ຮູບໜ້າຈໍ"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"ບັນທຶກ"</string>
+    <string name="screen_capture_region_box_top_left_handle_description" msgid="3619310281612042126">"ດ້າມຈັບເທິງສຸດເບື້ອງຊ້າຍ - ໃຊ້ປຸ່ມລູກສອນເພື່ອປັບຂະໜາດ"</string>
+    <string name="screen_capture_region_box_top_right_handle_description" msgid="7732373569053287436">"ດ້າມຈັບເທິງສຸດເບື້ອງຂວາ - ໃຊ້ປຸ່ມລູກສອນເພື່ອປັບຂະໜາດ"</string>
+    <string name="screen_capture_region_box_bottom_right_handle_description" msgid="5444943380877006881">"ດ້າມຈັບລຸ່ມສຸດເບື້ອງຂວາ - ໃຊ້ປຸ່ມລູກສອນເພື່ອປັບຂະໜາດ"</string>
+    <string name="screen_capture_region_box_bottom_left_handle_description" msgid="6095764656409143184">"ດ້າມຈັບລຸ່ມສຸດເບື້ອງຊ້າຍ - ໃຊ້ປຸ່ມລູກສອນເພື່ອປັບຂະໜາດ"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"ແບ່ງປັນ"</string>
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"ເລືອກແອັບທີ່ຈະແບ່ງປັນ"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"ແບ່ງປັນສຽງ"</string>
@@ -188,13 +196,38 @@
     <string name="screen_share_disclaimer_tab_sharing" msgid="3811486274577713101">"ເມື່ອທ່ານແບ່ງປັນແຖບ, <xliff:g id="APP_NAME">%1$s</xliff:g> ຈະເບິ່ງເຫັນທຸກຢ່າງພາຍໃນແຖບ. ດັ່ງນັ້ນກະລຸນາລະມັດລະວັງໃນການຈັດການຂໍ້ມູນລະອຽດອ່ອນ."</string>
     <string name="screen_share_disclaimer_full_screen_sharing" msgid="5173795016606926338">"ເມື່ອທ່ານແບ່ງປັນໜ້າຈໍທັງໝົດຂອງທ່ານ, ຄົນອື່ນຈະເບິ່ງເຫັນທຸກຢ່າງທີ່ຢູ່ໜ້າຈໍຂອງທ່ານໃນ <xliff:g id="APP_NAME">%1$s</xliff:g>. ດັ່ງນັ້ນກະລຸນາລະມັດລະວັງໃນການຈັດການຂໍ້ມູນລະອຽດອ່ອນ."</string>
     <string name="screen_share_a11y_announcement" msgid="8938007210094494367">"ເລືອກສິ່ງທີ່ຈະແບ່ງປັນ. ເລືອກແຖບ, ແອັບ ຫຼື ທັງໝົດໜ້າຈໍ. ຈາກນັ້ນກົດແບ່ງປັນ."</string>
-    <!-- no translation found for screen_share_cancel_announcement (5940879227647436383) -->
+    <string name="screen_share_cancel_announcement" msgid="5940879227647436383">"ການເລີ່ມການແບ່ງປັນໜ້າຈໍສິ້ນສຸດລົງແລ້ວ. ບໍ່ໄດ້ແບ່ງປັນໜ້າຈໍກັບໃຜ."</string>
+    <string name="screen_share_a11y_sharing_app" msgid="3445421300603336524">"ຕອນນີ້ກຳລັງແບ່ງປັນແອັບ: <xliff:g id="APP_NAME">%1$s</xliff:g>. ໃຊ້ສັນຍານບອກສະຖານະຄວາມເປັນສ່ວນຕົວເພື່ອສິ້ນສຸດການແບ່ງປັນ."</string>
+    <string name="screen_share_a11y_sharing_tab" msgid="2963542572740628746">"ຕອນນີ້ກຳລັງແບ່ງປັນແຖບ: <xliff:g id="TAB_TITLE">%1$s</xliff:g>. ໃຊ້ສັນຍານບອກສະຖານະຄວາມເປັນສ່ວນຕົວເພື່ອສິ້ນສຸດການແບ່ງປັນ."</string>
+    <string name="screen_share_a11y_sharing_display" msgid="5919924998949424031">"ຕອນນີ້ກຳລັງແບ່ງປັນຈໍສະແດງຜົນ: <xliff:g id="DISPLAY_NAME">%1$s</xliff:g>. ໃຊ້ສັນຍານບອກສະຖານະຄວາມເປັນສ່ວນຕົວເພື່ອສິ້ນສຸດການແບ່ງປັນ."</string>
+    <string name="screen_share_a11y_stopped_sharing_app" msgid="6928492106881188404">"ຢຸດແບ່ງປັນແອັບແລ້ວ: <xliff:g id="APP_NAME">%1$s</xliff:g>. ບໍ່ໄດ້ແບ່ງປັນໜ້າຈໍກັບໃຜ."</string>
+    <string name="screen_share_a11y_stopped_sharing_tab" msgid="5929089339684027985">"ຢຸດແບ່ງປັນແຖບແລ້ວ: <xliff:g id="TAB_TITLE">%1$s</xliff:g>. ບໍ່ໄດ້ແບ່ງປັນໜ້າຈໍກັບໃຜ."</string>
+    <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"ຢຸດແບ່ງປັນຈໍສະແດງຜົນແລ້ວ: <xliff:g id="DISPLAY_NAME">%1$s</xliff:g>. ບໍ່ໄດ້ແບ່ງປັນໜ້າຈໍກັບໃຜ."</string>
+    <!-- no translation found for screen_share_a11y_close_button (8017115316741874857) -->
     <skip />
-    <!-- no translation found for screen_share_a11y_sharing_app (3445421300603336524) -->
+    <!-- no translation found for screen_share_a11y_tab_button_unselected (5363622532939787310) -->
     <skip />
-    <!-- no translation found for screen_share_a11y_sharing_tab (2963542572740628746) -->
+    <!-- no translation found for screen_share_a11y_tab_button_selected (4304681826101817704) -->
     <skip />
-    <!-- no translation found for screen_share_a11y_sharing_display (5919924998949424031) -->
+    <!-- no translation found for screen_share_a11y_app_button_unselected (4539549394242556282) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_app_button_selected (6049272377472922732) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_fullscreen_button_unselected (2492516552817892989) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_fullscreen_button_selected (6706822615908429473) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_share_button_off (2004866083045967602) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_share_button_on (1311279200212158833) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_item_unselected (7479321583507874795) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_item_selected (2538971376128528640) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_tab_audio_on (7240792268381508075) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_tab_audio_off (8545238601433952854) -->
     <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"ຖ່າຍຮູບໜ້າຈໍ"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"ບັນທຶກໜ້າຈໍ"</string>
@@ -213,6 +246,7 @@
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"ກ້ອງຖ່າຍຮູບໜ້າ"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"ຢຸດການແບ່ງປັນ"</string>
+    <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"ການແບ່ງປັນໜ້າຈໍເປີດຢູ່. ໃຊ້ສັນຍານບອກສະຖານະຄວາມເປັນສ່ວນຕົວເພື່ອສິ້ນສຸດການແບ່ງປັນ."</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"ກຳລັງແບ່ງປັນໜ້າຈໍ"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"ກຳລັງແບ່ງປັນເນື້ອຫາ"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"ຢຸດການແບ່ງປັນໜ້າຈໍບໍ?"</string>
@@ -398,6 +432,8 @@
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"ການແຈ້ງເຕືອນ"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"ຜູ້ຊ່ວຍ"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"ແປ້ນພິມ"</string>
+    <!-- no translation found for input_method_switcher_title_large_screen (8490419050265486980) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{ມີ # ການແຈ້ງເຕືອນເພີ່ມເຕີມຢູ່ທາງໃນ.}other{ມີ # ການແຈ້ງເຕືອນເພີ່ມເຕີມຢູ່ທາງໃນ.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"ໜ້າຈໍຖືກລັອກໃນລວງນອນ."</string>
@@ -1800,10 +1836,8 @@
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"ສະຖານທີ່ແບບລະອຽດ"</string>
     <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"ໃຊ້ສະຖານທີ່ແບບລະອຽດ"</string>
     <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"ແບ່ງປັນສະຖານທີ່ແບບລະອຽດ"</string>
-    <!-- no translation found for location_button_text_near_my_precise_location (7590342799002942963) -->
-    <skip />
-    <!-- no translation found for location_button_text_near_your_precise_location (3792598666253599055) -->
-    <skip />
+    <string name="location_button_text_near_my_precise_location" msgid="7590342799002942963">"ໃກ້ກັບສະຖານທີ່ແບບລະອຽດຂອງຂ້ອຍ"</string>
+    <string name="location_button_text_near_your_precise_location" msgid="3792598666253599055">"ໃກ້ກັບສະຖານທີ່ແບບລະອຽດຂອງທ່ານ"</string>
     <string name="privacy_chip_use_string" msgid="979159484631969073">"ກຳລັງນຳໃຊ້ <xliff:g id="SENSOR">%1$s</xliff:g> ຢູ່"</string>
     <string name="privacy_chip_use_string_with_app" msgid="6807216002072346877">"ກຳລັງນຳໃຊ້ <xliff:g id="SENSOR">%1$s</xliff:g> ຢູ່ໂດຍ <xliff:g id="APP">%2$s</xliff:g>"</string>
     <string name="privacy_chip_camera_and_mic_text" msgid="6254449489859255607">"ກ້ອງ ແລະ ໄມ"</string>
@@ -1827,8 +1861,7 @@
     <string name="av_camera_blur_light" msgid="5666055368940059418">"ແຈ້ງ"</string>
     <string name="av_camera_blur_full" msgid="3276351992811619332">"ເຕັມ"</string>
     <string name="av_camera_improve_lighting" msgid="1540549414296669133">"ປັບປຸງແສງ"</string>
-    <!-- no translation found for av_camera_face_retouch (45890971969486224) -->
-    <skip />
+    <string name="av_camera_face_retouch" msgid="45890971969486224">"ການແຕ່ງຮູບບຸກຄົນ"</string>
     <string name="av_camera_framing" msgid="5108462267843042492">"ການວາງເຟຣມກ້ອງ"</string>
     <string name="av_studio_mic" msgid="2614843492629357766">"ໄມສະຕູດິໂອ"</string>
     <string name="av_studio_look" msgid="621893522645557619">"ສະຕູດິໂອລຸກ"</string>
@@ -1840,4 +1873,18 @@
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"ແບັດເຕີຣີ L %1$s"</string>
     <string name="accessibility_hearing_device_right_battery_level" msgid="7598843215226414563">"ແບັດເຕີຣີ R %1$s"</string>
     <string name="accessibility_hearing_device_notification_channel_name" msgid="7365020777623709400">"ສະຖານະອຸປະກອນຊ່ວຍຟັງ"</string>
+    <!-- no translation found for more_options_edit (6337988646114341329) -->
+    <skip />
+    <!-- no translation found for more_options_move (2226159413422979066) -->
+    <skip />
+    <!-- no translation found for more_options_remove_all (194855000797536179) -->
+    <skip />
+    <!-- no translation found for floating_menu_more_options_label (7859269790323628599) -->
+    <skip />
+    <!-- no translation found for dream_setup_title (7996530071414508238) -->
+    <skip />
+    <!-- no translation found for dream_setup_button_not_now (8028385323668620805) -->
+    <skip />
+    <!-- no translation found for dream_setup_button_setup (4755361016017554826) -->
+    <skip />
 </resources>
