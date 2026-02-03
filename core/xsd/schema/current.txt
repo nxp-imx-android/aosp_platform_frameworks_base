@@ -59,6 +59,12 @@ package com.android.xml.permission.configfile {
     method public void set_package(String);
   }
 
+  public class AppLockExempt {
+    ctor public AppLockExempt();
+    method public String get_package();
+    method public void set_package(String);
+  }
+
   public class AssignPermission {
     ctor public AssignPermission();
     method public String getName();
@@ -170,6 +176,7 @@ package com.android.xml.permission.configfile {
     method public java.util.List<com.android.xml.permission.configfile.AllowUnthrottledLocation> getAllowUnthrottledLocation_optional();
     method public java.util.List<com.android.xml.permission.configfile.AppDataIsolationWhitelistedApp> getAppDataIsolationWhitelistedApp_optional();
     method public java.util.List<com.android.xml.permission.configfile.AppLink> getAppLink_optional();
+    method public java.util.List<com.android.xml.permission.configfile.AppLockExempt> getAppLockExempt_optional();
     method public java.util.List<com.android.xml.permission.configfile.AssignPermission> getAssignPermission_optional();
     method public java.util.List<com.android.xml.permission.configfile.BackupTransportWhitelistedService> getBackupTransportWhitelistedService_optional();
     method public java.util.List<com.android.xml.permission.configfile.BugreportWhitelisted> getBugreportWhitelisted_optional();
