@@ -12127,15 +12127,8 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
             getInterestingRect(mTempRect, line);
             mTempRect.offset(mScrollX, mScrollY);
 
-            boolean requestRectangleOnScreenResult;
-            if (android.view.accessibility.Flags.requestRectangleWithSource()) {
-                requestRectangleOnScreenResult = requestRectangleOnScreen(mTempRect, false,
-                        View.RECTANGLE_ON_SCREEN_REQUEST_SOURCE_TEXT_CURSOR);
-            } else {
-                requestRectangleOnScreenResult = requestRectangleOnScreen(mTempRect);
-            }
-
-            if (requestRectangleOnScreenResult) {
+            if (requestRectangleOnScreen(mTempRect, false,
+                    View.RECTANGLE_ON_SCREEN_REQUEST_SOURCE_TEXT_CURSOR)) {
                 changed = true;
             }
         }

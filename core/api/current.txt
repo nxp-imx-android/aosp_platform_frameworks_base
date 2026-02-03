@@ -55512,7 +55512,7 @@ package android.view {
     method @FlaggedApi("com.android.hardware.input.pointer_capture_modes") public void requestPointerCapture(int);
     method public boolean requestRectangleOnScreen(android.graphics.Rect);
     method public boolean requestRectangleOnScreen(android.graphics.Rect, boolean);
-    method @FlaggedApi("android.view.accessibility.request_rectangle_with_source") public boolean requestRectangleOnScreen(@NonNull android.graphics.Rect, boolean, int);
+    method public boolean requestRectangleOnScreen(@NonNull android.graphics.Rect, boolean, int);
     method public final void requestUnbufferedDispatch(android.view.MotionEvent);
     method public final void requestUnbufferedDispatch(int);
     method @NonNull public final <T extends android.view.View> T requireViewById(@IdRes int);
@@ -55841,10 +55841,10 @@ package android.view {
     field protected static final int[] PRESSED_SELECTED_WINDOW_FOCUSED_STATE_SET;
     field protected static final int[] PRESSED_STATE_SET;
     field protected static final int[] PRESSED_WINDOW_FOCUSED_STATE_SET;
-    field @FlaggedApi("android.view.accessibility.request_rectangle_with_source") public static final int RECTANGLE_ON_SCREEN_REQUEST_SOURCE_INPUT_FOCUS = 3; // 0x3
-    field @FlaggedApi("android.view.accessibility.request_rectangle_with_source") public static final int RECTANGLE_ON_SCREEN_REQUEST_SOURCE_SCROLL_ONLY = 1; // 0x1
-    field @FlaggedApi("android.view.accessibility.request_rectangle_with_source") public static final int RECTANGLE_ON_SCREEN_REQUEST_SOURCE_TEXT_CURSOR = 2; // 0x2
-    field @FlaggedApi("android.view.accessibility.request_rectangle_with_source") public static final int RECTANGLE_ON_SCREEN_REQUEST_SOURCE_UNDEFINED = 0; // 0x0
+    field public static final int RECTANGLE_ON_SCREEN_REQUEST_SOURCE_INPUT_FOCUS = 3; // 0x3
+    field public static final int RECTANGLE_ON_SCREEN_REQUEST_SOURCE_SCROLL_ONLY = 1; // 0x1
+    field public static final int RECTANGLE_ON_SCREEN_REQUEST_SOURCE_TEXT_CURSOR = 2; // 0x2
+    field public static final int RECTANGLE_ON_SCREEN_REQUEST_SOURCE_UNDEFINED = 0; // 0x0
     field @FlaggedApi("android.view.flags.toolkit_set_frame_rate_read_only") public static final float REQUESTED_FRAME_RATE_CATEGORY_DEFAULT = (0.0f/0.0f);
     field @FlaggedApi("android.view.flags.toolkit_set_frame_rate_read_only") public static final float REQUESTED_FRAME_RATE_CATEGORY_HIGH = -4.0f;
     field @FlaggedApi("android.view.flags.toolkit_set_frame_rate_read_only") public static final float REQUESTED_FRAME_RATE_CATEGORY_LOW = -2.0f;
@@ -56405,7 +56405,7 @@ package android.view {
     method public void recomputeViewAttributes(android.view.View);
     method public void requestChildFocus(android.view.View, android.view.View);
     method public boolean requestChildRectangleOnScreen(@NonNull android.view.View, android.graphics.Rect, boolean);
-    method @FlaggedApi("android.view.accessibility.request_rectangle_with_source") public default boolean requestChildRectangleOnScreen(@NonNull android.view.View, @NonNull android.graphics.Rect, boolean, int);
+    method public default boolean requestChildRectangleOnScreen(@NonNull android.view.View, @NonNull android.graphics.Rect, boolean, int);
     method public void requestDisallowInterceptTouchEvent(boolean);
     method public void requestFitSystemWindows();
     method public void requestLayout();
