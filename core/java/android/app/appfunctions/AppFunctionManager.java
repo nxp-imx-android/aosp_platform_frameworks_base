@@ -38,6 +38,7 @@ import android.annotation.SystemApi;
 import android.annotation.SystemService;
 import android.annotation.TestApi;
 import android.annotation.UserHandleAware;
+import android.app.Activity;
 import android.app.appfunctions.AppFunctionManagerHelper.AppFunctionNotFoundException;
 import android.app.appsearch.AppSearchManager;
 import android.content.Context;
@@ -45,6 +46,7 @@ import android.content.Intent;
 import android.content.pm.SignedPackage;
 import android.os.Binder;
 import android.os.CancellationSignal;
+import android.os.IBinder;
 import android.os.ICancellationSignal;
 import android.os.OutcomeReceiver;
 import android.os.ParcelableException;
@@ -376,7 +378,7 @@ public final class AppFunctionManager {
     @Retention(RetentionPolicy.SOURCE)
     public @interface EnabledState {}
 
-    private final AppFunctionRegistry mRegistry = new AppFunctionRegistry();
+    private final AppFunctionRegistry mRegistry;
 
     /**
      * Creates an instance.
@@ -388,6 +390,7 @@ public final class AppFunctionManager {
     public AppFunctionManager(IAppFunctionManager service, Context context) {
         mService = service;
         mContext = context;
+        mRegistry = new AppFunctionRegistry(mContext);
     }
 
     /**
@@ -1298,6 +1301,8 @@ public final class AppFunctionManager {
     private class AppFunctionRegistry {
         private final Object mLock = new Object();
 
+        private final IBinder mActivityToken;
+
         @GuardedBy("mLock")
         private final ArrayMap<String, RegistrationRecord> mRegistrations = new ArrayMap<>();
 
@@ -1329,6 +1334,14 @@ public final class AppFunctionManager {
                     }
                 };
 
+        AppFunctionRegistry(Context context) {
+            if (context instanceof Activity) {
+                mActivityToken = context.getActivityToken();
+            } else {
+                mActivityToken = null;
+            }
+        }
+
         AppFunctionRegistration register(List<RegisterAppFunctionRequest> requests) {
             // This lock is held during the IPC call to the system server. This is a deliberate
             // choice to synchronize registration requests from multiple threads within this
@@ -1356,7 +1369,7 @@ public final class AppFunctionManager {
 
                 try {
                     mService.registerAppFunctions(
-                            mContext.getPackageName(), functionIds, mExecutor);
+                            mContext.getPackageName(), functionIds, mExecutor, mActivityToken);
                 } catch (RemoteException e) {
                     throw e.rethrowFromSystemServer();
                 }
@@ -1377,7 +1390,10 @@ public final class AppFunctionManager {
                 }
                 try {
                     mService.unregisterAppFunctions(
-                            mContext.getPackageName(), functionIdsToUnregister, mExecutor);
+                            mContext.getPackageName(),
+                            functionIdsToUnregister,
+                            mExecutor,
+                            mActivityToken);
                 } catch (RemoteException e) {
                     throw e.rethrowFromSystemServer();
                 }
