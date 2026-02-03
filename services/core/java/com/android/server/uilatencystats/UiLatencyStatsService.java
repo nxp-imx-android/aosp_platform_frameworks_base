@@ -34,7 +34,12 @@ import android.util.Slog;
 import android.util.SparseArray;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.VisibleForTesting;
+import com.android.server.IoThread;
+import com.android.server.LocalServices;
 import com.android.server.SystemService;
+import com.android.server.SystemServiceManager;
+import com.android.server.uilatencystats.listeners.BootStatsListener;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -48,6 +53,7 @@ public class UiLatencyStatsService extends SystemService {
     private static final String TAG = "UiLatencyStatsService";
 
     private final Handler mHandler;
+    private final Injector mInjector;
 
     private final Object mLock = new Object();
 
@@ -56,14 +62,21 @@ public class UiLatencyStatsService extends SystemService {
             new SparseArray<>();
 
     public UiLatencyStatsService(Context context) {
+        this(context, new Injector());
+    }
+
+    @VisibleForTesting
+    public UiLatencyStatsService(Context context, Injector injector) {
         super(context);
         mHandler = new Handler(IoThread.get().getLooper());
+        mInjector = injector;
     }
 
     @Override
     public void onStart() {
         publishBinderService(Context.UI_LATENCY_STATS_SERVICE, new BinderService());
         publishLocalService(UiLatencyStatsManagerInternal.class, new LocalService());
+        mInjector.registerBootstrapListeners(this);
     }
 
     @Override
@@ -132,6 +145,17 @@ public class UiLatencyStatsService extends SystemService {
         @Override
         public void publishEvent(Event event) {
             UiLatencyStatsService.this.publishEvent(event);
+        }
+    }
+
+    @VisibleForTesting
+    public static class Injector {
+        /**
+         * Registers the bootstrap listeners that are registered at the system server startup.
+         */
+        public void registerBootstrapListeners(UiLatencyStatsService service) {
+            service.registerUiLatencyEventListener(
+                    new BootStatsListener(LocalServices.getService(SystemServiceManager.class)));
         }
     }
 }
