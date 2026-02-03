@@ -27,6 +27,7 @@ import android.annotation.SdkConstant.SdkConstantType;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.annotation.TestApi;
+import android.app.AppOpsManager;
 import android.app.admin.DevicePolicyManager;
 import android.compat.annotation.ChangeId;
 import android.compat.annotation.EnabledAfter;
@@ -353,14 +354,17 @@ public final class Telephony {
         }
 
         /**
-         * Boolean bundle entry that specifies the read access restriction for the message. It's
-         * immutable and can be set to set only when a new sms or pdu message is inserted and the
-         * writer has the {@link AppOpsManager#OP_WRITE_RESTRICTED_MESSAGES} app op, otherwise it
-         * defaults to false. A restricted message can be accessed only by apps
-         * with a {@link AppOpsManager#OP_READ_RESTRICTED_MESSAGES} app op.
+         * Specifies if the message is restricted.
          *
-         * This value is also a column in the following views: "sms_baseline", "sms_restricted",
-         * "pdu_baseline", "pdu_restricted".
+         * This column can be set to {@code true} only when a new sms or pdu message is inserted and
+         * the writer has the {@link AppOpsManager#OP_WRITE_RESTRICTED_MESSAGES} app op. Otherwise
+         * it is set to {@code false}.
+         *
+         * A restricted message is only visible to the apps with a
+         * {@link AppOpsManager#OP_READ_RESTRICTED_MESSAGES} app op.
+         *
+         * This column is present in the following views: "sms_all", "sms_restricted", "pdu_all" and
+         * "pdu_restricted".
          *
          * <p>Type: BOOLEAN</p>
          * @hide
