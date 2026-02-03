@@ -83,6 +83,7 @@ import static android.service.notification.ZenPolicy.VISUAL_EFFECT_LIGHTS;
 import static android.service.notification.ZenPolicy.VISUAL_EFFECT_PEEK;
 
 import static com.android.internal.config.sysui.SystemUiSystemPropertiesFlags.NotificationFlags.LOG_DND_STATE_EVENTS;
+import static com.android.media.audio.Flags.FLAG_FILTER_CALL_ON_LISTENER_HINT;
 import static com.android.os.dnd.DNDProtoEnums.CONV_IMPORTANT;
 import static com.android.os.dnd.DNDProtoEnums.PEOPLE_STARRED;
 import static com.android.os.dnd.DNDProtoEnums.ROOT_CONFIG;
@@ -1064,6 +1065,57 @@ public class ZenModeHelperTest extends UiServiceTestCase {
         assertThat(policy.allowReminders()).isFalse();
         assertThat(policy.allowRepeatCallers()).isFalse();
         assertThat(policy.allowPriorityChannels()).isFalse();
+    }
+
+    @Test
+    @EnableFlags(FLAG_FILTER_CALL_ON_LISTENER_HINT)
+    public void testSuppressedCallEffects_matchesCallFilter() {
+        // With suppressed effects, regardless of Zen state, all calls should be filtered out
+        mZenModeHelper.setSuppressedEffects(ZenModeHelper.SUPPRESSED_EFFECT_CALLS);
+
+        mZenModeHelper.mZenMode = ZEN_MODE_OFF;
+        assertFalse(mZenModeHelper.matchesCallFilter(UserHandle.CURRENT, null, null, 0, 0, 0));
+
+        mZenModeHelper.mZenMode = ZEN_MODE_IMPORTANT_INTERRUPTIONS;
+        mZenModeHelper.mConsolidatedPolicy = new Policy(PRIORITY_CATEGORY_CALLS,
+                PRIORITY_SENDERS_ANY, PRIORITY_SENDERS_ANY, 0, CONVERSATION_SENDERS_ANYONE);
+
+        assertFalse(mZenModeHelper.matchesCallFilter(UserHandle.CURRENT, null, null, 0, 0, 0));
+
+        mZenModeHelper.mConsolidatedPolicy = new Policy(0,
+                PRIORITY_SENDERS_ANY, PRIORITY_SENDERS_ANY, 0, CONVERSATION_SENDERS_ANYONE);
+        assertFalse(mZenModeHelper.matchesCallFilter(UserHandle.CURRENT, null, null, 0, 0, 0));
+    }
+
+    @Test
+    @DisableFlags(FLAG_FILTER_CALL_ON_LISTENER_HINT)
+    public void testSuppressedCallEffects_matchesCallFilter_flagDisabled() {
+        // With suppressed effects, but flag disabled, calls should NOT be filtered out by suppression
+        mZenModeHelper.setSuppressedEffects(ZenModeHelper.SUPPRESSED_EFFECT_CALLS);
+
+        mZenModeHelper.mZenMode = ZEN_MODE_OFF;
+        // Should be allowed because suppression check is skipped
+        assertTrue(mZenModeHelper.matchesCallFilter(UserHandle.CURRENT, null, null, 0, 0, 0));
+    }
+
+    @Test
+    public void testNoSuppressedCallEffects_matchesCallFilter() {
+        // Without suppressed effects, zen-based call filtering should apply correctly
+        mZenModeHelper.setSuppressedEffects(0);
+
+        mZenModeHelper.mZenMode = ZEN_MODE_OFF;
+        assertTrue(mZenModeHelper.matchesCallFilter(UserHandle.CURRENT, null, null, 0, 0, 0));
+
+        // Without suppressed effects, calls should be allowed by a permissive policy.
+        mZenModeHelper.mZenMode = ZEN_MODE_IMPORTANT_INTERRUPTIONS;
+        mZenModeHelper.mConsolidatedPolicy = new Policy(PRIORITY_CATEGORY_CALLS,
+                PRIORITY_SENDERS_ANY, PRIORITY_SENDERS_ANY, 0, CONVERSATION_SENDERS_ANYONE);
+        assertTrue(mZenModeHelper.matchesCallFilter(UserHandle.CURRENT, null, null, 0, 0, 0));
+
+        // Without suppressed effects, calls should be blocked by a non-permissive policy.
+        mZenModeHelper.mConsolidatedPolicy = new Policy(0,
+                PRIORITY_SENDERS_ANY, PRIORITY_SENDERS_ANY, 0, CONVERSATION_SENDERS_ANYONE);
+        assertFalse(mZenModeHelper.matchesCallFilter(UserHandle.CURRENT, null, null, 0, 0, 0));
     }
 
     @Test
