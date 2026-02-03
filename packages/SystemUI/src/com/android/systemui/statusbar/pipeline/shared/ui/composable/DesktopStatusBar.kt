@@ -19,9 +19,11 @@ package com.android.systemui.statusbar.pipeline.shared.ui.composable
 import android.view.ContextThemeWrapper
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -37,6 +39,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -75,7 +78,6 @@ import com.android.systemui.statusbar.systemstatusicons.SystemStatusIconsInCompo
 import com.android.systemui.statusbar.systemstatusicons.ui.compose.SystemStatusIcons
 import com.android.systemui.statusbar.systemstatusicons.ui.compose.SystemStatusIconsLegacy
 import com.android.systemui.statusbar.systemstatusicons.ui.compose.movableSystemStatusIconsLegacyAndroidView
-import com.android.systemui.statusbar.ui.composable.getStatusBarItemSize
 
 object DesktopStatusBar {
     object Dimensions {
@@ -208,22 +210,42 @@ private fun NotificationsChip(viewModel: HomeStatusBarViewModel, modifier: Modif
                     DesktopStatusBar.Dimensions.ChipInternalSpacing,
                     Alignment.Start,
                 ),
+            includePadding = false,
             isClickable = viewModel.isNotificationsChipClickable,
         ) {
-            Icon(
-                icon =
-                    Icon.Resource(
-                        resId =
-                            if (viewModel.hasStatusBarNotifications) {
-                                R.drawable.ic_notification_bell_unread
-                            } else {
-                                R.drawable.ic_notification_bell
-                            },
-                        contentDescription = null,
-                    ),
-                tint = tint,
-                modifier = Modifier.size(getStatusBarItemSize()).align(Alignment.CenterVertically),
-            )
+            if (viewModel.hasStatusBarNotifications) {
+                Box(modifier = Modifier.align(Alignment.CenterVertically).fillMaxHeight()) {
+                    Icon(
+                        icon =
+                            Icon.Resource(
+                                resId = R.drawable.ic_notification_bell_unread_base,
+                                contentDescription = null,
+                            ),
+                        tint = tint,
+                    )
+                    Icon(
+                        icon =
+                            Icon.Resource(
+                                resId = R.drawable.ic_notification_bell_unread_dot,
+                                contentDescription = null,
+                            ),
+                        tint =
+                            if (chipHighlightModel is ChipHighlightModel.Transparent)
+                                Color.Unspecified
+                            else tint,
+                    )
+                }
+            } else {
+                Icon(
+                    icon =
+                        Icon.Resource(
+                            resId = R.drawable.ic_notification_bell,
+                            contentDescription = null,
+                        ),
+                    tint = tint,
+                    modifier = Modifier.align(Alignment.CenterVertically).fillMaxHeight(),
+                )
+            }
         }
     }
 }

@@ -125,6 +125,7 @@ fun ShadeHighlightChip(
     hoverBackgroundColor: Color = Color.Unspecified,
     rippleColor: Color = Color.Unspecified,
     horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
+    includePadding: Boolean = true,
     isClickable: Boolean = true,
     onClick: () -> Unit = {},
     content: @Composable RowScope.() -> Unit,
@@ -153,7 +154,7 @@ fun ShadeHighlightChip(
                         )
                     else Modifier
                 )
-                .thenIf(backgroundColor != Color.Unspecified) {
+                .thenIf(backgroundColor != Color.Unspecified && includePadding) {
                     Modifier.padding(
                         horizontal = ChipPaddingHorizontal,
                         vertical = ChipPaddingVertical,
