@@ -26,6 +26,7 @@ import android.content.res.ColorStateList;
 import android.os.AsyncTask;
 import android.os.CountDownTimer;
 import android.os.SystemClock;
+import android.uilatencystats.UiLatencyStatsManager;
 import android.util.Log;
 import android.util.PluralsMessageFormatter;
 import android.view.KeyEvent;
@@ -49,6 +50,7 @@ import com.android.systemui.user.domain.interactor.SelectedUserInteractor;
 import com.android.systemui.util.wrapper.LockPatternCheckerWrapper;
 
 import java.time.Duration;
+import java.util.Optional;
 
 public abstract class KeyguardAbsKeyInputViewController<T extends KeyguardAbsKeyInputView>
         extends KeyguardInputViewController<T> {
@@ -59,6 +61,7 @@ public abstract class KeyguardAbsKeyInputViewController<T extends KeyguardAbsKey
     private final EmergencyButtonController mEmergencyButtonController;
     private final UserActivityNotifier mUserActivityNotifier;
     private final LockPatternCheckerWrapper mLockPatternChecker;
+    private final Optional<UiLatencyStatsManager> mUiLatencyStatsManager;
     private CountDownTimer mCountdownTimer;
     private boolean mDismissing;
     protected AsyncTask<?, ?, ?> mPendingLockCheck;
@@ -94,7 +97,8 @@ public abstract class KeyguardAbsKeyInputViewController<T extends KeyguardAbsKey
             FeatureFlags featureFlags, SelectedUserInteractor selectedUserInteractor,
             BouncerHapticPlayer bouncerHapticPlayer,
             UserActivityNotifier userActivityNotifier,
-            LockPatternCheckerWrapper lockPatternCheckerWrapper
+            LockPatternCheckerWrapper lockPatternCheckerWrapper,
+            Optional<UiLatencyStatsManager> uiLatencyStatsManager
     ) {
         super(view, securityMode, keyguardSecurityCallback, emergencyButtonController,
                 messageAreaControllerFactory, featureFlags, selectedUserInteractor,
@@ -106,6 +110,7 @@ public abstract class KeyguardAbsKeyInputViewController<T extends KeyguardAbsKey
         mEmergencyButtonController = emergencyButtonController;
         mUserActivityNotifier = userActivityNotifier;
         mLockPatternChecker = lockPatternCheckerWrapper;
+        mUiLatencyStatsManager = uiLatencyStatsManager;
     }
 
     abstract void resetState();
@@ -205,6 +210,9 @@ public abstract class KeyguardAbsKeyInputViewController<T extends KeyguardAbsKey
             if (dismissKeyguard) {
                 mDismissing = true;
                 mLatencyTracker.onActionStart(LatencyTracker.ACTION_LOCKSCREEN_UNLOCK);
+                mUiLatencyStatsManager.ifPresent(m -> m.reportEvent(
+                        UiLatencyStatsManager.EVENT_LOCK_SCREEN_UNLOCK_START,
+                        SystemClock.elapsedRealtime()));
                 Log.i(TAG,
                         "StartUnlock. "
                         + "User: " + userId

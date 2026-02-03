@@ -436,6 +436,7 @@ android_library {
         "android.app.flags-aconfig",
         "android.net.platform.flags-aconfig",
         "com_android_systemui_flags",
+        "uilatencystats_flags",
     ],
 }
 
@@ -573,6 +574,7 @@ android_library {
         "displaylib",
         "aconfig_settings_flags_lib",
         "SurfaceEffectsComposeLib",
+        "uilatencystats_flags_core_java_lib",
     ],
     enable_ksp: true,
     annotation_processor_flags: [

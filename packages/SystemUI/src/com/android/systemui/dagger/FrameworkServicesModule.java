@@ -103,6 +103,7 @@ import android.telephony.CarrierConfigManager;
 import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
 import android.telephony.satellite.SatelliteManager;
+import android.uilatencystats.UiLatencyStatsManager;
 import android.view.CrossWindowBlurListeners;
 import android.view.IWindowManager;
 import android.view.LayoutInflater;
@@ -583,6 +584,12 @@ public class FrameworkServicesModule {
     @Singleton
     static UserScopedService<UiModeManager> provideUserScopedUiModeManager(Context context) {
         return new UserScopedServiceImpl<>(context, UiModeManager.class);
+    }
+
+    @Provides
+    @Singleton
+    static Optional<UiLatencyStatsManager> provideUiLatencyStatsManager(Context context) {
+        return Optional.ofNullable(context.getSystemService(UiLatencyStatsManager.class));
     }
 
     /** */

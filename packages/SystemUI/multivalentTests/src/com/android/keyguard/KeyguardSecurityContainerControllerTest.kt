@@ -23,6 +23,7 @@ import android.security.Flags.FLAG_SECURE_LOCK_DEVICE
 import android.telephony.TelephonyManager
 import android.testing.TestableLooper.RunWithLooper
 import android.testing.TestableResources
+import android.uilatencystats.UiLatencyStatsManager
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -102,6 +103,7 @@ import com.android.systemui.util.wrapper.LockPatternCheckerWrapper
 import com.android.systemui.window.domain.interactor.windowRootViewBlurInteractor
 import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
+import java.util.Optional
 import junit.framework.Assert
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -173,6 +175,7 @@ class KeyguardSecurityContainerControllerTest : SysuiTestCase() {
     @Mock private lateinit var mUserActivityNotifier: UserActivityNotifier
     @Mock private lateinit var bouncerInteractor: BouncerInteractor
     @Mock private lateinit var lockPatternChecker: LockPatternCheckerWrapper
+    @Mock private lateinit var mUiLatencyStatsManager: UiLatencyStatsManager
 
     @Captor
     private lateinit var keyguardUpdateMonitorCallbackCaptor:
@@ -261,6 +264,7 @@ class KeyguardSecurityContainerControllerTest : SysuiTestCase() {
                 null,
                 mUserActivityNotifier,
                 lockPatternChecker,
+                Optional.of(mUiLatencyStatsManager),
             )
 
         kosmos = testKosmos()

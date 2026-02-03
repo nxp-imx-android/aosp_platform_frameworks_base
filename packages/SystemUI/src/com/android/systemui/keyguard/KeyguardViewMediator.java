@@ -88,6 +88,7 @@ import android.provider.DeviceConfig;
 import android.provider.Settings;
 import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
+import android.uilatencystats.UiLatencyStatsManager;
 import android.util.Log;
 import android.util.Slog;
 import android.util.SparseBooleanArray;
@@ -202,6 +203,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
@@ -947,6 +949,9 @@ public class KeyguardViewMediator implements CoreStartable,
                 return;
             }
             Trace.beginSection("KeyguardViewMediator.mViewMediatorCallback#keyguardDonePending");
+            mUiLatencyStatsManager.ifPresent(m -> m.reportEvent(
+                    UiLatencyStatsManager.EVENT_LOCK_SCREEN_UNLOCK_START,
+                    mSystemClock.elapsedRealtime()));
             mKeyguardDonePendingForUser = targetUserId;
             mHideAnimationRun = true;
             mHideAnimationRunning = true;
@@ -1579,6 +1584,8 @@ public class KeyguardViewMediator implements CoreStartable,
     private final Lazy<WindowManagerLockscreenVisibilityManager> mWmLockscreenVisibilityManager;
 
     private WindowManagerOcclusionManager mWmOcclusionManager;
+    private final Optional<UiLatencyStatsManager> mUiLatencyStatsManager;
+
     /**
 
      * Injected constructor. See {@link KeyguardModule}.
@@ -1633,7 +1640,8 @@ public class KeyguardViewMediator implements CoreStartable,
             KeyguardTransitionBootInteractor transitionBootInteractor,
             Lazy<CommunalSceneInteractor> communalSceneInteractor,
             Lazy<CommunalSettingsInteractor> communalSettingsInteractor,
-            WindowManagerOcclusionManager wmOcclusionManager) {
+            WindowManagerOcclusionManager wmOcclusionManager,
+            Optional<UiLatencyStatsManager> uiLatencyStatsManager) {
         mContext = context;
         mUserTracker = userTracker;
         mFalsingCollector = falsingCollector;
@@ -1714,6 +1722,7 @@ public class KeyguardViewMediator implements CoreStartable,
         mShowKeyguardWakeLock.setReferenceCounted(false);
 
         mWmOcclusionManager = wmOcclusionManager;
+        mUiLatencyStatsManager = uiLatencyStatsManager;
     }
 
     public void userActivity() {

@@ -31,6 +31,7 @@ import static org.mockito.Mockito.when;
 import android.os.SystemClock;
 import android.platform.test.annotations.EnableFlags;
 import android.testing.TestableLooper.RunWithLooper;
+import android.uilatencystats.UiLatencyStatsManager;
 import android.view.KeyEvent;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -62,6 +63,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.time.Duration;
+import java.util.Optional;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
@@ -101,6 +103,8 @@ public class KeyguardAbsKeyInputViewControllerTest extends SysuiTestCase {
     private UserActivityNotifier mUserActivityNotifier;
     @Mock
     private LockPatternCheckerWrapper mLockPatternCheckerWrapper;
+    @Mock
+    private UiLatencyStatsManager mUiLatencyStatsManager;
     private KeyguardAbsKeyInputViewController mKeyguardAbsKeyInputViewController;
     private KosmosJavaAdapter mKosmosJavaAdapter = new KosmosJavaAdapter(this);
     private final BouncerHapticPlayer mBouncerHapticPlayer =
@@ -129,7 +133,8 @@ public class KeyguardAbsKeyInputViewControllerTest extends SysuiTestCase {
                 mKeyguardUpdateMonitor, mSecurityMode, mLockPatternUtils, mKeyguardSecurityCallback,
                 mKeyguardMessageAreaControllerFactory, mLatencyTracker, mFalsingCollector,
                 mEmergencyButtonController, mFeatureFlags, mSelectedUserInteractor,
-                mBouncerHapticPlayer, mUserActivityNotifier, mLockPatternCheckerWrapper) {
+                mBouncerHapticPlayer, mUserActivityNotifier, mLockPatternCheckerWrapper,
+                Optional.of(mUiLatencyStatsManager)) {
             @Override
             void resetState() {
             }
