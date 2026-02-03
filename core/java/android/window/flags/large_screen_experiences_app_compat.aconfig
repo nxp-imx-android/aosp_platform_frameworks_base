@@ -70,6 +70,16 @@ flag {
 }
 
 flag {
+  name: "app_compat_enable_blur_wallpaper_in_shell"
+  namespace: "large_screen_experiences_app_compat"
+  description: "Enables blur wallpaper in the letterbox implementation in Shell."
+  bug: "480962329"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "app_compat_refactoring"
   namespace: "large_screen_experiences_app_compat"
   description: "Whether the changes about app compat refactoring are enabled./n"
