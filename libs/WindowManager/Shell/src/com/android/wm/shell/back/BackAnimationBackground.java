@@ -16,7 +16,6 @@
 
 package com.android.wm.shell.back;
 
-import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS;
 
 import static com.android.graphics.surfaceflinger.flags.Flags.setClientDrawnCornerRadii;
@@ -26,7 +25,6 @@ import android.annotation.Nullable;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.view.SurfaceControl;
-import android.window.DesktopExperienceFlags;
 
 import com.android.internal.graphics.ColorUtils;
 import com.android.internal.view.AppearanceRegion;
@@ -96,11 +94,7 @@ public class BackAnimationBackground {
                 .setCallsite("BackAnimationBackground")
                 .setColorLayer();
 
-        if (DesktopExperienceFlags.ENABLE_MULTIDISPLAY_TRACKPAD_BACK_GESTURE.isTrue()) {
-            mRootTaskDisplayAreaOrganizer.attachToDisplayArea(displayId, colorLayerBuilder);
-        } else {
-            mRootTaskDisplayAreaOrganizer.attachToDisplayArea(DEFAULT_DISPLAY, colorLayerBuilder);
-        }
+        mRootTaskDisplayAreaOrganizer.attachToDisplayArea(displayId, colorLayerBuilder);
         mBackgroundSurface = colorLayerBuilder.build();
         transaction.setColor(mBackgroundSurface, colorComponents)
                 .show(mBackgroundSurface);
