@@ -27,6 +27,7 @@ import static android.app.AppOpsManager.MODE_ALLOWED;
 import static android.app.AppOpsManager.MODE_ERRORED;
 import static android.app.AppOpsManager.MODE_IGNORED;
 import static android.app.AppOpsManager.OP_BLUETOOTH_CONNECT;
+import static android.app.privatecompute.flags.Flags.enablePccFrameworkSupport;
 import static android.content.pm.ApplicationInfo.AUTO_REVOKE_DISALLOWED;
 import static android.content.pm.ApplicationInfo.AUTO_REVOKE_DISCOURAGED;
 
@@ -919,7 +920,15 @@ public class PermissionManagerService extends IPermissionManager.Stub {
             // any user
             int userId = UserHandle.getUserId((callingUid == Process.SYSTEM_UID ? sourceUid
                     : callingUid));
-            if (packageManagerInternal.getPackageUid(source.getPackageName(), 0, userId)
+
+            if (enablePccFrameworkSupport()) {
+                if (!packageManagerInternal.isSameApp(source.getPackageName(),
+                        0, sourceUid, userId)) {
+                    throw new SecurityException(
+                            "Cannot register attribution source for package:"
+                                    + source.getPackageName() + " from uid:" + callingUid);
+                }
+            } else if (packageManagerInternal.getPackageUid(source.getPackageName(), 0, userId)
                     != sourceUid) {
                 throw new SecurityException("Cannot register attribution source for package:"
                         + source.getPackageName() + " from uid:" + callingUid);
