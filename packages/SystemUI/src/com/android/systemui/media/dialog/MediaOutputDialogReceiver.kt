@@ -45,7 +45,11 @@ constructor(private val mediaOutputDialogManager: MediaOutputDialogManager) : Br
 
     private fun launchMediaOutputDialogIfPossible(packageName: String?) {
         if (!packageName.isNullOrEmpty()) {
-            mediaOutputDialogManager.createAndShow(packageName, false)
+            mediaOutputDialogManager.createAndShow(
+                packageName,
+                aboveStatusBar = false,
+                useSystemColors = true,
+            )
         } else if (DEBUG) {
             Log.e(TAG, "Unable to launch media output dialog. Package name is empty.")
         }

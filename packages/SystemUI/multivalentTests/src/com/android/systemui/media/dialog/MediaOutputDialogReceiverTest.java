@@ -25,10 +25,12 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import android.content.Intent;
+import android.platform.test.annotations.EnableFlags;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
+import com.android.media.flags.Flags;
 import com.android.settingslib.media.MediaOutputConstants;
 import com.android.systemui.SysuiTestCase;
 
@@ -51,35 +53,45 @@ public class MediaOutputDialogReceiverTest extends SysuiTestCase {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MEDIA_OUTPUT_SWITCHER_ENTRY_POINT_THEMING)
     public void launchMediaOutputDialog_ExtraPackageName_DialogFactoryCalled() {
         Intent intent = new Intent(MediaOutputConstants.ACTION_LAUNCH_MEDIA_OUTPUT_DIALOG);
         intent.putExtra(MediaOutputConstants.EXTRA_PACKAGE_NAME, getContext().getPackageName());
         mMediaOutputDialogReceiver.onReceive(getContext(), intent);
 
         verify(mMockMediaOutputDialogManager, times(1))
-                .createAndShow(eq(getContext().getPackageName()), eq(false), any(), any(), any());
+                .createAndShow(
+                        eq(getContext().getPackageName()),
+                        eq(false),
+                        any(),
+                        any(),
+                        any(),
+                        anyBoolean());
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MEDIA_OUTPUT_SWITCHER_ENTRY_POINT_THEMING)
     public void launchMediaOutputDialog_WrongExtraKey_DialogFactoryNotCalled() {
         Intent intent = new Intent(MediaOutputConstants.ACTION_LAUNCH_MEDIA_OUTPUT_DIALOG);
         intent.putExtra("Wrong Package Name Key", getContext().getPackageName());
         mMediaOutputDialogReceiver.onReceive(getContext(), intent);
 
         verify(mMockMediaOutputDialogManager, never())
-                .createAndShow(any(), anyBoolean(), any(), any(), any());
+                .createAndShow(any(), anyBoolean(), any(), any(), any(), anyBoolean());
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MEDIA_OUTPUT_SWITCHER_ENTRY_POINT_THEMING)
     public void launchMediaOutputDialog_NoExtra_DialogFactoryNotCalled() {
         Intent intent = new Intent(MediaOutputConstants.ACTION_LAUNCH_MEDIA_OUTPUT_DIALOG);
         mMediaOutputDialogReceiver.onReceive(getContext(), intent);
 
         verify(mMockMediaOutputDialogManager, never())
-                .createAndShow(any(), anyBoolean(), any(), any(), any());
+                .createAndShow(any(), anyBoolean(), any(), any(), any(), anyBoolean());
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MEDIA_OUTPUT_SWITCHER_ENTRY_POINT_THEMING)
     public void unKnownAction_ExtraPackageName_FactoriesNotCalled() {
         Intent intent = new Intent("UnKnown Action");
         intent.putExtra(Intent.EXTRA_PACKAGE_NAME, getContext().getPackageName());
@@ -87,15 +99,16 @@ public class MediaOutputDialogReceiverTest extends SysuiTestCase {
         mMediaOutputDialogReceiver.onReceive(getContext(), intent);
 
         verify(mMockMediaOutputDialogManager, never())
-                .createAndShow(any(), anyBoolean(), any(), any(), any());
+                .createAndShow(any(), anyBoolean(), any(), any(), any(), anyBoolean());
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MEDIA_OUTPUT_SWITCHER_ENTRY_POINT_THEMING)
     public void unKnownActionAnd_NoExtra_FactoriesNotCalled() {
         Intent intent = new Intent("UnKnown Action");
         mMediaOutputDialogReceiver.onReceive(getContext(), intent);
 
         verify(mMockMediaOutputDialogManager, never())
-                .createAndShow(any(), anyBoolean(), any(), any(), any());
+                .createAndShow(any(), anyBoolean(), any(), any(), any(), anyBoolean());
     }
 }

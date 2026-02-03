@@ -42,6 +42,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.android.internal.logging.UiEvent
 import com.android.internal.logging.UiEventLogger
+import com.android.media.flags.Flags.enableMediaOutputSwitcherEntryPointTheming
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.broadcast.BroadcastSender
 import com.android.systemui.res.R
@@ -62,6 +63,7 @@ class MediaOutputDialog(
      */
     private val mIncludePlaybackAndAppMetadata: Boolean,
     private val mOnDialogEventListener: OnDialogEventListener?,
+    private val mUseSystemColors: Boolean = false,
 ) :
     SystemUIDialog(context, R.style.Theme_SystemUI_Dialog_Media),
     MediaSwitchingController.Callback,
@@ -90,7 +92,6 @@ class MediaOutputDialog(
     private lateinit var mStopButton: Button
     private lateinit var mWarningSection: ViewGroup
     private lateinit var mWarningFixButton: Button
-    private val mWallpaperColors: WallpaperColors? = null
     private var mDismissing = false
 
     @JvmField
@@ -225,10 +226,12 @@ class MediaOutputDialog(
         mMediaSwitchingController.setRefreshing(true)
         // Update header icon
         val headerIcon = mMediaSwitchingController.getHeaderIcon()
-        var colorSetUpdated = false
         if (headerIcon != null) {
             val icon = headerIcon.toIcon(mContext)
-            if (icon.type != Icon.TYPE_BITMAP && icon.type != Icon.TYPE_ADAPTIVE_BITMAP) {
+            val iconSupportsColorExtraction =
+                icon.type == Icon.TYPE_BITMAP || icon.type == Icon.TYPE_ADAPTIVE_BITMAP
+            val useSystemColors = enableMediaOutputSwitcherEntryPointTheming() && mUseSystemColors
+            if (!iconSupportsColorExtraction || useSystemColors) {
                 // icon doesn't support getBitmap, use default value for color scheme
                 updateButtonBackgroundColorFilter()
                 updateDialogBackgroundColor()
@@ -237,15 +240,9 @@ class MediaOutputDialog(
                 val currentNightMode = config.uiMode and Configuration.UI_MODE_NIGHT_MASK
                 val isDarkThemeOn = currentNightMode == Configuration.UI_MODE_NIGHT_YES
                 val wallpaperColors = WallpaperColors.fromBitmap(icon.getBitmap())
-                colorSetUpdated = wallpaperColors != mWallpaperColors
-                if (colorSetUpdated) {
-                    mMediaSwitchingController.updateCurrentColorScheme(
-                        wallpaperColors,
-                        isDarkThemeOn,
-                    )
-                    updateButtonBackgroundColorFilter()
-                    updateDialogBackgroundColor()
-                }
+                mMediaSwitchingController.updateCurrentColorScheme(wallpaperColors, isDarkThemeOn)
+                updateButtonBackgroundColorFilter()
+                updateDialogBackgroundColor()
             }
             mHeaderIcon.setVisibility(View.VISIBLE)
             mHeaderIcon.setImageIcon(icon)
@@ -296,11 +293,7 @@ class MediaOutputDialog(
 
         if (!mAdapter.isDragging()) {
             val currentActivePosition = mAdapter.getCurrentActivePosition()
-            if (
-                !colorSetUpdated &&
-                    !deviceSetChanged &&
-                    currentActivePosition in 0..<mAdapter.itemCount
-            ) {
+            if (!deviceSetChanged && currentActivePosition in 0..<mAdapter.itemCount) {
                 mAdapter.notifyItemChanged(currentActivePosition)
             } else {
                 mAdapter.updateItems()
