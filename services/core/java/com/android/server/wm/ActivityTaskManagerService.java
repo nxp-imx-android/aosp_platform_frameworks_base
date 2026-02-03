@@ -7273,6 +7273,15 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         }
 
         @Override
+        @Nullable
+        public IBinder getAssistTokenForActivityToken(@NonNull IBinder activityToken) {
+            synchronized (mGlobalLock) {
+                final ActivityRecord r = ActivityRecord.isInRootTaskLocked(activityToken);
+                return r != null ? r.assistToken : null;
+            }
+        }
+
+        @Override
         public ActivityTokens getAttachedNonFinishingActivityForTask(int taskId,
                 IBinder token) {
             synchronized (mGlobalLock) {
