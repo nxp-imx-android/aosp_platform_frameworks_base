@@ -121,7 +121,7 @@ class InternalObserverCallbackRouter {
     //  example in case of dynamic app functions that are registered/unregistered in a composable.
     public void onEnabledStatesChanged(@NonNull Set<AppFunctionName> changedFunctionNames) {
         try {
-            var unused = mExecutor.submit(() -> onAppFunctionsChanged(changedFunctionNames));
+            var unused = mExecutor.submit(() -> onAppFunctionStatesChanged(changedFunctionNames));
         } catch (RejectedExecutionException ex) {
             Slog.w(TAG, "Failed to run onEnabledStateChanged due to executor shutdown.", ex);
         }
@@ -170,6 +170,30 @@ class InternalObserverCallbackRouter {
                             new ArrayList<>(filteredNames));
                 } catch (RemoteException e) {
                     Slog.e(TAG, "Failed to execute callback#onAppFunctionsChanged.", e);
+                }
+            }
+        }
+    }
+
+     private void onAppFunctionStatesChanged(@NonNull Set<AppFunctionName> changedFunctionNames) {
+        Set<InternalCallbackWrapper> callbacksToNotify;
+        synchronized (mInternalCallbacksLock) {
+            // Make a copy before iterating over the callbacks to prevent deadlocks.
+            callbacksToNotify = new ArraySet<>(mInternalCallbacks);
+        }
+        for (InternalCallbackWrapper internalCallbackWrapper : callbacksToNotify) {
+            Set<AppFunctionName> filteredNames = new ArraySet<>();
+            for (AppFunctionName functionName : changedFunctionNames) {
+                if (internalCallbackWrapper.isObservedFunction(functionName)) {
+                    filteredNames.add(functionName);
+                }
+            }
+            if (!filteredNames.isEmpty()) {
+                try {
+                    internalCallbackWrapper.mInternalCallback.onAppFunctionStatesChanged(
+                            new ArrayList<>(filteredNames));
+                } catch (RemoteException e) {
+                    Slog.e(TAG, "Failed to execute callback#onAppFunctionStatesChanged.", e);
                 }
             }
         }

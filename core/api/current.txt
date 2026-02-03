@@ -9355,6 +9355,7 @@ package android.app.appfunctions {
   }
 
   @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") public interface AppFunctionObserver {
+    method public void onAppFunctionStatesChanged(@NonNull java.util.List<android.app.appfunctions.AppFunctionName>);
     method public void onAppFunctionsChanged(@NonNull java.util.List<android.app.appfunctions.AppFunctionName>);
     method public void onPackagesChanged(@NonNull java.util.List<java.lang.String>);
   }
