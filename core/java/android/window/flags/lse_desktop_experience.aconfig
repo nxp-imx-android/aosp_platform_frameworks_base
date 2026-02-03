@@ -1253,6 +1253,16 @@ flag {
 }
 
 flag {
+    name: "respect_system_default_min_size"
+    namespace: "lse_desktop_experience"
+    description: "Enables the bug fix to respect system-default min size over app-requested."
+    bug: "478712811"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "runtime_density_resolution_for_window_layout"
     namespace: "lse_desktop_experience"
     description: "Enable API changes for runtime density resolution for ActivityInfo.WindowLayout"
