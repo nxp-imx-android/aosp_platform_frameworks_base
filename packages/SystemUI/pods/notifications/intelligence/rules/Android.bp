@@ -20,4 +20,30 @@ package {
 java_library {
     name: "com.android.systemui.notifications.intelligence.rules_api",
     defaults: ["sysui_api"],
+    libs: [
+        "com.android.systemui.flags_api",
+    ],
+}
+
+java_library {
+    name: "com.android.systemui.notifications.intelligence.rules_main",
+    defaults: ["sysui_main"],
+    static_libs: [
+        "com.android.systemui.notifications.intelligence.rules_api",
+        "kotlinx_coroutines",
+        "SystemUISharedLib",
+    ],
+    visibility: [
+        "//frameworks/base/packages/SystemUI/pods/notifications/intelligence/rules/ui",
+        "//vendor:__subpackages__",
+    ],
+}
+
+java_library {
+    name: "com.android.systemui.notifications.intelligence.rules_testlib",
+    defaults: ["sysui_testlib"],
+    static_libs: [
+        "com.android.systemui.notifications.intelligence.rules_api",
+        "com.android.systemui.notifications.intelligence.rules_main",
+    ],
 }
