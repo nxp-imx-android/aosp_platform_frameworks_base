@@ -56,6 +56,8 @@ interface IPersonalContextManager {
     oneway void publishInsightSurfaceHints(
         in List<ContextHintWrapper> hints, in InsightSurfaceClientInfo clientInfo, int userId);
 
+    oneway void showAttribution(in ContextInsightWrapper insight);
+
     oneway void reportEvent(in InsightEvent event, int userId);
 
     oneway void reportFeedback(
