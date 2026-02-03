@@ -481,16 +481,6 @@ flag {
 }
 
 flag {
-    name: "no_pause_task_snapshot_persister"
-    namespace: "windowing_frontend"
-    description: "The system server does not use render thread anymore, allow the persis thread to continuously execute in the background."
-    bug: "238206323"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "no_transfer_first_window_drawn"
     namespace: "windowing_frontend"
     description: "The firstWindowDrawn attribute should only represents main window drawn for an activity."
