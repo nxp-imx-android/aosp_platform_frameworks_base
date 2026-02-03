@@ -30,8 +30,8 @@ import static org.mockito.Mockito.when;
 
 import android.content.ContentResolver;
 import android.content.Context;
-import android.database.ContentObserver;
 import android.content.pm.PackageManager;
+import android.database.ContentObserver;
 import android.os.UserManager;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
@@ -90,8 +90,9 @@ public final class HsumBootUserInitializerTest {
 
     @Before
     public void setFixtures() {
+        when(mMockContext.getContentResolver()).thenReturn(mMockContentResolver);
         when(mMockContext.getPackageManager()).thenReturn(mMockPackageManager);
-        mFixture = new HsumBootUserInitializer(mMockUms, mMockAms, mMockPms, mMockContentResolver,
+        mFixture = new HsumBootUserInitializer(mMockUms, mMockAms, mMockPms,
                 // value of args below don't matter
                 /* shouldDesignateMainUser= */ false,
                 /* shouldCreateInitialUser= */ false,
@@ -103,7 +104,7 @@ public final class HsumBootUserInitializerTest {
         mockIsHsum(true);
 
         var instance = HsumBootUserInitializer.createInstance(mMockUms, mMockAms, mMockPms,
-                mIsManagedDevice, mMockContentResolver, mRealContext);
+                mIsManagedDevice, mRealContext);
 
         expect.withMessage("result of createInstance()").that(instance).isNotNull();
     }
@@ -112,7 +113,7 @@ public final class HsumBootUserInitializerTest {
         mockIsHsum(false);
 
         var instance = HsumBootUserInitializer.createInstance(mMockUms, mMockAms, mMockPms,
-                mIsManagedDevice, mMockContentResolver, mRealContext);
+                mIsManagedDevice, mRealContext);
 
         expect.withMessage("result of createInstance()").that(instance).isNull();
     }

@@ -88,12 +88,12 @@ public final class HsumBootUserInitializer {
     /** Static factory method for creating a {@link HsumBootUserInitializer} instance. */
     public static @Nullable HsumBootUserInitializer createInstance(UserManagerService ums,
             ActivityManagerService ams, PackageManagerService pms, boolean isManagedDevice,
-            ContentResolver contentResolver, Context context) {
+            Context context) {
 
         if (!UserManager.isHeadlessSystemUserMode()) {
             return null;
         }
-        var instance = new HsumBootUserInitializer(ums, ams, pms, contentResolver,
+        var instance = new HsumBootUserInitializer(ums, ams, pms,
                 designateMainUserOnBoot(context), createInitialAdminUserOnBoot(context),
                 isManagedDevice, context);
         setDumpable(instance, context);
@@ -102,19 +102,18 @@ public final class HsumBootUserInitializer {
 
     @VisibleForTesting
     HsumBootUserInitializer(UserManagerService ums, ActivityManagerService ams,
-            PackageManagerService pms, ContentResolver contentResolver,
-            boolean shouldDesignateMainUser, boolean shouldCreateInitialAdminUser,
-            boolean isManagedDevice, Context context) {
+            PackageManagerService pms, boolean shouldDesignateMainUser,
+            boolean shouldCreateInitialAdminUser, boolean isManagedDevice, Context context) {
         mUms = ums;
         mAms = ams;
         mPms = pms;
-        mContentResolver = contentResolver;
+        mContentResolver = context.getContentResolver();
         mShouldDesignateMainUser = shouldDesignateMainUser;
         mShouldCreateInitialAdminUser = shouldCreateInitialAdminUser;
         mIsManagedDevice = isManagedDevice;
         mDeviceProvisionedObserver = (Flags.hsuDeviceProvisioner()
                     ? new HsuDeviceProvisioner(
-                            context, new Handler(Looper.getMainLooper()), contentResolver, ums)
+                            context, new Handler(Looper.getMainLooper()), ums)
                     : new ContentObserver(new Handler(Looper.getMainLooper())) {
                         @Override
                         public void onChange(boolean selfChange) {
