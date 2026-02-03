@@ -18,6 +18,7 @@ package com.android.systemui.usb;
 
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.text.Html;
 
 import javax.inject.Inject;
 
@@ -45,11 +46,15 @@ public class UsbConfirmActivity extends UsbDialogActivity {
         super.onResume();
 
         final int titleId = mUsbConfirmMessageHandler.getPromptTitleId();
-        final String title =
-                getString(
-                        titleId, mDialogHelper.getAppName(), mDialogHelper.getDeviceDescription());
+        final CharSequence title =
+                Html.fromHtml(
+                        getString(
+                                titleId,
+                                mDialogHelper.getAppName(),
+                                mDialogHelper.getDeviceDescription()),
+                        Html.FROM_HTML_MODE_LEGACY);
         final int messageId = mUsbConfirmMessageHandler.getMessageId();
-        final String message =
+        final CharSequence message =
                 (messageId != Resources.ID_NULL)
                         ? getString(
                                 messageId,
