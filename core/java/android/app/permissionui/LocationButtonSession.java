@@ -96,6 +96,16 @@ public interface LocationButtonSession extends AutoCloseable {
     void resize(int width, int height);
 
     /**
+     * Sets the padding for the location button within its container.
+     *
+     * @param left   The left padding in pixels.
+     * @param top    The top padding in pixels.
+     * @param right  The right padding in pixels.
+     * @param bottom The bottom padding in pixels.
+     */
+    void setPadding(int left, int top, int right, int bottom);
+
+    /**
      * Notifies the remote service of a configuration change.
      *
      * <p>This should be called when the application's configuration changes, for example, due to a
@@ -116,9 +126,16 @@ public interface LocationButtonSession extends AutoCloseable {
     /**
      * Sets the corner radius for the location button.
      *
-     * @param radius The corner radius in pixels.
+     * @param cornerRadius The corner radius in pixels.
      */
-    void setCornerRadius(float radius);
+    void setCornerRadius(float cornerRadius);
+
+    /**
+     * Sets the corner radius for the location button pressed state.
+     *
+     * @param cornerRadius The corner radius in pixels.
+     */
+    void setPressedCornerRadius(float cornerRadius);
 
     /**
      * Sets the color of location button text.

@@ -71,6 +71,15 @@ final class LocationButtonSessionWrapper implements LocationButtonSession, IBind
     }
 
     @Override
+    public void setPadding(int left, int top, int right, int bottom) {
+        try {
+            mSessionResponse.getSession().setPadding(left, top, right, bottom);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    @Override
     public void changeConfiguration(@NonNull Configuration newConfig) {
         try {
             mSessionResponse.getSession().changeConfiguration(newConfig);
@@ -92,9 +101,18 @@ final class LocationButtonSessionWrapper implements LocationButtonSession, IBind
     }
 
     @Override
-    public void setCornerRadius(float radius) {
+    public void setCornerRadius(float cornerRadius) {
         try {
-            mSessionResponse.getSession().setCornerRadius(radius);
+            mSessionResponse.getSession().setCornerRadius(cornerRadius);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    @Override
+    public void setPressedCornerRadius(float cornerRadius) {
+        try {
+            mSessionResponse.getSession().setPressedCornerRadius(cornerRadius);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

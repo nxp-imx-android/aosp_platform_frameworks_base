@@ -68,6 +68,12 @@ constructor(private val repository: LocationButtonRepository) {
         }
     }
 
+    fun setPressedCornerRadius(sessionId: Int, pressedCornerRadius: Float) {
+        repository.updateButtonState(sessionId) {
+            it.copy(pressedCornerRadius = validateCornerRadius(pressedCornerRadius))
+        }
+    }
+
     fun setBackgroundColor(sessionId: Int, color: Int) {
         repository.updateButtonState(sessionId) {
             val backgroundColor = validateBackgroundColor(color)
@@ -115,6 +121,23 @@ constructor(private val repository: LocationButtonRepository) {
             it.copy(
                 width = validateWidth(width, it.density),
                 height = validateHeight(height, it.density),
+            )
+        }
+    }
+
+    fun setPadding(sessionId: Int, left: Int, top: Int, right: Int, bottom: Int) {
+        val model = repository.getButtonState(sessionId)
+        if (model == null) {
+            Slog.e(LOG_TAG, "Cannot setPadding: No state found for session $sessionId")
+            return
+        }
+
+        repository.updateButtonState(sessionId) {
+            it.copy(
+                paddingLeft = validatePadding(left, model.density),
+                paddingTop = validatePadding(top, model.density),
+                paddingRight = validatePadding(right, model.density),
+                paddingBottom = validatePadding(bottom, model.density),
             )
         }
     }
