@@ -2,13 +2,6 @@ package: "com.android.server.am"
 container: "system"
 
 flag {
-    name: "fgs_abuse_detection"
-    namespace: "backstage_power"
-    description: "Detect abusive FGS behavior for certain types (camera, mic, media, location)."
-    bug: "295545575"
-}
-
-flag {
     name: "bfgs_managed_network_access"
     namespace: "backstage_power"
     description: "Restrict network access for certain applications in BFGS process state"
