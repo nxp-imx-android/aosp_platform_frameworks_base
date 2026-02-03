@@ -96,6 +96,9 @@ public abstract class BaseBroadcastQueueTest {
     static final String PACKAGE_ORANGE = "com.example.orange";
 
     static final String PROCESS_SYSTEM = "system";
+    static final String PROCESS_RED = ":red";
+    static final String PROCESS_GREEN = ":green";
+    static final String PROCESS_BLUE = ":blue";
 
     static final String CLASS_RED = "com.example.red.Red";
     static final String CLASS_GREEN = "com.example.green.Green";
@@ -151,6 +154,8 @@ public abstract class BaseBroadcastQueueTest {
 
     @Mock
     AppStartInfoTracker mAppStartInfoTracker;
+    @Mock
+    AppErrors mAppErrors;
 
     Context mContext;
     ActivityManagerService mAms;
@@ -278,6 +283,11 @@ public abstract class BaseBroadcastQueueTest {
         @Override
         public ProcessList getProcessList(ActivityManagerService service) {
             return mProcessList;
+        }
+
+        @Override
+        public AppErrors getAppErrors() {
+            return mAppErrors;
         }
 
         @Override

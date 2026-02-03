@@ -47,6 +47,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
@@ -67,6 +68,7 @@ import android.app.ApplicationExitInfo;
 import android.app.BackgroundStartPrivileges;
 import android.app.BroadcastOptions;
 import android.app.IApplicationThread;
+import android.app.RemoteServiceException;
 import android.app.UidObserver;
 import android.app.usage.UsageEvents.Event;
 import android.content.ComponentName;
@@ -2583,16 +2585,143 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
             enqueuedBroadcasts.add(timeTickRecord);
         }
         waitForIdle();
-        verify(callerApp).killLocked(anyString(),
-                eq(ApplicationExitInfo.REASON_EXCESSIVE_RESOURCE_USAGE),
-                eq(ApplicationExitInfo.SUBREASON_EXCESSIVE_ENQUEUED_BROADCASTS_COUNT),
-                anyBoolean());
+        verify(mAms).crashApplicationWithTypeWithExtrasLocked(eq(callerApp.uid),
+                eq(callerApp.mPid), eq(callerApp.info.packageName),
+                eq(callerApp.userId), anyString(),
+                eq(true),
+                eq(RemoteServiceException.ExcessiveEnqueuedBroadcastsException.TYPE_ID),
+                isNull(),
+                eq(ApplicationExitInfo.SUBREASON_EXCESSIVE_ENQUEUED_BROADCASTS_COUNT));
         // Verify that broadcasts have been dropped
         verify(mAms, times(0)).startProcessLocked(eq(PACKAGE_RED), any(), anyBoolean(), anyInt(),
                 any(), anyInt(), anyBoolean(), anyBoolean());
         assertNull(mAms.getProcessRecordLocked(PACKAGE_RED, getUidForPackage(PACKAGE_RED)));
         // Skip checking the state for the very last broadcast as it wouldn't be enqueued.
         for (int i = 0; i < enqueuedBroadcasts.size() - 1; ++i) {
+            final BroadcastRecord record = enqueuedBroadcasts.get(i);
+            assertEquals("Broadcast should have been skipped #" + i + ": " + record,
+                    BroadcastRecord.DELIVERY_SKIPPED,
+                    record.getDeliveryState(0));
+        }
+    }
+
+    @EnableFlags(Flags.FLAG_LIMIT_PENDING_BROADCASTS_PER_SENDER_UID)
+    @Test
+    public void testEnqueueBroadcast_killOnlyOffendingProcessWithTooManyEnqueuedBroadcasts()
+            throws Exception {
+        mConstants.EXCESSIVE_PENDING_BROADCASTS =
+                mConstants.MAX_PENDING_BROADCASTS_PER_SENDER_UID * 2;
+        final ProcessRecord callerApp1 = new ActiveProcBuilder(PACKAGE_GREEN)
+                .setProcessName(PROCESS_GREEN)
+                .build();
+        final ProcessRecord callerApp2 = new ActiveProcBuilder(PACKAGE_GREEN)
+                .setProcessName(PROCESS_BLUE)
+                .build();
+
+        // App1 enqueues broadcasts up to the limit
+        final ArrayList<BroadcastRecord> enqueuedBroadcasts = new ArrayList();
+        for (int i = 0; i < mConstants.MAX_PENDING_BROADCASTS_PER_SENDER_UID; ++i) {
+            final BroadcastRecord timeTickRecord = new BroadcastRecordBuilder()
+                    .setIntentAction(Intent.ACTION_TIME_TICK)
+                    .setReceivers(List.of(makeManifestReceiver(PACKAGE_RED, CLASS_RED)))
+                    .setCallerApp(callerApp1)
+                    .setCallingUid(callerApp1.uid)
+                    .setCallerPackage(callerApp1.info.packageName)
+                    .build();
+            timeTickRecord.enqueueTime = SystemClock.uptimeMillis();
+            enqueueBroadcast(timeTickRecord);
+            enqueuedBroadcasts.add(timeTickRecord);
+        }
+
+        // App2 enqueues a broadcast, but it should not be killed because the limit is per-process
+        final BroadcastRecord recordFromSecondProc = new BroadcastRecordBuilder()
+                .setIntentAction(Intent.ACTION_TIME_TICK)
+                .setReceivers(List.of(makeManifestReceiver(PACKAGE_RED, CLASS_RED)))
+                .setCallerApp(callerApp2)
+                .setCallingUid(callerApp2.uid)
+                .setCallerPackage(callerApp2.info.packageName)
+                .build();
+        recordFromSecondProc.enqueueTime = SystemClock.uptimeMillis();
+        enqueueBroadcast(recordFromSecondProc);
+
+        // App1 enqueues one more broadcast and should be killed
+        final BroadcastRecord recordOverLimit = new BroadcastRecordBuilder()
+                .setIntentAction(Intent.ACTION_TIME_TICK)
+                .setReceivers(List.of(makeManifestReceiver(PACKAGE_RED, CLASS_RED)))
+                .setCallerApp(callerApp1)
+                .setCallingUid(callerApp1.uid)
+                .setCallerPackage(callerApp1.info.packageName)
+                .build();
+        recordOverLimit.enqueueTime = SystemClock.uptimeMillis();
+        enqueueBroadcast(recordOverLimit);
+
+        waitForIdle();
+        verify(mAms).crashApplicationWithTypeWithExtrasLocked(eq(callerApp1.uid),
+                eq(callerApp1.mPid), eq(callerApp1.info.packageName),
+                eq(callerApp1.userId), anyString(),
+                eq(true),
+                eq(RemoteServiceException.ExcessiveEnqueuedBroadcastsException.TYPE_ID),
+                isNull(),
+                eq(ApplicationExitInfo.SUBREASON_EXCESSIVE_ENQUEUED_BROADCASTS_COUNT));
+        verify(mAms, times(0)).crashApplicationWithTypeWithExtrasLocked(eq(callerApp2.mPid),
+                anyInt(), anyString(), anyInt(), anyString(), anyBoolean(), anyInt(), any(),
+                anyInt());
+
+        for (int i = 0; i < enqueuedBroadcasts.size(); ++i) {
+            final BroadcastRecord record = enqueuedBroadcasts.get(i);
+            assertEquals("Broadcast should have been skipped #" + i + ": " + record,
+                    BroadcastRecord.DELIVERY_SKIPPED,
+                    record.getDeliveryState(0));
+        }
+        assertEquals(BroadcastRecord.DELIVERY_DELIVERED, recordFromSecondProc.getDeliveryState(0));
+    }
+
+    @EnableFlags(Flags.FLAG_LIMIT_PENDING_BROADCASTS_PER_SENDER_UID)
+    @Test
+    public void testEnqueueBroadcast_countPersistsAcrossProcessRestarts() throws Exception {
+        mConstants.EXCESSIVE_PENDING_BROADCASTS =
+                mConstants.MAX_PENDING_BROADCASTS_PER_SENDER_UID * 2;
+        final ProcessRecord callerAppOld = new ActiveProcBuilder(PACKAGE_GREEN).build();
+
+        // Old process enqueues broadcasts up to the limit
+        final ArrayList<BroadcastRecord> enqueuedBroadcasts = new ArrayList();
+        for (int i = 0; i < mConstants.MAX_PENDING_BROADCASTS_PER_SENDER_UID; ++i) {
+            final BroadcastRecord r = new BroadcastRecordBuilder()
+                    .setIntentAction(Intent.ACTION_TIME_TICK)
+                    .setReceivers(List.of(makeManifestReceiver(PACKAGE_RED, CLASS_RED)))
+                    .setCallerApp(callerAppOld)
+                    .setCallingUid(callerAppOld.uid)
+                    .setCallerPackage(callerAppOld.info.packageName)
+                    .build();
+            r.enqueueTime = SystemClock.uptimeMillis();
+            enqueueBroadcast(r);
+            enqueuedBroadcasts.add(r);
+        }
+
+        mQueue.onApplicationCleanupLocked(callerAppOld);
+
+        final ProcessRecord callerApp = new ActiveProcBuilder(PACKAGE_GREEN).build();
+        // New process enqueues one broadcast and should be killed
+        final BroadcastRecord recordOverLimit = new BroadcastRecordBuilder()
+                .setIntentAction(Intent.ACTION_TIME_TICK)
+                .setReceivers(List.of(makeManifestReceiver(PACKAGE_RED, CLASS_RED)))
+                .setCallerApp(callerApp)
+                .setCallingUid(callerApp.uid)
+                .setCallerPackage(callerApp.info.packageName)
+                .build();
+        recordOverLimit.enqueueTime = SystemClock.uptimeMillis();
+        enqueueBroadcast(recordOverLimit);
+
+        waitForIdle();
+        verify(mAms).crashApplicationWithTypeWithExtrasLocked(eq(callerApp.uid),
+                eq(callerApp.mPid), eq(callerApp.info.packageName),
+                eq(callerApp.userId), anyString(),
+                eq(true),
+                eq(RemoteServiceException.ExcessiveEnqueuedBroadcastsException.TYPE_ID),
+                isNull(),
+                eq(ApplicationExitInfo.SUBREASON_EXCESSIVE_ENQUEUED_BROADCASTS_COUNT));
+
+        for (int i = 0; i < enqueuedBroadcasts.size(); ++i) {
             final BroadcastRecord record = enqueuedBroadcasts.get(i);
             assertEquals("Broadcast should have been skipped #" + i + ": " + record,
                     BroadcastRecord.DELIVERY_SKIPPED,
@@ -2625,10 +2754,9 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
             enqueueBroadcast(timeTickRecord);
         }
         waitForIdle();
-        verify(callerApp, times(0)).killLocked(anyString(),
-                anyInt(),
-                anyInt(),
-                anyBoolean());
+        verify(mAms, times(0)).crashApplicationWithTypeWithExtrasLocked(eq(callerApp.uid),
+                anyInt(), anyString(), anyInt(), anyString(), anyBoolean(), anyInt(), any(),
+                anyInt());
         final ProcessRecord receiverRedApp = mAms.getProcessRecordLocked(PACKAGE_RED,
                 getUidForPackage(PACKAGE_RED));
         assertNotNull(receiverRedApp);
@@ -2690,10 +2818,9 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
             enqueueBroadcast(timeTickRecord);
         }
         waitForIdle();
-        verify(systemCallerApp, times(0)).killLocked(anyString(),
-                anyInt(),
-                anyInt(),
-                anyBoolean());
+        verify(mAms, times(0)).crashApplicationWithTypeWithExtrasLocked(eq(systemCallerApp.uid),
+                anyInt(), anyString(), anyInt(), anyString(), anyBoolean(), anyInt(), any(),
+                anyInt());
         final ProcessRecord receiverRedApp = mAms.getProcessRecordLocked(PACKAGE_RED,
                 getUidForPackage(PACKAGE_RED));
         assertNotNull(receiverRedApp);

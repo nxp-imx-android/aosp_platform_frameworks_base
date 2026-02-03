@@ -17,6 +17,8 @@
 package com.android.server.am;
 
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
+import static android.app.ApplicationExitInfo.SUBREASON_INVALID_STATE;
+import static android.app.ApplicationExitInfo.SUBREASON_UNKNOWN;
 import static android.app.ApplicationExitInfo.reasonCodeToString;
 import static android.content.pm.ApplicationInfo.FLAG_SYSTEM;
 
@@ -34,6 +36,7 @@ import android.app.ActivityOptions;
 import android.app.AnrController;
 import android.app.ApplicationErrorReport;
 import android.app.ApplicationExitInfo;
+import android.app.ApplicationExitInfo.SubReason;
 import android.app.RemoteServiceException.CrashedByAdbException;
 import android.app.usage.UsageStatsManager;
 import android.content.ActivityNotFoundException;
@@ -510,10 +513,15 @@ class AppErrors {
      * @param initialPid fast-path match for the target to crash
      * @param packageName fallback match if the stated pid is not found or doesn't match uid
      * @param userId If nonnegative, required to identify a match by package name
-     * @param message
+     * @param message the message to use for the crash
+     * @param force if true, force kill the app after a timeout if it doesn't crash
+     * @param exceptionTypeId the type of exception to induce
+     * @param extras optional extras to pass to the crash
+     * @param subReason the subreason for the crash
      */
     void scheduleAppCrashLocked(int uid, int initialPid, String packageName, int userId,
-            String message, boolean force, int exceptionTypeId, @Nullable Bundle extras) {
+            String message, boolean force, int exceptionTypeId, @Nullable Bundle extras,
+            @SubReason int subReason) {
         ProcessRecord proc = null;
 
         // Figure out which process to kill.  We don't trust that initialPid
@@ -557,7 +565,14 @@ class AppErrors {
 
         mService.getCachedAppOptimizer().unfreezeProcess(initialPid,
                 CachedAppOptimizer.UNFREEZE_REASON_PROCESS_END);
-        proc.scheduleCrashLocked(message, exceptionTypeId, extras);
+
+        // Only update the pending crash subreason if a specific one is provided.
+        // This ensures that generic crash requests do not overwrite a more specific
+        // subreason (like EXCESSIVE_ENQUEUED_BROADCASTS_COUNT) that was set previously.
+        if (subReason != SUBREASON_UNKNOWN) {
+            proc.mErrorState.setPendingCrashSubReason(subReason);
+        }
+        proc.scheduleCrashLocked(message, exceptionTypeId, extras, subReason);
         if (force) {
             // If the app is responsive, the scheduled crash will happen as expected
             // and then the delayed summary kill will be a no-op.
@@ -566,9 +581,17 @@ class AppErrors {
                     () -> {
                         synchronized (mService) {
                             synchronized (mProcLock) {
-                                killAppImmediateLSP(p, ApplicationExitInfo.REASON_OTHER,
-                                        ApplicationExitInfo.SUBREASON_INVALID_STATE,
-                                        "forced", "killed for invalid state");
+                                synchronized (mProcLock) {
+                                    // If we have a specific subreason for why we are inducing this
+                                    // crash, use it. Otherwise, use the default INVALID_STATE
+                                    // subreason for forced kills.
+                                    killAppImmediateLSP(p, ApplicationExitInfo.REASON_OTHER,
+                                            subReason != SUBREASON_UNKNOWN
+                                                    ? subReason : SUBREASON_INVALID_STATE,
+                                            "forced", "killed for invalid state");
+
+
+                                }
                             }
                         }
                     },
@@ -625,7 +648,7 @@ class AppErrors {
                           && "Native crash".equals(crashInfo.exceptionClassName))
                           ? ApplicationExitInfo.REASON_CRASH_NATIVE
                           : ApplicationExitInfo.REASON_CRASH,
-                          ApplicationExitInfo.SUBREASON_UNKNOWN,
+                          r.mErrorState.getPendingCrashSubReason(),
                         "crash");
             }
         }
@@ -955,7 +978,9 @@ class AppErrors {
                 // annoy the user repeatedly.  Unless it is persistent, since those
                 // processes run critical code.
                 mService.mProcessList.removeProcessLocked(app, false, tryAgain,
-                        ApplicationExitInfo.REASON_CRASH, "crash");
+                        ApplicationExitInfo.REASON_CRASH,
+                        app.mErrorState.getPendingCrashSubReason(),
+                        "crash");
                 mService.mAtmInternal.resumeTopActivities(false /* scheduleIdle */);
                 if (!showBackground) {
                     return false;

@@ -263,6 +263,7 @@ import android.app.AppOpsManager.AttributionFlags;
 import android.app.AppOpsManagerInternal.CheckOpsDelegate;
 import android.app.ApplicationErrorReport;
 import android.app.ApplicationExitInfo;
+import android.app.ApplicationExitInfo.SubReason;
 import android.app.ApplicationStartInfo;
 import android.app.ApplicationThreadConstants;
 import android.app.BackgroundStartPrivileges;
@@ -3786,9 +3787,22 @@ public class ActivityManagerService extends IActivityManager.Stub
         }
 
         synchronized(this) {
-            mAppErrors.scheduleAppCrashLocked(uid, initialPid, packageName, userId,
-                    message, force, exceptionTypeId, extras);
+            crashApplicationWithTypeWithExtrasLocked(
+                    uid, initialPid, packageName, userId,
+                    message, force, exceptionTypeId, extras, ApplicationExitInfo.SUBREASON_UNKNOWN);
         }
+    }
+
+    /**
+     * Internal version of {@link #crashApplicationWithTypeWithExtras} that also accepts
+     * a subreason.
+     */
+    @GuardedBy("this")
+    void crashApplicationWithTypeWithExtrasLocked(int uid, int initialPid, String packageName,
+            int userId, String message, boolean force, int exceptionTypeId,
+            @Nullable Bundle extras, @SubReason int subReason) {
+        mAppErrors.scheduleAppCrashLocked(uid, initialPid, packageName, userId,
+                message, force, exceptionTypeId, extras, subReason);
     }
 
     /**

@@ -57,6 +57,7 @@ import android.app.AnrTypes;
 import android.app.ApplicationExitInfo;
 import android.app.BroadcastOptions;
 import android.app.IApplicationThread;
+import android.app.RemoteServiceException;
 import android.app.UidObserver;
 import android.app.usage.UsageEvents.Event;
 import android.compat.annotation.ChangeId;
@@ -824,26 +825,41 @@ class BroadcastQueueImpl extends BroadcastQueue {
             return;
         }
 
-        if (Flags.limitPendingBroadcastsPerSenderUid()) {
-            final int numPending = mHistory.getPendingBroadcastCountForSenderUid(r.callingUid);
+        if (Flags.limitPendingBroadcastsPerSenderUid() && r.callerApp != null) {
+            final int numPending = mHistory.getPendingBroadcastCountForSenderProcess(
+                    r.callingUid, r.callerApp.processName);
+            // Calculating the recent pending broadcasts count would require iterating through the
+            // pending broadcasts. So, only do it if the total pending are more than the limit.
             if (numPending >= mConstants.MAX_PENDING_BROADCASTS_PER_SENDER_UID) {
-                final long oldestPendingTime = mHistory.getOldestPendingBroadcastEnqueueTime(
-                        r.callingUid);
-                if (oldestPendingTime > SystemClock.uptimeMillis() - DateUtils.HOUR_IN_MILLIS) {
+                final long sinceTime = SystemClock.uptimeMillis() - DateUtils.HOUR_IN_MILLIS;
+                final int numRecentPending = mHistory.getPendingBroadcastCountForSenderProcessSince(
+                        r.callingUid, r.callerApp.processName, sinceTime);
+                if (numRecentPending >= mConstants.MAX_PENDING_BROADCASTS_PER_SENDER_UID) {
                     final StringBuilder sb = new StringBuilder();
-                    sb.append("Too many enqueued broadcasts from uid ")
-                            .append(r.callingUid)
+                    sb.append("Too many enqueued broadcasts from ")
+                            .append(r.callerApp.processName)
                             .append(".");
                     mHistory.appendPendingBroadcastsSummaryForUid(sb, r.callingUid);
-                    Slog.wtf(TAG, sb.toString());
-                    if (!UserHandle.isCore(r.callingUid) && r.callerApp != null
+                    final String errorMsg = sb.toString();
+                    Slog.wtf(TAG, errorMsg);
+                    if (!UserHandle.isCore(r.callingUid)
                             && shouldEnforceBroadcastSenderLimits(r.callerApp.info)) {
-                        r.callerApp.killLocked("Too many enqueued broadcasts",
-                                ApplicationExitInfo.REASON_EXCESSIVE_RESOURCE_USAGE,
-                                ApplicationExitInfo.SUBREASON_EXCESSIVE_ENQUEUED_BROADCASTS_COUNT,
-                                true /* noisy */);
+                        mService.crashApplicationWithTypeWithExtrasLocked(r.callingUid,
+                                r.callerApp.getPid(), r.callerApp.info.packageName,
+                                r.callerApp.userId, errorMsg,
+                                true /* force */,
+                                RemoteServiceException.ExcessiveEnqueuedBroadcastsException.TYPE_ID,
+                                null /* extras */,
+                                ApplicationExitInfo.SUBREASON_EXCESSIVE_ENQUEUED_BROADCASTS_COUNT);
                         forEachMatchingBroadcast(QUEUE_PREDICATE_ANY,
-                                (testRecord, testIndex) -> r.callingUid == testRecord.callingUid,
+                                (testRecord, testIndex) -> {
+                                    if (testRecord.callerApp == null) {
+                                        return false;
+                                    }
+                                    return r.callingUid == testRecord.callingUid
+                                            && Objects.equals(r.callerApp.processName,
+                                                    testRecord.callerApp.processName);
+                                },
                                 mBroadcastConsumerSkipDueToExcessiveCount, true);
                         return;
                     }
