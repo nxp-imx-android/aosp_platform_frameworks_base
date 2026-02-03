@@ -21,15 +21,11 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import android.app.usage.UsageEvents.Event;
-import android.platform.test.annotations.RequiresFlagsEnabled;
-import android.platform.test.flag.junit.CheckFlagsRule;
-import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.util.Log;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -39,9 +35,6 @@ import java.util.Random;
 @SmallTest
 public class EventListTest {
     private static final String TAG = EventListTest.class.getSimpleName();
-
-    @Rule
-    public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
 
     private static Event getUsageEvent(long timeStamp) {
         return getUsageEvent(Event.SYSTEM_INTERACTION, timeStamp);
@@ -164,7 +157,6 @@ public class EventListTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_USAGE_EVENTS_REPORTING_THRESHOLDS)
     public void testInsert_obfuscatedEvents_overLimit_doesNotDropsInserts() {
         final int numOfEventsToInsert = EventListRateLimiter.GENERAL_EVENTS_COUNT_LIMIT + 100;
         final EventList events = new EventList();
@@ -175,7 +167,6 @@ public class EventListTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_USAGE_EVENTS_REPORTING_THRESHOLDS)
     public void testInsert_generalEvents_overLimit_dropsInsert() {
         final int numOfEventsToInsert = EventListRateLimiter.GENERAL_EVENTS_COUNT_LIMIT + 100;
         final EventList events = new EventList();
@@ -186,7 +177,6 @@ public class EventListTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_USAGE_EVENTS_REPORTING_THRESHOLDS)
     public void testInsert_generalEvents_overLimit_replacesLastEvent() {
         final EventList events = new EventList();
         for (int i = 0; i < EventListRateLimiter.GENERAL_EVENTS_COUNT_LIMIT; i++) {
@@ -205,7 +195,6 @@ public class EventListTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_USAGE_EVENTS_REPORTING_THRESHOLDS)
     public void testInsert_generalEvents_differentTypes_doesNotDropInserts() {
         final int numOfEventsToInsert = EventListRateLimiter.GENERAL_EVENTS_COUNT_LIMIT - 1;
         final EventList events = new EventList();
@@ -219,7 +208,6 @@ public class EventListTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_USAGE_EVENTS_REPORTING_THRESHOLDS)
     public void testInsert_generalEvents_afterThreshold_doesNotDropInserts() {
         final int numOfEventsToInsert = EventListRateLimiter.GENERAL_EVENTS_COUNT_LIMIT - 1;
         final long initialTimestamp = EventListRateLimiter.GENERAL_EVENT_THRESHOLD_WINDOW_MS;
@@ -237,7 +225,6 @@ public class EventListTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_USAGE_EVENTS_REPORTING_THRESHOLDS)
     public void testInsert_userEvents_overLimit_dropsInsert() {
         final int numOfEventsToInsert = EventListRateLimiter.USER_EVENTS_COUNT_LIMIT + 10;
         EventList events = new EventList();
@@ -263,7 +250,6 @@ public class EventListTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_USAGE_EVENTS_REPORTING_THRESHOLDS)
     public void testInsert_userEvents_differentPackages_doesNotDropInserts() {
         final int numOfEventsToInsert = EventListRateLimiter.USER_EVENTS_COUNT_LIMIT - 1;
         final EventList events = new EventList();
@@ -279,7 +265,6 @@ public class EventListTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_USAGE_EVENTS_REPORTING_THRESHOLDS)
     public void testInsert_userEvents_afterThreshold_doesNotDropInserts() {
         final int numOfEventsToInsert = EventListRateLimiter.USER_EVENTS_COUNT_LIMIT - 1;
         final long initialTimestamp = EventListRateLimiter.USER_EVENT_THRESHOLD_WINDOW_MS;
@@ -297,7 +282,6 @@ public class EventListTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_USAGE_EVENTS_REPORTING_THRESHOLDS)
     public void testInsert_activityEvents_overLimit_dropsInsert() {
         final Random random = new Random();
         final int numOfEventsToInsert = EventListRateLimiter.USER_EVENTS_COUNT_LIMIT + 10;
@@ -310,7 +294,6 @@ public class EventListTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_USAGE_EVENTS_REPORTING_THRESHOLDS)
     public void testInsert_activityEvents_differentInstanceIds_doesNotDropInserts() {
         final int numOfEventsToInsert = EventListRateLimiter.USER_EVENTS_COUNT_LIMIT - 1;
         final EventList events = new EventList();
@@ -324,7 +307,6 @@ public class EventListTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_USAGE_EVENTS_REPORTING_THRESHOLDS)
     public void testInsert_activityEvents_afterThreshold_doesNotDropInserts() { //
         final int numOfEventsToInsert = EventListRateLimiter.USER_EVENTS_COUNT_LIMIT - 1;
         final long initialTimestamp = EventListRateLimiter.USER_EVENT_THRESHOLD_WINDOW_MS;
@@ -342,7 +324,6 @@ public class EventListTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_USAGE_EVENTS_REPORTING_THRESHOLDS)
     public void testInsert_fgsEvents_overLimit_dropsInsert() {
         final Random random = new Random();
         final int numOfEventsToInsert = EventListRateLimiter.USER_EVENTS_COUNT_LIMIT + 10;
@@ -357,7 +338,6 @@ public class EventListTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_USAGE_EVENTS_REPORTING_THRESHOLDS)
     public void testInsert_fgsEvents_differentClasses_doesNotDropInserts() {
         final int numOfEventsToInsert = EventListRateLimiter.USER_EVENTS_COUNT_LIMIT - 1;
         final EventList events = new EventList();
@@ -371,7 +351,6 @@ public class EventListTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_USAGE_EVENTS_REPORTING_THRESHOLDS)
     public void testInsert_fgsEvents_afterThreshold_doesNotDropInserts() {
         final int numOfEventsToInsert = EventListRateLimiter.USER_EVENTS_COUNT_LIMIT - 1;
         final long initialTimestamp = EventListRateLimiter.USER_EVENT_THRESHOLD_WINDOW_MS;

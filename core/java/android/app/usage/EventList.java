@@ -29,8 +29,6 @@ import java.util.ArrayList;
 public class EventList {
 
     private final ArrayList<Event> mEvents;
-
-    private final boolean mIsRateLimitedEnabled;
     private final EventListRateLimiter mEventListRateLimiter;
 
     /**
@@ -38,7 +36,6 @@ public class EventList {
      */
     public EventList() {
         mEvents = new ArrayList<>();
-        mIsRateLimitedEnabled = Flags.enableUsageEventsReportingThresholds();
         mEventListRateLimiter = new EventListRateLimiter();
     }
 
@@ -94,8 +91,7 @@ public class EventList {
     }
 
     private void insertInternal(Event event, boolean skipThresholdChecks) {
-        if (!skipThresholdChecks && mIsRateLimitedEnabled
-                && !mEventListRateLimiter.shouldInsert(event)) {
+        if (!skipThresholdChecks && !mEventListRateLimiter.shouldInsert(event)) {
             // Remove the last event of this type so it gets replaced with the new one.
             // This is a best effort to ensure an accurate timeline of events remains for consumers.
             // TODO: b/452129902 - Add a new "drop event count" field and return that to consumers.
