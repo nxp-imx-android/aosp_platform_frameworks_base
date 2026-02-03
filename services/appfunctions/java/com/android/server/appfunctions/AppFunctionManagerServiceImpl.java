@@ -44,6 +44,7 @@ import android.app.appfunctions.AppFunctionManagerHelper.AppFunctionNotFoundExce
 import android.app.appfunctions.AppFunctionName;
 import android.app.appfunctions.AppFunctionRuntimeMetadata;
 import android.app.appfunctions.AppFunctionSearchSpec;
+import android.app.appfunctions.AppFunctionStateList;
 import android.app.appfunctions.AppFunctionStaticMetadataHelper;
 import android.app.appfunctions.AppFunctionUriGrant;
 import android.app.appfunctions.ExecuteAppFunctionAidlRequest;
@@ -583,7 +584,9 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                                                                     new ParcelableException(
                                                                             exception));
                                                         } else {
-                                                            callback.onSuccess(states);
+                                                            callback.onSuccess(
+                                                                    new AppFunctionStateList(
+                                                                            states));
                                                         }
                                                     } catch (RemoteException re) {
                                                         Slog.w(TAG, "Fail to call onError");

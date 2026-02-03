@@ -9415,6 +9415,7 @@ package android.app.appfunctions {
 
   @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") public final class AppFunctionState implements android.os.Parcelable {
     method public int describeContents();
+    method @Nullable public android.util.ArraySet<android.app.appfunctions.AppFunctionActivityId> getActivityIds();
     method @NonNull public android.app.appfunctions.AppFunctionName getFunctionName();
     method public boolean isEnabled();
     method public void writeToParcel(@NonNull android.os.Parcel, int);

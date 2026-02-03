@@ -18,10 +18,14 @@ package android.app.appfunctions;
 
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
+import android.annotation.Nullable;
+import android.annotation.SuppressLint;
 import android.app.appfunctions.flags.Flags;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import android.util.ArraySet;
+import java.util.ArrayList;
 import java.util.Objects;
 
 /**
@@ -57,22 +61,31 @@ public final class AppFunctionState implements Parcelable {
 
     @NonNull private final AppFunctionName mFunctionName;
     private final boolean mIsEnabled;
+    @Nullable private final ArraySet<AppFunctionActivityId> mActivityIds;
 
     /**
      * Constructs an {@link AppFunctionState} object.
      *
      * @param functionName The identifier for the app function.
      * @param isEnabled Whether this app function can be executed.
+     * @param activityIds The {@link AppFunctionActivityId}s this app function is associated with.
      * @hide
      */
-    public AppFunctionState(@NonNull AppFunctionName functionName, boolean isEnabled) {
+    public AppFunctionState(
+            @NonNull AppFunctionName functionName,
+            boolean isEnabled,
+            @Nullable ArraySet<AppFunctionActivityId> activityIds) {
         mFunctionName = Objects.requireNonNull(functionName);
         mIsEnabled = isEnabled;
+        mActivityIds = activityIds;
     }
 
     private AppFunctionState(Parcel in) {
         mFunctionName = Objects.requireNonNull(in.readTypedObject(AppFunctionName.CREATOR));
         mIsEnabled = in.readBoolean();
+        mActivityIds =
+                (ArraySet<AppFunctionActivityId>)
+                        in.readArraySet(AppFunctionActivityId.class.getClassLoader());
     }
 
     /** The app function this state is associated with. */
@@ -86,16 +99,34 @@ public final class AppFunctionState implements Parcelable {
         return mIsEnabled;
     }
 
+    /**
+     * The {@link AppFunctionActivityId}s this app function is associated with, or null if none.
+     *
+     * <p>This will be non-null only when {@link AppFunctionMetadata#getScope} is {@link
+     * AppFunctionMetadata#SCOPE_ACTIVITY}.
+     *
+     * @see AppFunctionMetadata#SCOPE_ACTIVITY
+     */
+    // Performance optimization to avoid creating empty collections for an unbound list of
+    // AppFunctionStates (using null instead), and to allow indexed for-loop (using ArraySet).
+    @SuppressLint({"NullableCollection", "ConcreteCollection"})
+    @Nullable
+    public ArraySet<AppFunctionActivityId> getActivityIds() {
+        return mActivityIds;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof AppFunctionState that)) return false;
-        return mIsEnabled == that.mIsEnabled && mFunctionName.equals(that.mFunctionName);
+        return mIsEnabled == that.mIsEnabled
+                && mFunctionName.equals(that.mFunctionName)
+                && Objects.equals(mActivityIds, that.mActivityIds);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(mFunctionName, mIsEnabled);
+        return Objects.hash(mFunctionName, mIsEnabled, mActivityIds);
     }
 
     @Override
@@ -106,6 +137,9 @@ public final class AppFunctionState implements Parcelable {
                 + ", "
                 + "isEnabled="
                 + mIsEnabled
+                + ", "
+                + "activityIds="
+                + mActivityIds
                 + ")";
     }
 
@@ -113,6 +147,7 @@ public final class AppFunctionState implements Parcelable {
     public void writeToParcel(@NonNull Parcel dest, int flags) {
         dest.writeTypedObject(mFunctionName, flags);
         dest.writeBoolean(mIsEnabled);
+        dest.writeArraySet(mActivityIds);
     }
 
     @Override
