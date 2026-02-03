@@ -63,7 +63,9 @@ import com.android.systemui.log.SessionTracker;
 import com.android.systemui.media.NotificationMediaManager;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.res.R;
+import com.android.systemui.scene.domain.interactor.SceneInteractor;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
+import com.android.systemui.scene.shared.model.Overlays;
 import com.android.systemui.scene.shared.model.Scenes;
 import com.android.systemui.securelockdevice.domain.interactor.SecureLockDeviceInteractor;
 import com.android.systemui.statusbar.NotificationShadeWindowController;
@@ -188,7 +190,6 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
     private DozeScrimController mDozeScrimController;
     private KeyguardViewMediator mKeyguardViewMediator;
     private PendingAuthenticated mPendingAuthenticated = null;
-    private boolean mHasScreenTurnedOnSinceAuthenticating;
     private boolean mFadedAwayAfterWakeAndUnlock;
     private Set<BiometricUnlockEventsListener> mBiometricUnlockEventsListeners = new HashSet<>();
 
@@ -206,6 +207,7 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
     private final boolean mOrderUnlockAndWake;
     private final Lazy<SelectedUserInteractor> mSelectedUserInteractor;
     private final KeyguardTransitionInteractor mKeyguardTransitionInteractor;
+    private final Lazy<SceneInteractor> mSceneInteractor;
     private long mLastFpFailureUptimeMillis;
     private int mNumConsecutiveFpFailures;
 
@@ -317,7 +319,8 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
             BiometricUnlockInteractor biometricUnlockInteractor,
             JavaAdapter javaAdapter,
             KeyguardTransitionInteractor keyguardTransitionInteractor,
-            Lazy<SecureLockDeviceInteractor> secureLockDeviceInteractor
+            Lazy<SecureLockDeviceInteractor> secureLockDeviceInteractor,
+            Lazy<SceneInteractor> sceneInteractorLazy
     ) {
         mPowerManager = powerManager;
         mUpdateMonitor = keyguardUpdateMonitor;
@@ -356,6 +359,7 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
                         /* edgeWithoutSceneContainer */ Edge.create(
                                 KeyguardState.GONE, (KeyguardState) null)),
                 this::consumeFromGoneTransitions);
+        mSceneInteractor = sceneInteractorLazy;
         dumpManager.registerDumpable(this);
     }
 
@@ -524,7 +528,6 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
         mLogger.logStartWakeAndUnlock(mode);
         boolean wasDeviceInteractive = mUpdateMonitor.isDeviceInteractive();
         mMode = mode;
-        mHasScreenTurnedOnSinceAuthenticating = false;
         if (mMode == MODE_WAKE_AND_DISMISS_PULSING) {
             // If we are waking the device up while we are pulsing the clock and the
             // notifications would light up first, creating an unpleasant animation.
@@ -667,11 +670,11 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
             return MODE_WAKE_AND_DISMISS_FROM_DREAM;
         }
         if (keyguardShowing) {
-            if (mKeyguardViewController.primaryBouncerIsOrWillBeShowing() && unlockingAllowed) {
+            if (isPrimaryBouncerShowing() && unlockingAllowed) {
                 return MODE_DISMISS_BOUNCER;
             } else if (unlockingAllowed) {
                 return MODE_DISMISS;
-            } else if (!mKeyguardViewController.isBouncerShowing()) {
+            } else if (!isBouncerShowing()) {
                 return MODE_SHOW_BOUNCER;
             }
         }
@@ -706,11 +709,7 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
         final boolean deviceDreaming = mUpdateMonitor.isDreaming();
         final boolean bypass = mKeyguardBypassController.getBypassEnabled()
                 || mAuthController.isUdfpsFingerDown();
-        final boolean isBouncerShowing = mKeyguardViewController.primaryBouncerIsOrWillBeShowing()
-                || mKeyguardTransitionInteractor.getCurrentState()
-                    == KeyguardState.ALTERNATE_BOUNCER
-                || mKeyguardTransitionInteractor.getStartedState()
-                    == KeyguardState.ALTERNATE_BOUNCER;
+        final boolean isBouncerShowing = isBouncerShowing();
 
         logCalculateModeForPassiveAuth(unlockingAllowed, deviceInteractive, isKeyguardShowing,
                 deviceDreaming, bypass, isStrongBiometric);
@@ -754,6 +753,27 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
             }
         }
         return MODE_NONE;
+    }
+
+    private boolean isBouncerShowing() {
+        return isPrimaryBouncerShowing()
+                || mKeyguardTransitionInteractor.getCurrentState()
+                == KeyguardState.ALTERNATE_BOUNCER
+                || mKeyguardTransitionInteractor.getStartedState()
+                == KeyguardState.ALTERNATE_BOUNCER;
+    }
+
+    private boolean isPrimaryBouncerShowing() {
+        if (SceneContainerFlag.isEnabled()) {
+            return mSceneInteractor.get().getTransitionState().isIdle(
+                    Overlays.Bouncer) || mSceneInteractor.get()
+                    .getTransitionState().isTransitioning(null, Overlays.Bouncer);
+        } else {
+            return mKeyguardTransitionInteractor.getCurrentState()
+                    == KeyguardState.PRIMARY_BOUNCER
+                    || mKeyguardTransitionInteractor.getStartedState()
+                    == KeyguardState.PRIMARY_BOUNCER;
+        }
     }
 
     private void logCalculateModeForPassiveAuth(boolean unlockingAllowed,
