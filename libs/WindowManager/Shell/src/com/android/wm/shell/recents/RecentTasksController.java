@@ -99,6 +99,7 @@ public class RecentTasksController implements TaskStackListenerCallback,
     // a single `GroupedTaskInfo` whose type is `TYPE_DESK`, and its `mDeskId` doesn't matter, so
     // we pick the below arbitrary value.
     private static final int INVALID_DESK_ID = -1;
+    private static final int INVALID_USER_ID = -1;
 
     private final Context mContext;
     private final ShellController mShellController;
@@ -204,15 +205,12 @@ public class RecentTasksController implements TaskStackListenerCallback,
     void onInit() {
         mShellController.addExternalInterface(IRecentTasks.DESCRIPTOR,
                 this::createExternalInterface, this);
+        mUserId = mShellController.getCurrentUserId();
+        updateDeskRepositoryListeners(/* previousUserId= */ INVALID_USER_ID,
+                /* newUserId= */ mUserId);
+        mShellController.addUserChangeListener(this);
         mShellCommandHandler.addDumpCallback(this::dump, this);
         mShellCommandHandler.addCommandCallback("recents", mRecentsShellCommandHandler, this);
-        mUserId = ActivityManager.getCurrentUser();
-        mDesktopUserRepositories.ifPresent(
-                desktopUserRepositories -> {
-                    DesktopRepository currentUserRepository = desktopUserRepositories.getCurrent();
-                    currentUserRepository.addActiveTaskListener(this);
-                    currentUserRepository.addDeskChangeListener(this, mMainExecutor);
-                });
         mTaskStackListener.addListener(this);
         mTaskStackTransitionObserver.addTaskStackTransitionObserverListener(this,
                 mMainExecutor);
@@ -967,18 +965,30 @@ public class RecentTasksController implements TaskStackListenerCallback,
 
     @Override
     public void onUserChanged(int newUserId, @NonNull Context userContext) {
-        if (mDesktopUserRepositories.isEmpty()) return;
-
-        DesktopRepository previousUserRepository =
-                mDesktopUserRepositories.get().getProfile(mUserId);
+        final int previousUserId = mUserId;
         mUserId = newUserId;
-        DesktopRepository currentUserRepository =
-                mDesktopUserRepositories.get().getProfile(newUserId);
+        updateDeskRepositoryListeners(previousUserId, newUserId);
+    }
 
-        // No-op if both profile ids map to the same user.
-        if (previousUserRepository.getUserId() == currentUserRepository.getUserId()) return;
-        previousUserRepository.removeActiveTasksListener(this);
+    /**
+     * Updates the listeners for the previous and current user repositories.
+     *
+     * @param previousUserId The user id of the previous user, or -1 if this is the start-up user.
+     * @param newUserId The user id of the current user.
+     */
+    private void updateDeskRepositoryListeners(int previousUserId, int newUserId) {
+        if (previousUserId == newUserId) return;
+        if (mDesktopUserRepositories.isEmpty()) return;
+        final DesktopRepository currentUserRepository =
+                mDesktopUserRepositories.get().getProfile(newUserId);
+        if (previousUserId != INVALID_USER_ID) {
+            final DesktopRepository previousUserRepository =
+                    mDesktopUserRepositories.get().getProfile(previousUserId);
+            previousUserRepository.removeActiveTasksListener(this);
+            previousUserRepository.removeDeskChangeListener(this);
+        }
         currentUserRepository.addActiveTaskListener(this);
+        currentUserRepository.addDeskChangeListener(this, mMainExecutor);
     }
 
     @Override

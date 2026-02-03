@@ -172,7 +172,6 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
 
         mMocksInit = MockitoAnnotations.openMocks(this);
 
-        when(mDesktopUserRepositories.getCurrent()).thenReturn(mDesktopRepository);
         mMainExecutor = new TestShellExecutor();
         when(mContext.getPackageManager()).thenReturn(mock(PackageManager.class));
         when(mContext.getSystemService(KeyguardManager.class))
@@ -192,6 +191,10 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
         mShellInit = spy(new ShellInit(mMainExecutor));
         mShellController = spy(new ShellController(mContext, mShellInit, mShellCommandHandler,
                 mDisplayInsetsController, mUserManager, mMainExecutor));
+        final int userId = mShellController.getCurrentUserId();
+        when(mDesktopUserRepositories.getCurrent()).thenReturn(mDesktopRepository);
+        when(mDesktopUserRepositories.getProfile(userId)).thenReturn(mDesktopRepository);
+        when(mDesktopRepository.getUserId()).thenReturn(userId);
         mRecentTasksControllerReal = new RecentTasksController(mContext, mShellInit,
                 mShellController, mShellCommandHandler, mTaskStackListener, mActivityTaskManager,
                 Optional.of(mDesktopUserRepositories), mTaskStackTransitionObserver,
