@@ -16,7 +16,7 @@
 
 package com.android.systemui.screencapture.record.largescreen.ui.viewmodel
 
-import android.app.ActivityManager
+import android.app.ActivityManager.RunningTaskInfo
 import android.app.ActivityOptions.LaunchCookie
 import android.graphics.Point
 import android.graphics.Rect
@@ -84,8 +84,8 @@ constructor(
 
     private val regionBoxSource = MutableStateFlow<Rect?>(null)
 
-    private var runningTasks: List<ActivityManager.RunningTaskInfo> = emptyList()
-    private val topTaskSource = MutableStateFlow<ActivityManager.RunningTaskInfo?>(null)
+    var runningTasks: List<RunningTaskInfo> = emptyList()
+    private val topTaskSource = MutableStateFlow<RunningTaskInfo?>(null)
     private val appWindowSelectionSource = MutableStateFlow<AppWindowModel?>(null)
     val appWindowSelection: AppWindowModel? by appWindowSelectionSource.hydratedStateOf()
 
@@ -97,7 +97,7 @@ constructor(
 
     val captureRegion: ScreenCaptureRegion by captureRegionSource.hydratedStateOf()
 
-    val topTask: ActivityManager.RunningTaskInfo? by topTaskSource.hydratedStateOf()
+    val topTask: RunningTaskInfo? by topTaskSource.hydratedStateOf()
 
     val regionBox: Rect? by regionBoxSource.hydratedStateOf()
 
@@ -197,9 +197,19 @@ constructor(
         }
     }
 
-    private fun calculateVisibleArea(
-        selectedTask: ActivityManager.RunningTaskInfo
-    ): AppWindowModel {
+    fun focusTask(task: RunningTaskInfo) {
+        topTaskSource.value = task
+        appWindowSelectionSource.value = calculateVisibleArea(task)
+    }
+
+    fun unfocusTask(task: RunningTaskInfo) {
+        if (topTaskSource.value == task) {
+            topTaskSource.value = null
+            appWindowSelectionSource.value = null
+        }
+    }
+
+    private fun calculateVisibleArea(selectedTask: RunningTaskInfo): AppWindowModel {
         val selectedTaskIndex = runningTasks.indexOf(selectedTask)
         val selectedTaskBounds = selectedTask.configuration.windowConfiguration.bounds
         val overlappingBounds = mutableListOf<Rect>()
