@@ -105,7 +105,7 @@ class DesksController(
             userId,
             enforceDeskLimit,
         )
-        if (!canCreateDeskInDisplay(displayId, userId)) {
+        if (!canCreateDeskInDisplay(displayId, userId, enforceDeskLimit)) {
             logW("createDesk new desk cannot be created, ignoring request")
             return
         }
