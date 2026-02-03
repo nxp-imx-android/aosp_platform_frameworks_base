@@ -120,6 +120,9 @@ class DevicePolicyAnnotationProcessor : AbstractProcessor() {
             protoWriter.close()
         }
 
+        // TODO(b/481103556): Generate policies in a separate package.
+        return
+
         val policiesClass = PolicyMetadataCodeGenerator.generate(policyMetadata)
         val policiesWriter = createSourceWriter(policiesClass)
 
