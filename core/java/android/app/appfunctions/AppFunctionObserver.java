@@ -65,7 +65,7 @@ public interface AppFunctionObserver {
      *
      * <p>Upon receiving this notification, clients can call {@link
      * AppFunctionManager#getAppFunctionStates} using the provided {@code changedFunctionNames} to
-     * retrieve the updated {@link AppFunctionState} for affected functions.
+     * retrieve the updated {@link AppFunctionState} for the affected functions.
      *
      * @param changedFunctionNames The list of {@link AppFunctionName}s for the functions whose
      *     state has changed.
