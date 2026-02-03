@@ -103,6 +103,7 @@ interface IMediaProjectionManager {
             + ".permission.MANAGE_MEDIA_PROJECTION)")
     void requestConsentForInvalidProjection(in IMediaProjection projection);
 
+    @EnforcePermission("MANAGE_MEDIA_PROJECTION")
     @JavaPassthrough(annotation = "@android.annotation.RequiresPermission(android.Manifest"
             + ".permission.MANAGE_MEDIA_PROJECTION)")
     MediaProjectionInfo getActiveProjectionInfo();

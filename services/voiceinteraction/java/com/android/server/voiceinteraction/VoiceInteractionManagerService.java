@@ -74,6 +74,8 @@ import android.media.AudioFormat;
 import android.media.permission.Identity;
 import android.media.permission.PermissionUtil;
 import android.media.permission.SafeCloseable;
+import android.media.projection.IMediaProjectionManager;
+import android.media.projection.MediaProjectionInfo;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
@@ -1314,6 +1316,8 @@ public class VoiceInteractionManagerService extends SystemService {
          *   <li>There has been a recent hotword detection event within a specific time window
          *       ({@link #HOTWORD_TRIGGER_WINDOW}).
          *   <li>The voice interaction service's application is already in the foreground.
+         *   <li>The voice interaction service is currently associated with a media projection
+         *       session.
          * </ol>
          *
          * <p>This check prevents the service from starting sessions and potentially accessing
@@ -1383,8 +1387,39 @@ public class VoiceInteractionManagerService extends SystemService {
                 return true;
             }
 
+            // Condition 3: VIS is running an active MediaProjection session
+            if (isActiveMediaProjection(mImpl.mInfo.getServiceInfo().packageName, callingUid)) {
+                Slog.d(TAG, "Self-trigger check: VIS triggering from active MediaProjection");
+                return true;
+            }
+
             // Neither condition has been met, this trigger should be disallowed.
             Slog.d(TAG, "Self-trigger check: VIS self trigger not allowed.");
+            return false;
+        }
+
+        /**
+         * Checks if there is an active Media Projection session running, and if the
+         * package associated with the session is the provided package / uid.
+         */
+        private boolean isActiveMediaProjection(String packageName, int uid) {
+            final long token = Binder.clearCallingIdentity();
+            try {
+                IMediaProjectionManager mediaProjectionManager =
+                        IMediaProjectionManager.Stub.asInterface(
+                                ServiceManager.getService(Context.MEDIA_PROJECTION_SERVICE));
+                MediaProjectionInfo projectionInfo =
+                        mediaProjectionManager.getActiveProjectionInfo();
+                if (projectionInfo != null) {
+                    return Objects.equals(projectionInfo.getPackageName(), packageName)
+                            && projectionInfo.getUserHandle().getIdentifier()
+                            == UserHandle.getUserId(uid);
+                }
+            } catch (RemoteException | NullPointerException e) {
+                Slog.w(TAG, "Failed to get active media projection info", e);
+            } finally {
+                Binder.restoreCallingIdentity(token);
+            }
             return false;
         }
 
