@@ -7301,8 +7301,7 @@ public final class ActiveServices {
                         cr.binding.service.name,
                         cr.binding.client.userId,
                         cr.binding.intent.intent.getIntent(),
-                        cr.binding.intent.binder,
-                        cr.binding.client.uid
+                        cr.binding.intent.binder
                 );
             }
         } finally {
