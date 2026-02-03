@@ -24,6 +24,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationChannelGroup;
 import android.app.NotificationHistory;
 import android.app.NotificationManager;
+import android.app.NotificationRule;
 import android.app.ICallNotificationEventCallback;
 import android.content.AttributionSource;
 import android.content.ComponentName;
@@ -279,4 +280,7 @@ interface INotificationManager
     boolean isAdjustmentSupportedForPackage(int userId, String key, String pkg);
     void setAdjustmentSupportedForPackage(int userId, String key, String pkg, boolean enabled);
     oneway void requestSystemAdjustments(in List<Adjustment> adjustments);
+
+    NotificationRule addNotificationRule(int userId, in NotificationRule rule, int position);
+    ParceledListSlice getNotificationRules(in INotificationListener token, int userId);
 }

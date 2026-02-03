@@ -87,7 +87,6 @@ import static android.os.UserManager.USER_TYPE_FULL_SECONDARY;
 import static android.os.UserManager.USER_TYPE_FULL_SYSTEM;
 import static android.os.UserManager.USER_TYPE_PROFILE_CLONE;
 import static android.os.UserManager.USER_TYPE_PROFILE_MANAGED;
-import static android.os.UserManager.USER_TYPE_PROFILE_PRIVATE;
 import static android.security.Flags.FLAG_SECURE_LOCK_DEVICE;
 import static android.service.notification.Adjustment.KEY_CONTEXTUAL_ACTIONS;
 import static android.service.notification.Adjustment.KEY_IMPORTANCE;
@@ -195,6 +194,7 @@ import android.app.Notification.MessagingStyle.Message;
 import android.app.NotificationChannel;
 import android.app.NotificationChannelGroup;
 import android.app.NotificationManager;
+import android.app.NotificationRule;
 import android.app.PendingIntent;
 import android.app.Person;
 import android.app.RemoteInput;
@@ -438,6 +438,8 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     @Mock private PreferencesHelper mPreferencesHelper;
     AtomicFile mPolicyFile;
     File mFile;
+    AtomicFile mRulesFile;
+    File mFile2;
     @Mock
     private NotificationUsageStats mUsageStats;
     @Mock
@@ -607,7 +609,8 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
     @Parameters(name = "{0}")
     public static List<FlagsParameterization> getParams() {
-        return FlagsParameterization.allCombinationsOf();
+        return FlagsParameterization.allCombinationsOf(
+                android.app.Flags.FLAG_NM_CONTEXTUAL_DISPLAY_LAUNCH);
     }
 
     public NotificationManagerServiceTest(FlagsParameterization flags) {
@@ -741,6 +744,9 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         FileOutputStream fos = mPolicyFile.startWrite();
         fos.write(preupgradeXml.getBytes());
         mPolicyFile.finishWrite(fos);
+        mFile2 = new File(mContext.getCacheDir(), "test2.xml");
+        mFile2.createNewFile();
+        mRulesFile = new AtomicFile(mFile2);
 
         // Setup managed services
         when(mListeners.setPackageOrComponentEnabled(any(), anyInt(), anyBoolean(), anyBoolean()))
@@ -841,11 +847,11 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
         mService.init(mWorkerHandler, mRankingHandler, mBroadcastsHandler, mPackageManager,
                 mPackageManagerClient, mLightsManager, mListeners, mAssistants, mConditionProviders,
-                mCompanionMgr, mSnoozeHelper, mUsageStats, mPolicyFile, mActivityManager,
-                mGroupHelper, mAm, mAtm, mAppUsageStats, mDevicePolicyManager, mUgm, mUgmInternal,
-                mAppOpsManager, mUm, mHistoryManager, mStatsManager, mAmi, mToastRateLimiter,
-                mPermissionHelper, mock(UsageStatsManagerInternal.class), mTelecomManager, mLogger,
-                mTestFlagResolver, mPermissionManager, mPowerManager,
+                mCompanionMgr, mSnoozeHelper, mUsageStats, mPolicyFile, mRulesFile,
+                mActivityManager, mGroupHelper, mAm, mAtm, mAppUsageStats, mDevicePolicyManager,
+                mUgm, mUgmInternal, mAppOpsManager, mUm, mHistoryManager, mStatsManager, mAmi,
+                mToastRateLimiter, mPermissionHelper, mock(UsageStatsManagerInternal.class),
+                mTelecomManager, mLogger, mTestFlagResolver, mPermissionManager, mPowerManager,
                 mPostNotificationTrackerFactory, mUiEventLogger, mBitmapOffloader,
                 new NotificationListenerStats(MAX_CHANNELS_CREATED_BY_NLS_FOR_TESTING));
 
@@ -7804,7 +7810,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    public void testReadPolicyXml_readApprovedServicesFromXml() throws Exception {
+    public void testLoadPolicyXml_readApprovedServicesFromXml() throws Exception {
         final String upgradeXml = "<notification-policy version=\"1\">"
                 + "<ranking></ranking>"
                 + "<enabled_listeners>"
@@ -7817,10 +7823,10 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
                 + "<service_listing approved=\"test\" user=\"0\" primary=\"true\" />"
                 + "</dnd_apps>"
                 + "</notification-policy>";
-        mService.readPolicyXml(
-                new BufferedInputStream(new ByteArrayInputStream(upgradeXml.getBytes())),
-                false,
-                UserHandle.USER_ALL, null);
+        FileOutputStream fos = mPolicyFile.startWrite();
+        fos.write(upgradeXml.getBytes());
+        mPolicyFile.finishWrite(fos);
+        mService.loadPolicyFile();
         verify(mListeners, times(1)).readXml(any(), any(), anyBoolean(), anyInt(), any());
         verify(mConditionProviders, times(1)).readXml(any(), any(), anyBoolean(), anyInt(), any());
         verify(mAssistants, times(1)).readXml(any(), any(), anyBoolean(), anyInt(), any());
@@ -7833,26 +7839,26 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    public void testReadPolicyXml_readSnoozedNotificationsFromXml() throws Exception {
+    public void testLoadPolicyXml_readSnoozedNotificationsFromXml() throws Exception {
         final String upgradeXml = "<notification-policy version=\"1\">"
                 + "<snoozed-notifications>></snoozed-notifications>"
                 + "</notification-policy>";
-        mService.readPolicyXml(
-                new BufferedInputStream(new ByteArrayInputStream(upgradeXml.getBytes())),
-                false,
-                UserHandle.USER_ALL, null);
+        FileOutputStream fos = mPolicyFile.startWrite();
+        fos.write(upgradeXml.getBytes());
+        mPolicyFile.finishWrite(fos);
+        mService.loadPolicyFile();
         verify(mSnoozeHelper, times(1)).readXml(any(TypedXmlPullParser.class), anyLong(), any());
     }
 
     @Test
-    public void testReadPolicyXml_readApprovedServicesFromSettings() throws Exception {
+    public void testLoadPolicyXml_readApprovedServicesFromSettings() throws Exception {
         final String preupgradeXml = "<notification-policy version=\"1\">"
                 + "<ranking></ranking>"
                 + "</notification-policy>";
-        mService.readPolicyXml(
-                new BufferedInputStream(new ByteArrayInputStream(preupgradeXml.getBytes())),
-                false,
-                UserHandle.USER_ALL, null);
+        FileOutputStream fos = mPolicyFile.startWrite();
+        fos.write(preupgradeXml.getBytes());
+        mPolicyFile.finishWrite(fos);
+        mService.loadPolicyFile();
         verify(mListeners, never()).readXml(any(), any(), anyBoolean(), anyInt(), any());
         verify(mConditionProviders, never()).readXml(any(), any(), anyBoolean(), anyInt(), any());
         verify(mAssistants, never()).readXml(any(), any(), anyBoolean(), anyInt(), any());
@@ -7865,7 +7871,71 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    public void testReadPolicyXml_doesNotRestoreManagedServicesForCloneUser() throws Exception {
+    @EnableFlags(android.app.Flags.FLAG_NM_CONTEXTUAL_DISPLAY_LAUNCH)
+    public void testApplyRestore_containsPolicyAndRules() throws Exception {
+        NotificationRuleManager ruleManager = mock(NotificationRuleManager.class);
+        mService.setNotificationRuleManager(ruleManager);
+        final String policyXml =
+                "<notification-policy version=\"1\">"
+                + "<ranking></ranking>"
+                + "<enabled_listeners>"
+                + "<service_listing approved=\"test\" user=\"10\" primary=\"true\" />"
+                + "</enabled_listeners>"
+                + "<enabled_assistants>"
+                + "<service_listing approved=\"test\" user=\"10\" primary=\"true\" />"
+                + "</enabled_assistants>"
+                + "<dnd_apps>"
+                + "<service_listing approved=\"test\" user=\"10\" primary=\"true\" />"
+                + "</dnd_apps>"
+                + "</notification-policy>"
+                + "<notification-rules><rules><rules></notification-rules>";
+        UserInfo ui = new UserInfo();
+        ui.id = mUserId;
+        ui.userType = USER_TYPE_FULL_SYSTEM;
+        when(mUmInternal.getUserInfo(mUserId)).thenReturn(ui);
+        when(mUmInternal.getProfileParentId(mUserId)).thenReturn(mUserId);
+        mInternalService.applyRestore(policyXml.getBytes(), mUserId, mBrLogger);
+
+        verify(mListeners).readXml(any(), any(), eq(true), eq(mUserId), any());
+        verify(mConditionProviders).readXml(any(), any(), eq(true), eq(mUserId), any());
+        verify(mAssistants).readXml(any(), any(), eq(true), eq(mUserId), any());
+        verify(ruleManager).readXml(any(), eq(true), eq(mUserId), any());
+    }
+
+    @Test
+    @DisableFlags(android.app.Flags.FLAG_NM_CONTEXTUAL_DISPLAY_LAUNCH)
+    public void testApplyRestore_containsPolicyAndRules_flagOff() throws Exception {
+        NotificationRuleManager ruleManager = mock(NotificationRuleManager.class);
+        mService.setNotificationRuleManager(ruleManager);
+        final String policyXml =
+                "<notification-policy version=\"1\">"
+                        + "<ranking></ranking>"
+                        + "<enabled_listeners>"
+                        + "<service_listing approved=\"test\" user=\"10\" primary=\"true\" />"
+                        + "</enabled_listeners>"
+                        + "<enabled_assistants>"
+                        + "<service_listing approved=\"test\" user=\"10\" primary=\"true\" />"
+                        + "</enabled_assistants>"
+                        + "<dnd_apps>"
+                        + "<service_listing approved=\"test\" user=\"10\" primary=\"true\" />"
+                        + "</dnd_apps>"
+                        + "</notification-policy>"
+                        + "<notification-rules><rule></rule></notification-rules>";
+        UserInfo ui = new UserInfo();
+        ui.id = mUserId;
+        ui.userType = USER_TYPE_FULL_SYSTEM;
+        when(mUmInternal.getUserInfo(mUserId)).thenReturn(ui);
+        when(mUmInternal.getProfileParentId(mUserId)).thenReturn(mUserId);
+        mInternalService.applyRestore(policyXml.getBytes(), mUserId, mBrLogger);
+
+        verify(mListeners).readXml(any(), any(), eq(true), eq(mUserId), any());
+        verify(mConditionProviders).readXml(any(), any(), eq(true), eq(mUserId), any());
+        verify(mAssistants).readXml(any(), any(), eq(true), eq(mUserId), any());
+        verify(ruleManager, never()).readXml(any(), eq(true), eq(mUserId), any());
+    }
+
+    @Test
+    public void testApplyRestore_doesNotRestoreManagedServicesForCloneUser() throws Exception {
         final String policyXml = "<notification-policy version=\"1\">"
                 + "<ranking></ranking>"
                 + "<enabled_listeners>"
@@ -7883,10 +7953,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         when(mUmInternal.getUserInfo(10)).thenReturn(ui);
         // the parent ID needs to be different from the profile ID to identify it as a profile
         when(mUmInternal.getProfileParentId(10)).thenReturn(11);
-        mService.readPolicyXml(
-                new BufferedInputStream(new ByteArrayInputStream(policyXml.getBytes())),
-                true,
-                10, mBrLogger);
+        mInternalService.applyRestore(policyXml.getBytes(), 10, mBrLogger);
 
         verify(mListeners, never()).readXml(any(), any(), eq(true), eq(10), any());
         verify(mConditionProviders, never()).readXml(any(), any(), eq(true), eq(10), any());
@@ -7894,7 +7961,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    public void testReadPolicyXml_doesNotRestoreManagedServicesForManagedUser() throws Exception {
+    public void testApplyRestore_doesNotRestoreManagedServicesForManagedUser() throws Exception {
         final String policyXml = "<notification-policy version=\"1\">"
                 + "<ranking></ranking>"
                 + "<enabled_listeners>"
@@ -7911,10 +7978,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         ui.userType = USER_TYPE_PROFILE_MANAGED;
         when(mUmInternal.getUserInfo(10)).thenReturn(ui);
         when(mUmInternal.getProfileParentId(10)).thenReturn(11);
-        mService.readPolicyXml(
-                new BufferedInputStream(new ByteArrayInputStream(policyXml.getBytes())),
-                true,
-                10, mBrLogger);
+        mInternalService.applyRestore(policyXml.getBytes(), 10, mBrLogger);
 
         verify(mListeners, never()).readXml(any(), any(), eq(true), eq(10), any());
         verify(mConditionProviders, never()).readXml(any(), any(), eq(true), eq(10), any());
@@ -7922,7 +7986,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    public void testReadPolicyXml_doesNotRestoreManagedServicesForPrivateUser() throws Exception {
+    public void testApplyRestore_doesNotRestoreManagedServicesForPrivateUser() throws Exception {
         final String policyXml = "<notification-policy version=\"1\">"
                 + "<ranking></ranking>"
                 + "<enabled_listeners>"
@@ -7935,14 +7999,11 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
                 + "<service_listing approved=\"test\" user=\"10\" primary=\"true\" />"
                 + "</dnd_apps>"
                 + "</notification-policy>";
-        UserInfo ui = new UserInfo(10, "Private", UserInfo.FLAG_PROFILE);
-        ui.userType = USER_TYPE_PROFILE_PRIVATE;
+        UserInfo ui = new UserInfo(10, "Work", UserInfo.FLAG_PROFILE);
+        ui.userType = USER_TYPE_PROFILE_MANAGED;
         when(mUmInternal.getUserInfo(10)).thenReturn(ui);
         when(mUmInternal.getProfileParentId(10)).thenReturn(11);
-        mService.readPolicyXml(
-                new BufferedInputStream(new ByteArrayInputStream(policyXml.getBytes())),
-                true,
-                10, mBrLogger);
+        mInternalService.applyRestore(policyXml.getBytes(), 10, mBrLogger);
 
         verify(mListeners, never()).readXml(any(), any(), eq(true), eq(10), any());
         verify(mConditionProviders, never()).readXml(any(), any(), eq(true), eq(10), any());
@@ -7951,7 +8012,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    public void testReadPolicyXml_restoresManagedServicesForNonManagedUser() throws Exception {
+    public void testApplyRestore_restoresManagedServicesForNonManagedUser() throws Exception {
         final String policyXml = "<notification-policy version=\"1\">"
                 + "<ranking></ranking>"
                 + "<enabled_listeners>"
@@ -7968,10 +8029,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         ui.id = 10;
         ui.userType = USER_TYPE_FULL_SECONDARY;
         when(mUmInternal.getUserInfo(10)).thenReturn(ui);
-        mService.readPolicyXml(
-                new BufferedInputStream(new ByteArrayInputStream(policyXml.getBytes())),
-                true,
-                10, mBrLogger);
+        mInternalService.applyRestore(policyXml.getBytes(), 10, mBrLogger);
 
         verify(mListeners, times(1)).readXml(any(), any(), eq(true), eq(10), any());
         verify(mConditionProviders, times(1)).readXml(any(), any(), eq(true), eq(10), any());
@@ -7980,7 +8038,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
     @Test
     @EnableFlags(android.app.Flags.FLAG_BACKUP_RESTORE_LOGGING)
-    public void testReadPolicyXml_backupRestoreLogging() throws Exception {
+    public void testApplyRestore_backupRestoreLogging() throws Exception {
         if (ActivityManager.getCurrentUser() != UserHandle.USER_SYSTEM) {
             // By default, the ZenModeHelper only has a configuration for the system user.
             // If the current user is not the system user, the user must be updated.
@@ -7995,12 +8053,11 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         serializer.setOutput(new BufferedOutputStream(baos), "utf-8");
         serializer.startDocument(null, true);
-        mService.writePolicyXml(baos, true, ActivityManager.getCurrentUser(), mBrLogger);
+        mService.writePolicyXml(serializer, true, ActivityManager.getCurrentUser(), mBrLogger);
         serializer.flush();
 
-        mService.readPolicyXml(
-                new BufferedInputStream(new ByteArrayInputStream(baos.toByteArray())),
-                true, ActivityManager.getCurrentUser(), mBrLogger);
+        mInternalService.applyRestore(
+                baos.toByteArray(), ActivityManager.getCurrentUser(), mBrLogger);
 
         verify(mBrLogger).logItemsBackedUp(DATA_TYPE_ZEN_CONFIG, 1);
         verify(mBrLogger, never())
@@ -20243,5 +20300,17 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
         verify(mListeners, times(1)).onPackagesChanged(eq(false), eq(new String[]{"pkg"}),
                 eq(new int[]{123}));
+    }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_NM_CONTEXTUAL_DISPLAY_LAUNCH)
+    public void getNotificationRules() throws Exception {
+        NotificationRule first = NotificationRuleManagerTest.createFullRule(101, "first", true);
+        NotificationRule second = NotificationRuleManagerTest.createFullRule(102, "second", false);
+
+        assertThat(mBinderService.addNotificationRule(mUserId, first, 0)).isEqualTo(first);
+        assertThat(mBinderService.addNotificationRule(mUserId, second, 0)).isEqualTo(second);
+        assertThat(mBinderService.getNotificationRules(null, mUserId).getList())
+                .containsExactly(first, second);
     }
 }

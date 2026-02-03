@@ -43,6 +43,7 @@ import static android.app.NotificationLoggingConstants.DATA_TYPE_NOTIFICATION_RU
 import static android.app.NotificationLoggingConstants.ERROR_XML_PARSING;
 
 import static com.android.server.notification.NotificationManagerService.DEFAULT_ALLOWED_ADJUSTMENT_KEY_TYPES;
+import static com.android.server.notification.NotificationManagerService.TAG_NOTIFICATION_RULES;
 
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
@@ -85,9 +86,8 @@ public class NotificationRuleManager {
 
     // tags and attributes for persistence
     private final int mVersion = 1;
-    private final String NOTIFICATION_RULES_TAG = "notification-rules";
-    private final String VERSION_ATTR = "version";
-    private final String RULES_TAG = "rules";
+    private static final String VERSION_ATTR = "version";
+    private static final String RULES_TAG = "rules";
 
     // key: user id. value: notification rules in priority order
     private final Map<Integer, List<NotificationRule>> mNotificationRules = new ArrayMap<>();
@@ -99,8 +99,7 @@ public class NotificationRuleManager {
     }
 
     // for bugreports
-    void dump(FileDescriptor fd, PrintWriter pw, String[] args) {
-        pw.println("NotificationRules:");
+    void dump(PrintWriter pw) {
         synchronized (mLock) {
             for (@UserIdInt int user : mNotificationRules.keySet()) {
                 pw.println("  User " + user);
@@ -120,14 +119,14 @@ public class NotificationRuleManager {
         int type = parser.getEventType();
         if (type != XmlPullParser.START_TAG) return;
         String tag = parser.getName();
-        if (!NOTIFICATION_RULES_TAG.equals(tag)) return;
+        if (!TAG_NOTIFICATION_RULES.equals(tag)) return;
         int successfulReads = 0;
         int unsuccessfulReads = 0;
         synchronized (mLock) {
             type = parser.next();
             tag = parser.getName();
             while (type != XmlPullParser.END_DOCUMENT
-                    && !(NOTIFICATION_RULES_TAG.equals(tag) && type == XmlPullParser.END_TAG)) {
+                    && !(TAG_NOTIFICATION_RULES.equals(tag) && type == XmlPullParser.END_TAG)) {
                 tag = parser.getName();
                 if (RULE_TAG.equals(tag) && type == XmlPullParser.START_TAG) {
                     int ruleUser = parser.getAttributeInt(null, USER_ATTR, USER_ALL);
@@ -170,7 +169,7 @@ public class NotificationRuleManager {
             throw new IllegalArgumentException("writing to disk with userId != USER_ALL");
         }
         synchronized (mLock) {
-            out.startTag(null, NOTIFICATION_RULES_TAG);
+            out.startTag(null, TAG_NOTIFICATION_RULES);
             out.attributeInt(null, VERSION_ATTR, mVersion);
             out.startTag(null, RULES_TAG);
             int persistedRules = 0;
@@ -189,7 +188,7 @@ public class NotificationRuleManager {
             out.endTag(null, RULES_TAG);
             // TODO(b/478826998): add default highlighted behavior
             // TODO(b/479254459): migrate bundles
-            out.endTag(null, NOTIFICATION_RULES_TAG);
+            out.endTag(null, TAG_NOTIFICATION_RULES);
 
             if (logger != null) {
                 logger.logItemsBackedUp(DATA_TYPE_NOTIFICATION_RULES, persistedRules);
