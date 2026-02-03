@@ -32,6 +32,7 @@ interface ITunerFrontendSignalInfoInterface {
      * @param sessionToken The token that identifies the TIS session.
      * @return A Bundle that resembles {@code android.media.tv.tuner.frontend.FrontendStatus},
      *          containing the current signal information, such as strength, quality and more.
+     *          See @SignalConstant.FrontendSignalInfoKeys for key definitions.
      */
     Bundle getFrontendSignalInfo(String sessionToken);
     /**
