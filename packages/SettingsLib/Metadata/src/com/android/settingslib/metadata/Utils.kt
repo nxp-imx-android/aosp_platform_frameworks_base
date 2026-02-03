@@ -69,6 +69,14 @@ fun PreferenceMetadata.isPreferenceIndexable(context: Context): Boolean =
     if (this is PreferenceIndexableProvider) isIndexable(context) else indexable
 
 /**
+ * Returns whether the preference is only relevant for the UI.
+ *
+ * @return true if preference is only relevant for the UI, false otherwise
+ */
+fun PreferenceMetadata.isUiOnlyPreference(context: Context): Boolean =
+    tags(context).contains(UI_ONLY_PREFERENCE)
+
+/**
  * Performs preference hierarchy operation with a new [CoroutineScope].
  *
  * The coroutine scope will be cancelled automatically (when the block is finished) to cancel

@@ -130,6 +130,75 @@ class PreferenceServiceRequestTransformerTest {
     }
 
     @Test
+    fun transformCatalystGetMetadataResponse_withEmptyPreferenceOrGroupProto_returnsFrameworkResponseWithSuccess() {
+        val screen = preferenceScreenProto {
+            root = preferenceGroupProto {
+                addAllPreferences(
+                    listOf(
+                        preferenceOrGroupProto {
+                            group = preferenceGroupProto {
+                                addAllPreferences(
+                                    listOf(
+                                        preferenceOrGroupProto {
+
+                                        },
+                                        preferenceOrGroupProto {
+                                            preference = preferenceProto {
+                                                key = "key1"
+                                                title = textProto { string = "title1" }
+                                                enabled = true
+                                            }
+                                        },
+                                        preferenceOrGroupProto {
+
+                                        }
+                                    )
+
+                                )
+                            }
+                        },
+                        preferenceOrGroupProto {
+                            preference = preferenceProto {
+                                key = "key2"
+                                title = textProto { string = "title2" }
+                                enabled = false
+                            }
+                        },
+                        preferenceOrGroupProto {
+
+                        },
+                    )
+                )
+            }
+        }
+        val graphProto = PreferenceGraphProto.newBuilder().putScreens("screen", screen).build()
+
+        val fResult = transformCatalystGetMetadataResponse(context, graphProto)
+        with(fResult) {
+            assertThat(resultCode).isEqualTo(MetadataResult.RESULT_OK)
+            assertThat(metadataList.size).isEqualTo(2)
+        }
+        assertThat(
+            fResult.metadataList.any {
+                it.key == "key1" &&
+                        it.screenKey == "screen" &&
+                        it.title == "title1" &&
+                        it.isEnabled
+            }
+        )
+            .isTrue()
+        assertThat(
+            fResult.metadataList.any {
+                it.key == "key2" &&
+                        it.screenKey == "screen" &&
+                        it.title == "title2" &&
+                        !it.isEnabled
+            }
+        )
+            .isTrue()
+    }
+
+    @Test
     fun transformFrameworkGetValueRequest_returnsValidCatalystRequest() {
         val fRequest = GetValueRequest.Builder("screen", "pref").build()
         val cRequest = transformFrameworkGetValueRequest(fRequest)
