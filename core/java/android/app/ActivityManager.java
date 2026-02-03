@@ -5068,7 +5068,6 @@ public class ActivityManager {
      * @throws IllegalArgumentException If the listener is already registered.
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_UID_IMPORTANCE_LISTENER_FOR_UIDS)
     @SystemApi
     @SuppressLint("SamShouldBeLast")
     @RequiresPermission(Manifest.permission.PACKAGE_USAGE_STATS)
