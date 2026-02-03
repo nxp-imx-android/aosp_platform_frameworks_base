@@ -52,6 +52,7 @@ import android.hardware.usb.IUsbManagerInternal;
 import android.hardware.usb.IUsbOperationInternal;
 import android.hardware.usb.ParcelableUsbPort;
 import android.hardware.usb.UsbAccessory;
+import android.hardware.usb.UsbAuthorizationStatus;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.hardware.usb.UsbOperationInternal;
@@ -211,6 +212,10 @@ public class UsbService extends IUsbManager.Stub {
         return mHostManager.getConnectedDeviceFingerprintForAddress(deviceAddress);
     }
 
+    UsbAuthManager getAuthManager() {
+        return mAuthManager;
+    }
+
     public UsbService(Context context) {
         mContext = context;
         mDevicePolicyManagerInternal = LocalServices.getService(DevicePolicyManagerInternal.class);
@@ -222,12 +227,14 @@ public class UsbService extends IUsbManager.Stub {
                 || com.android.server.usb.flags.Flags.enableUsb4Tbt()) {
             mUsb4Manager = new Usb4Manager(context, mUserManager);
         }
-        if (com.android.server.usb.flags.Flags.enableUsbHostAuthorization()) {
-            mAuthManager = new UsbAuthManager(context, mUserManager);
-        }
         final PackageManager pm = mContext.getPackageManager();
         if (pm.hasSystemFeature(PackageManager.FEATURE_USB_HOST)) {
             mHostManager = new UsbHostManager(context, mAlsaManager, mPermissionManager);
+        }
+        if (com.android.server.usb.flags.Flags.enableUsbHostAuthorization()
+                && mHostManager != null) {
+            mAuthManager = new UsbAuthManager(context, mUserManager, mHostManager);
+            mHostManager.setAuthManager(mAuthManager);
         }
         if (new File("/sys/class/android_usb").exists()) {
             mDeviceManager = new UsbDeviceManager(context, mAlsaManager, mSettingsManager,
@@ -401,6 +408,9 @@ public class UsbService extends IUsbManager.Stub {
         }
         if (mPortManager != null) {
             mPortManager.systemReady();
+        }
+        if (mAuthManager != null) {
+            mAuthManager.systemReady();
         }
 
         if (com.android.server.usb.flags.Flags.enableUsb4()
@@ -835,6 +845,23 @@ public class UsbService extends IUsbManager.Stub {
         final long token = Binder.clearCallingIdentity();
         try {
             getPermissionsForUser(userId).grantAccessoryPermission(accessory, packageName, uid);
+        } finally {
+            Binder.restoreCallingIdentity(token);
+        }
+    }
+
+    @android.annotation.EnforcePermission(android.Manifest.permission.MANAGE_USB)
+    @Override
+    public void setAuthorizationResponse(
+            UsbDevice device, @UsbAuthorizationStatus int response, boolean isPersistent) {
+        setAuthorizationResponse_enforcePermission();
+        Objects.requireNonNull(device, "setAuthorizationResponse: device must not be null.");
+
+        final long token = Binder.clearCallingIdentity();
+        try {
+            if (mAuthManager != null) {
+                mAuthManager.setAuthorizationResponse(device, response, isPersistent);
+            }
         } finally {
             Binder.restoreCallingIdentity(token);
         }

@@ -25,6 +25,7 @@ import android.hardware.usb.IUsbOperationInternal;
 import android.hardware.usb.UsbAccessory;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.ParcelableUsbPort;
+import android.hardware.usb.UsbAuthorizationStatus;
 import android.hardware.usb.UsbPortStatus;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
@@ -131,6 +132,12 @@ interface IUsbManager
      */
     @EnforcePermission("MANAGE_USB")
     void grantAccessoryPermission(in UsbAccessory accessory, String packageName, int uid);
+
+    /* Sets the authorization response for a device that needs user
+     * authorization.
+     */
+    @EnforcePermission("MANAGE_USB")
+    void setAuthorizationResponse(in UsbDevice device, in UsbAuthorizationStatus response, in boolean isPersistent);
 
     /* Returns true if the USB manager has default preferences or permissions for the package */
     boolean hasDefaults(String packageName, int userId);
