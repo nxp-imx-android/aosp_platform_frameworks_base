@@ -26,6 +26,7 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.content.Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT;
 import static android.content.res.Configuration.SMALLEST_SCREEN_WIDTH_DP_UNDEFINED;
 import static android.view.Display.DEFAULT_DISPLAY;
+import static android.view.Display.INVALID_DISPLAY;
 import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManager.TRANSIT_KEYGUARD_OCCLUDE;
@@ -858,6 +859,14 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         final int extraTransitType = isSplitActive()
                 ? TRANSIT_SPLIT_SCREEN_OPEN_TO_SIDE : TRANSIT_SPLIT_SCREEN_PAIR_OPEN;
         final boolean resizeAnim = shouldPlayResizeAnimation(position);
+        if (enableNonDefaultDisplaySplitBugfix()) {
+            final int launchDisplayId = ActivityOptions.fromBundle(options).getLaunchDisplayId();
+            final int displayId = launchDisplayId != INVALID_DISPLAY
+                    ? launchDisplayId
+                    : DEFAULT_DISPLAY;
+            updateSplitLayoutConfig(mRootTDAOrganizer, displayId, mSplitLayout);
+            prepareMovingSplitScreenRoot(wct, displayId, true /* onTop */);
+        }
         prepareEnterSplitScreen(wct, null /* taskInfo */, position,
                 resizeAnim, index);
 
