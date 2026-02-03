@@ -193,6 +193,28 @@ class DesksControllerTest : ShellTestCase() {
         verify(mockDesksOrganizer, never()).createDesk(any(), any(), any())
     }
 
+    @Test
+    fun testCreateDesk_atLimit_limitNotEnforced_createsDesk() {
+        desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
+        desktopConfig.maxDeskLimit = 2
+        // Add two desks to bring the number up to the limit.
+        repository.addDesk(displayId = DEFAULT_DISPLAY, deskId = 2)
+        repository.addDesk(displayId = DEFAULT_DISPLAY, deskId = 3)
+        val currentDeskCount = repository.getNumberOfDesks(DEFAULT_DISPLAY)
+        whenever(mockDesksOrganizer.createDesk(eq(DEFAULT_DISPLAY), any(), any())).thenAnswer {
+                invocation ->
+            (invocation.arguments[2] as DesksOrganizer.OnCreateCallback).onCreated(deskId = 5)
+        }
+
+        controller.createDesk(
+            displayId = DEFAULT_DISPLAY,
+            userId = repository.userId,
+            enforceDeskLimit = false
+        )
+
+        assertThat(repository.getNumberOfDesks(DEFAULT_DISPLAY)).isEqualTo(currentDeskCount + 1)
+    }
+
     private companion object {
         private const val USER_ID_1 = 6
         private const val DESK_LIMIT_NO_LIMIT = 0
