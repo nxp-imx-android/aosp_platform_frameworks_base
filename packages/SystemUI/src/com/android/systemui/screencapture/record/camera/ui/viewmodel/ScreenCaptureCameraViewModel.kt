@@ -19,6 +19,7 @@ package com.android.systemui.screencapture.record.camera.ui.viewmodel
 import android.util.Size
 import android.view.Display
 import android.view.Surface
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import com.android.app.tracing.coroutines.flow.collectTraced
 import com.android.systemui.lifecycle.HydratedActivatable
@@ -29,6 +30,7 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -43,15 +45,18 @@ constructor(
     private val taps = Channel<Unit>()
 
     val shouldShowCamera: Boolean? by
-        screenRecordCameraInteractor.state
-            .map { it == CameraState.Started }
-            .hydratedStateOf("ScreenCaptureCameraViewModel#shouldShowCamera", null)
+        screenRecordCameraInteractor.state.mapHydrate(
+            "ScreenCaptureCameraViewModel#shouldShowCamera"
+        ) {
+            it == CameraState.Started
+        }
 
     val surfaceSize: Size? by
-        screenRecordCameraInteractor.optimalCameraStreamSize.hydratedStateOf(
-            "ScreenCaptureCameraViewModel#surfaceSize",
-            null,
-        )
+        screenRecordCameraInteractor.streamConfiguration.mapHydrate(
+            "ScreenCaptureCameraViewModel#surfaceSize"
+        ) {
+            it?.cameraStreamSize
+        }
 
     override suspend fun onActivated() {
         super.onActivated()
@@ -86,5 +91,9 @@ constructor(
     @AssistedFactory
     interface Factory {
         fun create(): ScreenCaptureCameraViewModel
+    }
+
+    private fun <T, R> StateFlow<T>.mapHydrate(traceName: String, mapping: (T) -> R): State<R> {
+        return map(mapping).hydratedStateOf(traceName = traceName, initialValue = mapping(value))
     }
 }
