@@ -8995,8 +8995,7 @@ public class Notification implements Parcelable
      * @hide
      */
     public boolean isColorized() {
-        return isColorizedRequested()
-                && (hasColorizedPermission() || isFgsOrUij() || isPromotedOngoing());
+        return isColorizedRequested() && (hasColorizedPermission() || isFgsOrUij());
     }
 
     /**
