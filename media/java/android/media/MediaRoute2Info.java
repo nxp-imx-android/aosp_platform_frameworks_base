@@ -167,6 +167,7 @@ public final class MediaRoute2Info implements Parcelable {
                 TYPE_USB_HEADSET,
                 TYPE_HEARING_AID,
                 TYPE_BLE_HEADSET,
+                TYPE_MULTICHANNEL_SPEAKER_GROUP,
                 TYPE_REMOTE_TV,
                 TYPE_REMOTE_SPEAKER,
                 TYPE_REMOTE_AUDIO_VIDEO_RECEIVER,
@@ -1363,6 +1364,8 @@ public final class MediaRoute2Info implements Parcelable {
                 return "USB_HEADSET";
             case TYPE_HEARING_AID:
                 return "HEARING_AID";
+            case TYPE_MULTICHANNEL_SPEAKER_GROUP:
+                return "TYPE_MULTICHANNEL_SPEAKER_GROUP";
             case TYPE_REMOTE_TV:
                 return "REMOTE_TV";
             case TYPE_REMOTE_SPEAKER:
