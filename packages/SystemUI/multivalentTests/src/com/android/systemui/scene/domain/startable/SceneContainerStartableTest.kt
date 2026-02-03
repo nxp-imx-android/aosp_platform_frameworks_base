@@ -2302,6 +2302,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
             assertThat(currentScene).isEqualTo(Scenes.Communal)
         }
 
+    @Test
     fun handleOcclusion_unoccludeBehindBouncer_bouncerStaysVisible() =
         kosmos.runTest {
             val currentScene by collectLastValue(sceneInteractor.currentScene)
@@ -2325,6 +2326,38 @@ class SceneContainerStartableTest : SysuiTestCase() {
 
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
             assertThat(currentOverlays).contains(Overlays.Bouncer)
+        }
+
+    @Test
+    fun handleOcclusion_unoccludeBehindShade_occludedRemovedFromBackStack() =
+        kosmos.runTest {
+            enableSingleShade()
+
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
+            val backStack by collectLastValue(sceneBackInteractor.backStack)
+
+            prepareState()
+            underTest.start()
+            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+
+            keyguardOcclusionInteractor.setWmNotifiedShowWhenLockedActivityOnTop(true, mock())
+            runCurrent()
+
+            assertThat(backStack?.asIterable()?.toList()).isEqualTo(listOf(Scenes.Lockscreen))
+            assertThat(currentScene).isEqualTo(Scenes.Occluded)
+
+            sceneInteractor.changeScene(Scenes.Shade, "")
+            assertThat(currentScene).isEqualTo(Scenes.Shade)
+            assertThat(backStack?.asIterable()?.toList())
+                .isEqualTo(listOf(Scenes.Occluded, Scenes.Lockscreen))
+
+            // Changing occlusion state underneath the shade should remove it from the backstack
+            keyguardOcclusionInteractor.setWmNotifiedShowWhenLockedActivityOnTop(false, mock())
+            runCurrent()
+
+            assertThat(backStack?.asIterable()?.toList()).isEqualTo(listOf(Scenes.Lockscreen))
+            assertThat(currentScene).isEqualTo(Scenes.Shade)
         }
 
     @Test
