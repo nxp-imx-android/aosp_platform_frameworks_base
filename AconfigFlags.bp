@@ -2541,6 +2541,10 @@ java_aconfig_library {
     min_sdk_version: "30",
     apex_available: [
         "//apex_available:platform",
+        // ART needs access to PCC flags to include PCC along with isolated processes
+        // in the shared-app logic
+        "com.android.art",
+        "com.android.art.debug",
         "com.android.appsearch",
     ],
 }
