@@ -26,11 +26,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
@@ -60,15 +57,14 @@ fun NotificationRuleEdit(
     rule: DraftRuleModel,
     modifier: Modifier = Modifier,
 ) {
-    val context = LocalContext.current
     val viewModel = rememberViewModel("NotificationRuleEditViewModel") { viewModelFactory.create() }
-    val scope = rememberCoroutineScope()
 
     var shownDialogType: EditDialogType by remember(rule) { mutableStateOf(EditDialogType.None) }
     var selectedAction by remember(rule) { mutableStateOf(rule.action) }
     var selectedContacts by remember(rule) { mutableStateOf(rule.contacts) }
-    val selectedIncludedApps by remember(rule) { mutableStateOf(rule.includedApps) }
+    val selectedIncludedApps = remember(rule) { rule.includedApps }
 
+    val textStyles = rememberTextStyles()
     val text =
         remember(selectedAction, selectedContacts, selectedIncludedApps, shownDialogType) {
             buildAnnotatedText(
@@ -77,6 +73,7 @@ fun NotificationRuleEdit(
                 selectedIncludedApps = selectedIncludedApps,
                 shownDialogType = shownDialogType,
                 changeEditDialog = { shownDialogType = it },
+                textStyles = textStyles,
             )
         }
 
@@ -106,7 +103,6 @@ fun NotificationRuleEdit(
                         shownDialogType = EditDialogType.None
                     },
                     viewModel = viewModel,
-                    context = context,
                 )
             }
             is EditDialogType.IncludedApps -> {
@@ -130,6 +126,7 @@ private fun buildAnnotatedText(
     selectedIncludedApps: RuleValue<IncludedAppsModel>?,
     shownDialogType: EditDialogType,
     changeEditDialog: (EditDialogType) -> Unit,
+    textStyles: TextStyles,
 ): AnnotatedString {
     return buildAnnotatedString {
         clickableText(
@@ -142,6 +139,7 @@ private fun buildAnnotatedText(
                     changeEditDialog = changeEditDialog,
                 )
             },
+            textStyles = textStyles,
         )
 
         append(" all Conversation notifications")
@@ -152,6 +150,7 @@ private fun buildAnnotatedText(
                 selectedIncludedApps = selectedIncludedApps,
                 editDialogShowing = shownDialogType,
                 changeEditDialog = changeEditDialog,
+                textStyles = textStyles,
             )
         }
 
@@ -161,6 +160,7 @@ private fun buildAnnotatedText(
                 selectedContacts = it,
                 editDialogShowing = shownDialogType,
                 changeEditDialog = changeEditDialog,
+                textStyles = textStyles,
             )
         }
 
@@ -235,6 +235,7 @@ private fun AnnotatedString.Builder.createIncludedAppsText(
     selectedIncludedApps: RuleValue<IncludedAppsModel>,
     editDialogShowing: EditDialogType,
     changeEditDialog: (EditDialogType) -> Unit,
+    textStyles: TextStyles,
 ) {
     val text =
         when (selectedIncludedApps) {
@@ -262,6 +263,7 @@ private fun AnnotatedString.Builder.createIncludedAppsText(
                 changeEditDialog = changeEditDialog,
             )
         },
+        textStyles = textStyles,
     )
 }
 
@@ -270,6 +272,7 @@ private fun AnnotatedString.Builder.createContactsText(
     selectedContacts: RuleValue<ContactsModel>,
     editDialogShowing: EditDialogType,
     changeEditDialog: (EditDialogType) -> Unit,
+    textStyles: TextStyles,
 ) {
     when (selectedContacts) {
         is RuleValue.Specified -> {
@@ -298,6 +301,7 @@ private fun AnnotatedString.Builder.createContactsText(
                         changeEditDialog = changeEditDialog,
                     )
                 },
+                textStyles = textStyles,
             )
         }
         is RuleValue.Ambiguous -> {
@@ -315,6 +319,7 @@ private fun AnnotatedString.Builder.createContactsText(
                         changeEditDialog = changeEditDialog,
                     )
                 },
+                textStyles = textStyles,
             )
         }
     }
@@ -330,13 +335,14 @@ private fun AnnotatedString.Builder.clickableText(
     text: String,
     isAmbiguous: Boolean,
     onClick: () -> Unit,
+    textStyles: TextStyles,
 ) {
     withLink(
         LinkAnnotation.Clickable(
             tag = text,
             styles =
                 TextLinkStyles(
-                    style = if (isAmbiguous) AMBIGUOUS_CLICKABLE_STYLE else CLICKABLE_STYLE
+                    style = if (isAmbiguous) textStyles.ambiguous else textStyles.default
                 ),
             linkInteractionListener = { onClick.invoke() },
         )
@@ -345,16 +351,16 @@ private fun AnnotatedString.Builder.clickableText(
     }
 }
 
-private val CLICKABLE_STYLE =
-    SpanStyle(
-        // TODO: b/478225883 - Use theme colors.
-        color = Color.Blue,
-        textDecoration = TextDecoration.Underline,
-        fontWeight = FontWeight.Bold,
-    )
+private data class TextStyles(val default: SpanStyle, val ambiguous: SpanStyle)
 
-private val AMBIGUOUS_CLICKABLE_STYLE =
-    CLICKABLE_STYLE.copy(
-        // TODO: b/478225883 - Use theme colors.
-        color = Color.Red
-    )
+@Composable
+private fun rememberTextStyles(): TextStyles {
+    val baseStyle =
+        SpanStyle(textDecoration = TextDecoration.Underline, fontWeight = FontWeight.Bold)
+    val defaultStyle = baseStyle.copy(color = MaterialTheme.colorScheme.primary)
+    val ambiguousStyle = baseStyle.copy(color = MaterialTheme.colorScheme.error)
+
+    return remember(defaultStyle, ambiguousStyle) {
+        TextStyles(default = defaultStyle, ambiguous = ambiguousStyle)
+    }
+}
