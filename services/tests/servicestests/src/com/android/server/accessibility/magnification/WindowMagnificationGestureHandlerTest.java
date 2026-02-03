@@ -29,8 +29,6 @@ import android.graphics.PointF;
 import android.graphics.Rect;
 import android.os.RemoteException;
 import android.os.SystemClock;
-import android.platform.test.flag.junit.CheckFlagsRule;
-import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.testing.TestableContext;
 import android.util.DebugUtils;
 import android.view.InputDevice;
@@ -60,9 +58,6 @@ import java.util.function.IntConsumer;
  */
 @RunWith(AndroidJUnit4.class)
 public class WindowMagnificationGestureHandlerTest {
-
-    @Rule
-    public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
 
     public static final int STATE_IDLE = 1;
     public static final int STATE_SHOW_MAGNIFIER_SHORTCUT = 2;
@@ -188,6 +183,7 @@ public class WindowMagnificationGestureHandlerTest {
         tap();
         tapAndHold();
         send(upEvent(DEFAULT_TAP_X, DEFAULT_TAP_Y));
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
         assertIn(STATE_SHOW_MAGNIFIER_TRIPLE_TAP);
         returnToNormalFrom(STATE_SHOW_MAGNIFIER_TRIPLE_TAP);
@@ -274,6 +270,7 @@ public class WindowMagnificationGestureHandlerTest {
                     tap();
                     tap();
                     tap();
+                    InstrumentationRegistry.getInstrumentation().waitForIdleSync();
                 }
                 break;
                 case STATE_NOT_ENABLED_SHOW_MAGNIFIER_TRIPLE_TAP_AND_HOLD: {
@@ -322,13 +319,16 @@ public class WindowMagnificationGestureHandlerTest {
                 tap();
                 tap();
                 tap();
+                InstrumentationRegistry.getInstrumentation().waitForIdleSync();
             }
             break;
             case STATE_NOT_ENABLED_SHOW_MAGNIFIER_TRIPLE_TAP_AND_HOLD:
                 send(upEvent(DEFAULT_TAP_X, DEFAULT_TAP_Y));
+                InstrumentationRegistry.getInstrumentation().waitForIdleSync();
                 break;
             case STATE_ENABLED_SHOW_MAGNIFIER_TRIPLE_TAP_AND_HOLD:
                 send(upEvent(DEFAULT_TAP_X, DEFAULT_TAP_Y));
+                InstrumentationRegistry.getInstrumentation().waitForIdleSync();
                 returnToNormalFrom(STATE_SHOW_MAGNIFIER_SHORTCUT);
                 break;
             default:
@@ -390,6 +390,7 @@ public class WindowMagnificationGestureHandlerTest {
     private void tapAndHold() {
         send(downEvent(DEFAULT_TAP_X, DEFAULT_TAP_Y));
         SystemClock.sleep(ViewConfiguration.getLongPressTimeout() + 100);
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
 
     private String stateDump() {
