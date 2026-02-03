@@ -159,3 +159,10 @@ flag {
     description: "Add a new field in AssociationRequest to indicate if the device supports AI agent automation."
     bug: "474639153"
 }
+
+flag {
+    name: "cmd_options"
+    namespace: "companion"
+    description: "Move the rest cmd optional args to options."
+    bug: "478509624"
+}
