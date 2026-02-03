@@ -186,8 +186,24 @@ public class ComputerControlSessionTest {
 
     @Test
     public void tapNotInRange_throws() {
+        // Negative coordinates
         assertThrows(IllegalArgumentException.class, () -> mSession.tap(-1, 2));
         assertThrows(IllegalArgumentException.class, () -> mSession.tap(1, -2));
+
+        // Coordinates outside of display bounds
+        assertThrows(IllegalArgumentException.class, () -> mSession.tap(WIDTH, 2));
+        assertThrows(IllegalArgumentException.class, () -> mSession.tap(1, HEIGHT));
+    }
+
+    @Test
+    public void tap_atBounds_succeeds() throws RemoteException {
+        // Top-left corner
+        mSession.tap(0, 0);
+        verify(mMockSession).tap(0, 0);
+
+        // Bottom-right corner
+        mSession.tap(WIDTH - 1, HEIGHT - 1);
+        verify(mMockSession).tap(WIDTH - 1, HEIGHT - 1);
     }
 
     @Test
@@ -198,10 +214,24 @@ public class ComputerControlSessionTest {
 
     @Test
     public void swipeNotInRange_throws() {
+        // Negative coordinates
         assertThrows(IllegalArgumentException.class, () -> mSession.swipe(-1, 2, 3, 4));
         assertThrows(IllegalArgumentException.class, () -> mSession.swipe(1, -2, 3, 4));
         assertThrows(IllegalArgumentException.class, () -> mSession.swipe(1, 2, -3, 4));
         assertThrows(IllegalArgumentException.class, () -> mSession.swipe(1, 2, 3, -4));
+
+        // Coordinates outside of display bounds
+        assertThrows(IllegalArgumentException.class, () -> mSession.swipe(WIDTH, 2, 3, 4));
+        assertThrows(IllegalArgumentException.class, () -> mSession.swipe(1, HEIGHT, 3, 4));
+        assertThrows(IllegalArgumentException.class, () -> mSession.swipe(1, 2, WIDTH, 4));
+        assertThrows(IllegalArgumentException.class, () -> mSession.swipe(1, 2, 3, HEIGHT));
+    }
+
+    @Test
+    public void swipe_atBounds_succeeds() throws RemoteException {
+        // Swipe from top-left to bottom-right
+        mSession.swipe(0, 0, WIDTH - 1, HEIGHT - 1);
+        verify(mMockSession).swipe(0, 0, WIDTH - 1, HEIGHT - 1);
     }
 
     @Test
@@ -212,8 +242,24 @@ public class ComputerControlSessionTest {
 
     @Test
     public void longPressNotInRange_throws() {
+        // Negative coordinates
         assertThrows(IllegalArgumentException.class, () -> mSession.longPress(-1, 2));
         assertThrows(IllegalArgumentException.class, () -> mSession.longPress(1, -2));
+
+        // Coordinates outside of display bounds
+        assertThrows(IllegalArgumentException.class, () -> mSession.longPress(WIDTH, 2));
+        assertThrows(IllegalArgumentException.class, () -> mSession.longPress(1, HEIGHT));
+    }
+
+    @Test
+    public void longPress_atBounds_succeeds() throws RemoteException {
+        // Top-left corner
+        mSession.longPress(0, 0);
+        verify(mMockSession).longPress(0, 0);
+
+        // Bottom-right corner
+        mSession.longPress(WIDTH - 1, HEIGHT - 1);
+        verify(mMockSession).longPress(WIDTH - 1, HEIGHT - 1);
     }
 
     @Test
