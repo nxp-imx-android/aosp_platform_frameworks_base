@@ -1101,6 +1101,18 @@
             android:exported="false">
         </activity>
 
+        <!-- Contextual setup activity for dreams/screensavers. -->
+        <activity
+            android:name=".dreams.ui.activity.DreamSetupActivity"
+            android:theme="@style/Theme.Transparent"
+            android:label=""
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:finishOnTaskLaunch="true"
+            android:showWhenLocked="true"
+            android:showForAllUsers="true"
+            />
+
         <service
             android:name="com.android.systemui.communal.widgets.GlanceableHubWidgetManagerService"
             android:exported="false" />

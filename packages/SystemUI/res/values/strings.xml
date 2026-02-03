@@ -4889,4 +4889,12 @@
     <string name="more_options_remove_all">Remove all</string>
     <!-- Label for the 'More options' button in the floating menu, which opens a pop up window with more actions. [CHAR LIMIT=NONE] -->
     <string name="floating_menu_more_options_label">More options</string>
+
+    <!-- Dream contextual setup -->
+    <!-- Title for the dream contextual setup bottom sheet. [CHAR LIMIT=NONE] -->
+    <string name="dream_setup_title">Set up screen saver</string>
+    <!-- Label for the "Not now" button in the dream contextual setup bottom sheet. [CHAR LIMIT=20] -->
+    <string name="dream_setup_button_not_now">Not now</string>
+    <!-- Label for the "Set up" button in the dream contextual setup bottom sheet. [CHAR LIMIT=20] -->
+    <string name="dream_setup_button_setup">Set up</string>
 </resources>
