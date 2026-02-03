@@ -938,9 +938,12 @@ public final class ViewRootImpl implements ViewParent,
      */
     private final ClientWindowFrames mTmpFrames = new ClientWindowFrames();
 
-    // These are accessed by multiple threads.
-    final Rect mWinFrame; // frame given by window manager.
-    private final Rect mLastLayoutFrame;
+    final Rect mWinFrame = new Rect();
+    private final Rect mLastLayoutFrame = new Rect();
+
+    // Used to calculate the window position in the parent container.
+    private final Rect mLastLayoutParentFrame = new Rect();
+
     Rect mOverrideInsetsFrame;
 
     private int mRelayoutSeq;
@@ -1393,8 +1396,6 @@ public final class ViewRootImpl implements ViewParent,
         mWidth = -1;
         mHeight = -1;
         mDirty = new Rect();
-        mWinFrame = new Rect();
-        mLastLayoutFrame = new Rect();
         mWindow = new W(this);
         mLeashToken = new Binder();
         mTargetSdkVersion = context.getApplicationInfo().targetSdkVersion;
@@ -1596,7 +1597,14 @@ public final class ViewRootImpl implements ViewParent,
     }
 
     private WindowConfiguration getCompatWindowConfiguration() {
-        final WindowConfiguration winConfig = getConfiguration().windowConfiguration;
+        // Use the window-level configuration to layout window if it is ever reported.
+        final WindowConfiguration candidate =
+                mLastReportedMergedConfiguration.getMergedConfiguration().windowConfiguration;
+        final WindowConfiguration winConfig =
+                (!com.android.window.flags.Flags.improveFluidResizingPerformance()
+                                || candidate.getBounds().isEmpty())
+                        ? getConfiguration().windowConfiguration
+                        : candidate;
         if (mInvCompatScale == 1f) {
             return winConfig;
         }
@@ -1782,7 +1790,11 @@ public final class ViewRootImpl implements ViewParent,
                         UNSPECIFIED_LENGTH, UNSPECIFIED_LENGTH,
                         mInsetsController.getRequestedVisibleTypes(), 1f /* compactScale */,
                         mTmpFrames);
-                setFrame(mTmpFrames.frame, true /* withinRelayout */);
+                setFrame(mTmpFrames.frame);
+                mLastLayoutFrame.set(mTmpFrames.frame);
+                mLastLayoutParentFrame.set(mTmpFrames.attachedFrame != null
+                        ? mTmpFrames.attachedFrame
+                        : getCompatWindowConfiguration().getBounds());
                 mInsetsController.onBoundsChanged(bounds);
                 registerBackCallbackOnWindow();
                 if (DEBUG_LAYOUT) Log.v(mTag, "Added window " + mWindow);
@@ -2524,7 +2536,7 @@ public final class ViewRootImpl implements ViewParent,
             onMovedToDisplay(displayId, mLastConfigurationFromResources);
         }
 
-        setFrame(frame, false /* withinRelayout */);
+        setFrame(frame);
         mTmpFrames.displayFrame.set(displayFrame);
         if (mTmpFrames.attachedFrame != null && attachedFrame != null) {
             mTmpFrames.attachedFrame.set(attachedFrame);
@@ -4160,6 +4172,12 @@ public final class ViewRootImpl implements ViewParent,
                                     : null);
                     updatedConfiguration = true;
                 }
+                // Updates mLastLayoutFrame and mLastLayoutParentFrame here after the configuration
+                // is updated because mLastLayoutParentFrame might come from the window bounds.
+                mLastLayoutFrame.set(mTmpFrames.frame);
+                mLastLayoutParentFrame.set(mTmpFrames.attachedFrame != null
+                        ? mTmpFrames.attachedFrame
+                        : getCompatWindowConfiguration().getBounds());
                 final boolean updateSurfaceNeeded = mUpdateSurfaceNeeded;
                 mUpdateSurfaceNeeded = false;
 
@@ -7322,7 +7340,7 @@ public final class ViewRootImpl implements ViewParent,
                         mTmpFrames.frame.right = l + w;
                         mTmpFrames.frame.top = t;
                         mTmpFrames.frame.bottom = t + h;
-                        setFrame(mTmpFrames.frame, false /* withinRelayout */);
+                        setFrame(mTmpFrames.frame);
                         maybeHandleWindowMove(mWinFrame);
                     }
                     break;
@@ -9953,6 +9971,9 @@ public final class ViewRootImpl implements ViewParent,
         final WindowConfiguration winConfigFromWm =
                 mLastReportedMergedConfiguration.getMergedConfiguration().windowConfiguration;
         final WindowConfiguration winConfig = getCompatWindowConfiguration();
+        final boolean relayAsyncDuringDragResizing =
+                com.android.window.flags.Flags.improveFluidResizingPerformance()
+                        && (mDragResizing || mPendingDragResizing);
         final int measuredWidth = mMeasuredWidth;
         final int measuredHeight = mMeasuredHeight;
         final boolean viewVisibilityChanged =
@@ -9963,7 +9984,8 @@ public final class ViewRootImpl implements ViewParent,
                 && mSyncSeqId <= mLastSyncSeqId
                 && (!NoPreloadHolder.sAlwaysSeqId
                     || mSeqId <= mLastSeqId)
-                && winConfigFromAm.diff(winConfigFromWm, false /* compareUndefined */) == 0) {
+                && (relayAsyncDuringDragResizing || winConfigFromAm.diff(
+                        winConfigFromWm, false /* compareUndefined */) == 0)) {
             final InsetsState state = mInsetsController.getState();
             final Rect displayCutoutSafe = mTempRect;
             state.getDisplayCutoutSafe(displayCutoutSafe);
@@ -9976,22 +9998,38 @@ public final class ViewRootImpl implements ViewParent,
                 mTranslator.translateRectInAppWindowToScreen(mWinFrameInScreen);
             }
 
-            // If the position and the size of the frame are both changed, it will trigger a BLAST
-            // sync, and we still need to call relayout to obtain the syncSeqId. Otherwise, we just
-            // need to send attributes via relayoutAsync.
+            // If the position on the parent surface and the size of the frame are both changed, it
+            // will trigger a BLAST sync, and we still need to call relayout to obtain the
+            // syncSeqId. Otherwise, we just need to send attributes via relayoutAsync.
             final Rect oldFrame = mLastLayoutFrame;
             final Rect newFrame = mTmpFrames.frame;
-            final boolean positionChanged =
-                    newFrame.top != oldFrame.top || newFrame.left != oldFrame.left;
+            final Rect oldParentFrame = mLastLayoutParentFrame;
+            final Rect newParentFrame = mTmpFrames.attachedFrame != null
+                    ? mTmpFrames.attachedFrame : winConfig.getBounds();
+            final boolean positionChanged;
+            if (com.android.window.flags.Flags.improveFluidResizingPerformance()) {
+                positionChanged =
+                        (newFrame.top - newParentFrame.top) != (oldFrame.top - oldParentFrame.top)
+                                || (newFrame.left - newParentFrame.left)
+                                        != (oldFrame.left - oldParentFrame.left);
+            } else {
+                positionChanged = newFrame.top != oldFrame.top || newFrame.left != oldFrame.left;
+            }
             final boolean sizeChanged =
                     newFrame.width() != oldFrame.width() || newFrame.height() != oldFrame.height();
             relayoutAsync = !positionChanged || !sizeChanged;
             if (!relayoutAsync && Trace.isTagEnabled(Trace.TRACE_TAG_VIEW)) {
                 Trace.instant(Trace.TRACE_TAG_VIEW, "relayoutSync "
                         + oldFrame.width() + "x" + oldFrame.height()
-                        + "+" + oldFrame.left + "," + oldFrame.top
+                        + "+" + (!com.android.window.flags.Flags.improveFluidResizingPerformance()
+                                ? (oldFrame.left  + "," + oldFrame.top)
+                                : ((oldFrame.left - oldParentFrame.left)
+                                        + "," + (oldFrame.top - oldParentFrame.top)))
                         + "->" + newFrame.width() + "x" + newFrame.height()
-                        + "+" + newFrame.left + "," + newFrame.top);
+                        + "+" + (!com.android.window.flags.Flags.improveFluidResizingPerformance()
+                                ? (newFrame.left  + "," + newFrame.top)
+                                : ((newFrame.left - newParentFrame.left)
+                                        + "," + (newFrame.top - newParentFrame.top))));
             }
         } else {
             relayoutAsync = false;
@@ -10160,7 +10198,7 @@ public final class ViewRootImpl implements ViewParent,
             params.restore();
         }
 
-        setFrame(mTmpFrames.frame, true /* withinRelayout */);
+        setFrame(mTmpFrames.frame);
         return relayoutResult;
     }
 
@@ -10202,16 +10240,11 @@ public final class ViewRootImpl implements ViewParent,
 
     /**
      * Set the mWinFrame of this window.
+     *
      * @param frame the new frame of this window.
-     * @param withinRelayout {@code true} if this setting is within the relayout, or is the initial
-     *                       setting. That will make sure in the relayout process, we always compare
-     *                       the window frame with the last processed window frame.
      */
-    private void setFrame(Rect frame, boolean withinRelayout) {
+    private void setFrame(Rect frame) {
         mWinFrame.set(frame);
-        if (withinRelayout) {
-            mLastLayoutFrame.set(frame);
-        }
 
         mInsetsController.onFrameChanged(mOverrideInsetsFrame != null ?
                 mOverrideInsetsFrame : frame);
