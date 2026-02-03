@@ -87,6 +87,10 @@ public abstract class BroadcastQueue {
                 TAG, cookie);
     }
 
+    static void traceInstant(@NonNull String msg) {
+        Trace.instantForTrack(Trace.TRACE_TAG_ACTIVITY_MANAGER, TAG, msg);
+    }
+
     public abstract void start(@NonNull ContentResolver resolver);
 
     /**
