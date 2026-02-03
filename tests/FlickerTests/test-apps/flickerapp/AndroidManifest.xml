@@ -482,6 +482,18 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <activity android:name=".WebIntentActivity"
+                  android:taskAffinity="com.android.server.wm.flicker.testapp.WebIntentActivity"
+                  android:label="WebIntentActivity"
+                  android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="http" android:host="www.android.com" />
+                <data android:scheme="https" android:host="www.android.com" />
+            </intent-filter>
+        </activity>
         <service
             android:name=".AssistantInteractionSessionService"
             android:exported="true"
