@@ -17,13 +17,37 @@
 package com.android.systemui.scene.ui.composable.transitions
 
 import androidx.compose.animation.core.tween
+import com.android.compose.animation.Easings
 import com.android.compose.animation.scene.TransitionBuilder
+import com.android.systemui.notifications.ui.composable.Notifications
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
+import com.android.systemui.qs.shared.ui.QuickSettings
 import com.android.systemui.shade.ui.composable.Shade
 import kotlin.time.Duration.Companion.milliseconds
 
-fun TransitionBuilder.shadeToAlwaysOnDisplayTransition(durationScale: Double = 1.0) {
-    spec = tween(durationMillis = (DefaultDuration * durationScale).inWholeMilliseconds.toInt())
-    fractionRange(start = 0.0f) { fade(Shade.Elements.ShadeElement) }
+fun TransitionBuilder.shadeToAlwaysOnDisplayTransition() {
+    spec =
+        tween(durationMillis = DefaultDuration.inWholeMilliseconds.toInt(), easing = Easings.Linear)
+
+    sharedElement(Notifications.Elements.StackPlaceholder, enabled = false)
+
+    // Fade out the shade elements first.
+    fractionRange(end = 0.33f) {
+        fade(Shade.Elements.ShadeElement)
+        fade(Shade.Elements.ShadeHeader)
+        fade(Shade.Elements.BackgroundScrim)
+        fade(Notifications.Elements.StackPlaceholder)
+        fade(QuickSettings.Elements.QuickQuickSettingsAndMedia)
+        fade(QuickSettings.Elements.SplitShadeQuickSettings)
+        fade(QuickSettings.Elements.FooterActions)
+        fade(Notifications.Elements.NotificationScrim)
+    }
+
+    // Once the screen is black, fade in the AOD elements.
+    fractionRange(start = 0.58f) {
+        fade(LockscreenElementKeys.Region.Clock.Small)
+        fade(LockscreenElementKeys.Region.Clock.Large)
+    }
 }
 
 private val DefaultDuration = 500.milliseconds

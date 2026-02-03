@@ -718,7 +718,6 @@ constructor(
                     alternateBouncerInteractor.hide()
                     dismissCallbackRegistry.notifyDismissCancelled()
                     val isAodAvailable = keyguardInteractor.isAodAvailable.value
-                    val isShadeAnyExpanded = shadeInteractor.isShadeAnyExpanded.value
 
                     switchToScene(
                         targetSceneKey = Scenes.Lockscreen,
@@ -726,7 +725,6 @@ constructor(
                         transitionKey = ToAlwaysOnDisplay.takeIf { isAodAvailable },
                         keyguardState = getKeyguardStateForWakefulness(isAwake = false),
                         freezeAndAnimateToCurrentState = !isAodAvailable,
-                        instantlySnapScenes = isShadeAnyExpanded && isAodAvailable,
                     )
                 } else {
                     if (wakeDirectlyToGoneInteractor.canWakeDirectlyToGone.value) {
