@@ -183,7 +183,7 @@ public class PersonalContextManagerService extends SystemService {
             Slog.i(TAG, "Creating new state for user " + userId);
             Context userContext = getContext().createContextAsUser(user.getUserHandle(), 0);
             final ContextComponentManager componentManager =
-                    new ContextComponentManager(userContext);
+                    new ContextComponentManager(userContext, user.getUserHandle());
             final ContextComponentMonitor monitor = new ContextComponentMonitor(componentManager);
             final HintInvalidationUnderstander hintInvalidationUnderstander =
                     new HintInvalidationUnderstander(

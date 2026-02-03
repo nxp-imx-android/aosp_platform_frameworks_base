@@ -20,6 +20,7 @@ import android.content.Context;
 import android.content.pm.ServiceInfo;
 import android.os.Bundle;
 import android.os.RemoteException;
+import android.os.UserHandle;
 import android.service.personalcontext.insight.ContextInsight;
 import android.service.personalcontext.insight.ContextInsightWrapper;
 import android.util.Slog;
@@ -32,8 +33,9 @@ import java.util.UUID;
  * @hide
  */
 public class ServiceClientUnderstander extends ServiceClientRefiner {
-    public ServiceClientUnderstander(Context context, UUID componentId, ServiceInfo serviceInfo) {
-        super(context, componentId, serviceInfo);
+    public ServiceClientUnderstander(Context context, UUID componentId, ServiceInfo serviceInfo,
+            UserHandle userHandle) {
+        super(context, componentId, serviceInfo, userHandle);
     }
 
 

@@ -22,6 +22,7 @@ import android.content.pm.ServiceInfo;
 import android.os.IBinder;
 import android.os.ParcelUuid;
 import android.os.RemoteException;
+import android.os.UserHandle;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.insight.ContextInsight;
 import android.service.personalcontext.insight.ContextInsightWrapper;
@@ -45,8 +46,9 @@ public class ServiceClientRenderer
         extends BaseServiceClientComponent<IInsightRenderer> implements Renderer {
     private InsightFilter mFilter = InsightFilter.REQUIRE_RENDER_TOKEN;
 
-    public ServiceClientRenderer(Context context, UUID componentId, ServiceInfo serviceInfo) {
-        super(context, componentId, serviceInfo);
+    public ServiceClientRenderer(Context context, UUID componentId, ServiceInfo serviceInfo,
+            UserHandle userHandle) {
+        super(context, componentId, serviceInfo, userHandle);
 
         runWithBinder(binder -> {
             try {
