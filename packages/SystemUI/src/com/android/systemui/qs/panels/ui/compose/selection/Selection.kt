@@ -51,6 +51,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -76,6 +77,7 @@ import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.zIndex
 import com.android.compose.modifiers.thenIf
 import com.android.systemui.common.ui.compose.gestures.dragSpy
+import com.android.systemui.qs.flags.QsEditModeFocusFixes
 import com.android.systemui.qs.flags.QsEditModeHoverFixes
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.InactiveTileCornerRadius
 import com.android.systemui.qs.panels.ui.compose.selection.SelectionDefaults.BADGE_ANGLE_RAD
@@ -245,15 +247,18 @@ fun StaticTileBadge(
     icon: ImageVector,
     contentDescription: String?,
     enabled: Boolean,
-    onClick: () -> Unit = {},
     modifier: Modifier = Modifier,
+    onClick: () -> Unit = {},
 ) {
     val offset = with(LocalDensity.current) { Offset(BadgeXOffset.toPx(), BadgeYOffset.toPx()) }
     val alpha by animateFloatAsState(if (enabled) 1f else 0f)
     MinimumInteractiveSizeComponent(
         angle = { BADGE_ANGLE_RAD },
         offset = { offset },
-        modifier = modifier,
+        modifier =
+            modifier.thenIf(QsEditModeFocusFixes.isEnabled) {
+                Modifier.focusProperties { canFocus = false }
+            },
         isClickable = enabled,
         onClick = onClick,
         rippleRadius = BadgeSize / 2,
@@ -311,6 +316,12 @@ private fun MinimumInteractiveSizeComponent(
                 .thenIf(excludeSystemGesture) {
                     Modifier.systemGestureExclusion { Rect(Offset.Zero, it.size.toSize()) }
                 }
+                .borderOnFocus(
+                    color = MaterialTheme.colorScheme.secondary,
+                    cornerSize = CornerSize(50),
+                    // Negative padding is needed on the focus ring to offset the touch target
+                    padding = if (QsEditModeFocusFixes.isEnabled) (-8).dp else 2.dp,
+                )
                 .thenIf(QsEditModeHoverFixes.isEnabled) {
                     Modifier.clickable(
                         enabled = isClickable,
@@ -318,8 +329,7 @@ private fun MinimumInteractiveSizeComponent(
                         interactionSource = interactionSource,
                         indication = ripple(radius = rippleRadius),
                     )
-                }
-                .borderOnFocus(MaterialTheme.colorScheme.secondary, CornerSize(50)),
+                },
         content = content,
     )
 }
