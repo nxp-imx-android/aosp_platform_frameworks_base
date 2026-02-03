@@ -16,14 +16,17 @@
 
 package android.app;
 
+import android.Manifest;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
+import android.annotation.RequiresPermission;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.app.appfunctions.flags.Flags;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.UserHandle;
 import android.provider.BaseColumns;
@@ -182,11 +185,30 @@ public final class AppInteractionContract implements BaseColumns {
      * instead of assuming so.
      */
     @NonNull
+    @SuppressWarnings("AndroidFrameworkClientSidePermissionCheck")
+    @RequiresPermission(
+            anyOf = {
+                Manifest.permission.EXECUTE_APP_FUNCTIONS,
+                Manifest.permission.EXECUTE_APP_FUNCTIONS_SYSTEM,
+                Manifest.permission.READ_APP_INTERACTION
+            })
     public static List<String> getDeviceAssistancePackageNames(@NonNull Context context) {
-        final String[] deviceSettingPackages =
-                Objects.requireNonNull(context)
-                        .getResources()
-                        .getStringArray(R.array.config_appInteractionDeviceAssistancePackages);
-        return List.of(deviceSettingPackages);
+        if (context.checkSelfPermission(Manifest.permission.EXECUTE_APP_FUNCTIONS)
+                        == PackageManager.PERMISSION_GRANTED
+                || context.checkSelfPermission(Manifest.permission.READ_APP_INTERACTION)
+                        == PackageManager.PERMISSION_GRANTED
+                || (Flags.enableAppFunctionPermissionV2()
+                        && context.checkSelfPermission(
+                                        Manifest.permission.EXECUTE_APP_FUNCTIONS_SYSTEM)
+                                == PackageManager.PERMISSION_GRANTED)) {
+            final String[] deviceSettingPackages =
+                    Objects.requireNonNull(context)
+                            .getResources()
+                            .getStringArray(R.array.config_appInteractionDeviceAssistancePackages);
+            return List.of(deviceSettingPackages);
+        } else {
+            throw new SecurityException(
+                    "Caller does not have permission to get device assistance package names.");
+        }
     }
 }

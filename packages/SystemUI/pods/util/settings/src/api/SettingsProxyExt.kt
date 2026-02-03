@@ -20,6 +20,7 @@ package com.android.systemui.util.settings
 import android.annotation.SuppressLint
 import android.annotation.UserIdInt
 import android.database.ContentObserver
+import androidx.annotation.WorkerThread
 import com.android.systemui.Flags
 import com.android.systemui.common.coroutine.ConflatedCallbackFlow.conflatedCallbackFlow
 import kotlinx.coroutines.channels.awaitClose
@@ -30,6 +31,7 @@ import kotlinx.coroutines.flow.Flow
 public object SettingsProxyExt {
 
     /** Returns a flow of [Unit] that is invoked each time that content is updated. */
+    @WorkerThread
     public fun UserSettingsProxy.observerFlow(
         @UserIdInt userId: Int,
         vararg names: String,
@@ -42,15 +44,14 @@ public object SettingsProxyExt {
                     }
                 }
 
-            names.forEach { name ->
-                registerContentObserverForUser(name, observer, userId)
-            }
+            names.forEach { name -> registerContentObserverForUser(name, observer, userId) }
 
             awaitClose { unregisterContentObserverAsync(observer) }
         }
     }
 
     /** Returns a flow of [Unit] that is invoked each time that content is updated. */
+    @WorkerThread
     public fun SettingsProxy.observerFlow(vararg names: String): Flow<Unit> {
         return conflatedCallbackFlow {
             val observer =
@@ -60,9 +61,7 @@ public object SettingsProxyExt {
                     }
                 }
 
-            names.forEach { name ->
-                registerContentObserver(name, observer)
-            }
+            names.forEach { name -> registerContentObserver(name, observer) }
 
             awaitClose { unregisterContentObserverAsync(observer) }
         }

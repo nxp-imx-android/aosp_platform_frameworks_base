@@ -22,11 +22,12 @@ import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.ObservableTransitionState.Transition
 import com.android.compose.animation.scene.SceneKey
+import com.android.compose.animation.scene.TransitionKey
 import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.brightness.domain.interactor.brightnessMirrorShowingInteractor
 import com.android.systemui.deviceentry.data.repository.deviceEntryRepository
 import com.android.systemui.deviceentry.shared.model.DeviceUnlockStatus
-import com.android.systemui.brightness.domain.interactor.brightnessMirrorShowingInteractor
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
@@ -40,6 +41,7 @@ import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.domain.startable.sceneContainerStartable
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.scene.shared.model.TransitionKeys.ToAlwaysOnDisplay
 import com.android.systemui.shade.domain.interactor.disableDualShade
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
@@ -698,6 +700,38 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    fun shadeExpansion_shadeToAod() =
+        kosmos.runTest {
+            val expandFraction by collectLastValue(notificationScrollViewModel.expandFraction)
+
+            enableSingleShade()
+            driveSceneTransition(
+                transitionKey = ToAlwaysOnDisplay,
+                currentScene = Scenes.Shade,
+                targetScene = Scenes.Lockscreen,
+                verifyIdleOnCurrentScene = { assertThat(expandFraction).isEqualTo(1f) },
+                verifyTransitionStep = { assertThat(expandFraction).isEqualTo(1f) },
+                verifyIdleOnTargetScene = { assertThat(expandFraction).isEqualTo(1f) },
+            )
+        }
+
+    @Test
+    fun shadeExpansion_qsToAod() =
+        kosmos.runTest {
+            val expandFraction by collectLastValue(notificationScrollViewModel.expandFraction)
+
+            enableSingleShade()
+            driveSceneTransition(
+                transitionKey = ToAlwaysOnDisplay,
+                currentScene = Scenes.Shade,
+                targetScene = Scenes.Lockscreen,
+                verifyIdleOnCurrentScene = { assertThat(expandFraction).isEqualTo(1f) },
+                verifyTransitionStep = { assertThat(expandFraction).isEqualTo(1f) },
+                verifyIdleOnTargetScene = { assertThat(expandFraction).isEqualTo(1f) },
+            )
+        }
+
+    @Test
     fun shadeExpansion_occludedToShade() =
         kosmos.runTest {
             val expandFraction by collectLastValue(notificationScrollViewModel.expandFraction)
@@ -802,6 +836,7 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
         verifyIdleOnCurrentScene: () -> Unit,
         verifyTransitionStep: (progress: Float) -> Unit,
         verifyIdleOnTargetScene: () -> Unit,
+        transitionKey: TransitionKey? = null,
     ) {
         // Idle on current Scene
         val transitionState =
@@ -815,13 +850,14 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
         sceneInteractor.changeScene(targetScene, "Switch to targetScene.")
         val transitionProgress = MutableStateFlow(0f)
         transitionState.value =
-            ObservableTransitionState.Transition(
+            Transition(
                 fromScene = currentScene,
                 toScene = targetScene,
                 currentScene = flowOf(targetScene),
                 progress = transitionProgress,
                 isInitiatedByUserInput = true,
                 isUserInputOngoing = flowOf(false),
+                key = transitionKey,
             )
         val steps = 10
         repeat(steps) { repetition ->

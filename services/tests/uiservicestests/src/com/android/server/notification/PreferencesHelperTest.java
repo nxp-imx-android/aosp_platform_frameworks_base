@@ -34,6 +34,8 @@ import static android.app.NotificationChannel.USER_LOCKED_SHOW_BADGE;
 import static android.app.NotificationChannel.USER_LOCKED_SOUND;
 import static android.app.NotificationChannel.USER_LOCKED_VIBRATION;
 import static android.app.NotificationChannel.USER_LOCKED_VISIBILITY;
+import static android.app.NotificationLoggingConstants.DATA_TYPE_NOTIF_GLOBAL;
+import static android.app.NotificationLoggingConstants.DATA_TYPE_NOTIF_PACKAGES;
 import static android.app.NotificationManager.BUBBLE_PREFERENCE_ALL;
 import static android.app.NotificationManager.BUBBLE_PREFERENCE_NONE;
 import static android.app.NotificationManager.BUBBLE_PREFERENCE_SELECTED;
@@ -44,8 +46,6 @@ import static android.app.NotificationManager.IMPORTANCE_MAX;
 import static android.app.NotificationManager.IMPORTANCE_NONE;
 import static android.app.NotificationManager.IMPORTANCE_UNSPECIFIED;
 import static android.app.NotificationManager.VISIBILITY_NO_OVERRIDE;
-import static android.app.backup.NotificationLoggingConstants.DATA_TYPE_NOTIF_GLOBAL;
-import static android.app.backup.NotificationLoggingConstants.DATA_TYPE_NOTIF_PACKAGES;
 import static android.content.ContentResolver.SCHEME_ANDROID_RESOURCE;
 import static android.content.ContentResolver.SCHEME_CONTENT;
 import static android.content.ContentResolver.SCHEME_FILE;
@@ -128,7 +128,6 @@ import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.permission.PermissionManager;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.FlagsParameterization;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
@@ -178,9 +177,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
-import platform.test.runner.parameterized.Parameters;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
@@ -200,6 +196,9 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadLocalRandom;
+
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
+import platform.test.runner.parameterized.Parameters;
 
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4.class)

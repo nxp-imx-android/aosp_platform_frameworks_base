@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2026 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package android.app.backup;
+
+package android.app;
+
+import android.app.backup.BackupRestoreEventLogger;
 
 /**
  * @hide
  */
 public class NotificationLoggingConstants {
-
     // Key under which the payload blob is stored
     public static final String KEY_NOTIFICATIONS = "notifications";
 
@@ -72,6 +74,12 @@ public class NotificationLoggingConstants {
      */
     @BackupRestoreEventLogger.BackupRestoreDataType
     public static final String DATA_TYPE_SNOOZED = KEY_NOTIFICATIONS + ":snoozed";
+
+    /**
+     * Events for notification rules
+     */
+    @BackupRestoreEventLogger.BackupRestoreDataType
+    public static final String DATA_TYPE_NOTIFICATION_RULES = KEY_NOTIFICATIONS + ":rules";
 
 
     @BackupRestoreEventLogger.BackupRestoreError

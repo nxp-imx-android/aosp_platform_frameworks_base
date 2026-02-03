@@ -53,8 +53,9 @@ class NotificationContentPickerTest : SysuiTestCase() {
         )
     }
 
-    private val hunPicker = HeadsUpPlaceholderContentPicker(kosmos.sceneContainerConfig)
-    private val stackPicker = StackPlaceholderContentPicker(kosmos.sceneContainerConfig)
+    private val sorter = ContentZOrderSorter(kosmos.sceneContainerConfig)
+    private val hunPicker = HeadsUpPlaceholderContentPicker(sorter)
+    private val stackPicker = StackPlaceholderContentPicker(sorter)
 
     @Test
     fun hunPicker_lockscreenAndShade_pickShade() {

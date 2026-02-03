@@ -111,6 +111,7 @@ class AppHandleController(
     private val windowDecorationActions: WindowDecorationActions,
     private val decorWindowContext: Context,
     private val onCaptionTouchListener: View.OnTouchListener,
+    private val onCaptionButtonClickListener: View.OnClickListener,
     private val appToWebRepository: AppToWebRepository,
     private val handleMenuFactory: HandleMenuFactory = HandleMenuFactory,
     private val appHandleViewHolderFactory: AppHandleViewHolder.Factory =
@@ -392,7 +393,10 @@ class AppHandleController(
         minimumInstancesFound: Boolean,
     ) {
         val supportsMultiInstance =
-            multiInstanceHelper.supportsMultiInstanceSplit(taskInfo.baseActivity, taskInfo.userId)
+            multiInstanceHelper.supportsMultiInstanceSplit(
+                taskInfo.baseActivity,
+                taskInfo.userId
+            )
         val shouldShowManageWindowsButton = supportsMultiInstance && minimumInstancesFound
         val shouldShowChangeAspectRatioButton = shouldShowChangeAspectRatioButton(taskInfo)
         val shouldShowGameControlsButton = shouldShowGameControlsButton(userContext, taskInfo)
@@ -501,8 +505,8 @@ class AppHandleController(
                 // View holder should inflate the caption's root view
                 rootView = null,
                 context = decorWindowContext,
-                windowDecorationActions = windowDecorationActions,
                 onCaptionTouchListener = onCaptionTouchListener,
+                onCaptionButtonClickListener = onCaptionButtonClickListener,
                 windowManagerWrapper = windowManagerWrapper,
                 handler = mainHandler,
                 desktopModeUiEventLogger = desktopModeUiEventLogger,

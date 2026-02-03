@@ -80,6 +80,7 @@ public interface AppLockInternal {
      *
      * @param packageName The name of the package that was successfully authenticated.
      * @param userId      The user Id for whom the authentication occurred.
+     * @throws SecurityException if the caller is not the system.
      */
     void setAppLockEnabledPackageSuccessfullyAuthenticated(@NonNull String packageName, int userId);
 

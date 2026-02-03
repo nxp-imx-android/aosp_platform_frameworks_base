@@ -401,9 +401,11 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     }
 
     void setCaptionListeners(
+            View.OnClickListener onCaptionButtonClickListener,
             View.OnTouchListener onCaptionTouchListener,
             View.OnLongClickListener onLongClickListener,
             View.OnGenericMotionListener onGenericMotionListener) {
+        mOnCaptionButtonClickListener = onCaptionButtonClickListener;
         mOnCaptionTouchListener = onCaptionTouchListener;
         mOnCaptionLongClickListener = onLongClickListener;
         mOnCaptionGenericMotionListener = onGenericMotionListener;
@@ -1017,8 +1019,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             return mAppHandleViewHolderFactory.create(
                     mResult.mRootView,
                     mDecorWindowContext,
-                    mWindowDecorationActions,
                     mOnCaptionTouchListener,
+                    mOnCaptionButtonClickListener,
                     mWindowManagerWrapper,
                     mHandler,
                     mDesktopModeUiEventLogger
@@ -1029,6 +1031,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                     mDecorWindowContext,
                     mWindowDecorationActions,
                     mOnCaptionTouchListener,
+                    mOnCaptionButtonClickListener,
                     mOnCaptionLongClickListener,
                     mOnCaptionGenericMotionListener,
                     /* onMaximizeHoverAnimationFinishedListener= */ () -> {

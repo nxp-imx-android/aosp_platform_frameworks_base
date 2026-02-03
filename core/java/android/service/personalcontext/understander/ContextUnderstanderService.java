@@ -22,6 +22,7 @@ import android.annotation.Nullable;
 import android.annotation.SystemApi;
 import android.app.Service;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.os.ParcelUuid;
 import android.os.RemoteException;
@@ -33,6 +34,7 @@ import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.hint.ContextHintWithSignatureWrapper;
 import android.service.personalcontext.hint.HintFilter;
 import android.service.personalcontext.insight.ContextInsight;
+import android.service.personalcontext.insight.ContextInsightWrapper;
 import android.service.personalcontext.insight.interaction.InsightEvent;
 import android.service.personalcontext.refiner.IGetFilterCallback;
 import android.service.personalcontext.refiner.IRefineCallback;
@@ -154,6 +156,18 @@ public abstract class ContextUnderstanderService extends Service {
         // Do nothing by default.
     }
 
+    /**
+     * Override this method to revieve user feedback on an insight.
+     *
+     * @see android.service.personalcontext.insight.interaction.FeedbackRequest
+     *
+     * @param insight {@link ContextInsight} that the user feedback is related to
+     * @param feedback information about the requested feedback and user responses
+     */
+    public void onHandleUserFeedback(@NonNull ContextInsight insight, @NonNull Bundle feedback) {
+        // Do nothing by default.
+    }
+
     private static final class Binder extends IRefiner.Stub {
         private final WeakReference<ContextUnderstanderService> mService;
 
@@ -195,6 +209,14 @@ public abstract class ContextUnderstanderService extends Service {
         @Override
         public void handleEvent(String packageName, InsightEvent event) throws RemoteException {
             getServiceOrThrow().onHandleEvent(packageName, event);
+        }
+
+        @Override
+        public void handleFeedback(ContextInsightWrapper insight, Bundle feedback)
+                throws RemoteException {
+            getServiceOrThrow().onHandleUserFeedback(
+                    insight.getContextInsight(),
+                    feedback);
         }
     }
 }

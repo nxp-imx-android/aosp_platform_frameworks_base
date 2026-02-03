@@ -243,7 +243,53 @@ class PolicyMetadataCodeGeneratorTest {
                     /* affectedResource= */ 1,
                     /* requiredPermission= */ null,
                     /* requiredCrossUserPermission= */ null,
-                    /* allowedDpcTypes= */ Set.of()
+                    /* allowedDpcTypes= */ Set.of(),
+                    /* minValue= */ Integer.MIN_VALUE,
+                    /* maxValue= */ Integer.MAX_VALUE
+                ));
+                """,
+                )
+            )
+    }
+
+    @Test
+    fun test_integerPolicyWithMinMax_outputMatches() {
+        val integerMetadata =
+            TypeSpecificPolicyMetadata.IntegerPolicyMetadata.newBuilder()
+                .setMinValue(-10)
+                .setMaxValue(10)
+        val policyList =
+            PolicyMetadataList.newBuilder()
+                .addPolicyMetadata(
+                    integerTestPolicy("test.package.PolicyContainer.MY_TEST_INTEGER_POLICY")
+                        .setTypeSpecificMetadata(
+                            TypeSpecificPolicyMetadata.newBuilder()
+                                .setIntegerMetadata(integerMetadata)
+                        )
+                        .addAllAllowedScopes(listOf(PolicyMetadata.PolicyScope.POLICY_SCOPE_DEVICE))
+                        .setAffectedResource(PolicyMetadata.ResourceType.RESOURCE_DEVICE_WIDE)
+                )
+                .build()
+
+        val javaFile = PolicyMetadataCodeGenerator.generate(policyList)
+
+        assertThat(javaFileToString(javaFile))
+            .isEqualTo(
+                fillInFile(
+                    staticImports = listOf("test.package.PolicyContainer.MY_TEST_INTEGER_POLICY"),
+                    code =
+                        """
+                policies.add(new IntegerPolicyMetadata(
+                    /* id= */ MY_TEST_INTEGER_POLICY,
+                    /* allowedScopes= */ Set.of(
+                        2
+                    ),
+                    /* affectedResource= */ 1,
+                    /* requiredPermission= */ null,
+                    /* requiredCrossUserPermission= */ null,
+                    /* allowedDpcTypes= */ Set.of(),
+                    /* minValue= */ -10,
+                    /* maxValue= */ 10
                 ));
                 """,
                 )
@@ -518,7 +564,9 @@ class PolicyMetadataCodeGeneratorTest {
                         /* affectedResource= */ 1,
                         /* requiredPermission= */ null,
                         /* requiredCrossUserPermission= */ null,
-                        /* allowedDpcTypes= */ Set.of()
+                        /* allowedDpcTypes= */ Set.of(),
+                        /* minValue= */ Integer.MIN_VALUE,
+                        /* maxValue= */ Integer.MAX_VALUE
                     ),
                     /* emptyListAllowed= */ true
                 ));

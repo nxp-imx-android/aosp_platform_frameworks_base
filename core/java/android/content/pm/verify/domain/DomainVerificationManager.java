@@ -482,6 +482,11 @@ public final class DomainVerificationManager {
      *
      * The set will be ordered from lowest to highest priority.
      *
+     * Verified apps are those packages that have been auto-verified by the domain verification.
+     * If you desire to get a list of ALL owner packages, please use `getOwnersForDomain()` instead.
+     * Please refer to https://developer.android.com/training/app-links/verify-applinks for more
+     * information regarding various domain verification status.
+     *
      * @param domain The host to query for. An invalid domain will result in an empty set.
      *
      * @hide

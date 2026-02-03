@@ -28,20 +28,35 @@ import java.util.Set;
  * @hide
  */
 public class IntegerPolicyMetadata extends PolicyMetadata<Integer> {
+    private final int mMinValue;
+    private final int mMaxValue;
+
     public IntegerPolicyMetadata(
             @NonNull PolicyIdentifier<Integer> id,
             @NonNull Set<Integer> allowedScopes,
             int affectedResource,
             @Nullable String requiredPermission,
             @Nullable String requiredCrossUserPermission,
-            @NonNull Set<Integer> allowedDpcTypes) {
+            @NonNull Set<Integer> allowedDpcTypes,
+            int minValue,
+            int maxValue) {
         super(
                 id,
                 allowedScopes,
                 affectedResource,
                 requiredPermission,
                 requiredCrossUserPermission,
-                allowedDpcTypes
-        );
+                allowedDpcTypes);
+        mMinValue = minValue;
+        mMaxValue = maxValue;
     }
+
+    public int getMinValue() {
+        return mMinValue;
+    }
+
+    public int getMaxValue() {
+        return mMaxValue;
+    }
+
 }

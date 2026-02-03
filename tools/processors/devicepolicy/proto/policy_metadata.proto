@@ -81,7 +81,10 @@ message PolicyMetadata {
 message TypeSpecificPolicyMetadata {
   message BooleanPolicyMetadata {}
 
-  message IntegerPolicyMetadata {}
+  message IntegerPolicyMetadata {
+    optional int32 min_value = 1;
+    optional int32 max_value = 2;
+  }
 
   message LongPolicyMetadata {}
 

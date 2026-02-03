@@ -22,10 +22,12 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.timeout;
@@ -37,6 +39,7 @@ import android.app.AppInteractionAttribution;
 import android.app.AppOpsManager;
 import android.app.IApplicationThread;
 import android.app.KeyguardManager;
+import android.app.admin.DevicePolicyManager;
 import android.app.admin.DevicePolicyManagerInternal;
 import android.companion.virtual.VirtualDeviceManager.VirtualDevice;
 import android.companion.virtual.audio.AudioCapture;
@@ -48,14 +51,21 @@ import android.companion.virtual.computercontrol.IComputerControlSession;
 import android.companion.virtual.computercontrol.IComputerControlSessionCallback;
 
 import android.content.AttributionSource;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
+import android.content.pm.UserInfo;
 import android.hardware.display.VirtualDisplay;
 import android.os.Binder;
+import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.UserHandle;
+import android.os.UserManager;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.view.Display;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -101,6 +111,9 @@ public class ComputerControlSessionProcessorTest {
                     .setAppInteractionAttribution(APP_INTERACTION_ATTRIBUTION)
                     .build();
 
+    @Rule
+    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
+
     @Mock
     private IApplicationThread mAppThread;
     @Mock
@@ -112,7 +125,11 @@ public class ComputerControlSessionProcessorTest {
     @Mock
     private UserManagerInternal mUserManagerInternal;
     @Mock
+    private UserManager mUserManager;
+    @Mock
     private DevicePolicyManagerInternal mDevicePolicyManagerInternal;
+    @Mock
+    private DevicePolicyManager mDevicePolicyManager;
     @Mock
     private InputManagerInternal mInputManagerInternal;
     @Mock
@@ -166,7 +183,15 @@ public class ComputerControlSessionProcessorTest {
 
         when(context.getSystemService(Context.KEYGUARD_SERVICE)).thenReturn(mKeyguardManager);
         when(context.getSystemService(Context.APP_OPS_SERVICE)).thenReturn(mAppOpsManager);
+        when(context.getSystemService(DevicePolicyManager.class)).thenReturn(mDevicePolicyManager);
+        when(context.getSystemService(UserManager.class)).thenReturn(mUserManager);
 
+        when(mUserManager.getUserInfo(anyInt())).thenReturn(
+                new UserInfo(CALLING_USER_ID, "name", 0));
+        when(mUserManager.isManagedProfile(anyInt())).thenReturn(false);
+
+        when(mDevicePolicyManager.isOrganizationOwnedDeviceWithManagedProfile()).thenReturn(false);
+        when(mDevicePolicyManagerInternal.getDeviceOwnerComponent(anyBoolean())).thenReturn(null);
         when(mDevicePolicyManagerInternal.isUserOrganizationManaged(CALLING_USER_ID))
                 .thenReturn(false);
 
@@ -362,7 +387,82 @@ public class ComputerControlSessionProcessorTest {
     }
 
     @Test
-    public void validateParams_userManaged_throwsSecurityException() {
+    @EnableFlags(android.companion.virtualdevice.flags.Flags.FLAG_COMPUTER_CONTROL_MANAGED_PROFILES)
+    public void validateParams_flagEnabled_deviceOwner_policyAllowed_sessionCreated()
+            throws RemoteException {
+        when(mDevicePolicyManagerInternal.getDeviceOwnerComponent(anyBoolean()))
+                .thenReturn(new ComponentName("com.test.admin", "DeviceOwner"));
+        when(mDevicePolicyManager.getNearbyAppStreamingPolicy(anyInt()))
+                .thenReturn(DevicePolicyManager.NEARBY_STREAMING_ENABLED);
+
+        mProcessor.processNewSessionRequest(
+                mAppThread, ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
+
+        verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
+                .onSessionCreated(anyInt(), any());
+    }
+
+    @Test
+    @EnableFlags(android.companion.virtualdevice.flags.Flags.FLAG_COMPUTER_CONTROL_MANAGED_PROFILES)
+    public void validateParams_flagEnabled_deviceOwner_policyDisallowed_throwsSecurityException() {
+        when(mDevicePolicyManagerInternal.getDeviceOwnerComponent(anyBoolean()))
+                .thenReturn(new ComponentName("com.test.admin", "DeviceOwner"));
+        when(mDevicePolicyManager.getNearbyAppStreamingPolicy(anyInt()))
+                .thenReturn(DevicePolicyManager.NEARBY_STREAMING_DISABLED);
+
+        assertThrows(SecurityException.class, () ->
+                mProcessor.processNewSessionRequest(
+                        mAppThread, ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback));
+    }
+
+    @Test
+    @EnableFlags(android.companion.virtualdevice.flags.Flags.FLAG_COMPUTER_CONTROL_MANAGED_PROFILES)
+    public void validateParams_flagEnabled_managedProfile_throwsSecurityException() {
+        when(mUserManager.isManagedProfile(CALLING_USER_ID)).thenReturn(true);
+
+        assertThrows(SecurityException.class, () ->
+                mProcessor.processNewSessionRequest(
+                        mAppThread, ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback));
+    }
+
+    @Test
+    @EnableFlags(android.companion.virtualdevice.flags.Flags.FLAG_COMPUTER_CONTROL_MANAGED_PROFILES)
+    public void validateParams_flagEnabled_copeDevice_policyAllowed_sessionCreated()
+            throws RemoteException {
+        when(mDevicePolicyManager.isOrganizationOwnedDeviceWithManagedProfile()).thenReturn(true);
+        UserInfo userInfo = new UserInfo(CALLING_USER_ID, "name", UserInfo.FLAG_MANAGED_PROFILE);
+        when(mUserManager.getUserInfo(CALLING_USER_ID)).thenReturn(userInfo);
+        DevicePolicyManager parentDpm = mock(DevicePolicyManager.class);
+        when(mDevicePolicyManager.getParentProfileInstance(userInfo)).thenReturn(parentDpm);
+        when(parentDpm.getNearbyAppStreamingPolicy())
+                .thenReturn(DevicePolicyManager.NEARBY_STREAMING_ENABLED);
+
+        mProcessor.processNewSessionRequest(
+                mAppThread, ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
+
+        verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
+                .onSessionCreated(anyInt(), any());
+    }
+
+    @Test
+    @EnableFlags(android.companion.virtualdevice.flags.Flags.FLAG_COMPUTER_CONTROL_MANAGED_PROFILES)
+    public void validateParams_flagEnabled_copeDevice_policyDisallowed_throwsSecurityException() {
+        when(mDevicePolicyManager.isOrganizationOwnedDeviceWithManagedProfile()).thenReturn(true);
+        UserInfo userInfo = new UserInfo(CALLING_USER_ID, "name", UserInfo.FLAG_MANAGED_PROFILE);
+        when(mUserManager.getUserInfo(CALLING_USER_ID)).thenReturn(userInfo);
+        DevicePolicyManager parentDpm = mock(DevicePolicyManager.class);
+        when(mDevicePolicyManager.getParentProfileInstance(userInfo)).thenReturn(parentDpm);
+        when(parentDpm.getNearbyAppStreamingPolicy())
+                .thenReturn(DevicePolicyManager.NEARBY_STREAMING_DISABLED);
+
+        assertThrows(SecurityException.class, () ->
+                mProcessor.processNewSessionRequest(
+                        mAppThread, ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback));
+    }
+
+    @Test
+    @DisableFlags(android.companion.virtualdevice.flags.Flags.FLAG_COMPUTER_CONTROL_MANAGED_PROFILES)
+    public void validateParams_flagDisabled_userManaged_throwsSecurityException() {
         when(mDevicePolicyManagerInternal.isUserOrganizationManaged(CALLING_USER_ID))
                 .thenReturn(true);
 

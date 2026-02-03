@@ -25,17 +25,28 @@ import android.annotation.Nullable;
 import android.annotation.SystemApi;
 import android.annotation.TestApi;
 import android.app.modes.ContextualMode;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ShortcutInfo;
+import android.media.AudioAttributes;
 import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.UserHandle;
 import android.service.notification.StatusBarNotification;
+import android.text.TextUtils;
 
+import com.android.modules.utils.TypedXmlPullParser;
+import com.android.modules.utils.TypedXmlSerializer;
+
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+
+import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -49,6 +60,8 @@ import java.util.Objects;
 @SystemApi
 @FlaggedApi(Flags.FLAG_NM_CONTEXTUAL_DISPLAY_LAUNCH)
 public final class NotificationRule implements Parcelable {
+    private static final String TAG = "NotificationRule";
+
     // Rule ids 100-200 are reserved for user owned rules.
     /**
      * Reserved rule id for OS owned rule that highlights promoted notifications
@@ -67,6 +80,61 @@ public final class NotificationRule implements Parcelable {
      * notifications
 \     */
     public static final int RESERVED_ID_IMPORTANT_NOTIFICATIONS = 204;
+
+    // tags and attributes for persistence
+    private static final String DELIMITER = ",";
+    /**
+     * @hide
+     */
+    public static final String RULE_TAG = "rule";
+    /**
+     * @hide
+     */
+    public static final String USER_ATTR = "user";
+    private static final String ID_ATTR = "id";
+    private static final String ENABLED_ATTR = "enabled";
+    private static final String NAME_ATTR = "name";
+    private static final String EDIT_INTENT_ACTION_ATTR = "editIntentAction";
+    private static final String CAN_BE_DISABLED_ATTR = "canBeDisabled";
+
+    private static final String ACTION_TAG = "action";
+    private static final String PRIMARY_ACTION_ATTR = "primaryAction";
+    private static final String SOUND_ATTR = "sound";
+    private static final String LIGHT_COLOR_ATTR = "lightColor";
+    private static final String MODE_BREAKTHROUGH_ATTR = "modeBreakthroughs";
+    private static final String DYNAMIC_BUNDLE_NAME_ATTR = "dynamicBundleName";
+    private static final String DYNAMIC_BUNDLE_EMOJI_ICON_ATTR = "dynamicBundleEmojiIcon";
+
+    private static final String CONDITIONS_TAG = "conditions";
+    private static final String CONDITION_TAG = "condition";
+    private static final String LOCATION_TAG = "location";
+    private static final String TIME_TAG = "time";
+    private static final String CONDITION_TYPE_ATTR = "conditionType";
+    private static final String LATITUDE_ATTR = "latitude";
+    private static final String LONGITUDE_ATTR = "longitude";
+    private static final String RADIUS_ATTR = "radius";
+    private static final String DAY_TAG = "day";
+    private static final String START_HOUR_ATTR = "startHour";
+    private static final String START_MINUTE_ATTR = "startMinute";
+    private static final String END_HOUR_ATTR = "endHour";
+    private static final String END_MINUTE_ATTR = "endMinute";
+
+    private static final String FILTERS_TAG = "filters";
+    private static final String FILTER_TAG = "filter";
+    private static final String INCLUDED_PACKAGES_TAG = "includedPackages";
+    private static final String EXCLUDED_PACKAGES_TAG = "excludedPackages";
+    private static final String CONTACT_LEVEL_ATTR = "contactLevel";
+    private static final String CONVERSATION_LEVEL_ATTR = "conversationLevel";
+    private static final String CONTACTS_TAG = "contacts";
+    private static final String CONTACT_TAG = "contact";
+    private static final String VALUE_ATTR = "value";
+    private static final String SHORTCUT_ID_TAG = "shortcutId";
+    private static final String KEYWORD_TAG = "keyword";
+    private static final String USER_TAG = "user";
+    private static final String CATEGORY_TAG = "category";
+    private static final String STATIC_BUNDLE_TYPE_TAG = "staticBundleType";
+    private static final String FLAGS_TAG = "flags";
+
 
     private final List<Filter> mFilters = new ArrayList<>();
     private boolean mEnabled = true;
@@ -181,6 +249,80 @@ public final class NotificationRule implements Parcelable {
                 '}';
     }
 
+    /**
+     * @hide
+     */
+    public static NotificationRule readXml(TypedXmlPullParser parser, boolean forRestore,
+            @Nullable Context context) throws XmlPullParserException, IOException {
+        int type = parser.getEventType();
+        String tag = parser.getName();
+        if (type != XmlPullParser.START_TAG || !RULE_TAG.equals(tag)) return null;
+
+        int id = parser.getAttributeInt(null, ID_ATTR, 0);
+        String name = parser.getAttributeValue(null, NAME_ATTR);
+        NotificationRule.Builder builder = new NotificationRule.Builder(id, name);
+        builder.setEnabled(parser.getAttributeBoolean(null, ENABLED_ATTR));
+        builder.setEditIntentAction(parser.getAttributeValue(null, EDIT_INTENT_ACTION_ATTR));
+        builder.setCanBeDisabled(parser.getAttributeBoolean(null, CAN_BE_DISABLED_ATTR));
+        type = parser.next();
+        tag = parser.getName();
+        while (type != XmlPullParser.END_DOCUMENT
+                && !(RULE_TAG.equals(tag) && type == XmlPullParser.END_TAG)) {
+            if (type == XmlPullParser.START_TAG) {
+                if (ACTION_TAG.equals(tag)) {
+                    builder.setAction(Action.readXml(parser, forRestore, context));
+                }
+                if (CONDITION_TAG.equals(tag)) {
+                    builder.addCondition(Condition.readXml(parser));
+                }
+                if (FILTER_TAG.equals(tag)) {
+                    Filter filter = Filter.readXml(parser);
+                    builder.addFilter(filter);
+                }
+            }
+            type = parser.next();
+            tag = parser.getName();
+        }
+        return builder.build();
+    }
+
+    /**
+     * @hide
+     */
+    public void writeXml(TypedXmlSerializer out, boolean forBackup, int userId,
+            @Nullable Context context) throws IOException {
+        out.startTag(null, RULE_TAG);
+        out.attribute(null, USER_ATTR, String.valueOf(userId));
+        out.attribute(null, ID_ATTR, String.valueOf(getId()));
+        out.attribute(null, ENABLED_ATTR, String.valueOf(isEnabled()));
+        out.attribute(null, NAME_ATTR, getName());
+        if (mEditIntentAction != null) {
+            out.attribute(null, EDIT_INTENT_ACTION_ATTR, getEditIntentAction());
+        }
+        out.attribute(null, CAN_BE_DISABLED_ATTR, String.valueOf(canBeDisabled()));
+
+        if (getAction() != null) {
+            getAction().writeXml(out, forBackup, context);
+        }
+
+        if (!getConditions().isEmpty()) {
+            out.startTag(null, CONDITIONS_TAG);
+            for (Condition condition : getConditions()) {
+                condition.writeXml(out);
+            }
+            out.endTag(null, CONDITIONS_TAG);
+        }
+
+        if (!getFilters().isEmpty()) {
+            out.startTag(null, FILTERS_TAG);
+            for (Filter filter : getFilters()) {
+                filter.writeXml(out);
+            }
+            out.endTag(null, FILTERS_TAG);
+        }
+        out.endTag(null, RULE_TAG);
+    }
+
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
         dest.writeTypedList(mFilters);
@@ -271,6 +413,16 @@ public final class NotificationRule implements Parcelable {
         }
 
         /**
+         * Adds a filter for this rule.
+         * @hide
+         */
+        @NonNull
+        public Builder addFilter(@NonNull NotificationRule.Filter filter) {
+            mFilters.add(filter);
+            return this;
+        }
+
+        /**
          * Sets whether this rule is enabled.
          */
         @NonNull
@@ -328,6 +480,16 @@ public final class NotificationRule implements Parcelable {
             if (conditions != null) {
                 mConditions.addAll(conditions);
             }
+            return this;
+        }
+
+        /**
+         * Adds a conditions that define when this rule is active.
+         * @hide
+         */
+        @NonNull
+        public Builder addCondition(@NonNull Condition condition) {
+            mConditions.add(condition);
             return this;
         }
 
@@ -404,6 +566,86 @@ public final class NotificationRule implements Parcelable {
         public static @NonNull Condition createLocationCondition(double latitude, double longitude,
                 float radiusMeters) {
             return new Condition(latitude, longitude, radiusMeters);
+        }
+
+        /**
+         * @hide
+         */
+        public static NotificationRule.Condition readXml(TypedXmlPullParser parser)
+                throws XmlPullParserException, IOException {
+            int type = parser.getEventType();
+            String tag = parser.getName();
+            if (type != XmlPullParser.START_TAG || !CONDITION_TAG.equals(tag)) return null;
+
+            int startHours = 0;
+            int startMinutes = 0;
+            int endHours = 0;
+            int endMinutes = 0;
+            List<Integer> days = new ArrayList<>();
+
+            int conditionType = parser.getAttributeInt(
+                    null, CONDITION_TYPE_ATTR, CONDITION_TYPE_UNKNOWN);
+            type = parser.next();
+            tag = parser.getName();
+            while (type != XmlPullParser.END_DOCUMENT
+                    && !(CONDITION_TAG.equals(tag) && type == XmlPullParser.END_TAG)) {
+                tag = parser.getName();
+                if (type == XmlPullParser.START_TAG) {
+                    if (LOCATION_TAG.equals(tag) && conditionType == CONDITION_TYPE_LOCATION) {
+                        return Condition.createLocationCondition(
+                                parser.getAttributeDouble(null, LATITUDE_ATTR),
+                                parser.getAttributeDouble(null, LONGITUDE_ATTR),
+                                parser.getAttributeFloat(null, RADIUS_ATTR));
+                    } else if (TIME_TAG.equals(tag) && conditionType == CONDITION_TYPE_TIME) {
+                        startHours = parser.getAttributeInt(null, START_HOUR_ATTR, 0);
+                        startMinutes = parser.getAttributeInt(null, START_MINUTE_ATTR, 0);
+                        endHours = parser.getAttributeInt(null, END_HOUR_ATTR, 0);
+                        endMinutes = parser.getAttributeInt(null, END_MINUTE_ATTR, 0);
+                    } else if (DAY_TAG.equals(tag) && conditionType == CONDITION_TYPE_TIME) {
+                        days.add(parser.getAttributeInt(null, VALUE_ATTR, 0));
+                    }
+                }
+                type = parser.next();
+                tag = parser.getName();
+            }
+            if (conditionType == CONDITION_TYPE_TIME) {
+                return Condition.createTimeCondition(
+                        days, startHours, startMinutes, endHours, endMinutes);
+            }
+            return null;
+        }
+
+        /**
+         * @hide
+         */
+        public void writeXml(TypedXmlSerializer out) throws IOException {
+            out.startTag(null, CONDITION_TAG);
+            out.attributeInt(null, CONDITION_TYPE_ATTR, getConditionType());
+            switch (getConditionType()) {
+                case Condition.CONDITION_TYPE_LOCATION:
+                    out.startTag(null, LOCATION_TAG);
+                    out.attributeDouble(null, LATITUDE_ATTR, getLatitude());
+                    out.attributeDouble(null, LONGITUDE_ATTR, getLongitude());
+                    out.attributeFloat(null, RADIUS_ATTR, getRadiusMeters());
+                    out.endTag(null, LOCATION_TAG);
+                    break;
+                case Condition.CONDITION_TYPE_TIME:
+                    out.startTag(null, TIME_TAG);
+                    out.attributeInt(null, START_HOUR_ATTR, getStartHour());
+                    out.attributeInt(null, START_MINUTE_ATTR, getStartMinute());
+                    out.attributeInt(null, END_HOUR_ATTR, getEndHour());
+                    out.attributeInt(null, END_MINUTE_ATTR, getEndMinute());
+                    for (int day : getDays()) {
+                        out.startTag(null, DAY_TAG);
+                        out.attributeInt(null, VALUE_ATTR, day);
+                        out.endTag(null, DAY_TAG);
+                    }
+                    out.endTag(null, TIME_TAG);
+                    break;
+                default:
+                    break;
+            }
+            out.endTag(null, CONDITION_TAG);
         }
 
         /**
@@ -701,6 +943,69 @@ public final class NotificationRule implements Parcelable {
                         return new Action[size];
                     }
                 };
+
+        /**
+         * @hide
+         */
+        public static NotificationRule.Action readXml(TypedXmlPullParser parser, boolean forRestore,
+                @Nullable Context context) throws XmlPullParserException, IOException {
+            int type = parser.getEventType();
+            if (type != XmlPullParser.START_TAG) return null;
+            String tag = parser.getName();
+            if (!ACTION_TAG.equals(tag)) return null;
+
+            int primaryAction = parser.getAttributeInt(
+                    null, PRIMARY_ACTION_ATTR, PRIMARY_ACTION_NONE);
+            NotificationRule.Action.Builder builder = new Builder(primaryAction);
+            builder.setLightColorOverride(parser.getAttributeInt(null, LIGHT_COLOR_ATTR, 0));
+            String soundOverride = parser.getAttributeValue(null, SOUND_ATTR);
+            if (!TextUtils.isEmpty(soundOverride)) {
+                if (forRestore) {
+                    Uri sound = NotificationSoundCanonicalizer.restoreSoundUri(
+                            context, Uri.parse(soundOverride), true,
+                            AudioAttributes.USAGE_NOTIFICATION, false).first;
+                    builder.setSoundHapticOverride(sound);
+                } else {
+                    builder.setSoundHapticOverride(Uri.parse(soundOverride));
+                }
+            }
+            builder.setDynamicBundleEmojiIcon(parser.getAttributeValue(
+                    null, DYNAMIC_BUNDLE_EMOJI_ICON_ATTR));
+            builder.setDynamicBundleName(parser.getAttributeValue(null, DYNAMIC_BUNDLE_NAME_ATTR));
+            String modesList = parser.getAttributeValue(null, MODE_BREAKTHROUGH_ATTR);
+            if (!TextUtils.isEmpty(modesList)) {
+                String[] modes = modesList.split(DELIMITER);
+                builder.setModeBreakthroughIds(Arrays.asList(modes));
+            }
+            return builder.build();
+        }
+
+        /**
+         * @hide
+         */
+        public void writeXml(TypedXmlSerializer out, boolean forBackup,
+                @Nullable Context context) throws IOException {
+            out.startTag(null, ACTION_TAG);
+            out.attribute(null, PRIMARY_ACTION_ATTR, String.valueOf(getPrimaryAction()));
+            Uri actionSoundHapticsUri = getSoundHapticOverride();
+            if (actionSoundHapticsUri != null && forBackup) {
+                actionSoundHapticsUri = NotificationSoundCanonicalizer.getSoundForBackup(
+                        context, getSoundHapticOverride());
+            }
+            if (actionSoundHapticsUri != null) {
+                out.attribute(null, SOUND_ATTR, actionSoundHapticsUri.toString());
+            }
+            out.attribute(null, LIGHT_COLOR_ATTR, String.valueOf(getLightColorOverride()));
+            out.attribute(null, MODE_BREAKTHROUGH_ATTR,
+                    String.join(DELIMITER, getModeBreakthroughIds()));
+            if (getDynamicBundleName() != null) {
+                out.attribute(null, DYNAMIC_BUNDLE_NAME_ATTR, getDynamicBundleName());
+            }
+            if (getDynamicBundleEmojiIcon() != null) {
+                out.attribute(null, DYNAMIC_BUNDLE_EMOJI_ICON_ATTR, getDynamicBundleEmojiIcon());
+            }
+            out.endTag(null, ACTION_TAG);
+        }
 
         @Override
         public boolean equals(Object o) {
@@ -1068,6 +1373,111 @@ public final class NotificationRule implements Parcelable {
             dest.writeInt(mFlags);
         }
 
+        /**
+         * @hide
+         */
+        public static NotificationRule.Filter readXml(TypedXmlPullParser parser)
+                throws XmlPullParserException, IOException {
+            int type = parser.getEventType();
+            String tag = parser.getName();
+            if (type != XmlPullParser.START_TAG || !FILTER_TAG.equals(tag)) return null;
+            NotificationRule.Filter.Builder builder = new NotificationRule.Filter.Builder();
+
+            type = parser.next();
+            tag = parser.getName();
+            while (type != XmlPullParser.END_DOCUMENT
+                    && !(FILTER_TAG.equals(tag) && type == XmlPullParser.END_TAG)) {
+                tag = parser.getName();
+                if (type == XmlPullParser.START_TAG) {
+                    if (INCLUDED_PACKAGES_TAG.equals(tag)) {
+                        builder.addIncludedPackageUid(parser.getAttributeInt(null, VALUE_ATTR, 0));
+                    } else if (EXCLUDED_PACKAGES_TAG.equals(tag)) {
+                        builder.addExcludedPackageUid(parser.getAttributeInt(null, VALUE_ATTR, 0));
+                    } else if (SHORTCUT_ID_TAG.equals(tag)) {
+                        builder.addShortcutId(parser.getAttributeValue(null, VALUE_ATTR));
+                    } else if (KEYWORD_TAG.equals(tag)) {
+                        builder.addKeyword(parser.getAttributeValue(null, VALUE_ATTR));
+                    } else if (CONTACTS_TAG.equals(tag)) {
+                        builder.setConversationLevel(parser.getAttributeInt(
+                                null, CONVERSATION_LEVEL_ATTR, CONVERSATION_LEVEL_ANY));
+                        builder.setContactLevel(parser.getAttributeInt(
+                                null, CONTACT_LEVEL_ATTR, CONTACT_LEVEL_ANY));
+                    } else if (CONTACT_TAG.equals(tag)) {
+                        builder.addContact(Uri.parse(parser.getAttributeValue(null, VALUE_ATTR)));
+                    } else if (USER_TAG.equals(tag)) {
+                        builder.addUser(UserHandle.of(parser.getAttributeInt(null, VALUE_ATTR, 0)));
+                    } else if (CATEGORY_TAG.equals(tag)) {
+                        builder.addCategory(parser.getAttributeValue(null, VALUE_ATTR));
+                    } else if (STATIC_BUNDLE_TYPE_TAG.equals(tag)) {
+                        builder.addStaticBundleType(parser.getAttributeInt(null, VALUE_ATTR, 0));
+                    } else if (FLAGS_TAG.equals(tag)) {
+                        builder.setFlags(parser.getAttributeInt(null, VALUE_ATTR, 0));
+                    }
+                }
+                type = parser.next();
+                tag = parser.getName();
+            }
+
+            return builder.build();
+        }
+
+        /**
+         * @hide
+         */
+        public void writeXml(TypedXmlSerializer out) throws IOException {
+            out.startTag(null, FILTER_TAG);
+            for (int uid : getIncludedPackageUids()) {
+                out.startTag(null, INCLUDED_PACKAGES_TAG);
+                out.attributeInt(null, VALUE_ATTR, uid);
+                out.endTag(null, INCLUDED_PACKAGES_TAG);
+            }
+            for (int uid : getExcludedPackageUids()) {
+                out.startTag(null, EXCLUDED_PACKAGES_TAG);
+                out.attributeInt(null, VALUE_ATTR, uid);
+                out.endTag(null, EXCLUDED_PACKAGES_TAG);
+            }
+            for (String shortcutId : getShortcutIds()) {
+                out.startTag(null, SHORTCUT_ID_TAG);
+                out.attribute(null, VALUE_ATTR, shortcutId);
+                out.endTag(null, SHORTCUT_ID_TAG);
+            }
+            for (String category : getCategories()) {
+                out.startTag(null, CATEGORY_TAG);
+                out.attribute(null, VALUE_ATTR, category);
+                out.endTag(null, CATEGORY_TAG);
+            }
+            for (String keyword : getKeywords()) {
+                out.startTag(null, KEYWORD_TAG);
+                out.attribute(null, VALUE_ATTR, keyword);
+                out.endTag(null, KEYWORD_TAG);
+            }
+            out.startTag(null, CONTACTS_TAG);
+            out.attributeInt(null, CONTACT_LEVEL_ATTR, getContactLevel());
+            out.attributeInt(null, CONVERSATION_LEVEL_ATTR, getConversationLevel());
+            for (Uri contact : getContacts()) {
+                out.startTag(null, CONTACT_TAG);
+                out.attribute(null, VALUE_ATTR, contact.toString());
+                out.endTag(null, CONTACT_TAG);
+            }
+            out.endTag(null, CONTACTS_TAG);
+
+            for (int staticBundleType : getStaticBundleTypes()) {
+                out.startTag(null, STATIC_BUNDLE_TYPE_TAG);
+                out.attributeInt(null, VALUE_ATTR, staticBundleType);
+                out.endTag(null, STATIC_BUNDLE_TYPE_TAG);
+            }
+            out.startTag(null, FLAGS_TAG);
+            out.attributeInt(null, VALUE_ATTR, getFlags());
+            out.endTag(null, FLAGS_TAG);
+
+            for (UserHandle user : getUsers()) {
+                out.startTag(null, USER_TAG);
+                out.attributeInt(null, VALUE_ATTR, user.getIdentifier());
+                out.endTag(null, USER_TAG);
+            }
+            out.endTag(null, FILTER_TAG);
+        }
+
         public static final class Builder {
             final List<Integer> mIncludedPackages = new ArrayList<>();
             final List<Integer> mExcludedPackages = new ArrayList<>();
@@ -1113,6 +1523,15 @@ public final class NotificationRule implements Parcelable {
             }
 
             /**
+             * @hide
+             */
+            @NonNull
+            public Builder addIncludedPackageUid(int packageUid) {
+                mIncludedPackages.add(packageUid);
+                return this;
+            }
+
+            /**
              * Do not apply this rule to any notifications that are sent from any of these packages
              * <p>Compare to {@link StatusBarNotification#getUid()}.
              * <p>If unspecified this rule will apply to all packages.
@@ -1124,6 +1543,15 @@ public final class NotificationRule implements Parcelable {
                 if (packageList != null) {
                     mExcludedPackages.addAll(packageList);
                 }
+                return this;
+            }
+
+            /**
+             * @hide
+             */
+            @NonNull
+            public Builder addExcludedPackageUid(int packageUid) {
+                mExcludedPackages.add(packageUid);
                 return this;
             }
 
@@ -1168,6 +1596,15 @@ public final class NotificationRule implements Parcelable {
             }
 
             /**
+             * @hide
+             */
+            @NonNull
+            public Builder addContact(@NonNull Uri contact) {
+                mContacts.add(contact);
+                return this;
+            }
+
+            /**
              * Apply this rule to any notification that is affiliated with one of these shortcuts
              * <p>Compare to {@link Notification#getShortcutId()}.
              * @param shortcutIds A set of {@link ShortcutInfo#getId() shortcut ids} that this rule
@@ -1183,6 +1620,15 @@ public final class NotificationRule implements Parcelable {
             }
 
             /**
+             * @hide
+             */
+            @NonNull
+            public Builder addShortcutId(@NonNull String shortcutId) {
+                mShortcutIds.add(shortcutId);
+                return this;
+            }
+
+            /**
              * Apply this rule to any notification whose visible text matches any of these keywords.
              * @param keywords A list of keywords to match against notification text
              */
@@ -1192,6 +1638,15 @@ public final class NotificationRule implements Parcelable {
                 if (keywords != null) {
                     mKeywords.addAll(keywords);
                 }
+                return this;
+            }
+
+            /**
+             * @hide
+             */
+            @NonNull
+            public Builder addKeyword(@NonNull String keyword) {
+                mKeywords.add(keyword);
                 return this;
             }
 
@@ -1211,6 +1666,15 @@ public final class NotificationRule implements Parcelable {
             }
 
             /**
+             * @hide
+             */
+            @NonNull
+            public Builder addUser(@NonNull UserHandle user) {
+                mUsers.add(user);
+                return this;
+            }
+
+            /**
              * Apply this rule to notifications that match one of the provided categories
              * <p>Compare to {@link Notification#category}.
              * @param categories A set of categories that this rule should apply to
@@ -1221,6 +1685,15 @@ public final class NotificationRule implements Parcelable {
                 if (categories != null) {
                     mCategories.addAll(categories);
                 }
+                return this;
+            }
+
+            /**
+             * @hide
+             */
+            @NonNull
+            public Builder addCategory(@NonNull String category) {
+                mCategories.add(category);
                 return this;
             }
 
@@ -1237,6 +1710,15 @@ public final class NotificationRule implements Parcelable {
                 if (bundleTypes != null) {
                     mStaticBundleTypes.addAll(bundleTypes);
                 }
+                return this;
+            }
+
+            /**
+             * @hide
+             */
+            @NonNull
+            public Builder addStaticBundleType(int bundleType) {
+                mStaticBundleTypes.add(bundleType);
                 return this;
             }
 

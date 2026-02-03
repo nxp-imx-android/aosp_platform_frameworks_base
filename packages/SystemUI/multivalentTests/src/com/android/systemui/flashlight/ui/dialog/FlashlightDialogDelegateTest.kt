@@ -55,6 +55,10 @@ class FlashlightDialogDelegateTest : SysuiTestCase() {
             underTest.showDialog()
 
             assertThat(dialog.isShowing).isTrue()
+
+            dialog.dismiss()
+
+            assertThat(dialog.isShowing).isFalse()
         }
 
     @Test
@@ -64,9 +68,14 @@ class FlashlightDialogDelegateTest : SysuiTestCase() {
             val expandable = mock<Expandable> {}
             whenever(expandable.dialogTransitionController(any())).thenReturn(mock())
 
-            underTest.showDialog(expandable)
+            val dialog = underTest.showDialog(expandable)
 
             verify(mockDialogTransitionAnimator).show(any(), any(), anyBoolean())
+
+            dialog?.let {
+                it.dismiss()
+                assertThat(it.isShowing).isFalse()
+            }
         }
 
     @Test
@@ -74,8 +83,13 @@ class FlashlightDialogDelegateTest : SysuiTestCase() {
         kosmos.runTest {
             val underTest = flashlightDialogDelegateWithMockAnimator
 
-            underTest.showDialog()
+            val dialog = underTest.showDialog()
 
             verify(mockDialogTransitionAnimator, never()).show(any(), any(), anyBoolean())
+
+            dialog?.let {
+                it.dismiss()
+                assertThat(it.isShowing).isFalse()
+            }
         }
 }

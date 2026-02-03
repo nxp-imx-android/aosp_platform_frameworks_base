@@ -25,34 +25,41 @@ import androidx.compose.ui.unit.Density
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.keyguard.ui.viewmodel.AodBurnInViewModel
 import com.android.systemui.keyguard.ui.viewmodel.BurnInMovementState
-import com.android.systemui.keyguard.ui.viewmodel.aodBurnInViewModel
 import com.android.systemui.keyguard.ui.viewmodel.keyguardClockViewModel
 import com.android.systemui.testKosmos
-import org.junit.Ignore
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mock
+import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@Ignore("b/479248684 Re-enable after verifying test")
 class BurnInTrackerTest : SysuiTestCase() {
 
     private val kosmos = testKosmos()
 
+    @Mock lateinit var aodBurnInViewModel: AodBurnInViewModel
     @get:Rule val composeTestRule = createComposeRule()
     private lateinit var underTest: BurnInTracker
+
+    @Before
+    fun setup() {
+        MockitoAnnotations.initMocks(this)
+    }
 
     @Composable
     private fun BurnInTrackerUnderTest() {
         underTest =
             trackBurnInParameters(
-                burnInViewModel = kosmos.aodBurnInViewModel,
-                burnInMovementState = { BurnInMovementState(kosmos.aodBurnInViewModel) },
+                burnInViewModel = aodBurnInViewModel,
+                burnInMovementState = { BurnInMovementState(aodBurnInViewModel) },
                 clockViewModel = kosmos.keyguardClockViewModel,
             )
     }
@@ -63,7 +70,7 @@ class BurnInTrackerTest : SysuiTestCase() {
         composeTestRule.waitForIdle()
 
         // Check it should be called once on initial composition
-        verify(kosmos.aodBurnInViewModel, times(1)).updateBurnInParams(any())
+        verify(aodBurnInViewModel, times(1)).updateBurnInParams(any())
 
         // WHEN: Update a dependency of 'params' (smartspaceTop)
         // This causes the 'params' object to be re-created in the remember block
@@ -71,20 +78,21 @@ class BurnInTrackerTest : SysuiTestCase() {
         composeTestRule.waitForIdle()
 
         // THEN: The burn in params are updated
-        verify(kosmos.aodBurnInViewModel, times(2)).updateBurnInParams(any())
+        verify(aodBurnInViewModel, times(2)).updateBurnInParams(any())
     }
 
     @Test
     fun densityChange_triggersUpdateBurnInParams() {
         val densityState = mutableStateOf(Density(density = 1f))
         composeTestRule.setContent {
-            CompositionLocalProvider(LocalDensity provides densityState.value) {}
-            BurnInTrackerUnderTest()
+            CompositionLocalProvider(LocalDensity provides densityState.value) {
+                BurnInTrackerUnderTest()
+            }
         }
         composeTestRule.waitForIdle()
 
         // Check it should be called once on initial composition
-        verify(kosmos.aodBurnInViewModel, times(1)).updateBurnInParams(any())
+        verify(aodBurnInViewModel, times(1)).updateBurnInParams(any())
 
         // WHEN: Update a dependency of 'params' (density)
         // This causes the 'params' object to be re-created in the remember block
@@ -92,6 +100,6 @@ class BurnInTrackerTest : SysuiTestCase() {
         composeTestRule.waitForIdle()
 
         // THEN: The burn in params are updated
-        verify(kosmos.aodBurnInViewModel, times(2)).updateBurnInParams(any())
+        verify(aodBurnInViewModel, times(2)).updateBurnInParams(any())
     }
 }

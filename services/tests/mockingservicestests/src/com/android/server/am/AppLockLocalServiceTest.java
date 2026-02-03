@@ -26,6 +26,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.when;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
@@ -61,7 +62,6 @@ import android.util.SparseArray;
 
 import androidx.annotation.Nullable;
 import androidx.test.filters.SmallTest;
-import androidx.test.runner.AndroidJUnit4;
 
 import com.android.server.LocalServices;
 import com.android.server.appop.AppOpsService;
@@ -69,6 +69,11 @@ import com.android.server.pm.UserManagerInternal;
 import com.android.server.wm.ActivityAssistInfo;
 import com.android.server.wm.ActivityTaskManagerInternal;
 import com.android.server.wm.ActivityTaskManagerService;
+
+import com.google.common.collect.ImmutableList;
+import com.google.testing.junit.testparameterinjector.TestParameter;
+import com.google.testing.junit.testparameterinjector.TestParameterInjector;
+import com.google.testing.junit.testparameterinjector.TestParameterValuesProvider;
 
 import org.junit.After;
 import org.junit.Before;
@@ -96,7 +101,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Presubmit
 @SmallTest
-@RunWith(AndroidJUnit4.class)
+@RunWith(TestParameterInjector.class)
 public class AppLockLocalServiceTest {
 
     private static final String TEST_PACKAGE_1 = "testpackage1";
@@ -105,7 +110,8 @@ public class AppLockLocalServiceTest {
     private static final int TEST_USER_ID_1 = 1234;
     private static final int TEST_USER_ID_2 = 2234;
     private static final int TEST_USER_ID_3 = 3334;
-    private static final int TEST_UID = 12345;
+    private static final int APP_UID = 12345;
+    private static final int TEST_UID = UserHandle.getUid(TEST_USER_ID_1, APP_UID);
     private static final ComponentName TEST_COMPONENT = new ComponentName(TEST_PACKAGE_1,
             TEST_PACKAGE_1 + ".Foo");
     private static final ComponentName TEST_COMPONENT_2 = new ComponentName(TEST_PACKAGE_1,
@@ -141,6 +147,7 @@ public class AppLockLocalServiceTest {
     private ActivityManagerService mAms;
     private MockitoSession mMockingSession;
     private AutoCloseable mCloseable;
+    private int mCallingUid;
     @Mock
     private AppOpsService mAppOpsService;
     @Mock
@@ -168,8 +175,8 @@ public class AppLockLocalServiceTest {
     public void setUp() throws Exception {
         getInstrumentation().getUiAutomation().adoptShellPermissionIdentity(
                 Manifest.permission.SUBSCRIBE_TO_KEYGUARD_LOCKED_STATE);
-        mMockingSession = mockitoSession().initMocks(this).mockStatic(AppGlobals.class).mockStatic(
-                UserHandle.class).strictness(Strictness.LENIENT).startMocking();
+        mMockingSession = mockitoSession().initMocks(this).mockStatic(AppGlobals.class)
+                .strictness(Strictness.LENIENT).startMocking();
         mCloseable = MockitoAnnotations.openMocks(this);
 
         // Add Local Services
@@ -182,7 +189,7 @@ public class AppLockLocalServiceTest {
         when(AppGlobals.getPermissionManager()).thenReturn(mPermissionManager);
         when(mPackageManager.getPackagesForUid(eq(Process.myUid()))).thenReturn(new String[]{""});
         when(AppGlobals.getPackageManager()).thenReturn(mPackageManager);
-        when(UserHandle.getUserId(eq(TEST_UID))).thenReturn(TEST_USER_ID_1);
+        mCallingUid = Process.SYSTEM_UID;
 
         // Set up ActivityManagerService
         TestActivityManagerServiceInjector amsInjector = new TestActivityManagerServiceInjector(
@@ -268,6 +275,27 @@ public class AppLockLocalServiceTest {
     }
 
     @Test
+    public void setAppLockEnabledPackageSuccessfullyAuthenticated_unAuthorizedUid_exception(
+            @TestParameter(valuesProvider = UnauthorizedUidProvider.class) int callingUid
+    ) {
+        mCallingUid = callingUid;
+
+        assertThrows(SecurityException.class,
+                () -> mAppLockLocalService.setAppLockEnabledPackageSuccessfullyAuthenticated(
+                        TEST_PACKAGE_1, TEST_USER_ID_1));
+    }
+
+    @Test
+    public void setAppLockEnabledPackageSuccessfullyAuthenticated_authorizedUid_noException(
+            @TestParameter(valuesProvider = AuthorizedUidProvider.class) int callingUid
+    ) {
+        mCallingUid = callingUid;
+
+        mAppLockLocalService.setAppLockEnabledPackageSuccessfullyAuthenticated(TEST_PACKAGE_1,
+                TEST_USER_ID_1);
+    }
+
+    @Test
     public void isPackageLocked_neverAuthenticatedNoVisibleActivitiesAndInBackground_true()
             throws Exception {
         mAppLockLocalService.systemServicesReady();
@@ -310,6 +338,33 @@ public class AppLockLocalServiceTest {
         latch.await(5100, TimeUnit.MILLISECONDS);
 
         assertThat(mAppLockLocalService.isPackageLocked(TEST_PACKAGE_1, TEST_USER_ID_1)).isTrue();
+    }
+
+    @Test
+    public void isPackageLocked_deviceLockedAndUnlockedWithinGracePeriod_true() throws Exception {
+        mAppLockLocalService.handleAppLockEnabled(TEST_PACKAGE_1, TEST_USER_ID_1);
+        mAppLockLocalService.setAppLockEnabledPackageSuccessfullyAuthenticated(TEST_PACKAGE_1,
+                TEST_USER_ID_1);
+        mTestHandler.executeRunnables();
+
+        // Verify unlocked initially
+        assertThat(mAppLockLocalService.isPackageLocked(TEST_PACKAGE_1, TEST_USER_ID_1)).isFalse();
+        assertThat(mListener.mLocked).isFalse();
+
+        // Lock device
+        mAppLockLocalService.onDeviceLockedStateChanged(true);
+        mTestHandler.executeRunnables();
+
+        // Verify locked immediately
+        assertThat(mListener.mLocked).isTrue();
+
+        // Unlock device
+        mAppLockLocalService.onDeviceLockedStateChanged(false);
+
+        // Verify still locked, even if within grace period of original auth
+        assertThat(mAppLockLocalService.isPackageLocked(TEST_PACKAGE_1, TEST_USER_ID_1)).isTrue();
+        assertThat(mAppLockLocalService.getLastSuccessfulAuthTimeForLockedPackage(TEST_PACKAGE_1,
+                TEST_USER_ID_1)).isEqualTo(-1L);
     }
 
     @Test
@@ -582,6 +637,9 @@ public class AppLockLocalServiceTest {
         assertThat(mListener.mUserId).isEqualTo(TEST_USER_ID_1);
         assertThat(mAppLockLocalService.packageHasQueuedAppLockedJob(TEST_USER_ID_1,
                 TEST_PACKAGE_1)).isFalse();
+        assertThat(mAppLockLocalService.isPackageLocked(TEST_PACKAGE_1, TEST_USER_ID_1)).isTrue();
+        assertThat(mAppLockLocalService.getLastSuccessfulAuthTimeForLockedPackage(TEST_PACKAGE_1,
+                TEST_USER_ID_1)).isEqualTo(-1L);
     }
 
     @Test
@@ -709,6 +767,24 @@ public class AppLockLocalServiceTest {
         return appInfo;
     }
 
+    private static final class UnauthorizedUidProvider extends TestParameterValuesProvider {
+        @Override
+        protected List<Integer> provideValues(Context context) {
+            return ImmutableList.of(Process.INVALID_UID, APP_UID, TEST_UID);
+        }
+    }
+
+    private static final class AuthorizedUidProvider extends TestParameterValuesProvider {
+        @Override
+        protected List<Integer> provideValues(Context context) {
+            return ImmutableList.of(
+                    Process.SYSTEM_UID,
+                    Process.ROOT_UID,
+                    UserHandle.getUid(TEST_USER_ID_1, Process.SYSTEM_UID),
+                    UserHandle.getUid(TEST_USER_ID_1, Process.ROOT_UID));
+        }
+    }
+
     private static class TestHandler extends Handler {
         private final Queue<Runnable> mQueue = new ArrayDeque<>();
 
@@ -758,6 +834,11 @@ public class AppLockLocalServiceTest {
         @Override
         public Handler getHandler() {
             return mTestHandler;
+        }
+
+        @Override
+        public int getCallingUid() {
+            return mCallingUid;
         }
     }
 

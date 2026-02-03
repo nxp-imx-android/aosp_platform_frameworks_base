@@ -80,14 +80,14 @@ public final class AppInteractionSQLiteHistory extends SQLiteOpenHelper
         static final String DELETE_TABLE_DATA = "DELETE FROM " + DB_TABLE;
     }
 
-    private static final String DB_NAME = "appinteraction.db";
+    static final String DB_NAME = "appinteraction.db";
 
     private static final int DB_VERSION = 1;
 
     private static final String TAG = "AppInteractionDatabase";
 
-    AppInteractionSQLiteHistory(@NonNull Context context) {
-        super(context, DB_NAME, /* factory= */ null, DB_VERSION);
+    AppInteractionSQLiteHistory(@NonNull Context context, @NonNull String dbFilePath) {
+        super(context, dbFilePath, /* factory= */ null, DB_VERSION);
     }
 
     @Override

@@ -101,6 +101,8 @@ import com.android.systemui.keyguard.shared.model.DozeTransitionModel
 import com.android.systemui.keyguard.shared.model.FailFingerprintAuthenticationStatus
 import com.android.systemui.keyguard.shared.model.KeyguardDone
 import com.android.systemui.keyguard.shared.model.KeyguardState
+import com.android.systemui.keyguard.shared.model.KeyguardTransitionKeys.AodToGoneTransition
+import com.android.systemui.keyguard.shared.model.KeyguardTransitionKeys.WithAnimationOverLockscreen
 import com.android.systemui.keyguard.shared.model.SuccessFingerprintAuthenticationStatus
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.advanceTimeBy
@@ -1360,11 +1362,14 @@ class SceneContainerStartableTest : SysuiTestCase() {
             assertThat(currentSceneKey).isEqualTo(Scenes.Lockscreen)
             underTest.start()
 
-            updateFingerprintAuthStatus(isSuccess = true)
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_WAKE_AND_DISMISS,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
+            )
             runCurrent()
             powerInteractor.setAwakeForTest()
             runCurrent()
-
+            assertThat(fakeSceneDataSource.currentSceneTransitionKey).isEqualTo(AodToGoneTransition)
             assertThat(currentSceneKey).isEqualTo(Scenes.Gone)
         }
 
@@ -2879,6 +2884,51 @@ class SceneContainerStartableTest : SysuiTestCase() {
             runCurrent()
 
             assertThat(isUnlocked).isTrue()
+            assertThat(currentScene).isEqualTo(Scenes.Gone)
+        }
+
+    @Test
+    fun handleDeviceUnlockStatus_transitionsToGoneWithAnimation_fromBouncer() =
+        kosmos.runTest {
+            val transitionState =
+                prepareState(
+                    isDeviceUnlocked = false,
+                    initialSceneKey = Scenes.Lockscreen,
+                    authenticationMethod = AuthenticationMethodModel.Biometric,
+                )
+            underTest.start()
+
+            val isUnlocked by
+                collectLastValue(deviceUnlockedInteractor.deviceUnlockStatus.map { it.isUnlocked })
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
+
+            assertThat(isUnlocked).isFalse()
+            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+
+            transitionState.value =
+                ObservableTransitionState.Idle(Scenes.Lockscreen, setOf(Overlays.Bouncer))
+            sceneInteractor.showOverlay(Overlays.Bouncer, "")
+            assertThat(currentOverlays).contains(Overlays.Bouncer)
+            runCurrent()
+
+            // Unlock device with a dismiss action that wants to animate over LS.
+            kosmos.keyguardDismissActionInteractor.setDismissAction(
+                DismissAction.RunAfterKeyguardGone(
+                    dismissAction = { KeyguardDone.LATER },
+                    onCancelAction = {},
+                    message = "",
+                    willAnimateOnLockscreen = true,
+                )
+            )
+
+            // Mark the device unlocked so we can transition to Gone.
+            deviceEntryRepository.deviceUnlockStatus.value = DeviceUnlockStatus(true, null)
+            runCurrent()
+
+            assertThat(isUnlocked).isTrue()
+            assertThat(fakeSceneDataSource.currentSceneTransitionKey)
+                .isEqualTo(WithAnimationOverLockscreen)
             assertThat(currentScene).isEqualTo(Scenes.Gone)
         }
 

@@ -85,7 +85,7 @@ import androidx.compose.ui.util.fastIsFinite
 import androidx.compose.ui.zIndex
 import com.android.compose.modifiers.thenIf
 import com.android.internal.R.dimen.system_app_widget_background_radius
-import com.android.systemui.Flags.communalEditModeAccessibilityResize
+import com.android.systemui.Flags.communalAccessibilityResize
 import com.android.systemui.communal.ui.compose.extensions.observeTaps
 import com.android.systemui.communal.ui.model.AccessibilityResizeAction
 import com.android.systemui.communal.ui.viewmodel.ResizeHandle
@@ -449,7 +449,7 @@ private fun BoxScope.UnifiedResizeHandle(
                 }
                 .anchoredDraggable(state = draggableState, orientation = Orientation.Vertical)
     ) {
-        if (communalEditModeAccessibilityResize()) {
+        if (communalAccessibilityResize()) {
             if (!state.canExpand && !state.canShrink) return@Box
 
             val transition =
@@ -609,7 +609,7 @@ fun ResizableItemFrame(
         }
 
     LaunchedEffect(isDragging) {
-        if (isDragging && communalEditModeAccessibilityResize()) {
+        if (isDragging && communalAccessibilityResize()) {
             viewModel.clearAccessibilityResizeHandle()
         }
     }
@@ -618,10 +618,10 @@ fun ResizableItemFrame(
     // to overlap content.
     Box(
         modifier
-            .thenIf(communalEditModeAccessibilityResize()) { Modifier.fillMaxSize() }
+            .thenIf(communalAccessibilityResize()) { Modifier.fillMaxSize() }
             .thenIf(
                 isDragging ||
-                    (communalEditModeAccessibilityResize() && accessibilityResizeHandle != null)
+                    (communalAccessibilityResize() && accessibilityResizeHandle != null)
             ) {
                 Modifier.zIndex(1f)
             }
@@ -654,7 +654,7 @@ fun ResizableItemFrame(
                     ResizeHandleUiState(
                         orientation = handle,
                         isAccessibilityControlsVisible =
-                            communalEditModeAccessibilityResize() &&
+                            communalAccessibilityResize() &&
                                 accessibilityResizeHandle == handle,
                         canExpand = viewModel.canExpand(handle),
                         canShrink = viewModel.canShrink(handle),
@@ -667,7 +667,7 @@ fun ResizableItemFrame(
                     state = uiState,
                     draggableState = draggableState,
                     onToggleAccessibilityControls = {
-                        if (communalEditModeAccessibilityResize()) {
+                        if (communalAccessibilityResize()) {
                             viewModel.toggleAccessibilityResizeHandle(handle)
                         }
                     },

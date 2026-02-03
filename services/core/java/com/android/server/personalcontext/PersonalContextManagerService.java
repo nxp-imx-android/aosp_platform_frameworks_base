@@ -26,6 +26,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.ContentObserver;
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.ParcelUuid;
 import android.os.Process;
 import android.os.UserHandle;
@@ -426,6 +427,33 @@ public class PersonalContextManagerService extends SystemService {
         refiner.handleEvent(packageName, event);
     }
 
+    private void reportFeedback(
+            int userId,
+            ContextInsight insight,
+            Bundle partialFeedback) {
+        final UserState userState = getUserStateSynchronized(userId);
+        if (userState == null) {
+            Slog.e(TAG, "No user state when reporting insight event");
+            return;
+        }
+
+        // Make sure partialFeedback isn't null.
+        partialFeedback = partialFeedback == null ? new Bundle() : partialFeedback;
+
+        // TODO(b/475327093): Handle the feedback UI in SysUI, for now we'll just deliver it.
+
+        final UUID componentId = insight.getOriginatingComponentId();
+        final Refiner refiner = userState.componentManager.getRefinerById(componentId);
+        if (refiner == null) {
+            Slog.e(
+                    TAG,
+                    "No component found with ID " + componentId + " when reporting insight event");
+            return;
+        }
+
+        refiner.handleFeedback(insight, partialFeedback);
+    }
+
     private UserState getUserStateSynchronized(int userId) {
         synchronized (mUserStates) {
             return mUserStates.get(userId);
@@ -613,6 +641,21 @@ public class PersonalContextManagerService extends SystemService {
                             userId,
                             callingPid,
                             event));
+        }
+
+        @PermissionManuallyEnforced
+        @Override
+        public void reportFeedback(
+                ContextInsightWrapper insight, Bundle partialFeedback, int userId) {
+            verifyUser(userId);
+
+            // TODO(b/450547433): Add security checks.
+
+            Binder.withCleanCallingIdentity(
+                    () -> getService().reportFeedback(
+                            userId,
+                            insight.getContextInsight(),
+                            partialFeedback));
         }
 
         @PermissionManuallyEnforced

@@ -19,6 +19,7 @@ package com.android.server.personalcontext.component.client;
 import android.annotation.PermissionManuallyEnforced;
 import android.content.Context;
 import android.content.pm.ServiceInfo;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.os.ParcelUuid;
 import android.os.RemoteException;
@@ -27,6 +28,7 @@ import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.hint.ContextHintWithSignatureWrapper;
 import android.service.personalcontext.hint.ContextHintWrapper;
 import android.service.personalcontext.hint.HintFilter;
+import android.service.personalcontext.insight.ContextInsight;
 import android.service.personalcontext.insight.interaction.InsightEvent;
 import android.service.personalcontext.refiner.IGetFilterCallback;
 import android.service.personalcontext.refiner.IRefineCallback;
@@ -126,5 +128,10 @@ public class ServiceClientRefiner extends BaseServiceClientComponent<IRefiner> i
                 Slog.w(TAG, this + " handleEvent() failed", e);
             }
         });
+    }
+
+    @Override
+    public void handleFeedback(ContextInsight insight, Bundle feedback) {
+        throw new IllegalStateException("Refiners do not support feedback");
     }
 }

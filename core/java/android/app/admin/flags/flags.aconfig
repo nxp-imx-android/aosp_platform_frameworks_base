@@ -611,3 +611,14 @@ flag {
   bug: "424869636"
   is_exported: true
 }
+
+
+flag {
+    name: "user_control_disabled_packages_settings_fix"
+    namespace: "enterprise"
+    description: "Controls a fix for the user_control_disabled_packages policy. When this policy is active, this flag ensures that users are prevented from clearing app storage or cache in the Settings app."
+    bug: "407764721"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}

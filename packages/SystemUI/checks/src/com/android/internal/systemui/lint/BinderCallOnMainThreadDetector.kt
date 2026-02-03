@@ -58,7 +58,9 @@ class BinderCallOnMainThreadDetector : Detector(), SourceCodeScanner {
             // go/keep-sorted start
             "android.app.PendingIntent#getBroadcast",
             "android.app.PendingIntent#queryIntentComponents",
+            "android.content.pm.PackageManager#getApplicationInfo",
             "android.media.projection.MediaProjectionManager#stopActiveProjection",
+            "android.media.session.MediaController#registerCallback",
             "android.media.session.MediaController#unregisterCallback",
             "android.telephony.SubscriptionManager#.*",
             "com.android.internal.statusbar.IStatusBarService#disableForUser",

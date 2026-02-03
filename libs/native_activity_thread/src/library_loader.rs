@@ -14,13 +14,13 @@
 // limitations under the License.
 
 use anyhow::{bail, Context, Result};
+use libc::{dlclose, dlopen, dlsym, RTLD_GLOBAL, RTLD_LOCAL, RTLD_NOW};
 use log::debug;
 use native_activity_thread_bindgen::{
     android_create_namespace, android_dlextinfo, android_dlopen_ext,
-    android_get_exported_namespace, android_link_namespaces, android_namespace_t, dlclose, dlopen,
-    dlsym, ANDROID_DLEXT_USE_NAMESPACE, ANDROID_NAMESPACE_TYPE_EXEMPT_LIST_ENABLED,
-    ANDROID_NAMESPACE_TYPE_ISOLATED, ANDROID_NAMESPACE_TYPE_SHARED, RTLD_GLOBAL, RTLD_LOCAL,
-    RTLD_NOW,
+    android_get_exported_namespace, android_link_namespaces, android_namespace_t,
+    ANDROID_DLEXT_USE_NAMESPACE, ANDROID_NAMESPACE_TYPE_EXEMPT_LIST_ENABLED,
+    ANDROID_NAMESPACE_TYPE_ISOLATED, ANDROID_NAMESPACE_TYPE_SHARED,
 };
 use std::{
     ffi::{c_void, CString},
@@ -36,26 +36,16 @@ mod utils_tests;
 use crate::library_loader::public_libraries::*;
 use crate::library_loader::utils::*;
 
-macro_rules! bail_with_dlerror {
-    ($fmt:literal $(, $($arg:tt)+)?) => {
-        {
-            // SAFETY: trivially safe.
-            let error = unsafe { libc::dlerror() };
-            if !error.is_null() {
-                // SAFETY: `error` is a pointer to a valid C string returned by `dlerror()`.
-                let error_cstr = unsafe { std::ffi::CStr::from_ptr(error) };
-                let dl_error_msg = error_cstr.to_string_lossy();
-
-                anyhow::bail!(
-                    concat!($fmt, ": {}"),
-                    $($($arg)+,)?
-                    dl_error_msg
-                );
-            } else {
-                anyhow::bail!($fmt $(, $($arg)+)?);
-            }
-        }
-    };
+fn last_dl_error() -> anyhow::Error {
+    // SAFETY: trivially safe.
+    let error = unsafe { libc::dlerror() };
+    if !error.is_null() {
+        // SAFETY: `error` is a pointer to a valid C string returned by `dlerror()`.
+        let error_cstr = unsafe { std::ffi::CStr::from_ptr(error) };
+        anyhow::anyhow!(error_cstr.to_string_lossy().into_owned())
+    } else {
+        anyhow::anyhow!("unknown dynamic linker error")
+    }
 }
 
 const SHARED_NAMESPACE_SUFFIX: &str = "-shared";
@@ -99,7 +89,7 @@ impl LinkerNamespace {
 
         match NonNull::new(namespace) {
             Some(namespace) => Ok(LinkerNamespace { namespace }),
-            None => bail_with_dlerror!("android_create_namespace failed"),
+            None => Err(last_dl_error().context("android_create_namespace failed")),
         }
     }
 
@@ -115,7 +105,7 @@ impl LinkerNamespace {
         // Passed pointers' lifetime is long enough.
         if !unsafe { android_link_namespaces(self.as_ptr(), target_ptr, shared_libs_cstr.as_ptr()) }
         {
-            bail_with_dlerror!("android_link_namespaces failed");
+            return Err(last_dl_error().context("android_link_namespaces failed"));
         }
         Ok(())
     }
@@ -127,7 +117,7 @@ impl LinkerNamespace {
         let namespace = unsafe { android_get_exported_namespace(cname.as_ptr()) };
         match NonNull::new(namespace) {
             Some(namespace) => Ok(LinkerNamespace { namespace }),
-            None => bail_with_dlerror!("android_get_exported_namespace failed"),
+            None => Err(last_dl_error().context("android_get_exported_namespace failed")),
         }
     }
 
@@ -286,13 +276,10 @@ impl NamespaceFactory {
             // SAFETY: `libandroid_native_denylist.so` is a system library, and
             //         remains loaded for the lifetime of the process.
             let library_handle = unsafe {
-                dlopen(
-                    c"libandroid_native_denylist.so".as_ptr(),
-                    RTLD_GLOBAL as i32 | RTLD_NOW as i32,
-                )
+                dlopen(c"libandroid_native_denylist.so".as_ptr(), RTLD_GLOBAL | RTLD_NOW)
             };
             if library_handle.is_null() {
-                panic!("Failed to preload the denylist library");
+                panic!("Failed to preload the denylist library: {}", last_dl_error());
             }
         });
     }
@@ -422,14 +409,12 @@ impl LoadedLibrary {
         // SAFETY: `library` and `dlextinfo` are valid pointers. The caller ensured that the
         // library is safe to be loaded.
         let library_handle = unsafe {
-            android_dlopen_ext(
-                library.as_ptr(),
-                RTLD_LOCAL as i32,
-                &dlextinfo as *const android_dlextinfo,
-            )
+            android_dlopen_ext(library.as_ptr(), RTLD_LOCAL, &dlextinfo as *const android_dlextinfo)
         };
         if library_handle.is_null() {
-            bail_with_dlerror!("Failed to open the library {}", library_name);
+            return Err(
+                last_dl_error().context(format!("Failed to open the library {}", library_name))
+            );
         }
 
         Ok(Self { library_handle })
@@ -441,7 +426,9 @@ impl LoadedLibrary {
         // string.
         let symbol_handle = unsafe { dlsym(self.library_handle, symbol.as_ptr()) };
         if symbol_handle.is_null() {
-            bail_with_dlerror!("Failed to find the symbol {}", symbol_name);
+            return Err(
+                last_dl_error().context(format!("Failed to find the symbol {}", symbol_name))
+            );
         }
         Ok(symbol_handle)
     }

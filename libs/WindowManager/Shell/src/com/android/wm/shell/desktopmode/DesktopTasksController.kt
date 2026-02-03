@@ -578,6 +578,15 @@ class DesktopTasksController(
                     )
                     return
                 }
+                if (focusedTask.windowingMode != WINDOWING_MODE_FULLSCREEN) {
+                    logW(
+                        "DesktopTasksController: Abandon keyboard shortcut attempt to toggle " +
+                            "fullscreen as the task with id=%d is not in fullscreen nor a " +
+                            "Desktop task",
+                        focusedTask.taskId,
+                    )
+                    return
+                }
                 moveFullscreenTaskToDesktop(focusedTask, transitionSource)
             }
             // Split screen -> Fullscreen (the active split screen app is moved into fullscreen).

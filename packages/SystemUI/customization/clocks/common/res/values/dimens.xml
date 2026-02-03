@@ -33,10 +33,16 @@
     <dimen name="small_clock_height">114dp</dimen>
     <dimen name="small_clock_padding_top">28dp</dimen>
     <dimen name="clock_padding_start">28dp</dimen>
-    <dimen name="weather_date_icon_padding">28dp</dimen>
     <dimen name="clock_vertical_digit_buffer">8dp</dimen>
-    <dimen name="small_clock_horizontal_padding">8dp</dimen>
+    <!-- the small clock has internal horizontal padding which is why this is under spec -->
+    <dimen name="small_clock_horizontal_padding">6dp</dimen>
 
+    <!-- Weather clock specific paddings -->
+    <dimen name="weather_date_icon_padding">28dp</dimen>
+    <dimen name="weather_time_start_padding">10dp</dimen>
+    <dimen name="weather_date_start_padding">14dp</dimen>
+    <dimen name="weather_alarm_end_padding">18dp</dimen>
+    <dimen name="weather_temp_end_padding">18dp</dimen>
     <dimen name="weather_clock_smartspace_bottom_margin">10dp</dimen>
 
     <!-- When large clock is showing, offset the smartspace by this amount -->

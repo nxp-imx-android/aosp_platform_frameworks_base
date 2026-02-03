@@ -104,14 +104,26 @@ public class ComputerControlExtensionsTest {
     }
 
     @Test
-    public void getInstance_noAccess_returnsNull() throws Exception {
+    public void getInstance_noAccess_returnsNonNull() throws Exception {
         when(mIVirtualDeviceManager.isComputerControlAvailable(any())).thenReturn(false);
-        assertThat(ComputerControlExtensions.getInstance(mContext)).isNull();
+        assertThat(ComputerControlExtensions.getInstance(mContext)).isNotNull();
     }
 
     @Test
     public void getInstance_returnsNonNull() {
         assertThat(ComputerControlExtensions.getInstance(mContext)).isNotNull();
+    }
+
+    @Test
+    public void isSessionCreationAvailable_noAccess_returnsFalse() throws Exception {
+        when(mIVirtualDeviceManager.isComputerControlAvailable(any())).thenReturn(false);
+        assertThat(ComputerControlExtensions.isSessionCreationAvailable(mContext)).isFalse();
+    }
+
+    @Test
+    public void isSessionCreationAvailable_withAccess_returnsTrue() throws Exception {
+        when(mIVirtualDeviceManager.isComputerControlAvailable(any())).thenReturn(true);
+        assertThat(ComputerControlExtensions.isSessionCreationAvailable(mContext)).isTrue();
     }
 
     @Test

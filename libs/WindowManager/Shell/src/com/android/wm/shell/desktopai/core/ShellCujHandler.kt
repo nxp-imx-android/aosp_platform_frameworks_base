@@ -16,11 +16,13 @@
 
 package com.android.wm.shell.desktopai.core
 
+import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.dagger.WMSingleton
 import com.android.wm.shell.desktopai.api.CujHandler
 import com.android.wm.shell.desktopai.api.IUserContextService
 import com.android.wm.shell.desktopai.api.TriggerEvent
 import com.android.wm.shell.desktopai.api.config.CujConfiguration
+import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_AI
 import javax.inject.Inject
 
 @WMSingleton
@@ -30,6 +32,11 @@ class ShellCujHandler @Inject constructor(private val contextService: IUserConte
         // Context collection phase
         val contextQuery = cujConfig.contextQueryFactory.create(triggerEvent)
         val contextData = contextService.getContext(contextQuery)
+        ProtoLog.v(WM_SHELL_DESKTOP_AI, "$TAG: CujHandlerRegistry: %s", contextData)
         // TODO(b/477202336): Use context Data
+    }
+
+    companion object {
+        private const val TAG = "ShellCujHandler"
     }
 }

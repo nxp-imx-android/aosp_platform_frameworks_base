@@ -184,6 +184,35 @@ public class PackageUpdateManagerTests extends WindowTestsBase {
 
     @Test
     @EnableFlags(FLAG_ENABLE_APP_RESTART_AFTER_UPDATE)
+    public void testOnPackageUpdateFinished_notifiesControllerForAttachedTasksOnly() {
+        // Set up an organizer to capture notifications.
+        PackageUpdateOrganizer o = new PackageUpdateOrganizer();
+        mWm.mAtmService.mTaskOrganizerController.registerTaskOrganizer(o);
+
+        // Create two tasks for the same package.
+        final Task attachedTask = setUpTask(PKG_1, AFFINITY_1, COMPONENT_1);
+        final Task unattachedTask = setUpTask(PKG_1, AFFINITY_2, COMPONENT_2);
+
+        // Add both tasks to the manager as "updating".
+        ArraySet<Task> tasks = new ArraySet<>();
+        tasks.add(attachedTask);
+        tasks.add(unattachedTask);
+        mManager.addUpdatingTasksForPackage(PKG_1, tasks);
+
+        // Make one task unattached by removing it from its parent display area.
+        // This simulates a task that is in recents but not in the active hierarchy.
+        unattachedTask.getParent().removeChild(unattachedTask);
+
+        // Trigger the package update finished logic.
+        mManager.onPackageUpdateFinished(PKG_1, 123);
+
+        // Verify that the controller is only notified for the attached task.
+        // The unattached task should be ignored because of MATCH_ATTACHED_TASK_ONLY.
+        assertThat(o.mUpdatedTaskIds).containsExactly(attachedTask.mTaskId);
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_APP_RESTART_AFTER_UPDATE)
     public void testOnRecentTaskRemoved_removesPersistentState() {
         final Task task1 = setUpTask(PKG_1, AFFINITY_1, COMPONENT_1);
         final Task task2 = setUpTask(PKG_1, AFFINITY_2, COMPONENT_2);

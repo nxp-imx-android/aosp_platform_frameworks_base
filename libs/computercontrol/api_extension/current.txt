@@ -4,6 +4,7 @@ package com.android.extensions.computercontrol {
   public class ComputerControlExtensions {
     method @Nullable public static com.android.extensions.computercontrol.ComputerControlExtensions getInstance(android.content.Context);
     method public static int getVersion();
+    method public static boolean isSessionCreationAvailable(@NonNull android.content.Context);
     method @RequiresPermission(allOf={android.Manifest.permission.ACCESS_COMPUTER_CONTROL, android.Manifest.permission.POST_NOTIFICATIONS}) public void requestSession(@NonNull com.android.extensions.computercontrol.ComputerControlSession.Params, @NonNull java.util.concurrent.Executor, @NonNull com.android.extensions.computercontrol.ComputerControlSession.Callback);
   }
 

@@ -38,6 +38,7 @@ import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.scene.shared.model.TransitionKeys.ToAlwaysOnDisplay
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.shared.model.ShadeMode
@@ -111,6 +112,10 @@ constructor(
     private fun expandFractionDuringSceneChange(sceneChange: ChangeScene): Flow<Float> =
         with(sceneChange) {
             when {
+                // Remain fully expanded when transitioning to AOD, to enable fading out in place
+                // (i.e. no collapse animation).
+                (key == ToAlwaysOnDisplay) && fromScene.showsNotifications() -> flowOf(1f)
+
                 // Transitions following variable Shade expansion
                 isTransitioningBetween(Scenes.Gone, Scenes.Shade) ||
                     isTransitioningBetween(Scenes.Occluded, Scenes.Shade) ||

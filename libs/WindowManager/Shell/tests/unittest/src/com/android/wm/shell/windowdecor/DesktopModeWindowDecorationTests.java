@@ -332,7 +332,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 .thenReturn(false);
         when(mMockAppHeaderViewHolderFactory
                 .create(any(), any(), any(), any(), any(), any(),
-                        any(), any(), any(), any()))
+                        any(), any(), any(), any(), any()))
                 .thenReturn(mMockAppHeaderViewHolder);
         when(mMockAppHandleViewHolderFactory
                 .create(any(), any(), any(), any(), any(), any(), any()))
@@ -1878,7 +1878,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mDesktopModeUiEventLogger, mDesktopModeCompatPolicy, mDesktopState,
                 mDesktopConfig, mMockWindowDecorationActions, mLockTaskChangeListener,
                 mFocusTransitionObserver);
-        windowDecor.setCaptionListeners(mMockTouchEventListener,
+        windowDecor.setCaptionListeners(mMockTouchEventListener, mMockTouchEventListener,
                 mMockTouchEventListener, mMockTouchEventListener);
         windowDecor.setExclusionRegionListener(mMockExclusionRegionListener);
         windowDecor.mDecorWindowContext = mContext;

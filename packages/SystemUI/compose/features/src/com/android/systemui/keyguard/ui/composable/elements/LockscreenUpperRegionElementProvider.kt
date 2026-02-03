@@ -20,20 +20,23 @@ import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
 import com.android.compose.animation.Easings
@@ -208,6 +211,8 @@ constructor(
                     }
                 }
 
+            val narrowPadding = dimensionResource(R.dimen.upper_region_narrow_horizontal_padding)
+
             NestedScenes(
                 sceneKey =
                     when (clockSize) {
@@ -228,15 +233,7 @@ constructor(
                         )
                     }
                 },
-                modifier =
-                    Modifier.padding(
-                            horizontal =
-                                dimensionResource(
-                                    R.dimen
-                                        .lockscreen_upper_region_horizontal_padding_narrow_screens
-                                )
-                        )
-                        .then(modifier),
+                modifier = Modifier.padding(horizontal = narrowPadding).then(modifier),
                 debugName = "NarrowLayout - Clocks",
             ) {
                 scene(NarrowScenes.LargeClock) { LockscreenElement(Region.Clock.Large) }
@@ -271,8 +268,13 @@ constructor(
                 logDecision("WideLayout: TwoColumn") {
                     when {
                         clockSize == ClockSize.SMALL -> Decision(true, "clockSize == SMALL")
-                        !viewModel.isDozing && (viewModel.isNotificationStackActive || viewModel.isMediaVisible) ->
-                            Decision(true, "!isDozing && (isNotificationStackActive || isMediaVisible)")
+                        !viewModel.isDozing &&
+                            (viewModel.isNotificationStackActive || viewModel.isMediaVisible) -> {
+                            Decision(
+                                true,
+                                "!isDozing && (isNotificationStackActive || isMediaVisible)",
+                            )
+                        }
                         viewModel.isDozing && viewModel.isHeadsUpNotificationActive ->
                             Decision(true, "isDozing && isHeadsUpNotificationActive")
                         viewModel.isDozing && viewModel.isPromotedNotificationActive ->
@@ -280,6 +282,8 @@ constructor(
                         else -> Decision(false, "Default Case")
                     }
                 }
+
+            val widePadding = dimensionResource(R.dimen.upper_region_wide_horizontal_padding)
 
             NestedScenes(
                 sceneKey =
@@ -326,14 +330,7 @@ constructor(
                         )
                     }
                 },
-                modifier =
-                    Modifier.padding(
-                            horizontal =
-                                dimensionResource(
-                                    R.dimen.lockscreen_upper_region_horizontal_padding_wide_screens
-                                )
-                        )
-                        .then(modifier),
+                modifier = Modifier.padding(horizontal = widePadding).then(modifier),
                 debugName = "WideLayout - Clocks",
             ) {
                 scene(WideScenes.CenteredClock) {
@@ -399,126 +396,128 @@ constructor(
         private fun LockscreenScope<ContentScope>.LargeClockEnd_NotifsStart_MediaStart(
             modifier: Modifier = Modifier
         ) {
-            TwoColumn(
-                startContent = {
-                    Column {
-                        MediaCarousel(Modifier.align(Alignment.Start))
-                        Notifications(aodAlignment = Alignment.TopStart)
-                    }
-                },
-                endContent = { LockscreenElement(Region.Clock.Large) },
-                modifier = modifier,
-            )
+            TwoColumn(modifier) {
+                StartColumn {
+                    MediaCarousel(Modifier.align(Alignment.Start))
+                    Notifications(aodAlignment = Alignment.TopStart)
+                }
+                EndColumn(useLargeClockPadding = true) { LockscreenElement(Region.Clock.Large) }
+            }
         }
 
         @Composable
         private fun LockscreenScope<ContentScope>.SmallClockStart_NotifsStart_MediaStart(
             modifier: Modifier = Modifier
         ) {
-            TwoColumn(
-                startContent = {
-                    Column {
-                        LockscreenElement(Region.Clock.Small)
-                        MediaCarousel(Modifier.align(Alignment.Start))
-                        Notifications(aodAlignment = Alignment.TopStart)
-                    }
-                },
-                modifier = modifier,
-            )
+            TwoColumn(modifier) {
+                StartColumn {
+                    LockscreenElement(Region.Clock.Small)
+                    MediaCarousel(Modifier.align(Alignment.Start))
+                    Notifications(aodAlignment = Alignment.TopStart)
+                }
+            }
         }
 
         @Composable
         private fun LockscreenScope<ContentScope>.LargeClockStart_NotifsEnd(
             modifier: Modifier = Modifier
         ) {
-            TwoColumn(
-                startContent = { LockscreenElement(Region.Clock.Large) },
-                endContent = { Notifications(aodAlignment = Alignment.TopEnd) },
-                modifier = modifier,
-            )
+            TwoColumn(modifier) {
+                StartColumn(useLargeClockPadding = true) { LockscreenElement(Region.Clock.Large) }
+                EndColumn { Notifications(aodAlignment = Alignment.TopEnd) }
+            }
         }
 
         @Composable
         private fun LockscreenScope<ContentScope>.LargeClockStart_NotifsEnd_MediaEnd(
             modifier: Modifier = Modifier
         ) {
-            TwoColumn(
-                startContent = { LockscreenElement(Region.Clock.Large) },
-                endContent = {
-                    Column {
-                        MediaCarousel(Modifier.align(Alignment.End))
-                        Notifications(aodAlignment = Alignment.TopEnd)
-                    }
-                },
-                modifier = modifier,
-            )
+            TwoColumn(modifier) {
+                StartColumn(useLargeClockPadding = true) { LockscreenElement(Region.Clock.Large) }
+                EndColumn {
+                    MediaCarousel(Modifier.align(Alignment.End))
+                    Notifications(aodAlignment = Alignment.TopEnd)
+                }
+            }
         }
 
         @Composable
         private fun LockscreenScope<ContentScope>.SmallClockStart_NotifsEnd_MediaStart(
             modifier: Modifier = Modifier
         ) {
-            TwoColumn(
-                startContent = {
-                    Column {
-                        LockscreenElement(Region.Clock.Small)
-                        MediaCarousel(Modifier.align(Alignment.Start))
-                    }
-                },
-                endContent = { Notifications(aodAlignment = Alignment.TopEnd) },
-                modifier = modifier,
-            )
+            TwoColumn(modifier) {
+                StartColumn {
+                    LockscreenElement(Region.Clock.Small)
+                    MediaCarousel(Modifier.align(Alignment.Start))
+                }
+                EndColumn { Notifications(aodAlignment = Alignment.TopEnd) }
+            }
         }
 
         @Composable
         private fun LockscreenScope<ContentScope>.SmallClockStart_NotifsEnd_MediaEnd(
             modifier: Modifier = Modifier
         ) {
-            TwoColumn(
-                startContent = { LockscreenElement(Region.Clock.Small) },
-                endContent = {
-                    Column {
-                        MediaCarousel(Modifier.align(Alignment.End))
-                        Notifications(aodAlignment = Alignment.TopEnd)
-                    }
-                },
-                modifier = modifier,
-            )
+            TwoColumn(modifier) {
+                StartColumn { LockscreenElement(Region.Clock.Small) }
+                EndColumn {
+                    MediaCarousel(Modifier.align(Alignment.End))
+                    Notifications(aodAlignment = Alignment.TopEnd)
+                }
+            }
+        }
+
+        @Immutable
+        inner class TwoColumnScope(private val rowScope: RowScope, private val columnPadding: Dp) {
+            @Composable
+            fun StartColumn(
+                useLargeClockPadding: Boolean = false,
+                modifier: Modifier = Modifier,
+                content: @Composable ColumnScope.() -> Unit = {},
+            ) {
+                var paddingModifier =
+                    if (useLargeClockPadding) Modifier.padding(end = columnPadding)
+                    else Modifier.padding(horizontal = columnPadding)
+                Column(
+                    paddingModifier
+                        .fillMaxWidth(0.5f)
+                        .fillMaxHeight()
+                        .graphicsLayer { translationX = viewModel.unfoldTranslations.start }
+                        .then(modifier)
+                ) {
+                    content()
+                }
+            }
+
+            @Composable
+            fun EndColumn(
+                useLargeClockPadding: Boolean = false,
+                modifier: Modifier = Modifier,
+                content: @Composable ColumnScope.() -> Unit = {},
+            ) {
+                var paddingModifier =
+                    if (useLargeClockPadding) Modifier.padding(start = columnPadding)
+                    else Modifier.padding(horizontal = columnPadding)
+                Column(
+                    paddingModifier
+                        .fillMaxWidth(1f)
+                        .fillMaxHeight()
+                        .graphicsLayer { translationX = viewModel.unfoldTranslations.end }
+                        .then(modifier)
+                ) {
+                    content()
+                }
+            }
         }
 
         @Composable
         private fun TwoColumn(
             modifier: Modifier = Modifier,
-            startContent: @Composable BoxScope.() -> Unit = {},
-            endContent: @Composable BoxScope.() -> Unit = {},
+            content: @Composable TwoColumnScope.() -> Unit = {},
         ) {
-            // The spec dictates that each column should get internal paddings that match the ones
-            // used for narrow layouts. It is like two narrow layouts side by side.
-            val narrowPadding =
-                Modifier.padding(
-                    horizontal =
-                        dimensionResource(
-                            R.dimen.lockscreen_upper_region_horizontal_padding_narrow_screens
-                        )
-                )
-
             Row(modifier) {
-                Box(
-                    content = startContent,
-                    modifier =
-                        Modifier.fillMaxWidth(0.5f)
-                            .then(narrowPadding)
-                            .fillMaxHeight()
-                            .graphicsLayer { translationX = viewModel.unfoldTranslations.start },
-                )
-                Box(
-                    content = endContent,
-                    modifier =
-                        Modifier.fillMaxWidth(1f)
-                            .then(narrowPadding)
-                            .fillMaxHeight()
-                            .graphicsLayer { translationX = viewModel.unfoldTranslations.end },
-                )
+                val padding = dimensionResource(R.dimen.upper_region_wide_column_horizontal_padding)
+                with(TwoColumnScope(this@Row, padding)) { content() }
             }
         }
     }

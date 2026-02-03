@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -48,6 +49,16 @@ fun PreShareToolbar(
     modifier: Modifier = Modifier,
     shareButtonEnabled: Boolean,
 ) {
+    val currentTargetsModel = shareScreenViewModel.currentTargetsModel
+    val (tabSelected, appSelected, fullscreenSelected) =
+        remember(currentTargetsModel) {
+            Triple(
+                currentTargetsModel is AppContentsViewModel,
+                currentTargetsModel is RecentTasksViewModel,
+                currentTargetsModel is DisplaysViewModel,
+            )
+        }
+
     val tabIcon by
         loadIcon(
             viewModel = shareScreenViewModel,
@@ -75,7 +86,12 @@ fun PreShareToolbar(
                 RadioButtonGroupItem(
                     icon = tabIcon,
                     modifier = Modifier.testTag("ShareTabOption"),
-                    isSelected = shareScreenViewModel.currentTargetsModel is AppContentsViewModel,
+                    isSelected = tabSelected,
+                    stateDescription =
+                        stringResource(
+                            if (tabSelected) R.string.screen_share_a11y_tab_button_selected
+                            else R.string.screen_share_a11y_tab_button_unselected
+                        ),
                     onClick = {
                         shareScreenViewModel.setTargetViewModel(
                             ScreenCaptureTarget.AppContent(contentId = 0)
@@ -89,7 +105,12 @@ fun PreShareToolbar(
                 RadioButtonGroupItem(
                     icon = windowIcon,
                     modifier = Modifier.testTag("ShareAppWindowOption"),
-                    isSelected = shareScreenViewModel.currentTargetsModel is RecentTasksViewModel,
+                    isSelected = appSelected,
+                    stateDescription =
+                        stringResource(
+                            if (appSelected) R.string.screen_share_a11y_app_button_selected
+                            else R.string.screen_share_a11y_app_button_unselected
+                        ),
                     onClick = {
                         shareScreenViewModel.setTargetViewModel(
                             ScreenCaptureTarget.App(displayId = 0, taskId = 0)
@@ -103,7 +124,13 @@ fun PreShareToolbar(
                 RadioButtonGroupItem(
                     icon = fullscreenIcon,
                     modifier = Modifier.testTag("ShareEntireScreenOption"),
-                    isSelected = shareScreenViewModel.currentTargetsModel is DisplaysViewModel,
+                    isSelected = fullscreenSelected,
+                    stateDescription =
+                        stringResource(
+                            if (fullscreenSelected)
+                                R.string.screen_share_a11y_fullscreen_button_selected
+                            else R.string.screen_share_a11y_fullscreen_button_unselected
+                        ),
                     onClick = {
                         shareScreenViewModel.setTargetViewModel(
                             ScreenCaptureTarget.Fullscreen(displayId = 0)
@@ -114,7 +141,12 @@ fun PreShareToolbar(
         }
     }
 
-    Toolbar(expanded = expanded, onCloseClick = onCloseClick, modifier = modifier) {
+    Toolbar(
+        expanded = expanded,
+        onCloseClick = onCloseClick,
+        modifier = modifier,
+        closeButtonDescription = stringResource(R.string.screen_share_a11y_close_button),
+    ) {
         Row {
             RadioButtonGroup(items = shareTargetButtonItems)
 
@@ -126,12 +158,23 @@ fun PreShareToolbar(
                     resId = R.drawable.ic_present_to_all,
                     ContentDescription.Resource(R.string.screen_share_toolbar_share_button),
                 )
+
+            val selectedItemLabel =
+                currentTargetsModel.selectedTarget.value?.label?.getOrNull() ?: "item"
+            val shareButtonA11yDescription =
+                if (shareButtonEnabled) {
+                    stringResource(R.string.screen_share_a11y_share_button_on, selectedItemLabel)
+                } else {
+                    stringResource(R.string.screen_share_a11y_share_button_off)
+                }
+
             PrimaryButton(
                 icon = shareIcon,
                 text = stringResource(R.string.screen_share_toolbar_share_button),
                 onClick = { shareScreenViewModel.onShareClicked() },
                 enabled = shareButtonEnabled,
                 modifier = Modifier.testTag("ShareButton"),
+                stateDescription = shareButtonA11yDescription,
             )
         }
     }

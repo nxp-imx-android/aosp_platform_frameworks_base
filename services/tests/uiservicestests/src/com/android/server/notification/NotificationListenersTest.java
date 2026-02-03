@@ -16,8 +16,8 @@
 package com.android.server.notification;
 
 import static android.Manifest.permission.RECEIVE_SENSITIVE_NOTIFICATIONS;
-import static android.app.backup.NotificationLoggingConstants.DATA_TYPE_NLS_RESTRICTED;
-import static android.app.backup.NotificationLoggingConstants.ERROR_XML_PARSING;
+import static android.app.NotificationLoggingConstants.DATA_TYPE_NLS_RESTRICTED;
+import static android.app.NotificationLoggingConstants.ERROR_XML_PARSING;
 import static android.content.Context.BIND_ALLOW_FREEZE;
 import static android.content.Context.BIND_SIMULATE_ALLOW_FREEZE;
 import static android.content.pm.ActivityInfo.RESIZE_MODE_RESIZEABLE;

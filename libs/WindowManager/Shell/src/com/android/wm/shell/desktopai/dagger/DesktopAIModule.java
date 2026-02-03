@@ -40,9 +40,9 @@ import java.util.Optional;
 import javax.inject.Provider;
 
 /**
- * Provides PlatformAi implementation components to Dagger dependency Graph.
+ * Provides DesktopAI implementation components to Dagger dependency Graph.
  */
-@Module
+@Module(includes = ExtensionsModule.class)
 public class DesktopAIModule {
 
     @WMSingleton

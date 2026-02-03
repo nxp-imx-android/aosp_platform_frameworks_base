@@ -18,15 +18,17 @@ package com.android.settingslib.metadata.preferencesapi
 
 import android.Manifest
 import android.content.Context
-import android.content.pm.PackageInfo
-import android.content.pm.PackageManager
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.settingslib.metadata.ValidatedKeyParameters
-import com.android.settingslib.metadata.preferencesapi.Utils.EXCEPTION_MESSAGE_NO_PARAMETER_DEFINED
-import com.android.settingslib.metadata.test.R
 import com.android.settingslib.metadata.preferencesapi.PreferencesApiScreen.Companion.PARTIALLY_MIGRATED_PREFIX
-import com.android.settingslib.metadata.preferencesapi.PreferencesApiScreenTest.Companion.ApiPreconditionsMapper.*
+import com.android.settingslib.metadata.preferencesapi.PreferencesApiScreenTest.Companion.ApiPreconditionsMapper.ALLOWED
+import com.android.settingslib.metadata.preferencesapi.PreferencesApiScreenTest.Companion.ApiPreconditionsMapper.CUSTOM
+import com.android.settingslib.metadata.preferencesapi.PreferencesApiScreenTest.Companion.ApiPreconditionsMapper.ENTERPRISE_RESTRICTION
+import com.android.settingslib.metadata.preferencesapi.PreferencesApiScreenTest.Companion.ApiPreconditionsMapper.HARDWARE_UNSUPPORTED
+import com.android.settingslib.metadata.preferencesapi.PreferencesApiScreenTest.Companion.ApiPreconditionsMapper.INVALID_PREFERENCE
+import com.android.settingslib.metadata.preferencesapi.PreferencesApiScreenTest.Companion.ApiPreconditionsMapper.MISSING_PERMISSION
+import com.android.settingslib.metadata.preferencesapi.Utils.EXCEPTION_MESSAGE_NO_PARAMETER_DEFINED
 import com.android.settingslib.metadata.preferencesapi.Utils.getExceptionMessageMultipleDefines
 import com.android.settingslib.metadata.preferencesapi.Utils.getExceptionMessageMultipleParametersDefined
 import com.android.settingslib.metadata.preferencesapi.Utils.getExceptionMessageWrongOrder
@@ -41,48 +43,42 @@ import com.android.settingslib.metadata.preferencesapi.types.AnyBoolean
 import com.android.settingslib.metadata.preferencesapi.types.AnyInt
 import com.android.settingslib.metadata.preferencesapi.types.GeneratedParameterType
 import com.android.settingslib.metadata.preferencesapi.types.GeneratedValue
-import com.android.settingslib.metadata.preferencesapi.types.InstalledPackageName
-import kotlinx.coroutines.test.runTest
+import com.android.settingslib.metadata.test.R
 import com.android.settingslib.preference.PreferenceFragment
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertThrows
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.Shadows.shadowOf
-import org.robolectric.shadows.ShadowPackageManager
 
 @RunWith(AndroidJUnit4::class)
 class PreferencesApiScreenTest {
     private val context: Context = ApplicationProvider.getApplicationContext()
 
-    private fun buildPackageInfo(packageName: String): PackageInfo {
-        val packageInfo = PackageInfo()
-        packageInfo.packageName = packageName
-        return packageInfo
-    }
-
     @Test
     fun createPreferencesApiScreenWithoutGetter_throwsError() {
-        val exception = assertThrows(IllegalStateException::class.java) {
-            val preferenceKey1 = "ApiPreference"
+        val exception =
+            assertThrows(IllegalStateException::class.java) {
+                val preferenceKey1 = "ApiPreference"
 
-            object : PreferencesApiScreen(
-                key = SCREEN_KEY,
-                topLevelSettingsCategory = Category.SYSTEM,
-                fragment = PreferenceFragment::class,
-                purpose = R.string.preference_screen_purpose
-            ) {
-                init {
-                    preference(
-                        key = preferenceKey1,
-                        purpose = R.string.preference_purpose1,
-                        type = AnyBoolean
-                    ) {}
+                object :
+                    PreferencesApiScreen(
+                        key = SCREEN_KEY,
+                        topLevelSettingsCategory = Category.SYSTEM,
+                        fragment = PreferenceFragment::class,
+                        purpose = R.string.preference_screen_purpose,
+                    ) {
+                    init {
+                        preference(
+                            key = preferenceKey1,
+                            purpose = R.string.preference_purpose1,
+                            type = AnyBoolean,
+                        ) {}
+                    }
                 }
             }
-        }
 
         assertThat(exception.message).isEqualTo("'get' block is required")
     }
@@ -92,34 +88,32 @@ class PreferencesApiScreenTest {
         val preferenceKey1 = "ApiPreference1"
         val preferenceKey2 = "ApiPreference2"
 
-        val preferenceScreen = object : PreferencesApiScreen(
-            key = SCREEN_KEY,
-            topLevelSettingsCategory = Category.SYSTEM,
-            fragment = PreferenceFragment::class,
-            purpose = R.string.preference_screen_purpose
-        ) {
-            init {
-                preference(
-                    key = preferenceKey1, purpose = R.string.preference_purpose1, type = AnyBoolean
+        val preferenceScreen =
+            object :
+                PreferencesApiScreen(
+                    key = SCREEN_KEY,
+                    topLevelSettingsCategory = Category.SYSTEM,
+                    fragment = PreferenceFragment::class,
+                    purpose = R.string.preference_screen_purpose,
                 ) {
-                    get {
-                        execute {
-                            false
-                        }
+                init {
+                    preference(
+                        key = preferenceKey1,
+                        purpose = R.string.preference_purpose1,
+                        type = AnyBoolean,
+                    ) {
+                        get { execute { false } }
                     }
-                }
 
-                preference(
-                    key = preferenceKey2, purpose = R.string.preference_purpose2, type = AnyInt
-                ) {
-                    get {
-                        execute {
-                            0
-                        }
+                    preference(
+                        key = preferenceKey2,
+                        purpose = R.string.preference_purpose2,
+                        type = AnyInt,
+                    ) {
+                        get { execute { 0 } }
                     }
                 }
             }
-        }
 
         // Check we only have 2 preferences in the list
         assertThat(preferenceScreen.preferences.size).isEqualTo(2)
@@ -135,12 +129,14 @@ class PreferencesApiScreenTest {
     @Test
     fun createPreferencesApiScreenWithSpaRoutePrefix_succeeds() {
         val spaRoutePrefix = "spa_route_prefix"
-        val preferenceScreen = object : PreferencesApiScreen(
-            key = SCREEN_KEY,
-            topLevelSettingsCategory = Category.SYSTEM,
-            spaRoutePrefix = spaRoutePrefix,
-            purpose = R.string.preference_screen_purpose,
-        ) {}
+        val preferenceScreen =
+            object :
+                PreferencesApiScreen(
+                    key = SCREEN_KEY,
+                    topLevelSettingsCategory = Category.SYSTEM,
+                    spaRoutePrefix = spaRoutePrefix,
+                    purpose = R.string.preference_screen_purpose,
+                ) {}
 
         assertThat(preferenceScreen.spaRoutePrefix).isEqualTo(spaRoutePrefix)
         assertThat(preferenceScreen.fragment).isNull()
@@ -153,50 +149,45 @@ class PreferencesApiScreenTest {
         val preferenceValue2 = 0
         val preferenceKey2 = "ApiPreference2"
 
-        val preferenceScreen = object : PreferencesApiScreen(
-            key = SCREEN_KEY,
-            topLevelSettingsCategory = Category.SYSTEM,
-            fragment = PreferenceFragment::class,
-            purpose = R.string.preference_screen_purpose
-        ) {
-            init {
-                preference(
-                    key = preferenceKey1, purpose = R.string.preference_purpose1, type = AnyBoolean
+        val preferenceScreen =
+            object :
+                PreferencesApiScreen(
+                    key = SCREEN_KEY,
+                    topLevelSettingsCategory = Category.SYSTEM,
+                    fragment = PreferenceFragment::class,
+                    purpose = R.string.preference_screen_purpose,
                 ) {
-                    get {
-                        execute {
-                            preferenceValue1
-                        }
+                init {
+                    preference(
+                        key = preferenceKey1,
+                        purpose = R.string.preference_purpose1,
+                        type = AnyBoolean,
+                    ) {
+                        get { execute { preferenceValue1 } }
                     }
-                }
 
-                preference(
-                    key = preferenceKey2, purpose = R.string.preference_purpose2, type = AnyInt
-                ) {
-                    get {
-                        execute {
-                            preferenceValue2
-                        }
+                    preference(
+                        key = preferenceKey2,
+                        purpose = R.string.preference_purpose2,
+                        type = AnyInt,
+                    ) {
+                        get { execute { preferenceValue2 } }
                     }
                 }
             }
-        }
-
 
         // Check we only have 2 preferences in the list
         assertThat(preferenceScreen.preferences.size).isEqualTo(2)
 
         // Check that getters return the correct value
         val firstPreference = preferenceScreen.preferences[0] as ApiPreference<Boolean>
-        assertThat(
-            firstPreference.storage(context).getValue(preferenceKey1, Boolean::class.java)
-        ).isEqualTo(preferenceValue1)
+        assertThat(firstPreference.storage(context).getValue(preferenceKey1, Boolean::class.java))
+            .isEqualTo(preferenceValue1)
 
         val secondPreference = preferenceScreen.preferences[1] as ApiPreference<Int>
         assertThat(secondPreference.key).isEqualTo("ApiPreference2")
-        assertThat(
-            secondPreference.storage(context).getValue(preferenceKey2, Int::class.java)
-        ).isEqualTo(preferenceValue2)
+        assertThat(secondPreference.storage(context).getValue(preferenceKey2, Int::class.java))
+            .isEqualTo(preferenceValue2)
     }
 
     @Test
@@ -207,40 +198,34 @@ class PreferencesApiScreenTest {
         val preferenceKey2 = "ApiPreference2"
         val newPreferenceValue2 = 22
 
-        val preferenceScreen = object : PreferencesApiScreen(
-            key = SCREEN_KEY,
-            topLevelSettingsCategory = Category.SYSTEM,
-            fragment = PreferenceFragment::class,
-            purpose = R.string.preference_screen_purpose
-        ) {
-            init {
-                preference(
-                    key = preferenceKey1, purpose = R.string.preference_purpose1, type = AnyBoolean
+        val preferenceScreen =
+            object :
+                PreferencesApiScreen(
+                    key = SCREEN_KEY,
+                    topLevelSettingsCategory = Category.SYSTEM,
+                    fragment = PreferenceFragment::class,
+                    purpose = R.string.preference_screen_purpose,
                 ) {
-                    get {
-                        execute {
-                            preferenceValue1
-                        }
-                    }
-                }
-
-                preference(
-                    key = preferenceKey2, purpose = R.string.preference_purpose2, type = AnyInt
-                ) {
-                    get {
-                        execute {
-                            preferenceValue2
-                        }
+                init {
+                    preference(
+                        key = preferenceKey1,
+                        purpose = R.string.preference_purpose1,
+                        type = AnyBoolean,
+                    ) {
+                        get { execute { preferenceValue1 } }
                     }
 
-                    set {
-                        execute { value ->
-                            preferenceValue2 = value
-                        }
+                    preference(
+                        key = preferenceKey2,
+                        purpose = R.string.preference_purpose2,
+                        type = AnyInt,
+                    ) {
+                        get { execute { preferenceValue2 } }
+
+                        set { execute { value -> preferenceValue2 = value } }
                     }
                 }
             }
-        }
 
         // Check we only have 2 preferences in the list
         assertThat(preferenceScreen.preferences.size).isEqualTo(2)
@@ -249,18 +234,17 @@ class PreferencesApiScreenTest {
         val firstPreference = preferenceScreen.preferences[0] as ApiPreference<Boolean>
         assertThat(firstPreference.key).isEqualTo(preferenceKey1)
         firstPreference.storage(context).setValue(preferenceKey1, Boolean::class.java, true)
-        assertThat(
-            firstPreference.storage(context).getValue(preferenceKey1, Boolean::class.java)
-        ).isEqualTo(preferenceValue1)
+        assertThat(firstPreference.storage(context).getValue(preferenceKey1, Boolean::class.java))
+            .isEqualTo(preferenceValue1)
 
         // Value of the second preference should be changed by setter
         val secondPreference = preferenceScreen.preferences[1] as ApiPreference<Int>
         assertThat(secondPreference.key).isEqualTo(preferenceKey2)
-        secondPreference.storage(context)
+        secondPreference
+            .storage(context)
             .setValue(preferenceKey2, Int::class.java, newPreferenceValue2)
-        assertThat(
-            secondPreference.storage(context).getValue(preferenceKey2, Int::class.java)
-        ).isEqualTo(newPreferenceValue2)
+        assertThat(secondPreference.storage(context).getValue(preferenceKey2, Int::class.java))
+            .isEqualTo(newPreferenceValue2)
     }
 
     @Test
@@ -269,43 +253,59 @@ class PreferencesApiScreenTest {
         val preferenceKey = "ApiPreference"
         var preconditionsCase = ALLOWED
 
-        val preferenceScreen = object : PreferencesApiScreen(
-            key = SCREEN_KEY,
-            topLevelSettingsCategory = Category.SYSTEM,
-            fragment = PreferenceFragment::class,
-            purpose = R.string.preference_screen_purpose
-        ) {
-            init {
-                preference(
-                    key = preferenceKey,
-                    purpose = R.string.preference_purpose1,
-                    type = AnyBoolean
+        val preferenceScreen =
+            object :
+                PreferencesApiScreen(
+                    key = SCREEN_KEY,
+                    topLevelSettingsCategory = Category.SYSTEM,
+                    fragment = PreferenceFragment::class,
+                    purpose = R.string.preference_screen_purpose,
                 ) {
-                    get {
-                        preconditions(R.string.preconditions_description1) {
-                            when (preconditionsCase) {
-                                ALLOWED -> Allowed
-                                CUSTOM -> Custom(R.string.preconditions_custom_message)
-                                ENTERPRISE_RESTRICTION -> EnterpriseRestriction(R.string.preconditions_enterprise_restriction_message)
-                                HARDWARE_UNSUPPORTED -> HardwareUnsupported(R.string.preconditions_hardware_unsupported_message)
-                                INVALID_PREFERENCE -> InvalidPreference("", "", R.string.preconditions_invalid_preference_message)
-                                MISSING_PERMISSION -> MissingPermission(listOf(Manifest.permission.ACCESS_FINE_LOCATION), R.string.preconditions_missing_permission_message)
+                init {
+                    preference(
+                        key = preferenceKey,
+                        purpose = R.string.preference_purpose1,
+                        type = AnyBoolean,
+                    ) {
+                        get {
+                            preconditions(R.string.preconditions_description1) {
+                                when (preconditionsCase) {
+                                    ALLOWED -> Allowed
+                                    CUSTOM -> Custom(R.string.preconditions_custom_message)
+                                    ENTERPRISE_RESTRICTION ->
+                                        EnterpriseRestriction(
+                                            R.string.preconditions_enterprise_restriction_message
+                                        )
+                                    HARDWARE_UNSUPPORTED ->
+                                        HardwareUnsupported(
+                                            R.string.preconditions_hardware_unsupported_message
+                                        )
+                                    INVALID_PREFERENCE ->
+                                        InvalidPreference(
+                                            "",
+                                            "",
+                                            R.string.preconditions_invalid_preference_message,
+                                        )
+                                    MISSING_PERMISSION ->
+                                        MissingPermission(
+                                            listOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                                            R.string.preconditions_missing_permission_message,
+                                        )
+                                }
                             }
-                        }
-                        execute {
-                            preferenceValue
+                            execute { preferenceValue }
                         }
                     }
                 }
             }
-        }
 
         // Check we only have 1 preference in the list
         assertThat(preferenceScreen.preferences.size).isEqualTo(1)
 
         // Check get preconditions description message
         val preference = preferenceScreen.preferences[0] as ApiPreference<Boolean>
-        assertThat(preference.get.preconditions?.getDescription(context)).isEqualTo(context.getString(R.string.preconditions_description1))
+        assertThat(preference.get.preconditions?.getDescription(context))
+            .isEqualTo(context.getString(R.string.preconditions_description1))
 
         // Create the API operation context to be used in ApiPreference calls
         val apiOperationContext = ApiOperationContext(context, ValidatedKeyParameters.EMPTY)
@@ -320,19 +320,55 @@ class PreferencesApiScreenTest {
                         assertThat(preference.get.execute(apiOperationContext)).isFalse()
                     }
                     CUSTOM -> {
-                        assertThat((preference.get.preconditions?.check(apiOperationContext) as Custom).getReason(context)).isEqualTo(context.getString(R.string.preconditions_custom_message))
+                        assertThat(
+                                (preference.get.preconditions?.check(apiOperationContext) as Custom)
+                                    .getReason(context)
+                            )
+                            .isEqualTo(context.getString(R.string.preconditions_custom_message))
                     }
                     ENTERPRISE_RESTRICTION -> {
-                        assertThat((preference.get.preconditions?.check(apiOperationContext) as EnterpriseRestriction).getReason(context)).isEqualTo(context.getString(R.string.preconditions_enterprise_restriction_message))
+                        assertThat(
+                                (preference.get.preconditions?.check(apiOperationContext)
+                                        as EnterpriseRestriction)
+                                    .getReason(context)
+                            )
+                            .isEqualTo(
+                                context.getString(
+                                    R.string.preconditions_enterprise_restriction_message
+                                )
+                            )
                     }
                     HARDWARE_UNSUPPORTED -> {
-                        assertThat((preference.get.preconditions?.check(apiOperationContext) as HardwareUnsupported).getReason(context)).isEqualTo(context.getString(R.string.preconditions_hardware_unsupported_message))
+                        assertThat(
+                                (preference.get.preconditions?.check(apiOperationContext)
+                                        as HardwareUnsupported)
+                                    .getReason(context)
+                            )
+                            .isEqualTo(
+                                context.getString(
+                                    R.string.preconditions_hardware_unsupported_message
+                                )
+                            )
                     }
                     INVALID_PREFERENCE -> {
-                        assertThat((preference.get.preconditions?.check(apiOperationContext) as InvalidPreference).getReason(context)).isEqualTo(context.getString(R.string.preconditions_invalid_preference_message))
+                        assertThat(
+                                (preference.get.preconditions?.check(apiOperationContext)
+                                        as InvalidPreference)
+                                    .getReason(context)
+                            )
+                            .isEqualTo(
+                                context.getString(R.string.preconditions_invalid_preference_message)
+                            )
                     }
                     MISSING_PERMISSION -> {
-                        assertThat((preference.get.preconditions?.check(apiOperationContext) as MissingPermission).getReason(context)).isEqualTo(context.getString(R.string.preconditions_missing_permission_message))
+                        assertThat(
+                                (preference.get.preconditions?.check(apiOperationContext)
+                                        as MissingPermission)
+                                    .getReason(context)
+                            )
+                            .isEqualTo(
+                                context.getString(R.string.preconditions_missing_permission_message)
+                            )
                     }
                 }
             }
@@ -351,43 +387,57 @@ class PreferencesApiScreenTest {
         val invalidPreferencePreconditionsMessage = "Requesting invalid preference"
         val missingPermissionPreconditionsMessage = "You miss an important permission"
 
-        val preferenceScreen = object : PreferencesApiScreen(
-            key = SCREEN_KEY,
-            topLevelSettingsCategory = Category.SYSTEM,
-            fragment = PreferenceFragment::class,
-            purpose = R.string.preference_screen_purpose
-        ) {
-            init {
-                preference(
-                    key = preferenceKey,
-                    purpose = R.string.preference_purpose1,
-                    type = AnyBoolean
+        val preferenceScreen =
+            object :
+                PreferencesApiScreen(
+                    key = SCREEN_KEY,
+                    topLevelSettingsCategory = Category.SYSTEM,
+                    fragment = PreferenceFragment::class,
+                    purpose = R.string.preference_screen_purpose,
                 ) {
-                    get {
-                        preconditions(preconditionDescription) {
-                            when (preconditionsCase) {
-                                ALLOWED -> Allowed
-                                CUSTOM -> Custom(customPreconditionsMessage)
-                                ENTERPRISE_RESTRICTION -> EnterpriseRestriction(enterpriseRestrictionPreconditionsMessage)
-                                HARDWARE_UNSUPPORTED -> HardwareUnsupported(hardwareUnsupportedPreconditionsMessage)
-                                INVALID_PREFERENCE -> InvalidPreference("", "", invalidPreferencePreconditionsMessage)
-                                MISSING_PERMISSION -> MissingPermission(listOf(Manifest.permission.ACCESS_FINE_LOCATION), missingPermissionPreconditionsMessage)
+                init {
+                    preference(
+                        key = preferenceKey,
+                        purpose = R.string.preference_purpose1,
+                        type = AnyBoolean,
+                    ) {
+                        get {
+                            preconditions(preconditionDescription) {
+                                when (preconditionsCase) {
+                                    ALLOWED -> Allowed
+                                    CUSTOM -> Custom(customPreconditionsMessage)
+                                    ENTERPRISE_RESTRICTION ->
+                                        EnterpriseRestriction(
+                                            enterpriseRestrictionPreconditionsMessage
+                                        )
+                                    HARDWARE_UNSUPPORTED ->
+                                        HardwareUnsupported(hardwareUnsupportedPreconditionsMessage)
+                                    INVALID_PREFERENCE ->
+                                        InvalidPreference(
+                                            "",
+                                            "",
+                                            invalidPreferencePreconditionsMessage,
+                                        )
+                                    MISSING_PERMISSION ->
+                                        MissingPermission(
+                                            listOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                                            missingPermissionPreconditionsMessage,
+                                        )
+                                }
                             }
-                        }
-                        execute {
-                            preferenceValue
+                            execute { preferenceValue }
                         }
                     }
                 }
             }
-        }
 
         // Check we only have 1 preference in the list
         assertThat(preferenceScreen.preferences.size).isEqualTo(1)
 
         // Check get preconditions description message
         val preference = preferenceScreen.preferences[0] as ApiPreference<Boolean>
-        assertThat(preference.get.preconditions?.getDescription(context)).isEqualTo(preconditionDescription)
+        assertThat(preference.get.preconditions?.getDescription(context))
+            .isEqualTo(preconditionDescription)
 
         // Create the API operation context to be used in ApiPreference calls
         val apiOperationContext = ApiOperationContext(context, ValidatedKeyParameters.EMPTY)
@@ -402,19 +452,43 @@ class PreferencesApiScreenTest {
                         assertThat(preference.get.execute(apiOperationContext)).isTrue()
                     }
                     CUSTOM -> {
-                        assertThat((preference.get.preconditions?.check(apiOperationContext) as Custom).getReason(context)).isEqualTo(customPreconditionsMessage)
+                        assertThat(
+                                (preference.get.preconditions?.check(apiOperationContext) as Custom)
+                                    .getReason(context)
+                            )
+                            .isEqualTo(customPreconditionsMessage)
                     }
                     ENTERPRISE_RESTRICTION -> {
-                        assertThat((preference.get.preconditions?.check(apiOperationContext) as EnterpriseRestriction).getReason(context)).isEqualTo(enterpriseRestrictionPreconditionsMessage)
+                        assertThat(
+                                (preference.get.preconditions?.check(apiOperationContext)
+                                        as EnterpriseRestriction)
+                                    .getReason(context)
+                            )
+                            .isEqualTo(enterpriseRestrictionPreconditionsMessage)
                     }
                     HARDWARE_UNSUPPORTED -> {
-                        assertThat((preference.get.preconditions?.check(apiOperationContext) as HardwareUnsupported).getReason(context)).isEqualTo(hardwareUnsupportedPreconditionsMessage)
+                        assertThat(
+                                (preference.get.preconditions?.check(apiOperationContext)
+                                        as HardwareUnsupported)
+                                    .getReason(context)
+                            )
+                            .isEqualTo(hardwareUnsupportedPreconditionsMessage)
                     }
                     INVALID_PREFERENCE -> {
-                        assertThat((preference.get.preconditions?.check(apiOperationContext) as InvalidPreference).getReason(context)).isEqualTo(invalidPreferencePreconditionsMessage)
+                        assertThat(
+                                (preference.get.preconditions?.check(apiOperationContext)
+                                        as InvalidPreference)
+                                    .getReason(context)
+                            )
+                            .isEqualTo(invalidPreferencePreconditionsMessage)
                     }
                     MISSING_PERMISSION -> {
-                        assertThat((preference.get.preconditions?.check(apiOperationContext) as MissingPermission).getReason(context)).isEqualTo(missingPermissionPreconditionsMessage)
+                        assertThat(
+                                (preference.get.preconditions?.check(apiOperationContext)
+                                        as MissingPermission)
+                                    .getReason(context)
+                            )
+                            .isEqualTo(missingPermissionPreconditionsMessage)
                     }
                 }
             }
@@ -429,43 +503,43 @@ class PreferencesApiScreenTest {
         val newPreferenceWrongValue = 23
         val newPreferenceValue = 112
 
-        val preferenceScreen = object : PreferencesApiScreen(
-            key = SCREEN_KEY,
-            topLevelSettingsCategory = Category.SYSTEM,
-            fragment = PreferenceFragment::class,
-            purpose = R.string.preference_screen_purpose
-        ) {
-            init {
-                preference(
-                    key = preferenceKey, purpose = R.string.preference_purpose1, type = AnyInt
+        val preferenceScreen =
+            object :
+                PreferencesApiScreen(
+                    key = SCREEN_KEY,
+                    topLevelSettingsCategory = Category.SYSTEM,
+                    fragment = PreferenceFragment::class,
+                    purpose = R.string.preference_screen_purpose,
                 ) {
-                    get {
-                        execute {
-                            preferenceValue
-                        }
-                    }
+                init {
+                    preference(
+                        key = preferenceKey,
+                        purpose = R.string.preference_purpose1,
+                        type = AnyInt,
+                    ) {
+                        get { execute { preferenceValue } }
 
-                    set {
-                        valuePreconditions(R.string.value_preconditions_even_number_description) { value ->
-                            // Value's digits must add up to even number
-                            var sum = 0
-                            for (digit in value.toString()) {
-                                sum += digit.digitToInt()
+                        set {
+                            valuePreconditions(
+                                R.string.value_preconditions_even_number_description
+                            ) { value ->
+                                // Value's digits must add up to even number
+                                var sum = 0
+                                for (digit in value.toString()) {
+                                    sum += digit.digitToInt()
+                                }
+                                if (sum % 2 == 0) {
+                                    Allowed
+                                } else {
+                                    Custom(R.string.value_preconditions_disallow_custom_reason)
+                                }
                             }
-                            if (sum % 2 == 0) {
-                                Allowed
-                            } else {
-                                Custom(R.string.value_preconditions_disallow_custom_reason)
-                            }
-                        }
 
-                        execute { value ->
-                            preferenceValue = value
+                            execute { value -> preferenceValue = value }
                         }
                     }
                 }
             }
-        }
 
         // Check we only have 1 preference in the list
         assertThat(preferenceScreen.preferences.size).isEqualTo(1)
@@ -473,21 +547,22 @@ class PreferencesApiScreenTest {
         // Trying to set a wrong value throws exception and value stays the same
         val preference = preferenceScreen.preferences[0] as ApiPreference<Int>
         assertThat(preference.key).isEqualTo(preferenceKey)
-        val exception = assertThrows(IllegalStateException::class.java) {
-            preference.storage(context)
-                .setValue(preferenceKey, Int::class.java, newPreferenceWrongValue)
-        }
-        assertThat(exception.message).isEqualTo(context.getString(R.string.value_preconditions_disallow_custom_reason))
-        assertThat(
-            preference.storage(context).getValue(preferenceKey, Int::class.java)
-        ).isEqualTo(initialPreferenceValue)
+        val exception =
+            assertThrows(IllegalStateException::class.java) {
+                preference
+                    .storage(context)
+                    .setValue(preferenceKey, Int::class.java, newPreferenceWrongValue)
+            }
+        assertThat(exception.message)
+            .isEqualTo(context.getString(R.string.value_preconditions_disallow_custom_reason))
+        assertThat(preference.storage(context).getValue(preferenceKey, Int::class.java))
+            .isEqualTo(initialPreferenceValue)
 
         // Setting correct value succeeds
         assertThat(preference.key).isEqualTo(preferenceKey)
         preference.storage(context).setValue(preferenceKey, Int::class.java, newPreferenceValue)
-        assertThat(
-            preference.storage(context).getValue(preferenceKey, Int::class.java)
-        ).isEqualTo(newPreferenceValue)
+        assertThat(preference.storage(context).getValue(preferenceKey, Int::class.java))
+            .isEqualTo(newPreferenceValue)
     }
 
     @Test
@@ -495,32 +570,30 @@ class PreferencesApiScreenTest {
         val preferenceValue = false
         val preferenceKey = "ApiPreference"
 
-        val exception = assertThrows(IllegalStateException::class.java) {
-            object : PreferencesApiScreen(
-                key = SCREEN_KEY,
-                topLevelSettingsCategory = Category.SYSTEM,
-                fragment = PreferenceFragment::class,
-                purpose = R.string.preference_screen_purpose
-            ) {
-                init {
-                    permissions(Manifest.permission.ACCESS_FINE_LOCATION)
-
-                    flag { false }
-
-                    preference(
-                        key = preferenceKey,
-                        purpose = R.string.preference_purpose1,
-                        type = AnyBoolean
+        val exception =
+            assertThrows(IllegalStateException::class.java) {
+                object :
+                    PreferencesApiScreen(
+                        key = SCREEN_KEY,
+                        topLevelSettingsCategory = Category.SYSTEM,
+                        fragment = PreferenceFragment::class,
+                        purpose = R.string.preference_screen_purpose,
                     ) {
-                        get {
-                            execute {
-                                preferenceValue
-                            }
+                    init {
+                        permissions(Manifest.permission.ACCESS_FINE_LOCATION)
+
+                        flag { false }
+
+                        preference(
+                            key = preferenceKey,
+                            purpose = R.string.preference_purpose1,
+                            type = AnyBoolean,
+                        ) {
+                            get { execute { preferenceValue } }
                         }
                     }
                 }
             }
-        }
 
         assertThat(exception.message).isEqualTo(getExceptionMessageWrongOrder("flag"))
     }
@@ -530,39 +603,37 @@ class PreferencesApiScreenTest {
         val preferenceValue = false
         val preferenceKey = "ApiPreference"
 
-        val exception = assertThrows(IllegalStateException::class.java) {
-            object : PreferencesApiScreen(
-                key = SCREEN_KEY,
-                topLevelSettingsCategory = Category.SYSTEM,
-                fragment = PreferenceFragment::class,
-                purpose = R.string.preference_screen_purpose
-            ) {
-                init {
-                    preference(
-                        key = preferenceKey,
-                        purpose = R.string.preference_purpose1,
-                        type = AnyBoolean
+        val exception =
+            assertThrows(IllegalStateException::class.java) {
+                object :
+                    PreferencesApiScreen(
+                        key = SCREEN_KEY,
+                        topLevelSettingsCategory = Category.SYSTEM,
+                        fragment = PreferenceFragment::class,
+                        purpose = R.string.preference_screen_purpose,
                     ) {
-                        get {
-                            execute {
-                                preferenceValue
-                            }
+                    init {
+                        preference(
+                            key = preferenceKey,
+                            purpose = R.string.preference_purpose1,
+                            type = AnyBoolean,
+                        ) {
+                            get { execute { preferenceValue } }
                         }
-                    }
 
-                    parameters {
-                        parameter(
-                            "package",
-                            R.string.parameter_purpose1,
-                            true,
-                            GeneratedParameterType(R.string.parameter_type_description) {
-                                listOf(GeneratedValue("value", "type_description"))
-                            }
-                        )
+                        parameters {
+                            parameter(
+                                "package",
+                                R.string.parameter_purpose1,
+                                true,
+                                GeneratedParameterType(R.string.parameter_type_description) {
+                                    listOf(GeneratedValue("value", "type_description"))
+                                },
+                            )
+                        }
                     }
                 }
             }
-        }
 
         assertThat(exception.message).isEqualTo(getExceptionMessageWrongOrder("parameters"))
     }
@@ -572,45 +643,43 @@ class PreferencesApiScreenTest {
         val preferenceValue = false
         val preferenceKey = "ApiPreference"
 
-        val exception = assertThrows(IllegalStateException::class.java) {
-            object : PreferencesApiScreen(
-                key = SCREEN_KEY,
-                topLevelSettingsCategory = Category.SYSTEM,
-                fragment = PreferenceFragment::class,
-                purpose = R.string.preference_screen_purpose
-            ) {
-                init {
-                    parameters {
-                        parameter(
-                            "package",
-                            R.string.parameter_purpose1,
-                            true,
-                            GeneratedParameterType(R.string.parameter_type_description) {
-                                listOf(GeneratedValue("value", "type_description"))
-                            }
-                        )
-                    }
-
-                    preconditions(R.string.preconditions_description1) {
-                        HardwareUnsupported(R.string.preconditions_hardware_unsupported_message)
-                    }
-
-                    permissions(Manifest.permission.ACCESS_FINE_LOCATION)
-
-                    preference(
-                        key = preferenceKey,
-                        purpose = R.string.preference_purpose1,
-                        type = AnyBoolean
+        val exception =
+            assertThrows(IllegalStateException::class.java) {
+                object :
+                    PreferencesApiScreen(
+                        key = SCREEN_KEY,
+                        topLevelSettingsCategory = Category.SYSTEM,
+                        fragment = PreferenceFragment::class,
+                        purpose = R.string.preference_screen_purpose,
                     ) {
-                        get {
-                            execute {
-                                preferenceValue
-                            }
+                    init {
+                        parameters {
+                            parameter(
+                                "package",
+                                R.string.parameter_purpose1,
+                                true,
+                                GeneratedParameterType(R.string.parameter_type_description) {
+                                    listOf(GeneratedValue("value", "type_description"))
+                                },
+                            )
+                        }
+
+                        preconditions(R.string.preconditions_description1) {
+                            HardwareUnsupported(R.string.preconditions_hardware_unsupported_message)
+                        }
+
+                        permissions(Manifest.permission.ACCESS_FINE_LOCATION)
+
+                        preference(
+                            key = preferenceKey,
+                            purpose = R.string.preference_purpose1,
+                            type = AnyBoolean,
+                        ) {
+                            get { execute { preferenceValue } }
                         }
                     }
                 }
             }
-        }
 
         assertThat(exception.message).isEqualTo(getExceptionMessageWrongOrder("permissions"))
     }
@@ -620,31 +689,29 @@ class PreferencesApiScreenTest {
         val preferenceValue = false
         val preferenceKey = "ApiPreference"
 
-        val exception = assertThrows(IllegalStateException::class.java) {
-            object : PreferencesApiScreen(
-                key = SCREEN_KEY,
-                topLevelSettingsCategory = Category.SYSTEM,
-                fragment = PreferenceFragment::class,
-                purpose = R.string.preference_screen_purpose
-            ) {
-                init {
-                    flag { true }
-                    flag { false }
-
-                    preference(
-                        key = preferenceKey,
-                        purpose = R.string.preference_purpose1,
-                        type = AnyBoolean
+        val exception =
+            assertThrows(IllegalStateException::class.java) {
+                object :
+                    PreferencesApiScreen(
+                        key = SCREEN_KEY,
+                        topLevelSettingsCategory = Category.SYSTEM,
+                        fragment = PreferenceFragment::class,
+                        purpose = R.string.preference_screen_purpose,
                     ) {
-                        get {
-                            execute {
-                                preferenceValue
-                            }
+                    init {
+                        flag { true }
+                        flag { false }
+
+                        preference(
+                            key = preferenceKey,
+                            purpose = R.string.preference_purpose1,
+                            type = AnyBoolean,
+                        ) {
+                            get { execute { preferenceValue } }
                         }
                     }
                 }
             }
-        }
 
         assertThat(exception.message).isEqualTo(getExceptionMessageMultipleDefines("flag"))
     }
@@ -654,81 +721,119 @@ class PreferencesApiScreenTest {
         val preferenceValue = false
         val preferenceKey = "ApiPreference"
 
-        val exception = assertThrows(IllegalStateException::class.java) {
-            object : PreferencesApiScreen(
-                key = SCREEN_KEY,
-                topLevelSettingsCategory = Category.SYSTEM,
-                fragment = PreferenceFragment::class,
-                purpose = R.string.preference_screen_purpose
-            ) {
-                init {
-                    parameters {
-                        parameter(
-                            "package",
-                            R.string.parameter_purpose1,
-                            true,
-                            GeneratedParameterType(R.string.parameter_type_description) {
-                                listOf(GeneratedValue("value", "type_description"))
-                            }
-                        )
-                    }
-
-                    parameters {
-                        parameter(
-                            "component",
-                            R.string.parameter_purpose2,
-                            true,
-                            GeneratedParameterType(R.string.parameter_type_description) {
-                                listOf(GeneratedValue("value", "type_description"))
-                            }
-                        )
-                    }
-
-                    preference(
-                        key = preferenceKey,
-                        purpose = R.string.preference_purpose1,
-                        type = AnyBoolean
+        val exception =
+            assertThrows(IllegalStateException::class.java) {
+                object :
+                    PreferencesApiScreen(
+                        key = SCREEN_KEY,
+                        topLevelSettingsCategory = Category.SYSTEM,
+                        fragment = PreferenceFragment::class,
+                        purpose = R.string.preference_screen_purpose,
                     ) {
-                        get {
-                            execute {
-                                preferenceValue
-                            }
+                    init {
+                        parameters {
+                            parameter(
+                                "package",
+                                R.string.parameter_purpose1,
+                                true,
+                                GeneratedParameterType(R.string.parameter_type_description) {
+                                    listOf(GeneratedValue("value", "type_description"))
+                                },
+                            )
+                        }
+
+                        parameters {
+                            parameter(
+                                "component",
+                                R.string.parameter_purpose2,
+                                true,
+                                GeneratedParameterType(R.string.parameter_type_description) {
+                                    listOf(GeneratedValue("value", "type_description"))
+                                },
+                            )
+                        }
+
+                        preference(
+                            key = preferenceKey,
+                            purpose = R.string.preference_purpose1,
+                            type = AnyBoolean,
+                        ) {
+                            get { execute { preferenceValue } }
                         }
                     }
                 }
             }
-        }
 
         assertThat(exception.message).isEqualTo(getExceptionMessageMultipleDefines("parameters"))
     }
 
     @Test
     fun parameters_emptyBlock_throwsException() {
-        val exception = assertThrows(IllegalStateException::class.java) {
-            object : PreferencesApiScreen(
-                key = SCREEN_KEY,
-                topLevelSettingsCategory = Category.SYSTEM,
-                fragment = PreferenceFragment::class,
-                purpose = R.string.preference_screen_purpose
-            ) {
-                init {
-                    parameters {}
+        val exception =
+            assertThrows(IllegalStateException::class.java) {
+                object :
+                    PreferencesApiScreen(
+                        key = SCREEN_KEY,
+                        topLevelSettingsCategory = Category.SYSTEM,
+                        fragment = PreferenceFragment::class,
+                        purpose = R.string.preference_screen_purpose,
+                    ) {
+                    init {
+                        parameters {}
+                    }
                 }
             }
-        }
 
         assertThat(exception.message).isEqualTo(EXCEPTION_MESSAGE_NO_PARAMETER_DEFINED)
     }
 
     @Test
     fun parameters_multipleParameters_throwsException() {
-        val exception = assertThrows(IllegalStateException::class.java) {
-            object : PreferencesApiScreen(
-                key = SCREEN_KEY,
-                topLevelSettingsCategory = Category.SYSTEM,
-                fragment = PreferenceFragment::class,
-                purpose = R.string.preference_screen_purpose
-            ) {
+        val exception =
+            assertThrows(IllegalStateException::class.java) {
+                object :
+                    PreferencesApiScreen(
+                        key = SCREEN_KEY,
+                        topLevelSettingsCategory = Category.SYSTEM,
+                        fragment = PreferenceFragment::class,
+                        purpose = R.string.preference_screen_purpose,
+                    ) {
+                    init {
+                        parameters {
+                            parameter(
+                                "package",
+                                R.string.parameter_purpose1,
+                                true,
+                                GeneratedParameterType(R.string.parameter_type_description) {
+                                    listOf(GeneratedValue("value", "type_description"))
+                                },
+                            )
+                            parameter(
+                                "component",
+                                R.string.parameter_purpose2,
+                                true,
+                                GeneratedParameterType(R.string.parameter_type_description) {
+                                    listOf(GeneratedValue("value", "type_description"))
+                                },
+                            )
+                        }
+                    }
+                }
+            }
+
+        assertThat(exception.message).isEqualTo(getExceptionMessageMultipleParametersDefined(2))
+    }
+
+    @Test
+    fun getAllPossibleParameters_returnsCorrectParameters() = runTest {
+        val screen =
+            object :
+                PreferencesApiScreen(
+                    key = SCREEN_KEY,
+                    topLevelSettingsCategory = Category.SYSTEM,
+                    fragment = PreferenceFragment::class,
+                    purpose = R.string.preference_screen_purpose,
+                ) {
                 init {
                     parameters {
                         parameter(
@@ -737,47 +842,11 @@ class PreferencesApiScreenTest {
                             true,
                             GeneratedParameterType(R.string.parameter_type_description) {
                                 listOf(GeneratedValue("value", "type_description"))
-                            }
-                        )
-                        parameter(
-                            "component",
-                            R.string.parameter_purpose2,
-                            true,
-                            GeneratedParameterType(R.string.parameter_type_description) {
-                                listOf(GeneratedValue("value", "type_description"))
-                            }
+                            },
                         )
                     }
                 }
             }
-        }
-
-        assertThat(exception.message).isEqualTo(
-            getExceptionMessageMultipleParametersDefined(2)
-        )
-    }
-
-    @Test
-    fun getAllPossibleParameters_returnsCorrectParameters() = runTest {
-        val screen = object : PreferencesApiScreen(
-            key = SCREEN_KEY,
-            topLevelSettingsCategory = Category.SYSTEM,
-            fragment = PreferenceFragment::class,
-            purpose = R.string.preference_screen_purpose
-        ) {
-            init {
-                parameters {
-                    parameter(
-                        "package",
-                        R.string.parameter_purpose1,
-                        true,
-                        GeneratedParameterType(R.string.parameter_type_description) {
-                            listOf(GeneratedValue("value", "type_description"))
-                        }
-                    )
-                }
-            }
-        }
 
         val allPossibleParameters = screen.getAllPossibleParameters(context).toList()
 
@@ -786,71 +855,33 @@ class PreferencesApiScreenTest {
     }
 
     @Test
-    fun getAllPossibleParameters_onParameterizedScreenWithInstalledPackageName_returnsCorrectParameters() = runTest {
-        val screen = object : PreferencesApiScreen(
-            key = SCREEN_KEY,
-            topLevelSettingsCategory = Category.SYSTEM,
-            fragment = PreferenceFragment::class,
-            purpose = R.string.preference_screen_purpose
-        ) {
-            init {
-                parameters {
-                    parameter(
-                        "package",
-                        R.string.parameter_purpose1,
-                        true,
-                        InstalledPackageName(PackageManager.PackageInfoFlags.of(0))
-                    )
-                }
-            }
-        }
-        ShadowPackageManager.reset()
-        val packageManager = shadowOf(context.packageManager)
-        packageManager.installPackage(buildPackageInfo("a.b.package1"))
-        packageManager.installPackage(buildPackageInfo("a.d.package2"))
-
-        val allPossibleParameters = screen.getAllPossibleParameters(context).toList()
-        val possibleParameterPairs = allPossibleParameters.flatMap{it.values.entries}.map{it.key to it.value}
-
-        allPossibleParameters.forEach {
-            assertThat(it.values).hasSize(1)
-        }
-        assertThat(possibleParameterPairs).containsExactly(
-            "package" to "a.b.package1",
-            "package" to "a.d.package2"
-        )
-    }
-
-    @Test
     fun createPreferencesApiScreenMultiplePermissionsBlocks_fails() {
         val preferenceValue = false
         val preferenceKey = "ApiPreference"
 
-        val exception = assertThrows(IllegalStateException::class.java) {
-            object : PreferencesApiScreen(
-                key = SCREEN_KEY,
-                topLevelSettingsCategory = Category.SYSTEM,
-                fragment = PreferenceFragment::class,
-                purpose = R.string.preference_screen_purpose
-            ) {
-                init {
-                    permissions(Manifest.permission.ACCESS_FINE_LOCATION)
-                    permissions(Manifest.permission.WRITE_SETTINGS)
-
-                    preference(
-                        key = preferenceKey,
-                        purpose = R.string.preference_purpose1,
-                        type = AnyBoolean
+        val exception =
+            assertThrows(IllegalStateException::class.java) {
+                object :
+                    PreferencesApiScreen(
+                        key = SCREEN_KEY,
+                        topLevelSettingsCategory = Category.SYSTEM,
+                        fragment = PreferenceFragment::class,
+                        purpose = R.string.preference_screen_purpose,
                     ) {
-                        get {
-                            execute {
-                                preferenceValue
-                            }
+                    init {
+                        permissions(Manifest.permission.ACCESS_FINE_LOCATION)
+                        permissions(Manifest.permission.WRITE_SETTINGS)
+
+                        preference(
+                            key = preferenceKey,
+                            purpose = R.string.preference_purpose1,
+                            type = AnyBoolean,
+                        ) {
+                            get { execute { preferenceValue } }
                         }
                     }
                 }
             }
-        }
 
         assertThat(exception.message).isEqualTo(getExceptionMessageMultipleDefines("permissions"))
     }
@@ -860,35 +891,35 @@ class PreferencesApiScreenTest {
         val preferenceValue = false
         val preferenceKey = "ApiPreference"
 
-        val exception = assertThrows(IllegalStateException::class.java) {
-            object : PreferencesApiScreen(
-                key = SCREEN_KEY,
-                topLevelSettingsCategory = Category.SYSTEM,
-                fragment = PreferenceFragment::class,
-                purpose = R.string.preference_screen_purpose
-            ) {
-                init {
-                    preconditions(R.string.preconditions_description1) {
-                        HardwareUnsupported(R.string.preconditions_hardware_unsupported_message)
-                    }
-                    preconditions(R.string.preconditions_description2) {
-                        EnterpriseRestriction(R.string.preconditions_enterprise_restriction_message)
-                    }
-
-                    preference(
-                        key = preferenceKey,
-                        purpose = R.string.preference_purpose1,
-                        type = AnyBoolean
+        val exception =
+            assertThrows(IllegalStateException::class.java) {
+                object :
+                    PreferencesApiScreen(
+                        key = SCREEN_KEY,
+                        topLevelSettingsCategory = Category.SYSTEM,
+                        fragment = PreferenceFragment::class,
+                        purpose = R.string.preference_screen_purpose,
                     ) {
-                        get {
-                            execute {
-                                preferenceValue
-                            }
+                    init {
+                        preconditions(R.string.preconditions_description1) {
+                            HardwareUnsupported(R.string.preconditions_hardware_unsupported_message)
+                        }
+                        preconditions(R.string.preconditions_description2) {
+                            EnterpriseRestriction(
+                                R.string.preconditions_enterprise_restriction_message
+                            )
+                        }
+
+                        preference(
+                            key = preferenceKey,
+                            purpose = R.string.preference_purpose1,
+                            type = AnyBoolean,
+                        ) {
+                            get { execute { preferenceValue } }
                         }
                     }
                 }
             }
-        }
 
         assertThat(exception.message).isEqualTo(getExceptionMessageMultipleDefines("preconditions"))
     }
@@ -898,31 +929,29 @@ class PreferencesApiScreenTest {
         var preferenceValue = false
         val preferenceKey = "ApiPreference"
 
-        val exception = assertThrows(IllegalStateException::class.java) {
-            object : PreferencesApiScreen(
-                key = SCREEN_KEY,
-                topLevelSettingsCategory = Category.SYSTEM,
-                fragment = PreferenceFragment::class,
-                purpose = R.string.preference_screen_purpose
-            ) {
-                init {
-                    preference(
-                        key = preferenceKey,
-                        purpose = R.string.preference_purpose1,
-                        type = AnyBoolean
+        val exception =
+            assertThrows(IllegalStateException::class.java) {
+                object :
+                    PreferencesApiScreen(
+                        key = SCREEN_KEY,
+                        topLevelSettingsCategory = Category.SYSTEM,
+                        fragment = PreferenceFragment::class,
+                        purpose = R.string.preference_screen_purpose,
                     ) {
-                        permissions(Manifest.permission.ACCESS_FINE_LOCATION)
-                        permissions(Manifest.permission.WRITE_SETTINGS)
+                    init {
+                        preference(
+                            key = preferenceKey,
+                            purpose = R.string.preference_purpose1,
+                            type = AnyBoolean,
+                        ) {
+                            permissions(Manifest.permission.ACCESS_FINE_LOCATION)
+                            permissions(Manifest.permission.WRITE_SETTINGS)
 
-                        get {
-                            execute {
-                                preferenceValue
-                            }
+                            get { execute { preferenceValue } }
                         }
                     }
                 }
             }
-        }
 
         assertThat(exception.message).isEqualTo(getExceptionMessageMultipleDefines("permissions"))
     }
@@ -932,35 +961,37 @@ class PreferencesApiScreenTest {
         var preferenceValue = false
         val preferenceKey = "ApiPreference"
 
-        val exception = assertThrows(IllegalStateException::class.java) {
-            object : PreferencesApiScreen(
-                key = SCREEN_KEY,
-                topLevelSettingsCategory = Category.SYSTEM,
-                fragment = PreferenceFragment::class,
-                purpose = R.string.preference_screen_purpose
-            ) {
-                init {
-                    preference(
-                        key = preferenceKey,
-                        purpose = R.string.preference_purpose1,
-                        type = AnyBoolean
+        val exception =
+            assertThrows(IllegalStateException::class.java) {
+                object :
+                    PreferencesApiScreen(
+                        key = SCREEN_KEY,
+                        topLevelSettingsCategory = Category.SYSTEM,
+                        fragment = PreferenceFragment::class,
+                        purpose = R.string.preference_screen_purpose,
                     ) {
-                        preconditions(R.string.preconditions_description1) {
-                            HardwareUnsupported(R.string.preconditions_hardware_unsupported_message)
-                        }
-                        preconditions(R.string.preconditions_description1) {
-                            EnterpriseRestriction(R.string.preconditions_enterprise_restriction_message)
-                        }
-
-                        get {
-                            execute {
-                                preferenceValue
+                    init {
+                        preference(
+                            key = preferenceKey,
+                            purpose = R.string.preference_purpose1,
+                            type = AnyBoolean,
+                        ) {
+                            preconditions(R.string.preconditions_description1) {
+                                HardwareUnsupported(
+                                    R.string.preconditions_hardware_unsupported_message
+                                )
                             }
+                            preconditions(R.string.preconditions_description1) {
+                                EnterpriseRestriction(
+                                    R.string.preconditions_enterprise_restriction_message
+                                )
+                            }
+
+                            get { execute { preferenceValue } }
                         }
                     }
                 }
             }
-        }
 
         assertThat(exception.message).isEqualTo(getExceptionMessageMultipleDefines("preconditions"))
     }
@@ -970,34 +1001,28 @@ class PreferencesApiScreenTest {
         var preferenceValue = false
         val preferenceKey = "ApiPreference"
 
-        val exception = assertThrows(IllegalStateException::class.java) {
-            object : PreferencesApiScreen(
-                key = SCREEN_KEY,
-                topLevelSettingsCategory = Category.SYSTEM,
-                fragment = PreferenceFragment::class,
-                purpose = R.string.preference_screen_purpose
-            ) {
-                init {
-                    preference(
-                        key = preferenceKey,
-                        purpose = R.string.preference_purpose1,
-                        type = AnyBoolean
+        val exception =
+            assertThrows(IllegalStateException::class.java) {
+                object :
+                    PreferencesApiScreen(
+                        key = SCREEN_KEY,
+                        topLevelSettingsCategory = Category.SYSTEM,
+                        fragment = PreferenceFragment::class,
+                        purpose = R.string.preference_screen_purpose,
                     ) {
-                        get {
-                            execute {
-                                preferenceValue
-                            }
-                        }
+                    init {
+                        preference(
+                            key = preferenceKey,
+                            purpose = R.string.preference_purpose1,
+                            type = AnyBoolean,
+                        ) {
+                            get { execute { preferenceValue } }
 
-                        get {
-                            execute {
-                                preferenceValue
-                            }
+                            get { execute { preferenceValue } }
                         }
                     }
                 }
             }
-        }
 
         assertThat(exception.message).isEqualTo(getExceptionMessageMultipleDefines("get"))
     }
@@ -1007,40 +1032,30 @@ class PreferencesApiScreenTest {
         var preferenceValue = false
         val preferenceKey = "ApiPreference"
 
-        val exception = assertThrows(IllegalStateException::class.java) {
-            object : PreferencesApiScreen(
-                key = SCREEN_KEY,
-                topLevelSettingsCategory = Category.SYSTEM,
-                fragment = PreferenceFragment::class,
-                purpose = R.string.preference_screen_purpose
-            ) {
-                init {
-                    preference(
-                        key = preferenceKey,
-                        purpose = R.string.preference_purpose1,
-                        type = AnyBoolean
+        val exception =
+            assertThrows(IllegalStateException::class.java) {
+                object :
+                    PreferencesApiScreen(
+                        key = SCREEN_KEY,
+                        topLevelSettingsCategory = Category.SYSTEM,
+                        fragment = PreferenceFragment::class,
+                        purpose = R.string.preference_screen_purpose,
                     ) {
-                        get {
-                            execute {
-                                preferenceValue
-                            }
-                        }
+                    init {
+                        preference(
+                            key = preferenceKey,
+                            purpose = R.string.preference_purpose1,
+                            type = AnyBoolean,
+                        ) {
+                            get { execute { preferenceValue } }
 
-                        set {
-                            execute { value ->
-                                preferenceValue = value
-                            }
-                        }
+                            set { execute { value -> preferenceValue = value } }
 
-                        set {
-                            execute { value ->
-                                preferenceValue = value
-                            }
+                            set { execute { value -> preferenceValue = value } }
                         }
                     }
                 }
             }
-        }
 
         assertThat(exception.message).isEqualTo(getExceptionMessageMultipleDefines("set"))
     }
@@ -1050,34 +1065,28 @@ class PreferencesApiScreenTest {
         var preferenceValue = false
         val preferenceKey = "ApiPreference"
 
-        val exception = assertThrows(IllegalStateException::class.java) {
-            object : PreferencesApiScreen(
-                key = SCREEN_KEY,
-                topLevelSettingsCategory = Category.SYSTEM,
-                fragment = PreferenceFragment::class,
-                purpose = R.string.preference_screen_purpose
-            ) {
-                init {
-                    preference(
-                        key = preferenceKey,
-                        purpose = R.string.preference_purpose1,
-                        type = AnyBoolean
+        val exception =
+            assertThrows(IllegalStateException::class.java) {
+                object :
+                    PreferencesApiScreen(
+                        key = SCREEN_KEY,
+                        topLevelSettingsCategory = Category.SYSTEM,
+                        fragment = PreferenceFragment::class,
+                        purpose = R.string.preference_screen_purpose,
                     ) {
-                        set {
-                            execute { value ->
-                                preferenceValue = value
-                            }
-                        }
+                    init {
+                        preference(
+                            key = preferenceKey,
+                            purpose = R.string.preference_purpose1,
+                            type = AnyBoolean,
+                        ) {
+                            set { execute { value -> preferenceValue = value } }
 
-                        get {
-                            execute {
-                                preferenceValue
-                            }
+                            get { execute { preferenceValue } }
                         }
                     }
                 }
             }
-        }
 
         assertThat(exception.message).isEqualTo(getExceptionMessageWrongOrder("get"))
     }
@@ -1087,36 +1096,30 @@ class PreferencesApiScreenTest {
         var preferenceValue = false
         val preferenceKey = "ApiPreference"
 
-        val exception = assertThrows(IllegalStateException::class.java) {
-            object : PreferencesApiScreen(
-                key = SCREEN_KEY,
-                topLevelSettingsCategory = Category.SYSTEM,
-                fragment = PreferenceFragment::class,
-                purpose = R.string.preference_screen_purpose
-            ) {
-                init {
-                    preference(
-                        key = preferenceKey,
-                        purpose = R.string.preference_purpose1,
-                        type = AnyBoolean
+        val exception =
+            assertThrows(IllegalStateException::class.java) {
+                object :
+                    PreferencesApiScreen(
+                        key = SCREEN_KEY,
+                        topLevelSettingsCategory = Category.SYSTEM,
+                        fragment = PreferenceFragment::class,
+                        purpose = R.string.preference_screen_purpose,
                     ) {
-                        get {
-                            execute {
-                                preferenceValue
-                            }
-                        }
+                    init {
+                        preference(
+                            key = preferenceKey,
+                            purpose = R.string.preference_purpose1,
+                            type = AnyBoolean,
+                        ) {
+                            get { execute { preferenceValue } }
 
-                        set {
-                            execute { value ->
-                                preferenceValue = value
-                            }
-                        }
+                            set { execute { value -> preferenceValue = value } }
 
-                        flag { false }
+                            flag { false }
+                        }
                     }
                 }
             }
-        }
 
         assertThat(exception.message).isEqualTo(getExceptionMessageWrongOrder("flag"))
     }
@@ -1126,39 +1129,35 @@ class PreferencesApiScreenTest {
         var preferenceValue = false
         val preferenceKey = "ApiPreference"
 
-        val exception = assertThrows(IllegalStateException::class.java) {
-            object : PreferencesApiScreen(
-                key = SCREEN_KEY,
-                topLevelSettingsCategory = Category.SYSTEM,
-                fragment = PreferenceFragment::class,
-                purpose = R.string.preference_screen_purpose
-            ) {
-                init {
-                    preference(
-                        key = preferenceKey,
-                        purpose = R.string.preference_purpose1,
-                        type = AnyBoolean
+        val exception =
+            assertThrows(IllegalStateException::class.java) {
+                object :
+                    PreferencesApiScreen(
+                        key = SCREEN_KEY,
+                        topLevelSettingsCategory = Category.SYSTEM,
+                        fragment = PreferenceFragment::class,
+                        purpose = R.string.preference_screen_purpose,
                     ) {
-                        get {
-                            execute {
-                                preferenceValue
-                            }
-                        }
+                    init {
+                        preference(
+                            key = preferenceKey,
+                            purpose = R.string.preference_purpose1,
+                            type = AnyBoolean,
+                        ) {
+                            get { execute { preferenceValue } }
 
-                        permissions(Manifest.permission.ACCESS_FINE_LOCATION)
-                        preconditions(R.string.preconditions_description1) {
-                            HardwareUnsupported(R.string.preconditions_hardware_unsupported_message)
-                        }
-
-                        set {
-                            execute { value ->
-                                preferenceValue = value
+                            permissions(Manifest.permission.ACCESS_FINE_LOCATION)
+                            preconditions(R.string.preconditions_description1) {
+                                HardwareUnsupported(
+                                    R.string.preconditions_hardware_unsupported_message
+                                )
                             }
+
+                            set { execute { value -> preferenceValue = value } }
                         }
                     }
                 }
             }
-        }
 
         assertThat(exception.message).isEqualTo(getExceptionMessageWrongOrder("permissions"))
     }
@@ -1168,34 +1167,36 @@ class PreferencesApiScreenTest {
         var preferenceValue = false
         val preferenceKey = "ApiPreference"
 
-        val exception = assertThrows(IllegalStateException::class.java) {
-            object : PreferencesApiScreen(
-                key = SCREEN_KEY,
-                topLevelSettingsCategory = Category.SYSTEM,
-                fragment = PreferenceFragment::class,
-                purpose = R.string.preference_screen_purpose
-            ) {
-                init {
-                    preference(
-                        key = preferenceKey,
-                        purpose = R.string.preference_purpose1,
-                        type = AnyBoolean
+        val exception =
+            assertThrows(IllegalStateException::class.java) {
+                object :
+                    PreferencesApiScreen(
+                        key = SCREEN_KEY,
+                        topLevelSettingsCategory = Category.SYSTEM,
+                        fragment = PreferenceFragment::class,
+                        purpose = R.string.preference_screen_purpose,
                     ) {
-                        get {
-                            permissions(Manifest.permission.ACCESS_FINE_LOCATION)
+                    init {
+                        preference(
+                            key = preferenceKey,
+                            purpose = R.string.preference_purpose1,
+                            type = AnyBoolean,
+                        ) {
+                            get {
+                                permissions(Manifest.permission.ACCESS_FINE_LOCATION)
 
-                            execute {
-                                preferenceValue
-                            }
+                                execute { preferenceValue }
 
-                            preconditions(R.string.preconditions_description1) {
-                                HardwareUnsupported(R.string.preconditions_hardware_unsupported_message)
+                                preconditions(R.string.preconditions_description1) {
+                                    HardwareUnsupported(
+                                        R.string.preconditions_hardware_unsupported_message
+                                    )
+                                }
                             }
                         }
                     }
                 }
             }
-        }
 
         assertThat(exception.message).isEqualTo(getExceptionMessageWrongOrder("preconditions"))
     }
@@ -1205,31 +1206,31 @@ class PreferencesApiScreenTest {
         var preferenceValue = false
         val preferenceKey = "ApiPreference"
 
-        val exception = assertThrows(IllegalStateException::class.java) {
-            object : PreferencesApiScreen(
-                key = SCREEN_KEY,
-                topLevelSettingsCategory = Category.SYSTEM,
-                fragment = PreferenceFragment::class,
-                purpose = R.string.preference_screen_purpose
-            ) {
-                init {
-                    preference(
-                        key = preferenceKey,
-                        purpose = R.string.preference_purpose1,
-                        type = AnyBoolean
+        val exception =
+            assertThrows(IllegalStateException::class.java) {
+                object :
+                    PreferencesApiScreen(
+                        key = SCREEN_KEY,
+                        topLevelSettingsCategory = Category.SYSTEM,
+                        fragment = PreferenceFragment::class,
+                        purpose = R.string.preference_screen_purpose,
                     ) {
-                        get {
-                            permissions(Manifest.permission.ACCESS_FINE_LOCATION)
-                            permissions(Manifest.permission.WRITE_SETTINGS)
+                    init {
+                        preference(
+                            key = preferenceKey,
+                            purpose = R.string.preference_purpose1,
+                            type = AnyBoolean,
+                        ) {
+                            get {
+                                permissions(Manifest.permission.ACCESS_FINE_LOCATION)
+                                permissions(Manifest.permission.WRITE_SETTINGS)
 
-                            execute {
-                                preferenceValue
+                                execute { preferenceValue }
                             }
                         }
                     }
                 }
             }
-        }
 
         assertThat(exception.message).isEqualTo(getExceptionMessageMultipleDefines("permissions"))
     }
@@ -1239,35 +1240,39 @@ class PreferencesApiScreenTest {
         var preferenceValue = false
         val preferenceKey = "ApiPreference"
 
-        val exception = assertThrows(IllegalStateException::class.java) {
-            object : PreferencesApiScreen(
-                key = SCREEN_KEY,
-                topLevelSettingsCategory = Category.SYSTEM,
-                fragment = PreferenceFragment::class,
-                purpose = R.string.preference_screen_purpose
-            ) {
-                init {
-                    preference(
-                        key = preferenceKey,
-                        purpose = R.string.preference_purpose1,
-                        type = AnyBoolean
+        val exception =
+            assertThrows(IllegalStateException::class.java) {
+                object :
+                    PreferencesApiScreen(
+                        key = SCREEN_KEY,
+                        topLevelSettingsCategory = Category.SYSTEM,
+                        fragment = PreferenceFragment::class,
+                        purpose = R.string.preference_screen_purpose,
                     ) {
-                        get {
-                            preconditions(R.string.preconditions_description1) {
-                                HardwareUnsupported(R.string.preconditions_hardware_unsupported_message)
-                            }
-                            preconditions(R.string.preconditions_description2) {
-                                EnterpriseRestriction(R.string.preconditions_enterprise_restriction_message)
-                            }
+                    init {
+                        preference(
+                            key = preferenceKey,
+                            purpose = R.string.preference_purpose1,
+                            type = AnyBoolean,
+                        ) {
+                            get {
+                                preconditions(R.string.preconditions_description1) {
+                                    HardwareUnsupported(
+                                        R.string.preconditions_hardware_unsupported_message
+                                    )
+                                }
+                                preconditions(R.string.preconditions_description2) {
+                                    EnterpriseRestriction(
+                                        R.string.preconditions_enterprise_restriction_message
+                                    )
+                                }
 
-                            execute {
-                                preferenceValue
+                                execute { preferenceValue }
                             }
                         }
                     }
                 }
             }
-        }
 
         assertThat(exception.message).isEqualTo(getExceptionMessageMultipleDefines("preconditions"))
     }
@@ -1277,32 +1282,30 @@ class PreferencesApiScreenTest {
         var preferenceValue = false
         val preferenceKey = "ApiPreference"
 
-        val exception = assertThrows(IllegalStateException::class.java) {
-            object : PreferencesApiScreen(
-                key = SCREEN_KEY,
-                topLevelSettingsCategory = Category.SYSTEM,
-                fragment = PreferenceFragment::class,
-                purpose = R.string.preference_screen_purpose
-            ) {
-                init {
-                    preference(
-                        key = preferenceKey,
-                        purpose = R.string.preference_purpose1,
-                        type = AnyBoolean
+        val exception =
+            assertThrows(IllegalStateException::class.java) {
+                object :
+                    PreferencesApiScreen(
+                        key = SCREEN_KEY,
+                        topLevelSettingsCategory = Category.SYSTEM,
+                        fragment = PreferenceFragment::class,
+                        purpose = R.string.preference_screen_purpose,
                     ) {
-                        get {
-                            execute {
-                                preferenceValue
-                            }
+                    init {
+                        preference(
+                            key = preferenceKey,
+                            purpose = R.string.preference_purpose1,
+                            type = AnyBoolean,
+                        ) {
+                            get {
+                                execute { preferenceValue }
 
-                            execute {
-                                preferenceValue
+                                execute { preferenceValue }
                             }
                         }
                     }
                 }
             }
-        }
 
         assertThat(exception.message).isEqualTo(getExceptionMessageMultipleDefines("execute"))
     }
@@ -1312,38 +1315,41 @@ class PreferencesApiScreenTest {
         var preferenceValue = false
         val preferenceKey = "ApiPreference"
 
-        val exception = assertThrows(IllegalStateException::class.java) {
-            object : PreferencesApiScreen(
-                key = SCREEN_KEY,
-                topLevelSettingsCategory = Category.SYSTEM,
-                fragment = PreferenceFragment::class,
-                purpose = R.string.preference_screen_purpose
-            ) {
-                init {
-                    preference(
-                        key = preferenceKey,
-                        purpose = R.string.preference_purpose1,
-                        type = AnyBoolean
+        val exception =
+            assertThrows(IllegalStateException::class.java) {
+                object :
+                    PreferencesApiScreen(
+                        key = SCREEN_KEY,
+                        topLevelSettingsCategory = Category.SYSTEM,
+                        fragment = PreferenceFragment::class,
+                        purpose = R.string.preference_screen_purpose,
                     ) {
-                        set {
-                            permissions(Manifest.permission.ACCESS_FINE_LOCATION)
+                    init {
+                        preference(
+                            key = preferenceKey,
+                            purpose = R.string.preference_purpose1,
+                            type = AnyBoolean,
+                        ) {
+                            set {
+                                permissions(Manifest.permission.ACCESS_FINE_LOCATION)
 
-                            preconditions(R.string.preconditions_description1) {
-                                HardwareUnsupported(R.string.preconditions_hardware_unsupported_message)
-                            }
+                                preconditions(R.string.preconditions_description1) {
+                                    HardwareUnsupported(
+                                        R.string.preconditions_hardware_unsupported_message
+                                    )
+                                }
 
-                            execute { value ->
-                                preferenceValue = value
-                            }
+                                execute { value -> preferenceValue = value }
 
-                            valuePreconditions(R.string.value_preconditions_description1) { value ->
-                                Allowed
+                                valuePreconditions(R.string.value_preconditions_description1) {
+                                    value ->
+                                    Allowed
+                                }
                             }
                         }
                     }
                 }
             }
-        }
 
         assertThat(exception.message).isEqualTo(getExceptionMessageWrongOrder("valuePreconditions"))
     }
@@ -1353,31 +1359,31 @@ class PreferencesApiScreenTest {
         var preferenceValue = false
         val preferenceKey = "ApiPreference"
 
-        val exception = assertThrows(IllegalStateException::class.java) {
-            object : PreferencesApiScreen(
-                key = SCREEN_KEY,
-                topLevelSettingsCategory = Category.SYSTEM,
-                fragment = PreferenceFragment::class,
-                purpose = R.string.preference_screen_purpose
-            ) {
-                init {
-                    preference(
-                        key = preferenceKey,
-                        purpose = R.string.preference_purpose1,
-                        type = AnyBoolean
+        val exception =
+            assertThrows(IllegalStateException::class.java) {
+                object :
+                    PreferencesApiScreen(
+                        key = SCREEN_KEY,
+                        topLevelSettingsCategory = Category.SYSTEM,
+                        fragment = PreferenceFragment::class,
+                        purpose = R.string.preference_screen_purpose,
                     ) {
-                        set {
-                            permissions(Manifest.permission.ACCESS_FINE_LOCATION)
-                            permissions(Manifest.permission.WRITE_SETTINGS)
+                    init {
+                        preference(
+                            key = preferenceKey,
+                            purpose = R.string.preference_purpose1,
+                            type = AnyBoolean,
+                        ) {
+                            set {
+                                permissions(Manifest.permission.ACCESS_FINE_LOCATION)
+                                permissions(Manifest.permission.WRITE_SETTINGS)
 
-                            execute { value ->
-                                preferenceValue = value
+                                execute { value -> preferenceValue = value }
                             }
                         }
                     }
                 }
             }
-        }
 
         assertThat(exception.message).isEqualTo(getExceptionMessageMultipleDefines("permissions"))
     }
@@ -1387,35 +1393,39 @@ class PreferencesApiScreenTest {
         var preferenceValue = false
         val preferenceKey = "ApiPreference"
 
-        val exception = assertThrows(IllegalStateException::class.java) {
-            object : PreferencesApiScreen(
-                key = SCREEN_KEY,
-                topLevelSettingsCategory = Category.SYSTEM,
-                fragment = PreferenceFragment::class,
-                purpose = R.string.preference_screen_purpose
-            ) {
-                init {
-                    preference(
-                        key = preferenceKey,
-                        purpose = R.string.preference_purpose1,
-                        type = AnyBoolean
+        val exception =
+            assertThrows(IllegalStateException::class.java) {
+                object :
+                    PreferencesApiScreen(
+                        key = SCREEN_KEY,
+                        topLevelSettingsCategory = Category.SYSTEM,
+                        fragment = PreferenceFragment::class,
+                        purpose = R.string.preference_screen_purpose,
                     ) {
-                        set {
-                            preconditions(R.string.preconditions_description1) {
-                                HardwareUnsupported(R.string.preconditions_hardware_unsupported_message)
-                            }
-                            preconditions(R.string.preconditions_description2) {
-                                EnterpriseRestriction(R.string.preconditions_enterprise_restriction_message)
-                            }
+                    init {
+                        preference(
+                            key = preferenceKey,
+                            purpose = R.string.preference_purpose1,
+                            type = AnyBoolean,
+                        ) {
+                            set {
+                                preconditions(R.string.preconditions_description1) {
+                                    HardwareUnsupported(
+                                        R.string.preconditions_hardware_unsupported_message
+                                    )
+                                }
+                                preconditions(R.string.preconditions_description2) {
+                                    EnterpriseRestriction(
+                                        R.string.preconditions_enterprise_restriction_message
+                                    )
+                                }
 
-                            execute { value ->
-                                preferenceValue = value
+                                execute { value -> preferenceValue = value }
                             }
                         }
                     }
                 }
             }
-        }
 
         assertThat(exception.message).isEqualTo(getExceptionMessageMultipleDefines("preconditions"))
     }
@@ -1425,37 +1435,40 @@ class PreferencesApiScreenTest {
         var preferenceValue = false
         val preferenceKey = "ApiPreference"
 
-        val exception = assertThrows(IllegalStateException::class.java) {
-            object : PreferencesApiScreen(
-                key = SCREEN_KEY,
-                topLevelSettingsCategory = Category.SYSTEM,
-                fragment = PreferenceFragment::class,
-                purpose = R.string.preference_screen_purpose
-            ) {
-                init {
-                    preference(
-                        key = preferenceKey,
-                        purpose = R.string.preference_purpose1,
-                        type = AnyBoolean
+        val exception =
+            assertThrows(IllegalStateException::class.java) {
+                object :
+                    PreferencesApiScreen(
+                        key = SCREEN_KEY,
+                        topLevelSettingsCategory = Category.SYSTEM,
+                        fragment = PreferenceFragment::class,
+                        purpose = R.string.preference_screen_purpose,
                     ) {
-                        set {
-                            valuePreconditions(R.string.value_preconditions_description1) { value ->
-                                Allowed
-                            }
-                            valuePreconditions(R.string.value_preconditions_description2) { value ->
-                                Allowed
-                            }
+                    init {
+                        preference(
+                            key = preferenceKey,
+                            purpose = R.string.preference_purpose1,
+                            type = AnyBoolean,
+                        ) {
+                            set {
+                                valuePreconditions(R.string.value_preconditions_description1) {
+                                    value ->
+                                    Allowed
+                                }
+                                valuePreconditions(R.string.value_preconditions_description2) {
+                                    value ->
+                                    Allowed
+                                }
 
-                            execute { value ->
-                                preferenceValue = value
+                                execute { value -> preferenceValue = value }
                             }
                         }
                     }
                 }
             }
-        }
 
-        assertThat(exception.message).isEqualTo(getExceptionMessageMultipleDefines("valuePreconditions"))
+        assertThat(exception.message)
+            .isEqualTo(getExceptionMessageMultipleDefines("valuePreconditions"))
     }
 
     @Test
@@ -1463,32 +1476,30 @@ class PreferencesApiScreenTest {
         var preferenceValue = false
         val preferenceKey = "ApiPreference"
 
-        val exception = assertThrows(IllegalStateException::class.java) {
-            object : PreferencesApiScreen(
-                key = SCREEN_KEY,
-                topLevelSettingsCategory = Category.SYSTEM,
-                fragment = PreferenceFragment::class,
-                purpose = R.string.preference_screen_purpose
-            ) {
-                init {
-                    preference(
-                        key = preferenceKey,
-                        purpose = R.string.preference_purpose1,
-                        type = AnyBoolean
+        val exception =
+            assertThrows(IllegalStateException::class.java) {
+                object :
+                    PreferencesApiScreen(
+                        key = SCREEN_KEY,
+                        topLevelSettingsCategory = Category.SYSTEM,
+                        fragment = PreferenceFragment::class,
+                        purpose = R.string.preference_screen_purpose,
                     ) {
-                        set {
-                            execute { value ->
-                                preferenceValue = value
-                            }
+                    init {
+                        preference(
+                            key = preferenceKey,
+                            purpose = R.string.preference_purpose1,
+                            type = AnyBoolean,
+                        ) {
+                            set {
+                                execute { value -> preferenceValue = value }
 
-                            execute { value ->
-                                preferenceValue = value
+                                execute { value -> preferenceValue = value }
                             }
                         }
                     }
                 }
             }
-        }
 
         assertThat(exception.message).isEqualTo(getExceptionMessageMultipleDefines("execute"))
     }
@@ -1498,13 +1509,15 @@ class PreferencesApiScreenTest {
         val preferenceKey = "ApiPreference"
         val preferenceValue = false
 
-        val preferenceScreen = object : PreferencesApiScreen(
-            key = "api_screen_key",
-            topLevelSettingsCategory = Category.SYSTEM,
-            fragment = PreferenceFragment::class,
-            purpose = R.string.preference_screen_purpose,
-            alreadyPartiallyMigrated = PreferenceFragment::class
-        ) {}
+        val preferenceScreen =
+            object :
+                PreferencesApiScreen(
+                    key = "api_screen_key",
+                    topLevelSettingsCategory = Category.SYSTEM,
+                    fragment = PreferenceFragment::class,
+                    purpose = R.string.preference_screen_purpose,
+                    alreadyPartiallyMigrated = PreferenceFragment::class,
+                ) {}
 
         assertThat(preferenceScreen.key.startsWith(PARTIALLY_MIGRATED_PREFIX)).isTrue()
     }
@@ -1514,57 +1527,65 @@ class PreferencesApiScreenTest {
         val preferenceKey = "ApiPreference"
         val preferenceValue = false
 
-        val exception = assertThrows(IllegalArgumentException::class.java) {
-            object : PreferencesApiScreen(
-                key = "screen_key",
-                topLevelSettingsCategory = Category.SYSTEM,
-                fragment = PreferenceFragment::class,
-                purpose = R.string.preference_screen_purpose,
-                alreadyPartiallyMigrated = PreferenceFragment::class
-            ) {}
-        }
+        val exception =
+            assertThrows(IllegalArgumentException::class.java) {
+                object :
+                    PreferencesApiScreen(
+                        key = "screen_key",
+                        topLevelSettingsCategory = Category.SYSTEM,
+                        fragment = PreferenceFragment::class,
+                        purpose = R.string.preference_screen_purpose,
+                        alreadyPartiallyMigrated = PreferenceFragment::class,
+                    ) {}
+            }
 
-        assertThat(exception.message).isEqualTo("The key 'screen_key' must start with 'api_' because it has an already migrated class.")
+        assertThat(exception.message)
+            .isEqualTo(
+                "The key 'screen_key' must start with 'api_' because it has an already migrated class."
+            )
     }
 
     @Test
     fun createPreferencesApiScreen_screenPreconditionsFail_launchIntentIsNull() {
-        val preferenceScreen = object : PreferencesApiScreen(
-            key = SCREEN_KEY,
-            topLevelSettingsCategory = Category.SYSTEM,
-            fragment = PreferenceFragment::class,
-            purpose = R.string.preference_screen_purpose
-        ) {
-            init {
-                preconditions(R.string.preconditions_description1) {
-                    Custom(R.string.preconditions_custom_message)
+        val preferenceScreen =
+            object :
+                PreferencesApiScreen(
+                    key = SCREEN_KEY,
+                    topLevelSettingsCategory = Category.SYSTEM,
+                    fragment = PreferenceFragment::class,
+                    purpose = R.string.preference_screen_purpose,
+                ) {
+                init {
+                    preconditions(R.string.preconditions_description1) {
+                        Custom(R.string.preconditions_custom_message)
+                    }
                 }
             }
-        }
 
         assertThat(preferenceScreen.getLaunchIntent(context, null)).isNull()
     }
 
     @Test
     fun createPreferencesApiScreen_screenPreconditionsMet_launchIntentIsNotNull() {
-        val preferenceScreen = object : PreferencesApiScreen(
-            key = SCREEN_KEY,
-            topLevelSettingsCategory = Category.SYSTEM,
-            fragment = PreferenceFragment::class,
-            purpose = R.string.preference_screen_purpose
-        ) {
-            init {
-                preconditions(R.string.preconditions_description1) {
-                    Allowed
+        val preferenceScreen =
+            object :
+                PreferencesApiScreen(
+                    key = SCREEN_KEY,
+                    topLevelSettingsCategory = Category.SYSTEM,
+                    fragment = PreferenceFragment::class,
+                    purpose = R.string.preference_screen_purpose,
+                ) {
+                init {
+                    preconditions(R.string.preconditions_description1) { Allowed }
                 }
             }
-        }
 
         assertThat(preferenceScreen.getLaunchIntent(context, null)).isNotNull()
     }
 
     companion object {
         const val SCREEN_KEY = "ApiScreen"
+
         enum class ApiPreconditionsMapper {
             ALLOWED,
             ENTERPRISE_RESTRICTION,

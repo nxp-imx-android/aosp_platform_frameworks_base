@@ -16,8 +16,10 @@
 
 package android.service.personalcontext.refiner;
 
+import android.os.Bundle;
 import android.os.ParcelUuid;
 import android.service.personalcontext.hint.ContextHintWithSignatureWrapper;
+import android.service.personalcontext.insight.ContextInsightWrapper;
 import android.service.personalcontext.insight.interaction.InsightEvent;
 import android.service.personalcontext.refiner.IGetFilterCallback;
 import android.service.personalcontext.refiner.IRefineCallback;
@@ -43,4 +45,7 @@ oneway interface IRefiner {
 
     /** Reports an insight event back to the understander. */
     void handleEvent(String packageName, in InsightEvent event);
+
+    /** Reports user feedback back to the understander. */
+    void handleFeedback(in ContextInsightWrapper insight, in Bundle feedback);
 }
