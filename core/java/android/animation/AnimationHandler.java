@@ -51,8 +51,6 @@ public class AnimationHandler {
             new ArrayMap<>();
     private final ArrayList<AnimationFrameCallback> mAnimationCallbacks =
             new ArrayList<>();
-    private final ArrayList<AnimationFrameCallback> mCommitCallbacks =
-            new ArrayList<>();
     private AnimationFrameCallbackProvider mProvider;
 
     // Static flag which allows the pausing behavior to be globally disabled/enabled.
@@ -323,28 +321,10 @@ public class AnimationHandler {
     }
 
     /**
-     * Register to get a one shot callback for frame commit timing. Frame commit timing is the
-     * time *after* traversals are done, as opposed to the animation frame timing, which is
-     * before any traversals. This timing can be used to adjust the start time of an animation
-     * when expensive traversals create big delta between the animation frame timing and the time
-     * that animation is first shown on screen.
-     *
-     * Note this should only be called when the animation has already registered to receive
-     * animation frame callbacks. This callback will be guaranteed to happen *after* the next
-     * animation frame callback.
-     */
-    public void addOneShotCommitCallback(final AnimationFrameCallback callback) {
-        if (!mCommitCallbacks.contains(callback)) {
-            mCommitCallbacks.add(callback);
-        }
-    }
-
-    /**
      * Removes the given callback from the list, so it will no longer be called for frame related
      * timing.
      */
     public void removeCallback(AnimationFrameCallback callback) {
-        mCommitCallbacks.remove(callback);
         mDelayedCallbackStartTime.remove(callback);
         int id = mAnimationCallbacks.indexOf(callback);
         if (id >= 0) {
@@ -402,25 +382,9 @@ public class AnimationHandler {
             }
             if (isCallbackDue(callback, currentTime)) {
                 callback.doAnimationFrame(frameTime);
-                if (mCommitCallbacks.contains(callback)) {
-                    getProvider().postCommitCallback(new Runnable() {
-                        @Override
-                        public void run() {
-                            commitAnimationFrame(callback, getProvider().getFrameTime());
-                        }
-                    });
-                }
             }
         }
         cleanUpList();
-    }
-
-    private void commitAnimationFrame(AnimationFrameCallback callback, long frameTime) {
-        if (!mDelayedCallbackStartTime.containsKey(callback) &&
-                mCommitCallbacks.contains(callback)) {
-            callback.commitAnimationFrame(frameTime);
-            mCommitCallbacks.remove(callback);
-        }
     }
 
     /**
@@ -510,11 +474,6 @@ public class AnimationHandler {
         }
 
         @Override
-        public void postCommitCallback(Runnable runnable) {
-            mChoreographer.postCallback(Choreographer.CALLBACK_COMMIT, runnable, null);
-        }
-
-        @Override
         public long getFrameTime() {
             return mChoreographer.getFrameTime();
         }
@@ -542,23 +501,6 @@ public class AnimationHandler {
          * @return if the animation has finished.
          */
         boolean doAnimationFrame(long frameTime);
-
-        /**
-         * This notifies the callback of frame commit time. Frame commit time is the time after
-         * traversals happen, as opposed to the normal animation frame time that is before
-         * traversals. This is used to compensate expensive traversals that happen as the
-         * animation starts. When traversals take a long time to complete, the rendering of the
-         * initial frame will be delayed (by a long time). But since the startTime of the
-         * animation is set before the traversal, by the time of next frame, a lot of time would
-         * have passed since startTime was set, the animation will consequently skip a few frames
-         * to respect the new frameTime. By having the commit time, we can adjust the start time to
-         * when the first frame was drawn (after any expensive traversals) so that no frames
-         * will be skipped.
-         *
-         * @param frameTime The frame time after traversals happen, if any, in the
-         *                  {@link SystemClock#uptimeMillis()} time base.
-         */
-        void commitAnimationFrame(long frameTime);
     }
 
     /**
@@ -571,7 +513,6 @@ public class AnimationHandler {
      */
     public interface AnimationFrameCallbackProvider {
         void postFrameCallback(Choreographer.FrameCallback callback);
-        void postCommitCallback(Runnable runnable);
         long getFrameTime();
         long getFrameDelay();
         void setFrameDelay(long delay);
