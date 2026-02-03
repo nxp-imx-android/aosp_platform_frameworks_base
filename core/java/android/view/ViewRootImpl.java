@@ -118,7 +118,6 @@ import static android.view.WindowManagerGlobal.RELAYOUT_RES_BUFFER_SYNC;
 import static android.view.WindowManagerGlobal.RELAYOUT_RES_CANCEL_AND_REDRAW;
 import static android.view.WindowManagerGlobal.RELAYOUT_RES_FIRST_TIME;
 import static android.view.WindowManagerGlobal.RELAYOUT_RES_SURFACE_CHANGED;
-import static android.view.accessibility.Flags.a11ySequentialFocusStartingPoint;
 import static android.view.accessibility.Flags.forceInvertColor;
 import static android.view.accessibility.Flags.reduceWindowContentChangedEventThrottle;
 import static android.view.flags.Flags.atomicTraversalBarrier;
@@ -8423,8 +8422,7 @@ public final class ViewRootImpl implements ViewParent,
             }
             if (direction != 0) {
                 View focused = mView.findFocus();
-                if (a11ySequentialFocusStartingPoint()
-                        && focused == null
+                if (focused == null
                         && ViewRootImpl.this.mAccessibilityFocusedHost != null) {
                     focused = ViewRootImpl.this.mAccessibilityFocusedHost;
                 }
