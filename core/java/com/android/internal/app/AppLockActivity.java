@@ -25,6 +25,7 @@ import android.annotation.Nullable;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.DownloadManager;
 import android.app.KeyguardManager;
 import android.app.admin.DevicePolicyManager;
 import android.content.Intent;
@@ -69,8 +70,16 @@ import java.util.Objects;
  *         request code {@code REQUEST_CODE_SET_SCREEN_LOCK}.</li>
  *     <li>After a screen lock is set (or if one already exists), a user education dialog activity
  *         with the request code {@code REQUEST_CODE_USER_EDUCATION_DIALOG} is shown.</li>
- *     <li>If the target app is a Photos app, a permission review dialog activity with the request
- *         code {@code REQUEST_CODE_PHOTOS_APP_PERMISSION_REVIEW_DIALOG} will be shown.</li>
+ *     <li>If the target app is a Photos or Files app, a permission review dialog activity with the
+ *         request code {@code REQUEST_CODE_APP_PERMISSION_REVIEW_DIALOG} will be shown.
+ *         <ul>
+ *             <li><b>Photos App:</b> Identified by its ability to handle an
+ *                 {@link android.content.Intent#ACTION_VIEW} intent with {@code image/*} or
+ *                 {@code video/*} MIME types.</li>
+ *             <li><b>Files App:</b> Identified by its ability to handle the
+ *                 {@link DownloadManager#ACTION_VIEW_DOWNLOADS} intent.</li>
+ *         </ul>
+ *     </li>
  *     <li>Finally, a biometric prompt is displayed to authenticate the user before enabling App
  *         Lock.</li>
  * </ol>
@@ -105,7 +114,7 @@ public class AppLockActivity extends Activity {
     // Request codes used to identify the originating request.
     private static final int REQUEST_CODE_SET_SCREEN_LOCK = 1;
     private static final int REQUEST_CODE_USER_EDUCATION_DIALOG = 2;
-    private static final int REQUEST_CODE_PHOTOS_APP_PERMISSION_REVIEW_DIALOG = 3;
+    private static final int REQUEST_CODE_APP_PERMISSION_REVIEW_DIALOG = 3;
 
     @Nullable
     private static Injector sInjector;
@@ -348,16 +357,18 @@ public class AppLockActivity extends Activity {
         startActivityForResult(userEducationIntent, REQUEST_CODE_USER_EDUCATION_DIALOG);
     }
 
-    /** Displays a permission review dialog while adding App Lock to Photos app. */
-    private void showPhotosAppPermissionReviewDialog(String packageName) {
+    /** Displays a permission review dialog while adding App Lock. */
+    private void showPermissionReviewDialog(String packageName,
+            @AppLockPermissionReviewActivity.ReviewType int reviewType) {
         if (DEBUG) {
-            Slog.d(TAG, "showPhotosAppPermissionReviewDialog called for " + packageName);
+            Slog.d(TAG, "showPermissionReviewDialog called for " + packageName);
         }
-        final Intent photoAccessActivityIntent =
-                AppLockPermissionReviewActivity.createIntent(this, packageName);
 
-        startActivityForResult(photoAccessActivityIntent,
-                REQUEST_CODE_PHOTOS_APP_PERMISSION_REVIEW_DIALOG);
+        final Intent appLockPermissionReviewActivityIntent =
+                AppLockPermissionReviewActivity.createIntent(this, packageName, reviewType);
+
+        startActivityForResult(appLockPermissionReviewActivityIntent,
+                REQUEST_CODE_APP_PERMISSION_REVIEW_DIALOG);
     }
 
     @SuppressLint("AndroidFrameworkRequiresPermission")
@@ -402,12 +413,16 @@ public class AppLockActivity extends Activity {
             }
             case REQUEST_CODE_USER_EDUCATION_DIALOG -> {
                 if (isPhotoApp(packageName)) {
-                    showPhotosAppPermissionReviewDialog(packageName);
+                    showPermissionReviewDialog(packageName,
+                            AppLockPermissionReviewActivity.REVIEW_TYPE_PHOTOS);
+                } else if (isFilesApp(packageName)) {
+                    showPermissionReviewDialog(packageName,
+                            AppLockPermissionReviewActivity.REVIEW_TYPE_FILES);
                 } else {
                     showBiometricPrompt(packageName, packageLabel, newAppLockEnabled);
                 }
             }
-            case REQUEST_CODE_PHOTOS_APP_PERMISSION_REVIEW_DIALOG -> {
+            case REQUEST_CODE_APP_PERMISSION_REVIEW_DIALOG -> {
                 showBiometricPrompt(packageName, packageLabel, newAppLockEnabled);
             }
             default -> {
@@ -441,6 +456,17 @@ public class AppLockActivity extends Activity {
             Slog.e(TAG, "Package " + packageName + " not found", e);
             return null;
         }
+    }
+
+    /**
+     * Determines if an app is a "Files app" by checking if it handles the
+     * {@link DownloadManager#ACTION_VIEW_DOWNLOADS} intent.
+     */
+    private boolean isFilesApp(String packageName) {
+        final Intent intent = new Intent(DownloadManager.ACTION_VIEW_DOWNLOADS);
+        intent.setPackage(packageName);
+        return getPackageManager().resolveActivity(intent,
+                    PackageManager.ResolveInfoFlags.of(PackageManager.MATCH_DEFAULT_ONLY)) != null;
     }
 
     /**
