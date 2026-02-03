@@ -30,6 +30,7 @@ import com.android.server.SystemService;
 import com.android.server.appinteraction.AppInteractionService;
 import com.android.server.appinteraction.AppInteractionServiceImpl;
 import com.android.server.uri.UriGrantsManagerInternal;
+import com.android.server.wm.ActivityTaskManagerInternal;
 
 import java.util.Objects;
 
@@ -57,7 +58,8 @@ public class AppFunctionManagerService extends SystemService {
                         new AppFunctionMetadataReader(
                                 MultiUserDynamicAppFunctionRegistry.getInstance(),
                                 new AppFunctionsMetadataCache(context),
-                                new ServiceConfigImpl()));
+                                new ServiceConfigImpl()),
+                        LocalServices.getService(ActivityTaskManagerInternal.class));
     }
 
     @Override

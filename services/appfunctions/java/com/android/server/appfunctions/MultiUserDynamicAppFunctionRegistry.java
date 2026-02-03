@@ -18,11 +18,11 @@ package com.android.server.appfunctions;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.appfunctions.AppFunctionActivityId;
 import android.app.appfunctions.ExecuteAppFunctionAidlRequest;
 import android.app.appfunctions.IAppFunctionExecutor;
 import android.app.appfunctions.SafeOneTimeExecuteAppFunctionCallback;
 import android.os.Build;
-import android.os.IBinder;
 import android.os.ICancellationSignal;
 import android.os.UserHandle;
 import android.util.Log;
@@ -185,20 +185,20 @@ public final class MultiUserDynamicAppFunctionRegistry {
     }
 
     public static class ActivitySourceId {
-        @Nullable private final IBinder mActivityToken;
+        @Nullable private final AppFunctionActivityId mAppFunctionActivityId;
 
-        ActivitySourceId(@Nullable IBinder activityToken) {
-            mActivityToken = activityToken;
+        ActivitySourceId(@Nullable AppFunctionActivityId appFunctionActivityId) {
+            mAppFunctionActivityId = appFunctionActivityId;
         }
 
         @Override
         public String toString() {
-            return "ActivitySourceId{" + mActivityToken + "}";
+            return "ActivitySourceId{" + mAppFunctionActivityId + "}";
         }
 
         @Override
         public int hashCode() {
-            return Objects.hashCode(mActivityToken);
+            return Objects.hashCode(mAppFunctionActivityId);
         }
 
         @Override
@@ -209,7 +209,8 @@ public final class MultiUserDynamicAppFunctionRegistry {
             if (!(obj instanceof ActivitySourceId)) {
                 return false;
             }
-            return Objects.equals(mActivityToken, ((ActivitySourceId) obj).mActivityToken);
+            return Objects.equals(
+                    mAppFunctionActivityId, ((ActivitySourceId) obj).mAppFunctionActivityId);
         }
     }
 

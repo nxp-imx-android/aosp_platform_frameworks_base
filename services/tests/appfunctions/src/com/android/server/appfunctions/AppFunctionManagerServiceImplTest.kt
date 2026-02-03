@@ -32,6 +32,7 @@ import com.android.modules.utils.testing.ExtendedMockitoRule
 import com.android.server.LocalServices
 import com.android.server.appinteraction.AppInteractionService
 import com.android.server.uri.UriGrantsManagerInternal
+import com.android.server.wm.ActivityTaskManagerInternal
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runTest
 import org.junit.Ignore
@@ -78,6 +79,7 @@ class AppFunctionManagerServiceImplTest {
             dynamicRegistry,
             appInteractionService,
             mock<AppFunctionMetadataReader>(),
+            mock<ActivityTaskManagerInternal>(),
         )
 
     @Test

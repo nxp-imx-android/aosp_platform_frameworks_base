@@ -36,6 +36,7 @@ import android.annotation.PermissionManuallyEnforced;
 import android.annotation.WorkerThread;
 import android.app.IUriGrantsManager;
 import android.app.appfunctions.AppFunctionAccessServiceInterface;
+import android.app.appfunctions.AppFunctionActivityId;
 import android.app.appfunctions.AppFunctionAidlSearchSpec;
 import android.app.appfunctions.AppFunctionException;
 import android.app.appfunctions.AppFunctionManager;
@@ -107,6 +108,7 @@ import com.android.internal.util.DumpUtils;
 import com.android.server.SystemService.TargetUser;
 import com.android.server.appinteraction.AppInteractionService;
 import com.android.server.uri.UriGrantsManagerInternal;
+import com.android.server.wm.ActivityTaskManagerInternal;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
@@ -153,6 +155,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
 
     private final VisibilityHelper mVisibilityHelper;
 
+    private final ActivityTaskManagerInternal mActivityTaskManagerInternal;
+
     public AppFunctionManagerServiceImpl(
             @NonNull Context context,
             @NonNull PackageManagerInternal packageManagerInternal,
@@ -162,7 +166,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             @NonNull AppFunctionsLoggerWrapper loggerWrapper,
             @NonNull MultiUserDynamicAppFunctionRegistry dynamicAppFunctionRegistry,
             @Nullable AppInteractionService appInteractionService,
-            @NonNull AppFunctionMetadataReader appFunctionMetadataReader) {
+            @NonNull AppFunctionMetadataReader appFunctionMetadataReader,
+            @NonNull ActivityTaskManagerInternal activityTaskManagerInternal) {
         this(
                 context,
                 new RemoteServiceCallerImpl<>(
@@ -182,7 +187,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 appFunctionMetadataReader,
                 new AppFunctionMetadataObserver(context, appFunctionMetadataReader),
                 appInteractionService,
-                new VisibilityHelperImpl(context, packageManagerInternal));
+                new VisibilityHelperImpl(context, packageManagerInternal),
+                activityTaskManagerInternal);
     }
 
     private AppFunctionManagerServiceImpl(
@@ -200,7 +206,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             AppFunctionMetadataReader appFunctionMetadataReader,
             AppFunctionMetadataObserver appFunctionMetadataObserver,
             @Nullable AppInteractionService appInteractionService,
-            VisibilityHelper visibilityHelper) {
+            VisibilityHelper visibilityHelper,
+            ActivityTaskManagerInternal activityTaskManagerInternal) {
         mContext = Objects.requireNonNull(context);
         mRemoteServiceCaller = Objects.requireNonNull(remoteServiceCaller);
         mCallerValidator = Objects.requireNonNull(callerValidator);
@@ -219,6 +226,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         mAppFunctionMetadataObserver = Objects.requireNonNull(appFunctionMetadataObserver);
         mAppInteractionService = appInteractionService;
         mVisibilityHelper = Objects.requireNonNull(visibilityHelper);
+        mActivityTaskManagerInternal = Objects.requireNonNull(activityTaskManagerInternal);
     }
 
     /** Called when the user is unlocked. */
@@ -959,6 +967,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         Objects.requireNonNull(packageName);
         Objects.requireNonNull(functionIdentifiers);
         Objects.requireNonNull(executor);
+
         UserHandle callingUserHandle = Binder.getCallingUserHandle();
         mCallerValidator.validateCallingPackage(packageName);
         // TODO(b/343261179): Remove this reference when the activity is destroyed to avoid leaking
@@ -977,7 +986,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             }
             // TODO(b/478873466) : use scope type for the check
             activityTokens.add(
-                    new MultiUserDynamicAppFunctionRegistry.ActivitySourceId(activityToken));
+                    new MultiUserDynamicAppFunctionRegistry.ActivitySourceId(
+                            getAppFunctionActivityId(activityToken)));
         }
         mDynamicAppFunctionRegistry.registerAppFunctions(
                 packageName, functionIdentifiers, executor, callingUserHandle, activityTokens);
@@ -1006,12 +1016,27 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                                 + " AndroidManifest.xml.");
             }
             activityTokens.add(
-                    new MultiUserDynamicAppFunctionRegistry.ActivitySourceId(activityToken));
+                    new MultiUserDynamicAppFunctionRegistry.ActivitySourceId(
+                            getAppFunctionActivityId(activityToken)));
         }
         mDynamicAppFunctionRegistry.unregisterAppFunctions(
                 packageName, functionIdentifiers, session, callingUserHandle, activityTokens);
 
         onDynamicFunctionRegistrationChanged(callingUserHandle, packageName, functionIdentifiers);
+    }
+
+    @Nullable
+    private AppFunctionActivityId getAppFunctionActivityId(@Nullable IBinder activityToken) {
+        if (activityToken == null) {
+            return null;
+        }
+        IBinder assistToken =
+                mActivityTaskManagerInternal.getAssistTokenForActivityToken(activityToken);
+        if (assistToken == null) {
+            throw new IllegalArgumentException(
+                    "Unable to process AppFunction registration. Activity not attached.");
+        }
+        return new AppFunctionActivityId(assistToken);
     }
 
     private void onDynamicFunctionRegistrationChanged(
