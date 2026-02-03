@@ -184,6 +184,14 @@ constructor(
                 .setOngoing(true)
                 .setAutoCancel(false)
                 .setDeleteIntent(getDeletePendingIntent(device))
+                .addExtras(
+                    Bundle().apply {
+                        putString(
+                            Notification.EXTRA_SUBSTITUTE_APP_NAME,
+                            context.getString(com.android.internal.R.string.android_system_label),
+                        )
+                    }
+                )
 
         getDeviceDetailsPendingIntent(device)?.let {
             builder.addAction(
