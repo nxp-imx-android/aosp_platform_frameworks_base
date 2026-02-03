@@ -90,7 +90,7 @@ public class InteractionProviderServiceInternal extends InteractionProviderInter
         boolean shouldResumeService = false;
         synchronized (mPidToInteractionListeners) {
             if (mPidToInteractionListeners.contains(callingPid)) {
-                throw new RuntimeException(
+                throw new IllegalArgumentException(
                         "The calling process has already registered a listener.");
             }
             InteractionListenerRecord listenerRecord = new InteractionListenerRecord(callingPid,
@@ -117,7 +117,8 @@ public class InteractionProviderServiceInternal extends InteractionProviderInter
         boolean shouldPauseService = false;
         synchronized (mPidToInteractionListeners) {
             if (!mPidToInteractionListeners.contains(callingPid)) {
-                throw new RuntimeException("The calling process has not registered listener.");
+                throw new IllegalArgumentException(
+                        "The calling process has not registered listener.");
             }
             mPidToInteractionListeners.remove(callingPid);
             shouldPauseService = mPidToInteractionListeners.size() == 0;
