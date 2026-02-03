@@ -23,6 +23,7 @@ import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.shared.model.fakeSceneDataSource
 import com.android.systemui.shade.data.repository.fakeShadeDisplaysRepository
+import com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_AWAKE
 import com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_NOTIFICATION_PANEL_VISIBLE
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
@@ -53,6 +54,15 @@ class SceneContainerPluginTest : SysuiTestCase() {
                 )
             )
             .isFalse()
+    }
+
+    @Test
+    fun flagValueOverride_doesntOverrideAwake() {
+        sceneDataSource.changeScene(Scenes.Shade)
+
+        shadeDisplayRepository.setPendingDisplayId(1)
+
+        assertThat(underTest.flagValueOverride(flag = SYSUI_STATE_AWAKE, displayId = 1)).isNull()
     }
 
     @Test
