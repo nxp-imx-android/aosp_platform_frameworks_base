@@ -2963,11 +2963,6 @@ public class WindowManagerService extends IWindowManager.Stub
             } else if (win.isSelfAnimating(0 /* flags */, ANIMATION_TYPE_WINDOW_ANIMATION)) {
                 // This is already animating via a WMCore-driven window animation.
                 reason = "selfAnimating";
-            } else if (win.mActivityRecord != null && win.mActivityRecord.inTransition()) {
-                // Already animating as part of a shell-transition. Currently this only handles
-                // activity window because other types should be WMCore-driven.
-                win.mTransitionController.mAnimatingExitWindows.add(win);
-                reason = "inTransition";
             }
             if (reason != null) {
                 win.mAnimatingExit = true;

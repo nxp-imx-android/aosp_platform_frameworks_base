@@ -177,12 +177,6 @@ class TransitionController {
     Transition mFinishingTransition;
 
     /**
-     * The windows that request to be invisible while it is in transition. After the transition
-     * is finished and the windows are no longer animating, their surfaces will be destroyed.
-     */
-    final ArrayList<WindowState> mAnimatingExitWindows = new ArrayList<>();
-
-    /**
      * List of tasks which were marked for disabling client-drawn rounded corners optimization
      * in SurfaceFlinger. This is to prevent state-errors in clipping rounded corners when the
      * corner radius is changing during a transition.
@@ -1224,15 +1218,6 @@ class TransitionController {
         }
         updateRunningRemoteAnimation(record, false /* isPlaying */);
         record.finishTransition(chain);
-        for (int i = mAnimatingExitWindows.size() - 1; i >= 0; i--) {
-            final WindowState w = mAnimatingExitWindows.get(i);
-            if (w.mAnimatingExit && w.mHasSurface && !w.inTransition()) {
-                w.onExitAnimationDone();
-            }
-            if (!w.mAnimatingExit || !w.mHasSurface) {
-                mAnimatingExitWindows.remove(i);
-            }
-        }
         mRunningLock.doNotifyLocked();
         // Run state-validation checks when no transitions are active anymore (Note: sometimes
         // finish can start a transition, so check afterwards -- eg. pip).
