@@ -16,12 +16,21 @@
 
 package com.android.server.uilatencystats;
 
+import static android.Manifest.permission.REPORT_UI_LATENCY_STATS;
+
+import android.annotation.EnforcePermission;
 import android.annotation.NonNull;
+import android.annotation.UserIdInt;
 import android.content.Context;
+import android.os.Handler;
+import android.os.UserHandle;
 import android.uilatencystats.Event;
 import android.uilatencystats.EventType;
+import android.uilatencystats.IUiLatencyStats;
 import android.uilatencystats.UiLatencyEventListener;
+import android.uilatencystats.UiLatencyStatsManager;
 import android.uilatencystats.UiLatencyStatsManagerInternal;
+import android.util.Slog;
 import android.util.SparseArray;
 
 import com.android.internal.annotations.GuardedBy;
@@ -38,6 +47,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class UiLatencyStatsService extends SystemService {
     private static final String TAG = "UiLatencyStatsService";
 
+    private final Handler mHandler;
+
     private final Object mLock = new Object();
 
     @GuardedBy("mLock")
@@ -46,10 +57,12 @@ public class UiLatencyStatsService extends SystemService {
 
     public UiLatencyStatsService(Context context) {
         super(context);
+        mHandler = new Handler(IoThread.get().getLooper());
     }
 
     @Override
     public void onStart() {
+        publishBinderService(Context.UI_LATENCY_STATS_SERVICE, new BinderService());
         publishLocalService(UiLatencyStatsManagerInternal.class, new LocalService());
     }
 
@@ -84,6 +97,29 @@ public class UiLatencyStatsService extends SystemService {
             for (UiLatencyEventListener listener : listeners) {
                 listener.onEvent(event);
             }
+        }
+    }
+
+    private void performReportEvent(int eventId, @UserIdInt int userId, long timestamp) {
+        final EventType type = UiLatencyStatsManager.getEventType(eventId);
+        if (type == null) {
+            Slog.w(TAG, "Unknown event type: " + eventId);
+            return;
+        }
+        final Event event = new Event(type, userId, timestamp);
+        publishEvent(event);
+    }
+
+    private final class BinderService extends IUiLatencyStats.Stub {
+        @Override
+        @EnforcePermission(REPORT_UI_LATENCY_STATS)
+        public void reportEvent(int event, long timestamp) {
+            reportEvent_enforcePermission();
+            int userId = UserHandle.getCallingUserId();
+            mHandler.post(
+                    () -> {
+                        UiLatencyStatsService.this.performReportEvent(event, userId, timestamp);
+                    });
         }
     }
 
