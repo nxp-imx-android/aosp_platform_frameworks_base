@@ -28,7 +28,6 @@ import android.widget.Switch
 import androidx.annotation.VisibleForTesting
 import com.android.internal.jank.InteractionJankMonitor.CUJ_SHADE_DIALOG_OPEN
 import com.android.internal.logging.MetricsLogger
-import com.android.systemui.Flags.recordIssueQsTile
 import com.android.systemui.animation.DialogCuj
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.animation.Expandable
@@ -134,7 +133,7 @@ constructor(
      * creating a distince SELinux context for com.android.systemui) is complex and will take time
      * to implement.
      */
-    override fun isAvailable(): Boolean = android.os.Build.IS_DEBUGGABLE && recordIssueQsTile()
+    override fun isAvailable(): Boolean = android.os.Build.IS_DEBUGGABLE
 
     override fun newTileState(): QSTile.BooleanState =
         QSTile.BooleanState().apply {
