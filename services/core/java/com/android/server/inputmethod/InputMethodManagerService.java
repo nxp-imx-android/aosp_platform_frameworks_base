@@ -496,8 +496,11 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                     final var menuItem = new IImeSwitcherMenu.Item();
                     menuItem.imeName = item.mImeName;
                     menuItem.subtypeName = item.mSubtypeName;
+                    menuItem.subtypeShortLabel = item.mSubtypeShortLabel;
+                    menuItem.subtypeIconResId = item.mSubtypeIconResId;
                     menuItem.layoutName = item.mLayoutName;
                     menuItem.imeId = item.mImi.getId();
+                    menuItem.imePackageName = item.mImi.getPackageName();
                     menuItem.subtypeIndex = item.mSubtypeIndex;
                     menuItems.add(menuItem);
                 }
