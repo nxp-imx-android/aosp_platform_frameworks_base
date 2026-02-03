@@ -532,6 +532,46 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
         assertThat(underTest.getNotificationRules(UserHandle.USER_ALL)).isEmpty();
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void readWriteXml_local_wrongUser_onWrite() throws Exception {
+        TypedXmlSerializer serializer = Xml.newFastSerializer();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        serializer.setOutput(new BufferedOutputStream(baos), "utf-8");
+        serializer.startDocument(null, true);
+
+        NotificationRule rule1User1 = createFullRule(100, "test", true);
+        underTest.setNotificationRules(mUser, List.of(rule1User1));
+
+        underTest.writeXml(serializer, false, mUser, null, false);
+        serializer.endDocument();
+        serializer.flush();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void readWriteXml_local_wrongUser_onRead() throws Exception {
+        TypedXmlSerializer serializer = Xml.newFastSerializer();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        serializer.setOutput(new BufferedOutputStream(baos), "utf-8");
+        serializer.startDocument(null, true);
+
+        NotificationRule rule1User1 = createFullRule(100, "test", true);
+        underTest.setNotificationRules(mUser, List.of(rule1User1));
+
+        underTest.writeXml(serializer, false, UserHandle.USER_ALL, null, false);
+        serializer.endDocument();
+        serializer.flush();
+
+        TypedXmlPullParser parser = Xml.newFastPullParser();
+        byte[] byteArray = baos.toByteArray();
+        parser.setInput(new BufferedInputStream(new ByteArrayInputStream(byteArray)), null);
+        parser.nextTag();
+
+        underTest = new NotificationRuleManager(mContext, mNmPrivate);
+        underTest.readXml(parser, false, mUser, null);
+
+        assertThat(underTest.getNotificationRules(mUser)).isEmpty();
+    }
+
     @Test
     public void readWriteXml_backupRestore() throws Exception {
         TypedXmlSerializer serializer = Xml.newFastSerializer();
@@ -565,16 +605,16 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
         parser.nextTag();
 
         underTest = new NotificationRuleManager(mContext, mNmPrivate);
-        underTest.readXml(parser, true, mUser, mLogger);
+        underTest.readXml(parser, true, mUserSecondary, mLogger);
 
         if (android.app.Flags.backupRestoreLogging()) {
             verify(mLogger).logItemsRestored(DATA_TYPE_NOTIFICATION_RULES, 3);
             verify(mLogger, never()).logItemsRestoreFailed(anyString(), anyInt(), anyString());
         }
 
-        assertThat(underTest.getNotificationRules(mUser))
+        assertThat(underTest.getNotificationRules(mUserSecondary))
                 .containsExactly(rule1User1, rule2User1, rule3User1).inOrder();
-        assertThat(underTest.getNotificationRules(mUser + 1)).isEmpty();
+        assertThat(underTest.getNotificationRules(mUser)).isEmpty();
     }
 
     @Test

@@ -114,6 +114,9 @@ public class NotificationRuleManager {
     // for backup and restore
     void readXml(TypedXmlPullParser parser, boolean forRestore, @UserIdInt int userId,
             @Nullable BackupRestoreEventLogger logger) throws XmlPullParserException, IOException {
+        if (!forRestore && userId != USER_ALL) {
+            throw new IllegalArgumentException("reading from disk with userId != USER_ALL");
+        }
         int type = parser.getEventType();
         if (type != XmlPullParser.START_TAG) return;
         String tag = parser.getName();
@@ -128,19 +131,22 @@ public class NotificationRuleManager {
                 tag = parser.getName();
                 if (RULE_TAG.equals(tag) && type == XmlPullParser.START_TAG) {
                     int ruleUser = parser.getAttributeInt(null, USER_ATTR, USER_ALL);
-                    if (userId == USER_ALL || userId == ruleUser) {
+                    int targetUser = forRestore ? userId : ruleUser;
+                    if (targetUser != USER_ALL) {
                         try {
                             NotificationRule rule = NotificationRule.readXml(parser, forRestore,
                                     mContext);
                             List<NotificationRule> rulesForUser =
-                                    mNotificationRules.getOrDefault(ruleUser, new ArrayList<>());
+                                    mNotificationRules.getOrDefault(targetUser, new ArrayList<>());
                             rulesForUser.add(rule);
-                            mNotificationRules.put(ruleUser, rulesForUser);
+                            mNotificationRules.put(targetUser, rulesForUser);
                             successfulReads++;
                         } catch (Exception e) {
                             Slog.d(TAG, "failed to restore rule", e);
                             unsuccessfulReads++;
                         }
+                    } else {
+                        unsuccessfulReads++;
                     }
                 }
                 type = parser.next();
@@ -160,6 +166,9 @@ public class NotificationRuleManager {
     void writeXml(TypedXmlSerializer out, boolean forBackup, @UserIdInt int userId,
             @Nullable BackupRestoreEventLogger logger, boolean useLegacyBundleStorage)
             throws IOException {
+        if (!forBackup && userId != USER_ALL) {
+            throw new IllegalArgumentException("writing to disk with userId != USER_ALL");
+        }
         synchronized (mLock) {
             out.startTag(null, NOTIFICATION_RULES_TAG);
             out.attributeInt(null, VERSION_ATTR, mVersion);
