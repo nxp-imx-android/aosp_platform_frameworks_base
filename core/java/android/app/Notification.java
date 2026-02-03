@@ -5027,6 +5027,7 @@ public class Notification implements Parcelable
         private ContrastColorUtil mColorUtil;
         private boolean mIsLegacy;
         private boolean mIsLegacyInitialized;
+        @Nullable private UserProfileBadgeProvider mUserProfileBadgeProvider;
 
         /**
          * Caches an instance of StandardTemplateParams. Note that this may have been used before,
@@ -6425,6 +6426,19 @@ public class Notification implements Parcelable
             return this;
         }
 
+        /**
+         * Sets the profile badge provider for this notification.
+         *
+         * @param provider the profile badge provider for this notification.
+         * @return the same Builder
+         * @hide
+         */
+        @VisibleForTesting
+        public Builder setUserProfileBadgeProvider(@Nullable UserProfileBadgeProvider provider) {
+            mUserProfileBadgeProvider = provider;
+            return this;
+        }
+
         private void bindPhishingAlertIcon(RemoteViews contentView, StandardTemplateParams p) {
             contentView.setDrawableTint(
                     R.id.phishing_alert,
@@ -6433,12 +6447,25 @@ public class Notification implements Parcelable
                     PorterDuff.Mode.SRC_ATOP);
         }
 
+        /**
+         * Returns the profile badge for this notification.
+         *
+         * @hide
+         */
+        public Bitmap getProfileBadge() {
+            if (mUserProfileBadgeProvider != null) {
+                return mUserProfileBadgeProvider.getProfileBadge(mContext);
+            } else {
+                return Notification.getProfileBadge(mContext);
+            }
+        }
+
         private void bindProfileBadge(RemoteViews contentView, StandardTemplateParams p) {
             if (richOngoingImprovements() && p.mHideProfileBadge) {
                 return;
             }
 
-            Bitmap profileBadge = Notification.getProfileBadge(mContext);
+            final Bitmap profileBadge = getProfileBadge();
 
             if (profileBadge != null) {
                 contentView.setImageViewBitmap(R.id.profile_badge, profileBadge);
@@ -6447,10 +6474,16 @@ public class Notification implements Parcelable
                     contentView.setDrawableTint(R.id.profile_badge, false,
                             getTextColor(p), PorterDuff.Mode.SRC_ATOP);
                 }
-                contentView.setContentDescription(
-                        R.id.profile_badge,
-                        mContext.getSystemService(UserManager.class)
-                                .getProfileAccessibilityString(mContext.getUserId()));
+                final String profileAccessibilityString;
+                if (mUserProfileBadgeProvider != null) {
+                    profileAccessibilityString =
+                            mUserProfileBadgeProvider.getProfileAccessibilityString(mContext);
+                } else {
+                    profileAccessibilityString =
+                            mContext.getSystemService(UserManager.class)
+                                    .getProfileAccessibilityString(mContext.getUserId());
+                }
+                contentView.setContentDescription(R.id.profile_badge, profileAccessibilityString);
             }
         }
 
@@ -18521,6 +18554,31 @@ public class Notification implements Parcelable
         @ColorInt
         @FlaggedApi(Flags.FLAG_API_NOTIFICATION_SEMANTIC_STYLE)
         int getSemanticColor(@SemanticStyle int style);
+    }
+
+    /**
+     * A provider for the profile badge.
+     * @hide
+     */
+    public interface UserProfileBadgeProvider {
+        /**
+         * Returns the profile badge for the user of the given context.
+         *
+         * @param context The context of the app that is to be badged.
+         * @return The profile badge for the given user, or null if no badge is available.
+         */
+        @Nullable
+        Bitmap getProfileBadge(@NonNull Context context);
+
+        /**
+         * Returns the profile badge accessibility string for the user of the given context.
+         *
+         * @param context The context of the app that is to be badged.
+         * @return The profile badge accessibility string for the given user, or null if no badge is
+         *     available.
+         */
+        @Nullable
+        String getProfileAccessibilityString(@NonNull Context context);
     }
 
     /**
