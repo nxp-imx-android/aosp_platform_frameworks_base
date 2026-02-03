@@ -224,6 +224,12 @@ public class TvExtensionContract {
          */
         public static final String KEY_TIMESHIFT_FREE_SIZE = "timeshift_storage_free_bytes";
 
+        /**
+         * Set/Get PVR recording path. This maps to a string.
+         *
+         */
+        public static final String KEY_RECORDING_PATH = "pvr_storage_path";
+
         // --- UI ---
         /**
          * The value is "0", "1". "0" for false, and "1" for true.
@@ -533,6 +539,18 @@ public class TvExtensionContract {
         })
         @Retention(RetentionPolicy.SOURCE)
         public @interface SuperImposeSetup {}
+
+        public static final String COLUMN_CC_DISPLAY = "digital_cc_display";
+        public final int DIGITAL_CC_DISPLAY_OFF = 0;
+        public final int DIGITAL_CC_DISPLAY_ON = 1;
+        public final int DIGITAL_CC_DISPLAY_MUTE = 2;
+        @IntDef({
+                DIGITAL_CC_DISPLAY_OFF,
+                DIGITAL_CC_DISPLAY_ON,
+                DIGITAL_CC_DISPLAY_MUTE
+        })
+        @Retention(RetentionPolicy.SOURCE)
+        public @interface DigitalCCDisPlay{}
     }
 
     /**
