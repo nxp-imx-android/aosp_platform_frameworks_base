@@ -174,6 +174,11 @@ constructor(
     fun getAccessibilityServiceInfo(target: AccessibilityTargetModel) =
         repository.getAccessibilityServiceInfo(target)
 
+    val accessibilityButtonTargetComponent = repository.accessibilityButtonTargetComponent
+
+    suspend fun setAccessibilityButtonTargetComponent(target: String) =
+        repository.setAccessibilityButtonTargetComponent(target)
+
     private fun processShortcutChooserIntent(intent: Intent): DialogRequestModel? {
         if (!AccessibilityFlags.enableA11yTopRowShortcut()) {
             return null
