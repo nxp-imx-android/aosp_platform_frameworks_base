@@ -2320,7 +2320,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                             desktopState,
                             desktopTasksController,
                             desktopUserRepositories)
-                    : Flags.enableTaskPositionerRefactorClank()
+                    : Flags.enableTaskPositionerRefactorForListedApps()
                         ? new ResizeTaskPositioner(
                             windowDecoration,
                             displayController,
