@@ -2342,13 +2342,6 @@ public class LockPatternView extends View {
         }
 
         @Override
-        public void invalidateRoot() {
-            for (int i = 0; i < DOT_COUNT; ++i) {
-                invalidateVirtualView(VIRTUAL_BASE_VIEW_ID + i);
-            }
-        }
-
-        @Override
         protected int getVirtualViewAt(float x, float y) {
             // This must use the same hit logic for the screen to ensure consistency whether
             // accessibility is on or off.
