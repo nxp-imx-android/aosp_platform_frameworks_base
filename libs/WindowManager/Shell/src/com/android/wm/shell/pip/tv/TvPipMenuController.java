@@ -329,6 +329,26 @@ public class TvPipMenuController implements PipMenuController, TvPipMenuView.Lis
         mMainHandler.removeCallbacks(mClosePipMenuRunnable);
     }
 
+    /**
+     * Promotes the PiP menu to the top of the window stack.
+     * This is used to ensure the menu is visible during the exit transition, preventing it from
+     * being obscured by the snapshot applied by the window manager.
+     */
+    public void promoteMenuToTop() {
+        if (!isMenuAttached()) {
+            return;
+        }
+        ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
+                "%s: promoteMenuToTop()", TAG);
+        final SurfaceControl frontSurface = getSurfaceControl(mPipMenuView);
+        final SurfaceControl.Transaction t = new SurfaceControl.Transaction();
+
+        if (frontSurface != null) {
+            t.setLayer(frontSurface, Integer.MAX_VALUE);
+        }
+        t.apply();
+    }
+
     @Override
     public void detach() {
         detachPipMenu();

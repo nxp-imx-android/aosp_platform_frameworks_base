@@ -16,12 +16,16 @@
 
 package com.android.wm.shell.pip2.tv;
 
+import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManager.TRANSIT_PIP;
+import static android.view.WindowManager.TRANSIT_TO_BACK;
 
 import static com.android.wm.shell.common.pip.PipMenuController.ALPHA_NO_CHANGE;
+import static com.android.wm.shell.pip2.phone.transition.PipTransitionUtils.getChangeByToken;
 import static com.android.wm.shell.pip2.phone.transition.PipTransitionUtils.getPipChange;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_PIP_BOUNDS_CHANGE;
+import static com.android.wm.shell.transition.Transitions.TRANSIT_REMOVE_PIP;
 
 import android.animation.ValueAnimator;
 import android.annotation.NonNull;
@@ -35,6 +39,7 @@ import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Debug;
 import android.os.IBinder;
+import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceControl;
 import android.window.TransitionInfo;
@@ -52,13 +57,16 @@ import com.android.wm.shell.common.pip.PipUtils;
 import com.android.wm.shell.pip.PipTransitionController;
 import com.android.wm.shell.pip.tv.TvPipBoundsAlgorithm;
 import com.android.wm.shell.pip.tv.TvPipBoundsState;
+import com.android.wm.shell.pip.tv.TvPipInterpolators;
 import com.android.wm.shell.pip.tv.TvPipMenuController;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
+import com.android.wm.shell.pip2.animation.PipAlphaAnimator;
 import com.android.wm.shell.pip2.animation.PipEnterAnimator;
 import com.android.wm.shell.pip2.animation.PipResizeAnimator;
 import com.android.wm.shell.pip2.phone.PipTransitionState;
 import com.android.wm.shell.pip2.phone.transition.PipTransitionUtils;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
+import com.android.wm.shell.shared.TransitionUtil;
 import com.android.wm.shell.shared.pip.PipFlags;
 import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.Transitions;
@@ -94,7 +102,9 @@ public class TvPipTransition extends PipTransitionController implements
     //
 
     @Nullable
-    private IBinder mEnterPipTransition;
+    private IBinder mEnterTransition;
+    @Nullable
+    private IBinder mRemoveTransition;
     @Nullable
     private IBinder mBoundsChangeTransition;
     private int mBoundsChangeDuration;
@@ -105,6 +115,8 @@ public class TvPipTransition extends PipTransitionController implements
 
     private Transitions.TransitionFinishCallback mFinishCallback;
     private ValueAnimator mCurrentAnimator;
+    private boolean mPendingRemoveWithFadeout;
+    private final long mExitFadeOutDuration;
 
     public TvPipTransition(
             Context context,
@@ -123,6 +135,8 @@ public class TvPipTransition extends PipTransitionController implements
         mTvPipMenuController = tvPipMenuController;
         mPipTransitionState = pipTransitionState;
         mPipTransitionState.addPipTransitionStateChangedListener(this);
+        mExitFadeOutDuration = context.getResources().getInteger(
+                R.integer.config_tvPipExitFadeOutDuration);
     }
 
     @Override
@@ -132,6 +146,15 @@ public class TvPipTransition extends PipTransitionController implements
                     "%s: V2 Flag is ON, registering TvPip2Transition handler.", TAG);
             mTransitions.addHandler(this);
         }
+    }
+
+    @Override
+    public void startRemoveTransition(WindowContainerTransaction wct, boolean withFadeout) {
+        if (wct == null) {
+            return;
+        }
+        mPendingRemoveWithFadeout = withFadeout;
+        mRemoveTransition = mTransitions.startTransition(TRANSIT_REMOVE_PIP, wct, this);
     }
 
     @Override
@@ -160,14 +183,25 @@ public class TvPipTransition extends PipTransitionController implements
     @Override
     public WindowContainerTransaction handleRequest(@NonNull IBinder transition,
             @NonNull TransitionRequestInfo request) {
-        // Only look for a direct pip enter request
+        if (mPipTransitionState.getState() == PipTransitionState.SCHEDULED_ENTER_PIP) {
+            // An enter PiP transition has already been scheduled and is waiting to be played.
+            return null;
+        }
         if (requestHasPipEnter(request)) {
             ProtoLog.d(WM_SHELL_PICTURE_IN_PICTURE,
                     "%s: handle PiP enter request", TAG);
             // Cache the token so we can identify this transition in startAnimation().
-            mEnterPipTransition = transition;
+            mEnterTransition = transition;
             mPipTransitionState.setState(PipTransitionState.SCHEDULED_ENTER_PIP);
             return getEnterPipTransaction(request.getPipChange());
+        } else if (TransitionUtil.isClosingType(request.getType())
+                && request.getTriggerTask() != null
+                && request.getTriggerTask().getToken().equals(
+                        mPipTransitionState.getPipTaskToken())) {
+            ProtoLog.d(WM_SHELL_PICTURE_IN_PICTURE,
+                    "%s: handle PiP remove request", TAG);
+            mRemoveTransition = transition;
+            return new WindowContainerTransaction();
         }
         return null;
     }
@@ -286,17 +320,67 @@ public class TvPipTransition extends PipTransitionController implements
         return true;
     }
 
+    private boolean startRemoveAnimation(@NonNull TransitionInfo info,
+            @NonNull SurfaceControl.Transaction startTransaction,
+            @NonNull SurfaceControl.Transaction finishTransaction,
+            @NonNull Transitions.TransitionFinishCallback finishCallback) {
+        TransitionInfo.Change pipChange = getChangeByToken(info,
+                mPipTransitionState.getPipTaskToken());
+        if (pipChange == null) {
+            return false;
+        }
+        mFinishCallback = finishCallback;
+
+        final Rect startBounds = pipChange.getStartAbsBounds();
+        startTransaction.setWindowCrop(pipChange.getLeash(),
+                startBounds.width(), startBounds.height());
+        finishTransaction.setAlpha(pipChange.getLeash(), 0f);
+
+        if (mPendingRemoveWithFadeout) {
+            mPendingRemoveWithFadeout = false;
+            final PipAlphaAnimator animator = new PipAlphaAnimator(
+                    mContext, mPipSurfaceTransactionHelper, pipChange.getLeash(),
+                    startTransaction, finishTransaction, PipAlphaAnimator.FADE_OUT);
+            animator.setInterpolator(TvPipInterpolators.EXIT);
+            animator.setDuration(mExitFadeOutDuration);     // Override the phone alpha duration.
+
+            animator.addUpdateListener(animation -> {
+                float alpha = (float) animation.getAnimatedValue();
+                mTvPipMenuController.movePipMenu(null, null, alpha);
+            });
+
+            animator.setAnimationEndCallback(() -> {
+                finishTransition();
+            });
+            mCurrentAnimator = animator;
+            animator.start();
+        } else {
+            startTransaction.setAlpha(pipChange.getLeash(), 0f);
+            startTransaction.apply();
+            finishTransition();
+        }
+        return true;
+    }
+
     @Override
     public boolean startAnimation(@NonNull IBinder transition,
             @NonNull TransitionInfo info,
             @NonNull SurfaceControl.Transaction startTransaction,
             @NonNull SurfaceControl.Transaction finishTransaction,
             @NonNull Transitions.TransitionFinishCallback finishCallback) {
+        if (isPipTransitionAnimationOngoing()) {
+            // Prevent another transition from disrupting ongoing transition.
+            Log.wtf(TAG, String.format("""
+                    PipTransition tried to startAnimation while another PiP animation was playing.
+                    callers=%s""", Debug.getCallers(4)));
+            return false;
+        }
+
         // Check if this is the enter transition we handled in handleRequest().
-        if (transition == mEnterPipTransition || info.getType() == TRANSIT_PIP) {
+        if (transition == mEnterTransition || info.getType() == TRANSIT_PIP) {
             ProtoLog.d(WM_SHELL_PICTURE_IN_PICTURE,
                     "%s: starting PiP enter animation", TAG);
-            mEnterPipTransition = null; // Clear the cached token.
+            mEnterTransition = null; // Clear the cached token.
             TransitionInfo.Change pipChange = getPipChange(info);
 
             Bundle extra = new Bundle();
@@ -319,8 +403,34 @@ public class TvPipTransition extends PipTransitionController implements
             mPipTransitionState.setState(PipTransitionState.CHANGING_PIP_BOUNDS, extra);
             return startBoundsChangeAnimation(info, startTransaction, finishTransaction,
                     finishCallback);
+        } else if (transition == mRemoveTransition || isRemovePipTransition(info)) {
+            ProtoLog.d(WM_SHELL_PICTURE_IN_PICTURE,
+                    "%s: starting PiP remove animation", TAG);
+            mRemoveTransition = null;
+            mPipTransitionState.setState(PipTransitionState.EXITING_PIP);
+            return startRemoveAnimation(info, startTransaction, finishTransaction, finishCallback);
         }
         return false;
+    }
+
+    private boolean isPipTransitionAnimationOngoing() {
+        // There is a one-to-one mapping between when finish callback is still cached
+        // and when there is an ongoing transition animation.
+        return mFinishCallback != null;
+    }
+
+    private boolean isRemovePipTransition(@NonNull TransitionInfo info) {
+        if (mPipTransitionState.getPipTaskToken() == null) {
+            return false;
+        }
+        TransitionInfo.Change pipChange = info.getChange(mPipTransitionState.getPipTaskToken());
+        if (pipChange == null) {
+            return false;
+        }
+
+        final int mode = pipChange.getMode();
+        return info.getType() == TRANSIT_REMOVE_PIP || mode == TRANSIT_CLOSE
+                || mode == TRANSIT_TO_BACK;
     }
 
     private void prepareConfigAtEndActivity(@NonNull SurfaceControl.Transaction startTx,

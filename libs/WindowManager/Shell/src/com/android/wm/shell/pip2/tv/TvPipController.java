@@ -248,7 +248,7 @@ public class TvPipController implements PipTransitionState.PipTransitionStateCha
         mShellController.addConfigurationChangeListener(this);
         mShellController.addUserChangeListener(this);
 
-        // TODO(b/463390460): Set callback mAppOpsListener.setCallback(); using TvPipScheduler
+        mAppOpsListener.setCallback(this::closePip);
     }
 
     @Override
@@ -444,7 +444,8 @@ public class TvPipController implements PipTransitionState.PipTransitionStateCha
                     "%s: PiP has already been closed by custom close action", TAG);
             return;
         }
-        // TODO(b/463390460): Make call to TvPipScheduler to remove PiP.
+        mTvPipMenuController.promoteMenuToTop();
+        mTvPipScheduler.scheduleRemovePip(/* withFadeout= */ true);
         mTvPipMenuController.closeMenu();
         mPipNotificationController.dismiss();
     }
