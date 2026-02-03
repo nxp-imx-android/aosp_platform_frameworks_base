@@ -30,6 +30,7 @@
         android:paddingEnd="?android:attr/dialogPreferredPadding"
         android:paddingBottom="@dimen/dialog_padding_material"
         android:paddingTop="0dp"
+        android:layout_ignoreOffset="true"
         android:fitsSystemWindows="true"
         android:background="@drawable/bottomsheet_background">
 
