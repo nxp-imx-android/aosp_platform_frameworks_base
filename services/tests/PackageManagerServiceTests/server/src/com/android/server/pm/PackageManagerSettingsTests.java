@@ -1668,7 +1668,8 @@ public class PackageManagerSettingsTests {
                 false, "lastDisabledCaller", new ArraySet<>(new String[]{"enabledComponent1"}),
                 new ArraySet<>(new String[]{"disabledComponent1"}), 0, 0, "harmfulAppWarning",
                 "splashScreenTheme", 1000L, PackageManager.USER_MIN_ASPECT_RATIO_UNSET, null,
-                false, PackageManager.VIRTUAL_GAMEPAD_USER_OPTION_UNSET);
+                false, PackageManager.VIRTUAL_GAMEPAD_USER_OPTION_UNSET,
+                PackageManager.PERSONAL_CONTEXT_MODE_UNSET);
         final PersistableBundle appExtras1 = createPersistableBundle(
                 PACKAGE_NAME_1, 1L, 0.01, true, "appString1");
         final PersistableBundle launcherExtras1 = createPersistableBundle(

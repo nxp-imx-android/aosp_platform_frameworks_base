@@ -41,6 +41,7 @@ import android.os.Looper;
 import android.os.PersistableBundle;
 import android.os.Process;
 import android.os.storage.StorageManager;
+import android.service.personalcontext.PersonalContextManager;
 import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.SparseArray;
@@ -57,6 +58,7 @@ import com.android.server.pm.pkg.AndroidPackage;
 import com.android.server.pm.pkg.PackageStateInternal;
 import com.android.server.pm.pkg.SharedUserApi;
 import com.android.server.pm.pkg.mutate.PackageStateMutator;
+import com.android.server.pm.pkg.mutate.PackageStateWrite;
 import com.android.server.pm.snapshot.PackageDataSnapshot;
 
 import java.io.IOException;
@@ -1375,10 +1377,19 @@ public abstract class PackageManagerInternal {
      * @return result if anything changed since initial state, or null if nothing changed and
      * commit was successful
      */
-    @Nullable
+    @NonNull
     public abstract PackageStateMutator.Result commitPackageStateMutation(
             @Nullable PackageStateMutator.InitialState state,
             @NonNull Consumer<PackageStateMutator> consumer);
+
+    /**
+     * @see #commitPackageStateMutation(PackageStateMutator.InitialState, Consumer)
+     */
+    @NonNull
+    public abstract PackageStateMutator.Result commitPackageStateMutation(
+            @Nullable PackageStateMutator.InitialState state,
+            @NonNull String packageName,
+            @NonNull Consumer<PackageStateWrite> consumer);
 
     /**
      * @return package data snapshot for use with other PackageManager infrastructure. This should
@@ -1492,4 +1503,31 @@ public abstract class PackageManagerInternal {
     @Nullable
     public abstract AllowComponentAccessPolicyInfo getAllowComponentAccessPolicyInfo(
             @NonNull String packageName, @UserIdInt int userId);
+
+    /**
+     * Sets the personal context data collection setting for a given package.
+     *
+     * @param packageName The package for which to modify the setting.
+     * @param userId The user ID for which to write the package setting.
+     * @param mode The new setting value.
+     * @throws PackageManager.NameNotFoundException if the package is not found
+     * @see PersonalContextManager#setPersonalContextModeEnabled(String, boolean)
+     */
+    public abstract void setPersonalContextMode(
+            String packageName,
+            int callingUid,
+            int userId,
+            @PackageManager.PersonalContextMode int mode);
+
+    /**
+     * Gets the personal context data collection setting value for a given package.
+     *
+     * @param packageName The package for which to fetch the setting value.
+     * @param userId The user ID for which to read the package setting.
+     * @return The setting value for the given package.
+     * @throws PackageManager.NameNotFoundException if the package is not found
+     * @see PersonalContextManager#isPersonalContextModeEnabled(String)
+     */
+    public abstract @PackageManager.PersonalContextMode int getPersonalContextMode(
+            String packageName, int callingUid, int userId);
 }

@@ -479,6 +479,16 @@ public class PackageStateMutator {
                 }
                 return this;
             }
+
+            @NonNull
+            @Override
+            public PackageUserStateWrite setPersonalContextMode(
+                    @PackageManager.PersonalContextMode int userOption) {
+                if (mUserState != null) {
+                    mUserState.setPersonalContextMode(userOption);
+                }
+                return this;
+            }
         }
     }
 }

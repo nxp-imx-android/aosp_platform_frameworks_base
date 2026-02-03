@@ -88,4 +88,9 @@ public interface PackageUserStateWrite {
     @NonNull
     PackageUserStateWrite setVirtualGamepadUserOption(
             @PackageManager.VirtualGamepadUserOption int userOption);
+
+    /** @see PackageUserStateImpl#setPersonalContextMode(int) */
+    @NonNull
+    PackageUserStateWrite setPersonalContextMode(
+            @PackageManager.PersonalContextMode int userOption);
 }

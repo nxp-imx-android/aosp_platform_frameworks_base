@@ -72,7 +72,6 @@ import com.android.server.pm.pkg.PackageUserStateInternal;
 import com.android.server.pm.pkg.SharedLibrary;
 import com.android.server.pm.pkg.SharedLibraryWrapper;
 import com.android.server.pm.pkg.SuspendParams;
-import com.android.server.pm.PackageManagerServiceUtils;
 import com.android.server.pm.verify.developer.DeveloperVerificationStatusInternal;
 import com.android.server.utils.SnapshotCache;
 import com.android.server.utils.WatchedArraySet;
@@ -1199,7 +1198,8 @@ public class PackageSetting extends SettingBase implements PackageStateInternal 
                       int installReason, int uninstallReason,
                       String harmfulAppWarning, String splashScreenTheme,
                       long firstInstallTime, int aspectRatio, ArchiveState archiveState,
-                      boolean appLockEnabled, int virtualGamepadUserOption) {
+                      boolean appLockEnabled, int virtualGamepadUserOption,
+                      int personalContextMode) {
         modifyUserState(userId)
                 .setSuspendParams(suspendParams)
                 .setCeDataInode(ceDataInode)
@@ -1225,7 +1225,8 @@ public class PackageSetting extends SettingBase implements PackageStateInternal 
                 .setMinAspectRatio(aspectRatio)
                 .setArchiveState(archiveState)
                 .setAppLockEnabled(appLockEnabled)
-                .setVirtualGamepadUserOption(virtualGamepadUserOption);
+                .setVirtualGamepadUserOption(virtualGamepadUserOption)
+                .setPersonalContextMode(personalContextMode);
         onChanged();
     }
 
@@ -1246,7 +1247,7 @@ public class PackageSetting extends SettingBase implements PackageStateInternal 
                 otherState.getHarmfulAppWarning(), otherState.getSplashScreenTheme(),
                 otherState.getFirstInstallTimeMillis(), otherState.getMinAspectRatio(),
                 otherState.getArchiveState(), otherState.isAppLockEnabled(),
-                otherState.getVirtualGamepadUserOption());
+                otherState.getVirtualGamepadUserOption(), otherState.getPersonalContextMode());
     }
 
     WatchedArraySet<String> getEnabledComponents(int userId) {

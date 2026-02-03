@@ -172,6 +172,11 @@ class PackageUserStateDefault implements PackageUserStateInternal {
     }
 
     @Override
+    public @PackageManager.PersonalContextMode int getPersonalContextMode() {
+        return PackageManager.PERSONAL_CONTEXT_MODE_UNSET;
+    }
+
+    @Override
     public long getFirstInstallTimeMillis() {
         return 0;
     }
