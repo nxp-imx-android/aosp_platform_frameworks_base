@@ -26,6 +26,7 @@ import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.windowdecor.WindowDecorationActions
+import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier
 import kotlin.test.Test
@@ -53,6 +54,7 @@ class AppPinnedControllerTest : ShellTestCase() {
     private val mockTouchListener = mock<View.OnTouchListener>()
     private val mockMotionListener = mock<View.OnGenericMotionListener>()
     private val mockDecorationActions = mock<WindowDecorationActions>()
+    private val mockTaskResourceLoader = mock<WindowDecorTaskResourceLoader>()
     private val mockTaskOrganizer = mock<ShellTaskOrganizer>()
     private val mockBgScope = mock<CoroutineScope>()
 
@@ -65,6 +67,7 @@ class AppPinnedControllerTest : ShellTestCase() {
             mockTouchListener,
             mockMotionListener,
             mockDecorationActions,
+            mockTaskResourceLoader,
             mockTaskOrganizer,
             mockBgScope,
         )

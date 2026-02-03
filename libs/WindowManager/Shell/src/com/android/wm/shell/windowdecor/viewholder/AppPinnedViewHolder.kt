@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.toArgb
 import com.android.wm.shell.R
 import com.android.wm.shell.windowdecor.WindowDecorLinearLayout
 import com.android.wm.shell.windowdecor.common.DrawableInsets
+import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader
 import com.android.wm.shell.windowdecor.common.createBackgroundDrawable
 import com.android.wm.shell.windowdecor.extension.isTransparentCaptionBarAppearance
 import com.android.wm.shell.windowdecor.viewholder.AppPinnedViewHolder.AppPinnedData
@@ -36,6 +37,7 @@ import com.android.wm.shell.windowdecor.viewholder.AppPinnedViewHolder.AppPinned
  */
 class AppPinnedViewHolder(
     override val rootView: View,
+    private val taskResourceLoader: WindowDecorTaskResourceLoader,
     onTouchListener: View.OnTouchListener,
     onGenericMotionEventListener: View.OnGenericMotionListener,
     onOpenSettings: View.OnClickListener,
@@ -67,6 +69,11 @@ class AppPinnedViewHolder(
             captionView.setBackgroundColor(Color.TRANSPARENT)
         } else {
             captionView.setBackgroundColor(darkColors.surfaceContainerHigh.toArgb())
+        }
+
+        taskResourceLoader.getNameAndHeaderIcon(data.taskInfo) { name, _ ->
+            closeButton.contentDescription =
+                rootView.context.getString(R.string.close_button_text, name)
         }
 
         closeButton.apply {

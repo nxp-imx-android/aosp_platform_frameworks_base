@@ -1112,6 +1112,7 @@ constructor(
                     onTouchListener = onTouchListener,
                     onGenericMotionEventListener = onGenericMotionListener,
                     windowDecorationActions,
+                    taskResourceLoader,
                     taskOrganizer,
                     bgScope,
                 )
