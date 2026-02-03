@@ -97,6 +97,7 @@ import com.android.internal.protolog.ProtoLog;
 import com.android.internal.util.function.pooled.PooledLambda;
 import com.android.server.Watchdog;
 import com.android.server.am.psc.AsyncBatchSession;
+import com.android.server.am.psc.Constants.OomAdjust;
 import com.android.server.am.psc.Constants.SchedGroup;
 import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.art.ReasonMapping;
@@ -178,7 +179,7 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
     // Last reported process state;
     private volatile int mRepProcState = PROCESS_STATE_NONEXISTENT;
     // Currently computed oom adj score
-    private volatile int mCurAdj = INVALID_ADJ;
+    private volatile @OomAdjust int mCurAdj = INVALID_ADJ;
     // are we in the process of crashing?
     private volatile boolean mCrashing;
     // does the app have a not responding dialog?
@@ -456,6 +457,7 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
         return mCurProcState;
     }
 
+    @OomAdjust
     int getCurrentAdj() {
         return mCurAdj;
     }
@@ -2178,12 +2180,12 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
     }
 
     @Override
-    public void onCurRawAdjChanged(int curRawAdj) {
+    public void onCurRawAdjChanged(@OomAdjust int curRawAdj) {
         mPerceptible = (curRawAdj <= PERCEPTIBLE_APP_ADJ);
     }
 
     @Override
-    public void onCurAdjChanged(int curAdj) {
+    public void onCurAdjChanged(@OomAdjust int curAdj) {
         mCurAdj = curAdj;
     }
 

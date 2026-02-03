@@ -17,6 +17,7 @@
 package com.android.server.am.psc;
 
 import android.annotation.IntDef;
+import android.annotation.IntRange;
 
 import com.android.server.am.Flags;
 
@@ -30,7 +31,37 @@ import java.lang.annotation.RetentionPolicy;
 public final class Constants {
     private Constants() {}
 
-    // OOM adjustments for processes in various states:
+    // OOM adjustment scores for processes in various states:
+    @IntRange(from = NATIVE_ADJ, to = UNKNOWN_ADJ)
+    @IntDef(value = {
+            INVALID_ADJ,
+            UNKNOWN_ADJ,
+            CACHED_APP_MAX_ADJ,
+            CACHED_APP_MIN_ADJ,
+            CACHED_APP_LMK_FIRST_ADJ,
+            CACHED_APP_IMPORTANCE_LEVELS,
+            SERVICE_B_ADJ,
+            PREVIOUS_APP_MAX_ADJ_LADDERED,
+            PREVIOUS_APP_ADJ,
+            HOME_APP_ADJ,
+            SERVICE_ADJ,
+            HEAVY_WEIGHT_APP_ADJ,
+            BACKUP_APP_ADJ,
+            PERCEPTIBLE_LOW_APP_ADJ,
+            PERCEPTIBLE_MEDIUM_APP_ADJ,
+            PERCEPTIBLE_APP_ADJ,
+            VISIBLE_APP_MAX_ADJ_LADDERED,
+            VISIBLE_APP_ADJ,
+            VISIBLE_APP_LAYER_MAX,
+            PERCEPTIBLE_RECENT_FOREGROUND_APP_ADJ,
+            FOREGROUND_APP_ADJ,
+            PERSISTENT_SERVICE_ADJ,
+            PERSISTENT_PROC_ADJ,
+            SYSTEM_ADJ,
+            NATIVE_ADJ
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface OomAdjust {}
 
     // Uninitialized value for any major or minor adj fields
     public static final int INVALID_ADJ = -10000;
@@ -58,6 +89,10 @@ public final class Constants {
     // services that aren't as shiny and interesting as the ones in the A list.
     public static final int SERVICE_B_ADJ = 800;
 
+    // TODO: Remove this constant and add PREVIOUS_APP_MAX_ADJ to the IntDef bucket
+    //  once the oomadjuster_prev_laddering flag logic is removed.
+    public static final int PREVIOUS_APP_MAX_ADJ_LADDERED = 799;
+
     // This is the process of the previous application that the user was in.
     // This process is kept above other things, because it is very common to
     // switch back to the previous app.  This is important both for recent
@@ -65,7 +100,11 @@ public final class Constants {
     // UI flow such as clicking on a URI in the e-mail app to view in the browser,
     // and then pressing back to return to e-mail.
     public static final int PREVIOUS_APP_ADJ = 700;
-    public static final int PREVIOUS_APP_MAX_ADJ = Flags.oomadjusterPrevLaddering() ? 799 : 700;
+
+    @OomAdjust
+    public static final int PREVIOUS_APP_MAX_ADJ =
+            Flags.oomadjusterPrevLaddering() ? PREVIOUS_APP_MAX_ADJ_LADDERED
+                    : PREVIOUS_APP_ADJ;
 
     // This is a process holding the home application -- we want to try
     // avoiding killing it, even if it would normally be in the background,
@@ -99,11 +138,17 @@ public final class Constants {
     // immediately visible. An example is background music playback.
     public static final int PERCEPTIBLE_APP_ADJ = 200;
 
+    // TODO: Remove this constant and add VISIBLE_APP_MAX_ADJ to the IntDef bucket
+    //  once the oomadjuster_vis_laddering and remove_lru_spam_prevention flags are removed.
+    public static final int VISIBLE_APP_MAX_ADJ_LADDERED = 199;
+
     // This is a process only hosting activities that are visible to the
     // user, so we'd prefer they don't disappear.
     public static final int VISIBLE_APP_ADJ = 100;
+
+    @OomAdjust
     public static final int VISIBLE_APP_MAX_ADJ = Flags.oomadjusterVisLaddering()
-            && Flags.removeLruSpamPrevention() ? 199 : 100;
+            && Flags.removeLruSpamPrevention() ? VISIBLE_APP_MAX_ADJ_LADDERED : VISIBLE_APP_ADJ;
 
     public static final int VISIBLE_APP_LAYER_MAX = PERCEPTIBLE_APP_ADJ - VISIBLE_APP_ADJ - 1;
 

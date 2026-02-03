@@ -140,6 +140,7 @@ import android.util.SparseIntArray;
 
 import com.android.server.LocalServices;
 import com.android.server.am.psc.ActiveUidsInternal;
+import com.android.server.am.psc.Constants.OomAdjust;
 import com.android.server.am.psc.Constants.SchedGroup;
 import com.android.server.am.psc.MockUtils;
 import com.android.server.am.psc.OomAdjuster;
@@ -1529,7 +1530,8 @@ public class MockingOomAdjusterTests {
 
         for (int i = 0; i < numberOfApps - 1; i++) {
             final int mruIndex = numberOfApps - i - 1;
-            int expectedAdj = CACHED_APP_MIN_ADJ + (mruIndex * 2 * CACHED_APP_IMPORTANCE_LEVELS);
+            @OomAdjust int expectedAdj =
+                    CACHED_APP_MIN_ADJ + (mruIndex * 2 * CACHED_APP_IMPORTANCE_LEVELS);
             if (expectedAdj > CACHED_APP_MAX_ADJ) {
                 expectedAdj = CACHED_APP_MAX_ADJ;
             }
@@ -4850,8 +4852,8 @@ public class MockingOomAdjusterTests {
     }
 
     @SuppressWarnings("GuardedBy")
-    private void assertProcStates(ProcessRecord app, int expectedProcState, int expectedAdj,
-            @SchedGroup int expectedSchedGroup) {
+    private void assertProcStates(ProcessRecord app, int expectedProcState,
+            @OomAdjust int expectedAdj, @SchedGroup int expectedSchedGroup) {
         final ProcessRecordInternal state = app;
         final int pid = app.getPid();
         assertEquals(expectedProcState, state.getSetProcState());
@@ -4870,8 +4872,9 @@ public class MockingOomAdjusterTests {
     }
 
     @SuppressWarnings("GuardedBy")
-    private void assertProcStates(ProcessRecord app, int expectedProcState, int expectedAdj,
-            @SchedGroup int expectedSchedGroup, String expectedAdjType) {
+    private void assertProcStates(ProcessRecord app, int expectedProcState,
+            @OomAdjust int expectedAdj, @SchedGroup int expectedSchedGroup,
+            String expectedAdjType) {
         assertProcStates(app, expectedProcState, expectedAdj, expectedSchedGroup);
         final ProcessRecordInternal state = app;
         assertEquals(expectedAdjType, state.getAdjType());
@@ -4918,9 +4921,13 @@ public class MockingOomAdjusterTests {
         long mLastPssTime;
         long mNextPssTime;
         long mLastPss = 12345;
+        @OomAdjust
         int mMaxAdj = UNKNOWN_ADJ;
+        @OomAdjust
         int mSetRawAdj = INVALID_ADJ;
+        @OomAdjust
         int mCurAdj = INVALID_ADJ;
+        @OomAdjust
         int mSetAdj = INVALID_ADJ;
         @SchedGroup int mCurSchedGroup = SCHED_GROUP_BACKGROUND;
         @SchedGroup int mSetSchedGroup = SCHED_GROUP_BACKGROUND;
@@ -5160,7 +5167,7 @@ public class MockingOomAdjusterTests {
         }
 
         @Override
-        public void setOomAdj(int pid, int uid, int adj, boolean forLmkdOnly) {
+        public void setOomAdj(int pid, int uid, @OomAdjust int adj, boolean forLmkdOnly) {
             if (pid <= 0) return;
             mLastSetOomAdj.put(pid, adj);
             mSetOomAdjAppliedAt.put(pid, mLastAppliedAt++);

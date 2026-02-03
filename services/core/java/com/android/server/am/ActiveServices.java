@@ -263,6 +263,7 @@ import com.android.server.am.LowMemDetector.MemFactor;
 import com.android.server.am.ServiceRecord.NeededReason;
 import com.android.server.am.ServiceRecord.ShortFgsInfo;
 import com.android.server.am.ServiceRecord.TimeLimitedFgsInfo;
+import com.android.server.am.psc.Constants.OomAdjust;
 import com.android.server.am.psc.SyncBatchSession;
 import com.android.server.pm.KnownPackages;
 import com.android.server.privatecompute.PccSandboxManagerInternal;
@@ -7515,7 +7516,7 @@ public final class ActiveServices {
     }
 
     private boolean collectPackageServicesLocked(String packageName, Set<String> filterByClasses,
-            boolean evenPersistent, boolean doit, int minOomAdj,
+            boolean evenPersistent, boolean doit, @OomAdjust int minOomAdj,
             ArrayMap<ComponentName, ServiceRecord> services) {
         boolean didSomething = false;
         for (int i = services.size() - 1; i >= 0; i--) {
@@ -7559,7 +7560,8 @@ public final class ActiveServices {
     }
 
     boolean bringDownDisabledPackageServicesLocked(String packageName, Set<String> filterByClasses,
-            int userId, boolean evenPersistent, boolean fullStop, boolean doit, int minOomAdj) {
+            int userId, boolean evenPersistent, boolean fullStop, boolean doit,
+            @OomAdjust int minOomAdj) {
         boolean didSomething = false;
 
         if (mTmpCollectionResults != null) {
