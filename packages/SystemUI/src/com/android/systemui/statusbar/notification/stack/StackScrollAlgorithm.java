@@ -189,9 +189,13 @@ public class StackScrollAlgorithm {
                     viewState.setAlpha(1f - ambientState.getHideAmount(), "keyguard hun");
                 } else {
                     // Take into account scene container-specific Lockscreen fade-in progress
-                    float fadeAlpha = ambientState.getLockscreenStackFadeInProgress();
-                    float dozeAlpha = 1f - ambientState.getDozeAmount();
-                    viewState.setAlpha(Math.min(dozeAlpha, fadeAlpha), "keyguard notif");
+                    final float alpha;
+                    if (ambientState.isLockscreenStackFadingIn()) {
+                        alpha = ambientState.getLockscreenStackFadeInProgress();
+                    } else {
+                        alpha = 1f - ambientState.getDozeAmount();
+                    }
+                    viewState.setAlpha(alpha, "keyguard notif");
                 }
             } else if (ambientState.isExpansionChanging()) {
                 // Adjust alpha for shade open & close.
