@@ -99,6 +99,13 @@ public abstract class PermissionControllerService extends Service {
     private static final long CAMERA_MIC_INDICATORS_NOT_PRESENT = 162547999L;
 
     /**
+     * A ChangeId indicating that this device does not support location indicators. Will be "false"
+     * if present, because the CompatChanges#isChangeEnabled method returns true if the change id is
+     * not present.
+     */
+    @ChangeId @Disabled private static final long LOCATION_INDICATORS_NOT_PRESENT = 430681066L;
+
+    /**
      * Revoke a set of runtime permissions for various apps.
      *
      * @param requests The permissions to revoke as {@code Map<packageName, List<permission>>}
