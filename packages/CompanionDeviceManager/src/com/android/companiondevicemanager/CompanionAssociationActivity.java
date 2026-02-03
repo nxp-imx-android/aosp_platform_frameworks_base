@@ -774,15 +774,6 @@ public class CompanionAssociationActivity extends FragmentActivity implements
                     }
                 });
 
-        // Set accessibility for the recyclerView that to be able scroll up/down for voice access.
-        mPermissionListRecyclerView.setAccessibilityDelegate(new View.AccessibilityDelegate() {
-            public void onInitializeAccessibilityNodeInfo(View host, AccessibilityNodeInfo info) {
-                super.onInitializeAccessibilityNodeInfo(host, info);
-                info.addAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_DOWN);
-                info.addAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_UP);
-            }
-        });
-
         mConstraintList.setVisibility(View.VISIBLE);
         mPermissionListRecyclerView.setVisibility(View.VISIBLE);
     }
