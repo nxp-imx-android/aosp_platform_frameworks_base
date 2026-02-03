@@ -44,6 +44,7 @@ fun TransitionBuilder.toSplitShadeTransition(durationScale: Double = 1.0) {
         fade(QuickSettings.Elements.SplitShadeQuickSettings)
         fade(QuickSettings.Elements.FooterActions)
         fade(Notifications.Elements.NotificationScrim)
+        fade(Notifications.Elements.StackPlaceholder)
     }
 }
 

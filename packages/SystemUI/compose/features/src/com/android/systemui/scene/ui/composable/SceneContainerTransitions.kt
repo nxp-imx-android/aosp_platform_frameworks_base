@@ -341,6 +341,7 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                         transitionDistancePx = lockscreenToShadeTransitionDistancePx
                     )
                 }
+                sharedElement(Notifications.Elements.StackPlaceholder, enabled = false)
             }
             from(
                 Scenes.Shade,
