@@ -720,6 +720,5 @@ interface IBackupManager {
      * @param request The DelayedRestoreRequest to schedule.
      * @return boolean indicating the success of the scheduling request.
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.SCHEDULE_DELAYED_RESTORE)")
     boolean scheduleDelayedRestore(in DelayedRestoreRequest request);
 }

@@ -60,4 +60,15 @@ public interface BackupManagerInternal {
      * @return boolean indicating the success of the scheduling request.
      */
     boolean scheduleDelayedRestoreForUser(int userId, DelayedRestoreRequest request);
+
+    /**
+     * Clears any cached data for a delayed restore for the given user and package. This method is
+     * called by the system when the cached data (used for delayed restore) of a package has
+     * expired.
+     *
+     * @param userId The user id for which the cached data should be cleared.
+     * @param packageName The package name for which the cached data should be cleared.
+     * @hide
+     */
+    void onDelayedRestoreCachedDataExpiredForUser(int userId, @NonNull String packageName);
 }

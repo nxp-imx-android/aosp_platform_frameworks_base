@@ -21,6 +21,7 @@ import static java.util.Collections.emptySet;
 import android.Manifest;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.RequiresPermission;
 import android.annotation.UserIdInt;
 import android.app.admin.DevicePolicyManager;
 import android.app.backup.BackupManager;
@@ -781,6 +782,7 @@ public class BackupManagerService extends IBackupManager.Stub implements BackupM
      * @return boolean indicating the success of the scheduling request.
      */
     @Override
+    @RequiresPermission(android.Manifest.permission.SCHEDULE_DELAYED_RESTORE)
     public boolean scheduleDelayedRestoreForUser(int userId, DelayedRestoreRequest request) {
         mContext.enforceCallingOrSelfPermission(Manifest.permission.SCHEDULE_DELAYED_RESTORE,
                 "scheduleDelayedRestoreForUser()");
@@ -826,6 +828,30 @@ public class BackupManagerService extends IBackupManager.Stub implements BackupM
 
         if (userBackupManagerService != null) {
             userBackupManagerService.onDelayedRestoreConditionMet(request);
+        }
+    }
+
+    /**
+     * Clears any cached data for a delayed restore for the given user and package. This method is
+     * part of the {@link BackupManagerInternal} interface and is called by the system when the
+     * cached data (used for delayed restore) of a package has expired. It delegates the call to the
+     * appropriate {@link UserBackupManagerService} instance for the given user.
+     *
+     * @param userId The user id for which the cached data should be cleared.
+     * @param packageName The package name for which the cached data should be cleared.
+     */
+    @Override
+    public void onDelayedRestoreCachedDataExpiredForUser(int userId, @NonNull String packageName) {
+        if (!isUserReadyForBackup(userId)) {
+            return;
+        }
+
+        UserBackupManagerService userBackupManagerService =
+                getServiceForUserIfCallerHasPermission(userId,
+                        "onDelayedRestoreCachedDataExpiredForUser()");
+
+        if (userBackupManagerService != null) {
+            userBackupManagerService.onDelayedRestoreCachedDataExpired(packageName);
         }
     }
 

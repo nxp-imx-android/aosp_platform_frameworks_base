@@ -77,6 +77,10 @@ public class BackupManagerConstants extends KeyValueSettingObserver {
     public static final String FULL_BACKUP_TRANSPORT_READ_SIZE =
             "full_backup_transport_read_size";
 
+    @VisibleForTesting
+    public static final String DELAYED_RESTORE_CACHE_TTL_MILLIS =
+            "delayed_restore_cache_ttl_millis";
+
     // Hard coded default values.
     @VisibleForTesting
     public static final long DEFAULT_KEY_VALUE_BACKUP_INTERVAL_MILLISECONDS =
@@ -108,6 +112,10 @@ public class BackupManagerConstants extends KeyValueSettingObserver {
     @VisibleForTesting
     public static final int DEFAULT_FULL_BACKUP_TRANSPORT_READ_SIZE = 64 * 1024; // 64KB
 
+    @VisibleForTesting
+    public static final long DEFAULT_DELAYED_RESTORE_CACHE_TTL_MILLIS =
+            24 * 60 * 60 * 1000; // 1 day
+
     // Backup manager constants.
     private long mKeyValueBackupIntervalMilliseconds;
     private long mKeyValueBackupFuzzMilliseconds;
@@ -119,6 +127,7 @@ public class BackupManagerConstants extends KeyValueSettingObserver {
     private String[] mBackupFinishedNotificationReceivers;
     private long mWakelockTimeoutMillis;
     private int mFullBackupTransportReadSize;
+    private long mDelayedRestoreCacheTtlMillis;
 
     public BackupManagerConstants(Handler handler, ContentResolver resolver) {
         super(handler, resolver, Settings.Secure.getUriFor(SETTING));
@@ -171,6 +180,10 @@ public class BackupManagerConstants extends KeyValueSettingObserver {
                 parser.getInt(
                         FULL_BACKUP_TRANSPORT_READ_SIZE,
                         DEFAULT_FULL_BACKUP_TRANSPORT_READ_SIZE);
+        mDelayedRestoreCacheTtlMillis =
+                parser.getLong(
+                        DELAYED_RESTORE_CACHE_TTL_MILLIS,
+                        DEFAULT_DELAYED_RESTORE_CACHE_TTL_MILLIS);
     }
 
     // The following are access methods for the individual parameters.
@@ -240,5 +253,17 @@ public class BackupManagerConstants extends KeyValueSettingObserver {
         Slog.d(TAG, "getFullBackupTransportReadSize(...) returns "
                 + mFullBackupTransportReadSize);
         return mFullBackupTransportReadSize;
+    }
+
+    /**
+     * Returns the TTL for the delayed restore cache in milliseconds.
+     *
+     * Note: This is the maximum amount of time for delayed restore cache data to be stored
+     * before it is expired and deleted.
+     */
+    public synchronized long getDelayedRestoreCacheTtlMillis() {
+        Slog.d(TAG, "getDelayedRestoreCacheTtlMillis(...) returns "
+                + mDelayedRestoreCacheTtlMillis);
+        return mDelayedRestoreCacheTtlMillis;
     }
 }

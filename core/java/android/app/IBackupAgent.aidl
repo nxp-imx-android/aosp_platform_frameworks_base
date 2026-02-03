@@ -252,6 +252,18 @@ oneway interface IBackupAgent {
             IBackupManager callbackBinder, long appVersionCode, int token);
 
     /**
+     * Clears cached key-value backup data that was stored for delayed restore.
+     *
+     * This method is called by the Android Backup system when the TTL (time to live) of the cache
+     * expires, which is defined in
+     * {@link com.android.server.backup.BackupManagerConstants#DELAYED_RESTORE_CACHE_TTL_MILLIS}.
+     *
+     * @param token The token of the restore session to clear cached data for.
+     * @param callbackBinder Binder on which to indicate operation completion.
+     */
+    void doDelayedRestoreCachedDataExpired(int token, IBackupManager callbackBinder);
+
+    /**
      * Callback for a delayed full restore when a requested trigger has been met.
      *
      * This method should invoke the agent's onDelayedFullRestore callback and report
