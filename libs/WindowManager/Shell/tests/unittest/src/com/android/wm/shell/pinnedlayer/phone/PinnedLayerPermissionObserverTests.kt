@@ -38,6 +38,7 @@ import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestRunningTaskInfoBuilder
 import com.android.wm.shell.TestShellExecutor
 import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorController
+import com.android.wm.shell.desktopmode.FakeShellDesktopState
 import com.android.wm.shell.desktopmode.WindowDragTransitionHandler
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController.UnpinStrategy
 import com.android.wm.shell.shared.TransactionPool
@@ -93,6 +94,7 @@ class PinnedLayerPermissionObserverTests : ShellTestCase() {
     private lateinit var pinnedLayerPermissionObserver: PinnedLayerPermissionObserver
     private lateinit var appOpsManager: AppOpsManager
     private lateinit var desktopState: FakeDesktopState
+    private lateinit var shellDesktopState: FakeShellDesktopState
 
     @Before
     fun setup() {
@@ -100,12 +102,14 @@ class PinnedLayerPermissionObserverTests : ShellTestCase() {
 
         desktopState = FakeDesktopState()
         desktopState.canEnterDesktopMode = true
+        shellDesktopState = FakeShellDesktopState(desktopState)
+        shellDesktopState.canBeWindowDropTarget = true
 
         pinnedLayerController =
             PinnedLayerController(
                 shellInit,
                 transitions,
-                desktopState,
+                shellDesktopState,
                 rootTaskDisplayAreaOrganizer,
                 shellTaskOrganizer,
                 presentationController,
