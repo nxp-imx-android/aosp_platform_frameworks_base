@@ -4,10 +4,14 @@ import androidx.compose.ui.unit.dp
 import com.android.compose.animation.Easings
 import com.android.compose.animation.scene.TransitionBuilder
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
+import com.android.systemui.scene.ui.viewmodel.ToBouncerTransitionViewModel
 
-fun TransitionBuilder.lockscreenToBouncerTransition(durationScale: Double = 1.0) {
+fun TransitionBuilder.lockscreenToBouncerTransition(
+    durationScale: Double = 1.0,
+    toBouncerTransitionViewModel: ToBouncerTransitionViewModel,
+) {
     lockscreenFadeOutTransition(durationScale = durationScale)
-    toBouncerTransition()
+    toBouncerTransition(viewModel = toBouncerTransitionViewModel)
 
     fractionRange(end = 0.3f, easing = Easings.PredictiveBack) {
         fade(LockscreenElementKeys.Region.Upper)
