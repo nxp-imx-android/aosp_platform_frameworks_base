@@ -33,6 +33,7 @@
 #include "SkiaDisplayList.h"
 #include "StretchMask.h"
 #include "TransformCanvas.h"
+#include "hwui/OutOfProcessRendering.h"
 
 namespace android {
 namespace uirenderer {
@@ -281,6 +282,10 @@ void RenderNodeDrawable::drawContent(SkCanvas* canvas) const {
                 srcBounds = snapshotResult->outSubset;
                 offset = snapshotResult->outOffset;
             }
+
+#ifdef __ANDROID__
+            oopr::registerSnapshot(renderNode->getOoprResources().get(), snapshotImage);
+#endif
 
             const auto dstBounds = SkIRect::MakeXYWH(offset.x(),
                                                      offset.y(),
