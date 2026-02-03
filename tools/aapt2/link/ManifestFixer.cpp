@@ -653,6 +653,7 @@ bool ManifestFixer::BuildRules(xml::XmlActionExecutor* executor, IAaptContext* c
   manifest_action["key-sets"]["upgrade-key-set"];
 
   manifest_action["allow-component-access"]["package"].Action(RequiredNameIsJavaPackage);
+  manifest_action["allow-component-access"]["package"]["additional-certificate"];
 
   // Application actions.
   xml::XmlNodeAction& application_action = manifest_action["application"];
