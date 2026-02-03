@@ -32,6 +32,7 @@ import com.android.testing.wm.util.MockToken
 import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_ANYTHING
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.ShellTaskOrganizer
+import com.android.wm.shell.bubbles.transitions.BubbleTransitions
 import com.android.wm.shell.bubbles.util.BubbleTestUtils.verifyExitBubbleTransaction
 import com.android.wm.shell.taskview.TaskView
 import com.android.wm.shell.taskview.TaskViewTaskController
@@ -39,6 +40,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.clearInvocations
 import org.mockito.kotlin.doReturn
@@ -200,5 +202,21 @@ class BubbleTaskStackListenerTest {
             }
         verifyExitBubbleTransaction(wct, bubbleTaskToken.asBinder())
         verify(taskViewTaskController).notifyTaskRemovalStarted(task)
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ENABLE_BUBBLE_ANYTHING)
+    fun onTaskMovedToFront_withActiveTransition_doesNothing() {
+        task.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FULLSCREEN
+        val mockTransition = mock<BubbleTransitions.BubbleTransition>()
+        bubble.stub { on { currentTransition } doReturn mockTransition }
+        bubbleData.stub { on { getBubbleInStackWithTaskId(bubbleTaskId) } doReturn bubble }
+
+        bubbleTaskStackListener.onTaskMovedToFront(task)
+
+        val taskViewTaskController = bubble.taskView.controller
+        val taskOrganizer = taskViewTaskController.taskOrganizer
+        verify(taskOrganizer, never()).applyTransaction(any())
+        verify(taskViewTaskController, never()).notifyTaskRemovalStarted(task)
     }
 }
