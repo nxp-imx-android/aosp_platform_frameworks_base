@@ -134,11 +134,16 @@ constructor(
 
     private val batteryStateListener =
         object : BatteryController.BatteryStateChangeCallback {
-            private var plugged = false
+            private var plugged =
+                if (Flags.systemStatusAnimationPerDisplay()) {
+                    batteryController.isPluggedIn
+                } else {
+                    false
+                }
             private var stateKnown = false
 
             override fun onBatteryLevelChanged(level: Int, pluggedIn: Boolean, charging: Boolean) {
-                if (!stateKnown) {
+                if (!stateKnown && !Flags.systemStatusAnimationPerDisplay()) {
                     stateKnown = true
                     plugged = pluggedIn
                     notifyListeners(level)
