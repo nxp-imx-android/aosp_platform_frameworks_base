@@ -1739,8 +1739,7 @@ public class JobSchedulerService extends com.android.server.SystemService
             int userId, @Nullable String namespace, String tag) {
         // Rate limit excessive schedule() calls.
         final String servicePkg = job.getService().getPackageName();
-        if (job.isPersisted() && (Flags.enforceScheduleLimitToProxyJobs()
-                || (packageName == null || packageName.equals(servicePkg)))) {
+        if (job.isPersisted()) {
             // limit excessive schedule calls for persisted jobs.
             final String pkg = packageName == null ? servicePkg : packageName;
             if (!mQuotaTracker.isWithinQuota(userId, pkg, QUOTA_TRACKER_SCHEDULE_PERSISTED_TAG)) {
