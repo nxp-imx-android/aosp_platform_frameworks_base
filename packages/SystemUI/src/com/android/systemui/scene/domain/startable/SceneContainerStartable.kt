@@ -1112,6 +1112,11 @@ constructor(
                             )
                         }
                     }
+                    if (!occluded) {
+                        sceneBackInteractor.removeOccludedSceneOnBackStack(
+                            reason = "removing occluded from backstack, if present"
+                        )
+                    }
                 }
         }
     }
