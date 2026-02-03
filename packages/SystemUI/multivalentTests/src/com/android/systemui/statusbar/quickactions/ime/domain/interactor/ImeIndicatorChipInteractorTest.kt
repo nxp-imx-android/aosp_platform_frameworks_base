@@ -18,6 +18,8 @@ package com.android.systemui.statusbar.quickactions.ime.domain.interactor
 
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
+import android.provider.Settings
+import android.view.inputmethod.InputMethodManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags
@@ -27,9 +29,10 @@ import com.android.systemui.inputmethod.data.repository.fakeInputMethodRepositor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.kosmos.runTest
-import android.view.inputmethod.InputMethodManager
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.testKosmosNew
+import com.android.systemui.user.data.repository.FakeUserRepository
+import com.android.systemui.util.settings.fakeSettings
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
@@ -57,9 +60,36 @@ class ImeIndicatorChipInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_STATUS_BAR_IME_CHIP)
-    fun chip_flagEnabled_isVisible() =
+    fun chip_visibility_updatesOnImeCountChange() =
         kosmos.runTest {
             backgroundScope.launch { underTest.chipModel.collect {} }
+
+            // One IME, one subtype.
+            val subtype1 = InputMethodModel.Subtype(subtypeId = 1, isAuxiliary = false)
+            val ime1 = InputMethodModel(USER_ID, "ime1", listOf(subtype1))
+            fakeInputMethodRepository.setEnabledInputMethods(USER_ID, ime1)
+            fakeInputMethodRepository.selectedInputMethodSubtypes = listOf(subtype1)
+            kosmos.fakeSettings.putStringForUser(
+                Settings.Secure.ENABLED_INPUT_METHODS,
+                "ime1",
+                USER_ID,
+            )
+            testScope.runCurrent()
+
+            assertThat(underTest.chipModel.value.isVisible).isFalse()
+
+            // Two IMEs, one subtype each.
+            val subtype2 = InputMethodModel.Subtype(subtypeId = 2, isAuxiliary = false)
+            val ime2 = InputMethodModel(USER_ID, "ime2", listOf(subtype2))
+            fakeInputMethodRepository.setEnabledInputMethods(USER_ID, ime1, ime2)
+            fakeInputMethodRepository.selectedInputMethodSubtypes = listOf(subtype1)
+            kosmos.fakeSettings.putStringForUser(
+                Settings.Secure.ENABLED_INPUT_METHODS,
+                "ime1:ime2",
+                USER_ID,
+            )
+            testScope.runCurrent()
+
             assertThat(underTest.chipModel.value.isVisible).isTrue()
         }
 
@@ -90,4 +120,8 @@ class ImeIndicatorChipInteractorTest : SysuiTestCase() {
             assertThat(fakeInputMethodRepository.inputMethodPickerShownDisplayId)
                 .isEqualTo(displayId)
         }
+
+    companion object {
+        const val USER_ID = FakeUserRepository.DEFAULT_SELECTED_USER
+    }
 }
