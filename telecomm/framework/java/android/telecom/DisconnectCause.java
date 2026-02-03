@@ -21,6 +21,7 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.media.ToneGenerator;
 import android.os.Parcel;
@@ -44,6 +45,10 @@ import java.util.Objects;
  * the label and description. It also may contain a reason for the disconnect, which is intended for
  * logging and not for display to the user.
  */
+/* TODO: b/478043076 - Remove SuppressLint once the API is finalized.
+ * And update the SDK check to the final version number.
+ */
+@SuppressLint("NewApi")
 public final class DisconnectCause implements Parcelable {
 
     private static final int TONE_UNKNOWN = -1;
@@ -327,8 +332,12 @@ public final class DisconnectCause implements Parcelable {
     /**
      * @hide
      */
+    /* TODO: b/478043076 - Remove SuppressLint once the API is finalized.
+     * And update the SDK check to the final version number.
+     */
     @SystemApi
     @FlaggedApi(Flags.FLAG_TELECOM_RESOLVE_HIDDEN_DEPENDENCIES)
+    @SuppressLint("NewApi")
     public static final class Builder {
         private @DisconnectCauseCode int mDisconnectCode;
         private CharSequence mDisconnectLabel;
