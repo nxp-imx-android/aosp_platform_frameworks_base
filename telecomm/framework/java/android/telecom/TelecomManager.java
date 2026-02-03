@@ -2135,6 +2135,14 @@ public class TelecomManager {
     /**
      * Returns whether there is an ongoing phone call (can be in dialing, ringing, active or holding
      * states) that is an external call.
+     * <p>
+     * External calls take place on another dveice. They do not retain audio focus or result in call
+     * audio routing operations. For example, a wearable device may provide a UI for a call which
+     * takes place on the user's phone for the purpose of controlling the call or potentially
+     * pulling it to the wearable; such a call is external.
+     * <p>
+     * Calls with
+     * {@link android.telecom.Call.Details#PROPERTY_IS_EXTERNAL_CALL} are external.
      *
      * @return {@code true} if there is an ongoing call that is external, {@code false} otherwise.
      */
