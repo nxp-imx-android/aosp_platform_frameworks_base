@@ -115,6 +115,16 @@ flag {
 }
 
 flag {
+    name: "allow_a11y_button_on_large_screen"
+    namespace: "accessibility"
+    description: "Allows the accessibility button location setting to be configured on large screen devices with gesture navigation."
+    bug: "477701122"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "button_chooser_activity_bottom_margin_system_bar"
     namespace: "accessibility"
     description: "Uses system bar insets as a bottom margin for AccessibilityButtonChooserActivity, preventing overlap."
