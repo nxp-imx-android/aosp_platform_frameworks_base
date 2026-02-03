@@ -37,7 +37,7 @@ public final class AppFunctionPackageMetadata implements AbstractAppFunctionMeta
             new Creator<AppFunctionPackageMetadata>() {
                 @Override
                 public AppFunctionPackageMetadata createFromParcel(Parcel in) {
-                    return new AppFunctionPackageMetadata(in);
+                    return in.readSquashed(AppFunctionPackageMetadata::new);
                 }
 
                 @Override
@@ -145,6 +145,9 @@ public final class AppFunctionPackageMetadata implements AbstractAppFunctionMeta
 
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
+        if (dest.maybeWriteSquashed(this)) {
+            return;
+        }
         dest.writeString8(mPackageName);
         mMetadataDocumentWrapper.writeToParcel(dest, flags);
     }
