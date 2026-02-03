@@ -736,7 +736,7 @@ public class AppLockLocalServiceTest {
         final ProcessRecord appRec = new ProcessRecord(mAms, info, info.processName, TEST_UID);
         appRec.setCurProcState(processState);
         final UidRecord record = new UidRecord(TEST_UID, mAms);
-        record.setCurProcState(processState);
+        mAms.mProcessStateController.setUidCurProcState(record, processState);
         record.addProcess(appRec);
         mAms.mProcessList.addProcessNameLocked(appRec);
         mAms.mProcessList.mActiveUids.put(TEST_UID, record);

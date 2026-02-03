@@ -102,7 +102,7 @@ public abstract class ConnectionRecordInternal implements OomAdjusterImpl.Connec
      *
      * @return The combined set of flags that were modified.
      */
-    public boolean updateFlags(final long newFlags) {
+    boolean updateFlags(final long newFlags) {
         final long updatedFlags = mFlags ^ newFlags;
         if (updatedFlags != (updatedFlags & Context.BIND_UPDATEABLE_FLAGS)) {
             Slog.wtf(TAG, "Attempt to update flags outside of BIND_UPDATEABLE_FLAGS with "
