@@ -21,6 +21,7 @@ import static android.app.admin.PolicyIdentifier.SIMPLE_ENUM_POLICY;
 import static android.app.admin.PolicyIdentifier.SIMPLE_INTEGER_POLICY;
 import static android.app.admin.PolicyIdentifier.SIMPLE_INTEGER_POLICY_WITH_RANGE;
 import static android.app.admin.PolicyIdentifier.SIMPLE_LONG_POLICY;
+import static android.app.admin.PolicyIdentifier.SIMPLE_LONG_POLICY_WITH_RANGE;
 import static android.app.admin.PolicyIdentifier.SIMPLE_STRING_LIST_POLICY;
 import static android.app.admin.PolicyIdentifier.SIMPLE_STRING_POLICY;
 import static android.app.admin.PolicyIdentifier.TEST_AFFILIATED_PROFILE_OWNER_ON_USER_ALLOWED;
@@ -251,7 +252,21 @@ public class Policies {
             /* affectedResource= */ 1,
             /* requiredPermission= */ null,
             /* requiredCrossUserPermission= */ null,
-            /* allowedDpcTypes= */ Set.of()
+            /* allowedDpcTypes= */ Set.of(),
+            /* minValue= */ Long.MIN_VALUE,
+            /* maxValue= */ Long.MAX_VALUE
+        ));
+        policies.add(new LongPolicyMetadata(
+            /* id= */ SIMPLE_LONG_POLICY_WITH_RANGE,
+            /* allowedScopes= */ Set.of(
+                1
+            ),
+            /* affectedResource= */ 1,
+            /* requiredPermission= */ null,
+            /* requiredCrossUserPermission= */ null,
+            /* allowedDpcTypes= */ Set.of(),
+            /* minValue= */ 10L,
+            /* maxValue= */ 100L
         ));
         policies.add(new StringPolicyMetadata(
             /* id= */ SIMPLE_STRING_POLICY,
