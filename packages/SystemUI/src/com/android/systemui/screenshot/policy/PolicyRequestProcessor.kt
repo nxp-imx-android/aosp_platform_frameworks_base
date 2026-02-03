@@ -28,6 +28,7 @@ import android.view.WindowManager.TAKE_SCREENSHOT_FULLSCREEN
 import android.view.WindowManager.TAKE_SCREENSHOT_PROVIDED_IMAGE
 import com.android.systemui.Flags.screenshotDisableLongScreenshotForSystemShade
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
 import com.android.systemui.screenshot.ImageCapture
 import com.android.systemui.screenshot.ScreenshotData
 import com.android.systemui.screenshot.ScreenshotRequestProcessor
@@ -53,6 +54,7 @@ class PolicyRequestProcessor(
     private val defaultOwner: UserHandle = myUserHandle(),
     /** The assigned component when no application has focus, or not visible */
     private val defaultComponent: ComponentName,
+    private val screenCaptureRecordFeaturesInteractor: ScreenCaptureRecordFeaturesInteractor,
 ) : ScreenshotRequestProcessor {
     override suspend fun process(original: ScreenshotData): ScreenshotData {
 
@@ -64,11 +66,12 @@ class PolicyRequestProcessor(
         val displayContent = displayTasks.getDisplayContent(original.displayId)
         val original =
             if (
-                screenshotDisableLongScreenshotForSystemShade() &&
-                    displayContent.systemUiState.shadeExpanded
+                (screenshotDisableLongScreenshotForSystemShade() &&
+                    displayContent.systemUiState.shadeExpanded) ||
+                    screenCaptureRecordFeaturesInteractor.isLargeScreenScreencaptureEnabled
             ) {
-                // Suppress long screenshot if the shade is expanded; ScreenshotController will hide
-                // the long screenshot chip.
+                // Suppress long screenshot if the shade is expanded or large-screen capture
+                // is enabled; ScreenshotController will hide the long screenshot chip.
                 original.copy(suppressLongScreenshot = true)
             } else {
                 original
