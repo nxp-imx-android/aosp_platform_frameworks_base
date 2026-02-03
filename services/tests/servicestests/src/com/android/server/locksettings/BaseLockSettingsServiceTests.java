@@ -37,6 +37,7 @@ import android.app.trust.TrustManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManagerInternal;
 import android.content.pm.UserInfo;
 import android.content.res.Resources;
 import android.hardware.authsecret.IAuthSecret;
@@ -110,6 +111,7 @@ public abstract class BaseLockSettingsServiceTests {
     MockSyntheticPasswordManager mSpManager;
     IAuthSecret mAuthSecretService;
     WindowManagerInternal mMockWindowManager;
+    PackageManagerInternal mMockPackageManagerInternal;
     FakeGsiService mGsiService;
     PasswordSlotManagerTestable mPasswordSlotManager;
     RecoverableKeyStoreManager mRecoverableKeyStoreManager;
@@ -141,6 +143,7 @@ public abstract class BaseLockSettingsServiceTests {
         mDevicePolicyManager = mock(DevicePolicyManager.class);
         mDevicePolicyManagerInternal = mock(DevicePolicyManagerInternal.class);
         mMockWindowManager = mock(WindowManagerInternal.class);
+        mMockPackageManagerInternal = mock(PackageManagerInternal.class);
         mGsiService = new FakeGsiService();
         mPasswordSlotManager = new PasswordSlotManagerTestable();
         mRecoverableKeyStoreManager = mock(RecoverableKeyStoreManager.class);
@@ -158,8 +161,10 @@ public abstract class BaseLockSettingsServiceTests {
         LocalServices.removeServiceForTest(LockSettingsInternal.class);
         LocalServices.removeServiceForTest(DevicePolicyManagerInternal.class);
         LocalServices.removeServiceForTest(WindowManagerInternal.class);
+        LocalServices.removeServiceForTest(PackageManagerInternal.class);
         LocalServices.addService(DevicePolicyManagerInternal.class, mDevicePolicyManagerInternal);
         LocalServices.addService(WindowManagerInternal.class, mMockWindowManager);
+        LocalServices.addService(PackageManagerInternal.class, mMockPackageManagerInternal);
 
         mSecureLockDeviceServiceInternal = mock(SecureLockDeviceServiceInternal.class);
         LocalServices.removeServiceForTest(SecureLockDeviceServiceInternal.class);

@@ -81,6 +81,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManagerInternal;
 import android.content.pm.UserInfo;
 import android.content.pm.UserProperties;
 import android.database.ContentObserver;
@@ -2846,6 +2847,10 @@ public class LockSettingsService extends ILockSettings.Stub {
         mHandler.post(() -> {
             mInjector.getDevicePolicyManager().reportPasswordChanged(newMetrics, userId);
             LocalServices.getService(WindowManagerInternal.class).reportPasswordChanged(userId);
+            if (android.security.Flags.appLockApis()) {
+                LocalServices.getService(
+                        PackageManagerInternal.class).reportLockCredentialChanged(userId);
+            }
         });
     }
 
