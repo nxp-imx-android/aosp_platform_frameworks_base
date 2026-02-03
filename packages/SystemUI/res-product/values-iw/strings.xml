@@ -70,4 +70,10 @@
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"יש לך אפשרות לאתר את הטאבלט הזה בעזרת שירות \"איפה המכשיר שלי\" גם כשהטאבלט כבוי"</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"אפשר לאתר את הטלפון הזה באמצעות השירות \"מרכז המכשירים שלי\" גם כשהוא כבוי"</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"אפשר לאתר את הטאבלט הזה באמצעות השירות \"מרכז המכשירים שלי\" גם כשהוא כבוי"</string>
+    <!-- no translation found for dream_setup_description (5167691612621831552) -->
+    <skip />
+    <!-- no translation found for dream_setup_description (6296793330727926553) -->
+    <skip />
+    <!-- no translation found for dream_setup_description (3098487756905462324) -->
+    <skip />
 </resources>

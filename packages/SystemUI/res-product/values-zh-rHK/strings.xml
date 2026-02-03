@@ -70,4 +70,10 @@
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"即使平板電腦關機，仍可透過「尋找我的裝置」尋找此平板電腦"</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"即使手機關機，仍可透過「尋找中心」尋找此手機"</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"即使平板電腦關機，仍可透過「尋找中心」尋找此平板電腦"</string>
+    <!-- no translation found for dream_setup_description (5167691612621831552) -->
+    <skip />
+    <!-- no translation found for dream_setup_description (6296793330727926553) -->
+    <skip />
+    <!-- no translation found for dream_setup_description (3098487756905462324) -->
+    <skip />
 </resources>
