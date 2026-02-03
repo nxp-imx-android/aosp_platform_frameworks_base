@@ -145,79 +145,64 @@ public final class ContentSafetyManager {
     public static final int CONTENT_SAFETY_UNKNOWN = 0;
     /**
      * Indicates that the content check was successful and no sensitive content was detected.
-     * @hide
      */
     public static final int CONTENT_SAFETY_SUCCESS_NONE = 1;
     /**
      * Indicates that the content check was successful and sensitive content was detected.
-     * @hide
      */
     public static final int CONTENT_SAFETY_SUCCESS_SENSITIVE = 2;
     /**
      * Indicates that SANDBOXED service failed due to unspecified internal error.
-     * @hide
      */
     public static final int CONTENT_SAFETY_SANDBOXED_SERVICE_ERROR_UNKNOWN = 3;
     /**
      * Indicates that sandboxed service is not available and fail to connect.
-     * @hide
      */
     public static final int CONTENT_SAFETY_SANDBOXED_SERVICE_ERROR_NOT_AVAILABLE = 4;
     /**
      * Indicates that getFeature remote call is returning failure error code due to internal error.
-     * @hide
      */
     public static final int CONTENT_SAFETY_GET_FEATURE_ERROR = 5;
     /**
      * Indicates that loadFeature remote call is returning failure error code due to internal error.
-     * @hide
      */
     public static final int CONTENT_SAFETY_LOAD_FEATURE_ERROR = 6;
     /**
      * Indicates that downloaded feature from remote service is not opened with read-only mode.
-     * @hide
      */
     public static final int CONTENT_SAFETY_FEATURE_NOT_READ_ONLY_ERROR = 7;
     /**
      * Indicates that the input file descriptors provided by the client is not opened with
      * read-only mode.
-     * @hide
      */
     public static final int CONTENT_SAFETY_PAYLOAD_NOT_READ_ONLY_ERROR = 8;
     /**
      * Indicates that the remote content safety service received a cancelled signal.
-     * @hide
      */
     public static final int CONTENT_SAFETY_CHECK_CONTENT_CANCELLED = 9;
     /**
      * Indicates that checkContent remote call failed due to internal error and return
      * an error code.
-     * @hide
      */
     public static final int CONTENT_SAFETY_CHECK_CONTENT_ERROR = 10;
     /**
      * Indicates that trying to invoke the remote call checkContent failed.
-     * @hide
      */
     public static final int CONTENT_SAFETY_CHECK_CONTENT_INVOKE_ERROR = 11;
     /**
      * Indicates that trying to invoke the remote call getFeature failed.
-     * @hide
      */
     public static final int CONTENT_SAFETY_GET_FEATURE_INVOKE_ERROR = 12;
     /**
      * Indicates that to invoke the remote call loadFeature failed.
-     * @hide
      */
     public static final int CONTENT_SAFETY_LOAD_FEATURE_INVOKE_ERROR = 13;
     /**
      * Indicates that the remote call getFeature failed due to internal error.
-     * @hide
      */
     public static final int CONTENT_SAFETY_GET_FEATURE_INTERNAL_ERROR = 14;
     /**
      * Indicates that the remote call loadFeature failed due to internal error.
-     * @hide
      */
     public static final int CONTENT_SAFETY_LOAD_FEATURE_INTERNAL_ERROR = 15;
     /**
