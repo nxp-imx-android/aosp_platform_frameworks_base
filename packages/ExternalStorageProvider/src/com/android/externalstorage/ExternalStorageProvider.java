@@ -18,6 +18,7 @@ package com.android.externalstorage;
 
 
 import static android.provider.Flags.enableDocumentsTrashApi;
+import static android.provider.Flags.enableOnVolumeRecordChangedListener;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -40,6 +41,7 @@ import android.os.storage.DiskInfo;
 import android.os.storage.StorageEventListener;
 import android.os.storage.StorageManager;
 import android.os.storage.VolumeInfo;
+import android.os.storage.VolumeRecord;
 import android.provider.DocumentsContract;
 import android.provider.DocumentsContract.Document;
 import android.provider.DocumentsContract.Path;
@@ -165,12 +167,27 @@ public class ExternalStorageProvider extends FileSystemProvider {
 
         updateVolumes();
 
-        mStorageManager.registerListener(new StorageEventListener() {
-                @Override
-                public void onVolumeStateChanged(VolumeInfo vol, int oldState, int newState) {
-                    updateVolumes();
-                }
-            });
+        if (enableOnVolumeRecordChangedListener()) {
+            mStorageManager.registerListener(new StorageEventListener() {
+                    @Override
+                    public void onVolumeStateChanged(VolumeInfo vol, int oldState, int newState) {
+                        updateVolumes();
+                    }
+
+                    // Update volumes when metadata such as volume nickname changes
+                    @Override
+                    public void onVolumeRecordChanged(VolumeRecord rec) {
+                        updateVolumes();
+                    }
+                });
+        } else {
+            mStorageManager.registerListener(new StorageEventListener() {
+                    @Override
+                    public void onVolumeStateChanged(VolumeInfo vol, int oldState, int newState) {
+                        updateVolumes();
+                    }
+                });
+        }
 
         return true;
     }
