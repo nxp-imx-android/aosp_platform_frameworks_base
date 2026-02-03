@@ -73,7 +73,6 @@ import kotlinx.coroutines.awaitCancellation
 @Composable
 internal fun ContentScope.PasswordBouncer(
     viewModel: PasswordBouncerViewModel,
-    alphaOnEntry: () -> Float,
     modifier: Modifier = Modifier,
 ) {
     val focusRequester = remember { FocusRequester() }
@@ -98,7 +97,7 @@ internal fun ContentScope.PasswordBouncer(
 
     val color = MaterialTheme.colorScheme.onSurfaceVariant
 
-    DisableSoftKeyboardWhenNotVisible(alphaOnEntry = alphaOnEntry) {
+    DisableSoftKeyboardWhenNotVisible() {
         SelectedUserAwareInputConnection(selectedUserId) {
             SelectedUserAwareLocalContext(selectedUserId) {
                 OutlinedSecureTextField(
@@ -251,12 +250,9 @@ private fun RequestFocus(focusRequester: FocusRequester, viewModel: PasswordBoun
 
 /** Disables the visibility of the IME when the bouncer is not visible. */
 @Composable
-fun ContentScope.DisableSoftKeyboardWhenNotVisible(
-    alphaOnEntry: () -> Float,
-    content: @Composable () -> Unit,
-) {
+fun ContentScope.DisableSoftKeyboardWhenNotVisible(content: @Composable () -> Unit) {
     val contentVisible by remember {
-        derivedStateOf { contentVisible(alphaOnEntry, layoutState.currentTransition) }
+        derivedStateOf { contentVisible(layoutState.currentTransition) }
     }
 
     DisableSoftKeyboard(!contentVisible) { content() }
@@ -282,15 +278,12 @@ fun DisableSoftKeyboard(disabled: Boolean, content: @Composable () -> Unit) {
  * Calculates whether the content of the bouncer is visible based on the alpha value from the entry
  * animation and the current transition state.
  */
-private fun contentVisible(
-    alphaOnEntry: () -> Float,
-    currentTransition: TransitionState.Transition?,
-): Boolean {
-    if (currentTransition == null || currentTransition.isTransitioning(to = Overlays.Bouncer)) {
-        return alphaOnEntry() > 0.5
+private fun contentVisible(currentTransition: TransitionState.Transition?): Boolean {
+    if (currentTransition?.isTransitioning(to = Overlays.Bouncer) == true) {
+        return currentTransition.progress > 0.5
     }
 
-    if (currentTransition.isTransitioning(from = Overlays.Bouncer)) {
+    if (currentTransition?.isTransitioning(from = Overlays.Bouncer) == true) {
         return currentTransition.progress <= 0.5
     }
 
