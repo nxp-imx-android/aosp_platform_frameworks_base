@@ -36,6 +36,7 @@ public class SupervisionUserData {
     public boolean supervisionLockScreenEnabled;
     @Nullable public PersistableBundle supervisionLockScreenOptions;
     ArraySet<String> supervisionRoleHolders = new ArraySet<>();
+    public boolean escrowTokenRequired;
     final PolicyMap policies = new PolicyMap();
 
     public SupervisionUserData(@UserIdInt int userId) {
@@ -49,6 +50,7 @@ public class SupervisionUserData {
         pw.println("supervisionEnabled: " + supervisionEnabled);
         pw.println("supervisionAppPackage: " + supervisionAppPackage);
         pw.println("supervisionRoleHolders: " + supervisionRoleHolders);
+        pw.println("escrowTokenRequired: " + escrowTokenRequired);
         pw.println("supervisionLockScreenEnabled: " + supervisionLockScreenEnabled);
         pw.println("supervisionLockScreenOptions: " + supervisionLockScreenOptions);
         pw.println("policies list size(): " + policies.size());

@@ -1160,18 +1160,25 @@ public class SupervisionService extends ISupervisionManager.Stub {
      * @return A list of the supervision role holders that were removed.
      */
     private List<String> updateSupervisionRoleHolders(@UserIdInt int userId) {
-        List<String> newRoleHolders =
+        List<String> allSupervisionRoleHolders =
+                new ArrayList<String>(
+                        mInjector.getRoleHoldersAsUser(
+                                ROLE_SYSTEM_SUPERVISION, UserHandle.of(userId)));
+
+        List<String> supervisionRoleHolders =
                 new ArrayList<String>(
                         mInjector.getRoleHoldersAsUser(ROLE_SUPERVISION, UserHandle.of(userId)));
-        newRoleHolders.addAll(
-                mInjector.getRoleHoldersAsUser(ROLE_SYSTEM_SUPERVISION, UserHandle.of(userId)));
+        allSupervisionRoleHolders.addAll(supervisionRoleHolders);
 
         synchronized (getLockObject()) {
             SupervisionUserData data = getUserDataLocked(userId);
             List<String> removedRoleHolders = new ArrayList<>(data.supervisionRoleHolders);
-            removedRoleHolders.removeAll(newRoleHolders);
+            removedRoleHolders.removeAll(allSupervisionRoleHolders);
             data.supervisionRoleHolders.clear();
-            data.supervisionRoleHolders.addAll(newRoleHolders);
+            data.supervisionRoleHolders.addAll(allSupervisionRoleHolders);
+            if (Flags.verifySupervisionRoleHoldersBeforeDestroyingEscrowToken()) {
+                data.escrowTokenRequired = !supervisionRoleHolders.isEmpty();
+            }
             mSupervisionSettings.saveUserData();
             return removedRoleHolders;
         }
@@ -1509,8 +1516,9 @@ public class SupervisionService extends ISupervisionManager.Stub {
             if (!Flags.verifySupervisionRoleHoldersBeforeDestroyingEscrowToken()) {
                 return false;
             }
-            final UserHandle user = UserHandle.of(userId);
-            return !mInjector.getRoleHoldersAsUser(ROLE_SUPERVISION, user).isEmpty();
+            synchronized (getLockObject()) {
+                return getUserDataLocked(userId).escrowTokenRequired;
+            }
         }
     }
 
