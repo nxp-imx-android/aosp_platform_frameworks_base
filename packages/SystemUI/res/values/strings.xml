@@ -274,6 +274,10 @@
     <string name="screenshot_dismiss_description">Dismiss screenshot</string>
     <!-- Content description indicating that tapping a button will dismiss the work profile first run dialog [CHAR LIMIT=NONE] -->
     <string name="screenshot_dismiss_work_profile">Dismiss work profile message</string>
+    <!-- Label for UI element which allows opening the screenshot in the Files app [CHAR LIMIT=30] -->
+    <string name="screenshot_open_in_folder_label">Folder</string>
+    <!-- Content description indicating that tapping the element will allow opening the screenshot in the Files app [CHAR LIMIT=NONE] -->
+    <string name="screenshot_open_in_folder_description">Open screenshot in Files</string>
     <!-- Content description indicating that the view is a preview of the screenshot that was just taken [CHAR LIMIT=NONE] -->
     <string name="screenshot_preview_description">Screenshot preview</string>
     <!-- Content description for the top boundary of the screenshot being cropped, with the current position as a percentage. [CHAR LIMIT=NONE] -->

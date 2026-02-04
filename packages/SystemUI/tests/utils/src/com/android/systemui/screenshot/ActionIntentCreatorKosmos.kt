@@ -20,6 +20,7 @@ import android.content.applicationContext
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.kosmos.testDispatcher
+import com.android.systemui.screencapture.record.largescreen.data.repository.parentUriRepositoryKosmos
 
 val Kosmos.actionIntentCreator by
     Kosmos.Fixture {
@@ -28,5 +29,6 @@ val Kosmos.actionIntentCreator by
             applicationContext.packageManager,
             backgroundScope,
             testDispatcher,
+            parentUriRepositoryKosmos,
         )
     }

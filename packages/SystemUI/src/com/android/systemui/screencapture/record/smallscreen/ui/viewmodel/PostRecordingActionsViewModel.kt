@@ -31,7 +31,7 @@ import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
-import com.android.systemui.screencapture.record.largescreen.domain.interactor.ParentUriInteractor
+import com.android.systemui.screencapture.record.largescreen.data.repository.ParentUriRepository
 import com.android.systemui.screenrecord.service.ActivityStartingReceiver
 import com.android.systemui.settings.UserTracker
 import dagger.assisted.Assisted
@@ -43,21 +43,21 @@ private const val MIME_TYPE = "video/mp4"
 class PostRecordingActionsViewModel
 @AssistedInject
 constructor(
-    @Assisted private val videoUri: Uri,
+    @Assisted val videoUri: Uri,
     @Assisted private val displayId: Int,
     private val context: Context,
     private val broadcastSender: BroadcastSender,
     private val userTracker: UserTracker,
     private val drawableLoaderViewModel: DrawableLoaderViewModel,
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
-    private val parentUriInteractor: ParentUriInteractor,
+    private val parentUriRepository: ParentUriRepository,
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModel {
 
     var parentUri: Uri? by mutableStateOf(null)
         private set
 
     override suspend fun onActivated() {
-        parentUri = parentUriInteractor.getParentDirectoryUri(videoUri)
+        parentUri = parentUriRepository.getParentDirectoryUri(videoUri)
     }
 
     fun retake() {
