@@ -84,7 +84,7 @@ abstract class LogModule {
             return factory.create("ShadeLog", 500, false)
         }
 
-        /** Provides a logging buffer for Shade messages. */
+        /** Provides a logging buffer for Shade touch messages. */
         @Provides
         @SysUISingleton
         @ShadeTouchLog
