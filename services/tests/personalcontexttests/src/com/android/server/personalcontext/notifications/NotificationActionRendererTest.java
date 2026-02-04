@@ -104,6 +104,13 @@ public class NotificationActionRendererTest {
     }
 
     @Test
+    public void testRenderer_hasCanReceiveNotificationInsightsProperty() {
+        assertThat(mRenderer.hasProperties(
+                NotificationActionRenderer.PROPERTY_CAN_RECEIVE_NOTIFICATION_INSIGHTS))
+                .isTrue();
+    }
+
+    @Test
     public void testRender_notActionableInsight_noAction() {
         ContextInsight insight = new BundleInsight.Builder().build();
 
