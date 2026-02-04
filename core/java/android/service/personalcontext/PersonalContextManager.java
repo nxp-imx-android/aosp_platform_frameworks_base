@@ -18,10 +18,12 @@ package android.service.personalcontext;
 
 import static java.util.Objects.requireNonNull;
 
+import android.Manifest;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresNoPermission;
+import android.annotation.RequiresPermission;
 import android.annotation.SdkConstant;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
@@ -109,6 +111,40 @@ public final class PersonalContextManager {
                 mContext.getContentResolver(),
                 Settings.Secure.PERSONAL_CONTEXT_ENABLED,
                 enable ? 1 : 0, mContext.getUserId());
+    }
+
+    /**
+     * Returns true if personal context data collection is enabled for the given application.
+     *
+     * <p>When disabled, this setting stops all data collection sources for personal context for a
+     * particular application, such as from the Content Capture API and notifications content.
+     *
+     * @param packageName package name of the application to read the setting for
+     */
+    @RequiresPermission(Manifest.permission.QUERY_ALL_PACKAGES)
+    public boolean isPersonalContextModeEnabled(@NonNull String packageName) {
+        try {
+            return mService.isPersonalContextModeEnabled(packageName, mContext.getUserId());
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Sets the personal context data collection state for the given application.
+     *
+     * @param packageName package name of the application to change the setting for
+     * @param enabled value for whether or not data collection is enabled
+     * @hide
+     */
+    @SystemApi
+    @RequiresPermission(Manifest.permission.CHANGE_PERSONAL_CONTEXT_MODE)
+    public void setPersonalContextModeEnabled(@NonNull String packageName, boolean enabled) {
+        try {
+            mService.setPersonalContextModeEnabled(packageName, mContext.getUserId(), enabled);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
     }
 
     /**
