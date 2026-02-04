@@ -242,9 +242,15 @@ public final class MotionEvent extends InputEvent implements Parcelable {
     public static final int ACTION_MOVE             = 2;
 
     /**
-     * Constant for {@link #getActionMasked}: The current gesture has been aborted.
-     * You will not receive any more points in it.  You should treat this as
-     * an up event, but not perform any action that you normally would.
+     * Constant for {@link #getActionMasked}: The current gesture has been aborted. You will not
+     * receive any more points in it. You should not perform any action that you normally would as a
+     * result of this gesture.
+     * <p>
+     * After an {@code ACTION_CANCEL} event, you should assume that all pointers that were down have
+     * been lifted. In cases where only one pointer is cancelled, {@link #ACTION_POINTER_UP} with
+     * {@link #FLAG_CANCELED} will be sent instead.
+     * <p>
+     * {@link #FLAG_CANCELED} is always set on {@code ACTION_CANCEL} events.
      */
     public static final int ACTION_CANCEL           = 3;
 
