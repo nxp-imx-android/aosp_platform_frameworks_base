@@ -214,6 +214,7 @@ import com.android.wm.shell.shared.annotations.ShellBackgroundThread;
 import com.android.wm.shell.shared.annotations.ShellDesktopThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.annotations.ShellMainThreadImmediate;
+import com.android.wm.shell.shared.bubbles.BubbleFeatureConfig;
 import com.android.wm.shell.shared.desktopmode.DesktopConfig;
 import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.shared.pip.PipFlags;
@@ -295,6 +296,12 @@ public abstract class WMShellModule {
     //
     // Bubbles
     //
+
+    @WMSingleton
+    @Provides
+    static BubbleFeatureConfig providesBubbleFeatureConfig(Context context) {
+        return new BubbleFeatureConfig(context);
+    }
 
     @WMSingleton
     @Provides
