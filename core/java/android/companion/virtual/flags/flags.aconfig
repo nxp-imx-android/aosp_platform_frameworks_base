@@ -229,6 +229,7 @@ flag {
     namespace: "virtual_devices"
     description: "API for setting the view behavior for virtual input devices"
     bug: "434658418"
+    is_exported: true
 }
 
 flag {

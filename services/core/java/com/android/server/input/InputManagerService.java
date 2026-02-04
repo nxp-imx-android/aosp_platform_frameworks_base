@@ -81,6 +81,7 @@ import android.hardware.input.KeyGlyphMap;
 import android.hardware.input.KeyboardLayout;
 import android.hardware.input.KeyboardLayoutSelectionResult;
 import android.hardware.input.TouchCalibration;
+import android.hardware.input.ViewBehaviorConfig;
 import android.hardware.input.VirtualDpadConfig;
 import android.hardware.input.VirtualGamepadConfig;
 import android.hardware.input.VirtualKeyboardConfig;
@@ -337,12 +338,10 @@ public class InputManagerService extends IInputManager.Stub
     @GuardedBy("mAssociationsLock")
     private final Set<String> mVirtualDevicePorts = new ArraySet<>();
 
-    // Stores input ports associated with device types. For example, adding an association
-    // {"123", "touchNavigation"} here would mean that a touch device appearing at port "123" would
-    // enumerate as a "touch navigation" device rather than the default "touchpad as a mouse
-    // pointer" device.
+    // Map of input ports to overrides on device configuration (.idc properties).
     @GuardedBy("mAssociationsLock")
-    private final Map<String, String> mDeviceTypeAssociations = new ArrayMap<>();
+    private final Map<String, ConfigurationOverride> mDeviceConfigurationOverrides =
+            new ArrayMap<>();
 
     // Guards per-display input properties and properties relating to the mouse pointer.
     // Threads can wait on this lock to be notified the next time the display on which the mouse
@@ -1944,21 +1943,25 @@ public class InputManagerService extends IInputManager.Stub
         mNative.changeUniqueIdAssociation();
     }
 
-    void setTypeAssociationInternal(@NonNull String inputPort, @NonNull String type) {
+    void setConfigurationOverride(
+            @NonNull String inputPort, @NonNull ConfigurationOverride configurationOverride) {
         Objects.requireNonNull(inputPort);
-        Objects.requireNonNull(type);
+        Objects.requireNonNull(configurationOverride);
         synchronized (mAssociationsLock) {
-            mDeviceTypeAssociations.put(inputPort, type);
+            mDeviceConfigurationOverrides.put(inputPort, configurationOverride);
         }
-        mNative.changeTypeAssociation();
+        mNative.changeConfigurationOverrides();
     }
 
-    void unsetTypeAssociationInternal(@NonNull String inputPort) {
+    void unsetConfigurationOverride(@NonNull String inputPort) {
         Objects.requireNonNull(inputPort);
+        final ConfigurationOverride removed;
         synchronized (mAssociationsLock) {
-            mDeviceTypeAssociations.remove(inputPort);
+            removed = mDeviceConfigurationOverrides.remove(inputPort);
         }
-        mNative.changeTypeAssociation();
+        if (removed != null) {
+            mNative.changeConfigurationOverrides();
+        }
     }
 
     void addKeyboardLayoutAssociation(@NonNull String inputPort,
@@ -2011,7 +2014,9 @@ public class InputManagerService extends IInputManager.Stub
                 config.getVendorId(), config.getProductId(), token,
                 InputManagerService.this.getTargetDisplayIdForInput(
                         config.getAssociatedDisplayId()),
-                config.getLanguageTag(), config.getLayoutType());
+                config.getLanguageTag(), config.getLayoutType(),
+                android.companion.virtualdevice.flags.Flags.virtualInputViewBehavior()
+                        ? config.getViewBehaviorConfig() : null);
     }
 
     @NonNull
@@ -2396,11 +2401,11 @@ public class InputManagerService extends IInputManager.Stub
                     pw.println("  uniqueId: " + v);
                 });
             }
-            if (!mDeviceTypeAssociations.isEmpty()) {
-                pw.println("Type Associations:");
-                mDeviceTypeAssociations.forEach((k, v) -> {
+            if (!mDeviceConfigurationOverrides.isEmpty()) {
+                pw.println("Configuration Overrides:");
+                mDeviceConfigurationOverrides.forEach((k, v) -> {
                     pw.print("  port: " + k);
-                    pw.println("  type: " + v);
+                    pw.println("  configuration: " + v);
                 });
             }
         }
@@ -3128,18 +3133,19 @@ public class InputManagerService extends IInputManager.Stub
     // Native callback
     @SuppressWarnings("unused")
     @VisibleForTesting
-    String[] getDeviceTypeAssociations() {
-        final Map<String, String> associations;
+    Map<String, ConfigurationOverride> getDeviceConfigurationOverrides() {
+        final Map<String, ConfigurationOverride> result = new ArrayMap<>();
         synchronized (mAssociationsLock) {
-            associations = new HashMap<>(mDeviceTypeAssociations);
+            for (Map.Entry<String, ConfigurationOverride> entry :
+                    mDeviceConfigurationOverrides.entrySet()) {
+                result.put(entry.getKey(), new ConfigurationOverride(entry.getValue()));
+            }
         }
-
-        return flatten(associations);
+        return result;
     }
 
     // Native callback
     @SuppressWarnings("unused")
-    @VisibleForTesting
     private String[] getKeyboardLayoutAssociations() {
         final Map<String, String> configs = new ArrayMap<>();
         synchronized (mAssociationsLock) {
@@ -3972,6 +3978,56 @@ public class InputManagerService extends IInputManager.Stub
         }
     }
 
+    /**
+     * Represents the overrides to the configuration (.idc properties) for an input device. These
+     * are typically used for virtual input devices which do not have a physical .idc file, and are
+     * ignored otherwise.
+     */
+    static final class ConfigurationOverride {
+        // Specifies the device type. For example, a touch device having type "touchNavigation"
+        // means that it is a touch navigation device rather than the default "touchpad as a mouse
+        // pointer" device.
+        @Nullable
+        private final String mDeviceType;
+        // Specifies the view behavior of the input device, to determine how views should react to
+        // input events generated by this device.
+        @Nullable
+        private final ViewBehaviorConfig mViewBehaviorConfig;
+
+        ConfigurationOverride(@Nullable String deviceType,
+                @Nullable ViewBehaviorConfig viewBehaviorConfig) {
+            mDeviceType = deviceType;
+            mViewBehaviorConfig = viewBehaviorConfig;
+        }
+
+        ConfigurationOverride(@NonNull ConfigurationOverride other) {
+            this(other.mDeviceType, other.mViewBehaviorConfig != null ? new ViewBehaviorConfig(
+                    other.mViewBehaviorConfig) : null);
+        }
+
+        // Native callback.
+        @SuppressWarnings("unused")
+        @VisibleForTesting
+        @Nullable
+        String getDeviceType() {
+            return mDeviceType;
+        }
+
+        // Native callback.
+        @SuppressWarnings("unused")
+        @VisibleForTesting
+        @Nullable
+        ViewBehaviorConfig getViewBehaviorConfig() {
+            return mViewBehaviorConfig;
+        }
+
+        @Override
+        public String toString() {
+            return "Configuration{" + "mDeviceType=" + mDeviceType + ", mViewBehaviorConfig="
+                    + mViewBehaviorConfig + '}';
+        }
+    }
+
     private final class LocalService extends InputManagerInternal {
         @Override
         public void setDisplayViewports(List<DisplayViewport> viewports) {
@@ -4042,13 +4098,13 @@ public class InputManagerService extends IInputManager.Stub
         }
 
         @Override
-        public void registerLidSwitchCallback(LidSwitchCallback callbacks) {
-            registerLidSwitchCallbackInternal(callbacks);
+        public void registerLidSwitchCallback(@NonNull LidSwitchCallback callback) {
+            registerLidSwitchCallbackInternal(callback);
         }
 
         @Override
-        public void unregisterLidSwitchCallback(LidSwitchCallback callbacks) {
-            unregisterLidSwitchCallbackInternal(callbacks);
+        public void unregisterLidSwitchCallback(@NonNull LidSwitchCallback callback) {
+            unregisterLidSwitchCallbackInternal(callback);
         }
 
         @Override
@@ -4085,16 +4141,6 @@ public class InputManagerService extends IInputManager.Stub
         @Override
         public void decrementKeyboardBacklight(int deviceId) {
             mKeyboardBacklightController.decrementKeyboardBacklight(deviceId);
-        }
-
-        @Override
-        public void setTypeAssociation(@NonNull String inputPort, @NonNull String type) {
-            setTypeAssociationInternal(inputPort, type);
-        }
-
-        @Override
-        public void unsetTypeAssociation(@NonNull String inputPort) {
-            unsetTypeAssociationInternal(inputPort);
         }
 
         @Override
@@ -4202,7 +4248,9 @@ public class InputManagerService extends IInputManager.Stub
                 @NonNull VirtualMouseConfig config) {
             return mVirtualInputDeviceController.createMouse(config.getInputDeviceName(),
                     config.getVendorId(), config.getProductId(), token,
-                    config.getAssociatedDisplayId());
+                    config.getAssociatedDisplayId(),
+                    android.companion.virtualdevice.flags.Flags.virtualInputViewBehavior()
+                            ? config.getViewBehaviorConfig() : null);
         }
 
         @NonNull
@@ -4211,7 +4259,9 @@ public class InputManagerService extends IInputManager.Stub
                 @NonNull VirtualTouchscreenConfig config) {
             return mVirtualInputDeviceController.createTouchscreen(config.getInputDeviceName(),
                     config.getVendorId(), config.getProductId(), token,
-                    config.getAssociatedDisplayId(), config.getHeight(), config.getWidth());
+                    config.getAssociatedDisplayId(), config.getHeight(), config.getWidth(),
+                    android.companion.virtualdevice.flags.Flags.virtualInputViewBehavior()
+                            ? config.getViewBehaviorConfig() : null);
         }
 
         @NonNull
@@ -4223,7 +4273,9 @@ public class InputManagerService extends IInputManager.Stub
                     config.getProductId(), token,
                     InputManagerService.this.getTargetDisplayIdForInput(
                             config.getAssociatedDisplayId()),
-                    config.getHeight(), config.getWidth());
+                    config.getHeight(), config.getWidth(),
+                    android.companion.virtualdevice.flags.Flags.virtualInputViewBehavior()
+                            ? config.getViewBehaviorConfig() : null);
         }
 
         @NonNull
@@ -4233,7 +4285,9 @@ public class InputManagerService extends IInputManager.Stub
             return mVirtualInputDeviceController.createDpad(config.getInputDeviceName(),
                     config.getVendorId(), config.getProductId(), token,
                     InputManagerService.this.getTargetDisplayIdForInput(
-                            config.getAssociatedDisplayId()));
+                            config.getAssociatedDisplayId()),
+                    android.companion.virtualdevice.flags.Flags.virtualInputViewBehavior()
+                            ? config.getViewBehaviorConfig() : null);
         }
 
         @NonNull
@@ -4242,7 +4296,9 @@ public class InputManagerService extends IInputManager.Stub
                 @NonNull VirtualStylusConfig config) {
             return mVirtualInputDeviceController.createStylus(config.getInputDeviceName(),
                     config.getVendorId(), config.getProductId(), token,
-                    config.getAssociatedDisplayId(), config.getHeight(), config.getWidth());
+                    config.getAssociatedDisplayId(), config.getHeight(), config.getWidth(),
+                    android.companion.virtualdevice.flags.Flags.virtualInputViewBehavior()
+                            ? config.getViewBehaviorConfig() : null);
         }
 
         @NonNull
@@ -4253,7 +4309,9 @@ public class InputManagerService extends IInputManager.Stub
             return mVirtualInputDeviceController.createRotaryEncoder(config.getInputDeviceName(),
                     config.getVendorId(), config.getProductId(), token,
                     InputManagerService.this.getTargetDisplayIdForInput(
-                            config.getAssociatedDisplayId()));
+                            config.getAssociatedDisplayId()),
+                    android.companion.virtualdevice.flags.Flags.virtualInputViewBehavior()
+                            ? config.getViewBehaviorConfig() : null);
         }
 
         @Override
@@ -4270,7 +4328,8 @@ public class InputManagerService extends IInputManager.Stub
 
     @Override
     public void onShellCommand(FileDescriptor in, FileDescriptor out, FileDescriptor err,
-            String[] args, ShellCallback callback, ResultReceiver resultReceiver) {
+            @NonNull String[] args, ShellCallback callback,
+            @NonNull ResultReceiver resultReceiver) {
         new InputShellCommand().exec(this, in, out, err, args, callback, resultReceiver);
     }
 

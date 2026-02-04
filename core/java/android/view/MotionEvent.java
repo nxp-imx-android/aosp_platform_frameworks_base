@@ -4299,6 +4299,15 @@ public final class MotionEvent extends InputEvent implements Parcelable {
     }
 
     /**
+     * Returns whether the specified axis is valid.
+     *
+     * @hide
+     */
+    public static boolean isValidAxis(int axis) {
+        return AXIS_SYMBOLIC_NAMES.contains(axis);
+    }
+
+    /**
      * Returns a string that represents the symbolic name of the specified combined
      * button state flags such as "0", "BUTTON_PRIMARY",
      * "BUTTON_PRIMARY|BUTTON_SECONDARY" or an equivalent numeric constant such as "0x10000000"

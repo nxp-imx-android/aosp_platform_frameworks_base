@@ -41,6 +41,7 @@ import android.hardware.input.IVirtualKeyboard;
 import android.hardware.input.IVirtualMouse;
 import android.hardware.input.IVirtualTouchscreen;
 import android.hardware.input.InputManagerGlobal;
+import android.hardware.input.ViewBehaviorConfig;
 import android.hardware.input.VirtualKeyEvent;
 import android.hardware.input.VirtualMouseButtonEvent;
 import android.hardware.input.VirtualMouseRelativeEvent;
@@ -58,6 +59,7 @@ import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.InputDevice;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 
 import com.android.server.LocalServices;
 
@@ -66,6 +68,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
@@ -95,6 +99,7 @@ public class VirtualInputDeviceControllerTest {
     private static final String NAME_2 = "testInputDeviceName2";
     private static final long EVENT_TIMESTAMP = 5000L;
 
+    private VirtualInputDeviceController mInputController;
     private TestableLooper mTestableLooper;
     private InputManagerGlobal.TestSession mInputSession;
     private final List<InputDevice> mDevices = new ArrayList<>();
@@ -118,7 +123,8 @@ public class VirtualInputDeviceControllerTest {
     @Mock
     private InputManagerService mInputManagerService;
 
-    private VirtualInputDeviceController mInputController;
+    @Captor
+    private ArgumentCaptor<InputManagerService.ConfigurationOverride> mConfigurationOverrideCaptor;
 
     @Before
     public void setUp() throws Exception {
@@ -146,7 +152,7 @@ public class VirtualInputDeviceControllerTest {
                 .when(mInputManagerService).getInputDeviceIds();
         doAnswer(inv -> mDevices.get(inv.getArgument(0)))
                 .when(mInputManagerService).getInputDevice(anyInt());
-        doAnswer(inv ->  mUniqueIdAssociationByPort.put(inv.getArgument(0), inv.getArgument(1)))
+        doAnswer(inv -> mUniqueIdAssociationByPort.put(inv.getArgument(0), inv.getArgument(1)))
                 .when(mInputManagerService).addUniqueIdAssociationByPort(anyString(), anyString());
         doAnswer(inv -> mUniqueIdAssociationByPort.remove(inv.getArgument(0)))
                 .when(mInputManagerService).removeUniqueIdAssociationByPort(anyString());
@@ -156,7 +162,6 @@ public class VirtualInputDeviceControllerTest {
                 .when(mInputManagerService).removeVirtualDevice(anyString());
         doAnswer(inv -> mPhysByDeviceId.get(inv.getArgument(0)))
                 .when(mInputManagerService).getPhysicalLocationPath(anyInt());
-
 
         // Set a new instance of InputManager for testing that uses the IInputManager mock as the
         // interface to the server.
@@ -220,7 +225,8 @@ public class VirtualInputDeviceControllerTest {
 
     @Test
     public void createInputDevice_openUinput() {
-        mInputController.createMouse(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1);
+        mInputController.createMouse(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1,
+                /* viewBehaviorConfig= */ null);
         verify(mNativeWrapperMock)
                 .openUinputMouse(eq(NAME), eq(VENDOR_ID), eq(PRODUCT_ID), anyString());
     }
@@ -230,7 +236,7 @@ public class VirtualInputDeviceControllerTest {
         final int height = 50;
         final int width = 60;
         mInputController.createStylus(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1,
-                height, width);
+                height, width, /* viewBehaviorConfig= */ null);
         verify(mNativeWrapperMock)
                 .openUinputStylus(eq(NAME), eq(VENDOR_ID), eq(PRODUCT_ID), anyString(), eq(height),
                         eq(width));
@@ -238,27 +244,52 @@ public class VirtualInputDeviceControllerTest {
 
     @Test
     public void createRotaryEncoder_opensUinput() {
-        mInputController.createRotaryEncoder(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1);
+        mInputController.createRotaryEncoder(
+                NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1, /* viewBehaviorConfig= */ null);
         verify(mNativeWrapperMock)
                 .openUinputRotaryEncoder(eq(NAME), eq(VENDOR_ID), eq(PRODUCT_ID), anyString());
     }
 
     @Test
-    public void createNavigationTouchpad_setsTypeAssociation() {
+    public void createNavigationTouchpad_setsDeviceConfigurationAssociation() {
+        ViewBehaviorConfig viewBehaviorConfig = createViewBehaviorConfig();
         mInputController.createNavigationTouchpad(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1,
-                DISPLAY_ID_1, /* touchpadHeight= */ 50, /* touchpadWidth= */ 50);
-        verify(mInputManagerService).setTypeAssociationInternal(
-                startsWith("virtualNavigationTouchpad:"), eq("touchNavigation"));
+                DISPLAY_ID_1, /* touchpadHeight= */ 50, /* touchpadWidth= */ 50,
+                viewBehaviorConfig);
+        verify(mInputManagerService).setConfigurationOverride(
+                startsWith("virtualNavigationTouchpad:"), mConfigurationOverrideCaptor.capture());
+        assertThat(mConfigurationOverrideCaptor.getValue().getDeviceType()).isEqualTo(
+                "touchNavigation");
+        assertViewBehaviorConfigsEqual(
+                viewBehaviorConfig,
+                mConfigurationOverrideCaptor.getValue().getViewBehaviorConfig());
 
         mInputController.unregisterInputDevice(TOKEN_1);
-        verify(mInputManagerService).unsetTypeAssociationInternal(
+        verify(mInputManagerService).unsetConfigurationOverride(
                 startsWith("virtualNavigationTouchpad:"));
     }
 
     @Test
-    public void createKeyboard_addAndRemoveKeyboardLayoutAssociation() {
+    public void createTouchscreen_setsDeviceConfigurationAssociation() {
+        ViewBehaviorConfig viewBehaviorConfig = createViewBehaviorConfig();
+        mInputController.createTouchscreen(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1,
+                /* height= */ 50, /* width= */ 50, viewBehaviorConfig);
+        verify(mInputManagerService).setConfigurationOverride(
+                startsWith("virtualTouchscreen:"), mConfigurationOverrideCaptor.capture());
+        assertThat(mConfigurationOverrideCaptor.getValue().getDeviceType()).isNull();
+        assertViewBehaviorConfigsEqual(
+                viewBehaviorConfig,
+                mConfigurationOverrideCaptor.getValue().getViewBehaviorConfig());
+
+        mInputController.unregisterInputDevice(TOKEN_1);
+        verify(mInputManagerService).unsetConfigurationOverride(
+                startsWith("virtualTouchscreen:"));
+    }
+
+    @Test
+    public void createKeyboard_addsAndRemovesKeyboardLayoutAssociation() {
         mInputController.createKeyboard(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1,
-                LANGUAGE_TAG, LAYOUT_TYPE);
+                LANGUAGE_TAG, LAYOUT_TYPE, /* viewBehaviorConfig= */ null);
         verify(mInputManagerService).addKeyboardLayoutAssociation(
                 startsWith("virtualKeyboard:"), eq(LANGUAGE_TAG), eq(LAYOUT_TYPE));
 
@@ -269,28 +300,32 @@ public class VirtualInputDeviceControllerTest {
 
     @Test
     public void createInputDevice_duplicateNamesAreNotAllowed() {
-        mInputController.createDpad(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1);
+        mInputController.createDpad(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1,
+                /* viewBehaviorConfig= */ null);
         assertThrows("Device names need to be unique",
                 IllegalArgumentException.class,
                 () -> mInputController.createDpad(
-                        NAME, VENDOR_ID, PRODUCT_ID, TOKEN_2, DISPLAY_ID_2));
+                        NAME, VENDOR_ID, PRODUCT_ID, TOKEN_2, DISPLAY_ID_2,
+                        /* viewBehaviorConfig= */ null));
     }
 
     @Test
     public void createInputDevice_duplicateTokensAreNotAllowed() {
-        mInputController.createDpad(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1);
+        mInputController.createDpad(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1,
+                /* viewBehaviorConfig= */ null);
         assertThrows("Device tokens need to be unique",
                 IllegalArgumentException.class,
                 () -> mInputController.createDpad(
-                        NAME_2, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_2));
+                        NAME_2, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_2,
+                        /* viewBehaviorConfig= */ null));
     }
 
     @Test
     public void createInputDevice_differentDevices_haveUniquePhys() throws RemoteException {
         final int d1 = mInputController.createDpad(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1,
-                DISPLAY_ID_1).getInputDeviceId();
+                DISPLAY_ID_1, /* viewBehaviorConfig= */ null).getInputDeviceId();
         final int d2 = mInputController.createDpad(NAME_2, VENDOR_ID, PRODUCT_ID, TOKEN_2,
-                DISPLAY_ID_1).getInputDeviceId();
+                DISPLAY_ID_1, /* viewBehaviorConfig= */ null).getInputDeviceId();
 
         final String phys1 = mPhysByDeviceId.get(d1);
         final String phys2 = mPhysByDeviceId.get(d2);
@@ -301,8 +336,8 @@ public class VirtualInputDeviceControllerTest {
 
     @Test
     public void getCursorPosition_returnsPositionFromService() throws Exception {
-        IVirtualMouse mouse =
-                mInputController.createMouse(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1);
+        IVirtualMouse mouse = mInputController.createMouse(
+                NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1, /* viewBehaviorConfig= */ null);
         final PointF physicalPoint = new PointF(10.0f, 20.0f);
         when(mouse.getCursorPositionInPhysicalDisplay()).thenReturn(physicalPoint);
         final PointF logicalPoint = new PointF(30.0f, 40.0f);
@@ -317,8 +352,8 @@ public class VirtualInputDeviceControllerTest {
 
     @Test
     public void sendDpadKeyEvent_writesEvent() throws Exception {
-        IVirtualDpad dpad =
-                mInputController.createDpad(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1);
+        IVirtualDpad dpad = mInputController.createDpad(
+                NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1, /* viewBehaviorConfig= */ null);
         when(mNativeWrapperMock.writeDpadKeyEvent(
                 PTR, KeyEvent.KEYCODE_BACK, VirtualKeyEvent.ACTION_UP, EVENT_TIMESTAMP))
                 .thenReturn(true);
@@ -336,9 +371,8 @@ public class VirtualInputDeviceControllerTest {
 
     @Test
     public void sendKeyEvent_writesEvent() throws Exception {
-        IVirtualKeyboard keyboard =
-                mInputController.createKeyboard(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1,
-                        LANGUAGE_TAG, LAYOUT_TYPE);
+        IVirtualKeyboard keyboard = mInputController.createKeyboard(NAME, VENDOR_ID, PRODUCT_ID,
+                TOKEN_1, DISPLAY_ID_1, LANGUAGE_TAG, LAYOUT_TYPE, /* viewBehaviorConfig= */ null);
         when(mNativeWrapperMock.writeKeyEvent(
                 PTR, KeyEvent.KEYCODE_A, VirtualKeyEvent.ACTION_UP, EVENT_TIMESTAMP))
                 .thenReturn(true);
@@ -356,8 +390,8 @@ public class VirtualInputDeviceControllerTest {
 
     @Test
     public void sendMouseButtonEvent_writesEvent() throws Exception {
-        IVirtualMouse mouse =
-                mInputController.createMouse(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1);
+        IVirtualMouse mouse = mInputController.createMouse(
+                NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1, /* viewBehaviorConfig= */ null);
         when(mNativeWrapperMock.writeButtonEvent(
                 PTR, VirtualMouseButtonEvent.BUTTON_BACK,
                 VirtualMouseButtonEvent.ACTION_BUTTON_PRESS, EVENT_TIMESTAMP))
@@ -376,8 +410,8 @@ public class VirtualInputDeviceControllerTest {
 
     @Test
     public void sendMouseRelativeEvent_writesEvent() throws Exception {
-        IVirtualMouse mouse =
-                mInputController.createMouse(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1);
+        IVirtualMouse mouse = mInputController.createMouse(
+                NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1, /* viewBehaviorConfig= */ null);
         final float x = -0.2f;
         final float y = 0.7f;
         when(mNativeWrapperMock.writeRelativeEvent(PTR, x, y, EVENT_TIMESTAMP)).thenReturn(true);
@@ -394,8 +428,8 @@ public class VirtualInputDeviceControllerTest {
 
     @Test
     public void sendMouseScrollEvent_writesEvent() throws Exception {
-        IVirtualMouse mouse =
-                mInputController.createMouse(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1);
+        IVirtualMouse mouse = mInputController.createMouse(
+                NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1, /* viewBehaviorConfig= */ null);
         final float x = 0.5f;
         final float y = 1f;
         when(mNativeWrapperMock.writeScrollEvent(PTR, x, y, EVENT_TIMESTAMP)).thenReturn(true);
@@ -412,9 +446,9 @@ public class VirtualInputDeviceControllerTest {
 
     @Test
     public void sendTouchEvent_writesEvent() throws Exception {
-        IVirtualTouchscreen touchscreen =
-                mInputController.createTouchscreen(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1,
-                        DISPLAY_ID_1, /* height= */ 50, /* width= */ 50);
+        IVirtualTouchscreen touchscreen = mInputController.createTouchscreen(NAME, VENDOR_ID,
+                PRODUCT_ID, TOKEN_1, DISPLAY_ID_1, /* height= */ 50, /* width= */ 50,
+                /* viewBehaviorConfig= */ null);
         final int pointerId = 5;
         final float x = 100.5f;
         final float y = 200.5f;
@@ -443,9 +477,9 @@ public class VirtualInputDeviceControllerTest {
 
     @Test
     public void sendTouchEvent_withoutPressureOrMajorAxisSize_writesEvent() throws Exception {
-        IVirtualTouchscreen touchscreen =
-                mInputController.createTouchscreen(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1,
-                        DISPLAY_ID_1, /* height= */ 50, /* width= */ 50);
+        IVirtualTouchscreen touchscreen = mInputController.createTouchscreen(NAME, VENDOR_ID,
+                PRODUCT_ID, TOKEN_1, DISPLAY_ID_1, /* height= */ 50, /* width= */ 50,
+                /* viewBehaviorConfig= */ null);
         final int pointerId = 5;
         final float x = 100.5f;
         final float y = 200.5f;
@@ -475,7 +509,7 @@ public class VirtualInputDeviceControllerTest {
                 PERMISSION_GRANTED);
 
         mInputController.createKeyboard(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1,
-                Display.INVALID_DISPLAY, LANGUAGE_TAG, LAYOUT_TYPE);
+                Display.INVALID_DISPLAY, LANGUAGE_TAG, LAYOUT_TYPE, /* viewBehaviorConfig= */ null);
 
         verify(mInputManagerService).addKeyboardLayoutAssociation(
                 startsWith("virtualKeyboard:"), eq(LANGUAGE_TAG), eq(LAYOUT_TYPE));
@@ -491,12 +525,26 @@ public class VirtualInputDeviceControllerTest {
                 PERMISSION_GRANTED);
 
         mInputController.createKeyboard(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1,
-                Display.INVALID_DISPLAY, LANGUAGE_TAG, LAYOUT_TYPE);
+                Display.INVALID_DISPLAY, LANGUAGE_TAG, LAYOUT_TYPE, /* viewBehaviorConfig= */ null);
 
         verify(mInputManagerService).addKeyboardLayoutAssociation(
                 startsWith("virtualKeyboard:"), eq(LANGUAGE_TAG), eq(LAYOUT_TYPE));
         mInputController.unregisterInputDevice(TOKEN_1);
         verify(mInputManagerService).removeKeyboardLayoutAssociation(
                 startsWith("virtualKeyboard:"));
+    }
+
+    private static void assertViewBehaviorConfigsEqual(
+            ViewBehaviorConfig expected, ViewBehaviorConfig actual) {
+        assertThat(actual.getPrimaryDirectionalMotionAxis()).isEqualTo(
+                expected.getPrimaryDirectionalMotionAxis());
+        assertThat(actual.shouldSmoothScroll()).isEqualTo(expected.shouldSmoothScroll());
+    }
+
+    private static ViewBehaviorConfig createViewBehaviorConfig() {
+        return new ViewBehaviorConfig.Builder()
+                .setShouldSmoothScroll(true)
+                .setPrimaryDirectionalMotionAxis(MotionEvent.AXIS_X)
+                .build();
     }
 }
