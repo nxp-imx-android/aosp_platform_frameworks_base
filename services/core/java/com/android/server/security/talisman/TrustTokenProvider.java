@@ -63,8 +63,7 @@ final class TrustTokenProvider {
             return null;
         }
         ServiceInfo si = resolved.serviceInfo;
-        if (si.permission == null
-                || !si.permission.equals(Manifest.permission.BIND_TRUST_TOKEN_SERVICE)) {
+        if (!si.permission.equals(Manifest.permission.BIND_TRUST_TOKEN_SERVICE)) {
             Slog.e(
                     TAG,
                     String.format(
