@@ -30,17 +30,12 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import android.annotation.UserIdInt;
-import android.companion.virtualdevice.flags.Flags;
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.UserHandle;
-import android.platform.test.annotations.RequiresFlagsEnabled;
-import android.platform.test.flag.junit.CheckFlagsRule;
-import android.platform.test.flag.junit.DeviceFlagsValueProvider;
-import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.test.mock.MockContentResolver;
 import android.virtualdevice.cts.common.VirtualDeviceRule;
@@ -65,7 +60,6 @@ import org.mockito.MockitoAnnotations;
  * atest FrameworksServicesTests:CoreSettingsObserverTest
  */
 @SmallTest
-@RequiresFlagsEnabled(Flags.FLAG_DEVICE_AWARE_SETTINGS_OVERRIDE)
 public class CoreSettingsObserverTest {
     private static final String TEST_SETTING_SECURE_INT = "secureInt";
     private static final String TEST_SETTING_GLOBAL_FLOAT = "globalFloat";
@@ -83,15 +77,9 @@ public class CoreSettingsObserverTest {
     private static final int SECONDARY_USER_ID = 10;
 
     @Rule
-    public final SetFlagsRule flags =
-            new SetFlagsRule(SetFlagsRule.DefaultInitValueType.DEVICE_DEFAULT);
-
-    @Rule
     public ServiceThreadRule mServiceThreadRule = new ServiceThreadRule();
     @Rule
     public final VirtualDeviceRule mVirtualDeviceRule = VirtualDeviceRule.createDefault();
-    @Rule
-    public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
 
     private ActivityManagerService mAms;
     @Mock
@@ -301,10 +289,7 @@ public class CoreSettingsObserverTest {
         if (userBundle == null || userBundle == Bundle.EMPTY) {
             return null;
         }
-        if (android.companion.virtualdevice.flags.Flags.deviceAwareSettingsOverride()) {
-            return userBundle.getBundle(String.valueOf(deviceId));
-        }
-        return userBundle;
+        return userBundle.getBundle(String.valueOf(deviceId));
     }
 
     private class TestInjector extends Injector {

@@ -59,8 +59,7 @@ import java.util.List;
 @Presubmit
 @RunWith(AndroidTestingRunner.class)
 @EnableFlags({Flags.FLAG_VIEWCONFIGURATION_APIS,
-        android.content.res.Flags.FLAG_DIMENSION_FRRO,
-        android.companion.virtualdevice.flags.Flags.FLAG_DEVICE_AWARE_SETTINGS_OVERRIDE})
+        android.content.res.Flags.FLAG_DIMENSION_FRRO})
 public class ViewConfigurationControllerTest {
 
     private static final int DEVICE_ID = 5;

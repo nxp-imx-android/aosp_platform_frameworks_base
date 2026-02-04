@@ -88,13 +88,6 @@ flag {
 }
 
 flag {
-    name: "device_aware_settings_override"
-    namespace: "virtual_devices"
-    description: "Settings override for virtual devices"
-    bug: "371801645"
-}
-
-flag {
     namespace: "virtual_devices"
     name: "viewconfiguration_apis"
     description: "APIs for setting ViewConfiguration attributes on virtual devices"

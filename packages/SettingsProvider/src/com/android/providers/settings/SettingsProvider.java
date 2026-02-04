@@ -3264,8 +3264,7 @@ public class SettingsProvider extends ContentProvider {
     }
 
     private int getDeviceId() {
-        int deviceId = android.companion.virtualdevice.flags.Flags.deviceAwareSettingsOverride()
-                && canAccessDeviceAwareSettings(Binder.getCallingUid(),
+        int deviceId = canAccessDeviceAwareSettings(Binder.getCallingUid(),
                 getCallingPackageUnchecked()) ? getCallingDeviceId() : Context.DEVICE_ID_DEFAULT;
         if (deviceId != Context.DEVICE_ID_DEFAULT) {
             // We have received a call for a non-default device id, so now would be a good time
@@ -3313,18 +3312,14 @@ public class SettingsProvider extends ContentProvider {
     private List<Integer> getDeviceIds() {
         final List<Integer> deviceIds = new ArrayList<>(1);
         deviceIds.add(Context.DEVICE_ID_DEFAULT);
-        VirtualDeviceManager virtualDeviceManager = getVirtualDeviceManager();
+        final VirtualDeviceManager virtualDeviceManager =
+                getContext().getSystemService(VirtualDeviceManager.class);
         if (virtualDeviceManager != null) {
             for (VirtualDevice virtualDevice : virtualDeviceManager.getVirtualDevices()) {
                 deviceIds.add(virtualDevice.getDeviceId());
             }
         }
         return deviceIds;
-    }
-
-    private VirtualDeviceManager getVirtualDeviceManager() {
-        return android.companion.virtualdevice.flags.Flags.deviceAwareSettingsOverride()
-                ? getContext().getSystemService(VirtualDeviceManager.class) : null;
     }
 
     private static boolean canAccessDeviceAwareSettings(int uid, String packageName) {

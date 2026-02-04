@@ -9390,16 +9390,13 @@ public final class ActivityThread extends ClientTransactionHandler
     }
 
     private Bundle getCoreSettingsForDeviceLocked(int deviceId) {
-        if (android.companion.virtualdevice.flags.Flags.deviceAwareSettingsOverride()) {
-            Bundle bundle = mCoreSettings.getBundle(String.valueOf(deviceId));
-            if (deviceId != Context.DEVICE_ID_DEFAULT && bundle == null) {
-                // There hasn't been any overridden settings for the virtual device, so just return
-                // the settings for the default device.
-                bundle = mCoreSettings.getBundle(String.valueOf(Context.DEVICE_ID_DEFAULT));
-            }
-            return bundle;
+        Bundle bundle = mCoreSettings.getBundle(String.valueOf(deviceId));
+        if (deviceId != Context.DEVICE_ID_DEFAULT && bundle == null) {
+            // There hasn't been any overridden settings for the virtual device, so just return
+            // the settings for the default device.
+            bundle = mCoreSettings.getBundle(String.valueOf(Context.DEVICE_ID_DEFAULT));
         }
-        return mCoreSettings;
+        return bundle;
     }
 
     @RavenwoodThrow(comment = "See ActivityThread_ravenwood for initialization on Ravenwood")
