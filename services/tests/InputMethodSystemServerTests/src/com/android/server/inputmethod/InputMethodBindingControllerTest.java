@@ -28,7 +28,9 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.AdditionalMatchers.not;
 import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -186,6 +188,24 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
     }
 
     /**
+     * Verifies that getting onServiceConnected while a different IME instance is bound clears that
+     * instance and connects to the new one.
+     */
+    @RequiresFlagsEnabled(Flags.FLAG_WARM_WORK_PROFILE_IME)
+    @Test
+    public void testDifferentImeBoundOnServiceConnected() throws Exception {
+        // Bind with main connection
+        testBindIme(false /* wasBound */);
+
+        // Bind with visible connection
+        testSetImeVisibleOrReconnect();
+
+        verifySetInactiveWhileBound(true /* isVisible */);
+
+        verifySetActiveWhileDifferentImeBound();
+    }
+
+    /**
      * Verifies the controller state after setting it inactive, then setting it active, and then
      * binding the main connection.
      */
@@ -320,6 +340,8 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
             assertThat(mBindingController.hasMainConnection()).isTrue();
             assertThat(mBindingController.hasVisibleConnection()).isFalse();
             assertThat(mBindingController.isActive()).isTrue();
+            final var curToken = mBindingController.getCurToken();
+            assertThat(curToken).isNotNull();
             if (wasBoundBeforeInactive) {
                 // No further unbinds (just two from previous setInactive).
                 verify(mContext, times(2)).unbindService(any(ServiceConnection.class));
@@ -329,8 +351,7 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
                         eq(mImeConnectionBindFlags) /* flags */, any(UserHandle.class) /* user */);
                 // ImeToken is first set when bound, and set again when made active.
                 verify(mMockWindowManagerInternal, times(2)).setImeWindowToken(
-                        eq(mBindingController.getCurToken()),
-                        eq(mBindingController.getCurDisplayId()));
+                        eq(curToken), eq(mBindingController.getCurDisplayId()));
             } else {
                 verify(mContext, never()).unbindService(any(ServiceConnection.class));
                 // No further binds from setActive (just one from previous binding).
@@ -338,16 +359,17 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
                         any(Intent.class) /* service */, any(ServiceConnection.class) /* conn */,
                         eq(mImeConnectionBindFlags) /* flags */, any(UserHandle.class) /* user */);
                 verify(mMockWindowManagerInternal, times(1)).setImeWindowToken(
-                        eq(mBindingController.getCurToken()),
-                        eq(mBindingController.getCurDisplayId()));
+                        eq(curToken), eq(mBindingController.getCurDisplayId()));
             }
-            assertThat(mBindingController.getCurToken()).isNotNull();
+            final var curIme = mBindingController.getCurIme();
             assertThat(mBindingController.getCurImeId()).isNotNull();
-            assertThat(mBindingController.getCurIme()).isNotNull();
+            assertThat(curIme).isNotNull();
             final int curImeUid = mBindingController.getCurImeUid();
             assertThat(curImeUid).isNotEqualTo(Process.INVALID_UID);
             verify(mInputMethodManagerService, times(2)).onImeConnected(eq(info.getId()),
                     eq(curImeUid), eq(mUserId));
+            verify(mInputMethodManagerService, times(1)).initializeImeLocked(eq(curIme),
+                    eq(curToken), eq(mUserId));
         }
     }
 
@@ -387,6 +409,72 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
             final int numConnect = wasUnbound ? 1 : 0;
             verify(mInputMethodManagerService, times(numConnect)).onImeConnected(
                     anyString() /* imeId */, anyInt() /* imeUid */, anyInt() /* userId */);
+            verify(mInputMethodManagerService, times(numConnect)).initializeImeLocked(
+                    any(IInputMethodInvoker.class) /* ime */, any(IBinder.class) /* token */,
+                    anyInt() /* userId */);
+        }
+    }
+
+    /**
+     * Verifies the state after setting the controller active while a different IME instance was
+     * bound.
+     */
+    private void verifySetActiveWhileDifferentImeBound() throws Exception {
+        final InputMethodInfo info;
+        final IInputMethodInvoker curIme;
+        synchronized (ImfLock.class) {
+            info = InputMethodSettingsRepository.get(mUserId).getMethodMap().get(TEST_IME_ID);
+            curIme = mBindingController.getCurIme();
+            mBindingController.setCurImeForTesting(mock(IInputMethodInvoker.class));
+        }
+        assertThat(info).isNotNull();
+        assertThat(curIme).isNotNull();
+
+        // Set active. It is called on another thread because we should wait for
+        // onServiceConnected() to finish.
+        final var latch = new CountDownLatch(1);
+        mInstrumentation.runOnMainSync(() -> {
+            synchronized (ImfLock.class) {
+                mBindingController.setLatchForTesting(latch);
+                mBindingController.setActive();
+            }
+        });
+
+        // Wait for onServiceConnected()
+        boolean completed = latch.await(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
+        if (!completed) {
+            fail("Timed out waiting for onServiceConnected()");
+        }
+
+        synchronized (ImfLock.class) {
+            assertThat(mBindingController.hasBackgroundConnection()).isTrue();
+            assertThat(mBindingController.hasMainConnection()).isTrue();
+            assertThat(mBindingController.hasVisibleConnection()).isFalse();
+            assertThat(mBindingController.isActive()).isTrue();
+            final var curToken = mBindingController.getCurToken();
+            assertThat(curToken).isNotNull();
+            // No further unbinds (just two from previous setInactive).
+            verify(mContext, times(2)).unbindService(any(ServiceConnection.class));
+            // Binds main connection again.
+            verify(mContext, times(2)).bindServiceAsUser(
+                    any(Intent.class) /* service */, any(ServiceConnection.class) /* conn */,
+                    eq(mImeConnectionBindFlags) /* flags */, any(UserHandle.class) /* user */);
+            // ImeToken is first set when bound, and set again when made active.
+            verify(mMockWindowManagerInternal, times(2)).setImeWindowToken(
+                    eq(curToken), eq(mBindingController.getCurDisplayId()));
+            assertThat(mBindingController.getCurImeId()).isNotNull();
+            final int curImeUid = mBindingController.getCurImeUid();
+            assertThat(curImeUid).isNotEqualTo(Process.INVALID_UID);
+            // The MockIME will be disconnected before connecting and initializing the new one.
+            verify(mInputMethodManagerService, times(2)).onImeDisconnected(eq(mUserId));
+            verify(mInputMethodManagerService, times(3)).onImeConnected(eq(info.getId()),
+                    eq(curImeUid), eq(mUserId));
+            // The initial IME.
+            verify(mInputMethodManagerService, times(1)).initializeImeLocked(eq(curIme),
+                    eq(curToken), eq(mUserId));
+            // The new IME.
+            verify(mInputMethodManagerService, times(1)).initializeImeLocked(not(eq(curIme)),
+                    eq(curToken), eq(mUserId));
         }
     }
 
@@ -418,6 +506,7 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
         assertThat(result).isNotNull();
         assertThat(result.result).isEqualTo(InputBindResult.ResultCode.SUCCESS_WAITING_IME_BINDING);
         assertThat(result.id).isEqualTo(info.getId());
+        final IBinder curToken;
         synchronized (ImfLock.class) {
             if (mFlagsValueProvider.getBoolean(Flags.FLAG_WARM_WORK_PROFILE_IME)) {
                 assertThat(mBindingController.hasBackgroundConnection()).isTrue();
@@ -425,7 +514,7 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
             assertThat(mBindingController.getCurImeIntent()).isNotNull();
             assertThat(mBindingController.hasMainConnection()).isTrue();
             assertThat(mBindingController.getCurImeId()).isEqualTo(info.getId());
-            final var curToken = mBindingController.getCurToken();
+            curToken = mBindingController.getCurToken();
             final int curDisplayId = mBindingController.getCurDisplayId();
             assertThat(curToken).isNotNull();
             assertThat(curDisplayId).isEqualTo(Display.DEFAULT_DISPLAY);
@@ -448,11 +537,14 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
 
         // Verify onServiceConnected() is called and bound successfully.
         synchronized (ImfLock.class) {
-            assertThat(mBindingController.getCurIme()).isNotNull();
+            final var curIme = mBindingController.getCurIme();
+            assertThat(curIme).isNotNull();
             final int curImeUid = mBindingController.getCurImeUid();
             assertThat(curImeUid).isNotEqualTo(Process.INVALID_UID);
             verify(mInputMethodManagerService, times(numBinds)).onImeConnected(eq(info.getId()),
                     eq(curImeUid), eq(mUserId));
+            verify(mInputMethodManagerService, times(1)).initializeImeLocked(eq(curIme),
+                    eq(curToken), eq(mUserId));
         }
     }
 
@@ -506,6 +598,9 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
             assertThat(curImeUid).isEqualTo(Process.INVALID_UID);
             verify(mInputMethodManagerService, never()).onImeConnected(anyString() /* imeId */,
                     anyInt() /* imeUid */, anyInt() /* userId */);
+            verify(mInputMethodManagerService, never()).initializeImeLocked(
+                    any(IInputMethodInvoker.class) /* ime */, any(IBinder.class) /* token */,
+                    anyInt() /* userId */);
         }
     }
 
