@@ -20,11 +20,10 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.notifications.intelligence.rules.data.repository.InstalledAppsRepository
 import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
 
-/** Interactor for information about installed apps. */
 @SysUISingleton
-class InstalledAppsInteractor(private val repository: InstalledAppsRepository) {
-    /** Fetches all apps installed on the device. */
-    suspend fun fetchInstalledApps(): List<AppModel> {
+class InstalledAppsInteractorImpl(private val repository: InstalledAppsRepository) :
+    InstalledAppsInteractor {
+    override suspend fun fetchInstalledApps(): List<AppModel> {
         return repository.fetchInstalledApps()
     }
 }

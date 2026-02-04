@@ -26,19 +26,12 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 
-/** A repository to fetch contact-related information for notification rules. */
 @SysUISingleton
-class ContactsRepository
+class ContactsRepositoryImpl
 @Inject
-constructor(@Background private val backgroundDispatcher: CoroutineDispatcher) {
-    /**
-     * Fetches all contacts whose name matches [searchQuery].
-     *
-     * @param contentResolver the content resolver for the current user.
-     *
-     * TODO: b/478225883 - For pre-existing rules, search by URI instead of name.
-     */
-    suspend fun fetchContacts(
+constructor(@Background private val backgroundDispatcher: CoroutineDispatcher) :
+    ContactsRepository {
+    override suspend fun fetchContacts(
         searchQuery: String,
         contentResolver: ContentResolver,
     ): List<ContactModel> {
