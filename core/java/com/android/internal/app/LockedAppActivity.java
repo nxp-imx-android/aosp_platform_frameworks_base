@@ -64,10 +64,10 @@ import java.util.Objects;
  *     <li><b>Intercept Mode (target exists):</b> The activity acts as a transparent overlay that
  *         intercepts the launch of a locked app. It immediately shows a {@link BiometricPrompt},
  *         and upon successful authentication, it launches the original target intent.
- *     <li><b>Locked Task Mode (target is {@code null}):</b> The activity provides a default UI with
- *         a background that continuously shows a {@link BiometricPrompt}, and the back button is
- *         disabled. This mode is intended for scenarios like a locked task overlay, where the user
- *         is returned to a locked app's task.
+ *     <li><b>Locked Task Mode (target is {@code null}):</b> The activity provides a default UI that
+ *         acts as a locked task overlay. It automatically shows a {@link BiometricPrompt} on
+ *         creation and when resumed, and allows the user to re-trigger the prompt by tapping the
+ *         background. The back button is disabled in this mode.
  * </ul>
  *
  * <p>The activity is designed to be transient and will finish itself under several conditions:
@@ -76,6 +76,7 @@ import java.util.Objects;
  *     <li>If the initiating intent is missing required data (package name or user ID).</li>
  *     <li>If the target package is already unlocked when the activity starts or becomes unlocked
  *         while the activity is visible.</li>
+ *     <li>If critical UI components cannot be initialized.</li>
  *     <li>After a successful authentication.</li>
  * </ul>
  *
@@ -126,8 +127,6 @@ public final class LockedAppActivity extends Activity {
                     if (isInterceptMode()) {
                         finish();
                     }
-                    // TODO(b/451913532): Handle authentication errors when this activity is a
-                    //  locked task overlay.
                 }
             };
 
@@ -207,7 +206,9 @@ public final class LockedAppActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         // Set up the UI based on the activity's mode.
-        setupUi();
+        if (!setupUi()) {
+            return;
+        }
 
         // Precondition: Check App Lock feature flags.
         if (!android.security.Flags.appLockApis() || !android.security.Flags.appLockCore()) {
@@ -250,8 +251,8 @@ public final class LockedAppActivity extends Activity {
             showBiometricPrompt();
         } else {
             // In locked task mode, disable the back button to prevent bypassing the
-            // BiometricPrompt. The BiometricPrompt will appear when the activity gains focus in
-            // onWindowFocusChanged(boolean).
+            // BiometricPrompt. The BiometricPrompt will appear when the activity resumes in
+            // onResume().
             mInjector.getOnBackInvokedDispatcher(this).registerOnBackInvokedCallback(
                     OnBackInvokedDispatcher.PRIORITY_DEFAULT, mOnBackInvokedCallback);
         }
@@ -296,53 +297,87 @@ public final class LockedAppActivity extends Activity {
     /**
      * Configures the user interface based on the current mode (intercept or locked task). This must
      * be called after {@code super.onCreate()} and in {@code super.onConfigurationChanged()}.
+     *
+     * @return {@code true} if the UI was successfully configured, {@code false} otherwise.
      */
-    private void setupUi() {
+    private boolean setupUi() {
         if (isInterceptMode()) {
             // In intercept mode, ensure the activity is translucent.
             mInjector.setTranslucent(this, true);
-        } else {
-            // In locked task mode, show a default UI.
-            mInjector.setContentView(this, R.layout.locked_app_activity_layout);
-
-            // Setup the external display message.
-            final int displayId = mInjector.getDisplayId(this);
-            // An external display is any valid display that is not the primary one.
-            final boolean isDisplayedOnExternalDisplay = displayId != Display.INVALID_DISPLAY
-                    && displayId != Display.DEFAULT_DISPLAY;
-            final TextView externalDisplayMessage = findViewById(
-                    R.id.locked_app_activity_external_display_message_id);
-            if (externalDisplayMessage != null) {
-                externalDisplayMessage.setVisibility(isDisplayedOnExternalDisplay
-                        ? View.VISIBLE : View.GONE);
-            }
+            return true;
         }
+        return setupLockedTaskModeUi();
+    }
+
+    private boolean setupLockedTaskModeUi() {
+        // Show a default UI.
+        mInjector.setContentView(this, R.layout.locked_app_activity_layout);
+
+        // Set up the root view click listener for the BiometricPrompt.
+        final View rootView = mInjector.findViewById(this, android.R.id.content);
+        if (rootView == null) {
+            Slog.e(TAG, "Root view not found in locked task mode, finishing");
+            finish();
+            return false;
+        }
+        rootView.setOnClickListener(v -> {
+            if (DEBUG) {
+                Slog.d(TAG, "Root view clicked in locked task mode");
+            }
+            if (!mIsBiometricPromptShowing) {
+                showBiometricPrompt();
+            }
+        });
+
+        // Set up the external display message.
+        final int displayId = mInjector.getDisplayId(this);
+        // An external display is any valid display that is not the primary one.
+        final boolean isDisplayedOnExternalDisplay = displayId != Display.INVALID_DISPLAY
+                && displayId != Display.DEFAULT_DISPLAY;
+        final TextView externalDisplayMessage = (TextView) mInjector.findViewById(this,
+                R.id.locked_app_activity_external_display_message_id);
+        if (externalDisplayMessage != null) {
+            externalDisplayMessage.setVisibility(isDisplayedOnExternalDisplay
+                    ? View.VISIBLE : View.GONE);
+        }
+        return true;
     }
 
     private boolean isInterceptMode() {
         return mTarget != null;
     }
 
+    /**
+     * Shows the biometric prompt when the activity resumes in Locked Task Mode, ensuring it's
+     * presented when the user returns to this overlay.
+     */
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (DEBUG) {
+            Slog.d(TAG, "onResume: " + (isInterceptMode() ? "intercept" : "locked task") + " mode");
+        }
+        // Show the biometric prompt when the activity resumes in Locked Task Mode.
+        if (!isInterceptMode() && !mIsBiometricPromptShowing) {
+            if (DEBUG) {
+                Slog.d(TAG, "onResume: showing biometric prompt in locked task mode");
+            }
+            showBiometricPrompt();
+        }
+    }
+
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
 
-        // The BiometricPrompt should only be shown if the package is locked and the activity has
-        // window focus.
+        // Finish if the package is no longer locked upon focus change.
         if (mPackageName == null) {
             Slog.w(TAG, "Package name is null in onWindowFocusChanged, finishing");
             finish();
             return;
         }
 
-        if (finishIfUnlocked(mPackageName, mUserId)) {
-            return;
-        }
-
-        // In locked task mode, show the prompt immediately upon gaining focus.
-        if (hasFocus && !mIsBiometricPromptShowing && !isInterceptMode()) {
-            showBiometricPrompt();
-        }
+        finishIfUnlocked(mPackageName, mUserId);
     }
 
     @Override
@@ -549,6 +584,18 @@ public final class LockedAppActivity extends Activity {
          */
         public void setContentView(Activity activity, int layoutResId) {
             activity.setContentView(layoutResId);
+        }
+
+        /**
+         * Returns the view with the given ID for the given activity.
+         *
+         * @param activity the activity to get the view from.
+         * @param id       the ID of the view to find.
+         * @return the view, or {@code null} if it cannot be found.
+         */
+        @Nullable
+        public View findViewById(Activity activity, int id) {
+            return activity.findViewById(id);
         }
 
         /**

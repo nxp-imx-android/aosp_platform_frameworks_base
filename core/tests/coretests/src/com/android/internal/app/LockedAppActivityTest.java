@@ -17,6 +17,7 @@
 package com.android.internal.app;
 
 import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
@@ -56,6 +57,7 @@ import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.security.Flags;
 import android.view.Display;
+import android.view.View;
 import android.window.OnBackInvokedCallback;
 import android.window.OnBackInvokedDispatcher;
 
@@ -474,7 +476,7 @@ public class LockedAppActivityTest {
 
     @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
     @Test
-    public void authError_inLockedTaskMode_doesNotFinishAndDoesNotUnlock() {
+    public void authError_inLockedTaskMode_doesNotFinishDoesNotUnlockAndDoesNotReTriggerPrompt() {
         Intent intent = createTestLockedAppActivityIntent(ActivityMode.LOCKED_TASK);
 
         try (ActivityScenario<LockedAppActivity> scenario = ActivityScenario.launch(intent)) {
@@ -482,6 +484,8 @@ public class LockedAppActivityTest {
             captureAuthenticationCallback().onAuthenticationError(
                     BiometricPrompt.BIOMETRIC_ERROR_CANCELED, "User canceled");
 
+            // Verify that authenticate was only called once (during initial launch).
+            verify(mBiometricPrompt, times(1)).authenticate(any(), any(), any());
             verifyPackageNotUnlockedAndDoesNotSendTargetIntent();
             scenario.onActivity(activity -> assertThat(activity.isFinishing()).isFalse());
         }
@@ -525,24 +529,69 @@ public class LockedAppActivityTest {
 
     @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
     @Test
-    public void onWindowFocusChanged_inLockedTaskMode_reShowsPromptAfterLosingAndRegainingFocus() {
+    public void clickBackground_inLockedTaskMode_showsPrompt() {
         Intent intent = createTestLockedAppActivityIntent(ActivityMode.LOCKED_TASK);
 
         try (ActivityScenario<LockedAppActivity> scenario = ActivityScenario.launch(intent)) {
-            // Mock an authentication error.
+            // Mock an authentication error to clear the first prompt.
             captureAuthenticationCallback().onAuthenticationError(
                     BiometricPrompt.BIOMETRIC_ERROR_CANCELED, "User canceled");
 
-            // Simulate losing and regaining focus.
-            scenario.onActivity(activity -> {
-                activity.onWindowFocusChanged(false);
-                activity.onWindowFocusChanged(true);
-            });
+            // Click the background.
+            onView(withId(android.R.id.content)).perform(click());
 
             // Verify that authenticate was called a second time.
             verify(mBiometricPrompt, times(2)).authenticate(any(), any(), any());
-            verifyPackageNotUnlockedAndDoesNotSendTargetIntent();
-            scenario.onActivity(activity -> assertThat(activity.isFinishing()).isFalse());
+        }
+    }
+
+    @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
+    @Test
+    public void onResume_inLockedTaskMode_reShowsPromptAfterDismissal() {
+        Intent intent = createTestLockedAppActivityIntent(ActivityMode.LOCKED_TASK);
+
+        try (ActivityScenario<LockedAppActivity> scenario = ActivityScenario.launch(intent)) {
+            // Mock an authentication error to clear the first prompt.
+            captureAuthenticationCallback().onAuthenticationError(
+                    BiometricPrompt.BIOMETRIC_ERROR_CANCELED, "User canceled");
+
+            // Simulate leaving and returning to the activity.
+            scenario.moveToState(Lifecycle.State.STARTED);
+            scenario.moveToState(Lifecycle.State.RESUMED);
+
+            // Verify that authenticate was called a second time.
+            verify(mBiometricPrompt, times(2)).authenticate(any(), any(), any());
+        }
+    }
+
+    @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
+    @Test
+    public void onConfigurationChanged_inLockedTaskMode_retainsClickListener() {
+        Intent intent = createTestLockedAppActivityIntent(ActivityMode.LOCKED_TASK);
+
+        try (ActivityScenario<LockedAppActivity> scenario = ActivityScenario.launch(intent)) {
+            // Mock an authentication error to clear the first prompt.
+            captureAuthenticationCallback().onAuthenticationError(
+                    BiometricPrompt.BIOMETRIC_ERROR_CANCELED, "User canceled");
+
+            scenario.onActivity(activity -> activity.onConfigurationChanged(new Configuration()));
+
+            // Click the background.
+            onView(withId(android.R.id.content)).perform(click());
+
+            // Verify that authenticate was called a second time.
+            verify(mBiometricPrompt, times(2)).authenticate(any(), any(), any());
+        }
+    }
+
+    @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
+    @Test
+    public void launchActivity_inLockedTaskMode_withMissingRootView_finishes() {
+        Intent intent = createTestLockedAppActivityIntent(ActivityMode.LOCKED_TASK);
+        mTestInjector.setReturnNullForRootView(true);
+
+        try (ActivityScenario<LockedAppActivity> scenario = ActivityScenario.launch(intent)) {
+            assertThat(scenario.getState()).isEqualTo(Lifecycle.State.DESTROYED);
         }
     }
 
@@ -564,6 +613,27 @@ public class LockedAppActivityTest {
             scenario.onActivity(activity -> activity.onWindowFocusChanged(true));
 
             scenario.onActivity(activity -> assertThat(activity.isFinishing()).isTrue());
+        }
+    }
+
+    @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
+    @Test
+    public void onWindowFocusChanged_afterAuthError_doesNotReTriggerPrompt() {
+        Intent intent = createTestLockedAppActivityIntent(ActivityMode.LOCKED_TASK);
+
+        try (ActivityScenario<LockedAppActivity> scenario = ActivityScenario.launch(intent)) {
+            // Mock an authentication error.
+            captureAuthenticationCallback().onAuthenticationError(
+                    BiometricPrompt.BIOMETRIC_ERROR_CANCELED, "User canceled");
+
+            // Simulate losing focus.
+            scenario.onActivity(activity -> activity.onWindowFocusChanged(false));
+
+            // Simulate gaining focus (e.g., after the prompt dialog disappears).
+            scenario.onActivity(activity -> activity.onWindowFocusChanged(true));
+
+            // Verify that authenticate was still only called once.
+            verify(mBiometricPrompt, times(1)).authenticate(any(), any(), any());
         }
     }
 
@@ -749,6 +819,7 @@ public class LockedAppActivityTest {
         private int mContentViewId = 0;
         private int mDisplayId = Display.INVALID_DISPLAY;
         private IntentSender mOriginalIntentSender;
+        private boolean mReturnNullForRootView = false;
 
         @Override
         public void setTheme(Activity activity, int resId) {
@@ -765,6 +836,14 @@ public class LockedAppActivityTest {
             mContentViewId = layoutResID;
             mSetContentViewCount++;
             activity.setContentView(layoutResID);
+        }
+
+        @Override
+        public View findViewById(Activity activity, int id) {
+            if (mReturnNullForRootView && id == android.R.id.content) {
+                return null;
+            }
+            return activity.findViewById(id);
         }
 
         @Override
@@ -830,6 +909,10 @@ public class LockedAppActivityTest {
 
         void setDisplayId(int displayId) {
             mDisplayId = displayId;
+        }
+
+        void setReturnNullForRootView(boolean returnNull) {
+            mReturnNullForRootView = returnNull;
         }
     }
 }
