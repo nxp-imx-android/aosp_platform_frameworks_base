@@ -1,0 +1,3 @@
+# Bug component: 1769055
+
+include /core/java/android/security/trusttoken/OWNERS
