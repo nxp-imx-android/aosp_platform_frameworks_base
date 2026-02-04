@@ -39,7 +39,8 @@ public class MediaQualityContract {
             LEVEL_MEDIUM,
             LEVEL_HIGH,
             LEVEL_OFF,
-            LEVEL_USER
+            LEVEL_USER,
+            LEVEL_UNKNOWN,
     })
     public @interface Level {}
 
@@ -82,6 +83,16 @@ public class MediaQualityContract {
     @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
     public static final String LEVEL_USER = "level_user";
 
+    /**
+     * Unknown level for a parameter.
+     *
+     * <p>This value is used to represent a level that is not recognized by the current version
+     * of the SDK. It serves as a fallback to ensure backwards compatibility when new levels
+     * are introduced in future platform versions.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String LEVEL_UNKNOWN = "level_unknown";
+
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
     @StringDef(prefix = "COLOR_TEMP", value = {
@@ -95,6 +106,7 @@ public class MediaQualityContract {
             COLOR_TEMP_WARM_HDR10PLUS,
             COLOR_TEMP_FMMSDR,
             COLOR_TEMP_FMMHDR,
+            COLOR_TEMP_UNKNOWN,
     })
     public @interface ColorTempValue {}
 
@@ -205,12 +217,23 @@ public class MediaQualityContract {
     @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
     public static final String COLOR_TEMP_FMMHDR = "color_temp_fmmhdr";
 
+    /**
+     * Key for an unknown color temperature preset.
+     *
+     * <p>Represents a color temperature state that the system cannot identify or that is
+     * defined in a newer version of the API than the one the application is currently using.
+     * This ensures the application remains stable even when encountering undefined presets.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String COLOR_TEMP_UNKNOWN = "color_temp_unknown";
+
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
     @StringDef(prefix = "LEVEL_RANGE", value = {
             LEVEL_RANGE_AUTO,
             LEVEL_RANGE_LIMITED,
             LEVEL_RANGE_FULL,
+            LEVEL_RANGE_UNKNOWN,
     })
     public @interface LevelRangeValue {}
 
@@ -238,12 +261,23 @@ public class MediaQualityContract {
     @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
     public static final String LEVEL_RANGE_FULL = "FULL";
 
+    /**
+     * Unknown level range option.
+     *
+     * <p>This value is used to represent a quantization level range that is not recognized
+     * by the current version of the SDK. It serves as a fallback to ensure backwards
+     * compatibility when new level range options are introduced in future platform versions.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String LEVEL_RANGE_UNKNOWN = "UNKNOWN";
+
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
     @StringDef(prefix = "HDMIRGB_RANGE", value = {
             HDMIRGB_RANGE_AUTO,
             HDMIRGB_RANGE_LIMITED,
             HDMIRGB_RANGE_FULL,
+            HDMIRGB_RANGE_UNKNOWN,
     })
     public @interface HdmiRgbRangeValue {}
 
@@ -271,6 +305,16 @@ public class MediaQualityContract {
     @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
     public static final String HDMIRGB_RANGE_FULL = "FULL";
 
+    /**
+     * Unknown HDMI RGB range option.
+     *
+     * <p>This value is used to represent an HDMI RGB range that is not recognized by the
+     * current version of the SDK. It serves as a fallback to ensure backwards compatibility
+     * when new HDMI RGB range options are introduced in future platform versions.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String HDMIRGB_RANGE_UNKNOWN = "UNKNOWN";
+
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
     @StringDef(prefix = "COLOR_SPACE", value = {
@@ -281,6 +325,7 @@ public class MediaQualityContract {
             COLOR_SPACE_BT2020,
             COLOR_SPACE_ON,
             COLOR_SPACE_OFF,
+            COLOR_SPACE_UNKNOWN,
     })
     public @interface ColorSpaceValue {}
 
@@ -341,6 +386,16 @@ public class MediaQualityContract {
     public static final String COLOR_SPACE_OFF = "OFF";
 
     /**
+     * Unknown color space option.
+     *
+     * <p>This value is used to represent a color space that is not recognized by the current
+     * version of the SDK. It serves as a fallback to ensure backwards compatibility when new
+     * color space options are introduced in future platform versions.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String COLOR_SPACE_UNKNOWN = "UNKNOWN";
+
+    /**
      * Defines the supported display panel technology types.
      * <p>
      * This is used with
@@ -352,7 +407,8 @@ public class MediaQualityContract {
      */
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(prefix = { "PANEL_TECHNOLOGY" }, value = {
-            PANEL_TECHNOLOGY_OLED
+            PANEL_TECHNOLOGY_OLED,
+            PANEL_TECHNOLOGY_UNKNOWN,
     })
     public @interface PanelTechnology {}
 
@@ -365,12 +421,23 @@ public class MediaQualityContract {
     @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
     public static final int PANEL_TECHNOLOGY_OLED = 0;
 
+    /**
+     * Unknown display panel technology type.
+     *
+     * <p>This value is used to represent a panel technology that is not recognized by the current
+     * version of the SDK. It serves as a fallback to ensure backwards compatibility when new
+     * technologies are introduced in future platform versions.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final int PANEL_TECHNOLOGY_UNKNOWN = -1;
+
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
     @StringDef(prefix = "GAMMA", value = {
             GAMMA_DARK,
             GAMMA_MIDDLE,
             GAMMA_BRIGHT,
+            GAMMA_UNKNOWN,
     })
     public @interface GammaValue {}
 
@@ -398,6 +465,16 @@ public class MediaQualityContract {
     @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
     public static final String GAMMA_BRIGHT = "BRIGHT";
 
+    /**
+     * Unknown gamma option.
+     *
+     * <p>This value is used to represent a gamma setting that is not recognized by the current
+     * version of the SDK. It serves as a fallback to ensure backwards compatibility when new
+     * gamma settings are introduced in future platform versions.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String GAMMA_UNKNOWN = "UNKNOWN";
+
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
     @StringDef(prefix = "PICTURE_QUALITY_EVENT_TYPE", value = {
@@ -409,6 +486,7 @@ public class MediaQualityContract {
             EXTRA_PICTURE_QUALITY_EVENT_TYPE_FRAME_CHANGE,
             PICTURE_QUALITY_EVENT_TYPE_DOLBY_IQ_CHANGE,
             PICTURE_QUALITY_EVENT_TYPE_DOLBY_APO_CHANGE,
+            PICTURE_QUALITY_EVENT_TYPE_UNKNOWN,
     })
     public @interface PictureQualityEventTypeValue {}
 
@@ -478,6 +556,16 @@ public class MediaQualityContract {
     @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
     public static final String PICTURE_QUALITY_EVENT_TYPE_DOLBY_APO_CHANGE = "DOLBY_APO_CHANGE";
 
+    /**
+     * Unknown picture quality event type.
+     *
+     * <p>This value is used to represent a picture quality event type that is not recognized
+     * by the current version of the SDK. It serves as a fallback to ensure backwards
+     * compatibility when new event types are introduced in future platform versions.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String PICTURE_QUALITY_EVENT_TYPE_UNKNOWN = "UNKNOWN";
+
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
     @StringDef(prefix = "STREAM_STATUS", value = {
@@ -499,6 +587,7 @@ public class MediaQualityContract {
             STREAM_STATUS_FMM_DOLBY,
             STREAM_STATUS_FMM_TCH,
             STREAM_STATUS_FMM_HDR_VIVID,
+            STREAM_STATUS_UNKNOWN,
     })
     public @interface StreamStatusValue {}
 
@@ -638,11 +727,22 @@ public class MediaQualityContract {
     @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
     public static final String STREAM_STATUS_FMM_HDR_VIVID = "FMMHDRVIVID";
 
+    /**
+     * Unknown stream status.
+     *
+     * <p>This value is used to represent a stream status that is not recognized by the current
+     * version of the SDK. It serves as a fallback to ensure backwards compatibility when new
+     * stream statuses are introduced in future platform versions.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String STREAM_STATUS_UNKNOWN = "UNKNOWN";
+
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
     @StringDef(prefix = "DOWN_MIX_MODE", value = {
             DOWN_MIX_MODE_STEREO,
             DOWN_MIX_MODE_SURROUND,
+            DOWN_MIX_MODE_UNKNOWN,
     })
     public @interface DownMixModeValue {}
 
@@ -664,6 +764,16 @@ public class MediaQualityContract {
     @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
     public static final String DOWN_MIX_MODE_SURROUND = "SURROUND";
 
+    /**
+     * Unknown down-mix mode option.
+     *
+     * <p>This value is used to represent a down-mix mode that is not recognized by the current
+     * version of the SDK. It serves as a fallback to ensure backwards compatibility when new
+     * down-mix modes are introduced in future platform versions.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String DOWN_MIX_MODE_UNKNOWN = "UNKNOWN";
+
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
     @StringDef(prefix = "SOUND_STYLE", value = {
@@ -675,6 +785,7 @@ public class MediaQualityContract {
             SOUND_STYLE_MUSIC,
             SOUND_STYLE_NEWS,
             SOUND_STYLE_AUTO,
+            SOUND_STYLE_UNKNOWN,
     })
     public @interface SoundStyleValue {}
 
@@ -743,6 +854,16 @@ public class MediaQualityContract {
     public static final String SOUND_STYLE_AUTO = "AUTO";
 
     /**
+     * Unknown sound style.
+     *
+     * <p>This value is used to represent a sound style that is not recognized by the current
+     * version of the SDK. It serves as a fallback to ensure backwards compatibility when new
+     * sound styles are introduced in future platform versions.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String SOUND_STYLE_UNKNOWN = "UNKNOWN";
+
+    /**
      * Defines the allowed values for the 3D mode parameter.
      * <p>
      * 3D mode specifies the format of the incoming stereoscopic video signal,
@@ -758,6 +879,7 @@ public class MediaQualityContract {
             THREE_D_MODE_SIDE_BY_SIDE,
             THREE_D_MODE_TOP_AND_BOTTOM,
             THREE_D_MODE_FRAME_PACKING,
+            THREE_D_MODE_UNKNOWN,
     })
     public @interface ThreeDModeValue {}
 
@@ -789,6 +911,16 @@ public class MediaQualityContract {
     @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
     public static final String THREE_D_MODE_FRAME_PACKING = "frame_packing";
 
+    /**
+     * Unknown 3D mode.
+     *
+     * <p>This value is used to represent a 3D mode that is not recognized by the current version
+     * of the SDK. It serves as a fallback to ensure backwards compatibility when new 3D modes
+     * are introduced in future platform versions.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String THREE_D_MODE_UNKNOWN = "unknown";
+
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
     @StringDef(prefix = "DIGITAL_OUTPUT_MODE", value = {
@@ -798,6 +930,7 @@ public class MediaQualityContract {
             DIGITAL_OUTPUT_MODE_DOLBY_DIGITAL_PLUS,
             DIGITAL_OUTPUT_MODE_DOLBY_DIGITAL,
             DIGITAL_OUTPUT_MODE_DOLBY_MAT,
+            DIGITAL_OUTPUT_MODE_UNKNOWN,
     })
     public @interface DigitalOutputModeValue {}
 
@@ -851,6 +984,16 @@ public class MediaQualityContract {
     @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
     public static final String DIGITAL_OUTPUT_MODE_DOLBY_MAT = "DolbyMat";
 
+    /**
+     * Unknown digital output mode.
+     *
+     * <p>This value is used to represent a digital audio output mode that is not recognized
+     * by the current version of the SDK. It serves as a fallback to ensure backwards
+     * compatibility when new digital output modes are introduced in future platform versions.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String DIGITAL_OUTPUT_MODE_UNKNOWN = "UNKNOWN";
+
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
     @StringDef(prefix = "DOLBY_SOUND_MODE", value = {
@@ -861,6 +1004,7 @@ public class MediaQualityContract {
             DOLBY_SOUND_MODE_STANDARD,
             DOLBY_SOUND_MODE_STADIUM,
             DOLBY_SOUND_MODE_USER,
+            DOLBY_SOUND_MODE_UNKNOWN,
     })
     public @interface DolbySoundModeValue {}
 
@@ -919,6 +1063,16 @@ public class MediaQualityContract {
      */
     @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
     public static final String DOLBY_SOUND_MODE_USER = "USER";
+
+    /**
+     * Unknown Dolby sound mode.
+     *
+     * <p>This value is used to represent a Dolby sound mode that is not recognized by the current
+     * version of the SDK. It serves as a fallback to ensure backwards compatibility when new
+     * Dolby sound modes are introduced in future platform versions.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String DOLBY_SOUND_MODE_UNKNOWN = "UNKNOWN";
 
 
     /** @hide */

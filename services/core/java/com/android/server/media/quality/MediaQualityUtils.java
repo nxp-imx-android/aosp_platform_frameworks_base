@@ -201,6 +201,7 @@ public final class MediaQualityUtils {
     ));
 
     private static final Set<String> VALID_STREAM_STATUS = new HashSet<>(Arrays.asList(
+            PictureProfile.STATUS_UNKNOWN,
             PictureProfile.STATUS_SDR,
             PictureProfile.STATUS_HDR10,
             PictureProfile.STATUS_TCH,
@@ -934,6 +935,9 @@ public final class MediaQualityUtils {
                     case MediaQualityContract.COLOR_TEMP_FMMHDR:
                         colorTemperatureByte = ColorTemperature.FMMHDR;
                         break;
+                    case MediaQualityContract.COLOR_TEMP_UNKNOWN:
+                        colorTemperatureByte = ColorTemperature.STANDARD;
+                        break;
                     default:
                         colorTemperatureByte = ColorTemperature.STANDARD;
                         Log.e("PictureParams", "Invalid color_temp string: "
@@ -987,6 +991,9 @@ public final class MediaQualityUtils {
                     case MediaQualityContract.LEVEL_RANGE_FULL:
                         levelRangeByte = ColorRange.FULL;
                         break;
+                    case MediaQualityContract.LEVEL_RANGE_UNKNOWN:
+                        levelRangeByte = ColorRange.AUTO;
+                        break;
                     default:
                         levelRangeByte = ColorRange.AUTO;
                         Log.e("PictureParams", "Invalid color_range string: "
@@ -1035,6 +1042,9 @@ public final class MediaQualityUtils {
                     case MediaQualityContract.HDMIRGB_RANGE_FULL:
                         hdmiRgbRangeByte = ColorRange.FULL;
                         break;
+                    case MediaQualityContract.HDMIRGB_RANGE_UNKNOWN:
+                        hdmiRgbRangeByte = ColorRange.AUTO;
+                        break;
                     default:
                         hdmiRgbRangeByte = ColorRange.AUTO;
                         Log.e("PictureParams", "Invalid hdmi_rgb_range string: "
@@ -1070,6 +1080,9 @@ public final class MediaQualityUtils {
                     case MediaQualityContract.COLOR_SPACE_OFF:
                         colorSpaceByte = ColorSpace.OFF;
                         break;
+                    case MediaQualityContract.COLOR_SPACE_UNKNOWN:
+                        colorSpaceByte = ColorSpace.OFF;
+                        break;
                     default:
                         colorSpaceByte = ColorSpace.OFF;
                         Log.e("PictureParams", "Invalid color_space string: "
@@ -1102,6 +1115,9 @@ public final class MediaQualityUtils {
                         break;
                     case MediaQualityContract.GAMMA_BRIGHT:
                         gammaByte = Gamma.BRIGHT;
+                        break;
+                    case MediaQualityContract.GAMMA_UNKNOWN:
+                        gammaByte = Gamma.DARK;
                         break;
                     default:
                         gammaByte = Gamma.DARK;
@@ -1358,6 +1374,9 @@ public final class MediaQualityUtils {
                     case MediaQualityContract.PICTURE_QUALITY_EVENT_TYPE_DOLBY_APO_CHANGE:
                         pictureQualityEventTypeByte = PictureQualityEventType.DOLBY_APO_CHANGE;
                         break;
+                    case MediaQualityContract.PICTURE_QUALITY_EVENT_TYPE_UNKNOWN:
+                        pictureQualityEventTypeByte = PictureQualityEventType.NONE;
+                        break;
                     default:
                         pictureQualityEventTypeByte = PictureQualityEventType.NONE;
                         Log.e("PictureParams", "Invalid event type string: "
@@ -1423,6 +1442,9 @@ public final class MediaQualityUtils {
                         break;
                     case MediaQualityContract.STREAM_STATUS_FMM_HDR_VIVID:
                         streamStatusByte = StreamStatus.FMMHDRVIVID;
+                        break;
+                    case MediaQualityContract.STREAM_STATUS_UNKNOWN:
+                        streamStatusByte = StreamStatus.SDR;
                         break;
                     default:
                         streamStatusByte = StreamStatus.SDR;
@@ -1725,6 +1747,9 @@ public final class MediaQualityUtils {
                     case MediaQualityContract.DOWN_MIX_MODE_SURROUND:
                         downMixModeByte = DownmixMode.SURROUND;
                         break;
+                    case MediaQualityContract.DOWN_MIX_MODE_UNKNOWN:
+                        downMixModeByte = DownmixMode.STEREO;
+                        break;
                     default:
                         downMixModeByte = DownmixMode.STEREO;
                         Log.e("SoundParams", "Invalid down mix mode: "
@@ -1763,6 +1788,9 @@ public final class MediaQualityUtils {
                     case MediaQualityContract.SOUND_STYLE_AUTO:
                         soundStyleByte = SoundStyle.AUTO;
                         break;
+                    case MediaQualityContract.SOUND_STYLE_UNKNOWN:
+                        soundStyleByte = SoundStyle.USER;
+                        break;
                     default:
                         soundStyleByte = SoundStyle.USER;
                         Log.e("SoundParams", "Invalid sound style: "
@@ -1795,6 +1823,9 @@ public final class MediaQualityUtils {
                         break;
                     case MediaQualityContract.DIGITAL_OUTPUT_MODE_DOLBY_MAT:
                         digitalOutputModeByte = DigitalOutput.DolbyMat;
+                        break;
+                    case MediaQualityContract.DIGITAL_OUTPUT_MODE_UNKNOWN:
+                        digitalOutputModeByte = DigitalOutput.AUTO;
                         break;
                     default:
                         digitalOutputModeByte = DigitalOutput.AUTO;
@@ -1866,6 +1897,9 @@ public final class MediaQualityUtils {
                             dolbySoundModeByte = DolbyAudioProcessing.SoundMode.STADIUM;
                             break;
                         case MediaQualityContract.DOLBY_SOUND_MODE_USER:
+                            dolbySoundModeByte = DolbyAudioProcessing.SoundMode.USER;
+                            break;
+                        case MediaQualityContract.DOLBY_SOUND_MODE_UNKNOWN:
                             dolbySoundModeByte = DolbyAudioProcessing.SoundMode.USER;
                             break;
                         default:
@@ -2044,9 +2078,11 @@ public final class MediaQualityUtils {
             @MediaQualityContract.PanelTechnology int frameworkPanelTechnology) {
         return switch (frameworkPanelTechnology) {
             case MediaQualityContract.PANEL_TECHNOLOGY_OLED -> PanelTechnologyType.OLED;
-            default ->
-                    throw new IllegalArgumentException(
-                            "Unknown panel technology: " + frameworkPanelTechnology);
+            case MediaQualityContract.PANEL_TECHNOLOGY_UNKNOWN -> -1;
+            default -> {
+                Log.w(TAG, "Unknown panel technology received: " + frameworkPanelTechnology);
+                yield -1;
+            }
         };
     }
 
@@ -2925,6 +2961,7 @@ public final class MediaQualityUtils {
             case MediaQualityContract.LEVEL_LOW -> QualityLevel.LOW;
             case MediaQualityContract.LEVEL_MEDIUM -> QualityLevel.MEDIUM;
             case MediaQualityContract.LEVEL_HIGH -> QualityLevel.HIGH;
+            case MediaQualityContract.LEVEL_UNKNOWN -> QualityLevel.OFF;
             default -> {
                 Log.e("PictureParams", "Invalid noise_reduction string: " + qualityLevel);
                 yield QualityLevel.OFF;
@@ -2940,7 +2977,7 @@ public final class MediaQualityUtils {
             case QualityLevel.HIGH -> MediaQualityContract.LEVEL_HIGH;
             default -> {
                 Log.e("PictureParams", "Invalid quality level: " + qualityLevel);
-                yield MediaQualityContract.LEVEL_OFF;
+                yield MediaQualityContract.LEVEL_UNKNOWN;
             }
         };
     }
@@ -2951,7 +2988,8 @@ public final class MediaQualityUtils {
             case MemcEffect.MIDDLE -> MediaQualityContract.LEVEL_MEDIUM;
             case MemcEffect.HIGH -> MediaQualityContract.LEVEL_HIGH;
             case MemcEffect.USER -> MediaQualityContract.LEVEL_USER;
-            default -> MediaQualityContract.LEVEL_OFF;
+            case MemcEffect.OFF -> MediaQualityContract.LEVEL_OFF;
+            default -> MediaQualityContract.LEVEL_UNKNOWN;
         };
     }
 
@@ -2960,7 +2998,8 @@ public final class MediaQualityUtils {
             case ThreeDMode.SIDE_BY_SIDE -> MediaQualityContract.THREE_D_MODE_SIDE_BY_SIDE;
             case ThreeDMode.TOP_AND_BOTTOM -> MediaQualityContract.THREE_D_MODE_TOP_AND_BOTTOM;
             case ThreeDMode.FRAME_PACKING -> MediaQualityContract.THREE_D_MODE_FRAME_PACKING;
-            default -> MediaQualityContract.THREE_D_MODE_OFF;
+            case ThreeDMode.OFF -> MediaQualityContract.THREE_D_MODE_OFF;
+            default -> MediaQualityContract.THREE_D_MODE_UNKNOWN;
         };
     }
 
@@ -2973,6 +3012,7 @@ public final class MediaQualityUtils {
             case MediaQualityContract.LEVEL_MEDIUM -> MemcEffect.MIDDLE;
             case MediaQualityContract.LEVEL_HIGH -> MemcEffect.HIGH;
             case MediaQualityContract.LEVEL_USER -> MemcEffect.USER;
+            case MediaQualityContract.LEVEL_UNKNOWN -> MemcEffect.OFF;
             default -> MemcEffect.OFF;
         };
     }
@@ -2985,6 +3025,7 @@ public final class MediaQualityUtils {
             case MediaQualityContract.THREE_D_MODE_SIDE_BY_SIDE -> ThreeDMode.SIDE_BY_SIDE;
             case MediaQualityContract.THREE_D_MODE_TOP_AND_BOTTOM -> ThreeDMode.TOP_AND_BOTTOM;
             case MediaQualityContract.THREE_D_MODE_FRAME_PACKING -> ThreeDMode.FRAME_PACKING;
+            case MediaQualityContract.THREE_D_MODE_UNKNOWN -> ThreeDMode.OFF;
             default -> ThreeDMode.OFF;
         };
     }
