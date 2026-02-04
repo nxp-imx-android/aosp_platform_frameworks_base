@@ -106,8 +106,7 @@ private constructor(
     private val shouldShowGameControlsButton: Boolean,
     private val shouldShowDesktopModeButton: Boolean,
     private val shouldShowRestartButton: Boolean,
-    private val isBrowserApp: Boolean,
-    private val openInAppOrBrowserIntent: Intent?,
+    private val appToWebData: AppToWebData?,
     private val desktopModeUiEventLogger: DesktopModeUiEventLogger,
     private val captionView: View,
     private val captionWidth: Int,
@@ -143,7 +142,7 @@ private constructor(
     private val globalMenuPosition: Point = Point()
 
     private val shouldShowBrowserPill: Boolean
-        get() = openInAppOrBrowserIntent != null
+        get() = appToWebData?.openInAppOrBrowserIntent != null
 
     private val shouldShowMoreActionsPill: Boolean
         get() =
@@ -216,14 +215,20 @@ private constructor(
                     shouldShowGameControlsButton = shouldShowGameControlsButton,
                     shouldShowDesktopModeButton = shouldShowDesktopModeButton,
                     shouldShowRestartButton = shouldShowRestartButton,
-                    isBrowserApp = isBrowserApp,
+                    appToWebData = appToWebData,
                 )
                 .apply {
                     bind(taskInfo, shouldShowMoreActionsPill)
                     this.onOpenInAppOrBrowserClickListener = {
-                        openInAppOrBrowserClickListener.invoke(openInAppOrBrowserIntent!!)
+                        val atwData =
+                            checkNotNull(appToWebData) { "Expected non-null App-to-Web data" }
+                        val intent =
+                            checkNotNull(atwData.openInAppOrBrowserIntent) {
+                                "Expected non-null app to web intent"
+                            }
+                        openInAppOrBrowserClickListener.invoke(intent)
                         val uiEvent =
-                            if (isBrowserApp) {
+                            if (atwData.isBrowserApp) {
                                 DESKTOP_WINDOWING_APP_TO_WEB_OPEN_IN_APP
                             } else {
                                 DESKTOP_WINDOWING_APP_TO_WEB_OPEN_IN_BROWSER
@@ -543,7 +548,7 @@ private constructor(
         private val shouldShowGameControlsButton: Boolean,
         private val shouldShowDesktopModeButton: Boolean,
         private val shouldShowRestartButton: Boolean,
-        private val isBrowserApp: Boolean,
+        private val appToWebData: AppToWebData?,
     ) : OnClickListener {
         val rootView =
             LayoutInflater.from(context)
@@ -860,7 +865,7 @@ private constructor(
             }
 
             val btnText =
-                if (isBrowserApp) {
+                if (appToWebData?.isBrowserApp == true) {
                     getString(R.string.open_in_app_text)
                 } else {
                     getString(R.string.open_in_browser_text)
@@ -883,7 +888,7 @@ private constructor(
             }
 
             openByDefaultBtn.apply {
-                isGone = isBrowserApp || taskInfo.baseActivity == null
+                isGone = appToWebData?.isBrowserApp == true || taskInfo.baseActivity == null
                 imageTintList = ColorStateList.valueOf(style.textColor)
                 background =
                     createBackgroundDrawable(
@@ -902,6 +907,9 @@ private constructor(
         )
     }
 
+    /** Data for App-to-Web feature. */
+    data class AppToWebData(val isBrowserApp: Boolean, val openInAppOrBrowserIntent: Intent?)
+
     companion object {
         private const val TAG = "HandleMenu"
         private const val SHOULD_SHOW_SCREENSHOT_BUTTON = false
@@ -914,9 +922,7 @@ private constructor(
             taskInfo.appCompatTaskInfo.eligibleForUserAspectRatioButton() &&
                 taskInfo.windowingMode == WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 
-        /**
-         * Returns whether the game controls button should be shown for the task.
-         */
+        /** Returns whether the game controls button should be shown for the task. */
         fun shouldShowGameControlsButton(context: Context, taskInfo: RunningTaskInfo): Boolean =
             GameControlsHelper.shouldShowGameControlsButton(context, taskInfo)
 
@@ -950,8 +956,7 @@ private constructor(
             shouldShowGameControlsButton: Boolean,
             shouldShowDesktopModeButton: Boolean,
             shouldShowRestartButton: Boolean,
-            isBrowserApp: Boolean,
-            openInAppOrBrowserIntent: Intent?,
+            appToWebData: AppToWebData?,
             desktopModeUiEventLogger: DesktopModeUiEventLogger,
             captionView: View,
             captionWidth: Int,
@@ -987,8 +992,7 @@ private constructor(
                 shouldShowGameControlsButton,
                 shouldShowDesktopModeButton,
                 shouldShowRestartButton,
-                isBrowserApp,
-                openInAppOrBrowserIntent,
+                appToWebData,
                 desktopModeUiEventLogger,
                 captionView,
                 captionWidth,
@@ -1018,8 +1022,7 @@ private constructor(
             shouldShowGameControlsButton: Boolean,
             shouldShowDesktopModeButton: Boolean,
             shouldShowRestartButton: Boolean,
-            isBrowserApp: Boolean,
-            openInAppOrBrowserIntent: Intent?,
+            appToWebData: AppToWebData?,
             desktopModeUiEventLogger: DesktopModeUiEventLogger,
             captionView: View,
             captionWidth: Int,
@@ -1055,8 +1058,7 @@ private constructor(
                 shouldShowGameControlsButton,
                 shouldShowDesktopModeButton,
                 shouldShowRestartButton,
-                isBrowserApp,
-                openInAppOrBrowserIntent,
+                appToWebData,
                 desktopModeUiEventLogger,
                 captionView,
                 captionWidth,
