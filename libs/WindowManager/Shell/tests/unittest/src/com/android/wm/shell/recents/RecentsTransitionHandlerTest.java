@@ -39,6 +39,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -387,11 +388,13 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
                 transition, createTransitionInfo(), new StubTransaction(), new StubTransaction(),
                 mock(Transitions.TransitionFinishCallback.class));
 
-        mRecentsTransitionHandler.findController(transition).merge(
-                mergeTransitionInfo,
-                new StubTransaction(),
-                new StubTransaction(),
-                mock(Transitions.TransitionFinishCallback.class));
+        assertTrue(
+                "Merge request was not consumed",
+                mRecentsTransitionHandler.findController(transition).merge(
+                    mergeTransitionInfo,
+                    new StubTransaction(),
+                    new StubTransaction(),
+                    mock(Transitions.TransitionFinishCallback.class)));
         mMainExecutor.flushAll();
 
         verify(animationRunner).onTasksAppeared(
@@ -418,11 +421,14 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
         SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
         Transitions.TransitionFinishCallback finishCallback
                 = mock(Transitions.TransitionFinishCallback.class);
-        mRecentsTransitionHandler.findController(transition).merge(
-                mergeTransitionInfo,
-                new StubTransaction(),
-                finishT,
-                finishCallback);
+
+        assertTrue(
+                "Merge request was not consumed",
+                mRecentsTransitionHandler.findController(transition).merge(
+                        mergeTransitionInfo,
+                        new StubTransaction(),
+                        finishT,
+                        finishCallback));
         mMainExecutor.flushAll();
 
         // Verify that we've merged
@@ -448,11 +454,13 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
         SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
         Transitions.TransitionFinishCallback finishCallback
                 = mock(Transitions.TransitionFinishCallback.class);
-        mRecentsTransitionHandler.findController(transition).merge(
-                mergeTransitionInfo,
-                new StubTransaction(),
-                finishT,
-                finishCallback);
+        assertFalse(
+                "Merge request was consumed",
+                mRecentsTransitionHandler.findController(transition).merge(
+                        mergeTransitionInfo,
+                        new StubTransaction(),
+                        finishT,
+                        finishCallback));
         mMainExecutor.flushAll();
 
         // Verify that we've cleaned up the original transition
@@ -474,11 +482,13 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
                 transition, createTransitionInfo(), new StubTransaction(), new StubTransaction(),
                 mock(Transitions.TransitionFinishCallback.class));
 
-        mRecentsTransitionHandler.findController(transition).merge(
-                mergeTransitionInfo,
-                new StubTransaction(),
-                finishT,
-                mock(Transitions.TransitionFinishCallback.class));
+        assertTrue(
+                "Merge request was consumed",
+                mRecentsTransitionHandler.findController(transition).merge(
+                        mergeTransitionInfo,
+                        new StubTransaction(),
+                        finishT,
+                        mock(Transitions.TransitionFinishCallback.class)));
         mRecentsTransitionHandler.findController(transition).finish(/* toHome= */ false,
                 false /* sendUserLeaveHint */, mock(IResultReceiver.class));
         mMainExecutor.flushAll();
@@ -561,9 +571,11 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
         newAppChange.setTaskInfo(appTask);
         final TransitionInfo mergeTransitionInfo = new TransitionInfoBuilder(TRANSIT_CHANGE)
                 .addChange(displayChange).addChange(newAppChange).build();
-        mRecentsTransitionHandler.findController(transition).merge(mergeTransitionInfo,
-                new StubTransaction(), new StubTransaction(),
-                mock(Transitions.TransitionFinishCallback.class));
+        assertFalse(
+                "Merge request was consumed",
+                mRecentsTransitionHandler.findController(transition).merge(mergeTransitionInfo,
+                        new StubTransaction(), new StubTransaction(),
+                        mock(Transitions.TransitionFinishCallback.class)));
         mMainExecutor.flushAll();
 
         verify(animationRunner).onAnimationCanceled(any(), any());
@@ -618,11 +630,13 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
                 .addChange(TRANSIT_OPEN, homeTask)
                 .build();
 
-        mRecentsTransitionHandler.findController(transition).merge(
-                mergeTransitionInfo,
-                new StubTransaction(),
-                new StubTransaction(),
-                mock(Transitions.TransitionFinishCallback.class));
+        assertFalse(
+                "Merge request was consumed",
+                mRecentsTransitionHandler.findController(transition).merge(
+                        mergeTransitionInfo,
+                        new StubTransaction(),
+                        new StubTransaction(),
+                        mock(Transitions.TransitionFinishCallback.class)));
         mMainExecutor.flushAll();
 
         // Verify that the runner was notified and that the cancel immediately took effect (and the
@@ -656,11 +670,13 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
                 transition, createTransitionInfo(), new StubTransaction(), new StubTransaction(),
                 mock(Transitions.TransitionFinishCallback.class));
 
-        mRecentsTransitionHandler.findController(transition).merge(
-                mergeTransitionInfo,
-                startT,
-                finishT,
-                mock(Transitions.TransitionFinishCallback.class));
+        assertTrue(
+                "Merge request was consumed",
+                mRecentsTransitionHandler.findController(transition).merge(
+                        mergeTransitionInfo,
+                        startT,
+                        finishT,
+                        mock(Transitions.TransitionFinishCallback.class)));
         mRecentsTransitionHandler.findController(transition).finish(/* toHome= */ false,
                 false /* sendUserLeaveHint */, mock(IResultReceiver.class));
         mMainExecutor.flushAll();
@@ -701,11 +717,13 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
                 transition, startTransitionInfo, new StubTransaction(), new StubTransaction(),
                 mock(Transitions.TransitionFinishCallback.class));
 
-        mRecentsTransitionHandler.findController(transition).merge(
-                mergeTransitionInfo,
-                new StubTransaction(),
-                finishT,
-                mock(Transitions.TransitionFinishCallback.class));
+        assertTrue(
+                "Merge request was consumed",
+                mRecentsTransitionHandler.findController(transition).merge(
+                        mergeTransitionInfo,
+                        new StubTransaction(),
+                        finishT,
+                        mock(Transitions.TransitionFinishCallback.class)));
         mRecentsTransitionHandler.findController(transition).finish(/* toHome= */ false,
                 false /* sendUserLeaveHint */, mock(IResultReceiver.class));
         mMainExecutor.flushAll();
@@ -781,11 +799,13 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
                 transition, createTransitionInfo(), new StubTransaction(), new StubTransaction(),
                 mock(Transitions.TransitionFinishCallback.class));
 
-        mRecentsTransitionHandler.findController(transition).merge(
-                mergeTransition,
-                new StubTransaction(),
-                new StubTransaction(),
-                mock(Transitions.TransitionFinishCallback.class));
+        assertFalse(
+                "Merge request was consumed",
+                mRecentsTransitionHandler.findController(transition).merge(
+                        mergeTransition,
+                        new StubTransaction(),
+                        new StubTransaction(),
+                        mock(Transitions.TransitionFinishCallback.class)));
         mMainExecutor.flushAll();
 
         // Verify that the runner was notified and that the cancel immediately took effect (and the
