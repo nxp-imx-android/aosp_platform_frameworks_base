@@ -21,27 +21,15 @@ import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.SuppressLint;
 
-import java.util.List;
+import java.util.Set;
 
 /**
  * An observer used to notify about changes to app functions that match the criteria specified in
- * the {@link AppFunctionSearchSpec} or their packages.
- *
- * <p>The provided information in the received callbacks can be used to construct a focused {@link
- * AppFunctionSearchSpec} and call {@link AppFunctionManager#searchAppFunctions} to retrieve the
- * full, updated {@link AppFunctionMetadata} for the changed functions.
+ * {@link AppFunctionManager#observeAppFunctions}.
  */
 @FlaggedApi(FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
 @SuppressLint("CallbackName")
 public interface AppFunctionObserver {
-    /**
-     * Called when one or more app functions or their {@link AppFunctionMetadata} has changed.
-     *
-     * @param changedFunctionNames The {@link AppFunctionName}s of the app functions that were
-     *     added, updated or removed.
-     */
-    void onAppFunctionsChanged(@NonNull List<AppFunctionName> changedFunctionNames);
-
     /**
      * Called when changes occur to a package exposing app functions that may impact the state or
      * metadata of its contained functions.
@@ -56,9 +44,13 @@ public interface AppFunctionObserver {
      *   <li>The package's {@link AppFunctionPackageMetadata} has been updated.
      * </ul>
      *
+     * <p>Upon receiving this notification, clients can call {@link
+     * AppFunctionManager#searchAppFunctions} using the provided {@code changedPackageNames} to
+     * retrieve the updated {@link AppFunctionMetadata} for affected functions.
+     *
      * @param changedPackageNames The names of the updated packages.
      */
-    void onPackagesChanged(@NonNull List<String> changedPackageNames);
+    void onAppFunctionMetadataChanged(@NonNull Set<String> changedPackageNames);
 
     /**
      * Called when the runtime state of one or more app functions changes.
@@ -72,5 +64,5 @@ public interface AppFunctionObserver {
      * @see AppFunctionState
      * @see AppFunctionManager#getAppFunctionStates
      */
-    void onAppFunctionStatesChanged(@NonNull List<AppFunctionName> changedFunctionNames);
+    void onAppFunctionStatesChanged(@NonNull Set<AppFunctionName> changedFunctionNames);
 }

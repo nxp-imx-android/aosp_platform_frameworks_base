@@ -32,6 +32,7 @@ import android.annotation.CallbackExecutor;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.annotation.SdkConstant;
 import android.annotation.SystemApi;
@@ -54,6 +55,7 @@ import android.os.RemoteException;
 import android.os.SystemClock;
 import android.permission.flags.Flags;
 import android.util.ArrayMap;
+import android.util.ArraySet;
 import android.util.Log;
 
 import com.android.internal.annotations.GuardedBy;
@@ -64,6 +66,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.Executor;
 
 /**
@@ -615,8 +618,8 @@ public final class AppFunctionManager {
     }
 
     /**
-     * Registers an observer to monitor changes to {@link AppFunctionMetadata} that match the
-     * provided {@link AppFunctionSearchSpec}.
+     * Registers an observer to monitor changes to {@link AppFunctionMetadata} for the given
+     * packages.
      *
      * <p>When a change occurs, the registered {@link AppFunctionObserver} will be notified with
      * information about the changed app functions.
@@ -633,8 +636,8 @@ public final class AppFunctionManager {
      * <p>An example usage flow is:
      *
      * <ol>
-     *   <li>Call this method, {@link #observeAppFunctions}, to start monitoring changes for the app
-     *       functions of interest, using the {@link AppFunctionObserver}.
+     *   <li>Call this method, {@link #observeAppFunctions}, to start monitoring changes for the
+     *       packages of interest, using the {@link AppFunctionObserver}.
      *   <li>Call {@link #searchAppFunctions} to get an initial snapshot of {@link
      *       AppFunctionMetadata}.
      *   <li>When the observer is triggered, use the change information within it to construct a new
@@ -646,7 +649,7 @@ public final class AppFunctionManager {
      * <strong>Note:</strong> If app functions are reported to have changed but are not returned
      * from {@link #searchAppFunctions}, it means that they have been removed.
      *
-     * @param searchSpec the spec of AppFunctions to observe for.
+     * @param packageNames the names of the packages to observe for changes.
      * @param executor the executor to run the {@link AppFunctionObserver} callbacks.
      * @param appFunctionObserver the observer to receive updates to registered app functions.
      * @return An {@link AppFunctionObservation} used to cancel this observation.
@@ -663,30 +666,28 @@ public final class AppFunctionManager {
     @UserHandleAware
     @NonNull
     public AppFunctionObservation observeAppFunctions(
-            @NonNull AppFunctionSearchSpec searchSpec,
+            @Nullable Set<String> packageNames,
             @NonNull @CallbackExecutor Executor executor,
             @NonNull AppFunctionObserver appFunctionObserver) {
-        Objects.requireNonNull(searchSpec);
         Objects.requireNonNull(executor);
         Objects.requireNonNull(appFunctionObserver);
 
         AppFunctionAidlSearchSpec aidlSearchSpec =
                 new AppFunctionAidlSearchSpec(
-                        mContext.getPackageName(), searchSpec, mContext.getUserId());
+                        mContext.getPackageName(),
+                        new AppFunctionSearchSpec.Builder()
+                                .setPackageNames(packageNames)
+                                .build(),
+                        mContext.getUserId());
 
         IObserveAppFunctionChangesCallback internalCallback =
                 new IObserveAppFunctionChangesCallback.Stub() {
                     @Override
-                    public void onAppFunctionsChanged(List<AppFunctionName> changedFunctionNames) {
+                    public void onPackagesChanged(List<String> packageNames) {
                         executor.execute(
                                 () ->
-                                        appFunctionObserver.onAppFunctionsChanged(
-                                                changedFunctionNames));
-                    }
-
-                    @Override
-                    public void onPackagesChanged(List<String> packageNames) {
-                        executor.execute(() -> appFunctionObserver.onPackagesChanged(packageNames));
+                                        appFunctionObserver.onAppFunctionMetadataChanged(
+                                                new ArraySet<>(packageNames)));
                     }
 
                     @Override
@@ -695,7 +696,7 @@ public final class AppFunctionManager {
                         executor.execute(
                                 () ->
                                         appFunctionObserver.onAppFunctionStatesChanged(
-                                                changedFunctionNames));
+                                                new ArraySet<>(changedFunctionNames)));
                     }
                 };
 

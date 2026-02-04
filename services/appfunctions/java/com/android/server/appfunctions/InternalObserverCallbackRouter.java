@@ -61,6 +61,11 @@ class InternalObserverCallbackRouter {
     }
 
     public void onDocumentChanged(@NonNull DocumentChangeInfo documentChangeInfo) {
+        // TODO: b/481659383 - Batch change notifications.
+        // 1. In case both functions and top-level documents change we will receive two
+        // notifications as AppSearch groups changes by schema, but we should only notify once.
+        // 2. For each package, we will receive at least one notification or two at most. We can
+        // batch these to provide a list of changed packages within a timeframe.
         Runnable runnable =
                 () -> {
                     if (isAppFunctionStaticMetadataSchema(documentChangeInfo.getSchemaName())) {
@@ -81,7 +86,7 @@ class InternalObserverCallbackRouter {
                         String changedPackageName =
                                 getPackageNameFromSchemaName(documentChangeInfo.getSchemaName());
                         if (changedPackageName != null) {
-                            onPackagesChanged(Set.of(changedPackageName));
+                            onPackageLevelChange(Set.of(changedPackageName));
                         }
                     }
                 };
@@ -102,7 +107,7 @@ class InternalObserverCallbackRouter {
                             changedPackageNames.add(changedPackageName);
                         }
                     }
-                    onPackagesChanged(changedPackageNames);
+                    onPackageLevelChange(changedPackageNames);
                 };
         try {
             var unused = mExecutor.submit(runnable);
@@ -127,7 +132,7 @@ class InternalObserverCallbackRouter {
         }
     }
 
-    private void onPackagesChanged(@NonNull Set<String> changedPackageNames) {
+    private void onPackageLevelChange(@NonNull Set<String> changedPackageNames) {
         Set<InternalCallbackWrapper> callbacksToNotify;
         synchronized (mInternalCallbacksLock) {
             // Make a copy before iterating over the callbacks to prevent deadlocks.
@@ -158,16 +163,16 @@ class InternalObserverCallbackRouter {
             callbacksToNotify = new ArraySet<>(mInternalCallbacks);
         }
         for (InternalCallbackWrapper internalCallbackWrapper : callbacksToNotify) {
-            Set<AppFunctionName> filteredNames = new ArraySet<>();
+            Set<String> filteredPackageNames = new ArraySet<>();
             for (AppFunctionName functionName : changedFunctionNames) {
                 if (internalCallbackWrapper.isObservedFunction(functionName)) {
-                    filteredNames.add(functionName);
+                    filteredPackageNames.add(functionName.getPackageName());
                 }
             }
-            if (!filteredNames.isEmpty()) {
+            if (!filteredPackageNames.isEmpty()) {
                 try {
-                    internalCallbackWrapper.mInternalCallback.onAppFunctionsChanged(
-                            new ArrayList<>(filteredNames));
+                    internalCallbackWrapper.mInternalCallback.onPackagesChanged(
+                            new ArrayList<>(filteredPackageNames));
                 } catch (RemoteException e) {
                     Slog.e(TAG, "Failed to execute callback#onAppFunctionsChanged.", e);
                 }
@@ -175,7 +180,7 @@ class InternalObserverCallbackRouter {
         }
     }
 
-     private void onAppFunctionStatesChanged(@NonNull Set<AppFunctionName> changedFunctionNames) {
+    private void onAppFunctionStatesChanged(@NonNull Set<AppFunctionName> changedFunctionNames) {
         Set<InternalCallbackWrapper> callbacksToNotify;
         synchronized (mInternalCallbacksLock) {
             // Make a copy before iterating over the callbacks to prevent deadlocks.
