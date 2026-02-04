@@ -180,6 +180,7 @@ import com.android.server.display.DisplayManagerService;
 import com.android.server.display.color.ColorDisplayService;
 import com.android.server.dreams.DreamManagerService;
 import com.android.server.emergency.EmergencyAffordanceService;
+import com.android.server.files.FilesService;
 import com.android.server.flags.FeatureFlagsService;
 import com.android.server.gpu.GpuService;
 import com.android.server.grammaticalinflection.GrammaticalInflectionService;
@@ -1941,6 +1942,16 @@ public final class SystemServer implements Dumpable {
                     reportWtf("starting StorageStatsService", e);
                 }
                 t.traceEnd();
+
+                if (android.app.privatecompute.flags.Flags.enablePccFrameworkSupport()) {
+                    t.traceBegin("StartFilesService");
+                    try {
+                        mSystemServiceManager.startService(FilesService.class);
+                    } catch (Throwable e) {
+                        reportWtf("starting FilesService", e);
+                    }
+                    t.traceEnd();
+                }
             }
         }
 
