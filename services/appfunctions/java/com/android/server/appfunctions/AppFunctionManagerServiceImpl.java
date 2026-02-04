@@ -106,6 +106,7 @@ import com.android.internal.content.PackageMonitor;
 import com.android.internal.infra.AndroidFuture;
 import com.android.internal.util.DumpUtils;
 import com.android.server.SystemService.TargetUser;
+import com.android.server.appfunctions.MultiUserDynamicAppFunctionRegistry.RegistrationScopeId;
 import com.android.server.appinteraction.AppInteractionService;
 import com.android.server.uri.UriGrantsManagerInternal;
 import com.android.server.wm.ActivityTaskManagerInternal;
@@ -975,25 +976,16 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         mCallerValidator.validateCallingPackage(packageName);
         // TODO(b/343261179): Remove this reference when the activity is destroyed to avoid leaking
         // the activity token.
-        ArrayList<MultiUserDynamicAppFunctionRegistry.ActivitySourceId> activityTokens =
-                new ArrayList<>(functionIdentifiers.size());
-        for (String functionIdentifier : functionIdentifiers) {
-            if (!mAppFunctionMetadataReader.isDynamicFunction(
-                    packageName, functionIdentifier, callingUserHandle)) {
-                throw new IllegalArgumentException(
-                        "Unable to register AppFunction "
-                                + functionIdentifier
-                                + ". Ensure this function is declared in the XML resource"
-                                + " referenced by the property within the <application> tag of your"
-                                + " AndroidManifest.xml.");
-            }
-            // TODO(b/478873466) : use scope type for the check
-            activityTokens.add(
-                    new MultiUserDynamicAppFunctionRegistry.ActivitySourceId(
-                            getAppFunctionActivityId(activityToken)));
-        }
+        List<RegistrationScopeId> scopeIds =
+                verifyDynamicRegistrationRequestsAndCollectScopeIds(
+                        packageName,
+                        functionIdentifiers,
+                        callingUserHandle,
+                        activityToken,
+                        /* operationName= */ "register");
+
         mDynamicAppFunctionRegistry.registerAppFunctions(
-                packageName, functionIdentifiers, executor, callingUserHandle, activityTokens);
+                packageName, functionIdentifiers, executor, callingUserHandle, scopeIds);
 
         onDynamicFunctionRegistrationChanged(callingUserHandle, packageName, functionIdentifiers);
     }
@@ -1006,26 +998,56 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             @Nullable IBinder activityToken) {
         UserHandle callingUserHandle = Binder.getCallingUserHandle();
         mCallerValidator.validateCallingPackage(packageName);
-        ArrayList<MultiUserDynamicAppFunctionRegistry.ActivitySourceId> activityTokens =
-                new ArrayList<>(functionIdentifiers.size());
+        List<RegistrationScopeId> activityTokens =
+                verifyDynamicRegistrationRequestsAndCollectScopeIds(
+                        packageName,
+                        functionIdentifiers,
+                        callingUserHandle,
+                        activityToken,
+                        /* operationName= */ "unregister");
+        mDynamicAppFunctionRegistry.unregisterAppFunctions(
+                packageName, functionIdentifiers, session, callingUserHandle, activityTokens);
+
+        onDynamicFunctionRegistrationChanged(callingUserHandle, packageName, functionIdentifiers);
+    }
+
+    private List<RegistrationScopeId> verifyDynamicRegistrationRequestsAndCollectScopeIds(
+            @NonNull String packageName,
+            @NonNull List<String> functionIdentifiers,
+            @NonNull UserHandle callingUserHandle,
+            @Nullable IBinder activityToken,
+            @NonNull String operationName) {
+        ArrayList<RegistrationScopeId> scopeIds = new ArrayList<>(functionIdentifiers.size());
+        RegistrationScopeId globalScopeId = new RegistrationScopeId(null);
+        RegistrationScopeId passedScopeId = (activityToken != null)
+                ? new RegistrationScopeId(getAppFunctionActivityId(activityToken))
+                : globalScopeId;
         for (String functionIdentifier : functionIdentifiers) {
             if (!mAppFunctionMetadataReader.isDynamicFunction(
                     packageName, functionIdentifier, callingUserHandle)) {
                 throw new IllegalArgumentException(
-                        "Unable to unregister AppFunction "
+                        "Unable to "
+                                + operationName
+                                + " AppFunction "
                                 + functionIdentifier
                                 + ". Ensure this function is declared in the XML resource"
                                 + " referenced by the property within the <application> tag of your"
                                 + " AndroidManifest.xml.");
             }
-            activityTokens.add(
-                    new MultiUserDynamicAppFunctionRegistry.ActivitySourceId(
-                            getAppFunctionActivityId(activityToken)));
+            if (mAppFunctionMetadataReader.isActivityScopedDynamicFunction(
+                    packageName, functionIdentifier, callingUserHandle)) {
+                if (activityToken == null) {
+                    throw new IllegalArgumentException(
+                            "Activity scoped function "
+                                    + functionIdentifier
+                                    + " must be registered within an activity context");
+                }
+                scopeIds.add(passedScopeId);
+            } else {
+                scopeIds.add(globalScopeId);
+            }
         }
-        mDynamicAppFunctionRegistry.unregisterAppFunctions(
-                packageName, functionIdentifiers, session, callingUserHandle, activityTokens);
-
-        onDynamicFunctionRegistrationChanged(callingUserHandle, packageName, functionIdentifiers);
+        return scopeIds;
     }
 
     @Nullable

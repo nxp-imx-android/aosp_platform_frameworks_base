@@ -55,7 +55,9 @@ class AppFunctionsMetadataCache {
                     .addFilterSchemas(AppFunctionStaticMetadataHelper.STATIC_SCHEMA_TYPE)
                     .addProjectionPaths(
                             AppFunctionStaticMetadataHelper.STATIC_SCHEMA_TYPE,
-                            List.of(new PropertyPath(AppFunctionMetadata.PROPERTY_SERVICE_NAME)))
+                            List.of(
+                                    new PropertyPath(AppFunctionMetadata.PROPERTY_SERVICE_NAME),
+                                    new PropertyPath(AppFunctionMetadata.PROPERTY_SCOPE)))
                     .setVerbatimSearchEnabled(true)
                     .build();
 
@@ -72,7 +74,8 @@ class AppFunctionsMetadataCache {
     private final Object mCrossUserLock = new Object();
 
     @GuardedBy("mCrossUserLock")
-    private final SparseArray<ArraySet<String>> mPerUserDynamicFunctionsCache = new SparseArray<>();
+    private final SparseArray<DynamicFunctionsCache> mPerUserDynamicFunctionsCache =
+            new SparseArray<>();
 
     /** Constructs a new {@link AppFunctionsMetadataCache}. */
     AppFunctionsMetadataCache(Context context) {
@@ -84,7 +87,7 @@ class AppFunctionsMetadataCache {
 
     void populateDataForUser(UserHandle user) {
         synchronized (mCrossUserLock) {
-            mPerUserDynamicFunctionsCache.put(user.getIdentifier(), new ArraySet<>());
+            mPerUserDynamicFunctionsCache.put(user.getIdentifier(), new DynamicFunctionsCache());
         }
         populateAllDynamicAppFunctions(user);
     }
@@ -101,8 +104,7 @@ class AppFunctionsMetadataCache {
      *
      * @param packageName The package name of the application containing the function.
      * @param functionIdentifier The unique identifier for the function within the package.
-     * @return {@link AppFunctionMetadata#FUNCTION_TYPE_STATIC} if the function requires the
-     *     AppFunctionService, or {@link AppFunctionMetadata#FUNCTION_TYPE_DYNAMIC} if it does not.
+     * @return true if the function is dynamic. false otherwise.
      */
     boolean isDynamicFunction(String packageName, String functionIdentifier, UserHandle user) {
         synchronized (mCrossUserLock) {
@@ -112,79 +114,87 @@ class AppFunctionsMetadataCache {
 
             return mPerUserDynamicFunctionsCache
                     .get(user.getIdentifier())
-                    .contains(
-                            AppFunctionStaticMetadataHelper.getDocumentIdForAppFunction(
-                                    packageName, functionIdentifier));
+                    .isDynamicFunction(packageName, functionIdentifier);
+        }
+    }
+
+    boolean isActivityScopedDynamicFunction(
+            String packageName, String functionIdentifier, UserHandle user) {
+        synchronized (mCrossUserLock) {
+            if (!mPerUserDynamicFunctionsCache.contains(user.getIdentifier())) {
+                throw new IllegalArgumentException("User is not unlocked");
+            }
+            return mPerUserDynamicFunctionsCache
+                    .get(user.getIdentifier())
+                    .isActivityScopedDynamicFunction(packageName, functionIdentifier);
         }
     }
 
     void populateAllDynamicAppFunctions(UserHandle user) {
-        var unused = mExecutor.submit(
-                () -> {
-                    Set<String> dynamicFunctions =
-                            searchForDynamicFunctions(user, /* idsToFilter= */ null);
-                    if (dynamicFunctions == null) {
-                        return;
-                    }
+        var unused =
+                mExecutor.submit(
+                        () -> {
+                            DynamicFunctionsSearchResult dynamicFunctions =
+                                    searchForDynamicFunctions(user, /* idsToFilter= */ null);
+                            if (dynamicFunctions == null) {
+                                return;
+                            }
 
-                    int userId = user.getIdentifier();
-                    synchronized (mCrossUserLock) {
-                        if (!mPerUserDynamicFunctionsCache.contains(userId)) {
-                            Slog.e(
-                                    TAG,
-                                    "Cache is not available for user "
-                                            + userId
-                                            + ". Ignoring update.");
-                            return;
-                        }
+                            int userId = user.getIdentifier();
+                            synchronized (mCrossUserLock) {
+                                if (!mPerUserDynamicFunctionsCache.contains(userId)) {
+                                    Slog.e(
+                                            TAG,
+                                            "Cache is not available for user "
+                                                    + userId
+                                                    + ". Ignoring update.");
+                                    return;
+                                }
 
-                        ArraySet<String> userCachedFunctions =
-                                mPerUserDynamicFunctionsCache.get(userId);
-                        userCachedFunctions.clear();
-                        userCachedFunctions.addAll(dynamicFunctions);
+                                mPerUserDynamicFunctionsCache.put(
+                                        userId,
+                                        new DynamicFunctionsCache(
+                                                dynamicFunctions.mGlobalScopeFunctions,
+                                                dynamicFunctions.mActivityScopeFunctions));
 
-                        maybeLogForDebug(
-                                "Cache after update for user " + userId,
-                                mPerUserDynamicFunctionsCache.get(userId));
-                    }
-                });
+                                maybeLogForDebug(
+                                        "Cache after update for user " + userId,
+                                        mPerUserDynamicFunctionsCache.get(userId));
+                            }
+                        });
     }
 
     void updateDynamicFunctions(UserHandle user, @NonNull Set<String> idsToFilter) {
-        var unused = mExecutor.submit(
-                () -> {
-                    Set<String> dynamicFunctions = searchForDynamicFunctions(user, idsToFilter);
-                    if (dynamicFunctions == null) {
-                        return;
-                    }
+        var unused =
+                mExecutor.submit(
+                        () -> {
+                            DynamicFunctionsSearchResult dynamicFunctions =
+                                    searchForDynamicFunctions(user, idsToFilter);
+                            if (dynamicFunctions == null) {
+                                return;
+                            }
 
-                    int userId = user.getIdentifier();
-                    synchronized (mCrossUserLock) {
-                        if (!mPerUserDynamicFunctionsCache.contains(userId)) {
-                            Slog.w(TAG, "Cache is not available for user " + userId);
-                            return;
-                        }
+                            int userId = user.getIdentifier();
+                            synchronized (mCrossUserLock) {
+                                if (!mPerUserDynamicFunctionsCache.contains(userId)) {
+                                    Slog.w(TAG, "Cache is not available for user " + userId);
+                                    return;
+                                }
 
-                        ArraySet<String> userCachedFunctions =
-                                mPerUserDynamicFunctionsCache.get(userId);
-                        // Add functions that are (or have become) dynamic.
-                        userCachedFunctions.addAll(dynamicFunctions);
+                                mPerUserDynamicFunctionsCache
+                                        .get(userId)
+                                        .updateCacheLocked(dynamicFunctions);
 
-                        // Remove functions that are no longer dynamic.
-                        Set<String> obsoleteFunctions = new ArraySet<>(idsToFilter);
-                        obsoleteFunctions.removeAll(dynamicFunctions);
-                        userCachedFunctions.removeAll(obsoleteFunctions);
-
-                        maybeLogForDebug(
-                                "Cache after update for user " + userId,
-                                mPerUserDynamicFunctionsCache.get(userId));
-                    }
-                });
+                                maybeLogForDebug(
+                                        "Cache after update for user " + userId,
+                                        mPerUserDynamicFunctionsCache.get(userId));
+                            }
+                        });
     }
 
     @Nullable
     @WorkerThread
-    private Set<String> searchForDynamicFunctions(
+    private DynamicFunctionsSearchResult searchForDynamicFunctions(
             UserHandle user, @Nullable Set<String> idsToFilter) {
         AppSearchManager appSearchManager =
                 mContext.createContextAsUser(user, /* flags= */ 0)
@@ -202,7 +212,8 @@ class AppFunctionsMetadataCache {
             searchFnSpec =
                     new SearchSpec.Builder(searchFnSpec).addFilterDocumentIds(idsToFilter).build();
         }
-        ArraySet<String> populatedFunctions = new ArraySet<>();
+        ArraySet<String> populatedGlobalFunctions = new ArraySet<>();
+        ArraySet<String> populatedActivityFunctions = new ArraySet<>();
         try (FutureAppSearchSession staticMetadataSearchSession =
                         new FutureAppSearchSessionImpl(
                                 appSearchManager, Runnable::run, staticMetadataSearchContext);
@@ -213,19 +224,106 @@ class AppFunctionsMetadataCache {
             List<SearchResult> searchResultsList = futureSearchResults.getNextPage().get();
             while (!searchResultsList.isEmpty()) {
                 for (SearchResult searchResult : searchResultsList) {
-                    populatedFunctions.add(searchResult.getGenericDocument().getId());
+                    String scopeType = searchResult
+                            .getGenericDocument()
+                            .getPropertyString(AppFunctionMetadata.PROPERTY_SCOPE);
+                    if (scopeType == null) {
+                        Log.w(TAG, "Scope type is not present for "
+                                + searchResult.getGenericDocument().getId());
+                    } else if (scopeType.equals(AppFunctionMetadata.PROPERTY_VALUE_SCOPE_GLOBAL)) {
+                        populatedGlobalFunctions.add(searchResult.getGenericDocument().getId());
+                    } else {
+                        populatedActivityFunctions.add(searchResult.getGenericDocument().getId());
+                    }
                 }
                 searchResultsList = futureSearchResults.getNextPage().get();
             }
         } catch (Exception ex) {
             Log.e(TAG, "Error while populating cache: " + ex.getMessage());
         }
-        return populatedFunctions;
+        return new DynamicFunctionsSearchResult(
+                populatedGlobalFunctions, populatedActivityFunctions, idsToFilter);
     }
 
-    private void maybeLogForDebug(String message, Iterable<String> ids) {
+    private static class DynamicFunctionsSearchResult {
+        @NonNull final ArraySet<String> mGlobalScopeFunctions;
+        @NonNull final ArraySet<String> mActivityScopeFunctions;
+
+        @Nullable final Set<String> mRequestedIds;
+
+        DynamicFunctionsSearchResult(
+                @NonNull ArraySet<String> globalScopeFunctions,
+                @NonNull ArraySet<String> activityScopeFunctions,
+                @Nullable Set<String> requestedIds) {
+            mGlobalScopeFunctions = globalScopeFunctions;
+            mActivityScopeFunctions = activityScopeFunctions;
+            mRequestedIds = requestedIds;
+        }
+
+        ArraySet<String> extractNonDynamicAppFunctions() {
+            if (mRequestedIds == null) {
+                return new ArraySet<>();
+            }
+            ArraySet<String> nonDynamicFunctions = new ArraySet<>(mRequestedIds);
+            nonDynamicFunctions.removeAll(mGlobalScopeFunctions);
+            nonDynamicFunctions.removeAll(mActivityScopeFunctions);
+            return nonDynamicFunctions;
+        }
+    }
+
+    private static class DynamicFunctionsCache {
+        @NonNull final ArraySet<String> mGlobalScopeFunctions;
+        @NonNull final ArraySet<String> mActivityScopeFunctions;
+
+        DynamicFunctionsCache() {
+            mGlobalScopeFunctions = new ArraySet<>();
+            mActivityScopeFunctions = new ArraySet<>();
+        }
+
+        DynamicFunctionsCache(
+                @NonNull Set<String> globalScopeFunctions,
+                @NonNull Set<String> activityScopeFunctions) {
+            mGlobalScopeFunctions = new ArraySet<>(globalScopeFunctions);
+            mActivityScopeFunctions = new ArraySet<>(activityScopeFunctions);
+        }
+
+        @GuardedBy("mCrossUserLock")
+        boolean isDynamicFunction(String packageName, String functionIdentifier) {
+            String documentId =
+                    AppFunctionStaticMetadataHelper.getDocumentIdForAppFunction(
+                            packageName, functionIdentifier);
+            return mGlobalScopeFunctions.contains(documentId)
+                    || mActivityScopeFunctions.contains(documentId);
+        }
+
+        @GuardedBy("mCrossUserLock")
+        boolean isActivityScopedDynamicFunction(String packageName, String functionIdentifier) {
+            String documentId =
+                    AppFunctionStaticMetadataHelper.getDocumentIdForAppFunction(
+                            packageName, functionIdentifier);
+            return mActivityScopeFunctions.contains(documentId);
+        }
+
+        @Override
+        public String toString() {
+            return TextUtils.formatSimple(
+                    "globalScopeFunctions: %s, activityScopeFunctions: %s",
+                    mGlobalScopeFunctions, mActivityScopeFunctions);
+        }
+
+        @GuardedBy("mCrossUserLock")
+        void updateCacheLocked(DynamicFunctionsSearchResult updates) {
+            mGlobalScopeFunctions.addAll(updates.mGlobalScopeFunctions);
+            mActivityScopeFunctions.addAll(updates.mActivityScopeFunctions);
+            ArraySet<String> nonDynamicFunctions = updates.extractNonDynamicAppFunctions();
+            mActivityScopeFunctions.removeAll(nonDynamicFunctions);
+            mGlobalScopeFunctions.removeAll(nonDynamicFunctions);
+        }
+    }
+
+    private void maybeLogForDebug(String message, DynamicFunctionsCache cache) {
         if (DEBUG) {
-            Log.d(TAG, TextUtils.formatSimple("%s: %s", message, String.join(", ", ids)));
+            Log.d(TAG, TextUtils.formatSimple("%s: %s", message, cache));
         }
     }
 }
