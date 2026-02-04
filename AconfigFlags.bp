@@ -75,6 +75,7 @@ aconfig_declarations_group {
         "android.provider.flags-aconfig-java",
         "android.sdk.flags-aconfig-java",
         "android.security.flags-aconfig-java",
+        "android.security.identity.flags-aconfig-java",
         "android.service.appprediction.flags-aconfig-java",
         "android.service.autofill.flags-aconfig-java",
         "android.service.chooser.flags-aconfig-java",
@@ -548,6 +549,21 @@ aconfig_declarations {
             "core/java/android/security/conscrypt_nsc_off.aconfig",
         ],
     }),
+}
+
+aconfig_declarations {
+    name: "android.security.identity.flags-aconfig",
+    package: "android.security.identity",
+    container: "system",
+    exportable: true,
+    srcs: ["identity/identity.aconfig"],
+}
+
+java_aconfig_library {
+    name: "android.security.identity.flags-aconfig-java",
+    aconfig_declarations: "android.security.identity.flags-aconfig",
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+    mode: "exported",
 }
 
 java_aconfig_library {
