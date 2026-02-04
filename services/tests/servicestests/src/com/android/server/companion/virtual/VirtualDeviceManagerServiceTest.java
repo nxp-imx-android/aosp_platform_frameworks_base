@@ -454,16 +454,6 @@ public class VirtualDeviceManagerServiceTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_HANDLE_INVALID_DEVICE_ID)
-    public void getDevicePolicy_invalidDeviceId_returnsDefault() {
-        assertThat(mVdm.getDevicePolicy(DEVICE_ID_INVALID, POLICY_TYPE_SENSORS))
-                .isEqualTo(DEVICE_POLICY_DEFAULT);
-        assertThat(mVdmNative.getDevicePolicy(DEVICE_ID_INVALID, POLICY_TYPE_SENSORS))
-                .isEqualTo(DEVICE_POLICY_DEFAULT);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_HANDLE_INVALID_DEVICE_ID)
     public void getDevicePolicy_invalidDeviceId_returnsInvalid() {
         assertThat(mVdm.getDevicePolicy(DEVICE_ID_INVALID, POLICY_TYPE_SENSORS))
                 .isEqualTo(DEVICE_POLICY_INVALID);
@@ -480,16 +470,6 @@ public class VirtualDeviceManagerServiceTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_HANDLE_INVALID_DEVICE_ID)
-    public void getDevicePolicy_nonExistentDeviceId_returnsDefault() {
-        assertThat(mVdm.getDevicePolicy(mDeviceImpl.getDeviceId() + 1, POLICY_TYPE_SENSORS))
-                .isEqualTo(DEVICE_POLICY_DEFAULT);
-        assertThat(mVdmNative.getDevicePolicy(mDeviceImpl.getDeviceId() + 1, POLICY_TYPE_SENSORS))
-                .isEqualTo(DEVICE_POLICY_DEFAULT);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_HANDLE_INVALID_DEVICE_ID)
     public void getDevicePolicy_nonExistentDeviceId_returnsInvalid() {
         assertThat(mVdm.getDevicePolicy(mDeviceImpl.getDeviceId() + 1, POLICY_TYPE_SENSORS))
                 .isEqualTo(DEVICE_POLICY_INVALID);
