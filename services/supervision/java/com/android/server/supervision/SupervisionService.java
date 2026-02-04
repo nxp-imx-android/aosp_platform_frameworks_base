@@ -34,6 +34,7 @@ import static com.android.internal.util.Preconditions.checkCallAuthorization;
 import android.annotation.CallbackExecutor;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.RequiresPermission;
 import android.annotation.SuppressLint;
 import android.annotation.UserIdInt;
 import android.app.KeyguardManager;
@@ -309,11 +310,17 @@ public class SupervisionService extends ISupervisionManager.Stub {
     }
 
     @Override
+    @RequiresPermission(MANAGE_ROLE_HOLDERS)
     public boolean shouldAllowBypassingSupervisionRoleQualification() {
         enforcePermission(MANAGE_ROLE_HOLDERS);
         if (!Flags.enableSupervisionManagerPolicyApis()) {
             return shouldAllowBypassingSupervisionRoleQualificationBasedOnState();
         }
+
+        if (hasNonTestDefaultUsers()) {
+            return false;
+        }
+
         synchronized (getLockObject()) {
             return mAllowBypassingSupervisionRoleQualification;
         }
@@ -334,6 +341,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
     }
 
     @Override
+    @RequiresPermission(BYPASS_ROLE_QUALIFICATION)
     public void setShouldAllowBypassingSupervisionRoleQualification(boolean allowBypassing) {
         enforcePermission(BYPASS_ROLE_QUALIFICATION);
         synchronized (getLockObject()) {
