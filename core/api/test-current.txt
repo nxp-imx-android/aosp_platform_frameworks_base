@@ -2203,6 +2203,7 @@ package android.media {
   public final class AudioDeviceInfo {
     method public static void enforceValidAudioDeviceTypeIn(int);
     method public static void enforceValidAudioDeviceTypeOut(int);
+    method @FlaggedApi("android.media.audio.ambisonics_support_api") @NonNull public int[] getChannelAcnMasks();
   }
 
   public class AudioDeviceVolumeManager {
