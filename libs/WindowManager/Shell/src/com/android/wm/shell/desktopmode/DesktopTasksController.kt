@@ -3731,8 +3731,7 @@ class DesktopTasksController(
         }
         val shouldRemoveDesk =
             forceRemoveDesk ||
-                (DesktopExperienceFlags.ENABLE_REMOVE_DESK_ON_LAST_TASK_REMOVAL.isTrue &&
-                    removingLastTaskId != null &&
+                (removingLastTaskId != null &&
                     !rootTaskDisplayAreaOrganizer.isDisplayDesktopFirst(displayId))
         return if (shouldRemoveDesk) {
             addDeskRemovalChanges(
@@ -5837,12 +5836,8 @@ class DesktopTasksController(
         val repository = userRepositories.getProfile(userId)
         val tasksToRemove =
             if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-                val activeTaskIdsInDesk = repository.getActiveTaskIdsInDesk(deskId)
-                if (DesktopExperienceFlags.ENABLE_REMOVE_DESK_ON_LAST_TASK_REMOVAL.isTrue) {
-                    activeTaskIdsInDesk.filterNot { taskId -> taskId == excludingTaskId }.toSet()
-                } else {
-                    activeTaskIdsInDesk
-                }
+                repository.getActiveTaskIdsInDesk(deskId)
+                    .filterNot { taskId -> taskId == excludingTaskId }.toSet()
             } else {
                 repository.removeDesk(deskId)
             }
