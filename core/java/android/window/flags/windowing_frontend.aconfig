@@ -315,12 +315,6 @@ flag {
     bug: "402454136"
 }
 
-flag {
-    name: "enable_multidisplay_trackpad_back_gesture"
-    namespace: "lse_desktop_experience"
-    description: "Adds support for trackpad back gestures on connected displays"
-    bug: "382774299"
-}
 
 flag {
     name: "transition_handler_cuj_tags"

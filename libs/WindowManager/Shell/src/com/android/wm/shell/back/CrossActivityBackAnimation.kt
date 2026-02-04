@@ -30,7 +30,6 @@ import android.os.Handler
 import android.os.RemoteException
 import android.util.TimeUtils
 import android.view.Choreographer
-import android.view.Display
 import android.view.IRemoteAnimationFinishedCallback
 import android.view.IRemoteAnimationRunner
 import android.view.RemoteAnimationTarget
@@ -44,7 +43,6 @@ import android.window.BackEvent.EDGE_RIGHT
 import android.window.BackMotionEvent
 import android.window.BackNavigationInfo
 import android.window.BackProgressAnimator
-import android.window.DesktopExperienceFlags
 import android.window.IOnBackInvokedCallback
 import com.android.graphics.surfaceflinger.flags.Flags.setClientDrawnCornerRadii
 import com.android.internal.dynamicanimation.animation.FloatValueHolder
@@ -208,19 +206,21 @@ abstract class CrossActivityBackAnimation(
 
         if (fixCrossActivityBackAnimationInBubbles()) {
             // Use a custom corner radius when we're inside a Bubble or a freeform task.
-            cornerRadius = when {
-                bubbleController.isPresent && bubbleController.get()
-                    .hasStableBubbleForTask(closingTarget!!.taskId) -> {
-                    bubbleController.get().getBubbleCornerRadius(closingTarget!!.taskId)
+            cornerRadius =
+                when {
+                    bubbleController.isPresent &&
+                        bubbleController.get().hasStableBubbleForTask(closingTarget!!.taskId) ->
+                        bubbleController.get().getBubbleCornerRadius(closingTarget!!.taskId)
+                    closingTarget!!.taskInfo.isFreeform ->
+                        context.resources
+                            .getDimensionPixelSize(
+                                com.android.wm.shell.shared.R.dimen
+                                    .desktop_windowing_freeform_rounded_corner_radius
+                            )
+                            .toFloat()
+                    else ->
+                        ScreenDecorationsUtils.getWindowCornerRadius(context)
                 }
-                closingTarget!!.taskInfo.isFreeform -> {
-                    context.resources.getDimensionPixelSize(com.android.wm.shell.shared.R.dimen
-                        .desktop_windowing_freeform_rounded_corner_radius).toFloat()
-                }
-                else -> {
-                    ScreenDecorationsUtils.getWindowCornerRadius(context)
-                }
-            }
         }
 
         preparePreCommitClosingRectMovement(backMotionEvent.swipeEdge)
@@ -288,7 +288,8 @@ abstract class CrossActivityBackAnimation(
         if (fixCrossActivityBackAnimationInBubbles()) {
             if (screenSpaceBounds.top <= statusbarHeight / 2) {
                 background.customizeStatusBarAppearance(
-                    (currentClosingRect.top + screenSpaceBounds.top).toInt())
+                    (currentClosingRect.top + screenSpaceBounds.top).toInt()
+                )
             }
         } else {
             background.customizeStatusBarAppearance(currentClosingRect.top.toInt())
@@ -450,14 +451,10 @@ abstract class CrossActivityBackAnimation(
                 .setOpaque(false)
                 .setHidden(false)
 
-        if (DesktopExperienceFlags.ENABLE_MULTIDISPLAY_TRACKPAD_BACK_GESTURE.isTrue()) {
-            rootTaskDisplayAreaOrganizer.attachToDisplayArea(
-                closingTarget!!.taskInfo.getDisplayId(),
-                scrimBuilder,
-            )
-        } else {
-            rootTaskDisplayAreaOrganizer.attachToDisplayArea(Display.DEFAULT_DISPLAY, scrimBuilder)
-        }
+        rootTaskDisplayAreaOrganizer.attachToDisplayArea(
+            closingTarget!!.taskInfo.getDisplayId(),
+            scrimBuilder,
+        )
         scrimLayer = scrimBuilder.build()
         val colorComponents = floatArrayOf(0f, 0f, 0f)
         maxScrimAlpha = if (isDarkTheme) MAX_SCRIM_ALPHA_DARK else MAX_SCRIM_ALPHA_LIGHT
@@ -478,7 +475,7 @@ abstract class CrossActivityBackAnimation(
 
     /**
      * @return A [FloatArray] containing the radii in the order: Top-Left, Top-Right, Bottom-Right,
-     * Bottom-Left.
+     *   Bottom-Left.
      */
     private fun getTaskAlignedCornerRadii(): FloatArray {
         val taskBounds = closingTarget!!.taskInfo.configuration.windowConfiguration.bounds
@@ -550,17 +547,10 @@ abstract class CrossActivityBackAnimation(
                 .setOpaque(true)
                 .setHidden(false)
 
-        if (DesktopExperienceFlags.ENABLE_MULTIDISPLAY_TRACKPAD_BACK_GESTURE.isTrue()) {
-            rootTaskDisplayAreaOrganizer.attachToDisplayArea(
-                closingTarget!!.taskInfo.getDisplayId(),
-                letterboxBuilder,
-            )
-        } else {
-            rootTaskDisplayAreaOrganizer.attachToDisplayArea(
-                Display.DEFAULT_DISPLAY,
-                letterboxBuilder,
-            )
-        }
+        rootTaskDisplayAreaOrganizer.attachToDisplayArea(
+            closingTarget!!.taskInfo.getDisplayId(),
+            letterboxBuilder,
+        )
         val layer = letterboxBuilder.build()
         val colorComponents =
             floatArrayOf(
