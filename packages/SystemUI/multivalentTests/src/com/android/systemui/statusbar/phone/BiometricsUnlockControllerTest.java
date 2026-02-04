@@ -36,6 +36,8 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import static java.util.Collections.emptySet;
+
 import android.hardware.biometrics.BiometricSourceType;
 import android.hardware.fingerprint.FingerprintManager;
 import android.os.Handler;
@@ -68,6 +70,10 @@ import com.android.systemui.kosmos.KosmosJavaAdapter;
 import com.android.systemui.log.SessionTracker;
 import com.android.systemui.media.NotificationMediaManager;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
+import com.android.systemui.scene.domain.interactor.SceneInteractor;
+import com.android.systemui.scene.shared.flag.SceneContainerFlag;
+import com.android.systemui.scene.shared.model.Overlays;
+import com.android.systemui.scene.shared.model.Scenes;
 import com.android.systemui.securelockdevice.data.repository.FakeSecureLockDeviceRepository;
 import com.android.systemui.securelockdevice.domain.interactor.SecureLockDeviceInteractor;
 import com.android.systemui.statusbar.NotificationShadeWindowController;
@@ -83,6 +89,8 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
+import java.util.Set;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
@@ -143,6 +151,8 @@ public class BiometricsUnlockControllerTest extends SysuiTestCase {
     private BiometricUnlockInteractor mBiometricUnlockInteractor;
     @Mock
     private KeyguardTransitionInteractor mKeyguardTransitionInteractor;
+    @Mock
+    private SceneInteractor mSceneInteractor;
     private final KosmosJavaAdapter mKosmos = new KosmosJavaAdapter(this);
     private final SecureLockDeviceInteractor mSecureLockDeviceInteractor =
             mKosmos.getSecureLockDeviceInteractor();
@@ -154,6 +164,10 @@ public class BiometricsUnlockControllerTest extends SysuiTestCase {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        when(mSceneInteractor.getTransitionState()).thenReturn(
+                new com.android.compose.animation.scene.content.state.TransitionState.Idle(
+                        Scenes.Lockscreen, emptySet())
+        );
         when(mKeyguardStateController.isShowing()).thenReturn(true);
         when(mUpdateMonitor.isDeviceInteractive()).thenReturn(true);
         when(mKeyguardStateController.isFaceEnrolledAndEnabled()).thenReturn(true);
@@ -185,7 +199,8 @@ public class BiometricsUnlockControllerTest extends SysuiTestCase {
                 mBiometricUnlockInteractor,
                 mock(JavaAdapter.class),
                 mKeyguardTransitionInteractor,
-                () -> mSecureLockDeviceInteractor
+                () -> mSecureLockDeviceInteractor,
+                () -> mSceneInteractor
         );
         biometricUnlockController.setKeyguardViewController(mStatusBarKeyguardViewManager);
         biometricUnlockController.addListener(mBiometricUnlockEventsListener);
@@ -273,7 +288,7 @@ public class BiometricsUnlockControllerTest extends SysuiTestCase {
     @Test
     public void onBiometricAuthenticated_whenFingerprintOnBouncer_dismissBouncer() {
         when(mUpdateMonitor.isUnlockingWithBiometricAllowed(anyBoolean())).thenReturn(true);
-        when(mStatusBarKeyguardViewManager.primaryBouncerIsOrWillBeShowing()).thenReturn(true);
+        setPrimaryBouncerShowing(true);
         // the value of isStrongBiometric doesn't matter here since we only care about the returned
         // value of isUnlockingWithBiometricAllowed()
         mBiometricUnlockController.onBiometricAuthenticated(UserHandle.USER_CURRENT,
@@ -370,7 +385,7 @@ public class BiometricsUnlockControllerTest extends SysuiTestCase {
         when(mUpdateMonitor.isDeviceInteractive()).thenReturn(true);
         when(mUpdateMonitor.isDreaming()).thenReturn(true);
         when(mUpdateMonitor.isUnlockingWithBiometricAllowed(anyBoolean())).thenReturn(true);
-        when(mStatusBarKeyguardViewManager.primaryBouncerIsOrWillBeShowing()).thenReturn(true);
+        setPrimaryBouncerShowing(true);
         // the value of isStrongBiometric doesn't matter here since we only care about the returned
         // value of isUnlockingWithBiometricAllowed()
         mBiometricUnlockController.onBiometricAuthenticated(UserHandle.USER_CURRENT,
@@ -417,7 +432,7 @@ public class BiometricsUnlockControllerTest extends SysuiTestCase {
     @Test
     public void onBiometricAuthenticated_whenFaceOnBouncer_dismissBouncer() {
         when(mUpdateMonitor.isUnlockingWithBiometricAllowed(anyBoolean())).thenReturn(true);
-        when(mStatusBarKeyguardViewManager.primaryBouncerIsOrWillBeShowing()).thenReturn(true);
+        setPrimaryBouncerShowing(true);
         // the value of isStrongBiometric doesn't matter here since we only care about the returned
         // value of isUnlockingWithBiometricAllowed()
         mBiometricUnlockController.onBiometricAuthenticated(UserHandle.USER_CURRENT,
@@ -433,7 +448,7 @@ public class BiometricsUnlockControllerTest extends SysuiTestCase {
     @Test
     public void onBiometricAuthenticated_whenFaceOnAlternateBouncer_dismissBouncer() {
         when(mUpdateMonitor.isUnlockingWithBiometricAllowed(anyBoolean())).thenReturn(true);
-        when(mStatusBarKeyguardViewManager.primaryBouncerIsOrWillBeShowing()).thenReturn(false);
+        setPrimaryBouncerShowing(false);
         when(mKeyguardTransitionInteractor.getCurrentState())
                 .thenReturn(KeyguardState.ALTERNATE_BOUNCER);
         // the value of isStrongBiometric doesn't matter here since we only care about the returned
@@ -451,7 +466,7 @@ public class BiometricsUnlockControllerTest extends SysuiTestCase {
     @Test
     public void onBiometricAuthenticated_whenFaceOnTransitionToAlternateBouncer_dismissBouncer() {
         when(mUpdateMonitor.isUnlockingWithBiometricAllowed(anyBoolean())).thenReturn(true);
-        when(mStatusBarKeyguardViewManager.primaryBouncerIsOrWillBeShowing()).thenReturn(false);
+        setPrimaryBouncerShowing(false);
         when(mKeyguardTransitionInteractor.getStartedState())
                 .thenReturn(KeyguardState.ALTERNATE_BOUNCER);
         // the value of isStrongBiometric doesn't matter here since we only care about the returned
@@ -473,7 +488,7 @@ public class BiometricsUnlockControllerTest extends SysuiTestCase {
         when(mKeyguardBypassController.getBypassEnabled()).thenReturn(true);
         when(mKeyguardBypassController.onBiometricAuthenticated(any(), anyBoolean()))
                 .thenReturn(true);
-        when(mStatusBarKeyguardViewManager.primaryBouncerIsOrWillBeShowing()).thenReturn(true);
+        setPrimaryBouncerShowing(true);
         // the value of isStrongBiometric doesn't matter here since we only care about the returned
         // value of isUnlockingWithBiometricAllowed()
         mBiometricUnlockController.onBiometricAuthenticated(UserHandle.USER_CURRENT,
@@ -676,5 +691,29 @@ public class BiometricsUnlockControllerTest extends SysuiTestCase {
         verify(mKeyguardViewMediator).onWakeAndUnlocking(true);
         // Ensure that the power hasn't been told to wake up yet.
         verify(mPowerManager, never()).wakeUp(anyLong(), anyInt(), anyString());
+    }
+
+    private void setPrimaryBouncerShowing(boolean isShowing) {
+        if (SceneContainerFlag.isEnabled()) {
+            if (isShowing) {
+                when(mSceneInteractor.getTransitionState()).thenReturn(
+                        new com.android.compose.animation.scene.content.state.TransitionState.Idle(
+                                Scenes.Lockscreen, Set.of(Overlays.Bouncer))
+                );
+            } else {
+                when(mSceneInteractor.getTransitionState()).thenReturn(
+                        new com.android.compose.animation.scene.content.state.TransitionState.Idle(
+                                Scenes.Lockscreen, emptySet())
+                );
+            }
+        } else {
+            if (isShowing) {
+                when(mKeyguardTransitionInteractor.getCurrentState())
+                        .thenReturn(KeyguardState.PRIMARY_BOUNCER);
+            } else {
+                when(mKeyguardTransitionInteractor.getCurrentState())
+                        .thenReturn(KeyguardState.LOCKSCREEN);
+            }
+        }
     }
 }
