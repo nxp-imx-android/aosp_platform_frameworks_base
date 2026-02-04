@@ -18,6 +18,7 @@ package com.android.systemui.bundle.phone;
 
 import com.android.systemui.brightness.BrightnessModule;
 import com.android.systemui.notifications.intelligence.rules.NotificationRulesModule;
+import com.android.systemui.notifications.intelligence.rules.ui.NotificationRulesUiModule;
 
 import dagger.Module;
 
@@ -27,6 +28,7 @@ import dagger.Module;
 @Module(includes = {
         BrightnessModule.class,
         NotificationRulesModule.class,
+        NotificationRulesUiModule.class,
 })
 public interface PodModulePhone {
     // Leave this empty

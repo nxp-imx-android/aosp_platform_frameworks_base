@@ -138,6 +138,7 @@ filegroup {
         "testFixtures/**/*.java",
         "testFixtures/**/*.kt",
         ":com.android.systemui.brightness_fixtureFiles",
+        ":com.android.systemui.notifications.intelligence.rules.ui_fixtureFiles",
     ],
 
     visibility: ["//frameworks/base/packages/SystemUI/tests:__pkg__"],

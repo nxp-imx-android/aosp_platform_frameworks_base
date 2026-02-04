@@ -25,6 +25,7 @@ java_library {
     ],
     libs: [
         "androidx.compose.foundation_foundation",
+        "com.android.systemui.lifecycle_api",
         "com.android.systemui.notifications.intelligence.rules_api",
     ],
 }
@@ -55,4 +56,9 @@ java_library {
     static_libs: [
         "com.android.systemui.notifications.intelligence.rules.ui_main",
     ],
+}
+
+filegroup {
+    name: "com.android.systemui.notifications.intelligence.rules.ui_fixtureFiles",
+    defaults: ["sysui_fixtureFiles"],
 }

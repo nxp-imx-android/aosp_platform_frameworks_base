@@ -48,6 +48,8 @@ import com.android.systemui.keyguard.ui.composable.elements.LockscreenElements
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.media.remedia.ui.compose.Media
 import com.android.systemui.media.remedia.ui.compose.MediaPresentationStyle
+import com.android.systemui.notifications.intelligence.rules.shared.NmContextualDisplayLaunch
+import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRulesShadeStateViewModel
 import com.android.systemui.notifications.ui.viewmodel.NotificationsShadeOverlayActionsViewModel
 import com.android.systemui.notifications.ui.viewmodel.NotificationsShadeOverlayContentViewModel
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
@@ -70,6 +72,8 @@ class NotificationsShadeOverlay
 constructor(
     private val actionsViewModelFactory: NotificationsShadeOverlayActionsViewModel.Factory,
     private val contentViewModelFactory: NotificationsShadeOverlayContentViewModel.Factory,
+    private val notificationRulesShadeStateViewModelFactory:
+        NotificationRulesShadeStateViewModel.Factory,
     private val lockscreenElements: LockscreenElements,
     private val shadeSession: SaveableSession,
     private val stackScrollView: Lazy<NotificationScrollView>,
@@ -102,6 +106,14 @@ constructor(
                 viewModel.notificationsPlaceholderViewModelFactory.create(
                     Overlays.NotificationsShade
                 )
+            }
+        val notificationRulesShadeStateViewModel =
+            if (NmContextualDisplayLaunch.isEnabled) {
+                rememberViewModel("NotificationsShadeOverlay-notifRulesShateStateViewModel") {
+                    notificationRulesShadeStateViewModelFactory.create()
+                }
+            } else {
+                null
             }
 
         DisposableEffectWithLifecycle(Unit) {
@@ -193,6 +205,7 @@ constructor(
                     shadeSession = shadeSession,
                     stackScrollView = stackScrollView,
                     viewModel = placeholderViewModel,
+                    notificationRulesShadeStateViewModel = notificationRulesShadeStateViewModel,
                     jankMonitor = jankMonitor,
                     shouldPunchHoleBehindScrim = false,
                     isTransparencyEnabled = viewModel.isTransparencyEnabled,
