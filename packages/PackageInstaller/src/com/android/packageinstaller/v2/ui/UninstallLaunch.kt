@@ -90,7 +90,7 @@ class UninstallLaunch : FragmentActivity(), UninstallActionListener {
         if (savedInstanceState != null) {
             savedIntent = savedInstanceState.getParcelable(ARGS_SAVED_INTENT, Intent::class.java)
         }
-        if (!intent.filterEquals(savedIntent)) {
+        if (!uninstallViewModel!!.isPreprocessed || !intent.filterEquals(savedIntent)) {
             uninstallViewModel!!.preprocessIntent(intent, callerInfo)
         }
 

@@ -101,7 +101,7 @@ class InstallLaunch : FragmentActivity(), InstallActionListener {
         if (savedInstanceState != null) {
             savedIntent = savedInstanceState.getParcelable(ARGS_SAVED_INTENT, Intent::class.java)
         }
-        if (!intent.filterEquals(savedIntent)) {
+        if (!installViewModel!!.isPreprocessed || !intent.filterEquals(savedIntent)) {
             installViewModel!!.preprocessIntent(intent, info)
         }
 

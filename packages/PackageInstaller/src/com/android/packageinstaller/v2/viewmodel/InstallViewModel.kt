@@ -38,6 +38,9 @@ class InstallViewModel(application: Application, val repository: InstallReposito
     val currentInstallStage: MutableLiveData<InstallStage>
         get() = _currentInstallStage
 
+    var isPreprocessed: Boolean = false
+        private set
+
     init {
         // Since installing is an async operation, we may get the install result later in time.
         // Result of the installation will be set in InstallRepository#installResult.
@@ -66,6 +69,7 @@ class InstallViewModel(application: Application, val repository: InstallReposito
     }
 
     fun preprocessIntent(intent: Intent, callerInfo: InstallRepository.CallerInfo) {
+        isPreprocessed = true
         val stage = repository.performPreInstallChecks(intent, callerInfo)
         if (stage.stageCode == InstallStage.STAGE_ABORTED
             || stage.stageCode == InstallStage.STAGE_VERIFICATION_FAILURE) {
