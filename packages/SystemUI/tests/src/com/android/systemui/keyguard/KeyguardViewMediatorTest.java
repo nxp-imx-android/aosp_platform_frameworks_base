@@ -1135,6 +1135,8 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
         int currentUserId = 99;
         int userSpecificTimeout = 5999;
 
+        when(mLockPatternUtils.isSecure(99)).thenReturn(true);
+
         when(mSelectedUserInteractor.getSelectedUserId()).thenReturn(currentUserId);
         when(mKeyguardStateController.isKeyguardGoingAway()).thenReturn(false);
         when(mDevicePolicyManager.getMaximumTimeToLock(null, currentUserId)).thenReturn(0L);
