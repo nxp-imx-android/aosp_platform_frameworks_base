@@ -44,10 +44,7 @@ fun ShortcutEditorDialogContent(
         AlertDialogContent(
             title = {
                 Text(
-                    stringResource(
-                        R.string.accessibility_shortcutchooser_editor_dialog_title,
-                        stringResource(ShortcutUtils.typeToString(shortcutType)),
-                    ),
+                    getDialogTitleString(shortcutType),
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Start,
                 )
@@ -69,3 +66,15 @@ fun ShortcutEditorDialogContent(
         )
     }
 }
+
+@Composable
+private fun getDialogTitleString(@UserShortcutType shortcutType: Int): String =
+    when (shortcutType) {
+        UserShortcutType.TOP_ROW_KEY ->
+            stringResource(R.string.accessibility_shortcutchooser_toprow_editor_dialog_title)
+        else ->
+            stringResource(
+                R.string.accessibility_shortcutchooser_editor_dialog_title,
+                stringResource(ShortcutUtils.typeToString(shortcutType)),
+            )
+    }
