@@ -77,14 +77,18 @@ public class PackageManagerServiceTest {
     private static final String TEST_PKG_NAME = "com.android.servicestests.apps.stubapp";
 
     private IPackageManager mIPackageManager;
+    private UiAutomation mUiAutomation;
 
     @Before
     public void setUp() throws Exception {
         mIPackageManager = AppGlobals.getPackageManager();
+        mUiAutomation = androidx.test.platform.app.InstrumentationRegistry
+                .getInstrumentation().getUiAutomation();
     }
 
     @After
     public void tearDown() throws Exception {
+        mUiAutomation.dropShellPermissionIdentity();
     }
 
     @Test
@@ -640,28 +644,43 @@ public class PackageManagerServiceTest {
 
     @Test
     public void testGetVirtualGamepadUserOption_withPermission_succeeds() throws Exception {
-        final UiAutomation automation = androidx.test.platform.app.InstrumentationRegistry
-                .getInstrumentation().getUiAutomation();
-
         final File testApk = new File(TEST_DATA_PATH, TEST_APP_APK);
         runShellCommand("pm install " + testApk);
+        mUiAutomation.adoptShellPermissionIdentity(INJECT_EVENTS);
 
-        automation.adoptShellPermissionIdentity(INJECT_EVENTS);
         mIPackageManager.getVirtualGamepadUserOption(TEST_PKG_NAME, UserHandle.myUserId());
-        automation.dropShellPermissionIdentity();
 
         runShellCommand("pm uninstall " + TEST_PKG_NAME);
     }
 
     @Test
     public void testSetVirtualGamepadUserOption_withPermission_succeeds() throws Exception {
-        final UiAutomation automation = androidx.test.platform.app.InstrumentationRegistry
-                .getInstrumentation().getUiAutomation();
+        final File testApk = new File(TEST_DATA_PATH, TEST_APP_APK);
+        mUiAutomation.adoptShellPermissionIdentity(INJECT_EVENTS);
+        runShellCommand("pm install " + testApk);
 
-        automation.adoptShellPermissionIdentity(INJECT_EVENTS);
-        mIPackageManager.setVirtualGamepadUserOption(PACKAGE_NAME, UserHandle.myUserId(),
-                PackageManager.VIRTUAL_GAMEPAD_USER_OPTION_UNSET);
-        automation.dropShellPermissionIdentity();
+        try {
+            // Initial value is unset
+            assertEquals(PackageManager.VIRTUAL_GAMEPAD_USER_OPTION_UNSET,
+                    mIPackageManager.getVirtualGamepadUserOption(TEST_PKG_NAME,
+                            UserHandle.myUserId()));
+
+            // Update to opt out
+            mIPackageManager.setVirtualGamepadUserOption(TEST_PKG_NAME, UserHandle.myUserId(),
+                    PackageManager.VIRTUAL_GAMEPAD_USER_OPTION_OPT_OUT);
+            assertEquals(PackageManager.VIRTUAL_GAMEPAD_USER_OPTION_OPT_OUT,
+                    mIPackageManager.getVirtualGamepadUserOption(TEST_PKG_NAME,
+                            UserHandle.myUserId()));
+
+            // Update to unset
+            mIPackageManager.setVirtualGamepadUserOption(TEST_PKG_NAME, UserHandle.myUserId(),
+                    PackageManager.VIRTUAL_GAMEPAD_USER_OPTION_UNSET);
+            assertEquals(PackageManager.VIRTUAL_GAMEPAD_USER_OPTION_UNSET,
+                    mIPackageManager.getVirtualGamepadUserOption(TEST_PKG_NAME,
+                            UserHandle.myUserId()));
+        } finally {
+            runShellCommand("pm uninstall " + TEST_PKG_NAME);
+        }
     }
 
     @Test
