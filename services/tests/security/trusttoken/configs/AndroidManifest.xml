@@ -16,7 +16,7 @@
   -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.android.server.security.talisman">
+          package="com.android.server.security.trusttoken">
     <application android:debuggable="true">
         <service
             android:name=".MockTrustTokenService"
@@ -27,7 +27,7 @@
         </service>
     </application>
     <instrumentation android:name="androidx.test.runner.AndroidJUnitRunner"
-         android:targetPackage="com.android.server.security.talisman"
+         android:targetPackage="com.android.server.security.trusttoken"
          android:label="TrustToken Tests"/>
     <uses-permission android:name="android.permission.ACQUIRE_VERIFIED_DEVICE_TOKEN"/>
     <uses-permission android:name="android.permission.SIGN_WITH_TRUST_TOKEN"/>

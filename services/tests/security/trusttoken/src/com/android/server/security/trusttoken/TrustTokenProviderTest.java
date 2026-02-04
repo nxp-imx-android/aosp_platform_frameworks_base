@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.server.security.talisman;
+package com.android.server.security.trusttoken;
 
 import static com.google.common.truth.Truth.assertThat;
 
