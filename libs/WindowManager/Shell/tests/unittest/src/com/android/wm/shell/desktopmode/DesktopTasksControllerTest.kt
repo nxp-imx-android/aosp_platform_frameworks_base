@@ -3071,10 +3071,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_REMOVE_DESK_ON_LAST_TASK_REMOVAL,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun moveToFullscreen_fromDesk_touchFirst_lastTaskInDesk_removesDesk() {
         val task = setUpFreeformTask()
         rootTaskDisplayAreaOrganizer.setTouchFirst(DEFAULT_DISPLAY)
@@ -3112,40 +3109,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             )
         assertThat(wct.changes[task.token.asBinder()]?.windowingMode)
             .isEqualTo(WINDOWING_MODE_UNDEFINED)
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER)
-    @DisableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        com.android.launcher3.Flags.FLAG_ENABLE_ALT_TAB_KQS_FLATENNING,
-        Flags.FLAG_REMOVE_DESK_ON_LAST_TASK_REMOVAL,
-    )
-    fun moveToFullscreen_tdaFullscreen_windowingModeUndefined_removesWallpaperActivity() {
-        desktopState.enterDesktopByDefaultOnFreeformDisplay = true
-        val homeTask = setUpHomeTask()
-        val task = setUpFreeformTask()
-        assertNotNull(rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY))
-            .configuration
-            .windowConfiguration
-            .windowingMode = WINDOWING_MODE_FULLSCREEN
-
-        controller.moveToFullscreen(task.taskId, transitionSource = UNKNOWN)
-
-        val wct = getLatestExitDesktopWct()
-        val taskChange = assertNotNull(wct.changes[task.token.asBinder()])
-        verify(desktopModeEnterExitTransitionListener)
-            .onExitDesktopModeTransitionStarted(
-                FULLSCREEN_ANIMATION_DURATION,
-                shouldEndUpAtHome = false,
-            )
-        assertThat(taskChange.windowingMode).isEqualTo(WINDOWING_MODE_UNDEFINED)
-        assertThat(wct.hierarchyOps).hasSize(3)
-        // Removes wallpaper activity when leaving desktop
-        wct.assertReorderAt(index = 0, wallpaperToken, toTop = false)
-        // Moves home task behind the fullscreen task
-        wct.assertReorderAt(index = 1, homeTask.getToken(), toTop = true)
-        wct.assertReorderAt(index = 2, task.getToken(), toTop = true)
     }
 
     @Test
@@ -4340,10 +4303,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_REMOVE_DESK_ON_LAST_TASK_REMOVAL,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun moveToNextDisplay_wasLastTaskInSourceDesk_touchFirst_removesDesk() {
         rootTaskDisplayAreaOrganizer.setTouchFirst(DEFAULT_DISPLAY)
         val transition = Binder()
@@ -4822,10 +4782,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_REMOVE_DESK_ON_LAST_TASK_REMOVAL,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onDesktopWindowClose_lastWindow_touchFirst_removesDesk() {
         rootTaskDisplayAreaOrganizer.setTouchFirst(DEFAULT_DISPLAY)
         val task = setUpFreeformTask()
@@ -4862,10 +4819,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_REMOVE_DESK_ON_LAST_TASK_REMOVAL,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onDesktopWindowClose_lastWindow_touchFirst_addsPendingRemoveTransition() {
         rootTaskDisplayAreaOrganizer.setTouchFirst(DEFAULT_DISPLAY)
         val task = setUpFreeformTask()
@@ -5478,39 +5432,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    @DisableFlags(Flags.FLAG_REMOVE_DESK_ON_LAST_TASK_REMOVAL)
-    fun handleRequest_fullscreenTaskThatWasInactiveInDesk_touchFirst_tracksDeskDeactivation() {
-        rootTaskDisplayAreaOrganizer.setTouchFirst(DEFAULT_DISPLAY)
-        // Set up and existing desktop task in an active desk.
-        val inactiveInDeskTask = setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = 0)
-        taskRepository.setDeskInactive(deskId = 0)
-
-        // Now the task is launching as fullscreen.
-        inactiveInDeskTask.configuration.windowConfiguration.windowingMode =
-            WINDOWING_MODE_FULLSCREEN
-        val transition = Binder()
-        val wct = controller.handleRequest(transition, createTransition(inactiveInDeskTask))
-
-        // Desk is deactivated.
-        assertNotNull(wct, "should handle request")
-        verify(desksTransitionsObserver)
-            .addPendingTransition(
-                DeskTransition.DeactivateDesk(
-                    transition,
-                    userId = taskRepository.userId,
-                    deskId = 0,
-                    displayId = DEFAULT_DISPLAY,
-                    switchingUser = false,
-                    exitReason = ExitReason.FULLSCREEN_LAUNCH,
-                )
-            )
-    }
-
-    @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_REMOVE_DESK_ON_LAST_TASK_REMOVAL,
-    )
     fun handleRequest_fullscreenTaskThatWasInactiveInDesk_touchFirst_tracksDeskRemoval() {
         rootTaskDisplayAreaOrganizer.setTouchFirst(DEFAULT_DISPLAY)
         // Set up and existing desktop task in an active desk.
@@ -6592,10 +6513,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_REMOVE_DESK_ON_LAST_TASK_REMOVAL,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun handleRequest_systemUIActivityWithDisplayInFreeformTask_inDesktop_lastTask_tracksDeskRemoval() {
         rootTaskDisplayAreaOrganizer.setTouchFirst(DEFAULT_DISPLAY)
         val deskId = 5
@@ -11940,8 +11858,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(
-        FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_REMOVE_DESK_ON_LAST_TASK_REMOVAL,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
         com.android.launcher3.Flags.FLAG_ENABLE_ALT_TAB_KQS_FLATENNING,
     )
     @DisableFlags(Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK)
@@ -11963,7 +11880,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Test
     @EnableFlags(
         FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_REMOVE_DESK_ON_LAST_TASK_REMOVAL,
         Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK,
         com.android.launcher3.Flags.FLAG_ENABLE_ALT_TAB_KQS_FLATENNING,
     )
@@ -11984,7 +11900,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Test
     @EnableFlags(
         FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_REMOVE_DESK_ON_LAST_TASK_REMOVAL,
         Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK,
     )
     fun addMoveToBubbleFromDesktopChange_multiTasks_notExitDesktop() {
