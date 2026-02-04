@@ -28,6 +28,7 @@ import com.android.settingslib.ipc.ApiPermissionChecker
 import com.android.settingslib.metadata.PreferenceCoordinate
 import com.android.settingslib.metadata.ReadWritePermit
 import com.android.settingslib.metadata.SensitivityLevel
+import com.android.settingslib.robotests.R
 import com.android.settingslib.testutils.GraphTestUtils
 import com.android.settingslib.testutils.GraphTestUtils.createPersistentPreference
 import com.android.settingslib.testutils.GraphTestUtils.createScreen
@@ -80,6 +81,7 @@ class PreferenceGetterApiHandlerTest {
             persistentPreferenceConfig = GraphTestUtils.PersistentPreferenceConfig(
                 preferenceConfig = GraphTestUtils.PreferenceConfig(
                     key = "preference_key",
+                    purpose = R.string.preference_purpose,
                     isEnabled = true,
                     isAvailable = true,
                     isRestricted = false,
@@ -94,8 +96,12 @@ class PreferenceGetterApiHandlerTest {
             )
         )
         val screen = createScreen(
-            "screen_key",
-            persistentPreference
+            screenConfig = GraphTestUtils.PreferenceScreenConfig(
+                screenKey = "screen_key",
+                purpose = R.string.preference_screen_purpose,
+                preferences = listOf(persistentPreference)
+            )
+
         )
         setRegistryFactories(screen)
         makePermissionPass(application, INTERACT_ACROSS_USERS, true)
@@ -107,7 +113,7 @@ class PreferenceGetterApiHandlerTest {
             available = true
             indexable = true
             restricted = false
-            purpose = 12
+            purpose = R.string.preference_purpose
             persistent = true
             sensitivityLevel = SensitivityLevel.LOW_SENSITIVITY
             readPermissions = Permissions.allOf(
