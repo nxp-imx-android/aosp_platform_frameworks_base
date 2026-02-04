@@ -96,6 +96,16 @@ flag {
 }
 
 flag {
+    name: "fix_window_magnification_inactive_double_tap"
+    namespace: "accessibility"
+    description: "Fixes a bug where Window Magnification interferes with double-tap gestures in apps when inactive by correcting timestamp corruption and adding a bypass optimization."
+    bug: "479568199"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "fullscreen_fling_gesture"
     namespace: "accessibility"
     description: "When true, adds a fling gesture animation for fullscreen magnification"
