@@ -20,12 +20,14 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.appfunctions.AppFunctionActivityId;
 import android.app.appfunctions.AppFunctionActivityState;
+import android.app.appfunctions.AppFunctionName;
 import android.app.appfunctions.ExecuteAppFunctionAidlRequest;
 import android.app.appfunctions.IAppFunctionExecutor;
 import android.app.appfunctions.SafeOneTimeExecuteAppFunctionCallback;
 import android.os.Build;
 import android.os.ICancellationSignal;
 import android.os.UserHandle;
+import android.util.ArraySet;
 import android.util.Log;
 import android.util.SparseArray;
 
@@ -185,6 +187,22 @@ public final class MultiUserDynamicAppFunctionRegistry {
                         cancellationTransport);
     }
 
+    /**
+     * Returns the currently registered {@link android.app.appfunctions.AppFunctionActivityId}s for
+     * a given {@code functionName}.
+     *
+     * @param functionName Name of the app function to search for.
+     * @param userHandle Handle of the user where the app function is registered.
+     * @return ArraySet of {@link android.app.appfunctions.AppFunctionActivityId}s which registered
+     *     the given function. Null of no activities registered the function or the function is
+     *     registered with a global scope.
+     */
+    @Nullable
+    public ArraySet<AppFunctionActivityId> getRegisteredActivityIds(
+            @NonNull AppFunctionName functionName, @NonNull UserHandle userHandle) {
+        return getPerUserRegistry(userHandle).getRegisteredActivityIds(functionName);
+    }
+
     @NonNull
     public List<AppFunctionActivityState> getAppFunctionActivityStates(
             @NonNull List<AppFunctionActivityId> activityIds, @NonNull UserHandle userHandle) {
@@ -194,8 +212,15 @@ public final class MultiUserDynamicAppFunctionRegistry {
     public static class RegistrationScopeId {
         @Nullable private final AppFunctionActivityId mAppFunctionActivityId;
 
-        RegistrationScopeId(@Nullable AppFunctionActivityId appFunctionActivityId) {
+        public static final RegistrationScopeId GLOBAL_SCOPE = new RegistrationScopeId(null);
+
+        public RegistrationScopeId(@Nullable AppFunctionActivityId appFunctionActivityId) {
             mAppFunctionActivityId = appFunctionActivityId;
+        }
+
+        @Nullable
+        public AppFunctionActivityId getAppFunctionActivityId() {
+            return mAppFunctionActivityId;
         }
 
         @Override
