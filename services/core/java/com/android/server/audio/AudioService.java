@@ -14258,7 +14258,9 @@ public class AudioService extends IAudioService.Stub
         pw.println("\n# Stream activity");
         mPlaybackMonitor.dump(pw);
         mRecordMonitor.dump(pw);
-        mHardeningLogger.dump(pw); pw.println();
+        pw.println("  mHardeningOverride=" + mHardeningOverride.get());
+        mHardeningLogger.dump(pw);
+        pw.println();
         mMediaFocusControl.dump(pw);
 
         pw.println("\n# Routing");
@@ -16520,14 +16522,13 @@ public class AudioService extends IAudioService.Stub
     }
 
     /**
-     * @see AudioManager#setEnableHardening(boolean)
+     * @see AudioManager#setHardeningOverride(int)
      */
     @android.annotation.EnforcePermission(MODIFY_AUDIO_SETTINGS_PRIVILEGED)
-    public void setEnableHardening(boolean shouldHarden) {
-        super.setEnableHardening_enforcePermission();
-        int hardeningOverride = shouldHarden ? HardeningOverride.ENABLE : HardeningOverride.DISABLE;
-        mHardeningOverride.set(hardeningOverride);
-        mAudioPolicy.setHardeningOverride((byte) hardeningOverride);
+    public void setHardeningOverride(int hardeningMode) {
+        super.setHardeningOverride_enforcePermission();
+        mHardeningOverride.set(hardeningMode);
+        mAudioPolicy.setHardeningOverride((byte) hardeningMode);
     }
 
     //======================

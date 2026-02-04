@@ -103,7 +103,9 @@ class AudioManagerShellCommand extends ShellCommand {
             case "adj-group-volume":
                 return adjGroupVolume();
             case "set-hardening":
-                return setEnableHardening();
+                return setHardeningOverride();
+            case "clear-hardening":
+                return clearHardeningOverride();
             case "get-preferred-output-device":
                 return getPreferredOutputDevice();
             case "set-preferred-output-device":
@@ -177,8 +179,10 @@ class AudioManagerShellCommand extends ShellCommand {
         pw.println("    Sets the volume for GROUP_ID to VOLUME_INDEX");
         pw.println("  adj-group-volume GROUP_ID <RAISE|LOWER|MUTE|UNMUTE>");
         pw.println("    Adjusts the group volume for GROUP_ID given the specified direction");
-        pw.println("  set-enable-hardening <1|0>");
-        pw.println("    Enables full audio hardening enforcement, disabling any exemptions");
+        pw.println("  set-hardening <1|enable|0|disable>");
+        pw.println("    Enables (1) or disables (0) full audio hardening enforcement");
+        pw.println("  clear-hardening");
+        pw.println("    Clears the hardening override, returning to default behavior");
         pw.println("  set-preferred-output-device AUDIO_DEVICE_TYPE [ADDRESS]");
         pw.println("    Sets the output audio device to AUDIO_DEVICE_TYPE "
                 + "(e.g. AUTO, HDMI, BLUETOOTH_A2DP, BUILTIN_SPEAKER) for media strategy."
@@ -510,12 +514,45 @@ class AudioManagerShellCommand extends ShellCommand {
         return 0;
     }
 
-    private int setEnableHardening() {
-        final boolean shouldEnable = !(readIntArg() == 0);
-        getOutPrintWriter()
-                .println("calling AudioManager.setEnableHardening(" + shouldEnable + ")");
+    private int setHardeningOverride() {
+        String hardeningMode = getNextArg();
+        if (hardeningMode == null) {
+            getErrPrintWriter().println("Error: no hardening mode specified");
+            return 1;
+        }
+        final int mode;
+        final String modeName;
+        switch (hardeningMode) {
+            case "enable", "true", "1" -> {
+                mode = AudioManager.HARDENING_ENABLE;
+                modeName = "HARDENING_ENABLE";
+            }
+            case "disable", "false", "0" -> {
+                mode = AudioManager.HARDENING_DISABLE;
+                modeName = "HARDENING_DISABLE";
+            }
+            case "default" -> {
+                mode = AudioManager.HARDENING_DEFAULT;
+                modeName = "HARDENING_DEFAULT";
+            }
+            default -> {
+                getErrPrintWriter().println("Error: invalid hardening mode: " + hardeningMode);
+                return 1;
+            }
+        }
+        getOutPrintWriter().println("calling AudioManager.setHardeningOverride(" + modeName + ")");
         try {
-            mAudioManager.setEnableHardening(shouldEnable);
+            mAudioManager.setHardeningOverride(mode);
+        } catch (Exception e) {
+            getOutPrintWriter().println("Exception: " + e);
+        }
+        return 0;
+    }
+
+    private int clearHardeningOverride() {
+        getOutPrintWriter().println("calling AudioManager.setHardeningOverride(HARDENING_DEFAULT)");
+        try {
+            mAudioManager.setHardeningOverride(AudioManager.HARDENING_DEFAULT);
         } catch (Exception e) {
             getOutPrintWriter().println("Exception: " + e);
         }
