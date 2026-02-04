@@ -233,7 +233,6 @@ class AppHandleControllerTests : ShellTestCase() {
             windowDecorationActions = mockWindowDecorationActions,
             decorWindowContext = context,
             onCaptionTouchListener = mock(),
-            onCaptionButtonClickListener = mock(),
             appToWebRepository = appToWebRepository,
             handleMenuFactory = mockHandleMenuFactory,
         )
