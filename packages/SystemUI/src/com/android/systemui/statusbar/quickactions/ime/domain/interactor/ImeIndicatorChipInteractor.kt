@@ -16,20 +16,26 @@
 
 package com.android.systemui.statusbar.quickactions.ime.domain.interactor
 
+import android.provider.Settings
 import android.view.inputmethod.InputMethodManager
 import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.inputmethod.data.repository.InputMethodRepository
+import com.android.systemui.inputmethod.domain.interactor.InputMethodInteractor
 import com.android.systemui.statusbar.quickactions.ime.shared.model.ImeIndicatorChipModel
 import com.android.systemui.user.data.repository.UserRepository
+import com.android.systemui.util.settings.SecureSettings
+import com.android.systemui.util.settings.SettingsProxyExt.observerFlow
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -39,8 +45,10 @@ class ImeIndicatorChipInteractor
 @Inject
 constructor(
     @param:Background private val scope: CoroutineScope,
+    private val inputMethodInteractor: InputMethodInteractor,
     private val inputMethodRepository: InputMethodRepository,
     private val userRepository: UserRepository,
+    private val secureSettings: SecureSettings,
 ) {
     private val isFeatureEnabled: Boolean
         get() = Flags.statusBarImeChip()
@@ -48,15 +56,25 @@ constructor(
     /** The current state of the IME indicator chip. */
     val chipModel: StateFlow<ImeIndicatorChipModel> =
         if (isFeatureEnabled) {
-                // TODO(b/458558606): Add logic to show / hide chip depending on enabled IME
-                // subtypes.
-                userRepository.selectedUserInfo
-                    .flatMapLatest { userInfo ->
-                        inputMethodRepository.selectedInputMethodSubtype(userInfo.userHandle)
+                userRepository.selectedUserInfo.flatMapLatest { userInfo ->
+                    val user = userInfo.userHandle
+                    val hasMultipleEnabledImesOrSubtypes =
+                        secureSettings
+                            .observerFlow(user.identifier, Settings.Secure.ENABLED_INPUT_METHODS)
+                            .onStart { emit(Unit) }
+                            .mapLatest {
+                                inputMethodInteractor.hasMultipleEnabledImesOrSubtypes(
+                                    user.identifier
+                                )
+                            }
+
+                    combine(
+                        hasMultipleEnabledImesOrSubtypes,
+                        inputMethodRepository.selectedInputMethodSubtype(user),
+                    ) { isVisible, subtype ->
+                        ImeIndicatorChipModel(isVisible = isVisible, selectedSubtype = subtype)
                     }
-                    .map { subtype ->
-                        ImeIndicatorChipModel(isVisible = true, selectedSubtype = subtype)
-                    }
+                }
             } else {
                 flowOf(ImeIndicatorChipModel(isVisible = false, selectedSubtype = null))
             }
