@@ -228,7 +228,6 @@ public final class Choreographer {
     private long mFrameIntervalNanos;
     private long mLastFrameIntervalNanos;
 
-    private boolean mDebugPrintNextFrameTimeDelta;
     private int mFPSDivisor = 1;
     private final DisplayEventReceiver.VsyncEventData mLastVsyncEventData =
             new DisplayEventReceiver.VsyncEventData();
@@ -1120,12 +1119,6 @@ public final class Choreographer {
                 }
                 mLastNoOffsetFrameTimeNanos = frameTimeNanos;
 
-                if (DEBUG_JANK && mDebugPrintNextFrameTimeDelta) {
-                    mDebugPrintNextFrameTimeDelta = false;
-                    Log.d(TAG, "Frame time delta: "
-                            + ((offsetFrameTimeNanos - mLastFrameTimeNanos) * 0.000001f) + " ms");
-                }
-
                 startNanos = System.nanoTime();
                 // Calculating jitter involves using the original frame time without
                 // adjustments from buffer stuffing
@@ -1209,16 +1202,16 @@ public final class Choreographer {
                     timeline.mExpectedPresentationTimeNanos);
 
             mFrameInfo.markInputHandlingStart();
-            doCallbacks(Choreographer.CALLBACK_INPUT, frameIntervalNanos);
+            doCallbacks(Choreographer.CALLBACK_INPUT);
 
             mFrameInfo.markAnimationsStart();
-            doCallbacks(Choreographer.CALLBACK_ANIMATION, frameIntervalNanos);
-            doCallbacks(Choreographer.CALLBACK_INSETS_ANIMATION, frameIntervalNanos);
+            doCallbacks(Choreographer.CALLBACK_ANIMATION);
+            doCallbacks(Choreographer.CALLBACK_INSETS_ANIMATION);
 
             mFrameInfo.markPerformTraversalsStart();
-            doCallbacks(Choreographer.CALLBACK_TRAVERSAL, frameIntervalNanos);
+            doCallbacks(Choreographer.CALLBACK_TRAVERSAL);
 
-            doCallbacks(Choreographer.CALLBACK_COMMIT, frameIntervalNanos);
+            doCallbacks(Choreographer.CALLBACK_COMMIT);
         } finally {
             AnimationUtils.unlockAnimationClock();
             mInDoFrameCallback = false;
@@ -1236,7 +1229,7 @@ public final class Choreographer {
         }
     }
 
-    void doCallbacks(int callbackType, long frameIntervalNanos) {
+    void doCallbacks(int callbackType) {
         CallbackRecord callbacks;
         long frameTimeNanos = mFrameData.mFrameTimeNanos;
         synchronized (mLock) {
@@ -1250,34 +1243,6 @@ public final class Choreographer {
                 return;
             }
             mCallbacksRunning = true;
-
-            // Update the frame time if necessary when committing the frame.
-            // We only update the frame time if we are more than 2 frames late reaching
-            // the commit phase.  This ensures that the frame time which is observed by the
-            // callbacks will always increase from one frame to the next and never repeat.
-            // We never want the next frame's starting frame time to end up being less than
-            // or equal to the previous frame's commit frame time.  Keep in mind that the
-            // next frame has most likely already been scheduled by now so we play it
-            // safe by ensuring the commit time is always at least one frame behind.
-            if (callbackType == Choreographer.CALLBACK_COMMIT) {
-                final long jitterNanos = now - frameTimeNanos;
-                Trace.traceCounter(Trace.TRACE_TAG_VIEW, "jitterNanos", (int) jitterNanos);
-                if (frameIntervalNanos > 0 && jitterNanos >= 2 * frameIntervalNanos) {
-                    final long lastFrameOffset = jitterNanos % frameIntervalNanos
-                            + frameIntervalNanos;
-                    if (DEBUG_JANK) {
-                        Log.d(TAG, "Commit callback delayed by " + (jitterNanos * 0.000001f)
-                                + " ms which is more than twice the frame interval of "
-                                + (frameIntervalNanos * 0.000001f) + " ms!  "
-                                + "Setting frame time to " + (lastFrameOffset * 0.000001f)
-                                + " ms in the past.");
-                        mDebugPrintNextFrameTimeDelta = true;
-                    }
-                    frameTimeNanos = now - lastFrameOffset;
-                    mLastFrameTimeNanos = frameTimeNanos;
-                    mFrameData.update(frameTimeNanos, mDisplayEventReceiver, jitterNanos);
-                }
-            }
         }
         try {
             Trace.traceBegin(Trace.TRACE_TAG_VIEW, CALLBACK_TRACE_TITLES[callbackType]);
