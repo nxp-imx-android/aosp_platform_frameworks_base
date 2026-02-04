@@ -35,7 +35,6 @@ import android.widget.TextView
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.recyclerview.widget.RecyclerView
-import com.android.media.flags.Flags
 import com.android.settingslib.media.MediaDevice
 import com.android.systemui.FontStyles.GSF_TITLE_MEDIUM_EMPHASIZED
 import com.android.systemui.FontStyles.GSF_TITLE_SMALL
@@ -323,17 +322,14 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
             initSeekbar(
                 volumeChangeCallback = { volume: Int -> mController.adjustSessionVolume(volume) },
                 deviceDrawable = groupDrawable,
-                // When Flags.enableOutputSwitcherPersonalAudioSharing() is on, no need to show
-                // disabled seek bar for volume control disabled session because devices won't be
-                // collapsed.
+                // No need to show disabled seek bar for volume control disabled session because
+                // devices won't be collapsed.
                 // This is a side effect of broadcast design: broadcast devices should be controlled
                 // separately so they should not be collapsed, so isVolumeControlEnabledForSession
                 // is added to {@link MediaOutputAdapter#updateItems()}. The logic will spread to
                 // casting devices without group volume control, so disabling seek bar will be
-                // unnecessary when Flags.enableOutputSwitcherPersonalAudioSharing() is on.
-                isVolumeControlAllowed =
-                    Flags.enableOutputSwitcherPersonalAudioSharing() ||
-                        mController.isVolumeControlEnabledForSession(),
+                // unnecessary.
+                isVolumeControlAllowed = true,
                 currentVolume = mController.getSessionVolume(),
                 maxVolume = mController.getSessionVolumeMax(),
                 colorTheme = colorTheme,

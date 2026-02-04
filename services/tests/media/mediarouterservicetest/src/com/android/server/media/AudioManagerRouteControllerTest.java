@@ -385,7 +385,6 @@ public class AudioManagerRouteControllerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
     public void transferToNonBtDevice_inBroadcast_stopsBroadcastAndSetsTheExpectedRoutingPolicy() {
         setUpControllerAndLEAudioMocks();
         when(mMockBluetoothDeviceRoutesManager.isLEAudioBroadcastSupported()).thenReturn(true);
@@ -419,7 +418,6 @@ public class AudioManagerRouteControllerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
     public void transferToBtDevice_inBroadcast_stopsBroadcastWithoutSettingRoutingPolicy() {
         setUpControllerAndLEAudioMocks();
         when(mMockBluetoothDeviceRoutesManager.isLEAudioBroadcastSupported()).thenReturn(true);
@@ -494,7 +492,6 @@ public class AudioManagerRouteControllerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
     public void updateVolume_inBroadcast_propagatesCorrectlyToRouteInfo() {
         when(mMockAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC)).thenReturn(2);
         when(mMockAudioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)).thenReturn(3);
@@ -527,7 +524,6 @@ public class AudioManagerRouteControllerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
     public void setVolume_noBroadcast_setMusicStreamVolume() {
         mControllerUnderTest.setVolume(/* requestId */ 0L, FAKE_ROUTE_NAME, 2);
         mLooperManager.execute(mLooperManager.next());
@@ -536,7 +532,6 @@ public class AudioManagerRouteControllerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
     public void setVolume_inBroadcast_primaryDevice_setMusicStreamVolume() {
         when(mMockAudioManager.getDevicesForAttributes(ATTRIBUTES_MEDIA))
                 .thenReturn(
@@ -553,7 +548,6 @@ public class AudioManagerRouteControllerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
     public void setVolume_inBroadcast_mediaOnlyDevice_setDeviceVolume() {
         when(mMockAudioManager.getDevicesForAttributes(ATTRIBUTES_MEDIA))
                 .thenReturn(
@@ -632,7 +626,6 @@ public class AudioManagerRouteControllerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
     public void getRoutes_whenLEAudioBroadcastNotSupported_returnsCorrectStates() {
         setUpControllerAndLEAudioMocks();
         when(mMockBluetoothDeviceRoutesManager.isLEAudioBroadcastSupported()).thenReturn(false);
@@ -662,7 +655,6 @@ public class AudioManagerRouteControllerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
     public void getRoutes_singleDeviceSelectedAndOutputNotBroadcast_returnsCorrectStates() {
         setUpControllerAndLEAudioMocks();
         when(mMockBluetoothDeviceRoutesManager.isLEAudioBroadcastSupported()).thenReturn(true);
@@ -695,7 +687,6 @@ public class AudioManagerRouteControllerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
     public void getRoutes_nonBLEDeviceSelectedAndOutputNotBroadcast_returnsCorrectStates() {
         setUpControllerAndLEAudioMocks();
         when(mMockBluetoothDeviceRoutesManager.isLEAudioBroadcastSupported()).thenReturn(true);
@@ -725,7 +716,6 @@ public class AudioManagerRouteControllerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
     public void getRoutes_singleDeviceSelectedAndOutputIsBroadcast_returnsCorrectStates() {
         setUpControllerAndLEAudioMocks();
         when(mMockBluetoothDeviceRoutesManager.isLEAudioBroadcastSupported()).thenReturn(true);
