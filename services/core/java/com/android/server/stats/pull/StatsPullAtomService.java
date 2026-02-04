@@ -5422,7 +5422,7 @@ public class StatsPullAtomService extends SystemService {
                     (int) info.suspendAttemptCount,
                     (int) info.failedSuspendCount,
                     (int) info.shortSuspendCount,
-                    info.suspendTimeMillis,
+                    info.suspendTimeMillis - info.shortSuspendTimeMillis,
                     info.shortSuspendTimeMillis,
                     (int) info.breakEvenMillis,
                     info.suspendOverheadTimeMillis,
