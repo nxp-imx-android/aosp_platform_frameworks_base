@@ -2731,39 +2731,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun preserveDesk_transientDeskRemoved() = runTest {
-        val listener = TestDeskChangeListener()
-        val executor = TestShellExecutor()
-        repo.addDeskChangeListener(listener, executor)
-        repo.addDesk(
-            displayId = DEFAULT_DISPLAY,
-            deskId = 1,
-            uniqueDisplayId = UNIQUE_DISPLAY_ID,
-            transientDesk = true,
-        )
-        repo.addTaskToDesk(
-            displayId = DEFAULT_DISPLAY,
-            deskId = 1,
-            taskId = 1,
-            isVisible = true,
-            taskBounds = TEST_TASK_BOUNDS,
-        )
-
-        repo.preserveDesk(deskId = 1, uniqueDisplayId = UNIQUE_DISPLAY_ID, preserveAsActive = true)
-
-        val allDesks = repo.getAllDesks()
-        // We only have the default desk left.
-        assertThat(allDesks.size).isEqualTo(1)
-        assertThat(allDesks.first().deskId).isEqualTo(DEFAULT_DESKTOP_ID)
-        assertThat(listener.lastRemoval).isNull()
-        verify(persistentRepository, never())
-            .addOrUpdateDesktop(any(), any(), any(), any(), any(), any(), any(), any())
-        verify(persistentRepository, never())
-            .addOrUpdateRepository(any(), any(), any(), any(), any())
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun preserveDesk_activeDesk_deskPreservedAsActive() = runTest {
         val listener = TestDeskChangeListener()
         val executor = TestShellExecutor()

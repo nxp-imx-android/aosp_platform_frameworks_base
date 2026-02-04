@@ -143,7 +143,7 @@ import com.android.wm.shell.desktopmode.data.DesktopRepository.Companion.INVALID
 import com.android.wm.shell.desktopmode.data.DesktopRepository.DeskChangeListener
 import com.android.wm.shell.desktopmode.data.DesktopRepository.VisibleTasksListener
 import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializer
-import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializer.DeskRecreationFactory
+import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializer.DeskRootHelper
 import com.android.wm.shell.desktopmode.data.persistence.DesktopTaskTilingState
 import com.android.wm.shell.desktopmode.desktopfirst.isDisplayDesktopFirst
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
@@ -386,16 +386,7 @@ class DesktopTasksController(
         latencyTracker = LatencyTracker.getInstance(context)
 
         if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            desktopRepositoryInitializer.deskRecreationFactory =
-                DeskRecreationFactory { deskUserId, destinationDisplayId, _ ->
-                    // TODO: b/393978539 - One of the recreated desks may need to be activated by
-                    //  default in desktop-first.
-                    // TODO(b/467367552): Update client invocation to DesksController.
-                    desksController.createDeskRootSuspending(
-                        displayId = destinationDisplayId,
-                        userId = deskUserId,
-                    )
-                }
+            desktopRepositoryInitializer.deskRootHelper = desksController
         }
         wallpaperDimAmount =
             SystemProperties.getInt("persist.wm.debug.wallpaper_dim_amount", 100).toFloat() / 100
