@@ -17,12 +17,9 @@
 package com.android.wm.shell.compatui.letterbox
 
 import android.graphics.Rect
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.view.SurfaceControl
 import androidx.test.filters.SmallTest
-import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.compatui.letterbox.lifecycle.FakeLetterboxLifecycleEventFactory
@@ -74,23 +71,6 @@ class DelegateLetterboxTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY)
-    fun `With flag disabled LetterboxLifecycleController ignored for not leaf tasks`() {
-        runTestScenario { r ->
-            executeTransitionObserverTest(observerFactory = r.observerFactory) {
-                r.invokeShellInit()
-                transitionInfo {
-                    addChange {
-                        runningTaskInfo { ti -> ti.appCompatTaskInfo.setIsLeafTask(false) }
-                    }
-                }
-                validateOnTransitionReady { r.checkLifecycleControllerInvoked(times = 0) }
-            }
-        }
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY)
     fun `With flag enabled LetterboxLifecycleController not for not leaf tasks`() {
         runTestScenario { r ->
             executeTransitionObserverTest(observerFactory = r.observerFactory) {
