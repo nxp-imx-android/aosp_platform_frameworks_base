@@ -562,6 +562,11 @@ public class PipTransition extends PipTransitionController implements
             @NonNull Transitions.TransitionFinishCallback finishCallback) {
         TransitionInfo.Change pipChange = getPipChange(info);
         if (pipChange == null) {
+            Log.wtf(TAG, String.format("""
+                        PipTransition did not find a PiP change despite waiting for a scheduled
+                        bounds change PiP transition.
+                        callers=%s""", Debug.getCallers(4)));
+            onTransitionAborted();
             return false;
         }
         mFinishCallback = finishCallback;
