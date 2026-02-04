@@ -566,7 +566,6 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_SEE_THROUGH_TASK_FRAGMENTS)
     public void testVisibility_behindOpaqueNestedFreeformTasksNotFillingParenBounds_visible() {
         // A fullscreen task with an opaque activity.
         final Task bottomTask = createTask(mDisplayContent.getDefaultTaskDisplayArea(),
@@ -588,7 +587,6 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_SEE_THROUGH_TASK_FRAGMENTS)
     public void testVisibility_behindOpaqueNestedFreeformTasksThatFillParenBounds_invisible() {
         // A fullscreen task with an opaque activity.
         final Task bottomTask = createTask(mDisplayContent.getDefaultTaskDisplayArea(),
@@ -610,7 +608,6 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_SEE_THROUGH_TASK_FRAGMENTS)
     public void testVisibility_behindTranslucentNestedFreeformFillingBounds_visBehindTranslucent() {
         // A fullscreen task with an opaque activity.
         final Task bottomTask = createTask(mDisplayContent.getDefaultTaskDisplayArea(),
@@ -633,7 +630,6 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_SEE_THROUGH_TASK_FRAGMENTS)
     public void testVisibility_behindAtLeastOneNonFillingAdjacentTaskFragments_visBehindTrans() {
         // A fullscreen task with an opaque activity.
         final Task bottomTask = createTask(mDisplayContent.getDefaultTaskDisplayArea(),
@@ -666,7 +662,6 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_SEE_THROUGH_TASK_FRAGMENTS)
     public void testVisibility_behindFillingAdjacentTaskFragments_invisible() {
         // A fullscreen task with an opaque activity.
         final Task bottomTask = createTask(mDisplayContent.getDefaultTaskDisplayArea(),

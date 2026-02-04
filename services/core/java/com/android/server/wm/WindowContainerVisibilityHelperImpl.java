@@ -164,11 +164,9 @@ final class WindowContainerVisibilityHelperImpl implements WindowContainerVisibi
 
             // Must fill the parent to affect visibility.
             boolean affectsSiblingVisibility = other.fillsParentBounds();
-            if (DesktopExperienceFlags.ENABLE_SEE_THROUGH_TASK_FRAGMENTS.isTrue()) {
-                // It also must have filling content itself, to prevent empty or only partially
-                // occluding containers from affecting visibility.
-                affectsSiblingVisibility &= other.hasFillingContent();
-            }
+            // It also must have filling content itself, to prevent empty or only partially
+            // occluding containers from affecting visibility.
+            affectsSiblingVisibility &= other.hasFillingContent();
             if (affectsSiblingVisibility) {
                 // This task fragment is fully covered by |other|.
                 if (isTranslucent(other, starting)) {
