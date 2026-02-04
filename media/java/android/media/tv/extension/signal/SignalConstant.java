@@ -16,6 +16,7 @@
 package android.media.tv.extension.signal;
 
 import android.annotation.IntDef;
+import android.annotation.StringDef;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -25,7 +26,7 @@ import java.lang.annotation.RetentionPolicy;
  *
  * @hide
  */
-final class SignalConstant {
+public final class SignalConstant {
     @IntDef({FRONTEND_STATUS_UNTUNED, FRONTEND_STATUS_TUNING,
             FRONTEND_STATUS_LOCKED, FRONTEND_STATUS_UNLOCKED})
     @Retention(RetentionPolicy.SOURCE)
@@ -34,4 +35,48 @@ final class SignalConstant {
     public static final int FRONTEND_STATUS_TUNING = 1;
     public static final int FRONTEND_STATUS_LOCKED = 2;
     public static final int FRONTEND_STATUS_UNLOCKED = 3;
+
+    @StringDef({
+            KEY_TUNER_SIGNAL_QUALITY_IN_PERCENT,
+            KEY_TUNER_SIGNAL_STRENGTH_IN_PERCENT,
+            KEY_TUNER_SIGNAL_BER,
+            KEY_TUNER_SIGNAL_UEC,
+            KEY_TUNER_SIGNAL_SNR,
+            KEY_TUNER_SIGNAL_AGC,
+            KEY_TUNER_SIGNAL_BANDWIDTH,
+            KEY_TUNER_SIGNAL_MODULATION
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface FrontendSignalInfoKeys {}
+    /** Tuner signal quality percentage, 0 - 100 (Percentage) */
+    public static final String KEY_TUNER_SIGNAL_QUALITY_IN_PERCENT = "SIGNAL_QUALITY_IN_PERCENT";
+    /** Tuner signal strength percentage, 0 - 100 (Percentage) */
+    public static final String KEY_TUNER_SIGNAL_STRENGTH_IN_PERCENT = "SIGNAL_STRENGTH_IN_PERCENT";
+    /** Bit Error Rate, int */
+    public static final String KEY_TUNER_SIGNAL_BER = "BER";
+    /** Uncorrected Error Count, int */
+    public static final String KEY_TUNER_SIGNAL_UEC = "UEC";
+    /** Signal-to-Noise Ratio, db measures in int */
+    public static final String KEY_TUNER_SIGNAL_SNR = "SNR";
+    /** Automatic Gain Control, hardware specific gain level in int */
+    public static final String KEY_TUNER_SIGNAL_AGC = "AGC";
+    /** Frequency, int */
+    public static final String KEY_TUNER_SIGNAL_BANDWIDTH = "BANDWIDTH";
+    /** Modulation type, int */
+    public static final String KEY_TUNER_SIGNAL_MODULATION = "MODULATION";
+
+    @StringDef({
+            KEY_AUDIO_FRONT_CH_NUM,
+            KEY_AUDIO_REAR_CH_NUM,
+            KEY_AUDIO_DOLBY_ICON
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface AudioSignalInfoKeys {}
+    /** The number of front audio channel, int */
+    public static final String KEY_AUDIO_FRONT_CH_NUM = "FRONT_CH_NUM";
+    /** The number of rear audio channel, int */
+    public static final String KEY_AUDIO_REAR_CH_NUM = "REAR_CH_NUM";
+    /** The dolby icon to display, int value based on {@link android.media.AudioFormat} */
+    public static final String KEY_AUDIO_DOLBY_ICON = "DOLBY_ICON";
+
 }
