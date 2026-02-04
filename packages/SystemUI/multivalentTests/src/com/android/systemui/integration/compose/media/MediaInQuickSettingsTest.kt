@@ -35,7 +35,7 @@ import com.android.systemui.integration.SystemUiIntegrationTest
 import com.android.systemui.jank.interactionJankMonitor
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
-import com.android.systemui.media.remedia.data.repository.fakeMediaData
+import com.android.systemui.media.remedia.data.repository.fakeActiveMedia
 import com.android.systemui.media.remedia.data.repository.setFakeCurrentMedia
 import com.android.systemui.media.remedia.data.repository.setHasMedia
 import com.android.systemui.qs.composefragment.dagger.usingMediaInComposeFragment
@@ -91,7 +91,7 @@ class MediaInQuickSettingsTest : SysuiTestCase() {
 
     @Before
     fun setup() {
-        kosmos.setFakeCurrentMedia(kosmos.fakeMediaData)
+        kosmos.setFakeCurrentMedia(listOf(kosmos.fakeActiveMedia))
     }
 
     @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
