@@ -676,14 +676,17 @@ public final class WindowContainerTransaction implements Parcelable {
     }
 
     /**
-     * Sets whether the given container is able to contain self-movable tasks. A display is
-     * considered able to contain self-movable tasks as long as there is one child window container
-     * that is able to contain self-movable tasks.
+     * Sets whether the given container is able to contain self-movable tasks. This is used to
+     * determine the outcome of a {@link
+     * android.content.Context#startActivity(android.content.Intent, android.os.Bundle)} call with
+     * the {@link android.app.ActivityOptions#setMovableTaskRequired(boolean)} option set.
      *
      * <p>Initially after each boot-up no window containers can contain self-movable tasks.
      *
      * <p>The container must be either a TaskDisplayArea or a root Task for this setting to have
      * effect.
+     *
+     * <p>This setting can be overridden to false by LaunchParamsModifiers.
      *
      * @param container The window container whose ability to contain self-movable tasks is set on.
      * @param isTaskMoveAllowed {@code true} to allow containing self-movable tasks, {@code
