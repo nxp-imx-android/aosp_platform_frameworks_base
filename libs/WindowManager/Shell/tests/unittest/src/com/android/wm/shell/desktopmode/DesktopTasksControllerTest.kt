@@ -10889,7 +10889,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 preservedDisplay = preservedDisplay,
                 userId = taskRepository.userId,
             )
-            runCurrent()
+            testScopeImmediate.runCurrent()
 
             verify(pipScheduler).scheduleExitPipViaExpand(eq(true), eq(SECOND_DISPLAY_ON_RECONNECT))
         }
@@ -10941,7 +10941,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 preservedDisplay = preservedDisplay,
                 userId = taskRepository.userId,
             )
-            runCurrent()
+            testScopeImmediate.runCurrent()
 
             verify(pipScheduler, never())
                 .scheduleExitPipViaExpand(eq(true), eq(SECOND_DISPLAY_ON_RECONNECT))
