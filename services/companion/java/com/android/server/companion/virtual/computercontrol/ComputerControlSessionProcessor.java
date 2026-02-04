@@ -61,6 +61,7 @@ import android.os.UserManager;
 import android.util.ArraySet;
 import android.util.Slog;
 
+import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.LocalServices;
@@ -83,6 +84,9 @@ public final class ComputerControlSessionProcessor {
     // TODO(b/419548594): Make this configurable.
     @VisibleForTesting
     static final int MAXIMUM_CONCURRENT_SESSIONS = 1;
+
+    @Nullable
+    private final String mReferenceDisplayAddress;
 
     private final Context mContext;
     private final KeyguardManager mKeyguardManager;
@@ -126,6 +130,8 @@ public final class ComputerControlSessionProcessor {
         mDevicePolicyManager = context.getSystemService(DevicePolicyManager.class);
         mDevicePolicyManagerInternal = LocalServices.getService(DevicePolicyManagerInternal.class);
         mAllowlistController = allowlistController;
+        mReferenceDisplayAddress = context.getString(
+                R.string.config_computerControlReferenceDisplayPhysicalAddress);
     }
 
     /** Perform initialization tasks (if any). */
@@ -341,7 +347,7 @@ public final class ComputerControlSessionProcessor {
                     synchronized (mSessions) {
                         mSessions.remove(closedSession);
                     }
-                }));
+                }, mReferenceDisplayAddress));
         synchronized (mSessions) {
             mSessions.add(session);
         }
