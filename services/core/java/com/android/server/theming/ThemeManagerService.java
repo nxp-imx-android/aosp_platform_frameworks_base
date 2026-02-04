@@ -21,7 +21,6 @@ import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
-import android.app.ActivityManagerInternal;
 import android.app.KeyguardManager;
 import android.content.Context;
 import android.os.SystemProperties;
@@ -60,7 +59,7 @@ import java.util.Objects;
  *     <li>{@link ThemeUserLifecycle}: Handles user-related events (start, switch, setup).</li>
  *     <li>{@link ThemeEventObserver}: Listens for system events (wallpaper, settings, lock
  *     state).</li>
- *     <li>{@link ThemeManagerInternal}: Provides a local interface for other system services.</li>
+ *     <li>{@link ThemeManagerImpl}: Provides a local interface for other system services.</li>
  *     <li>{@link ThemeBinderService}: Provides the public Binder interface for apps.</li>
  * </ul>
  *
@@ -72,7 +71,7 @@ public class ThemeManagerService extends SystemService {
 
     private static final String KEY_COLOR_PALETTE_VERSION = "global_color_palette_version";
 
-    private final ThemeManagerInternal mInternal;
+    private final ThemeManagerInternal mImpl;
     private final ThemeBinderService mPublic;
     private final Context mContext;
     private final ThemeSettingsManager mThemeSettingsManager;
@@ -82,7 +81,6 @@ public class ThemeManagerService extends SystemService {
     private final ThemeOverlayHelper mOverlayHelper;
     private final SystemPropertiesReader mSystemPropertiesReader;
     private final ThemeWallpaperManager mThemeWallpaperManager;
-
 
     private static boolean isWatch(Context context) {
         return RoSystemFeatures.hasFeatureWatch(context);
@@ -124,23 +122,27 @@ public class ThemeManagerService extends SystemService {
         mContext = context;
         mStateManager = themeStateManager;
         mThemeWallpaperManager = new ThemeWallpaperManager(wallpaperManagerInternal);
-        mThemeSettingsManager = new ThemeSettingsManager(mThemeWallpaperManager);
         mSystemPropertiesReader = systemPropertiesReader;
+        final String[] defaultThemeData = context.getResources().getStringArray(
+                com.android.internal.R.array.theming_defaults);
+        mThemeSettingsManager = new ThemeSettingsManager(mThemeWallpaperManager,
+                mSystemPropertiesReader, defaultThemeData);
         mOverlayHelper = new ThemeOverlayHelper(overlayManagerInternal);
 
-        mInternal = new ThemeManagerInternal(mContext, mThemeSettingsManager,
-                mSystemPropertiesReader, mStateManager, mOverlayHelper, platform, specVersion);
-        mPublic = new ThemeBinderService(mContext, mInternal);
+        mImpl = new ThemeManagerImpl(mContext, mThemeSettingsManager,
+                mStateManager, mOverlayHelper, platform, specVersion);
+        mPublic = new ThemeBinderService(mContext, mImpl);
 
         mUserLifecycle = userLifecycle != null ? userLifecycle : new ThemeUserLifecycle(mContext,
-                mStateManager, mInternal);
+                mStateManager, mThemeSettingsManager);
+
         mEventObserver = eventObserver != null ? eventObserver : new ThemeEventObserver(mContext,
-                mStateManager, mInternal, mUserLifecycle);
+                mStateManager, mThemeSettingsManager, mUserLifecycle, (ThemeManagerImpl) mImpl);
     }
 
     @Override
     public void onStart() {
-        publishLocalService(ThemeManagerInternal.class, mInternal);
+        publishLocalService(ThemeManagerInternal.class, mImpl);
         publishBinderService(Context.THEME_SERVICE, mPublic.asBinder());
     }
 
@@ -157,9 +159,11 @@ public class ThemeManagerService extends SystemService {
                     LocalServices.getService(UiModeManagerInternal.class), mThemeWallpaperManager);
             mUserLifecycle.onBootCompleteLoadUsers();
             mEventObserver.onServicesReady(mThemeWallpaperManager,
-                    LocalServices.getService(ActivityManagerInternal.class),
                     LocalServices.getService(UiModeManagerInternal.class),
                     mContext.getSystemService(KeyguardManager.class));
+
+            // Register component listeners
+            mUserLifecycle.registerListeners();
             mEventObserver.registerListeners();
         }
 
@@ -178,7 +182,6 @@ public class ThemeManagerService extends SystemService {
     public void onUserSwitching(@Nullable TargetUser from, @NonNull TargetUser to) {
         mUserLifecycle.onUserSwitching(from, to);
     }
-
 
     private boolean shouldForceReloadForVersion() {
         String storedVersion = Settings.Global.getString(mContext.getContentResolver(),

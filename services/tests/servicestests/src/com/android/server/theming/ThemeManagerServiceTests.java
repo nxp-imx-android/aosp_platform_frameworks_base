@@ -174,7 +174,7 @@ public class ThemeManagerServiceTests {
                 pair.getCurrentState().timeStamp());
 
         verify(mThemeUserLifecycle).onServicesReady(any(), any(), any());
-        verify(mThemeEventObserver).onServicesReady(any(), any(), any(), any());
+        verify(mThemeEventObserver).onServicesReady(any(), any(), any());
         verify(mThemeEventObserver).registerListeners();
     }
 
@@ -186,17 +186,6 @@ public class ThemeManagerServiceTests {
         mThemeManagerService.onUserStarting(user);
 
         verify(mThemeUserLifecycle).onUserStarting(user);
-    }
-
-    @Test
-    public void test_onUserSwitching_delegatesToLifecycle() {
-        mThemeManagerService = testableServiceStart();
-        SystemService.TargetUser from = new SystemService.TargetUser(new UserInfo(0, "from", 0));
-        SystemService.TargetUser to = new SystemService.TargetUser(new UserInfo(10, "to", 0));
-
-        mThemeManagerService.onUserSwitching(from, to);
-
-        verify(mThemeUserLifecycle).onUserSwitching(from, to);
     }
 
     private ThemeStatePair startProvisionedUser() {

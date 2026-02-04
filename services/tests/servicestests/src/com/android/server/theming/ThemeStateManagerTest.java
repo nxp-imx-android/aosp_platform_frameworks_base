@@ -579,6 +579,10 @@ public class ThemeStateManagerTest {
                 DEFAULT_CONTRAST, DEFAULT_STYLE);
         ThemeStatePair pair = mThemeStateManager.getState(DEFAULT_USER_ID);
 
+        // Mock color scheme as applied
+        when(mThemeOverlayHelper.isColorSchemeApplied(any(), anyInt(), any(), any())).thenReturn(
+                true);
+
         mThemeStateManager.onBootComplete(false);
         assertThat(pair.getPendingState()).isNull(); // there is no update
     }
@@ -587,6 +591,10 @@ public class ThemeStateManagerTest {
     public void testOnBootComplete_colorSchemeNotApplied_shouldForceUpdate() {
         // creates user with seed color red, not the same as the default google_blue
         ThemeStatePair pair = startProvisionedUser();
+
+        // Mock color scheme as NOT applied
+        when(mThemeOverlayHelper.isColorSchemeApplied(any(), anyInt(), any(), any())).thenReturn(
+                false);
 
         mThemeStateManager.onBootComplete(false);
         assertThat(pair.getPendingState()).isNotNull(); // there is an update

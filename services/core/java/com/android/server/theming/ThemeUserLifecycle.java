@@ -21,13 +21,17 @@ import static android.content.theming.FieldColorSource.VALUE_PRESET;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.theming.ThemeSettings;
 import android.os.UserHandle;
 import android.provider.Settings;
 import android.util.Slog;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.os.BackgroundThread;
 import com.android.server.SystemService;
 import com.android.server.UiModeManagerInternal;
 import com.android.server.pm.UserManagerInternal;
@@ -45,17 +49,18 @@ public class ThemeUserLifecycle {
 
     private final Context mContext;
     private final ThemeStateManager mStateManager;
-    private final ThemeManagerInternal mThemeManagerInternal;
+    private final ThemeSettingsManager mThemeSettingsManager;
+
     private ThemeWallpaperManager mWallpaperManager;
     private UserManagerInternal mUserManagerInternal;
     private UiModeManagerInternal mUiModeManagerInternal;
 
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
-    ThemeUserLifecycle(@NonNull Context context, @NonNull ThemeStateManager stateManager,
-            @NonNull ThemeManagerInternal themeManagerInternal) {
+    public ThemeUserLifecycle(@NonNull Context context, @NonNull ThemeStateManager stateManager,
+            @NonNull ThemeSettingsManager themeSettingsManager) {
         mContext = context;
         mStateManager = stateManager;
-        mThemeManagerInternal = themeManagerInternal;
+        mThemeSettingsManager = themeSettingsManager;
     }
 
     /**
@@ -67,6 +72,28 @@ public class ThemeUserLifecycle {
         mUserManagerInternal = userManager;
         mUiModeManagerInternal = uiModeManager;
         mWallpaperManager = wallpaperManager;
+    }
+
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
+    public final BroadcastReceiver mUserLifecycleReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (Intent.ACTION_PROFILE_ADDED.equals(intent.getAction())) {
+                handleProfileAdded(intent);
+            }
+        }
+    };
+
+    /**
+     * Registers for user-related system broadcasts.
+     */
+    public void registerListeners() {
+        final IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_PROFILE_ADDED);
+        filter.addDataScheme("package");
+
+        mContext.registerReceiver(mUserLifecycleReceiver, filter, null,
+                BackgroundThread.getHandler());
     }
 
     /**
@@ -83,7 +110,8 @@ public class ThemeUserLifecycle {
         }
 
         // check if seed color comes from wallpaper or preset
-        ThemeSettings userSettings = mThemeManagerInternal.getThemeSettingsOrDefault(userId);
+        ThemeSettings userSettings = mThemeSettingsManager.getSettingsOrDefault(userId,
+                mContext.getContentResolver());
 
         int seedColor = getEffectiveSeedColor(userSettings, userId);
 
@@ -135,7 +163,8 @@ public class ThemeUserLifecycle {
             return false;
         }
 
-        ThemeSettings userSettings = mThemeManagerInternal.getThemeSettingsOrDefault(userId);
+        ThemeSettings userSettings = mThemeSettingsManager.getSettingsOrDefault(userId,
+                mContext.getContentResolver());
         int seedColor = getEffectiveSeedColor(userSettings, userId);
 
         boolean isSetup = Settings.Secure.getIntForUser(mContext.getContentResolver(),
@@ -146,6 +175,23 @@ public class ThemeUserLifecycle {
                 userSettings.themeStyle());
 
         return mStateManager.hasState(userId);
+    }
+
+    private void handleProfileAdded(Intent intent) {
+        UserHandle newUserHandle = intent.getParcelableExtra(Intent.EXTRA_USER, UserHandle.class);
+        if (newUserHandle == null) return;
+        int newUserOrProfileId = newUserHandle.getIdentifier();
+
+        // Load the new user/profile's theme state immediately
+        loadUserStateAndNotifyStateManager(newUserOrProfileId);
+
+        Integer parentId = mStateManager.parentOf(newUserOrProfileId);
+        if (parentId == null || !loadUserStateAndNotifyStateManager(parentId)) {
+            return;
+        }
+
+        Slog.d(TAG, "User: " + newUserOrProfileId + " added to parent: " + parentId);
+        mStateManager.onProfileAdd(parentId, newUserOrProfileId);
     }
 
     /**

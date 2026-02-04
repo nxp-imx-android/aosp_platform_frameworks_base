@@ -18,13 +18,16 @@ package com.android.server.theming;
 
 import static android.util.TypedValue.TYPE_INT_COLOR_ARGB8;
 
+import android.content.Context;
 import android.content.om.FabricatedOverlay;
 import android.content.om.OverlayIdentifier;
 import android.content.om.OverlayManagerTransaction;
+import android.content.res.Resources;
 import android.os.UserHandle;
 import android.util.Pair;
 import android.util.Slog;
 
+import com.android.internal.R;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.om.OverlayManagerInternal;
 import com.android.systemui.monet.ColorScheme;
@@ -52,7 +55,7 @@ public class ThemeOverlayHelper {
 
     private final OverlayManagerInternal mOverlayManager;
 
-    ThemeOverlayHelper(OverlayManagerInternal overlayManager) {
+    public ThemeOverlayHelper(OverlayManagerInternal overlayManager) {
         mOverlayManager = overlayManager;
     }
 
@@ -85,6 +88,62 @@ public class ThemeOverlayHelper {
         }
 
         return false;
+    }
+
+    /**
+     * Checks if the given ColorSchemes are correctly applied to the user's resources.
+     * <p>
+     * Note: This is a heuristic check and does not verify every single color. It checks a
+     * representative subset of colors to determine if the ColorScheme is generally applied.
+     *
+     * @param context     The system context.
+     * @param userId      The user ID to check.
+     * @param darkScheme  The expected dark color scheme.
+     * @param lightScheme The expected light color scheme.
+     * @return {@code true} if the colors match the expected schemes.
+     */
+    public boolean isColorSchemeApplied(Context context, int userId, ColorScheme darkScheme,
+            ColorScheme lightScheme) {
+        Resources res = context.createContextAsUser(UserHandle.of(userId), 0).getResources();
+
+        try {
+            return res.getColor(R.color.system_accent1_500_dark)
+                    == darkScheme.getAccent1().getS500()
+                    && res.getColor(R.color.system_accent1_500_light)
+                    == lightScheme.getAccent1().getS500()
+
+                    && res.getColor(com.android.internal.R.color.system_accent2_500_dark)
+                    == darkScheme.getAccent2().getS500()
+                    && res.getColor(R.color.system_accent2_500_light)
+                    == lightScheme.getAccent2().getS500()
+
+                    && res.getColor(com.android.internal.R.color.system_accent3_500_dark)
+                    == darkScheme.getAccent3().getS500()
+                    && res.getColor(R.color.system_accent3_500_light)
+                    == lightScheme.getAccent3().getS500()
+
+                    && res.getColor(com.android.internal.R.color.system_neutral1_500_dark)
+                    == darkScheme.getNeutral1().getS500()
+                    && res.getColor(R.color.system_neutral1_500_light)
+                    == lightScheme.getNeutral1().getS500()
+
+                    && res.getColor(com.android.internal.R.color.system_neutral2_500_dark)
+                    == darkScheme.getNeutral2().getS500()
+                    && res.getColor(R.color.system_neutral2_500_light)
+                    == lightScheme.getNeutral2().getS500()
+
+                    && res.getColor(android.R.color.system_outline_variant_dark)
+                    == darkScheme.getMaterialScheme().getOutlineVariant()
+                    && res.getColor(android.R.color.system_outline_variant_light)
+                    == lightScheme.getMaterialScheme().getOutlineVariant()
+
+                    && res.getColor(android.R.color.system_primary_container_dark)
+                    == darkScheme.getMaterialScheme().getPrimaryContainer()
+                    && res.getColor(android.R.color.system_primary_container_light)
+                    == lightScheme.getMaterialScheme().getPrimaryContainer();
+        } catch (Resources.NotFoundException e) {
+            return false;
+        }
     }
 
     /**
