@@ -28,7 +28,6 @@ import static android.view.MotionEvent.ACTION_CANCEL;
 import static android.view.MotionEvent.ACTION_DOWN;
 import static android.view.MotionEvent.ACTION_UP;
 import static android.view.WindowManager.TRANSIT_CHANGE;
-import static android.window.DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION;
 import static android.window.DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION_ALWAYS;
 
 import static com.android.internal.policy.SystemBarUtils.getDesktopViewAppHeaderHeightId;
@@ -1159,14 +1158,12 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 // even when the caption touchable region is not being limited.
                 relayoutParams.mInputFeatures |= WindowManager.LayoutParams.INPUT_FEATURE_SPY;
             } else {
-                if (ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION.isTrue()) {
-                    if (shouldExcludeCaptionFromAppBounds) {
-                        relayoutParams.mShouldSetAppBounds = true;
-                    } else {
-                        // Force-consume the caption bar insets when the app tries to hide the
-                        // caption. This improves app compatibility of immersive apps.
-                        relayoutParams.mInsetSourceFlags |= FLAG_FORCE_CONSUMING;
-                    }
+                if (shouldExcludeCaptionFromAppBounds) {
+                    relayoutParams.mShouldSetAppBounds = true;
+                } else {
+                    // Force-consume the caption bar insets when the app tries to hide the
+                    // caption. This improves app compatibility of immersive apps.
+                    relayoutParams.mInsetSourceFlags |= FLAG_FORCE_CONSUMING;
                 }
             }
             if (ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION_ALWAYS.isTrue()) {
