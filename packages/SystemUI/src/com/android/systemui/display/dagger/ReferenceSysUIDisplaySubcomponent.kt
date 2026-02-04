@@ -19,6 +19,7 @@ package com.android.systemui.display.dagger
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayId
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
+import com.android.systemui.statusbar.gesture.StatusBarLongPressGestureDetector
 import com.android.systemui.statusbar.phone.fragment.dagger.HomeStatusBarComponent
 import com.android.systemui.statusbar.pipeline.shared.ui.binder.HomeStatusBarViewBinder
 import com.android.systemui.statusbar.pipeline.shared.ui.composable.StatusBarRootFactory
@@ -49,6 +50,8 @@ interface ReferenceSysUIDisplaySubcomponent : SystemUIDisplaySubcomponent {
     @get:DisplayAware val homeStatusBarViewModelFactory: HomeStatusBarViewModelFactory
 
     @get:DisplayAware val homeStatusBarViewBinder: HomeStatusBarViewBinder
+
+    @get:DisplayAware val statusBarLongPressGestureDetector: StatusBarLongPressGestureDetector
 
     @get:DisplayAware val statusBarRootFactory: StatusBarRootFactory
 

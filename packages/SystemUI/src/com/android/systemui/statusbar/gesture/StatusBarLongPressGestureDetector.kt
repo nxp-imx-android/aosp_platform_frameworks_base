@@ -14,28 +14,29 @@
  * limitations under the License.
  */
 
-package com.android.systemui.shade
+package com.android.systemui.statusbar.gesture
 
 import android.content.Context
 import android.view.GestureDetector
 import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.MotionEvent
-import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.shade.ShadeController
+import com.android.systemui.shade.ShadeViewController
 import com.android.systemui.statusbar.policy.DeviceProvisionedController
-import javax.inject.Inject
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 
 /** Accepts touch events, detects long press, and calls ShadeViewController#onStatusBarLongPress. */
-@SysUISingleton
 class StatusBarLongPressGestureDetector
-@Inject
+@AssistedInject
 constructor(
-    // TODO b/383125226 - Make this class per-display
-    @Main context: Context,
+    @Assisted private val context: Context,
     val shadeViewController: ShadeViewController,
     val shadeController: ShadeController,
     val deviceProvisionedController: DeviceProvisionedController,
 ) {
+
     val gestureDetector =
         GestureDetector(
             context,
@@ -54,5 +55,10 @@ constructor(
     /** Accepts touch events to detect long presses. */
     fun handleTouch(ev: MotionEvent) {
         gestureDetector.onTouchEvent(ev)
+    }
+
+    @AssistedFactory
+    interface Factory {
+        fun create(context: Context): StatusBarLongPressGestureDetector
     }
 }

@@ -47,7 +47,9 @@ import com.android.systemui.statusbar.events.SystemStatusAnimationScheduler
 import com.android.systemui.statusbar.events.domain.interactor.SystemStatusEventAnimationInteractor
 import com.android.systemui.statusbar.events.domain.interactor.systemStatusEventAnimationInteractor
 import com.android.systemui.statusbar.events.systemStatusAnimationScheduler
+import com.android.systemui.statusbar.gesture.StatusBarLongPressGestureDetector
 import com.android.systemui.statusbar.gesture.SwipeStatusBarAwayGestureHandler
+import com.android.systemui.statusbar.gesture.statusBarLongPressGestureDetector
 import com.android.systemui.statusbar.gesture.swipeStatusBarAwayGestureHandler
 import com.android.systemui.statusbar.layout.StatusBarContentInsetsProvider
 import com.android.systemui.statusbar.layout.mockStatusBarContentInsetsProvider
@@ -121,6 +123,9 @@ fun Kosmos.createFakeDisplaySubcomponent(
     statusBarWindowStateRepository: () -> StatusBarWindowStatePerDisplayRepository = {
         this.fakeStatusBarWindowStatePerDisplayRepository
     },
+    statusBarLongPressGestureDetector: () -> StatusBarLongPressGestureDetector = {
+        this.statusBarLongPressGestureDetector
+    },
 ): ReferenceSysUIDisplaySubcomponent {
     return object : ReferenceSysUIDisplaySubcomponent {
         override val displayCoroutineScope: CoroutineScope
@@ -182,6 +187,9 @@ fun Kosmos.createFakeDisplaySubcomponent(
 
         override val sysuiDarkIconDispatcher: SysuiDarkIconDispatcher
             get() = sysUiDarkIconDispatcher()
+
+        override val statusBarLongPressGestureDetector: StatusBarLongPressGestureDetector
+            get() = statusBarLongPressGestureDetector()
 
         override val homeStatusBarViewModelFactory: HomeStatusBarViewModelFactory
             get() =
