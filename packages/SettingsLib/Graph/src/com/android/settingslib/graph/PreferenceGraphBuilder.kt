@@ -25,6 +25,7 @@ import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import androidx.fragment.app.Fragment
 import androidx.preference.Preference
@@ -661,12 +662,21 @@ fun <T> PersistentPreference<T>.evalWritePermit(
 ): Int? {
     val isDebuggable = AppUtils.isDebuggable()
 
+    // Use the global setting as a gate for debug environments
+    val hasUnknownSensitivitySettings = Settings.Global.getInt(
+        context.contentResolver,
+        "com.android.settings.UNKNOWN_SENSITIVITY_IS_AVAILABLE",
+        0
+    ) == 1
+
     return when {
         // High sensitivity is strictly disallowed.
         sensitivityLevel == HIGH_SENSITIVITY -> ReadWritePermit.DISALLOW
 
-        // Unknown sensitivity is disallowed, unless we are on a debuggable build.
-        sensitivityLevel == UNKNOWN_SENSITIVITY && !isDebuggable -> ReadWritePermit.DISALLOW
+        // Unknown sensitivity is disallowed, unless we are on a debuggable build
+        // and the caller holds the WRITE_SECURE_SETTINGS permission.
+        sensitivityLevel == UNKNOWN_SENSITIVITY &&
+                !(isDebuggable && hasUnknownSensitivitySettings) -> ReadWritePermit.DISALLOW
 
         // If the app lacks the required permissions, require them.
         getWritePermissions(context)?.check(context, callingPid, callingUid) == false ->
