@@ -175,6 +175,7 @@ import com.android.systemui.topui.TopUiModule;
 import com.android.systemui.touchpad.TouchpadModule;
 import com.android.systemui.tuner.dagger.TunerModule;
 import com.android.systemui.uimode.data.UiModeModule;
+import com.android.systemui.usb.UsbModule;
 import com.android.systemui.user.UserModule;
 import com.android.systemui.user.domain.UserDomainLayerModule;
 import com.android.systemui.util.EventLogModule;
@@ -313,6 +314,7 @@ import javax.inject.Named;
         TopUiModule.class,
         TouchpadModule.class,
         TunerModule.class,
+        UsbModule.class,
         UiModeModule.class,
         UserDomainLayerModule.class,
         UserModule.class,

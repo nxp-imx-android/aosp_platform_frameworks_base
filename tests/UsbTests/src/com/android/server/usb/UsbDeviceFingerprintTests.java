@@ -29,7 +29,6 @@ import static org.mockito.Mockito.when;
 import android.hardware.usb.IUsbSerialReader;
 import android.hardware.usb.UsbConfiguration;
 import android.hardware.usb.UsbDevice;
-import android.hardware.usb.flags.Flags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.Pair;
@@ -53,6 +52,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+@EnableFlags({
+    android.hardware.usb.flags.Flags.FLAG_ENABLE_PERSISTENT_USB_DEVICE_PERMISSIONS,
+    com.android.server.usb.flags.Flags.FLAG_ENABLE_USB_HOST_AUTHORIZATION
+})
 public class UsbDeviceFingerprintTests {
     @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
@@ -145,8 +148,11 @@ public class UsbDeviceFingerprintTests {
                 .build(new LocalSerialReader(serialNumber));
     }
 
+    private long now() {
+        return System.currentTimeMillis();
+    }
+
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_PERSISTENT_USB_DEVICE_PERMISSIONS})
     public void testHashcode() throws NoSuchAlgorithmException {
         byte[] testData = "test data".getBytes();
         Hashcode.Hasher hasher = Hashcode.getHasher();
@@ -160,7 +166,6 @@ public class UsbDeviceFingerprintTests {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_PERSISTENT_USB_DEVICE_PERMISSIONS})
     public void testHashcodeEquals() {
         Hashcode first = Hashcode.getHasher().putBytes(DESCRIPTOR_SERIAL_ONLY).hash();
         Hashcode second = Hashcode.getHasher().putBytes(DESCRIPTOR_SERIAL_ONLY).hash();
@@ -173,7 +178,6 @@ public class UsbDeviceFingerprintTests {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_PERSISTENT_USB_DEVICE_PERMISSIONS})
     public void testCreateEmptyHashcode() {
         Hashcode hashcode = Hashcode.createEmptyHashcode();
         byte[] expected = new byte[32];
@@ -182,7 +186,6 @@ public class UsbDeviceFingerprintTests {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_PERSISTENT_USB_DEVICE_PERMISSIONS})
     public void testFingerprintWithSerialNumber() {
         UsbDevice device = spy(getDeviceCopy("12345"));
 
@@ -197,7 +200,8 @@ public class UsbDeviceFingerprintTests {
                         mockDescriptorParser,
                         NO_PATH_COMPARISON,
                         mTempDir.getAbsolutePath(),
-                        UsbDescriptorParser::fromDeviceAddress);
+                        UsbDescriptorParser::fromDeviceAddress,
+                        now());
 
         assertEquals(
                 UsbDeviceFingerprint.HASHCODE_WITH_SERIAL_NUMBER, fingerprint.getHashcodeQuality());
@@ -205,7 +209,6 @@ public class UsbDeviceFingerprintTests {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_PERSISTENT_USB_DEVICE_PERMISSIONS})
     public void testFingerprintDirectConnection() throws IOException {
         String deviceAddr = "/dev/bus/usb/001/002";
         UsbDevice device = spy(getDeviceCopy(null));
@@ -237,7 +240,8 @@ public class UsbDeviceFingerprintTests {
                         descriptorParser,
                         NO_PATH_COMPARISON,
                         sysfsPrefix,
-                        mockParserFactory);
+                        mockParserFactory,
+                        now());
 
         assertEquals(descriptorHash.asInt(), fingerprint.hashCode());
         assertEquals(
@@ -247,7 +251,6 @@ public class UsbDeviceFingerprintTests {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_PERSISTENT_USB_DEVICE_PERMISSIONS})
     public void testFingerprintWithHubTopology() throws IOException {
         String deviceAddr = "/dev/bus/usb/001/003";
         UsbDevice device = spy(getDeviceCopy(null));
@@ -292,7 +295,8 @@ public class UsbDeviceFingerprintTests {
                         descriptorParser,
                         NO_PATH_COMPARISON,
                         sysfsPrefix,
-                        mockParserFactory);
+                        mockParserFactory,
+                        now());
 
         Hashcode descriptorHash = Hashcode.getHasher().putBytes(DESCRIPTOR_NOSERIAL).hash();
         Hashcode pathHash =
@@ -318,7 +322,8 @@ public class UsbDeviceFingerprintTests {
                         descriptorParser,
                         NO_PATH_COMPARISON,
                         sysfsPrefix,
-                        mockParserFactory);
+                        mockParserFactory,
+                        now());
 
         descriptorHash = Hashcode.getHasher().putBytes(DESCRIPTOR_NOSERIAL).hash();
         pathHash =
@@ -332,7 +337,6 @@ public class UsbDeviceFingerprintTests {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_PERSISTENT_USB_DEVICE_PERMISSIONS})
     public void testEqualsAndHashCode() throws IOException {
         UsbDevice device = spy(getDeviceCopy("SERIAL1"));
         doReturn(new Pair<>(1, 2)).when(device).getBusAndDeviceNumber();
@@ -349,7 +353,8 @@ public class UsbDeviceFingerprintTests {
                         mockDescriptorParser1,
                         NO_PATH_COMPARISON,
                         mTempDir.getAbsolutePath(),
-                        UsbDescriptorParser::fromDeviceAddress);
+                        UsbDescriptorParser::fromDeviceAddress,
+                        now());
 
         UsbDevice mockUsbDevice2 = spy(getDeviceCopy("SERIAL1"));
         doReturn(new Pair<>(1, 2)).when(mockUsbDevice2).getBusAndDeviceNumber();
@@ -366,7 +371,8 @@ public class UsbDeviceFingerprintTests {
                         mockDescriptorParser2,
                         NO_PATH_COMPARISON,
                         mTempDir.getAbsolutePath(),
-                        UsbDescriptorParser::fromDeviceAddress);
+                        UsbDescriptorParser::fromDeviceAddress,
+                        now());
 
         // Test equality when descriptors are the same.
         assertEquals(fingerprint1.getHashcodeQuality(), fingerprint2.getHashcodeQuality());
@@ -389,7 +395,8 @@ public class UsbDeviceFingerprintTests {
                         mockDescriptorParser3,
                         NO_PATH_COMPARISON,
                         mTempDir.getAbsolutePath(),
-                        UsbDescriptorParser::fromDeviceAddress);
+                        UsbDescriptorParser::fromDeviceAddress,
+                        now());
 
         // Test inequality - hashcode will be same (based off descriptors) but unequal (due to
         // serial number).
@@ -412,10 +419,107 @@ public class UsbDeviceFingerprintTests {
                         mockDescriptorParser4,
                         NO_PATH_COMPARISON,
                         mTempDir.getAbsolutePath(),
-                        UsbDescriptorParser::fromDeviceAddress);
+                        UsbDescriptorParser::fromDeviceAddress,
+                        now());
 
         // Test inequality
         assertNotEquals(fingerprint1.hashCode(), fingerprint4.hashCode());
         assertNotEquals(fingerprint1, fingerprint4);
+    }
+
+    @Test
+    public void testLastSeen_updateToNow() {
+        long testStartedAt = now();
+
+        UsbDevice device = spy(getDeviceCopy("12345"));
+        Hashcode descriptorHash = Hashcode.getHasher().putBytes(DESCRIPTOR_SERIAL_ONLY).hash();
+        UsbDescriptorParser mockDescriptorParser = mock(UsbDescriptorParser.class);
+        when(mockDescriptorParser.getDescriptorHashcode()).thenReturn(descriptorHash);
+
+        UsbDeviceFingerprint fingerprint =
+                UsbDeviceFingerprint.createLiveFingerprintInternal(
+                        device,
+                        mockDescriptorParser,
+                        NO_PATH_COMPARISON,
+                        mTempDir.getAbsolutePath(),
+                        UsbDescriptorParser::fromDeviceAddress,
+                        testStartedAt - 100);
+
+        assertTrue(testStartedAt > fingerprint.getLastSeenMs());
+        assertFalse(fingerprint.isStale());
+        fingerprint.updateLastSeenToNow();
+        assertTrue(fingerprint.getLastSeenMs() >= testStartedAt);
+    }
+
+    @Test
+    public void testLastSeen_checkStaleDates() {
+        long startTime = now() - 1;
+        long serial_stale = startTime - UsbDeviceFingerprint.PERSIST_DURATION_WITH_SERIAL_MS;
+        long noserial_stale = startTime - UsbDeviceFingerprint.PERSIST_DURATION_WITHOUT_SERIAL_MS;
+
+        // Test assumption is that we keep devices with serial numbers longer.
+        assertTrue(
+                UsbDeviceFingerprint.PERSIST_DURATION_WITH_SERIAL_MS
+                        > UsbDeviceFingerprint.PERSIST_DURATION_WITHOUT_SERIAL_MS);
+
+        UsbDevice device = spy(getDeviceCopy("12345"));
+        Hashcode descriptorHash = Hashcode.getHasher().putBytes(DESCRIPTOR_SERIAL_ONLY).hash();
+        UsbDescriptorParser mockDescriptorParser = mock(UsbDescriptorParser.class);
+        when(mockDescriptorParser.getDescriptorHashcode()).thenReturn(descriptorHash);
+
+        UsbDeviceFingerprint fingerprint =
+                UsbDeviceFingerprint.createLiveFingerprintInternal(
+                        device,
+                        mockDescriptorParser,
+                        NO_PATH_COMPARISON,
+                        mTempDir.getAbsolutePath(),
+                        UsbDescriptorParser::fromDeviceAddress,
+                        serial_stale);
+
+        assertEquals(
+                UsbDeviceFingerprint.HASHCODE_WITH_SERIAL_NUMBER, fingerprint.getHashcodeQuality());
+        assertTrue(fingerprint.isStale());
+
+        fingerprint =
+                UsbDeviceFingerprint.createLiveFingerprintInternal(
+                        device,
+                        mockDescriptorParser,
+                        NO_PATH_COMPARISON,
+                        mTempDir.getAbsolutePath(),
+                        UsbDescriptorParser::fromDeviceAddress,
+                        noserial_stale);
+
+        assertEquals(
+                UsbDeviceFingerprint.HASHCODE_WITH_SERIAL_NUMBER, fingerprint.getHashcodeQuality());
+        assertFalse(fingerprint.isStale());
+
+        // Now create a device with no serial number.
+        device = spy(getDeviceCopy(null));
+        descriptorHash = Hashcode.getHasher().putBytes(DESCRIPTOR_NOSERIAL).hash();
+        mockDescriptorParser = mock(UsbDescriptorParser.class);
+        when(mockDescriptorParser.getDescriptorHashcode()).thenReturn(descriptorHash);
+
+        fingerprint =
+                UsbDeviceFingerprint.createLiveFingerprintInternal(
+                        device,
+                        mockDescriptorParser,
+                        NO_PATH_COMPARISON,
+                        mTempDir.getAbsolutePath(),
+                        UsbDescriptorParser::fromDeviceAddress,
+                        startTime);
+
+        // If we're close to the start time, the fingerprint shouldn't be stale.
+        assertFalse(fingerprint.isStale());
+
+        fingerprint =
+                UsbDeviceFingerprint.createLiveFingerprintInternal(
+                        device,
+                        mockDescriptorParser,
+                        NO_PATH_COMPARISON,
+                        mTempDir.getAbsolutePath(),
+                        UsbDescriptorParser::fromDeviceAddress,
+                        noserial_stale);
+
+        assertTrue(fingerprint.isStale());
     }
 }

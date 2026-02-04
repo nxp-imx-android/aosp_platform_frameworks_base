@@ -42,6 +42,7 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -220,6 +221,13 @@ public class UsbDeviceFingerprint {
     private static final String DEVICEPATH_HASH_ATTR_TAG = "devicepath-hash";
     private static final String HASHCODE_QUALITY_ATTR_TAG = "hashcode-quality";
     private static final String COMPARE_DEVPATHS_ATTR_TAG = "compare-device-paths";
+    private static final String LAST_SEEN_ATTR_TAG = "last-seen";
+
+    // Devices with serial numbers will retain data for 30 days since they were last seen.
+    static final long PERSIST_DURATION_WITH_SERIAL_MS = TimeUnit.DAYS.toMillis(30);
+
+    // Devices without serial numbers will retain data for 7 days since they were last seen.
+    static final long PERSIST_DURATION_WITHOUT_SERIAL_MS = TimeUnit.DAYS.toMillis(7);
 
     // Information about the device being fingerprinted.
     private DeviceFilter mDeviceFilter;
@@ -243,6 +251,10 @@ public class UsbDeviceFingerprint {
     // Whether to check device paths for equivalence.
     boolean mCompareDevicePaths;
 
+    // When was this device/fingerprint last seen on the system? Used for trimming away
+    // devices that have not been used/seen in a while.
+    long mLastSeenMs;
+
     // Private constructor requiring a DeviceFilter and descriptor hash code.
     //
     // @param deviceFilter - Serializable representation of a Usb Device
@@ -254,12 +266,14 @@ public class UsbDeviceFingerprint {
             Hashcode descriptorHashcode,
             Hashcode devicePathHashcode,
             int hashcodeQuality,
-            boolean compareDevicePaths) {
+            boolean compareDevicePaths,
+            long lastSeenTimestamp) {
         mDeviceFilter = deviceFilter;
         mDescriptorHashcode = descriptorHashcode;
         mDevicePathHashcode = devicePathHashcode;
         mHashcodeQuality = hashcodeQuality;
         mCompareDevicePaths = compareDevicePaths;
+        mLastSeenMs = lastSeenTimestamp;
 
         // Java hashcode is simply the first 4 bytes of descriptor hashcode
         mTruncatedHashcode = mDescriptorHashcode.asInt();
@@ -271,6 +285,7 @@ public class UsbDeviceFingerprint {
         this.mDevicePathHashcode = new Hashcode(other.mDevicePathHashcode);
         this.mHashcodeQuality = other.mHashcodeQuality;
         this.mCompareDevicePaths = other.mCompareDevicePaths;
+        this.mLastSeenMs = other.mLastSeenMs;
     }
 
     // Read the file from given directory or return empty string on error.
@@ -424,12 +439,14 @@ public class UsbDeviceFingerprint {
      */
     public static UsbDeviceFingerprint createLiveFingerprint(
             UsbDevice device, UsbDescriptorParser descriptorParser) {
+        long lastSeenMs = System.currentTimeMillis();
         return createLiveFingerprintInternal(
                 device,
                 descriptorParser,
                 COMPARE_PATHS_DEFAULT,
                 SYSFS_USB_DEVICES_PATH,
-                UsbDescriptorParser::fromDeviceAddress);
+                UsbDescriptorParser::fromDeviceAddress,
+                lastSeenMs);
     }
 
     /** Internal factory method that allows injecting a UsbDescriptorParser factory. */
@@ -438,7 +455,8 @@ public class UsbDeviceFingerprint {
             UsbDescriptorParser descriptorParser,
             boolean compareDevicePaths,
             String sysfsPrefix,
-            Function<String, UsbDescriptorParser> parserFactory) {
+            Function<String, UsbDescriptorParser> parserFactory,
+            long lastSeenMs) {
         DeviceFilter df = new DeviceFilter(device);
 
         // Start with worst hash quality and empty hashcode.
@@ -463,7 +481,8 @@ public class UsbDeviceFingerprint {
                 descriptorParser.getDescriptorHashcode(),
                 devicePathHashcode,
                 hashQuality,
-                compareDevicePaths);
+                compareDevicePaths,
+                lastSeenMs);
     }
 
     /**
@@ -484,6 +503,8 @@ public class UsbDeviceFingerprint {
             int hashQuality = parser.getAttributeInt(null, HASHCODE_QUALITY_ATTR_TAG);
             boolean compareDevicePaths =
                     parser.getAttributeBoolean(null, COMPARE_DEVPATHS_ATTR_TAG);
+            long lastSeen = parser.getAttributeLong(
+                    null, LAST_SEEN_ATTR_TAG, System.currentTimeMillis());
 
             XmlUtils.nextElementWithin(parser, outerDepth);
 
@@ -498,7 +519,8 @@ public class UsbDeviceFingerprint {
                         descriptorHash,
                         devicePathHash,
                         hashQuality,
-                        compareDevicePaths);
+                        compareDevicePaths,
+                        lastSeen);
             } else {
                 Slog.e(TAG, "error reading fingerprint data");
             }
@@ -522,6 +544,7 @@ public class UsbDeviceFingerprint {
         serializer.attribute(null, DEVICEPATH_HASH_ATTR_TAG, mDevicePathHashcode.toString());
         serializer.attributeInt(null, HASHCODE_QUALITY_ATTR_TAG, mHashcodeQuality);
         serializer.attributeBoolean(null, COMPARE_DEVPATHS_ATTR_TAG, mCompareDevicePaths);
+        serializer.attributeLong(null, LAST_SEEN_ATTR_TAG, mLastSeenMs);
         mDeviceFilter.write(serializer);
         serializer.endTag(null, XML_ROOT_NAME);
     }
@@ -561,5 +584,40 @@ public class UsbDeviceFingerprint {
     // susceptible to spoofing or collisions.
     public int getHashcodeQuality() {
         return mHashcodeQuality;
+    }
+
+    /** Get the time this device as last seen (timestamp in milliseconds). */
+    public long getLastSeenMs() {
+        return mLastSeenMs;
+    }
+
+    /** Update when this device was last seen to now. */
+    public void updateLastSeenToNow() {
+        mLastSeenMs = System.currentTimeMillis();
+    }
+
+    /**
+     * Check if this fingerprint is for a device that hasn't been seen recently.
+     *
+     * <p>Depending on the quality of the fingerprint (with serial number or without), the duration
+     * used for this check is different.
+     *
+     * @return True if the fingerprint is stale, False otherwise
+     */
+    public boolean isStale() {
+        long now = System.currentTimeMillis();
+
+        // Fingerprint is from the future so it's not stale.
+        if (now < mLastSeenMs) {
+            return false;
+        }
+
+        long delta = now - mLastSeenMs;
+
+        if (getHashcodeQuality() == HASHCODE_WITH_SERIAL_NUMBER) {
+            return delta > PERSIST_DURATION_WITH_SERIAL_MS;
+        } else {
+            return delta > PERSIST_DURATION_WITHOUT_SERIAL_MS;
+        }
     }
 }

@@ -417,6 +417,7 @@
   <java-symbol type="string" name="config_usbAccessoryUriActivity" />
   <java-symbol type="string" name="config_usbConfirmActivity" />
   <java-symbol type="string" name="config_usbResolverActivity" />
+  <java-symbol type="string" name="config_usbAuthorizationActivity" />
   <java-symbol type="string" name="config_sensorUseStartedActivity" />
   <java-symbol type="string" name="config_sensorUseStartedActivity_hwToggle" />
   <java-symbol type="string" name="config_sensorStateChangedActivity" />
