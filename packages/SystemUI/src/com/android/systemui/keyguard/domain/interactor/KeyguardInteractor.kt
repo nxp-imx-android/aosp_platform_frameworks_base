@@ -19,6 +19,7 @@ import android.app.StatusBarManager
 import android.graphics.Point
 import android.util.Log
 import android.util.MathUtils
+import androidx.compose.runtime.Stable
 import com.android.internal.widget.LockPatternUtils
 import com.android.systemui.bouncer.data.repository.KeyguardBouncerRepository
 import com.android.systemui.common.shared.model.NotificationContainerBounds
@@ -87,6 +88,7 @@ import kotlinx.coroutines.flow.transform
  * Encapsulates business-logic related to the keyguard but not to a more specific part within it.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
+@Stable
 @SysUISingleton
 class KeyguardInteractor
 @Inject
