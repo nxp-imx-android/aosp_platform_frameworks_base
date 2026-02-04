@@ -2092,7 +2092,7 @@ public class LockSettingsService extends ILockSettings.Stub {
                 setDeviceUnlockedForUser(userId);
             }
             notifySeparateProfileChallengeChanged(userId);
-            onPostPasswordChanged(credential, userId);
+            onPostLockCredentialChanged(credential, userId);
             return true;
         } finally {
             Binder.restoreCallingIdentity(identity);
@@ -2197,7 +2197,7 @@ public class LockSettingsService extends ILockSettings.Stub {
         }
     }
 
-    private void onPostPasswordChanged(LockscreenCredential newCredential, int userId) {
+    private void onPostLockCredentialChanged(LockscreenCredential newCredential, int userId) {
         updatePasswordHistory(newCredential, userId);
         mContext.getSystemService(TrustManager.class).reportEnabledTrustAgentsChanged(userId);
         sendMainUserCredentialChangedNotificationIfNeeded(userId);
@@ -4132,7 +4132,7 @@ public class LockSettingsService extends ILockSettings.Stub {
                     credential, tokenHandle, token, userId)) {
                 return false;
             }
-            onPostPasswordChanged(credential, userId);
+            onPostLockCredentialChanged(credential, userId);
             return true;
         }
 
