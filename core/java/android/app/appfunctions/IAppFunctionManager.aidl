@@ -16,8 +16,10 @@
 
 package android.app.appfunctions;
 
+import android.app.appfunctions.AppFunctionActivityId;
 import android.app.appfunctions.AppFunctionAidlSearchSpec;
 import android.app.appfunctions.ExecuteAppFunctionAidlRequest;
+import android.app.appfunctions.IGetAppFunctionActivityStatesCallback;
 import android.app.appfunctions.IIsAppFunctionEnabledCallback;
 import android.app.appfunctions.ISetAppFunctionEnabledCallback;
 import android.app.appfunctions.IExecuteAppFunctionCallback;
@@ -145,4 +147,10 @@ interface IAppFunctionManager {
         in String callingPackageName,
         int targetUserId,
         in IGetAppFunctionStatesCallback callback);
+
+    void getAppFunctionActivityStates(
+        in List<AppFunctionActivityId> activityIds,
+        in String callingPackageName,
+        int targetUserId,
+        in IGetAppFunctionActivityStatesCallback callback);
 }

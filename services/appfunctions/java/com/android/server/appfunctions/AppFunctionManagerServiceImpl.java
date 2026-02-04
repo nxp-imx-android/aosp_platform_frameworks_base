@@ -46,6 +46,7 @@ import android.app.appfunctions.AppFunctionName;
 import android.app.appfunctions.AppFunctionRuntimeMetadata;
 import android.app.appfunctions.AppFunctionSearchSpec;
 import android.app.appfunctions.AppFunctionStateList;
+import android.app.appfunctions.AppFunctionActivityStateList;
 import android.app.appfunctions.AppFunctionStaticMetadataHelper;
 import android.app.appfunctions.AppFunctionUriGrant;
 import android.app.appfunctions.ExecuteAppFunctionAidlRequest;
@@ -58,6 +59,7 @@ import android.app.appfunctions.IAppFunctionService;
 import android.app.appfunctions.ICancellationCallback;
 import android.app.appfunctions.IExecuteAppFunctionCallback;
 import android.app.appfunctions.IGetAppFunctionStatesCallback;
+import android.app.appfunctions.IGetAppFunctionActivityStatesCallback;
 import android.app.appfunctions.IIsAppFunctionEnabledCallback;
 import android.app.appfunctions.IObserveAppFunctionChangesCallback;
 import android.app.appfunctions.IOnAppFunctionAccessChangeListener;
@@ -580,36 +582,82 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                             new FutureGlobalSearchSession(
                                     perUserAppSearchManager, THREAD_POOL_EXECUTOR);
 
-                    final long token = Binder.clearCallingIdentity();
-                    try {
-                        var unused =
-                                mAppFunctionMetadataReader
-                                        .getAppFunctionStates(
-                                                futureGlobalSearchSession,
-                                                visibleAppFunctionNames,
-                                                targetUserId)
-                                        .whenCompleteAsync(
-                                                (states, exception) -> {
-                                                    try {
-                                                        if (exception != null) {
-                                                            callback.onError(
-                                                                    new ParcelableException(
-                                                                            exception));
-                                                        } else {
-                                                            callback.onSuccess(
-                                                                    new AppFunctionStateList(
-                                                                            states));
-                                                        }
-                                                    } catch (RemoteException re) {
-                                                        Slog.w(TAG, "Fail to call onError");
-                                                    } finally {
-                                                        futureGlobalSearchSession.close();
+                    var unused =
+                            mAppFunctionMetadataReader
+                                    .getAppFunctionStates(
+                                            futureGlobalSearchSession,
+                                            visibleAppFunctionNames,
+                                            targetUserId)
+                                    .whenCompleteAsync(
+                                            (states, exception) -> {
+                                                try {
+                                                    if (exception != null) {
+                                                        callback.onError(
+                                                                new ParcelableException(exception));
+                                                    } else {
+                                                        callback.onSuccess(
+                                                                new AppFunctionStateList(states));
                                                     }
-                                                },
-                                                THREAD_POOL_EXECUTOR);
-                    } finally {
-                        Binder.restoreCallingIdentity(token);
-                    }
+                                                } catch (RemoteException re) {
+                                                    Slog.w(TAG, "Fail to call onError");
+                                                } finally {
+                                                    futureGlobalSearchSession.close();
+                                                }
+                                            },
+                                            THREAD_POOL_EXECUTOR);
+                });
+    }
+
+    @Override
+    public void getAppFunctionActivityStates(
+            @NonNull List<AppFunctionActivityId> activityIds,
+            @NonNull String callingPackageName,
+            int targetUserId,
+            @NonNull IGetAppFunctionActivityStatesCallback callback)
+            throws RemoteException {
+        Objects.requireNonNull(activityIds);
+        Objects.requireNonNull(callback);
+
+        final int callingUid = Binder.getCallingUid();
+        final int callingPid = Binder.getCallingPid();
+
+        try {
+            mCallerValidator.validateCallingPackage(callingPackageName);
+            mCallerValidator.verifyUserInteraction(
+                    /* targetUserId= */ targetUserId,
+                    /* callingUid= */ callingUid,
+                    /* callingPid= */ callingPid,
+                    /* callingPackageName= */ callingPackageName);
+        } catch (SecurityException e) {
+            try {
+                callback.onError(new ParcelableException(e));
+            } catch (RemoteException ex) {
+                Slog.e(TAG, "Failed to execute callback#onError.", e);
+            }
+            return;
+        }
+
+        THREAD_POOL_EXECUTOR.execute(
+                () -> {
+                    var unused =
+                            mAppFunctionMetadataReader
+                                    .getAppFunctionActivityStates(activityIds, targetUserId)
+                                    .whenCompleteAsync(
+                                            (states, exception) -> {
+                                                try {
+                                                    if (exception != null) {
+                                                        callback.onError(
+                                                                new ParcelableException(exception));
+                                                    } else {
+                                                        callback.onSuccess(
+                                                                new AppFunctionActivityStateList(
+                                                                        states));
+                                                    }
+                                                } catch (RemoteException ex) {
+                                                    Slog.w(TAG, "Fail to call onError", ex);
+                                                }
+                                            },
+                                            THREAD_POOL_EXECUTOR);
                 });
     }
 
