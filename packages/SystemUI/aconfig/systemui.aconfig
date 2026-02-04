@@ -1844,6 +1844,16 @@ flag {
 }
 
 flag {
+    name: "strong_auth_required_after_sign_out_message_fix"
+    namespace: "systemui"
+    description: "Fix Bouncer message when strong auth is required after sign out"
+    bug: "478831458"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "synchronized_queue_cascade_notify"
     namespace: "systemui"
     description: "Cascade notify() in SynchornizedLinkedBlockingQueue to prevent waking up all threads unnecessarily"
