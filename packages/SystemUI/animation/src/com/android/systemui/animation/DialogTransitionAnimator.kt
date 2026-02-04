@@ -823,10 +823,7 @@ private class AnimatedDialog(
         startController?.let { moveSourceDrawingToDialog(it) }
     }
 
-    private fun moveSourceDrawingToDialog(
-        controller: DialogTransitionAnimator.Controller,
-        isLaunch: Boolean = true,
-    ) {
+    private fun moveSourceDrawingToDialog(controller: DialogTransitionAnimator.Controller) {
         if (decorView.viewRootImpl == null) {
             // Make sure that we have access to the dialog view root to move the drawing to the
             // dialog overlay.
@@ -842,9 +839,7 @@ private class AnimatedDialog(
             controller,
             then = {
                 isSourceDrawnInDialog = true
-                if (isLaunch) {
-                    maybeStartLaunchAnimation(controller)
-                }
+                maybeStartLaunchAnimation(controller)
             },
         )
     }
@@ -985,12 +980,14 @@ private class AnimatedDialog(
 
         if (!shouldAnimateDialogIntoSource(endController) || endController == null) {
             endController?.onExitAnimationCancelled()
-            if (endController == null) {
-                // If we couldn't resolve the end controller, we notify the start controller that
-                // the
-                // exit animation was cancelled so it can perform any necessary cleanup (e.g.
-                // showing
-                // the source view again).
+            if (endController == null || TransitionAnimator.dynamicTargetResolutionEnabled()) {
+                /*
+                 * If we couldn't resolve the end controller, we notify the start controller that
+                 * the exit animation was cancelled so it can perform any necessary cleanup (e.g.
+                 * showing the source view again).
+                 *
+                 * Perform additional cleanup for the scenario when dialog resolution would be on.
+                 */
                 startController?.onExitAnimationCancelled()
             }
             onAnimationFinished(false /* instantDismiss */)
@@ -998,7 +995,6 @@ private class AnimatedDialog(
             return
         }
 
-        moveSourceDrawingToDialog(endController, false)
         startAnimation(
             controller = endController,
             isLaunching = false,
@@ -1021,6 +1017,16 @@ private class AnimatedDialog(
                 }
 
                 endController.stopDrawingInOverlay()
+                if (TransitionAnimator.dynamicTargetResolutionEnabled()) {
+                    /*
+                     * Perform additional cleanup for startController also.
+                     *
+                     * When dynamic resolution would be off, we would have same instance for
+                     * both start and end controller.
+                     *
+                     */
+                    startController?.stopDrawingInOverlay()
+                }
                 synchronizeNextDraw(endController) {
                     onAnimationFinished(true /* instantDismiss */)
                     onDialogDismissed(this@AnimatedDialog)
