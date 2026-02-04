@@ -418,10 +418,7 @@ import java.util.stream.Collectors;
     }
 
     private String getDeviceName(BluetoothDevice device) {
-        String deviceName =
-                Flags.enableUseOfBluetoothDeviceGetAliasForMr2infoGetName()
-                        ? device.getAlias()
-                        : device.getName();
+        String deviceName = device.getAlias();
         if (TextUtils.isEmpty(deviceName)) {
             deviceName = mContext.getResources().getText(R.string.unknownName).toString();
         }
