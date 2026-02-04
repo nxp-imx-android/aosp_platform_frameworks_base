@@ -120,6 +120,7 @@ import kotlinx.coroutines.flow.Flow
 object Shade {
     object Elements {
         val ShadeElement = ElementKey("ShadeElement")
+        val ShadeHeader = ElementKey("ShadeHeader")
         val BackgroundScrim =
             ElementKey("ShadeBackgroundScrim", contentPicker = LowestZIndexContentPicker)
     }
@@ -269,7 +270,7 @@ private fun ContentScope.SingleShade(
 
     val onlyPunchHolesInThisScene =
         layoutState.isTransitioningBetween(Scenes.Gone, Scenes.Shade) ||
-            layoutState.isTransitioning(from = Scenes.Lockscreen, to = Scenes.Shade)
+            layoutState.isTransitioningBetween(Scenes.Lockscreen, Scenes.Shade)
     val mediaInRow = viewModel.showMediaInRow
     val notificationStackPadding = dimensionResource(id = R.dimen.notification_side_paddings)
 
@@ -325,7 +326,11 @@ private fun ContentScope.SingleShade(
             shortContentOverscrollEffect = shortContentOverscrollEffect,
             jankMonitor = jankMonitor,
             statusBarHeader = {
-                CollapsedShadeHeader(viewModel = headerViewModel, isSplitShade = false)
+                CollapsedShadeHeader(
+                    viewModel = headerViewModel,
+                    isSplitShade = false,
+                    modifier = Modifier.element(Shade.Elements.ShadeHeader),
+                )
             },
             mediaAndQqsHeader = {
                 val qqsLayoutPaddingBottom = 16.dp
@@ -519,9 +524,10 @@ private fun ContentScope.SplitShade(
                 modifier =
                     // unfoldTranslationXForStartSide may be updated every frame, so only read value
                     // in the layout phase by using lambda.
-                    Modifier.padding(
-                        horizontal = { viewModel.unfoldTranslationXForStartSide.roundToInt() }
-                    ),
+                    Modifier.element(Shade.Elements.ShadeHeader)
+                        .padding(
+                            horizontal = { viewModel.unfoldTranslationXForStartSide.roundToInt() }
+                        ),
             )
 
             Row(modifier = Modifier.fillMaxWidth().weight(1f)) {

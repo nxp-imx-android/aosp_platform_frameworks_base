@@ -30,6 +30,7 @@ import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.SceneFamilies
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.shared.model.TransitionKeys.Instant
+import com.android.systemui.scene.shared.model.TransitionKeys.ToAlwaysOnDisplay
 import com.android.systemui.scene.shared.model.TransitionKeys.ToSplitShade
 import com.android.systemui.shade.ShadeOverlayBoundsListener
 import com.android.systemui.shade.data.repository.ShadeRepository
@@ -361,7 +362,13 @@ constructor(
                                 if (state.toContent == resolvedSceneKey) {
                                     state.progress
                                 } else if (state.fromContent == resolvedSceneKey) {
-                                    state.progress.map { progress -> 1 - progress }
+                                    if (state.key == ToAlwaysOnDisplay) {
+                                        // Keep the scene expanded during a transition to AOD,
+                                        // because it should fade out in place.
+                                        flowOf(1f)
+                                    } else {
+                                        state.progress.map { progress -> 1 - progress }
+                                    }
                                 } else {
                                     flowOf(0f)
                                 }
@@ -404,7 +411,13 @@ constructor(
                         if (state.toContent == overlay) {
                             state.progress
                         } else if (state.fromContent == overlay) {
-                            state.progress.map { progress -> 1 - progress }
+                            if (state.key == ToAlwaysOnDisplay) {
+                                // Keep the scene expanded during a transition to AOD,
+                                // because it should fade out in place.
+                                flowOf(1f)
+                            } else {
+                                state.progress.map { progress -> 1 - progress }
+                            }
                         } else {
                             state.currentOverlays().map { if (overlay in it) 1f else 0f }
                         }
