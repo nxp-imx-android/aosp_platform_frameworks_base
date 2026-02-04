@@ -217,53 +217,58 @@ final class RemoteAugmentedAutofillService {
                                 });
 
         CompletableFuture<InlineSuggestionsResponseData> augmentedInlineResponse =
-                mInjector
-                        .orTimeout(
-                                sendInlineSuggestionsRequest(
-                                        sessionId,
-                                        client,
-                                        taskId,
-                                        activityComponent,
-                                        focusedId,
-                                        focusedValue,
-                                        inlineSuggestionsRequest,
-                                        requestTime,
-                                        cancellationRef),
-                                mRequestTimeoutMs,
-                                TimeUnit.MILLISECONDS)
-                        .exceptionally(
-                                err -> {
-                                    if (err instanceof CancellationException) {
-                                        dispatchCancellation(cancellationRef.get());
-                                    } else if (err instanceof TimeoutException) {
-                                        Slog.w(
-                                                TAG,
-                                                "PendingAutofillRequest timed out ("
-                                                        + mRequestTimeoutMs
-                                                        + "ms) for "
-                                                        + RemoteAugmentedAutofillService.this);
-                                        // NOTE: so far we don't need notify
-                                        // RemoteAugmentedAutofillServiceCallbacks
-                                        dispatchCancellation(cancellationRef.get());
-                                        if (mComponentName != null) {
-                                            logResponse(
-                                                    MetricsEvent.TYPE_ERROR,
-                                                    mComponentName.getPackageName(),
-                                                    activityComponent,
-                                                    sessionId,
-                                                    mRequestTimeoutMs);
-                                        }
-                                    } else if (err != null) {
-                                        Slog.e(
-                                                TAG,
-                                                "exception handling "
-                                                        + "sendInlineSuggestionsRequest() for "
-                                                        + sessionId
-                                                        + ": ",
-                                                err);
-                                    }
-                                    return null;
-                                });
+                mInjector.orTimeout(
+                        new AndroidFuture<>(), mRequestTimeoutMs, TimeUnit.MILLISECONDS);
+
+        mInjector
+                .orTimeout(
+                        sendInlineSuggestionsRequest(
+                                sessionId,
+                                client,
+                                taskId,
+                                activityComponent,
+                                focusedId,
+                                focusedValue,
+                                inlineSuggestionsRequest,
+                                requestTime,
+                                cancellationRef,
+                                augmentedInlineResponse),
+                        mRequestTimeoutMs,
+                        TimeUnit.MILLISECONDS)
+                .exceptionally(
+                        err -> {
+                            if (err instanceof CancellationException) {
+                                dispatchCancellation(cancellationRef.get());
+                            } else if (err instanceof TimeoutException) {
+                                Slog.w(
+                                        TAG,
+                                        "PendingAutofillRequest timed out ("
+                                                + mRequestTimeoutMs
+                                                + "ms) for "
+                                                + RemoteAugmentedAutofillService.this);
+                                dispatchCancellation(cancellationRef.get());
+                                if (mComponentName != null) {
+                                    logResponse(
+                                            MetricsEvent.TYPE_ERROR,
+                                            mComponentName.getPackageName(),
+                                            activityComponent,
+                                            sessionId,
+                                            mRequestTimeoutMs);
+                                }
+                            } else if (err != null) {
+                                Slog.e(
+                                        TAG,
+                                        "exception handling sendInlineSuggestionsRequest() "
+                                                + "for "
+                                                + sessionId
+                                                + ": ",
+                                        err);
+                            } else {
+                                // NOTE: so far we don't need notify
+                                // RemoteAugmentedAutofillServiceCallbacks
+                            }
+                            return null;
+                        });
 
         // TODO(b/456768621): don't need to wait for personal context depending on config value
         CompletableFuture<Void> mergeFuture = CompletableFuture.allOf(personalContextFuture,
@@ -339,18 +344,20 @@ final class RemoteAugmentedAutofillService {
     /**
      * Sends the inline suggestions request to the augmented autofill service.
      *
-     * @return a future that will be completed with the inline suggestions response
+     * @return a future that can be used to listen for cancellation. {@link
+     *      #dispatchCancellation(ICancellationSignal)} should be called if the future is cancelled.
      */
-    private AndroidFuture<InlineSuggestionsResponseData> sendInlineSuggestionsRequest(
+    private AndroidFuture<Void> sendInlineSuggestionsRequest(
             int sessionId, @NonNull IAutoFillManagerClient client, int taskId,
             @NonNull ComponentName activityComponent,
             @NonNull AutofillId focusedId,
             @Nullable AutofillValue focusedValue,
             @Nullable InlineSuggestionsRequest inlineSuggestionsRequest,
-            long requestTime, AtomicReference<ICancellationSignal> cancellationRef) {
+            long requestTime, AtomicReference<ICancellationSignal> cancellationRef,
+            CompletableFuture<InlineSuggestionsResponseData> autofillResponse) {
         return mServiceConnector.postAsync(service -> {
-            AndroidFuture<InlineSuggestionsResponseData> requestAutofill =
-                    new AndroidFuture<>();
+            // Future used to track completion/cancellation status of the request.
+            AndroidFuture<Void> completionStatus = new AndroidFuture<>();
             // TODO(b/122728762): set cancellation signal, timeout (from both client and service),
             // cache IAugmentedAutofillManagerClient reference, etc...
             client.getAugmentedAutofillClient(new IResultReceiver.Stub() {
@@ -365,22 +372,33 @@ final class RemoteAugmentedAutofillService {
                                 public void onSuccess(@Nullable List<Dataset> inlineSuggestionsData,
                                         @Nullable Bundle clientState, boolean showingFillWindow) {
                                     mCallbacks.resetLastResponse();
-                                    requestAutofill.complete(
+                                    autofillResponse.complete(
                                             new InlineSuggestionsResponseData(
                                                     inlineSuggestionsData,
                                                     clientState,
                                                     showingFillWindow));
+
+                                    if (!showingFillWindow) {
+                                        // When fill window is showing, inline suggestions will not
+                                        // be shown. We expect cancellation to be possible in this
+                                        // case, so the future is not marked complete. This is done
+                                        // as AugmentedAutofillService checks isCompleted before
+                                        // cancelling. In addition, cancelling a completed future is
+                                        // a no-op and will result in the cancellation not being
+                                        // dispatched.
+                                        completionStatus.complete(null);
+                                    }
                                 }
 
                                 @Override
                                 public boolean isCompleted() {
-                                    return requestAutofill.isDone()
-                                            && !requestAutofill.isCancelled();
+                                    return completionStatus.isDone()
+                                            && !completionStatus.isCancelled();
                                 }
 
                                 @Override
                                 public void onCancellable(ICancellationSignal cancellation) {
-                                    if (requestAutofill.isCancelled()) {
+                                    if (completionStatus.isCancelled()) {
                                         dispatchCancellation(cancellation);
                                     } else {
                                         cancellationRef.set(cancellation);
@@ -389,12 +407,13 @@ final class RemoteAugmentedAutofillService {
 
                                 @Override
                                 public void cancel() {
-                                    requestAutofill.cancel(true);
+                                    completionStatus.cancel(true);
+                                    autofillResponse.cancel(true);
                                 }
                             });
                 }
             });
-            return requestAutofill;
+            return completionStatus;
         });
     }
 
