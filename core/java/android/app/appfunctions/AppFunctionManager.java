@@ -768,12 +768,34 @@ public final class AppFunctionManager {
      * <p>To register multiple functions at once in a single, batched call, consider using {@link
      * #registerAppFunctions(List)} as a more efficient alternative.
      *
+     * <h3>Function Scoping and Context</h3>
+     *
+     * <p>The behavior of this method depends on the {@link AppFunctionMetadata#getScope()}
+     * defined for the function in the app's XML resource:
+     * <ul>
+     * <li><b>{@link AppFunctionMetadata#SCOPE_GLOBAL}:</b> Only one implementation
+     * can be registered for a given {@code functionIdentifier} across the entire application.
+     * Subsequent registration attempts without unregistering the existing one will throw an
+     * {@link IllegalStateException}.</li>
+     * <li><b>{@link AppFunctionMetadata#SCOPE_ACTIVITY}:</b> This method
+     * <b>must</b> be called on an {@link AppFunctionManager} that was created from an
+     * {@link android.app.Activity} context. The registration is tied to that specific Activity
+     * instance via its {@link android.app.appfunctions.AppFunctionActivityId}. This allows multiple
+     * instances of the same function to be registered simultaneously (e.g., if the same Activity is
+     * open in split-screen), each associated with its own context.</li>
+     * </ul>
+     *
      * <h3>Function Execution</h3>
      *
      * <p>While the function is registered, a call to {@link AppFunctionManager#executeAppFunction}
      * with the app's package name and the provided {@code functionId} in the request will be routed
      * to the {@link AppFunction} implementation provided here. The implementation will be invoked
      * on the provided {@link Executor}.
+     *
+     * <b>Note:</b> For activity-scoped functions, the calling agent must provide the corresponding
+     * {@link android.app.appfunctions.AppFunctionActivityId} in the execution request to ensure
+     * the call is routed to the correct Activity instance, otherwise the execution will fail with
+     * {@link AppFunctionException#ERROR_NOT_FOUND}.
      *
      * <p>If an application-level function is called but no implementation is currently registered,
      * the execution will fail with {@link AppFunctionException#ERROR_DISABLED}.
@@ -810,7 +832,8 @@ public final class AppFunctionManager {
      * @throws IllegalStateException if a function with the same {@code functionId} is already
      *     registered by this app.
      * @throws IllegalArgumentException if the provided {@code functionId} is not declared in the
-     *     app's application-level XML resources.
+     *     app's application-level XML resources or if an activity-scoped function is
+     *     registered from a non-Activity context.
      */
     @NonNull
     @FlaggedApi(FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
@@ -840,7 +863,8 @@ public final class AppFunctionManager {
      * <p>The registration is atomic: either all functions in the provided list are registered
      * successfully, or none are. If any function in the list fails validation (e.g., its ID is
      * already registered or not declared in the manifest), this method will throw an exception, and
-     * no functions from the batch will be registered.
+     * no functions from the batch will be registered. Each function in the request follows the
+     * scoping rules declared in the app's XML resources.
      *
      * <p>A single {@link AppFunctionRegistration} object is returned, which can be used to
      * unregister the entire batch of functions with one call.
