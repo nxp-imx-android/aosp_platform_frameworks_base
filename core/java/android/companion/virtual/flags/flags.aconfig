@@ -96,16 +96,6 @@ flag {
 }
 
 flag {
-    name: "correct_virtual_display_power_state"
-    namespace: "virtual_devices"
-    description: "Fix the virtual display power state"
-    bug: "371125136"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "device_aware_settings_override"
     namespace: "virtual_devices"
     description: "Settings override for virtual devices"
