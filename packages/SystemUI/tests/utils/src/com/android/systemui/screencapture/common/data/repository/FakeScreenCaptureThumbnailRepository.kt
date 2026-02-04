@@ -59,7 +59,10 @@ fun FakeScreenCaptureThumbnailRepository.drawThumbnail(
     height: Int = 100,
     draw: Canvas.() -> Unit,
 ) {
-    putThumbnail(taskId, Result.success(createBitmap(width, height).applyCanvas(draw)))
+    putThumbnail(
+        taskId,
+        Result.success(createBitmap(width, height, Bitmap.Config.RGB_565).applyCanvas(draw)),
+    )
 }
 
 fun FakeScreenCaptureThumbnailRepository.drawThumbnail(
@@ -67,5 +70,6 @@ fun FakeScreenCaptureThumbnailRepository.drawThumbnail(
     height: Int = 100,
     draw: Canvas.() -> Unit,
 ) {
-    defaultFakeThumbnail = Result.success(createBitmap(width, height).applyCanvas(draw))
+    defaultFakeThumbnail =
+        Result.success(createBitmap(width, height, Bitmap.Config.RGB_565).applyCanvas(draw))
 }
