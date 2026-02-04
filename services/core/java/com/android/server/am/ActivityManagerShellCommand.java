@@ -4674,7 +4674,9 @@ final class ActivityManagerShellCommand extends ShellCommand {
                 case "ignore" -> {
                     String uidString = getNextArgRequired();
                     if (Objects.equals(uidString, "none")) {
-                        limiter.ignoreUid(INVALID_UID, false);
+                        limiter.ignoreUid(MemoryLimiter.ALL_UIDS, false);
+                    } else if (Objects.equals(uidString, "all")) {
+                        limiter.ignoreUid(MemoryLimiter.ALL_UIDS, true);
                     } else {
                         try {
                             limiter.ignoreUid(Integer.valueOf(uidString), true);
@@ -4699,6 +4701,14 @@ final class ActivityManagerShellCommand extends ShellCommand {
             return -1;
         }
         return 0;
+    }
+
+    private static void showMemoryLimiterHelp(PrintWriter pw) {
+        pw.println("  memory-limiter <SUBCOMMAND>");
+        pw.println("         ignore <UID> do not configure limits for the UID.");
+        pw.println("         ignore none  resume normal operation for all UIDs.");
+        pw.println("         ignore all   ignore all processes, for testing.");
+        pw.println("         status       report the status of the limiter.");
     }
 
     private Resources getResources(PrintWriter pw) throws RemoteException {
@@ -5177,10 +5187,7 @@ final class ActivityManagerShellCommand extends ShellCommand {
             pw.println("         Set an app's media service inactive or active.");
             pw.println("  clear-bad-process [--user USER_ID] <PROCESS_NAME>");
             pw.println("         Clears a process from the bad processes list.");
-            pw.println("  memory-limiter <SUBCOMMAND>");
-            pw.println("         ignore <UID> do not configure limits for the UID.");
-            pw.println("         ignore none  resume normal operation for all UIDs.");
-            pw.println("         status       report the status of the limiter.");
+            showMemoryLimiterHelp(pw);
             Intent.printIntentArgsHelp(pw, "");
         }
     }
