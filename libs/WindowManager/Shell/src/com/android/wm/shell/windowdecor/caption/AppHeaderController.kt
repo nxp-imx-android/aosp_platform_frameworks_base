@@ -180,9 +180,6 @@ class AppHeaderController(
     private val taskPositionInParent
         get() = taskInfo.positionInParent
 
-    private val display
-        get() = displayController.getDisplay(taskInfo.displayId)
-
     private val closeMaximizeWindowRunnable = Runnable { closeLayoutMenu() }
     private val isEducationOrHandleReportingEnabled =
         Flags.enableDesktopWindowingAppHandleEducation() ||
