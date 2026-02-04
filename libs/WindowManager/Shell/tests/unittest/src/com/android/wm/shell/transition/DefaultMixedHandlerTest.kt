@@ -44,7 +44,6 @@ import com.android.wm.shell.bubbles.BubbleRootTask
 import com.android.wm.shell.bubbles.transitions.BubbleTransitions
 import com.android.wm.shell.desktopmode.DesktopTasksController
 import com.android.wm.shell.desktopmode.NormalAppLayerHandler
-import com.android.wm.shell.desktopmode.desktoptaskshandlers.DesktopTasksTransitionHandler
 import com.android.wm.shell.keyguard.KeyguardTransitionHandler
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerHandler
 import com.android.wm.shell.pip.PipTransitionController
@@ -80,7 +79,6 @@ class DefaultMixedHandlerTest : ShellTestCase() {
     private val recentsTransitionHandler = mock<RecentsTransitionHandler>()
     private val keyguardTransitionHandler = mock<KeyguardTransitionHandler>()
     private val desktopTasksController = mock<DesktopTasksController>()
-    private val desktopTasksTransitionHandler = mock<DesktopTasksTransitionHandler>()
     private val unfoldTransitionHandler = mock<UnfoldTransitionHandler>()
     private val activityEmbeddingController = mock<ActivityEmbeddingController>()
     private val bubbleController = mock<BubbleController>()
@@ -116,7 +114,6 @@ class DefaultMixedHandlerTest : ShellTestCase() {
             Optional.of(recentsTransitionHandler),
             keyguardTransitionHandler,
             Optional.of(desktopTasksController),
-            desktopTasksTransitionHandler,
             Optional.of(unfoldTransitionHandler),
             Optional.of(activityEmbeddingController),
             bubbleTransitions,
