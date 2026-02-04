@@ -113,9 +113,8 @@ final class DynamicAppFunctionRegistry {
      * @param packageName Name of the package containing the app function.
      * @param functionIdentifiers A list of identifiers of the app functions.
      * @param executor Executor of the app function.
-     * @param scopeIds Identifiers of the source corresponding to each
-     *     functionIdentifier. Activity identifier for activity scoped functions, empty class for
-     *     global scoped functions.
+     * @param scopeIds Identifiers of the source corresponding to each functionIdentifier. Activity
+     *     identifier for activity scoped functions, empty class for global scoped functions.
      * @throws IllegalStateException If any of the provided app functions is already registered.
      */
     public void registerAppFunctions(
@@ -151,8 +150,7 @@ final class DynamicAppFunctionRegistry {
                         .put(registrationId.getActivityToken(), executor);
 
                 if (!mExecutorToRegistrations.containsKey(executor.asBinder())) {
-                    mExecutorToRegistrations.put(
-                            executor.asBinder(), new ArraySet<>());
+                    mExecutorToRegistrations.put(executor.asBinder(), new ArraySet<>());
                     mCallbacks.register(executor);
                 }
                 Objects.requireNonNull(mExecutorToRegistrations.get(executor.asBinder()))
@@ -252,8 +250,7 @@ final class DynamicAppFunctionRegistry {
         AppFunctionName name =
                 new AppFunctionName(
                         request.getTargetPackageName(), request.getFunctionIdentifier());
-        // TODO(b/478873466): support execute with activityId
-        RegistrationScopeId sourceId = new RegistrationScopeId(null);
+        RegistrationScopeId sourceId = new RegistrationScopeId(request.getActivityId());
         if (DEBUG) {
             Log.d(TAG, "executeAppFunction with ID:" + name + " with activity token: " + sourceId);
         }
