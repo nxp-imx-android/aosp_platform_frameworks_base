@@ -31,6 +31,7 @@ import android.os.UserHandle
 import android.os.UserManager
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
+import android.provider.Settings
 import android.testing.AndroidTestingRunner
 import android.testing.TestableContext
 import androidx.test.filters.SmallTest
@@ -90,6 +91,7 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
             mockitoSession()
                 .strictness(Strictness.LENIENT)
                 .spyStatic(UserManager::class.java)
+                .spyStatic(Settings::class.java)
                 .startMocking()
         mockContext = spy(mContext)
         val resources = spy(mockContext.resources)
@@ -103,6 +105,7 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
             .`when`(desktopModeCompatPolicy)
             .getDefaultHomePackage(any())
         mockContext.setMockPackageManager(packageManager)
+        toggleOverlayAppOpForAllUsers(false)
     }
 
     @After
@@ -266,6 +269,38 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
                     isActivityStackTransparent = true
                     isTopActivityNoDisplay = false
                     numActivities = 1
+                    baseActivity = baseActivityTest
+                }
+            )
+        )
+    }
+
+    @Test
+    fun testIsTopActivityExemptWithAppOpAllowed_onlyTransparentActivitiesInStack() {
+        toggleOverlayAppOpForAllUsers(true)
+        assertTrue(
+            desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
+                createFreeformTask().apply {
+                    isActivityStackTransparent = true
+                    isTopActivityNoDisplay = false
+                    numActivities = 1
+                    topActivityInfo = ActivityInfo().apply { applicationInfo = ApplicationInfo() }
+                    baseActivity = baseActivityTest
+                }
+            )
+        )
+    }
+
+    @Test
+    fun testIsTopActivityExemptWithAppOpIgnored_onlyTransparentActivitiesInStack() {
+        toggleOverlayAppOpForAllUsers(false)
+        assertFalse(
+            desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
+                createFreeformTask().apply {
+                    isActivityStackTransparent = true
+                    isTopActivityNoDisplay = false
+                    numActivities = 1
+                    topActivityInfo = ActivityInfo().apply { applicationInfo = ApplicationInfo() }
                     baseActivity = baseActivityTest
                 }
             )
@@ -656,5 +691,11 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
                 )
             )
             .thenReturn(packageInfo)
+    }
+
+    fun toggleOverlayAppOpForAllUsers(toggle: Boolean) {
+        ExtendedMockito.doReturn(toggle).`when` {
+            Settings.isCallingPackageAllowedToDrawOverlays(any(), anyInt(), anyString(), any())
+        }
     }
 }
