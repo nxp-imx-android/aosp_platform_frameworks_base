@@ -50,13 +50,25 @@ public final class TrustTokenServiceException extends Exception {
     /** The request parameters are invalid. */
     public static final int ERROR_INVALID_ARGUMENT = 1;
 
-    /** The request failed due to an internal error. */
+    /**
+     * The request failed due to an internal error.
+     * This is usually caused by a dependency failure or a bug. Callers might try to restart the
+     * service or reboot the device, if the error persists, please report the issue to the service
+     * provider.
+     */
     public static final int ERROR_INTERNAL = 2;
 
-    /** The request failed due to an unavailable error (such as network unavailable). */
+    /**
+     * The request failed due to an unavailable error (such as network unavailable).
+     * This is a retryable error, callers should retry the request with a backoff time.
+     */
     public static final int ERROR_UNAVAILABLE = 3;
 
-    /** The request was cancelled. */
+    /**
+     * The request was cancelled by the caller (the system).
+     * This is usually because of the system is busy, so the caller should wait until the system
+     * is at a proper state (such as idle and plugged in) to retry.
+     */
     public static final int ERROR_CANCELLED = 4;
 
     @ErrorCode
