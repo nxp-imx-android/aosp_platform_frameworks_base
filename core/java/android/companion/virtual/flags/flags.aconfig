@@ -12,14 +12,6 @@ container: "system"
 
 flag {
     namespace: "virtual_devices"
-    name: "virtual_display_rotation_api"
-    description: "API for on-demand rotation of virtual displays"
-    bug: "291748430"
-    is_exported: true
-}
-
-flag {
-    namespace: "virtual_devices"
     name: "high_resolution_scroll"
     description: "Enable high resolution scroll"
     bug: "335160780"
