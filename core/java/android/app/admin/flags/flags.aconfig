@@ -622,3 +622,10 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+  name: "policy_streamlining_maximum_time_to_lock"
+  namespace: "enterprise"
+  description: "Redirect set/getMaximumTimeToLock to the generic set/getPolicy APIs."
+  bug: "444381053"
+}
