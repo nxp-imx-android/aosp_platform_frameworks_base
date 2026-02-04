@@ -17,9 +17,11 @@ package com.android.systemui.locationbutton.domain.interactor
 
 import android.content.res.Configuration
 import android.util.Slog
+import androidx.annotation.ColorInt
 import androidx.annotation.StringRes
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import com.android.internal.graphics.ColorUtils
 import com.android.internal.util.ContrastColorUtil
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.locationbutton.data.repository.LocationButtonRepository
@@ -34,24 +36,24 @@ constructor(private val repository: LocationButtonRepository) {
     fun getButtonState(sessionId: Int): ButtonModel? = repository.getButtonState(sessionId)
 
     fun setButtonState(sessionId: Int, requestModel: ButtonModel) {
+        val density = requestModel.density
+        val backgroundColor = validateBackgroundColor(requestModel.backgroundColor.toArgb())
         val validatedModel =
             requestModel.copy(
-                width = validateWidth(requestModel.width, requestModel.configuration),
-                height = validateHeight(requestModel.height, requestModel.configuration),
-                strokeWidth =
-                    validateStrokeWidth(requestModel.strokeWidth, requestModel.configuration),
+                width = validateWidth(requestModel.width, density),
+                height = validateHeight(requestModel.height, density),
+                paddingLeft = validatePadding(requestModel.paddingLeft, density),
+                paddingTop = validatePadding(requestModel.paddingTop, density),
+                paddingRight = validatePadding(requestModel.paddingRight, density),
+                paddingBottom = validatePadding(requestModel.paddingBottom, density),
+                strokeWidth = validateStrokeWidth(requestModel.strokeWidth, density),
+                cornerRadius = validateCornerRadius(requestModel.cornerRadius),
+                pressedCornerRadius = validateCornerRadius(requestModel.pressedCornerRadius),
+                backgroundColor = backgroundColor,
                 iconTint =
-                    ensureColorContrast(
-                        "Icon tint",
-                        requestModel.iconTint,
-                        requestModel.backgroundColor,
-                    ),
+                    validateForegroundColor("Icon tint", requestModel.iconTint, backgroundColor),
                 textColor =
-                    ensureColorContrast(
-                        "Text color",
-                        requestModel.textColor,
-                        requestModel.backgroundColor,
-                    ),
+                    validateForegroundColor("Text color", requestModel.textColor, backgroundColor),
             )
         repository.setButtonState(sessionId, validatedModel)
     }
@@ -61,16 +63,18 @@ constructor(private val repository: LocationButtonRepository) {
     }
 
     fun setCornerRadius(sessionId: Int, cornerRadius: Float) {
-        repository.updateButtonState(sessionId) { it.copy(cornerRadius = cornerRadius) }
+        repository.updateButtonState(sessionId) {
+            it.copy(cornerRadius = validateCornerRadius(cornerRadius))
+        }
     }
 
     fun setBackgroundColor(sessionId: Int, color: Int) {
-        // TODO: Validate and fix background color opacity
         repository.updateButtonState(sessionId) {
+            val backgroundColor = validateBackgroundColor(color)
             it.copy(
-                backgroundColor = Color(color),
-                iconTint = ensureColorContrast("Icon tint", it.iconTint, Color(color)),
-                textColor = ensureColorContrast("Text color", it.textColor, Color(color)),
+                backgroundColor = backgroundColor,
+                iconTint = validateForegroundColor("Icon tint", it.iconTint, backgroundColor),
+                textColor = validateForegroundColor("Text color", it.textColor, backgroundColor),
             )
         }
     }
@@ -78,14 +82,17 @@ constructor(private val repository: LocationButtonRepository) {
     fun setTextColor(sessionId: Int, textColor: Int) {
         repository.updateButtonState(sessionId) {
             it.copy(
-                textColor = ensureColorContrast("Text color", Color(textColor), it.backgroundColor)
+                textColor =
+                    validateForegroundColor("Text color", Color(textColor), it.backgroundColor)
             )
         }
     }
 
     fun setIconTint(sessionId: Int, color: Int) {
         repository.updateButtonState(sessionId) {
-            it.copy(iconTint = ensureColorContrast("Icon tint", Color(color), it.backgroundColor))
+            it.copy(
+                iconTint = validateForegroundColor("Icon tint", Color(color), it.backgroundColor)
+            )
         }
     }
 
@@ -98,54 +105,36 @@ constructor(private val repository: LocationButtonRepository) {
     }
 
     fun setStrokeWidth(sessionId: Int, width: Int) {
-        val currentState = repository.getButtonState(sessionId)
-        if (currentState == null) {
-            Slog.e(TAG, "Cannot setStrokeWidth: No state found for session $sessionId")
-            return
+        repository.updateButtonState(sessionId) {
+            it.copy(strokeWidth = validateStrokeWidth(width, it.density))
         }
-        val validatedWidth = validateStrokeWidth(width, currentState.configuration)
-        repository.updateButtonState(sessionId) { it.copy(strokeWidth = validatedWidth) }
     }
 
     fun setSize(sessionId: Int, width: Int, height: Int) {
-        val currentState = repository.getButtonState(sessionId)
-        if (currentState == null) {
-            Slog.e(TAG, "Cannot setSize: No state found for session $sessionId")
-            return
-        }
-
-        // Validate the incoming width and height
-        val validatedWidth = validateWidth(width, currentState.configuration)
-        val validatedHeight = validateHeight(height, currentState.configuration)
-
         repository.updateButtonState(sessionId) {
-            it.copy(width = validatedWidth, height = validatedHeight)
+            it.copy(
+                width = validateWidth(width, it.density),
+                height = validateHeight(height, it.density),
+            )
         }
     }
 
-    fun setConfiguration(sessionId: Int, newConfig: Configuration) {
-        val currentState = repository.getButtonState(sessionId)
-        if (currentState == null) {
-            Slog.e(TAG, "Cannot setConfiguration: No state found for session $sessionId")
-            return
-        }
-
-        // Re-validate existing values against the NEW configuration
-        val validatedWidth = validateWidth(currentState.width, newConfig)
-        val validatedHeight = validateHeight(currentState.height, newConfig)
-        val validatedStrokeWidth = validateStrokeWidth(currentState.strokeWidth, newConfig)
-        val validatedIconTint =
-            ensureColorContrast("Icon tint", currentState.iconTint, currentState.backgroundColor)
-        val validatedTextColor =
-            ensureColorContrast("Text color", currentState.textColor, currentState.backgroundColor)
+    fun setConfiguration(sessionId: Int, newConfig: Configuration, density: Float) {
         repository.updateButtonState(sessionId) {
+            val backgroundColor = validateBackgroundColor(it.backgroundColor.toArgb())
             it.copy(
                 configuration = newConfig,
-                width = validatedWidth,
-                height = validatedHeight,
-                strokeWidth = validatedStrokeWidth,
-                iconTint = validatedIconTint,
-                textColor = validatedTextColor,
+                density = density,
+                width = validateWidth(it.width, density),
+                height = validateHeight(it.height, density),
+                paddingLeft = validatePadding(it.paddingLeft, density),
+                paddingTop = validatePadding(it.paddingTop, density),
+                paddingRight = validatePadding(it.paddingRight, density),
+                paddingBottom = validatePadding(it.paddingBottom, density),
+                strokeWidth = validateStrokeWidth(it.strokeWidth, density),
+                backgroundColor = backgroundColor,
+                iconTint = validateForegroundColor("Icon tint", it.iconTint, backgroundColor),
+                textColor = validateForegroundColor("Text color", it.textColor, backgroundColor),
             )
         }
     }
@@ -168,7 +157,7 @@ constructor(private val repository: LocationButtonRepository) {
      * @return The foreground [Color], adjusted if necessary to ensure sufficient contrast against
      *   the background color.
      */
-    private fun ensureColorContrast(
+    private fun validateForegroundColor(
         colorName: String,
         foregroundColor: Color,
         backgroundColor: Color,
@@ -179,7 +168,7 @@ constructor(private val repository: LocationButtonRepository) {
             ContrastColorUtil.ensureContrast(foregroundArgb, backgroundArgb, MIN_CONTRAST_RATIO)
         if (foregroundArgb != validatedArgb) {
             Slog.w(
-                TAG,
+                LOG_TAG,
                 "$colorName color #${Integer.toHexString(foregroundArgb)} adjusted to #${
                     Integer.toHexString(validatedArgb)
                 } for contrast against #${Integer.toHexString(backgroundArgb)}",
@@ -188,49 +177,81 @@ constructor(private val repository: LocationButtonRepository) {
         return Color(validatedArgb)
     }
 
-    /** Helper to get min 48dp size in pixels */
-    private fun getMinPixelSize(configuration: Configuration): Int {
-        val density = configuration.densityDpi / 160f
-        return (MIN_TOUCH_TARGET_DP * density).roundToInt() // 48dp in pixels
-    }
+    // Make background color fully opaque.
+    private fun validateBackgroundColor(@ColorInt backgroundColor: Int) =
+        Color(ColorUtils.setAlphaComponent(backgroundColor, 255))
 
-    private fun validateWidth(widthInPixels: Int, configuration: Configuration): Int {
-        val minPixelWidth = getMinPixelSize(configuration)
-        val validatedWidth = widthInPixels.coerceAtLeast(minPixelWidth)
-
-        if (widthInPixels < validatedWidth) {
-            Slog.w(TAG, "Clamping width from $widthInPixels px to $validatedWidth px (min 48dp)")
+    private fun validateWidth(width: Int, density: Float): Int {
+        val minWidth = (MIN_TOUCH_TARGET_SIZE_DP * density).roundToInt()
+        if (width < minWidth) {
+            Slog.w(LOG_TAG, "Clamping width up from $width to $minWidth px (min 48dp)")
+            return minWidth
         }
-        return validatedWidth
+        return width
     }
 
-    private fun validateHeight(heightInPixels: Int, configuration: Configuration): Int {
-        val minPixelHeight = getMinPixelSize(configuration)
-        val validatedHeight = heightInPixels.coerceAtLeast(minPixelHeight)
+    private fun validateHeight(height: Int, density: Float): Int {
+        val minHeight = (MIN_TOUCH_TARGET_SIZE_DP * density).roundToInt()
+        val maxHeight = (MAX_HEIGHT_DP * density).roundToInt()
 
-        if (heightInPixels < validatedHeight) {
-            Slog.w(TAG, "Clamping height from $heightInPixels px to $validatedHeight px (min 48dp)")
+        if (height < minHeight) {
+            Slog.w(LOG_TAG, "Clamping height up from $height to $minHeight px (min 48dp)")
+            return minHeight
         }
-        return validatedHeight
+        if (height > maxHeight) {
+            Slog.w(LOG_TAG, "Clamping height down from $height to $maxHeight px (max 136dp)")
+            return maxHeight
+        }
+
+        return height
     }
 
-    private fun validateStrokeWidth(widthInPixels: Int, configuration: Configuration): Int {
-        val density = configuration.densityDpi / 160f
-        val maxPixelWidth = (MAX_STROKE_WIDTH_DP * density).roundToInt()
-        val validatedWidth = widthInPixels.coerceAtMost(maxPixelWidth)
-        if (widthInPixels > validatedWidth) {
+    private fun validateCornerRadius(cornerRadius: Float): Float {
+        if (cornerRadius < 0) {
+            Slog.w(LOG_TAG, "cornerRadius can't be negative.")
+            return 0f
+        }
+        return cornerRadius
+    }
+
+    private fun validateStrokeWidth(strokeWidth: Int, density: Float): Int {
+        if (strokeWidth < 0) {
+            Slog.w(LOG_TAG, "strokeWidth can't be negative.")
+            return 0
+        }
+        val maxStrokeWidth = (MAX_STROKE_WIDTH_DP * density).roundToInt()
+
+        if (strokeWidth > maxStrokeWidth) {
             Slog.w(
-                TAG,
-                "Clamping strokeWidth from $widthInPixels px to $validatedWidth px (max 4dp)",
+                LOG_TAG,
+                "Clamping strokeWidth from $strokeWidth to $maxStrokeWidth px (max 3dp)",
             )
+            return maxStrokeWidth
         }
-        return validatedWidth
+        return strokeWidth
+    }
+
+    private fun validatePadding(padding: Int, density: Float): Int {
+        if (padding < 0) {
+            Slog.w(LOG_TAG, "Padding can't be negative.")
+            return 0
+        }
+
+        val maxPadding = (MAX_PADDING_DP * density).roundToInt()
+
+        if (padding > maxPadding) {
+            Slog.w(LOG_TAG, "Clamping padding from $padding to $maxPadding px (max 8dp)")
+            return maxPadding
+        }
+        return padding
     }
 
     private companion object {
         const val MIN_CONTRAST_RATIO = 4.5
-        const val MAX_STROKE_WIDTH_DP = 4
-        const val MIN_TOUCH_TARGET_DP = 48
-        const val TAG = "LocationButton"
+        const val MAX_STROKE_WIDTH_DP = 3
+        const val MIN_TOUCH_TARGET_SIZE_DP = 48
+        const val MAX_HEIGHT_DP = 136
+        const val MAX_PADDING_DP = 8
+        const val LOG_TAG = "LocationButton"
     }
 }

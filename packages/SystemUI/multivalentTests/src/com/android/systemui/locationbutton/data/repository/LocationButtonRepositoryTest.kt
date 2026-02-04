@@ -113,14 +113,20 @@ class LocationButtonRepositoryTest : SysuiTestCase() {
         return ButtonModel(
             width = width,
             height = 50,
+            paddingLeft = 0,
+            paddingTop = 0,
+            paddingRight = 0,
+            paddingBottom = 0,
             backgroundColor = Color.Black,
             strokeColor = Color.White,
             strokeWidth = 2,
             cornerRadius = 10f,
+            pressedCornerRadius = 8f,
             iconTint = Color.White,
             textResId = null,
             textColor = Color.White,
             configuration = Configuration(),
+            density = 1.0f,
         )
     }
 }

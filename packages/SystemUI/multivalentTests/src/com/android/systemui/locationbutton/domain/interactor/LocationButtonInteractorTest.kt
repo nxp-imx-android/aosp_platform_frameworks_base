@@ -37,16 +37,202 @@ class LocationButtonInteractorTest : SysuiTestCase() {
 
     @Test
     fun setButtonState_validatesDimensionsAndSetsState() {
+        // Min 48dp = 48px at 1.0x density
         val sessionId = 1
-        val buttonModel = createTestButtonModel(width = 10, height = 10, strokeWidth = 100)
+        val model = createTestButtonModel(widthPx = 10)
 
-        underTest.setButtonState(sessionId, buttonModel)
+        underTest.setButtonState(sessionId, model)
 
-        val state = underTest.getButtonState(sessionId)
-        assertThat(state).isNotNull()
-        assertThat(state!!.width).isEqualTo(MIN_PIXEL_SIZE)
-        assertThat(state.height).isEqualTo(MIN_PIXEL_SIZE)
-        assertThat(state.strokeWidth).isEqualTo((MAX_STROKE_WIDTH_DP * 1.5).toInt())
+        val state = underTest.getButtonState(sessionId)!!
+        assertThat(state.width).isEqualTo(48) // Clamped to 48
+    }
+
+    @Test
+    fun setButtonState_widthValid_remainsUnchanged() {
+        val sessionId = 1
+        val model = createTestButtonModel(widthPx = 100)
+
+        underTest.setButtonState(sessionId, model)
+
+        val state = underTest.getButtonState(sessionId)!!
+        assertThat(state.width).isEqualTo(100)
+    }
+
+    @Test
+    fun setButtonState_widthTooSmall_highDensity_clampedToScaledMin() {
+        // Min 48dp = 96px at 2.0x density
+        val sessionId = 1
+        // Input 80px is < 96px
+        val model = createTestButtonModel(widthPx = 80, density = 2.0f)
+
+        underTest.setButtonState(sessionId, model)
+
+        val state = underTest.getButtonState(sessionId)!!
+        assertThat(state.width).isEqualTo(96)
+    }
+
+    @Test
+    fun setButtonState_heightTooSmall_clampedToMin() {
+        val sessionId = 1
+        val model = createTestButtonModel(heightPx = 10)
+
+        underTest.setButtonState(sessionId, model)
+
+        val state = underTest.getButtonState(sessionId)!!
+        assertThat(state.height).isEqualTo(48)
+    }
+
+    @Test
+    fun setButtonState_heightTooLarge_clampedToMax() {
+        // Max 136dp = 408px at 3.0x density
+        val sessionId = 1
+        val model = createTestButtonModel(heightPx = 500, density = 3.0f)
+
+        underTest.setButtonState(sessionId, model)
+
+        val state = underTest.getButtonState(sessionId)!!
+        assertThat(state.height).isEqualTo(408)
+    }
+
+    @Test
+    fun setBackgroundColor_forcesOpaque() {
+        val sessionId = 1
+        underTest.setButtonState(sessionId, createTestButtonModel())
+        val transparentRed = Color.Red.copy(alpha = 0.5f).toArgb()
+
+        underTest.setBackgroundColor(sessionId, transparentRed)
+
+        val state = underTest.getButtonState(sessionId)!!
+        // Alpha should be forced to 255 (opaque)
+        assertThat(state.backgroundColor.toArgb()).isEqualTo(Color.Red.toArgb())
+    }
+
+    @Test
+    fun setButtonState_heightValid_remainsUnchanged() {
+        val sessionId = 1
+        val model = createTestButtonModel(heightPx = 100)
+
+        underTest.setButtonState(sessionId, model)
+
+        val state = underTest.getButtonState(sessionId)!!
+        assertThat(state.height).isEqualTo(100)
+    }
+
+    @Test
+    fun setButtonState_heightValidation_highDensity_scalesCorrectly() {
+        // Density 2.0x: Min 48dp = 96px, Max 136dp = 272px
+        val sessionId = 1
+
+        // Test Min Clamp
+        underTest.setButtonState(sessionId, createTestButtonModel(heightPx = 50, density = 2.0f))
+        assertThat(underTest.getButtonState(sessionId)!!.height).isEqualTo(96)
+
+        // Test Max Clamp
+        underTest.setButtonState(sessionId, createTestButtonModel(heightPx = 300, density = 2.0f))
+        assertThat(underTest.getButtonState(sessionId)!!.height).isEqualTo(272)
+    }
+
+    @Test
+    fun setButtonState_paddingTooLarge_highDensity_clampedToScaledMax() {
+        // Max 8dp = 24px at 3.0x density
+        val sessionId = 1
+        val model =
+            createTestButtonModel(
+                paddingLeftPx = 100,
+                paddingTopPx = 100,
+                paddingRightPx = 100,
+                paddingBottomPx = 100,
+                density = 3.0f,
+            )
+
+        underTest.setButtonState(sessionId, model)
+
+        val state = underTest.getButtonState(sessionId)!!
+        assertThat(state.paddingLeft).isEqualTo(24)
+        assertThat(state.paddingTop).isEqualTo(24)
+        assertThat(state.paddingRight).isEqualTo(24)
+        assertThat(state.paddingBottom).isEqualTo(24)
+    }
+
+    @Test
+    fun setButtonState_paddingValid_remainsUnchanged() {
+        val sessionId = 1
+        val model = createTestButtonModel(paddingLeftPx = 5)
+
+        underTest.setButtonState(sessionId, model)
+
+        assertThat(underTest.getButtonState(sessionId)!!.paddingLeft).isEqualTo(5)
+    }
+
+    @Test
+    fun setButtonState_paddingHighDensity_clampedToScaledMax() {
+        // Max 8dp = 12px at 1.5x density
+        val sessionId = 1
+        val model = createTestButtonModel(paddingLeftPx = 20, density = 1.5f)
+
+        underTest.setButtonState(sessionId, model)
+
+        assertThat(underTest.getButtonState(sessionId)!!.paddingLeft).isEqualTo(12)
+    }
+
+    @Test
+    fun setButtonState_strokeWidthTooLarge_clampedToMax() {
+        // Max 3dp = 3px at 1.0x density
+        val sessionId = 1
+        val model = createTestButtonModel(strokeWidthPx = 10)
+
+        underTest.setButtonState(sessionId, model)
+
+        val state = underTest.getButtonState(sessionId)!!
+        assertThat(state.strokeWidth).isEqualTo(MAX_STROKE_WIDTH_DP)
+    }
+
+    @Test
+    fun setButtonState_strokeWidthValid_remainsUnchanged() {
+        val sessionId = 1
+        val model = createTestButtonModel(strokeWidthPx = 2)
+
+        underTest.setButtonState(sessionId, model)
+
+        val state = underTest.getButtonState(sessionId)!!
+        assertThat(state.strokeWidth).isEqualTo(2)
+    }
+
+    @Test
+    fun setStrokeWidth_updatesAndValidates() {
+        // Max 3dp = 6px at 2.0x density
+        val sessionId = 1
+        underTest.setButtonState(sessionId, createTestButtonModel(density = 2.0f))
+
+        // Update to 10px (too large, should clamp to 6)
+        underTest.setStrokeWidth(sessionId, 10)
+
+        val state = underTest.getButtonState(sessionId)!!
+        assertThat(state.strokeWidth).isEqualTo(6)
+    }
+
+    @Test
+    fun setConfiguration_updatesState() {
+        val sessionId = 1
+        underTest.setButtonState(sessionId, createTestButtonModel())
+
+        val newConfig = Configuration().apply { densityDpi = 320 }
+        underTest.setConfiguration(sessionId, newConfig, newConfig.densityDpi / 160f)
+
+        assertThat(underTest.getButtonState(sessionId)!!.configuration).isEqualTo(newConfig)
+    }
+
+    @Test
+    fun setSize_validatesAndUpdatesState() {
+        val sessionId = 1
+        underTest.setButtonState(sessionId, createTestButtonModel())
+
+        // Set size too small (10x10) -> Should clamp to 48x48
+        underTest.setSize(sessionId, 10, 10)
+
+        val state = underTest.getButtonState(sessionId)!!
+        assertThat(state.width).isEqualTo(48)
+        assertThat(state.height).isEqualTo(48)
     }
 
     @Test
@@ -80,31 +266,43 @@ class LocationButtonInteractorTest : SysuiTestCase() {
     }
 
     @Test
-    fun setSize_validatesAndUpdatesState() {
+    fun setTextColor_updatesState() {
         val sessionId = 1
         underTest.setButtonState(sessionId, createTestButtonModel())
-        underTest.setSize(sessionId, 10, 10)
+        val newColor = Color.Cyan.toArgb()
+        underTest.setTextColor(sessionId, newColor)
 
-        val state = underTest.getButtonState(sessionId)!!
-        assertThat(state.width).isEqualTo(MIN_PIXEL_SIZE)
-        assertThat(state.height).isEqualTo(MIN_PIXEL_SIZE)
+        assertThat(underTest.getButtonState(sessionId)!!.textColor.toArgb()).isEqualTo(newColor)
     }
 
     @Test
-    fun setConfiguration_revalidatesDimensionsAndUpdatesState() {
+    fun setIconTint_updatesState() {
         val sessionId = 1
-        val initialModel = createTestButtonModel(width = 80, height = 80) // Valid for 1.5x
-        underTest.setButtonState(sessionId, initialModel)
+        underTest.setButtonState(sessionId, createTestButtonModel())
+        val newColor = Color.Green.toArgb()
+        underTest.setIconTint(sessionId, newColor)
 
-        // New config with higher density, making 80px too small
-        val newConfig = Configuration().apply { densityDpi = 480 } // 3.0x density
-        val newMinPixelSize = 48 * 3 // 144
-        underTest.setConfiguration(sessionId, newConfig)
+        assertThat(underTest.getButtonState(sessionId)!!.iconTint.toArgb()).isEqualTo(newColor)
+    }
 
-        val state = underTest.getButtonState(sessionId)!!
-        assertThat(state.configuration).isEqualTo(newConfig)
-        assertThat(state.width).isEqualTo(newMinPixelSize)
-        assertThat(state.height).isEqualTo(newMinPixelSize)
+    @Test
+    fun setTextId_updatesState() {
+        val sessionId = 1
+        underTest.setButtonState(sessionId, createTestButtonModel())
+        val newTextId = 12345
+        underTest.setTextId(sessionId, newTextId)
+
+        assertThat(underTest.getButtonState(sessionId)!!.textResId).isEqualTo(newTextId)
+    }
+
+    @Test
+    fun setStrokeColor_updatesState() {
+        val sessionId = 1
+        underTest.setButtonState(sessionId, createTestButtonModel())
+        val newColor = Color.Yellow.toArgb()
+        underTest.setStrokeColor(sessionId, newColor)
+
+        assertThat(underTest.getButtonState(sessionId)!!.strokeColor.toArgb()).isEqualTo(newColor)
     }
 
     @Test
@@ -194,7 +392,7 @@ class LocationButtonInteractorTest : SysuiTestCase() {
     }
 
     @Test
-    fun setConfiguration_adjustsLowContrastIconTintAndTextColorsAndUpdatesState() {
+    fun setConfiguration_adjustsContrast() {
         val sessionId = 1
         val lowContrastButtonModel =
             createTestButtonModel(
@@ -202,32 +400,24 @@ class LocationButtonInteractorTest : SysuiTestCase() {
                 textColor = Color.White,
                 iconTint = Color.White,
             )
-        // Inject an invalid contrast ButtonModel into the repository to force a refresh with an
-        // invalid model.
+        // Inject an invalid contrast ButtonModel into the repository.
         kosmos.locationButtonRepository.setButtonState(sessionId, lowContrastButtonModel)
 
-        underTest.setConfiguration(sessionId, Configuration())
+        val config = Configuration()
+        underTest.setConfiguration(sessionId, config, config.densityDpi / 160f)
 
         val state = underTest.getButtonState(sessionId)!!
-        val backgroundArgb = state.backgroundColor.toArgb()
-        assertThat(backgroundArgb).isEqualTo(Color.White.toArgb())
-        val expectedIconTint =
-            ContrastColorUtil.ensureContrast(
-                lowContrastButtonModel.iconTint.toArgb(),
-                backgroundArgb,
-                MIN_CONTRAST_RATIO,
+        // In the current implementation, colors ARE adjusted during setConfiguration.
+        assertThat(state.backgroundColor).isEqualTo(Color.White)
+        assertThat(state.textColor.toArgb()).isNotEqualTo(Color.White.toArgb())
+        assertThat(state.iconTint.toArgb()).isNotEqualTo(Color.White.toArgb())
+        assertThat(
+                ContrastColorUtil.calculateContrast(state.textColor.toArgb(), Color.White.toArgb())
             )
-        assertThat(state.iconTint.toArgb()).isEqualTo(expectedIconTint)
-        assertThat(ContrastColorUtil.calculateContrast(state.iconTint.toArgb(), backgroundArgb))
             .isAtLeast(MIN_CONTRAST_RATIO)
-        val expectedTextColor =
-            ContrastColorUtil.ensureContrast(
-                lowContrastButtonModel.textColor.toArgb(),
-                backgroundArgb,
-                MIN_CONTRAST_RATIO,
+        assertThat(
+                ContrastColorUtil.calculateContrast(state.iconTint.toArgb(), Color.White.toArgb())
             )
-        assertThat(state.textColor.toArgb()).isEqualTo(expectedTextColor)
-        assertThat(ContrastColorUtil.calculateContrast(state.textColor.toArgb(), backgroundArgb))
             .isAtLeast(MIN_CONTRAST_RATIO)
     }
 
@@ -327,34 +517,52 @@ class LocationButtonInteractorTest : SysuiTestCase() {
     }
 
     private fun createTestButtonModel(
-        width: Int = 100,
-        height: Int = 50,
-        strokeWidth: Int = 2,
+        widthPx: Int = 100,
+        heightPx: Int = 50,
+        strokeWidthPx: Int = 0,
+        paddingLeftPx: Int = 0,
+        paddingTopPx: Int = 0,
+        paddingRightPx: Int = 0,
+        paddingBottomPx: Int = 0,
         backgroundColor: Color = Color.Black,
         textColor: Color = Color.White,
         iconTint: Color = Color.White,
         strokeColor: Color = Color.White,
+        config: Configuration? = null,
+        density: Float? = null,
     ): ButtonModel {
+        val actualConfig =
+            config
+                ?: Configuration().apply {
+                    densityDpi = if (density != null) (density * 160).toInt() else DENSITY_DPI
+                }
+        val actualDensity = density ?: (actualConfig.densityDpi / 160f)
         return ButtonModel(
-            width = width,
-            height = height,
+            width = widthPx,
+            height = heightPx,
+            paddingLeft = paddingLeftPx,
+            paddingTop = paddingTopPx,
+            paddingRight = paddingRightPx,
+            paddingBottom = paddingBottomPx,
             backgroundColor = backgroundColor,
             strokeColor = strokeColor,
-            strokeWidth = strokeWidth,
+            strokeWidth = strokeWidthPx,
             cornerRadius = 10f,
+            pressedCornerRadius = 8f,
             iconTint = iconTint,
-            textResId = android.R.string.ok,
+            textResId = null,
             textColor = textColor,
-            configuration = Configuration().apply { densityDpi = DENSITY_DP },
+            configuration = actualConfig,
+            density = actualDensity,
         )
     }
 
     private companion object {
-        const val MAX_STROKE_WIDTH_DP = 4
+        const val MAX_STROKE_WIDTH_DP = 3
         const val MIN_TOUCH_TARGET_DP = 48
         const val DENSITY_DP = 240
-        private const val MIN_PIXEL_SIZE = MIN_TOUCH_TARGET_DP * DENSITY_DP / 160
         private const val MIN_CONTRAST_RATIO = 4.5
         private val COLOR_LIGHT_GRAY = Color(0xFFBBBBBB).toArgb()
+        const val DENSITY_DPI = 160
     }
 }

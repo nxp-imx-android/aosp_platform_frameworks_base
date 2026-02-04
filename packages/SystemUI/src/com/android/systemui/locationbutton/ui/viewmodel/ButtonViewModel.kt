@@ -18,14 +18,20 @@ package com.android.systemui.locationbutton.ui.viewmodel
 import android.content.res.Configuration
 import androidx.annotation.StringRes
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
 
 data class ButtonViewModel(
-    val width: Int,
-    val height: Int,
+    val width: Dp,
+    val height: Dp,
+    val paddingLeft: Dp,
+    val paddingTop: Dp,
+    val paddingRight: Dp,
+    val paddingBottom: Dp,
     val backgroundColor: Color,
     val strokeColor: Color,
-    val strokeWidth: Int,
-    val cornerRadius: Float,
+    val strokeWidth: Dp,
+    val cornerRadius: Dp,
+    val pressedCornerRadius: Dp,
     val iconTint: Color,
     @StringRes val textResId: Int?,
     val textColor: Color,
