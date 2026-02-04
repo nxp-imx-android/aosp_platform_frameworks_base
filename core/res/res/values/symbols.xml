@@ -6530,6 +6530,9 @@
   <!-- Whether contextual mode (e.g. Do Not Disturb Mode) sync is supported by this device. -->
   <java-symbol type="bool" name="config_supportContextualModeSync"/>
 
+  <!-- Whether the native_serial service is supported by this device. -->
+  <java-symbol type="bool" name="config_supportNativeSerialService" />
+
   <!-- Whether Airplane Mode sync is supported by this device. -->
   <java-symbol type="bool" name="config_supportAirplaneModeSync"/>
 
