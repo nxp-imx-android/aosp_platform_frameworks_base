@@ -538,6 +538,7 @@ aconfig_declarations {
     container: "system",
     srcs: [
         "core/java/android/security/flags.aconfig",
+        "core/java/android/security/keychain_flags.aconfig",
         "core/java/android/security/responsible_apis_flags.aconfig",
     ] + select(release_flag("RELEASE_CONSCRYPT_NSC"), {
         true: [
