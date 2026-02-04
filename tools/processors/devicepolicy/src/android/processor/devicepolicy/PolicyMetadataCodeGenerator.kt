@@ -21,6 +21,7 @@ import android.processor.devicepolicy.protos.PolicyMetadataList
 import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.EnumPolicyMetadata
 import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.IntegerPolicyMetadata
 import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.ListPolicyMetadata.ListElementMetadataCase
+import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.LongPolicyMetadata
 import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.StringPolicyMetadata
 import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.TypeMetadataCase
 import com.squareup.javapoet.ClassName
@@ -309,15 +310,29 @@ object PolicyMetadataCodeGenerator {
     private fun generateLongPolicyMetadata(
         policy: PolicyMetadata,
         policyId: CodeBlock = policy.getPolicyIdCodeBlock(),
-    ) =
-        CodeBlock.builder()
+        longMetadata: LongPolicyMetadata = policy.typeSpecificMetadata.longMetadata,
+    ): CodeBlock {
+        val builder = CodeBlock.builder()
             .add("new \$T(\n", longPolicyMetadataType)
             .indent()
             .addPolicyArguments(policy, policyId)
-            .add("\n")
-            .unindent()
-            .add(")")
-            .build()
+            .add(",\n")
+        val minValue = if (longMetadata.hasMinValue()) {
+            CodeBlock.of("\$LL", longMetadata.minValue)
+        } else {
+            CodeBlock.of("Long.MIN_VALUE")
+        }
+        val maxValue = if (longMetadata.hasMaxValue()) {
+            CodeBlock.of("\$LL", longMetadata.maxValue)
+        } else {
+            CodeBlock.of("Long.MAX_VALUE")
+        }
+        builder.add("/* minValue= */ \$L,\n", minValue)
+        builder.add("/* maxValue= */ \$L", maxValue)
+        builder.add("\n")
+        builder.unindent().add(")")
+        return builder.build()
+    }
 
     private val stringPolicyMetadataType = ClassName.get(METADATA_PACKAGE, "StringPolicyMetadata")
 

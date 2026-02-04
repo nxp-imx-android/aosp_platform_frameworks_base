@@ -28,13 +28,18 @@ import java.util.Set;
  * @hide
  */
 public class LongPolicyMetadata extends PolicyMetadata<Long> {
+    private final long mMinValue;
+    private final long mMaxValue;
+
     public LongPolicyMetadata(
             @NonNull PolicyIdentifier<Long> id,
             @NonNull Set<Integer> allowedScopes,
             int affectedResource,
             @Nullable String requiredPermission,
             @Nullable String requiredCrossUserPermission,
-            @NonNull Set<Integer> allowedDpcTypes) {
+            @NonNull Set<Integer> allowedDpcTypes,
+            long minValue,
+            long maxValue) {
         super(
                 id,
                 allowedScopes,
@@ -43,5 +48,23 @@ public class LongPolicyMetadata extends PolicyMetadata<Long> {
                 requiredCrossUserPermission,
                 allowedDpcTypes
         );
+        mMinValue = minValue;
+        mMaxValue = maxValue;
+    }
+
+    /**
+     * Returns the smallest accepted value for this policy, defaults to {@link Long#MIN_VALUE} if
+     * not set.
+     */
+    public long getMinValue() {
+        return mMinValue;
+    }
+
+    /**
+     * Returns the largest accepted value for this policy, defaults to {@link Long#MAX_VALUE} if not
+     * set.
+     */
+    public long getMaxValue() {
+        return mMaxValue;
     }
 }
