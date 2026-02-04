@@ -427,6 +427,7 @@ public class WallpaperDataParser {
         if (wallpaper.getDescription().getComponent() == null) {
             // The last save was done before the content handling flag was enabled and has no
             // WallpaperDescription, so create a default one with the correct component.
+            // CSP: log boot after flag change to false -> true
             wallpaper.setDescription(
                     new WallpaperDescription.Builder().setComponent(componentName).build());
         }
@@ -568,7 +569,7 @@ public class WallpaperDataParser {
         }
 
         out.attribute(null, "name", wallpaper.name);
-        if (!wallpaper.getComponent().equals(WallpaperData.NO_COMPONENT)
+        if (wallpaper.getComponent() != null
                 && !wallpaper.getComponent().equals(mImageWallpaper)) {
             out.attribute(null, "component",
                     wallpaper.getComponent().flattenToShortString());
