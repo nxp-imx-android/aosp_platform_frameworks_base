@@ -4407,7 +4407,11 @@ public class AccessibilityNodeInfo implements Parcelable {
     public void setTextSelection(int start, int end) {
         enforceNotSealed();
         if (Flags.a11ySelectionApi()) {
-            Selection selection =
+            // If invalid text selection flag is enabled and text selection is invalid, then set the
+            // selection to null.
+            Selection selection = (Flags.a11ySelectionApiInvalidTextSelection()
+                    && (start == UNDEFINED_SELECTION_INDEX || end == UNDEFINED_SELECTION_INDEX))
+                            ? null :
                     new Selection(
                             new SelectionPosition(this, start), new SelectionPosition(this, end));
             setSelection(selection);

@@ -76,6 +76,16 @@ flag {
 }
 
 flag {
+    name: "a11y_selection_api_invalid_text_selection"
+    namespace: "accessibility"
+    description: "Sets multi-node selection to null if setTextSelection called with invalid indexes."
+    bug: "464963130"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "a11y_selection_position_app_getters_api"
     namespace: "accessibility"
     description: "Enables new APIs for an app to get the nodes from a SelectionPosition without a direct node instance."
