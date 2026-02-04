@@ -25,10 +25,13 @@ import static android.security.authenticationpolicy.AuthenticationPolicyManager.
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.PRIMARY_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE;
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.SOME_AUTH_REQUIRED_AFTER_ADAPTIVE_AUTH_REQUEST;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assume.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.never;
@@ -66,6 +69,7 @@ import com.android.server.LocalServices;
 import com.android.server.locksettings.LockSettingsInternal;
 import com.android.server.locksettings.LockSettingsStateListener;
 import com.android.server.pm.UserManagerInternal;
+import com.android.server.security.authenticationpolicy.agent.AgentAuthServiceInternal;
 import com.android.server.wm.WindowManagerInternal;
 
 import org.junit.After;
@@ -115,6 +119,8 @@ public class AuthenticationPolicyServiceTest {
     private SecureLockDeviceServiceInternal mSecureLockDeviceService;
     @Mock
     private WatchRangingServiceInternal mWatchRangingService;
+    @Mock
+    private AgentAuthServiceInternal mAgentAuthService;
 
     @Captor
     ArgumentCaptor<LockSettingsStateListener> mLockSettingsStateListenerCaptor;
@@ -150,6 +156,8 @@ public class AuthenticationPolicyServiceTest {
         LocalServices.addService(UserManagerInternal.class, mUserManager);
         LocalServices.removeServiceForTest(WatchRangingServiceInternal.class);
         LocalServices.addService(WatchRangingServiceInternal.class, mWatchRangingService);
+        LocalServices.removeServiceForTest(AgentAuthServiceInternal.class);
+        LocalServices.addService(AgentAuthServiceInternal.class, mAgentAuthService);
 
         if (secureLockdown()) {
             LocalServices.removeServiceForTest(SecureLockDeviceServiceInternal.class);
@@ -611,5 +619,30 @@ public class AuthenticationPolicyServiceTest {
     private void toggleAdaptiveAuthSettingsOverride(int userId, boolean disable) {
         Settings.Secure.putIntForUser(mContext.getContentResolver(),
                 Settings.Secure.DISABLE_ADAPTIVE_AUTH_LIMIT_LOCK, disable ? 1 : 0, userId);
+    }
+
+    @Test
+    @EnableFlags(android.companion.Flags.FLAG_SUPPORT_AI_AGENT)
+    public void testIsAgentAuthorized_callsAgentAuthService() throws RemoteException {
+        int associationId = 123;
+        when(mAgentAuthService.isAgentAuthorized(PRIMARY_USER_ID, associationId)).thenReturn(true);
+
+        boolean result = mAuthenticationPolicyService.getBinderService().isAgentAuthorized(
+                UserHandle.of(PRIMARY_USER_ID), associationId);
+
+        assertThat(result).isTrue();
+        verify(mAgentAuthService).isAgentAuthorized(PRIMARY_USER_ID, associationId);
+    }
+
+    @Test
+    @DisableFlags(android.companion.Flags.FLAG_SUPPORT_AI_AGENT)
+    public void testIsAgentAuthorized_flagDisabled_returnsFalse() throws RemoteException {
+        int associationId = 123;
+
+        boolean result = mAuthenticationPolicyService.getBinderService().isAgentAuthorized(
+                UserHandle.of(PRIMARY_USER_ID), associationId);
+
+        assertThat(result).isFalse();
+        verify(mAgentAuthService, never()).isAgentAuthorized(anyInt(), anyInt());
     }
 }

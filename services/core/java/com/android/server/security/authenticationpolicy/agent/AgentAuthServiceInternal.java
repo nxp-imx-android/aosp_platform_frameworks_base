@@ -14,7 +14,17 @@
  * limitations under the License.
  */
 
-package com.android.server.security.authenticationpolicy;
+package com.android.server.security.authenticationpolicy.agent;
 
+/** Internal interface for the AgentAuthService. */
 public interface AgentAuthServiceInternal {
+
+    /**
+     * Checks if the agent can perform automation at this time.
+     *
+     * @param userId user id
+     * @param associationId CDM association id of the agent connection
+     * @return current status
+     */
+    boolean isAgentAuthorized(int userId, int associationId);
 }
