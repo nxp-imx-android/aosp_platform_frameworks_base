@@ -35,6 +35,7 @@ constructor(
         contentManagerFactory.create(
             canConfigMobileData = accessPointController.canConfigMobileData(),
             canConfigWifi = accessPointController.canConfigWifi(),
+            isInDialog = false,
         )
     }
 
