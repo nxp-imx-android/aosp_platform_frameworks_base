@@ -652,9 +652,6 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     }
 
     private boolean showInputLayer() {
-        if (!DesktopModeFlags.ENABLE_INPUT_LAYER_TRANSITION_FIX.isTrue()) {
-            return isCaptionVisible();
-        }
         // Don't show the input layer during the recents transition, otherwise it could become
         // touchable while in overview, during quick-switch or even for a short moment after going
         // Home.
@@ -2068,8 +2065,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     void setIsRecentsTransitionRunning(boolean isRecentsTransitionRunning) {
         mIsRecentsTransitionRunning = isRecentsTransitionRunning;
         // TODO (b/415631133): Update this to call on #relayout once b/415631133 is fixed
-        if (isAppHandle(mWindowDecorViewHolder)
-                && DesktopModeFlags.ENABLE_INPUT_LAYER_TRANSITION_FIX.isTrue()) {
+        if (isAppHandle(mWindowDecorViewHolder)) {
             updateAppHandleViewHolder();
         }
     }
