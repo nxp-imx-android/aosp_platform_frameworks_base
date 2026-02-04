@@ -1407,13 +1407,6 @@ flag {
 }
 
 flag {
-   name: "record_issue_qs_tile"
-   namespace: "systemui"
-   description: "Replace Record Trace QS Tile with expanded Record Issue QS Tile"
-   bug: "305049544"
-}
-
-flag {
    name: "register_wallpaper_notifier_background"
    namespace: "systemui"
    description: "Decide whether to register wallpaper change broadcast receiver on background executor."
