@@ -31,6 +31,13 @@ flag {
 }
 
 flag {
+    name: "floating_menu_on_headless_user"
+    namespace: "accessibility"
+    description: "adds condition that allows the FAB to display on bouncer for headless system user."
+    bug: "452113149"
+}
+
+flag {
     name: "floating_menu_tuck_skips_tooltip"
     namespace: "accessibility"
     description: "If the user performs a tuck, the tucking tooltip is skipped."
