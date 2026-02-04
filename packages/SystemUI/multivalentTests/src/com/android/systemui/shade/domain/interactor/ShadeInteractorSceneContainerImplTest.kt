@@ -413,6 +413,46 @@ class ShadeInteractorSceneContainerImplTest : SysuiTestCase() {
             assertThat(expansionAmount).isEqualTo(0f)
         }
 
+    @Test
+    fun lockscreenShadeExpansion_idleOnScene_openBounceOverlay() =
+        kosmos.runTest {
+            enableSingleShade()
+            // GIVEN an expansion flow based on overlay transitions while on shade
+            val key = Scenes.Shade
+            val expansion = underTest.sceneBasedExpansion(sceneInteractor, key)
+            val expansionAmount by collectLastValue(expansion)
+
+            // WHEN transition state is starting show overlay
+            val progress = MutableStateFlow(0f)
+            sceneInteractor.setTransitionState(
+                flowOf(
+                    Transition.showOverlay(
+                        fromScene = key,
+                        overlay = Overlays.Bouncer,
+                        progress = progress,
+                        isInitiatedByUserInput = false,
+                        isUserInputOngoing = flowOf(false),
+                        currentOverlays = flowOf(emptySet()),
+                    )
+                )
+            )
+
+            // THEN expansion is always 1
+            assertThat(expansionAmount).isEqualTo(1f)
+
+            // WHEN transition state is partially to the scene
+            progress.value = .4f
+
+            // THEN expansion is always 1
+            assertThat(expansionAmount).isEqualTo(1f)
+
+            // WHEN transition completes
+            progress.value = 1f
+
+            // THEN expansion is always 1
+            assertThat(expansionAmount).isEqualTo(1f)
+        }
+
     fun isQsBypassingShade_goneToQs() =
         kosmos.runTest {
             enableSingleShade()

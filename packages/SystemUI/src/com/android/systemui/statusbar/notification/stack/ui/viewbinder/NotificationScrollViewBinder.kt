@@ -90,7 +90,6 @@ constructor(
             }
 
             launch { viewModel.animationsEnabled.collectTraced { view.setAnimationsEnabled(it) } }
-            launch { viewModel.isOccluded.collectTraced { view.setOccluded(it) } }
 
             launch { viewModel.maxAlpha.collectTraced { view.setMaxAlpha(it) } }
             launch { viewModel.shadeScrollState.collect { view.setScrollState(it) } }
