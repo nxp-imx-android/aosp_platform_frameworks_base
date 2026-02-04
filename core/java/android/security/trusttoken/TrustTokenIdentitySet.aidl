@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-package android.security.talisman;
+package android.security.trusttoken;
 
-parcelable TrustConfiguration;
+parcelable TrustTokenIdentitySet;

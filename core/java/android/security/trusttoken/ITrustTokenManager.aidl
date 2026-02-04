@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package android.security.talisman;
+package android.security.trusttoken;
 
-import android.security.talisman.TrustToken;
-import android.security.talisman.TrustTokenIdentitySet;
-import android.security.talisman.TrustTokenWithChallenge;
+import android.security.trusttoken.TrustToken;
+import android.security.trusttoken.TrustTokenIdentitySet;
+import android.security.trusttoken.TrustTokenWithChallenge;
 
 /**
  * Interface for the TrustTokenManagerService.

@@ -18,8 +18,8 @@ package com.android.server.security.talisman;
 
 import android.annotation.IntDef;
 import android.annotation.NonNull;
-import android.security.talisman.TrustToken;
-import android.security.talisman.TrustTokenIdentitySet;
+import android.security.trusttoken.TrustToken;
+import android.security.trusttoken.TrustTokenIdentitySet;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

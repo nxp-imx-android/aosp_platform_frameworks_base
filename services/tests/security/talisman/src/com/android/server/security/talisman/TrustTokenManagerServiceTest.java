@@ -16,9 +16,9 @@
 
 package com.android.server.security.talisman;
 
-import static android.security.talisman.TrustTokenManager.VERIFICATION_FAILURE_CHALLENGE_INCORRECT;
-import static android.security.talisman.TrustTokenManager.VERIFICATION_FAILURE_SIGNATURE_INVALID;
-import static android.security.talisman.TrustTokenManager.VERIFICATION_SUCCESS;
+import static android.security.trusttoken.TrustTokenManager.VERIFICATION_FAILURE_CHALLENGE_INCORRECT;
+import static android.security.trusttoken.TrustTokenManager.VERIFICATION_FAILURE_SIGNATURE_INVALID;
+import static android.security.trusttoken.TrustTokenManager.VERIFICATION_SUCCESS;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 
@@ -35,10 +35,10 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import android.app.StatsManager;
-import android.security.talisman.ITrustTokenManager;
-import android.security.talisman.TrustConfiguration;
-import android.security.talisman.TrustToken;
-import android.security.talisman.TrustTokenManager;
+import android.security.trusttoken.ITrustTokenManager;
+import android.security.trusttoken.TrustConfiguration;
+import android.security.trusttoken.TrustToken;
+import android.security.trusttoken.TrustTokenManager;
 import android.testing.TestableContext;
 import android.util.Base64;
 import android.util.StatsEvent;

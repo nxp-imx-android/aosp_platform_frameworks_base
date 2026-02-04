@@ -25,7 +25,7 @@ import android.app.job.JobService;
 import android.content.ComponentName;
 import android.content.Context;
 import android.os.OutcomeReceiver;
-import android.security.talisman.TrustConfiguration;
+import android.security.trusttoken.TrustConfiguration;
 import android.util.Pair;
 import android.util.Slog;
 

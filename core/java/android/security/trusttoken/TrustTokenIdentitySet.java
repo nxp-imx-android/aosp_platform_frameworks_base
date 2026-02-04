@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package android.security.talisman;
+package android.security.trusttoken;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;

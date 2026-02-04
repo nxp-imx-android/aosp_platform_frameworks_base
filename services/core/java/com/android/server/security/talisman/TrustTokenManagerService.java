@@ -16,10 +16,10 @@
 
 package com.android.server.security.talisman;
 
-import static android.security.talisman.TrustTokenManager.VERIFICATION_FAILURE_CHALLENGE_INCORRECT;
-import static android.security.talisman.TrustTokenManager.VERIFICATION_FAILURE_SIGNATURE_INVALID;
-import static android.security.talisman.TrustTokenManager.VERIFICATION_FAILURE_UNKNOWN;
-import static android.security.talisman.TrustTokenManager.VERIFICATION_SUCCESS;
+import static android.security.trusttoken.TrustTokenManager.VERIFICATION_FAILURE_CHALLENGE_INCORRECT;
+import static android.security.trusttoken.TrustTokenManager.VERIFICATION_FAILURE_SIGNATURE_INVALID;
+import static android.security.trusttoken.TrustTokenManager.VERIFICATION_FAILURE_UNKNOWN;
+import static android.security.trusttoken.TrustTokenManager.VERIFICATION_SUCCESS;
 
 import android.annotation.EnforcePermission;
 import android.annotation.NonNull;
@@ -29,11 +29,11 @@ import android.app.StatsManager.PullAtomMetadata;
 import android.content.Context;
 import android.os.Binder;
 import android.os.PermissionEnforcer;
-import android.security.talisman.ITrustTokenManager;
-import android.security.talisman.TrustConfiguration;
-import android.security.talisman.TrustToken;
-import android.security.talisman.TrustTokenIdentitySet;
-import android.security.talisman.TrustTokenWithChallenge;
+import android.security.trusttoken.ITrustTokenManager;
+import android.security.trusttoken.TrustConfiguration;
+import android.security.trusttoken.TrustToken;
+import android.security.trusttoken.TrustTokenIdentitySet;
+import android.security.trusttoken.TrustTokenWithChallenge;
 import android.util.Base64;
 import android.util.Slog;
 import android.util.StatsEvent;

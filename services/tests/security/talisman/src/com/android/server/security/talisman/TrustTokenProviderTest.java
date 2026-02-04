@@ -30,7 +30,7 @@ import android.app.Instrumentation;
 import android.content.ComponentName;
 import android.content.Context;
 import android.os.OutcomeReceiver;
-import android.security.talisman.TrustConfiguration;
+import android.security.trusttoken.TrustConfiguration;
 import android.security.trusttoken.TrustTokenRequest;
 import android.security.trusttoken.TrustTokenResponse;
 import android.security.trusttoken.TrustTokenService;
