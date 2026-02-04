@@ -22,17 +22,19 @@ import android.window.WindowAnimationState;
 
 import com.android.internal.infra.AndroidFuture;
 
+import java.util.List;
+
 /**
  * The result of a {@link TransitionMixpatcher} detach operation. It can represent an
  * immediate/synchronous result or act as a Promise that the detachment will be completed later.
  */
-public class DetachResult extends AndroidFuture<WindowAnimationState[]> {
+public class DetachResult extends AndroidFuture<List<WindowAnimationState>> {
     /** No result yet, so this is a promise by default. */
     private DetachResult() {
     }
 
     /** Construct an immediate/synchronous result. */
-    public DetachResult(@NonNull WindowAnimationState[] states) {
+    public DetachResult(@NonNull List<WindowAnimationState> states) {
         super.complete(states);
     }
 

@@ -209,25 +209,26 @@ public class AnimationPlan {
 
     /**
      * Finish detaching a set of containers which were previously promised to be detached at a
-     * later time (either via {@link #detachAsync} or by returning {@link DetachResult#promise()}
+     * later time (either via {@link #detachAsync} or by returning {@link DetachResult#promise})
      * from {@link ITransitionAnimation#detach}.
      *
      * {@param containers} and {@param state} are expected to correspond 1-to-1.
      */
     void detachPending(@NonNull List<WindowContainerToken> containers,
-            @NonNull WindowAnimationState[] state) {
-        if (containers.size() != state.length) {
+            @NonNull List<WindowAnimationState> state) {
+        if (containers.size() != state.size()) {
             throw new IllegalArgumentException("Detached " + containers.size()
-                    + " containers but only got " + state.length
+                    + " containers but only got " + state.size()
                     + " states back.");
         }
         ProtoLog.v(WM_SHELL_MIXPATCHER, "detach| %s of %d pending", containers,
                 mPendingDetachments.size());
-        for (int c = 0; c < state.length; ++c) {
-            mTransferStates.put(containers.get(c), state[c]);
-            final boolean removed = mPendingDetachments.remove(containers.get(c));
+        for (int c = 0; c < state.size(); ++c) {
+            final WindowContainerToken container = containers.get(c);
+            mTransferStates.put(container, state.get(c));
+            final boolean removed = mPendingDetachments.remove(container);
             if (!removed) {
-                throw new IllegalStateException("Possible double-detach of " + containers.get(c));
+                throw new IllegalStateException("Possible double-detach of " + container);
             }
         }
         if (mOnAsyncAllDetached != null && mPendingDetachments.isEmpty()) {
