@@ -30,6 +30,7 @@ import android.permission.flags.Flags
 import android.util.Slog
 import com.android.internal.os.RoSystemProperties
 import com.android.internal.pm.permission.CompatibilityPermissionInfo
+import com.android.internal.pm.pkg.component.ParsedUsesPermission
 import com.android.modules.utils.BinaryXmlPullParser
 import com.android.modules.utils.BinaryXmlSerializer
 import com.android.server.permission.access.AccessState
@@ -729,6 +730,9 @@ class AppIdPermissionPolicy : SchemePolicy() {
         if (Flags.accessLocalNetworkPermissionEnabled()) {
             clearNearbyDevicesPermissionsUserFlagsOnPackageUpdate(appId)
         }
+        if (Flags.locationButtonEnabled()) {
+            revokePermissionIfOnlyForLocationButtonOnPackageUpdate(appId)
+        }
     }
 
     private fun MutateStateScope.revokeStorageAndMediaPermissionsOnPackageUpdate(appId: Int) {
@@ -913,6 +917,31 @@ class AppIdPermissionPolicy : SchemePolicy() {
                 }
             }
         }
+
+    private fun MutateStateScope.revokePermissionIfOnlyForLocationButtonOnPackageUpdate(
+        appId: Int
+    ) {
+        val onlyForLocationButton =
+            allPackagesInAppId(appId) { packageState ->
+                val usesPermission =
+                    packageState.androidPackage!!
+                        .usesPermissionMapping[Manifest.permission.ACCESS_FINE_LOCATION]
+                        ?: return@allPackagesInAppId false
+                usesPermission.usesPermissionFlags.hasBits(
+                    ParsedUsesPermission.FLAG_ONLY_FOR_LOCATION_BUTTON
+                )
+            }
+        if (!onlyForLocationButton) {
+            return
+        }
+        newState.userStates.forEachIndexed { _, userId, _ ->
+            if (
+                isRuntimePermissionGranted(appId, userId, Manifest.permission.ACCESS_FINE_LOCATION)
+            ) {
+                revokeRuntimePermission(appId, userId, Manifest.permission.ACCESS_FINE_LOCATION)
+            }
+        }
+    }
 
     private fun GetStateScope.isRuntimePermissionGranted(
         appId: Int,
@@ -1660,6 +1689,18 @@ class AppIdPermissionPolicy : SchemePolicy() {
                 targetSdkVersion
             }
         }
+
+    private inline fun MutateStateScope.allPackagesInAppId(
+        appId: Int,
+        state: AccessState = newState,
+        predicate: (PackageState) -> Boolean,
+    ): Boolean {
+        val packageNames = state.externalState.appIdPackageNames[appId]!!
+        return packageNames.allIndexed { _, packageName ->
+            val packageState = state.externalState.packageStates[packageName]!!
+            packageState.androidPackage != null && predicate(packageState)
+        }
+    }
 
     private inline fun MutateStateScope.anyPackageInAppId(
         appId: Int,
