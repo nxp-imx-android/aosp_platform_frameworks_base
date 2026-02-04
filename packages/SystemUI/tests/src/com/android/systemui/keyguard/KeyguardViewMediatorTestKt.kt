@@ -219,6 +219,7 @@ class KeyguardViewMediatorTestKt : SysuiTestCase() {
                     any<ActivityTransitionAnimator.Controller>(),
                     eq(kosmos.testScope),
                     anyBoolean(),
+                    anyBoolean(),
                     any<RemoteTransitionHelper>(),
                 )
             )
