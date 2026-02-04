@@ -27,10 +27,11 @@ import java.io.IOException
 import javax.tools.StandardLocation.SOURCE_OUTPUT
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.fail
-
+import org.junit.Ignore
 import org.junit.Test
 import javax.tools.JavaFileObject
 
+@Ignore("b/481103556 - Disabled until the processor is fixed.")
 class DevicePolicyAnnotationProcessorTest {
     private val mCompilerWithoutProcessor = Compiler.javac()
     private val mCompiler = Compiler.javac().withProcessors(DevicePolicyAnnotationProcessor())

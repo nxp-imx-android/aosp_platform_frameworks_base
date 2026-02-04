@@ -3348,8 +3348,8 @@ public final class ProcessList extends ProcessListInternal
                 if (Arrays.binarySearch(mService.mDeviceIdleTempAllowlist,
                             UserHandle.getAppId(proc.uid)) >= 0
                         || mService.mPendingTempAllowlist.indexOfKey(proc.uid) >= 0) {
-                    uidRec.setCurAllowListed(true);
-                    uidRec.setSetAllowListed(true);
+                    mService.mProcessStateController.setUidCurAllowListed(uidRec, true);
+                    mService.mProcessStateController.setUidSetAllowListed(uidRec, true);
                 }
                 uidRec.updateHasInternetPermission();
                 mActiveUids.put(proc.uid, uidRec);

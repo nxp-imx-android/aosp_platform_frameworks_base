@@ -263,6 +263,7 @@ import android.app.AppOpsManager.AttributionFlags;
 import android.app.AppOpsManagerInternal.CheckOpsDelegate;
 import android.app.ApplicationErrorReport;
 import android.app.ApplicationExitInfo;
+import android.app.ApplicationExitInfo.SubReason;
 import android.app.ApplicationStartInfo;
 import android.app.ApplicationThreadConstants;
 import android.app.BackgroundStartPrivileges;
@@ -475,6 +476,7 @@ import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.DumpUtils;
 import com.android.internal.util.FastPrintWriter;
 import com.android.internal.util.FrameworkStatsLog;
+import com.android.internal.util.HexDump;
 import com.android.internal.util.MemInfoReader;
 import com.android.internal.util.NamedLock;
 import com.android.internal.util.Preconditions;
@@ -3786,9 +3788,22 @@ public class ActivityManagerService extends IActivityManager.Stub
         }
 
         synchronized(this) {
-            mAppErrors.scheduleAppCrashLocked(uid, initialPid, packageName, userId,
-                    message, force, exceptionTypeId, extras);
+            crashApplicationWithTypeWithExtrasLocked(
+                    uid, initialPid, packageName, userId,
+                    message, force, exceptionTypeId, extras, ApplicationExitInfo.SUBREASON_UNKNOWN);
         }
+    }
+
+    /**
+     * Internal version of {@link #crashApplicationWithTypeWithExtras} that also accepts
+     * a subreason.
+     */
+    @GuardedBy("this")
+    void crashApplicationWithTypeWithExtrasLocked(int uid, int initialPid, String packageName,
+            int userId, String message, boolean force, int exceptionTypeId,
+            @Nullable Bundle extras, @SubReason int subReason) {
+        mAppErrors.scheduleAppCrashLocked(uid, initialPid, packageName, userId,
+                message, force, exceptionTypeId, extras, subReason);
     }
 
     /**
@@ -12238,11 +12253,77 @@ public class ActivityManagerService extends IActivityManager.Stub
                 }
             }
         }
+        if (android.app.privatecompute.flags.Flags.enableAllowComponentAccess()) {
+            PackageManagerInternal pmInternal = getPackageManagerInternal();
+            int userId = mUserController.getCurrentUserId();
+            IndentingPrintWriter ipw = new IndentingPrintWriter(pw, "  ");
+            if (dumpPackage != null) {
+                // Fast path: Check specific package
+                AllowComponentAccessPolicyInfo policy =
+                        pmInternal.getAllowComponentAccessPolicyInfo(dumpPackage, userId);
+                if (policy != null) {
+                    if (printed) pw.println();
+                    ipw.increaseIndent();
+                    ipw.println("App declared allow associations (Manifest):");
+                    printManifestPolicyLocked(ipw, dumpPackage, policy);
+                    ipw.decreaseIndent();
+                    printed = true;
+                }
+            } else if (dumpAll) {
+                // Slow path: Check all packages
+                boolean printedHeader = false;
+                List<ApplicationInfo> apps =
+                        pmInternal.getInstalledApplications(0, userId, SYSTEM_UID);
+                final int size = apps.size();
+                for (int i = 0; i < size; i++) {
+                    String pkg = apps.get(i).packageName;
+                    var policy = pmInternal.getAllowComponentAccessPolicyInfo(pkg, userId);
+                    if (policy != null) {
+                        if (!printedHeader) {
+                            if (printed) pw.println();
+                            ipw.increaseIndent();
+                            ipw.println("App declared allow associations (Manifest):");
+                            printedHeader = true;
+                            printed = true;
+                        }
+                        printManifestPolicyLocked(ipw, pkg, policy);
+                    }
+                }
+                if (printedHeader) {
+                    ipw.decreaseIndent();
+                }
+            }
+        }
         if (!printed) {
             pw.println("  (No association restrictions)");
         }
     }
 
+    private void printManifestPolicyLocked(IndentingPrintWriter ipw, String pkg,
+            AllowComponentAccessPolicyInfo policy) {
+        ipw.print("* ");
+        ipw.print(pkg);
+        ipw.println(":");
+
+        ipw.increaseIndent();
+        ipw.increaseIndent();
+
+        var rules = policy.getAllowlistedSignedPackages();
+        for (int j = 0; j < rules.size(); j++) {
+            var rule = rules.get(j);
+            ipw.print("Allow: ");
+            ipw.print(rule.getPackageName());
+            if (rule.hasCertificateDigest()) {
+                ipw.print(" (cert: ");
+                ipw.print(HexDump.toHexString(rule.getCertificateDigest()));
+                ipw.print(")");
+            }
+            ipw.println();
+        }
+
+        ipw.decreaseIndent();
+        ipw.decreaseIndent();
+    }
     void dumpPermissions(FileDescriptor fd, PrintWriter pw, String[] args,
             int opti, boolean dumpAll, String dumpPackage) {
 
@@ -16112,8 +16193,8 @@ public class ActivityManagerService extends IActivityManager.Stub
                                         || userId == UserHandle.getUserId(uid)) {
                                     EventLogTags.writeAmUidIdle(uid);
                                     synchronized (mProcLock) {
-                                        uidRec.setIdle(true);
-                                        uidRec.setSetIdle(true);
+                                        mProcessStateController.setUidIdle(uidRec, true);
+                                        mProcessStateController.setUidSetIdle(uidRec, true);
                                     }
                                     Slog.w(TAG, "Idling uid " + UserHandle.formatUid(uid)
                                             + " from package " + packageName + " user " + userId);
@@ -16174,9 +16255,9 @@ public class ActivityManagerService extends IActivityManager.Stub
                 if (bgTime <= maxBgTime) {
                     EventLogTags.writeAmUidIdle(uidRec.getUid());
                     synchronized (mProcLock) {
-                        uidRec.setIdle(true);
-                        uidRec.setSetIdle(true);
-                        uidRec.setLastIdleTime(nowElapsed);
+                        mProcessStateController.setUidIdle(uidRec, true);
+                        mProcessStateController.setUidSetIdle(uidRec, true);
+                        mProcessStateController.setUidLastIdleTime(uidRec, nowElapsed);
                     }
                     doStopUidLocked(uidRec.getUid(), uidRec);
                 } else {

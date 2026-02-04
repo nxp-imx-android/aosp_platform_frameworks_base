@@ -16,13 +16,11 @@
 
 package com.android.systemui.shade.domain.interactor
 
-import android.view.Display
 import com.android.app.displaylib.PerDisplayRepository
 import com.android.app.tracing.FlowTracing.traceEach
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
-import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModel
 import com.android.systemui.statusbar.data.repository.HomeStatusBarComponentsRepository
 import com.android.systemui.statusbar.disableflags.shared.model.DisableFlagsModel
@@ -33,7 +31,6 @@ import dagger.Lazy
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -56,12 +53,7 @@ constructor(
     perDisplaySubcomponentRepository: PerDisplayRepository<SystemUIDisplaySubcomponent>,
 ) {
 
-    private val shadeDisplayId: StateFlow<Int> =
-        if (ShadeWindowGoesAround.isEnabled) {
-            shadeDisplaysInteractor.get().displayId
-        } else {
-            MutableStateFlow(Display.DEFAULT_DISPLAY)
-        }
+    private val shadeDisplayId: StateFlow<Int> = shadeDisplaysInteractor.get().displayId
 
     /**
      * Provides the [HomeStatusBarComponent] for the display the shade is currently on. Returns null

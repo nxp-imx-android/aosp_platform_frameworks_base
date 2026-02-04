@@ -22,6 +22,7 @@ import android.os.Parcel
 import android.os.Parcelable.PARCELABLE_WRITE_RETURN_VALUE
 import android.testing.AndroidTestingRunner
 import androidx.test.filters.SmallTest
+import com.android.users.UserType
 import com.android.wm.shell.ShellTestCase
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test

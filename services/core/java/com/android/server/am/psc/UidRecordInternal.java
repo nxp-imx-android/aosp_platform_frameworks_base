@@ -156,7 +156,7 @@ public abstract class UidRecordInternal {
 
     @VisibleForTesting
     @GuardedBy({"mService", "mProcLock"})
-    public void setCurProcStateSeq(long value) {
+    void setCurProcStateSeq(long value) {
         mCurProcStateSeq = value;
     }
 
@@ -166,7 +166,7 @@ public abstract class UidRecordInternal {
     }
 
     @GuardedBy({"mService", "mProcLock"})
-    public void setCurProcState(int curProcState) {
+    void setCurProcState(int curProcState) {
         mCurProcState = curProcState;
     }
 
@@ -176,7 +176,7 @@ public abstract class UidRecordInternal {
     }
 
     @GuardedBy({"mService", "mProcLock"})
-    public void setSetProcState(int setProcState) {
+    void setSetProcState(int setProcState) {
         mSetProcState = setProcState;
     }
 
@@ -186,7 +186,7 @@ public abstract class UidRecordInternal {
     }
 
     @GuardedBy({"mService", "mProcLock"})
-    public void setProcAdjChanged(boolean procAdjChanged) {
+    void setProcAdjChanged(boolean procAdjChanged) {
         mProcAdjChanged = procAdjChanged;
     }
 
@@ -196,7 +196,7 @@ public abstract class UidRecordInternal {
     }
 
     @GuardedBy({"mService", "mProcLock"})
-    public void setCurCapability(int curCapability) {
+    void setCurCapability(int curCapability) {
         mCurCapability = curCapability;
     }
 
@@ -206,7 +206,7 @@ public abstract class UidRecordInternal {
     }
 
     @GuardedBy({"mService", "mProcLock"})
-    public void setSetCapability(int setCapability) {
+    void setSetCapability(int setCapability) {
         mSetCapability = setCapability;
     }
 
@@ -216,7 +216,7 @@ public abstract class UidRecordInternal {
     }
 
     @GuardedBy({"mService", "mProcLock"})
-    public void setLastBackgroundTime(long lastBackgroundTime) {
+    void setLastBackgroundTime(long lastBackgroundTime) {
         mLastBackgroundTime = lastBackgroundTime;
     }
 
@@ -238,7 +238,7 @@ public abstract class UidRecordInternal {
      * @param lastIdleTime The elapsed real-time when the UID became idle.
      */
     @GuardedBy({"mService", "mProcLock"})
-    public void setLastIdleTime(@ElapsedRealtimeLong long lastIdleTime) {
+    void setLastIdleTime(@ElapsedRealtimeLong long lastIdleTime) {
         mLastIdleTimeIfStillIdle = lastIdleTime;
         if (lastIdleTime > 0) {
             mRealLastIdleTime = lastIdleTime;
@@ -251,7 +251,7 @@ public abstract class UidRecordInternal {
     }
 
     @GuardedBy({"mService", "mProcLock"})
-    public void setEphemeral(boolean ephemeral) {
+    void setEphemeral(boolean ephemeral) {
         mEphemeral = ephemeral;
     }
 
@@ -261,7 +261,7 @@ public abstract class UidRecordInternal {
     }
 
     @GuardedBy({"mService", "mProcLock"})
-    public void setHasForegroundServices(boolean hasForeGroundServices) {
+    void setHasForegroundServices(boolean hasForeGroundServices) {
         mHasForegroundServices = hasForeGroundServices;
     }
 
@@ -271,7 +271,7 @@ public abstract class UidRecordInternal {
     }
 
     @GuardedBy({"mService", "mProcLock"})
-    public void setCurAllowListed(boolean curAllowList) {
+    void setCurAllowListed(boolean curAllowList) {
         mCurAllowList = curAllowList;
     }
 
@@ -281,7 +281,7 @@ public abstract class UidRecordInternal {
     }
 
     @GuardedBy({"mService", "mProcLock"})
-    public void setSetAllowListed(boolean setAllowlist) {
+    void setSetAllowListed(boolean setAllowlist) {
         mSetAllowList = setAllowlist;
     }
 
@@ -291,7 +291,7 @@ public abstract class UidRecordInternal {
     }
 
     @GuardedBy({"mService", "mProcLock"})
-    public void setIdle(boolean idle) {
+    void setIdle(boolean idle) {
         mIdle = idle;
     }
 
@@ -301,7 +301,7 @@ public abstract class UidRecordInternal {
     }
 
     @GuardedBy({"mService", "mProcLock"})
-    public void setSetIdle(boolean setIdle) {
+    void setSetIdle(boolean setIdle) {
         mSetIdle = setIdle;
     }
 

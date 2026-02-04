@@ -1138,6 +1138,12 @@
     <!-- Permission required for CTS test - CtsTelephonyTestCases -->
     <uses-permission android:name="android.permission.BIND_ALTERNATIVE_MESSAGE_TRANSPORT_SERVICE" />
 
+    <!-- Permission required for App Lock CTS tests -->
+    <uses-permission android:name="android.permission.TEST_LOCK_APPS"/>
+
+    <!-- Permission required for personal context settings testing  -->
+    <uses-permission android:name="android.permission.CHANGE_PERSONAL_CONTEXT_MODE" />
+
     <application
         android:label="@string/app_label"
         android:theme="@android:style/Theme.DeviceDefault.DayNight"

@@ -179,11 +179,40 @@ public class TransitionMixpatcher {
     /** List of all transitions which are finished (in order) but have not yet reported to WM. */
     private final ArrayList<TransitionState> mFinished = new ArrayList<>();
 
+    /** List of {@link Runnable} instances to run when the last active transition has finished. */
+    private final ArrayList<Runnable> mRunWhenIdleQueue = new ArrayList<>();
+
     TransitionMixpatcher(@NonNull ShellTaskOrganizer organizer,
             @NonNull ShellExecutor mainExecutor) {
         mOrganizer = organizer;
         mMainExecutor = mainExecutor;
         mKeyguardPlanner = new KeyguardTransitionPlanner(mMainExecutor);
+    }
+
+    /**
+     * Used for the legacy dispatcher to hook into the pre-distribute stage. Using this means
+     * that {@param prePlanner} is expected to handle all the prefix transitions like
+     * sleep/keyguard.
+     *
+     * @deprecated as this is only intended to be used during migration.
+     */
+    @Deprecated
+    void overridePrePlanner(@NonNull ITransitionPlanner prePlanner) {
+        mKeyguardPlanner = prePlanner;
+        // No-op sleep so there's only one pre-planner
+        mSleepPlanner = new ITransitionPlanner() {
+            @Override
+            public void plan(@NonNull AnimationPlan plan, @NonNull TransitionInfo fullInfo,
+                    @NonNull IBinder transition, @NonNull TransitionInfo info,
+                    @NonNull SurfaceControl.Transaction startTransaction) {
+            }
+
+            @NonNull
+            @Override
+            public String getDebugName() {
+                return "NoOpSleep";
+            }
+        };
     }
 
     private static int findTransition(@NonNull IBinder transition,
@@ -536,6 +565,31 @@ public class TransitionMixpatcher {
         }
         mReadyOrder.clear();
         mFinished.clear();
+        executeIdle();
+    }
+
+    /**
+     * Runs the given {@code runnable} when the last active transition has finished, or immediately
+     * if there are currently no active transitions.
+     *
+     * <p>This method should be called on the Shell main-thread, where the given {@code runnable}
+     * will be executed when the last active transition is finished.
+     */
+    public void runOnIdle(Runnable runnable) {
+        mMainExecutor.assertCurrentThread();
+        if (mReadyOrder.isEmpty() && mPending.isEmpty()) {
+            runnable.run();
+        } else {
+            mRunWhenIdleQueue.add(runnable);
+        }
+    }
+
+    private void executeIdle() {
+        ProtoLog.v(WM_SHELL_MIXPATCHER, "Transition system is idle now.");
+        for (int i = 0; i < mRunWhenIdleQueue.size(); i++) {
+            mRunWhenIdleQueue.get(i).run();
+        }
+        mRunWhenIdleQueue.clear();
     }
 
     private class InvisiblesPlanner implements ITransitionPlanner {

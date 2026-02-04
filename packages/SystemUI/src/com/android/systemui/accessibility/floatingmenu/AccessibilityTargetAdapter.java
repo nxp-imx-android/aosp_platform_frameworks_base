@@ -57,6 +57,17 @@ public class AccessibilityTargetAdapter extends Adapter<ViewHolder> {
 
     private int mHearingDeviceStatus;
     private boolean mBadgeOnLeftSide = false;
+    private MoreOptionsClickListener mMoreOptionsClickListener;
+
+    /** A listener for when the "More Options" menu item is clicked. */
+    public interface MoreOptionsClickListener {
+        /**
+         * A callback that is invoked when the "More Options" menu item is clicked.
+         *
+         * @param view The view that was clicked.
+         */
+        void onMoreOptionsClicked(View view);
+    }
 
     @IntDef({
             ItemType.FIRST_ITEM,
@@ -92,6 +103,10 @@ public class AccessibilityTargetAdapter extends Adapter<ViewHolder> {
         return new ViewHolder(root);
     }
 
+    public void setMoreOptionsClickListener(MoreOptionsClickListener listener) {
+        mMoreOptionsClickListener = listener;
+    }
+
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         final AccessibilityTarget target = mTargets.get(position);
@@ -100,7 +115,15 @@ public class AccessibilityTargetAdapter extends Adapter<ViewHolder> {
         holder.mLeftBadgeView.setBackground(null);
         holder.updateIconSize(mIconWidthHeight);
         holder.updateItemPadding(mItemPadding, getItemCount());
-        holder.itemView.setOnClickListener((v) -> target.onSelected());
+        holder.itemView.setOnClickListener(view -> {
+            if (target instanceof MoreOptionsTarget) {
+                if (mMoreOptionsClickListener != null) {
+                    mMoreOptionsClickListener.onMoreOptionsClicked(view);
+                }
+            } else {
+                target.onSelected();
+            }
+        });
         holder.itemView.setStateDescription(target.getStateDescription());
         holder.itemView.setContentDescription(target.getLabel());
 

@@ -51,7 +51,6 @@ import com.android.systemui.shade.ShadeExpansionChangeEvent
 import com.android.systemui.shade.ShadeExpansionListener
 import com.android.systemui.shade.data.repository.ShadeDisplaysRepository
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
-import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.statusbar.phone.BiometricUnlockController
 import com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_WAKE_AND_DISMISS
 import com.android.systemui.statusbar.phone.DozeParameters
@@ -246,12 +245,7 @@ constructor(
         }
 
     private val isShadeOnDefaultDisplay: Boolean
-        get() =
-            if (ShadeWindowGoesAround.isEnabled) {
-                shadeDisplaysRepository.get().displayId.value == Display.DEFAULT_DISPLAY
-            } else {
-                true
-            }
+        get() = shadeDisplaysRepository.get().displayId.value == Display.DEFAULT_DISPLAY
 
     /** Blur radius of the wake and unlock animation on this frame, and whether to zoom out. */
     private var wakeAndUnlockBlurRadius = 0f

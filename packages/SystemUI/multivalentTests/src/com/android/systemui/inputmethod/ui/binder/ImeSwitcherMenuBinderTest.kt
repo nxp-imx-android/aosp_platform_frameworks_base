@@ -51,7 +51,7 @@ class ImeSwitcherMenuBinderTest : SysuiTestCase() {
     private val kosmos =
         testKosmos().apply {
             whenever(displayManager.getDisplay(any())).thenReturn(mockDisplay)
-            whenever(imeSwitcherMenuUiFactory.create(any(), any())).thenReturn(mockUi)
+            whenever(imeSwitcherMenuUiFactory.create(any(), any(), any())).thenReturn(mockUi)
         }
     private val repository
         get() = kosmos.imeSwitcherMenuRepository.fake
@@ -68,7 +68,7 @@ class ImeSwitcherMenuBinderTest : SysuiTestCase() {
             val model = createModel()
 
             repository.setModel(userId, model)
-            verify(imeSwitcherMenuUiFactory).create(any(), any())
+            verify(imeSwitcherMenuUiFactory).create(any(), any(), any())
             verify(mockUi).show()
         }
 
@@ -81,7 +81,7 @@ class ImeSwitcherMenuBinderTest : SysuiTestCase() {
             val model = createModel()
 
             repository.setModel(userId, model)
-            verify(imeSwitcherMenuUiFactory).create(any(), any())
+            verify(imeSwitcherMenuUiFactory).create(any(), any(), any())
             verify(mockUi).show()
 
             repository.setModel(userId, model = null)
@@ -100,25 +100,25 @@ class ImeSwitcherMenuBinderTest : SysuiTestCase() {
             val secondModel = createModel(selectedImeId = "secondId")
 
             repository.setModel(firstUser, firstModel)
-            verify(imeSwitcherMenuUiFactory, times(1)).create(any(), any())
+            verify(imeSwitcherMenuUiFactory, times(1)).create(any(), any(), any())
             verify(mockUi, times(1)).show()
 
             repository.setModel(secondUser, secondModel)
-            verify(imeSwitcherMenuUiFactory, times(2)).create(any(), any())
+            verify(imeSwitcherMenuUiFactory, times(2)).create(any(), any(), any())
             verify(mockUi, times(2)).show()
             // No dismiss calls.
             verify(mockUi, never()).dismiss()
 
             repository.setModel(firstUser, model = null)
             // No new create calls.
-            verify(imeSwitcherMenuUiFactory, times(2)).create(any(), any())
+            verify(imeSwitcherMenuUiFactory, times(2)).create(any(), any(), any())
             // No new show calls.
             verify(mockUi, times(2)).show()
             verify(mockUi, times(1)).dismiss()
 
             repository.setModel(secondUser, model = null)
             // No new create calls.
-            verify(imeSwitcherMenuUiFactory, times(2)).create(any(), any())
+            verify(imeSwitcherMenuUiFactory, times(2)).create(any(), any(), any())
             // No new show calls.
             verify(mockUi, times(2)).show()
             verify(mockUi, times(2)).dismiss()
@@ -137,12 +137,12 @@ class ImeSwitcherMenuBinderTest : SysuiTestCase() {
             val otherModel = createModel(selectedImeId = "otherId")
 
             repository.setModel(userId, model)
-            verify(imeSwitcherMenuUiFactory).create(any(), any())
+            verify(imeSwitcherMenuUiFactory).create(any(), any(), any())
             verify(mockUi, times(1)).show()
 
             repository.setModel(userId, otherModel)
             // Just one call from the first show.
-            verify(imeSwitcherMenuUiFactory, times(1)).create(any(), any())
+            verify(imeSwitcherMenuUiFactory, times(1)).create(any(), any(), any())
             // Shown again.
             verify(mockUi, times(2)).show()
         }
@@ -160,12 +160,12 @@ class ImeSwitcherMenuBinderTest : SysuiTestCase() {
             val otherModel = createModel(displayId = 3)
 
             repository.setModel(userId, model)
-            verify(imeSwitcherMenuUiFactory).create(any(), any())
+            verify(imeSwitcherMenuUiFactory).create(any(), any(), any())
             verify(mockUi, times(1)).show()
 
             repository.setModel(userId, otherModel)
             // Created again for new display.
-            verify(imeSwitcherMenuUiFactory, times(2)).create(any(), any())
+            verify(imeSwitcherMenuUiFactory, times(2)).create(any(), any(), any())
             // Shown again.
             verify(mockUi, times(2)).show()
         }

@@ -46,4 +46,6 @@ interface ISupervisionManager {
     List<ResolveInfo> querySupervisionApprovalActivities(int userId);
     boolean hasValidRecoveryMethod(int userId);
     List<UserInfo> getUsersThatRequirePlatformCredential();
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.BYPASS_ROLE_QUALIFICATION)")
+    void setShouldAllowBypassingSupervisionRoleQualification(boolean allowBypassing);
 }

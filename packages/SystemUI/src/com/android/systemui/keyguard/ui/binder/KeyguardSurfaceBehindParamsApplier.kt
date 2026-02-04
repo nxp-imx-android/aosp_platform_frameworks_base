@@ -223,7 +223,7 @@ constructor(
     private fun applyToSurfaceBehind() {
         surfaceBehind?.let { surface ->
             executor.execute {
-                if (surfaceBehind == null) {
+                if (surfaceBehind == null || !surface.leash.isValid) {
                     Log.d(
                         TAG,
                         "Attempting to modify params of surface that isn't " +

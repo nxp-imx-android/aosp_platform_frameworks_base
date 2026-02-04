@@ -2228,7 +2228,9 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                 }
             }
 
-            SELinuxMMAC.readInstallPolicy();
+            if (!SELinuxMMAC.readInstallPolicy()) {
+                throw new RuntimeException("Unable to load SELinux MMAC policy");
+            }
 
             t.traceBegin("loadFallbacks");
             FallbackCategoryProvider.loadFallbacks();
@@ -5641,7 +5643,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             }
             return mAppLockPackageHelper.setPackageAppLockEnabled(
                     PackageManagerService.this::snapshotComputer, pkgName, userId, enabled,
-                    Binder.getCallingUid());
+                    Binder.getCallingUid(), Binder.getCallingPid());
         }
 
         @Override
@@ -7000,7 +7002,8 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         }
     }
 
-    private class PackageManagerInternalImpl extends PackageManagerInternalBase {
+    @VisibleForTesting
+    class PackageManagerInternalImpl extends PackageManagerInternalBase {
 
         public PackageManagerInternalImpl() {
             super(PackageManagerService.this);
@@ -7614,6 +7617,42 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             }
 
             return PackageInfoUtils.generateAllowComponentAccessPolicyInfo(parsedPolicy);
+        }
+
+        @Override
+        public void setPersonalContextMode(@NonNull String packageName, int callingUid, int userId,
+                @PackageManager.PersonalContextMode int mode) {
+            final Computer snapshot = snapshotComputer();
+            snapshot.enforceCrossUserPermission(callingUid, userId,
+                    false /* requireFullPermission */, false /* checkShell */,
+                    "setPersonalContextMode");
+
+            final PackageStateInternal packageState = snapshot
+                    .getPackageStateForInstalledAndFiltered(packageName, callingUid, userId);
+            if (packageState == null) {
+                throw new ParcelableException(
+                        new PackageManager.NameNotFoundException(packageName));
+            }
+
+            if (packageState.getUserStateOrDefault(userId).getPersonalContextMode() == mode) {
+                return;
+            }
+
+            commitPackageStateMutation(null, packageName, state ->
+                    state.userState(userId).setPersonalContextMode(mode));
+        }
+
+        @Override
+        @PackageManager.PersonalContextMode
+        public int getPersonalContextMode(String packageName, int callingUid, int userId) {
+            final Computer snapshot = snapshotComputer();
+            final PackageStateInternal packageState = snapshot
+                    .getPackageStateForInstalledAndFiltered(packageName, callingUid, userId);
+            if (packageState == null) {
+                throw new ParcelableException(
+                        new PackageManager.NameNotFoundException(packageName));
+            }
+            return packageState.getUserStateOrDefault(userId).getPersonalContextMode();
         }
     }
 

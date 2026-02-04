@@ -498,10 +498,19 @@ class AppTaskImpl extends IAppTask.Stub {
                             }
 
                             final int cookieTraceId = transition.getSyncId();
+                            // Normal layer is always approved, no room for rejecting by Shell.
                             final ObservedRemoteCallback observedCallback =
-                                    new ObservedRemoteCallback(callback);
+                                    layer == WINDOWING_LAYER_NORMAL_APP
+                                    ? null
+                                    : new ObservedRemoteCallback(callback);
                             transition.addTransitionEndedListener(() -> {
-                                rejectRequestIfNotHandledAfterTimeout(observedCallback);
+                                if (observedCallback != null) {
+                                    rejectRequestIfNotHandledAfterTimeout(observedCallback);
+                                } else {
+                                    sendWindowingLayerResult(
+                                            TaskWindowingLayerRequestHandler.RESULT_APPROVED,
+                                            callback);
+                                }
                                 Trace.endAsyncSection(TRACE_WINDOWING_LAYER_NAME, cookieTraceId);
                             });
                             Trace.beginAsyncSection(TRACE_WINDOWING_LAYER_NAME, cookieTraceId);

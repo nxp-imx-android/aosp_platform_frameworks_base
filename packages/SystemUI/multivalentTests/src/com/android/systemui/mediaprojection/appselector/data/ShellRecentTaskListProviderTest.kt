@@ -8,14 +8,15 @@ import android.os.UserManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.mediaprojection.appselector.data.RecentTask.UserType.CLONED
-import com.android.systemui.mediaprojection.appselector.data.RecentTask.UserType.PRIVATE
-import com.android.systemui.mediaprojection.appselector.data.RecentTask.UserType.STANDARD
-import com.android.systemui.mediaprojection.appselector.data.RecentTask.UserType.WORK
 import com.android.systemui.settings.UserTracker
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.mockito.whenever
+import com.android.users.UserType
+import com.android.users.UserType.CLONED
+import com.android.users.UserType.MAIN
+import com.android.users.UserType.PRIVATE
+import com.android.users.UserType.WORK
 import com.android.wm.shell.recents.RecentTasks
 import com.android.wm.shell.shared.GroupedTaskInfo
 import com.android.wm.shell.shared.split.SplitBounds
@@ -202,7 +203,7 @@ class ShellRecentTaskListProviderTest : SysuiTestCase() {
     @Test
     fun loadRecentTasks_assignsCorrectUserType() {
         givenRecentTasks(
-            createSingleTask(taskId = 1, userId = 10, userType = STANDARD),
+            createSingleTask(taskId = 1, userId = 10, userType = MAIN),
             createSingleTask(taskId = 2, userId = 20, userType = WORK),
             createSingleTask(taskId = 3, userId = 30, userType = CLONED),
             createSingleTask(taskId = 4, userId = 40, userType = PRIVATE),
@@ -211,7 +212,7 @@ class ShellRecentTaskListProviderTest : SysuiTestCase() {
         val result = runBlocking { recentTaskListProvider.loadRecentTasks() }
 
         assertThat(result.map { it.userType })
-            .containsExactly(STANDARD, WORK, CLONED, PRIVATE)
+            .containsExactly(MAIN, WORK, CLONED, PRIVATE)
             .inOrder()
     }
 
@@ -225,7 +226,7 @@ class ShellRecentTaskListProviderTest : SysuiTestCase() {
 
     private fun createRecentTask(
         taskId: Int,
-        userType: RecentTask.UserType = STANDARD,
+        userType: UserType = MAIN,
         baseIntent: Intent? = null,
     ): RecentTask =
         RecentTask(
@@ -245,7 +246,7 @@ class ShellRecentTaskListProviderTest : SysuiTestCase() {
         taskId: Int,
         userId: Int = 0,
         isVisible: Boolean = false,
-        userType: RecentTask.UserType = STANDARD,
+        userType: UserType = MAIN,
     ): GroupedTaskInfo {
         val userInfo =
             mock<UserInfo> {

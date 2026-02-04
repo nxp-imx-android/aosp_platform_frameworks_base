@@ -90,20 +90,31 @@
             android:paddingHorizontal="@dimen/usb_device_dialog_space_small4">
 
             <Button
+                android:id="@+id/usb_device_dialog_always_allow_button"
+                style="@android:style/Widget.DeviceDefault.Button.Borderless.Colored"
+                android:visibility="gone"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/usb_device_dialog_button_height"
+                android:layout_marginTop="@dimen/usb_device_dialog_button_margin_vertical"
+                android:layout_marginBottom="@dimen/usb_device_dialog_button_margin_vertical_large"
+                android:paddingHorizontal="@dimen/usb_device_dialog_space_small1"
+                android:paddingVertical="@dimen/usb_device_dialog_button_padding_vertical"
+                android:background="@drawable/usb_device_dialog_button_background_filled"
+                android:textColor="@color/materialColorOnPrimary"
+                android:text="@string/usb_device_dialog_always_allow_button"/>
+
+            <Button
                 android:id="@+id/usb_device_dialog_allow_only_this_time_button"
                 style="@android:style/Widget.DeviceDefault.Button.Borderless.Colored"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/usb_device_dialog_button_height"
-                android:layout_marginVertical="@dimen/usb_device_dialog_button_margin_vertical"
+                android:layout_marginTop="@dimen/usb_device_dialog_button_margin_vertical"
+                android:layout_marginBottom="@dimen/usb_device_dialog_button_margin_vertical_large"
                 android:paddingHorizontal="@dimen/usb_device_dialog_space_small1"
                 android:paddingVertical="@dimen/usb_device_dialog_button_padding_vertical"
                 android:background="@drawable/usb_device_dialog_button_background_outline"
                 android:textColor="@color/materialColorPrimary"
                 android:text="@string/usb_device_dialog_allow_only_this_time_button"/>
-
-            <Space
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/usb_device_dialog_button_space"/>
 
             <Button
                 android:id="@+id/usb_device_dialog_cancel_button"

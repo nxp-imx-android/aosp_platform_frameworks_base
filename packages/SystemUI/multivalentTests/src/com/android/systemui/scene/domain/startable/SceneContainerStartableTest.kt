@@ -35,6 +35,7 @@ import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.internal.logging.uiEventLoggerFake
 import com.android.internal.policy.IKeyguardDismissCallback
+import com.android.internal.widget.lockPatternUtils
 import com.android.keyguard.AuthInteractionProperties
 import com.android.keyguard.keyguardUpdateMonitor
 import com.android.systemui.Flags
@@ -1193,7 +1194,41 @@ class SceneContainerStartableTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableSceneContainer
+    fun switchToGoneWhenDeviceStartsToWakeUp_lockscreenDisabledByLockPatternUtils() =
+        kosmos.runTest {
+            val currentSceneKey by collectLastValue(sceneInteractor.currentScene)
+            val canWakeDirectlyToGone by
+                collectLastValue(keyguardWakeDirectlyToGoneInteractor.canWakeDirectlyToGone)
+            prepareState(
+                initialSceneKey = Scenes.Lockscreen,
+                authenticationMethod = AuthenticationMethodModel.None,
+                isLockscreenEnabled = true,
+            )
+
+            // Do not suppress keyguard at start
+            whenever(lockPatternUtils.isLockScreenDisabled(anyInt())).thenReturn(false)
+
+            // Even when lockscreen is disabled, device must be unlocked to make sure locked SIM
+            // state is detected.
+            deviceEntryRepository.deviceUnlockStatus.value =
+                DeviceUnlockStatus(true, deviceUnlockSource = null)
+
+            powerInteractor.setAsleepForTest()
+            underTest.start()
+            runCurrent()
+            assertThat(currentSceneKey).isEqualTo(Scenes.Lockscreen)
+            assertThat(canWakeDirectlyToGone).isFalse()
+
+            // Change disabled state, which will be read when the device is awake
+            whenever(lockPatternUtils.isLockScreenDisabled(anyInt())).thenReturn(true)
+
+            powerInteractor.setAwakeForTest()
+            runCurrent()
+
+            assertThat(currentSceneKey).isEqualTo(Scenes.Gone)
+        }
+
+    @Test
     fun switchToGoneWhenDeviceStartsToWakeUp_authMethodNone_canIgnoreAuth() =
         kosmos.runTest {
             val currentSceneKey by collectLastValue(sceneInteractor.currentScene)
@@ -1225,7 +1260,6 @@ class SceneContainerStartableTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableSceneContainer
     fun switchToGoneWhenDeviceStartsToWakeUpWhileTransitioningToLockscreenAndCanIgnoreAuth() =
         kosmos.runTest {
             val currentSceneKey by collectLastValue(sceneInteractor.currentScene)
@@ -1268,7 +1302,6 @@ class SceneContainerStartableTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableSceneContainer
     fun doesNotSwitchToGoneWhenDeviceStartsToWakeUp_authMethodNone_canNotIgnoreAuth() =
         kosmos.runTest {
             val currentSceneKey by collectLastValue(sceneInteractor.currentScene)
@@ -2269,6 +2302,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
             assertThat(currentScene).isEqualTo(Scenes.Communal)
         }
 
+    @Test
     fun handleOcclusion_unoccludeBehindBouncer_bouncerStaysVisible() =
         kosmos.runTest {
             val currentScene by collectLastValue(sceneInteractor.currentScene)
@@ -2292,6 +2326,38 @@ class SceneContainerStartableTest : SysuiTestCase() {
 
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
             assertThat(currentOverlays).contains(Overlays.Bouncer)
+        }
+
+    @Test
+    fun handleOcclusion_unoccludeBehindShade_occludedRemovedFromBackStack() =
+        kosmos.runTest {
+            enableSingleShade()
+
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
+            val backStack by collectLastValue(sceneBackInteractor.backStack)
+
+            prepareState()
+            underTest.start()
+            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+
+            keyguardOcclusionInteractor.setWmNotifiedShowWhenLockedActivityOnTop(true, mock())
+            runCurrent()
+
+            assertThat(backStack?.asIterable()?.toList()).isEqualTo(listOf(Scenes.Lockscreen))
+            assertThat(currentScene).isEqualTo(Scenes.Occluded)
+
+            sceneInteractor.changeScene(Scenes.Shade, "")
+            assertThat(currentScene).isEqualTo(Scenes.Shade)
+            assertThat(backStack?.asIterable()?.toList())
+                .isEqualTo(listOf(Scenes.Occluded, Scenes.Lockscreen))
+
+            // Changing occlusion state underneath the shade should remove it from the backstack
+            keyguardOcclusionInteractor.setWmNotifiedShowWhenLockedActivityOnTop(false, mock())
+            runCurrent()
+
+            assertThat(backStack?.asIterable()?.toList()).isEqualTo(listOf(Scenes.Lockscreen))
+            assertThat(currentScene).isEqualTo(Scenes.Shade)
         }
 
     @Test

@@ -154,14 +154,16 @@ public class RecentTasksControllerTest extends ShellTestCase {
         mMocksInit = MockitoAnnotations.openMocks(this);
 
         mMainExecutor = new TestShellExecutor();
-        when(mDesktopUserRepositories.getCurrent()).thenReturn(mDesktopRepository);
-        when(mDesktopUserRepositories.getProfile(anyInt())).thenReturn(mDesktopRepository);
         when(mContext.getPackageManager()).thenReturn(mock(PackageManager.class));
         when(mContext.getSystemService(KeyguardManager.class))
                 .thenReturn(mock(KeyguardManager.class));
         mShellInit = spy(new ShellInit(mMainExecutor));
         mShellController = spy(new ShellController(mContext, mShellInit, mShellCommandHandler,
                 mDisplayInsetsController, mUserManager, mMainExecutor));
+        final int userId = mShellController.getCurrentUserId();
+        when(mDesktopUserRepositories.getCurrent()).thenReturn(mDesktopRepository);
+        when(mDesktopUserRepositories.getProfile(userId)).thenReturn(mDesktopRepository);
+        when(mDesktopRepository.getUserId()).thenReturn(userId);
         mRecentTasksControllerReal = new RecentTasksController(mContext, mShellInit,
                 mShellController, mShellCommandHandler, mTaskStackListener, mActivityTaskManager,
                 Optional.of(mDesktopUserRepositories), mTaskStackTransitionObserver,
@@ -199,9 +201,15 @@ public class RecentTasksControllerTest extends ShellTestCase {
     }
 
     @Test
-    public void instantiateController_initializesRepository() {
-        verify(mDesktopUserRepositories, times(1)).getCurrent();
-        verify(mDesktopRepository, times(1)).addActiveTaskListener(any());
+    public void onInit_updateDeskRepositoryListeners_addsListenersForInitialUser() {
+        verify(mDesktopRepository).addActiveTaskListener(mRecentTasksControllerReal);
+        verify(mDesktopRepository).addDeskChangeListener(
+                eq(mRecentTasksControllerReal), eq(mMainExecutor));
+    }
+
+    @Test
+    public void onInit_registersUserChangeListener() {
+        verify(mShellController).addUserChangeListener(mRecentTasksControllerReal);
     }
 
     @Test
@@ -1070,5 +1078,20 @@ public class RecentTasksControllerTest extends ShellTestCase {
                         + flattenedFoundTaskIds.stream().map(String::valueOf).collect(joining()),
                 flattenedExpectedTaskIds,
                 flattenedFoundTaskIds);
+    }
+
+    @Test
+    public void onUserChanged_differentUserRepository_updatesListeners() {
+        final DesktopRepository repoUser11 = mock(DesktopRepository.class);
+        when(repoUser11.getUserId()).thenReturn(11);
+        when(mDesktopUserRepositories.getProfile(11)).thenReturn(repoUser11);
+
+        mRecentTasksControllerReal.onUserChanged(11, mContext);
+        mMainExecutor.flushAll();
+
+        verify(mDesktopRepository).removeActiveTasksListener(mRecentTasksControllerReal);
+        verify(mDesktopRepository).removeDeskChangeListener(mRecentTasksControllerReal);
+        verify(repoUser11).addActiveTaskListener(mRecentTasksControllerReal);
+        verify(repoUser11).addDeskChangeListener(eq(mRecentTasksControllerReal), any());
     }
 }

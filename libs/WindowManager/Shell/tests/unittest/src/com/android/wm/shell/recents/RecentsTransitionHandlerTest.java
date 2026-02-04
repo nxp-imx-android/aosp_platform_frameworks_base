@@ -172,7 +172,6 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
 
         mMocksInit = MockitoAnnotations.openMocks(this);
 
-        when(mDesktopUserRepositories.getCurrent()).thenReturn(mDesktopRepository);
         mMainExecutor = new TestShellExecutor();
         when(mContext.getPackageManager()).thenReturn(mock(PackageManager.class));
         when(mContext.getSystemService(KeyguardManager.class))
@@ -192,6 +191,10 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
         mShellInit = spy(new ShellInit(mMainExecutor));
         mShellController = spy(new ShellController(mContext, mShellInit, mShellCommandHandler,
                 mDisplayInsetsController, mUserManager, mMainExecutor));
+        final int userId = mShellController.getCurrentUserId();
+        when(mDesktopUserRepositories.getCurrent()).thenReturn(mDesktopRepository);
+        when(mDesktopUserRepositories.getProfile(userId)).thenReturn(mDesktopRepository);
+        when(mDesktopRepository.getUserId()).thenReturn(userId);
         mRecentTasksControllerReal = new RecentTasksController(mContext, mShellInit,
                 mShellController, mShellCommandHandler, mTaskStackListener, mActivityTaskManager,
                 Optional.of(mDesktopUserRepositories), mTaskStackTransitionObserver,
@@ -720,6 +723,54 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
         SurfaceControl deskChild2Leash = startTransitionInfo.getChanges().get(1).getLeash();
         verify(finishT).show(deskChild1Leash);
         verify(finishT).show(deskChild2Leash);
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    public void testMerge_openingNewTaskInPausedDesk_usesIdLogicCorrectly() {
+        final int deskId = 100;
+        final int taskId = 200;
+        ActivityManager.RunningTaskInfo deskRootTask =
+                new TestRunningTaskInfoBuilder().setTaskId(deskId).build();
+
+        ActivityManager.RunningTaskInfo deskChildTask =
+                new TestRunningTaskInfoBuilder().setTaskId(taskId).setParentTaskId(deskId).build();
+
+        when(mDesksOrganizer.isDeskChange(any())).thenReturn(true);
+        when(mDesksOrganizer.getDeskAtEnd(any())).thenReturn(deskId);
+
+        TransitionInfo startInfo = new TransitionInfoBuilder(TRANSIT_START_RECENTS_TRANSITION)
+                .addChange(TRANSIT_TO_BACK, deskChildTask)
+                .addChange(TRANSIT_TO_BACK, deskRootTask)
+                .build();
+        IBinder transition = startRecentsTransition(/* synthetic= */ false);
+
+        SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
+        mRecentsTransitionHandler.setFinishTransactionSupplier(() -> finishT);
+
+        mRecentsTransitionHandler.startAnimation(
+                transition, startInfo, new StubTransaction(), new StubTransaction(),
+                mock(Transitions.TransitionFinishCallback.class));
+
+        TransitionInfo mergeInfo = new TransitionInfoBuilder(TRANSIT_OPEN)
+                .addChange(TRANSIT_OPEN, deskRootTask)
+                .addChange(TRANSIT_OPEN, deskChildTask)
+                .build();
+
+        mRecentsTransitionHandler.findController(transition).merge(
+                mergeInfo,
+                new StubTransaction(),
+                finishT,
+                mock(Transitions.TransitionFinishCallback.class));
+
+        mRecentsTransitionHandler.findController(transition).finish(
+                /* toHome= */ false,
+                /* sendUserLeaveHint= */ false,
+                mock(IResultReceiver.class));
+
+        mMainExecutor.flushAll();
+
+        verify(mTransitions).startTransition(eq(TRANSIT_END_RECENTS_TRANSITION), any(), any());
     }
 
     private void startTransitionAndMergeThenVerifyCanceled(TransitionInfo mergeTransition)

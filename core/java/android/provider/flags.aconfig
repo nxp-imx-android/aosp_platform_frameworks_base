@@ -123,3 +123,11 @@ flag {
     description: "This flag enables the new intent category CATEGORY_APPROVED_DOCUMENT_HANDLER."
     bug: "440464827"
 }
+
+flag {
+    name: "enable_on_volume_record_changed_listener"
+    is_exported: false
+    namespace: "documentsui"
+    description: "Enables an ExternalStorageProvider listener for onVolumeChanged."
+    bug: "350615090"
+}

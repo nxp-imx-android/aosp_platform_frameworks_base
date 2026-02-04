@@ -269,6 +269,13 @@ public interface PackageUserState {
     int getVirtualGamepadUserOption();
 
     /**
+     * @return the user option for personal context data collection.
+     * @hide
+     */
+    @PackageManager.PersonalContextMode
+    int getPersonalContextMode();
+
+    /**
      * Information about the archived state of an app. Set only if an app is archived.
      *
      * @hide

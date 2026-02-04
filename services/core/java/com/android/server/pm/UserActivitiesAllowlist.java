@@ -42,7 +42,8 @@ public final class UserActivitiesAllowlist extends GenericAllowlist<ComponentNam
     @Override
     protected boolean isOverridingDisallowedStatus(int status) {
         return switch (status) {
-            case STATUS_ALLOWED_ALLOWLISTING_DISABLED_BY_SHELL_CMD -> true;
+            case STATUS_ALLOWED_ALLOWLISTING_DISABLED_BY_SHELL_CMD,
+                    STATUS_ALLOWED_ALLOWLISTING_DISABLED_WHILE_DEVICE_IS_PROVISIONING -> true;
             default -> false;
         };
     }

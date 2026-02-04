@@ -30,7 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class AdbdServicesManager {
+public class AdbdServicesManager implements AdbdIServicesManager {
 
     private static final String TAG = AdbDebuggingManager.class.getSimpleName();
 
@@ -82,11 +82,13 @@ public class AdbdServicesManager {
         return instanceName + "." + serviceType;
     }
 
-    void registerService(String instanceName, String serviceType, int port) {
+    @Override
+    public void registerService(String instanceName, String serviceType, int port) {
         registerService(instanceName, serviceType, port, RegistrationCallback.NO_OP);
     }
 
-    void registerService(
+    @Override
+    public void registerService(
             String instanceName,
             String serviceType,
             int port,
@@ -128,7 +130,8 @@ public class AdbdServicesManager {
         checkMulticastLock();
     }
 
-    void unregisterService(String instanceName, String serviceType) {
+    @Override
+    public void unregisterService(String instanceName, String serviceType) {
         String key = keyForService(instanceName, serviceType);
         if (!mRegisteredServices.containsKey(key)) {
             Slog.i(TAG, "unregister service noop for" + key);
@@ -145,7 +148,8 @@ public class AdbdServicesManager {
         checkMulticastLock();
     }
 
-    void unregisterAll() {
+    @Override
+    public void unregisterAll() {
         for (AdbdRegistrationListener service : new ArrayList<>(mRegisteredServices.values())) {
             unregisterService(service.mInstanceName, service.mServiceType);
         }
@@ -153,7 +157,8 @@ public class AdbdServicesManager {
 
     // When an attribute has changed, we cannot just update the TXT since NsdManager does not
     // supports it. Instead, we republish all services (see b/445548047).
-    void onAttributeChanged() {
+    @Override
+    public void onAttributeChanged() {
         List<AdbdRegistrationListener> services = new ArrayList<>(mRegisteredServices.values());
         for (AdbdRegistrationListener service : services) {
             unregisterService(service.mInstanceName, service.mServiceType);

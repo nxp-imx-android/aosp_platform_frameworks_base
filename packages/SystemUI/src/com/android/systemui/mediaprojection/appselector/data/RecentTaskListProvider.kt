@@ -22,6 +22,7 @@ import android.os.UserManager
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.settings.UserTracker
 import com.android.systemui.util.kotlin.getOrNull
+import com.android.users.UserType
 import com.android.wm.shell.recents.RecentTasks
 import com.android.wm.shell.shared.GroupedTaskInfo
 import java.util.Optional
@@ -125,14 +126,14 @@ constructor(
             }
         }
 
-    private fun UserInfo.toUserType(): RecentTask.UserType =
+    private fun UserInfo.toUserType(): UserType =
         if (isCloneProfile) {
-            RecentTask.UserType.CLONED
+            UserType.CLONED
         } else if (isManagedProfile) {
-            RecentTask.UserType.WORK
+            UserType.WORK
         } else if (isPrivateProfile) {
-            RecentTask.UserType.PRIVATE
+            UserType.PRIVATE
         } else {
-            RecentTask.UserType.STANDARD
+            UserType.MAIN
         }
 }

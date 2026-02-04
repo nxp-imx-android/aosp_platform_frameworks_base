@@ -17,7 +17,7 @@
 package com.android.wm.shell.bubbles.user.model
 
 import com.android.launcher3.util.UserIconInfo
-import com.android.wm.shell.shared.bubbles.UserType
+import com.android.users.UserType
 
 /** User info needed for displaying bubbles for the user. */
 data class BubbleUserInfo(val userId: Int, val userType: UserType) {

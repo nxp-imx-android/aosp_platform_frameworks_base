@@ -74,6 +74,15 @@ class BubbleTaskStackListener(
     override fun onTaskMovedToFront(task: ActivityManager.RunningTaskInfo) {
         val taskId = task.taskId
         bubbleData.getBubbleInStackWithTaskId(taskId)?.let { bubble ->
+            if (bubble.currentTransition != null) {
+                BubbleLog.d(
+                    "BubbleTaskStackListener.onTaskMovedToFront(): taskId=%d bubble=%s" +
+                        " has an active transition, skip handling",
+                    taskId,
+                    bubble.key,
+                )
+                return
+            }
             BubbleLog.d(
                 "BubbleTaskStackListener.onTaskMovedToFront(): taskId=%d bubble=%s",
                 taskId,

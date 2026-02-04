@@ -211,6 +211,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/see_all_button"
                 android:visibility="gone"
+                android:focusable="false"
                 android:layout_marginTop="@dimen/tile_details_button_margin_vertical_corrected">
 
                 <LinearLayout
@@ -220,11 +221,13 @@
                     android:background="@drawable/settingslib_entry_bg_off"
                     android:gravity="center"
                     android:layout_gravity="center"
-                    android:duplicateParentState="true">
+                    android:duplicateParentState="false"
+                    android:clickable="false">
 
                     <FrameLayout
                         android:layout_width="@dimen/tile_details_button_size"
                         android:layout_height="@dimen/tile_details_button_size"
+                        android:focusable="false"
                         android:clickable="false">
 
                         <ImageView
@@ -237,6 +240,7 @@
 
                     <FrameLayout
                         android:clickable="false"
+                        android:focusable="false"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="@dimen/tile_details_entry_horizontal_margin">

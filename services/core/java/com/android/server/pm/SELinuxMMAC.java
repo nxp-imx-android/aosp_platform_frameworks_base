@@ -203,10 +203,10 @@ public final class SELinuxMMAC {
                 sb.append(macPermission);
                 sb.append(":");
                 sb.append(ex);
-                Slog.w(TAG, sb.toString());
+                Slog.e(TAG, sb.toString());
                 return false;
             } catch (IOException ioe) {
-                Slog.w(TAG, "Exception parsing " + macPermission, ioe);
+                Slog.e(TAG, "Exception parsing " + macPermission, ioe);
                 return false;
             } finally {
                 IoUtils.closeQuietly(policyFile);
@@ -217,8 +217,7 @@ public final class SELinuxMMAC {
         PolicyComparator policySort = new PolicyComparator();
         Collections.sort(policies, policySort);
         if (policySort.foundDuplicate()) {
-            Slog.w(TAG, "ERROR! Duplicate entries found parsing mac_permissions.xml files");
-            return false;
+            Slog.e(TAG, "ERROR! Duplicate entries found parsing mac_permissions.xml files");
         }
 
         synchronized (sPolicies) {

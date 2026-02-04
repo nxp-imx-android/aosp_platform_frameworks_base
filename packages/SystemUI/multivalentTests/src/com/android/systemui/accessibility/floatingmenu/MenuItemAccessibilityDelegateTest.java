@@ -21,9 +21,11 @@ import static androidx.core.view.accessibility.AccessibilityNodeInfoCompat.ACTIO
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static kotlinx.coroutines.flow.FlowKt.flowOf;
+
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
@@ -42,7 +44,8 @@ import androidx.test.filters.SmallTest;
 import com.android.settingslib.bluetooth.HearingAidDeviceManager;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.accessibility.utils.TestUtils;
-import com.android.systemui.navigationbar.NavigationModeController;
+import com.android.systemui.inputdevice.data.repository.PointerDeviceRepository;
+import com.android.systemui.keyboard.data.repository.KeyboardRepository;
 import com.android.systemui.res.R;
 import com.android.systemui.util.settings.SecureSettings;
 
@@ -61,17 +64,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @TestableLooper.RunWithLooper
 @RunWith(AndroidJUnit4.class)
 public class MenuItemAccessibilityDelegateTest extends SysuiTestCase {
-    @Rule
-    public MockitoRule mockito = MockitoJUnit.rule();
+    @Rule public MockitoRule mockito = MockitoJUnit.rule();
 
-    @Mock
-    private AccessibilityManager mAccessibilityManager;
-    @Mock
-    private HearingAidDeviceManager mHearingAidDeviceManager;
+    @Mock private AccessibilityManager mAccessibilityManager;
+    @Mock private HearingAidDeviceManager mHearingAidDeviceManager;
+    @Mock private KeyboardRepository mKeyboardRepository;
+    @Mock private PointerDeviceRepository mPointerDeviceRepository;
     private final SecureSettings mSecureSettings = TestUtils.mockSecureSettings(mContext);
     private RecyclerView mStubListView;
     private MenuView mMenuView;
-    private MenuViewLayer mMenuViewLayer;
+    @Mock private MenuViewLayer mMenuViewLayer;
     private MenuItemAccessibilityDelegate mMenuItemAccessibilityDelegate;
     private MenuAnimationController mMenuAnimationController;
     private final Rect mDraggableBounds = new Rect(100, 200, 300, 400);
@@ -80,32 +82,44 @@ public class MenuItemAccessibilityDelegateTest extends SysuiTestCase {
 
     @Before
     public void setUp() {
+        doReturn(flowOf(false)).when(mKeyboardRepository).isAnyKeyboardConnected();
+        doReturn(flowOf(false)).when(mPointerDeviceRepository).isAnyPointerDeviceConnected();
+
         final WindowManager stubWindowManager = mContext.getSystemService(WindowManager.class);
-        final MenuViewAppearance stubMenuViewAppearance = new MenuViewAppearance(mContext,
-                stubWindowManager);
-        final MenuViewModel stubMenuViewModel = new MenuViewModel(mContext, mAccessibilityManager,
-                mSecureSettings, mHearingAidDeviceManager);
+        final MenuViewAppearance stubMenuViewAppearance =
+                new MenuViewAppearance(mContext, stubWindowManager);
+        final MenuViewModel stubMenuViewModel =
+                new MenuViewModel(
+                        mContext,
+                        mAccessibilityManager,
+                        mSecureSettings,
+                        mHearingAidDeviceManager,
+                        mKeyboardRepository,
+                        mPointerDeviceRepository);
 
         final int halfScreenHeight =
                 stubWindowManager.getCurrentWindowMetrics().getBounds().height() / 2;
-        mMenuView = spy(new MenuView(mContext, stubMenuViewModel, stubMenuViewAppearance,
-                mSecureSettings));
+        mMenuView =
+                spy(
+                        new MenuView(
+                                mContext,
+                                stubMenuViewModel,
+                                stubMenuViewAppearance,
+                                mSecureSettings));
         mMenuView.setTranslationY(halfScreenHeight);
 
-        mMenuViewLayer = spy(new MenuViewLayer(
-                mContext, stubWindowManager, mAccessibilityManager,
-                stubMenuViewModel, stubMenuViewAppearance, mMenuView,
-                mock(IAccessibilityFloatingMenu.class), mSecureSettings,
-                mock(NavigationModeController.class)));
         doNothing().when(mMenuViewLayer).gotoEditScreen();
+        doNothing().when(mMenuViewLayer).dispatchAccessibilityAction(anyInt());
 
         doReturn(mDraggableBounds).when(mMenuView).getMenuDraggableBounds();
         mStubListView = new RecyclerView(mContext);
-        mMenuAnimationController = spy(new MenuAnimationController(mMenuView,
-                stubMenuViewAppearance));
+        mMenuAnimationController =
+                spy(new MenuAnimationController(mMenuView, stubMenuViewAppearance));
         mMenuItemAccessibilityDelegate =
-                new MenuItemAccessibilityDelegate(new RecyclerViewAccessibilityDelegate(
-                        mStubListView), mMenuAnimationController, mMenuViewLayer);
+                new MenuItemAccessibilityDelegate(
+                        new RecyclerViewAccessibilityDelegate(mStubListView),
+                        mMenuAnimationController,
+                        mMenuViewLayer);
         mEditReceived.set(false);
     }
 
@@ -122,9 +136,8 @@ public class MenuItemAccessibilityDelegateTest extends SysuiTestCase {
     @Test
     public void performMoveTopLeftAction_matchPosition() {
         final boolean moveTopLeftAction =
-                mMenuItemAccessibilityDelegate.performAccessibilityAction(mStubListView,
-                        R.id.action_move_top_left,
-                        null);
+                mMenuItemAccessibilityDelegate.performAccessibilityAction(
+                        mStubListView, R.id.action_move_top_left, null);
 
         assertThat(moveTopLeftAction).isTrue();
         assertThat(mMenuView.getTranslationX()).isEqualTo(mDraggableBounds.left);
@@ -134,8 +147,8 @@ public class MenuItemAccessibilityDelegateTest extends SysuiTestCase {
     @Test
     public void performMoveTopRightAction_matchPosition() {
         final boolean moveTopRightAction =
-                mMenuItemAccessibilityDelegate.performAccessibilityAction(mStubListView,
-                        R.id.action_move_top_right, null);
+                mMenuItemAccessibilityDelegate.performAccessibilityAction(
+                        mStubListView, R.id.action_move_top_right, null);
 
         assertThat(moveTopRightAction).isTrue();
         assertThat(mMenuView.getTranslationX()).isEqualTo(mDraggableBounds.right);
@@ -145,8 +158,8 @@ public class MenuItemAccessibilityDelegateTest extends SysuiTestCase {
     @Test
     public void performMoveBottomLeftAction_matchPosition() {
         final boolean moveBottomLeftAction =
-                mMenuItemAccessibilityDelegate.performAccessibilityAction(mStubListView,
-                        R.id.action_move_bottom_left, null);
+                mMenuItemAccessibilityDelegate.performAccessibilityAction(
+                        mStubListView, R.id.action_move_bottom_left, null);
 
         assertThat(moveBottomLeftAction).isTrue();
         assertThat(mMenuView.getTranslationX()).isEqualTo(mDraggableBounds.left);
@@ -156,8 +169,8 @@ public class MenuItemAccessibilityDelegateTest extends SysuiTestCase {
     @Test
     public void performMoveBottomRightAction_matchPosition() {
         final boolean moveBottomRightAction =
-                mMenuItemAccessibilityDelegate.performAccessibilityAction(mStubListView,
-                        R.id.action_move_bottom_right, null);
+                mMenuItemAccessibilityDelegate.performAccessibilityAction(
+                        mStubListView, R.id.action_move_bottom_right, null);
 
         assertThat(moveBottomRightAction).isTrue();
         assertThat(mMenuView.getTranslationX()).isEqualTo(mDraggableBounds.right);
@@ -167,8 +180,8 @@ public class MenuItemAccessibilityDelegateTest extends SysuiTestCase {
     @Test
     public void performMoveToEdgeAndHideAction_success() {
         final boolean moveToEdgeAndHideAction =
-                mMenuItemAccessibilityDelegate.performAccessibilityAction(mStubListView,
-                        R.id.action_move_to_edge_and_hide, null);
+                mMenuItemAccessibilityDelegate.performAccessibilityAction(
+                        mStubListView, R.id.action_move_to_edge_and_hide, null);
 
         assertThat(moveToEdgeAndHideAction).isTrue();
         verify(mMenuAnimationController).moveToEdgeAndHide();
@@ -177,8 +190,8 @@ public class MenuItemAccessibilityDelegateTest extends SysuiTestCase {
     @Test
     public void performMoveOutFromEdgeAction_success() {
         final boolean moveOutEdgeAndShowAction =
-                mMenuItemAccessibilityDelegate.performAccessibilityAction(mStubListView,
-                        R.id.action_move_out_edge_and_show, null);
+                mMenuItemAccessibilityDelegate.performAccessibilityAction(
+                        mStubListView, R.id.action_move_out_edge_and_show, null);
 
         assertThat(moveOutEdgeAndShowAction).isTrue();
         verify(mMenuAnimationController).moveOutEdgeAndShow();
@@ -187,8 +200,8 @@ public class MenuItemAccessibilityDelegateTest extends SysuiTestCase {
     @Test
     public void performRemoveMenuAction_success() {
         final boolean removeMenuAction =
-                mMenuItemAccessibilityDelegate.performAccessibilityAction(mStubListView,
-                        R.id.action_remove_menu, null);
+                mMenuItemAccessibilityDelegate.performAccessibilityAction(
+                        mStubListView, R.id.action_remove_menu, null);
 
         assertThat(removeMenuAction).isTrue();
         verify(mMenuViewLayer).dispatchAccessibilityAction(R.id.action_remove_menu);
@@ -197,8 +210,8 @@ public class MenuItemAccessibilityDelegateTest extends SysuiTestCase {
     @Test
     public void performEditAction_success() {
         final boolean editAction =
-                mMenuItemAccessibilityDelegate.performAccessibilityAction(mStubListView,
-                        R.id.action_edit, null);
+                mMenuItemAccessibilityDelegate.performAccessibilityAction(
+                        mStubListView, R.id.action_edit, null);
 
         assertThat(editAction).isTrue();
         verify(mMenuViewLayer).dispatchAccessibilityAction(R.id.action_edit);
@@ -206,16 +219,16 @@ public class MenuItemAccessibilityDelegateTest extends SysuiTestCase {
 
     @Test
     public void performFocusAction_fadeIn() {
-        mMenuItemAccessibilityDelegate.performAccessibilityAction(mStubListView,
-                ACTION_ACCESSIBILITY_FOCUS, null);
+        mMenuItemAccessibilityDelegate.performAccessibilityAction(
+                mStubListView, ACTION_ACCESSIBILITY_FOCUS, null);
 
         verify(mMenuAnimationController).fadeInNowIfEnabled();
     }
 
     @Test
     public void performClearFocusAction_fadeOut() {
-        mMenuItemAccessibilityDelegate.performAccessibilityAction(mStubListView,
-                ACTION_CLEAR_ACCESSIBILITY_FOCUS, null);
+        mMenuItemAccessibilityDelegate.performAccessibilityAction(
+                mStubListView, ACTION_CLEAR_ACCESSIBILITY_FOCUS, null);
 
         verify(mMenuAnimationController).fadeOutIfEnabled();
     }

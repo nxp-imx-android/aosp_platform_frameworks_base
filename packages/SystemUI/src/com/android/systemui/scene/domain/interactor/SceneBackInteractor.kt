@@ -109,6 +109,14 @@ constructor(
         replaceBottomScene(from = Scenes.Gone, to = Scenes.Lockscreen, reason)
     }
 
+    /**
+     * Remove Occluded from the backstack, usually due to the occluded app being stopped underneath
+     * the existing scene (like shade).
+     */
+    fun removeOccludedSceneOnBackStack(reason: String) {
+        updateBackStackList(reason) { list -> list.removeAll { it == Scenes.Occluded } }
+    }
+
     /** Generic helper for simple 1:1 replacements at the bottom (end) of the stack. */
     private fun replaceBottomScene(from: SceneKey, to: SceneKey, reason: String) {
         updateBackStackList(reason) { list ->

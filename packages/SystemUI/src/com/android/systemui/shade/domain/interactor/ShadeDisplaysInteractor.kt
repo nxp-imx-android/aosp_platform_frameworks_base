@@ -38,7 +38,6 @@ import com.android.systemui.shade.data.repository.MutableShadeDisplaysRepository
 import com.android.systemui.shade.data.repository.ShadeDisplaysRepository
 import com.android.systemui.shade.display.ShadeExpansionIntent
 import com.android.systemui.shade.domain.interactor.ShadeExpandedStateInteractor.ShadeElement
-import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.statusbar.notification.domain.interactor.ActiveNotificationsInteractor
 import com.android.systemui.statusbar.notification.stack.NotificationStackRebindingHider
 import com.android.systemui.statusbar.phone.ConfigurationForwarder
@@ -94,7 +93,6 @@ constructor(
     override val pendingDisplayId: StateFlow<Int> = shadePositionRepository.pendingDisplayId
 
     override fun start() {
-        ShadeWindowGoesAround.isUnexpectedlyInLegacyMode()
         listenForWindowContextConfigChanges()
         bgScope.launchTraced(TAG) {
             shadePositionRepository.pendingDisplayId.collectLatest { displayId ->

@@ -86,13 +86,6 @@ flag {
 }
 
 flag {
-    name: "enable_voice_access_key_gestures"
-    namespace: "input"
-    description: "Adds key gestures for voice access"
-    bug: "383734125"
-}
-
-flag {
     name: "pointer_acceleration"
     namespace: "input"
     description: "Allows the user to disable pointer acceleration for mouse and touchpads."

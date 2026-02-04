@@ -35,6 +35,7 @@ import android.window.WindowContainerTransaction
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorController
+import com.android.wm.shell.desktopmode.ShellDesktopState
 import com.android.wm.shell.desktopmode.WindowDragTransitionHandler
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerLogs.logD
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerLogs.logV
@@ -43,7 +44,6 @@ import com.android.wm.shell.pinnedlayer.phone.PinnedLayerUtils.getLayerPinnedWct
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerUtils.getLayerUnpinnedWct
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerUtils.getRemovedFromLayerWct
 import com.android.wm.shell.shared.TransactionPool
-import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.windowdecor.OnTaskRepositionAnimationListener
@@ -58,7 +58,7 @@ import com.android.wm.shell.windowdecor.OnTaskRepositionAnimationListener
 class PinnedLayerController(
     shellInit: ShellInit,
     private val transitions: Transitions,
-    private val desktopState: DesktopState,
+    private val desktopState: ShellDesktopState,
     private val taskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer,
     private val shellTaskOrganizer: ShellTaskOrganizer,
     private val presentationController: PinnedLayerPresentationController,
@@ -274,22 +274,19 @@ class PinnedLayerController(
         val isPinned = isPinned(task.taskId)
         val isSameDisplay = task.displayId == displayId
         val isDisplayUnavailable = displayAreaInfo == null
-        val isDesktopModeSupportedOnDisplay =
-            desktopState.isDesktopModeSupportedOnDisplay(displayId)
+        val isDisplayEligibleTarget = desktopState.isEligibleWindowDropTarget(displayId)
         logD(
             "moveToDisplay: task=%d, displayId=%d, isPinned=%b, isSameDisplayRequest=%b, " +
-                "isDisplayUnavailable=%b, isDesktopModeSupportedOnDisplay=%b",
+                "isDisplayUnavailable=%b, isDisplayEligibleDropTarget=%b",
             task.taskId,
             displayId,
             isPinned,
             isSameDisplay,
             isDisplayUnavailable,
-            isDesktopModeSupportedOnDisplay,
+            isDisplayEligibleTarget,
         )
 
-        if (
-            !isPinned || isSameDisplay || isDisplayUnavailable || !isDesktopModeSupportedOnDisplay
-        ) {
+        if (!isPinned || isSameDisplay || isDisplayUnavailable || !isDisplayEligibleTarget) {
             logV("moveToDisplay: skipping for the task=%s and display=%s.", task, displayAreaInfo)
             return null
         }

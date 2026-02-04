@@ -60,6 +60,7 @@ import com.android.systemui.screencapture.sharescreen.domain.interactor.shareScr
 import com.android.systemui.statusbar.quickactions.sharescreen.domain.interactor.shareScreenPrivacyIndicatorInteractor
 import com.android.systemui.testKosmosNew
 import com.android.systemui.util.mockito.whenever
+import com.android.users.UserType
 import com.google.common.truth.Truth.assertThat
 import java.lang.ref.WeakReference
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -94,7 +95,7 @@ class ScreenCaptureShareScreenViewModelTest : SysuiTestCase() {
                 baseIntent = Intent(),
                 colorBackground = 0x12345699,
                 isForegroundTask = true,
-                userType = RecentTask.UserType.STANDARD,
+                userType = UserType.MAIN,
                 splitBounds = null,
             )
         }

@@ -27,6 +27,7 @@ import android.service.personalcontext.Flags;
 import android.service.personalcontext.Token;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWithSignature;
+import android.service.personalcontext.insight.interaction.AttributionDetails;
 import android.service.personalcontext.insight.interaction.FeedbackRequest;
 import android.service.personalcontext.insight.interaction.ReturnHintReport;
 
@@ -183,6 +184,18 @@ public final class ActionableInsight extends ContextInsight {
         @NonNull
         public Builder addToken(@NonNull Token token) {
             mBaseBuilder.addToken(token);
+            return this;
+        }
+
+        /**
+         * Sets the attribution details that can be shown to the user.
+         *
+         * @param attributionDetails Details to show user when they ask for how this insight was
+         *                           generated.
+         */
+        @NonNull
+        Builder setAttributionDetails(@Nullable AttributionDetails attributionDetails) {
+            mBaseBuilder.setAttributionDetails(attributionDetails);
             return this;
         }
 

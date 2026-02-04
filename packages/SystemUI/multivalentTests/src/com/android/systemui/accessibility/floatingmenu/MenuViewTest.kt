@@ -20,8 +20,14 @@ import android.app.UiModeManager
 import android.content.Context
 import android.content.res.Configuration
 import android.graphics.drawable.GradientDrawable
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper.RunWithLooper
 import android.view.accessibility.accessibilityManager
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LifecycleRegistry
+import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.accessibility.AccessibilityShortcutController
@@ -29,9 +35,13 @@ import com.android.internal.accessibility.AccessibilityShortcutController.MAGNIF
 import com.android.internal.accessibility.common.ShortcutConstants.AccessibilityFragmentType.VOLUME_SHORTCUT_TOGGLE
 import com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.SOFTWARE
 import com.android.internal.accessibility.dialog.AccessibilityTarget
+import com.android.systemui.Flags
 import com.android.systemui.Prefs
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.accessibility.floatingmenu.MenuView.OnTargetFeaturesChangeListener
+import com.android.systemui.accessibility.utils.TestUtils
+import com.android.systemui.inputdevice.data.repository.pointerDeviceRepository
+import com.android.systemui.keyboard.data.repository.keyboardRepository
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
@@ -59,7 +69,16 @@ class MenuViewTest : SysuiTestCase() {
     private val testTargetList =
         listOf(TestAccessibilityTarget(mContext, 123), TestAccessibilityTarget(mContext, 456))
     private val onTargetFeaturesChangeListener: OnTargetFeaturesChangeListener = mock {}
+    private val fakeLifecycleOwner: LifecycleOwner = mock()
+
     private val kosmos = testKosmosNew()
+    private lateinit var menuView: MenuView
+
+    private val fakeKeyboardRepository
+        get() = kosmos.keyboardRepository
+
+    private val fakePointerDeviceRepository
+        get() = kosmos.pointerDeviceRepository
 
     @SuppressLint("MissingPermission")
     @Before
@@ -74,11 +93,16 @@ class MenuViewTest : SysuiTestCase() {
         nightConfig.uiMode = Configuration.UI_MODE_NIGHT_YES
         context.resources.updateConfiguration(nightConfig, context.resources.displayMetrics, null)
 
+        val lifecycleRegistry = LifecycleRegistry(fakeLifecycleOwner)
+        whenever(fakeLifecycleOwner.lifecycle).thenReturn(lifecycleRegistry)
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
+
         with(kosmos) {
             whenever(accessibilityManager.getAccessibilityShortcutTargets(anyInt()))
                 .thenReturn(shortcutTargets)
-            menuView.setOnTargetFeaturesChangeListener(onTargetFeaturesChangeListener)
         }
+
+        createAndAttachMenuView()
 
         lastPosition =
             Prefs.getString(
@@ -215,6 +239,70 @@ class MenuViewTest : SysuiTestCase() {
     private val menuViewGradient: GradientDrawable
         get() = this.menuViewInsetLayer.getDrawable(INDEX_MENU_ITEM) as GradientDrawable
 
+    @Test
+    @EnableFlags(Flags.FLAG_FLOATING_MENU_MORE_OPTIONS)
+    fun onTargetFeaturesChanged_withKeyboard_moreOptionsIsAdded() {
+        kosmos.runTest {
+            menuView.show()
+
+            val initialTargets = listOf(TestAccessibilityTarget(context, 1))
+            menuViewModel.onTargetFeaturesChanged(initialTargets)
+            assertThat(menuView.getTargetFeaturesView().adapter!!.itemCount).isEqualTo(1)
+
+            fakeKeyboardRepository.setIsAnyKeyboardConnected(true)
+            menuViewModel.onTargetFeaturesChanged(initialTargets)
+
+            assertThat(menuView.getTargetFeaturesView().adapter!!.itemCount).isEqualTo(2)
+        }
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_FLOATING_MENU_MORE_OPTIONS)
+    fun onTargetFeaturesChanged_withPointer_moreOptionsIsAdded() {
+        kosmos.runTest {
+            menuView.show()
+
+            val initialTargets = listOf(TestAccessibilityTarget(context, 1))
+            menuViewModel.onTargetFeaturesChanged(initialTargets)
+            assertThat(menuView.getTargetFeaturesView().adapter!!.itemCount).isEqualTo(1)
+
+            fakePointerDeviceRepository.setIsAnyPointerConnected(true)
+            menuViewModel.onTargetFeaturesChanged(initialTargets)
+
+            assertThat(menuView.getTargetFeaturesView().adapter!!.itemCount).isEqualTo(2)
+        }
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_FLOATING_MENU_MORE_OPTIONS)
+    fun onTargetFeaturesChanged_noInputDevice_moreOptionsIsNotAdded() {
+        kosmos.runTest {
+            fakeKeyboardRepository.setIsAnyKeyboardConnected(false)
+            fakePointerDeviceRepository.setIsAnyPointerConnected(false)
+
+            menuView.show()
+            val initialTargets = listOf(TestAccessibilityTarget(context, 1))
+            menuViewModel.onTargetFeaturesChanged(initialTargets)
+
+            assertThat(menuView.getTargetFeaturesView().adapter!!.itemCount).isEqualTo(1)
+        }
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_FLOATING_MENU_MORE_OPTIONS)
+    fun onTargetFeaturesChanged_flagDisabled_moreOptionsIsNotAdded() {
+        kosmos.runTest {
+            fakeKeyboardRepository.setIsAnyKeyboardConnected(true)
+            fakePointerDeviceRepository.setIsAnyPointerConnected(true)
+
+            menuView.show()
+            val initialTargets = listOf(TestAccessibilityTarget(context, 1))
+            menuViewModel.onTargetFeaturesChanged(initialTargets)
+
+            assertThat(menuView.getTargetFeaturesView().adapter!!.itemCount).isEqualTo(1)
+        }
+    }
+
     /** Simplified AccessibilityTarget for testing MenuView. */
     private class TestAccessibilityTarget(context: Context?, uid: Int) :
         AccessibilityTarget(
@@ -231,5 +319,21 @@ class MenuViewTest : SysuiTestCase() {
 
     companion object {
         private const val INDEX_MENU_ITEM = 0
+    }
+
+    private fun createAndAttachMenuView() {
+        with(kosmos) {
+            menuView =
+                MenuView(
+                    context,
+                    menuViewModel,
+                    menuViewAppearance,
+                    TestUtils.mockSecureSettings(context),
+                )
+
+            menuView.setOnTargetFeaturesChangeListener(onTargetFeaturesChangeListener)
+            menuView.setViewTreeLifecycleOwner(fakeLifecycleOwner)
+            menuView.onAttachedToWindow()
+        }
     }
 }

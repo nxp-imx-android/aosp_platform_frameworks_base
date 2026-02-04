@@ -20,6 +20,8 @@ import android.content.testableContext
 import android.view.accessibility.accessibilityManager
 import com.android.settingslib.bluetooth.HearingAidDeviceManager
 import com.android.systemui.accessibility.TestUtils
+import com.android.systemui.inputdevice.data.repository.pointerDeviceRepository
+import com.android.systemui.keyboard.data.repository.keyboardRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import org.mockito.Mockito
@@ -30,5 +32,7 @@ val Kosmos.menuViewModel by Fixture {
         accessibilityManager,
         TestUtils.mockSecureSettings(testableContext),
         Mockito.mock(HearingAidDeviceManager::class.java),
+        keyboardRepository,
+        pointerDeviceRepository,
     )
 }

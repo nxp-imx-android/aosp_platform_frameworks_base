@@ -28,7 +28,6 @@ import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.data.repository.ShadeDisplaysRepository
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
-import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_BOUNCER_SHOWING
 import com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_COMMUNAL_HUB_SHOWING
@@ -84,7 +83,7 @@ constructor(
             return null
         }
 
-        if (ShadeWindowGoesAround.isEnabled && shadeDisplayId.value != displayId) {
+        if (shadeDisplayId.value != displayId) {
             // The shade is in another display. All flags related to the shade container will map to
             // false on other displays now.
             //

@@ -164,4 +164,10 @@ class SnapControllerTest : ShellTestCase() {
         verify(snapEventHandler)
             .onDisplayLayoutChange(displayId, config, oldStableBounds, newToOldDpiRatio)
     }
+
+    @Test
+    fun testOnTaskLaunchStarted() {
+        snapController.onTaskLaunchStarted()
+        verify(snapEventHandler).onTaskLaunchStarted()
+    }
 }

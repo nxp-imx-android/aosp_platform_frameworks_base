@@ -47,10 +47,10 @@ fun TransitionBuilder.toSingleShadeTransition(
     }
 
     fractionRange(start = .58f) {
-        fade(QuickSettings.Elements.QuickQuickSettingsAndMedia)
         fade(QuickSettings.Elements.SplitShadeQuickSettings)
         fade(QuickSettings.Elements.FooterActions)
         if (isLargeScreenPortrait) {
+            fade(QuickSettings.Elements.QuickQuickSettingsAndMedia)
             fade(Notifications.Elements.NotificationScrim)
         }
     }

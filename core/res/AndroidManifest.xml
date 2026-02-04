@@ -861,6 +861,8 @@
     <protected-broadcast android:name="android.intent.action.STOP_VOICE_COMMAND" />
 
     <!-- Added in 26Q2 -->
+    <protected-broadcast android:name="android.app.action.ALLOWED_NAS_ADJUSTMENT_KEYS_CHANGED" />
+    <protected-broadcast android:name="android.app.action.SUPPORTED_NAS_ADJUSTMENT_KEYS_CHANGED" />
     <protected-broadcast android:name="android.telephony.action.STK_SETUP_EVENT_LIST" />
 
     <!-- Added in 26Q4 -->
@@ -2666,6 +2668,17 @@
          @FlaggedApi(android.security.Flags.FLAG_APP_LOCK_APIS) -->
     <permission android:name="android.permission.LOCK_APPS"
         android:protectionLevel="internal|role|recents"
+        android:featureFlag="android.security.app_lock_apis" />
+
+    <!-- @TestApi
+         Allows a test application to set App Lock enablement state for other applications.
+         Intended for test only.
+         <p>Protection level: signature
+         @hide
+         @FlaggedApi(android.security.Flags.FLAG_APP_LOCK_APIS)
+    -->
+    <permission android:name="android.permission.TEST_LOCK_APPS"
+        android:protectionLevel="signature"
         android:featureFlag="android.security.app_lock_apis" />
 
     <!-- @SystemApi
@@ -7880,12 +7893,9 @@
     <permission android:name="android.permission.MANAGE_SUBSCRIPTION_PLANS"
         android:protectionLevel="signature|privileged" />
 
-    <!-- @SystemApi @hide Allows for reading subscription plan fields for status and end date.
-         @FlaggedApi(com.android.internal.telephony.flags.Flags.FLAG_SUBSCRIPTION_PLAN_ALLOW_STATUS_AND_END_DATE)
-    -->
+    <!-- @SystemApi @hide Allows for reading subscription plan fields for status and end date. -->
     <permission android:name="android.permission.READ_SUBSCRIPTION_PLANS"
         android:protectionLevel="signature|privileged"
-        android:featureFlag="com.android.internal.telephony.flags.subscription_plan_allow_status_and_end_date"
         android:permissionFlags="allowedInPrivateComputeCore" />
 
     <!-- C2DM permission.

@@ -31,6 +31,7 @@ package android {
     field public static final String START_ACTIVITIES_FROM_SDK_SANDBOX = "android.permission.START_ACTIVITIES_FROM_SDK_SANDBOX";
     field public static final String TEST_BIOMETRIC = "android.permission.TEST_BIOMETRIC";
     field public static final String TEST_INPUT_METHOD = "android.permission.TEST_INPUT_METHOD";
+    field @FlaggedApi("android.security.app_lock_apis") public static final String TEST_LOCK_APPS = "android.permission.TEST_LOCK_APPS";
     field public static final String TEST_MANAGE_ROLLBACKS = "android.permission.TEST_MANAGE_ROLLBACKS";
   }
 
@@ -951,6 +952,7 @@ package android.app.supervision {
   }
 
   @FlaggedApi("android.app.supervision.flags.supervision_manager_apis") public class SupervisionManager {
+    method @FlaggedApi("android.app.supervision.flags.enable_supervision_manager_policy_apis") @RequiresPermission(android.Manifest.permission.BYPASS_ROLE_QUALIFICATION) public void setShouldAllowBypassingSupervisionRoleQualification(boolean);
     method public void setSupervisionEnabled(boolean);
   }
 
@@ -1266,6 +1268,7 @@ package android.content.pm {
     method public void holdLock(android.os.IBinder, int);
     method @RequiresPermission(android.Manifest.permission.MAKE_UID_VISIBLE) public void makeUidVisible(int, int);
     method @RequiresPermission(android.Manifest.permission.KEEP_UNINSTALLED_PACKAGES) public void setKeepUninstalledPackages(@NonNull java.util.List<java.lang.String>);
+    method @FlaggedApi("android.security.app_lock_apis") @RequiresPermission(android.Manifest.permission.TEST_LOCK_APPS) public boolean setPackageAppLockEnabled(@NonNull String, boolean);
     field public static final String FEATURE_ADOPTABLE_STORAGE = "android.software.adoptable_storage";
     field public static final String FEATURE_COMMUNAL_MODE = "android.software.communal_mode";
     field public static final String FEATURE_FILE_BASED_ENCRYPTION = "android.software.file_based_encryption";

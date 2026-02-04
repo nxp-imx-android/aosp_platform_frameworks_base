@@ -17,7 +17,6 @@ package com.android.server.pm;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 
-import android.content.ContentResolver;
 import android.content.Context;
 import android.os.UserManager;
 import android.util.Log;
@@ -55,9 +54,6 @@ public final class HsumBootUserInitializerNonParameterizedTest {
     @Mock
     private PackageManagerService mMockPms;
 
-    @Mock
-    private ContentResolver mMockContentResolver;
-
     // NOTE: not used, hence always false
     private final boolean mIsManagedDevice = false;
 
@@ -70,7 +66,7 @@ public final class HsumBootUserInitializerNonParameterizedTest {
         mockIsHsum(true);
 
         var instance = HsumBootUserInitializer.createInstance(mMockUms, mMockAms, mMockPms,
-                mIsManagedDevice, mMockContentResolver, mRealContext);
+                mIsManagedDevice, mRealContext);
 
         expect.withMessage("result of createInstance()").that(instance).isNotNull();
     }
@@ -80,7 +76,7 @@ public final class HsumBootUserInitializerNonParameterizedTest {
         mockIsHsum(false);
 
         var instance = HsumBootUserInitializer.createInstance(mMockUms, mMockAms, mMockPms,
-                mIsManagedDevice, mMockContentResolver, mRealContext);
+                mIsManagedDevice, mRealContext);
 
         expect.withMessage("result of createInstance()").that(instance).isNull();
     }

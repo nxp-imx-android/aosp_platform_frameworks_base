@@ -2004,6 +2004,38 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         assertThat(notificationRow.viewState.yTranslation).isEqualTo(expectedY)
     }
 
+    @Test
+    @EnableSceneContainer
+    fun resetViewStates_stackOnLockscreen_fadingFromDoze() {
+        ambientState.fakeShowingStackOnLockscreen()
+        ambientState.dozeAmount = 0.1f
+
+        whenever(notificationRow.isHeadsUpState).thenReturn(false)
+
+        stackScrollAlgorithm.initView(context)
+
+        stackScrollAlgorithm.resetViewStates(ambientState, /* speedBumpIndex= */ 0)
+
+        assertThat(notificationRow.viewState.alpha).isEqualTo(1f - ambientState.dozeAmount)
+    }
+
+    @Test
+    @EnableSceneContainer
+    fun resetViewStates_stackOnLockscreen_fadingFromShade() {
+        ambientState.fakeShowingStackOnLockscreen()
+        ambientState.dozeAmount = 0.0f
+        ambientState.lockscreenStackFadeInProgress = 0.2f
+
+        whenever(notificationRow.isHeadsUpState).thenReturn(false)
+
+        stackScrollAlgorithm.initView(context)
+
+        stackScrollAlgorithm.resetViewStates(ambientState, /* speedBumpIndex= */ 0)
+
+        assertThat(notificationRow.viewState.alpha)
+            .isEqualTo(ambientState.lockscreenStackFadeInProgress)
+    }
+
     private fun createHunViewMock(
         isShadeOpen: Boolean,
         fullyVisible: Boolean,

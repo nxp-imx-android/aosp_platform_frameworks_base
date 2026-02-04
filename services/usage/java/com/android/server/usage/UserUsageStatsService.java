@@ -306,11 +306,9 @@ class UserUsageStatsService {
                     + eventToString(event.mEventType));
         }
 
-        if (event.mEventType != Event.USER_INTERACTION
-                && event.mEventType != Event.APP_COMPONENT_USED) {
-            checkAndGetTimeLocked();
-            convertToSystemTimeLocked(event);
-        }
+        // Always call checkAndGetTimeLocked to handle potential time changes.
+        checkAndGetTimeLocked();
+        convertToSystemTimeLocked(event);
 
         if (event.mTimeStamp >= mDailyExpiryDate.getTimeInMillis()) {
             // Need to rollover

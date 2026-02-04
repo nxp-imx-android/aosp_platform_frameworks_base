@@ -43,12 +43,12 @@ import static android.security.advancedprotection.AdvancedProtectionManager.ADVA
 import static android.view.Display.INVALID_DISPLAY;
 import static android.view.WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL;
 import static android.view.accessibility.AccessibilityManager.FlashNotificationReason;
+import static android.view.accessibility.Flags.allowA11yButtonOnLargeScreen;
 import static android.view.accessibility.Flags.enableA11yTopRowShortcut;
 
 import static com.android.hardware.input.Flags.enableColorInversionKeyGestures;
 import static com.android.hardware.input.Flags.enableSelectToSpeakKeyGestures;
 import static com.android.hardware.input.Flags.enableTalkbackKeyGestures;
-import static com.android.hardware.input.Flags.enableVoiceAccessKeyGestures;
 import static com.android.internal.accessibility.AccessibilityShortcutController.ACCESSIBILITY_HEARING_AIDS_COMPONENT_NAME;
 import static com.android.internal.accessibility.AccessibilityShortcutController.COLOR_INVERSION_COMPONENT_NAME;
 import static com.android.internal.accessibility.AccessibilityShortcutController.MAGNIFICATION_COMPONENT_NAME;
@@ -700,9 +700,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         if (enableTalkbackKeyGestures()) {
             supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER);
         }
-        if (enableVoiceAccessKeyGestures()) {
-            supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS);
-        }
+        supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS);
         if (enableA11yTopRowShortcut()) {
             supportedGestures.add(
                     KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_TOP_ROW_ACCESSIBILITY_KEY);
@@ -2714,7 +2712,15 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                     gestureTargets.addAll(softwareTargets);
                     softwareTargets.clear();
                 }
-                buttonMode = ACCESSIBILITY_BUTTON_MODE_FLOATING_MENU;
+
+                // Conditions to force floating menu mode:
+                // 1. Flag is off (original behavior): Always use floating menu in gestural nav.
+                // 2. Flag is on: Only use floating menu if nav bar can move (i.e. not persistent).
+                final boolean navBarCanMove = mContext.getResources().getBoolean(
+                        com.android.internal.R.bool.config_navBarCanMove);
+                if (!allowA11yButtonOnLargeScreen() || navBarCanMove) {
+                    buttonMode = ACCESSIBILITY_BUTTON_MODE_FLOATING_MENU;
+                }
             } else {
                 // Only change the current button mode if there are gesture targets
                 // (indicating the user came from gesture mode or is migrating)
@@ -4775,14 +4781,6 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER))) {
                 Slog.w(LOG_TAG,
                         "KEY_GESTURE type TalkBack shortcuts are disabled by feature flag");
-                return;
-            }
-            if (!enableVoiceAccessKeyGestures() && shortcutTargets.contains(
-                    getTargetNameFromKeyGestureType(
-                        KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS))) {
-                Slog.w(LOG_TAG,
-                        "KEY_GESTURE type voice access shortcuts are "
-                                + "disabled by feature flag");
                 return;
             }
         }

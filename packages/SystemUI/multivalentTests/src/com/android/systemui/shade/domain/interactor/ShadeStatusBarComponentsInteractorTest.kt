@@ -16,8 +16,6 @@
 
 package com.android.systemui.shade.domain.interactor
 
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.view.Display
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -29,7 +27,6 @@ import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.shade.data.repository.fakeShadeDisplaysRepository
-import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModel
 import com.android.systemui.statusbar.data.repository.homeStatusBarComponentsRepository
 import com.android.systemui.statusbar.disableflags.data.repository.FakeDisableFlagsRepository
@@ -96,7 +93,6 @@ class ShadeStatusBarComponentsInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(ShadeWindowGoesAround.FLAG_NAME)
     fun phoneStatusBarViewController_returnsCorrectControllerWhenComponentAdded() =
         kosmos.runTest {
             fakeShadeDisplaysRepository.setDisplayId(DEFAULT_DISPLAY)
@@ -111,7 +107,6 @@ class ShadeStatusBarComponentsInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(ShadeWindowGoesAround.FLAG_NAME)
     fun phoneStatusBarViewController_updatesAfterDisplayChangeToComponentPresent() =
         kosmos.runTest {
             val defaultController = mock<PhoneStatusBarViewController>()
@@ -132,7 +127,6 @@ class ShadeStatusBarComponentsInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(ShadeWindowGoesAround.FLAG_NAME)
     fun phoneStatusBarViewController_becomesNullAfterDisplayChangeToComponentAbsent() =
         kosmos.runTest {
             val defaultController = mock<PhoneStatusBarViewController>()
@@ -149,68 +143,6 @@ class ShadeStatusBarComponentsInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(ShadeWindowGoesAround.FLAG_NAME)
-    fun phoneStatusBarViewController_returnsDefaultControllerWhenFlagDisabled() =
-        kosmos.runTest {
-            // GIVEN components for default and secondary displays exist
-            val defaultController = mock<PhoneStatusBarViewController>()
-            homeStatusBarComponentsRepository.onStatusBarViewInitialized(
-                createMockHomeStatusBarComponent(DEFAULT_DISPLAY, defaultController)
-            )
-            val secondaryController = mock<PhoneStatusBarViewController>()
-            homeStatusBarComponentsRepository.onStatusBarViewInitialized(
-                createMockHomeStatusBarComponent(SECONDARY_DISPLAY, secondaryController)
-            )
-            val controller by collectLastValue(underTest.phoneStatusBarViewController)
-
-            // THEN it should be the controller for the DEFAULT display
-            assertThat(controller).isEqualTo(defaultController)
-        }
-
-    @Test
-    @DisableFlags(ShadeWindowGoesAround.FLAG_NAME)
-    fun phoneStatusBarViewController_ignoresDisplayChangesWhenFlagDisabled() =
-        kosmos.runTest {
-            val defaultController = mock<PhoneStatusBarViewController>()
-            homeStatusBarComponentsRepository.onStatusBarViewInitialized(
-                createMockHomeStatusBarComponent(DEFAULT_DISPLAY, defaultController)
-            )
-            val controller by collectLastValue(underTest.phoneStatusBarViewController)
-            assertThat(controller).isEqualTo(defaultController)
-
-            // WHEN the shade repository reports a display change
-            fakeShadeDisplaysRepository.setDisplayId(SECONDARY_DISPLAY)
-
-            // THEN the controller remains the default one, because the interactor is locked to it
-            assertThat(controller).isEqualTo(defaultController)
-        }
-
-    @Test
-    @DisableFlags(ShadeWindowGoesAround.FLAG_NAME)
-    fun phoneStatusBarViewController_becomesNullWhenDefaultComponentIsRemovedWhenFlagDisabled() =
-        kosmos.runTest {
-            val defaultComponent =
-                createMockHomeStatusBarComponent(
-                    DEFAULT_DISPLAY,
-                    mock<PhoneStatusBarViewController>(),
-                )
-            homeStatusBarComponentsRepository.onStatusBarViewInitialized(defaultComponent)
-            // Add a secondary component to ensure it's ignored
-            homeStatusBarComponentsRepository.onStatusBarViewInitialized(
-                createMockHomeStatusBarComponent(SECONDARY_DISPLAY, mock())
-            )
-            val controller by collectLastValue(underTest.phoneStatusBarViewController)
-            assertThat(controller).isNotNull()
-
-            // WHEN the default component is removed
-            homeStatusBarComponentsRepository.onStatusBarViewDestroyed(defaultComponent)
-
-            // THEN the controller becomes null, even though the secondary component still exists
-            assertThat(controller).isNull()
-        }
-
-    @Test
-    @EnableFlags(ShadeWindowGoesAround.FLAG_NAME)
     fun ongoingActivityChipsViewModel_updatesAfterDisplayChange() =
         kosmos.runTest {
             val viewModel by collectLastValue(underTest.ongoingActivityChipsViewModel)
@@ -223,7 +155,6 @@ class ShadeStatusBarComponentsInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(ShadeWindowGoesAround.FLAG_NAME)
     fun disableFlags_updatesAfterDisplayChange() =
         kosmos.runTest {
             val disableFlags by collectLastValue(underTest.disableFlags)

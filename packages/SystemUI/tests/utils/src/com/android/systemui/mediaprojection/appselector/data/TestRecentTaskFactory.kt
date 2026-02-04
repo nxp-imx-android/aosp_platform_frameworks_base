@@ -19,6 +19,7 @@ package com.android.systemui.mediaprojection.appselector.data
 import android.content.ComponentName
 import android.os.UserHandle
 import android.view.Display
+import com.android.users.UserType
 
 object TestRecentTaskFactory {
 
@@ -37,7 +38,7 @@ object TestRecentTaskFactory {
             baseIntent = null,
             colorBackground = colorBackground,
             isForegroundTask = false,
-            userType = RecentTask.UserType.STANDARD,
+            userType = UserType.MAIN,
             splitBounds = null,
         )
     }

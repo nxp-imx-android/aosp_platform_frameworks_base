@@ -30,6 +30,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
+import android.os.UserHandle;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
@@ -50,7 +51,8 @@ public class ContextComponentManagerTest {
 
     @Test
     public void testRegistrationEmptyAtStart() {
-        final ContextComponentManager manager = new ContextComponentManager(mock(Context.class));
+        final ContextComponentManager manager = new ContextComponentManager(mock(Context.class),
+                mock(UserHandle.class));
 
         assertThat(manager.getRefiners()).isEmpty();
         assertThat(manager.getRenderers()).isEmpty();
@@ -61,7 +63,8 @@ public class ContextComponentManagerTest {
         final Refiner refiner = mock(Refiner.class);
         when(refiner.getComponentId()).thenReturn(UUID.randomUUID());
 
-        final ContextComponentManager manager = new ContextComponentManager(mock(Context.class));
+        final ContextComponentManager manager = new ContextComponentManager(mock(Context.class),
+                mock(UserHandle.class));
         manager.register(refiner);
 
         assertThat(manager.getRefiners()).containsExactly(refiner);
@@ -72,7 +75,8 @@ public class ContextComponentManagerTest {
         final Renderer renderer = mock(Renderer.class);
         when(renderer.getComponentId()).thenReturn(UUID.randomUUID());
 
-        final ContextComponentManager manager = new ContextComponentManager(mock(Context.class));
+        final ContextComponentManager manager = new ContextComponentManager(mock(Context.class),
+                mock(UserHandle.class));
         manager.register(renderer);
 
         assertThat(manager.getRenderers()).containsExactly(renderer);
@@ -82,10 +86,11 @@ public class ContextComponentManagerTest {
     public void testRegisterAllComponentsIntent() {
         final Context context = mock(Context.class);
         final PackageManager pm = mock(PackageManager.class);
+        final UserHandle userHandle = mock(UserHandle.class);
 
         when(context.getPackageManager()).thenReturn(pm);
 
-        new ContextComponentManager(context)
+        new ContextComponentManager(context, userHandle)
                 .registerComponentsForAllPackages();
 
         final ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
@@ -99,10 +104,11 @@ public class ContextComponentManagerTest {
         final String packageName = "com.whatever";
         final Context context = mock(Context.class);
         final PackageManager pm = mock(PackageManager.class);
+        final UserHandle userHandle = mock(UserHandle.class);
 
         when(context.getPackageManager()).thenReturn(pm);
 
-        new ContextComponentManager(context)
+        new ContextComponentManager(context, userHandle)
                 .registerComponentsForPackage(packageName);
 
         final ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
@@ -116,6 +122,7 @@ public class ContextComponentManagerTest {
         final String packageName = "com.whatever";
         final Context context = mock(Context.class);
         final PackageManager pm = mock(PackageManager.class);
+        final UserHandle userHandle = mock(UserHandle.class);
         final ResolveInfo resolve = new ResolveInfo();
         resolve.serviceInfo = new ServiceInfo();
         resolve.serviceInfo.packageName = packageName;
@@ -124,7 +131,7 @@ public class ContextComponentManagerTest {
         when(context.getPackageManager()).thenReturn(pm);
         when(pm.queryIntentServices(any(), anyInt())).thenReturn(List.of(resolve));
 
-        final ContextComponentManager manager = new ContextComponentManager(context);
+        final ContextComponentManager manager = new ContextComponentManager(context, userHandle);
         manager.registerComponentsForAllPackages();
 
         // The above code reports the same service for all requested service types. Because

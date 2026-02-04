@@ -86,4 +86,7 @@ interface SnapEventHandler {
         oldStableBounds: Rect,
         newToOldDpiRatio: Double,
     )
+
+    /** Notifies tiling handler that a task launch animation has started. */
+    fun onTaskLaunchStarted()
 }

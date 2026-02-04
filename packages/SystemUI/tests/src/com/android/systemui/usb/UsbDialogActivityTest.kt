@@ -18,15 +18,17 @@ package com.android.systemui.usb
 
 import android.Manifest
 import android.app.Activity
-import android.app.PendingIntent
 import android.content.Intent
 import android.content.PermissionChecker
+import android.hardware.usb.IUsbManager
 import android.hardware.usb.IUsbSerialReader
 import android.hardware.usb.UsbAccessory
 import android.hardware.usb.UsbConfiguration
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
 import android.hardware.usb.flags.Flags.FLAG_ENABLE_PERSISTENT_USB_DEVICE_PERMISSIONS
+import android.os.IBinder
+import android.os.ServiceManager
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.view.View
@@ -42,9 +44,11 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.mockito.Answers
 import org.mockito.MockitoSession
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.mockito.quality.Strictness
 
@@ -54,8 +58,6 @@ abstract class UsbDialogActivityTest<T> : SysuiTestCase()
         protected const val PACKAGE: String = "com.android.systemui.tests"
         protected const val EXTRA_PACKAGE: String = "com.android.systemui"
         protected const val EXTRA_UID: Int = 12
-        protected const val REQUEST_CODE: Int = 334
-        protected const val INTENT_ACTION: String = "NO_ACTION"
 
         protected const val NAME: String = "name"
         protected const val VENDOR_ID: Int = 3
@@ -79,12 +81,15 @@ abstract class UsbDialogActivityTest<T> : SysuiTestCase()
         fun getAlertParams(): AlertController.AlertParams
     }
 
-    protected var mMessage: UsbAudioWarningDialogMessage = UsbAudioWarningDialogMessage()
+    protected val mMessage: UsbAudioWarningDialogMessage = UsbAudioWarningDialogMessage()
+    protected val mUsbService: IUsbManager = mock<IUsbManager>()
+    protected lateinit var mUsbDevice: UsbDevice
+    protected lateinit var mUsbAccessory: UsbAccessory
     protected lateinit var mAppName: CharSequence
     protected lateinit var mAlertParams: AlertController.AlertParams
 
     private lateinit var mMockSession: MockitoSession
-    private var mSerialReader: IUsbSerialReader =
+    private val mSerialReader: IUsbSerialReader =
         object : IUsbSerialReader.Stub() {
             override fun getSerial(packageName: String): String {
                 return SERIAL_NUMBER
@@ -94,6 +99,13 @@ abstract class UsbDialogActivityTest<T> : SysuiTestCase()
     protected abstract fun createActivity(): T
 
     protected abstract fun getActivityClass(): Class<T>
+
+    protected open fun createIntent(canBeDefault: Boolean): Intent {
+        return Intent(mContext, getActivityClass()).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            putExtra(UsbManager.EXTRA_CAN_BE_DEFAULT, canBeDefault)
+        }
+    }
 
     @Rule
     @JvmField
@@ -115,9 +127,13 @@ abstract class UsbDialogActivityTest<T> : SysuiTestCase()
         mMockSession =
             mockitoSession()
                 .strictness(Strictness.LENIENT)
-                .initMocks(this)
                 .mockStatic(PermissionChecker::class.java)
+                .mockStatic(ServiceManager::class.java, Answers.CALLS_REAL_METHODS)
                 .startMocking()
+
+        val binder = mock<IBinder>()
+        whenever(ServiceManager.getService(android.content.Context.USB_SERVICE)).thenReturn(binder)
+        whenever(binder.queryLocalInterface(any())).thenReturn(mUsbService)
     }
 
     @After
@@ -126,67 +142,47 @@ abstract class UsbDialogActivityTest<T> : SysuiTestCase()
         mMockSession.finishMocking()
     }
 
-    private fun createIntent(canBeDefault: Boolean): Intent {
-        return Intent(mContext, getActivityClass()).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            putExtra(UsbManager.EXTRA_PACKAGE, EXTRA_PACKAGE)
-            putExtra(Intent.EXTRA_UID, EXTRA_UID)
-            putExtra(
-                Intent.EXTRA_INTENT,
-                PendingIntent.getBroadcast(
-                    mContext,
-                    REQUEST_CODE,
-                    Intent(INTENT_ACTION).apply { setPackage(PACKAGE) },
-                    PendingIntent.FLAG_MUTABLE,
-                ),
-            )
-            putExtra(UsbManager.EXTRA_CAN_BE_DEFAULT, canBeDefault)
-        }
-    }
-
     private fun createDeviceIntent(
         canBeDefault: Boolean,
         hasAudioPlayback: Boolean,
         hasAudioCapture: Boolean,
     ): Intent {
-        return createIntent(canBeDefault)
-            .putExtra(
-                UsbManager.EXTRA_DEVICE,
-                UsbDevice.Builder(
-                        NAME,
-                        VENDOR_ID,
-                        PRODUCT_ID,
-                        CLASS,
-                        SUB_CLASS,
-                        PROTOCOL,
-                        MANUFACTURER,
-                        USB_DEVICE_PRODUCT_NAME,
-                        VERSION,
-                        emptyArray<UsbConfiguration>(),
-                        SERIAL_NUMBER,
-                        hasAudioPlayback,
-                        hasAudioCapture,
-                        HAS_MIDI,
-                        HAS_VIDEO_PLAYBACK,
-                        HAS_VIDEO_CAPTURE,
-                    )
-                    .build(mSerialReader),
-            )
+        mUsbDevice =
+            UsbDevice.Builder(
+                    NAME,
+                    VENDOR_ID,
+                    PRODUCT_ID,
+                    CLASS,
+                    SUB_CLASS,
+                    PROTOCOL,
+                    MANUFACTURER,
+                    USB_DEVICE_PRODUCT_NAME,
+                    VERSION,
+                    emptyArray<UsbConfiguration>(),
+                    SERIAL_NUMBER,
+                    hasAudioPlayback,
+                    hasAudioCapture,
+                    HAS_MIDI,
+                    HAS_VIDEO_PLAYBACK,
+                    HAS_VIDEO_CAPTURE,
+                )
+                .build(mSerialReader)
+
+        return createIntent(canBeDefault).putExtra(UsbManager.EXTRA_DEVICE, mUsbDevice)
     }
 
     private fun createAccessoryIntent(canBeDefault: Boolean): Intent {
-        return createIntent(canBeDefault)
-            .putExtra(
-                UsbManager.EXTRA_ACCESSORY,
-                UsbAccessory(
-                    MANUFACTURER,
-                    MODEL,
-                    USB_ACCESSORY_DESCRIPTION,
-                    VERSION,
-                    URI,
-                    mSerialReader,
-                ),
+        mUsbAccessory =
+            UsbAccessory(
+                MANUFACTURER,
+                MODEL,
+                USB_ACCESSORY_DESCRIPTION,
+                VERSION,
+                URI,
+                mSerialReader,
             )
+
+        return createIntent(canBeDefault).putExtra(UsbManager.EXTRA_ACCESSORY, mUsbAccessory)
     }
 
     protected fun deviceConfiguration(
@@ -235,6 +231,48 @@ abstract class UsbDialogActivityTest<T> : SysuiTestCase()
         assertThat(mAlertParams.mNegativeButtonText).isNull()
         assertThat(mAlertParams.mPositiveButtonListener).isNull()
         assertThat(mAlertParams.mNegativeButtonListener).isNull()
+    }
+
+    protected fun prepareNewDialogCancel(isUsbDevice: Boolean) {
+        deviceConfiguration(isUsbDevice = isUsbDevice)
+
+        val dialogView: View = mAlertParams.mView
+        activityRule.runOnUiThread {
+            dialogView.findViewById<View>(R.id.usb_device_dialog_cancel_button).performClick()
+        }
+    }
+
+    protected fun prepareNewDialogAllowOnlyThisTime(isUsbDevice: Boolean) {
+        deviceConfiguration(isUsbDevice = isUsbDevice, canBeDefault = true)
+
+        val dialogView: View = mAlertParams.mView
+        activityRule.runOnUiThread {
+            dialogView
+                .findViewById<View>(R.id.usb_device_dialog_allow_only_this_time_button)
+                .performClick()
+        }
+    }
+
+    protected fun prepareNewDialogAllowOnlyThisTimeWithAlwaysUse(isUsbDevice: Boolean) {
+        deviceConfiguration(isUsbDevice = isUsbDevice, canBeDefault = true)
+
+        val dialogView: View = mAlertParams.mView
+        activityRule.runOnUiThread {
+            dialogView.findViewById<View>(com.android.internal.R.id.alwaysUse).performClick()
+            dialogView
+                .findViewById<View>(R.id.usb_device_dialog_allow_only_this_time_button)
+                .performClick()
+        }
+    }
+
+    // The 'Always allow' button is applicable only to UsbDevice.
+    protected fun prepareNewDialogAlwaysAllow() {
+        deviceConfiguration(isUsbDevice = true)
+
+        val dialogView: View = mAlertParams.mView
+        activityRule.runOnUiThread {
+            dialogView.findViewById<View>(R.id.usb_device_dialog_always_allow_button).performClick()
+        }
     }
 
     private fun verifyHideNonSystemOverlay() {

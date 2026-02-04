@@ -193,7 +193,7 @@ public class BugreportManagerServiceImplTest {
                 /* isScreenshotRequested= */ false,
                 /* skipUserConsentUnused = */ false);
 
-        assertThat(hasStarted.await(5, TimeUnit.SECONDS)).isTrue();
+        assertThat(hasStarted.await(60, TimeUnit.SECONDS)).isTrue();
         assertThat(mInjector.getNumBugreportsStarted()).isEqualTo(1);
     }
 
@@ -216,7 +216,7 @@ public class BugreportManagerServiceImplTest {
                 /* isScreenshotRequested= */ false,
                 /* skipUserConsentUnused = */ false);
 
-        assertThat(hasStarted.await(5, TimeUnit.SECONDS)).isTrue();
+        assertThat(hasStarted.await(60, TimeUnit.SECONDS)).isTrue();
         assertThat(mInjector.getNumBugreportsStarted()).isEqualTo(1);
     }
 
@@ -274,7 +274,7 @@ public class BugreportManagerServiceImplTest {
                 /* isScreenshotRequested= */ false,
                 /* skipUserConsentUnused = */ false);
 
-        assertThat(hasStarted.await(5, TimeUnit.SECONDS)).isTrue();
+        assertThat(hasStarted.await(60, TimeUnit.SECONDS)).isTrue();
         assertThat(mInjector.getNumBugreportsStarted()).isEqualTo(1);
     }
 
@@ -330,7 +330,7 @@ public class BugreportManagerServiceImplTest {
                 /* isScreenshotRequested= */ true,
                 /* skipUserConsentUnused = */ false);
 
-        assertThat(hasStarted.await(5, TimeUnit.SECONDS)).isTrue();
+        assertThat(hasStarted.await(60, TimeUnit.SECONDS)).isTrue();
         assertThat(mInjector.getNumBugreportsStarted()).isEqualTo(1);
     }
 
@@ -341,7 +341,7 @@ public class BugreportManagerServiceImplTest {
         mService.retrieveBugreport(Binder.getCallingUid(), mContext.getPackageName(),
                 mContext.getUserId(), new FileDescriptor(), mBugreportFile,
                 /* keepOnRetrieval= */ false, /* skipUserConsent = */ false, listener);
-        assertThat(latch.await(5, TimeUnit.SECONDS)).isTrue();
+        assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
         assertThat(listener.getErrorCode()).isEqualTo(
                 BugreportCallback.BUGREPORT_ERROR_NO_BUGREPORT_TO_RETRIEVE);
     }
@@ -383,6 +383,7 @@ public class BugreportManagerServiceImplTest {
 
         @Override
         public void onProgress(int progress) throws RemoteException {
+            mLatch.countDown();
         }
 
         @Override

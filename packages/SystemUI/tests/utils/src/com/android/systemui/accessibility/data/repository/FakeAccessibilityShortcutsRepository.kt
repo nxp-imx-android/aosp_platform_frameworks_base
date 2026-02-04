@@ -35,6 +35,7 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import org.mockito.kotlin.mock
@@ -86,6 +87,14 @@ class FakeAccessibilityShortcutsRepository(
         )
 
     override val hsuExcludedTargets = listOf(FAKE_HSU_EXCLUDED_TARGET_NAME)
+
+    private val _accessibilityButtonTargetComponent = MutableStateFlow<String?>(null)
+    override val accessibilityButtonTargetComponent =
+        _accessibilityButtonTargetComponent.asStateFlow()
+
+    override suspend fun setAccessibilityButtonTargetComponent(target: String) {
+        _accessibilityButtonTargetComponent.value = target
+    }
 
     var ttsPrompt: TtsPrompt? = null
     var ttsText: CharSequence = ""

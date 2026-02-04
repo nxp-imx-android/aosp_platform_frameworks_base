@@ -21,6 +21,7 @@ import android.content.Context
 import android.hardware.display.DisplayManager
 import android.view.WindowManager
 import android.view.inputmethod.Flags
+import android.view.inputmethod.InputMethodManager.IMPickerEntryPoint
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.inputmethod.ui.ImeSwitcherMenuUi
@@ -53,8 +54,12 @@ constructor(
     private val listener =
         object : ImeSwitcherMenuBinderViewModel.DisplayChangeListener {
 
-            override fun onChanged(@UserIdInt userId: Int, displayId: Int?) {
-                updateUiState(userId, displayId)
+            override fun onChanged(
+                @UserIdInt userId: Int,
+                @IMPickerEntryPoint entryPoint: Int?,
+                displayId: Int?,
+            ) {
+                updateUiState(userId, entryPoint, displayId)
             }
         }
 
@@ -90,11 +95,17 @@ constructor(
      * the UI is created and shown. Otherwise, the UI is dismissed and destroyed.
      *
      * @param userId the ID of the user to update the UI state for.
+     * @param entryPoint the entry point where the UI was requested from, or `null` if the UI should
+     *   be destroyed.
      * @param displayId the ID of the display to create the UI for, or `null` if the UI should be
      *   destroyed.
      */
-    private fun updateUiState(@UserIdInt userId: Int, displayId: Int?) {
-        if (displayId != null) {
+    private fun updateUiState(
+        @UserIdInt userId: Int,
+        @IMPickerEntryPoint entryPoint: Int?,
+        displayId: Int?,
+    ) {
+        if (entryPoint != null && displayId != null) {
             val current = userUiInstances[userId]
             if (current != null && current.displayId != displayId) {
                 // Dismiss if the UI is currently showing on a different display.
@@ -105,7 +116,7 @@ constructor(
             userUiInstances
                 .getOrPut(userId) {
                     val ui =
-                        uiFactory.create(getContext(displayId)) { context ->
+                        uiFactory.create(getContext(displayId), entryPoint) { context ->
                             viewModelFactory.create(context, userId)
                         }
                     DisplayUiInstance(ui, displayId)

@@ -111,6 +111,10 @@ class SnapController() : SnapEventHandler {
         }
     }
 
+    override fun onTaskLaunchStarted() {
+        delegateIfRunning { snapEventHandler.onTaskLaunchStarted() }
+    }
+
     private fun <T> delegateIfRunning(fn: () -> T): T? =
         if (::snapEventHandler.isInitialized) {
             fn()

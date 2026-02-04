@@ -184,7 +184,9 @@ public abstract class InfoMediaManager {
      *     caller is interested in system-level routing only (for example, headsets, built-in
      *     speakers, as opposed to app-specific routing (for example, casting to another device).
      * @param userHandle The {@link UserHandle} of the user on which the app to control is running,
-     *     or null if the caller does not need app-specific routing (see {@code packageName}).
+     *     or null to use the user handle of the caller of this method. Passing null is not
+     *     recommended, and clients should explicitly pass the user handle for the app they want to
+     *     control.
      * @param token The token of the associated {@link MediaSession} for which to do media routing.
      */
     public static InfoMediaManager createInstance(

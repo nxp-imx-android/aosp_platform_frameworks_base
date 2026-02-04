@@ -4468,6 +4468,10 @@ public class AppOpsService extends IAppOpsService.Stub {
             return;
         }
 
+        if (Process.isPrivateComputeCoreUid(proxiedUid)) {
+            proxiedUid = mContext.getPackageManager().getAppUidForPrivateComputeCoreUid(proxiedUid);
+        }
+
         synchronized (this) {
             boolean hasProxy = proxyUid != Process.INVALID_UID;
             Op op = getOpLocked(code, proxiedUid, proxiedPackageName, attributionTag,

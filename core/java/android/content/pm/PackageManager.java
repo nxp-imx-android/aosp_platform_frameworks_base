@@ -97,6 +97,7 @@ import android.ravenwood.annotation.RavenwoodKeepPartialClass;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.ravenwood.annotation.RavenwoodSupported;
 import android.ravenwood.annotation.RavenwoodSupported.SupportType;
+import android.service.personalcontext.PersonalContextManager;
 import android.telephony.TelephonyManager;
 import android.telephony.UiccCardInfo;
 import android.telephony.gba.GbaService;
@@ -2821,6 +2822,45 @@ public abstract class PackageManager {
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface VirtualGamepadUserOption {}
+
+    /**
+     * User options for the personal context data collection setting.
+     *
+     * @see PersonalContextManager#isPersonalContextModeEnabled(String)
+     * @see PersonalContextManager#setPersonalContextModeEnabled(String, boolean)
+     * @hide
+     */
+    @IntDef(
+            prefix = {"PERSONAL_CONTEXT_MODE_"},
+            value = {
+                PERSONAL_CONTEXT_MODE_UNSET,
+                PERSONAL_CONTEXT_MODE_USER_OFF,
+                PERSONAL_CONTEXT_MODE_USER_ON
+            })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface PersonalContextMode {}
+
+    /**
+     * Value that indicates no user option has been set, meaning personal context data collection is
+     * enabled for this package.
+     *
+     * @hide
+     */
+    public static final int PERSONAL_CONTEXT_MODE_UNSET = 0;
+
+    /**
+     * Value that indicates the user turned off personal context data collection for a package.
+     *
+     * @hide
+     */
+    public static final int PERSONAL_CONTEXT_MODE_USER_OFF = 1;
+
+    /**
+     * Value that indicates the user turned on personal context data collection for a package.
+     *
+     * @hide
+     */
+    public static final int PERSONAL_CONTEXT_MODE_USER_ON = 2;
 
     /**
      * Flag parameter for {@link #deletePackage} to indicate that you don't want to delete the
@@ -10720,7 +10760,9 @@ public abstract class PackageManager {
      * Set App Lock enablement state (enabled or disabled). This should only be called after a
      * successful authentication with either Device Credential or a Class 3 Biometric.
      *
-     * Only called by the system. This will do UID checks to verify the caller.
+     * Only called by the system or by test apps that hold the
+     * {@link Manifest.permission#TEST_LOCK_APPS} permission. This will do UID checks to verify the
+     * caller.
      *
      * @param packageName the package to enable or disable App Lock.
      * @param enabled true when the user would like to enable App Lock for the given package, false
@@ -10731,6 +10773,9 @@ public abstract class PackageManager {
      *
      * @hide
      */
+    @FlaggedApi(android.security.Flags.FLAG_APP_LOCK_APIS)
+    @RequiresPermission(Manifest.permission.TEST_LOCK_APPS)
+    @TestApi
     public boolean setPackageAppLockEnabled(@NonNull String packageName, boolean enabled) {
         throw new UnsupportedOperationException(
                 "setPackageAppLockEnabled has not been implemented");

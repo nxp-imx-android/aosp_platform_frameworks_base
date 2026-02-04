@@ -27,7 +27,6 @@ import com.android.systemui.log.table.Diffable
 import com.android.systemui.log.table.TableLogBufferFactory
 import com.android.systemui.log.table.TableRowLogger
 import com.android.systemui.model.SysUiState.SysUiStateCallback
-import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.shared.system.QuickStepContract
 import com.android.systemui.shared.system.QuickStepContract.SystemUiStateFlags
 import com.android.systemui.shared.system.QuickStepContract.getSystemUiStateString
@@ -151,7 +150,7 @@ constructor(
 
     /** Methods to this call can be chained together before calling [.commitUpdate]. */
     override fun setFlag(@SystemUiStateFlags flag: Long, enabled: Boolean): SysUiState {
-        if (ShadeWindowGoesAround.isEnabled && bitCount(flag) > 1) {
+        if (bitCount(flag) > 1) {
             error("Flags should be a single bit.")
         }
         val toSet = flagWithOptionalOverrides(flag, enabled, displayId, sceneContainerPlugin)

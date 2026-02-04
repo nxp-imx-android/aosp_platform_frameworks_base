@@ -29,8 +29,7 @@ class ScreenRecordingPreferenceRepository(private val context: Context) {
     fun updateSettings(
         showTaps: Boolean,
         rememberOriginalShowTaps: Boolean = true,
-        showSeconds: Boolean = true,
-        rememberOriginalShowSeconds: Boolean = true,
+        showSeconds: Boolean = false,
     ) {
         val originalShowTapsSetting = getShowTaps()
         setShowTaps(showTaps)
@@ -43,7 +42,7 @@ class ScreenRecordingPreferenceRepository(private val context: Context) {
 
         val originalShowSecondsSetting = getShowSeconds()
         setShowSeconds(showSeconds)
-        if (rememberOriginalShowSeconds && showSeconds != originalShowSecondsSetting) {
+        if (showSeconds != originalShowSecondsSetting) {
             sharedPreference().edit {
                 putBoolean(STORED_SHOW_SECONDS_VALUE, originalShowSecondsSetting)
                 putBoolean(UPDATE_SHOW_SECONDS, true)

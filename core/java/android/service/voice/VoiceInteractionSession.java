@@ -32,6 +32,7 @@ import android.app.Dialog;
 import android.app.DirectAction;
 import android.app.Instrumentation;
 import android.app.VoiceInteractor;
+import android.app.appfunctions.AppFunctionActivityId;
 import android.app.assist.AssistContent;
 import android.app.assist.AssistStructure;
 import android.content.ComponentCallbacks2;
@@ -2240,6 +2241,24 @@ public class VoiceInteractionSession implements KeyEvent.Callback, ComponentCall
 
         mHandlerCaller.sendMessage(
                 mHandlerCaller.obtainMessageO(MSG_UNREGISTER_VISIBLE_ACTIVITY_CALLBACK, callback));
+    }
+
+    /**
+     * Converts a {@link ActivityId} to an {@link AppFunctionActivityId}.
+     *
+     * <p>The resulting {@link AppFunctionActivityId} will equal an element of {@link
+     * android.app.appfunctions.AppFunctionState#getActivityIds} if they reference the same {@link
+     * android.app.Activity} instance.
+     *
+     * @param activityId The {@link ActivityId} to convert.
+     * @return The converted {@link AppFunctionActivityId}.
+     */
+    // TODO: b/479450424 - Verify documentation references.
+    @FlaggedApi(android.app.appfunctions.flags.Flags.FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
+    @NonNull
+    public AppFunctionActivityId getAppFunctionActivityId(@NonNull ActivityId activityId) {
+        Objects.requireNonNull(activityId);
+        return new AppFunctionActivityId(activityId.getAssistToken());
     }
 
     /**

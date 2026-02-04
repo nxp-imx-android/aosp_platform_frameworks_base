@@ -45,7 +45,6 @@ import com.android.systemui.privacy.PrivacyItem
 import com.android.systemui.res.R
 import com.android.systemui.shade.domain.interactor.ShadeDisplaysInteractor
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
-import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.statusbar.StatusBarState.SHADE
 import com.android.systemui.statusbar.StatusBarState.SHADE_LOCKED
 import com.android.systemui.statusbar.events.PrivacyDotCorner.BottomLeft
@@ -208,7 +207,7 @@ constructor(
             }
         }
         scope.launch {
-            if (ShadeWindowGoesAround.isEnabled && shadeDisplaysInteractor != null) {
+            if (shadeDisplaysInteractor != null) {
                 combine(
                     shadeInteractor?.isQsExpanded ?: flowOf(false),
                     shadeDisplaysInteractor.get().displayId,
@@ -536,7 +535,7 @@ constructor(
                 (stateController.isExpanded && stateController.state == SHADE)
             }
         val isShadeExpandedOnThisDisplay =
-            if (ShadeWindowGoesAround.isEnabled && shadeDisplaysInteractor != null) {
+            if (shadeDisplaysInteractor != null) {
                 isShadeExpanded && shadeDisplaysInteractor.get().displayId.value == displayId
             } else {
                 isShadeExpanded

@@ -52,6 +52,7 @@ import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorController
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ExitReason
 import com.android.wm.shell.desktopmode.DesktopTasksController
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
+import com.android.wm.shell.desktopmode.FakeShellDesktopState
 import com.android.wm.shell.desktopmode.NormalAppLayerController
 import com.android.wm.shell.desktopmode.WindowDragTransitionHandler
 import com.android.wm.shell.desktopmode.data.DesktopRepository
@@ -115,6 +116,7 @@ class PinnedLayerHandlerTests : ShellTestCase() {
     @Mock private lateinit var shellTaskOrganizer: ShellTaskOrganizer
 
     private lateinit var desktopState: FakeDesktopState
+    private lateinit var shellDesktopState: FakeShellDesktopState
     private lateinit var pinnedLayerController: PinnedLayerController
     private lateinit var pinnedLayerUiState: PinnedLayerUiState
     private lateinit var pinnedLayerHandler: PinnedLayerHandler
@@ -123,12 +125,14 @@ class PinnedLayerHandlerTests : ShellTestCase() {
     fun setup() {
         desktopState = FakeDesktopState()
         desktopState.canEnterDesktopMode = true
+        shellDesktopState = FakeShellDesktopState(desktopState)
+        shellDesktopState.canBeWindowDropTarget = true
 
         pinnedLayerController =
             PinnedLayerController(
                 shellInit,
                 transitions,
-                desktopState,
+                shellDesktopState,
                 rootTaskDisplayAreaOrganizer,
                 shellTaskOrganizer,
                 presentationController,

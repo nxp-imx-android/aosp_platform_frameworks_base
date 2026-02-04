@@ -47,6 +47,8 @@ import com.android.systemui.accessibility.AccessibilityButtonTargetsObserver;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Application;
 import com.android.systemui.dagger.qualifiers.Main;
+import com.android.systemui.inputdevice.data.repository.PointerDeviceRepository;
+import com.android.systemui.keyboard.data.repository.KeyboardRepository;
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor;
 import com.android.systemui.keyguard.shared.model.KeyguardState;
 import com.android.systemui.navigationbar.NavigationModeController;
@@ -73,8 +75,8 @@ public class AccessibilityFloatingMenuController implements
     private final AccessibilityButtonModeObserver mAccessibilityButtonModeObserver;
     private final AccessibilityButtonTargetsObserver mAccessibilityButtonTargetsObserver;
     private final KeyguardUpdateMonitor mKeyguardUpdateMonitor;
-    private final KeyguardTransitionInteractor mKeyguardInteractor;
     private final SceneInteractor mSceneInteractor;
+    private final KeyguardTransitionInteractor mKeyguardInteractor;
     private final UserTracker mUserTracker;
 
     private final Context mContext;
@@ -87,8 +89,9 @@ public class AccessibilityFloatingMenuController implements
     private final SecureSettings mSecureSettings;
     private final DisplayTracker mDisplayTracker;
     private final NavigationModeController mNavigationModeController;
-    @VisibleForTesting
-    IAccessibilityFloatingMenu mFloatingMenu;
+    private final KeyboardRepository mKeyboardRepository;
+    private final PointerDeviceRepository mPointerDeviceRepository;
+    @VisibleForTesting IAccessibilityFloatingMenu mFloatingMenu;
     private int mBtnMode;
     private String mBtnTargets;
     private boolean mIsKeyguardVisible;
@@ -144,7 +147,8 @@ public class AccessibilityFloatingMenuController implements
     };
 
     @Inject
-    public AccessibilityFloatingMenuController(Context context,
+    public AccessibilityFloatingMenuController(
+            Context context,
             WindowManager windowManager,
             DisplayManager displayManager,
             AccessibilityManager accessibilityManager,
@@ -159,7 +163,9 @@ public class AccessibilityFloatingMenuController implements
             @Application CoroutineScope coroutineScope,
             KeyguardTransitionInteractor keyguardInteractor,
             SceneInteractor sceneInteractor,
-            UserTracker userTracker) {
+            UserTracker userTracker,
+            KeyboardRepository keyboardRepository,
+            PointerDeviceRepository pointerDeviceRepository) {
         mContext = context;
         mWindowManager = windowManager;
         mDisplayManager = displayManager;
@@ -176,6 +182,8 @@ public class AccessibilityFloatingMenuController implements
         mSceneInteractor = sceneInteractor;
         mCoroutineScope = coroutineScope;
         mUserTracker = userTracker;
+        mKeyboardRepository = keyboardRepository;
+        mPointerDeviceRepository = pointerDeviceRepository;
 
         mIsKeyguardVisible = false;
     }
@@ -256,14 +264,22 @@ public class AccessibilityFloatingMenuController implements
 
     private void showFloatingMenu() {
         if (mFloatingMenu == null) {
-            final Display defaultDisplay = mDisplayManager.getDisplay(
-                    mDisplayTracker.getDefaultDisplayId());
-            final Context windowContext = mContext.createWindowContext(defaultDisplay,
-                    TYPE_NAVIGATION_BAR_PANEL, /* options= */ null);
+            final Display defaultDisplay =
+                    mDisplayManager.getDisplay(mDisplayTracker.getDefaultDisplayId());
+            final Context windowContext =
+                    mContext.createWindowContext(
+                            defaultDisplay, TYPE_NAVIGATION_BAR_PANEL, /* options= */ null);
             windowContext.setTheme(R.style.Theme_SystemUI);
-            mFloatingMenu = new MenuViewLayerController(windowContext, mWindowManager,
-                    mAccessibilityManager, mSecureSettings, mNavigationModeController,
-                    mHearingAidDeviceManager);
+            mFloatingMenu =
+                    new MenuViewLayerController(
+                            windowContext,
+                            mWindowManager,
+                            mAccessibilityManager,
+                            mSecureSettings,
+                            mNavigationModeController,
+                            mHearingAidDeviceManager,
+                            mKeyboardRepository,
+                            mPointerDeviceRepository);
         }
 
         mFloatingMenu.show();
@@ -278,8 +294,7 @@ public class AccessibilityFloatingMenuController implements
         mFloatingMenu = null;
     }
 
-    class UserInitializationCompleteCallback
-            extends IUserInitializationCompleteCallback.Stub {
+    class UserInitializationCompleteCallback extends IUserInitializationCompleteCallback.Stub {
         @Override
         public void onUserInitializationComplete(int userId) {
             mIsUserInInitialization = false;

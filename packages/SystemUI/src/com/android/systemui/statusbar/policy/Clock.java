@@ -53,7 +53,6 @@ import com.android.systemui.plugins.DarkIconDispatcher;
 import com.android.systemui.plugins.DarkIconDispatcher.DarkReceiver;
 import com.android.systemui.res.R;
 import com.android.systemui.settings.UserTracker;
-import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround;
 import com.android.systemui.statusbar.phone.ui.StatusBarIconController;
 import com.android.systemui.tuner.TunerService;
 import com.android.systemui.tuner.TunerService.Tunable;
@@ -139,12 +138,8 @@ public class Clock extends TextView implements
         }
         mBroadcastDispatcher = Dependency.get(BroadcastDispatcher.class);
         mUserTracker = Dependency.get(UserTracker.class);
-        if (ShadeWindowGoesAround.isEnabled()) {
-            mInterestingConfigChanges = new InterestingConfigChanges(
-                    ActivityInfo.CONFIG_FONT_SCALE | ActivityInfo.CONFIG_DENSITY);
-        } else {
-            mInterestingConfigChanges = null;
-        }
+        mInterestingConfigChanges = new InterestingConfigChanges(
+                ActivityInfo.CONFIG_FONT_SCALE | ActivityInfo.CONFIG_DENSITY);
 
         setIncludeFontPadding(false);
     }
@@ -311,7 +306,7 @@ public class Clock extends TextView implements
     }
 
     public void onDensityOrFontScaleChanged() {
-        ShadeWindowGoesAround.assertInLegacyMode();
+
         // Note that this class is not being registered as configuration listener when used
         // from compose. It will instead receive a normal "View#onConfigurationChanged".
         reloadDimens();
@@ -335,12 +330,10 @@ public class Clock extends TextView implements
     @Override
     protected void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        if (ShadeWindowGoesAround.isEnabled()) {
-            final boolean shouldReloadDimensions =
-                    mInterestingConfigChanges.applyNewConfig(newConfig);
-            if (shouldReloadDimensions) {
-                reloadDimens();
-            }
+        final boolean shouldReloadDimensions =
+                mInterestingConfigChanges.applyNewConfig(newConfig);
+        if (shouldReloadDimensions) {
+            reloadDimens();
         }
     }
 

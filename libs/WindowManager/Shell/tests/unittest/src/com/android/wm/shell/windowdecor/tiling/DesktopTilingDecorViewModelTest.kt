@@ -335,6 +335,21 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
     }
 
     @Test
+    fun onTaskLaunchStarted_notifiesAllActiveHandlers() {
+        val decorationByDeskId = SparseArray<DesktopTilingWindowDecoration>()
+        val desktopTilingDecoration2: DesktopTilingWindowDecoration = mock()
+        decorationByDeskId.put(1, desktopTilingDecoration)
+        decorationByDeskId.put(2, desktopTilingDecoration2)
+        desktopTilingDecorViewModel.currentUserId = 1
+        desktopTilingDecorViewModel.tilingHandlerByUserAndDeskId.put(1, decorationByDeskId)
+
+        desktopTilingDecorViewModel.onTaskLaunchStarted()
+
+        verify(desktopTilingDecoration).onTaskLaunchStarted()
+        verify(desktopTilingDecoration2).onTaskLaunchStarted()
+    }
+
+    @Test
     fun userChange_tilingDividerHidden() {
         val decorationByDisplayId = SparseArray<DesktopTilingWindowDecoration>()
         decorationByDisplayId.put(1, desktopTilingDecoration)

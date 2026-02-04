@@ -306,11 +306,24 @@ public final class PersonalContextManager {
     }
 
     /**
+     * Instructs the understander to show attribution for the provided insight.
+     *
+     * @param insight Insight with attribution information that should be shown to the user.
+     */
+    @RequiresNoPermission
+    public void showAttribution(@NonNull ContextInsight insight) {
+        try {
+            mService.showAttribution(new ContextInsightWrapper(insight));
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Reports an InsightEvent back to the Understander that generated the Insight.
      *
      * @hide
      */
-    @RequiresNoPermission
     public void reportEvent(@NonNull InsightEvent event) {
         try {
             mService.reportEvent(event, mContext.getUserId());

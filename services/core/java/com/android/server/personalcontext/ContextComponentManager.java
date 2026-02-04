@@ -21,6 +21,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
+import android.os.UserHandle;
 import android.service.personalcontext.renderer.InsightRendererService;
 import android.text.TextUtils;
 import android.util.Log;
@@ -62,14 +63,16 @@ class ContextComponentManager
     private static final String TAG = "ContextComponentManager";
 
     private final Context mContext;
+    private final UserHandle mUserHandle;
 
     private final Map<String, Set<Refiner>> mRefinersByPackage = new HashMap<>();
     private final Map<String, Set<Renderer>> mRenderersByPackage = new HashMap<>();
     private final Map<UUID, Refiner> mRefiners = new HashMap<>();
     private final Map<UUID, Renderer> mRenderers = new HashMap<>();
 
-    ContextComponentManager(Context context) {
+    ContextComponentManager(Context context, UserHandle userHandle) {
         mContext = context;
+        mUserHandle = userHandle;
     }
 
     /** Registers an in-process refiner or understander. */
@@ -99,7 +102,8 @@ class ContextComponentManager
     public void registerComponentsForPackage(String packageName) {
         for (ServiceInfo serviceInfo : getServiceInfo(ACTION_REFINER_SERVICE, packageName)) {
             registerComponent(
-                    new ServiceClientRefiner(mContext, UUID.randomUUID(), serviceInfo),
+                    new ServiceClientRefiner(mContext, UUID.randomUUID(), serviceInfo,
+                            mUserHandle),
                     mRefiners,
                     serviceInfo.packageName,
                     mRefinersByPackage);
@@ -107,7 +111,8 @@ class ContextComponentManager
 
         for (ServiceInfo serviceInfo : getServiceInfo(ACTION_UNDERSTANDER_SERVICE, packageName)) {
             registerComponent(
-                    new ServiceClientUnderstander(mContext, UUID.randomUUID(), serviceInfo),
+                    new ServiceClientUnderstander(mContext, UUID.randomUUID(), serviceInfo,
+                            mUserHandle),
                     mRefiners,
                     serviceInfo.packageName,
                     mRefinersByPackage);
@@ -116,7 +121,8 @@ class ContextComponentManager
         for (ServiceInfo serviceInfo :
                 getServiceInfo(InsightRendererService.SERVICE_INTERFACE, packageName)) {
             registerComponent(
-                    new ServiceClientRenderer(mContext, UUID.randomUUID(), serviceInfo),
+                    new ServiceClientRenderer(mContext, UUID.randomUUID(), serviceInfo,
+                            mUserHandle),
                     mRenderers,
                     serviceInfo.packageName,
                     mRenderersByPackage);

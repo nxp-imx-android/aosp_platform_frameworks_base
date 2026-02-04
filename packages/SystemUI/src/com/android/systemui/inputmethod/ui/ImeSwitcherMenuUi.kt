@@ -18,6 +18,7 @@ package com.android.systemui.inputmethod.ui
 
 import android.content.Context
 import android.util.IndentingPrintWriter
+import android.view.inputmethod.InputMethodManager.IMPickerEntryPoint
 import androidx.annotation.MainThread
 import com.android.systemui.inputmethod.ui.viewmodel.ImeSwitcherMenuViewModel
 
@@ -44,10 +45,12 @@ interface ImeSwitcherMenuUi {
          * Creates a new IME Switcher Menu UI instance.
          *
          * @param context the context of the UI.
+         * @param entryPoint the entry point where the menu was requested from.
          * @param viewModelFactory the factory to create view model.
          */
         fun create(
             context: Context,
+            @IMPickerEntryPoint entryPoint: Int,
             viewModelFactory: (context: Context) -> ImeSwitcherMenuViewModel,
         ): ImeSwitcherMenuUi
     }

@@ -15,6 +15,8 @@
  */
 package android.app.appfunctions;
 
+import static android.app.appfunctions.AppFunctionMetadata.PROPERTY_SCOPE;
+import static android.app.appfunctions.AppFunctionMetadata.scopeToScopeXmlValue;
 import static android.app.appfunctions.AppFunctionStaticMetadataHelper.getDocumentIdForAppFunction;
 import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS;
 
@@ -57,6 +59,7 @@ public final class AppFunctionSearchSpec implements Parcelable {
     @Nullable private final String mSchemaCategory;
     @Nullable private final String mSchemaName;
     private final long mMinSchemaVersion;
+    @Nullable @AppFunctionMetadata.Scope private final List<Integer> mScopes;
 
     /** Creates an instance of {@link AppFunctionSearchSpec}. */
     private AppFunctionSearchSpec(
@@ -64,12 +67,14 @@ public final class AppFunctionSearchSpec implements Parcelable {
             @Nullable List<AppFunctionName> functionNames,
             @Nullable String schemaCategory,
             @Nullable String schemaName,
-            long minSchemaVersion) {
+            long minSchemaVersion,
+            @Nullable List<Integer> scopes) {
         mPackageNames = packageNames != null ? new ArrayList<>(packageNames) : null;
         mFunctionNames = functionNames != null ? new ArrayList<>(functionNames) : null;
         mSchemaCategory = schemaCategory;
         mSchemaName = schemaName;
         mMinSchemaVersion = minSchemaVersion;
+        mScopes = scopes;
     }
 
     private AppFunctionSearchSpec(Parcel in) {
@@ -79,6 +84,7 @@ public final class AppFunctionSearchSpec implements Parcelable {
         mSchemaCategory = in.readString8();
         mSchemaName = in.readString8();
         mMinSchemaVersion = in.readLong();
+        mScopes = in.readArrayList(Integer.class.getClassLoader(), Integer.class);
     }
 
     /** Returns the list of package names to filter by. */
@@ -112,6 +118,17 @@ public final class AppFunctionSearchSpec implements Parcelable {
         return mMinSchemaVersion;
     }
 
+    /**
+     * Returns the list of scope type to filter by.
+     *
+     * @see AppFunctionMetadata#getScope() for possible values.
+     */
+    @Nullable
+    @SuppressLint("NullableCollection")
+    public List<Integer> getScopes() {
+        return mScopes;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -122,13 +139,19 @@ public final class AppFunctionSearchSpec implements Parcelable {
                 && Objects.equals(mFunctionNames, that.mFunctionNames)
                 && Objects.equals(mSchemaCategory, that.mSchemaCategory)
                 && Objects.equals(mSchemaName, that.mSchemaName)
-                && mMinSchemaVersion == that.mMinSchemaVersion;
+                && mMinSchemaVersion == that.mMinSchemaVersion
+                && Objects.equals(mScopes, that.mScopes);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(
-                mPackageNames, mFunctionNames, mSchemaCategory, mSchemaName, mMinSchemaVersion);
+                mPackageNames,
+                mFunctionNames,
+                mSchemaCategory,
+                mSchemaName,
+                mMinSchemaVersion,
+                mScopes);
     }
 
     @Override
@@ -144,6 +167,8 @@ public final class AppFunctionSearchSpec implements Parcelable {
                 + mSchemaName
                 + ", minSchemaVersion="
                 + mMinSchemaVersion
+                + ", scopes="
+                + mScopes
                 + ")";
     }
 
@@ -159,7 +184,7 @@ public final class AppFunctionSearchSpec implements Parcelable {
         if (mPackageNames != null) {
             query.add(
                     TextUtils.formatSimple(
-                            "packageName:(%s)", getOrQueryExpression(mPackageNames)));
+                            "packageName:(%s)", getOrStringQueryExpression(mPackageNames)));
         }
         if (mSchemaCategory != null) {
             query.add(TextUtils.formatSimple("schemaCategory:\"%s\"", mSchemaCategory));
@@ -169,6 +194,15 @@ public final class AppFunctionSearchSpec implements Parcelable {
         }
         if (mMinSchemaVersion >= 1) {
             query.add(TextUtils.formatSimple("schemaVersion>=%d", mMinSchemaVersion));
+        }
+        if (mScopes != null && !mScopes.isEmpty()) {
+            List<String> scopeXmlValues = new ArrayList<>();
+            for (int scope : mScopes) {
+                scopeXmlValues.add(scopeToScopeXmlValue(scope));
+            }
+            query.add(
+                    TextUtils.formatSimple(
+                            "%s:(%s)", PROPERTY_SCOPE, getOrStringQueryExpression(scopeXmlValues)));
         }
         return String.join(" ", query);
     }
@@ -249,7 +283,7 @@ public final class AppFunctionSearchSpec implements Parcelable {
         return result;
     }
 
-    private String getOrQueryExpression(@NonNull List<String> elements) {
+    private String getOrStringQueryExpression(@NonNull List<String> elements) {
         String[] quotedElements = new String[elements.size()];
         for (int i = 0; i < elements.size(); i++) {
             quotedElements[i] = TextUtils.formatSimple("\"%s\"", elements.get(i));
@@ -264,6 +298,7 @@ public final class AppFunctionSearchSpec implements Parcelable {
         @Nullable private String mSchemaCategory = null;
         @Nullable private String mSchemaName = null;
         private long mMinSchemaVersion = 0;
+        @Nullable @AppFunctionMetadata.Scope private List<Integer> mScopes = null;
 
         /**
          * Creates a new instance of {@link AppFunctionSearchSpec.Builder} with empty properties.
@@ -282,6 +317,7 @@ public final class AppFunctionSearchSpec implements Parcelable {
             this.mSchemaCategory = searchSpec.mSchemaCategory;
             this.mSchemaName = searchSpec.mSchemaName;
             this.mMinSchemaVersion = searchSpec.mMinSchemaVersion;
+            this.mScopes = searchSpec.mScopes;
         }
 
         /**
@@ -292,7 +328,12 @@ public final class AppFunctionSearchSpec implements Parcelable {
         @NonNull
         public AppFunctionSearchSpec build() {
             return new AppFunctionSearchSpec(
-                    mPackageNames, mFunctionNames, mSchemaCategory, mSchemaName, mMinSchemaVersion);
+                    mPackageNames,
+                    mFunctionNames,
+                    mSchemaCategory,
+                    mSchemaName,
+                    mMinSchemaVersion,
+                    mScopes);
         }
 
         /**
@@ -361,6 +402,17 @@ public final class AppFunctionSearchSpec implements Parcelable {
             this.mMinSchemaVersion = minSchemaVersion;
             return this;
         }
+
+        /**
+         * Sets the scope types to filter by.
+         *
+         * @see AppFunctionMetadata#getScope()
+         */
+        @NonNull
+        public Builder setScopes(@Nullable List<Integer> scopes) {
+            this.mScopes = scopes;
+            return this;
+        }
     }
 
     @Override
@@ -371,6 +423,7 @@ public final class AppFunctionSearchSpec implements Parcelable {
         dest.writeString8(mSchemaCategory);
         dest.writeString8(mSchemaName);
         dest.writeLong(mMinSchemaVersion);
+        dest.writeList(mScopes);
     }
 
     @Override

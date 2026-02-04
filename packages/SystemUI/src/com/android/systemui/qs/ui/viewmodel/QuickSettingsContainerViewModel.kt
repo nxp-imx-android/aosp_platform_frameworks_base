@@ -32,14 +32,12 @@ import com.android.systemui.qs.panels.ui.viewmodel.EditModeViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.MediaInRowInLandscapeViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.TileGridViewModel
 import com.android.systemui.shade.ShadeDisplayAware
-import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.shade.ui.viewmodel.ShadeHeaderViewModel
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
@@ -65,13 +63,9 @@ constructor(
             traceName = "isBrightnessSliderVisible",
             initialValue = shadeDisplayTypeRepository.displayType.value == Display.TYPE_INTERNAL,
             source =
-                if (ShadeWindowGoesAround.isEnabled) {
-                    // The shade could be on an external display: in that case the slider shouldn't
-                    // be visible.
-                    shadeDisplayTypeRepository.displayType.map { it == Display.TYPE_INTERNAL }
-                } else {
-                    flowOf(true)
-                },
+                // The shade could be on an external display: in that case the slider shouldn't
+                // be visible.
+                shadeDisplayTypeRepository.displayType.map { it == Display.TYPE_INTERNAL },
         )
 
     val isEditing by

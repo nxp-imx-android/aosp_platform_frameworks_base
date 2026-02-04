@@ -881,7 +881,8 @@ class ActivityStarter {
                 }
             }
 
-            if (mRequest.intent != null && Build.isDebuggable()) {
+            if (com.android.window.flags.Flags.logStartActivityIntent()
+                    && mRequest.intent != null && Build.isDebuggable()) {
                 // For lab debug device usages.
                 ProtoLog.d(WM_DEBUG_ACTIVITY_START_INTENT,
                         "Execute activity start request:\nIntent=%s\nIsExported=%s",

@@ -25,6 +25,7 @@ import android.service.personalcontext.ComponentIdProvider;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.Token;
 import android.service.personalcontext.hint.ContextHintWithSignature;
+import android.service.personalcontext.insight.interaction.AttributionDetails;
 import android.service.personalcontext.insight.interaction.FeedbackRequest;
 
 import java.util.ArrayList;
@@ -214,6 +215,18 @@ public final class InsightCollection extends ContextInsight implements Iterable<
         @NonNull
         public Builder setUserFeedbackRequest(@Nullable FeedbackRequest feedbackRequest) {
             mBaseBuilder.setUserFeedbackRequest(feedbackRequest);
+            return this;
+        }
+
+        /**
+         * Sets the attribution details that can be shown to the user.
+         *
+         * @param attributionDetails Details to show user when they ask for how this insight was
+         *                           generated.
+         */
+        @NonNull
+        Builder setAttributionDetails(@Nullable AttributionDetails attributionDetails) {
+            mBaseBuilder.setAttributionDetails(attributionDetails);
             return this;
         }
 

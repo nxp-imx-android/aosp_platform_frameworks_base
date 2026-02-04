@@ -16,12 +16,10 @@
 
 package com.android.systemui.qs.ui.viewmodel
 
-import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper
 import android.view.Display
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.systemui.Flags.FLAG_SHADE_WINDOW_GOES_AROUND
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.kosmos.Kosmos
@@ -101,7 +99,6 @@ class QuickSettingsContainerViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(FLAG_SHADE_WINDOW_GOES_AROUND)
     fun isBrightnessSliderVisible_externalDisplay_isInvisible() =
         with(kosmos) {
             testScope.runTest {
@@ -115,7 +112,6 @@ class QuickSettingsContainerViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(FLAG_SHADE_WINDOW_GOES_AROUND)
     fun isBrightnessSliderVisible_defaultDisplay_internal_isVisible() =
         with(kosmos) {
             testScope.runTest {
@@ -127,7 +123,6 @@ class QuickSettingsContainerViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(FLAG_SHADE_WINDOW_GOES_AROUND)
     fun isBrightnessSliderVisible_defaultDisplay_external_isInvisible() =
         with(kosmos) {
             testScope.runTest {

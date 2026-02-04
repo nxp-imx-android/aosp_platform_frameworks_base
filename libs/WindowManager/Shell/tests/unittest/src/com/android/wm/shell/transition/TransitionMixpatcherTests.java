@@ -20,6 +20,7 @@ import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManager.TRANSIT_OPEN;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -91,9 +92,19 @@ public class TransitionMixpatcherTests extends ShellTestCase {
         final TestTransitAnim testAnim = new TestTransitAnim(mMainHandler);
         final TestPlanner d = new TestPlanner(mMainHandler);
         mMixpatcher.mPlanners.add(d);
+        boolean[] mRanOnIdle = new boolean[]{false};
+
+        // If already idle, then run-on-idle should happen synchronously
+        mMixpatcher.runOnIdle(() -> mRanOnIdle[0] = true);
+        assertTrue(mRanOnIdle[0]);
+        mRanOnIdle[0] = false;
 
         final IBinder transit = mMixpatcher.startTransition(null /* transit */, TRANSIT_OPEN, wct,
                 null /* interest*/);
+
+        // Once a transition is in the system, it is no-longer idle
+        mMixpatcher.runOnIdle(() -> mRanOnIdle[0] = true);
+        assertFalse(mRanOnIdle[0]);
 
         final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_OPEN)
                 .addChange(new ChangeBuilder(createTestContainer("Open"), TRANSIT_OPEN).build())
@@ -108,6 +119,7 @@ public class TransitionMixpatcherTests extends ShellTestCase {
 
         testAnim.finishNow();
         assertEquals(1, mWmFinishedTransitions.size());
+        assertTrue(mRanOnIdle[0]);
     }
 
     @Test

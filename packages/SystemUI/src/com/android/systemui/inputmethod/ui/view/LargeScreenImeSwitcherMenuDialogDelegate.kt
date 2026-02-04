@@ -22,6 +22,8 @@ import android.util.Slog
 import android.view.Gravity
 import android.view.WindowInsets
 import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
+import android.view.inputmethod.InputMethodManager.IMPickerEntryPoint
 import androidx.annotation.MainThread
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
@@ -42,6 +44,7 @@ import javax.inject.Inject
 class LargeScreenImeSwitcherMenuDialogDelegate
 constructor(
     private val context: Context,
+    @param:IMPickerEntryPoint private val entryPoint: Int,
     private val viewModelFactory: (context: Context) -> ImeSwitcherMenuViewModel,
     private val sysuiDialogFactory: SystemUIDialogFactory,
 ) : SystemUIDialog.Delegate, ImeSwitcherMenuUi {
@@ -67,11 +70,7 @@ constructor(
                 // with other IME windows based on type vs. grouping based on whichever token
                 // happens to get selected by the system later on.
                 token = dialog.context.windowContextToken
-                gravity =
-                    Gravity.getAbsoluteGravity(
-                        Gravity.BOTTOM or Gravity.END,
-                        dialog.context.resources.configuration.layoutDirection,
-                    )
+                gravity = resolveGravity(entryPoint)
                 x = HORIZONTAL_OFFSET
                 privateFlags =
                     privateFlags or WindowManager.LayoutParams.SYSTEM_FLAG_SHOW_FOR_ALL_USERS
@@ -83,6 +82,9 @@ constructor(
                         WindowInsets.Type.statusBars() or
                         WindowInsets.Type.navigationBars() or
                         WindowInsets.Type.displayCutout()
+            }
+            if (entryPoint == InputMethodManager.IM_PICKER_ENTRY_POINT_STATUS_BAR_CHIP) {
+                it.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
             }
             it.setHideOverlayWindows(true)
         }
@@ -138,6 +140,16 @@ constructor(
         pw.run { printSection("$TAG $description") { println("isShowing: $isShowing") } }
     }
 
+    private fun resolveGravity(@IMPickerEntryPoint entryPoint: Int): Int {
+        val gravity =
+            when (entryPoint) {
+                InputMethodManager.IM_PICKER_ENTRY_POINT_STATUS_BAR_CHIP ->
+                    Gravity.TOP or Gravity.END
+                else -> Gravity.BOTTOM or Gravity.END
+            }
+        return Gravity.getAbsoluteGravity(gravity, context.resources.configuration.layoutDirection)
+    }
+
     @SysUISingleton
     class Factory
     @Inject
@@ -148,6 +160,7 @@ constructor(
 
         override fun create(
             context: Context,
+            @IMPickerEntryPoint entryPoint: Int,
             viewModelFactory: (context: Context) -> ImeSwitcherMenuViewModel,
         ): ImeSwitcherMenuUi {
             val useLargeScreenLayout =
@@ -158,11 +171,17 @@ constructor(
             return if (useLargeScreenLayout) {
                 LargeScreenImeSwitcherMenuDialogDelegate(
                     context,
+                    entryPoint,
                     viewModelFactory,
                     sysuiDialogFactory,
                 )
             } else {
-                ImeSwitcherMenuDialogDelegate(context, viewModelFactory, sysuiDialogFactory)
+                ImeSwitcherMenuDialogDelegate(
+                    context,
+                    entryPoint,
+                    viewModelFactory,
+                    sysuiDialogFactory,
+                )
             }
         }
     }

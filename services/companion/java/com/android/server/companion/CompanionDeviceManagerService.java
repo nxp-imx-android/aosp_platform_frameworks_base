@@ -127,6 +127,8 @@ import com.android.server.companion.devicetrust.BluetoothPasskeyProvider;
 import com.android.server.companion.devicetrust.RandomKeyProvider;
 import com.android.server.companion.devicetrust.TrustedDeviceProcessor;
 import com.android.server.companion.devicetrust.TrustedDeviceStore;
+import com.android.server.companion.powerexemption.CompanionExemptionProcessor;
+import com.android.server.companion.powerexemption.CompanionExemptionStore;
 import com.android.server.companion.transport.CompanionTransportManager;
 import com.android.server.wm.ActivityTaskManagerInternal;
 
@@ -163,6 +165,7 @@ public class CompanionDeviceManagerService extends SystemService {
     private final DataSyncProcessor mDataSyncProcessor;
     private final TrustedDeviceProcessor mTrustedDeviceProcessor;
     private final ActionRequestProcessor mActionRequestProcessor;
+    private final CompanionExemptionStore mCompanionExemptionStore;
     private final Object mPackageLock = new Object();
 
     public CompanionDeviceManagerService(Context context) {
@@ -190,6 +193,7 @@ public class CompanionDeviceManagerService extends SystemService {
         mObservableUuidStore = new ObservableUuidStore();
         mLocalMetadataStore = new LocalMetadataStore();
         mTrustedDeviceStore = new TrustedDeviceStore();
+        mCompanionExemptionStore = new CompanionExemptionStore();
 
         // Init processors
         mAssociationRequestsProcessor = new AssociationRequestsProcessor(context,
@@ -202,7 +206,7 @@ public class CompanionDeviceManagerService extends SystemService {
 
         mCompanionExemptionProcessor = new CompanionExemptionProcessor(context,
                 powerExemptionManager, appOpsManager, packageManagerInternal, atmInternal,
-                amInternal, mAssociationStore);
+                amInternal, mAssociationStore, mCompanionExemptionStore);
 
         mDevicePresenceProcessor = new DevicePresenceProcessor(context,
                 mCompanionAppBinder, userManager, mAssociationStore, mObservableUuidStore,
@@ -318,14 +322,21 @@ public class CompanionDeviceManagerService extends SystemService {
         for (ObservableUuid uuid : uuidsTobeObserved) {
             mObservableUuidStore.removeObservableUuid(userId, uuid.uuid(), packageName);
         }
+        mCompanionExemptionProcessor.removePackage(userId, packageName);
     }
 
     private void onPackageModifiedInternal(@UserIdInt int userId, @NonNull String packageName) {
         final List<AssociationInfo> associations =
                 mAssociationStore.getAssociationsByPackage(userId, packageName);
-        if (!associations.isEmpty()) {
-            mCompanionExemptionProcessor.exemptPackage(userId, packageName, false);
+
+        boolean isPresent = false;
+        for (AssociationInfo association : associations) {
+            if (mDevicePresenceProcessor.isDevicePresent(association.getId())) {
+                isPresent = true;
+                break;
+            }
         }
+        mCompanionExemptionProcessor.exemptPackage(userId, packageName, isPresent);
     }
 
     private void onPackageAddedInternal(@UserIdInt int userId, @NonNull String packageName) {

@@ -46,6 +46,7 @@ import android.service.personalcontext.hint.NotificationHint;
 import android.service.personalcontext.hint.TextClassificationHint;
 import android.service.personalcontext.insight.ContextInsight;
 import android.service.personalcontext.insight.ContextInsightWrapper;
+import android.service.personalcontext.insight.interaction.AttributionDetails;
 import android.service.personalcontext.insight.interaction.InsightEvent;
 import android.util.Log;
 import android.util.Slog;
@@ -182,7 +183,7 @@ public class PersonalContextManagerService extends SystemService {
             Slog.i(TAG, "Creating new state for user " + userId);
             Context userContext = getContext().createContextAsUser(user.getUserHandle(), 0);
             final ContextComponentManager componentManager =
-                    new ContextComponentManager(userContext);
+                    new ContextComponentManager(userContext, user.getUserHandle());
             final ContextComponentMonitor monitor = new ContextComponentMonitor(componentManager);
             final HintInvalidationUnderstander hintInvalidationUnderstander =
                     new HintInvalidationUnderstander(
@@ -656,6 +657,15 @@ public class PersonalContextManagerService extends SystemService {
                             userId,
                             insight.getContextInsight(),
                             partialFeedback));
+        }
+
+        @PermissionManuallyEnforced
+        @Override
+        public void showAttribution(ContextInsightWrapper insight) {
+            final AttributionDetails attributionDetails =
+                    insight.getContextInsight().getAttributionDetails();
+
+            // TODO(b/475328786): Handle showing the attribution.
         }
 
         @PermissionManuallyEnforced

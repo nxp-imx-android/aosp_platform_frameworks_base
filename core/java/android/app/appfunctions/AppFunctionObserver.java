@@ -59,4 +59,18 @@ public interface AppFunctionObserver {
      * @param changedPackageNames The names of the updated packages.
      */
     void onPackagesChanged(@NonNull List<String> changedPackageNames);
+
+    /**
+     * Called when the runtime state of one or more app functions changes.
+     *
+     * <p>Upon receiving this notification, clients can call {@link
+     * AppFunctionManager#getAppFunctionStates} using the provided {@code changedFunctionNames} to
+     * retrieve the updated {@link AppFunctionState} for the affected functions.
+     *
+     * @param changedFunctionNames The list of {@link AppFunctionName}s for the functions whose
+     *     state has changed.
+     * @see AppFunctionState
+     * @see AppFunctionManager#getAppFunctionStates
+     */
+    void onAppFunctionStatesChanged(@NonNull List<AppFunctionName> changedFunctionNames);
 }

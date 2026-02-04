@@ -19,8 +19,10 @@ package com.android.systemui.inputmethod.ui.view
 import android.content.Context
 import android.content.applicationContext
 import android.platform.test.annotations.EnableFlags
+import android.view.Gravity
 import android.view.inputmethod.Flags.FLAG_IME_SWITCHER_MENU_LARGE_SCREEN
 import android.view.inputmethod.Flags.FLAG_IME_SWITCHER_MENU_SYSTEMUI
+import android.view.inputmethod.InputMethodManager
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -71,7 +73,12 @@ class LargeScreenImeSwitcherMenuDialogDelegateTest : SysuiTestCase() {
             disableDesktopStatusBar()
             runCurrent()
 
-            val underTest = dialogFactory.create(context, viewModelFactory)
+            val underTest =
+                dialogFactory.create(
+                    context,
+                    InputMethodManager.IM_PICKER_ENTRY_POINT_DEFAULT,
+                    viewModelFactory,
+                )
 
             assertThat(underTest).isInstanceOf(ImeSwitcherMenuDialogDelegate::class.java)
         }
@@ -86,7 +93,12 @@ class LargeScreenImeSwitcherMenuDialogDelegateTest : SysuiTestCase() {
             enableUsingDesktopStatusBar()
             runCurrent()
 
-            val underTest = dialogFactory.create(context, viewModelFactory)
+            val underTest =
+                dialogFactory.create(
+                    context,
+                    InputMethodManager.IM_PICKER_ENTRY_POINT_DEFAULT,
+                    viewModelFactory,
+                )
 
             assertThat(underTest).isInstanceOf(LargeScreenImeSwitcherMenuDialogDelegate::class.java)
         }
@@ -101,6 +113,7 @@ class LargeScreenImeSwitcherMenuDialogDelegateTest : SysuiTestCase() {
             val underTest =
                 LargeScreenImeSwitcherMenuDialogDelegate(
                     context = kosmos.applicationContext,
+                    entryPoint = InputMethodManager.IM_PICKER_ENTRY_POINT_DEFAULT,
                     viewModelFactory = { kosmos.imeSwitcherMenuViewModel },
                     sysuiDialogFactory = kosmos.systemUIDialogFactory,
                 )
@@ -111,6 +124,54 @@ class LargeScreenImeSwitcherMenuDialogDelegateTest : SysuiTestCase() {
             }
 
             composeTestRule.onNodeWithTag("large_screen_ime_switcher_menu").assertExists()
+        }
+    }
+
+    /** Verifies that the dialog has BOTTOM|END gravity for the default entry point. */
+    @Test
+    fun dialog_hasBottomEndGravity_forDefaultEntryPoint() {
+        kosmos.runTest {
+            composeTestRule.runOnUiThread {
+                val dialog =
+                    LargeScreenImeSwitcherMenuDialogDelegate(
+                            context = kosmos.applicationContext,
+                            entryPoint = InputMethodManager.IM_PICKER_ENTRY_POINT_DEFAULT,
+                            viewModelFactory = { kosmos.imeSwitcherMenuViewModel },
+                            sysuiDialogFactory = kosmos.systemUIDialogFactory,
+                        )
+                        .createDialog()
+
+                val expectedGravity =
+                    Gravity.getAbsoluteGravity(
+                        Gravity.BOTTOM or Gravity.END,
+                        kosmos.applicationContext.resources.configuration.layoutDirection,
+                    )
+                assertThat(dialog.window?.attributes?.gravity).isEqualTo(expectedGravity)
+            }
+        }
+    }
+
+    /** Verifies that the dialog has TOP|END gravity for the status bar chip entry point. */
+    @Test
+    fun dialog_hasTopEndGravity_forStatusBarChipEntryPoint() {
+        kosmos.runTest {
+            composeTestRule.runOnUiThread {
+                val dialog =
+                    LargeScreenImeSwitcherMenuDialogDelegate(
+                            context = kosmos.applicationContext,
+                            entryPoint = InputMethodManager.IM_PICKER_ENTRY_POINT_STATUS_BAR_CHIP,
+                            viewModelFactory = { kosmos.imeSwitcherMenuViewModel },
+                            sysuiDialogFactory = kosmos.systemUIDialogFactory,
+                        )
+                        .createDialog()
+
+                val expectedGravity =
+                    Gravity.getAbsoluteGravity(
+                        Gravity.TOP or Gravity.END,
+                        kosmos.applicationContext.resources.configuration.layoutDirection,
+                    )
+                assertThat(dialog.window?.attributes?.gravity).isEqualTo(expectedGravity)
+            }
         }
     }
 }

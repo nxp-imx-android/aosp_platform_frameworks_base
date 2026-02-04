@@ -94,6 +94,7 @@ public final class AppFunctionPackageMetadata implements AbstractAppFunctionMeta
                         .setPropertyDocument(
                                 PROPERTY_TOP_LEVEL_DOCUMENTS,
                                 topLevelMetadataDocuments.toArray(new GenericDocument[0]))
+                        .setCreationTimestampMillis(0)
                         .build());
     }
 

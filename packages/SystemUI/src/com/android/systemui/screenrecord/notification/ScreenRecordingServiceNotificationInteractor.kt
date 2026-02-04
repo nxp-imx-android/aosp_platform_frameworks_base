@@ -77,7 +77,9 @@ class ScreenRecordingServiceNotificationInteractor(
         notificationManager.notify(tag, notificationId, builder.build())
     }
 
-    override fun notifyRecording(notificationId: Int, audioSource: ScreenRecordingAudioSource) {
+    override fun createRecordingNotification(
+        audioSource: ScreenRecordingAudioSource
+    ): Notification {
         val notificationTitle: String =
             if (audioSource == ScreenRecordingAudioSource.NONE) {
                 strings.ongoingRecording
@@ -102,22 +104,19 @@ class ScreenRecordingServiceNotificationInteractor(
                     ),
                 )
                 .build()
-        val builder =
-            Notification.Builder(context, channelId)
-                .setSmallIcon(R.drawable.ic_screenrecord)
-                .setContentTitle(notificationTitle)
-                .setUsesChronometer(true)
-                .setColorized(true)
-                .setColor(context.getColor(R.color.GM2_red_700))
-                .setOngoing(true)
-                .setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE)
-                .addAction(stopAction)
-                .addExtras(
-                    Bundle().apply {
-                        putString(Notification.EXTRA_SUBSTITUTE_APP_NAME, strings.title)
-                    }
-                )
-        notificationManager.notify(tag, notificationId, builder.build())
+        return Notification.Builder(context, channelId)
+            .setSmallIcon(R.drawable.ic_screenrecord)
+            .setContentTitle(notificationTitle)
+            .setUsesChronometer(true)
+            .setColorized(true)
+            .setColor(context.getColor(R.color.GM2_red_700))
+            .setOngoing(true)
+            .setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE)
+            .addAction(stopAction)
+            .addExtras(
+                Bundle().apply { putString(Notification.EXTRA_SUBSTITUTE_APP_NAME, strings.title) }
+            )
+            .build()
     }
 
     override fun notifySaved(

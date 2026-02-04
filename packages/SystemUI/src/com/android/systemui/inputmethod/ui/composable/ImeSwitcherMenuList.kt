@@ -19,6 +19,7 @@ package com.android.systemui.inputmethod.ui.composable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -42,12 +43,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.android.internal.R
+import com.android.systemui.common.shared.model.asIcon
+import com.android.systemui.common.ui.compose.Icon as SysuiIconComposable
 import com.android.systemui.inputmethod.ui.viewmodel.ImeSwitcherMenuViewModel
 
 /**
@@ -56,12 +62,14 @@ import com.android.systemui.inputmethod.ui.viewmodel.ImeSwitcherMenuViewModel
  * @param items the UI items for IMEs and IME subtypes.
  * @param viewModel the view model to get the data from.
  * @param dismissAction the action to invoke when the UI should be dismissed.
+ * @param useLargeScreenLayout whether the UI should use the large screen layout.
  */
 @Composable
 fun ImeSwitcherMenuList(
     items: List<ImeSwitcherMenuViewModel.MenuItem>,
     viewModel: ImeSwitcherMenuViewModel,
     dismissAction: () -> Unit,
+    useLargeScreenLayout: Boolean,
 ) {
     val listState = rememberLazyListState()
     // Start the UI scrolled to the selected item, and react to changes in the selected item,
@@ -86,6 +94,7 @@ fun ImeSwitcherMenuList(
                 index == viewModel.selectedIndex.intValue,
                 viewModel,
                 dismissAction,
+                useLargeScreenLayout,
             )
         }
     }
@@ -98,6 +107,7 @@ fun ImeSwitcherMenuList(
  * @param isSelected whether this is the currently selected item in the list.
  * @param viewModel the view model to get the data from.
  * @param dismissAction the action to invoke when the UI should be dismissed.
+ * @param useLargeScreenLayout whether the UI should use the large screen layout.
  */
 @Composable
 private fun ImeSwitcherMenuListItem(
@@ -105,6 +115,7 @@ private fun ImeSwitcherMenuListItem(
     isSelected: Boolean,
     viewModel: ImeSwitcherMenuViewModel,
     dismissAction: () -> Unit,
+    useLargeScreenLayout: Boolean,
 ) {
     Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
         if (item.hasDivider) {
@@ -153,6 +164,9 @@ private fun ImeSwitcherMenuListItem(
                     .padding(vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            if (useLargeScreenLayout) {
+                SubtypeIconOrShortLabel(item, color = selectedColor)
+            }
             Column(modifier = Modifier.weight(1f)) {
                 val text = if (item.subtypeName.isNullOrEmpty()) item.imeName else item.subtypeName
                 Text(
@@ -185,4 +199,43 @@ private fun ImeSwitcherMenuListItem(
             }
         }
     }
+}
+
+/**
+ * The UI which shows the subtype icon if available, otherwise the subtype short label. If neither
+ * is available, shows an empty spacer.
+ *
+ * @param item the IME or IME subtype to display.
+ * @param color the color of the icon or short label.
+ */
+@Composable
+private fun SubtypeIconOrShortLabel(item: ImeSwitcherMenuViewModel.MenuItem, color: Color) {
+    Row(modifier = Modifier.padding(end = 16.dp)) {
+        val icon = item.subtypeIcon
+        if (icon != null) {
+            SysuiIconComposable(
+                icon = icon,
+                modifier = Modifier.size(ListItemDimensions.IconSize).testTag("SubtypeIcon"),
+                tint = color,
+            )
+        } else if (!item.subtypeShortLabel.isNullOrEmpty()) {
+            Box(
+                modifier = Modifier.size(ListItemDimensions.IconSize),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = item.subtypeShortLabel.toString(),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = color,
+                    textAlign = TextAlign.Center,
+                )
+            }
+        } else {
+            Spacer(modifier = Modifier.size(ListItemDimensions.IconSize))
+        }
+    }
+}
+
+private object ListItemDimensions {
+    val IconSize = 24.dp
 }

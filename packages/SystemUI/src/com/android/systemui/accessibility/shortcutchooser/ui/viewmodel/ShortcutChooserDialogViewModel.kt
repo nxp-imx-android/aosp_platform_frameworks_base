@@ -98,6 +98,12 @@ constructor(
             applicationContext = applicationContext,
         )
 
+    val accessibilityButtonTargetComponent: String? by
+        interactor.accessibilityButtonTargetComponent.hydratedStateOf(null)
+
+    suspend fun setAccessibilityButtonTargetComponent(target: String) =
+        interactor.setAccessibilityButtonTargetComponent(target)
+
     fun enableShortcutForTarget(
         enable: Boolean,
         @UserShortcutType shortcutType: Int,

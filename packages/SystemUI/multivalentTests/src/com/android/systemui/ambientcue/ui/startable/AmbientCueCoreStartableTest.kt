@@ -17,7 +17,9 @@
 package com.android.systemui.ambientcue.ui.startable
 
 import android.os.UserHandle
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
+import com.android.systemui.shared.Flags.FLAG_CUE_BAR_ACE_MIGRATION
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags
@@ -39,6 +41,7 @@ class AmbientCueCoreStartableTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_UNDERLAY)
+    @DisableFlags(FLAG_CUE_BAR_ACE_MIGRATION)
     fun isAmbientCueEnabled_setFalse_disableOverlay() =
         kosmos.runTest {
             ambientCueCoreStartable.start()
@@ -51,6 +54,7 @@ class AmbientCueCoreStartableTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_UNDERLAY)
+    @DisableFlags(FLAG_CUE_BAR_ACE_MIGRATION)
     fun isAmbientCueEnabled_setTrue_enableOverlay() =
         kosmos.runTest {
             ambientCueCoreStartable.start()

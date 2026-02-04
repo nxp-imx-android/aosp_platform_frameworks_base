@@ -295,6 +295,8 @@ class MenuInfoRepository {
         if (com.android.settingslib.flags.Flags.hearingDeviceSetConnectionStatusReport()) {
             registerConnectionStatusListener();
         }
+
+        onTargetFeaturesChanged();
     }
 
     private void registerConnectionStatusListener() {

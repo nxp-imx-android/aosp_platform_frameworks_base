@@ -28,6 +28,7 @@ import static android.provider.Settings.Secure.NAVIGATION_MODE;
 import static android.security.advancedprotection.AdvancedProtectionManager.ADVANCED_PROTECTION_SYSTEM_ENTITY;
 import static android.view.WindowManagerPolicyConstants.NAV_BAR_MODE_3BUTTON;
 import static android.view.WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL;
+import static android.view.accessibility.Flags.FLAG_ALLOW_A11Y_BUTTON_ON_LARGE_SCREEN;
 import static android.view.accessibility.Flags.FLAG_ENABLE_TRUSTED_ACCESSIBILITY_SERVICE_API;
 
 import static com.android.hardware.input.Flags.enableColorInversionKeyGestures;
@@ -1994,6 +1995,27 @@ public class AccessibilityManagerServiceTest {
     }
 
     @Test
+    @EnableFlags(FLAG_ALLOW_A11Y_BUTTON_ON_LARGE_SCREEN)
+    public void onGestureNavigation_persistentNavBar_keepsNavBarMode() {
+        mFakePermissionEnforcer.grant(Manifest.permission.STATUS_BAR_SERVICE);
+        mTestableContext.getOrCreateTestableResources().addOverride(
+                com.android.internal.R.bool.config_navBarCanMove, false);
+        final AccessibilityUserState userState = new AccessibilityUserState(
+                mA11yms.getCurrentUserIdLocked(), mTestableContext, mA11yms);
+        mA11yms.mUserStates.put(userState.mUserId, userState);
+        setupShortcutTargetServices(userState);
+        ShortcutUtils.setButtonMode(
+                mTestableContext, ACCESSIBILITY_BUTTON_MODE_NAVIGATION_BAR, userState.mUserId);
+
+        Settings.Secure.putIntForUser(mTestableContext.getContentResolver(),
+                NAVIGATION_MODE, NAV_BAR_MODE_GESTURAL, userState.mUserId);
+        mA11yms.updateShortcutsForCurrentNavigationMode();
+
+        assertThat(ShortcutUtils.getButtonMode(mTestableContext, userState.mUserId))
+                .isEqualTo(ACCESSIBILITY_BUTTON_MODE_NAVIGATION_BAR);
+    }
+
+    @Test
     public void onNavigation_gestureNavigation_gestureButtonMode_migratesTargetsToGesture() {
         mFakePermissionEnforcer.grant(Manifest.permission.STATUS_BAR_SERVICE);
         final AccessibilityUserState userState = new AccessibilityUserState(
@@ -2357,7 +2379,6 @@ public class AccessibilityManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_VOICE_ACCESS_KEY_GESTURES)
     public void handleKeyGestureEvent_activateVoiceAccess_trustedService() {
         setupAccessibilityServiceConnection(FLAG_REQUEST_ACCESSIBILITY_BUTTON);
         mFakePermissionEnforcer.grant(Manifest.permission.MANAGE_ACCESSIBILITY);
@@ -2506,7 +2527,6 @@ public class AccessibilityManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_VOICE_ACCESS_KEY_GESTURES)
     public void handleKeyGestureEvent_toggleVoiceAccess_noDefault_doesNothing() {
         mFakePermissionEnforcer.grant(Manifest.permission.MANAGE_ACCESSIBILITY);
 
@@ -2522,7 +2542,6 @@ public class AccessibilityManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_VOICE_ACCESS_KEY_GESTURES)
     public void handleKeyGestureEvent_toggleVoiceAccess_emptyDefault_doesNothing() {
         mFakePermissionEnforcer.grant(Manifest.permission.MANAGE_ACCESSIBILITY);
         mTestableContext.getOrCreateTestableResources().addOverride(

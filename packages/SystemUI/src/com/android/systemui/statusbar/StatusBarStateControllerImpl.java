@@ -21,7 +21,6 @@ import static com.android.systemui.util.kotlin.JavaAdapterKt.combineFlows;
 
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
-import android.os.SystemProperties;
 import android.os.Trace;
 import android.text.format.DateFormat;
 import android.util.FloatProperty;
@@ -78,8 +77,6 @@ public class StatusBarStateControllerImpl implements
         SysuiStatusBarStateController,
         CallbackController<StateListener> {
     private static final String TAG = "SbStateController";
-    private static final boolean DEBUG_IMMERSIVE_APPS =
-            SystemProperties.getBoolean("persist.debug.immersive_apps", false);
 
     // Must be a power of 2
     private static final int HISTORY_SIZE = 32;
@@ -90,7 +87,7 @@ public class StatusBarStateControllerImpl implements
     private static final Comparator<RankedListener> sComparator =
             Comparator.comparingInt(o -> o.mRank);
     private static final FloatProperty<StatusBarStateControllerImpl> SET_DARK_AMOUNT_PROPERTY =
-            new FloatProperty<StatusBarStateControllerImpl>("mDozeAmount") {
+            new FloatProperty<>("mDozeAmount") {
 
                 @Override
                 public void setValue(StatusBarStateControllerImpl object, float value) {
@@ -125,11 +122,6 @@ public class StatusBarStateControllerImpl implements
     private HistoricalState[] mHistoricalRecords = new HistoricalState[HISTORY_SIZE];
     // These views are used by InteractionJankMonitor to get callback from HWUI.
     private View mView;
-
-    /**
-     * If any of the system bars is hidden.
-     */
-    private boolean mIsFullscreen = false;
 
     /**
      * If the device is currently pulsing (AOD2).

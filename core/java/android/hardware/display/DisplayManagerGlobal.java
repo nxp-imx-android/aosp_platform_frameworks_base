@@ -2406,8 +2406,10 @@ public final class DisplayManagerGlobal {
                         // event, since this is the first time the system is acknowledging it.
                         endLocalControl(index);
                     } else if (value == LOCALLY_REMOVED_MASK || (value & FLAG_ADDED) != 0) {
-                        // If it is either already removed display, or it is a duplicated event.
-                        // We should not send these events to the client.
+                        /// The value is found, but it is not locally injected
+                        // (value != LOCALLY_ADDED_MASK), then it is either already removed display,
+                        // or it is a duplicated event. In either case we should not send these
+                        // events to the client.
                         outEventMask &= ~(EVENT_DISPLAY_CONNECTED | EVENT_DISPLAY_ADDED);
                         endLocalControl(index);
                     } else {
@@ -2427,11 +2429,13 @@ public final class DisplayManagerGlobal {
                     if (value == LOCALLY_ADDED_MASK) {
                         // The display is locally injected.
                         // The event must be sent to the listener, because it was not sent before.
-                        endLocalControl(index);
+                        // Don't end local control yet, because display is "ADDED" so we still need
+                        // to wait for the ADDED event to be sent from the system server.
                     } else if (value == LOCALLY_REMOVED_MASK || (value & FLAG_CONNECTED) != 0) {
-                        // If value is found, but it is not "locally injected" display, then it is
-                        // either already removed display, or it is a duplicated event. In either
-                        // case we should not send these events to the client.
+                        // The value is found, but it is not locally injected
+                        // (value != LOCALLY_ADDED_MASK), then it is either already removed display,
+                        // or it is a duplicated event. In either case we should not send these
+                        // events to the client.
                         outEventMask &= ~EVENT_DISPLAY_CONNECTED;
                         endLocalControl(index);
                     } else {

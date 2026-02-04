@@ -188,4 +188,10 @@
     <!-- Message shown during tablet shutdown when Find Hub with Dead Battery Finder is active Same as 8045583079989970505, except the new product name that should be taken from Localizer.  [CHAR LIMIT=300] [BACKUP_MESSAGE_ID: 8045583079989970505]-->
     <string name="find_hub_active" product="tablet">You can locate this tablet with Find Hub even when powered off</string>
 
+    <!-- Description for the dream contextual setup bottom sheet. [CHAR LIMIT=NONE] -->
+    <string name="dream_setup_description" product="default">Show a clock, photos, or weather when your phone is charging</string>
+    <!-- Description for the dream contextual setup bottom sheet. [CHAR LIMIT=NONE] -->
+    <string name="dream_setup_description" product="tablet">Show a clock, photos, or weather when your tablet is charging</string>
+    <!-- Description for the dream contextual setup bottom sheet. [CHAR LIMIT=NONE] -->
+    <string name="dream_setup_description" product="device">Show a clock, photos, or weather when your device is charging</string>
 </resources>

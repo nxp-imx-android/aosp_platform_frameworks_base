@@ -857,7 +857,6 @@ public class QSSecurityFooterTest extends SysuiTestCase {
 
     @Test
     public void testFinancedDeviceUsesSettingsButtonText() {
-        allowTestableLooperAsMainThread();
         when(mSecurityController.isDeviceManaged()).thenReturn(true);
         when(mSecurityController.getDeviceOwnerOrganizationName())
                 .thenReturn(MANAGING_ORGANIZATION);

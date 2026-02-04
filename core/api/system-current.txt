@@ -377,7 +377,7 @@ package android {
     field public static final String READ_RUNTIME_PROFILES = "android.permission.READ_RUNTIME_PROFILES";
     field public static final String READ_SAFETY_CENTER_STATUS = "android.permission.READ_SAFETY_CENTER_STATUS";
     field public static final String READ_SEARCH_INDEXABLES = "android.permission.READ_SEARCH_INDEXABLES";
-    field @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_allow_status_and_end_date") public static final String READ_SUBSCRIPTION_PLANS = "android.permission.READ_SUBSCRIPTION_PLANS";
+    field public static final String READ_SUBSCRIPTION_PLANS = "android.permission.READ_SUBSCRIPTION_PLANS";
     field @FlaggedApi("android.app.system_terms_of_address_enabled") public static final String READ_SYSTEM_GRAMMATICAL_GENDER = "android.permission.READ_SYSTEM_GRAMMATICAL_GENDER";
     field public static final String READ_SYSTEM_UPDATE_INFO = "android.permission.READ_SYSTEM_UPDATE_INFO";
     field public static final String READ_WALLPAPER_INTERNAL = "android.permission.READ_WALLPAPER_INTERNAL";
@@ -3855,11 +3855,22 @@ package android.apphibernation {
 package android.attention {
 
   @FlaggedApi("com.android.input.flags.enable_attention_service_apis") public final class AttentionManager {
+    method @FlaggedApi("com.android.input.flags.enable_attention_service_apis") @RequiresPermission(android.Manifest.permission.ACCESS_ATTENTION_LISTENER) public void registerInteractionListener(int, @NonNull java.time.Duration, @NonNull java.util.concurrent.Executor, @NonNull android.attention.InteractionListener);
+    method @FlaggedApi("com.android.input.flags.enable_attention_service_apis") @RequiresPermission(android.Manifest.permission.ACCESS_ATTENTION_LISTENER) public void unregisterInteractionListener();
     field @FlaggedApi("com.android.input.flags.enable_attention_service_apis") public static final int INTERACTION_TYPE_ALL = -1; // 0xffffffff
     field @FlaggedApi("com.android.input.flags.enable_attention_service_apis") public static final int INTERACTION_TYPE_GESTURE = 4; // 0x4
     field @FlaggedApi("com.android.input.flags.enable_attention_service_apis") public static final int INTERACTION_TYPE_HOVER = 2; // 0x2
     field @FlaggedApi("com.android.input.flags.enable_attention_service_apis") public static final int INTERACTION_TYPE_KEY = 1; // 0x1
     field @FlaggedApi("com.android.input.flags.enable_attention_service_apis") public static final int INTERACTION_TYPE_NONE = 0; // 0x0
+  }
+
+  @FlaggedApi("com.android.input.flags.enable_attention_service_apis") public final class InteractionInfo {
+    method public long getInteractionTimeMillis();
+    method public int getInteractionTypes();
+  }
+
+  @FlaggedApi("com.android.input.flags.enable_attention_service_apis") public interface InteractionListener {
+    method @FlaggedApi("com.android.input.flags.enable_attention_service_apis") public void onInteraction(@NonNull android.attention.InteractionInfo);
   }
 
 }

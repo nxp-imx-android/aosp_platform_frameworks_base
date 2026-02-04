@@ -44,6 +44,7 @@ import android.app.appfunctions.AppFunctionManagerHelper.AppFunctionNotFoundExce
 import android.app.appfunctions.AppFunctionName;
 import android.app.appfunctions.AppFunctionRuntimeMetadata;
 import android.app.appfunctions.AppFunctionSearchSpec;
+import android.app.appfunctions.AppFunctionStateList;
 import android.app.appfunctions.AppFunctionStaticMetadataHelper;
 import android.app.appfunctions.AppFunctionUriGrant;
 import android.app.appfunctions.ExecuteAppFunctionAidlRequest;
@@ -109,6 +110,7 @@ import com.android.server.uri.UriGrantsManagerInternal;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -582,7 +584,9 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                                                                     new ParcelableException(
                                                                             exception));
                                                         } else {
-                                                            callback.onSuccess(states);
+                                                            callback.onSuccess(
+                                                                    new AppFunctionStateList(
+                                                                            states));
                                                         }
                                                     } catch (RemoteException re) {
                                                         Slog.w(TAG, "Fail to call onError");
@@ -948,9 +952,19 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
 
     @Override
     public void registerAppFunctions(
-            String packageName, List<String> functionIdentifiers, IAppFunctionExecutor executor) {
+            @NonNull String packageName,
+            @NonNull List<String> functionIdentifiers,
+            @NonNull IAppFunctionExecutor executor,
+            @Nullable IBinder activityToken) {
+        Objects.requireNonNull(packageName);
+        Objects.requireNonNull(functionIdentifiers);
+        Objects.requireNonNull(executor);
         UserHandle callingUserHandle = Binder.getCallingUserHandle();
         mCallerValidator.validateCallingPackage(packageName);
+        // TODO(b/343261179): Remove this reference when the activity is destroyed to avoid leaking
+        // the activity token.
+        ArrayList<MultiUserDynamicAppFunctionRegistry.ActivitySourceId> activityTokens =
+                new ArrayList<>(functionIdentifiers.size());
         for (String functionIdentifier : functionIdentifiers) {
             if (!mAppFunctionMetadataReader.isDynamicFunction(
                     packageName, functionIdentifier, callingUserHandle)) {
@@ -961,18 +975,26 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                                 + " referenced by the property within the <application> tag of your"
                                 + " AndroidManifest.xml.");
             }
+            // TODO(b/478873466) : use scope type for the check
+            activityTokens.add(
+                    new MultiUserDynamicAppFunctionRegistry.ActivitySourceId(activityToken));
         }
         mDynamicAppFunctionRegistry.registerAppFunctions(
-                packageName, functionIdentifiers, executor, callingUserHandle);
+                packageName, functionIdentifiers, executor, callingUserHandle, activityTokens);
 
         onDynamicFunctionRegistrationChanged(callingUserHandle, packageName, functionIdentifiers);
     }
 
     @Override
     public void unregisterAppFunctions(
-            String packageName, List<String> functionIdentifiers, IAppFunctionExecutor session) {
+            @NonNull String packageName,
+            @NonNull List<String> functionIdentifiers,
+            @NonNull IAppFunctionExecutor session,
+            @Nullable IBinder activityToken) {
         UserHandle callingUserHandle = Binder.getCallingUserHandle();
         mCallerValidator.validateCallingPackage(packageName);
+        ArrayList<MultiUserDynamicAppFunctionRegistry.ActivitySourceId> activityTokens =
+                new ArrayList<>(functionIdentifiers.size());
         for (String functionIdentifier : functionIdentifiers) {
             if (!mAppFunctionMetadataReader.isDynamicFunction(
                     packageName, functionIdentifier, callingUserHandle)) {
@@ -983,9 +1005,11 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                                 + " referenced by the property within the <application> tag of your"
                                 + " AndroidManifest.xml.");
             }
+            activityTokens.add(
+                    new MultiUserDynamicAppFunctionRegistry.ActivitySourceId(activityToken));
         }
         mDynamicAppFunctionRegistry.unregisterAppFunctions(
-                packageName, functionIdentifiers, session, callingUserHandle);
+                packageName, functionIdentifiers, session, callingUserHandle, activityTokens);
 
         onDynamicFunctionRegistrationChanged(callingUserHandle, packageName, functionIdentifiers);
     }

@@ -26,6 +26,8 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import com.android.internal.inputmethod.IImeSwitcherMenu
 import com.android.systemui.Dumpable
+import com.android.systemui.common.shared.model.Icon
+import com.android.systemui.common.shared.model.asIcon
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.inputmethod.domain.interactor.ImeSwitcherMenuInteractor
 import com.android.systemui.inputmethod.shared.model.ImeSwitcherMenuModel
@@ -121,7 +123,7 @@ constructor(
             return
         }
 
-        val newItems = getMenuItems(model.items)
+        val newItems = getMenuItems(context, model.items)
         menuItems.clear()
         menuItems.addAll(newItems)
 
@@ -200,6 +202,8 @@ constructor(
     data class MenuItem(
         val imeName: CharSequence,
         val subtypeName: CharSequence?,
+        val subtypeShortLabel: CharSequence?,
+        val subtypeIcon: Icon?,
         val layoutName: CharSequence?,
         val imeId: String,
         @param:IntRange(from = NOT_A_SUBTYPE_INDEX.toLong()) val subtypeIndex: Int,
@@ -231,9 +235,13 @@ constructor(
          * * A header is added before each group (after the divider, if it exists) if the group has
          *   at least two items, or a single item with a subtype name.
          *
+         * @param context the context to use for loading icon resources.
          * @param items the list of IME and subtype items.
          */
-        private fun getMenuItems(items: List<IImeSwitcherMenu.Item>): List<MenuItem> {
+        private fun getMenuItems(
+            context: Context,
+            items: List<IImeSwitcherMenu.Item>,
+        ): List<MenuItem> {
             val menuItems = mutableListOf<MenuItem>()
             if (items.isEmpty()) {
                 return menuItems
@@ -259,10 +267,23 @@ constructor(
                     prevImeId = item.imeId
                 }
 
+                val icon =
+                    if (item.subtypeIconResId != 0 && !item.imePackageName.isNullOrEmpty()) {
+                        android.graphics.drawable.Icon.createWithResource(
+                                item.imePackageName,
+                                item.subtypeIconResId,
+                            )
+                            .loadDrawable(context)
+                            ?.asIcon()
+                    } else {
+                        null
+                    }
                 menuItems.add(
                     MenuItem(
                         item.imeName,
                         item.subtypeName,
+                        item.subtypeShortLabel,
+                        icon,
                         item.layoutName,
                         item.imeId,
                         item.subtypeIndex,

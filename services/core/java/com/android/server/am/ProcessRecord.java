@@ -1270,9 +1270,12 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
      * @param message exception message
      * @param exceptionTypeId ID defined in {@link android.app.RemoteServiceException} or one
      *                        of its subclasses.
+     * @param extras optional extras to pass to the exception.
+     * @param subReason the subreason for the crash if it fails to schedule.
      */
     @GuardedBy("mService")
-    void scheduleCrashLocked(String message, int exceptionTypeId, @Nullable Bundle extras) {
+    void scheduleCrashLocked(String message, int exceptionTypeId, @Nullable Bundle extras,
+            @SubReason int subReason) {
         // Checking killedbyAm should keep it from showing the crash dialog if the process
         // was already dead for a good / normal reason.
         if (!isKilledByAm()) {
@@ -1288,7 +1291,7 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
                     // If it's already dead our work is done. If it's wedged just kill it.
                     // We won't get the crash dialog or the error reporting.
                     killLocked("scheduleCrash for '" + message + "' failed",
-                            ApplicationExitInfo.REASON_CRASH, true);
+                            ApplicationExitInfo.REASON_CRASH, subReason, true);
                 } finally {
                     Binder.restoreCallingIdentity(ident);
                 }

@@ -141,7 +141,6 @@ public final class SubscriptionPlan implements Parcelable {
      * This is the default value, used when the carrier is unable to provide the current status
      * of the subscription.
      */
-    @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ALLOW_STATUS_AND_END_DATE)
     public static final int SUBSCRIPTION_STATUS_UNKNOWN = 0;
 
     /**
@@ -150,7 +149,6 @@ public final class SubscriptionPlan implements Parcelable {
      * This indicates that the subscription is in good standing and all services are available
      * to the user.
      */
-    @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ALLOW_STATUS_AND_END_DATE)
     public static final int SUBSCRIPTION_STATUS_ACTIVE = 1;
 
     /**
@@ -159,7 +157,6 @@ public final class SubscriptionPlan implements Parcelable {
      * This status means the subscription is not currently in service. This could be because it
      * has been canceled, has expired, or has not yet been activated.
      */
-    @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ALLOW_STATUS_AND_END_DATE)
     public static final int SUBSCRIPTION_STATUS_INACTIVE = 2;
 
     /**
@@ -169,7 +166,6 @@ public final class SubscriptionPlan implements Parcelable {
      * features or limitations than a standard subscription. After the trial period ends, the
      * status will typically change to active or inactive.
      */
-    @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ALLOW_STATUS_AND_END_DATE)
     public static final int SUBSCRIPTION_STATUS_TRIAL = 3;
 
     /**
@@ -179,7 +175,6 @@ public final class SubscriptionPlan implements Parcelable {
      * issues, a user's request, or a violation of the carrier's terms of service. Services are
      * unavailable, but the subscription can typically be reactivated.
      */
-    @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ALLOW_STATUS_AND_END_DATE)
     public static final int SUBSCRIPTION_STATUS_SUSPENDED = 4;
 
     /** @hide */
@@ -720,7 +715,6 @@ public final class SubscriptionPlan implements Parcelable {
      *
      * @return The plan's end date as a {@link ZonedDateTime}, or {@code null} if unavailable.
      */
-    @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ALLOW_STATUS_AND_END_DATE)
     @Nullable
     public ZonedDateTime getPlanEndDate() {
         // ZonedDateTime is immutable, so no need to create a defensive copy.
@@ -869,7 +863,6 @@ public final class SubscriptionPlan implements Parcelable {
      * @see #SUBSCRIPTION_STATUS_TRIAL
      * @see #SUBSCRIPTION_STATUS_SUSPENDED
      */
-    @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ALLOW_STATUS_AND_END_DATE)
     @SubscriptionStatus
     public int getSubscriptionStatus() {
         return mSubscriptionStatus;
@@ -1399,7 +1392,6 @@ public final class SubscriptionPlan implements Parcelable {
          *
          * @param subscriptionStatus the current subscription status
          */
-        @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ALLOW_STATUS_AND_END_DATE)
         @NonNull
         public Builder setSubscriptionStatus(@SubscriptionStatus int subscriptionStatus) {
             if (subscriptionStatus < SUBSCRIPTION_STATUS_UNKNOWN

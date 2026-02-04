@@ -380,12 +380,12 @@ constructor(
                         )
                     }
                 }
+                if (captureRegion == ScreenCaptureRegion.APP_WINDOW) {
+                    runningTasks = appWindowInteractor.getAppWindowTasks(displayId)
+                }
             }
             launch { toolbarViewModel.activate() }
             launch { initializeRegionBox() }
-            if (captureRegion == ScreenCaptureRegion.APP_WINDOW) {
-                launch { runningTasks = appWindowInteractor.getAppWindowTasks(displayId) }
-            }
         }
     }
 

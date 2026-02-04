@@ -33,7 +33,6 @@ import android.widget.ImageView
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags.FLAG_FIX_PRIVACY_INDICATOR_BOTH_DOT_CHIP_VISIBLE_QS
 import com.android.systemui.Flags.FLAG_SCENE_CONTAINER
-import com.android.systemui.Flags.FLAG_SHADE_WINDOW_GOES_AROUND
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.kosmos.runTest
@@ -344,7 +343,6 @@ class PrivacyDotViewControllerTest(flags: FlagsParameterization) : SysuiTestCase
     }
 
     @Test
-    @EnableFlags(FLAG_SHADE_WINDOW_GOES_AROUND)
     fun init_shadeExpandedOnDifferentDisplay_doesNotChangeShadeExpandedState() =
         kosmos.runTest {
             fakeShadeDisplaysRepository.setDisplayId(Display.DEFAULT_DISPLAY)
@@ -359,7 +357,6 @@ class PrivacyDotViewControllerTest(flags: FlagsParameterization) : SysuiTestCase
         }
 
     @Test
-    @EnableFlags(FLAG_SHADE_WINDOW_GOES_AROUND)
     fun init_shadeExpandedOnThisDisplay_doesChangeShadeExpandedState() =
         kosmos.runTest {
             fakeShadeDisplaysRepository.setDisplayId(Display.DEFAULT_DISPLAY)

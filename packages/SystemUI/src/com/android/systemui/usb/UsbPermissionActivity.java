@@ -19,6 +19,8 @@ package com.android.systemui.usb;
 import android.content.res.Resources;
 import android.os.Bundle;
 
+import androidx.annotation.VisibleForTesting;
+
 import javax.inject.Inject;
 
 /**
@@ -26,7 +28,7 @@ import javax.inject.Inject;
  */
 public class UsbPermissionActivity extends UsbDialogActivity {
 
-    private boolean mPermissionGranted = false;
+    @VisibleForTesting boolean mPermissionGranted = false;
     private final UsbAudioWarningDialogMessage mUsbPermissionMessageHandler;
 
     @Inject
@@ -70,8 +72,8 @@ public class UsbPermissionActivity extends UsbDialogActivity {
     }
 
     @Override
-    void onConfirm() {
-        mDialogHelper.grantUidAccessPermission();
+    void onConfirm(boolean isPersistent) {
+        mDialogHelper.grantUidAccessPermission(isPersistent);
         if (isAlwaysUseChecked()) {
             mDialogHelper.setDefaultPackage();
         }

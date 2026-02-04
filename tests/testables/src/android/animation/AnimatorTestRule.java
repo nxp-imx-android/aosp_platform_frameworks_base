@@ -331,7 +331,6 @@ public final class AnimatorTestRule implements TestRule {
 
         public void doFrame() {
             mTestProvider.animateFrame();
-            mTestProvider.commitFrame();
         }
 
         @Override
@@ -355,7 +354,6 @@ public final class AnimatorTestRule implements TestRule {
     private class TestProvider implements AnimationHandler.AnimationFrameCallbackProvider {
         private long mFrameDelay = 10;
         private Choreographer.FrameCallback mFrameCallback = null;
-        private final List<Runnable> mCommitCallbacks = new ArrayList<>();
 
         public void animateFrame() {
             Choreographer.FrameCallback frameCallback = mFrameCallback;
@@ -365,23 +363,10 @@ public final class AnimatorTestRule implements TestRule {
             }
         }
 
-        public void commitFrame() {
-            List<Runnable> commitCallbacks = new ArrayList<>(mCommitCallbacks);
-            mCommitCallbacks.clear();
-            for (Runnable commitCallback : commitCallbacks) {
-                commitCallback.run();
-            }
-        }
-
         @Override
         public void postFrameCallback(Choreographer.FrameCallback callback) {
             assert mFrameCallback == null;
             mFrameCallback = callback;
-        }
-
-        @Override
-        public void postCommitCallback(Runnable runnable) {
-            mCommitCallbacks.add(runnable);
         }
 
         @Override

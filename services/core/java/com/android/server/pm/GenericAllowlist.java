@@ -119,9 +119,14 @@ public abstract class GenericAllowlist<E> {
     /** Element is allowed because allowlisting was temporary disabled by cmd user. */
     public static final int STATUS_ALLOWED_ALLOWLISTING_DISABLED_BY_SHELL_CMD = 7;
 
+    /**
+     * Element is allowed because allowlisting is disabled while the device is being provisioned.
+     */
+    public static final int STATUS_ALLOWED_ALLOWLISTING_DISABLED_WHILE_DEVICE_IS_PROVISIONING = 8;
+
     @VisibleForTesting
     static final int LAST_STATUS_ALLOWED =
-            STATUS_ALLOWED_ALLOWLISTING_DISABLED_BY_SHELL_CMD;
+            STATUS_ALLOWED_ALLOWLISTING_DISABLED_WHILE_DEVICE_IS_PROVISIONING;
 
     // TODO(b/414326600): this class is public because WM uses @AllowlistStatus. It might be cleaner
     // to create a new class for it.
@@ -135,7 +140,8 @@ public abstract class GenericAllowlist<E> {
             STATUS_ALLOWED_PERMANENT_LIST_EMPTY,
             STATUS_ALLOWED_BY_PERMANENT_LIST,
             STATUS_DISALLOWED_NOT_IN_PERMANENT_LIST,
-            STATUS_ALLOWED_ALLOWLISTING_DISABLED_BY_SHELL_CMD
+            STATUS_ALLOWED_ALLOWLISTING_DISABLED_BY_SHELL_CMD,
+            STATUS_ALLOWED_ALLOWLISTING_DISABLED_WHILE_DEVICE_IS_PROVISIONING
             })
     public @interface AllowlistStatus {}
 
@@ -262,6 +268,12 @@ public abstract class GenericAllowlist<E> {
         Slogf.i(mTag, "overrideDisallowedStatus(): changed from %d (%s) to %d (%s)",
                 previousStatus, allowlistStatusToString(previousStatus),
                 status, allowlistStatusToString(status));
+    }
+
+    @VisibleForTesting
+    @Nullable
+    Integer getOverriddenDisallowedStatus() {
+        return mOverriddenDisallowedStatus.get();
     }
 
     // NOTE: only called by 'cmd user' (which needs to "build" the temporary allowlist based on

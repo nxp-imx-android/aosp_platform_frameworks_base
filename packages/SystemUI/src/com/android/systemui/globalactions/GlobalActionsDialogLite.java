@@ -138,7 +138,6 @@ import com.android.systemui.scrim.ScrimDrawable;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.shade.ShadeController;
 import com.android.systemui.shade.ShadeDisplayAware;
-import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround;
 import com.android.systemui.statusbar.VibratorHelper;
 import com.android.systemui.statusbar.phone.DialogDelegate;
 import com.android.systemui.statusbar.phone.LightBarController;
@@ -813,17 +812,6 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
     }
 
     private Context getContextForDisplay(int displayId) {
-        if (!ShadeWindowGoesAround.isEnabled()) {
-            if (displayId != Display.DEFAULT_DISPLAY) {
-                Log.e(
-                        TAG,
-                        "Asked for the displayId="
-                                + displayId
-                                + " context but returning default display one as"
-                                + " ShadeWindowGoesAround flag is disabled.");
-            }
-            return mContext;
-        }
         try {
             DisplayWindowProperties properties = mDisplayWindowPropertiesRepositoryLazy.get().get(
                     displayId,

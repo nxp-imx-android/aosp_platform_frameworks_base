@@ -440,7 +440,7 @@
     <dimen name="notification_2025_content_min_height">40dp</dimen>
 
     <!-- Max height of a collapsed (headerless) notification with a summarization -->
-    <dimen name="notification_collapsed_height_with_summarization">156dp</dimen>
+    <dimen name="notification_collapsed_height_with_summarization">300dp</dimen>
 
     <!-- Max height of a collapsed (headerless) notification with one or two lines -->
     <!-- 14 * 2 (reduced margins) + 48 (max collapsed content height) = 72 (notification) -->

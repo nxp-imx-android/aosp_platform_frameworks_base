@@ -38,7 +38,6 @@ import android.view.WindowInsets.Type;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 
-import androidx.annotation.MainThread;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StyleRes;
@@ -49,7 +48,6 @@ import com.android.systemui.animation.DialogTransitionAnimator;
 import com.android.systemui.broadcast.BroadcastDispatcher;
 import com.android.systemui.dagger.qualifiers.Application;
 import com.android.systemui.res.R;
-import com.android.systemui.util.Assert;
 import com.android.systemui.util.DialogKt;
 import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor;
 
@@ -338,9 +336,7 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
      *
      * @param window the window whose size to update.
      */
-    @MainThread
     private void updateWindowSize(@NonNull Window window) {
-        Assert.isMainThread();
         int width = getWidth();
         int height = getHeight();
         if (width == mLastWidth && height == mLastHeight) {
@@ -726,9 +722,7 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
      *
      * @param window the dialog window to refresh the background of.
      */
-    @MainThread
     private void refreshBackground(@NonNull Window window) {
-        Assert.isMainThread();
         final View viewWithBackground = getViewWithBackground(this);
         if (viewWithBackground == null) {
             return;

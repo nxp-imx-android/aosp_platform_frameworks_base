@@ -16,7 +16,8 @@
 
 package com.android.systemui.notifications.intelligence.rules.ui.composable
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -26,9 +27,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
@@ -37,8 +40,10 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
+import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleModel
+import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRuleEditViewModel
 
 /**
  * A composable rendering a page to edit a specific notification rule.
@@ -47,28 +52,46 @@ import com.android.systemui.notifications.intelligence.rules.shared.model.RuleMo
  */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun NotificationRuleEdit(rule: RuleModel, modifier: Modifier = Modifier) {
+fun NotificationRuleEdit(
+    viewModelFactory: NotificationRuleEditViewModel.Factory,
+    rule: RuleModel,
+    modifier: Modifier = Modifier,
+) {
+    val viewModel = rememberViewModel("NotificationRuleEditViewModel") { viewModelFactory.create() }
+    val scope = rememberCoroutineScope()
+
     var editDialogShowing: EditDialogType? by remember { mutableStateOf(null) }
     var selectedAction by remember { mutableStateOf(rule.action) }
 
     val text =
-        remember(selectedAction) {
+        remember(selectedAction, editDialogShowing) {
             buildAnnotatedText(
                 selectedAction = selectedAction,
+                editDialogShowing = editDialogShowing,
                 changeEditDialog = { editDialogShowing = it },
             )
         }
-    Box(modifier = modifier) {
-        Text(text = text, style = MaterialTheme.typography.bodyLargeEmphasized)
 
-        when (editDialogShowing) {
-            EditDialogType.Action -> {
-                ActionChoiceDialog(
-                    onDismissRequest = { editDialogShowing = null },
-                    onActionSelected = { action -> selectedAction = action },
-                )
+    Column(modifier = modifier) {
+        Row { Text(text = text, style = MaterialTheme.typography.bodyLargeEmphasized) }
+
+        Row {
+            when (editDialogShowing) {
+                EditDialogType.Action -> {
+                    ActionChoiceDialog(
+                        onDismissRequest = { editDialogShowing = null },
+                        onActionSelected = { action -> selectedAction = action },
+                    )
+                }
+                EditDialogType.Contact -> {
+                    ContactChoiceDialog(
+                        viewModel = viewModel,
+                        scope = scope,
+                        context = LocalContext.current,
+                    )
+                }
+                null -> {}
             }
-            null -> {}
         }
     }
 }
@@ -82,19 +105,51 @@ fun NotificationRuleEdit(rule: RuleModel, modifier: Modifier = Modifier) {
  */
 private fun buildAnnotatedText(
     selectedAction: ActionModel,
+    editDialogShowing: EditDialogType?,
     changeEditDialog: (EditDialogType?) -> Unit,
 ): AnnotatedString {
     return buildAnnotatedString {
         clickableText(
             text = selectedAction.name,
-            onClick = { changeEditDialog.invoke(EditDialogType.Action) },
+            onClick = {
+                toggleEditDialogShown(
+                    desiredType = EditDialogType.Action,
+                    currentEditDialogShowing = editDialogShowing,
+                    changeEditDialog = changeEditDialog,
+                )
+            },
         )
-        append(" all Conversation notifications on weekdays")
+        append(" all Conversation notifications from ")
+        clickableText(
+            text = "{contact click placeholder}",
+            onClick = {
+                toggleEditDialogShown(
+                    desiredType = EditDialogType.Contact,
+                    currentEditDialogShowing = editDialogShowing,
+                    changeEditDialog = changeEditDialog,
+                )
+            },
+        )
+        append(" on weekdays")
+    }
+}
+
+/** Shows/hides the [desiredType] edit dialog, depending on whether it's currently open or not. */
+private fun toggleEditDialogShown(
+    desiredType: EditDialogType,
+    currentEditDialogShowing: EditDialogType?,
+    changeEditDialog: (EditDialogType?) -> Unit,
+) {
+    if (currentEditDialogShowing == desiredType) {
+        changeEditDialog.invoke(null)
+    } else {
+        changeEditDialog.invoke(desiredType)
     }
 }
 
 private enum class EditDialogType {
-    Action
+    Action,
+    Contact,
     // TODO: b/478225883 - Add more edit types.
 }
 
@@ -102,6 +157,8 @@ private enum class EditDialogType {
  * Renders a dropdown menu to choose one rule action.
  *
  * @param onActionSelected invoked when the user selects an action in the menu.
+ *
+ * TODO: b/478225883 - Move to a separate file.
  */
 @Composable
 private fun ActionChoiceDialog(

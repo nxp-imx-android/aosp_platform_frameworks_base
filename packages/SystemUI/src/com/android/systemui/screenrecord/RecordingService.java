@@ -80,6 +80,7 @@ public class RecordingService extends Service implements ScreenMediaRecorderList
     protected static final String EXTRA_PATH = "extra_path";
     private static final String EXTRA_AUDIO_SOURCE = "extra_useAudio";
     private static final String EXTRA_SHOW_TAPS = "extra_showTaps";
+    private static final String EXTRA_SHOW_SECONDS = "extra_showSeconds";
     private static final String EXTRA_CAPTURE_TARGET = "extra_captureTarget";
     private static final String EXTRA_DISPLAY_ID = "extra_displayId";
     private static final String EXTRA_STOP_REASON = "extra_stopReason";
@@ -199,13 +200,14 @@ public class RecordingService extends Service implements ScreenMediaRecorderList
                         .values()[intent.getIntExtra(EXTRA_AUDIO_SOURCE, 0)];
                 Log.d(getTag(), "recording with audio source " + mAudioSource);
                 boolean showTaps = intent.getBooleanExtra(EXTRA_SHOW_TAPS, false);
+                boolean showSeconds = intent.getBooleanExtra(EXTRA_SHOW_SECONDS, false);
                 MediaProjectionCaptureTarget captureTarget =
                         intent.getParcelableExtra(EXTRA_CAPTURE_TARGET,
                                 MediaProjectionCaptureTarget.class);
 
                 int displayId = intent.getIntExtra(EXTRA_DISPLAY_ID, Display.DEFAULT_DISPLAY);
 
-                mRecordingPreferenceRepository.updateSettings(showTaps);
+                mRecordingPreferenceRepository.updateSettings(showTaps, true, showSeconds);
 
                 mRecorder = new ScreenMediaRecorder(
                         mUserContextTracker.getUserContext(),

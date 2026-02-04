@@ -16,6 +16,7 @@
 
 package com.android.systemui.inputmethod.ui.viewmodel
 
+import android.view.inputmethod.InputMethodManager.IMPickerEntryPoint
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.inputmethod.domain.interactor.ImeSwitcherMenuInteractor
 import com.android.systemui.inputmethod.shared.model.ImeSwitcherMenuModel
@@ -39,7 +40,7 @@ constructor(private val interactor: ImeSwitcherMenuInteractor) {
             object : ModelChangeListener {
 
                 override fun onChanged(userId: Int, model: ImeSwitcherMenuModel?) {
-                    listener.onChanged(userId, model?.displayId)
+                    listener.onChanged(userId, model?.entryPoint, model?.displayId)
                 }
             }
         interactor.registerModelChangeListener(modelListener)
@@ -55,9 +56,11 @@ constructor(private val interactor: ImeSwitcherMenuInteractor) {
          * Called when the display that should show the UI tied to a user has changed.
          *
          * @param userId the ID of the user whose display changed.
+         * @param entryPoint the entry point where the UI was requested from, or `null` if no UI
+         *   should be shown.
          * @param displayId the ID of the display that should show the UI, or `null` if no UI should
          *   be shown.
          */
-        fun onChanged(userId: Int, displayId: Int?)
+        fun onChanged(userId: Int, @IMPickerEntryPoint entryPoint: Int?, displayId: Int?)
     }
 }

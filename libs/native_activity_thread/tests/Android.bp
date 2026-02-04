@@ -17,7 +17,7 @@ package {
 }
 
 aidl_interface {
-    name: "sample_native_service_aidl_interface",
+    name: "simple_native_service_aidl_interface",
     unstable: true,
     visibility: [
         "//system/tools/aidl/build",
@@ -31,39 +31,40 @@ aidl_interface {
         },
     },
     srcs: [
-        "lib/aidl/**/*.aidl",
+        "aidl/**/*.aidl",
     ],
-    local_include_dir: "lib/aidl",
+    local_include_dir: "aidl",
 }
 
 cc_library_shared {
-    name: "libsamplenativeservicetest",
+    name: "libsimplenativeservice",
     srcs: [
-        "lib/NativeService.cpp",
+        "lib/SimpleNativeService.cpp",
     ],
     cflags: [
         "-Wall",
         "-Werror",
+        "-Wextra",
         "-Wno-missing-field-initializers",
         "-Wno-unused-variable",
     ],
     shared_libs: [
-        "liblog",
         "libandroid",
         "libbinder_ndk",
+        "liblog",
     ],
     header_libs: [
-        "libandroid_headers_private",
         "liblog_headers",
     ],
     static_libs: [
-        "sample_native_service_aidl_interface-ndk",
+        "simple_native_service_aidl_interface-ndk",
     ],
-    cpp_std: "c++20",
+    sdk_version: "current",
+    stl: "c++_shared",
 }
 
 android_test {
-    name: "NativeZygoteIntegrationTest",
+    name: "NativeServiceIntegrationTest",
     team: "trendy_team_system_performance",
     dex_preopt: {
         enabled: false,
@@ -75,7 +76,7 @@ android_test {
         "am_flags_lib",
         "android.os.flags-aconfig-java",
         "compatibility-device-util-axt",
-        "sample_native_service_aidl_interface-java",
+        "simple_native_service_aidl_interface-java",
     ],
     libs: [
         "android.test.runner.stubs.test",
@@ -87,7 +88,7 @@ android_test {
         "general-tests",
     ],
     jni_libs: [
-        "libsamplenativeservicetest",
+        "libsimplenativeservice",
     ],
     manifest: "AndroidManifest.xml",
     use_embedded_native_libs: true,

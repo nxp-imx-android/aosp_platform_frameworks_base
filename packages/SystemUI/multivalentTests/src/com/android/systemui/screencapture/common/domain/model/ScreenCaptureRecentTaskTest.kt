@@ -22,6 +22,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.mediaprojection.appselector.data.RecentTask
+import com.android.users.UserType
 import com.android.wm.shell.shared.split.SplitBounds
 import com.android.wm.shell.shared.split.SplitScreenConstants
 import com.google.common.truth.Truth.assertThat
@@ -55,7 +56,7 @@ class ScreenCaptureRecentTaskTest : SysuiTestCase() {
                 baseIntent = null,
                 colorBackground = 0x99123456.toInt(),
                 isForegroundTask = true,
-                userType = RecentTask.UserType.STANDARD,
+                userType = UserType.MAIN,
                 splitBounds = fakeSplitBounds,
             )
 

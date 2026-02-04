@@ -33,6 +33,7 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.embedded.IInsightSurfaceVisualizer;
+import android.service.personalcontext.embedded.IVisualizationResult;
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
 import android.service.personalcontext.embedded.InsightSurfaceVisualizerService;
 import android.service.personalcontext.insight.BundleInsight;
@@ -105,14 +106,9 @@ public class VisualizerConnectionTest {
     }
 
     @Test
-    public void testOnRegistered() {
-        mVisualizerConnection.onRegistered();
-        assertThat(mTestInjector.getServiceConnection()).isNotNull();
-    }
-
-    @Test
-    public void testOnUnregistered() {
-        mVisualizerConnection.onRegistered();
+    public void testOnUnregistered() throws RemoteException {
+        final InsightSurfaceClientInfo client = mock(InsightSurfaceClientInfo.class);
+        createVisualizationForClient(client, true);
         assertThat(mTestInjector.getServiceConnection()).isNotNull();
         mVisualizerConnection.onUnregistered();
         assertThat(mTestInjector.getServiceConnection()).isNull();
@@ -120,50 +116,97 @@ public class VisualizerConnectionTest {
 
     @Test
     public void testOnClientDisconnected() throws RemoteException {
-        mVisualizerConnection.onRegistered();
-        final InsightSurfaceClientInfo client = mock(InsightSurfaceClientInfo.class);
+        final InsightSurfaceClientInfo client = createClient();
+        createVisualizationForClient(client, true);
         mVisualizerConnection.onClientDisconnected(client);
         verify(mVisualizer).onClientDisconnected(client);
     }
 
     @Test
     public void testCreateVisualizationForClient() throws RemoteException {
-        mVisualizerConnection.onRegistered();
+        createVisualizationForClient(createClient(), true);
+    }
+
+    @Test
+    public void testUnbindFromService_whenLastClientDisconnects() throws RemoteException {
+        final InsightSurfaceClientInfo client = createClient();
+        createVisualizationForClient(client, true);
+        assertThat(mTestInjector.getServiceConnection()).isNotNull();
+        mVisualizerConnection.onClientDisconnected(client);
+        verify(mVisualizer).onClientDisconnected(client);
+        assertThat(mTestInjector.getServiceConnection()).isNull();
+    }
+
+    @Test
+    public void testDoesNotUnbindFromService_whenClientStillConnected() throws RemoteException {
+        final InsightSurfaceClientInfo client1 = createClient();
+        final InsightSurfaceClientInfo client2 = createClient();
+
+        createVisualizationForClient(client1, true);
+        createVisualizationForClient(client2, true);
+
+        mVisualizerConnection.onClientDisconnected(client1);
+        assertThat(mTestInjector.getServiceConnection()).isNotNull();
+    }
+
+    @Test
+    public void testUnbindFromService_whenNoVisualizationCreated() throws RemoteException {
+        final InsightSurfaceClientInfo client = createClient();
+        createVisualizationForClient(client, false);
+        assertThat(mTestInjector.getServiceConnection()).isNull();
+    }
+
+    @Test
+    public void connectToVisualizer_withDefaultInjector_usesCorrectBindFlags()
+            throws RemoteException  {
+        // Use the constructor that creates a DefaultInjector to test its behavior.
+        final VisualizerConnection connection = new VisualizerConnection(
+                mComponentName, mContext, Runnable::run);
         final ContextInsight insight = new BundleInsight.Builder().build();
         final RenderToken renderToken = new RenderToken(UUID.randomUUID());
+
+        // Trigger the service binding.
+        connection.createVisualizationForClient(
+                insight, createClient(), renderToken, (success) -> {});
+
+        // Capture the arguments passed to context.bindService to verify the flags.
+        final ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
+        final ArgumentCaptor<Integer> flagsCaptor = ArgumentCaptor.forClass(Integer.class);
+        verify(mContext).bindService(
+                intentCaptor.capture(), any(ServiceConnection.class), flagsCaptor.capture());
+
+        // Verify that the BIND_ALLOW_ACTIVITY_STARTS flag is included.
+        final int expectedFlags = Context.BIND_AUTO_CREATE | Context.BIND_ALLOW_ACTIVITY_STARTS;
+        assertThat(flagsCaptor.getValue()).isEqualTo(expectedFlags);
+
+        // Also verify the intent is constructed correctly.
+        final Intent capturedIntent = intentCaptor.getValue();
+        assertThat(capturedIntent.getComponent()).isEqualTo(mComponentName);
+        assertThat(capturedIntent.getAction())
+                .isEqualTo(InsightSurfaceVisualizerService.SERVICE_INTERFACE);
+    }
+
+    private InsightSurfaceClientInfo createClient() {
         final InsightSurfaceClientInfo client = mock(InsightSurfaceClientInfo.class);
+        when(client.getId()).thenReturn(UUID.randomUUID());
+        return client;
+    }
+
+    private void createVisualizationForClient(
+            InsightSurfaceClientInfo client,
+            boolean shouldSucceed) throws RemoteException {
+        final ContextInsight insight = new BundleInsight.Builder().build();
+        final RenderToken renderToken = new RenderToken(UUID.randomUUID());
+        ArgumentCaptor<IVisualizationResult> resultCaptor =
+                ArgumentCaptor.forClass(IVisualizationResult.class);
+
         mVisualizerConnection.createVisualizationForClient(
                 insight, client, renderToken, (success) -> {});
         verify(mVisualizer).createVisualizationForClient(
                 argThat(wrapper -> wrapper.getContextInsight() == insight),
                 any(),
                 eq(renderToken),
-                any());
-    }
-
-    @Test
-    public void onRegistered_withDefaultInjector_usesCorrectBindFlags() {
-        // Use the constructor that creates a DefaultInjector to test its behavior.
-        VisualizerConnection connection = new VisualizerConnection(
-                mComponentName, mContext, Runnable::run);
-
-        // Trigger the service binding.
-        connection.onRegistered();
-
-        // Capture the arguments passed to context.bindService to verify the flags.
-        ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
-        ArgumentCaptor<Integer> flagsCaptor = ArgumentCaptor.forClass(Integer.class);
-        verify(mContext).bindService(
-                intentCaptor.capture(), any(ServiceConnection.class), flagsCaptor.capture());
-
-        // Verify that the BIND_ALLOW_ACTIVITY_STARTS flag is included.
-        int expectedFlags = Context.BIND_AUTO_CREATE | Context.BIND_ALLOW_ACTIVITY_STARTS;
-        assertThat(flagsCaptor.getValue()).isEqualTo(expectedFlags);
-
-        // Also verify the intent is constructed correctly.
-        Intent capturedIntent = intentCaptor.getValue();
-        assertThat(capturedIntent.getComponent()).isEqualTo(mComponentName);
-        assertThat(capturedIntent.getAction())
-                .isEqualTo(InsightSurfaceVisualizerService.SERVICE_INTERFACE);
+                resultCaptor.capture());
+        resultCaptor.getValue().onResult(shouldSucceed);
     }
 }

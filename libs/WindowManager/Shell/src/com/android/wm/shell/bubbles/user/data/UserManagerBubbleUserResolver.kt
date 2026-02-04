@@ -17,9 +17,9 @@
 package com.android.wm.shell.bubbles.user.data
 
 import android.os.UserManager
+import com.android.users.UserType
 import com.android.wm.shell.bubbles.user.model.BubbleUserInfo
 import com.android.wm.shell.dagger.WMSingleton
-import com.android.wm.shell.shared.bubbles.UserType
 import com.android.wm.shell.shared.bubbles.logging.BubbleLog
 import javax.inject.Inject
 

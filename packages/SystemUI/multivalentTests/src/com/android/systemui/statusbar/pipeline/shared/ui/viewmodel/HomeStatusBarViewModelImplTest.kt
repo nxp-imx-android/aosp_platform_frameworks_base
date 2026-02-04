@@ -582,7 +582,6 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
     @EnableSceneContainer
     fun isHomeStatusBarAllowed_QsVisibleButInExternalDisplay_defaultStatusBarVisible() =
         kosmos.runTest {
@@ -598,24 +597,6 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
-    @DisableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
-    @EnableSceneContainer
-    fun isHomeStatusBarAllowed_QsVisibleButInExternalDisplay_withFlagOff_defaultStatusBarInvisible() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.isHomeStatusBarAllowed)
-
-            kosmos.sceneContainerRepository.instantlyTransitionTo(Scenes.Gone)
-            kosmos.sceneContainerRepository.showOverlay(Overlays.QuickSettingsShade)
-            kosmos.shadeTestUtil.setQsExpansion(1f)
-            kosmos.fakeShadeDisplaysRepository.setDisplayId(EXTERNAL_DISPLAY)
-            runCurrent()
-
-            // Shade position is ignored.
-            assertThat(latest).isFalse()
-        }
-
-    @Test
-    @EnableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
     @EnableSceneContainer
     fun isHomeStatusBarAllowed_qsVisibleInThisDisplay_thisStatusBarInvisible() =
         kosmos.runTest {
@@ -663,7 +644,6 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
 
     @Test
     @EnableSceneContainer
-    @EnableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
     fun isHomeStatusBarAllowed_onExternalDisplayWithLocksceren_invisible() =
         kosmos.runTest {
             val underTest = homeStatusBarViewModelFactory(EXTERNAL_DISPLAY)
@@ -676,7 +656,6 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
     @EnableSceneContainer
     fun isHomeStatusBarAllowed_onExternalDisplay_whenNotificationShadeIsVisibleOnDefaultDisplay_isTrue() =
         kosmos.runTest {
@@ -691,7 +670,6 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
     @EnableSceneContainer
     fun isHomeStatusBarAllowed_onDefaultDisplay_whenShadeIsVisibleOnDefaultDisplay_isFalse() =
         kosmos.runTest {
@@ -706,7 +684,6 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
     @EnableSceneContainer
     fun isHomeStatusBarAllowed_onExternalDisplay_whenShadeIsVisibleOnDefaultDisplay_isTrue() =
         kosmos.runTest {
@@ -1891,7 +1868,6 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
     @EnableSceneContainer
     fun isHomeStatusBarAllowed_shadeOnExternalDisplay_statusBarOnDefaultDisplay_isVisible() =
         kosmos.runTest {

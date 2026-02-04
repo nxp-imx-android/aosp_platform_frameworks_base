@@ -120,9 +120,9 @@ interface IAppFunctionManager {
         int flags
     );
 
-    void registerAppFunctions(in String packageName, in List<String> functionIds, in IAppFunctionExecutor executor);
+    void registerAppFunctions(in String packageName, in List<String> functionIds, in IAppFunctionExecutor executor, in IBinder activityToken);
 
-    void unregisterAppFunctions(in String packageName, in List<String> functionIds, in IAppFunctionExecutor executor);
+    void unregisterAppFunctions(in String packageName, in List<String> functionIds, in IAppFunctionExecutor executor, in IBinder activityToken);
 
     void revokeSelfAccess(in String targetPackageName);
 

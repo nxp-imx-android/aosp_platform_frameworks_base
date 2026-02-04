@@ -37,7 +37,6 @@ import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractorI
 import com.android.systemui.common.ui.view.ChoreographerUtils
 import com.android.systemui.common.ui.view.ChoreographerUtilsImpl
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.display.data.repository.DisplayTypeRepository
 import com.android.systemui.display.data.repository.ShadeDisplayTypeRepository
 import com.android.systemui.keyevent.domain.interactor.SysUIKeyEventHandler
@@ -54,7 +53,6 @@ import com.android.systemui.shade.domain.interactor.ShadeDialogContextInteractor
 import com.android.systemui.shade.domain.interactor.ShadeDisplaysDialogInteractor
 import com.android.systemui.shade.domain.interactor.ShadeDisplaysInteractor
 import com.android.systemui.shade.domain.interactor.ShadeDisplaysInteractorImpl
-import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.statusbar.notification.stack.NotificationStackRebindingHider
 import com.android.systemui.statusbar.notification.stack.NotificationStackRebindingHiderImpl
 import com.android.systemui.statusbar.phone.ConfigurationControllerImpl
@@ -68,7 +66,6 @@ import dagger.Module
 import dagger.Provides
 import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
-import javax.inject.Provider
 import javax.inject.Qualifier
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -96,17 +93,9 @@ object ShadeDisplayAwareModule {
         context: Context,
         @ShadeDisplayAware shadeContextBuildOptions: Bundle?,
     ): Context {
-        return if (ShadeWindowGoesAround.isEnabled) {
-            context
-                .createWindowContext(
-                    context.display,
-                    TYPE_NOTIFICATION_SHADE,
-                    shadeContextBuildOptions,
-                )
-                .apply { setTheme(R.style.Theme_SystemUI) }
-        } else {
-            context
-        }
+        return context
+            .createWindowContext(context.display, TYPE_NOTIFICATION_SHADE, shadeContextBuildOptions)
+            .apply { setTheme(R.style.Theme_SystemUI) }
     }
 
     @Provides
@@ -121,7 +110,6 @@ object ShadeDisplayAwareModule {
     @ShadeDisplayAware
     @SysUISingleton
     fun provideShadeDisplayAwareWindowContext(@ShadeDisplayAware context: Context): WindowContext {
-        ShadeWindowGoesAround.isUnexpectedlyInLegacyMode()
         // We rely on the fact context is a WindowContext as the API to reparent windows is only
         // available there.
         return (context as? WindowContext)
@@ -141,15 +129,10 @@ object ShadeDisplayAwareModule {
     @ShadeDisplayAware
     @SysUISingleton
     fun provideShadeWindowManager(
-        defaultWindowManager: WindowManager,
         @ShadeDisplayAware context: Context,
         windowManagerProvider: WindowManagerProvider,
     ): WindowManager {
-        return if (ShadeWindowGoesAround.isEnabled) {
-            windowManagerProvider.getWindowManager(context)
-        } else {
-            defaultWindowManager
-        }
+        return windowManagerProvider.getWindowManager(context)
     }
 
     @Provides
@@ -172,22 +155,16 @@ object ShadeDisplayAwareModule {
     fun provideShadeWindowConfigurationController(
         @ShadeDisplayAware shadeContext: Context,
         factory: ConfigurationControllerImpl.Factory,
-        @Main globalConfigController: ConfigurationController,
     ): ConfigurationController {
-        return if (ShadeWindowGoesAround.isEnabled) {
-            factory.create(shadeContext)
-        } else {
-            globalConfigController
-        }
+        return factory.create(shadeContext)
     }
 
     @Provides
     @ShadeDisplayAware
     @SysUISingleton
-    fun provideShadeWindowConfigurationForwarder(
+    fun provideConfigurationForwarder(
         @ShadeDisplayAware shadeConfigurationController: ConfigurationController
     ): ConfigurationForwarder {
-        ShadeWindowGoesAround.isUnexpectedlyInLegacyMode()
         return shadeConfigurationController
     }
 
@@ -198,13 +175,9 @@ object ShadeDisplayAwareModule {
         factory: ConfigurationStateImpl.Factory,
         @ShadeDisplayAware configurationController: ConfigurationController,
         @ShadeDisplayAware context: Context,
-        @Main configurationState: ConfigurationState,
     ): ConfigurationState {
-        return if (ShadeWindowGoesAround.isEnabled) {
-            factory.create(context, configurationController)
-        } else {
-            configurationState
-        }
+
+        return factory.create(context, configurationController)
     }
 
     @SysUISingleton
@@ -225,27 +198,17 @@ object ShadeDisplayAwareModule {
         factory: ConfigurationRepositoryImpl.Factory,
         @ShadeDisplayAware configurationController: ConfigurationController,
         @ShadeDisplayAware context: Context,
-        @Main globalConfigurationRepository: ConfigurationRepository,
     ): ConfigurationRepository {
-        return if (ShadeWindowGoesAround.isEnabled) {
-            factory.create(context, configurationController)
-        } else {
-            globalConfigurationRepository
-        }
+        return factory.create(context, configurationController)
     }
 
     @SysUISingleton
     @Provides
     @ShadeDisplayAware
     fun provideShadeAwareConfigurationInteractor(
-        @ShadeDisplayAware configurationRepository: ConfigurationRepository,
-        @Main configurationInteractor: ConfigurationInteractor,
+        @ShadeDisplayAware configurationRepository: ConfigurationRepository
     ): ConfigurationInteractor {
-        return if (ShadeWindowGoesAround.isEnabled) {
-            ConfigurationInteractorImpl(configurationRepository)
-        } else {
-            configurationInteractor
-        }
+        return ConfigurationInteractorImpl(configurationRepository)
     }
 
     @SysUISingleton
@@ -253,7 +216,6 @@ object ShadeDisplayAwareModule {
     fun provideShadePositionRepository(
         impl: MutableShadeDisplaysRepository
     ): ShadeDisplaysRepository {
-        ShadeWindowGoesAround.isUnexpectedlyInLegacyMode()
         return impl
     }
 
@@ -262,7 +224,6 @@ object ShadeDisplayAwareModule {
     fun provideMutableShadePositionRepository(
         impl: ShadeDisplaysRepositoryImpl
     ): MutableShadeDisplaysRepository {
-        ShadeWindowGoesAround.isUnexpectedlyInLegacyMode()
         return impl
     }
 
@@ -276,27 +237,16 @@ object ShadeDisplayAwareModule {
     @IntoMap
     @ClassKey(ShadeDialogContextInteractor::class)
     fun provideShadeDialogContextInteractorCoreStartable(
-        impl: Provider<ShadeDialogContextInteractorImpl>
-    ): CoreStartable {
-        return if (ShadeWindowGoesAround.isEnabled) {
-            impl.get()
-        } else {
-            CoreStartable.NOP
-        }
-    }
+        impl: ShadeDialogContextInteractorImpl
+    ): CoreStartable = impl
 
     @Provides
     @IntoMap
     @ClassKey(ShadePrimaryDisplayCommand::class)
     fun provideShadePrimaryDisplayCommand(
-        impl: Provider<ShadePrimaryDisplayCommand>
-    ): CoreStartable {
-        return if (ShadeWindowGoesAround.isEnabled) {
-            impl.get()
-        } else {
-            CoreStartable.NOP
-        }
-    }
+        impl: ShadePrimaryDisplayCommand
+    ): CoreStartable = impl
+
 
     /**
      * Provided for making classes easier to test. In tests, a custom method to wait for the next
@@ -326,14 +276,8 @@ object ShadeDisplayAwareModule {
     @IntoMap
     @ClassKey(ShadeDisplaysDialogInteractor::class)
     fun provideShadeDisplayDialogInteractor(
-        impl: Provider<ShadeDisplaysDialogInteractor>
-    ): CoreStartable {
-        return if (ShadeWindowGoesAround.isEnabled) {
-            impl.get()
-        } else {
-            CoreStartable.NOP
-        }
-    }
+        impl: ShadeDisplaysDialogInteractor
+    ): CoreStartable = impl
 
     @Provides
     @ShadeDisplayAware
@@ -362,14 +306,8 @@ object ShadeDisplayAwareWithShadeWindowModule {
     @IntoMap
     @ClassKey(ShadeDisplaysInteractorImpl::class)
     fun provideShadeDisplaysInteractorCoreStartable(
-        impl: Provider<ShadeDisplaysInteractorImpl>
-    ): CoreStartable {
-        return if (ShadeWindowGoesAround.isEnabled) {
-            impl.get()
-        } else {
-            CoreStartable.NOP
-        }
-    }
+        impl: ShadeDisplaysInteractorImpl
+    ): CoreStartable = impl
 
     @Provides
     @SysUISingleton

@@ -242,10 +242,6 @@ public class SurfaceAnimationRunnerTest {
         }
 
         @Override
-        public void postCommitCallback(Runnable runnable) {
-        }
-
-        @Override
         public long getFrameTime() {
             return 0;
         }

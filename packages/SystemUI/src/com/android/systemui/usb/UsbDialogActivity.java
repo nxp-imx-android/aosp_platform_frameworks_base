@@ -16,7 +16,7 @@
 
 package com.android.systemui.usb;
 
-import static com.android.internal.hidden_from_bootclasspath.android.hardware.usb.flags.Flags.enablePersistentUsbDevicePermissions;
+import static android.hardware.usb.flags.Flags.enablePersistentUsbDevicePermissions;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -75,7 +75,9 @@ abstract class UsbDialogActivity extends AlertActivity
     @Override
     public void onClick(DialogInterface dialog, int which) {
         if (which == AlertDialog.BUTTON_POSITIVE) {
-            onConfirm();
+            // The legacy UI lacks a button to grant persistent permission,
+            // so this value is always false.
+            onConfirm(/* isPersistent= */ false);
         } else {
             finish();
         }
@@ -143,8 +145,17 @@ abstract class UsbDialogActivity extends AlertActivity
             messageView.setVisibility(View.VISIBLE);
         }
 
+        if (mDialogHelper.isUsbDevice()) {
+            Log.d(TAG, "Display always allow button only for UsbDevice.");
+
+            view.findViewById(R.id.usb_device_dialog_always_allow_button)
+                    .setOnClickListener(v -> onConfirm(/* isPersistent= */ true));
+            view.findViewById(R.id.usb_device_dialog_always_allow_button)
+                    .setVisibility(View.VISIBLE);
+        }
+
         view.findViewById(R.id.usb_device_dialog_allow_only_this_time_button)
-                .setOnClickListener(v -> onConfirm());
+                .setOnClickListener(v -> onConfirm(/* isPersistent= */ false));
         view.findViewById(R.id.usb_device_dialog_cancel_button)
                 .setOnClickListener(v -> finish());
 
@@ -194,6 +205,8 @@ abstract class UsbDialogActivity extends AlertActivity
 
     /**
      * Called when the dialog is confirmed.
+     *
+     * @param isPersistent Whether the permission should be granted permanently.
      */
-    abstract void onConfirm();
+    abstract void onConfirm(boolean isPersistent);
 }

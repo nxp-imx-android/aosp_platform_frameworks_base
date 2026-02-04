@@ -34,6 +34,7 @@ import com.android.internal.graphics.ColorUtils;
 import com.android.launcher3.icons.BitmapInfo;
 import com.android.launcher3.icons.BubbleIconFactory;
 import com.android.launcher3.util.UserIconInfo;
+import com.android.users.UserType;
 import com.android.wm.shell.R;
 import com.android.wm.shell.bubbles.appinfo.BubbleAppInfo;
 import com.android.wm.shell.bubbles.appinfo.BubbleAppInfoProvider;
@@ -44,7 +45,6 @@ import com.android.wm.shell.bubbles.user.data.BubbleUserResolver;
 import com.android.wm.shell.bubbles.user.model.BubbleUserInfo;
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
-import com.android.wm.shell.shared.bubbles.UserType;
 import com.android.wm.shell.shared.bubbles.logging.BubbleLog;
 
 import dagger.assisted.Assisted;

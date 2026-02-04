@@ -163,7 +163,7 @@ class DismissView(context: Context) : FrameLayout(context) {
         alphaAnim.setDuration(DISMISS_SCRIM_FADE_MS)
         alphaAnim.start()
 
-        animator.cancel()
+        animator.cancel(DynamicAnimation.TRANSLATION_Y)
         animator.spring(DynamicAnimation.TRANSLATION_Y, 0f, spring).start()
         return true
     }
@@ -192,7 +192,7 @@ class DismissView(context: Context) : FrameLayout(context) {
 
     /** Cancels the animator for the dismiss target. */
     fun cancelAnimators() {
-        animator.cancel()
+        animator.cancel(DynamicAnimation.TRANSLATION_Y)
     }
 
     fun updateResources() {

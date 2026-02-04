@@ -9326,6 +9326,7 @@ package android.app.appfunctions {
     method @NonNull public android.app.appfunctions.AppFunctionName getName();
     method @NonNull public android.app.appfunctions.AppFunctionPackageMetadata getPackageMetadata();
     method @Nullable public android.app.appfunctions.AppFunctionSchemaMetadata getSchemaMetadata();
+    method public int getScope();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.app.appfunctions.AppFunctionMetadata> CREATOR;
     field public static final String PROPERTY_ENABLED_BY_DEFAULT = "enabledByDefault";
@@ -9333,6 +9334,11 @@ package android.app.appfunctions {
     field public static final String PROPERTY_SCHEMA_CATEGORY = "schemaCategory";
     field public static final String PROPERTY_SCHEMA_NAME = "schemaName";
     field public static final String PROPERTY_SCHEMA_VERSION = "schemaVersion";
+    field public static final String PROPERTY_SCOPE = "scope";
+    field public static final String PROPERTY_VALUE_SCOPE_ACTIVITY = "activity";
+    field public static final String PROPERTY_VALUE_SCOPE_GLOBAL = "global";
+    field public static final int SCOPE_ACTIVITY = 1; // 0x1
+    field public static final int SCOPE_GLOBAL = 0; // 0x0
   }
 
   @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") public final class AppFunctionName implements android.os.Parcelable {
@@ -9349,6 +9355,7 @@ package android.app.appfunctions {
   }
 
   @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") public interface AppFunctionObserver {
+    method public void onAppFunctionStatesChanged(@NonNull java.util.List<android.app.appfunctions.AppFunctionName>);
     method public void onAppFunctionsChanged(@NonNull java.util.List<android.app.appfunctions.AppFunctionName>);
     method public void onPackagesChanged(@NonNull java.util.List<java.lang.String>);
   }
@@ -9383,6 +9390,7 @@ package android.app.appfunctions {
     method @Nullable public java.util.List<java.lang.String> getPackageNames();
     method @Nullable public String getSchemaCategory();
     method @Nullable public String getSchemaName();
+    method @Nullable public java.util.List<java.lang.Integer> getScopes();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.app.appfunctions.AppFunctionSearchSpec> CREATOR;
   }
@@ -9395,6 +9403,7 @@ package android.app.appfunctions {
     method @NonNull public android.app.appfunctions.AppFunctionSearchSpec.Builder setPackageNames(@Nullable java.util.List<java.lang.String>);
     method @NonNull public android.app.appfunctions.AppFunctionSearchSpec.Builder setSchemaCategory(@Nullable String);
     method @NonNull public android.app.appfunctions.AppFunctionSearchSpec.Builder setSchemaName(@Nullable String);
+    method @NonNull public android.app.appfunctions.AppFunctionSearchSpec.Builder setScopes(@Nullable java.util.List<java.lang.Integer>);
   }
 
   @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public abstract class AppFunctionService extends android.app.Service {
@@ -9406,6 +9415,7 @@ package android.app.appfunctions {
 
   @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") public final class AppFunctionState implements android.os.Parcelable {
     method public int describeContents();
+    method @Nullable public android.util.ArraySet<android.app.appfunctions.AppFunctionActivityId> getActivityIds();
     method @NonNull public android.app.appfunctions.AppFunctionName getFunctionName();
     method public boolean isEnabled();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
@@ -44052,6 +44062,7 @@ package android.service.personalcontext {
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class PersonalContextManager {
     method public void publishTriggeringHint(@NonNull android.service.personalcontext.insight.interaction.ReturnHintReport, @NonNull java.util.List<android.service.personalcontext.hint.ContextHint>);
     method public void reportUserFeedback(@NonNull android.service.personalcontext.insight.ContextInsight, @Nullable android.os.Bundle);
+    method public void showAttribution(@NonNull android.service.personalcontext.insight.ContextInsight);
     field public static final String ACTION_PERSONAL_CONTEXT_ENABLED_CHANGED = "android.service.personalcontext.action.PERSONAL_CONTEXT_ENABLED_CHANGED";
     field public static final String PERSONAL_CONTEXT_SERVICE = "personal_context";
   }
@@ -44432,6 +44443,7 @@ package android.service.personalcontext.insight {
     method @NonNull public java.util.Set<android.service.personalcontext.hint.ContextHintWithSignature> getOriginHints();
     method @NonNull public java.util.Set<android.service.personalcontext.Token> getTokens();
     method @Nullable public android.service.personalcontext.insight.interaction.FeedbackRequest getUserFeedbackRequest();
+    method public boolean hasAttribution();
     method public void reportEvent(@NonNull android.content.Context, int, @NonNull android.service.personalcontext.RenderToken, @Nullable android.os.Bundle);
   }
 
@@ -44506,6 +44518,25 @@ package android.service.personalcontext.insight {
 }
 
 package android.service.personalcontext.insight.interaction {
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class AttributionDetails implements android.os.Parcelable {
+    ctor public AttributionDetails(@NonNull java.util.Collection<android.service.personalcontext.insight.interaction.AttributionDetails.AttributionLine>);
+    method public int describeContents();
+    method @NonNull public java.util.List<android.service.personalcontext.insight.interaction.AttributionDetails.AttributionLine> getLines();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.insight.interaction.AttributionDetails> CREATOR;
+  }
+
+  public static final class AttributionDetails.AttributionLine implements android.os.Parcelable {
+    ctor public AttributionDetails.AttributionLine(@Nullable CharSequence, @Nullable android.graphics.drawable.Icon, @Nullable CharSequence, @Nullable CharSequence);
+    method public int describeContents();
+    method @Nullable public CharSequence getContentDescription();
+    method @Nullable public android.graphics.drawable.Icon getIcon();
+    method @Nullable public CharSequence getSubtitle();
+    method @Nullable public CharSequence getTitle();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.insight.interaction.AttributionDetails.AttributionLine> CREATOR;
+  }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class FeedbackRequest implements android.os.Parcelable {
     ctor public FeedbackRequest(@NonNull java.util.Collection<android.service.personalcontext.insight.interaction.FeedbackRequest.FeedbackField>);
@@ -44949,6 +44980,7 @@ package android.service.voice {
     method public void closeSystemDialogs();
     method public void dump(String, java.io.FileDescriptor, java.io.PrintWriter, String[]);
     method public void finish();
+    method @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") @NonNull public android.app.appfunctions.AppFunctionActivityId getAppFunctionActivityId(@NonNull android.service.voice.VoiceInteractionSession.ActivityId);
     method public android.content.Context getContext();
     method public int getDisabledShowContext();
     method public android.view.LayoutInflater getLayoutInflater();
@@ -48147,8 +48179,8 @@ package android.telephony {
     method public long getDataUsageTime();
     method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") public int getId();
     method @NonNull public int[] getNetworkTypes();
-    method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_allow_status_and_end_date") @Nullable public java.time.ZonedDateTime getPlanEndDate();
-    method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_allow_status_and_end_date") public int getSubscriptionStatus();
+    method @Nullable public java.time.ZonedDateTime getPlanEndDate();
+    method public int getSubscriptionStatus();
     method @Nullable public CharSequence getSummary();
     method @Nullable public CharSequence getTitle();
     method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") @NonNull public java.util.Set<java.lang.Integer> getTypes();
@@ -48171,11 +48203,11 @@ package android.telephony {
     field @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") public static final int PLAN_TYPE_ROAMING = 9; // 0x9
     field @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") public static final int PLAN_TYPE_SATELLITE = 2; // 0x2
     field @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") public static final int PLAN_TYPE_TETHERING = 10; // 0xa
-    field @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_allow_status_and_end_date") public static final int SUBSCRIPTION_STATUS_ACTIVE = 1; // 0x1
-    field @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_allow_status_and_end_date") public static final int SUBSCRIPTION_STATUS_INACTIVE = 2; // 0x2
-    field @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_allow_status_and_end_date") public static final int SUBSCRIPTION_STATUS_SUSPENDED = 4; // 0x4
-    field @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_allow_status_and_end_date") public static final int SUBSCRIPTION_STATUS_TRIAL = 3; // 0x3
-    field @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_allow_status_and_end_date") public static final int SUBSCRIPTION_STATUS_UNKNOWN = 0; // 0x0
+    field public static final int SUBSCRIPTION_STATUS_ACTIVE = 1; // 0x1
+    field public static final int SUBSCRIPTION_STATUS_INACTIVE = 2; // 0x2
+    field public static final int SUBSCRIPTION_STATUS_SUSPENDED = 4; // 0x4
+    field public static final int SUBSCRIPTION_STATUS_TRIAL = 3; // 0x3
+    field public static final int SUBSCRIPTION_STATUS_UNKNOWN = 0; // 0x0
     field public static final long TIME_UNKNOWN = -1L; // 0xffffffffffffffffL
     field @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") public static final int UNSPECIFIED_ID = -1; // 0xffffffff
   }
@@ -48193,7 +48225,7 @@ package android.telephony {
     method @NonNull public android.telephony.SubscriptionPlan.Builder setNetworkTypes(@NonNull int[]);
     method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") @NonNull public android.telephony.SubscriptionPlan.Builder setStreamingAppMaxDownlinkKbps(long);
     method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") @NonNull public android.telephony.SubscriptionPlan.Builder setStreamingAppMaxUplinkKbps(long);
-    method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_allow_status_and_end_date") @NonNull public android.telephony.SubscriptionPlan.Builder setSubscriptionStatus(int);
+    method @NonNull public android.telephony.SubscriptionPlan.Builder setSubscriptionStatus(int);
     method public android.telephony.SubscriptionPlan.Builder setSummary(@Nullable CharSequence);
     method public android.telephony.SubscriptionPlan.Builder setTitle(@Nullable CharSequence);
     method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") @NonNull public android.telephony.SubscriptionPlan.Builder setTypes(@NonNull int[]);
@@ -54541,10 +54573,10 @@ package android.view {
     ctor public RoundedRectBlurRegion(@NonNull android.graphics.RectF, @NonNull float[], @FloatRange(from=0.0, to=1.0) float, float);
     method @NonNull public android.view.RoundedRectBlurRegion copy();
     method @NonNull public android.graphics.RectF getBounds();
-    method @NonNull public float[] getCornerRadius();
+    method @NonNull public float[] getCornerRadii();
     method public void setBounds(@NonNull android.graphics.RectF);
-    method public void setCornerRadius(@NonNull float[]);
-    method public void setCornerRadius(float);
+    method public void setCornerRadii(@NonNull float[]);
+    method public void setCornerRadii(float);
   }
 
   public class ScaleGestureDetector {

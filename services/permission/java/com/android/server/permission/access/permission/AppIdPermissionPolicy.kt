@@ -923,7 +923,7 @@ class AppIdPermissionPolicy : SchemePolicy() {
         return PermissionFlags.isAppOpGranted(flags)
     }
 
-    fun MutateStateScope.revokeRuntimePermission(
+    private fun MutateStateScope.revokeRuntimePermission(
         appId: Int,
         userId: Int,
         permissionName: String,
@@ -2075,7 +2075,9 @@ class AppIdPermissionPolicy : SchemePolicy() {
                 PermissionFlags.APP_OP_REVOKED or
                 PermissionFlags.ONE_TIME or
                 PermissionFlags.HIBERNATION or
-                PermissionFlags.USER_SELECTED
+                PermissionFlags.USER_SELECTED or
+                PermissionFlags.TRUSTED_UI_SHOWN or
+                PermissionFlags.TRUSTED_UI_CONSENTED
 
         /**
          * Mask for all permission flags that imply we shouldn't automatically modify the permission

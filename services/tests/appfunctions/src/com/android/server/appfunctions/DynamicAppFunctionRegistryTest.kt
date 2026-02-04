@@ -27,6 +27,7 @@ import android.os.ICancellationSignal
 import android.os.RemoteException
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
+import com.android.server.appfunctions.MultiUserDynamicAppFunctionRegistry.ActivitySourceId
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -54,6 +55,13 @@ class DynamicAppFunctionRegistryTest {
     private lateinit var mMockOnBinderDeathCleanupCallback:
         DynamicAppFunctionRegistry.OnBinderDeathCleanupCallback
 
+    private val globalScope: List<ActivitySourceId> = listOf(ActivitySourceId(null))
+
+    private val batchedGlobalScope: List<ActivitySourceId> =
+        listOf(ActivitySourceId(null), ActivitySourceId(null))
+
+    private val mockActivityToken: IBinder = mock()
+
     @Before
     fun setUp() {
         mMockOnBinderDeathCleanupCallback =
@@ -62,28 +70,78 @@ class DynamicAppFunctionRegistryTest {
     }
 
     @Test
+    fun createRegistrationId_equalsPackageAndFunction() {
+        val id1 = DynamicAppFunctionRegistry.AppFunctionRegistrationId(TEST_PACKAGE, TEST_FUNCTION,
+            ActivitySourceId(null))
+        val id2 = DynamicAppFunctionRegistry.AppFunctionRegistrationId(TEST_PACKAGE, TEST_FUNCTION,
+            ActivitySourceId(null))
+
+        assertThat(id1).isEqualTo(id2)
+        assertThat(id1.hashCode()).isEqualTo(id2.hashCode())
+    }
+
+    @Test
+    fun createRegistrationId_notEqualConstructorArguments_notEqualAndNotEqualHashCode() {
+        val globalScopeId = ActivitySourceId(null)
+        val activityScopeId = ActivitySourceId(mock())
+        val id1 = DynamicAppFunctionRegistry.AppFunctionRegistrationId(TEST_PACKAGE, TEST_FUNCTION, globalScopeId)
+        val id2 = DynamicAppFunctionRegistry.AppFunctionRegistrationId(TEST_PACKAGE, TEST_FUNCTION2, globalScopeId)
+        val id3 = DynamicAppFunctionRegistry.AppFunctionRegistrationId(TEST_PACKAGE2, TEST_FUNCTION, globalScopeId)
+        val id4 = DynamicAppFunctionRegistry.AppFunctionRegistrationId(TEST_PACKAGE, TEST_FUNCTION,
+            activityScopeId)
+
+        assertThat(id1).isNotEqualTo(id2)
+        assertThat(id1.hashCode()).isNotEqualTo(id2.hashCode())
+
+        assertThat(id1).isNotEqualTo(id3)
+        assertThat(id1.hashCode()).isNotEqualTo(id3.hashCode())
+
+        assertThat(id1).isNotEqualTo(id4)
+        assertThat(id1.hashCode()).isNotEqualTo(id4.hashCode())
+    }
+
+    @Test
     fun register_success() {
-        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), createExecutorMock())
+        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), createExecutorMock(), globalScope)
 
         assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION)).isTrue()
     }
 
     @Test
     fun register_alreadyRegistered_throwsException() {
-        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), createExecutorMock())
+        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), createExecutorMock(), globalScope)
 
         assertThrows(IllegalStateException::class.java) {
-            registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), createExecutorMock())
+            registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), createExecutorMock(), globalScope)
         }
+    }
+
+    @Test
+    fun register_batchRegistrationIsAtomic_failsIfOneIsAlreadyRegistered() {
+        // Pre-register one function
+        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), createExecutorMock(), globalScope)
+
+        // Attempt to register the same function again in a batch with a new one
+        assertThrows(IllegalStateException::class.java) {
+            registry.registerAppFunctions(
+                TEST_PACKAGE,
+                listOf(TEST_FUNCTION, TEST_FUNCTION2),
+                createExecutorMock(),
+                batchedGlobalScope
+            )
+        }
+
+        // Verify that the new function was NOT registered, proving the operation was atomic
+        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION2)).isFalse()
     }
 
     @Test
     fun register_afterUnregistration_succeeds() {
         val executor = createExecutorMock()
-        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor)
-        registry.unregisterAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor)
+        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor, globalScope)
+        registry.unregisterAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor, globalScope)
 
-        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor)
+        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor, globalScope)
         assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION)).isTrue()
     }
 
@@ -92,8 +150,8 @@ class DynamicAppFunctionRegistryTest {
         val executor1 = createExecutorMock()
         val executor2 = createExecutorMock()
 
-        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor1)
-        registry.registerAppFunctions(TEST_PACKAGE2, listOf(TEST_FUNCTION), executor2)
+        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor1, globalScope)
+        registry.registerAppFunctions(TEST_PACKAGE2, listOf(TEST_FUNCTION), executor2, globalScope)
 
         assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION)).isTrue()
         assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE2, TEST_FUNCTION)).isTrue()
@@ -103,24 +161,102 @@ class DynamicAppFunctionRegistryTest {
     fun register_deathListenerAttached() {
         val binder = mock<IBinder>()
         val executor = createExecutorMock(binder)
-        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor)
+        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor, globalScope)
         verify(binder).linkToDeath(any(), anyInt())
     }
 
     @Test
-    fun unregister_success() {
-        val executor = createExecutorMock()
-        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor)
+    fun register_sameFunctionWithDifferentToken_success() {
+        val activityExecutor = createExecutorMock()
+        val mockActivitySourceId = listOf(ActivitySourceId(mock()))
+
+        val mockActivityToken: IBinder = mock()
+        registry.registerAppFunctions(
+            TEST_PACKAGE,
+            listOf(TEST_FUNCTION),
+            activityExecutor,
+            mockActivitySourceId
+        )
+
+        val mockActivitySourceId2 = listOf(ActivitySourceId(mock()))
+        registry.registerAppFunctions(
+            TEST_PACKAGE,
+            listOf(TEST_FUNCTION),
+            activityExecutor,
+            mockActivitySourceId2)
+    }
+
+    @Test
+    fun register_alreadyRegisteredWithTheSameActivityToken_throwsException() {
+        val activityExecutor = createExecutorMock()
+        val mockActivitySourceId = listOf(ActivitySourceId(mock()))
+
+        val mockActivityToken: IBinder = mock()
+        registry.registerAppFunctions(
+            TEST_PACKAGE,
+            listOf(TEST_FUNCTION),
+            activityExecutor,
+            mockActivitySourceId
+        )
+        assertThrows(IllegalStateException::class.java) {
+            registry.registerAppFunctions(
+                TEST_PACKAGE,
+                listOf(TEST_FUNCTION),
+                activityExecutor,
+                mockActivitySourceId)
+        }
+    }
+
+    @Test
+    fun register_withActivityToken_countsRegistration() {
+        val activityExecutor = createExecutorMock()
+        val activitySourceId = listOf(ActivitySourceId(mock()))
+        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), activityExecutor, globalScope)
+        registry.registerAppFunctions(
+            TEST_PACKAGE,
+            listOf(TEST_FUNCTION),
+            activityExecutor,
+            activitySourceId
+        )
+
+        // Unregister the activity-scoped function
+        registry.unregisterAppFunctions(
+            TEST_PACKAGE,
+            listOf(TEST_FUNCTION),
+            activityExecutor,
+            activitySourceId
+        )
+
+        // Verify the global function is still registered
         assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION)).isTrue()
+    }
 
-        registry.unregisterAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor)
+    @Test
+    fun unregister_wrongActivityToken_noOp() {
+        val activityExecutor = createExecutorMock()
 
-        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION)).isFalse()
+        val mockActivitySourceId = listOf(ActivitySourceId(mock()))
+        val mockActivityToken: IBinder = mock()
+        registry.registerAppFunctions(
+            TEST_PACKAGE,
+            listOf(TEST_FUNCTION),
+            activityExecutor,
+            mockActivitySourceId
+        )
+
+        val mockActivitySourceId2 = listOf(ActivitySourceId(mock()))
+        registry.unregisterAppFunctions(
+            TEST_PACKAGE,
+            listOf(TEST_FUNCTION),
+            activityExecutor,
+            mockActivitySourceId2)
+
+        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION)).isTrue()
     }
 
     @Test
     fun unregister_notRegistered_noOp() {
-        registry.unregisterAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), createExecutorMock())
+        registry.unregisterAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), createExecutorMock(), globalScope)
 
         assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION)).isFalse()
     }
@@ -129,10 +265,10 @@ class DynamicAppFunctionRegistryTest {
     fun unregister_wrongExecutor_noOp() {
         val executorA = createExecutorMock()
         val executorB = createExecutorMock()
-        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executorA)
+        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executorA, globalScope)
         assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION)).isTrue()
 
-        registry.unregisterAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executorB)
+        registry.unregisterAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executorB, globalScope)
 
         assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION)).isTrue()
     }
@@ -140,11 +276,11 @@ class DynamicAppFunctionRegistryTest {
     @Test
     fun unregister_doesNotAffectAnotherWithSameExecutor() {
         val executor = createExecutorMock()
-        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION, TEST_FUNCTION2), executor)
+        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION, TEST_FUNCTION2), executor, batchedGlobalScope)
         assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION)).isTrue()
         assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION2)).isTrue()
 
-        registry.unregisterAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor)
+        registry.unregisterAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor, globalScope)
 
         assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION)).isFalse()
         assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION2)).isTrue()
@@ -153,9 +289,9 @@ class DynamicAppFunctionRegistryTest {
     @Test
     fun unregister_nonExistentFunction_isHarmless() {
         val executor = createExecutorMock()
-        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor)
+        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor, globalScope)
 
-        registry.unregisterAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION2), executor)
+        registry.unregisterAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION2), executor, globalScope)
 
         assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION)).isTrue()
     }
@@ -175,13 +311,14 @@ class DynamicAppFunctionRegistryTest {
                 for (j in 0 until numOperations) {
                     val functionName = "function_" + i + "_" + j
                     try {
-                        registry.registerAppFunctions(TEST_PACKAGE, listOf(functionName), executor)
+                        registry.registerAppFunctions(TEST_PACKAGE, listOf(functionName), executor, globalScope)
                         assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, functionName))
                             .isTrue()
                         registry.unregisterAppFunctions(
                             TEST_PACKAGE,
                             listOf(functionName),
                             executor,
+                            globalScope
                         )
                         assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, functionName))
                             .isFalse()
@@ -203,7 +340,7 @@ class DynamicAppFunctionRegistryTest {
     fun onCallbackDied_unregistersRegistration() {
         val binder = mock<IBinder>()
         val executor = createExecutorMock(binder)
-        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor)
+        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor, globalScope)
 
         val deathRecipientCaptor = argumentCaptor<IBinder.DeathRecipient>()
         verify(binder).linkToDeath(deathRecipientCaptor.capture(), anyInt())
@@ -220,7 +357,9 @@ class DynamicAppFunctionRegistryTest {
     fun onCallbackDied_unregistersAllRelatedRegistrations() {
         val binder = mock<IBinder>()
         val executor = createExecutorMock(binder)
-        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION, TEST_FUNCTION2), executor)
+        registry.registerAppFunctions(
+            TEST_PACKAGE,
+            listOf(TEST_FUNCTION, TEST_FUNCTION2), executor, batchedGlobalScope)
 
         val deathRecipientCaptor = argumentCaptor<IBinder.DeathRecipient>()
         verify(binder).linkToDeath(deathRecipientCaptor.capture(), anyInt())
@@ -244,8 +383,8 @@ class DynamicAppFunctionRegistryTest {
     fun onCallbackDied_forUnregisteredExecutor_noOp() {
         val binder = mock<IBinder>()
         val executor = createExecutorMock(binder)
-        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor)
-        registry.unregisterAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor)
+        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor, globalScope)
+        registry.unregisterAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor, globalScope)
 
         val deathRecipientCaptor = argumentCaptor<IBinder.DeathRecipient>()
         verify(binder).linkToDeath(deathRecipientCaptor.capture(), anyInt())
@@ -259,7 +398,7 @@ class DynamicAppFunctionRegistryTest {
     fun concurrency_onCallbackDiedAndUnregister_isSafe() {
         val binder = mock<IBinder>()
         val executor = createExecutorMock(binder)
-        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION, TEST_FUNCTION2), executor)
+        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION, TEST_FUNCTION2), executor, batchedGlobalScope)
 
         val deathRecipientCaptor = argumentCaptor<IBinder.DeathRecipient>()
         verify(binder).linkToDeath(deathRecipientCaptor.capture(), anyInt())
@@ -278,7 +417,7 @@ class DynamicAppFunctionRegistryTest {
 
         executorService.submit {
             try {
-                registry.unregisterAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor)
+                registry.unregisterAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor, globalScope)
             } finally {
                 latch.countDown()
             }
@@ -294,7 +433,6 @@ class DynamicAppFunctionRegistryTest {
             .run(
                 eq(
                     setOf(
-                        AppFunctionName(TEST_PACKAGE, TEST_FUNCTION),
                         AppFunctionName(TEST_PACKAGE, TEST_FUNCTION2),
                     )
                 )
@@ -310,7 +448,7 @@ class DynamicAppFunctionRegistryTest {
     @Test
     fun executeAppFunction_success_invokesExecutor() {
         val executor = createExecutorMock()
-        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor)
+        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor, globalScope)
 
         val request = createMockExecutionRequest(TEST_PACKAGE, TEST_FUNCTION)
         val safeCallback = mock<SafeOneTimeExecuteAppFunctionCallback>()
@@ -326,7 +464,7 @@ class DynamicAppFunctionRegistryTest {
 
     @Test
     fun executeAppFunction_functionNotFound_callsOnError() {
-        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), createExecutorMock())
+        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), createExecutorMock(), globalScope)
         val request = createMockExecutionRequest(TEST_PACKAGE, TEST_FUNCTION2)
         val safeCallback = mock<SafeOneTimeExecuteAppFunctionCallback>()
         val cancellationSignal = mock<ICancellationSignal>()
@@ -343,7 +481,7 @@ class DynamicAppFunctionRegistryTest {
     fun executeAppFunction_executorThrowsRemoteException_callsOnError() {
         val executor = createExecutorMock()
         whenever(executor.execute(any(), any(), any())).doThrow(RemoteException("Test"))
-        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor)
+        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor, globalScope)
 
         val request = createMockExecutionRequest(TEST_PACKAGE, TEST_FUNCTION)
         val safeCallback = mock<SafeOneTimeExecuteAppFunctionCallback>()
@@ -363,7 +501,7 @@ class DynamicAppFunctionRegistryTest {
     fun executeAppFunction_attachesDeathListener() {
         val binder = mock<IBinder>()
         val executor = createExecutorMock(binder)
-        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor)
+        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor, globalScope)
 
         val request = createMockExecutionRequest(TEST_PACKAGE, TEST_FUNCTION)
         val safeCallback = mock<SafeOneTimeExecuteAppFunctionCallback>()
@@ -380,7 +518,7 @@ class DynamicAppFunctionRegistryTest {
     fun executeAppFunction_binderAlreadyDied_reportsError() {
         val binder = mock<IBinder>()
         val executor = createExecutorMock(binder)
-        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor)
+        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor, globalScope)
 
         val request = createMockExecutionRequest(TEST_PACKAGE, TEST_FUNCTION)
         val safeCallback = mock<SafeOneTimeExecuteAppFunctionCallback>()
@@ -399,7 +537,7 @@ class DynamicAppFunctionRegistryTest {
     fun executeAppFunction_onSuccess_unlinksExecutionDeathListener() {
         val binder = mock<IBinder>()
         val executor = createExecutorMock(binder)
-        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor)
+        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor, globalScope)
 
         val request = createMockExecutionRequest(TEST_PACKAGE, TEST_FUNCTION)
         val safeCallback =
@@ -427,7 +565,7 @@ class DynamicAppFunctionRegistryTest {
     fun executeAppFunction_onError_unlinksExecutionDeathListener() {
         val binder = mock<IBinder>()
         val executor = createExecutorMock(binder)
-        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor)
+        registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor, globalScope)
 
         val request = createMockExecutionRequest(TEST_PACKAGE, TEST_FUNCTION)
         val safeCallback =

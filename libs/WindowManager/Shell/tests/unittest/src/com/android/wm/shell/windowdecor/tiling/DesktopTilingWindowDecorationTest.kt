@@ -15,7 +15,6 @@
  */
 package com.android.wm.shell.windowdecor.tiling
 
-import android.app.ActivityManager
 import android.app.ActivityManager.RunningTaskInfo
 import android.content.Context
 import android.content.res.Configuration
@@ -1112,7 +1111,47 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
         verify(desktopRepository, never()).removeLeftTiledTaskFromDesk(displayId, deskId)
     }
 
-    private fun initTiledTaskHelperMock(taskInfo: ActivityManager.RunningTaskInfo) {
+    @Test
+    fun onTaskLaunchStarted_suppressesFocusChangeReorder() {
+        val task1 = createVisibleTask()
+        setupTiledSession(task1)
+        whenever(focusTransitionObserver.isFocusedOnDisplay(task1)).thenReturn(true)
+
+        tilingDecoration.onTaskLaunchStarted()
+        // Update focus (happens during recents exit/ task launch)
+        tilingDecoration.onFocusedTaskChanged(
+            task1,
+            isFocusedOnDisplay = true,
+            isFocusedGlobally = true,
+        )
+
+        // Check transition was NOT triggered because the flag was set
+        verify(transitions, never()).startTransition(eq(TRANSIT_TO_FRONT), any(), any())
+    }
+
+    @Test
+    fun onTaskLaunchStarted_setsLaunchFlagToTrue() {
+        assertThat(tilingDecoration.isLaunchInProgress).isFalse()
+
+        tilingDecoration.onTaskLaunchStarted()
+
+        assertThat(tilingDecoration.isLaunchInProgress).isTrue()
+    }
+
+    @Test
+    fun onTransitionReady_resetsLaunchFlag() {
+        tilingDecoration.isLaunchInProgress = true
+
+        tilingDecoration.onTransitionReady(mock(), mock(), mock(), mock())
+        val runnableCaptor = ArgumentCaptor.forClass(Runnable::class.java)
+        verify(mainExecutor).execute(runnableCaptor.capture())
+        // Update isLaunchInProgress to false
+        runnableCaptor.value.run()
+
+        assertThat(tilingDecoration.isLaunchInProgress).isFalse()
+    }
+
+    private fun initTiledTaskHelperMock(taskInfo: RunningTaskInfo) {
         whenever(tiledTaskHelper.bounds).thenReturn(BOUNDS)
         whenever(tiledTaskHelper.taskInfo).thenReturn(taskInfo)
         whenever(tiledTaskHelper.newBounds).thenReturn(Rect(BOUNDS))
@@ -1186,6 +1225,16 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
                 }
             )
         }
+
+    private fun setupTiledSession(task: RunningTaskInfo) {
+        whenever(tiledTaskHelper.taskInfo).thenReturn(task)
+        whenever(tiledTaskHelper.windowDecoration).thenReturn(windowDecoration)
+        whenever(windowDecoration.taskSurface).thenReturn(mock())
+
+        tilingDecoration.leftTaskResizingHelper = tiledTaskHelper
+        tilingDecoration.rightTaskResizingHelper = tiledTaskHelper
+        tilingDecoration.isTilingManagerInitialised = true
+    }
 
     private fun createTransitRecentsEnds() =
         TransitionInfo(TRANSIT_END_RECENTS_TRANSITION, /* flags= */ 0)

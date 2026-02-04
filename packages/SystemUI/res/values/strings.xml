@@ -126,6 +126,9 @@
     <!-- Title for USB accessory dialog.  Used when the name of the accessory cannot be determined.  [CHAR LIMIT=50] -->
     <string name="title_usb_accessory">USB accessory</string>
 
+    <!-- Prompt for the USB dialog's always allow button [CHAR LIMIT=20] -->
+    <string name="usb_device_dialog_always_allow_button">Always allow</string>
+
     <!-- Prompt for the USB dialog's allow only this time button [CHAR LIMIT=20] -->
     <string name="usb_device_dialog_allow_only_this_time_button">Only this time</string>
 
@@ -957,6 +960,9 @@
 
     <!-- Accessibility text describing the input method indicator chip in the status bar. [CHAR LIMIT=NONE] -->
     <string name="accessibility_status_bar_input_method_indicator">Keyboard</string>
+
+    <!-- Title of the large-screen version of the pop-up dialog in which the user switches keyboard or input method. [CHAR LIMIT=NONE] -->
+    <string name="input_method_switcher_title_large_screen">Keyboard</string>
 
     <!-- The overflow indicator shown when a group has more notification inside the group than the visible ones. An example is "+ 3" [CHAR LIMIT=5] -->
     <string name="notification_group_overflow_indicator">+ <xliff:g id="number" example="3">%s</xliff:g></string>
@@ -4874,4 +4880,21 @@
     <string name="accessibility_hearing_device_right_battery_level">R battery %1$s</string>
     <!-- Notification channel name for hearing device status [CHAR LIMIT=NONE] -->
     <string name="accessibility_hearing_device_notification_channel_name">Hearing Device Status</string>
+
+    <!-- Label for the 'Edit' action in the more options menu. Tapping this takes you to the edit accessibility shortcuts page. [CHAR LIMIT=NONE] -->
+    <string name="more_options_edit">Edit</string>
+    <!-- Label for the 'Move' action in the more options menu. This action allows the user to change the position of the floating menu. [CHAR LIMIT=NONE] -->
+    <string name="more_options_move">Move</string>
+    <!-- Label for the action to remove all items from the floating menu, found in the more options menu. [CHAR LIMIT=NONE] -->
+    <string name="more_options_remove_all">Remove all</string>
+    <!-- Label for the 'More options' button in the floating menu, which opens a pop up window with more actions. [CHAR LIMIT=NONE] -->
+    <string name="floating_menu_more_options_label">More options</string>
+
+    <!-- Dream contextual setup -->
+    <!-- Title for the dream contextual setup bottom sheet. [CHAR LIMIT=NONE] -->
+    <string name="dream_setup_title">Set up screen saver</string>
+    <!-- Label for the "Not now" button in the dream contextual setup bottom sheet. [CHAR LIMIT=20] -->
+    <string name="dream_setup_button_not_now">Not now</string>
+    <!-- Label for the "Set up" button in the dream contextual setup bottom sheet. [CHAR LIMIT=20] -->
+    <string name="dream_setup_button_setup">Set up</string>
 </resources>

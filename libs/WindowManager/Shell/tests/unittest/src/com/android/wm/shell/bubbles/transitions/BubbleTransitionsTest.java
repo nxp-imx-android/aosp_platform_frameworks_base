@@ -75,6 +75,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.launcher3.icons.BubbleIconFactory;
 import com.android.testing.wm.util.MockToken;
+import com.android.users.UserType;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.TestSyncExecutor;
@@ -104,7 +105,6 @@ import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
-import com.android.wm.shell.shared.bubbles.UserType;
 import com.android.wm.shell.taskview.TaskView;
 import com.android.wm.shell.taskview.TaskViewRepository;
 import com.android.wm.shell.taskview.TaskViewTaskController;
@@ -553,8 +553,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
         assertThat(chg.getForceExcludedFromRecents()).isFalse();
     }
 
-    @Test
-    public void convertFloatingBubbleToFullscreen() {
+    private void convertFloatingBubbleToFullscreen(int changeType) {
         final BubbleExpandedView bev = mock(BubbleExpandedView.class);
         final ViewRootImpl vri = mock(ViewRootImpl.class);
         when(bev.getViewRootImpl()).thenReturn(vri);
@@ -573,7 +572,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
         final TransitionInfo info = new TransitionInfo(TRANSIT_CHANGE, 0);
         final TransitionInfo.Change chg = new TransitionInfo.Change(taskInfo.token,
                 mock(SurfaceControl.class));
-        chg.setMode(TRANSIT_CHANGE);
+        chg.setMode(changeType);
         chg.setTaskInfo(taskInfo);
         info.addChange(chg);
         info.addRoot(new TransitionInfo.Root(0, mock(SurfaceControl.class), 0, 0));
@@ -587,6 +586,16 @@ public class BubbleTransitionsTest extends ShellTestCase {
         // in order to properly synchronize surface manipulation with drawing and thus can't be
         // directly tested.
         assertThat(mTaskViewTransitions.hasPending()).isFalse();
+    }
+
+    @Test
+    public void convertFloatingBubbleToFullscreen_change() {
+        convertFloatingBubbleToFullscreen(TRANSIT_CHANGE);
+    }
+
+    @Test
+    public void convertFloatingBubbleToFullscreen_toFront() {
+        convertFloatingBubbleToFullscreen(TRANSIT_TO_FRONT);
     }
 
     @Test

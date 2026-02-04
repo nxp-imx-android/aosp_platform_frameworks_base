@@ -81,7 +81,7 @@ public class ConversationLayout extends FrameLayout
     public static final Interpolator FAST_OUT_SLOW_IN = new PathInterpolator(0.4f, 0f, 0.2f, 1f);
     public static final Interpolator OVERSHOOT = new PathInterpolator(0.4f, 0f, 0.2f, 1.4f);
     private static final String TAG = "ConversationLayout";
-    private static final int MAX_SUMMARIZATION_LINES = 3;
+    private static final int MAX_SUMMARIZATION_LINES = 5;
     public static final int IMPORTANCE_ANIM_GROW_DURATION = 250;
     public static final int IMPORTANCE_ANIM_SHRINK_DURATION = 200;
     public static final int IMPORTANCE_ANIM_SHRINK_DELAY = 25;

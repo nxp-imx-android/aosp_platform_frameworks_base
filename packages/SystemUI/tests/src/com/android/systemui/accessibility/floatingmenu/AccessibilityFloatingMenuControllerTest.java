@@ -52,6 +52,8 @@ import com.android.systemui.Flags;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.accessibility.AccessibilityButtonModeObserver;
 import com.android.systemui.accessibility.AccessibilityButtonTargetsObserver;
+import com.android.systemui.inputdevice.data.repository.FakePointerDeviceRepository;
+import com.android.systemui.keyboard.data.repository.FakeKeyboardRepository;
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor;
 import com.android.systemui.keyguard.shared.model.KeyguardState;
 import com.android.systemui.navigationbar.NavigationModeController;
@@ -123,9 +125,16 @@ public class AccessibilityFloatingMenuControllerTest extends SysuiTestCase {
     private ArgumentCaptor<UserTracker.Callback> mUserTrackerCallbackCaptor;
     private UserTracker.Callback mUserTrackerCallback;
 
+    private FakeKeyboardRepository mKeyboardRepository;
+    private FakePointerDeviceRepository mPointerDeviceRepository;
+
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+
+        mKeyboardRepository = new FakeKeyboardRepository();
+        mPointerDeviceRepository = new FakePointerDeviceRepository();
+
         mContextWrapper = new ContextWrapper(mContext) {
             @Override
             public Context createContextAsUser(UserHandle user, int flags) {
@@ -211,7 +220,7 @@ public class AccessibilityFloatingMenuControllerTest extends SysuiTestCase {
         mController = setUpController();
         mController.mFloatingMenu = new MenuViewLayerController(mContextWrapper, mWindowManager,
                 mAccessibilityManager, mSecureSettings, mNavigationModeController,
-                mHearingAidDeviceManager);
+                mHearingAidDeviceManager, mKeyboardRepository, mPointerDeviceRepository);
         captureKeyguardUpdateMonitorCallback();
         mKeyguardCallback.onUserUnlocked();
 
@@ -241,7 +250,7 @@ public class AccessibilityFloatingMenuControllerTest extends SysuiTestCase {
         mController = setUpController();
         mController.mFloatingMenu = new MenuViewLayerController(mContextWrapper, mWindowManager,
                 mAccessibilityManager, mSecureSettings, mNavigationModeController,
-                mHearingAidDeviceManager);
+                mHearingAidDeviceManager, mKeyboardRepository, mPointerDeviceRepository);
         captureKeyguardUpdateMonitorCallback();
 
         mKeyguardCallback.onUserSwitching(fakeUserId);
@@ -257,7 +266,7 @@ public class AccessibilityFloatingMenuControllerTest extends SysuiTestCase {
         mController = setUpController();
         mController.mFloatingMenu = new MenuViewLayerController(mContextWrapper, mWindowManager,
                 mAccessibilityManager, mSecureSettings, mNavigationModeController,
-                mHearingAidDeviceManager);
+                mHearingAidDeviceManager, mKeyboardRepository, mPointerDeviceRepository);
         captureKeyguardUpdateMonitorCallback();
         mKeyguardCallback.onUserUnlocked();
         mKeyguardCallback.onKeyguardVisibilityChanged(true);
@@ -548,7 +557,8 @@ public class AccessibilityFloatingMenuControllerTest extends SysuiTestCase {
                         displayTracker, mNavigationModeController,
                         new Handler(mTestableLooper.getLooper()),
                         /*coroutineScope= */ null ,
-                        mKeyguardInteractor, mSceneInteractor, mUserTracker);
+                        mKeyguardInteractor, mSceneInteractor, mUserTracker,
+                        mKeyboardRepository, mPointerDeviceRepository);
         controller.init();
 
         return controller;

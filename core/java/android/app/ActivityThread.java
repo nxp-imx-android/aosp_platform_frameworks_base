@@ -50,6 +50,7 @@ import android.app.RemoteServiceException.BadForegroundServiceNotificationExcept
 import android.app.RemoteServiceException.BadUserInitiatedJobNotificationException;
 import android.app.RemoteServiceException.CannotPostForegroundServiceNotificationException;
 import android.app.RemoteServiceException.CrashedByAdbException;
+import android.app.RemoteServiceException.ExcessiveEnqueuedBroadcastsException;
 import android.app.RemoteServiceException.ForegroundServiceDidNotStartInTimeException;
 import android.app.RemoteServiceException.ForegroundServiceDidNotStopInTimeException;
 import android.app.RemoteServiceException.MissingRequestPasswordComplexityPermissionException;
@@ -2557,9 +2558,12 @@ public final class ActivityThread extends ClientTransactionHandler
             case CrashedByAdbException.TYPE_ID:
                 throw new CrashedByAdbException(message);
 
+            case ExcessiveEnqueuedBroadcastsException.TYPE_ID:
+                throw new ExcessiveEnqueuedBroadcastsException(message);
+
             default:
                 throw new RemoteServiceException(message
-                        + " (with unwknown typeId:" + typeId + ")");
+                        + " (with unknown typeId:" + typeId + ")");
         }
     }
 

@@ -369,7 +369,7 @@ public final class TransitionRequestInfo implements Parcelable {
         };
 
         @DataClass.Generated(
-                time = 1761782785544L,
+                time = 1769081030214L,
                 codegenVersion = "1.0.23",
                 sourceFile = "frameworks/base/core/java/android/window/TransitionRequestInfo.java",
                 inputSignatures = "private final  int mDisplayId\nprivate @android.annotation.Nullable android.graphics.Rect mStartAbsBounds\nprivate @android.annotation.Nullable android.graphics.Rect mEndAbsBounds\nprivate  int mStartRotation\nprivate  int mEndRotation\nprivate  boolean mPhysicalDisplayChanged\nprivate  int mDisconnectReparentDisplay\nclass DisplayChange extends java.lang.Object implements [android.os.Parcelable]\n@com.android.internal.util.DataClass(genToString=true, genSetters=true, genBuilder=false, genConstructor=false)")
@@ -506,7 +506,7 @@ public final class TransitionRequestInfo implements Parcelable {
         };
 
         @DataClass.Generated(
-                time = 1761782785556L,
+                time = 1769081030234L,
                 codegenVersion = "1.0.23",
                 sourceFile = "frameworks/base/core/java/android/window/TransitionRequestInfo.java",
                 inputSignatures = "private @android.annotation.NonNull android.window.WindowContainerToken mTaskFragmentToken\nprivate @android.annotation.NonNull android.app.ActivityManager.RunningTaskInfo mTaskInfo\nclass PipChange extends java.lang.Object implements [android.os.Parcelable]\n@com.android.internal.util.DataClass(genToString=true, genSetters=true, genBuilder=false, genConstructor=false)")
@@ -627,7 +627,7 @@ public final class TransitionRequestInfo implements Parcelable {
         };
 
         @DataClass.Generated(
-                time = 1761782785560L,
+                time = 1769081030241L,
                 codegenVersion = "1.0.23",
                 sourceFile = "frameworks/base/core/java/android/window/TransitionRequestInfo.java",
                 inputSignatures = "private  int mDisplayId\nprivate @android.annotation.NonNull android.graphics.Rect mBounds\nclass RequestedLocation extends java.lang.Object implements [android.os.Parcelable]\n@com.android.internal.util.DataClass(genToString=true, genSetters=true, genBuilder=false, genConstructor=false)")
@@ -732,7 +732,7 @@ public final class TransitionRequestInfo implements Parcelable {
         };
 
         @DataClass.Generated(
-                time = 1761782785562L,
+                time = 1769081030246L,
                 codegenVersion = "1.0.23",
                 sourceFile = "frameworks/base/core/java/android/window/TransitionRequestInfo.java",
                 inputSignatures = "private final  int mPreviousUserId\nprivate final  int mNewUserId\nclass UserChange extends java.lang.Object implements [android.os.Parcelable]\n@com.android.internal.util.DataClass(genToString=true, genSetters=true, genBuilder=false, genConstructor=false)")
@@ -748,7 +748,7 @@ public final class TransitionRequestInfo implements Parcelable {
     @DataClass(genToString = true, genSetters = true, genBuilder = false, genConstructor = false)
     public static final class WindowingLayerChange implements Parcelable {
         private final @WindowingLayer int mWindowingLayer;
-        private final @android.annotation.NonNull IRemoteCallback mRemoteCallback;
+        private final @Nullable IRemoteCallback mRemoteCallback;
 
         public WindowingLayerChange(@WindowingLayer int windowingLayer, IRemoteCallback remoteCallback) {
             mWindowingLayer = windowingLayer;
@@ -776,7 +776,7 @@ public final class TransitionRequestInfo implements Parcelable {
         }
 
         @DataClass.Generated.Member
-        public @android.annotation.NonNull IRemoteCallback getRemoteCallback() {
+        public @Nullable IRemoteCallback getRemoteCallback() {
             return mRemoteCallback;
         }
 
@@ -798,8 +798,11 @@ public final class TransitionRequestInfo implements Parcelable {
             // You can override field parcelling by defining methods like:
             // void parcelFieldName(Parcel dest, int flags) { ... }
 
+            byte flg = 0;
+            if (mRemoteCallback != null) flg |= 0x2;
+            dest.writeByte(flg);
             dest.writeInt(mWindowingLayer);
-            dest.writeStrongInterface(mRemoteCallback);
+            if (mRemoteCallback != null) dest.writeStrongInterface(mRemoteCallback);
         }
 
         @Override
@@ -813,15 +816,14 @@ public final class TransitionRequestInfo implements Parcelable {
             // You can override field unparcelling by defining methods like:
             // static FieldType unparcelFieldName(Parcel in) { ... }
 
+            byte flg = in.readByte();
             int windowingLayer = in.readInt();
-            IRemoteCallback remoteCallback = IRemoteCallback.Stub.asInterface(in.readStrongBinder());
+            IRemoteCallback remoteCallback = (flg & 0x2) == 0 ? null : IRemoteCallback.Stub.asInterface(in.readStrongBinder());
 
             this.mWindowingLayer = windowingLayer;
             com.android.internal.util.AnnotationValidations.validate(
                     WindowingLayer.class, null, mWindowingLayer);
             this.mRemoteCallback = remoteCallback;
-            com.android.internal.util.AnnotationValidations.validate(
-                    android.annotation.NonNull.class, null, mRemoteCallback);
 
             // onConstructed(); // You can define this method to get a callback
         }
@@ -841,10 +843,10 @@ public final class TransitionRequestInfo implements Parcelable {
         };
 
         @DataClass.Generated(
-                time = 1761782785566L,
+                time = 1769081030251L,
                 codegenVersion = "1.0.23",
                 sourceFile = "frameworks/base/core/java/android/window/TransitionRequestInfo.java",
-                inputSignatures = "private final @android.app.ActivityManager.AppTask.WindowingLayer int mWindowingLayer\nprivate final @android.annotation.NonNull android.os.IRemoteCallback mRemoteCallback\nclass WindowingLayerChange extends java.lang.Object implements [android.os.Parcelable]\n@com.android.internal.util.DataClass(genToString=true, genSetters=true, genBuilder=false, genConstructor=false)")
+                inputSignatures = "private final @android.app.ActivityManager.AppTask.WindowingLayer int mWindowingLayer\nprivate final @android.annotation.Nullable android.os.IRemoteCallback mRemoteCallback\nclass WindowingLayerChange extends java.lang.Object implements [android.os.Parcelable]\n@com.android.internal.util.DataClass(genToString=true, genSetters=true, genBuilder=false, genConstructor=false)")
         @Deprecated
         private void __metadata() {}
 
@@ -960,7 +962,7 @@ public final class TransitionRequestInfo implements Parcelable {
         };
 
         @DataClass.Generated(
-                time = 1761782785569L,
+                time = 1769081030256L,
                 codegenVersion = "1.0.23",
                 sourceFile = "frameworks/base/core/java/android/window/TransitionRequestInfo.java",
                 inputSignatures = "private final @android.annotation.NonNull android.window.IRemoteTransition mRemoteTransition\nprivate final @android.annotation.Nullable java.lang.String mDebugName\nclass RemoteTransitionInfo extends java.lang.Object implements [android.os.Parcelable]\n@com.android.internal.util.DataClass(genToString=true, genConstructor=false)")
@@ -1072,7 +1074,7 @@ public final class TransitionRequestInfo implements Parcelable {
         };
 
         @DataClass.Generated(
-                time = 1761782785571L,
+                time = 1769081030260L,
                 codegenVersion = "1.0.23",
                 sourceFile = "frameworks/base/core/java/android/window/TransitionRequestInfo.java",
                 inputSignatures = "private final @android.app.Activity.FullscreenModeRequest int mModeRequest\nprivate final @android.annotation.Nullable android.os.IRemoteCallback mRemoteCallback\nclass FullscreenRequestChange extends java.lang.Object implements [android.os.Parcelable]\n@com.android.internal.util.DataClass(genToString=true, genSetters=true, genBuilder=false, genConstructor=false)")
@@ -1437,7 +1439,7 @@ public final class TransitionRequestInfo implements Parcelable {
     };
 
     @DataClass.Generated(
-            time = 1761782785586L,
+            time = 1769081030285L,
             codegenVersion = "1.0.23",
             sourceFile = "frameworks/base/core/java/android/window/TransitionRequestInfo.java",
             inputSignatures = "private final @android.view.WindowManager.TransitionType int mType\nprivate @android.annotation.Nullable android.app.ActivityManager.RunningTaskInfo mTriggerTask\nprivate @android.annotation.Nullable android.window.TransitionRequestInfo.PipChange mPipChange\nprivate @android.annotation.Nullable android.window.TransitionRequestInfo.RemoteTransitionInfo mRemoteTransitionInfo\nprivate @android.annotation.Nullable android.window.TransitionRequestInfo.DisplayChange mDisplayChange\nprivate @android.annotation.Nullable android.window.TransitionRequestInfo.RequestedLocation mRequestedLocation\nprivate @android.annotation.Nullable android.window.TransitionRequestInfo.UserChange mUserChange\nprivate @android.annotation.Nullable android.window.TransitionRequestInfo.WindowingLayerChange mWindowingLayerChange\nprivate @android.annotation.Nullable android.window.TransitionRequestInfo.FullscreenRequestChange mFullscreenRequestChange\nprivate final  int mFlags\nprivate final  int mDebugId\n  java.lang.String typeToString()\npublic  android.window.RemoteTransition getRemoteTransition()\npublic  void setRemoteTransition(android.window.RemoteTransition)\nclass TransitionRequestInfo extends java.lang.Object implements [android.os.Parcelable]\n@com.android.internal.util.DataClass(genToString=true, genSetters=true, genAidl=true)")

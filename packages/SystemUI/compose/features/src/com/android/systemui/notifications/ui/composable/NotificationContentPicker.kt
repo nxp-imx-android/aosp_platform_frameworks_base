@@ -38,11 +38,21 @@ class StackPlaceholderContentPicker @Inject constructor(
 }
 
 /**
- * Picks content with lowest z-order (bottom-most), with specific exceptions
- * for smooth transitions. Used for heads up notifications (HUNs).
+ * Pick lowest z-order (bottom-most).
+ */
+class LowestZContentPicker @Inject constructor(
+    private val sorter: ContentZOrderSorter
+) : NotificationContentPicker {
+    override fun pickContentFrom(keys: Set<ContentKey>): ContentKey? {
+        return sorter.getLowestZ(keys)
+    }
+}
+
+/**
+ * Apply HUN-specific rules before falling back to default behavior
  */
 class HeadsUpPlaceholderContentPicker @Inject constructor(
-    private val sorter: ContentZOrderSorter
+    private val defaultPicker: LowestZContentPicker
 ) : NotificationContentPicker {
 
     override fun pickContentFrom(keys: Set<ContentKey>): ContentKey? {
@@ -52,8 +62,6 @@ class HeadsUpPlaceholderContentPicker @Inject constructor(
         if (Scenes.Lockscreen in keys && Scenes.Shade in keys) {
             return Scenes.Shade
         }
-
-        // Delegate "default" behavior to the sorter
-        return sorter.getLowestZ(keys)
+        return defaultPicker.pickContentFrom(keys)
     }
 }

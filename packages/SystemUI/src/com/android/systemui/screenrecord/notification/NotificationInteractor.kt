@@ -16,13 +16,14 @@
 
 package com.android.systemui.screenrecord.notification
 
+import android.app.Notification
 import com.android.systemui.screenrecord.ScreenMediaRecorder.SavedRecording
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
 
 /** Notifies user about different stages of screen recording flow. */
 interface NotificationInteractor {
 
-    fun notifyRecording(notificationId: Int, audioSource: ScreenRecordingAudioSource)
+    fun createRecordingNotification(audioSource: ScreenRecordingAudioSource): Notification
 
     fun notifyProcessing(notificationId: Int, audioSource: ScreenRecordingAudioSource)
 

@@ -1316,6 +1316,31 @@ public class StageCoordinatorTests extends ShellTestCase {
         verify(mTransactionPool, never()).acquire();
     }
 
+    @Test
+    public void testOnExitingSplit_setsSplitsNotVisible() {
+        // Set stages to visible initially.
+        mMainStage.mVisible = true;
+        mSideStage.mVisible = true;
+        mMainStage.mHasChildren = true;
+        mSideStage.mHasChildren = true;
+
+        // Register a listener to verify callbacks.
+        mStageCoordinator.registerSplitScreenListener(mSplitScreenListener);
+        clearInvocations(mSplitScreenListener);
+
+        // Call the method under test.
+        mStageCoordinator.onExitingSplit();
+
+        // Verify that the stages are marked as not visible and without children.
+        assertFalse(mMainStage.mVisible);
+        assertFalse(mSideStage.mVisible);
+        assertFalse(mMainStage.mHasChildren);
+        assertFalse(mSideStage.mHasChildren);
+
+        // Verify that the visibility change is dispatched to listeners.
+        verify(mSplitScreenListener).onSplitVisibilityChanged(eq(false));
+    }
+
     private static int getLaunchWindowingMode(Bundle options) {
         return options.getInt("android.activity.windowingMode", 0);
     }

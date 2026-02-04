@@ -684,6 +684,10 @@
     <string name="adb_qrcode_pairing_device_failed_msg">Failed to pair the device. Either the QR code was incorrect, or the device is not connected to the same network.</string>
     <!-- [CHAR LIMIT=50] Adb Wireless ip address and port title -->
     <string name="adb_wireless_ip_addr_preference_title">IP address \u0026 Port</string>
+    <!-- Text displayed when Adb Wireless isn't available due to network not allowed -->
+    <string name="adb_wireless_unavailable_not_allowed">Unavailable (Not allowed)</string>
+    <!-- Text displayed when Adb Wireless isn't available due to no network connection-->
+    <string name="adb_wireless_unavailable_disconnected">Unavailable (Wi\u2011Fi Disconnected)</string>
     <!-- [CHAR LIMIT=NONE] Adb Wireless QR code pairing scanner title -->
     <string name="adb_wireless_qrcode_pairing_title">Scan QR code</string>
     <!-- [CHAR LIMIT=NONE] Adb Wireless QR code pairing description -->

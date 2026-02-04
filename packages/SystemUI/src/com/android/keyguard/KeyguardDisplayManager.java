@@ -45,7 +45,6 @@ import com.android.systemui.navigationbar.views.NavigationBarView;
 import com.android.systemui.settings.DisplayTracker;
 import com.android.systemui.shade.ShadeDisplayAware;
 import com.android.systemui.shade.data.repository.ShadeDisplaysRepository;
-import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.wallpapers.WallpaperPresentationEnabled;
 
@@ -138,10 +137,8 @@ public class KeyguardDisplayManager {
         mConnectedDisplayKeyguardPresentationFactory = connectedDisplayKeyguardPresentationFactory;
         mIsCentralizedWallpaperPresentationEnabled = isCentralizedWallpaperPresentationEnabled;
         mDisplayRepository = displayRepository;
-        if (ShadeWindowGoesAround.isEnabled()) {
-            collectFlow(appScope, shadePositionRepositoryProvider.get().getPendingDisplayId(),
-                    (id) -> onShadeWindowMovedToDisplayId(id));
-        }
+        collectFlow(appScope, shadePositionRepositoryProvider.get().getPendingDisplayId(),
+                (id) -> onShadeWindowMovedToDisplayId(id));
     }
 
     private void onShadeWindowMovedToDisplayId(int shadeDisplayId) {
@@ -159,21 +156,14 @@ public class KeyguardDisplayManager {
             Log.i(TAG, "Cannot show Keyguard on null display");
             return false;
         }
-        if (ShadeWindowGoesAround.isEnabled()) {
-            if (display.getDisplayId() == shadeDisplayId) {
-                Log.i(
-                    TAG,
-                    "Secondary Keyguard presentation not shown on display "
-                            + display.getDisplayId()
-                            + " because shade window is on it (with the primary keyguard)");
+        if (display.getDisplayId() == shadeDisplayId) {
+            Log.i(
+                TAG,
+                "Secondary Keyguard presentation not shown on display "
+                    + display.getDisplayId()
+                    + " because shade window is on it (with the primary keyguard)");
 
-                return false;
-            }
-        } else {
-            if (display.getDisplayId() == mDisplayTracker.getDefaultDisplayId()) {
-                Log.i(TAG, "Do not show KeyguardPresentation on the default display");
-                return false;
-            }
+            return false;
         }
         display.getDisplayInfo(mTmpDisplayInfo);
         if ((mTmpDisplayInfo.flags & Display.FLAG_PRIVATE) != 0) {
@@ -201,12 +191,8 @@ public class KeyguardDisplayManager {
     }
 
     private int getShadeDisplayId() {
-        if (ShadeWindowGoesAround.isEnabled()) {
-            return mShadePositionRepositoryProvider
-                .get().getPendingDisplayId().getValue();
-        } else {
-            return Display.DEFAULT_DISPLAY;
-        }
+        return mShadePositionRepositoryProvider
+            .get().getPendingDisplayId().getValue();
     }
 
     /**

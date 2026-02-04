@@ -31,7 +31,6 @@ import android.view.KeyboardShortcutGroup
 import android.view.KeyboardShortcutInfo
 import com.android.hardware.input.Flags.enableSelectToSpeakKeyGestures
 import com.android.hardware.input.Flags.enableTalkbackKeyGestures
-import com.android.hardware.input.Flags.enableVoiceAccessKeyGestures
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.keyboard.shortcut.data.model.shortcutInfo
 import com.android.systemui.res.R
@@ -79,17 +78,13 @@ class AccessibilityShortcutsSource @Inject constructor(@Main private val resourc
             }
         )
 
-        if (enableVoiceAccessKeyGestures()) {
-            shortcuts.add(
-                // Toggle voice access:
-                //  - Meta + Alt + V
-                shortcutInfo(
-                    resources.getString(R.string.group_accessibility_toggle_voice_access)
-                ) {
-                    command(META_META_ON or META_ALT_ON, KEYCODE_V)
-                }
-            )
-        }
+        shortcuts.add(
+            // Toggle voice access:
+            //  - Meta + Alt + V
+            shortcutInfo(resources.getString(R.string.group_accessibility_toggle_voice_access)) {
+                command(META_META_ON or META_ALT_ON, KEYCODE_V)
+            }
+        )
 
         if (enableTalkbackKeyGestures()) {
             shortcuts.add(

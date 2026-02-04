@@ -177,12 +177,6 @@ class TransitionController {
     Transition mFinishingTransition;
 
     /**
-     * The windows that request to be invisible while it is in transition. After the transition
-     * is finished and the windows are no longer animating, their surfaces will be destroyed.
-     */
-    final ArrayList<WindowState> mAnimatingExitWindows = new ArrayList<>();
-
-    /**
      * List of tasks which were marked for disabling client-drawn rounded corners optimization
      * in SurfaceFlinger. This is to prevent state-errors in clipping rounded corners when the
      * corner radius is changing during a transition.
@@ -350,13 +344,12 @@ class TransitionController {
         // Temporarily clear so that nothing gets started/queued while flushing
         final ArrayList<TransitionPlayerRecord> temp = new ArrayList<>(mTransitionPlayers);
         mTransitionPlayers.clear();
-        final ArrayList<Transition> playing = new ArrayList<>(mPlayingTransitions);
-        mPlayingTransitions.clear();
         final ArrayList<Transition> waiting = new ArrayList<>(mWaitingTransitions);
         mWaitingTransitions.clear();
         final ArrayList<QueuedTransition> queued = new ArrayList<>(mQueuedTransitions);
         mQueuedTransitions.clear();
 
+        final ArrayList<Transition> playing = new ArrayList<>(mPlayingTransitions);
         // Clean-up/finish any playing transitions. Backwards since they can remove themselves.
         for (int i = playing.size() - 1; i >= 0; --i) {
             try {
@@ -365,6 +358,9 @@ class TransitionController {
                 Slog.wtf(TAG, "Exception during flush: cleanup playing transition #"
                         + playing.get(i).getSyncId(), e);
             }
+        }
+        if (!mPlayingTransitions.isEmpty()) {
+            Slog.e(TAG, "Unexpected playing transitions during flush: " + mPlayingTransitions);
         }
         // Clean up waiting transitions first since they technically started first.
         for (int i = waiting.size() - 1; i >= 0; --i) {
@@ -1222,15 +1218,6 @@ class TransitionController {
         }
         updateRunningRemoteAnimation(record, false /* isPlaying */);
         record.finishTransition(chain);
-        for (int i = mAnimatingExitWindows.size() - 1; i >= 0; i--) {
-            final WindowState w = mAnimatingExitWindows.get(i);
-            if (w.mAnimatingExit && w.mHasSurface && !w.inTransition()) {
-                w.onExitAnimationDone();
-            }
-            if (!w.mAnimatingExit || !w.mHasSurface) {
-                mAnimatingExitWindows.remove(i);
-            }
-        }
         mRunningLock.doNotifyLocked();
         // Run state-validation checks when no transitions are active anymore (Note: sometimes
         // finish can start a transition, so check afterwards -- eg. pip).

@@ -375,6 +375,7 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
     private static final String ATTR_SPLASH_SCREEN_THEME = "splash-screen-theme";
     private static final String ATTR_MIN_ASPECT_RATIO = "min-aspect-ratio";
     private static final String ATTR_VIRTUAL_GAMEPAD_USER_OPTION = "virtual-gamepad-user-option";
+    private static final String ATTR_PERSONAL_CONTEXT_MODE = "personal-context-mode";
 
     private static final String ATTR_PACKAGE_NAME = "packageName";
     private static final String ATTR_BUILD_FINGERPRINT = "buildFingerprint";
@@ -1208,7 +1209,8 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
                                 PackageManager.USER_MIN_ASPECT_RATIO_UNSET,
                                 null /*archiveState*/,
                                 false /*appLockEnabled*/,
-                                PackageManager.VIRTUAL_GAMEPAD_USER_OPTION_UNSET
+                                PackageManager.VIRTUAL_GAMEPAD_USER_OPTION_UNSET,
+                                PackageManager.PERSONAL_CONTEXT_MODE_UNSET
                         );
                     }
                 }
@@ -1952,7 +1954,8 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
                                     PackageManager.USER_MIN_ASPECT_RATIO_UNSET,
                                     null /*archiveState*/,
                                     false /*appLockEnabled*/,
-                                    PackageManager.VIRTUAL_GAMEPAD_USER_OPTION_UNSET
+                                    PackageManager.VIRTUAL_GAMEPAD_USER_OPTION_UNSET,
+                                    PackageManager.PERSONAL_CONTEXT_MODE_UNSET
                             );
                         }
                         return;
@@ -2061,6 +2064,9 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
                         final int virtualGamepadUserOption = parser.getAttributeInt(null,
                                 ATTR_VIRTUAL_GAMEPAD_USER_OPTION,
                                 PackageManager.VIRTUAL_GAMEPAD_USER_OPTION_UNSET);
+                        final int personalContextMode = parser.getAttributeInt(null,
+                                ATTR_PERSONAL_CONTEXT_MODE,
+                                PackageManager.PERSONAL_CONTEXT_MODE_UNSET);
 
                         ArraySet<String> enabledComponents = null;
                         ArraySet<String> disabledComponents = null;
@@ -2144,7 +2150,7 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
                                 firstInstallTime != 0 ? firstInstallTime
                                         : origFirstInstallTimes.getOrDefault(name, 0L),
                                 minAspectRatio, archiveState, appLockEnabled,
-                                virtualGamepadUserOption);
+                                virtualGamepadUserOption, personalContextMode);
                         mDomainVerificationManager.setLegacyUserState(name, userId, verifState);
                     } else if (tagName.equals("preferred-activities")) {
                         readPreferredActivitiesLPw(parser, userId);
@@ -2578,6 +2584,11 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
                                 != PackageManager.VIRTUAL_GAMEPAD_USER_OPTION_UNSET) {
                             serializer.attributeInt(null, ATTR_VIRTUAL_GAMEPAD_USER_OPTION,
                                     ustate.getVirtualGamepadUserOption());
+                        }
+                        if (ustate.getPersonalContextMode()
+                                != PackageManager.PERSONAL_CONTEXT_MODE_UNSET) {
+                            serializer.attributeInt(null, ATTR_PERSONAL_CONTEXT_MODE,
+                                    ustate.getPersonalContextMode());
                         }
                         if (ustate.isSuspended()) {
                             for (int i = 0; i < ustate.getSuspendParams().size(); i++) {

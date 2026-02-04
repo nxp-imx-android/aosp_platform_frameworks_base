@@ -32,7 +32,7 @@ object QsEditModeHoverFixes {
     /** Is the refactor enabled */
     @JvmStatic
     inline val isEnabled
-        get() = Flags.statusBarEventForwardingModernization() && SceneContainerFlag.isEnabled
+        get() = Flags.qsEditModeHoverFixes() && SceneContainerFlag.isEnabled
 
     /**
      * Called to ensure code is only run when the flag is enabled. This protects users from the

@@ -22,6 +22,7 @@ import android.app.appfunctions.ExecuteAppFunctionAidlRequest;
 import android.app.appfunctions.IAppFunctionExecutor;
 import android.app.appfunctions.SafeOneTimeExecuteAppFunctionCallback;
 import android.os.Build;
+import android.os.IBinder;
 import android.os.ICancellationSignal;
 import android.os.UserHandle;
 import android.util.Log;
@@ -31,6 +32,7 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.server.SystemService;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Manages the lifecycle of app functions registered at runtime cross user. Creates a per user
@@ -104,18 +106,21 @@ public final class MultiUserDynamicAppFunctionRegistry {
      * @param executor The client's executor, an {@link IAppFunctionExecutor} binder used to invoke
      *     the function implementation in the client's process.
      * @param userHandle The user for whom the app functions are being registered.
+     * @param activityTokens Identifiers of the source activities corresponding to each
+     *     functionIdentifier.
      * @throws IllegalStateException if any of the function identifiers are already registered for
      *     this package and user, or if the specified user has not been unlocked. No function
      *     identifiers from the list will be registered in this case.
      */
     public void registerAppFunctions(
-            String packageName,
-            List<String> functionIdentifiers,
-            IAppFunctionExecutor executor,
-            UserHandle userHandle) {
+            @NonNull String packageName,
+            @NonNull List<String> functionIdentifiers,
+            @NonNull IAppFunctionExecutor executor,
+            @NonNull UserHandle userHandle,
+            @NonNull List<ActivitySourceId> activityTokens) {
         maybePrintDebugLog("registerAppFunction for " + packageName + " :", functionIdentifiers);
         getPerUserRegistry(userHandle)
-                .registerAppFunctions(packageName, functionIdentifiers, executor);
+                .registerAppFunctions(packageName, functionIdentifiers, executor, activityTokens);
     }
 
     /**
@@ -130,16 +135,19 @@ public final class MultiUserDynamicAppFunctionRegistry {
      * @param executor The client's executor that was used for registration. The system verifies
      *     this to ensure that only the original registrant can unregister the function.
      * @param userHandle The user for whom the app functions should be unregistered.
+     * @param activityTokens Identifiers of the source activities corresponding to each
+     *     functionIdentifier.
      * @throws IllegalStateException if the specified {@code userHandle} has not been unlocked.
      */
     public void unregisterAppFunctions(
-            String packageName,
-            List<String> functionIdentifiers,
-            IAppFunctionExecutor executor,
-            UserHandle userHandle) {
+            @NonNull String packageName,
+            @NonNull List<String> functionIdentifiers,
+            @NonNull IAppFunctionExecutor executor,
+            @NonNull UserHandle userHandle,
+            @NonNull List<ActivitySourceId> activityTokens) {
         maybePrintDebugLog("unregisterAppFunction " + packageName + ": ", functionIdentifiers);
         getPerUserRegistry(userHandle)
-                .unregisterAppFunctions(packageName, functionIdentifiers, executor);
+                .unregisterAppFunctions(packageName, functionIdentifiers, executor, activityTokens);
     }
 
     /**
@@ -174,6 +182,35 @@ public final class MultiUserDynamicAppFunctionRegistry {
                         request.getClientRequest(),
                         safeExecuteAppFunctionCallback,
                         cancellationTransport);
+    }
+
+    public static class ActivitySourceId {
+        @Nullable private final IBinder mActivityToken;
+
+        ActivitySourceId(@Nullable IBinder activityToken) {
+            mActivityToken = activityToken;
+        }
+
+        @Override
+        public String toString() {
+            return "ActivitySourceId{" + mActivityToken + "}";
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hashCode(mActivityToken);
+        }
+
+        @Override
+        public boolean equals(@Nullable Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (!(obj instanceof ActivitySourceId)) {
+                return false;
+            }
+            return Objects.equals(mActivityToken, ((ActivitySourceId) obj).mActivityToken);
+        }
     }
 
     @NonNull

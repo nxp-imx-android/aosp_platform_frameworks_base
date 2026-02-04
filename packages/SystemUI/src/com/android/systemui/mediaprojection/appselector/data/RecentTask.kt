@@ -21,6 +21,7 @@ import android.annotation.UserIdInt
 import android.app.TaskInfo
 import android.content.ComponentName
 import android.content.Intent
+import com.android.users.UserType
 import com.android.wm.shell.shared.split.SplitBounds
 
 data class RecentTask(
@@ -52,11 +53,4 @@ data class RecentTask(
         userType,
         splitBounds,
     )
-
-    enum class UserType {
-        STANDARD,
-        WORK,
-        PRIVATE,
-        CLONED,
-    }
 }

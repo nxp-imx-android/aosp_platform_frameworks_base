@@ -16,8 +16,6 @@
 package com.android.systemui.shade
 
 import android.content.res.Configuration
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper.RunWithLooper
 import android.view.accessibility.AccessibilityEvent
 import android.widget.FrameLayout
@@ -258,7 +256,6 @@ class NotificationShadeWindowViewTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(AConfigFlags.FLAG_SHADE_WINDOW_GOES_AROUND)
     fun onConfigurationChanged_configForwarderNotSet() {
         underTest.onConfigurationChanged(Configuration())
 
@@ -266,7 +263,6 @@ class NotificationShadeWindowViewTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(AConfigFlags.FLAG_SHADE_WINDOW_GOES_AROUND)
     fun onMovedToDisplay_configForwarderSet_propagatesConfig() {
         val config = Configuration()
 

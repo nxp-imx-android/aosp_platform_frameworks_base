@@ -84,13 +84,6 @@ flag {
 }
 
 flag {
-    name: "a11y_sequential_focus_starting_point"
-    namespace: "accessibility"
-    description: "Enables sequential focus's starting point to be set to accessibility focus when system focus is null."
-    bug: "393668020"
-}
-
-flag {
     name: "a11y_sort_direction_api"
     namespace: "accessibility"
     description: "Enables new APIs to convey the sort direction applied to the data associated with this node."
@@ -112,6 +105,16 @@ flag {
     is_exported: true
     description: "Enables new APIs for an AccessibilityService to communicate with a HID Braille display"
     bug: "303522222"
+}
+
+flag {
+    name: "allow_a11y_button_on_large_screen"
+    namespace: "accessibility"
+    description: "Allows the accessibility button location setting to be configured on large screen devices with gesture navigation."
+    bug: "477701122"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {
@@ -143,6 +146,16 @@ flag {
     description: "Controls the deprecation of AccessibilityNodeInfo labelFor apis"
     bug: "333783827"
     is_exported: true
+}
+
+flag {
+    name: "disable_edt_for_autofill_inline_view"
+    namespace: "accessibility"
+    description: "Disables expanded dark theme for the autofill inline view that is embedded in an IME"
+    bug: "438345051"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {

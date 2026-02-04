@@ -575,9 +575,9 @@ class InternalObserverCallbackRouterTest {
 
         callbacksRouter.onEnabledStatesChanged(setOf(AppFunctionName("testPackage1", "id1")))
 
-        assertThat(callback1.changedFunctionNames)
+        assertThat(callback1.stateChangedFunctionNames)
             .isEqualTo(listOf(AppFunctionName("testPackage1", "id1")))
-        assertThat(callback2.changedFunctionNames).isNull()
+        assertThat(callback2.stateChangedFunctionNames).isNull()
     }
 
     fun onEnabledStatesChanged_functionMatch_routesToMatchingCallbacks() {
@@ -623,8 +623,8 @@ class InternalObserverCallbackRouterTest {
 
         callbacksRouter.onEnabledStatesChanged(setOf(AppFunctionName("testPackage3", "id3")))
 
-        assertThat(callback1.changedFunctionNames).isNull()
-        assertThat(callback2.changedFunctionNames).isNull()
+        assertThat(callback1.stateChangedFunctionNames).isNull()
+        assertThat(callback2.stateChangedFunctionNames).isNull()
     }
 
     private fun createMockSearchSpec(
@@ -640,6 +640,7 @@ class InternalObserverCallbackRouterTest {
     class TestInternalCallback() : IObserveAppFunctionChangesCallback {
         var changedPackageNames: List<String>? = null
         var changedFunctionNames: List<AppFunctionName>? = null
+        var stateChangedFunctionNames: List<AppFunctionName>? = null
         val binder = Binder((binderId++).toString())
 
         override fun onAppFunctionsChanged(appFunctions: List<AppFunctionName>) {
@@ -648,6 +649,10 @@ class InternalObserverCallbackRouterTest {
 
         override fun onPackagesChanged(packageNames: List<String>) {
             changedPackageNames = packageNames
+        }
+
+        override fun onAppFunctionStatesChanged(appFunctions: List<AppFunctionName>) {
+            stateChangedFunctionNames = appFunctions
         }
 
         override fun asBinder(): IBinder {

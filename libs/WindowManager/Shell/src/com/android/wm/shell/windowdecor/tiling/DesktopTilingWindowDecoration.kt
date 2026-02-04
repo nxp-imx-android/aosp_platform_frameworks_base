@@ -156,6 +156,7 @@ class DesktopTilingWindowDecoration(
     private var isDarkMode = false
     private var isResizing = false
     private var isTilingFocused = false
+    @VisibleForTesting var isLaunchInProgress = false
     private var hiddenByOverviewAnimation = false
     private lateinit var configuration: Configuration
     private var dividerWidth: Int = 0
@@ -570,6 +571,10 @@ class DesktopTilingWindowDecoration(
             }
             explodedViewTopTaskId = null
         }
+
+        if (isLaunchInProgress) {
+            mainExecutor.execute { isLaunchInProgress = false }
+        }
     }
 
     private fun handleTaskBroughtToFront(taskId: Int) {
@@ -692,7 +697,9 @@ class DesktopTilingWindowDecoration(
         isFocusedOnDisplay: Boolean,
         isFocusedGlobally: Boolean,
     ) {
-        moveTiledPairToFront(runningTaskInfo.taskId, isFocusedOnDisplay)
+        if (!isLaunchInProgress) {
+            moveTiledPairToFront(runningTaskInfo.taskId, isFocusedOnDisplay)
+        }
     }
 
     // Only called if [taskInfo] relates to a focused task
@@ -766,6 +773,10 @@ class DesktopTilingWindowDecoration(
 
     fun onExplodedViewReorder(topTaskId: Int) {
         explodedViewTopTaskId = topTaskId
+    }
+
+    fun onTaskLaunchStarted() {
+        isLaunchInProgress = true
     }
 
     fun resetTilingSession(shouldPersistTilingData: Boolean = false) {

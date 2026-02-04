@@ -75,7 +75,6 @@ import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
 import platform.test.desktop.DesktopMouseTestRule
 import platform.test.desktop.LogicalDisplayPointPx
-import platform.test.desktop.ShadeDisplayGoesAroundTestRule
 import platform.test.desktop.SimulatedConnectedDisplayTestRule
 
 // TODO(b/416608975) - Move the utility methods to shared library or/and utilize existing library (
@@ -112,9 +111,7 @@ class ConnectedDisplayCujSmokeTests {
 
     @get:Rule(order = 4) val connectedDisplayRule = SimulatedConnectedDisplayTestRule()
 
-    @get:Rule(order = 5) val shadeDisplayGoesAroundTestRule = ShadeDisplayGoesAroundTestRule()
-
-    @get:Rule(order = 6) val desktopMouseRule = DesktopMouseTestRule(/* deferSetup= */ true)
+    @get:Rule(order = 5) val desktopMouseRule = DesktopMouseTestRule(/* deferSetup= */ true)
 
     @Before
     fun setup() {
@@ -172,14 +169,15 @@ class ConnectedDisplayCujSmokeTests {
         } else {
             DeviceHelpers.waitForObj(
                     By.text(CONNECTED_DEVICES_TEXT),
-                    timeout = UIAUTOMATOR_TIMEOUT
+                    timeout = UIAUTOMATOR_TIMEOUT,
                 ) {
                     "Can't find a connected device on setting"
                 }
                 .click()
             DeviceHelpers.waitForObj(
                     By.text(EXTERNAL_DISPLAY_TEXT),
-                    timeout = UIAUTOMATOR_TIMEOUT) {
+                    timeout = UIAUTOMATOR_TIMEOUT,
+                ) {
                     "Can't find an external display on setting"
                 }
                 .click()

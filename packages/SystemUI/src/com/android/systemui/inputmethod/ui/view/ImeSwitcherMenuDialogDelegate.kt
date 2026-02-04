@@ -22,6 +22,7 @@ import android.util.Slog
 import android.view.Gravity
 import android.view.WindowInsets
 import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager.IMPickerEntryPoint
 import androidx.annotation.MainThread
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
@@ -42,6 +43,7 @@ class ImeSwitcherMenuDialogDelegate
 @AssistedInject
 constructor(
     @Assisted private val context: Context,
+    @Assisted @param:IMPickerEntryPoint private val entryPoint: Int,
     @Assisted private val viewModelFactory: (context: Context) -> ImeSwitcherMenuViewModel,
     private val sysuiDialogFactory: SystemUIDialogFactory,
 ) : SystemUIDialog.Delegate, ImeSwitcherMenuUi {
@@ -143,6 +145,7 @@ constructor(
 
         override fun create(
             context: Context,
+            @IMPickerEntryPoint entryPoint: Int,
             viewModelFactory: (Context) -> ImeSwitcherMenuViewModel,
         ): ImeSwitcherMenuDialogDelegate
     }

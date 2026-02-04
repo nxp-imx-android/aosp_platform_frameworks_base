@@ -65,5 +65,4 @@
   <string name="brightness_percentage_label">Brightness <xliff:g id="percentage">%1$s</xliff:g> %%</string>
   <!-- The percentage of the music volume, and double "%" is required to represent the symbol "%" -->
   <string name="music_volume_percentage_label">Music volume <xliff:g id="percentage">%1$s</xliff:g> %%</string>
-
 </resources>

@@ -32,6 +32,7 @@ import android.service.personalcontext.Token;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.hint.ContextHintWithSignatureWrapper;
+import android.service.personalcontext.insight.interaction.AttributionDetails;
 import android.service.personalcontext.insight.interaction.FeedbackRequest;
 import android.service.personalcontext.insight.interaction.InsightEvent;
 import android.util.Log;
@@ -68,6 +69,7 @@ public abstract class ContextInsight {
     private static final String KEY_ORIGIN_HINTS = "key_origin_hints";
     private static final String KEY_TOKENS = "key_tokens";
     private static final String KEY_INSIGHT_DATA = "key_insight_data";
+    private static final String KEY_ATTRIBUTION = "key_attribution";
     private static final String KEY_ORIGINATING_COMPONENT_ID = "key_originating_component_id";
     private static final String KEY_CREATION_TIME = "key_creation_time";
     private static final String KEY_FEEDBACK_REQUEST = "key_feedback_request";
@@ -123,7 +125,8 @@ public abstract class ContextInsight {
                     /* originatingComponentId= */ UUID.randomUUID(),
                     /* originHints= */ Collections.emptySet(),
                     /* tokens= */ Collections.emptySet(),
-                    /* feedbackRequest= */ null)) {
+                    /* feedbackRequest= */ null,
+                    /* attributionDetails= */ null)) {
         @Override
         @InsightType public int getInsightType() {
             return INSIGHT_TYPE_ERROR;
@@ -147,6 +150,7 @@ public abstract class ContextInsight {
     private final Set<Token> mTokens;
     private final Instant mCreationTime;
     private final FeedbackRequest mFeedbackRequest;
+    private final AttributionDetails mAttributionDetails;
 
     /**
      * Internal constructor for insights. This should be called by subclasses in their public
@@ -161,6 +165,7 @@ public abstract class ContextInsight {
         mTokens = Collections.unmodifiableSet(new HashSet<>(params.mTokens));
         mCreationTime = params.mCreationTime;
         mFeedbackRequest = params.mFeedbackRequest;
+        mAttributionDetails = params.mAttributionDetails;
     }
 
     /**
@@ -328,7 +333,8 @@ public abstract class ContextInsight {
                                 KEY_ORIGIN_HINTS, ContextHintWithSignatureWrapper.class)),
                 bundle.getParcelableArrayList(KEY_TOKENS, Token.class),
                 Instant.ofEpochMilli(bundle.getLong(KEY_CREATION_TIME)),
-                bundle.getParcelable(KEY_FEEDBACK_REQUEST, FeedbackRequest.class));
+                bundle.getParcelable(KEY_FEEDBACK_REQUEST, FeedbackRequest.class),
+                bundle.getParcelable(KEY_ATTRIBUTION, AttributionDetails.class));
 
         try {
             return switch (type) {
@@ -350,6 +356,20 @@ public abstract class ContextInsight {
     @Nullable
     public FeedbackRequest getUserFeedbackRequest() {
         return mFeedbackRequest;
+    }
+
+    /**
+     * Indicates whether the insight has attribution details that can be shown.
+     *
+     * @see AttributionDetails
+     */
+    public boolean hasAttribution() {
+        return mAttributionDetails != null;
+    }
+
+    /** @hide */
+    public AttributionDetails getAttributionDetails() {
+        return mAttributionDetails;
     }
 
     /**
@@ -390,19 +410,22 @@ public abstract class ContextInsight {
         private final Collection<Token> mTokens;
         private final Instant mCreationTime;
         private final FeedbackRequest mFeedbackRequest;
+        private final AttributionDetails mAttributionDetails;
 
         private ConstructorParams(
                 UUID originatingComponentId,
                 Collection<ContextHintWithSignature> originHints,
-                 Collection<Token> tokens,
-                FeedbackRequest feedbackRequest) {
+                Collection<Token> tokens,
+                FeedbackRequest feedbackRequest,
+                AttributionDetails attributionDetails) {
             this(
                     UUID.randomUUID(),
                     originatingComponentId,
                     originHints,
                     tokens,
                     Instant.now(),
-                    feedbackRequest);
+                    feedbackRequest,
+                    attributionDetails);
         }
 
         private ConstructorParams(
@@ -411,18 +434,21 @@ public abstract class ContextInsight {
                 Collection<ContextHintWithSignature> originHints,
                 Collection<Token> tokens,
                 Instant creationTime,
-                FeedbackRequest feedbackRequest) {
+                FeedbackRequest feedbackRequest,
+                AttributionDetails attributionDetails) {
             mId = id;
             mOriginatingComponentId = originatingComponentId;
             mOriginHints = originHints;
             mTokens = tokens;
             mCreationTime = creationTime;
             mFeedbackRequest = feedbackRequest;
+            mAttributionDetails = attributionDetails;
         }
 
         static final class Builder {
             private final Set<ContextHintWithSignature> mOriginHints = new HashSet<>();
             private final Set<Token> mTokens = new HashSet<>();
+            private AttributionDetails mAttributionDetails;
             private UUID mOriginatingComponentId;
             private FeedbackRequest mFeedbackRequest;
 
@@ -445,6 +471,18 @@ public abstract class ContextInsight {
             @NonNull
             Builder addToken(@NonNull Token token) {
                 mTokens.add(token);
+                return this;
+            }
+
+            /**
+             * Sets the attribution details that can be shown to the user.
+             *
+             * @param attributionDetails Details to show user when they ask for how this insight was
+             *                           generated.
+             */
+            @NonNull
+            Builder setAttributionDetails(@Nullable AttributionDetails attributionDetails) {
+                mAttributionDetails = attributionDetails;
                 return this;
             }
 
@@ -483,7 +521,11 @@ public abstract class ContextInsight {
                 }
 
                 return new ConstructorParams(
-                        mOriginatingComponentId, mOriginHints, mTokens, mFeedbackRequest);
+                        mOriginatingComponentId,
+                        mOriginHints,
+                        mTokens,
+                        mFeedbackRequest,
+                        mAttributionDetails);
             }
         }
     }

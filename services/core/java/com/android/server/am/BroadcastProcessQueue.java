@@ -849,6 +849,10 @@ class BroadcastProcessQueue {
     public void traceActiveBegin() {
         Trace.asyncTraceForTrackBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER,
                 runningTraceTrackName, mActive.toShortString() + " scheduled", hashCode());
+        if (mActive.options != null && mActive.options.getDebugReason() != null) {
+            Trace.instantForTrack(Trace.TRACE_TAG_ACTIVITY_MANAGER,
+                    runningTraceTrackName, "reason: " + mActive.options.getDebugReason());
+        }
     }
 
     public void traceActiveEnd() {

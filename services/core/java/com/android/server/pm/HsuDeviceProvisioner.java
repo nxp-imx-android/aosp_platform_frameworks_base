@@ -60,10 +60,9 @@ final class HsuDeviceProvisioner extends ContentObserver {
      * <p>Consequently, the {@link PackageManager} obtained via {@code context.getPackageManager()}
      * will operate with the privileges and scope of the system user.
      */
-    HsuDeviceProvisioner(Context context, Handler handler, ContentResolver contentResolver,
-            UserManagerService ums) {
+    HsuDeviceProvisioner(Context context, Handler handler, UserManagerService ums) {
         super(handler);
-        mContentResolver = contentResolver;
+        mContentResolver = context.getContentResolver();
         mPm = context.getPackageManager();
         mUms = ums;
     }

@@ -91,11 +91,16 @@ android_library {
         ":SystemUI_pod_fixtureFiles",
     ],
 
+    static_libs: [
+        "androidx.compose.ui_ui-test-junit4",
+    ],
+
     libs: [
         // go/keep-sorted start
         "SystemUI-application",
         "SystemUICustomizationTestUtils",
         "android.test.mock.stubs.system",
+        "androidx.compose.ui_ui-test",
         "androidx.compose.ui_ui-test-junit4",
         "androidx.core_core-animation-testing",
         "flag-junit",

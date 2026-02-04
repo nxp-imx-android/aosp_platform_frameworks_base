@@ -43,6 +43,7 @@ import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorController
 import com.android.wm.shell.desktopmode.DesktopTestHelpers
+import com.android.wm.shell.desktopmode.FakeShellDesktopState
 import com.android.wm.shell.desktopmode.WindowDragTransitionHandler
 import com.android.wm.shell.shared.TransactionPool
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
@@ -96,6 +97,7 @@ class PinnedLayerControllerTest : ShellTestCase() {
 
     private lateinit var defaultDisplayToken: WindowContainerToken
     private lateinit var desktopState: FakeDesktopState
+    private lateinit var shellDesktopState: FakeShellDesktopState
     private lateinit var presentationController: PinnedLayerPresentationController
     private lateinit var pinnedWindowRepositionAnimationHandler:
         PinnedWindowRepositionAnimationHandler
@@ -105,6 +107,7 @@ class PinnedLayerControllerTest : ShellTestCase() {
     fun setup() {
         defaultDisplayToken = MockToken.token()
         desktopState = FakeDesktopState()
+        shellDesktopState = FakeShellDesktopState(desktopState)
 
         whenever(transactionPool.acquire()).thenReturn(poolTransaction)
 
@@ -118,7 +121,7 @@ class PinnedLayerControllerTest : ShellTestCase() {
             PinnedLayerController(
                 shellInit,
                 transitions,
-                desktopState,
+                shellDesktopState,
                 rootTaskDisplayAreaOrganizer,
                 shellTaskOrganizer,
                 presentationController,
@@ -386,6 +389,7 @@ class PinnedLayerControllerTest : ShellTestCase() {
         isDesktopModeSupported: Boolean = true,
     ) {
         desktopState.overrideDesktopModeSupportPerDisplay[displayId] = isDesktopModeSupported
+        shellDesktopState.overrideWindowDropTargetEligibility[displayId] = isDesktopModeSupported
 
         whenever(rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(displayId))
             .thenReturn(DisplayAreaInfo(token, displayId, DisplayAreaOrganizer.FEATURE_UNDEFINED))

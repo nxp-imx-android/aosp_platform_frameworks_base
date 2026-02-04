@@ -24,7 +24,6 @@ import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.plugins.statusbar.StatusBarStateController
 import com.android.systemui.res.R
 import com.android.systemui.shade.domain.interactor.ShadeDisplaysInteractor
-import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.shared.animation.UnfoldConstantTranslateAnimator
 import com.android.systemui.shared.animation.UnfoldConstantTranslateAnimator.Direction.END
 import com.android.systemui.shared.animation.UnfoldConstantTranslateAnimator.Direction.START
@@ -56,12 +55,7 @@ constructor(
         }
     }
 
-    private val progressProvider: UnfoldTransitionProgressProvider =
-        if (ShadeWindowGoesAround.isEnabled) {
-            scopedProgressProvider
-        } else {
-            progressProviderFromConstructor
-        }
+    private val progressProvider: UnfoldTransitionProgressProvider = scopedProgressProvider
 
     private val filterShade: () -> Boolean = {
         statusBarStateController.getState() == SHADE ||
@@ -103,13 +97,10 @@ constructor(
         if (splitShadeStatusBarViewGroup != null) {
             translateAnimatorStatusBar.init(splitShadeStatusBarViewGroup, translationMax)
         }
-        if (ShadeWindowGoesAround.isEnabled) {
-            listenForShadeDisplayChanges()
-        }
+        listenForShadeDisplayChanges()
     }
 
     private fun listenForShadeDisplayChanges() {
-        ShadeWindowGoesAround.isUnexpectedlyInLegacyMode()
         backgroundScope.launchTraced("NotificationPanelUnfoldAnimationController") {
             scopedProgressProvider.setReadyToHandleTransition(
                 shadeDisplaysInteractor.get().displayId.value == Display.DEFAULT_DISPLAY

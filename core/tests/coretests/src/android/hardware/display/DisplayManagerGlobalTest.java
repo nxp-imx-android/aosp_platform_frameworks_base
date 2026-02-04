@@ -573,6 +573,22 @@ public class DisplayManagerGlobalTest {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_DISPLAY_IDS_CACHE_VALIDATION)
+    public void testConnectedEventForLocallyControlledDisplay_doesNotStopLocalControl() {
+        var cache = initDisplayIdsCache(/*enableConnectedCache=*/ true, /*enableAddedCache=*/ true);
+        cache.injectLocked(2);
+        var mask = cache.updateCacheLocked(2, DisplayManagerGlobal.EVENT_DISPLAY_CONNECTED);
+        assertEquals("Out mask must contain CONNECTED",
+                DisplayManagerGlobal.EVENT_DISPLAY_CONNECTED, mask);
+
+        assertExpectedCache(cache, new int[] { 0, 1, 2 }, new int[] { 0, 2 });
+        mask = cache.updateCacheLocked(2, DisplayManagerGlobal.EVENT_DISPLAY_ADDED);
+        assertEquals("Out mask must contain ADDED",
+                DisplayManagerGlobal.EVENT_DISPLAY_ADDED, mask);
+        assertExpectedCache(cache, new int[] { 0, 1, 2 }, new int[] { 0, 2 });
+    }
+
+    @Test
     public void testUpdateDisplayIdsCache_skipRemovedAndDisconnectedForUnknownDisplayId() {
         var cache = initDisplayIdsCache(/*enableConnectedCache=*/ true, /*enableAddedCache=*/ true);
         var mask = cache.updateCacheLocked(1, DisplayManagerGlobal.EVENT_DISPLAY_REMOVED
