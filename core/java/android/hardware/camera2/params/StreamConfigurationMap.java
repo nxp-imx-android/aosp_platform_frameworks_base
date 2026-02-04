@@ -2202,6 +2202,10 @@ public final class StreamConfigurationMap {
                 return "RAW_PRIVATE";
             case ImageFormat.RAW10:
                 return "RAW10";
+            case ImageFormat.RAW12:
+                return "RAW12";
+            case ImageFormat.RAW14:
+                return "RAW14";
             case ImageFormat.DEPTH16:
                 return "DEPTH16";
             case ImageFormat.DEPTH_POINT_CLOUD:
