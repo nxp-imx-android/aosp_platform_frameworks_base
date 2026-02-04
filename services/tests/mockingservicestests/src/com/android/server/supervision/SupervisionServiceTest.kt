@@ -635,6 +635,7 @@ class SupervisionServiceTest {
             UserHandle.of(USER_ID),
             listOf(),
         )
+        injector.awaitServiceThreadIdle()
         assertThat(service.mInternal.isEscrowTokenRequired(USER_ID)).isFalse()
 
         injector.setRoleHoldersAsUser(
@@ -642,6 +643,7 @@ class SupervisionServiceTest {
             UserHandle.of(USER_ID),
             listOf("com.example.supervisionapp1"),
         )
+        injector.awaitServiceThreadIdle()
         assertThat(service.mInternal.isEscrowTokenRequired(USER_ID)).isTrue()
     }
 

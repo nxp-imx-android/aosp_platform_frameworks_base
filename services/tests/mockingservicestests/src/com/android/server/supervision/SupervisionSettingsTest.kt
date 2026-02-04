@@ -23,8 +23,6 @@ import android.app.supervision.flags.Flags
 import android.content.Context
 import android.content.res.Resources
 import android.os.PersistableBundle
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.platform.test.flag.junit.SetFlagsRule
@@ -75,7 +73,7 @@ class SupervisionSettingsTest {
     fun anySupervisedUser_oneSupervisedUser_returnsTrue() {
         // Get and set user data
         val userData1 = mSupervisionSettings.getUserData(1)
-        userData1.changeUserData(true, "package1", true, BUNDLE_1)
+        userData1.changeUserData(true, "package1", true, BUNDLE_1, true)
 
         val anySupervisedUser: Boolean = mSupervisionSettings.anySupervisedUser()
 
@@ -86,13 +84,13 @@ class SupervisionSettingsTest {
     fun anySupervisedUser_manySupervisedUsers_returnsTrue() {
         // Get and set user data
         val userData1 = mSupervisionSettings.getUserData(1)
-        userData1.changeUserData(true, "package1", true, BUNDLE_1)
+        userData1.changeUserData(true, "package1", true, BUNDLE_1, true)
         val userData2 = mSupervisionSettings.getUserData(2)
-        userData2.changeUserData(true, null, false, null)
+        userData2.changeUserData(true, null, false, null, false)
         val userData3 = mSupervisionSettings.getUserData(3)
-        userData3.changeUserData(false, null, false, BUNDLE_2)
+        userData3.changeUserData(false, null, false, BUNDLE_2, false)
         val userData4 = mSupervisionSettings.getUserData(4)
-        userData4.changeUserData(true, "package4", false, null)
+        userData4.changeUserData(true, "package4", false, null, false)
 
         val anySupervisedUser: Boolean = mSupervisionSettings.anySupervisedUser()
 
@@ -103,15 +101,15 @@ class SupervisionSettingsTest {
     fun anySupervisedUser_noSupervisedUser_returnsFalse() {
         // Get and set user data
         val userData0 = mSupervisionSettings.getUserData(0)
-        userData0.changeUserData(false, "package1", true, BUNDLE_1)
+        userData0.changeUserData(false, "package1", true, BUNDLE_1, true)
         val userData1 = mSupervisionSettings.getUserData(1)
-        userData1.changeUserData(false, "package1", true, BUNDLE_1)
+        userData1.changeUserData(false, "package1", true, BUNDLE_1, true)
         val userData2 = mSupervisionSettings.getUserData(2)
-        userData2.changeUserData(false, null, false, null)
+        userData2.changeUserData(false, null, false, null, false)
         val userData3 = mSupervisionSettings.getUserData(3)
-        userData3.changeUserData(false, null, false, BUNDLE_2)
+        userData3.changeUserData(false, null, false, BUNDLE_2, false)
         val userData4 = mSupervisionSettings.getUserData(4)
-        userData4.changeUserData(false, "package4", false, null)
+        userData4.changeUserData(false, "package4", false, null, false)
 
         val anySupervisedUser: Boolean = mSupervisionSettings.anySupervisedUser()
 
@@ -122,7 +120,7 @@ class SupervisionSettingsTest {
     fun removeAndGetUserData_returnsNewInstanceOfUserData() {
         // Get and set user data
         val userData = mSupervisionSettings.getUserData(1)
-        userData.changeUserData(true, "package1", true, BUNDLE_1)
+        userData.changeUserData(true, "package1", true, BUNDLE_1, true)
 
         // Remove user data and get a new instance
         mSupervisionSettings.removeUserData(1)
@@ -136,30 +134,30 @@ class SupervisionSettingsTest {
     fun saveAndLoadSupervisionUserData_oneUser_retrievesUserDataCorrectly() {
         // Get and set user data
         val userData1 = mSupervisionSettings.getUserData(1)
-        userData1.changeUserData(true, "package1", true, BUNDLE_1)
+        userData1.changeUserData(true, "package1", true, BUNDLE_1, true)
 
         // Save, change and load user data
         mSupervisionSettings.saveUserData()
-        userData1.changeUserData(false, null, false, BUNDLE_2)
+        userData1.changeUserData(false, null, false, BUNDLE_2, false)
         mSupervisionSettings.loadUserData()
 
         // Check if user data was loaded correctly
-        mSupervisionSettings.getUserData(1).checkUserData(true, "package1", true, BUNDLE_1)
+        mSupervisionSettings.getUserData(1).checkUserData(true, "package1", true, BUNDLE_1, true)
     }
 
     @Test
     fun saveAndLoadSupervisionUserData_oneUserNoPersistableBundle_retrievesUserDataCorrectly() {
         // Get and set user data
         val userData1 = mSupervisionSettings.getUserData(1)
-        userData1.changeUserData(true, "package1", true, null)
+        userData1.changeUserData(true, "package1", true, null, true)
 
         // Save, change and load user data
         mSupervisionSettings.saveUserData()
-        userData1.changeUserData(false, null, false, BUNDLE_2)
+        userData1.changeUserData(false, null, false, BUNDLE_2, false)
         mSupervisionSettings.loadUserData()
 
         // Check if user data was loaded correctly
-        mSupervisionSettings.getUserData(1).checkUserData(true, "package1", true, null)
+        mSupervisionSettings.getUserData(1).checkUserData(true, "package1", true, null, true)
     }
 
     @Test
@@ -167,42 +165,44 @@ class SupervisionSettingsTest {
         // Get and set user data
         val userData1 = mSupervisionSettings.getUserData(1)
         val roleHolders = ArraySet<String>(setOf("package2", "package3", "package4"))
-        userData1.changeUserData(true, "package1", true, null, roleHolders)
+        userData1.changeUserData(true, "package1", true, null, true, roleHolders)
 
         // Save, change and load user data
         mSupervisionSettings.saveUserData()
-        userData1.changeUserData(false, null, false, BUNDLE_2)
+        userData1.changeUserData(false, null, false, BUNDLE_2, false)
         mSupervisionSettings.loadUserData()
 
         // Check if user data was loaded correctly
-        mSupervisionSettings.getUserData(1).checkUserData(true, "package1", true, null, roleHolders)
+        mSupervisionSettings
+            .getUserData(1)
+            .checkUserData(true, "package1", true, null, true, roleHolders)
     }
 
     @Test
     fun saveAndLoadSupervisionUserData_manyUsers_retrievesUserDataCorrectly() {
         // Get and set user data
         val userData1 = mSupervisionSettings.getUserData(1)
-        userData1.changeUserData(true, "package1", true, BUNDLE_1)
+        userData1.changeUserData(true, "package1", true, BUNDLE_1, true)
         val userData2 = mSupervisionSettings.getUserData(2)
-        userData2.changeUserData(true, null, false, null)
+        userData2.changeUserData(true, null, false, null, false)
         val userData3 = mSupervisionSettings.getUserData(3)
-        userData3.changeUserData(false, null, false, BUNDLE_2)
+        userData3.changeUserData(false, null, false, BUNDLE_2, false)
         val userData4 = mSupervisionSettings.getUserData(4)
-        userData4.changeUserData(false, "package4", false, null)
+        userData4.changeUserData(false, "package4", false, null, false)
 
         // Save, change and load user data
         mSupervisionSettings.saveUserData()
-        userData1.changeUserData(false, null, false, BUNDLE_2)
-        userData2.changeUserData(true, null, false, BUNDLE_1)
-        userData3.changeUserData(true, "package3", true, null)
-        userData4.changeUserData(false, null, false, null)
+        userData1.changeUserData(false, null, false, BUNDLE_2, false)
+        userData2.changeUserData(true, null, false, BUNDLE_1, false)
+        userData3.changeUserData(true, "package3", true, null, true)
+        userData4.changeUserData(false, null, false, null, false)
         mSupervisionSettings.loadUserData()
 
         // Check if user data was loaded correctly
-        mSupervisionSettings.getUserData(1).checkUserData(true, "package1", true, BUNDLE_1)
-        mSupervisionSettings.getUserData(2).checkUserData(true, null, false, null)
-        mSupervisionSettings.getUserData(3).checkUserData(false, null, false, BUNDLE_2)
-        mSupervisionSettings.getUserData(4).checkUserData(false, "package4", false, null)
+        mSupervisionSettings.getUserData(1).checkUserData(true, "package1", true, BUNDLE_1, true)
+        mSupervisionSettings.getUserData(2).checkUserData(true, null, false, null, false)
+        mSupervisionSettings.getUserData(3).checkUserData(false, null, false, BUNDLE_2, false)
+        mSupervisionSettings.getUserData(4).checkUserData(false, "package4", false, null, false)
     }
 
     @Test
@@ -232,13 +232,14 @@ class SupervisionSettingsTest {
                 null,
                 true,
                 null,
+                true,
                 ArraySet<String>(),
                 listOf(TEST_PACKAGE_POLICY, TEST_PACKAGE_POLICY_2),
             )
 
         // save user data, update with empty policies and load user data
         mSupervisionSettings.saveUserData()
-        mSupervisionSettings.getUserData(1).changeUserData(false, null, false, null)
+        mSupervisionSettings.getUserData(1).changeUserData(false, null, false, null, false)
         mSupervisionSettings.loadUserData()
 
         // check if policy was loaded correctly
@@ -249,6 +250,7 @@ class SupervisionSettingsTest {
                 null,
                 true,
                 null,
+                true,
                 ArraySet<String>(),
                 listOf(TEST_PACKAGE_POLICY, TEST_PACKAGE_POLICY_2),
             )
@@ -274,7 +276,7 @@ class SupervisionSettingsTest {
 
         mSupervisionSettings.loadUserData()
 
-        mSupervisionSettings.getUserData(1).checkUserData(true, "package1", true, BUNDLE_1)
+        mSupervisionSettings.getUserData(1).checkUserData(true, "package1", true, BUNDLE_1, true)
     }
 
     private fun writeSupervisionSettingsFrom(@XmlRes resId: Int) {
@@ -331,6 +333,7 @@ class SupervisionSettingsTest {
             appPackage: String?,
             lockScreenEnabled: Boolean,
             lockScreenOptions: PersistableBundle?,
+            escrowTokenRequired: Boolean,
             roleHolders: ArraySet<String> = ArraySet<String>(),
             policies: List<Policy> = emptyList(),
         ) {
@@ -338,6 +341,7 @@ class SupervisionSettingsTest {
             this.supervisionAppPackage = appPackage
             this.supervisionLockScreenEnabled = lockScreenEnabled
             this.supervisionLockScreenOptions = lockScreenOptions
+            this.escrowTokenRequired = escrowTokenRequired
             this.supervisionRoleHolders = roleHolders
             for (policy in policies) {
                 this.policies.add(policy)
@@ -349,6 +353,7 @@ class SupervisionSettingsTest {
             appPackage: String?,
             lockScreenEnabled: Boolean,
             lockScreenOptions: PersistableBundle?,
+            escrowTokenRequired: Boolean,
             roleHolders: ArraySet<String> = ArraySet<String>(),
             policies: List<Policy> = emptyList(),
         ) {
@@ -361,6 +366,7 @@ class SupervisionSettingsTest {
                 assertThat(this.supervisionLockScreenOptions.toString())
                     .isEqualTo(lockScreenOptions.toString())
             }
+            assertThat(this.escrowTokenRequired).isEqualTo(escrowTokenRequired)
             assertThat(this.supervisionRoleHolders).containsExactlyElementsIn(roleHolders)
             assertThat(this.policies.getPolicies()).containsExactlyElementsIn(policies)
         }
