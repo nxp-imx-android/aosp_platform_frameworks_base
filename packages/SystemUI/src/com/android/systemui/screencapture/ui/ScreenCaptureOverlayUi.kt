@@ -29,12 +29,14 @@ import androidx.compose.foundation.AndroidEmbeddedExternalSurface
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -42,7 +44,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asComposePath
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -136,7 +141,7 @@ constructor(
         val display = LocalContext.current.display
         val viewModel =
             rememberViewModel("ScreenCaptureCameraViewModel") { cameraViewModelFactory.create() }
-        LaunchedEffect(display, viewModel) { viewModel.onDisplayReady(display) }
+        LightLaunchedEffect(display, viewModel) { viewModel.onDisplayReady(display) }
         val surfaceSize =
             viewModel.surfaceSize?.let { IntSize(width = it.width, height = it.height) }
         val shouldShowCamera = viewModel.shouldShowCamera
@@ -149,12 +154,7 @@ constructor(
                     cameraTransformationViewModel.create()
                 }
             var windowBounds: Rect by remember { mutableStateOf(Rect.Zero) }
-            LaunchedEffect(
-                transformationViewModel.offsetX,
-                transformationViewModel.offsetY,
-                transformationViewModel.rotation,
-                transformationViewModel.scale,
-            ) {
+            LightLaunchedEffect(transformationViewModel.fillCameraInteractableRegionIndicator) {
                 transformationViewModel.fillCameraInteractableRegion(outTouchableRegion)
             }
 
@@ -164,12 +164,15 @@ constructor(
                     modifier
                         .fillMaxSize()
                         .onGloballyPositioned { layoutCoordinates ->
-                            windowBounds = layoutCoordinates.boundsInWindow()
+                            val layoutBounds = layoutCoordinates.boundsInWindow()
+                            windowBounds = layoutBounds
+                            transformationViewModel.onUiBoundsChanged(layoutBounds)
                         }
                         .selfieTransformableModifier(
                             viewModel = transformationViewModel,
                             isEverywhere = true,
-                        ),
+                        )
+                        .showDebugIfNeeded(transformationViewModel),
             ) {
                 val surfaceAlpha by
                     animateFloatAsState(
@@ -179,31 +182,11 @@ constructor(
                 AndroidEmbeddedExternalSurface(
                     surfaceSize = surfaceSize,
                     isOpaque = false,
+                    transform = transformationViewModel.surfaceTransformation,
                     modifier =
                         Modifier.fillMaxSmallDimension(windowBounds)
-                            .aspectRatio(surfaceSize.height.toFloat() / surfaceSize.width)
-                            .selfieTransformableModifier(
-                                viewModel = transformationViewModel,
-                                isEverywhere = false,
-                            )
-                            .onGloballyPositioned { layoutCoordinates ->
-                                val boundsInWindow = layoutCoordinates.boundsInWindow(false)
-                                transformationViewModel.onCameraScreenBoundsUpdated(boundsInWindow)
-                                transformationViewModel.fillCameraInteractableRegion(
-                                    outTouchableRegion
-                                )
-                            }
-                            .graphicsLayer {
-                                alpha = surfaceAlpha
-                                with(transformationViewModel) {
-                                    scaleX = scale
-                                    scaleY = scale
-                                    translationX = offsetX
-                                    translationY = offsetY
-                                    rotationZ = rotation
-                                }
-                            }
-                            .clickable { viewModel.onSurfaceClicked() },
+                            .graphicsLayer { alpha = surfaceAlpha }
+                            .aspectRatio(surfaceSize.height.toFloat() / surfaceSize.width),
                 ) {
                     onSurface { surface, width, height ->
                         viewModel.onSurfaceReady(surface = surface, width = width, height = height)
@@ -217,6 +200,31 @@ constructor(
                         surface.onDestroyed { viewModel.onSurfaceDestroyed() }
                     }
                 }
+                Spacer(
+                    modifier =
+                        Modifier.fillMaxSmallDimension(windowBounds)
+                            .aspectRatio(surfaceSize.height.toFloat() / surfaceSize.width)
+                            .onGloballyPositioned { layoutCoordinates ->
+                                val boundsInWindow = layoutCoordinates.boundsInWindow(false)
+                                transformationViewModel.onSurfaceScreenBoundsUpdated(boundsInWindow)
+                            }
+                            .selfieTransformableModifier(
+                                viewModel = transformationViewModel,
+                                isEverywhere = false,
+                            )
+                            .graphicsLayer {
+                                translationX = transformationViewModel.offsetX
+                                translationY = transformationViewModel.offsetY
+                                rotationZ = transformationViewModel.rotation
+                                scaleX = transformationViewModel.scale
+                                scaleY = transformationViewModel.scale
+                            }
+                            .clickable(
+                                interactionSource = null,
+                                indication = null,
+                                onClick = { viewModel.onSurfaceClicked() },
+                            )
+                )
             }
         }
     }
@@ -231,7 +239,7 @@ constructor(
         isEverywhere: Boolean,
     ): Modifier {
         return if (isEverywhere == viewModel.transformableByTouchAnywhere) {
-            transformable(viewModel.state)
+            transformable(viewModel)
         } else {
             this
         }
@@ -255,11 +263,40 @@ constructor(
     }
 }
 
+private fun Modifier.showDebugIfNeeded(vm: ScreenCaptureCameraTransformationViewModel): Modifier {
+    return if (vm.shouldShowTouchBounds) {
+        drawWithContent {
+            drawContent()
+            val path = vm.debugTouchBounds?.boundaryPath?.asComposePath() ?: return@drawWithContent
+            drawPath(path = path, color = Color.Red, alpha = 0.2f)
+        }
+    } else {
+        this
+    }
+}
+
+/** Runs [action] if the [condition] is met. */
 @Composable
 private fun ConditionalLaunchedEffect(condition: Boolean, action: suspend () -> Unit) {
     LaunchedEffect(condition) {
         if (condition) {
             action()
         }
+    }
+}
+
+@Composable
+private fun LightLaunchedEffect(key: Any?, action: () -> Unit) {
+    DisposableEffect(key) {
+        action()
+        onDispose {}
+    }
+}
+
+@Composable
+private fun LightLaunchedEffect(key1: Any?, key2: Any?, action: () -> Unit) {
+    DisposableEffect(key1, key2) {
+        action()
+        onDispose {}
     }
 }

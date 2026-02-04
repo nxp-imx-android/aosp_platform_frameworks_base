@@ -18,6 +18,7 @@ package com.android.systemui.screencapture.record.camera.ui.viewmodel
 
 import android.graphics.Region
 import android.media.projection.StopReason
+import android.os.SystemProperties
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.toAndroidRectF
@@ -68,7 +69,7 @@ class ScreenCaptureCameraTransformationViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             val transform = CompletableDeferred<Unit>()
 
-            testScope.launch { underTest.state.transform { transform.await() } }
+            testScope.launch { underTest.transform { transform.await() } }
             assertThat(screenCaptureCameraTransformationInteractor.isTransforming).isTrue()
 
             transform.complete(Unit)
@@ -78,7 +79,9 @@ class ScreenCaptureCameraTransformationViewModelTest : SysuiTestCase() {
     @Test
     fun recordingInProgress_useCameraBounds() =
         kosmos.runTest {
-            val cameraScreenBounds = Rect(0f, 0f, 1080f, 1920f)
+            val uiBounds = Rect(0f, 0f, 1080f, 1920f)
+            underTest.onUiBoundsChanged(uiBounds)
+            underTest.onSurfaceScreenBoundsUpdated(uiBounds.deflate(10f))
             screenRecordingServiceInteractor.startRecording(
                 ScreenRecordingParameters(
                     captureTarget = null,
@@ -87,11 +90,11 @@ class ScreenCaptureCameraTransformationViewModelTest : SysuiTestCase() {
                     shouldShowTaps = false,
                 )
             )
-            fakeScreenRecordCameraRepository.setCameraRegion(Region(20, 20, 100, 100))
-            underTest.onCameraScreenBoundsUpdated(cameraScreenBounds)
-            underTest.state.transform {
+            fakeScreenRecordCameraRepository.setCameraSubjectBounds(Region(20, 20, 100, 100))
+
+            underTest.transform {
                 transformByWithCentroid(
-                    centroid = cameraScreenBounds.center,
+                    centroid = uiBounds.center,
                     zoomChange = 0.01f,
                     panChange = Offset(10f, 10f),
                     rotationChange = 10f,
@@ -106,12 +109,14 @@ class ScreenCaptureCameraTransformationViewModelTest : SysuiTestCase() {
     @Test
     fun noRecordingInProgress_useGlobalBounds() =
         kosmos.runTest {
-            val cameraScreenBounds = Rect(0f, 0f, 1080f, 1920f)
+            val uiBounds = Rect(0f, 0f, 1080f, 1920f)
+            underTest.onUiBoundsChanged(uiBounds)
+            underTest.onSurfaceScreenBoundsUpdated(uiBounds.deflate(10f))
+
             screenRecordingServiceInteractor.stopRecording(StopReason.STOP_HOST_APP)
-            underTest.onCameraScreenBoundsUpdated(cameraScreenBounds)
-            underTest.state.transform {
+            underTest.transform {
                 transformByWithCentroid(
-                    centroid = cameraScreenBounds.center,
+                    centroid = uiBounds.center,
                     zoomChange = 10f,
                     panChange = Offset(10f, 10f),
                     rotationChange = 10f,
@@ -120,7 +125,17 @@ class ScreenCaptureCameraTransformationViewModelTest : SysuiTestCase() {
 
             assertThat(underTest.transformableByTouchAnywhere).isTrue()
             val touchableRegion = Region().also(underTest::fillCameraInteractableRegion)
-            assertThat(touchableRegion.bounds)
-                .isEqualTo(cameraScreenBounds.toAndroidRectF().toRect())
+            assertThat(touchableRegion.bounds).isEqualTo(uiBounds.toAndroidRectF().toRect())
+        }
+
+    @Test
+    fun notDebuggable_debugTouchBounds_isNull() =
+        kosmos.runTest {
+            SystemProperties.set(
+                ScreenCaptureCameraTransformationViewModel.SHOW_SELFIE_TOUCH_BOUNDS_PROPERTY,
+                "false",
+            )
+
+            assertThat(underTest.debugTouchBounds).isNull()
         }
 }
