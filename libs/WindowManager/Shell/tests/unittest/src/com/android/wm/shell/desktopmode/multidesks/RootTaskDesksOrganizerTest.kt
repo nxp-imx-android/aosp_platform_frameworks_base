@@ -1256,6 +1256,50 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
         verify(listener, never()).invoke(any())
     }
 
+    @Test
+    fun createDesk_concurrentRequestsWithInterleavedMinizationRoots_rootsFilledInCreationOrder() =
+        runTest {
+            val desk1Callback = mock<DesksOrganizer.OnCreateCallback>()
+            val desk2Callback = mock<DesksOrganizer.OnCreateCallback>()
+            val desk1Task =
+                createFreeformTask(taskId = 1, userId = PRIMARY_USER_ID).apply { parentTaskId = -1 }
+            val min1Task =
+                createFreeformTask(taskId = 2, userId = PRIMARY_USER_ID).apply { parentTaskId = -1 }
+            val desk2Task =
+                createFreeformTask(taskId = 3, userId = PRIMARY_USER_ID).apply { parentTaskId = -1 }
+            val min2Task =
+                createFreeformTask(taskId = 4, userId = PRIMARY_USER_ID).apply { parentTaskId = -1 }
+            whenever(mockShellTaskOrganizer.createTask(any(), any())).thenReturn(null)
+
+            // Request Desk 1 and have its root appear, which should request a minimization root.
+            organizer.createDesk(DEFAULT_DISPLAY, PRIMARY_USER_ID, desk1Callback)
+            organizer.onTaskAppeared(desk1Task, mock())
+            // Request Desk 2, before the minimization root of Desk 1 appears.
+            organizer.createDesk(DEFAULT_DISPLAY, PRIMARY_USER_ID, desk2Callback)
+            // Minimization root of Desk 1 appears.
+            organizer.onTaskAppeared(min1Task, mock())
+            // Desk 2 root appears.
+            organizer.onTaskAppeared(desk2Task, mock())
+            // Minimization root of Desk 2 appears
+            organizer.onTaskAppeared(min2Task, mock())
+
+            // Verify desk callbacks are invoked with the correct desk ids.
+            verify(desk1Callback).onCreated(deskId = 1)
+            verify(desk2Callback).onCreated(deskId = 3)
+            // Verify the desk roots are assigned the expected ids as WM would dispatch them (in
+            // order of creation request).
+            assertThat(organizer.deskRootsByDeskId.size()).isEqualTo(2)
+            assertThat(organizer.deskMinimizationRootsByDeskId.size).isEqualTo(2)
+            val desk1Root = assertNotNull(organizer.deskRootsByDeskId[1])
+            val min1Root = assertNotNull(organizer.deskMinimizationRootsByDeskId[1])
+            val desk2Root = assertNotNull(organizer.deskRootsByDeskId[3])
+            val min2Root = assertNotNull(organizer.deskMinimizationRootsByDeskId[3])
+            assertThat(desk1Root.deskId).isEqualTo(desk1Task.taskId)
+            assertThat(min1Root.rootId).isEqualTo(min1Task.taskId)
+            assertThat(desk2Root.deskId).isEqualTo(desk2Task.taskId)
+            assertThat(min2Root.rootId).isEqualTo(min2Task.taskId)
+        }
+
     private data class DeskRoots(
         val deskRoot: DeskRoot,
         val minimizationRoot: DeskMinimizationRoot,
