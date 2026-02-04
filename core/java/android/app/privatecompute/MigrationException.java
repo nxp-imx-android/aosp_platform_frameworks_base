@@ -18,25 +18,24 @@ package android.app.privatecompute;
 
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
-import android.annotation.NonNull;
 import android.annotation.Nullable;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * Interface for receiving the result of a startNonPccProcessForDataMigration request.
+ * Exception thrown when a migration request fails.
  */
 @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
-public interface MigrationRequestResultReceiver {
+public final class MigrationException extends Exception {
     /** The migration request failed due to an invocation error. */
-    int ERROR_INVOCATION_FAILED = 1;
+    public static final int ERROR_INVOCATION_FAILED = 1;
 
     /** The migration request failed due to a timeout. */
-    int ERROR_TIMEOUT = 2;
+    public static final int ERROR_TIMEOUT = 2;
 
     /**
-     * Error codes for {@link #onError(int, String)}.
+     * Error codes for {@link #getErrorCode()}.
      * @hide
      */
     @IntDef(prefix = { "ERROR_" }, value = {
@@ -44,16 +43,20 @@ public interface MigrationRequestResultReceiver {
             ERROR_TIMEOUT
     })
     @Retention(RetentionPolicy.SOURCE)
-    @interface MigrationError {}
+    public @interface MigrationError {}
 
-    /** Called when the non-PCC process provides a result (Accepted/Rejected). */
-    void onResult(@NonNull MigrationRequestResult result);
+    private final int mErrorCode;
+
+    public MigrationException(@MigrationError int errorCode, @Nullable String message) {
+        super(message);
+        mErrorCode = errorCode;
+    }
 
     /**
-     * Called if the system fails to start the non-PCC process or it times out.
-     *
-     * @param errorCode The error code.
-     * @param errorMessage A description of the error.
+     * Returns the error code associated with this exception.
      */
-    void onError(int errorCode, @Nullable String errorMessage);
+    @MigrationError
+    public int getErrorCode() {
+        return mErrorCode;
+    }
 }

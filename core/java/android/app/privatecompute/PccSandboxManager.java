@@ -23,6 +23,7 @@ import android.annotation.RequiresNoPermission;
 import android.annotation.SuppressLint;
 import android.annotation.SystemService;
 import android.content.Context;
+import android.os.OutcomeReceiver;
 import android.os.PersistableBundle;
 import android.os.RemoteException;
 
@@ -104,7 +105,7 @@ public final class PccSandboxManager {
     @SuppressLint("RequiresPermission")
     public void startNonPccProcessForDataMigration(
             @NonNull @CallbackExecutor Executor executor,
-            @NonNull MigrationRequestResultReceiver callback) {
+            @NonNull OutcomeReceiver<MigrationRequestResult, MigrationException> callback) {
         try {
             mService.startNonPccProcessForDataMigration(new IMigrationRequestResultReceiver.Stub() {
                 @Override
@@ -114,7 +115,8 @@ public final class PccSandboxManager {
 
                 @Override
                 public void onError(int errorCode, String errorMessage) {
-                    executor.execute(() -> callback.onError(errorCode, errorMessage));
+                    executor.execute(() -> callback.onError(new MigrationException(errorCode,
+                            errorMessage)));
                 }
             });
         } catch (RemoteException e) {
