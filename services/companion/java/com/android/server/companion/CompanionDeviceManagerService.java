@@ -329,14 +329,9 @@ public class CompanionDeviceManagerService extends SystemService {
         final List<AssociationInfo> associations =
                 mAssociationStore.getAssociationsByPackage(userId, packageName);
 
-        boolean isPresent = false;
-        for (AssociationInfo association : associations) {
-            if (mDevicePresenceProcessor.isDevicePresent(association.getId())) {
-                isPresent = true;
-                break;
-            }
-        }
-        mCompanionExemptionProcessor.exemptPackage(userId, packageName, isPresent);
+       if (!associations.isEmpty()) {
+            mCompanionExemptionProcessor.exemptPackage(userId, packageName, false);
+       }
     }
 
     private void onPackageAddedInternal(@UserIdInt int userId, @NonNull String packageName) {
