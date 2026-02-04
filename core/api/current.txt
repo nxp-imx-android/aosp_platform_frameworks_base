@@ -10187,6 +10187,8 @@ package android.app.permissionui {
     method public void setBackgroundColor(@ColorInt int);
     method public void setCornerRadius(float);
     method public void setIconTint(@ColorInt int);
+    method public void setPadding(int, int, int, int);
+    method public void setPressedCornerRadius(float);
     method public void setStrokeColor(@ColorInt int);
     method public void setStrokeWidth(int);
     method public void setTextColor(@ColorInt int);

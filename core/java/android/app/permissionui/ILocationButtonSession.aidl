@@ -24,12 +24,14 @@ import android.content.res.Configuration;
  * @hide
  */
 oneway interface ILocationButtonSession {
-    void setCornerRadius(float radius);
+    void setCornerRadius(float cornerRadius);
+    void setPressedCornerRadius(float cornerRadius);
     void setBackgroundColor(int color);
     void setIconTint(int color);
     void setTextType(int textType);
     void setTextColor(int color);
     void resize(int width, int height);
+    void setPadding(int left, int top, int right, int bottom);
     void changeConfiguration(in Configuration newConfig);
     void close();
     void setStrokeColor(int color);
