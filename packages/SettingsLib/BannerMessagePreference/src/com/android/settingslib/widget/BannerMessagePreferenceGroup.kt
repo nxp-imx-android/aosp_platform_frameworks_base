@@ -24,7 +24,6 @@ import android.util.AttributeSet
 import android.view.View
 import android.view.animation.PathInterpolator
 import androidx.preference.Preference
-import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceGroup
 import androidx.preference.PreferenceGroupAdapter
 import androidx.preference.PreferenceViewHolder
@@ -56,7 +55,6 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
     private val dismissedSection = GroupSection()
 
     private val handler = Handler(Looper.getMainLooper())
-    private var subsectionCategory: PreferenceCategory? = null
     private var expandKey: String? = null
     private var expandTitle: CharSequence? = null
     private var collapseKey: String? = null
@@ -79,11 +77,7 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
         }
 
     private val collapsiblePreferenceCount
-        get() = max(activeSection.list.size - visiblePreferencesWhenCollapsedCount, 0) +
-                subsectionPreferenceCount
-
-    private val subsectionPreferenceCount
-        get() = subsectionCategory?.preferenceCount ?: 0
+        get() = max(activeSection.list.size - visiblePreferencesWhenCollapsedCount, 0)
 
     var expandContentDescription: Int = 0
         set(value) {
@@ -179,17 +173,10 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
             return wasRemoved
         }
 
-        if (subsectionCategory?.removePreference(preference) == true) {
-            updateCollapsedItemCount()
-            updateVisibilities()
-            return true
-        }
-
         return false
     }
 
     override fun removeAll() {
-        subsectionCategory?.removeAll()
         activeSection.list.forEach { super.removePreference(it) }
         activeSection.list.clear()
         updateCollapsedItemCount()
@@ -225,7 +212,6 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
             !activeSection.isExpanded && collapsiblePreferenceCount > 0
         activeSection.collapsePref?.isVisible =
             activeSection.isExpanded && collapsiblePreferenceCount > 0
-        subsectionCategory?.isVisible = activeSection.isExpanded && subsectionPreferenceCount > 0
     }
 
     private fun toggleExpansion(anchorView: View?) {
@@ -327,40 +313,6 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
 
     fun setCollapseTitle(title: CharSequence?) {
         collapseTitle = title
-    }
-
-    fun addSubsection(subsectionTitle: CharSequence) {
-        if (subsectionCategory == null) {
-            subsectionCategory = PreferenceCategory(context).apply {
-                key = SUBSECTION_KEY
-                title = subsectionTitle
-                order = SUBSECTION_ORDER
-                super.addPreference(this)
-                isVisible = false
-            }
-        }
-    }
-
-    fun setSubsectionTitle(subsectionTitle: CharSequence?) {
-        subsectionCategory?.title = subsectionTitle
-    }
-
-    fun removeSubsection() {
-        subsectionCategory?.let {
-            super.removePreference(it)
-            subsectionCategory = null
-        }
-        updateCollapsedItemCount()
-        updateVisibilities()
-    }
-
-    fun addSubsectionPreference(preference: BannerMessagePreference) {
-        if (subsectionCategory?.addPreference(preference) == true) {
-            preference.isVisible = activeSection.isExpanded
-            maybeCreateExpandCollapsePreference()
-            updateCollapsedItemCount()
-            updateVisibilities()
-        }
     }
 
     fun removePreferenceRecursively(key: CharSequence, moveToDismissed: Boolean): Boolean {
@@ -580,9 +532,7 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
     }
 
     companion object {
-        private const val SUBSECTION_KEY = "banner_message_preference_group_subsection"
         private const val DEFAULT_VISIBLE_PREFERENCES_WHEN_COLLAPSED = 1
-        private const val SUBSECTION_ORDER = 999
         private const val EXPAND_ORDER = 1000
         private const val COLLAPSE_ORDER = 2000
         private const val EXPAND_DISMISSED_ORDER = 10000
