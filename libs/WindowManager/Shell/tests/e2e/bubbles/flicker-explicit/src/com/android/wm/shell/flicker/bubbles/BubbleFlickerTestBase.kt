@@ -103,25 +103,29 @@ abstract class BubbleFlickerTestBase : BubbleFlickerSubjects {
     @CallSuper
     @Before
     open fun setUp() {
-        eventLogSubject =
-            EventLogSubject(
-                traceDataReader.readEventLogTrace() ?: error("Failed to read event log"),
-                traceDataReader,
-            )
-        wmTraceSubject =
-            WindowManagerTraceSubject(
-                traceDataReader.readWmTrace() ?: error("Failed to read WM trace")
-            )
-        layersTraceSubject =
-            LayersTraceSubject(
-                traceDataReader.readLayersTrace() ?: error("Failed to read layer trace")
-            )
+        try {
+            eventLogSubject =
+                EventLogSubject(
+                    traceDataReader.readEventLogTrace() ?: error("Failed to read event log"),
+                    traceDataReader,
+                )
+            wmTraceSubject =
+                WindowManagerTraceSubject(
+                    traceDataReader.readWmTrace() ?: error("Failed to read WM trace")
+                )
+            layersTraceSubject =
+                LayersTraceSubject(
+                    traceDataReader.readLayersTrace() ?: error("Failed to read layer trace")
+                )
 
-        val parser = SubjectsParser(traceDataReader)
-        wmStateSubjectAtStart = parser.getSubjectOfType(Tag.START)
-        wmStateSubjectAtEnd = parser.getSubjectOfType(Tag.END)
-        layerTraceEntrySubjectAtStart = parser.getSubjectOfType(Tag.START)
-        layerTraceEntrySubjectAtEnd = parser.getSubjectOfType(Tag.END)
+            val parser = SubjectsParser(traceDataReader)
+            wmStateSubjectAtStart = parser.getSubjectOfType(Tag.START)
+            wmStateSubjectAtEnd = parser.getSubjectOfType(Tag.END)
+            layerTraceEntrySubjectAtStart = parser.getSubjectOfType(Tag.START)
+            layerTraceEntrySubjectAtEnd = parser.getSubjectOfType(Tag.END)
+        } catch (_: UninitializedPropertyAccessException) {
+            error("traceDataReader is not initialized. See the first test to know why it failed.")
+        }
     }
 
     // region Generic tests
