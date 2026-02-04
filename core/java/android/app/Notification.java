@@ -12587,7 +12587,7 @@ public class Notification implements Parcelable
             bindMetricStyleMetrics(contentView, p, metricsToBind, isExpandedView);
 
             if (useLabelAsTitle) {
-                contentView.setTextViewText(MetricView.VIEWS.getFirst().labelId(), "");
+                contentView.setViewVisibility(MetricView.VIEWS.getFirst().labelId(), View.GONE);
             }
 
             return contentView;
@@ -12608,6 +12608,7 @@ public class Notification implements Parcelable
                     final CharSequence metricLabel = getMetricLabel(metric, isExpandedView);
 
                     mBuilder.setTextColor(contentView, metricView.labelId(), p);
+                    contentView.setViewVisibility(metricView.labelId(), View.VISIBLE);
                     contentView.setTextViewText(metricView.labelId(), metricLabel);
 
                     // Choose the view (text/chronometer) to show and its visual appearance.
