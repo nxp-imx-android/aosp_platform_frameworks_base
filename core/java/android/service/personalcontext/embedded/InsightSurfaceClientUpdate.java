@@ -65,6 +65,9 @@ public final class InsightSurfaceClientUpdate implements Parcelable {
     /** Key for should blur update. */
     public static final String KEY_SHOULD_BLUR = "key_should_blur";
 
+    /** Key for a theme resource name update. */
+    public static final String KEY_THEME_RESOURCE_NAME = "key_theme_resource_name";
+
     /** Key for a {@link Configuration} update. */
     public static final String KEY_CONFIGURATION = "key_configuration";
 
@@ -173,6 +176,18 @@ public final class InsightSurfaceClientUpdate implements Parcelable {
     }
 
     /**
+     * Return the theme resource name update for this update, or null if the update doesn't
+     * contain such a value.
+     * @see InsightSurfaceClientInfo#getThemeResourceName()
+     */
+    @Nullable
+    public String getThemeResourceName() {
+        return hasUpdate(KEY_THEME_RESOURCE_NAME)
+                ? mUpdateValues.getString(KEY_THEME_RESOURCE_NAME)
+                : null;
+    }
+
+    /**
      * Return the {@link Configuration} for this update, or null if the update doesn't contain a
      * configuration.
      */
@@ -255,6 +270,17 @@ public final class InsightSurfaceClientUpdate implements Parcelable {
         @NonNull
         public Builder setShouldBlur(boolean shouldBlur) {
             mValues.putBoolean(KEY_SHOULD_BLUR, shouldBlur);
+            return this;
+        }
+
+        /**
+         * Set the theme resource name for this update.
+         * @see InsightSurfaceClient.Builder#setThemeResourceName(String)
+         * @param themeResourceName the name of the theme resource
+         */
+        @NonNull
+        public Builder setThemeResourceName(@Nullable String themeResourceName) {
+            mValues.putString(KEY_THEME_RESOURCE_NAME, themeResourceName);
             return this;
         }
 

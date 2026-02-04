@@ -58,6 +58,8 @@ public class InsightSurfaceClientInfoTest {
         final int nestedScrollingAxes = View.SCROLL_AXIS_HORIZONTAL | View.SCROLL_AXIS_VERTICAL;
         final boolean nestedScrollAxisLocked = true;
         final boolean shouldBlur = true;
+        final String themeResourceName = "theme";
+        final String packageName = "package.name";
         final Configuration configuration = new Configuration();
 
         final InsightSurfaceClientInfo clientInfo =
@@ -69,6 +71,8 @@ public class InsightSurfaceClientInfoTest {
                         nestedScrollingAxes,
                         nestedScrollAxisLocked,
                         shouldBlur,
+                        themeResourceName,
+                        packageName,
                         configuration,
                         mClient);
 
@@ -79,6 +83,8 @@ public class InsightSurfaceClientInfoTest {
         assertThat(clientInfo.getBackgroundColor()).isEqualTo(backgroundColor);
         assertThat(clientInfo.getNestedScrollAxes()).isEqualTo(nestedScrollingAxes);
         assertThat(clientInfo.shouldBlur()).isEqualTo(shouldBlur);
+        assertThat(clientInfo.getThemeResourceName()).isEqualTo(themeResourceName);
+        assertThat(clientInfo.getPackageName()).isEqualTo(packageName);
         assertThat(clientInfo.getNestedScrollAxisLocked()).isEqualTo(nestedScrollAxisLocked);
     }
 
@@ -93,6 +99,8 @@ public class InsightSurfaceClientInfoTest {
                         View.SCROLL_AXIS_NONE,
                         false,
                         false,
+                        null,
+                        "package.name",
                         new Configuration(),
                         mClient);
         clientInfo.onSurfaceCreated(mSurfacePackage, mSession);
@@ -110,6 +118,8 @@ public class InsightSurfaceClientInfoTest {
                         View.SCROLL_AXIS_NONE,
                         false,
                         false,
+                        null,
+                        "package.name",
                         new Configuration(),
                         mClient);
         clientInfo.onReceiveInsight(new BundleInsight.Builder().build());
