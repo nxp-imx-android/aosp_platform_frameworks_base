@@ -2085,6 +2085,11 @@ public class WindowManagerService extends IWindowManager.Stub
 
         if (imMayMove) {
             displayContent.computeImeLayeringTarget(true /* update */);
+            if (WindowManager.useClientSurface() && displayContent.getImeLayeringTarget() == win) {
+                // Since WindowState#showSurfaceOnCreation is false, explicitly show the surface if
+                // it is the IME layering target.
+                displayContent.getPendingTransaction().show(win.mSurfaceControl);
+            }
         }
 
         // Don't do layout here, the window must call
