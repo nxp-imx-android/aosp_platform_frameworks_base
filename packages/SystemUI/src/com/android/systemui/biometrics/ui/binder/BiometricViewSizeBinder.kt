@@ -440,6 +440,8 @@ object BiometricViewSizeBinder {
                     previousLayoutState = currentState
                     currentPosition = currentState.position
                     currentView = currentState.activeView
+
+                    panelView.visibility = View.VISIBLE
                     panelView.invalidateOutline()
                 }
             }
