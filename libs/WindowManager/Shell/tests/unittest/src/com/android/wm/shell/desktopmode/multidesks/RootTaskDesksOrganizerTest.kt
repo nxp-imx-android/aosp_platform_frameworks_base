@@ -54,6 +54,9 @@ import com.android.wm.shell.sysui.ShellInit
 import com.google.common.truth.Truth.assertThat
 import kotlin.coroutines.suspendCoroutine
 import kotlin.test.assertNotNull
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertThrows
 import org.junit.Before
@@ -158,6 +161,14 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
 
     @Test
     fun testWarmUpDefaultDesk_createRequestInProgress_noDeskCreated() = runTest {
+        val deskRoot =
+            TaskAppearedInfo(
+                createFreeformTask(displayId = DEFAULT_DISPLAY, userId = PRIMARY_USER_ID)
+                    .apply { parentTaskId = -1 },
+                SurfaceControl(),
+            )
+        whenever(mockShellTaskOrganizer.createTask(any(), eq(organizer)))
+            .thenReturn(deskRoot)
         organizer.createDesk(displayId = DEFAULT_DISPLAY, userId = PRIMARY_USER_ID) {}
 
         warmUpDefaultDesk(userId = PRIMARY_USER_ID, displayId = DEFAULT_DISPLAY)
@@ -239,9 +250,17 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     @Test
     fun testCreateDesk_warmUpInProgress_usesWarmedUpDesk() = runTest {
         val displayId = DEFAULT_DISPLAY
-        organizer.warmUpDefaultDesk(userId = PRIMARY_USER_ID, displayId = DEFAULT_DISPLAY)
+        val deskRoot =
+            TaskAppearedInfo(
+                createFreeformTask(displayId = displayId, userId = PRIMARY_USER_ID)
+                    .apply { parentTaskId = -1 },
+                SurfaceControl(),
+            )
+        whenever(mockShellTaskOrganizer.createTask(any(), eq(organizer)))
+            .thenReturn(deskRoot)
+        organizer.warmUpDefaultDesk(userId = PRIMARY_USER_ID, displayId = displayId)
 
-        organizer.createDesk(userId = PRIMARY_USER_ID, displayId = DEFAULT_DISPLAY) {}
+        organizer.createDesk(userId = PRIMARY_USER_ID, displayId = displayId) {}
 
         // Only one desk attempt.
         verify(mockShellTaskOrganizer, times(1)).createTask(any(), eq(organizer))
@@ -249,16 +268,26 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
 
     @Test
     fun testCreateDesk_warmUpInProgress_appliesCallback() = runTest {
-        val freeformRoot = createFreeformTask().apply { parentTaskId = -1 }
+        val deskRoot =
+            TaskAppearedInfo(
+                createFreeformTask().apply { parentTaskId = -1 },
+                SurfaceControl(),
+            )
+        val minimizationRoot =
+            TaskAppearedInfo(
+                createFreeformTask().apply { parentTaskId = -1 },
+                SurfaceControl(),
+            )
+        whenever(mockShellTaskOrganizer.createTask(any(), eq(organizer)))
+            .thenReturn(deskRoot, minimizationRoot)
         var callbackApplied = false
 
         organizer.warmUpDefaultDesk(userId = PRIMARY_USER_ID, displayId = DEFAULT_DISPLAY)
         organizer.createDesk(userId = PRIMARY_USER_ID, displayId = DEFAULT_DISPLAY) { _ ->
             callbackApplied = true
         }
-        organizer.onTaskAppeared(freeformRoot, SurfaceControl())
-        val minimizationRoot = createFreeformTask()
-        organizer.onTaskAppeared(minimizationRoot, SurfaceControl())
+        organizer.onTaskAppeared(deskRoot.taskInfo, SurfaceControl())
+        organizer.onTaskAppeared(minimizationRoot.taskInfo, SurfaceControl())
 
         assertThat(callbackApplied).isTrue()
     }
@@ -266,10 +295,24 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     @Test
     fun testCreateDesk_twice_warmUpInProgress_usesWarmedUpDeskAndCreatesOne() = runTest {
         val displayId = DEFAULT_DISPLAY
-        organizer.warmUpDefaultDesk(userId = PRIMARY_USER_ID, displayId = DEFAULT_DISPLAY)
+        val root1 =
+            TaskAppearedInfo(
+                createFreeformTask(displayId = displayId, userId = PRIMARY_USER_ID)
+                    .apply { parentTaskId = -1 },
+                SurfaceControl(),
+            )
+        val root2 =
+            TaskAppearedInfo(
+                createFreeformTask(displayId = displayId, userId = PRIMARY_USER_ID)
+                    .apply { parentTaskId = -1 },
+                SurfaceControl(),
+            )
+        whenever(mockShellTaskOrganizer.createTask(any(), eq(organizer)))
+            .thenReturn(root1, root2)
+        organizer.warmUpDefaultDesk(userId = PRIMARY_USER_ID, displayId = displayId)
 
-        organizer.createDesk(userId = PRIMARY_USER_ID, displayId = DEFAULT_DISPLAY) {}
-        organizer.createDesk(userId = PRIMARY_USER_ID, displayId = DEFAULT_DISPLAY) {}
+        organizer.createDesk(userId = PRIMARY_USER_ID, displayId = displayId) {}
+        organizer.createDesk(userId = PRIMARY_USER_ID, displayId = displayId) {}
 
         // One for the warmup/first desk and one for the second desk.
         verify(mockShellTaskOrganizer, times(2)).createTask(any(), eq(organizer))
@@ -1269,7 +1312,15 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
                 createFreeformTask(taskId = 3, userId = PRIMARY_USER_ID).apply { parentTaskId = -1 }
             val min2Task =
                 createFreeformTask(taskId = 4, userId = PRIMARY_USER_ID).apply { parentTaskId = -1 }
-            whenever(mockShellTaskOrganizer.createTask(any(), any())).thenReturn(null)
+            whenever(mockShellTaskOrganizer.createTask(any(), any()))
+                .thenReturn(
+                    // In order of creation request, the same order that is used below to call
+                    // onTaskAppeared.
+                    TaskAppearedInfo(desk1Task, mock()),
+                    TaskAppearedInfo(min1Task, mock()),
+                    TaskAppearedInfo(desk2Task, mock()),
+                    TaskAppearedInfo(min2Task, mock()),
+                )
 
             // Request Desk 1 and have its root appear, which should request a minimization root.
             organizer.createDesk(DEFAULT_DISPLAY, PRIMARY_USER_ID, desk1Callback)
@@ -1305,7 +1356,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
         val minimizationRoot: DeskMinimizationRoot,
     )
 
-    private suspend fun createDeskSuspending(
+    private suspend fun TestScope.createDeskSuspending(
         visible: Boolean = true,
         userId: Int = PRIMARY_USER_ID,
         displayId: Int = DEFAULT_DISPLAY,
@@ -1327,47 +1378,58 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
             .thenAnswer { invocation ->
                 val listener = (invocation.arguments[1] as TaskListener)
                 val taskAppearedInfo = TaskAppearedInfo(freeformRootTask, SurfaceControl())
-                listener.onTaskAppeared(taskAppearedInfo.taskInfo, taskAppearedInfo.leash)
+                this.launch {
+                    listener.onTaskAppeared(taskAppearedInfo.taskInfo, taskAppearedInfo.leash)
+                }
                 taskAppearedInfo
             }
             .thenAnswer { invocation ->
                 val listener = (invocation.arguments[1] as TaskListener)
                 val taskAppearedInfo = TaskAppearedInfo(minimizationRootTask, SurfaceControl())
-                listener.onTaskAppeared(taskAppearedInfo.taskInfo, taskAppearedInfo.leash)
+                this.launch {
+                    listener.onTaskAppeared(taskAppearedInfo.taskInfo, taskAppearedInfo.leash)
+                }
                 taskAppearedInfo
             }
         val deskId = organizer.createDeskSuspending(displayId, userId)
+        advanceUntilIdle()
         val deskRoot = assertNotNull(organizer.deskRootsByDeskId.get(deskId))
-        val minimizationRoot = assertNotNull(organizer.deskMinimizationRootsByDeskId[deskId])
+        val minimizationRoot = assertNotNull(organizer.deskMinimizationRootsByDeskId.get(deskId))
         return DeskRoots(deskRoot, minimizationRoot)
     }
 
-    private fun warmUpDefaultDesk(userId: Int = PRIMARY_USER_ID, displayId: Int = DEFAULT_DISPLAY) {
+    private suspend fun TestScope.warmUpDefaultDesk(
+        userId: Int = PRIMARY_USER_ID,
+        displayId: Int = DEFAULT_DISPLAY,
+    ) {
         val freeformRootTask =
-            createFreeformTask().apply {
+            createFreeformTask(userId = userId, displayId = displayId).apply {
                 parentTaskId = -1
-                this.displayId = displayId
             }
         val minimizationRootTask =
-            createFreeformTask().apply {
+            createFreeformTask(userId = userId, displayId = displayId).apply {
                 parentTaskId = -1
-                this.displayId = displayId
             }
         Mockito.reset(mockShellTaskOrganizer)
         whenever(mockShellTaskOrganizer.createTask(any(), eq(organizer)))
             .thenAnswer { invocation ->
                 val listener = (invocation.arguments[1] as TaskListener)
                 val taskAppearedInfo = TaskAppearedInfo(freeformRootTask, SurfaceControl())
-                listener.onTaskAppeared(taskAppearedInfo.taskInfo, taskAppearedInfo.leash)
+                this.launch {
+                    listener.onTaskAppeared(taskAppearedInfo.taskInfo, taskAppearedInfo.leash)
+                }
                 taskAppearedInfo
             }
             .thenAnswer { invocation ->
                 val listener = (invocation.arguments[1] as TaskListener)
                 val taskAppearedInfo = TaskAppearedInfo(minimizationRootTask, SurfaceControl())
-                listener.onTaskAppeared(taskAppearedInfo.taskInfo, taskAppearedInfo.leash)
+                this.launch {
+                    listener.onTaskAppeared(taskAppearedInfo.taskInfo, taskAppearedInfo.leash)
+                }
                 taskAppearedInfo
             }
         organizer.warmUpDefaultDesk(displayId, userId)
+        advanceUntilIdle()
     }
 
     private fun WindowContainerTransaction.hasMinimizationHops(
