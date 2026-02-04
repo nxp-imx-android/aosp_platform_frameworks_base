@@ -70,6 +70,47 @@ class SteppedCascadingTest : ShellTestCase() {
         assertThat(dest.top).isEqualTo(centerPos.y)
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS)
+    @EnableFlags(Flags.FLAG_ENABLE_STEPPED_CASCADING)
+    fun cascade_rememberedBounds_collision_cascades() {
+        // Exact overlap
+        val prev = getDefaultBounds()
+        val dest = getDefaultBounds()
+
+        cascadeWindowStepped(mContext.resources, FRAME, prev, dest, true)
+
+        val offset = getCascadingOffset()
+        assertThat(dest.left).isEqualTo(prev.left + offset)
+        assertThat(dest.top).isEqualTo(prev.top + offset)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS)
+    @EnableFlags(Flags.FLAG_ENABLE_STEPPED_CASCADING)
+    fun cascade_rememberedBounds_outOfBounds_fallbackToOriginal() {
+        // On the bottom edge, which requires screen wrapping for the next cascading.
+        val prev = getDefaultBounds().apply { offsetTo(0, FRAME.bottom - height()) }
+        val dest = Rect(prev)
+
+        cascadeWindowStepped(mContext.resources, FRAME, prev, dest, true)
+
+        assertThat(dest).isEqualTo(dest)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS)
+    @EnableFlags(Flags.FLAG_ENABLE_STEPPED_CASCADING)
+    fun cascade_rememberedBounds_maximized_fallbackToOriginal() {
+        // Maximized bounds.
+        val prev = Rect(FRAME)
+        val dest = Rect(FRAME)
+
+        cascadeWindowStepped(mContext.resources, FRAME, prev, dest, true)
+
+        assertThat(dest).isEqualTo(dest)
+    }
+
     private companion object {
         private const val DEFAULT_WIDTH = 1600
         private const val DEFAULT_HEIGHT = 800
