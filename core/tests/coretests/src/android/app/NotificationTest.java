@@ -172,6 +172,7 @@ public class NotificationTest {
                 .setFlag(FLAG_CAN_COLORIZE, false)
                 .setColorized(true).setColor(Color.WHITE)
                 .build();
+        assertTrue(n.isColorizedRequested());
         assertFalse(n.isColorized());
     }
 
@@ -192,7 +193,19 @@ public class NotificationTest {
                 .setFlag(Notification.FLAG_FOREGROUND_SERVICE, false)
                 .setColorized(true).setColor(Color.WHITE)
                 .build();
+        assertTrue(n.isColorizedRequested());
         assertFalse(n.isColorized());
+    }
+
+    @Test
+    public void testNotColorizedByPromotedOngoing() {
+        Notification n = new Notification.Builder(mContext, "test")
+                .setFlag(Notification.FLAG_PROMOTED_ONGOING, true)
+                .setColorized(true).setColor(Color.WHITE)
+                .build();
+
+        assertThat(n.isColorizedRequested()).isTrue();
+        assertThat(n.isColorized()).isFalse();
     }
 
     @Test
