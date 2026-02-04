@@ -3682,6 +3682,7 @@
 
   <java-symbol type="drawable" name="app_lock_scrollbar_handle" />
 
+  <java-symbol type="id" name="app_lock_activity_layout" />
   <java-symbol type="id" name="app_lock_dialog_add_screen_lock_button" />
   <java-symbol type="id" name="app_lock_dialog_cancel_button" />
   <java-symbol type="id" name="app_lock_dialog_message" />
@@ -3691,6 +3692,7 @@
   <java-symbol type="id" name="app_lock_edu_dialog_btn_lock_app" />
   <java-symbol type="id" name="app_lock_edu_dialog_desc" />
   <java-symbol type="id" name="app_lock_edu_dialog_title" />
+  <java-symbol type="id" name="app_lock_edu_layout" />
   <java-symbol type="id" name="app_lock_permission_review_app_list_recycler_view" />
   <java-symbol type="id" name="app_lock_permission_review_btn_cancel" />
   <java-symbol type="id" name="app_lock_permission_review_btn_continue" />

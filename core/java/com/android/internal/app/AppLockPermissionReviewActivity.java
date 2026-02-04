@@ -33,6 +33,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.android.internal.R;
+import com.android.internal.widget.ResolverDrawerLayout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -86,6 +87,14 @@ public class AppLockPermissionReviewActivity extends Activity {
             return;
         }
         setContentView(R.layout.app_lock_permission_review_sheet);
+
+        // Dismiss App Lock flow when the transparent background is tapped.
+        final View rootLayout = findViewById(R.id.app_lock_activity_layout);
+        if (rootLayout instanceof ResolverDrawerLayout) {
+            ((ResolverDrawerLayout) rootLayout).setOnDismissListener(this::onBackPressed);
+        } else {
+            rootLayout.setOnClickListener(v -> onBackPressed());
+        }
 
         // Set up the recycler view and its adapter.
         final AppLockMaxHeightRecyclerView recyclerView = findViewById(
