@@ -288,25 +288,10 @@ public final class VirtualCameraConfig implements Parcelable {
     }
 
     /**
-     * By default, when the client camera application requests multiple output streams, the
-     * virtual camera service will try to pick a single {@link VirtualCameraStreamConfig} which
-     * can honor all requested outputs. It will then create a {@link Surface} matching the
-     * picked configuration and pass it in a single
-     * {@link VirtualCameraCallback#onStreamConfigured(int, Surface, int, int, int)} call.
-     * <p>
-     * In case it can't find a single config to match the output, the configuration will fail
-     * on the client side and the virtual camera owner won't be notified.
-     * <p>
-     * With {@code isConcurrentStreamConfigSupported} enabled, the virtual camera service will
-     * call
-     * VirtualCameraCallback#onStreamConfigured(int, Surface, int, int, int) with a different
-     * {@link Surface} for each opened
-     * {@link android.hardware.camera2.params.OutputConfiguration}, allowing the virtual camera
-     * owner to write different data for each stream.
-     * <p>
-     * Enabling this will ensure that {@link CaptureRequest} for different configuration can be
-     * submitted concurrently.
+     * If true, a {@link Surface} will be provided for all opened
+     * {@link VirtualCameraStreamConfig}. Otherwise, only a single stream will be opened.
      *
+     * @see Builder#setConcurrentStreamConfigSupported(boolean)
      * @return true if this virtual camera has been configured to support multiple input streams.
      */
     @FlaggedApi(Flags.FLAG_CAMERA_MULTIPLE_INPUT_STREAMS)
@@ -523,7 +508,8 @@ public final class VirtualCameraConfig implements Parcelable {
          * Set whether this virtual camera supports opening multiple
          * {@link VirtualCameraStreamConfig} concurrently.
          * <p>
-         * By default, when the client camera application requests multiple output streams, the
+         * By default, when the client camera application requests multiple
+         * {@link StreamConfiguration output streams}, the
          * virtual camera service will try to pick a single {@link VirtualCameraStreamConfig} which
          * can honor all requested outputs. It will then create a {@link Surface} matching the
          * picked configuration and pass it in a single
@@ -534,8 +520,8 @@ public final class VirtualCameraConfig implements Parcelable {
          * <p>
          * With {@code setConcurrentStreamConfigSupported} enabled, the virtual camera service will
          * call
-         * VirtualCameraCallback#onStreamConfigured(int, Surface, int, int, int) with a different
-         * {@link Surface} for each opened
+         * {@link VirtualCameraCallback#onStreamConfigured(int, Surface, int, int, int)} with a
+         * different {@link Surface} for each opened
          * {@link android.hardware.camera2.params.OutputConfiguration}, allowing the virtual camera
          * owner to write different data for each stream.
          * <p>
