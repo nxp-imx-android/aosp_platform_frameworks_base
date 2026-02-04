@@ -34,6 +34,7 @@ import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.TestContentScope
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.compose.modifiers.resIdToTestTag
+import com.android.systemui.shade.domain.interactor.enableSplitShade
 import com.android.systemui.Flags
 import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
@@ -135,8 +136,42 @@ class SwipeDownToMediaTest : SysuiTestCase() {
                 .assertExists()
         }
 
+    @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
+    @Test
+    fun swipeDown_showsQqsAndMedia_splitShade() =
+        kosmos.runTest {
+            usingMediaInComposeFragment = true
+            enableSplitShade()
+            setHasMedia(true)
+
+            // Start with the shade closed to properly test the swipe gesture.
+            composeTestRule.setContent {
+                PlatformTheme {
+                    WithStatusIconContext(tintedIconManagerFactory) {
+                        with(scene) {
+                            TestContentScope(currentScene = Scenes.Gone) { Content(Modifier) }
+                        }
+                    }
+                }
+            }
+            runCurrent()
+            composeTestRule.waitForIdle()
+
+            // Perform a realistic swipe from the top-center edge of the screen.
+            composeTestRule.swipeDownToOpenShade()
+            runCurrent()
+
+            // Verify that the split shade qs exists.
+            composeTestRule.onNodeWithTag(SPLIT_SHADE_QS_TAG).assertExists()
+            // Verify that the media controls (UMO) are visible in the shade.
+            composeTestRule
+                .onNodeWithContentDescription(EXPECTED_UMO_CONTENT_DESC, substring = true)
+                .assertExists()
+        }
+
     private companion object {
         private val QQS_PANEL_TAG = resIdToTestTag("quick_qs_panel")
+        private const val SPLIT_SHADE_QS_TAG = "element:SplitShadeQuickSettings"
         private const val EXPECTED_UMO_CONTENT_DESC = "Fake_Music_Player"
     }
 }
