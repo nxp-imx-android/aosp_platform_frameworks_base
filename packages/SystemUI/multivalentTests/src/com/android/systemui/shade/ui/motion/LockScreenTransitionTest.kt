@@ -28,7 +28,6 @@ import androidx.compose.ui.test.swipeDown
 import androidx.compose.ui.test.swipeLeft
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
-import com.android.compose.animation.scene.Key
 import com.android.compose.animation.scene.isElement
 import com.android.compose.snapshot.ObserveReadsRoot
 import com.android.compose.theme.PlatformTheme
@@ -51,32 +50,15 @@ import com.android.systemui.communal.util.communalColors
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.jank.interactionJankMonitor
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
-import com.android.systemui.keyguard.domain.interactor.keyguardClockInteractorWithImpl
 import com.android.systemui.keyguard.ui.composable.LockscreenContent
 import com.android.systemui.keyguard.ui.composable.LockscreenScene
-import com.android.systemui.keyguard.ui.composable.elements.LockscreenElementFactoryImpl
-import com.android.systemui.keyguard.ui.composable.elements.LockscreenElements
-import com.android.systemui.keyguard.ui.lockscreen.elementproviders.ambientIndicationAreaProvider
-import com.android.systemui.keyguard.ui.lockscreen.elementproviders.clockRegionElementProvider
-import com.android.systemui.keyguard.ui.lockscreen.elementproviders.defaultClockFaceLayout
+import com.android.systemui.keyguard.ui.lockscreen.content.lockscreenContent
 import com.android.systemui.keyguard.ui.lockscreen.elementproviders.keyguardStatusBarViewComponentFactory
-import com.android.systemui.keyguard.ui.lockscreen.elementproviders.lockIconElementProvider
-import com.android.systemui.keyguard.ui.lockscreen.elementproviders.lockscreenLowerRegionElementProvider
-import com.android.systemui.keyguard.ui.lockscreen.elementproviders.lockscreenRootElementProvider
-import com.android.systemui.keyguard.ui.lockscreen.elementproviders.lockscreenUpperRegionElementProvider
-import com.android.systemui.keyguard.ui.lockscreen.elementproviders.settingsMenuElementProvider
-import com.android.systemui.keyguard.ui.lockscreen.elementproviders.statusBarElementProvider
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenUserActionsViewModel
-import com.android.systemui.keyguard.ui.viewmodel.keyguardClockViewModelWithImpl
-import com.android.systemui.keyguard.ui.viewmodel.lockscreenBehindScrimViewModelFactory
-import com.android.systemui.keyguard.ui.viewmodel.lockscreenContentViewModelFactory
-import com.android.systemui.keyguard.ui.viewmodel.lockscreenFrontScrimViewModelFactory
 import com.android.systemui.keyguard.ui.viewmodel.lockscreenUserActionsViewModel
 import com.android.systemui.lifecycle.rememberViewModel
-import com.android.systemui.log.LogBuffer
 import com.android.systemui.motion.createSysUiComposeMotionTestRule
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.notificationRulesShadeStateViewModelFactory
-import com.android.systemui.plugins.keyguard.ui.composable.elements.BaseLockscreenElement
 import com.android.systemui.qs.ui.composable.QuickSettingsScene
 import com.android.systemui.qs.ui.viewmodel.quickSettingsSceneContentViewModelFactory
 import com.android.systemui.qs.ui.viewmodel.quickSettingsUserActionsViewModelFactory
@@ -156,56 +138,6 @@ class LockScreenTransitionTest : SysuiTestCase() {
         whenever(kosmos.communalSettingsRepository.getV2FlagEnabled()).thenReturn(true)
     }
 
-    private val lockScreenContent =
-        with(kosmos) {
-            LockscreenContent(
-                viewModelFactory = lockscreenContentViewModelFactory,
-                lockscreenFrontScrimViewModelFactory = lockscreenFrontScrimViewModelFactory,
-                lockscreenBehindScrimViewModelFactory = lockscreenBehindScrimViewModelFactory,
-                lockscreenElements =
-                    LockscreenElements(
-                        builder =
-                            object : LockscreenElementFactoryImpl.Builder {
-                                override fun create(
-                                    elements: Map<Key, BaseLockscreenElement>
-                                ): LockscreenElementFactoryImpl {
-                                    return LockscreenElementFactoryImpl(
-                                        elements = elements,
-                                        blueprintLog =
-                                            LogBuffer(
-                                                "Test",
-                                                10,
-                                                com.android.systemui.util.mockito.mock(),
-                                            ),
-                                    )
-                                }
-                            },
-                        keyguardClockViewModel = keyguardClockViewModelWithImpl,
-                        elementProviders = {
-                            setOf(
-                                lockscreenRootElementProvider,
-                                statusBarElementProvider,
-                                lockscreenUpperRegionElementProvider,
-                                lockIconElementProvider,
-                                ambientIndicationAreaProvider,
-                                lockscreenLowerRegionElementProvider,
-                                settingsMenuElementProvider,
-                                clockRegionElementProvider,
-                                defaultClockFaceLayout,
-                            )
-                        },
-                        blueprintLog =
-                            LogBuffer(
-                                "LockscreenBuffer",
-                                10,
-                                com.android.systemui.util.mockito.mock(),
-                            ),
-                    ),
-                clockInteractor = keyguardClockInteractorWithImpl,
-                interactionJankMonitor = interactionJankMonitor,
-            )
-        }
-
     private val shadeSession: SaveableSession =
         object : SaveableSession, Session by Session(SessionStorage()) {
             @Composable
@@ -246,7 +178,7 @@ class LockScreenTransitionTest : SysuiTestCase() {
     private val lockscreenScene =
         LockscreenScene(
             actionsViewModelFactory = lockscreenUserActionsViewModelFactory,
-            lockscreenContent = { lockScreenContent },
+            lockscreenContent = { kosmos.lockscreenContent },
         )
 
     @Test
