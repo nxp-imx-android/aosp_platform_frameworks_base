@@ -707,8 +707,7 @@ public class VirtualDeviceManagerService extends SystemService {
             }
             VirtualDeviceImpl virtualDevice = getVirtualDeviceForId(deviceId);
             if (virtualDevice == null) {
-                return Flags.handleInvalidDeviceId()
-                        ? DEVICE_POLICY_INVALID : DEVICE_POLICY_DEFAULT;
+                return DEVICE_POLICY_INVALID;
             }
             return virtualDevice.getDevicePolicy(policyType);
         }
