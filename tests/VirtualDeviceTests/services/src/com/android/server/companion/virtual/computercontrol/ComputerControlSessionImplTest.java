@@ -49,6 +49,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.after;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -715,6 +716,87 @@ public class ComputerControlSessionImplTest {
         mSession.tap(500, 600);
         verify(mVirtualTouchscreen, times(4)).sendTouchEvent(
                 argThat(new MatchesTouchEvent(VirtualTouchEvent.ACTION_CANCEL)));
+    }
+
+
+    private enum CancelingAction {
+        TAP {
+            @Override
+            void execute(ComputerControlSessionImplTest test, ComputerControlSessionImpl session)
+                    throws Exception {
+                session.tap(1, 1);
+            }
+        },
+        INSERT_TEXT {
+            @Override
+            void execute(ComputerControlSessionImplTest test, ComputerControlSessionImpl session)
+                    throws Exception {
+                session.insertText("text", false, false);
+            }
+        },
+        PERFORM_ACTION {
+            @Override
+            void execute(ComputerControlSessionImplTest test, ComputerControlSessionImpl session)
+                    throws Exception {
+                session.performAction(ComputerControlSession.ACTION_GO_BACK);
+            }
+        },
+        LAUNCH_APPLICATION {
+            @Override
+            void execute(ComputerControlSessionImplTest test, ComputerControlSessionImpl session)
+                    throws Exception {
+                when(test.mOwnerPackageManager.queryIntentActivities(any(), any()))
+                        .thenReturn(List.of(new ResolveInfo()));
+                session.launchApplication(TARGET_PACKAGE_1, TARGET_CLASS);
+            }
+        },
+        ENTERING_BLOCKED_STATE {
+            @Override
+            void execute(ComputerControlSessionImplTest test, ComputerControlSessionImpl session)
+                    throws Exception {
+                verify(test.mVirtualDevice).addActivityListener(any(),
+                        test.mActivityListenerArgumentCaptor.capture());
+                test.mActivityListenerArgumentCaptor.getValue()
+                        .onSecureWindowShown(
+                                VIRTUAL_DISPLAY_ID, TEST_COMPONENT, test.mUserHandle);
+            }
+        },
+        CLOSE {
+            @Override
+            void execute(ComputerControlSessionImplTest test, ComputerControlSessionImpl session)
+                    throws Exception {
+                session.close();
+            }
+        };
+
+        abstract void execute(
+                ComputerControlSessionImplTest test, ComputerControlSessionImpl session)
+            throws Exception;
+    }
+
+    private static List<CancelingAction> getCancelingActionsForSwipe() {
+        return List.of(CancelingAction.values());
+    }
+
+    private static List<CancelingAction> getCancelingActionsForInsertText() {
+        return List.of(
+                CancelingAction.TAP,
+                CancelingAction.PERFORM_ACTION,
+                CancelingAction.LAUNCH_APPLICATION,
+                CancelingAction.ENTERING_BLOCKED_STATE,
+                CancelingAction.CLOSE);
+    }
+
+    @Test
+    @Parameters(method = "getCancelingActionsForInsertText")
+    public void action_cancelsOngoingInsertText(CancelingAction action) throws Exception {
+        assertActionCancelsOngoingInsertText(session -> action.execute(this, session));
+    }
+
+    @Test
+    @Parameters(method = "getCancelingActionsForSwipe")
+    public void action_cancelsOngoingSwipe(CancelingAction action) throws Exception {
+        assertActionCancelsOngoingSwipe(session -> action.execute(this, session));
     }
 
     @Test
@@ -1531,6 +1613,36 @@ public class ComputerControlSessionImplTest {
                 new AttributionSource(UserHandle.getUid(USER_ID, 0), AGENT_PACKAGE,
                         ATTRIBUTION_TAG),
                 mVirtualDeviceFactory, mOnClosedListener, Runnable::run);
+    }
+
+    private void assertActionCancelsOngoingSwipe(Interactor action) throws Exception {
+        createComputerControlSession(mDefaultParams);
+
+        // Start a swipe, which is asynchronous.
+        mSession.swipe(100, 200, 300, 400);
+
+        // Perform the action.
+        action.interact(mSession);
+
+        // Verify the ongoing swipe was cancelled.
+        verify(mVirtualTouchscreen).sendTouchEvent(
+                argThat(new MatchesTouchEvent(VirtualTouchEvent.ACTION_CANCEL)));
+    }
+
+    private void assertActionCancelsOngoingInsertText(Interactor action) throws Exception {
+        createComputerControlSession(mDefaultParams);
+        mEditorInfo.imeOptions = EditorInfo.IME_ACTION_DONE;
+
+        // Start an insertText with a delayed commit action.
+        mSession.insertText("text", false /* replaceExisting */, true /* commit */);
+
+        // Perform the action.
+        action.interact(mSession);
+
+        // Verify the commit action was cancelled.
+        verify(mRemoteComputerControlInputConnection, after(KEY_EVENT_DELAY_MS * 2).never())
+                .performEditorAction(any(), anyInt());
+        verify(mRemoteComputerControlInputConnection, never()).sendKeyEvent(any(), any());
     }
 
     @SuppressLint("MissingPermission")
