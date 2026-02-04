@@ -7504,8 +7504,10 @@ public class UserManagerService extends IUserManager.Stub {
 
     @Override
     public Bundle getApplicationRestrictionsForUser(String packageName, @UserIdInt int userId) {
+        final int callingUid = Binder.getCallingUid();
         if (UserHandle.getCallingUserId() != userId
-                || !UserHandle.isSameApp(Binder.getCallingUid(), getUidForPackage(packageName))) {
+                || !getPackageManagerInternal().isSameApp(packageName, callingUid,
+                        UserHandle.getUserId(callingUid))) {
             checkSystemOrRoot("get application restrictions for other user/app " + packageName);
         }
 
