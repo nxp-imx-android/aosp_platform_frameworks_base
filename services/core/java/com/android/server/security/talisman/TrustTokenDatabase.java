@@ -45,14 +45,6 @@ abstract class TrustTokenDatabase {
             throws IllegalArgumentException;
 
     /**
-     * Counts the number of trust token sets of a specific type in the database.
-     *
-     * @param type the type of the trust token sets to count.
-     * @return the number of trust token sets of the specified type.
-     */
-    abstract int countTrustTokenSets(@TrustTokenSet.Type int type);
-
-    /**
      * Cleans up the stored tokens. It removes expired, invalid and excess tokens from the database.
      *
      * @param type the token type to clean up.
