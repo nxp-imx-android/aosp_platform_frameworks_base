@@ -284,8 +284,8 @@ private fun ContentScope.SingleShade(
         modifier =
             modifier.thenIf(onlyPunchHolesInThisScene) {
                 // Render the scene to an offscreen buffer so that BlendMode.DstOut only clears this
-                // scene (and not the one under it). It is used to saves the LS content from being
-                // cut out during the LS -> Shade transition.
+                // scene (and not the one under it). It saves the LS content (e.g. the clock) from
+                // being cut out during the LS -> Shade transition.
                 Modifier.graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
             }
     ) {
