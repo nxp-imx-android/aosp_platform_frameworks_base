@@ -9385,12 +9385,12 @@ package android.app.appfunctions {
 
   @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") public final class AppFunctionSearchSpec implements android.os.Parcelable {
     method public int describeContents();
-    method @Nullable public java.util.List<android.app.appfunctions.AppFunctionName> getFunctionNames();
+    method @Nullable public java.util.Set<android.app.appfunctions.AppFunctionName> getFunctionNames();
     method public long getMinSchemaVersion();
-    method @Nullable public java.util.List<java.lang.String> getPackageNames();
+    method @Nullable public java.util.Set<java.lang.String> getPackageNames();
     method @Nullable public String getSchemaCategory();
     method @Nullable public String getSchemaName();
-    method @Nullable public java.util.List<java.lang.Integer> getScopes();
+    method @Nullable public java.util.Set<java.lang.Integer> getScopes();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.app.appfunctions.AppFunctionSearchSpec> CREATOR;
   }
@@ -9398,12 +9398,12 @@ package android.app.appfunctions {
   public static final class AppFunctionSearchSpec.Builder {
     ctor public AppFunctionSearchSpec.Builder();
     method @NonNull public android.app.appfunctions.AppFunctionSearchSpec build();
-    method @NonNull public android.app.appfunctions.AppFunctionSearchSpec.Builder setFunctionNames(@Nullable java.util.List<android.app.appfunctions.AppFunctionName>);
+    method @NonNull public android.app.appfunctions.AppFunctionSearchSpec.Builder setFunctionNames(@Nullable java.util.Set<android.app.appfunctions.AppFunctionName>);
     method @NonNull public android.app.appfunctions.AppFunctionSearchSpec.Builder setMinSchemaVersion(long);
-    method @NonNull public android.app.appfunctions.AppFunctionSearchSpec.Builder setPackageNames(@Nullable java.util.List<java.lang.String>);
+    method @NonNull public android.app.appfunctions.AppFunctionSearchSpec.Builder setPackageNames(@Nullable java.util.Set<java.lang.String>);
     method @NonNull public android.app.appfunctions.AppFunctionSearchSpec.Builder setSchemaCategory(@Nullable String);
     method @NonNull public android.app.appfunctions.AppFunctionSearchSpec.Builder setSchemaName(@Nullable String);
-    method @NonNull public android.app.appfunctions.AppFunctionSearchSpec.Builder setScopes(@Nullable java.util.List<java.lang.Integer>);
+    method @NonNull public android.app.appfunctions.AppFunctionSearchSpec.Builder setScopes(@Nullable java.util.Set<java.lang.Integer>);
   }
 
   @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public abstract class AppFunctionService extends android.app.Service {

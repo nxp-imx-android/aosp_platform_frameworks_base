@@ -271,9 +271,9 @@ class InternalObserverCallbackRouterTest {
         val callback1 = TestInternalCallback()
         val searchSpec1 =
             AppFunctionSearchSpec.Builder()
-                .setPackageNames(listOf("testPackage1"))
+                .setPackageNames(setOf("testPackage1"))
                 .setFunctionNames(
-                    listOf(
+                    setOf(
                         AppFunctionName("testPackage1", "id1"),
                         AppFunctionName("testPackage2", "id2"),
                     )
@@ -298,9 +298,9 @@ class InternalObserverCallbackRouterTest {
         val callback1 = TestInternalCallback()
         val searchSpec1 =
             AppFunctionSearchSpec.Builder()
-                .setPackageNames(listOf("testPackage1"))
+                .setPackageNames(setOf("testPackage1"))
                 .setFunctionNames(
-                    listOf(
+                    setOf(
                         AppFunctionName("testPackage1", "id1"),
                         AppFunctionName("testPackage2", "id2"),
                     )
@@ -329,9 +329,9 @@ class InternalObserverCallbackRouterTest {
         val callback1 = TestInternalCallback()
         val searchSpec1 =
             AppFunctionSearchSpec.Builder()
-                .setPackageNames(listOf("testPackage3"))
+                .setPackageNames(setOf("testPackage3"))
                 .setFunctionNames(
-                    listOf(
+                    setOf(
                         AppFunctionName("testPackage1", "id1"),
                         AppFunctionName("testPackage2", "id2"),
                     )
@@ -356,9 +356,9 @@ class InternalObserverCallbackRouterTest {
         val callback1 = TestInternalCallback()
         val searchSpec1 =
             AppFunctionSearchSpec.Builder()
-                .setPackageNames(listOf("testPackage3"))
+                .setPackageNames(setOf("testPackage3"))
                 .setFunctionNames(
-                    listOf(
+                    setOf(
                         AppFunctionName("testPackage1", "id1"),
                         AppFunctionName("testPackage2", "id2"),
                     )
@@ -387,7 +387,7 @@ class InternalObserverCallbackRouterTest {
         val searchSpec1 =
             AppFunctionSearchSpec.Builder()
                 .setFunctionNames(
-                    listOf(
+                    setOf(
                         AppFunctionName("testPackage1", "id1"),
                         AppFunctionName("testPackage2", "id2"),
                     )
@@ -417,7 +417,7 @@ class InternalObserverCallbackRouterTest {
         val searchSpec1 =
             AppFunctionSearchSpec.Builder()
                 .setFunctionNames(
-                    listOf(
+                    setOf(
                         AppFunctionName("testPackage1", "id1"),
                         AppFunctionName("testPackage2", "id2"),
                     )
@@ -449,7 +449,7 @@ class InternalObserverCallbackRouterTest {
         val callback1 = TestInternalCallback()
         val searchSpec1 =
             AppFunctionSearchSpec.Builder()
-                .setPackageNames(listOf("testPackage1", "testPackage2"))
+                .setPackageNames(setOf("testPackage1", "testPackage2"))
                 .build()
         val callbacksRouter = InternalObserverCallbackRouter(testExecutorService)
         callbacksRouter.addCallback(callback1, searchSpec1)
@@ -474,7 +474,7 @@ class InternalObserverCallbackRouterTest {
         val callback1 = TestInternalCallback()
         val searchSpec1 =
             AppFunctionSearchSpec.Builder()
-                .setPackageNames(listOf("testPackage1", "testPackage2"))
+                .setPackageNames(setOf("testPackage1", "testPackage2"))
                 .build()
 
         val callbacksRouter = InternalObserverCallbackRouter(testExecutorService)
