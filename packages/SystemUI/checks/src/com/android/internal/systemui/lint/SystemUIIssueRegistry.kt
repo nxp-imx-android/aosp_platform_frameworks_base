@@ -46,6 +46,7 @@ class SystemUIIssueRegistry : IssueRegistry() {
                 MissingApacheLicenseDetector.ISSUE,
                 NonInjectedMainThreadDetector.ISSUE,
                 NonInjectedServiceDetector.ISSUE,
+                NonSysUISingletonApplicationScopeDetector.ISSUE,
                 NoKotlinTestInScenarioTestDetector.ISSUE,
                 NoMetricInParameterizedDetector.ISSUE_BEFORE,
                 NoMetricInParameterizedDetector.ISSUE_AFTER,
