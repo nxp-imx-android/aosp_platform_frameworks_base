@@ -19,18 +19,16 @@ package com.android.systemui.screencapture.record.largescreen.ui.viewmodel
 import android.app.ActivityManager
 import android.app.WindowConfiguration
 import android.content.ComponentName
-import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Point
 import android.graphics.Rect
 import android.hardware.display.displayManager
-import android.net.Uri
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.util.DisplayMetrics
 import android.view.Display
 import android.view.WindowManager
-import android.view.WindowMetrics
+import androidx.core.net.toUri
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.logging.uiEventLoggerFake
@@ -78,14 +76,10 @@ import org.mockito.kotlin.whenever
 @RunWith(AndroidJUnit4::class)
 class PreCaptureViewModelTest : SysuiTestCase() {
     private val kosmos = testKosmosNew()
-    private val appWindowInteractor = kosmos.appWindowInteractor
 
     @Mock private lateinit var mockBitmap: Bitmap
     @Mock private lateinit var mockBackgroundBitmap: Bitmap
-    @Mock private lateinit var mockWindowMetrics: WindowMetrics
     @Mock private lateinit var mockDisplay: Display
-    @Mock private lateinit var mockDisplayContext: Context
-    @Mock private lateinit var mockWindowManager: WindowManager
 
     private val screenBounds = Rect(0, 0, 100, 100)
     private val displayId = 1234
@@ -767,7 +761,7 @@ class PreCaptureViewModelTest : SysuiTestCase() {
             setupViewModel()
             val toolbarViewModel = viewModel.toolbarViewModel
             val customUri =
-                Uri.parse("content://com.android.externalstorage.documents/tree/primary%3ATest")
+                "content://com.android.externalstorage.documents/tree/primary%3ATest".toUri()
 
             largeScreenCaptureParametersInteractor.setCustomSaveLocation(customUri)
             toolbarViewModel.setCustomSaveLocationActiveStatus(true)
@@ -781,7 +775,7 @@ class PreCaptureViewModelTest : SysuiTestCase() {
             setupViewModel()
             val toolbarViewModel = viewModel.toolbarViewModel
             val customUri =
-                Uri.parse("content://com.android.externalstorage.documents/tree/primary%3ATest")
+                "content://com.android.externalstorage.documents/tree/primary%3ATest".toUri()
 
             largeScreenCaptureParametersInteractor.setCustomSaveLocation(customUri)
             toolbarViewModel.setCustomSaveLocationActiveStatus(false)
@@ -929,7 +923,7 @@ class PreCaptureViewModelTest : SysuiTestCase() {
                             .RECORD
                     )
                 )
-            assertThat(uiState).isEqualTo(ScreenCaptureUiState.Invisible)
+            assertThat(uiState).isInstanceOf(ScreenCaptureUiState.Invisible::class.java)
         }
     }
 

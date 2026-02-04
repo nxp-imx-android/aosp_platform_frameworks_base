@@ -21,6 +21,8 @@ import com.android.systemui.CoreStartable
 import com.android.systemui.screencapture.ScreenCaptureCoreStartable
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModelImpl
+import com.android.systemui.screencapture.data.repository.ScreenCaptureTracingRepository
+import com.android.systemui.screencapture.data.repository.ScreenCaptureTracingRepositoryImpl
 import com.android.systemui.screencapture.record.largescreen.ui.DirectoryPickerActivity
 import com.android.systemui.screencapture.record.smallscreen.ui.SmallScreenPostRecordingActivity
 import com.android.systemui.screencapture.ui.ShareScreenActivity
@@ -57,6 +59,11 @@ interface ScreenCaptureModule {
 
     @Binds
     fun bindDrawableLoaderViewModel(impl: DrawableLoaderViewModelImpl): DrawableLoaderViewModel
+
+    @Binds
+    fun bindScreenCaptureTracingRepository(
+        impl: ScreenCaptureTracingRepositoryImpl
+    ): ScreenCaptureTracingRepository
 
     @Multibinds fun screenCaptureStartableSet(): Set<ScreenCaptureStartable>
 

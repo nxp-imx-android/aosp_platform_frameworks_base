@@ -68,7 +68,7 @@ class ScreenCaptureUiInteractorTest : SysuiTestCase() {
             fakeUserRepository.setSelectedUserInfo(userInfo)
 
             underTest.show(ScreenCaptureUiParameters.Record())
-            assertThat(uiState).isEqualTo(ScreenCaptureUiState.Invisible)
+            assertThat(uiState).isInstanceOf(ScreenCaptureUiState.Invisible::class.java)
         }
 
     @Test

@@ -42,5 +42,5 @@ class ScreenCaptureUiRepository @Inject constructor() {
     }
 
     private fun obtainState(type: ScreenCaptureType): MutableStateFlow<ScreenCaptureUiState> =
-        _uiStates.getOrPut(type, { MutableStateFlow(ScreenCaptureUiState.Invisible) })
+        _uiStates.getOrPut(type, { MutableStateFlow(ScreenCaptureUiState.Invisible()) })
 }
