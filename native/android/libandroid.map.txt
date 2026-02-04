@@ -444,6 +444,7 @@ LIBANDROID {
     ANpuBuffer_map; # introduced=37
     ANpuBuffer_unmap; # introduced=37
     ANpuBuffer_setPriority; # introduced=37
+    ANpuBuffer_loadAsync; # introduced=37
     ANpuManager_AllocRequest_create; # introduced=37
     ANpuManager_AllocRequest_free; # introduced=37
     ANpuManager_AllocRequest_setBufferPriority; # introduced=37
