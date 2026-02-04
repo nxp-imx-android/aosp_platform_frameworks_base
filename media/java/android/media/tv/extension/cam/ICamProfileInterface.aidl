@@ -19,6 +19,7 @@ package android.media.tv.extension.cam;
 import android.os.Bundle;
 
 import android.media.tv.extension.cam.ICamProfileListener;
+import android.media.tv.extension.cam.ICiOperatorListener;
 
 /**
  * @hide
@@ -58,4 +59,29 @@ interface ICamProfileInterface {
      * @param listener The listener to unregister.
      */
     void removeListener(in ICamProfileListener listener);
+
+    /**
+     * Updates the control status of a specific Operator Profile.
+     *
+     * @param profileName The unique name/ID of the profile (Consistency with deleteProfile).
+     * @param enable      True to enable/activate, False to disable.
+     * @param listener    Callback for the result of this async operation.
+     * @return 0 for success (request sent), or specific error code.
+     */
+    int updateCiOPControl(String profileName, boolean enable, in ICiOperatorListener listener);
+
+    /**
+     * Retrieves the list of available Operator Profile names.
+     *
+     * @return Array of profile names. Returns empty array if none found.
+     */
+     String[] getCiOpNameList();
+
+     /**
+      * Deletes a specific profile from storage.
+      *
+      * @param profileName The unique name of the profile to delete.
+      * @return true if deletion was successful, false otherwise.
+      */
+     boolean deleteProfile(String profileName);
 }
