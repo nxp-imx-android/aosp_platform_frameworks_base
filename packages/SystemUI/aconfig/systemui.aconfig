@@ -1661,6 +1661,16 @@ flag {
 }
 
 flag {
+    name: "standalone_fingerprint_lock_screen_ux_fix"
+    namespace: "systemui"
+    description: "Fix standalone fingerprint sensor lock screen UX"
+    bug: "481645959"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "status_bar_always_check_underlying_networks"
     namespace: "systemui"
     description: "For status bar connectivity UI, always check underlying networks for wifi and "
