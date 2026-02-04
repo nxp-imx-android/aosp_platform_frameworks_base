@@ -35,6 +35,7 @@ import android.graphics.Shader;
 import android.graphics.drawable.Animatable2;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.graphics.drawable.Drawable;
+import android.multiuser.Flags;
 import android.os.Handler;
 import android.os.SystemProperties;
 import android.os.Trace;
@@ -46,6 +47,8 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.AlphaAnimation;
+import android.view.animation.AnimationSet;
+import android.view.animation.TranslateYAnimation;
 import android.view.animation.Animation;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -70,7 +73,9 @@ class UserSwitchingDialog extends Dialog {
     @SuppressWarnings("DebugTrue")
     protected static final boolean DEBUG = true;
 
-    private static final long DIALOG_SHOW_HIDE_ANIMATION_DURATION_MS = 300;
+    private static final long DIALOG_SHOW_HIDE_ANIMATION_DURATION_MS =
+            Flags.userSwitchingDialogEntryExitAnimations() ? 200 : 300;
+    private static final float DIALOG_SHOW_HIDE_ANIMATION_TRANSLATE_Y_PX = 20;
     private volatile boolean mDisableAnimations;
 
     // Time to wait for the onAnimationEnd() callbacks before moving on
@@ -221,7 +226,19 @@ class UserSwitchingDialog extends Dialog {
             return;
         }
         asyncTraceBegin("showAnimation", 1);
-        startDialogAnimation("show", new AlphaAnimation(0, 1), () -> {
+
+        final Animation animation;
+        if (Flags.userSwitchingDialogEntryExitAnimations()) {
+            final AnimationSet animationSet = new AnimationSet(true);
+            animationSet.addAnimation(new AlphaAnimation(0, 1));
+            animationSet.addAnimation(
+                    new TranslateYAnimation(DIALOG_SHOW_HIDE_ANIMATION_TRANSLATE_Y_PX, 0));
+            animation = animationSet;
+        } else {
+            animation = new AlphaAnimation(0, 1);
+        }
+
+        startDialogAnimation("show", animation, () -> {
             asyncTraceEnd("showAnimation", 1);
 
             asyncTraceBegin("spinnerAnimation", 2);
@@ -239,8 +256,20 @@ class UserSwitchingDialog extends Dialog {
             onAnimationEnd.run();
             return;
         }
+
+        final Animation animation;
+        if (Flags.userSwitchingDialogEntryExitAnimations()) {
+            final AnimationSet animationSet = new AnimationSet(true);
+            animationSet.addAnimation(new AlphaAnimation(1, 0));
+            animationSet.addAnimation(
+                    new TranslateYAnimation(0, -DIALOG_SHOW_HIDE_ANIMATION_TRANSLATE_Y_PX));
+            animation = animationSet;
+        } else {
+            animation = new AlphaAnimation(1, 0);
+        }
+
         asyncTraceBegin("dismissAnimation", 3);
-        startDialogAnimation("dismiss", new AlphaAnimation(1, 0), () -> {
+        startDialogAnimation("dismiss", animation, () -> {
             asyncTraceEnd("dismissAnimation", 3);
 
             onAnimationEnd.run();
