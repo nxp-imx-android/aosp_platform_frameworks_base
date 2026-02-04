@@ -181,8 +181,8 @@ public class TaskViewTest extends ShellTestCase {
                 mOrganizer, Optional.of(mBubbleHelper), /* taskViewRootTask= */ Optional.empty()));
         mTaskViewTaskController = new TaskViewTaskController(mContext, mOrganizer,
                 mTaskViewTransitions, mSyncQueue);
-        mTaskView = new TaskView(mContext, mTaskViewTransitions, mTaskViewTaskController);
-        mTaskView.setHandler(mViewHandler);
+        mTaskView = new TaskView(mContext, mTaskViewTransitions, mTaskViewTaskController,
+                mViewHandler);
         mTaskView.setListener(mExecutor, mViewListener);
     }
 
