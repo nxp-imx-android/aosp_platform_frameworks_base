@@ -46,6 +46,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -226,10 +227,12 @@ fun SystemUIDialogFactory.createBottomSheet(
                                 }
                             }
                         } else {
-                            drawable.apply {
-                                // Stop BackgroundBlurDrawable from dispatching blur regions
-                                // to SF since now blur radius is set to 0.
-                                setBlurRadius(0)
+                            SideEffect {
+                                drawable.apply {
+                                    // Stop BackgroundBlurDrawable from dispatching blur regions
+                                    // to SF since now blur radius is set to 0.
+                                    setBlurRadius(0)
+                                }
                             }
                             null
                         }
