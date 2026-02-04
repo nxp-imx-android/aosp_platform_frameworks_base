@@ -1158,7 +1158,7 @@ public abstract class WMShellModule {
     @Provides
     static DesktopTilingDecorViewModel provideDesktopTilingViewModel(Context context,
             @ShellMainThread MainCoroutineDispatcher mainDispatcher,
-            @ShellMainThread CoroutineScope mainScope,
+            @ShellMainThreadImmediate CoroutineScope mainImmediateScope,
             @ShellBackgroundThread CoroutineScope bgScope,
             DisplayController displayController,
             RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
@@ -1180,7 +1180,7 @@ public abstract class WMShellModule {
         return new DesktopTilingDecorViewModel(
                 context,
                 mainDispatcher,
-                mainScope,
+                mainImmediateScope,
                 bgScope,
                 displayController,
                 rootTaskDisplayAreaOrganizer,
@@ -1498,6 +1498,7 @@ public abstract class WMShellModule {
             @ShellMainThread Choreographer mainChoreographer,
             @ShellMainThread MainCoroutineDispatcher mainDispatcher,
             @ShellMainThread CoroutineScope mainScope,
+            @ShellMainThreadImmediate CoroutineScope mainImmediateScope,
             @ShellBackgroundThread CoroutineScope bgScope,
             @ShellBackgroundThread ShellExecutor bgExecutor,
             ShellInit shellInit,
@@ -1548,8 +1549,8 @@ public abstract class WMShellModule {
             return Optional.empty();
         }
         return Optional.of(new DesktopModeWindowDecorViewModel(context, shellExecutor, mainHandler,
-                mainChoreographer, mainDispatcher, mainScope, bgScope, bgExecutor,
-                shellInit, shellCommandHandler, windowManager,
+                mainChoreographer, mainDispatcher, mainScope, mainImmediateScope, bgScope,
+                bgExecutor, shellInit, shellCommandHandler, windowManager,
                 taskOrganizer, desktopUserRepositories, displayController, shellController,
                 displayInsetsController, syncQueue, transitions, desktopTasksController,
                 desktopImmersiveController.get(),
@@ -1655,8 +1656,8 @@ public abstract class WMShellModule {
             @NonNull ShellCommandHandler shellCommandHandler,
             @NonNull UserProfileContexts userProfileContexts) {
         return new WindowDecorTaskResourceLoaderImpl(context, shellInit, shellController,
-                mainHandler, mainScope, mainDispatcher, bgDispatcher, shellCommandHandler,
-                userProfileContexts);
+                mainHandler, mainScope, mainDispatcher.getImmediate(), bgDispatcher,
+                shellCommandHandler, userProfileContexts);
     }
 
     @WMSingleton

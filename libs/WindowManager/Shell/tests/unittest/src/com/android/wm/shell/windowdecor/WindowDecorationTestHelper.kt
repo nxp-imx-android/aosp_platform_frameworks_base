@@ -152,6 +152,7 @@ object WindowDecorationTestHelper {
                 mainExecutor = executor,
                 mainDispatcher = mock(),
                 mainScope = scope,
+                mainImmediateScope = scope,
                 bgExecutor = mock(),
                 bgScope = scope,
                 transitions = mock(),

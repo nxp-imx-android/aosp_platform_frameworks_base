@@ -45,6 +45,7 @@ import com.android.wm.shell.desktopmode.ToggleResizeDesktopTaskTransitionHandler
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
+import com.android.wm.shell.shared.annotations.ShellMainThreadImmediate
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
@@ -59,7 +60,7 @@ import kotlinx.coroutines.MainCoroutineDispatcher
 class DesktopTilingDecorViewModel(
     private val context: Context,
     @ShellMainThread private val mainDispatcher: MainCoroutineDispatcher,
-    @ShellMainThread private val mainScope: CoroutineScope,
+    @ShellMainThreadImmediate private val mainImmediateScope: CoroutineScope,
     @ShellBackgroundThread private val bgScope: CoroutineScope,
     private val displayController: DisplayController,
     private val rootTdaOrganizer: RootTaskDisplayAreaOrganizer,
@@ -108,7 +109,7 @@ class DesktopTilingDecorViewModel(
                     DesktopTilingWindowDecoration(
                             context,
                             mainDispatcher,
-                            mainScope,
+                            mainImmediateScope,
                             bgScope,
                             syncQueue,
                             displayController,

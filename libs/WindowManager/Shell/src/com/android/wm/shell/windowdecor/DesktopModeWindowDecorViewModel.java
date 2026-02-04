@@ -135,6 +135,7 @@ import com.android.wm.shell.recents.RecentsTransitionStateListener;
 import com.android.wm.shell.shared.FocusTransitionListener;
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
+import com.android.wm.shell.shared.annotations.ShellMainThreadImmediate;
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 import com.android.wm.shell.shared.desktopmode.DesktopConfig;
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource;
@@ -202,6 +203,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     private final @ShellMainThread Handler mMainHandler;
     private final @ShellMainThread MainCoroutineDispatcher mMainDispatcher;
     private final @ShellMainThread CoroutineScope mMainScope;
+    private final @ShellMainThreadImmediate CoroutineScope mMainImmediateScope;
     private final @ShellBackgroundThread CoroutineScope mBgScope;
     private final @ShellBackgroundThread ShellExecutor mBgExecutor;
     private final Choreographer mMainChoreographer;
@@ -295,6 +297,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             Choreographer mainChoreographer,
             @ShellMainThread MainCoroutineDispatcher mainDispatcher,
             @ShellMainThread CoroutineScope mainScope,
+            @ShellMainThreadImmediate CoroutineScope mainImmediateScope,
             @ShellBackgroundThread CoroutineScope bgScope,
             @ShellBackgroundThread ShellExecutor bgExecutor,
             ShellInit shellInit,
@@ -347,6 +350,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 mainChoreographer,
                 mainDispatcher,
                 mainScope,
+                mainImmediateScope,
                 bgScope,
                 bgExecutor,
                 shellInit,
@@ -409,6 +413,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             Choreographer mainChoreographer,
             @ShellMainThread MainCoroutineDispatcher mainDispatcher,
             @ShellMainThread CoroutineScope mainScope,
+            @ShellMainThreadImmediate CoroutineScope mainImmediateScope,
             @ShellBackgroundThread CoroutineScope bgScope,
             @ShellBackgroundThread ShellExecutor bgExecutor,
             ShellInit shellInit,
@@ -467,6 +472,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         mMainChoreographer = mainChoreographer;
         mMainDispatcher = mainDispatcher;
         mMainScope = mainScope;
+        mMainImmediateScope = mainImmediateScope;
         mBgScope = bgScope;
         mBgExecutor = bgExecutor;
         mActivityTaskManager = mContext.getSystemService(ActivityTaskManager.class);
@@ -1804,6 +1810,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     mMainExecutor,
                     mMainDispatcher,
                     mMainScope,
+                    mMainImmediateScope,
                     mBgExecutor,
                     mBgScope,
                     mTransitions,

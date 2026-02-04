@@ -251,6 +251,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
                 mock<MainCoroutineDispatcher>(),
                 mock<CoroutineScope>(),
                 mock<CoroutineScope>(),
+                mock<CoroutineScope>(),
                 bgExecutor,
                 shellInit,
                 mockShellCommandHandler,
