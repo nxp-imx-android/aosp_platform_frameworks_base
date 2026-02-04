@@ -392,15 +392,14 @@ public class VirtualDisplayAdapter extends DisplayAdapter {
             mProjection = projection;
             mMediaProjectionCallback = mediaProjectionCallback;
             mNeverBlank = isNeverBlank(flags);
-            if (android.companion.virtualdevice.flags.Flags.correctVirtualDisplayPowerState()
-                    && !mNeverBlank) {
+            if (mNeverBlank) {
+                mDisplayState = Display.STATE_ON;
+            } else {
                 // The display's power state depends on the power state of the state of its
                 // display / power group, which we don't know here. Initializing to UNKNOWN allows
                 // the first call to requestDisplayStateLocked() to set the correct state.
                 // This also triggers VirtualDisplay.Callback to tell the owner the initial state.
                 mDisplayState = Display.STATE_UNKNOWN;
-            } else {
-                mDisplayState = Display.STATE_ON;
             }
             mPendingChanges |= PENDING_SURFACE_CHANGE;
             mDisplayIdToMirror = virtualDisplayConfig.getDisplayIdToMirror();
@@ -511,14 +510,12 @@ public class VirtualDisplayAdapter extends DisplayAdapter {
                     mCallback.dispatchDisplayResumed();
                 }
 
-                if (android.companion.virtualdevice.flags.Flags.correctVirtualDisplayPowerState()) {
-                    final IBinder token = getDisplayTokenLocked();
-                    runnable = () -> {
-                        final int mode = getPowerModeForState(state);
-                        Slog.d(TAG, "Requesting power mode for display " + mName + " to " + mode);
-                        mSurfaceControlDisplayFactory.setDisplayPowerMode(token, mode);
-                    };
-                }
+                final IBinder token = getDisplayTokenLocked();
+                runnable = () -> {
+                    final int mode = getPowerModeForState(state);
+                    Slog.d(TAG, "Requesting power mode for display " + mName + " to " + mode);
+                    mSurfaceControlDisplayFactory.setDisplayPowerMode(token, mode);
+                };
             }
             if (android.companion.virtualdevice.flags.Flags.deviceAwareDisplayPower()
                     && mBrightnessListener != null
