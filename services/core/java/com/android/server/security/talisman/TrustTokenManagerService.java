@@ -24,6 +24,8 @@ import static android.security.talisman.TrustTokenManager.VERIFICATION_SUCCESS;
 import android.annotation.EnforcePermission;
 import android.annotation.NonNull;
 import android.annotation.RequiresNoPermission;
+import android.app.StatsManager;
+import android.app.StatsManager.PullAtomMetadata;
 import android.content.Context;
 import android.os.Binder;
 import android.os.PermissionEnforcer;
@@ -34,10 +36,12 @@ import android.security.talisman.TrustTokenIdentitySet;
 import android.security.talisman.TrustTokenWithChallenge;
 import android.util.Base64;
 import android.util.Slog;
+import android.util.StatsEvent;
 
 import com.android.internal.R;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.Clock;
+import com.android.internal.util.ConcurrentUtils;
 import com.android.server.SystemService;
 
 import com.google.android.security.trusttoken.TrustAnchor;
@@ -73,6 +77,9 @@ public class TrustTokenManagerService extends SystemService {
     private final AtomicReference<TrustAnchor> mTrustAnchor = new AtomicReference<>();
     private final Stub mBinder;
     private final boolean mHasProvider;
+    private final StatsManager mStatsManager;
+    private boolean mAuthorityFallback = false;
+    private int mNumRootKey = 0;
 
     /**
      * Creates a new instance of {@link TrustTokenManagerService}.
@@ -105,6 +112,7 @@ public class TrustTokenManagerService extends SystemService {
         mRefreshScheduler = new TrustTokenRefreshService.Scheduler(context);
         mCleanUpScheduler = new TrustTokenCleanUpService.Scheduler(context);
         mHasProvider = TrustTokenProvider.getServiceProvider(context) != null;
+        mStatsManager = mContext.getSystemService(StatsManager.class);
 
         try {
             updateTrustAnchor();
@@ -125,6 +133,11 @@ public class TrustTokenManagerService extends SystemService {
             mRefreshScheduler.scheduleRegularRefresh();
             mCleanUpScheduler.scheduleRegularCleanUp();
         }
+        mStatsManager.setPullAtomCallback(
+                MetricsLogger.TrustTokenState.ATOM_TAG,
+                new PullAtomMetadata.Builder().setCoolDownMillis(60000).build(),
+                ConcurrentUtils.DIRECT_EXECUTOR,
+                new PullTrustTokenState());
     }
 
     private void updateTrustAnchor() throws TrustConfigurationUnavailableException {
@@ -147,6 +160,7 @@ public class TrustTokenManagerService extends SystemService {
                 }
                 rootKeys.retainAll(deviceRootKeySet);
             }
+            mAuthorityFallback = false;
             Slog.i(TAG, "The number of root keys: " + rootKeys.size());
             if (rootKeys.isEmpty()) {
                 Slog.e(
@@ -154,8 +168,11 @@ public class TrustTokenManagerService extends SystemService {
                         "No common root keys between the device and the configuration."
                                 + " TrustTokenService won't function!");
             }
+        } else {
+            mAuthorityFallback = true;
         }
 
+        mNumRootKey = rootKeys.size();
         var newAnchor =
                 new TrustAnchor(
                         rootKeys.stream().map(key -> key.array()).collect(Collectors.toList()),
@@ -208,10 +225,14 @@ public class TrustTokenManagerService extends SystemService {
                 })
         public TrustTokenWithChallenge acquireVerifiedDeviceToken(byte[] challenge) {
             acquireVerifiedDeviceToken_enforcePermission();
+            var logger =
+                    new MetricsLogger.AcquireTokenCalled()
+                            .setTokenType(MetricsLogger.AcquireTokenCalled.TYPE_DEVICE);
             TrustTokenSetWithKey setWithKey;
             try {
                 setWithKey = mDatabase.getTrustTokenSet(TrustTokenSet.TYPE_VERIFIED_DEVICE);
             } catch (TrustTokenExhaustedException e) {
+                logger.setOutcome(MetricsLogger.AcquireTokenCalled.OUTCOME_TOKEN_EXHAUSTED).log();
                 if (mHasProvider) {
                     mRefreshScheduler.scheduleUrgentRefresh();
                 }
@@ -221,8 +242,13 @@ public class TrustTokenManagerService extends SystemService {
                     new com.google.android.security.trusttoken.TrustToken(
                             getTrustAnchor(), setWithKey.getTokenSet().getTokenSet())) {
                 // No exception means the token is valid.
+            } catch (TrustConfigurationUnavailableException e) {
+                logger.setOutcome(MetricsLogger.AcquireTokenCalled.OUTCOME_ANCHOR_UNAVAILABLE)
+                        .log();
+                throw e;
             } catch (IllegalArgumentException e) {
                 Slog.e(TAG, "Fetched an invalid token: " + e.toString());
+                logger.setOutcome(MetricsLogger.AcquireTokenCalled.OUTCOME_TOKEN_INVALID).log();
                 // Since the tokens are fetched in a batch, we are likely to have a large
                 // amount of invalid tokens. We return immediately to avoid keeping the
                 // client waiting.
@@ -233,6 +259,7 @@ public class TrustTokenManagerService extends SystemService {
                         "Cannot acquire valid tokens. Consider the service unavailable.");
             }
             byte[] challengeResponse = mMasterKey.sign(setWithKey.getKey(), challenge);
+            logger.setOutcome(MetricsLogger.AcquireTokenCalled.OUTCOME_SUCCESS).log();
             return new TrustTokenWithChallenge(
                     setWithKey.getTokenSet().asVerifiedDeviceToken(), challengeResponse);
         }
@@ -252,29 +279,38 @@ public class TrustTokenManagerService extends SystemService {
                 TrustToken token, byte[] remoteResponse, byte[] expectedChallenge) {
             // TODO(b/418280383): Replace with correct permissions.
             verifyTrustTokenAndChallenge_enforcePermission();
+            var logger = new MetricsLogger.VerifyTokenCalled();
             try (var parsedToken =
                     new com.google.android.security.trusttoken.TrustToken(
                             getTrustAnchor(), token.encoded())) {
                 var policy = parsedToken.getPolicy();
+                logger.setPolicy(policy);
                 if (policy != TrustTokenPolicy.VERIFIED_DEVICE
                         && policy != TrustTokenPolicy.VERIFIED_DEVICE_STRONG) {
                     // The method only takes a verified device token. Identity tokens should
                     // be verified with |verifyIdentityTokens| after the device is
                     // authenticated.
+                    logger.setOutcome(MetricsLogger.VerifyTokenCalled.OUTCOME_INVALID_POLICY).log();
                     throw new IllegalArgumentException("not a verified device token");
                 }
                 if (parsedToken.verifyChallenge(expectedChallenge, remoteResponse)) {
+                    logger.setOutcome(MetricsLogger.VerifyTokenCalled.OUTCOME_SUCCESS).log();
                     return VERIFICATION_SUCCESS;
                 } else {
+                    logger.setOutcome(MetricsLogger.VerifyTokenCalled.OUTCOME_CHALLENGE_INCORRECT)
+                            .log();
                     return VERIFICATION_FAILURE_CHALLENGE_INCORRECT;
                 }
             } catch (TrustTokenInvalidSignatureException e) {
+                logger.setOutcome(MetricsLogger.VerifyTokenCalled.OUTCOME_SIGNATURE_INVALID).log();
                 Slog.e(TAG, "Trust token signature error: " + e.toString());
                 return VERIFICATION_FAILURE_SIGNATURE_INVALID;
             } catch (IllegalArgumentException e) {
+                logger.setOutcome(MetricsLogger.VerifyTokenCalled.OUTCOME_FAILURE_UNKNOWN).log();
                 Slog.e(TAG, "Failed to verify the trust token: " + e.toString());
                 return VERIFICATION_FAILURE_UNKNOWN;
             } catch (TrustConfigurationUnavailableException e) {
+                logger.setOutcome(MetricsLogger.VerifyTokenCalled.OUTCOME_ANCHOR_UNAVAILABLE).log();
                 if (mHasProvider) {
                     mRefreshScheduler.scheduleUrgentRefresh();
                 }
@@ -393,4 +429,25 @@ public class TrustTokenManagerService extends SystemService {
                             });
                 }
             };
+
+    @VisibleForTesting
+    class PullTrustTokenState implements StatsManager.StatsPullAtomCallback {
+        @Override
+        public int onPullAtom(int atomTag, List<StatsEvent> data) {
+            if (atomTag != MetricsLogger.TrustTokenState.ATOM_TAG) {
+                return StatsManager.PULL_SKIP;
+            }
+            var state =
+                    new MetricsLogger.TrustTokenState()
+                            .setHasProvider(mHasProvider)
+                            .setHasTrustAnchor(mTrustAnchor.get() != null)
+                            .setAuthorityFallback(mAuthorityFallback)
+                            .setNumRootKey(mNumRootKey)
+                            .setDeviceTokenCounts(
+                                    mDatabase.countTrustTokenSets(
+                                            TrustTokenSet.TYPE_VERIFIED_DEVICE));
+            data.add(state.build());
+            return StatsManager.PULL_SUCCESS;
+        }
+    }
 }

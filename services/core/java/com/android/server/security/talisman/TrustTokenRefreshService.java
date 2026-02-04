@@ -42,7 +42,7 @@ import java.util.concurrent.Executors;
 public class TrustTokenRefreshService extends JobService {
     private static final String TAG = "TrustTokenRefreshService";
 
-    private static final String NAMESPACE = "trust_token_refresh";
+    private static final String NAMESPACE = "trust_token";
     private static final ComponentName REFRESH_SERVICE_COMPONENT =
             new ComponentName("android", TrustTokenRefreshService.class.getName());
     private static final int REGULAR_REFRESH_JOB_ID = 1;
@@ -87,8 +87,19 @@ public class TrustTokenRefreshService extends JobService {
     @Override
     public boolean onStartJob(JobParameters params) {
         Slog.i(TAG, "start job " + params.toString());
+        var startLogger = new MetricsLogger.RefreshTokenStarted();
+        var finishLogger = new MetricsLogger.RefreshTokenFinished();
+        if (params.getJobId() == URGENT_REFRESH_JOB_ID) {
+            startLogger.setRefreshType(startLogger.REFRESH_TYPE_URGENT);
+            finishLogger.setRefreshType(finishLogger.REFRESH_TYPE_URGENT);
+        } else if (params.getJobId() == REGULAR_REFRESH_JOB_ID) {
+            startLogger.setRefreshType(startLogger.REFRESH_TYPE_REGULAR);
+            finishLogger.setRefreshType(finishLogger.REFRESH_TYPE_REGULAR);
+        }
+        startLogger.log();
         if (mProvider == null) {
             Slog.e(TAG, "no TrustTokenProvider found");
+            finishLogger.setOutcome(finishLogger.OUTCOME_PROVIDER_UNAVAILABLE).log();
             return false;
         }
         mExecutorService.execute(
@@ -111,12 +122,26 @@ public class TrustTokenRefreshService extends JobService {
                                         Pair<TrustConfiguration, List<byte[]>> result) {
                                     mInternal.updateTrustConfiguration(result.first);
                                     mInternal.addTrustTokens(keys, result.second);
+                                    finishLogger.setOutcome(finishLogger.OUTCOME_SUCCESS).log();
                                     jobFinished(params, /* wantsReschedule= */ false);
                                 }
 
                                 @Override
                                 public void onError(Throwable throwable) {
                                     Slog.e(TAG, "Failed to refresh tokens: " + throwable);
+                                    if (throwable instanceof TrustTokenProvider.ProviderError) {
+                                        finishLogger
+                                                .setOutcome(finishLogger.OUTCOME_SERVER_ERROR)
+                                                .setServerErrorCode(
+                                                        ((TrustTokenProvider.ProviderError)
+                                                                        throwable)
+                                                                .getCode())
+                                                .log();
+                                    } else {
+                                        finishLogger
+                                                .setOutcome(finishLogger.OUTCOME_SERVICE_ERROR)
+                                                .log();
+                                    }
                                     // Only retry the periodical refresh job. The one off refreshes
                                     // will be triggered again by the client if it's still
                                     // necessary.
