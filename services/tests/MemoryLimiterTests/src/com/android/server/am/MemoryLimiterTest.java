@@ -21,6 +21,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 import android.app.ActivityManager;
 import android.app.ActivityManager.ProcessState;
@@ -250,9 +251,11 @@ public class MemoryLimiterTest {
     // Prepare the helper app.  Start the process, get its pid, and prepare the cgroup.  Then
     // return the pid.
     private static int prepareHelper(int uid) throws Exception {
-        // -S stops any existing activity before starting new, ensuring cold start
-        final String cmd = String.format("am start-activity -S -W -n %s/.%s", HELPER, ACTIVITY);
-        shellCommand(cmd);
+        final String args = "-S -W --dismiss-keyguard";
+        final String cmd = String.format("am start-activity %s -n %s/.%s", args, HELPER, ACTIVITY);
+        final String ans = shellCommand(cmd);
+        Log.i(TAG, "started: " + ans);
+        assumeTrue(ans.contains("LaunchState: COLD"));
 
         int pid = getHelperPid();
         Log.i(TAG, String.format("helper at pid=%d uid=%d", pid, uid));
@@ -316,7 +319,7 @@ public class MemoryLimiterTest {
     // Send a request to the application to change its memory.  The size has unit MB.
     private void appCommand(int size) {
         final Intent intent = new Intent(); // SendActivity.this, SendActivity.class);
-        intent.setAction(HELPER + "MEMORY");
+        intent.setAction(HELPER + ".MEMORY");
         intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
         intent.putExtra("size", Integer.toString(size));
         mContext.sendBroadcast(intent);

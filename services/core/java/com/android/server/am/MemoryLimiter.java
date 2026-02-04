@@ -94,6 +94,10 @@ class MemoryLimiter implements AutoCloseable {
     static final int MEMORY_LIMIT_TYPE = 1;
     // LINT.ThenChange(/services/core/jni/com_android_server_am_MemoryLimiter.cpp:limitTypes)
 
+    // A discriminated value to mean "all UIDs".  It does not overlay INVALID_UID or any legal
+    // UID.
+    static final int ALL_UIDS = -2;
+
     /**
      * A convenience function that maps limit types to strings.
      */
@@ -289,19 +293,19 @@ class MemoryLimiter implements AutoCloseable {
                             // it.
                             return;
                         }
-                        final int pid = msg.arg1;
-                        final int uid = msg.arg2;
-                        final int op = msg.what;
+                        int pid = msg.arg1;
+                        int uid = msg.arg2;
+                        int op = msg.what;
                         synchronized (mLock) {
                             switch (op) {
                                 case MESSAGE_START -> {
-                                    if (enableMonitoring() && (uid != mIgnoredUid)) {
+                                    if (enableMonitoring() && !shouldIgnore(uid)) {
                                         onProcessStarted(mNative, pid, uid);
                                     }
                                 }
 
                                 case MESSAGE_CONFIG -> {
-                                    if (msg.obj != null && uid != mIgnoredUid) {
+                                    if (msg.obj != null && !shouldIgnore(uid)) {
                                         long limit = (Long) msg.obj;
                                         configureLimit(mNative, pid, uid, limit);
                                     }
@@ -310,6 +314,11 @@ class MemoryLimiter implements AutoCloseable {
                                 case MESSAGE_IGNORE -> {
                                     // This message is only issued during testing.
                                     String oldValue = ignoredUid();
+                                    Boolean ignored = (Boolean) msg.obj;
+                                    if (!ignored) {
+                                        // Normalize the UID to INVALID if no UID is being ignored.
+                                        uid = INVALID_UID;
+                                    }
                                     mIgnoredUid = uid;
                                     Slog.i(TAG, "ignoring " + ignoredUid() + " was " + oldValue);
                                 }
@@ -489,7 +498,7 @@ class MemoryLimiter implements AutoCloseable {
 
         @Override
         public void ignoreUid(int uid, boolean ignore) {
-            sendCommand(MESSAGE_IGNORE, INVALID_PID, ignore ? uid : INVALID_UID, null);
+            sendCommand(MESSAGE_IGNORE, INVALID_PID, uid, Boolean.valueOf(ignore));
         }
 
         @Override
@@ -499,7 +508,20 @@ class MemoryLimiter implements AutoCloseable {
 
         // A simple function to string-ify the ignored UID.
         private String ignoredUid() {
-            return (mIgnoredUid == INVALID_UID) ? "none" : Integer.toString(mIgnoredUid);
+            return switch (mIgnoredUid) {
+                case INVALID_UID -> "none";
+                case ALL_UIDS -> "all";
+                default -> Integer.toString(mIgnoredUid);
+            };
+        }
+
+        // Return true if the input UID is being ignored.
+        private boolean shouldIgnore(int uid) {
+            return switch (mIgnoredUid) {
+                case INVALID_UID -> false;
+                case ALL_UIDS -> true;
+                default -> uid == mIgnoredUid;
+            };
         }
 
         @Override
