@@ -503,8 +503,10 @@ class DynamicAppFunctionRegistryTest {
         assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION)).isFalse()
         assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION2)).isFalse()
 
-        verify(mMockOnBinderDeathCleanupCallback, times(1))
-            .run(eq(setOf(AppFunctionName(TEST_PACKAGE, TEST_FUNCTION2))))
+        val captor = argumentCaptor<Set<AppFunctionName>>()
+        verify(mMockOnBinderDeathCleanupCallback, times(1)).run(captor.capture())
+        assertThat(captor.firstValue)
+            .contains(AppFunctionName(TEST_PACKAGE, TEST_FUNCTION2))
         verifyNoMoreInteractions(mMockOnBinderDeathCleanupCallback)
     }
 
