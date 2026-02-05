@@ -6808,7 +6808,7 @@ package android.hardware.input {
     method @NonNull public String getInputDeviceName();
     method public int getProductId();
     method public int getVendorId();
-    method @FlaggedApi("android.companion.virtualdevice.flags.virtual_input_view_behavior") @Nullable public android.hardware.input.ViewBehaviorConfig getViewBehaviorConfig();
+    method @FlaggedApi("android.companion.virtualdevice.flags.virtual_input_view_behavior") @NonNull public android.hardware.input.ViewBehaviorConfig getViewBehaviorConfig();
   }
 
   public abstract static class VirtualInputDeviceConfig.Builder<T extends android.hardware.input.VirtualInputDeviceConfig.Builder<T>> {
