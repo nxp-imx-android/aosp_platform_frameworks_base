@@ -115,6 +115,11 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
         if (preference !is BannerMessagePreference) {
             return false
         }
+
+        if (activeSection.list.size >= MAX_BANNERS_COUNT) {
+            return false
+        }
+
         if (activeSection.list.contains(preference)) {
             return true
         }
@@ -341,8 +346,25 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
         if (!showDismissedPreferences || dismissedSection.list.contains(preference)) {
             return
         }
-        preference.order = EXPAND_DISMISSED_ORDER + dismissedSection.list.size
+
+        // LIMIT CHECK: FIFO (Remove oldest if full)
+        if (dismissedSection.list.size >= MAX_BANNERS_COUNT) {
+            val oldestPreference = dismissedSection.list[0]
+            dismissedSection.list.removeAt(0)
+
+            if (dismissedSection.isExpanded) {
+                oldestPreference.signalCollapse(false) {
+                    handler.post { super.removePreference(oldestPreference) }
+                }
+            } else {
+                super.removePreference(oldestPreference)
+            }
+        }
+
         dismissedSection.list.add(preference)
+        dismissedSection.list.forEachIndexed { index, pref ->
+            pref.order = EXPAND_DISMISSED_ORDER + index
+        }
         maybeCreateExpandCollapseDismissedPreference()
         dismissedSection.expandPref?.let { it.count = dismissedSection.list.size }
         preference.isVisible = dismissedSection.isExpanded
@@ -533,6 +555,7 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
 
     companion object {
         private const val DEFAULT_VISIBLE_PREFERENCES_WHEN_COLLAPSED = 1
+        private const val MAX_BANNERS_COUNT = 10
         private const val EXPAND_ORDER = 1000
         private const val COLLAPSE_ORDER = 2000
         private const val EXPAND_DISMISSED_ORDER = 10000
