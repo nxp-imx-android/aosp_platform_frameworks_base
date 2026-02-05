@@ -1198,6 +1198,8 @@
 
     <!-- Dimensions for biometric prompt panel padding -->
     <dimen name="biometric_prompt_panel_max_width">640dp</dimen>
+    <dimen name="biometric_prompt_center_vertical_spacing">24dp</dimen>
+    <dimen name="biometric_prompt_center_vertical_padding">60dp</dimen>
     <dimen name="biometric_prompt_land_small_horizontal_guideline_padding">344dp</dimen>
     <dimen name="biometric_prompt_two_pane_udfps_horizontal_guideline_padding">114dp</dimen>
     <dimen name="biometric_prompt_two_pane_udfps_shorter_content_width">216dp</dimen>
