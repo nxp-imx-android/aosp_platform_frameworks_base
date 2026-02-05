@@ -181,7 +181,8 @@ class MultiDisplayVeiledResizeTaskPositioner(
             // WMS moves the focus to the touched window.
             if (
                 Flags.moveTaskToFrontOnDragResizingBugfix() &&
-                    !taskBoundsAtDragStart.contains(x.toInt(), y.toInt())
+                    !taskBoundsAtDragStart.contains(x.toInt(), y.toInt()) &&
+                    !windowDecoration.hasGlobalFocus
             ) {
                 desktopTasksController.moveTaskToFront(windowDecoration.taskInfo)
             }

@@ -752,6 +752,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
     @Test
     @EnableFlags(Flags.FLAG_MOVE_TASK_TO_FRONT_ON_DRAG_RESIZING_BUGFIX)
     fun testDragResize_resize_movesTaskToFront_whenStartOutside() = runOnUiThread {
+        whenever(mockWindowDecoration.hasGlobalFocus).thenReturn(false)
         taskPositioner.onDragPositioningStart(
             CTRL_TYPE_RIGHT,
             DISPLAY_ID_0,
@@ -776,6 +777,22 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
 
         verify(mockDesktopTasksController, never()).moveTaskToFront(any(), any(), any())
     }
+
+    @Test
+    @EnableFlags(Flags.FLAG_MOVE_TASK_TO_FRONT_ON_DRAG_RESIZING_BUGFIX)
+    fun testDragResize_resize_doesNotMoveTaskToFront_whenStartOutsideAndAlreadyFocused() =
+        runOnUiThread {
+            whenever(mockWindowDecoration.hasGlobalFocus).thenReturn(true)
+            taskPositioner.onDragPositioningStart(
+                CTRL_TYPE_RIGHT,
+                DISPLAY_ID_0,
+                STARTING_BOUNDS.right.toFloat() + 10,
+                STARTING_BOUNDS.bottom.toFloat() + 10,
+                INPUT_METHOD_TYPE_UNKNOWN,
+            )
+
+            verify(mockDesktopTasksController, never()).moveTaskToFront(any(), any(), any())
+        }
 
     @Test
     fun testDragResize_drag_draggedTaskNotReorderedToTop() = runOnUiThread {
