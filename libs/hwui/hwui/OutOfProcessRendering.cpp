@@ -24,6 +24,7 @@
 #include <com_android_graphics_libgui_flags.h>
 #include <gui/GraphicBuffersRegisterInfo.h>
 #include <gui/GraphicBuffersUnregisterInfo.h>
+#include <gui/TraceUtils.h>
 #include <include/android/GrAHardwareBufferUtils.h>
 #include <inttypes.h>
 #include <log/log.h>
@@ -82,15 +83,15 @@ AllocationResult createLayerSurface(uint32_t width, uint32_t height, GrDirectCon
 
     LOG_ALWAYS_FATAL_IF(!context, "Skia GrDirectContext is null");
 
-    sp<GraphicBuffer> buffer = new GraphicBuffer(
+    sp<GraphicBuffer> buffer = sp<GraphicBuffer>::make(
             width, height, PIXEL_FORMAT_RGBA_8888, 1,
-            AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE | AHARDWAREBUFFER_USAGE_GPU_FRAMEBUFFER,
-            "OOPRLayer");
+            GraphicBuffer::USAGE_HW_TEXTURE | GraphicBuffer::USAGE_HW_RENDER, "OOPRLayer");
     if (buffer->initCheck() != NO_ERROR) {
         ALOGE("Failed to allocate GraphicBuffer for layer");
         return {};
     }
 
+    ATRACE_FORMAT("createLayerSurface bufferId=%llu", buffer->getId());
     AutoBackendTextureRelease* textureRelease =
             new AutoBackendTextureRelease(context, buffer->toAHardwareBuffer());
     if (!textureRelease->getTexture().isValid()) {
@@ -144,6 +145,7 @@ void registerSnapshot(NodeResources* resources, const sk_sp<SkImage>& image) {
             return;
         }
     }
+    ATRACE_FORMAT("registerBuffer bufferId=%llu imageId=%u", buffer->getId(), image->uniqueID());
 
     sRenderResourceCache.bitmaps[image->uniqueID()] =
             IPCClientBitmap{buffer->getId(), false, buffer};
@@ -152,6 +154,7 @@ void registerSnapshot(NodeResources* resources, const sk_sp<SkImage>& image) {
 void registerBuffer(const sp<GraphicBuffer>& buffer, const sk_sp<SkImage>& image) {
     if (!sEnableOOPR || !image) return;
     std::lock_guard lock{sRenderResourceLock};
+    ATRACE_FORMAT("registerBuffer bufferId=%llu imageId=%u", buffer->getId(), image->uniqueID());
     sRenderResourceCache.bitmaps[image->uniqueID()] =
             IPCClientBitmap{buffer->getId(), false, buffer};
 }
@@ -160,6 +163,7 @@ void registerPendingBitmaps() {
     if (!sEnableOOPR) {
         return;
     }
+    ATRACE_CALL();
     std::lock_guard lock{sRenderResourceLock};
 
     gui::GraphicBuffersRegisterInfo registerInfo;
@@ -195,6 +199,8 @@ void deregisterBuffer(const sk_sp<SkImage>& image) {
     uint64_t bufferId = it->second.id;
     bool registered = it->second.registeredWithServer;
     sRenderResourceCache.bitmaps.erase(it);
+
+    ATRACE_FORMAT("deregisterBuffer bufferId=%llu imageId=%u", bufferId, image->uniqueID());
 
     if (!registered) {
         return;

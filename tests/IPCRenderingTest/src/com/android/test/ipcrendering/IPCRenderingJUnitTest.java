@@ -98,11 +98,13 @@ public class IPCRenderingJUnitTest {
                 layerNode.setLayerType(View.LAYER_TYPE_HARDWARE);
                 layerNode.setAlpha(0.5f);
 
-                Canvas lc = layerNode.beginRecording(200, 200);
-                lc.drawColor(0xFFFF0000); // Red
-                layerNode.endRecording();
-
                 for (int i = 0; i < 200; i++) {
+                    // Oscillate color
+                    Canvas lc = layerNode.beginRecording(200, 200);
+                    int red = (int) ((Math.sin(i * 0.1) + 1) * 127.5);
+                    int green = (int) ((Math.cos(i * 0.1) + 1) * 127.5);
+                    lc.drawColor(Color.rgb(red, green, 0));
+                    layerNode.endRecording();
                     Canvas c = context.lockCanvas(512, 512);
                     c.drawColor(0xFFFFFFFF);
 
