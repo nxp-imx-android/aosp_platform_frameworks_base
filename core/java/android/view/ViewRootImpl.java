@@ -5051,7 +5051,9 @@ public final class ViewRootImpl implements ViewParent,
             return;
         }
         Trace.instant(TRACE_TAG_VIEW, "setClientDrawnCornerRadii: radii" + mCornerRadii);
-        applyOpacity(false);
+        if (!mCornerRadii.isEmpty()) {
+            applyOpacity(false);
+        }
         RectF bounds = threadedRenderer.setCornerRadius(mCornerRadii);
         applyTransactionOnDraw(mTransaction
                 .setClientDrawnCornerRadius(mSurfaceControl, mCornerRadii.topLeft,
@@ -10224,11 +10226,10 @@ public final class ViewRootImpl implements ViewParent,
     private void applyOpacity(boolean opaque) {
         final ThreadedRenderer renderer = mAttachInfo.mThreadedRenderer;
         if (renderer != null && renderer.rendererOwnsSurfaceControlOpacity()) {
-            opaque = renderer.setSurfaceControlOpaque(opaque);
-        } else {
-            applyTransactionOnDraw(mTransaction.setOpaque(mSurfaceControl, opaque));
+            opaque = renderer.getSurfaceControlOpacity(opaque);
         }
-
+        mTransaction.setOpaque(mSurfaceControl, opaque);
+        applyTransactionOnDraw(mTransaction);
         mIsSurfaceOpaque = opaque;
     }
 
