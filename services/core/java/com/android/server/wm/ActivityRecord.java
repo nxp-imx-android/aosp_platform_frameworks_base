@@ -439,6 +439,8 @@ final class ActivityRecord extends WindowToken {
     final int launchedFromUid; // always the uid who started the activity.
     final String launchedFromPackage; // always the package who started the activity.
     @Nullable
+    final String launchedFromProcessName; // always the process who started the activity.
+    @Nullable
     final String launchedFromFeatureId; // always the feature in launchedFromPackage
     @LaunchSourceType
     int mLaunchSourceType; // latest launch source type
@@ -1957,6 +1959,7 @@ final class ActivityRecord extends WindowToken {
         launchedFromPid = _launchedFromPid;
         launchedFromUid = _launchedFromUid;
         launchedFromPackage = _launchedFromPackage;
+        launchedFromProcessName = _caller != null ? _caller.mName : null;
         launchedFromFeatureId = _launchedFromFeature;
         mLaunchSourceType = determineLaunchSourceType(_launchedFromUid, _caller);
         shortComponentName = _intent.getComponent().flattenToShortString();

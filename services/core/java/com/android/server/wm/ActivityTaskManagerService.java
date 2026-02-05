@@ -5894,7 +5894,8 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
             final Message m = PooledLambda.obtainMessage(ActivityManagerInternal::startProcess,
                     mAmInternal, activity.processName, activity.info.applicationInfo, knownToBeDead,
                     isTop, hostingType, activity.intent.getComponent(),
-                    activity.info.shouldRunInPccSandbox());
+                    activity.info.shouldRunInPccSandbox(),
+                    activity.launchedFromUid, activity.launchedFromProcessName);
             mH.sendMessage(m);
         } finally {
             Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);

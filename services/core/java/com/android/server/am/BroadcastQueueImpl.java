@@ -1097,7 +1097,8 @@ class BroadcastQueueImpl extends BroadcastQueue {
 
         final int intentFlags = r.intent.getFlags() | Intent.FLAG_FROM_BACKGROUND;
         final HostingRecord hostingRecord = new HostingRecord(HostingRecord.HOSTING_TYPE_BROADCAST,
-                component, r.intent.getAction(), r.getHostingRecordTriggerType(), runInPccSandbox);
+                component, r.intent.getAction(), r.getHostingRecordTriggerType(), runInPccSandbox,
+                r.callingUid, r.callerApp != null ? r.callerApp.processName : null);
         final boolean isActivityCapable = (r.options != null
                 && r.options.getTemporaryAppAllowlistDuration() > 0);
         final int zygotePolicyFlags = isActivityCapable ? ZYGOTE_POLICY_FLAG_LATENCY_SENSITIVE

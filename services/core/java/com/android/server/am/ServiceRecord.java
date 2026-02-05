@@ -226,6 +226,28 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
     // ApplicationInfo of the most recent callingPackage that start/bind this service.
     @Nullable ApplicationInfo mRecentCallerApplicationInfo;
 
+    void updateRecentCallingAppInfo(@Nullable String callingPackage, int callingUid) {
+        mRecentCallingPackage = callingPackage;
+        mRecentCallingUid = callingUid;
+        if (callingPackage != null) {
+            try {
+                mRecentCallerApplicationInfo = ams.mContext.getPackageManager()
+                        .getApplicationInfoAsUser(callingPackage, 0,
+                                UserHandle.getUserId(callingUid));
+            } catch (PackageManager.NameNotFoundException e) {
+                mRecentCallerApplicationInfo = null;
+            }
+        } else {
+            mRecentCallerApplicationInfo = null;
+        }
+    }
+
+    @Nullable
+    String getRecentCallerProcessName() {
+        return mRecentCallerApplicationInfo != null
+                ? mRecentCallerApplicationInfo.processName : null;
+    }
+
     // The uptime when the service enters FGS state.
     long mFgsEnterTime = 0;
     // The uptime when the service exits FGS state.
