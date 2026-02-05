@@ -2253,7 +2253,6 @@ public class VoiceInteractionSession implements KeyEvent.Callback, ComponentCall
      * @param activityId The {@link ActivityId} to convert.
      * @return The converted {@link AppFunctionActivityId}.
      */
-    // TODO: b/479450424 - Verify documentation references.
     @FlaggedApi(android.app.appfunctions.flags.Flags.FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
     @NonNull
     public AppFunctionActivityId getAppFunctionActivityId(@NonNull ActivityId activityId) {
