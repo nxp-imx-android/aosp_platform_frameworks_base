@@ -865,14 +865,6 @@ public final class AppFunctionManager {
      * to the {@link AppFunction} implementation provided here. The implementation will be invoked
      * on the provided {@link Executor}.
      *
-     * <b>Note:</b> For activity-scoped functions, the calling agent must provide the corresponding
-     * {@link android.app.appfunctions.AppFunctionActivityId} in the execution request to ensure
-     * the call is routed to the correct Activity instance, otherwise the execution will fail with
-     * {@link AppFunctionException#ERROR_NOT_FOUND}.
-     *
-     * <p>If an application-level function is called but no implementation is currently registered,
-     * the execution will fail with {@link AppFunctionException#ERROR_DISABLED}.
-     *
      * <h3>Lifecycle management</h3>
      *
      * <p>The function is only enabled and available for execution while it is registered. The

@@ -39,6 +39,10 @@ import java.util.Objects;
  *
  * <p>The {@link ExecuteAppFunctionRequest#getExtras()} provides any extra metadata for the request.
  * Structured APIs can be exposed in the SDK by packing and unpacking this Bundle.
+ *
+ * <p>If {@link AppFunctionMetadata#getScope()} is {@link AppFunctionMetadata#SCOPE_ACTIVITY}, the
+ * target activity must be specified using {@link ExecuteAppFunctionRequest.Builder#setActivityId}.
+ * If omitted, the request fails with {@link AppFunctionException#ERROR_FUNCTION_NOT_FOUND}.
  */
 @FlaggedApi(FLAG_ENABLE_APP_FUNCTION_MANAGER)
 public final class ExecuteAppFunctionRequest implements Parcelable {
