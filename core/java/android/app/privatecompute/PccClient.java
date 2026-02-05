@@ -92,11 +92,8 @@ public class PccClient {
      *                                    <li>Read-only {@link android.os.ParcelFileDescriptor}
      *                                    <li>Read-only {@link android.os.SharedMemory}
      *                                    <li>{@link android.graphics.Bitmap}
-     *                                    <li>Custom {@link android.os.Parcelable} objects, must
-     *                                    be serialized as a {@code byte[]} if the bundle contains
-     *                                    any active objects like
-     *                                    {@link android.os.ParcelFileDescriptor} or
-     *                                    {@link android.os.SharedMemory}.
+     *                                    <li>Custom {@link android.os.Parcelable} objects must
+     *                                    be serialized as a {@code byte[]}.
      *                                    <li>Nested {@code Bundle} objects, which are
      *                                    recursively sanitized. Throws {@code
      *                                    IllegalArgumentException} if the depth exceeds 100.
