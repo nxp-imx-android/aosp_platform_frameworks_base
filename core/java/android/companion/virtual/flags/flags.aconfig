@@ -11,13 +11,6 @@ package: "android.companion.virtualdevice.flags"
 container: "system"
 
 flag {
-    namespace: "virtual_devices"
-    name: "high_resolution_scroll"
-    description: "Enable high resolution scroll"
-    bug: "335160780"
-}
-
-flag {
     name: "camera_multiple_input_streams"
     is_exported: true
     namespace: "virtual_devices"
