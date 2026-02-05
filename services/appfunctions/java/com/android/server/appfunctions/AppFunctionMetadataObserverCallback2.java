@@ -74,7 +74,7 @@ public class AppFunctionMetadataObserverCallback2 implements ObserverCallback {
                                 /* shouldSetRuntimeMetadataSchemaUnconditionally= */ false)
                         .whenComplete(
                                 (isSyncSuccessful, ex) -> {
-                                    if (!isSyncSuccessful) {
+                                    if (ex != null || !isSyncSuccessful) {
                                         Slog.d(TAG, "Failed to sync metadata", ex);
                                         return;
                                     }
