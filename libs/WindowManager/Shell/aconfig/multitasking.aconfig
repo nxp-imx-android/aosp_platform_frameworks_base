@@ -331,3 +331,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "update_bubble_bounds_during_rotation"
+    namespace: "multitasking"
+    description: "Update the bounds of the expanded bubble task as part of the rotation transition"
+    bug: "471756214"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
