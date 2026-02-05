@@ -10220,7 +10220,7 @@ package android.app.privatecompute {
   @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public abstract class DataMigrationToPccService extends android.app.Service {
     ctor public DataMigrationToPccService();
     method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
-    method public abstract void onMigrationRequested(@NonNull android.app.privatecompute.MigrationRequestResultSender);
+    method public abstract void onMigrationRequested(@NonNull java.util.function.Consumer<android.app.privatecompute.MigrationRequestResult>);
     field public static final long MIGRATION_TIMEOUT_MS = 60000L; // 0xea60L
     field public static final String SERVICE_INTERFACE = "android.app.privatecompute.DataMigrationToPccService";
   }
@@ -10241,10 +10241,6 @@ package android.app.privatecompute {
     field @NonNull public static final android.os.Parcelable.Creator<android.app.privatecompute.MigrationRequestResult> CREATOR;
     field public static final int MIGRATION_REQUEST_ACCEPTED = 1; // 0x1
     field public static final int MIGRATION_REQUEST_REJECTED = 2; // 0x2
-  }
-
-  @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public final class MigrationRequestResultSender {
-    method public void sendResult(@NonNull android.app.privatecompute.MigrationRequestResult);
   }
 
   @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public class PccClient {
