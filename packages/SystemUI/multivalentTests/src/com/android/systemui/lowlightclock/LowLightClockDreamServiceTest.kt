@@ -20,9 +20,11 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.dream.lowlight.LowLightTransitionCoordinator
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.runTest
+import com.android.systemui.testKosmos
 import java.util.Optional
 import javax.inject.Provider
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
@@ -35,110 +37,120 @@ import org.mockito.kotlin.whenever
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class LowLightClockDreamServiceTest : SysuiTestCase() {
-    private val chargingStatusProvider: ChargingStatusProvider = mock()
-    private val displayController: LowLightDisplayController = mock()
-    private val animationProvider: LowLightClockAnimationProvider = mock()
-    private val lowLightTransitionCoordinator: LowLightTransitionCoordinator = mock()
-    private val animationInAnimator: Animator = mock()
-    private val animationOutAnimator: Animator = mock()
+    private val kosmos = testKosmos()
 
-    private lateinit var service: LowLightClockDreamService
+    private val Kosmos.chargingStatusProvider by Kosmos.Fixture { mock<ChargingStatusProvider>() }
+    private val Kosmos.displayController by Kosmos.Fixture { mock<LowLightDisplayController>() }
+    private val Kosmos.lowLightTransitionCoordinator by Kosmos.Fixture {
+        mock<LowLightTransitionCoordinator>()
+    }
+    private val Kosmos.animationInAnimator by Kosmos.Fixture { mock<Animator>() }
+    private val Kosmos.animationOutAnimator by Kosmos.Fixture { mock<Animator>() }
+    private val Kosmos.animationProvider by
+        Kosmos.Fixture<LowLightClockAnimationProvider> {
+            mock {
+                on { provideAnimationIn(any(), any()) }.thenReturn(animationInAnimator)
+                on { provideAnimationOut(any(), any()) }.thenReturn(animationOutAnimator)
+            }
+        }
 
-    @Before
-    fun setUp() {
-        service =
-            LowLightClockDreamService(
-                chargingStatusProvider,
-                animationProvider,
-                lowLightTransitionCoordinator,
-                Optional.of(Provider { displayController }),
-            )
-
-        whenever(animationProvider.provideAnimationIn(any(), any())).thenReturn(animationInAnimator)
-        whenever(animationProvider.provideAnimationOut(any(), any()))
-            .thenReturn(animationOutAnimator)
+    private val Kosmos.underTest by Kosmos.Fixture {
+        LowLightClockDreamService(
+            chargingStatusProvider,
+            animationProvider,
+            lowLightTransitionCoordinator,
+            Optional.of(Provider { displayController }),
+        )
     }
 
     @Test
-    fun testSetDbmStateWhenSupported() {
-        whenever(displayController.isDisplayBrightnessModeSupported()).thenReturn(true)
+    fun testSetDbmStateWhenSupported() =
+        kosmos.runTest {
+            whenever(displayController.isDisplayBrightnessModeSupported()).thenReturn(true)
 
-        service.onDreamingStarted()
+            underTest.onDreamingStarted()
 
-        verify(displayController).setDisplayBrightnessModeEnabled(true)
-    }
-
-    @Test
-    fun testNotSetDbmStateWhenNotSupported() {
-        whenever(displayController.isDisplayBrightnessModeSupported()).thenReturn(false)
-
-        service.onDreamingStarted()
-
-        verify(displayController, never()).setDisplayBrightnessModeEnabled(any())
-    }
+            verify(displayController).setDisplayBrightnessModeEnabled(true)
+        }
 
     @Test
-    fun testClearDbmState() {
-        whenever(displayController.isDisplayBrightnessModeSupported()).thenReturn(true)
+    fun testNotSetDbmStateWhenNotSupported() =
+        kosmos.runTest {
+            whenever(displayController.isDisplayBrightnessModeSupported()).thenReturn(false)
 
-        service.onDreamingStarted()
-        clearInvocations(displayController)
+            underTest.onDreamingStarted()
 
-        service.onDreamingStopped()
-
-        verify(displayController).setDisplayBrightnessModeEnabled(false)
-    }
+            verify(displayController, never()).setDisplayBrightnessModeEnabled(any())
+        }
 
     @Test
-    fun testAnimationsStartedOnDreamingStarted() {
-        service.onDreamingStarted()
+    fun testClearDbmState() =
+        kosmos.runTest {
+            whenever(displayController.isDisplayBrightnessModeSupported()).thenReturn(true)
 
-        // Entry animation started.
-        verify(animationInAnimator).start()
-    }
+            underTest.onDreamingStarted()
+            clearInvocations(displayController)
 
-    @Test
-    fun testAnimationsStartedOnWakeUp() {
-        // Start dreaming then wake up.
-        service.onDreamingStarted()
-        service.onWakeUp()
+            underTest.onDreamingStopped()
 
-        // Entry animation started.
-        verify(animationInAnimator).cancel()
-
-        // Exit animation started.
-        verify(animationOutAnimator).start()
-    }
+            verify(displayController).setDisplayBrightnessModeEnabled(false)
+        }
 
     @Test
-    fun testAnimationsStartedBeforeExitingLowLight() {
-        service.onBeforeExitLowLight()
+    fun testAnimationsStartedOnDreamingStarted() =
+        kosmos.runTest {
+            underTest.onDreamingStarted()
 
-        // Exit animation started.
-        verify(animationOutAnimator).start()
-    }
-
-    @Test
-    fun testWakeUpAnimationCancelledOnDetach() {
-        service.onWakeUp()
-
-        // Exit animation started.
-        verify(animationOutAnimator).start()
-
-        service.onDetachedFromWindow()
-
-        verify(animationOutAnimator).cancel()
-    }
+            // Entry animation started.
+            verify(animationInAnimator).start()
+        }
 
     @Test
-    fun testExitLowLightAnimationCancelledOnDetach() {
-        service.onBeforeExitLowLight()
+    fun testAnimationsStartedOnWakeUp() =
+        kosmos.runTest {
+            // Start dreaming then wake up.
+            underTest.onDreamingStarted()
+            underTest.onWakeUp()
 
-        // Exit animation started.
-        verify(animationOutAnimator).start()
+            // Entry animation started.
+            verify(animationInAnimator).cancel()
 
-        service.onDetachedFromWindow()
+            // Exit animation started.
+            verify(animationOutAnimator).start()
+        }
 
-        verify(animationOutAnimator).cancel()
-    }
+    @Test
+    fun testAnimationsStartedBeforeExitingLowLight() =
+        kosmos.runTest {
+            underTest.onBeforeExitLowLight()
+
+            // Exit animation started.
+            verify(animationOutAnimator).start()
+        }
+
+    @Test
+    fun testWakeUpAnimationCancelledOnDetach() =
+        kosmos.runTest {
+            underTest.onWakeUp()
+
+            // Exit animation started.
+            verify(animationOutAnimator).start()
+
+            underTest.onDetachedFromWindow()
+
+            verify(animationOutAnimator).cancel()
+        }
+
+    @Test
+    fun testExitLowLightAnimationCancelledOnDetach() =
+        kosmos.runTest {
+            underTest.onBeforeExitLowLight()
+
+            // Exit animation started.
+            verify(animationOutAnimator).start()
+
+            underTest.onDetachedFromWindow()
+
+            verify(animationOutAnimator).cancel()
+        }
 }
