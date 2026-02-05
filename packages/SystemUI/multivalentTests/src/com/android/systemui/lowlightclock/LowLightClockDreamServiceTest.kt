@@ -16,7 +16,7 @@
 package com.android.systemui.lowlightclock
 
 import android.animation.Animator
-import android.testing.AndroidTestingRunner
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.dream.lowlight.LowLightTransitionCoordinator
 import com.android.systemui.SysuiTestCase
@@ -33,7 +33,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 @SmallTest
-@RunWith(AndroidTestingRunner::class)
+@RunWith(AndroidJUnit4::class)
 class LowLightClockDreamServiceTest : SysuiTestCase() {
     private val chargingStatusProvider: ChargingStatusProvider = mock()
     private val displayController: LowLightDisplayController = mock()
