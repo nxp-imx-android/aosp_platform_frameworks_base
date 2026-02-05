@@ -133,12 +133,12 @@ import com.android.wm.shell.desktopmode.DesktopMinimizationTransitionHandler;
 import com.android.wm.shell.desktopmode.DesktopMixedTransitionHandler;
 import com.android.wm.shell.desktopmode.DesktopModeDragAndDropAnimatorHelper;
 import com.android.wm.shell.desktopmode.DesktopModeDragAndDropTransitionHandler;
-import com.android.wm.shell.desktopmode.DesktopModeEnterExitTransitionListener;
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger;
 import com.android.wm.shell.desktopmode.DesktopModeKeyGestureHandler;
 import com.android.wm.shell.desktopmode.DesktopModeLoggerTransitionObserver;
 import com.android.wm.shell.desktopmode.DesktopModeMoveToDisplayTransitionHandler;
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger;
+import com.android.wm.shell.desktopmode.DesktopRemoteListener;
 import com.android.wm.shell.desktopmode.DesktopTaskChangeListener;
 import com.android.wm.shell.desktopmode.DesktopTasksController;
 import com.android.wm.shell.desktopmode.DesktopTasksLimiter;
@@ -1095,7 +1095,7 @@ public abstract class WMShellModule {
             DesksController desksController,
             Optional<DesktopTasksTransitionObserver> desktopTasksTransitionObserver,
             SnapController snapController,
-            DesktopModeEnterExitTransitionListener desktopModeEnterExitTransitionListener) {
+            DesktopRemoteListener desktopRemoteListener) {
         return new DesktopTasksController(
                 context,
                 desktopAnimationConfiguration,
@@ -1157,7 +1157,7 @@ public abstract class WMShellModule {
                 desksController,
                 desktopTasksTransitionObserver.get(),
                 snapController,
-                desktopModeEnterExitTransitionListener);
+                desktopRemoteListener);
     }
 
     @WMSingleton

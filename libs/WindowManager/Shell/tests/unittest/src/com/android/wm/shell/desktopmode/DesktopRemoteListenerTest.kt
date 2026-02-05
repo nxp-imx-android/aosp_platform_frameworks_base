@@ -28,25 +28,20 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 /**
- * Tests for [DesktopModeEnterExitTransitionListener] Usage: atest
- * WMShellUnitTests:DesktopModeEnterExitTransitionListenerTest
+ * Tests for [DesktopRemoteListener]
+ *
+ * Usage: `atest WMShellUnitTests:DesktopRemoteListenerTest`
  */
 @SmallTest
-class DesktopModeEnterExitTransitionListenerTest : ShellTestCase() {
+class DesktopRemoteListenerTest : ShellTestCase() {
 
-    private lateinit var remoteListener:
-        SingleInstanceRemoteListener<DesktopTasksController, IDesktopTaskListener>
-
-    private lateinit var desktopTaskListener: IDesktopTaskListener
-
-    private lateinit var listener: DesktopModeEnterExitTransitionListener
+    private val remoteListener =
+        mock<SingleInstanceRemoteListener<DesktopTasksController, IDesktopTaskListener>>()
+    private val desktopTaskListener = mock<IDesktopTaskListener>()
+    private val listener = DesktopRemoteListener()
 
     @Before
     fun setUp() {
-        remoteListener =
-            mock<SingleInstanceRemoteListener<DesktopTasksController, IDesktopTaskListener>>()
-        desktopTaskListener = mock<IDesktopTaskListener>()
-        listener = DesktopModeEnterExitTransitionListener()
         listener.register(remoteListener)
         // Set up the remote listener to execute the callback with the mock IDesktopTaskListener
         whenever(remoteListener.call(any())).thenAnswer {

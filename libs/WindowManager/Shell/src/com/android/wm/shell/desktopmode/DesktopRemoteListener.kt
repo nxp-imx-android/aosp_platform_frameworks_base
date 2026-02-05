@@ -22,12 +22,9 @@ import com.android.wm.shell.dagger.WMSingleton
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import javax.inject.Inject
 
-/**
- * Listener for entering/exiting Desktop Windowing mode, which forwards calls to
- * [IDesktopTaskListener]
- */
+/** Represents a remote-listener forwarding calls for [IDesktopTaskListener]. */
 @WMSingleton
-class DesktopModeEnterExitTransitionListener @Inject constructor() {
+class DesktopRemoteListener @Inject constructor() {
 
     private var remoteListener:
         SingleInstanceRemoteListener<DesktopTasksController, IDesktopTaskListener>? =
@@ -58,8 +55,7 @@ class DesktopModeEnterExitTransitionListener @Inject constructor() {
     fun onEnterDesktopModeTransitionStarted(transitionDuration: Int) {
         ProtoLog.v(
             WM_SHELL_DESKTOP_MODE,
-            "DesktopModeEnterExitTransitionListener: onEnterDesktopModeTransitionStarted" +
-                "transitionTime=%d remoteListener running=%b",
+            "$TAG: onEnterDesktopModeTransitionStarted transitionTime=%d remoteListener running=%b",
             transitionDuration,
             remoteListener != null,
         )
@@ -76,7 +72,7 @@ class DesktopModeEnterExitTransitionListener @Inject constructor() {
     fun onExitDesktopModeTransitionStarted(transitionDuration: Int, shouldEndUpAtHome: Boolean) {
         ProtoLog.v(
             WM_SHELL_DESKTOP_MODE,
-            "DesktopModeEnterExitTransitionListener: onExitDesktopModeTransitionStarted " +
+            "$TAG: onExitDesktopModeTransitionStarted " +
                 "transitionTime=%d shouldEndUpAtHome=%b  remoteListener running=%b",
             transitionDuration,
             shouldEndUpAtHome,
@@ -85,5 +81,9 @@ class DesktopModeEnterExitTransitionListener @Inject constructor() {
         remoteListener?.call { l ->
             l.onExitDesktopModeTransitionStarted(transitionDuration, shouldEndUpAtHome)
         }
+    }
+
+    private companion object {
+        private val TAG = "DesktopRemoteListener"
     }
 }

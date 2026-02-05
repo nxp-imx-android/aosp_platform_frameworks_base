@@ -283,7 +283,7 @@ class DesktopTasksController(
     private val desksController: DesksController,
     private val desktopTasksTransitionObserver: DesktopTasksTransitionObserver,
     private val snapController: SnapController,
-    private val desktopModeEnterExitTransitionListener: DesktopModeEnterExitTransitionListener,
+    private val desktopRemoteListener: DesktopRemoteListener,
 ) :
     RemoteCallable<DesktopTasksController>,
     TransitionHandler,
@@ -1595,7 +1595,7 @@ class DesktopTasksController(
         }
         // Replaced by |IDesktopTaskListener#onActiveDeskChanged|.
         if (!desktopState.enableMultipleDesktops) {
-            desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
+            desktopRemoteListener.onEnterDesktopModeTransitionStarted(
                 desktopAnimationConfiguration.toDesktopAnimationDurationMs
             )
         }
@@ -1651,7 +1651,7 @@ class DesktopTasksController(
         }
         // Replaced by |IDesktopTaskListener#onActiveDeskChanged|.
         if (!desktopState.enableMultipleDesktops) {
-            desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
+            desktopRemoteListener.onEnterDesktopModeTransitionStarted(
                 desktopAnimationConfiguration.toDesktopAnimationDurationMs
             )
         }
@@ -1751,7 +1751,7 @@ class DesktopTasksController(
         val transition = dragToDesktopTransitionHandler.finishDragToDesktopTransition(wct)
         // Replaced by |IDesktopTaskListener#onActiveDeskChanged|.
         if (!desktopState.enableMultipleDesktops) {
-            desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
+            desktopRemoteListener.onEnterDesktopModeTransitionStarted(
                 DRAG_TO_DESKTOP_FINISH_ANIM_DURATION_MS.toInt()
             )
         }
@@ -2335,7 +2335,7 @@ class DesktopTasksController(
                 &&
                 !desktopState.enableMultipleDesktops
         ) {
-            desktopModeEnterExitTransitionListener?.onExitDesktopModeTransitionStarted(
+            desktopRemoteListener.onExitDesktopModeTransitionStarted(
                 FULLSCREEN_ANIMATION_DURATION,
                 shouldEndUpAtHome = false,
             )
@@ -2542,7 +2542,7 @@ class DesktopTasksController(
             launchTransaction = activateDeskWct
             // Replaced by |IDesktopTaskListener#onActiveDeskChanged|.
             if (!desktopState.enableMultipleDesktops) {
-                desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
+                desktopRemoteListener.onEnterDesktopModeTransitionStarted(
                     desktopAnimationConfiguration.toDesktopAnimationDurationMs
                 )
             }
@@ -3698,7 +3698,7 @@ class DesktopTasksController(
                 // Replaced by |IDesktopTaskListener#onActiveDeskChanged|.
                 !desktopState.enableMultipleDesktops
         ) {
-            desktopModeEnterExitTransitionListener?.onExitDesktopModeTransitionStarted(
+            desktopRemoteListener.onExitDesktopModeTransitionStarted(
                 FULLSCREEN_ANIMATION_DURATION,
                 shouldEndUpAtHome,
             )
@@ -5731,7 +5731,7 @@ class DesktopTasksController(
             runOnTransitStart?.invoke(transition)
             // Replaced by |IDesktopTaskListener#onActiveDeskChanged|.
             if (!desktopState.enableMultipleDesktops) {
-                desktopModeEnterExitTransitionListener.onEnterDesktopModeTransitionStarted(
+                desktopRemoteListener.onEnterDesktopModeTransitionStarted(
                     desktopAnimationConfiguration.toDesktopAnimationDurationMs
                 )
             }
@@ -6134,12 +6134,7 @@ class DesktopTasksController(
     // TODO: b/457313894 - remove this method once IDesktopModeImpl is moved to a separate class.
     /** Creates a new instance of the external interface to pass to another process. */
     public fun createExternalInterface(): ExternalInterfaceBinder =
-        IDesktopModeImpl(
-            shellController,
-            transitionStateHolder,
-            this,
-            desktopModeEnterExitTransitionListener,
-        )
+        IDesktopModeImpl(shellController, transitionStateHolder, this, desktopRemoteListener)
 
     /**
      * Perform checks required on drag move. Create/release fullscreen indicator as needed.
@@ -6839,7 +6834,7 @@ class DesktopTasksController(
         private var shellController: ShellController?,
         private var transitionStateHolder: TransitionStateHolder?,
         private var controller: DesktopTasksController?,
-        private val desktopModeEnterExitTransitionListener: DesktopModeEnterExitTransitionListener,
+        private val desktopRemoteListener: DesktopRemoteListener,
     ) : IDesktopMode.Stub(), ExternalInterfaceBinder {
 
         private lateinit var remoteListener:
@@ -7137,7 +7132,7 @@ class DesktopTasksController(
             }
             c.userRepositories.current.addVisibleTasksListener(visibleTasksListener, c.mainExecutor)
             c.taskbarDesktopTaskListener = taskbarDesktopTaskListener
-            desktopModeEnterExitTransitionListener.register(remoteListener)
+            desktopRemoteListener.register(remoteListener)
         }
 
         private fun unregisterListeners(c: DesktopTasksController) {
@@ -7146,7 +7141,7 @@ class DesktopTasksController(
             }
             c.userRepositories.current.removeVisibleTasksListener(visibleTasksListener)
             c.taskbarDesktopTaskListener = null
-            desktopModeEnterExitTransitionListener.unregister()
+            desktopRemoteListener.unregister()
         }
     }
 
