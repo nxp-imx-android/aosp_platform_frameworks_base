@@ -2782,7 +2782,7 @@ public final class MediaQualityUtils {
 
         //TODO: add the pre-defined band
         return new EqualizerSettings.Builder()
-                .setBands(frameworkBands)
+                .addBands(frameworkBands)
                 .build();
     }
 

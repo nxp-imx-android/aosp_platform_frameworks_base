@@ -22,7 +22,6 @@ import android.media.tv.flags.Flags;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -43,26 +42,14 @@ public final class EqualizerSettings implements Parcelable {
         public Builder() {}
 
         /**
-         * Sets the full array of equalizer bands.
+         * Adds a list of bands to the equalizer settings.
          *
-         * @param bands An array of {@link EqualizerBand} objects.
+         * @param bands A list of {@link EqualizerBand} objects to be added.
          * @return This builder instance.
          */
         @NonNull
-        public Builder setBands(@NonNull List<EqualizerBand> bands) {
-            mBands = new ArrayList<>(Objects.requireNonNull(bands));
-            return this;
-        }
-
-        /**
-         * Adds a single band to the equalizer settings.
-         *
-         * @param band The {@link EqualizerBand} to add.
-         * @return This builder instance.
-         */
-        @NonNull
-        public Builder addBand(@NonNull EqualizerBand band) {
-            mBands.add(Objects.requireNonNull(band));
+        public Builder addBands(@NonNull List<EqualizerBand> bands) {
+            mBands.addAll(Objects.requireNonNull(bands));
             return this;
         }
 
