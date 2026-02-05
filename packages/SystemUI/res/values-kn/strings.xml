@@ -46,6 +46,8 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"<xliff:g id="USB_ACCESSORY">%2$s</xliff:g> ಅನ್ನು ನಿರ್ವಹಿಸಲು <xliff:g id="APPLICATION">%1$s</xliff:g> ಅನ್ನು ತೆರೆಯುವುದೇ?"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"ಆಪ್‌ಗಳು USB ಪರಿಕರದಲ್ಲಿ ಕಾರ್ಯನಿರ್ವಹಿಸುವುದಿಲ್ಲ. ಆ ಬಗ್ಗೆ <xliff:g id="URL">%1$s</xliff:g> ನಲ್ಲಿ ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ"</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"USB ಆ್ಯಕ್ಸೆಸರಿ"</string>
+    <!-- no translation found for usb_device_dialog_always_allow_button (7426535342650638393) -->
+    <skip />
     <string name="usb_device_dialog_allow_only_this_time_button" msgid="3653881633944232491">"ಈ ಬಾರಿ ಮಾತ್ರ"</string>
     <string name="usb_device_dialog_cancel_button" msgid="9050554648474787233">"ರದ್ದುಮಾಡಿ"</string>
     <string name="label_view" msgid="6815442985276363364">"ವೀಕ್ಷಿಸು"</string>
@@ -121,7 +123,7 @@
     <string name="screenrecord_channel_description" msgid="4147077128486138351">"ಸ್ಕ್ರೀನ್ ರೆಕಾರ್ಡಿಂಗ್ ಸೆಶನ್‌ಗಾಗಿ ಚಾಲ್ತಿಯಲ್ಲಿರುವ ನೋಟಿಫಿಕೇಶನ್"</string>
     <string name="screenrecord_permission_dialog_title" msgid="7415261783188749730">"ನಿಮ್ಮ ಸ್ಕ್ರೀನ್‌ ಅನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡಬೇಕೇ?"</string>
     <string name="screenrecord_permission_dialog_option_text_single_app" msgid="1996450687814647583">"ಒಂದು ಆ್ಯಪ್ ಅನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡಿ"</string>
-    <string name="screenrecord_permission_dialog_option_text_entire_screen" msgid="4882406311415082016">"ಸ್ಕ್ರೀನ್ ಅನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡಿ"</string>
+    <string name="screenrecord_permission_dialog_option_text_entire_screen" msgid="4882406311415082016">"ಈ ಸ್ಕ್ರೀನ್ ಅನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡಿ"</string>
     <string name="screenrecord_permission_dialog_option_text_entire_screen_for_display" msgid="4169494703993148253">"%s ರೆಕಾರ್ಡ್ ಮಾಡಿ"</string>
     <string name="screenrecord_permission_dialog_warning_entire_screen" msgid="1321758636709366068">"ನಿಮ್ಮ ಸಂಪೂರ್ಣ ಸ್ಕ್ರೀನ್‌ ಅನ್ನು ನೀವು ರೆಕಾರ್ಡ್ ಮಾಡುತ್ತಿರುವಾಗ, ನಿಮ್ಮ ಸ್ಕ್ರೀನ್‌ ಮೇಲೆ ಗೋಚರಿಸುವ ಎಲ್ಲವನ್ನೂ ರೆಕಾರ್ಡ್ ಮಾಡಲಾಗುತ್ತದೆ. ಆದ್ದರಿಂದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳು, ಪಾವತಿ ವಿವರಗಳು, ಸಂದೇಶಗಳು, ಫೋಟೋಗಳು ಮತ್ತು ಆಡಿಯೋ ಮತ್ತು ವೀಡಿಯೊದಂತಹ ವಿಷಯಗಳ ಬಗ್ಗೆ ಜಾಗರೂಕರಾಗಿರಿ."</string>
     <string name="screenrecord_permission_dialog_warning_single_app" msgid="3738199712880063924">"ನೀವು ಆ್ಯಪ್ ಅನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡುವಾಗ, ಆ ಆ್ಯಪ್‌ನಲ್ಲಿ ತೋರಿಸಿರುವ ಅಥವಾ ಪ್ಲೇ ಮಾಡಿದ ಎಲ್ಲವನ್ನೂ ರೆಕಾರ್ಡ್ ಮಾಡಲಾಗುತ್ತದೆ. ಆದ್ದರಿಂದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳು, ಪಾವತಿ ವಿವರಗಳು, ಸಂದೇಶಗಳು, ಫೋಟೋಗಳು ಮತ್ತು ಆಡಿಯೋ ಮತ್ತು ವೀಡಿಯೊದಂತಹ ವಿಷಯಗಳ ಬಗ್ಗೆ ಜಾಗರೂಕರಾಗಿರಿ."</string>
@@ -137,6 +139,8 @@
     <string name="screenrecord_ongoing_screen_and_audio" msgid="5351133763125180920">"ಸ್ಕ್ರೀನ್ ಮತ್ತು ಆಡಿಯೋ ರೆಕಾರ್ಡಿಂಗ್"</string>
     <string name="screenrecord_taps_label" msgid="1595690528298857649">"ಸ್ಪರ್ಶಗಳನ್ನು ಸ್ಕ್ರೀನ್ ಮೇಲೆ ತೋರಿಸಿ"</string>
     <string name="screenrecord_stop_label" msgid="72699670052087989">"ನಿಲ್ಲಿಸಿ"</string>
+    <string name="screenrecord_stop_description" msgid="4656717003438764637">"ರೆಕಾರ್ಡಿಂಗ್ ನಿಲ್ಲಿಸಿ"</string>
+    <string name="screenrecord_start_description" msgid="8173864933793754995">"ರೆಕಾರ್ಡಿಂಗ್ ಪ್ರಾರಂಭಿಸಿ"</string>
     <string name="screenrecord_share_label" msgid="5025590804030086930">"ಹಂಚಿಕೊಳ್ಳಿ"</string>
     <string name="screenrecord_save_title" msgid="1886652605520893850">"ಸ್ಕ್ರೀನ್ ರೆಕಾರ್ಡಿಂಗ್ ಸೇವ್ ಮಾಡಲಾಗಿದೆ"</string>
     <string name="screenrecord_save_text" msgid="3008973099800840163">"ವೀಕ್ಷಿಸಲು ಟ್ಯಾಪ್ ಮಾಡಿ"</string>
@@ -161,7 +165,7 @@
     <string name="screen_record_video_saved" msgid="1345283626390232282">"ವೀಡಿಯೊ ಸೇವ್ ಆಗಿದೆ"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"ವೀಡಿಯೊವನ್ನು ಅಳಿಸಲಾಗಿದೆ"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"ರದ್ದುಮಾಡಿ"</string>
-    <string name="screen_record_take_another" msgid="8071412867905614800">"ಇನ್ನೊಂದು ತೆಗೆಯಿರಿ"</string>
+    <string name="screen_record_take_another" msgid="5877933424208100617">"ಹೊಸತು"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"ಎಡಿಟ್ ಮಾಡಿ"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"ಅಳಿಸಿ"</string>
     <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"ಈ ರೆಕಾರ್ಡಿಂಗ್ ಅನ್ನು ಅಳಿಸಬೇಕೇ?"</string>
@@ -178,6 +182,10 @@
     <string name="screen_capture_record_region_selection_button" msgid="3699353194755563053">"ಆಯ್ದ ಪ್ರದೇಶವನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡಿ"</string>
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"ಸ್ಕ್ರೀನ್‌ಶಾಟ್"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"ರೆಕಾರ್ಡ್ ಮಾಡಿ"</string>
+    <string name="screen_capture_region_box_top_left_handle_description" msgid="3619310281612042126">"ಮೇಲಿನ-ಎಡಭಾಗದ ಹ್ಯಾಂಡಲ್‌ - ಮರುಗಾತ್ರಗೊಳಿಸಲು ಆ್ಯರೋ ಕೀಗಳನ್ನು ಬಳಸಿ"</string>
+    <string name="screen_capture_region_box_top_right_handle_description" msgid="7732373569053287436">"ಮೇಲಿನ-ಬಲಭಾಗದ ಹ್ಯಾಂಡಲ್‌ - ಮರುಗಾತ್ರಗೊಳಿಸಲು ಆ್ಯರೋ ಕೀಗಳನ್ನು ಬಳಸಿ"</string>
+    <string name="screen_capture_region_box_bottom_right_handle_description" msgid="5444943380877006881">"ಕೆಳಗಿನ-ಬಲಭಾಗದ ಹ್ಯಾಂಡಲ್‌ - ಮರುಗಾತ್ರಗೊಳಿಸಲು ಆ್ಯರೋ ಕೀಗಳನ್ನು ಬಳಸಿ"</string>
+    <string name="screen_capture_region_box_bottom_left_handle_description" msgid="6095764656409143184">"ಕೆಳಗಿನ-ಎಡಭಾಗದ ಹ್ಯಾಂಡಲ್‌ - ಮರುಗಾತ್ರಗೊಳಿಸಲು ಆ್ಯರೋ ಕೀಗಳನ್ನು ಬಳಸಿ"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"ಹಂಚಿಕೊಳ್ಳಿ"</string>
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"ಹಂಚಿಕೊಳ್ಳಲು ಆ್ಯಪ್ ಅನ್ನು ಆಯ್ಕೆಮಾಡಿ"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"ಆಡಿಯೋ ಹಂಚಿಕೊಳ್ಳಿ"</string>
@@ -189,11 +197,37 @@
     <string name="screen_share_disclaimer_full_screen_sharing" msgid="5173795016606926338">"ನಿಮ್ಮ ಸಂಪೂರ್ಣ ಸ್ಕ್ರೀನ್‌ ಅನ್ನು ನೀವು ಹಂಚಿಕೊಳ್ಳುತ್ತಿರುವಾಗ, ನಿಮ್ಮ ಸ್ಕ್ರೀನ್‌ನಲ್ಲಿರುವ ಏನಾದರೂ <xliff:g id="APP_NAME">%1$s</xliff:g> ಗೆ ಕಾಣಿಸುತ್ತದೆ. ಸೂಕ್ಷ್ಮ ಮಾಹಿತಿ ಜೊತೆ ಜಾಗರೂಕರಾಗಿರಿ."</string>
     <string name="screen_share_a11y_announcement" msgid="8938007210094494367">"ಏನನ್ನು ಹಂಚಿಕೊಳ್ಳಬೇಕು ಎಂಬುದನ್ನು ಆಯ್ಕೆಮಾಡಿ. ಟ್ಯಾಬ್, ಆ್ಯಪ್ ಅಥವಾ ಸಂಪೂರ್ಣ ಸ್ಕ್ರೀನ್ ಅನ್ನು ಆಯ್ಕೆಮಾಡಿ. ನಂತರ ಹಂಚಿಕೊಳ್ಳಿ ಎಂಬುದನ್ನು ಒತ್ತಿರಿ."</string>
     <string name="screen_share_cancel_announcement" msgid="5940879227647436383">"ಸ್ಕ್ರೀನ್ ಹಂಚಿಕೊಳ್ಳುವಿಕೆ ಪ್ರಾರಂಭಿಸುವಿಕೆ ಕೊನೆಗೊಂಡಿದೆ. ಸ್ಕ್ರೀನ್ ಅನ್ನು ಯಾರೊಂದಿಗೂ ಹಂಚಿಕೊಳ್ಳಲಾಗಿಲ್ಲ."</string>
-    <!-- no translation found for screen_share_a11y_sharing_app (3445421300603336524) -->
+    <string name="screen_share_a11y_sharing_app" msgid="3445421300603336524">"ಈಗ ಆ್ಯಪ್ ಅನ್ನು ಹಂಚಿಕೊಳ್ಳಲಾಗುತ್ತಿದೆ: <xliff:g id="APP_NAME">%1$s</xliff:g>. ಹಂಚಿಕೊಳ್ಳುವಿಕೆಯನ್ನು ಕೊನೆಗೊಳಿಸಲು ಗೌಪ್ಯತೆ ಸೂಚಕವನ್ನು ಬಳಸಿ."</string>
+    <string name="screen_share_a11y_sharing_tab" msgid="2963542572740628746">"ಈಗ ಟ್ಯಾಬ್ ಅನ್ನು ಹಂಚಿಕೊಳ್ಳಲಾಗುತ್ತಿದೆ: <xliff:g id="TAB_TITLE">%1$s</xliff:g>. ಹಂಚಿಕೊಳ್ಳುವಿಕೆಯನ್ನು ಕೊನೆಗೊಳಿಸಲು ಗೌಪ್ಯತೆ ಸೂಚಕವನ್ನು ಬಳಸಿ."</string>
+    <string name="screen_share_a11y_sharing_display" msgid="5919924998949424031">"ಈಗ ಡಿಸ್‌ಪ್ಲೇ ಹಂಚಿಕೊಳ್ಳಲಾಗುತ್ತಿದೆ: <xliff:g id="DISPLAY_NAME">%1$s</xliff:g>. ಹಂಚಿಕೊಳ್ಳುವಿಕೆಯನ್ನು ಕೊನೆಗೊಳಿಸಲು ಗೌಪ್ಯತೆ ಸೂಚಕವನ್ನು ಬಳಸಿ."</string>
+    <string name="screen_share_a11y_stopped_sharing_app" msgid="6928492106881188404">"ಆ್ಯಪ್‌ ಹಂಚಿಕೊಳ್ಳುವಿಕೆಯನ್ನು ನಿಲ್ಲಿಸಲಾಗಿದೆ: <xliff:g id="APP_NAME">%1$s</xliff:g>. ಸ್ಕ್ರೀನ್‌ ಅನ್ನು ಯಾರೊಂದಿಗೂ ಹಂಚಿಕೊಳ್ಳಲಾಗಿಲ್ಲ."</string>
+    <string name="screen_share_a11y_stopped_sharing_tab" msgid="5929089339684027985">"ಟ್ಯಾಬ್‌ ಹಂಚಿಕೊಳ್ಳುವಿಕೆಯನ್ನು ನಿಲ್ಲಿಸಲಾಗಿದೆ: <xliff:g id="TAB_TITLE">%1$s</xliff:g>. ಸ್ಕ್ರೀನ್‌ ಅನ್ನು ಯಾರೊಂದಿಗೂ ಹಂಚಿಕೊಳ್ಳಲಾಗಿಲ್ಲ."</string>
+    <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"ಡಿಸ್‌ಪ್ಲೇ ಹಂಚಿಕೊಳ್ಳುವಿಕೆಯನ್ನು ನಿಲ್ಲಿಸಲಾಗಿದೆ: <xliff:g id="DISPLAY_NAME">%1$s</xliff:g>. ಸ್ಕ್ರೀನ್‌ ಅನ್ನು ಯಾರೊಂದಿಗೂ ಹಂಚಿಕೊಳ್ಳಲಾಗಿಲ್ಲ."</string>
+    <!-- no translation found for screen_share_a11y_close_button (8017115316741874857) -->
     <skip />
-    <!-- no translation found for screen_share_a11y_sharing_tab (2963542572740628746) -->
+    <!-- no translation found for screen_share_a11y_tab_button_unselected (5363622532939787310) -->
     <skip />
-    <!-- no translation found for screen_share_a11y_sharing_display (5919924998949424031) -->
+    <!-- no translation found for screen_share_a11y_tab_button_selected (4304681826101817704) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_app_button_unselected (4539549394242556282) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_app_button_selected (6049272377472922732) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_fullscreen_button_unselected (2492516552817892989) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_fullscreen_button_selected (6706822615908429473) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_share_button_off (2004866083045967602) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_share_button_on (1311279200212158833) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_item_unselected (7479321583507874795) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_item_selected (2538971376128528640) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_tab_audio_on (7240792268381508075) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_tab_audio_off (8545238601433952854) -->
     <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"ವಿಂಡೋದ ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ತೆಗೆದುಕೊಳ್ಳಿ"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"ವಿಂಡೋ ರೆಕಾರ್ಡ್ ಮಾಡಿ"</string>
@@ -212,6 +246,7 @@
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"ಮುಂಬದಿಯ ಕ್ಯಾಮರಾ"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"ಹಂಚಿಕೊಳ್ಳುವಿಕೆಯನ್ನು ನಿಲ್ಲಿಸಿ"</string>
+    <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"ಸ್ಕ್ರೀನ್‌ ಹಂಚಿಕೊಳ್ಳುವಿಕೆ ಆನ್ ಆಗಿದೆ. ಹಂಚಿಕೊಳ್ಳುವಿಕೆಯನ್ನು ಕೊನೆಗೊಳಿಸಲು ಗೌಪ್ಯತೆ ಇಂಡಿಕೇಟರ್‌ ಅನ್ನು ಬಳಸಿ."</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"ಪರದೆಯನ್ನು ಹಂಚಿಕೊಳ್ಳಲಾಗುತ್ತಿದೆ"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"ಕಂಟೆಂಟ್‌ ಅನ್ನು ಹಂಚಿಕೊಳ್ಳಲಾಗುತ್ತಿದೆ"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"ಸ್ಕ್ರೀನ್ ಹಂಚಿಕೊಳ್ಳುವಿಕೆಯನ್ನು ನಿಲ್ಲಿಸಬೇಕೆ?"</string>
@@ -397,6 +432,8 @@
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"ನೋಟಿಫಿಕೇಶನ್‌ಗಳು"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistant"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"ಕೀಬೋರ್ಡ್"</string>
+    <!-- no translation found for input_method_switcher_title_large_screen (8490419050265486980) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{ಇನ್ನೂ # ನೋಟಿಫಿಕೇಶನ್ ಒಳಗಿದೆ.}one{ಇನ್ನೂ # ನೋಟಿಫಿಕೇಶನ್‌ಗಳು ಒಳಗಿವೆ.}other{ಇನ್ನೂ # ನೋಟಿಫಿಕೇಶನ್‌ಗಳು ಒಳಗಿವೆ.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"ಪರದೆಯನ್ನು ಲ್ಯಾಂಡ್‌ಸ್ಕೇಪ್ ಓರಿಯಂಟೇಶನ್‍ನಲ್ಲಿ ಲಾಕ್ ಮಾಡಲಾಗಿದೆ."</string>
@@ -1436,7 +1473,7 @@
     <string name="controls_error_timeout" msgid="794197289772728958">"ನಿಷ್ಕ್ರಿಯ, ಆ್ಯಪ್ ಪರಿಶೀಲಿಸಿ"</string>
     <string name="controls_error_removed" msgid="6675638069846014366">"ಕಂಡುಬಂದಿಲ್ಲ"</string>
     <string name="controls_error_removed_title" msgid="1207794911208047818">"ನಿಯಂತ್ರಣ ಲಭ್ಯವಿಲ್ಲ"</string>
-    <string name="controls_error_removed_message" msgid="2885911717034750542">"<xliff:g id="DEVICE">%1$s</xliff:g> ಪ್ರವೇಶಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ನಿಯಂತ್ರಣ ಈಗಲೂ ಲಭ್ಯವಿದೆ ಮತ್ತು ಆ್ಯಪ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಬದಲಾಯಿಸಲಾಗಿಲ್ಲ ಎಂಬುದನ್ನು ಖಚಿತಪಡಿಸಿಕೊಳ್ಳಲು <xliff:g id="APPLICATION">%2$s</xliff:g> ಆ್ಯಪ್ ಅನ್ನು ಪರಿಶೀಲಿಸಿ."</string>
+    <string name="controls_error_removed_message" msgid="2885911717034750542">"<xliff:g id="DEVICE">%1$s</xliff:g> ಆ್ಯಕ್ಸೆಸ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ನಿಯಂತ್ರಣ ಈಗಲೂ ಲಭ್ಯವಿದೆ ಮತ್ತು ಆ್ಯಪ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಬದಲಾಯಿಸಲಾಗಿಲ್ಲ ಎಂಬುದನ್ನು ಖಚಿತಪಡಿಸಿಕೊಳ್ಳಲು <xliff:g id="APPLICATION">%2$s</xliff:g> ಆ್ಯಪ್ ಅನ್ನು ಪರಿಶೀಲಿಸಿ."</string>
     <string name="controls_open_app" msgid="483650971094300141">"ಆ್ಯಪ್ ತೆರೆಯಿರಿ"</string>
     <string name="controls_error_generic" msgid="352500456918362905">"ಸ್ಥಿತಿ ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ"</string>
     <string name="controls_error_failed" msgid="960228639198558525">"ದೋಷ, ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ"</string>
@@ -1799,10 +1836,8 @@
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"ನಿಖರವಾದ ಸ್ಥಳ"</string>
     <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"ನಿಖರವಾದ ಸ್ಥಳವನ್ನು ಬಳಸಿ"</string>
     <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"ನಿಖರವಾದ ಸ್ಥಳವನ್ನು ಹಂಚಿಕೊಳ್ಳಿ"</string>
-    <!-- no translation found for location_button_text_near_my_precise_location (7590342799002942963) -->
-    <skip />
-    <!-- no translation found for location_button_text_near_your_precise_location (3792598666253599055) -->
-    <skip />
+    <string name="location_button_text_near_my_precise_location" msgid="7590342799002942963">"ನನ್ನ ನಿಖರವಾದ ಸ್ಥಳದ ಸಮೀಪದಲ್ಲಿರುವುದು"</string>
+    <string name="location_button_text_near_your_precise_location" msgid="3792598666253599055">"ನಿಮ್ಮ ನಿಖರವಾದ ಸ್ಥಳದ ಸಮೀಪದಲ್ಲಿರುವುದು"</string>
     <string name="privacy_chip_use_string" msgid="979159484631969073">"<xliff:g id="SENSOR">%1$s</xliff:g> ಬಳಕೆಯಲ್ಲಿವೆ"</string>
     <string name="privacy_chip_use_string_with_app" msgid="6807216002072346877">"<xliff:g id="SENSOR">%1$s</xliff:g> ಅನ್ನು <xliff:g id="APP">%2$s</xliff:g> ಬಳಸುತ್ತಿದೆ"</string>
     <string name="privacy_chip_camera_and_mic_text" msgid="6254449489859255607">"ಕ್ಯಾಮರಾ ಮತ್ತು ಮೈಕ್"</string>
@@ -1838,4 +1873,18 @@
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"ಎಡ ಬ್ಯಾಟರಿ %1$s"</string>
     <string name="accessibility_hearing_device_right_battery_level" msgid="7598843215226414563">"ಬಲ ಬ್ಯಾಟರಿ %1$s"</string>
     <string name="accessibility_hearing_device_notification_channel_name" msgid="7365020777623709400">"ಹಿಯರಿಂಗ್ ಸಾಧನದ ಸ್ಥಿತಿ"</string>
+    <!-- no translation found for more_options_edit (6337988646114341329) -->
+    <skip />
+    <!-- no translation found for more_options_move (2226159413422979066) -->
+    <skip />
+    <!-- no translation found for more_options_remove_all (194855000797536179) -->
+    <skip />
+    <!-- no translation found for floating_menu_more_options_label (7859269790323628599) -->
+    <skip />
+    <!-- no translation found for dream_setup_title (7996530071414508238) -->
+    <skip />
+    <!-- no translation found for dream_setup_button_not_now (8028385323668620805) -->
+    <skip />
+    <!-- no translation found for dream_setup_button_setup (4755361016017554826) -->
+    <skip />
 </resources>

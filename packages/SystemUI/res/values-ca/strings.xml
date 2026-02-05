@@ -46,6 +46,8 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"Vols obrir <xliff:g id="APPLICATION">%1$s</xliff:g> per gestionar <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>?"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"Les aplicacions instal·lades no funcionen amb l\'accessori USB. Més informació: <xliff:g id="URL">%1$s</xliff:g>"</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"Accessori USB"</string>
+    <!-- no translation found for usb_device_dialog_always_allow_button (7426535342650638393) -->
+    <skip />
     <string name="usb_device_dialog_allow_only_this_time_button" msgid="3653881633944232491">"Només aquesta vegada"</string>
     <string name="usb_device_dialog_cancel_button" msgid="9050554648474787233">"Cancel·la"</string>
     <string name="label_view" msgid="6815442985276363364">"Mostra"</string>
@@ -137,6 +139,8 @@
     <string name="screenrecord_ongoing_screen_and_audio" msgid="5351133763125180920">"S\'estan gravant la pantalla i l\'àudio"</string>
     <string name="screenrecord_taps_label" msgid="1595690528298857649">"Mostra els tocs a la pantalla"</string>
     <string name="screenrecord_stop_label" msgid="72699670052087989">"Atura"</string>
+    <string name="screenrecord_stop_description" msgid="4656717003438764637">"Atura la gravació"</string>
+    <string name="screenrecord_start_description" msgid="8173864933793754995">"Inicia la gravació"</string>
     <string name="screenrecord_share_label" msgid="5025590804030086930">"Comparteix"</string>
     <string name="screenrecord_save_title" msgid="1886652605520893850">"S\'ha desat la gravació de pantalla"</string>
     <string name="screenrecord_save_text" msgid="3008973099800840163">"Toca per veure-la"</string>
@@ -161,7 +165,7 @@
     <string name="screen_record_video_saved" msgid="1345283626390232282">"El vídeo s\'ha desat"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"Vídeo suprimit"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"Desfés"</string>
-    <string name="screen_record_take_another" msgid="8071412867905614800">"Fes-ne una altra"</string>
+    <string name="screen_record_take_another" msgid="5877933424208100617">"Nova"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Edita"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Suprimeix"</string>
     <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"Vols suprimir aquesta gravació?"</string>
@@ -178,6 +182,10 @@
     <string name="screen_capture_record_region_selection_button" msgid="3699353194755563053">"Grava l\'àrea seleccionada"</string>
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"Captura de pantalla"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Grava"</string>
+    <string name="screen_capture_region_box_top_left_handle_description" msgid="3619310281612042126">"Ansa superior esquerra: utilitza les tecles de fletxa per canviar la mida"</string>
+    <string name="screen_capture_region_box_top_right_handle_description" msgid="7732373569053287436">"Ansa superior dreta: utilitza les tecles de fletxa per canviar la mida"</string>
+    <string name="screen_capture_region_box_bottom_right_handle_description" msgid="5444943380877006881">"Ansa inferior dreta: utilitza les tecles de fletxa per canviar la mida"</string>
+    <string name="screen_capture_region_box_bottom_left_handle_description" msgid="6095764656409143184">"Ansa inferior esquerra: utilitza les tecles de fletxa per canviar la mida"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Comparteix"</string>
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Selecciona una aplicació per compartir"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Comparteix l\'àudio"</string>
@@ -188,13 +196,38 @@
     <string name="screen_share_disclaimer_tab_sharing" msgid="3811486274577713101">"En compartir una pestanya, tot el que conté és visible per a <xliff:g id="APP_NAME">%1$s</xliff:g>. Vigila amb la informació sensible."</string>
     <string name="screen_share_disclaimer_full_screen_sharing" msgid="5173795016606926338">"Quan comparteixes tota la pantalla, qualsevol cosa que s\'hi mostra és visible per a <xliff:g id="APP_NAME">%1$s</xliff:g>. Per tant, ves amb compte amb la informació sensible."</string>
     <string name="screen_share_a11y_announcement" msgid="8938007210094494367">"Selecciona què vols compartir. Selecciona una pestanya, una aplicació o tota la pantalla. A continuació, prem Comparteix."</string>
-    <!-- no translation found for screen_share_cancel_announcement (5940879227647436383) -->
+    <string name="screen_share_cancel_announcement" msgid="5940879227647436383">"La iniciació de la compartició de pantalla ha finalitzat. La pantalla no s\'ha compartit amb ningú."</string>
+    <string name="screen_share_a11y_sharing_app" msgid="3445421300603336524">"S\'està compartint l\'aplicació <xliff:g id="APP_NAME">%1$s</xliff:g>. Utilitza l\'indicador de privadesa per deixar de compartir-la."</string>
+    <string name="screen_share_a11y_sharing_tab" msgid="2963542572740628746">"S\'està compartint la pestanya <xliff:g id="TAB_TITLE">%1$s</xliff:g>. Utilitza l\'indicador de privadesa per deixar de compartir-la."</string>
+    <string name="screen_share_a11y_sharing_display" msgid="5919924998949424031">"S\'està compartint la pantalla <xliff:g id="DISPLAY_NAME">%1$s</xliff:g>. Utilitza l\'indicador de privadesa per deixar de compartir-la."</string>
+    <string name="screen_share_a11y_stopped_sharing_app" msgid="6928492106881188404">"S\'ha deixat de compartir l\'aplicació <xliff:g id="APP_NAME">%1$s</xliff:g>. La pantalla no s\'ha compartit amb ningú."</string>
+    <string name="screen_share_a11y_stopped_sharing_tab" msgid="5929089339684027985">"S\'ha deixat de compartir la pestanya <xliff:g id="TAB_TITLE">%1$s</xliff:g>. La pantalla no s\'ha compartit amb ningú."</string>
+    <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"S\'ha deixat de compartir la pantalla <xliff:g id="DISPLAY_NAME">%1$s</xliff:g>. La pantalla no s\'ha compartit amb ningú."</string>
+    <!-- no translation found for screen_share_a11y_close_button (8017115316741874857) -->
     <skip />
-    <!-- no translation found for screen_share_a11y_sharing_app (3445421300603336524) -->
+    <!-- no translation found for screen_share_a11y_tab_button_unselected (5363622532939787310) -->
     <skip />
-    <!-- no translation found for screen_share_a11y_sharing_tab (2963542572740628746) -->
+    <!-- no translation found for screen_share_a11y_tab_button_selected (4304681826101817704) -->
     <skip />
-    <!-- no translation found for screen_share_a11y_sharing_display (5919924998949424031) -->
+    <!-- no translation found for screen_share_a11y_app_button_unselected (4539549394242556282) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_app_button_selected (6049272377472922732) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_fullscreen_button_unselected (2492516552817892989) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_fullscreen_button_selected (6706822615908429473) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_share_button_off (2004866083045967602) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_share_button_on (1311279200212158833) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_item_unselected (7479321583507874795) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_item_selected (2538971376128528640) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_tab_audio_on (7240792268381508075) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_tab_audio_off (8545238601433952854) -->
     <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Fes una captura de pantalla de la finestra"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Grava la finestra"</string>
@@ -213,6 +246,7 @@
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"Càmera frontal"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Deixa de compartir"</string>
+    <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"La compartició de pantalla està activada. Utilitza l\'indicador de privadesa per deixar de compartir-la."</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"S\'està compartint la pantalla"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"S\'està compartint contingut"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"Vols deixar de compartir la pantalla?"</string>
@@ -398,6 +432,8 @@
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Notificacions"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistent"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"Teclat"</string>
+    <!-- no translation found for input_method_switcher_title_large_screen (8490419050265486980) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{# notificació més a l\'interior.}many{# notificacions més a l\'interior.}other{# notificacions més a l\'interior.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"La pantalla està bloquejada en orientació horitzontal."</string>
@@ -520,7 +556,7 @@
     <string name="qs_record_issue_dropdown_screenrecord" msgid="6396141928484257626">"Gravació de pantalla"</string>
     <string name="performance" msgid="6552785217174378320">"Rendiment"</string>
     <string name="user_interface" msgid="3712869377953950887">"Interfície d\'usuari"</string>
-    <string name="thermal" msgid="6758074791325414831">"Tèrmic"</string>
+    <string name="thermal" msgid="6758074791325414831">"Temperatura"</string>
     <string name="custom" msgid="3337456985275158299">"Personalitzat"</string>
     <string name="custom_trace_settings_dialog_title" msgid="2608570500144830554">"Configuració de traça personalitzada"</string>
     <string name="restore_default" msgid="5259420807486239755">"Restaura la configuració predeterminada"</string>
@@ -1535,7 +1571,7 @@
     <string name="see_all_networks" msgid="3773666844913168122">"Mostra-ho tot"</string>
     <string name="to_switch_networks_disconnect_ethernet" msgid="6698111101156951955">"Per canviar de xarxa, desconnecta la connexió Ethernet"</string>
     <string name="wifi_scan_notify_message" msgid="3753839537448621794">"Per millorar l\'experiència amb el dispositiu, les aplicacions i els serveis poden continuar cercant xarxes Wi‑Fi en qualsevol moment, fins i tot amb la Wi‑Fi desactivada. Pots canviar aquesta opció a la configuració de cerca de xarxes Wi‑Fi. "<annotation id="link">"Canvia-la"</annotation>"."</string>
-    <string name="turn_off_airplane_mode" msgid="8425587763226548579">"Desactiva el mode avió"</string>
+    <string name="turn_off_airplane_mode" msgid="8425587763226548579">"Desactiva el mode d\'avió"</string>
     <string name="qs_tile_request_dialog_text" msgid="3501359944139877694">"<xliff:g id="APPNAME">%1$s</xliff:g> vol afegir la icona següent a la configuració ràpida"</string>
     <string name="qs_tile_request_dialog_text_with_size" msgid="732578771040573291">"<xliff:g id="APPNAME">%1$s</xliff:g> vol afegir una icona a la configuració ràpida. Selecciona una mida d\'icona per continuar."</string>
     <string name="qs_tile_request_dialog_add" msgid="4888460910694986304">"Afegeix la icona"</string>
@@ -1800,10 +1836,8 @@
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"Ubicació precisa"</string>
     <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"Utilitza la ubicació precisa"</string>
     <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"Comparteix la ubicació precisa"</string>
-    <!-- no translation found for location_button_text_near_my_precise_location (7590342799002942963) -->
-    <skip />
-    <!-- no translation found for location_button_text_near_your_precise_location (3792598666253599055) -->
-    <skip />
+    <string name="location_button_text_near_my_precise_location" msgid="7590342799002942963">"A prop de la meva ubicació precisa"</string>
+    <string name="location_button_text_near_your_precise_location" msgid="3792598666253599055">"A prop de la teva ubicació precisa"</string>
     <string name="privacy_chip_use_string" msgid="979159484631969073">"<xliff:g id="SENSOR">%1$s</xliff:g> en ús"</string>
     <string name="privacy_chip_use_string_with_app" msgid="6807216002072346877">"<xliff:g id="SENSOR">%1$s</xliff:g> en ús per <xliff:g id="APP">%2$s</xliff:g>"</string>
     <string name="privacy_chip_camera_and_mic_text" msgid="6254449489859255607">"Càmera i micròfon"</string>
@@ -1827,8 +1861,7 @@
     <string name="av_camera_blur_light" msgid="5666055368940059418">"Lleuger"</string>
     <string name="av_camera_blur_full" msgid="3276351992811619332">"Complet"</string>
     <string name="av_camera_improve_lighting" msgid="1540549414296669133">"Millora la il·luminació"</string>
-    <!-- no translation found for av_camera_face_retouch (45890971969486224) -->
-    <skip />
+    <string name="av_camera_face_retouch" msgid="45890971969486224">"Retoc de retrat"</string>
     <string name="av_camera_framing" msgid="5108462267843042492">"Enquadrament de la càmera"</string>
     <string name="av_studio_mic" msgid="2614843492629357766">"Micròfon d\'estudi"</string>
     <string name="av_studio_look" msgid="621893522645557619">"Look d\'estudi"</string>
@@ -1840,4 +1873,18 @@
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"Bateria de l\'esquerra: %1$s"</string>
     <string name="accessibility_hearing_device_right_battery_level" msgid="7598843215226414563">"Bateria de la dreta: %1$s"</string>
     <string name="accessibility_hearing_device_notification_channel_name" msgid="7365020777623709400">"Estat de l\'audiòfon"</string>
+    <!-- no translation found for more_options_edit (6337988646114341329) -->
+    <skip />
+    <!-- no translation found for more_options_move (2226159413422979066) -->
+    <skip />
+    <!-- no translation found for more_options_remove_all (194855000797536179) -->
+    <skip />
+    <!-- no translation found for floating_menu_more_options_label (7859269790323628599) -->
+    <skip />
+    <!-- no translation found for dream_setup_title (7996530071414508238) -->
+    <skip />
+    <!-- no translation found for dream_setup_button_not_now (8028385323668620805) -->
+    <skip />
+    <!-- no translation found for dream_setup_button_setup (4755361016017554826) -->
+    <skip />
 </resources>

@@ -46,6 +46,8 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"<xliff:g id="APPLICATION">%1$s</xliff:g> 앱을 열어 <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>을(를) 처리하시겠습니까?"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"이 USB와 호환되는 설치 앱이 없습니다. <xliff:g id="URL">%1$s</xliff:g>에서 세부정보를 참조하세요."</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"USB 액세서리"</string>
+    <!-- no translation found for usb_device_dialog_always_allow_button (7426535342650638393) -->
+    <skip />
     <string name="usb_device_dialog_allow_only_this_time_button" msgid="3653881633944232491">"이번만 허용"</string>
     <string name="usb_device_dialog_cancel_button" msgid="9050554648474787233">"취소"</string>
     <string name="label_view" msgid="6815442985276363364">"보기"</string>
@@ -123,8 +125,8 @@
     <string name="screenrecord_permission_dialog_option_text_single_app" msgid="1996450687814647583">"단일 앱 녹화"</string>
     <string name="screenrecord_permission_dialog_option_text_entire_screen" msgid="4882406311415082016">"이 화면 녹화"</string>
     <string name="screenrecord_permission_dialog_option_text_entire_screen_for_display" msgid="4169494703993148253">"%s 녹화"</string>
-    <string name="screenrecord_permission_dialog_warning_entire_screen" msgid="1321758636709366068">"전체 화면을 녹화하면 화면에 표시되는 모든 항목이 녹화됩니다. 따라서 비밀번호, 결제 세부정보, 메시지, 사진, 오디오 및 동영상 등이 노출되지 않도록 주의하세요."</string>
-    <string name="screenrecord_permission_dialog_warning_single_app" msgid="3738199712880063924">"앱을 녹화하면 앱에 표시되거나 앱에서 재생되는 모든 항목이 녹화됩니다. 따라서 비밀번호, 결제 세부정보, 메시지, 사진, 오디오 및 동영상 등이 노출되지 않도록 주의하세요."</string>
+    <string name="screenrecord_permission_dialog_warning_entire_screen" msgid="1321758636709366068">"전체 화면을 녹화하면 화면에 표시되는 모든 항목이 녹화됩니다. 그러므로 비밀번호, 결제 세부정보, 메시지, 사진, 오디오 및 동영상 등이 노출되지 않도록 주의하세요."</string>
+    <string name="screenrecord_permission_dialog_warning_single_app" msgid="3738199712880063924">"앱을 녹화하면 앱에 표시되거나 앱에서 재생되는 모든 항목이 녹화됩니다. 그러므로 비밀번호, 결제 세부정보, 메시지, 사진, 오디오 및 동영상 등이 노출되지 않도록 주의하세요."</string>
     <string name="screenrecord_permission_dialog_continue_entire_screen" msgid="5557974446773486600">"화면 녹화"</string>
     <string name="screenrecord_app_selector_title" msgid="3854492366333954736">"녹화할 앱 선택"</string>
     <string name="screenrecord_audio_label" msgid="6183558856175159629">"오디오 녹음"</string>
@@ -137,6 +139,8 @@
     <string name="screenrecord_ongoing_screen_and_audio" msgid="5351133763125180920">"화면 및 오디오 녹화/녹음 중"</string>
     <string name="screenrecord_taps_label" msgid="1595690528298857649">"화면에 터치 표시"</string>
     <string name="screenrecord_stop_label" msgid="72699670052087989">"중지"</string>
+    <string name="screenrecord_stop_description" msgid="4656717003438764637">"녹화 중지"</string>
+    <string name="screenrecord_start_description" msgid="8173864933793754995">"녹화 시작"</string>
     <string name="screenrecord_share_label" msgid="5025590804030086930">"공유"</string>
     <string name="screenrecord_save_title" msgid="1886652605520893850">"화면 녹화 저장됨"</string>
     <string name="screenrecord_save_text" msgid="3008973099800840163">"탭하여 보기"</string>
@@ -161,7 +165,7 @@
     <string name="screen_record_video_saved" msgid="1345283626390232282">"동영상 저장됨"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"동영상 삭제됨"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"실행취소"</string>
-    <string name="screen_record_take_another" msgid="8071412867905614800">"다시 찍기"</string>
+    <string name="screen_record_take_another" msgid="5877933424208100617">"신규"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"수정"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"삭제"</string>
     <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"이 녹화 파일을 삭제하시겠습니까?"</string>
@@ -178,23 +182,52 @@
     <string name="screen_capture_record_region_selection_button" msgid="3699353194755563053">"선택한 영역 녹화"</string>
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"스크린샷"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"녹화"</string>
+    <string name="screen_capture_region_box_top_left_handle_description" msgid="3619310281612042126">"왼쪽 상단 핸들 - 화살표 키를 사용하여 크기 조절"</string>
+    <string name="screen_capture_region_box_top_right_handle_description" msgid="7732373569053287436">"오른쪽 상단 핸들 - 화살표 키를 사용하여 크기 조절"</string>
+    <string name="screen_capture_region_box_bottom_right_handle_description" msgid="5444943380877006881">"오른쪽 하단 핸들 - 화살표 키를 사용하여 크기 조절"</string>
+    <string name="screen_capture_region_box_bottom_left_handle_description" msgid="6095764656409143184">"왼쪽 하단 핸들 - 화살표 키를 사용하여 크기 조절"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"공유"</string>
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"공유할 앱 선택"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"오디오 공유"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"앱 창 공유"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"탭 공유"</string>
     <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"전체 화면 공유"</string>
-    <string name="screen_share_disclaimer_app_sharing" msgid="1839029004749224549">"앱을 공유하면 앱에 표시되거나 앱에서 재생되는 모든 항목이 <xliff:g id="APP_NAME">%1$s</xliff:g>에 표시됩니다. 따라서 민감한 정보가 노출되지 않도록 주의하세요."</string>
-    <string name="screen_share_disclaimer_tab_sharing" msgid="3811486274577713101">"탭을 공유하면 탭에 있는 모든 항목이 <xliff:g id="APP_NAME">%1$s</xliff:g>에 표시됩니다. 따라서 민감한 정보가 노출되지 않도록 주의하세요."</string>
-    <string name="screen_share_disclaimer_full_screen_sharing" msgid="5173795016606926338">"전체 화면을 공유하면 화면에 있는 모든 항목이 <xliff:g id="APP_NAME">%1$s</xliff:g>에 표시됩니다. 따라서 민감한 정보가 노출되지 않도록 주의하세요."</string>
+    <string name="screen_share_disclaimer_app_sharing" msgid="1839029004749224549">"앱을 공유하면 앱에 표시되거나 앱에서 재생되는 모든 항목이 <xliff:g id="APP_NAME">%1$s</xliff:g>에 표시됩니다. 민감한 정보가 노출되지 않도록 주의하세요."</string>
+    <string name="screen_share_disclaimer_tab_sharing" msgid="3811486274577713101">"탭을 공유하면 탭에 있는 모든 항목이 <xliff:g id="APP_NAME">%1$s</xliff:g>에 표시됩니다. 민감한 정보가 노출되지 않도록 주의하세요."</string>
+    <string name="screen_share_disclaimer_full_screen_sharing" msgid="5173795016606926338">"전체 화면을 공유하면 화면에 있는 모든 항목이 <xliff:g id="APP_NAME">%1$s</xliff:g>에 표시됩니다. 민감한 정보가 노출되지 않도록 주의하세요."</string>
     <string name="screen_share_a11y_announcement" msgid="8938007210094494367">"공유할 정보를 선택합니다. 탭, 앱 또는 전체 화면을 선택합니다. 그런 다음 공유를 누릅니다."</string>
-    <!-- no translation found for screen_share_cancel_announcement (5940879227647436383) -->
+    <string name="screen_share_cancel_announcement" msgid="5940879227647436383">"화면 공유 시작이 종료되었습니다. 화면이 누구와도 공유되지 않습니다."</string>
+    <string name="screen_share_a11y_sharing_app" msgid="3445421300603336524">"현재 공유 중인 앱: <xliff:g id="APP_NAME">%1$s</xliff:g> 공유를 종료하려면 개인 정보 보호 표시기를 사용하세요."</string>
+    <string name="screen_share_a11y_sharing_tab" msgid="2963542572740628746">"현재 공유 중인 탭: <xliff:g id="TAB_TITLE">%1$s</xliff:g> 공유를 종료하려면 개인 정보 보호 표시기를 사용하세요."</string>
+    <string name="screen_share_a11y_sharing_display" msgid="5919924998949424031">"현재 공유 중인 디스플레이: <xliff:g id="DISPLAY_NAME">%1$s</xliff:g> 공유를 종료하려면 개인 정보 보호 표시기를 사용하세요."</string>
+    <string name="screen_share_a11y_stopped_sharing_app" msgid="6928492106881188404">"<xliff:g id="APP_NAME">%1$s</xliff:g> 앱 공유가 중지되었습니다. 화면이 누구와도 공유되지 않습니다."</string>
+    <string name="screen_share_a11y_stopped_sharing_tab" msgid="5929089339684027985">"<xliff:g id="TAB_TITLE">%1$s</xliff:g> 탭 공유가 중지되었습니다. 화면이 누구와도 공유되지 않습니다."</string>
+    <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"<xliff:g id="DISPLAY_NAME">%1$s</xliff:g> 디스플레이 공유가 중지되었습니다. 화면이 누구와도 공유되지 않습니다."</string>
+    <!-- no translation found for screen_share_a11y_close_button (8017115316741874857) -->
     <skip />
-    <!-- no translation found for screen_share_a11y_sharing_app (3445421300603336524) -->
+    <!-- no translation found for screen_share_a11y_tab_button_unselected (5363622532939787310) -->
     <skip />
-    <!-- no translation found for screen_share_a11y_sharing_tab (2963542572740628746) -->
+    <!-- no translation found for screen_share_a11y_tab_button_selected (4304681826101817704) -->
     <skip />
-    <!-- no translation found for screen_share_a11y_sharing_display (5919924998949424031) -->
+    <!-- no translation found for screen_share_a11y_app_button_unselected (4539549394242556282) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_app_button_selected (6049272377472922732) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_fullscreen_button_unselected (2492516552817892989) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_fullscreen_button_selected (6706822615908429473) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_share_button_off (2004866083045967602) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_share_button_on (1311279200212158833) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_item_unselected (7479321583507874795) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_item_selected (2538971376128528640) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_tab_audio_on (7240792268381508075) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_tab_audio_off (8545238601433952854) -->
     <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"창 스크린샷 찍기"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"창 녹화"</string>
@@ -213,6 +246,7 @@
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"전면 카메라"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g>x<xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"공유 중지"</string>
+    <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"화면 공유가 사용 설정되어 있습니다. 공유를 종료하려면 개인 정보 보호 표시기를 사용하세요."</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"화면 공유 중"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"콘텐츠 공유"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"화면 공유를 중지하시겠습니까?"</string>
@@ -398,6 +432,8 @@
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"알림"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"어시스턴트"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"키보드"</string>
+    <!-- no translation found for input_method_switcher_title_large_screen (8490419050265486980) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"<xliff:g id="NUMBER">%s</xliff:g>개 더보기"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{그룹에 알림이 #개 더 있습니다.}other{그룹에 알림이 #개 더 있습니다.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"화면이 가로 방향으로 잠겨 있습니다."</string>
@@ -520,7 +556,7 @@
     <string name="qs_record_issue_dropdown_screenrecord" msgid="6396141928484257626">"화면 녹화"</string>
     <string name="performance" msgid="6552785217174378320">"성능"</string>
     <string name="user_interface" msgid="3712869377953950887">"사용자 인터페이스"</string>
-    <string name="thermal" msgid="6758074791325414831">"열화상"</string>
+    <string name="thermal" msgid="6758074791325414831">"발열"</string>
     <string name="custom" msgid="3337456985275158299">"맞춤"</string>
     <string name="custom_trace_settings_dialog_title" msgid="2608570500144830554">"맞춤 트레이스 설정"</string>
     <string name="restore_default" msgid="5259420807486239755">"기본값 복원"</string>
@@ -1800,10 +1836,8 @@
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"정확한 위치"</string>
     <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"정확한 위치 사용"</string>
     <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"정확한 위치 공유"</string>
-    <!-- no translation found for location_button_text_near_my_precise_location (7590342799002942963) -->
-    <skip />
-    <!-- no translation found for location_button_text_near_your_precise_location (3792598666253599055) -->
-    <skip />
+    <string name="location_button_text_near_my_precise_location" msgid="7590342799002942963">"내 정확한 위치 근처"</string>
+    <string name="location_button_text_near_your_precise_location" msgid="3792598666253599055">"내 정확한 위치 근처"</string>
     <string name="privacy_chip_use_string" msgid="979159484631969073">"<xliff:g id="SENSOR">%1$s</xliff:g> 사용 중"</string>
     <string name="privacy_chip_use_string_with_app" msgid="6807216002072346877">"<xliff:g id="APP">%2$s</xliff:g>에서 <xliff:g id="SENSOR">%1$s</xliff:g> 사용 중"</string>
     <string name="privacy_chip_camera_and_mic_text" msgid="6254449489859255607">"카메라 및 마이크"</string>
@@ -1827,8 +1861,7 @@
     <string name="av_camera_blur_light" msgid="5666055368940059418">"약하게"</string>
     <string name="av_camera_blur_full" msgid="3276351992811619332">"전체"</string>
     <string name="av_camera_improve_lighting" msgid="1540549414296669133">"조명 개선"</string>
-    <!-- no translation found for av_camera_face_retouch (45890971969486224) -->
-    <skip />
+    <string name="av_camera_face_retouch" msgid="45890971969486224">"인물 보정"</string>
     <string name="av_camera_framing" msgid="5108462267843042492">"카메라 프레이밍"</string>
     <string name="av_studio_mic" msgid="2614843492629357766">"스튜디오 마이크"</string>
     <string name="av_studio_look" msgid="621893522645557619">"스튜디오 화질"</string>
@@ -1840,4 +1873,18 @@
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"왼쪽 배터리 %1$s"</string>
     <string name="accessibility_hearing_device_right_battery_level" msgid="7598843215226414563">"오른쪽 배터리 %1$s"</string>
     <string name="accessibility_hearing_device_notification_channel_name" msgid="7365020777623709400">"청각 보조 기기 상태"</string>
+    <!-- no translation found for more_options_edit (6337988646114341329) -->
+    <skip />
+    <!-- no translation found for more_options_move (2226159413422979066) -->
+    <skip />
+    <!-- no translation found for more_options_remove_all (194855000797536179) -->
+    <skip />
+    <!-- no translation found for floating_menu_more_options_label (7859269790323628599) -->
+    <skip />
+    <!-- no translation found for dream_setup_title (7996530071414508238) -->
+    <skip />
+    <!-- no translation found for dream_setup_button_not_now (8028385323668620805) -->
+    <skip />
+    <!-- no translation found for dream_setup_button_setup (4755361016017554826) -->
+    <skip />
 </resources>
