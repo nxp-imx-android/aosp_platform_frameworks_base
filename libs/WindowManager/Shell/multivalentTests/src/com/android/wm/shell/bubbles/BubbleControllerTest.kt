@@ -33,7 +33,6 @@ import android.os.UserHandle
 import android.os.UserManager
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
-import android.platform.test.flag.junit.FlagsParameterization
 import android.platform.test.flag.junit.SetFlagsRule
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
@@ -49,6 +48,7 @@ import android.window.TransitionInfo
 import android.window.WindowContainerToken
 import androidx.core.content.getSystemService
 import androidx.test.core.app.ApplicationProvider
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import com.android.internal.logging.InstanceIdSequence
@@ -121,8 +121,6 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
-import platform.test.runner.parameterized.ParameterizedAndroidJunit4
-import platform.test.runner.parameterized.Parameters
 
 /**
  * Tests for [BubbleController].
@@ -132,10 +130,10 @@ import platform.test.runner.parameterized.Parameters
  * - atest WMShellMultivalentTestsOnDevice:BubbleControllerTest (on device)
  */
 @SmallTest
-@RunWith(ParameterizedAndroidJunit4::class)
-class BubbleControllerTest(flags: FlagsParameterization) {
+@RunWith(AndroidJUnit4::class)
+class BubbleControllerTest {
 
-    @get:Rule val setFlagsRule = SetFlagsRule(flags)
+    @get:Rule val setFlagsRule = SetFlagsRule()
 
     private val context = ApplicationProvider.getApplicationContext<Context>()
     private val uiEventLoggerFake = UiEventLoggerFake()
@@ -1281,9 +1279,5 @@ class BubbleControllerTest(flags: FlagsParameterization) {
             }
             return insetsState
         }
-
-        @JvmStatic
-        @Parameters(name = "{0}")
-        fun getParams() = FlagsParameterization.allCombinationsOf(FLAG_ENABLE_CREATE_ANY_BUBBLE)
     }
 }
