@@ -18,8 +18,8 @@ package com.android.wm.shell.windowdecor.viewholder.util
 import android.graphics.Rect
 import com.android.wm.shell.windowdecor.common.DrawableInsets
 
-/** Provides the dimensions to use for drawing the app header. */
-interface AppHeaderDimensions {
+/** Provides the dimensions to use for drawing the header. */
+interface HeaderDimensions {
     /** The height of the app header. */
     val height: Int
     /** The corner radius to apply to the app chip, maximize and close button's background. */

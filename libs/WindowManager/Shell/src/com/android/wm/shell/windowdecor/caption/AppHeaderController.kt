@@ -86,7 +86,7 @@ import com.android.wm.shell.windowdecor.extension.requestingImmersive
 import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder
 import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder.HeaderData
 import com.android.wm.shell.windowdecor.viewholder.WindowDecorationViewHolder
-import com.android.wm.shell.windowdecor.viewholder.util.LargeAppHeaderDimensions
+import com.android.wm.shell.windowdecor.viewholder.util.LargeHeaderDimensions
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainCoroutineDispatcher
@@ -186,7 +186,7 @@ class AppHeaderController(
             DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_APP_TO_WEB_EDUCATION_INTEGRATION
                 .isTrue ||
             DesktopExperienceFlags.ENABLE_APP_HANDLE_POSITION_REPORTING.isTrue
-    private val dimensions = LargeAppHeaderDimensions(decorWindowContext.resources)
+    private val dimensions = LargeHeaderDimensions(decorWindowContext.resources)
 
     private var isLayoutMenuHovered = false
     private var isAppHeaderMaximizeButtonHovered = false

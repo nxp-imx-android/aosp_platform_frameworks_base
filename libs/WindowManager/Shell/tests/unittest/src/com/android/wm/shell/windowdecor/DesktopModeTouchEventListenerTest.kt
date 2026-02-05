@@ -41,10 +41,10 @@ import com.android.wm.shell.shared.desktopmode.FakeDesktopConfig
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.sysui.ShellInit
-import com.android.wm.shell.windowdecor.WindowDecorationTestHelper.TestAppHeaderDimensions
-import com.android.wm.shell.windowdecor.WindowDecorationTestHelper.TestAppHeaderDimensions.Companion.APP_HEADER_HEIGHT
-import com.android.wm.shell.windowdecor.WindowDecorationTestHelper.TestAppHeaderDimensions.Companion.CUSTOMIZABLE_REGION_MARGIN_START
 import com.android.wm.shell.windowdecor.WindowDecorationTestHelper.TestAppHeaderViewHolderFactory
+import com.android.wm.shell.windowdecor.WindowDecorationTestHelper.TestHeaderDimensions
+import com.android.wm.shell.windowdecor.WindowDecorationTestHelper.TestHeaderDimensions.Companion.APP_HEADER_HEIGHT
+import com.android.wm.shell.windowdecor.WindowDecorationTestHelper.TestHeaderDimensions.Companion.CUSTOMIZABLE_REGION_MARGIN_START
 import com.android.wm.shell.windowdecor.WindowDecorationTestHelper.TestInputPilferer
 import com.android.wm.shell.windowdecor.WindowDecorationTestHelper.TestWindowDecoration
 import com.android.wm.shell.windowdecor.WindowDecorationTestHelper.createAppHeaderTask
@@ -457,7 +457,7 @@ class DesktopModeTouchEventListenerTest : ShellTestCase() {
                 windowDecorationActions = mockWindowDecorationActions,
                 captionVisibilityHelper = mockCaptionVisibilityHelper,
                 appHeaderViewHolderFactory =
-                    TestAppHeaderViewHolderFactory(TestAppHeaderDimensions(context.resources)),
+                    TestAppHeaderViewHolderFactory(TestHeaderDimensions(context.resources)),
                 windowDecorationExclusionTracker = mockWindowDecorationExclusionTracker,
                 pinnedLayerController = mockPinnedLayerController,
             )

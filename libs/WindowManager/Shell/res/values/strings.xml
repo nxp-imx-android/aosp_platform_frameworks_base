@@ -318,7 +318,7 @@
     <!-- Accessibility text for the handle menu close menu button [CHAR LIMIT=NONE] -->
     <string name="collapse_menu_text">Close Menu</string>
     <!-- Accessibility text for the App Header's App Chip [CHAR LIMIT=NONE] -->
-    <string name="desktop_mode_app_header_chip_text"><xliff:g id="app_name" example="Chrome">%1$s</xliff:g> (Desktop windowing)</string>
+    <string name="desktop_mode_header_chip_text"><xliff:g id="app_name" example="Chrome">%1$s</xliff:g> (Desktop windowing)</string>
     <!-- Layout menu maximize button string. -->
     <string name="desktop_mode_layout_menu_maximize_text">Maximize Screen</string>
     <!-- Layout menu snap buttons string. -->
