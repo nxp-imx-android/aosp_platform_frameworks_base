@@ -268,7 +268,7 @@
     <string name="apn_settings_not_available" msgid="1147111671403342300">"ಆ್ಯಕ್ಸೆಸ್ ಬಿಂದು ಹೆಸರಿನ ಸೆಟ್ಟಿಂಗ್‌ಗಳು ಈ ಬಳಕೆದಾರರಿಗೆ ಲಭ್ಯವಿಲ್ಲ"</string>
     <string name="enable_adb" msgid="8072776357237289039">"USB ಡೀಬಗ್ ಮಾಡುವಿಕೆ"</string>
     <string name="enable_adb_summary" msgid="3711526030096574316">"USB ಸಂಪರ್ಕಗೊಂಡಾಗ ಡೀಬಗ್ ಮೋಡ್"</string>
-    <string name="clear_adb_keys" msgid="3010148733140369917">"USB ಡೀಬಗ್‌ ಮಾಡುವಿಕೆಯ ಅಧಿಕೃತಗೊಳಿಸುವಿಕೆಗಳನ್ನು ಹಿಂತೆಗೆದುಕೊಳ್ಳಿ"</string>
+    <string name="clear_adb_keys" msgid="2696065439790970581">"adb ಡೀಬಗ್ ಮಾಡುವಿಕೆಯ ದೃಢೀಕರಣಗಳನ್ನು ಹಿಂತೆಗೆದುಕೊಳ್ಳಿ"</string>
     <string name="enable_adb_wireless" msgid="6973226350963971018">"ವೈರ್‌ಲೆಸ್ ಡೀಬಗಿಂಗ್"</string>
     <string name="enable_adb_wireless_summary" msgid="7344391423657093011">"ವೈ-ಫೈ ಕನೆಕ್ಟ್ ಆದಾಗ ಡೀಬಗ್ ಮೋಡ್"</string>
     <string name="adb_wireless_error" msgid="721958772149779856">"ದೋಷ"</string>
@@ -293,6 +293,10 @@
     <string name="adb_wireless_verifying_qrcode_text" msgid="6123192424916029207">"ಸಾಧನವನ್ನು ಜೋಡಿಸಲಾಗುತ್ತಿದೆ…"</string>
     <string name="adb_qrcode_pairing_device_failed_msg" msgid="6936292092592914132">"ಸಾಧನವನ್ನು ಜೋಡಿಸಲು ವಿಫಲವಾಗಿದೆ. QR ಕೋಡ್ ತಪ್ಪಾಗಿದೆ ಅಥವಾ ಸಾಧನವು ಒಂದೇ ನೆಟ್‌ವರ್ಕ್‌ಗೆ ಕನೆಕ್ಟ್ ಆಗಿಲ್ಲ."</string>
     <string name="adb_wireless_ip_addr_preference_title" msgid="8335132107715311730">"IP ವಿಳಾಸ ಮತ್ತು ಪೋರ್ಟ್"</string>
+    <!-- no translation found for adb_wireless_unavailable_not_allowed (83310404140556806) -->
+    <skip />
+    <!-- no translation found for adb_wireless_unavailable_disconnected (8819105186435736128) -->
+    <skip />
     <string name="adb_wireless_qrcode_pairing_title" msgid="1906409667944674707">"QR ಕೋಡ್ ಸ್ಕ್ಯಾನ್ ಮಾಡಿ"</string>
     <string name="adb_wireless_qrcode_pairing_description" msgid="6014121407143607851">"QR ಕೋಡ್ ಅನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡುವ ಮೂಲಕ ವೈ-ಫೈ ಮೂಲಕ ಸಾಧನವನ್ನು ಪೇರ್ ಮಾಡಿ"</string>
     <string name="adb_wireless_no_network_msg" msgid="2365795244718494658">"ವೈ-ಫೈ ನೆಟ್‌ವರ್ಕ್‌ಗೆ ಸಂಪರ್ಕಿಸಿ"</string>
@@ -366,7 +370,7 @@
     <string name="adb_warning_message" msgid="8145270656419669221">"USB ಡೀಬಗ್ ಮಾಡುವಿಕೆಯು ಅಭಿವೃದ್ಧಿ ಉದ್ದೇಶಗಳಿಗೆ ಮಾತ್ರ ಆಗಿದೆ. ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್ ಮತ್ತು ನಿಮ್ಮ ಸಾಧನದ ನಡುವೆ ಡೇಟಾವನ್ನು ನಕಲಿಸಲು, ನೋಟಿಫಿಕೇಶನ್ ಇಲ್ಲದೆ ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿ ಆ್ಯಪ್‍ಗಳನ್ನು ಇನ್‍ಸ್ಟಾಲ್ ಮಾಡಲು ಮತ್ತು ಲಾಗ್ ಡೇಟಾ ಓದಲು ಅದನ್ನು ಬಳಸಿ."</string>
     <string name="adbwifi_warning_title" msgid="727104571653031865">"ವೈರ್‌ಲೆಸ್ ಡೀಬಗ್ ಮಾಡುವಿಕೆಯನ್ನು ಅನುಮತಿಸಬೇಕೆ?"</string>
     <string name="adbwifi_warning_message" msgid="8005936574322702388">"ವೈರ್‌ಲೆಸ್ ಡೀಬಗ್ ಮಾಡುವಿಕೆಯು ಅಭಿವೃದ್ಧಿ ಉದ್ದೇಶಗಳಿಗೆ ಮಾತ್ರ ಆಗಿದೆ. ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್ ಮತ್ತು ನಿಮ್ಮ ಸಾಧನದ ನಡುವೆ ಡೇಟಾವನ್ನು ಕಾಪಿ ಮಾಡಲು, ನೋಟಿಫಿಕೇಶನ್‌ ಇಲ್ಲದೆ ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿ ಆ್ಯಪ್‌ಗಳನ್ನು ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲು ಮತ್ತು ಲಾಗ್ ಡೇಟಾ ಓದಲು ಅದನ್ನು ಬಳಸಿ."</string>
-    <string name="adb_keys_warning_message" msgid="2968555274488101220">"ನೀವು ಹಿಂದೆ ಅಧಿಕೃತಗೊಳಿಸಿದ ಎಲ್ಲ ಕಂಪ್ಯೂಟರ್‌ಗಳಿಂದ USB ಡೀಬಗ್‌ಗೆ ಪ್ರವೇಶವನ್ನು ರದ್ದುಗೊಳಿಸುವುದೇ?"</string>
+    <string name="adb_keys_warning_message" msgid="7827514623080777814">"ನೀವು ಈ ಹಿಂದೆ ದೃಢೀಕರಿಸಿರುವ ಎಲ್ಲ ಕಂಪ್ಯೂಟರ್‌ಗಳು ಮತ್ತು ನೆಟ್‌ವರ್ಕ್‌ಗಳಿಂದ adb ಡೀಬಗ್ ಮಾಡುವಿಕೆಗೆ ಆ್ಯಕ್ಸೆಸ್ ಅನ್ನು ಹಿಂತೆಗೆದುಕೊಳ್ಳಬೇಕೆ?"</string>
     <string name="dev_settings_warning_title" msgid="8251234890169074553">"ಅಭಿವೃದ್ಧಿಯ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಅನುಮತಿಸುವುದೇ?"</string>
     <string name="dev_settings_warning_message" msgid="37741686486073668">"ಈ ಸೆಟ್ಟಿಂಗ್‌ಗಳು ಅಭಿವೃದ್ಧಿಯ ಬಳಕೆಗೆ ಮಾತ್ರ. ಅವುಗಳು ನಿಮ್ಮ ಸಾಧನ ಮತ್ತು ಅಪ್ಲಿಕೇಶನ್‌‌ಗಳಿಗೆ ಧಕ್ಕೆ ಮಾಡಬಹುದು ಅಥವಾ ಅವು ಸರಿಯಾಗಿ ಕಾರ್ಯನಿರ್ವಹಿಸದಿರುವಂತೆ ಮಾಡಬಹುದು."</string>
     <string name="verify_apps_over_usb_title" msgid="6031809675604442636">"USB ಮೂಲಕ ಆ್ಯಪ್‌ ಪರಿಶೀಲಿಸಿ"</string>

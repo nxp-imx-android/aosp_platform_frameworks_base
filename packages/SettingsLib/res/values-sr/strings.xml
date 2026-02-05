@@ -268,7 +268,7 @@
     <string name="apn_settings_not_available" msgid="1147111671403342300">"Подешавања назива приступне тачке нису доступна за овог корисника"</string>
     <string name="enable_adb" msgid="8072776357237289039">"Отклањање USB грешака"</string>
     <string name="enable_adb_summary" msgid="3711526030096574316">"Режим отклањања грешака када је USB повезан"</string>
-    <string name="clear_adb_keys" msgid="3010148733140369917">"Опозивање одобрења за уклањање USB грешака"</string>
+    <string name="clear_adb_keys" msgid="2696065439790970581">"Опозови одобрења за adb отклањање грешака"</string>
     <string name="enable_adb_wireless" msgid="6973226350963971018">"Бежично отклањање грешака"</string>
     <string name="enable_adb_wireless_summary" msgid="7344391423657093011">"Режим за отклањање грешака када је WiFi повезан"</string>
     <string name="adb_wireless_error" msgid="721958772149779856">"Грешка"</string>
@@ -293,6 +293,10 @@
     <string name="adb_wireless_verifying_qrcode_text" msgid="6123192424916029207">"Упарује се уређај…"</string>
     <string name="adb_qrcode_pairing_device_failed_msg" msgid="6936292092592914132">"Упаривање уређаја није успело. QR кôд је погрешан или уређај није повезан са истом мрежом."</string>
     <string name="adb_wireless_ip_addr_preference_title" msgid="8335132107715311730">"IP адреса и порт"</string>
+    <!-- no translation found for adb_wireless_unavailable_not_allowed (83310404140556806) -->
+    <skip />
+    <!-- no translation found for adb_wireless_unavailable_disconnected (8819105186435736128) -->
+    <skip />
     <string name="adb_wireless_qrcode_pairing_title" msgid="1906409667944674707">"Скенирај QR кôд"</string>
     <string name="adb_wireless_qrcode_pairing_description" msgid="6014121407143607851">"Упарите уређај помоћу Wi‑Fi мреже тако што ћете скенирати QR кôд"</string>
     <string name="adb_wireless_no_network_msg" msgid="2365795244718494658">"Повежите се на WiFi мрежу"</string>
@@ -366,7 +370,7 @@
     <string name="adb_warning_message" msgid="8145270656419669221">"Отклањање USB грешака намењено је само за сврхе програмирања. Користите га за копирање података са рачунара на уређај и обратно, инсталирање апликација на уређају без обавештења и читање података из евиденције."</string>
     <string name="adbwifi_warning_title" msgid="727104571653031865">"Желите да дозволите бежично отклањање грешака?"</string>
     <string name="adbwifi_warning_message" msgid="8005936574322702388">"Бежично отклањање грешака намењено је само програмирању. Користите га за копирање података са рачунара на уређај и обратно, инсталирање апликација на уређају без обавештења и читање података из евиденције."</string>
-    <string name="adb_keys_warning_message" msgid="2968555274488101220">"Желите ли да опозовете приступ отклањању USB грешака са свих рачунара које сте претходно одобрили?"</string>
+    <string name="adb_keys_warning_message" msgid="7827514623080777814">"Желите ли да опозовете приступ adb отклањању грешака са свих рачунара и мрежа које сте претходно одобрили?"</string>
     <string name="dev_settings_warning_title" msgid="8251234890169074553">"Желите ли да омогућите програмерска подешавања?"</string>
     <string name="dev_settings_warning_message" msgid="37741686486073668">"Ова подешавања су намењена само за програмирање. Могу да изазову престанак функционисања или неочекивано понашање уређаја и апликација на њему."</string>
     <string name="verify_apps_over_usb_title" msgid="6031809675604442636">"Верификуј апликације преко USB-а"</string>
