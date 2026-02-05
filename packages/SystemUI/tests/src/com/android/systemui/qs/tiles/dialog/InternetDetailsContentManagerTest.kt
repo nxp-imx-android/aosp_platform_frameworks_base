@@ -425,7 +425,7 @@ class InternetDetailsContentManagerTest(private val isInDialog: Boolean) : Sysui
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_QS_WIFI_CONFIG)
+    @DisableFlags(Flags.FLAG_QS_WIFI_CONFIG, Flags.FLAG_QS_WIFI_MULTIUSER)
     fun updateContent_wifiOnAndHasInternetWifi_showConnectedWifi() {
         whenever(internetDetailsContentController.activeAutoSwitchNonDdsSubId).thenReturn(1)
         whenever(internetDetailsContentController.hasActiveSubIdOnDds()).thenReturn(true)
@@ -448,7 +448,7 @@ class InternetDetailsContentManagerTest(private val isInDialog: Boolean) : Sysui
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_QS_WIFI_CONFIG)
+    @DisableFlags(Flags.FLAG_QS_WIFI_CONFIG, Flags.FLAG_QS_WIFI_MULTIUSER)
     fun updateContent_wifiOnAndNoConnectedWifi_hideConnectedWifi() {
         // The precondition WiFi ON is already in setUp()
         internetDetailsContentManager.connectedWifiEntry = null
@@ -466,7 +466,7 @@ class InternetDetailsContentManagerTest(private val isInDialog: Boolean) : Sysui
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_QS_WIFI_CONFIG)
+    @DisableFlags(Flags.FLAG_QS_WIFI_CONFIG, Flags.FLAG_QS_WIFI_MULTIUSER)
     fun updateContent_wifiOnAndNoWifiEntry_showWifiListAndSeeAllArea() {
         // The precondition WiFi ON is already in setUp()
         internetDetailsContentManager.connectedWifiEntry = null
@@ -487,7 +487,7 @@ class InternetDetailsContentManagerTest(private val isInDialog: Boolean) : Sysui
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_QS_WIFI_CONFIG)
+    @DisableFlags(Flags.FLAG_QS_WIFI_CONFIG, Flags.FLAG_QS_WIFI_MULTIUSER)
     fun updateContent_wifiOnAndOneWifiEntry_showWifiListAndSeeAllArea() {
         // The precondition WiFi ON is already in setUp()
         internetDetailsContentManager.connectedWifiEntry = null
@@ -508,7 +508,7 @@ class InternetDetailsContentManagerTest(private val isInDialog: Boolean) : Sysui
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_QS_WIFI_CONFIG)
+    @DisableFlags(Flags.FLAG_QS_WIFI_CONFIG, Flags.FLAG_QS_WIFI_MULTIUSER)
     fun updateContent_wifiOnAndHasConnectedWifi_showAllWifiAndSeeAllArea() {
         // The preconditions WiFi ON and WiFi entries are already in setUp()
         internetDetailsContentManager.wifiEntriesCount = 0
@@ -528,7 +528,7 @@ class InternetDetailsContentManagerTest(private val isInDialog: Boolean) : Sysui
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_QS_WIFI_CONFIG)
+    @DisableFlags(Flags.FLAG_QS_WIFI_CONFIG, Flags.FLAG_QS_WIFI_MULTIUSER)
     fun updateContent_wifiOnAndHasMaxWifiList_showWifiListAndSeeAll() {
         // The preconditions WiFi ON and WiFi entries are already in setUp()
         internetDetailsContentManager.connectedWifiEntry = null
@@ -550,7 +550,7 @@ class InternetDetailsContentManagerTest(private val isInDialog: Boolean) : Sysui
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_QS_WIFI_CONFIG)
+    @DisableFlags(Flags.FLAG_QS_WIFI_CONFIG, Flags.FLAG_QS_WIFI_MULTIUSER)
     fun updateContent_wifiOnAndHasBothWifiEntry_showBothWifiEntryAndSeeAll() {
         // The preconditions WiFi ON and WiFi entries are already in setUp()
         internetDetailsContentManager.wifiEntriesCount =
@@ -571,7 +571,7 @@ class InternetDetailsContentManagerTest(private val isInDialog: Boolean) : Sysui
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_QS_WIFI_CONFIG)
+    @EnableFlags(Flags.FLAG_QS_WIFI_MULTIUSER)
     fun updateContent_deviceLockedAndNoConnectedWifi_showWifiToggle() {
         // The preconditions WiFi entries are already in setUp()
         whenever(internetDetailsContentController.isDeviceLocked).thenReturn(true)
@@ -593,7 +593,7 @@ class InternetDetailsContentManagerTest(private val isInDialog: Boolean) : Sysui
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_QS_WIFI_CONFIG)
+    @EnableFlags(Flags.FLAG_QS_WIFI_MULTIUSER)
     fun updateContent_deviceLockedAndHasConnectedWifi_showWifiToggleWithBackground() {
         // The preconditions WiFi ON and WiFi entries are already in setUp()
         whenever(internetDetailsContentController.isDeviceLocked).thenReturn(true)
@@ -614,7 +614,7 @@ class InternetDetailsContentManagerTest(private val isInDialog: Boolean) : Sysui
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_QS_WIFI_CONFIG)
+    @EnableFlags(Flags.FLAG_QS_WIFI_MULTIUSER)
     fun updateContent_showAddNetworkButton() {
         if (isInDialog) {
             return
@@ -634,7 +634,7 @@ class InternetDetailsContentManagerTest(private val isInDialog: Boolean) : Sysui
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_QS_WIFI_CONFIG)
+    @DisableFlags(Flags.FLAG_QS_WIFI_CONFIG, Flags.FLAG_QS_WIFI_MULTIUSER)
     fun updateContent_notShowAddNetworkButtonWhenFlagDisabled() {
         if (isInDialog) {
             return
@@ -812,7 +812,7 @@ class InternetDetailsContentManagerTest(private val isInDialog: Boolean) : Sysui
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_QS_WIFI_CONFIG)
+    @DisableFlags(Flags.FLAG_QS_WIFI_CONFIG, Flags.FLAG_QS_WIFI_MULTIUSER)
     fun onClickSeeMoreButton_clickSeeAll_verifyLaunchNetworkSetting() {
         seeAll!!.performClick()
 
@@ -821,7 +821,7 @@ class InternetDetailsContentManagerTest(private val isInDialog: Boolean) : Sysui
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_QS_WIFI_CONFIG)
+    @EnableFlags(Flags.FLAG_QS_WIFI_MULTIUSER)
     fun onClickSeeMoreButton_clickSeeAll_verifExpandWifiList() {
         internetDetailsContentManager.hasSeeAllClicked = true
         internetDetailsContentManager.updateContent(false)
