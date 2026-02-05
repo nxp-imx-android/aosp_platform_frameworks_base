@@ -17,12 +17,12 @@
 package com.android.systemui.notifications.intelligence.rules.ui.viewmodel
 
 import com.android.systemui.lifecycle.Activatable
-import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.RuleModel
 
 /** A view model for the notification rules screen. */
 public interface NotificationRulesScreenViewModel : Activatable {
     /** The list of current saved rules for the user. */
-    public val rules: List<DraftRuleModel>
+    public val rules: List<RuleModel>
 
     public interface Factory {
         public fun create(): NotificationRulesScreenViewModel

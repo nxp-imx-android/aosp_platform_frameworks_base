@@ -19,14 +19,38 @@ package com.android.systemui.notifications.intelligence.rules.ui.viewmodel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import com.android.systemui.lifecycle.HydratedActivatable
-import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.ContactsModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.FilterModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.RuleModel
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 
 class NotificationRulesScreenViewModelImpl @AssistedInject constructor() :
     NotificationRulesScreenViewModel, HydratedActivatable() {
     // TODO: b/478225883 - Fetch the current rules.
-    override val rules: List<DraftRuleModel> by mutableStateOf(emptyList())
+    override val rules: List<RuleModel> by
+        mutableStateOf(
+            listOf(
+                RuleModel(
+                    action = ActionModel.Bundle,
+                    filter =
+                        FilterModel(
+                            contacts = ContactsModel(listOf(ContactModel("spam"))),
+                            includedApps = null,
+                        ),
+                ),
+                RuleModel(
+                    action = ActionModel.Highlight,
+                    filter =
+                        FilterModel(
+                            contacts = ContactsModel(listOf(ContactModel("mom"), ContactModel("dad"))),
+                            includedApps = null,
+                        ),
+                ),
+            )
+        )
 
     @AssistedFactory
     interface Factory : NotificationRulesScreenViewModel.Factory {

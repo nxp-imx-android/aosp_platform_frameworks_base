@@ -17,15 +17,18 @@
 package com.android.systemui.notifications.intelligence.rules.shared.model
 
 /**
- * Represents a draft of a notification rule. Notification rules control when and how notifications
- * are presented.
+ * Represents a **draft** of a notification rule. Notification rules control when and how
+ * notifications are presented.
  *
- * Because this is a draft version of a rule, some values may be underspecified. Any underspecified
- * values will use [RuleValue.Ambiguous], and the user will have to specify the value in the UI
- * before the rule is saved.
+ * This rule draft is being edited by a user and is not yet saved anywhere. And because it's a
+ * draft, some values may be underspecified. Any underspecified values will use
+ * [RuleValue.Ambiguous], and the user will have to specify the value in the UI before the rule is
+ * saved.
  *
  * This is mostly an internal equivalent of [android.app.NotificationRule], but with ambiguous value
  * support as well.
+ *
+ * See also: [RuleModel] for rules that are already saved.
  */
 public data class DraftRuleModel(
     /** The action to apply to the notification. See [android.app.NotificationRule.getAction]. */
