@@ -16,6 +16,7 @@
 
 package com.android.server.adb;
 
+import android.net.nsd.NsdManager;
 import android.util.Slog;
 
 public class AdbdServicesManagerNoop implements AdbdIServicesManager {
@@ -33,7 +34,7 @@ public class AdbdServicesManagerNoop implements AdbdIServicesManager {
             String instanceName,
             String serviceType,
             int port,
-            AdbdServicesManager.RegistrationCallback registrationCallback) {
+            NsdManager.RegistrationListener registrationCallback) {
         Slog.i(TAG, "Registering service noop");
     }
 
