@@ -19,16 +19,15 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 
 import com.android.internal.widget.remotecompose.core.CoreDocument;
+import com.android.internal.widget.remotecompose.core.RemoteClock;
 import com.android.internal.widget.remotecompose.core.RemoteComposeBuffer;
 import com.android.internal.widget.remotecompose.core.RemoteContext;
-import com.android.internal.widget.remotecompose.core.SystemClock;
 import com.android.internal.widget.remotecompose.core.operations.ColorTheme;
 import com.android.internal.widget.remotecompose.core.operations.layout.Component;
 import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -38,14 +37,14 @@ public class RemoteDocument {
     private @NonNull CoreDocument mDocument;
 
     public RemoteDocument(@NonNull byte[] inputStream) {
-        this(new ByteArrayInputStream(inputStream), new SystemClock());
+        this(new ByteArrayInputStream(inputStream), RemoteClock.SYSTEM);
     }
 
     public RemoteDocument(@NonNull InputStream inputStream) {
-        this(inputStream, new SystemClock());
+        this(inputStream, RemoteClock.SYSTEM);
     }
 
-    public RemoteDocument(@NonNull InputStream inputStream, @NonNull Clock clock) {
+    public RemoteDocument(@NonNull InputStream inputStream, @NonNull RemoteClock clock) {
         mDocument = new CoreDocument(clock);
         RemoteComposeBuffer buffer = RemoteComposeBuffer.fromInputStream(inputStream);
         mDocument.initFromBuffer(buffer);
@@ -213,7 +212,7 @@ public class RemoteDocument {
      *
      * @return
      */
-    public @NonNull Clock getClock() {
+    public @NonNull RemoteClock getClock() {
         return getDocument().getClock();
     }
 

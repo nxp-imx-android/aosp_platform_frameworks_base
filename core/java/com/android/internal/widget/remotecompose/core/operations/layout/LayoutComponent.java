@@ -33,6 +33,7 @@ import com.android.internal.widget.remotecompose.core.operations.MatrixSave;
 import com.android.internal.widget.remotecompose.core.operations.MatrixTranslate;
 import com.android.internal.widget.remotecompose.core.operations.layout.animation.AnimationSpec;
 import com.android.internal.widget.remotecompose.core.operations.layout.managers.CanvasLayout;
+import com.android.internal.widget.remotecompose.core.operations.layout.managers.LayoutManager;
 import com.android.internal.widget.remotecompose.core.operations.layout.measure.ComponentMeasure;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.AlignByModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.ComponentModifiers;
@@ -351,11 +352,21 @@ public class LayoutComponent extends Component {
     }
 
     @Override
-    public void getLocationInWindow(@NonNull float [] value, boolean forSelf) {
-        value[0] += mX + mPaddingLeft;
-        value[1] += mY + mPaddingTop;
+    public void getLocationInWindow(@NonNull RemoteContext context, @NonNull float [] value,
+            boolean forSelf) {
+        if (context.getTouchVersion() == LayoutManager.FIX_TOUCH_EVENT) {
+            value[0] += mX;
+            value[1] += mY;
+            if (!forSelf) {
+                value[0] += mPaddingLeft + getScrollX();
+                value[1] += mPaddingTop + getScrollY();
+            }
+        } else {
+            value[0] += mX + mPaddingLeft;
+            value[1] += mY + mPaddingTop;
+        }
         if (mParent != null) {
-            mParent.getLocationInWindow(value, false);
+            mParent.getLocationInWindow(context, value, false);
         }
     }
 

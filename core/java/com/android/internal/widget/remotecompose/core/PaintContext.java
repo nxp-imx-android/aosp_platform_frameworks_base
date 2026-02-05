@@ -18,9 +18,9 @@ package com.android.internal.widget.remotecompose.core;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 
+import com.android.internal.widget.remotecompose.core.operations.layout.managers.LayoutManager;
 import com.android.internal.widget.remotecompose.core.operations.paint.PaintBundle;
 
-import java.time.Clock;
 import java.util.HashMap;
 
 /** Specify an abstract paint context used by RemoteCompose commands to draw */
@@ -32,7 +32,7 @@ public abstract class PaintContext {
     public static final int TEXT_MEASURE_AUTOSIZE = 0x10;
     protected @NonNull RemoteContext mContext;
     private boolean mNeedsRepaint = false;
-    private int mMeasureVersion;
+    private int mMeasureVersion = LayoutManager.DEFAULT_MEASURE_TYPE;
 
     @NonNull
     public RemoteContext getContext() {
@@ -77,7 +77,7 @@ public abstract class PaintContext {
         matrixSave();
     }
 
-    public @NonNull Clock getClock() {
+    public @NonNull RemoteClock getClock() {
         return mContext.getClock();
     }
 
@@ -573,4 +573,5 @@ public abstract class PaintContext {
     public int getMeasureVersion() {
         return mMeasureVersion;
     }
+
 }

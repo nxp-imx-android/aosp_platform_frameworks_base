@@ -32,7 +32,8 @@ import com.android.internal.widget.remotecompose.core.serialize.Serializable;
 import java.util.List;
 
 /** Operation to perform Color related calculation TODO support color update */
-public class ColorAttribute extends PaintOperation implements VariableSupport, Serializable {
+public class ColorAttribute extends PaintOperation implements VariableSupport, Serializable,
+        ComponentData {
     private static final int OP_CODE = Operations.ATTRIBUTE_COLOR;
     private static final String CLASS_NAME = "ColorAttribute";
     public int mId;

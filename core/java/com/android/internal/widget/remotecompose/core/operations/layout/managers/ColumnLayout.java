@@ -471,13 +471,15 @@ public class ColumnLayout extends LayoutManager {
     }
 
     @Override
-    public void getLocationInWindow(@NonNull float [] value, boolean forSelf) {
-        super.getLocationInWindow(value, forSelf);
+    public void getLocationInWindow(@NonNull RemoteContext context, @NonNull float [] value,
+            boolean forSelf) {
+        super.getLocationInWindow(context, value, forSelf);
+        if (context.getTouchVersion() != LayoutManager.FIX_TOUCH_EVENT) {
+            if (!forSelf && mVerticalScrollDelegate instanceof ScrollModifierOperation) {
+                ScrollModifierOperation smo = (ScrollModifierOperation) mVerticalScrollDelegate;
 
-        if (!forSelf && mVerticalScrollDelegate instanceof ScrollModifierOperation) {
-            ScrollModifierOperation smo = (ScrollModifierOperation) mVerticalScrollDelegate;
-
-            value[1] += smo.getScrollY();
+                value[1] += smo.getScrollY();
+            }
         }
     }
 
@@ -553,7 +555,8 @@ public class ColumnLayout extends LayoutManager {
      * @param doc to append the description to.
      */
     public static void documentation(@NonNull DocumentationBuilder doc) {
-        doc.operation("Layout Operations", id(), name())
+        doc.operation("Layout Managers", id(), name())
+                .additionalDocumentation("column")
                 .description(
                         "Column layout implementation, positioning components one"
                                 + " after the other vertically.\n\n"

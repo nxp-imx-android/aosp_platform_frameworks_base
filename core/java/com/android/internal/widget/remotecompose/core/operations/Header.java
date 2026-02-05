@@ -111,6 +111,9 @@ public class Header extends Operation implements RemoteComposeOperation {
     /** Specify measure implementation version */
     public static final short FEATURE_MEASURE_VERSION = 17;
 
+    /** Specify touch implementation version */
+    public static final short FEATURE_TOUCH_VERSION = 18;
+
 
     /** The object is an integer */
     private static final short DATA_TYPE_INT = 0;
@@ -136,7 +139,8 @@ public class Header extends Operation implements RemoteComposeOperation {
             DOC_PROFILES,
             FEATURE_PAINT_MEASURE,
             DEBUG,
-            FEATURE_MEASURE_VERSION
+            FEATURE_MEASURE_VERSION,
+            FEATURE_TOUCH_VERSION
     };
     private static final String[] KEY_NAMES = {
             "DOC_WIDTH",
@@ -150,7 +154,8 @@ public class Header extends Operation implements RemoteComposeOperation {
             "DOC_PROFILES",
             "PAINT_MEASURE",
             "DEBUG",
-            "MEASURE_VERSION"
+            "MEASURE_VERSION",
+            "TOUCH_VERSION"
     };
 
     /**

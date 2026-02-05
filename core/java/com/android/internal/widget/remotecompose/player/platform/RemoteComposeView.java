@@ -15,8 +15,6 @@
  */
 package com.android.internal.widget.remotecompose.player.platform;
 
-import static com.android.internal.widget.remotecompose.core.RemoteClock.nanoTime;
-
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.Context;
@@ -37,6 +35,7 @@ import android.widget.TextView;
 
 import com.android.internal.widget.remotecompose.core.CoreDocument;
 import com.android.internal.widget.remotecompose.core.LayoutCallback;
+import com.android.internal.widget.remotecompose.core.RemoteClock;
 import com.android.internal.widget.remotecompose.core.RemoteContext;
 import com.android.internal.widget.remotecompose.core.SystemClock;
 import com.android.internal.widget.remotecompose.core.operations.ColorTheme;
@@ -66,7 +65,7 @@ public class RemoteComposeView extends FrameLayout
     private static final int MAX_BITMAP_MEMORY = 20 * 1024 * 1024;
     private String mErrorMessage = "";
 
-    Clock mClock;
+    RemoteClock mClock;
 
     RemoteDocument mDocument = null;
     int mTheme = Theme.SYSTEM;
@@ -105,7 +104,7 @@ public class RemoteComposeView extends FrameLayout
     public RemoteComposeView(@NonNull Context context) {
         super(context);
         addOnAttachStateChangeListener(this);
-        setClock(new SystemClock());
+        setClock(RemoteClock.SYSTEM);
     }
 
     /**
@@ -117,7 +116,7 @@ public class RemoteComposeView extends FrameLayout
     public RemoteComposeView(@NonNull Context context, @NonNull AttributeSet attrs) {
         super(context);
         addOnAttachStateChangeListener(this);
-        setClock(new SystemClock());
+        setClock(RemoteClock.SYSTEM);
     }
 
     /**
@@ -133,7 +132,7 @@ public class RemoteComposeView extends FrameLayout
         super(context, attrs, defStyleAttr);
         setBackgroundColor(Color.WHITE);
         addOnAttachStateChangeListener(this);
-        setClock(new SystemClock());
+        setClock(RemoteClock.SYSTEM);
     }
 
     /**
@@ -153,7 +152,7 @@ public class RemoteComposeView extends FrameLayout
         super(context, attrs, defStyleAttr);
         setBackgroundColor(Color.WHITE);
         addOnAttachStateChangeListener(this);
-        setClock(clock);
+        setClock(new SystemClock(clock));
     }
 
     /**
@@ -162,9 +161,9 @@ public class RemoteComposeView extends FrameLayout
      *
      * @param clock The {@link Clock} to set.
      */
-    private void setClock(@NonNull Clock clock) {
+    private void setClock(@NonNull RemoteClock clock) {
         this.mClock = clock;
-        mStart = nanoTime(clock);
+        mStart = clock.nanoTime();
         mLastFrameCall = clock.millis();
         mARContext = new AndroidRemoteContext(clock);
         mARContext.setEdgeEffectBuilder(() -> new EdgeEffect(getContext()));
@@ -194,10 +193,10 @@ public class RemoteComposeView extends FrameLayout
      */
     @SuppressWarnings("ReferenceEquality") // newClock != mClock
     public void setDocument(@NonNull RemoteDocument value) {
-        Clock newClock = value.getClock();
+        RemoteClock newClock = value.getClock();
         if (newClock != mClock) {
             mClock = newClock;
-            mStart = nanoTime(mClock);
+            mStart = mClock.nanoTime();
             mLastFrameCall = mClock.millis();
         }
 
@@ -224,9 +223,14 @@ public class RemoteComposeView extends FrameLayout
         requestLayout();
         mARContext.loadFloat(RemoteContext.ID_TOUCH_EVENT_TIME, -Float.MAX_VALUE);
         mARContext.loadFloat(RemoteContext.ID_FONT_SIZE, getDefaultTextSize());
-
-        mDocument.applyDataOperations(mARContext);
-
+        try {
+            mDocument.applyDataOperations(mARContext);
+        } catch (Exception e) {
+            e.printStackTrace();
+            mDisable = true;
+            mErrorMessage = e.getMessage();
+            invalidate();
+        }
         invalidate();
         Integer debug = (Integer) mDocument.getDocument().getProperty(Header.DEBUG);
         if (debug != null) {
@@ -803,7 +807,7 @@ public class RemoteComposeView extends FrameLayout
         }
 
         try {
-            long nanoStart = nanoTime(mClock);
+            long nanoStart = mClock.nanoTime();
             long start = mEvalTime ? nanoStart : 0; // measure execution of commands
             float animationTime = (nanoStart - mStart) * 1E-9f;
             mARContext.setAnimationTime(animationTime);
@@ -820,7 +824,7 @@ public class RemoteComposeView extends FrameLayout
             mDocument.paint(mARContext, theme);
             if (mDebug == 1) {
                 mCount++;
-                long nanoEnd = nanoTime(mClock);
+                long nanoEnd = mClock.nanoTime();
                 if (nanoEnd - mTime > 1000000000L) {
                     System.out.println(" count " + mCount + " fps");
                     mCount = 0;
@@ -859,7 +863,7 @@ public class RemoteComposeView extends FrameLayout
                 }
             }
             if (mEvalTime) {
-                mDuration += nanoTime(mClock) - start;
+                mDuration += mClock.nanoTime() - start;
                 mCount++;
             }
         } catch (Exception ex) {

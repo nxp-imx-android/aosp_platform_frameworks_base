@@ -47,17 +47,17 @@ public class TouchUpModifierOperation extends ListActionsOperation implements To
     }
 
     @Override
-    public void onTouchDown(
+    public boolean onTouchDown(
             @NonNull RemoteContext context,
             @NonNull CoreDocument document,
             @NonNull Component component,
             float x,
             float y) {
-        // nothing
+        return false;
     }
 
     @Override
-    public void onTouchUp(
+    public boolean onTouchUp(
             @NonNull RemoteContext context,
             @NonNull CoreDocument document,
             @NonNull Component component,
@@ -66,26 +66,27 @@ public class TouchUpModifierOperation extends ListActionsOperation implements To
             float dx,
             float dy) {
         applyActions(context, document, component, x, y, true);
+        return true;
     }
 
     @Override
-    public void onTouchCancel(
+    public boolean onTouchCancel(
             @NonNull RemoteContext context,
             @NonNull CoreDocument document,
             @NonNull Component component,
             float x,
             float y) {
-        // nothing
+        return false;
     }
 
     @Override
-    public void onTouchDrag(
+    public boolean onTouchDrag(
             @NonNull RemoteContext context,
             @NonNull CoreDocument document,
             @NonNull Component component,
             float x,
             float y) {
-        // nothing
+        return false;
     }
 
     /**

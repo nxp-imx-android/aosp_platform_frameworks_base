@@ -525,13 +525,15 @@ public class RowLayout extends LayoutManager {
     }
 
     @Override
-    public void getLocationInWindow(@NonNull float [] value, boolean forSelf) {
-        super.getLocationInWindow(value, forSelf);
+    public void getLocationInWindow(@NonNull RemoteContext context, @NonNull float [] value,
+            boolean forSelf) {
+        super.getLocationInWindow(context, value, forSelf);
+        if (context.getTouchVersion() != LayoutManager.FIX_TOUCH_EVENT) {
+            if (!forSelf && mHorizontalScrollDelegate instanceof ScrollModifierOperation) {
+                ScrollModifierOperation smo = (ScrollModifierOperation) mHorizontalScrollDelegate;
 
-        if (!forSelf && mHorizontalScrollDelegate instanceof ScrollModifierOperation) {
-            ScrollModifierOperation smo = (ScrollModifierOperation) mHorizontalScrollDelegate;
-
-            value[0] += smo.getScrollX();
+                value[0] += smo.getScrollX();
+            }
         }
     }
 
@@ -607,7 +609,8 @@ public class RowLayout extends LayoutManager {
      * @param doc to append the description to.
      */
     public static void documentation(@NonNull DocumentationBuilder doc) {
-        doc.operation("Layout Operations", id(), name())
+        doc.operation("Layout Managers", id(), name())
+                .additionalDocumentation("row")
                 .description(
                         "Row layout implementation, positioning components one"
                                 + " after the other horizontally.\n\n"

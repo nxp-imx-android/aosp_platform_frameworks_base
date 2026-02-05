@@ -23,17 +23,13 @@ import com.android.internal.widget.remotecompose.core.operations.ShaderData;
 import com.android.internal.widget.remotecompose.core.operations.Theme;
 import com.android.internal.widget.remotecompose.core.operations.Utils;
 import com.android.internal.widget.remotecompose.core.operations.layout.Component;
+import com.android.internal.widget.remotecompose.core.operations.layout.managers.LayoutManager;
 import com.android.internal.widget.remotecompose.core.operations.layout.utils.DebugLog;
 import com.android.internal.widget.remotecompose.core.operations.utilities.ArrayAccess;
 import com.android.internal.widget.remotecompose.core.operations.utilities.CollectionsAccess;
 import com.android.internal.widget.remotecompose.core.operations.utilities.DataMap;
 import com.android.internal.widget.remotecompose.core.operations.utilities.IntMap;
 
-import java.time.Clock;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 
 /**
@@ -45,7 +41,7 @@ import java.util.ArrayList;
  */
 public abstract class RemoteContext {
     private static final int MAX_OP_COUNT = 20_000; // Maximum cmds per frame
-    private @NonNull Clock mClock;
+    private @NonNull RemoteClock mClock;
     protected @NonNull CoreDocument mDocument;
     public @NonNull RemoteComposeState mRemoteComposeState =
             new RemoteComposeState(); // todo, is this a valid use of RemoteComposeState -- bbade@
@@ -71,11 +67,13 @@ public abstract class RemoteContext {
 
     private boolean mUseChoreographer = true;
 
+    private int mTouchVersion = LayoutManager.DEFAULT_TOUCH_VERSION;
+
     public RemoteContext() {
-        this(new SystemClock());
+        this(RemoteClock.SYSTEM);
     }
 
-    public RemoteContext(@NonNull Clock clock) {
+    public RemoteContext(@NonNull RemoteClock clock) {
         this.mClock = clock;
         setDocLoadTime();
         mDocument = new CoreDocument(clock); // todo: is this a valid way to initialize? bbade@
@@ -388,11 +386,11 @@ public abstract class RemoteContext {
         mUseChoreographer = value;
     }
 
-    public @NonNull Clock getClock() {
+    public @NonNull RemoteClock getClock() {
         return mClock;
     }
 
-    public void setClock(@NonNull Clock clock) {
+    public void setClock(@NonNull RemoteClock clock) {
         this.mClock = clock;
     }
 
@@ -427,6 +425,22 @@ public abstract class RemoteContext {
      */
     public int getPaintTheme() {
         return mPaintTheme;
+    }
+
+    /**
+     * Set the touch version
+     * @param touchVersion
+     */
+    public void setTouchVersion(int touchVersion) {
+        mTouchVersion = touchVersion;
+    }
+
+    /**
+     * Get the touch version
+     * @return
+     */
+    public int getTouchVersion() {
+        return mTouchVersion;
     }
 
     /** The font information */
@@ -935,61 +949,6 @@ public abstract class RemoteContext {
     public static boolean isTime(float fl) {
         int value = Utils.idFromNan(fl);
         return value >= ID_CONTINUOUS_SEC && value <= ID_DAY_OF_MONTH;
-    }
-
-    /**
-     * get the time from a float id that indicates a type of time
-     *
-     * @param fl id of the type of time information requested
-     * @return various time information such as seconds or min
-     */
-    public static float getTime(float fl) {
-        LocalDateTime dateTime =
-                LocalDateTime.now(ZoneId.systemDefault()); // TODO, pass in a timezone explicitly?
-        // This define the time in the format
-        // seconds run from Midnight=0 quantized to seconds hour 0..3599
-        // minutes run from Midnight=0 quantized to minutes 0..1439
-        // hours run from Midnight=0 quantized to Hours 0-23
-        // CONTINUOUS_SEC is seconds from midnight looping every hour 0-3600
-        // CONTINUOUS_SEC is accurate to milliseconds due to float precession
-        // ID_OFFSET_TO_UTC is the offset from UTC in sec (typically / 3600f)
-        int value = Utils.idFromNan(fl);
-        int month = dateTime.getMonth().getValue();
-        int hour = dateTime.getHour();
-        int minute = dateTime.getMinute();
-        int seconds = dateTime.getSecond();
-        int currentMinute = hour * 60 + minute;
-        int currentSeconds = minute * 60 + seconds;
-        float sec = currentSeconds + dateTime.getNano() * 1E-9f;
-        int day_week = dateTime.getDayOfWeek().getValue();
-        int day_month = dateTime.getDayOfMonth();
-
-        ZoneId zone = ZoneId.systemDefault();
-        OffsetDateTime offsetDateTime = dateTime.atZone(zone).toOffsetDateTime();
-        ZoneOffset offset = offsetDateTime.getOffset();
-        switch (value) {
-            case ID_OFFSET_TO_UTC:
-                return offset.getTotalSeconds();
-            case ID_CONTINUOUS_SEC:
-                return sec;
-            case ID_TIME_IN_SEC:
-                return currentSeconds;
-            case ID_TIME_IN_MIN:
-                return currentMinute;
-            case ID_TIME_IN_HR:
-                return hour;
-            case ID_CALENDAR_MONTH:
-                return month;
-            case ID_DAY_OF_MONTH:
-                return day_month;
-            case ID_WEEK_DAY:
-                return day_week;
-            case ID_DAY_OF_YEAR:
-                return dateTime.getDayOfYear();
-            case ID_YEAR:
-                return dateTime.getYear();
-        }
-        return fl;
     }
 
     /**

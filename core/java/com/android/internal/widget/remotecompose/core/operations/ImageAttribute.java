@@ -16,7 +16,7 @@
 package com.android.internal.widget.remotecompose.core.operations;
 
 import static com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation.INT;
-import static com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation.INT_ARRAY;
+import static com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation.REPEATED_INT;
 import static com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation.SHORT;
 
 import android.annotation.NonNull;
@@ -143,7 +143,7 @@ public class ImageAttribute extends PaintOperation {
                 .field(INT, "imageId", "The ID of the image variable to extract from")
                 .field(SHORT, "type", "The type of property to extract (0=WIDTH, 1=HEIGHT)")
                 .field(SHORT, "argsLength", "The number of additional arguments")
-                .field(INT_ARRAY, "args", "The additional arguments");
+                .field(REPEATED_INT, "args", "The additional arguments");
     }
 
     @NonNull
