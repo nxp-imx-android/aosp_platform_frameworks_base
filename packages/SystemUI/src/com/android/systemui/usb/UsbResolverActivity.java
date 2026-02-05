@@ -34,11 +34,9 @@ import android.os.ServiceManager;
 import android.os.UserHandle;
 import android.util.Log;
 import android.view.WindowManager;
-import android.widget.CheckBox;
 
 import com.android.internal.app.ResolverActivity;
 import com.android.internal.app.chooser.TargetInfo;
-import com.android.systemui.res.R;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -135,15 +133,6 @@ public class UsbResolverActivity extends ResolverActivity {
 
         CharSequence title = getResources().getText(com.android.internal.R.string.chooseUsbActivity);
         super.onCreate(savedInstanceState, target, title, null, rList, true);
-
-        CheckBox alwaysUse = (CheckBox)findViewById(com.android.internal.R.id.alwaysUse);
-        if (alwaysUse != null) {
-            if (mDevice == null) {
-                alwaysUse.setText(R.string.always_use_accessory);
-            } else {
-                alwaysUse.setText(R.string.always_use_device);
-            }
-        }
     }
 
     @Override
