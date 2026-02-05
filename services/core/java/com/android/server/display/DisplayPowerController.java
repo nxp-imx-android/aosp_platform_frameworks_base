@@ -3446,8 +3446,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
 
         boolean isColorFadeEnabled(Context context) {
             return !ActivityManager.isLowRamDeviceStatic()
-                    || (Flags.forceColorFade()
-                    && context.getResources().getBoolean(R.bool.config_forceColorFade));
+                    || context.getResources().getBoolean(R.bool.config_forceColorFade);
         }
 
         ChargingStateReceiver getChargingStateReceiver(DisplayPowerController dpc) {
