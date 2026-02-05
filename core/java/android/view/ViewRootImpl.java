@@ -3263,8 +3263,8 @@ public final class ViewRootImpl implements ViewParent,
             // the scheduled traversals have occurred unless the message is
             // specifically "asynchronous" - see Message#setAsynchronous
             postTraversalBarrier();
-            mChoreographer.postCallback(
-                    Choreographer.CALLBACK_TRAVERSAL, mTraversalRunnable, null);
+            mChoreographer.postVsyncCallback(
+                    Choreographer.CALLBACK_TRAVERSAL, mTraversalCallback);
             notifyRendererOfFramePending();
             pokeDrawLockIfNeeded();
         }
@@ -3275,16 +3275,16 @@ public final class ViewRootImpl implements ViewParent,
         if (mTraversalScheduled) {
             mTraversalScheduled = false;
             removeTraversalBarrier();
-            mChoreographer.removeCallbacks(
-                    Choreographer.CALLBACK_TRAVERSAL, mTraversalRunnable, null);
+            mChoreographer.removeVsyncCallback(
+                    Choreographer.CALLBACK_TRAVERSAL, mTraversalCallback);
         }
     }
 
-    void doTraversal() {
+    void doTraversal(long frameTimeNanos) {
         if (mTraversalScheduled) {
             mTraversalScheduled = false;
             removeTraversalBarrier();
-            performTraversals();
+            performTraversals(frameTimeNanos);
         }
     }
 
@@ -3756,7 +3756,7 @@ public final class ViewRootImpl implements ViewParent,
         return (int) (displayMetrics.density * dip + 0.5f);
     }
 
-    private void performTraversals() {
+    private void performTraversals(long frameTimeNanos) {
         mLastPerformTraversalsSkipDrawReason = null;
 
         // cache mView since it is used so much below...
@@ -4734,6 +4734,7 @@ public final class ViewRootImpl implements ViewParent,
                 }
                 mPendingTransitions.clear();
             }
+            mAttachInfo.mDrawingTime = frameTimeNanos / TimeUtils.NANOS_PER_MS;
             if (!performDraw(mActiveSurfaceSyncGroup)) {
                 handleSyncRequestWhenNoAsyncDraw(mActiveSurfaceSyncGroup, mHasPendingTransactions,
                         mPendingTransaction, mLastPerformDrawSkippedReason);
@@ -6076,9 +6077,6 @@ public final class ViewRootImpl implements ViewParent,
                 requestLayout();
             }
         }
-
-        mAttachInfo.mDrawingTime =
-                mChoreographer.getFrameTimeNanos() / TimeUtils.NANOS_PER_MS;
 
         boolean useAsyncReport = false;
         if (!dirty.isEmpty() || mIsAnimating || accessibilityFocusDirty) {
@@ -11210,13 +11208,13 @@ public final class ViewRootImpl implements ViewParent,
         return consumedBatches;
     }
 
-    final class TraversalRunnable implements Runnable {
+    final class TraversalCallback implements Choreographer.VsyncCallback {
         @Override
-        public void run() {
-            doTraversal();
+        public void onVsync(Choreographer.FrameData frameData) {
+            doTraversal(frameData.getFrameTimeNanos());
         }
     }
-    final TraversalRunnable mTraversalRunnable = new TraversalRunnable();
+    final TraversalCallback mTraversalCallback = new TraversalCallback();
 
     final class WindowInputEventReceiver extends InputEventReceiver {
         private final HardwareRenderer mRenderer;
