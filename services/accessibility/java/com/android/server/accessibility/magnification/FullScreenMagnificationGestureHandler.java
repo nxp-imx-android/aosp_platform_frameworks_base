@@ -897,35 +897,25 @@ public class FullScreenMagnificationGestureHandler extends MagnificationGestureH
 
                     if (!mFullScreenMagnificationController.magnificationRegionContains(
                             mDisplayId, event.getX(), event.getY())) {
-
                         transitionToDelegatingStateAndClear();
-
                     } else if (!isActivated() && !mShortcutTriggered
                             && mFullScreenMagnificationController.imeRegionContains(
-                                    mDisplayId, event.getX(), event.getY())) {
+                            mDisplayId, event.getX(), event.getY())) {
                         // Delegate new taps performed over the IME while unmagnified. This removes
                         // any observable delay while typing on an unmagnified keyboard.
                         transitionToDelegatingStateAndClear();
-
-                    } else if (isMultiTapTriggered(2 /* taps */)) {
-
+                    } else if (isMultiTapTriggered(/* taps */ 2)) {
                         // 3tap and hold
                         afterLongTapTimeoutTransitionToDraggingState(event);
-
                     } else if (isTapOutOfDistanceSlop()) {
-
                         transitionToDelegatingStateAndClear();
-
                     } else if (mDetectSingleFingerTripleTap
                             // If activated, delay an ACTION_DOWN for mMultiTapMaxDelay
                             // to ensure reachability of
                             // STATE_PANNING_SCALING(triggerable with ACTION_POINTER_DOWN)
                             || isActivated()) {
-
                         afterMultiTapTimeoutTransitionToDelegatingState();
-
                     } else {
-
                         // Delegate pending events without delay
                         transitionToDelegatingStateAndClear();
                     }
@@ -934,7 +924,11 @@ public class FullScreenMagnificationGestureHandler extends MagnificationGestureH
                 case ACTION_POINTER_DOWN: {
                     if (isActivated() && event.getPointerCount() == 2) {
                         storePointerDownLocation(mSecondPointerDownLocation, event);
-                        mHandler.sendEmptyMessageDelayed(MESSAGE_TRANSITION_TO_PANNINGSCALING_STATE,
+                        if (Flags.reduceInteractiveDelayWithMagnification()) {
+                            mHandler.removeMessages(MESSAGE_TRANSITION_TO_DELEGATING_STATE);
+                        }
+                        mHandler.sendEmptyMessageDelayed(
+                                MESSAGE_TRANSITION_TO_PANNINGSCALING_STATE,
                                 ViewConfiguration.getTapTimeout());
                     } else {
                         transitionToDelegatingStateAndClear();
@@ -1014,6 +1008,9 @@ public class FullScreenMagnificationGestureHandler extends MagnificationGestureH
                                     || (distance(mLastDown, mLastUp) >= mSwipeMinDistance))) {
                         transitionToDelegatingStateAndClear();
 
+                    } else if (Flags.reduceInteractiveDelayWithMagnification()
+                            && !mDetectSingleFingerTripleTap) {
+                        transitionToDelegatingStateAndClear();
                     }
                 }
                 break;
