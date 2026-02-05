@@ -2745,6 +2745,45 @@ static void nativeEnableDebugLogCallPoints(JNIEnv* env, jclass clazz, jlong tran
     transaction->enableDebugLogCallPoints();
 }
 
+static void nativeSetPostProcess(JNIEnv* env, jclass clazz, jlong transactionObj,
+                                 jlong nativeObject, jobject shader, jbyteArray uniformsByteArray,
+                                 jint target) {
+    auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
+
+    sp<IBinder> shaderBinder = ibinderForJavaObject(env, shader);
+    std::shared_ptr<std::vector<uint8_t>> uniforms;
+    if (uniformsByteArray != nullptr) {
+        jsize length = env->GetArrayLength(uniformsByteArray);
+        uniforms = std::make_shared<std::vector<uint8_t>>(length);
+        env->GetByteArrayRegion(uniformsByteArray, 0, length,
+                                reinterpret_cast<jbyte*>(uniforms->data()));
+    }
+
+    layer_state_t::SampleTarget sampleTarget = static_cast<layer_state_t::SampleTarget>(target);
+    transaction->setPostProcess(ctrl, shaderBinder, uniforms, sampleTarget);
+}
+
+static jobject nativeRegisterShader(JNIEnv* env, jclass clazz, jstring debugName,
+                                    jstring shaderString) {
+    ScopedUtfChars name(env, debugName);
+    if (!name.c_str()) {
+        return nullptr;
+    }
+    ScopedUtfChars shader(env, shaderString);
+    if (!shader.c_str()) {
+        return nullptr;
+    }
+    sp<IBinder> token = SurfaceComposerClient::registerShader(std::string(name.c_str()),
+                                                              std::string(shader.c_str()));
+    return javaObjectForIBinder(env, token);
+}
+
+static void nativeUnregisterShader(JNIEnv* env, jclass clazz, jobject shader) {
+    sp<IBinder> shaderBinder = ibinderForJavaObject(env, shader);
+    SurfaceComposerClient::unregisterShader(shaderBinder);
+}
+
 static const JNINativeMethod sSurfaceControlMethods[] = {
         // clang-format off
     {"nativeCreate", "(Landroid/view/SurfaceSession;Ljava/lang/String;IIIIJLandroid/os/Parcel;)J",
@@ -2837,6 +2876,12 @@ static const JNINativeMethod sSurfaceControlMethods[] = {
             (void*)nativeToggleRoundedCornerOpt},
     {"nativeSetBoxShadowSettings", "(JJLandroid/os/Parcel;)V",
             (void*)nativeSetBoxShadowSettings },
+    {"nativeSetPostProcess", "(JJLandroid/os/IBinder;[BI)V",
+            (void*)nativeSetPostProcess },
+    {"nativeRegisterShader", "(Ljava/lang/String;Ljava/lang/String;)Landroid/os/IBinder;",
+            (void*)nativeRegisterShader },
+    {"nativeUnregisterShader", "(Landroid/os/IBinder;)V",
+            (void*)nativeUnregisterShader },
     {"nativeSetBorderSettings", "(JJLandroid/os/Parcel;)V",
             (void*)nativeSetBorderSettings },
     {"nativeSetFrameRate", "(JJFII)V",

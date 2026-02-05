@@ -102,6 +102,7 @@ import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
+
 /**
  * Handle to an on-screen Surface managed by the system compositor. The SurfaceControl is
  * a combination of a buffer source, and metadata about how to display the buffers.
@@ -295,6 +296,12 @@ public final class SurfaceControl implements Parcelable {
     private static native DisplayDecorationSupport nativeGetDisplayDecorationSupport(
             IBinder displayToken);
 
+    private static native void nativeSetPostProcess(long transactionObj, long nativeObject,
+            IBinder shader, byte[] uniforms, int target);
+
+    private static native IBinder nativeRegisterShader(String debugName, String shaderString);
+    private static native void nativeUnregisterShader(IBinder shader);
+
     private static native void nativeSetFrameRate(long transactionObj, long nativeObject,
             float frameRate, int compatibility, int changeFrameRateStrategy);
     private static native void nativeSetDefaultFrameRateCompatibility(long transactionObj,
@@ -442,6 +449,29 @@ public final class SurfaceControl implements Parcelable {
         }
         Log.e(TAG, "Trying to convert unknown rotation=" + rotation);
         return BUFFER_TRANSFORM_IDENTITY;
+    }
+
+    /**
+     * Registers a shader with the system.
+     *
+     * Requires having the android.permission.READ_FRAME_BUFFER permission
+     *
+     * @param shaderString The shader code.
+     * @return A handle to the registered shader.
+     * @hide
+     */
+    public static IBinder registerShader(@NonNull String debugName, @NonNull String shaderString) {
+        return nativeRegisterShader(debugName, shaderString);
+    }
+
+    /**
+     * Unregisters a shader from the system.
+     *
+     * @param shader The handle to the shader to unregister.
+     * @hide
+     */
+    public static void unregisterShader(@NonNull IBinder shader) {
+        nativeUnregisterShader(shader);
     }
 
     @Nullable
@@ -4859,6 +4889,39 @@ public final class SurfaceControl implements Parcelable {
         public @NonNull Transaction setBuffer(@NonNull SurfaceControl sc,
                 @Nullable HardwareBuffer buffer) {
             return setBuffer(sc, buffer, null);
+        }
+
+        /**
+         * Sample from the buffer set on the SurfaceControl
+         *
+         * @hide
+         */
+        public static final int SAMPLE_SELF = 0;
+
+        /**
+         * Sample from the content behind the SurfaceControl
+         *
+         * @hide
+         */
+        public static final int SAMPLE_BEHIND = 1;
+
+        /**
+         * Sets the post-process effect for the layer.
+         *
+         * @param sc The SurfaceControl to set the effect on.
+         * @param shader The shader to use.
+         * @param uniforms The uniforms to pass to the shader.
+         * @param target The target of the effect, either {@link #SAMPLE_SELF}
+         *               or {@link #SAMPLE_BEHIND}.
+         * @return This Transaction.
+         * @hide
+         */
+        @NonNull
+        public Transaction setPostProcess(@NonNull SurfaceControl sc, @Nullable IBinder shader,
+                @Nullable byte[] uniforms, int target) {
+            checkPreconditions(sc);
+            nativeSetPostProcess(mNativeObject, sc.mNativeObject, shader, uniforms, target);
+            return this;
         }
 
         /**
