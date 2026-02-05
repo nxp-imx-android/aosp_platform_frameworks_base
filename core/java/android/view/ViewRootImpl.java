@@ -5050,6 +5050,7 @@ public final class ViewRootImpl implements ViewParent,
                 || !mSurfaceControl.isValid()) {
             return;
         }
+        Trace.instant(TRACE_TAG_VIEW, "setClientDrawnCornerRadii: radii" + mCornerRadii);
         applyOpacity(false);
         RectF bounds = threadedRenderer.setCornerRadius(mCornerRadii);
         applyTransactionOnDraw(mTransaction
