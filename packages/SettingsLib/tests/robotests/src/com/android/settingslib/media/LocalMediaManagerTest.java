@@ -37,6 +37,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothProfile;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.media.AudioDeviceAttributes;
 import android.media.AudioManager;
 import android.media.AudioSystem;
@@ -63,8 +64,10 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.shadows.ShadowPackageManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -81,6 +84,7 @@ public class LocalMediaManagerTest {
     private static final String TEST_DEVICE_ID_1 = "device_id_1";
     private static final String TEST_DEVICE_ID_2 = "device_id_2";
     private static final String TEST_DEVICE_ID_3 = "device_id_3";
+    private static final String TEST_PHONE_DEVICE_ID = "phone_device_id";
     private static final String TEST_CURRENT_DEVICE_ID = "currentDevice_id";
     private static final String TEST_PACKAGE_NAME = "com.test.playmusic";
     private static final String TEST_SESSION_ID = "session_id";
@@ -347,6 +351,66 @@ public class LocalMediaManagerTest {
 
         assertThat(mLocalMediaManager.mMediaDevices).hasSize(1);
         verify(mCallback).onDeviceListUpdate(any());
+    }
+
+    @Test
+    public void onDeviceListAdded_isTv_bondedDeviceAddedToList() {
+        setUpTvEnvironment();
+        List<MediaDevice> devices = setUpMediaDevice(MediaDevice.MediaDeviceType.TYPE_PHONE_DEVICE,
+                TEST_PHONE_DEVICE_ID);
+        List<LocalBluetoothProfile> profiles = setUpProfiles();
+        BluetoothDevice bluetoothDevice = mock(BluetoothDevice.class);
+        CachedBluetoothDeviceManager cachedDeviceManager = setUpCachedDeviceManager();
+        setUpCachedDevice(bluetoothDevice, cachedDeviceManager, profiles, TEST_ADDRESS,
+                TEST_DEVICE_NAME_1);
+        setUpMostRecentlyConnectedDevice(bluetoothDevice);
+
+        mLocalMediaManager.mMediaDeviceCallback.onDeviceListAdded(devices);
+
+        assertThat(mLocalMediaManager.mMediaDevices).hasSize(2);
+    }
+
+    @Test
+    public void onDeviceListAdded_isTvNoBluetoothManager_bondedDeviceIgnored() {
+        // Simulate TV Environment
+        setUpTvEnvironment();
+        List<MediaDevice> devices = setUpMediaDevice(MediaDevice.MediaDeviceType.TYPE_PHONE_DEVICE,
+                TEST_PHONE_DEVICE_ID);
+        List<LocalBluetoothProfile> profiles = setUpProfiles();
+        BluetoothDevice bluetoothDevice = mock(BluetoothDevice.class);
+        CachedBluetoothDeviceManager cachedDeviceManager = setUpCachedDeviceManager();
+        setUpCachedDevice(bluetoothDevice, cachedDeviceManager, profiles, TEST_ADDRESS,
+                TEST_DEVICE_NAME_1);
+        setUpMostRecentlyConnectedDevice(bluetoothDevice);
+
+        //Setup LocalMediaManager with nullBluetoothManager
+        LocalMediaManager localMediaManager = setUpLocalMediaManagerWithNullBluetoothManager(
+                mInfoMediaManager, TEST_PACKAGE_NAME, mCallback, mAudioManager);
+        localMediaManager.mMediaDeviceCallback.onDeviceListAdded(devices);
+
+        assertThat(localMediaManager.mMediaDevices).hasSize(1);
+    }
+
+    @Test
+    public void onDeviceListAdded_hasMutingExpectedDeviceNoBluetoothManager_deviceIgnored() {
+        setUpTvEnvironment();
+        List<MediaDevice> devices = setUpMediaDevice(MediaDevice.MediaDeviceType.TYPE_PHONE_DEVICE,
+                TEST_PHONE_DEVICE_ID);
+        BluetoothDevice bluetoothDevice = mock(BluetoothDevice.class);
+        setUpMostRecentlyConnectedDevice(bluetoothDevice);
+        List<LocalBluetoothProfile> profiles = setUpProfiles();
+        when(mA2dpProfile.getActiveDevice()).thenReturn(bluetoothDevice);
+        CachedBluetoothDeviceManager cachedDeviceManager = setUpCachedDeviceManager();
+        setUpCachedDevice(bluetoothDevice, cachedDeviceManager, profiles, TEST_ADDRESS,
+                TEST_DEVICE_NAME_1);
+        setUpAudioDeviceAttributes();
+        when(mHapProfile.getActiveDevices()).thenReturn(new ArrayList<>());
+
+        LocalMediaManager localMediaManager = setUpLocalMediaManagerWithNullBluetoothManager(
+                mInfoMediaManager, TEST_PACKAGE_NAME, mCallback, mAudioManager);
+        localMediaManager.mMediaDeviceCallback.onDeviceListAdded(devices);
+
+        assertThat(localMediaManager.mMediaDevices).hasSize(1);
     }
 
     @Test
@@ -658,5 +722,71 @@ public class LocalMediaManagerTest {
         mLocalMediaManager.mMediaDeviceCallback.onMissingPermissionsUpdated(info);
 
         verify(mCallback).onMissingPermissionsUpdated(info);
+    }
+
+    private void setUpTvEnvironment() {
+        ShadowPackageManager shadowPackageManager = Shadows.shadowOf(mContext.getPackageManager());
+        shadowPackageManager.setSystemFeature(PackageManager.FEATURE_LEANBACK, true);
+        shadowPackageManager.setSystemFeature(PackageManager.FEATURE_TELEVISION, true);
+    }
+
+    private List<MediaDevice> setUpMediaDevice(int type,
+            String id) {
+        List<MediaDevice> devices = new ArrayList<>();
+        MediaDevice device = mock(MediaDevice.class);
+        when(device.getDeviceType()).thenReturn(type);
+        when(device.getId()).thenReturn(id);
+        devices.add(device);
+        return devices;
+    }
+
+    private void setUpCachedDevice(BluetoothDevice bluetoothDevice,
+            CachedBluetoothDeviceManager cachedDeviceManager, List<LocalBluetoothProfile> profiles,
+            String address, String name) {
+
+        CachedBluetoothDevice cachedDevice = mock(CachedBluetoothDevice.class);
+        when(cachedDeviceManager.findDevice(bluetoothDevice)).thenReturn(cachedDevice);
+        when(cachedDevice.getDevice()).thenReturn(bluetoothDevice);
+        when(cachedDevice.getBondState()).thenReturn(BluetoothDevice.BOND_BONDED);
+        when(cachedDevice.isConnected()).thenReturn(false);
+        when(cachedDevice.getUiAccessibleProfiles()).thenReturn(profiles);
+        when(cachedDevice.getAddress()).thenReturn(address);
+        when(cachedDevice.getName()).thenReturn(name);
+        when(bluetoothDevice.getAddress()).thenReturn(address);
+    }
+
+    private LocalMediaManager setUpLocalMediaManagerWithNullBluetoothManager(
+            InfoMediaManager infoMediaManager, String packageName,
+            LocalMediaManager.DeviceCallback callback, AudioManager audioManager) {
+        LocalMediaManager localMediaManager = new LocalMediaManager(
+                mContext, /* localBluetoothManager= */ null, infoMediaManager, packageName);
+        localMediaManager.registerCallback(callback);
+        localMediaManager.mAudioManager = audioManager;
+
+        return localMediaManager;
+    }
+
+    private CachedBluetoothDeviceManager setUpCachedDeviceManager() {
+        CachedBluetoothDeviceManager cachedDeviceManager = mock(CachedBluetoothDeviceManager.class);
+        when(mLocalBluetoothManager.getCachedDeviceManager()).thenReturn(cachedDeviceManager);
+        return cachedDeviceManager;
+    }
+
+    private void setUpMostRecentlyConnectedDevice(BluetoothDevice bluetoothDevice) {
+        List<BluetoothDevice> mostRecentlyConnected = new ArrayList<>();
+        mostRecentlyConnected.add(bluetoothDevice);
+        mShadowBluetoothAdapter.setMostRecentlyConnectedDevices(mostRecentlyConnected);
+    }
+
+    private List<LocalBluetoothProfile> setUpProfiles() {
+        List<LocalBluetoothProfile> profiles = new ArrayList<>();
+        profiles.add(mA2dpProfile);
+        return profiles;
+    }
+
+    private void setUpAudioDeviceAttributes() {
+        AudioDeviceAttributes audioDeviceAttributes = new AudioDeviceAttributes(
+                AudioSystem.DEVICE_OUT_BLUETOOTH_A2DP, TEST_ADDRESS);
+        when(mAudioManager.getMutingExpectedDevice()).thenReturn(audioDeviceAttributes);
     }
 }

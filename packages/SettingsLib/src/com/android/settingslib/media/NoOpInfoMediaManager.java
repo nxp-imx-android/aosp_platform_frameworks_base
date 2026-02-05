@@ -64,7 +64,7 @@ import java.util.concurrent.Executor;
             Context context,
             @NonNull String packageName,
             @NonNull UserHandle userHandle,
-            LocalBluetoothManager localBluetoothManager,
+            @Nullable LocalBluetoothManager localBluetoothManager,
             @Nullable MediaController mediaController) {
         super(context, packageName, userHandle, localBluetoothManager, mediaController);
     }

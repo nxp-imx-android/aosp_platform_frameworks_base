@@ -87,7 +87,8 @@ import java.util.Set;
 
 @RunWith(RobolectricTestRunner.class)
 public class InfoMediaManagerTest {
-    @Rule public final MockitoRule mockito = MockitoJUnit.rule();
+    @Rule
+    public final MockitoRule mockito = MockitoJUnit.rule();
 
     private static final String TEST_PACKAGE_NAME = "com.test.packagename";
     private static final String TEST_ID = "test_id";
@@ -138,7 +139,8 @@ public class InfoMediaManagerTest {
 
     private static final int ASYNC_TIMEOUT_SECONDS = 5;
 
-    @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
+    @Rule
+    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     @Mock
     private MediaRouter2Manager mRouterManager;
@@ -150,8 +152,10 @@ public class InfoMediaManagerTest {
     private MediaSessionManager mMediaSessionManager;
     @Mock
     private ComponentName mComponentName;
-    @Mock private MediaRouter2 mRouter2;
-    @Mock private RoutingController mRoutingController;
+    @Mock
+    private MediaRouter2 mRouter2;
+    @Mock
+    private RoutingController mRoutingController;
 
     @Captor
     private ArgumentCaptor<DeviceSuggestionsUpdatesCallback> mDeviceSuggestionsUpdatesCallback;
@@ -627,8 +631,8 @@ public class InfoMediaManagerTest {
         when(route2Info.getClientPackageName()).thenReturn(TEST_PACKAGE_NAME);
 
         assertThat(
-                        mInfoMediaManager.removeDeviceFromPlayMedia(
-                                device, /* routingChangeInfo= */ null))
+                mInfoMediaManager.removeDeviceFromPlayMedia(
+                        device, /* routingChangeInfo= */ null))
                 .isTrue();
     }
 
@@ -651,8 +655,8 @@ public class InfoMediaManagerTest {
         when(route2Info.getClientPackageName()).thenReturn(TEST_PACKAGE_NAME);
 
         assertThat(
-                        mInfoMediaManager.removeDeviceFromPlayMedia(
-                                device, /* routingChangeInfo= */ null))
+                mInfoMediaManager.removeDeviceFromPlayMedia(
+                        device, /* routingChangeInfo= */ null))
                 .isFalse();
     }
 
@@ -975,6 +979,23 @@ public class InfoMediaManagerTest {
         mInfoMediaManager.addMediaDeviceLocked(bluetoothRoute, TEST_SYSTEM_ROUTING_SESSION, null);
 
         assertThat(mInfoMediaManager.mMediaDevices.size()).isEqualTo(0);
+    }
+
+    @Test
+    public void addMediaDevice_bluetoothManagerNull_shouldNotAddDevice() {
+        RouterInfoMediaManager manager = new RouterInfoMediaManager(
+                mContext,
+                TEST_PACKAGE_NAME,
+                mContext.getUser(),
+                /* localBluetoothManager= */ null,
+                /* mediaController= */ null,
+                mRouter2,
+                mRouterManager);
+
+        manager.addMediaDeviceLocked(TEST_BLUETOOTH_ROUTE,
+                TEST_SYSTEM_ROUTING_SESSION, /* rlpItem= */ null);
+
+        assertThat(manager.mMediaDevices).isEmpty();
     }
 
     @Test

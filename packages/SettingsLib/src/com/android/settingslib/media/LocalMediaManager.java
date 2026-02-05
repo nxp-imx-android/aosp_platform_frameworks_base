@@ -86,7 +86,7 @@ public class LocalMediaManager implements BluetoothCallback {
     final MediaDeviceCallback mMediaDeviceCallback = new MediaDeviceCallback();
 
     private Context mContext;
-    private LocalBluetoothManager mLocalBluetoothManager;
+    @Nullable private LocalBluetoothManager mLocalBluetoothManager;
     private InfoMediaManager mInfoMediaManager;
     private String mPackageName;
     private MediaDevice mOnTransferBluetoothDevice;
@@ -168,7 +168,7 @@ public class LocalMediaManager implements BluetoothCallback {
      *
      * It will use {@link BluetoothAdapter#getDefaultAdapter()] for setting the bluetooth adapter.
      */
-    public LocalMediaManager(Context context, LocalBluetoothManager localBluetoothManager,
+    public LocalMediaManager(Context context, @Nullable LocalBluetoothManager localBluetoothManager,
             InfoMediaManager infoMediaManager, String packageName) {
         mContext = context;
         mLocalBluetoothManager = localBluetoothManager;
@@ -548,6 +548,9 @@ public class LocalMediaManager implements BluetoothCallback {
         boolean isActiveDeviceA2dp = false;
         boolean isActiveDeviceHearingAid = false;
         boolean isActiveLeAudio = false;
+        if (mLocalBluetoothManager == null) {
+            return false;
+        }
         final A2dpProfile a2dpProfile = mLocalBluetoothManager.getProfileManager().getA2dpProfile();
         if (a2dpProfile != null) {
             isActiveDeviceA2dp = device.getDevice().equals(a2dpProfile.getActiveDevice());
@@ -623,8 +626,9 @@ public class LocalMediaManager implements BluetoothCallback {
                     || pm.hasSystemFeature(PackageManager.FEATURE_LEANBACK);
         }
 
+        @Nullable
         private MediaDevice getMutingExpectedDevice() {
-            if (mBluetoothAdapter == null
+            if (mLocalBluetoothManager == null || mBluetoothAdapter == null
                     || mAudioManager.getMutingExpectedDevice() == null) {
                 return null;
             }
@@ -655,6 +659,10 @@ public class LocalMediaManager implements BluetoothCallback {
         private List<MediaDevice> buildDisconnectedBluetoothDevice() {
             if (mBluetoothAdapter == null) {
                 Log.w(TAG, "buildDisconnectedBluetoothDevice() BluetoothAdapter is null");
+                return new ArrayList<>();
+            }
+            if (mLocalBluetoothManager == null) {
+                Log.w(TAG, "buildDisconnectedBluetoothDevice() LocalBluetoothManager is null");
                 return new ArrayList<>();
             }
 
