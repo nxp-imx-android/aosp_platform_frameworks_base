@@ -110,6 +110,7 @@ import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.L
 import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.LID_OPEN;
 import static com.android.server.power.feature.flags.Flags.interactiveDozeExperience;
 import static com.android.window.flags.Flags.commitKeyguardOcclusionBeforeWakingUp;
+import static com.android.systemui.shared.Flags.brightnessDialogOnSystemUser;
 
 import android.accessibilityservice.AccessibilityService;
 import android.annotation.NonNull;
@@ -3728,10 +3729,16 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         mDisplayManager.setBrightness(screenDisplayId, adjustedLinearBrightness);
 
         Intent intent = new Intent(Intent.ACTION_SHOW_BRIGHTNESS_DIALOG);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION
-                | Intent.FLAG_ACTIVITY_NO_USER_ACTION);
+        if (brightnessDialogOnSystemUser()) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        }
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION | Intent.FLAG_ACTIVITY_NO_USER_ACTION);
         intent.putExtra(EXTRA_FROM_BRIGHTNESS_KEY, true);
-        startActivityAsUser(intent, UserHandle.CURRENT_OR_SELF);
+        // When brightnessDialogOnSystemUser() is true, the dialog should launch in system user.
+        startActivityAsUser(
+                intent,
+                brightnessDialogOnSystemUser() ? UserHandle.SYSTEM : UserHandle.CURRENT_OR_SELF
+        );
     }
 
     /**
