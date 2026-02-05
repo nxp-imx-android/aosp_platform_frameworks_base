@@ -2,6 +2,16 @@ package: "com.android.server.am"
 container: "system"
 
 flag {
+    name: "fgs_wiu_qs_tile_clicked"
+    namespace: "responsible_apis"
+    description: "Whether to allow while-in-use permissions in FGS when QS tile is clicked"
+    bug: "299952896"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "bfgs_managed_network_access"
     namespace: "backstage_power"
     description: "Restrict network access for certain applications in BFGS process state"
