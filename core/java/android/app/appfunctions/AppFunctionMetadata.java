@@ -149,19 +149,34 @@ public final class AppFunctionMetadata implements AbstractAppFunctionMetadata, P
      * A value returned from {@link #getScope()} that indicates it is a globally scoped app
      * function.
      *
-     * <p>There can be at most one function with the same {@link AppFunctionName} available
-     * with this scope.
+     * <p>There can be at most one function with the same {@link AppFunctionName} available with
+     * this scope.
+     *
+     * <p>The function remains registered until it is explicitly unregistered or the process
+     * terminates.
      */
     public static final int SCOPE_GLOBAL = 0;
 
     /**
-     * A value returned from {@link #getScope()} that indicates it is an activity scoped app
+     * A value returned from {@link #getScope()} that indicates it is a activity scoped app
      * function.
      *
-     * <p>There can be multiple functions with the same {@link AppFunctionName}, one for each {@link
-     * android.app.Activity} instance.
+     * <p>Multiple instances of the same function (with the same {@link AppFunctionName}) can
+     * exist simultaneously, each associated with a different activity instance identified by an
+     * {@link AppFunctionActivityId}.
+     *
+     * <p>To discover the specific activities where an activity-scoped function is currently
+     * registered, see {@link AppFunctionManager#getAppFunctionStates} and {@link
+     * AppFunctionManager#getAppFunctionActivityStates}.
+     *
+     * <p>To execute an activity-scoped function, see {@link
+     * ExecuteAppFunctionRequest#setActivityId}.
+     *
+     * <p>The function remains registered until it is explicitly unregistered or the activity is
+     * destroyed.
+     *
+     * @see AppFunctionActivityId
      */
-    // TODO(b/479814161): Update the doc when AppFunctionActivityId and relevant APIs are in.
     public static final int SCOPE_ACTIVITY = 1;
 
     @IntDef({SCOPE_GLOBAL, SCOPE_ACTIVITY})
@@ -255,14 +270,10 @@ public final class AppFunctionMetadata implements AbstractAppFunctionMetadata, P
     /**
      * Returns the scope of the app function.
      *
-     * <p>The same app can provide multiple functions with the same {@link AppFunctionName} and
-     * non-equal scope identifier.
-     *
-     * <p>Each scope has its own rule.For example two scopes of type {@link #SCOPE_GLOBAL} are
-     * always equal, while two scopes of type {@link #SCOPE_ACTIVITY} are equal only if their
-     * activity IDs are equal. See the {@code SCOPE_*} constants for the details of each scope.
+     * <p>The scope determines the function's lifecycle and uniqueness rules. Depending on the
+     * scope, there could be at most one or multiple functions registered in the system with the
+     * same {@link AppFunctionName}.
      */
-    // TODO(b/479814161): Update the doc when AppFunctionActivityId and relevant APIs are in.
     @Scope
     public int getScope() {
         String xmlValue = getMetadataDocument().getPropertyString(PROPERTY_SCOPE);
