@@ -58,6 +58,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.ShortcutInfo;
 import android.content.pm.UserInfo;
 import android.content.res.Configuration;
+import android.graphics.Insets;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -110,9 +111,11 @@ import com.android.wm.shell.bubbles.logging.BubbleSessionTracker;
 import com.android.wm.shell.bubbles.logging.BubbleSessionTracker.SessionEvent;
 import com.android.wm.shell.bubbles.transitions.BubbleTransitions;
 import com.android.wm.shell.bubbles.util.BubbleShellCommandHandler;
+import com.android.wm.shell.bubbles.util.BubbleUtils;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayImeController;
 import com.android.wm.shell.common.DisplayInsetsController;
+import com.android.wm.shell.common.DisplayLayout;
 import com.android.wm.shell.common.ExternalInterfaceBinder;
 import com.android.wm.shell.common.FloatingContentCoordinator;
 import com.android.wm.shell.common.HomeIntentProvider;
@@ -573,12 +576,16 @@ public class BubbleController implements ConfigurationChangeListener,
                         newScreenBounds =
                                 newDisplayAreaInfo.configuration.windowConfiguration.getBounds();
                     }
+                    boolean rotated = fromRotation != toRotation;
                     // This is triggered right before the rotation or new screen size is applied
-                    if (fromRotation != toRotation || !newScreenBounds.equals(mScreenBounds)) {
+                    if (rotated || !newScreenBounds.equals(mScreenBounds)) {
                         if (mStackView != null) {
                             // Layout listener set on stackView will update the positioner
                             // once the rotation or screen change is applied
                             mStackView.onOrientationChanged();
+                            if (rotated && Flags.updateBubbleBoundsDuringRotation()) {
+                                updateExpandedBubbleBoundsForRotation(displayId, t);
+                            }
                         }
                     }
                 });
@@ -622,6 +629,36 @@ public class BubbleController implements ConfigurationChangeListener,
                 Slog.e(TAG, "Failed to register Bubble multitasking delegate.", e);
             }
         }
+    }
+
+    private void updateExpandedBubbleBoundsForRotation(int displayId,
+            WindowContainerTransaction wct) {
+        if (mStackView == null || !mStackView.isExpanded()) {
+            return;
+        }
+        WindowContainerToken token =
+                mBubbleData.getSelectedBubble() instanceof Bubble b
+                        ? BubbleUtils.getTaskTokenForBoundsUpdate(b, mBubbleHelper)
+                        : null;
+        if (token == null) {
+            return;
+        }
+        final Context context = mDisplayController.getDisplayContext(displayId);
+        final DisplayLayout displayLayout = mDisplayController.getDisplayLayout(displayId);
+        if (context == null || displayLayout == null) {
+            return;
+        }
+
+        // we can't rely on the display context to get bounds and insets because it may not have
+        // been updated yet; we have to get those from the display layout.
+        Rect screenBounds = new Rect(0, 0, displayLayout.width(), displayLayout.height());
+        Insets insets = Insets.of(displayLayout.stableInsets());
+        mBubblePositioner.update(DeviceConfig.create(context, screenBounds, insets));
+        Rect bounds = new Rect();
+        mBubblePositioner.getTaskViewRestBounds(bounds);
+        wct.setBounds(token, bounds);
+        // update the expanded view as well to make sure that the surface position is correct
+        mStackView.updateExpandedView(/* forceUpdateBounds= */ true);
     }
 
     private ExternalInterfaceBinder createExternalInterface() {
@@ -3156,13 +3193,14 @@ public class BubbleController implements ConfigurationChangeListener,
             }
             BubbleLog.d("BubbleController.BubblesImeListener.onImeVisibilityChanged visible=%b"
                     + " runnable=%s stackView=%s", imeVisible, mOnImeHidden, mStackView);
+            boolean heightChanged = imeHeight != mBubblePositioner.getImeHeight();
             // the imeHeight here is actually the ime inset; it only includes the part of the ime
             // that overlaps with the Bubbles window. adjust it to include the bottom screen inset,
             // so we have the total height of the ime.
             int totalImeHeight = imeHeight + mBubblePositioner.getInsets().bottom;
             mBubblePositioner.setImeVisible(imeVisible, totalImeHeight);
             if (mStackView != null) {
-                mStackView.setImeVisible(imeVisible);
+                mStackView.setImeVisible(imeVisible, heightChanged);
                 if (!imeVisible && mOnImeHidden != null) {
                     mOnImeHidden.run();
                     mOnImeHidden = null;
@@ -3177,13 +3215,17 @@ public class BubbleController implements ConfigurationChangeListener,
                 return IME_ANIMATION_DEFAULT;
             }
 
+            int height = hiddenTop - shownTop;
+            int previousImeHeight =
+                    mBubblePositioner.getImeHeight() + mBubblePositioner.getInsets().bottom;
+            boolean heightChanged = height != previousImeHeight;
             if (showing) {
                 mBubblePositioner.setImeVisible(true, hiddenTop - shownTop);
             } else {
                 mBubblePositioner.setImeVisible(false, 0);
             }
             if (mStackView != null) {
-                mStackView.setImeVisible(showing);
+                mStackView.setImeVisible(showing, heightChanged);
             }
 
             return IME_ANIMATION_DEFAULT;
