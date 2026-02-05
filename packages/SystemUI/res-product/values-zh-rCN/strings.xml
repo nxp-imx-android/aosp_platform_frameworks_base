@@ -70,4 +70,10 @@
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"即使这部平板电脑已关机，您也可以通过“查找我的设备”确定其位置"</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"即使这部手机已关机，您也可以通过“查找中心”定位它"</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"即使这部平板电脑已关机，您也可以通过“查找中心”定位它"</string>
+    <!-- no translation found for dream_setup_description (5167691612621831552) -->
+    <skip />
+    <!-- no translation found for dream_setup_description (6296793330727926553) -->
+    <skip />
+    <!-- no translation found for dream_setup_description (3098487756905462324) -->
+    <skip />
 </resources>
