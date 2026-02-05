@@ -2754,11 +2754,12 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         final var bindingController = getInputMethodBindingController(userId);
         final InputMethodInfo imi = InputMethodSettingsRepository.get(userId).getMethodMap()
                 .get(imeId);
-        if (bindingController.getSupportsStylusHandwriting() != imi.supportsStylusHandwriting()) {
+        if (imi != null && bindingController.getSupportsStylusHandwriting()
+                != imi.supportsStylusHandwriting()) {
             bindingController.setSupportsStylusHandwriting(imi.supportsStylusHandwriting());
             InputMethodManager.invalidateLocalStylusHandwritingAvailabilityCaches();
         }
-        if (bindingController.getSupportsConnectionlessStylusHandwriting()
+        if (imi != null && bindingController.getSupportsConnectionlessStylusHandwriting()
                 != imi.supportsConnectionlessStylusHandwriting()) {
             bindingController.setSupportsConnectionlessStylusHandwriting(
                     imi.supportsConnectionlessStylusHandwriting());
