@@ -692,16 +692,6 @@ flag {
 }
 
 flag {
-    name: "enable_input_layer_transition_fix"
-    namespace: "lse_desktop_experience"
-    description: "Enables a bugfix for input layer disposal during certain transitions."
-    bug: "371473978"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_interaction_dependent_tab_tearing_bounds"
     namespace: "lse_desktop_experience"
     description: "Update bounds of a torn tab and position it with respect to user /n"
