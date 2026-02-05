@@ -673,7 +673,7 @@ public class CpuWakeupStats {
                 KEY_WAKING_ACTIVITY_RETENTION_MS,
         };
 
-        static final long DEFAULT_WAKEUP_STATS_RETENTION_MS = TimeUnit.DAYS.toMillis(3);
+        static final long DEFAULT_WAKEUP_STATS_RETENTION_MS = TimeUnit.DAYS.toMillis(1);
         private static final long DEFAULT_WAKEUP_MATCHING_WINDOW_MS = TimeUnit.SECONDS.toMillis(1);
         private static final long DEFAULT_WAKING_ACTIVITY_RETENTION_MS =
                 TimeUnit.MINUTES.toMillis(5);
