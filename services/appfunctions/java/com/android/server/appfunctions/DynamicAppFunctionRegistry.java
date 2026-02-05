@@ -303,6 +303,38 @@ final class DynamicAppFunctionRegistry {
         }
     }
 
+    /**
+     * Returns the currently registered {@link android.app.appfunctions.AppFunctionActivityId}s for
+     * a given {@code functionName}.
+     *
+     * @param functionName Name of the app function to search for.
+     * @return ArraySet of {@link android.app.appfunctions.AppFunctionActivityId}s which registered
+     *     the given function. Null of no activities registered the function or the function is
+     *     registered with a global scope.
+     */
+    @Nullable
+    public ArraySet<AppFunctionActivityId> getRegisteredActivityIds(
+            @NonNull AppFunctionName functionName) {
+        synchronized (mLock) {
+            ArrayMap<RegistrationScopeId, IAppFunctionExecutor> registeredScopes =
+                    mRegistrations.get(functionName);
+
+            if (registeredScopes == null || registeredScopes.isEmpty()) {
+                return null;
+            }
+
+            ArraySet<AppFunctionActivityId> activities = new ArraySet<>();
+            for (RegistrationScopeId scopeId : registeredScopes.keySet()) {
+                if (scopeId.getAppFunctionActivityId() != null) {
+                    activities.add(scopeId.getAppFunctionActivityId());
+                } else {
+                    return null;
+                }
+            }
+            return activities;
+        }
+    }
+
     // TODO(b/481676087): Either disallow registering disabled appfunctions or update this method
     // to filter them out.
     @NonNull

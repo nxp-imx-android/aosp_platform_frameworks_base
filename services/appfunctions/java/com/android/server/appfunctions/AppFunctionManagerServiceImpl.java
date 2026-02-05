@@ -37,6 +37,7 @@ import android.annotation.WorkerThread;
 import android.app.IUriGrantsManager;
 import android.app.appfunctions.AppFunctionAccessServiceInterface;
 import android.app.appfunctions.AppFunctionActivityId;
+import android.app.appfunctions.AppFunctionActivityStateList;
 import android.app.appfunctions.AppFunctionAidlSearchSpec;
 import android.app.appfunctions.AppFunctionException;
 import android.app.appfunctions.AppFunctionManager;
@@ -46,7 +47,6 @@ import android.app.appfunctions.AppFunctionName;
 import android.app.appfunctions.AppFunctionRuntimeMetadata;
 import android.app.appfunctions.AppFunctionSearchSpec;
 import android.app.appfunctions.AppFunctionStateList;
-import android.app.appfunctions.AppFunctionActivityStateList;
 import android.app.appfunctions.AppFunctionStaticMetadataHelper;
 import android.app.appfunctions.AppFunctionUriGrant;
 import android.app.appfunctions.ExecuteAppFunctionAidlRequest;
@@ -58,8 +58,8 @@ import android.app.appfunctions.IAppFunctionSearchResults;
 import android.app.appfunctions.IAppFunctionService;
 import android.app.appfunctions.ICancellationCallback;
 import android.app.appfunctions.IExecuteAppFunctionCallback;
-import android.app.appfunctions.IGetAppFunctionStatesCallback;
 import android.app.appfunctions.IGetAppFunctionActivityStatesCallback;
+import android.app.appfunctions.IGetAppFunctionStatesCallback;
 import android.app.appfunctions.IIsAppFunctionEnabledCallback;
 import android.app.appfunctions.IObserveAppFunctionChangesCallback;
 import android.app.appfunctions.IOnAppFunctionAccessChangeListener;
@@ -1066,10 +1066,10 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             @Nullable IBinder activityToken,
             @NonNull String operationName) {
         ArrayList<RegistrationScopeId> scopeIds = new ArrayList<>(functionIdentifiers.size());
-        RegistrationScopeId globalScopeId = new RegistrationScopeId(null);
-        RegistrationScopeId passedScopeId = (activityToken != null)
-                ? new RegistrationScopeId(getAppFunctionActivityId(activityToken))
-                : globalScopeId;
+        RegistrationScopeId passedScopeId =
+                (activityToken != null)
+                        ? new RegistrationScopeId(getAppFunctionActivityId(activityToken))
+                        : RegistrationScopeId.GLOBAL_SCOPE;
         for (String functionIdentifier : functionIdentifiers) {
             if (!mAppFunctionMetadataReader.isDynamicFunction(
                     packageName, functionIdentifier, callingUserHandle)) {
@@ -1092,7 +1092,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 }
                 scopeIds.add(passedScopeId);
             } else {
-                scopeIds.add(globalScopeId);
+                scopeIds.add(RegistrationScopeId.GLOBAL_SCOPE);
             }
         }
         return scopeIds;

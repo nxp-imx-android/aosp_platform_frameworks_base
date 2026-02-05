@@ -353,12 +353,21 @@ final class AppFunctionMetadataReader {
             return new AppFunctionState(
                     appFunctionName,
                     calculateEffectiveEnabledState(staticDocument, runtimeDocument, userId),
-                    // TODO: b/479450424 - Populate activity IDs.
-                    new ArraySet<>());
+                    getActivityIdInfo(appFunctionName, UserHandle.of(userId)));
         } catch (RuntimeException e) {
             Slog.e(TAG, "Failed to convert SearchResult to AppFunctionState.", e);
             return null;
         }
+    }
+
+    @Nullable
+    private ArraySet<AppFunctionActivityId> getActivityIdInfo(
+            @NonNull AppFunctionName functionName, @NonNull UserHandle user) {
+        if (!mCache.isActivityScopedDynamicFunction(
+                functionName.getPackageName(), functionName.getFunctionId(), user)) {
+            return null;
+        }
+        return mMultiUserDynamicAppFunctionRegistry.getRegisteredActivityIds(functionName, user);
     }
 
     /**
