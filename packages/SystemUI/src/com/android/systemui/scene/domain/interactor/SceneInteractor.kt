@@ -16,6 +16,7 @@
 
 package com.android.systemui.scene.domain.interactor
 
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.snapshotFlow
 import com.android.app.tracing.coroutines.flow.stateInTraced
 import com.android.compose.animation.scene.ContentKey
@@ -73,6 +74,7 @@ import kotlinx.coroutines.launch
  * application state change.
  */
 @SysUISingleton
+@Stable
 class SceneInteractor
 @Inject
 constructor(
