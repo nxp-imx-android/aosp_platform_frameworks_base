@@ -65,6 +65,7 @@ import com.android.settingslib.metadata.SensitivityLevel.Companion.UNKNOWN_SENSI
 import com.android.settingslib.metadata.preferencesapi.PreferencesApiScreen
 import com.android.settingslib.metadata.getPreferenceIcon
 import com.android.settingslib.metadata.isPreferenceIndexable
+import com.android.settingslib.metadata.isUiOnlyPreference
 import com.android.settingslib.preference.PreferenceScreenCreator
 import com.android.settingslib.preference.PreferenceScreenFactory
 import com.android.settingslib.preference.PreferenceScreenProvider
@@ -96,6 +97,7 @@ private constructor(
     private val includeParameters = (request.flags and PreferenceGetterFlags.PARAMETERS) != 0
     private val includeHierarchy = (request.flags and PreferenceGetterFlags.EXCLUDE_HIERARCHY) == 0
     private val shrinkHierarchy = (request.flags and PreferenceGetterFlags.SHRINK_HIERARCHY) != 0
+    private val excludeUiOnlyPreferences = true
 
     private suspend fun init() {
         val factories = PreferenceScreenRegistry.preferenceScreenMetadataFactories
@@ -426,14 +428,18 @@ private constructor(
         screenMetadata: PreferenceScreenMetadata,
         isRoot: Boolean,
     ): PreferenceGroupProto = preferenceGroupProto {
-        preference = toProto(screenMetadata, this@toProto.metadata, isRoot)
+        if (!excludeUiOnlyPreferences || !this@toProto.metadata.isUiOnlyPreference(context)) {
+            preference = toProto(screenMetadata, this@toProto.metadata, isRoot)
+        }
         forEachAsync {
             addPreferences(
                 preferenceOrGroupProto {
                     if (it is PreferenceHierarchy) {
                         group = it.toProto(screenMetadata, false)
                     } else {
-                        preference = toProto(screenMetadata, it.metadata, false)
+                        if (!excludeUiOnlyPreferences || !it.metadata.isUiOnlyPreference(context)) {
+                            preference = toProto(screenMetadata, it.metadata, false)
+                        }
                     }
                 }
             )

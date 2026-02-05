@@ -35,6 +35,7 @@ import com.android.settingslib.metadata.PreferenceScreenMetadata
 import com.android.settingslib.metadata.PreferenceScreenRegistry
 import com.android.settingslib.metadata.ReadWritePermit
 import com.android.settingslib.metadata.SensitivityLevel
+import com.android.settingslib.metadata.UI_ONLY_PREFERENCE
 import com.android.settingslib.metadata.preferenceHierarchy
 import kotlinx.coroutines.CoroutineScope
 import org.mockito.kotlin.whenever
@@ -81,7 +82,7 @@ object GraphTestUtils {
      * @property isAvailable Whether the preference is available.
      * @property isRestricted Whether the preference is restricted.
      * @property isEnabled Whether the preference is enabled.
-     *
+     * @property isUiOnly Whether the preference is UI-only
      */
     data class PreferenceConfig(
         val key : String,
@@ -89,6 +90,7 @@ object GraphTestUtils {
         val isAvailable : Boolean = true,
         val isRestricted: Boolean = false,
         val isEnabled : Boolean = true,
+        val isUiOnly: Boolean = false,
     )
 
     /**
@@ -97,13 +99,14 @@ object GraphTestUtils {
      * @property title Optional screen title
      * @property purpose Screen purpose
      * @property preferences list of Preferences wrapped in this screen
-     *
+     * @property isUiOnly if current screen is marked as UI-only
      */
     data class PreferenceScreenConfig(
         val screenKey: String,
         val purpose: Int,
         val title: Int = 0,
-        val preferences: List<PreferenceMetadata> = listOf()
+        val preferences: List<PreferenceMetadata> = listOf(),
+        val isUiOnly: Boolean = false,
     )
 
     /**
@@ -174,6 +177,11 @@ object GraphTestUtils {
         override fun isRestricted(context: Context): Boolean =
             preferenceConfig.isRestricted
 
+        override fun tags(context: Context): Array<String> =
+            if(preferenceConfig.isUiOnly)
+                arrayOf(UI_ONLY_PREFERENCE)
+            else arrayOf()
+
     }
 
     /**
@@ -234,6 +242,11 @@ object GraphTestUtils {
             persistentPreferenceConfig.preferenceConfig.isRestricted
         override fun isEnabled(context: Context): Boolean =
             persistentPreferenceConfig.preferenceConfig.isEnabled
+        override fun tags(context: Context): Array<String> =
+            if(persistentPreferenceConfig.preferenceConfig.isUiOnly)
+                arrayOf(UI_ONLY_PREFERENCE)
+            else arrayOf()
+
     }
 
     /**
