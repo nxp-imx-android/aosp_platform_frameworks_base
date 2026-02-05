@@ -1268,6 +1268,11 @@ public class AudioSystem
     /** @hide */
     public static final Set<Integer> DEVICE_OUT_ALL_BLE_UNICAST_SET;
 
+    /** @hide */
+    public static final Set<Integer> DEVICE_OUT_ALL_BLE_CENTRAL_SET =
+            Set.of(DEVICE_OUT_BLE_CENTRAL);
+
+
     static {
         DEVICE_OUT_ALL_SET = new HashSet<>();
         DEVICE_OUT_ALL_SET.add(DEVICE_OUT_EARPIECE);
@@ -1442,6 +1447,14 @@ public class AudioSystem
     public static final Set<Integer> DEVICE_IN_ALL_BLE_SET = Set.of(DEVICE_IN_BLE_HEADSET,
             DEVICE_IN_BLE_HEARING_AID);
 
+    /** @hide */
+    public static final Set<Integer> DEVICE_IN_ALL_BLE_CENTRAL_SET =
+            Set.of(DEVICE_IN_BLE_CENTRAL, DEVICE_IN_BLE_CENTRAL_BROADCAST);
+
+    /** @hide */
+    public static final Set<Integer> DEVICE_IN_ALL_BLE_CENTRAL_UNICAST_SET =
+            Set.of(DEVICE_IN_BLE_CENTRAL);
+
     static {
         DEVICE_IN_ALL_SET = new HashSet<>();
         DEVICE_IN_ALL_SET.add(DEVICE_IN_COMMUNICATION);
@@ -1555,6 +1568,31 @@ public class AudioSystem
     @android.ravenwood.annotation.RavenwoodKeep
     public static boolean isBluetoothLeOutUnicastDevice(int deviceType) {
         return DEVICE_OUT_ALL_BLE_UNICAST_SET.contains(deviceType);
+    }
+
+    /** @hide */
+    @android.ravenwood.annotation.RavenwoodKeep
+    public static boolean isBluetoothLeOutCentralDevice(int deviceType) {
+        return DEVICE_OUT_ALL_BLE_CENTRAL_SET.contains(deviceType);
+    }
+
+    /** @hide */
+    @android.ravenwood.annotation.RavenwoodKeep
+    public static boolean isBluetoothLeInCentralDevice(int deviceType) {
+        return DEVICE_IN_ALL_BLE_CENTRAL_SET.contains(deviceType);
+    }
+
+    /** @hide */
+    @android.ravenwood.annotation.RavenwoodKeep
+    public static boolean isBluetoothLeCentralDevice(int deviceType) {
+        return isBluetoothLeOutCentralDevice(deviceType)
+                || isBluetoothLeInCentralDevice(deviceType);
+    }
+
+    /** @hide */
+    @android.ravenwood.annotation.RavenwoodKeep
+    public static boolean isBluetoothLeInCentralUnicastDevice(int deviceType) {
+        return DEVICE_IN_ALL_BLE_CENTRAL_UNICAST_SET.contains(deviceType);
     }
 
     /** @hide */
