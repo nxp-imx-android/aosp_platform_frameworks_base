@@ -1123,6 +1123,7 @@
     <string name="lockscreen_access_pattern_cell_added_verbose" msgid="2931364927622563465">"ସେଲ୍‍ <xliff:g id="CELL_INDEX">%1$s</xliff:g> ଯୋଡ଼ାଗଲା"</string>
     <string name="lockscreen_access_pattern_detected" msgid="3931150554035194012">"ପାଟର୍ନ ସମ୍ପୂର୍ଣ୍ଣ ହେଲା"</string>
     <string name="lockscreen_access_pattern_area" msgid="1288780416685002841">"ପାଟର୍ନ କ୍ଷେତ୍ର।"</string>
+    <string name="lockscreen_access_pattern_cell_verbose" msgid="6670905066468035137">"ସେଲ <xliff:g id="CELL_INDEX">%1$s</xliff:g>"</string>
     <string name="keyguard_accessibility_widget_changed" msgid="7298011259508200234">"%1$s। %3$dରୁ %2$d ୱିଜେଟ୍‍।"</string>
     <string name="keyguard_accessibility_add_widget" msgid="8245795023551343672">"ୱିଜେଟ୍ ଯୋଡ଼ନ୍ତୁ।"</string>
     <string name="keyguard_accessibility_widget_empty_slot" msgid="544239307077644480">"ଖାଲି କରନ୍ତୁ"</string>
@@ -1842,7 +1843,7 @@
     <string name="leave_accessibility_shortcut_on" msgid="6543362062336990814">"ଶର୍ଟକଟ୍‍ ବ୍ୟବହାର କରନ୍ତୁ"</string>
     <string name="color_inversion_feature_name" msgid="2672824491933264951">"କଲର ଇନଭର୍ସନ"</string>
     <string name="color_correction_feature_name" msgid="7975133554160979214">"ରଙ୍ଗ ସଂଶୋଧନ"</string>
-    <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"ଏକ-ହାତ ମୋଡ୍"</string>
+    <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"ଏକ-ହାତ ମୋଡ"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"ଅତ୍ୟଧିକ ଡିମ"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"ଶ୍ରବଣ ଡିଭାଇସଗୁଡ଼ିକ"</string>
     <string name="autoclick_feature_name" msgid="4056260617171267864">"ଅଟୋକ୍ଲିକ (ଡ୍ୱେଲ ଟାଇମିଂ)"</string>
@@ -2006,6 +2007,7 @@
     <string name="managed_profile_label_badge_3" msgid="6882151970556391957">"3ୟ କାର୍ଯ୍ୟ <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="clone_profile_label_badge" msgid="1871997694718793964">"<xliff:g id="LABEL">%1$s</xliff:g> କ୍ଲୋନ"</string>
     <string name="private_profile_label_badge" msgid="1712086003787839183">"ପ୍ରାଇଭେଟ <xliff:g id="LABEL">%1$s</xliff:g>"</string>
+    <string name="hsu_label_badge" msgid="1357272000281944932">"ସିଷ୍ଟମ <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="lock_to_app_unlock_pin" msgid="3890940811866290782">"ଅନପିନ୍‌ କରିବା ପୂର୍ବରୁ PIN ପଚାରନ୍ତୁ"</string>
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"ଅନପିନ୍‌ କରିବା ପୂର୍ବରୁ ଲକ୍‌ ଖୋଲିବା ପାଟର୍ନ ପଚାରନ୍ତୁ"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"ଅନପିନ୍‌ କରିବା ପୂର୍ବରୁ ପାସ୍‌ୱର୍ଡ ପଚାରନ୍ତୁ"</string>
@@ -2230,7 +2232,7 @@
     <string name="autofill_update_title_with_2types_expressive" msgid="1911825941498393471"><b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b>"ରେ <xliff:g id="TYPE_0">%1$s</xliff:g> ଏବଂ <xliff:g id="TYPE_1">%2$s</xliff:g> ଅପଡେଟ କରନ୍ତୁ"</string>
     <string name="autofill_update_title_with_3types" msgid="8285767070604652626"><b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>"ରେ ଏହି ଆଇଟମଗୁଡ଼ିକୁ ଅପଡେଟ କରିବେ: <xliff:g id="TYPE_0">%1$s</xliff:g>, <xliff:g id="TYPE_1">%2$s</xliff:g> ଏବଂ <xliff:g id="TYPE_2">%3$s</xliff:g>?"</string>
     <string name="autofill_update_title_with_3types_expressive" msgid="6040725201378429027"><b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>"ରେ ଏହି ଆଇଟମଗୁଡ଼ିକୁ ଅପଡେଟ କରନ୍ତୁ: <xliff:g id="TYPE_0">%1$s</xliff:g>, <xliff:g id="TYPE_1">%2$s</xliff:g> ଏବଂ <xliff:g id="TYPE_2">%3$s</xliff:g>"</string>
-    <string name="autofill_save_yes" msgid="8035743017382012850">"ସେଭ୍‌ କରନ୍ତୁ"</string>
+    <string name="autofill_save_yes" msgid="8035743017382012850">"ସେଭ କରନ୍ତୁ"</string>
     <string name="autofill_save_no" msgid="9212826374207023544">"ନାଁ, ପଚାରିଥିବାରୁ ଧନ୍ୟବାଦ"</string>
     <string name="autofill_save_notnow" msgid="2853932672029024195">"ଏବେ ନୁହେଁ"</string>
     <string name="autofill_save_never" msgid="6821841919831402526">"କେବେ ବି ନୁହେଁ"</string>
@@ -2617,6 +2619,8 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"ସେଟେଲାଇଟ ମାଧ୍ୟମରେ ମେସେଜ କରିବା ପାଇଁ Google Messagesକୁ ଆପଣଙ୍କର ଡିଫଲ୍ଟ ମେସେଜିଂ ଆପ ଭାବେ ସେଟ କରନ୍ତୁ"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"ସେଟେଲାଇଟ ମେସେଜିଂ ଉପଲବ୍ଧ ନାହିଁ"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"ଏହି ଦେଶ କିମ୍ବା ଅଞ୍ଚଳରେ ସେଟେଲାଇଟ ମେସେଜିଂ ଉପଲବ୍ଧ ଅଛି ନା ନାହିଁ ତାହା ଯାଞ୍ଚ କରିବାକୁ ଲୋକେସନ ସେଟିଂସ ଚାଲୁ କରନ୍ତୁ"</string>
+    <!-- no translation found for satellite_indicator (6846063647532086110) -->
+    <skip />
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"ଫିଙ୍ଗରପ୍ରିଣ୍ଟ ଅନଲକ ପୁଣି ସେଟ ଅପ କରନ୍ତୁ"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"<xliff:g id="FINGERPRINT">%s</xliff:g>କୁ ଆଉ ଚିହ୍ନଟ କରାଯାଇପାରିବ ନାହିଁ।"</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> ଏବଂ <xliff:g id="FINGERPRINT_1">%2$s</xliff:g>କୁ ଆଉ ଚିହ୍ନଟ କରାଯାଇପାରିବ ନାହିଁ।"</string>

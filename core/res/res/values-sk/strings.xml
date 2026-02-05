@@ -381,7 +381,7 @@
     <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"Presné údaje o pohybe a okolí"</string>
     <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"presná kontrola okolia a sledovanie hlavy"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Načítať obsah okna"</string>
-    <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Môžete preskúmať obsah okna, s ktorým pracujete."</string>
+    <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Preskúmajte obsah okna, s ktorým pracujete."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"Zapnúť funkciu Preskúmanie dotykom"</string>
     <string name="capability_desc_canRequestTouchExploration" msgid="4394677060796752976">"Po klepnutí na položku sa vysloví jej názov a obrazovku je možné preskúmať pomocou gest."</string>
     <string name="capability_title_canRequestFilterKeyEvents" msgid="2772371671541753254">"Sledovať zadávaný text"</string>
@@ -1125,6 +1125,7 @@
     <string name="lockscreen_access_pattern_cell_added_verbose" msgid="2931364927622563465">"Bola pridaná bunka <xliff:g id="CELL_INDEX">%1$s</xliff:g>"</string>
     <string name="lockscreen_access_pattern_detected" msgid="3931150554035194012">"Bezpečnostný vzor bol dokončený"</string>
     <string name="lockscreen_access_pattern_area" msgid="1288780416685002841">"Oblasť na zadanie bezpečnostného vzoru."</string>
+    <string name="lockscreen_access_pattern_cell_verbose" msgid="6670905066468035137">"Bunka <xliff:g id="CELL_INDEX">%1$s</xliff:g>"</string>
     <string name="keyguard_accessibility_widget_changed" msgid="7298011259508200234">"%1$s. Miniaplikácia %2$d z %3$d."</string>
     <string name="keyguard_accessibility_add_widget" msgid="8245795023551343672">"Pridať miniaplikáciu."</string>
     <string name="keyguard_accessibility_widget_empty_slot" msgid="544239307077644480">"Prázdne"</string>
@@ -2008,6 +2009,7 @@
     <string name="managed_profile_label_badge_3" msgid="6882151970556391957">"3. <xliff:g id="LABEL">%1$s</xliff:g> do práce"</string>
     <string name="clone_profile_label_badge" msgid="1871997694718793964">"Klonovať <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="private_profile_label_badge" msgid="1712086003787839183">"Súkromná aplikácia <xliff:g id="LABEL">%1$s</xliff:g>"</string>
+    <string name="hsu_label_badge" msgid="1357272000281944932">"Systém <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="lock_to_app_unlock_pin" msgid="3890940811866290782">"Pred odopnutím požiadať o číslo PIN"</string>
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Pred uvoľnením požiadať o bezpečnostný vzor"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Pred odopnutím požiadať o heslo"</string>
@@ -2619,6 +2621,8 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"Ak chcete posielať správy cez satelit, nastavte Správy Google ako predvolený komunikátor"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"Správy cez satelit nie sú k dispozícii"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"Ak chcete skontrolovať, či sú správy cez satelit v tejto krajine alebo regióne k dispozícii, zapnite nastavenia polohy"</string>
+    <!-- no translation found for satellite_indicator (6846063647532086110) -->
+    <skip />
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"Znova nastavte odomknutie odtlačkom prsta"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"<xliff:g id="FINGERPRINT">%s</xliff:g> sa už nedari rozpoznať."</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> a <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> sa už nedari rozpoznať."</string>

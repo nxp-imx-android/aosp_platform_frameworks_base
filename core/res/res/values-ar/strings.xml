@@ -1127,6 +1127,7 @@
     <string name="lockscreen_access_pattern_cell_added_verbose" msgid="2931364927622563465">"تمت إضافة الخلية <xliff:g id="CELL_INDEX">%1$s</xliff:g>"</string>
     <string name="lockscreen_access_pattern_detected" msgid="3931150554035194012">"اكتمل النمط"</string>
     <string name="lockscreen_access_pattern_area" msgid="1288780416685002841">"منطقة النقش."</string>
+    <string name="lockscreen_access_pattern_cell_verbose" msgid="6670905066468035137">"الخلية <xliff:g id="CELL_INDEX">%1$s</xliff:g>"</string>
     <string name="keyguard_accessibility_widget_changed" msgid="7298011259508200234">"‏%1$s. التطبيق المصغَّر %2$d من %3$d."</string>
     <string name="keyguard_accessibility_add_widget" msgid="8245795023551343672">"إضافة تطبيق مصغَّر."</string>
     <string name="keyguard_accessibility_widget_empty_slot" msgid="544239307077644480">"فارغة"</string>
@@ -2010,6 +2011,7 @@
     <string name="managed_profile_label_badge_3" msgid="6882151970556391957">"العمل الثالث <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="clone_profile_label_badge" msgid="1871997694718793964">"نسخة طبق الأصل عن \"<xliff:g id="LABEL">%1$s</xliff:g>\""</string>
     <string name="private_profile_label_badge" msgid="1712086003787839183">"ملف شخصي خاص على <xliff:g id="LABEL">%1$s</xliff:g>"</string>
+    <string name="hsu_label_badge" msgid="1357272000281944932">"‫<xliff:g id="LABEL">%1$s</xliff:g> النظام"</string>
     <string name="lock_to_app_unlock_pin" msgid="3890940811866290782">"طلب إدخال رقم التعريف الشخصي قبل إزالة التثبيت"</string>
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"طلب إدخال نقش فتح القفل قبل إزالة التثبيت"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"طلب إدخال كلمة المرور قبل إزالة التثبيت"</string>
@@ -2621,6 +2623,8 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"‏للمراسلة عبر القمر الصناعي، عليك ضبط تطبيق \"رسائل Google\" ليصبح تطبيق المراسلة التلقائي"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"ميزة \"المراسلة عبر القمر الاصطناعي\" غير متاحة"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"لمعرفة ما إذا كانت ميزة \"المراسلة عبر القمر الاصطناعي\" متاحة في هذا البلد أو هذه المنطقة، فعِّل إعدادات الموقع الجغرافي"</string>
+    <!-- no translation found for satellite_indicator (6846063647532086110) -->
+    <skip />
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"إعادة إعداد ميزة \"فتح الجهاز ببصمة الإصبع\""</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"لا يمكن بعد الآن التعرّف على \"<xliff:g id="FINGERPRINT">%s</xliff:g>\"."</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"لا يمكن بعد الآن التعرّف على \"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g>\" و\"<xliff:g id="FINGERPRINT_1">%2$s</xliff:g>\"."</string>

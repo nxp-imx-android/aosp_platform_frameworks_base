@@ -294,7 +294,7 @@
     <string name="bugreport_option_full_title" msgid="7681035745950045690">"Raport complet"</string>
     <string name="bugreport_option_full_summary" msgid="1975130009258435885">"Folosește această opțiune pentru a reduce la minimum interferențele cu sistemul când dispozitivul nu răspunde, funcționează prea lent sau când ai nevoie de toate secțiunile raportului. Nu poți să introduci mai multe detalii sau să creezi capturi de ecran suplimentare."</string>
     <string name="bugreport_countdown" msgid="6418620521782120755">"{count,plural, =1{Peste # secundă se va realiza o captură de ecran pentru raportul de eroare.}few{Peste # secunde se va realiza o captură de ecran pentru raportul de eroare.}other{Peste # de secunde se va realiza o captură de ecran pentru raportul de eroare.}}"</string>
-    <string name="bugreport_screenshot_success_toast" msgid="7986095104151473745">"S-a realizat captura de ecran a raportului de eroare"</string>
+    <string name="bugreport_screenshot_success_toast" msgid="7986095104151473745">"S-a capturat ecranul cu raportul de eroare"</string>
     <string name="bugreport_screenshot_failure_toast" msgid="6736320861311294294">"Nu s-a realizat captura de ecran a raportului de eroare"</string>
     <string name="global_action_toggle_silent_mode" msgid="8464352592860372188">"Mod Silențios"</string>
     <string name="global_action_silent_mode_on_status" msgid="2371892537738632013">"Sunetul este DEZACTIVAT"</string>
@@ -360,7 +360,7 @@
     <string name="permgrouplab_microphone" msgid="2480597427667420076">"Microfon"</string>
     <string name="permgroupdesc_microphone" msgid="1047786732792487722">"înregistreze sunet"</string>
     <string name="permgrouplab_activityRecognition" msgid="3324466667921775766">"Activitate fizică"</string>
-    <string name="permgroupdesc_activityRecognition" msgid="4725624819457670704">"să acceseze activitatea fizică"</string>
+    <string name="permgroupdesc_activityRecognition" msgid="4725624819457670704">"accesează activitatea fizică"</string>
     <string name="permgrouplab_camera" msgid="9090413408963547706">"Camera foto"</string>
     <string name="permgroupdesc_camera" msgid="7585150538459320326">"să fotografieze și să înregistreze videoclipuri"</string>
     <string name="permgrouplab_nearby_devices" msgid="5529147543651181991">"Dispozitive din apropiere"</string>
@@ -379,7 +379,7 @@
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"să urmărească ochii, fața, corpul și să scaneze zona"</string>
     <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"Date precise despre mișcări și zonă"</string>
     <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"să scaneze cu precizie zona și să urmărească capul;"</string>
-    <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"să preia conținutul ferestrei"</string>
+    <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"să preia conținutul ferestrei."</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Inspectează conținutul unei ferestre cu care interacționezi."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"să activeze funcția Explorează prin atingere"</string>
     <string name="capability_desc_canRequestTouchExploration" msgid="4394677060796752976">"Elementele atinse vor fi rostite cu voce tare, iar ecranul poate fi explorat utilizând gesturi."</string>
@@ -1124,6 +1124,7 @@
     <string name="lockscreen_access_pattern_cell_added_verbose" msgid="2931364927622563465">"Celula <xliff:g id="CELL_INDEX">%1$s</xliff:g> a fost adăugată"</string>
     <string name="lockscreen_access_pattern_detected" msgid="3931150554035194012">"Modelul a fost desenat"</string>
     <string name="lockscreen_access_pattern_area" msgid="1288780416685002841">"Zonă model."</string>
+    <string name="lockscreen_access_pattern_cell_verbose" msgid="6670905066468035137">"Celula <xliff:g id="CELL_INDEX">%1$s</xliff:g>"</string>
     <string name="keyguard_accessibility_widget_changed" msgid="7298011259508200234">"%1$s. Widget %2$d din %3$d."</string>
     <string name="keyguard_accessibility_add_widget" msgid="8245795023551343672">"Adaugă un widget."</string>
     <string name="keyguard_accessibility_widget_empty_slot" msgid="544239307077644480">"Gol"</string>
@@ -1820,7 +1821,7 @@
     <string name="accessibility_enable_service_title" msgid="3931558336268541484">"Permiți serviciului <xliff:g id="SERVICE">%1$s</xliff:g> să aibă control total asupra dispozitivului?"</string>
     <string name="accessibility_service_warning_description" msgid="291674995220940133">"Controlul total este adecvat pentru aplicații care te ajută cu accesibilitatea, însă nu pentru majoritatea aplicaților."</string>
     <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"să vadă și să controleze ecranul"</string>
-    <string name="accessibility_service_screen_control_description" msgid="6946315917771791525">"Poate citi tot conținutul de pe ecran și poate afișa conținut peste alte aplicații."</string>
+    <string name="accessibility_service_screen_control_description" msgid="6946315917771791525">"Poate să citească tot conținutul de pe ecran și să afișeze conținut peste alte aplicații."</string>
     <string name="accessibility_service_action_perform_title" msgid="779670378951658160">"să vadă și să facă acțiuni"</string>
     <string name="accessibility_service_action_perform_description" msgid="2718852014003170558">"Poate să urmărească interacțiunile tale cu o aplicație sau cu un senzor hardware și să interacționeze cu aplicații în numele tău."</string>
     <string name="accessibility_dialog_button_allow" msgid="2092558122987144530">"Permite"</string>
@@ -2007,6 +2008,7 @@
     <string name="managed_profile_label_badge_3" msgid="6882151970556391957">"<xliff:g id="LABEL">%1$s</xliff:g> pentru serviciu (3)"</string>
     <string name="clone_profile_label_badge" msgid="1871997694718793964">"Clonă pentru <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="private_profile_label_badge" msgid="1712086003787839183">"<xliff:g id="LABEL">%1$s</xliff:g> privat"</string>
+    <string name="hsu_label_badge" msgid="1357272000281944932">"Sistem <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="lock_to_app_unlock_pin" msgid="3890940811866290782">"Solicită codul PIN înainte de a anula fixarea"</string>
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Solicită modelul înainte de a anula fixarea"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Solicită parola înainte de a anula fixarea"</string>
@@ -2618,6 +2620,8 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"Pentru a trimite mesaje prin satelit, setează Mesaje Google ca aplicație prestabilită pentru mesaje"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"Mesajele prin satelit nu sunt disponibile"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"Pentru a verifica dacă mesajele prin satelit sunt disponibile în această țară sau regiune, activează setările privind locația"</string>
+    <!-- no translation found for satellite_indicator (6846063647532086110) -->
+    <skip />
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"Configurează din nou Deblocarea cu amprenta"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"<xliff:g id="FINGERPRINT">%s</xliff:g> nu mai poate fi recunoscută."</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> și <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> nu mai pot fi recunoscute."</string>
@@ -2662,6 +2666,6 @@
     <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Suprasolicitarea resurselor"</string>
     <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"Aplicația <xliff:g id="APP_NAME">%1$s</xliff:g> folosește prea multe resurse."</string>
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"Actualizare de la părintele tău"</string>
-    <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> a fost eliminată momentan"</string>
-    <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> este acum disponibilă"</string>
+    <string name="supervision_blocked_app_content" msgid="4125452996088641559">"Aplicația <xliff:g id="APP_NAME">%1$s</xliff:g> a fost eliminată momentan"</string>
+    <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"Aplicația <xliff:g id="APP_NAME">%1$s</xliff:g> este acum disponibilă"</string>
 </resources>

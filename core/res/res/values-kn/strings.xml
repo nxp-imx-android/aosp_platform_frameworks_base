@@ -568,7 +568,7 @@
     <string name="permlab_readPhoneState" msgid="8138526903259297969">"ಫೋನ್ ಸ್ಥಿತಿ ಮತ್ತು ಗುರುತಿಸುವಿಕೆಯನ್ನು ಓದಿ"</string>
     <string name="permdesc_readPhoneState" msgid="7229063553502788058">"ಸಾಧನದ ಫೋನ್ ವೈಶಿಷ್ಟ್ಯಗಳನ್ನು ಪ್ರವೇಶಿಸಲು ಅಪ್ಲಿಕೇಶನ್‍‍ಗೆ ಅವಕಾಶ ಮಾಡಿಕೊಡುತ್ತದೆ. ಈ ಅನುಮತಿಯು ಫೋನ್ ಸಂಖ್ಯೆ ಮತ್ತು ಸಾಧನದ ID ಗಳನ್ನು ನಿರ್ಧರಿಸಲು, ಕರೆಯು ಸಕ್ರಿಯವಾಗಿದೆಯೇ ಮತ್ತು ಕರೆಯ ಮೂಲಕ ರಿಮೋಟ್ ಸಂಖ್ಯೆಯು ಸಂಪರ್ಕಗೊಂಡಿವೆಯೇ ಎಂಬುದನ್ನೂ ನಿರ್ಧರಿಸಲು ಅಪ್ಲಿಕೇಶನ್‌ಗೆ ಅವಕಾಶ ಕಲ್ಪಿಸುತ್ತದೆ."</string>
     <string name="permlab_readBasicPhoneState" msgid="3214853233263871347">"ಮೂಲ ಟೆಲಿಫೋನ್ ಸ್ಥಿತಿ ಮತ್ತು ಗುರುತನ್ನು ಓದಿ"</string>
-    <string name="permdesc_readBasicPhoneState" msgid="828185691675460520">"ಸಾಧನದ ಮೂಲ ಟೆಲಿಫೋನ್ ವೈಶಿಷ್ಟ್ಯಗಳನ್ನು ಆ್ಯಕ್ಸೆಸ್ ಮಾಡಲು ಆ್ಯಪ್‌ಗೆ ಅನುಮತಿಸುತ್ತದೆ."</string>
+    <string name="permdesc_readBasicPhoneState" msgid="828185691675460520">"ಸಾಧನದ ಮೂಲ ಟೆಲಿಫೋನ್ ಫೀಚರ್‌ಗಳನ್ನು ಆ್ಯಕ್ಸೆಸ್ ಮಾಡಲು ಆ್ಯಪ್‌ಗೆ ಅನುಮತಿಸುತ್ತದೆ."</string>
     <string name="permlab_manageOwnCalls" msgid="9033349060307561370">"ಕರೆಗಳನ್ನು ಸಿಸ್ಟಂ ಮೂಲಕ ರವಾನಿಸಿ"</string>
     <string name="permdesc_manageOwnCalls" msgid="4431178362202142574">"ಕರೆಯ ಅನುಭವವನ್ನು ಸುಧಾರಿಸಲು ಅಪ್ಲಿಕೇಶನ್‌ನ ಕರೆಗಳನ್ನು ಸಿಸ್ಟಂ ಮೂಲಕ ರವಾನಿಸಲು ಅನುಮತಿಸುತ್ತದೆ."</string>
     <string name="permlab_callCompanionApp" msgid="3654373653014126884">"ಸಿಸ್ಟಂ ಮೂಲಕ ಕರೆಗಳನ್ನು ವೀಕ್ಷಿಸಿ ಮತ್ತು ನಿಯಂತ್ರಿಸಿ."</string>
@@ -1123,6 +1123,7 @@
     <string name="lockscreen_access_pattern_cell_added_verbose" msgid="2931364927622563465">"<xliff:g id="CELL_INDEX">%1$s</xliff:g> ಸೆಲ್ ಸೇರಿಸಲಾಗಿದೆ"</string>
     <string name="lockscreen_access_pattern_detected" msgid="3931150554035194012">"ಪ್ಯಾಟರ್ನ್ ಪೂರ್ಣಗೊಂಡಿದೆ"</string>
     <string name="lockscreen_access_pattern_area" msgid="1288780416685002841">"ಪ್ಯಾಟರ್ನ್ ಪ್ರದೇಶ."</string>
+    <string name="lockscreen_access_pattern_cell_verbose" msgid="6670905066468035137">"ಸೆಲ್ <xliff:g id="CELL_INDEX">%1$s</xliff:g>"</string>
     <string name="keyguard_accessibility_widget_changed" msgid="7298011259508200234">"%1$s.%3$d ರಲ್ಲಿ %2$d ವಿಜೆಟ್."</string>
     <string name="keyguard_accessibility_add_widget" msgid="8245795023551343672">"ವಿಜೆಟ್ ಸೇರಿಸಿ."</string>
     <string name="keyguard_accessibility_widget_empty_slot" msgid="544239307077644480">"ಖಾಲಿ"</string>
@@ -2006,6 +2007,7 @@
     <string name="managed_profile_label_badge_3" msgid="6882151970556391957">"3 ನೇ ಕೆಲಸದ <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="clone_profile_label_badge" msgid="1871997694718793964">"<xliff:g id="LABEL">%1$s</xliff:g> ಕ್ಲೋನ್"</string>
     <string name="private_profile_label_badge" msgid="1712086003787839183">"ಖಾಸಗಿ <xliff:g id="LABEL">%1$s</xliff:g>"</string>
+    <string name="hsu_label_badge" msgid="1357272000281944932">"ಸಿಸ್ಟಂ <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="lock_to_app_unlock_pin" msgid="3890940811866290782">"ಅನ್‌ಪಿನ್ ಮಾಡಲು ಪಿನ್‌ ಕೇಳು"</string>
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"ಅನ್‌ಪಿನ್ ಮಾಡಲು ಅನ್‌ಲಾಕ್ ಪ್ಯಾಟರ್ನ್ ಕೇಳಿ"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"ಅನ್‌ಪಿನ್ ಮಾಡಲು ಪಾಸ್‌ವರ್ಡ್ ಕೇಳು"</string>
@@ -2617,6 +2619,8 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"ಸ್ಯಾಟಲೈಟ್‌ ಮೂಲಕ ಸಂದೇಶ ಕಳುಹಿಸಲು, Google Messages ಅನ್ನು ನಿಮ್ಮ ಡೀಫಾಲ್ಟ್ ಮೆಸೇಜಿಂಗ್ ಆ್ಯಪ್‌ನಂತೆ ಸೆಟ್‌ ಮಾಡಿ"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"ಸ್ಯಾಟಲೈಟ್‌ ಮೆಸೇಜಿಂಗ್‌ ಕಳುಹಿಸುವಿಕೆ ಲಭ್ಯವಿಲ್ಲ"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"ಈ ದೇಶ ಅಥವಾ ಪ್ರದೇಶದಲ್ಲಿ ಸ್ಯಾಟಲೈಟ್‌ ಮೆಸೇಜಿಂಗ್‌ ಲಭ್ಯವಿದೆಯೇ ಎಂದು ಪರಿಶೀಲಿಸಲು, ಸ್ಥಳ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಆನ್‌ ಮಾಡಿ"</string>
+    <!-- no translation found for satellite_indicator (6846063647532086110) -->
+    <skip />
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಅನ್‌ಲಾಕ್ ಅನ್ನು ಮತ್ತೊಮ್ಮೆ ಸೆಟಪ್ ಮಾಡಿ"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"<xliff:g id="FINGERPRINT">%s</xliff:g> ಅನ್ನು ಇನ್ನು ಮುಂದೆ ಗುರುತಿಸಲಾಗುವುದಿಲ್ಲ."</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> ಮತ್ತು <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> ಅನ್ನು ಇನ್ನು ಮುಂದೆ ಗುರುತಿಸಲಾಗುವುದಿಲ್ಲ."</string>

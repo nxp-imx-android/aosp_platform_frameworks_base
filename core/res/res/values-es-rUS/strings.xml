@@ -1124,6 +1124,7 @@
     <string name="lockscreen_access_pattern_cell_added_verbose" msgid="2931364927622563465">"Se agregó la celda <xliff:g id="CELL_INDEX">%1$s</xliff:g>"</string>
     <string name="lockscreen_access_pattern_detected" msgid="3931150554035194012">"Se completó el patrón"</string>
     <string name="lockscreen_access_pattern_area" msgid="1288780416685002841">"Área de patrón"</string>
+    <string name="lockscreen_access_pattern_cell_verbose" msgid="6670905066468035137">"Celda <xliff:g id="CELL_INDEX">%1$s</xliff:g>"</string>
     <string name="keyguard_accessibility_widget_changed" msgid="7298011259508200234">"%1$s. Widget %2$d de %3$d"</string>
     <string name="keyguard_accessibility_add_widget" msgid="8245795023551343672">"Agregar widget"</string>
     <string name="keyguard_accessibility_widget_empty_slot" msgid="544239307077644480">"Vacío"</string>
@@ -1835,7 +1836,7 @@
     <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"gesto"</string>
     <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"configuración rápida"</string>
     <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"presionar tres veces"</string>
-    <string name="accessibility_shortcut_label_top_row_key" msgid="1488840908672437180">"tecla de accesibilidad"</string>
+    <string name="accessibility_shortcut_label_top_row_key" msgid="1488840908672437180">"la tecla de accesibilidad"</string>
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"Se desactivó <xliff:g id="SERVICE_NAME">%s</xliff:g>"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Editar accesos directos"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"Listo"</string>
@@ -2007,6 +2008,7 @@
     <string name="managed_profile_label_badge_3" msgid="6882151970556391957">"<xliff:g id="LABEL">%1$s</xliff:g> de trabajo 3"</string>
     <string name="clone_profile_label_badge" msgid="1871997694718793964">"Clon de <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="private_profile_label_badge" msgid="1712086003787839183">"<xliff:g id="LABEL">%1$s</xliff:g> privado"</string>
+    <string name="hsu_label_badge" msgid="1357272000281944932">"<xliff:g id="LABEL">%1$s</xliff:g> del sistema"</string>
     <string name="lock_to_app_unlock_pin" msgid="3890940811866290782">"Solicitar PIN para quitar fijación"</string>
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Solicitar patrón de desbloqueo para quitar fijación"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Solicitar contraseña para quitar fijación"</string>
@@ -2618,6 +2620,8 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"Para enviar mensajes por satélite, establece Mensajes de Google como tu app de mensajería predeterminada"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"La Mensajería satelital no disponible"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"Para verificar si la Mensajería satelital está disponible en este país o región, activa la configuración de ubicación"</string>
+    <!-- no translation found for satellite_indicator (6846063647532086110) -->
+    <skip />
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"Vuelve a configurar el Desbloqueo con huellas dactilares"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"Ya no se puede reconocer <xliff:g id="FINGERPRINT">%s</xliff:g>."</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"Ya no se pueden reconocer <xliff:g id="FINGERPRINT_0">%1$s</xliff:g> y <xliff:g id="FINGERPRINT_1">%2$s</xliff:g>."</string>

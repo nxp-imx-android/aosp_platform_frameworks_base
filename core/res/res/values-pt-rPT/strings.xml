@@ -1124,6 +1124,7 @@
     <string name="lockscreen_access_pattern_cell_added_verbose" msgid="2931364927622563465">"Célula <xliff:g id="CELL_INDEX">%1$s</xliff:g> adicionada"</string>
     <string name="lockscreen_access_pattern_detected" msgid="3931150554035194012">"Padrão concluído"</string>
     <string name="lockscreen_access_pattern_area" msgid="1288780416685002841">"Área da sequência."</string>
+    <string name="lockscreen_access_pattern_cell_verbose" msgid="6670905066468035137">"Célula <xliff:g id="CELL_INDEX">%1$s</xliff:g>"</string>
     <string name="keyguard_accessibility_widget_changed" msgid="7298011259508200234">"%1$s. Widget %2$d de %3$d."</string>
     <string name="keyguard_accessibility_add_widget" msgid="8245795023551343672">"Adicionar widget."</string>
     <string name="keyguard_accessibility_widget_empty_slot" msgid="544239307077644480">"Vazio"</string>
@@ -1844,7 +1845,7 @@
     <string name="color_inversion_feature_name" msgid="2672824491933264951">"Inversão de cores"</string>
     <string name="color_correction_feature_name" msgid="7975133554160979214">"Correção da cor"</string>
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"Modo para uma mão"</string>
-    <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Mais escuro"</string>
+    <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Escurecimento extra"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Dispositivos auditivos"</string>
     <string name="autoclick_feature_name" msgid="4056260617171267864">"Clique automático (tempo de permanência)"</string>
     <string name="mouse_keys_feature_name" msgid="3362643216513384542">"Teclas do rato"</string>
@@ -2007,6 +2008,7 @@
     <string name="managed_profile_label_badge_3" msgid="6882151970556391957">"3.º <xliff:g id="LABEL">%1$s</xliff:g> de trabalho"</string>
     <string name="clone_profile_label_badge" msgid="1871997694718793964">"Clonar <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="private_profile_label_badge" msgid="1712086003787839183">"<xliff:g id="LABEL">%1$s</xliff:g> privado"</string>
+    <string name="hsu_label_badge" msgid="1357272000281944932">"Sistema <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="lock_to_app_unlock_pin" msgid="3890940811866290782">"Pedir PIN antes de soltar"</string>
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Pedir padrão de desbloqueio antes de soltar"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Pedir palavra-passe antes de soltar"</string>
@@ -2618,6 +2620,8 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"Para enviar mensagens por satélite, defina a app Mensagens Google como a sua app de mensagens predefinida"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"Mensagens por satélite não disponíveis"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"Para verificar se as mensagens por satélite estão disponíveis neste país ou região, ative as definições de localização"</string>
+    <!-- no translation found for satellite_indicator (6846063647532086110) -->
+    <skip />
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"Configure o Desbloqueio por impressão digital novamente"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"Já não é possível reconhecer <xliff:g id="FINGERPRINT">%s</xliff:g>."</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"Já não é possível reconhecer <xliff:g id="FINGERPRINT_0">%1$s</xliff:g> e <xliff:g id="FINGERPRINT_1">%2$s</xliff:g>."</string>

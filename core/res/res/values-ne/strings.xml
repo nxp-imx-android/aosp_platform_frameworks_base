@@ -1123,6 +1123,7 @@
     <string name="lockscreen_access_pattern_cell_added_verbose" msgid="2931364927622563465">"कक्ष <xliff:g id="CELL_INDEX">%1$s</xliff:g> थपियो"</string>
     <string name="lockscreen_access_pattern_detected" msgid="3931150554035194012">"ढाँचा पुरा भयो"</string>
     <string name="lockscreen_access_pattern_area" msgid="1288780416685002841">"ढाँचा क्षेत्र।"</string>
+    <string name="lockscreen_access_pattern_cell_verbose" msgid="6670905066468035137">"सेल <xliff:g id="CELL_INDEX">%1$s</xliff:g>"</string>
     <string name="keyguard_accessibility_widget_changed" msgid="7298011259508200234">"%1$s. विजेट %2$d of %3$d।"</string>
     <string name="keyguard_accessibility_add_widget" msgid="8245795023551343672">"विजेट थप गर्नुहोस्।"</string>
     <string name="keyguard_accessibility_widget_empty_slot" msgid="544239307077644480">"खाली"</string>
@@ -2006,6 +2007,7 @@
     <string name="managed_profile_label_badge_3" msgid="6882151970556391957">"कार्यालयको तेस्रो <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="clone_profile_label_badge" msgid="1871997694718793964">"<xliff:g id="LABEL">%1$s</xliff:g> क्लोन गर्नुहोस्"</string>
     <string name="private_profile_label_badge" msgid="1712086003787839183">"निजी <xliff:g id="LABEL">%1$s</xliff:g>"</string>
+    <string name="hsu_label_badge" msgid="1357272000281944932">"सिस्टम <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="lock_to_app_unlock_pin" msgid="3890940811866290782">"अनपिन गर्नुअघि PIN मागियोस्"</string>
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"अनपिन गर्नअघि अनलक प्याटर्न माग्नुहोस्"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"पिन निकाल्नुअघि पासवर्ड सोध्नुहोस्"</string>
@@ -2617,6 +2619,8 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"स्याटलाइटमार्फत म्यासेज पठाउन Google Messages लाई डिफल्ट म्यासेजिङ एपका रूपमा सेट गर्नुहोस्"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"स्याटलाइटमार्फत म्यासेज पठाउने सुविधा उपलब्ध छैन"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"यो देश वा क्षेत्रमा स्याटलाइटमार्फत म्यासेज पठाउने सुविधा उपलब्ध छ कि छैन भन्ने कुरा जाँच्न लोकेसन सेटिङ अन गर्नुहोस्"</string>
+    <!-- no translation found for satellite_indicator (6846063647532086110) -->
+    <skip />
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"फिंगरप्रिन्ट अनलक फेरि सेटअप गर्नुहोस्"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"<xliff:g id="FINGERPRINT">%s</xliff:g> अब पहिचान गर्न सकिँदैन।"</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> र <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> अब पहिचान गर्न सकिँदैन।"</string>

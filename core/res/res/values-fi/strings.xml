@@ -1123,6 +1123,7 @@
     <string name="lockscreen_access_pattern_cell_added_verbose" msgid="2931364927622563465">"Solu <xliff:g id="CELL_INDEX">%1$s</xliff:g> lisätty"</string>
     <string name="lockscreen_access_pattern_detected" msgid="3931150554035194012">"Kuvio valmis"</string>
     <string name="lockscreen_access_pattern_area" msgid="1288780416685002841">"Kuvioalue."</string>
+    <string name="lockscreen_access_pattern_cell_verbose" msgid="6670905066468035137">"Solu <xliff:g id="CELL_INDEX">%1$s</xliff:g>"</string>
     <string name="keyguard_accessibility_widget_changed" msgid="7298011259508200234">"%1$s. Widget %2$d/%3$d."</string>
     <string name="keyguard_accessibility_add_widget" msgid="8245795023551343672">"Lisää widget."</string>
     <string name="keyguard_accessibility_widget_empty_slot" msgid="544239307077644480">"Tyhjä"</string>
@@ -1845,7 +1846,7 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"Yhden käden moodi"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Erittäin himmeä"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Kuulolaitteet"</string>
-    <string name="autoclick_feature_name" msgid="4056260617171267864">"Automaattinen klikkaus (viiveaika)"</string>
+    <string name="autoclick_feature_name" msgid="4056260617171267864">"Automaattiklikkaukset (viiveaika)"</string>
     <string name="mouse_keys_feature_name" msgid="3362643216513384542">"Hiirenohjausnäppäimet"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Yhteys katkaistu"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Yhdistetty"</string>
@@ -2006,6 +2007,7 @@
     <string name="managed_profile_label_badge_3" msgid="6882151970556391957">"Kolmas <xliff:g id="LABEL">%1$s</xliff:g>, työ"</string>
     <string name="clone_profile_label_badge" msgid="1871997694718793964">"Kloonaa <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="private_profile_label_badge" msgid="1712086003787839183">"Yksityinen <xliff:g id="LABEL">%1$s</xliff:g>"</string>
+    <string name="hsu_label_badge" msgid="1357272000281944932">"Järjestelmä<xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="lock_to_app_unlock_pin" msgid="3890940811866290782">"Pyydä PIN ennen irrotusta"</string>
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Pyydä lukituksenpoistokuvio ennen irrotusta"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Pyydä salasana ennen irrotusta"</string>
@@ -2617,6 +2619,8 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"Jos haluat lähettää viestejä satelliitin kautta, aseta Google Messages oletusviestisovellukseksi"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"Satelliittiviestintä ei ole käytettävissä"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"Voit tarkistaa, onko satelliittiviestit saatavilla tällä alueella, laittamalla sijaintiasetukset päälle"</string>
+    <!-- no translation found for satellite_indicator (6846063647532086110) -->
+    <skip />
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"Ota sormenjälkiavaus uudelleen käyttöön"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"<xliff:g id="FINGERPRINT">%s</xliff:g> ei enää ole tunnistettavissa."</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> ja <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> eivät enää ole tunnistettavissa."</string>

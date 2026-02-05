@@ -342,18 +342,18 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"仕事用プロファイルに切り替える"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"個人用の <xliff:g id="APP_NAME">%1$s</xliff:g> に切り替える"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"仕事用の <xliff:g id="APP_NAME">%1$s</xliff:g> に切り替える"</string>
-    <string name="permgrouplab_contacts" msgid="7443702399615347952">"連絡先とアカウント"</string>
+    <string name="permgrouplab_contacts" msgid="7443702399615347952">"連絡先とア⁠カ⁠ウ⁠ン⁠ト"</string>
     <string name="permgroupdesc_contacts" msgid="2001771388402758264">"連絡先にアクセスして、このデバイスで連絡先を保存できるアカウントの一覧を表示する"</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"位置情報"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"このデバイスの位置情報へのアクセス"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"カレンダー"</string>
     <string name="permgroupdesc_calendar" msgid="6762751063361489379">"カレンダーへのアクセス"</string>
     <string name="permgrouplab_sms" msgid="795737735126084874">"SMS"</string>
-    <string name="permgroupdesc_sms" msgid="5726462398070064542">"SMSメッセージの送信と表示"</string>
+    <string name="permgroupdesc_sms" msgid="5726462398070064542">"SMSメッセージの送信と表⁠示"</string>
     <string name="permgrouplab_storage" msgid="17339216290379241">"ファイル"</string>
     <string name="permgroupdesc_storage" msgid="5378659041354582769">"デバイス内のファイルにアクセス"</string>
     <string name="permgrouplab_readMediaAural" msgid="1858331312624942053">"音楽とオーディオ"</string>
-    <string name="permgroupdesc_readMediaAural" msgid="7565467343667089595">"デバイス上の音楽とオーディオにアクセスする"</string>
+    <string name="permgroupdesc_readMediaAural" msgid="7565467343667089595">"デバイス上の音楽とオーデ⁠ィ⁠オ⁠に⁠ア⁠ク⁠セ⁠ス⁠す⁠る"</string>
     <string name="permgrouplab_readMediaVisual" msgid="4724874717811908660">"写真と動画"</string>
     <string name="permgroupdesc_readMediaVisual" msgid="4080463241903508688">"デバイス上の写真と動画にアクセスする"</string>
     <string name="permgrouplab_microphone" msgid="2480597427667420076">"マイク"</string>
@@ -363,7 +363,7 @@
     <string name="permgrouplab_camera" msgid="9090413408963547706">"カメラ"</string>
     <string name="permgroupdesc_camera" msgid="7585150538459320326">"写真と動画の撮影"</string>
     <string name="permgrouplab_nearby_devices" msgid="5529147543651181991">"付近のデバイス"</string>
-    <string name="permgroupdesc_nearby_devices" msgid="3213561597116913508">"付近のデバイスの検出と接続"</string>
+    <string name="permgroupdesc_nearby_devices" msgid="3213561597116913508">"付近のデバイスの検出と接⁠続"</string>
     <string name="permgrouplab_calllog" msgid="7926834372073550288">"通話履歴"</string>
     <string name="permgroupdesc_calllog" msgid="2026996642917801803">"通話履歴の読み取りと書き込み"</string>
     <string name="permgrouplab_phone" msgid="570318944091926620">"電話"</string>
@@ -1123,6 +1123,7 @@
     <string name="lockscreen_access_pattern_cell_added_verbose" msgid="2931364927622563465">"セル<xliff:g id="CELL_INDEX">%1$s</xliff:g>を追加しました"</string>
     <string name="lockscreen_access_pattern_detected" msgid="3931150554035194012">"パターンの描画が完了しました"</string>
     <string name="lockscreen_access_pattern_area" msgid="1288780416685002841">"パターンエリアです。"</string>
+    <string name="lockscreen_access_pattern_cell_verbose" msgid="6670905066468035137">"セル <xliff:g id="CELL_INDEX">%1$s</xliff:g>"</string>
     <string name="keyguard_accessibility_widget_changed" msgid="7298011259508200234">"%1$s。ウィジェット%2$d/%3$d。"</string>
     <string name="keyguard_accessibility_add_widget" msgid="8245795023551343672">"ウィジェットを追加します。"</string>
     <string name="keyguard_accessibility_widget_empty_slot" msgid="544239307077644480">"なし"</string>
@@ -1845,7 +1846,7 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"片手モード"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"さらに輝度を下げる"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"補聴器"</string>
-    <string name="autoclick_feature_name" msgid="4056260617171267864">"自動クリック（一時静止）"</string>
+    <string name="autoclick_feature_name" msgid="4056260617171267864">"自動クリック（静止時間）"</string>
     <string name="mouse_keys_feature_name" msgid="3362643216513384542">"マウスキー"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"未接続"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"接続済み"</string>
@@ -2006,6 +2007,7 @@
     <string name="managed_profile_label_badge_3" msgid="6882151970556391957">"3 番目の仕事用<xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="clone_profile_label_badge" msgid="1871997694718793964">"<xliff:g id="LABEL">%1$s</xliff:g> のクローン"</string>
     <string name="private_profile_label_badge" msgid="1712086003787839183">"プライベートの<xliff:g id="LABEL">%1$s</xliff:g>"</string>
+    <string name="hsu_label_badge" msgid="1357272000281944932">"システム <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="lock_to_app_unlock_pin" msgid="3890940811866290782">"オフライン再生を解除する前にPINの入力を求める"</string>
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"画面固定を解除する前にロック解除パターンの入力を求める"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"オフライン再生を解除する前にパスワードの入力を求める"</string>
@@ -2617,6 +2619,8 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"衛星経由でメッセージを送受信するには、Google メッセージをデフォルトのメッセージ アプリに設定してください"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"衛星通信メッセージを利用できません"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"この国または地域で衛星通信メッセージを利用できるかどうかを確認するには、位置情報の設定を ON にしてください"</string>
+    <!-- no translation found for satellite_indicator (6846063647532086110) -->
+    <skip />
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"指紋認証をもう一度設定してください"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"<xliff:g id="FINGERPRINT">%s</xliff:g>を認識できなくなりました。"</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g>と<xliff:g id="FINGERPRINT_1">%2$s</xliff:g>を認識できなくなりました。"</string>

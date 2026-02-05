@@ -1123,6 +1123,7 @@
     <string name="lockscreen_access_pattern_cell_added_verbose" msgid="2931364927622563465">"Punkt <xliff:g id="CELL_INDEX">%1$s</xliff:g> hinzugefügt"</string>
     <string name="lockscreen_access_pattern_detected" msgid="3931150554035194012">"Muster abgeschlossen"</string>
     <string name="lockscreen_access_pattern_area" msgid="1288780416685002841">"Bereich für Muster"</string>
+    <string name="lockscreen_access_pattern_cell_verbose" msgid="6670905066468035137">"Zelle <xliff:g id="CELL_INDEX">%1$s</xliff:g>"</string>
     <string name="keyguard_accessibility_widget_changed" msgid="7298011259508200234">"%1$s. Widget %2$d von %3$d."</string>
     <string name="keyguard_accessibility_add_widget" msgid="8245795023551343672">"Widget hinzufügen"</string>
     <string name="keyguard_accessibility_widget_empty_slot" msgid="544239307077644480">"Leer"</string>
@@ -2006,6 +2007,7 @@
     <string name="managed_profile_label_badge_3" msgid="6882151970556391957">"3. <xliff:g id="LABEL">%1$s</xliff:g> (geschäftlich)"</string>
     <string name="clone_profile_label_badge" msgid="1871997694718793964">"Klon <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="private_profile_label_badge" msgid="1712086003787839183">"<xliff:g id="LABEL">%1$s</xliff:g> (privat)"</string>
+    <string name="hsu_label_badge" msgid="1357272000281944932">"System – <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="lock_to_app_unlock_pin" msgid="3890940811866290782">"Vor dem Beenden nach PIN fragen"</string>
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Vor dem Beenden nach Entsperrungsmuster fragen"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Vor dem Beenden nach Passwort fragen"</string>
@@ -2292,7 +2294,7 @@
     <string name="nas_upgrade_notification_enable_action" msgid="3046406808378726874">"OK"</string>
     <string name="nas_upgrade_notification_disable_action" msgid="3794833210043497982">"Ausschalten"</string>
     <string name="nas_upgrade_notification_learn_more_action" msgid="7011130656195423947">"Weitere Informationen"</string>
-    <string name="nas_upgrade_notification_learn_more_content" msgid="3735480566983530650">"Die adaptiven Benachrichtigungen wurden in Android 12 durch die Funktion „Erweiterte Benachrichtigungen“ ersetzt. Diese Funktion zeigt Vorschläge für Aktionen und Antworten an und sortiert Benachrichtigungen.\n\nDie Funktion hat Zugriff auf alle Benachrichtigungen, darunter auch personenbezogene Daten wie Namen von Kontakten und Nachrichten. Außerdem kann sie auf Benachrichtigungen antworten oder diese schließen und so unter anderem Anrufe entgegennehmen oder „Bitte nicht stören“ steuern."</string>
+    <string name="nas_upgrade_notification_learn_more_content" msgid="3735480566983530650">"Die adaptiven Benachrichtigungen wurden in Android 12 durch die Funktion „Optimierte Benachrichtigungen“ ersetzt. Diese Funktion zeigt Vorschläge für Aktionen und Antworten an und sortiert Benachrichtigungen.\n\nDie Funktion hat Zugriff auf alle Benachrichtigungen, darunter auch personenbezogene Daten wie Namen von Kontakten und Nachrichten. Außerdem kann sie auf Benachrichtigungen antworten oder diese schließen und so unter anderem Anrufe entgegennehmen oder „Bitte nicht stören“ steuern."</string>
     <string name="dynamic_mode_notification_channel_name" msgid="2986926422100223328">"Infomitteilung zum Ablaufmodus"</string>
     <string name="dynamic_mode_notification_title" msgid="1388718452788985481">"Energiesparmodus aktiviert"</string>
     <string name="dynamic_mode_notification_summary" msgid="1639031262484979689">"Reduzierung der Akkunutzung, um die Akkulaufzeit zu verlängern"</string>
@@ -2617,6 +2619,8 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"Wenn du Nachrichten per Satellit senden möchtest, musst du Google Messages als Standard-Messaging-App festlegen"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"„Nachrichten per Satellit“ nicht verfügbar"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"Wenn du wissen möchtest, ob „Nachrichten per Satellit“ in diesem Land oder dieser Region verfügbar ist, aktiviere die Standorteinstellungen"</string>
+    <!-- no translation found for satellite_indicator (6846063647532086110) -->
+    <skip />
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"Entsperrung per Fingerabdruck neu einrichten"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"<xliff:g id="FINGERPRINT">%s</xliff:g> wird nicht mehr erkannt."</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> und <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> werden nicht mehr erkannt."</string>

@@ -1123,6 +1123,7 @@
     <string name="lockscreen_access_pattern_cell_added_verbose" msgid="2931364927622563465">"ਸੈਲ <xliff:g id="CELL_INDEX">%1$s</xliff:g> ਜੋੜਿਆ ਗਿਆ"</string>
     <string name="lockscreen_access_pattern_detected" msgid="3931150554035194012">"ਪੈਟਰਨ ਪੂਰਾ ਕੀਤਾ"</string>
     <string name="lockscreen_access_pattern_area" msgid="1288780416685002841">"ਪੈਟਰਨ ਖੇਤਰ।"</string>
+    <string name="lockscreen_access_pattern_cell_verbose" msgid="6670905066468035137">"ਸੈੱਲ <xliff:g id="CELL_INDEX">%1$s</xliff:g>"</string>
     <string name="keyguard_accessibility_widget_changed" msgid="7298011259508200234">"%1$s। %3$d ਦਾ ਵਿਜੇਟ %2$d।"</string>
     <string name="keyguard_accessibility_add_widget" msgid="8245795023551343672">"ਵਿਜੇਟ ਸ਼ਾਮਲ ਕਰੋ।"</string>
     <string name="keyguard_accessibility_widget_empty_slot" msgid="544239307077644480">"ਖਾਲੀ"</string>
@@ -1845,7 +1846,7 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"ਇੱਕ ਹੱਥ ਮੋਡ"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"ਜ਼ਿਆਦਾ ਘੱਟ ਚਮਕ"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"ਸੁਣਨ ਵਾਲੇ ਡੀਵਾਈਸ"</string>
-    <string name="autoclick_feature_name" msgid="4056260617171267864">"ਸਵੈ-ਕਲਿੱਕ (ਉਡੀਕ ਦਾ ਸਮਾਂ)"</string>
+    <string name="autoclick_feature_name" msgid="4056260617171267864">"ਸਵੈ-ਕਲਿੱਕ (ਠਹਿਰਾਅ ਸਮਾਂ)"</string>
     <string name="mouse_keys_feature_name" msgid="3362643216513384542">"ਮਾਊਸ ਕੁੰਜੀਆਂ"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"ਡਿਸਕਨੈਕਟ ਹੋ ਗਿਆ"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"ਕਨੈਕਟ ਹੈ"</string>
@@ -2006,6 +2007,7 @@
     <string name="managed_profile_label_badge_3" msgid="6882151970556391957">"ਤੀਸਰੀ ਕਾਰਜ-ਸਥਾਨ <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="clone_profile_label_badge" msgid="1871997694718793964">"<xliff:g id="LABEL">%1$s</xliff:g> ਦਾ ਕਲੋਨ"</string>
     <string name="private_profile_label_badge" msgid="1712086003787839183">"ਨਿੱਜੀ <xliff:g id="LABEL">%1$s</xliff:g>"</string>
+    <string name="hsu_label_badge" msgid="1357272000281944932">"ਸਿਸਟਮ <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="lock_to_app_unlock_pin" msgid="3890940811866290782">"ਅਨਪਿੰਨ ਕਰਨ ਤੋਂ ਪਹਿਲਾਂ ਪਿੰਨ ਮੰਗੋ"</string>
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"ਅਨਪਿੰਨ ਕਰਨ ਤੋਂ ਪਹਿਲਾਂ ਅਣਲਾਕ ਪੈਟਰਨ ਵਾਸਤੇ ਪੁੱਛੋ"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"ਅਣਪਿੰਨ ਕਰਨ ਤੋਂ ਪਹਿਲਾਂ ਪਾਸਵਰਡ ਮੰਗੋ"</string>
@@ -2617,6 +2619,8 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"ਸੈਟੇਲਾਈਟ ਰਾਹੀਂ ਸੁਨੇਹਾ ਭੇਜਣ ਲਈ, Google Messages ਨੂੰ ਆਪਣੀ ਪੂਰਵ-ਨਿਰਧਾਰਿਤ ਸੁਨੇਹਾ ਐਪ ਵਜੋਂ ਸੈੱਟ ਕਰੋ"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"ਸੈਟੇਲਾਈਟ ਸੁਨੇਹੇ ਦੀ ਸੁਵਿਧਾ ਉਪਲਬਧ ਨਹੀਂ ਹੈ"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"ਇਹ ਜਾਂਚ ਕਰਨ ਲਈ ਕਿ ਇਸ ਦੇਸ਼ ਜਾਂ ਖੇਤਰ ਵਿੱਚ ਸੈਟੇਲਾਈਟ ਸੁਨੇਹੇ ਦੀ ਸੁਵਿਧਾ ਉਪਲਬਧ ਹੈ ਜਾਂ ਨਹੀਂ, ਟਿਕਾਣਾ ਸੈਟਿੰਗਾਂ ਨੂੰ ਚਾਲੂ ਕਰੋ"</string>
+    <!-- no translation found for satellite_indicator (6846063647532086110) -->
+    <skip />
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"ਫਿੰਗਰਪ੍ਰਿੰਟ ਅਣਲਾਕ ਦਾ ਦੁਬਾਰਾ ਸੈੱਟਅੱਪ ਕਰੋ"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"<xliff:g id="FINGERPRINT">%s</xliff:g> ਦੀ ਹੁਣ ਪਛਾਣ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕਦੀ।"</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> ਅਤੇ <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> ਦੀ ਹੁਣ ਪਛਾਣ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕਦੀ।"</string>

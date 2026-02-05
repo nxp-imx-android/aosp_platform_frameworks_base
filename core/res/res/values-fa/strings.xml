@@ -1123,6 +1123,7 @@
     <string name="lockscreen_access_pattern_cell_added_verbose" msgid="2931364927622563465">"سلول <xliff:g id="CELL_INDEX">%1$s</xliff:g> اضافه شد"</string>
     <string name="lockscreen_access_pattern_detected" msgid="3931150554035194012">"الگو کامل شد"</string>
     <string name="lockscreen_access_pattern_area" msgid="1288780416685002841">"ناحیه الگو"</string>
+    <string name="lockscreen_access_pattern_cell_verbose" msgid="6670905066468035137">"سلول <xliff:g id="CELL_INDEX">%1$s</xliff:g>"</string>
     <string name="keyguard_accessibility_widget_changed" msgid="7298011259508200234">"‏%1$s. ابزاره %2$d از %3$d."</string>
     <string name="keyguard_accessibility_add_widget" msgid="8245795023551343672">"ابزاره اضافه کنید."</string>
     <string name="keyguard_accessibility_widget_empty_slot" msgid="544239307077644480">"خالی"</string>
@@ -1848,7 +1849,7 @@
     <string name="autoclick_feature_name" msgid="4056260617171267864">"کلیک خودکار (زمان‌بندی توقف)"</string>
     <string name="mouse_keys_feature_name" msgid="3362643216513384542">"کلیدهای موشواره"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"متصل نیست"</string>
-    <string name="hearing_device_status_connected" msgid="2149385149669918764">"وصل شد"</string>
+    <string name="hearing_device_status_connected" msgid="2149385149669918764">"متصل‌شده"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"فعال"</string>
     <string name="hearing_device_status_loading" msgid="5717083847663109747">"درحال بار کردن"</string>
     <string name="accessibility_shortcut_enabling_service" msgid="5473495203759847687">"کلیدهای میزان صدا پایین نگه داشته شد. <xliff:g id="SERVICE_NAME">%1$s</xliff:g> روشن شد."</string>
@@ -2006,6 +2007,7 @@
     <string name="managed_profile_label_badge_3" msgid="6882151970556391957">"کار سوم <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="clone_profile_label_badge" msgid="1871997694718793964">"همسانه <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="private_profile_label_badge" msgid="1712086003787839183">"«<xliff:g id="LABEL">%1$s</xliff:g>» خصوصی"</string>
+    <string name="hsu_label_badge" msgid="1357272000281944932">"سیستم<xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="lock_to_app_unlock_pin" msgid="3890940811866290782">"درخواست کد پین قبل از برداشتن پین"</string>
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"درخواست الگوی بازگشایی قفل قبل‌از برداشتن سنجاق"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"درخواست گذرواژه قبل از برداشتن سنجاق"</string>
@@ -2554,7 +2556,7 @@
     <string name="concurrent_display_notification_thermal_content" msgid="2075484836527609319">"‫«صفحه‌نمایش دوگانه» دردسترس نیست زیرا تلفن بیش‌ازحد گرم شده است"</string>
     <string name="concurrent_display_notification_power_save_title" msgid="1794569070730736281">"«صفحه‌نمایش دوگانه» دردسترس نیست"</string>
     <string name="concurrent_display_notification_power_save_content" msgid="2198116070583851493">"«صفحه‌نمایش دوگانه» دردسترس نیست چون «بهینه‌سازی باتری» روشن است. می‌توانید این ویژگی را در «تنظیمات» خاموش کنید."</string>
-    <string name="device_state_notification_settings_button" msgid="691937505741872749">"رفتن به تنظیمات"</string>
+    <string name="device_state_notification_settings_button" msgid="691937505741872749">"رفتن به «تنظیمات»"</string>
     <string name="device_state_notification_turn_off_button" msgid="6327161707661689232">"خاموش کردن"</string>
     <string name="keyboard_layout_notification_selected_title" msgid="1202560174252421219">"‫<xliff:g id="DEVICE_NAME">%s</xliff:g> پیکربندی شد"</string>
     <string name="keyboard_layout_notification_one_selected_message" msgid="4314216053129257197">"جانمایی صفحه‌کلید روی <xliff:g id="LAYOUT_1">%s</xliff:g> تنظیم شد. برای تغییر دادن، تک‌ضرب بزنید."</string>
@@ -2617,6 +2619,8 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"‏برای ارسال پیام ازطریق ماهواره، «پیام‌نگار Google» را به‌عنوان برنامه پیام‌رسانی پیش‌فرض تنظیم کنید"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"پیام‌رسانی ماهواره‌ای دردسترس نیست"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"برای بررسی دردسترس بودن پیام‌رسانی ماهواره‌ای در این کشور یا منطقه، تنظیمات مکان را فعال کنید"</string>
+    <!-- no translation found for satellite_indicator (6846063647532086110) -->
+    <skip />
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"راه‌اندازی مجدد «قفل‌گشایی با اثر انگشت»"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"‫<xliff:g id="FINGERPRINT">%s</xliff:g> دیگر قابل‌شناسایی نیست."</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"‫<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> و <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> دیگر قابل‌شناسایی نیستند."</string>

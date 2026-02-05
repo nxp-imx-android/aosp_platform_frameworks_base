@@ -1127,6 +1127,7 @@
     <string name="lockscreen_access_pattern_cell_added_verbose" msgid="2931364927622563465">"<xliff:g id="CELL_INDEX">%1$s</xliff:g> уячасы кошулду"</string>
     <string name="lockscreen_access_pattern_detected" msgid="3931150554035194012">"Үлгү аягына чыкты"</string>
     <string name="lockscreen_access_pattern_area" msgid="1288780416685002841">"Үлгү аймагы."</string>
+    <string name="lockscreen_access_pattern_cell_verbose" msgid="6670905066468035137">"<xliff:g id="CELL_INDEX">%1$s</xliff:g>-уяча"</string>
     <string name="keyguard_accessibility_widget_changed" msgid="7298011259508200234">"%1$s. %3$d ичинен %2$d виджет."</string>
     <string name="keyguard_accessibility_add_widget" msgid="8245795023551343672">"Виджет кошуу."</string>
     <string name="keyguard_accessibility_widget_empty_slot" msgid="544239307077644480">"Бош"</string>
@@ -2010,6 +2011,7 @@
     <string name="managed_profile_label_badge_3" msgid="6882151970556391957">"3-жумуш <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="clone_profile_label_badge" msgid="1871997694718793964">"<xliff:g id="LABEL">%1$s</xliff:g> клону"</string>
     <string name="private_profile_label_badge" msgid="1712086003787839183">"Купуя <xliff:g id="LABEL">%1$s</xliff:g>"</string>
+    <string name="hsu_label_badge" msgid="1357272000281944932">"Тутум: <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="lock_to_app_unlock_pin" msgid="3890940811866290782">"Бошотуудан мурун PIN суралсын"</string>
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Бошотуудан мурун графикалык ачкыч суралсын"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Бошотуудан мурун сырсөз суралсын"</string>
@@ -2117,7 +2119,7 @@
     <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"Колдонмону иштетүү"</string>
     <string name="app_lock_add_screen_lock_button_text" msgid="9209013414563206600">"Экранды кулпулоо функциясын кошуу"</string>
     <string name="app_lock_add_screen_lock_message" msgid="6107009360675769892">"Экран кулпуңуз PIN код, графикалык ачкыч же сырсөз болушу мүмкүн. Аны түзмөктүн кулпусун ачуу жана кулпуланган колдонмолорду пайдалануу үчүн колдоносуз."</string>
-    <string name="app_lock_add_screen_lock_title" msgid="6905612843620128689">"Алгач экран кулпусун кошуңуз"</string>
+    <string name="app_lock_add_screen_lock_title" msgid="6905612843620128689">"Алгач экранга кулпу коюңуз"</string>
     <string name="enable_app_lock_success_toast_message" msgid="3339622779190529987">"<xliff:g id="APP_NAME">%1$s</xliff:g> кулпуланды"</string>
     <string name="enable_app_lock_failure_toast_message" msgid="1055838896510445566">"<xliff:g id="APP_NAME">%1$s</xliff:g> колдонмосу кулпуланган жок"</string>
     <string name="disable_app_lock_success_toast_message" msgid="70733620589071266">"Кулпулоо <xliff:g id="APP_NAME">%1$s</xliff:g> колдонмосунан өчүрүлдү"</string>
@@ -2621,6 +2623,8 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"Спутник аркылуу жазышуу үчүн Google Messages кызматын демейки жазышуу колдонмосу катары тандаңыз"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"Спутник аркылуу байланышуу жеткиликсиз"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"Бул өлкөдө же аймакта спутник аркылуу байланышуу функциясынын жеткиликтүүлүгүн текшерүү үчүн жайгашкан жерди аныктоо параметрлерин күйгүзүңүз"</string>
+    <!-- no translation found for satellite_indicator (6846063647532086110) -->
+    <skip />
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"Манжа изи менен ачуу функциясын кайра тууралаңыз"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"<xliff:g id="FINGERPRINT">%s</xliff:g> мындан ары таанылбайт."</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> жана <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> мындан ары таанылбайт."</string>
@@ -2666,5 +2670,5 @@
     <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"<xliff:g id="APP_NAME">%1$s</xliff:g> колдонмосу өтө көп ресурстарды колдонуп жатат."</string>
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"Ата-энең параметрлерди өзгөрттү"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> колдонмосу азырынча өчүрүлдү"</string>
-    <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> эми жеткиликтүү"</string>
+    <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> колдоно берсең болот"</string>
 </resources>
