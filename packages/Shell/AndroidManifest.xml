@@ -1144,6 +1144,10 @@
     <!-- Permission required for personal context settings testing  -->
     <uses-permission android:name="android.permission.CHANGE_PERSONAL_CONTEXT_MODE" />
 
+    <!-- Permission required for CTS test - CtsAttentionServiceDeviceTestCases -->
+    <uses-permission android:name="android.permission.ACCESS_ATTENTION_LISTENER"
+        android:featureFlag="com.android.input.flags.enable_attention_service_apis" />
+
     <application
         android:label="@string/app_label"
         android:theme="@android:style/Theme.DeviceDefault.DayNight"
