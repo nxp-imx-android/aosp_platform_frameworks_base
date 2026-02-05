@@ -26,6 +26,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyFloat;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -41,18 +42,21 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.hamcrest.MockitoHamcrest.argThat;
+import static org.mockito.ArgumentMatchers.argThat;
 
 import android.accessibilityservice.MagnificationConfig;
 import android.animation.TimeAnimator;
 import android.animation.ValueAnimator;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.Region;
 import android.hardware.display.DisplayManagerInternal;
+import android.os.Build;
 import android.os.Looper;
 import android.os.UserHandle;
 import android.platform.test.annotations.RequiresFlagsEnabled;
@@ -61,6 +65,7 @@ import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.test.mock.MockContentResolver;
+import android.util.Log;
 import android.view.DisplayInfo;
 import android.view.MagnificationSpec;
 import android.view.View;
@@ -85,6 +90,7 @@ import com.android.server.wm.WindowManagerInternal.MagnificationCallbacks;
 
 import com.google.common.truth.Truth;
 
+import java.util.List;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
@@ -94,6 +100,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatcher;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 import org.testng.Assert;
@@ -245,7 +252,7 @@ public class FullScreenMagnificationControllerTest {
     }
 
     @Test
-    public void testRegister_WindowManagerAndContextRegisterListeners() {
+    public void testRegister_registersCallbacksAndListeners() {
         register(DISPLAY_0);
         register(DISPLAY_1);
         register(INVALID_DISPLAY);
@@ -263,13 +270,28 @@ public class FullScreenMagnificationControllerTest {
     }
 
     @Test
-    public void testRegister_WindowManagerAndContextUnregisterListeners() {
+    public void testRegister_debuggableBuild_registersExtraDebugger() {
+        assumeTrue(Build.IS_DEBUGGABLE);
+
+        register(DISPLAY_0);
+
+        // Verify the FullScreenMagnificationActivationDebugger is registered.
+        verify(mMockContext).registerReceiver(
+                any(BroadcastReceiver.class), any(IntentFilter.class), eq(Context.RECEIVER_EXPORTED)
+        );
+    }
+
+    @Test
+    public void testRegister_unregistersCallbacksAndListeners() {
         register(DISPLAY_0);
         register(DISPLAY_1);
         mFullScreenMagnificationController.unregister(DISPLAY_0);
+        // Receivers should not be unregistered if there are still active displays.
         verify(mMockContext, times(0)).unregisterReceiver(any(BroadcastReceiver.class));
         mFullScreenMagnificationController.unregister(DISPLAY_1);
-        verify(mMockContext).unregisterReceiver(any(BroadcastReceiver.class));
+        int expectedUnregisterReceiverCount = Build.IS_DEBUGGABLE ? 2 : 1;
+        verify(mMockContext, times(expectedUnregisterReceiverCount))
+                .unregisterReceiver(any(BroadcastReceiver.class));
         verify(mMockWindowManager).setMagnificationCallbacks(eq(DISPLAY_0), eq(null));
         verify(mMockWindowManager).setMagnificationCallbacks(eq(DISPLAY_1), eq(null));
         assertFalse(mFullScreenMagnificationController.isRegistered(DISPLAY_0));
@@ -1060,8 +1082,10 @@ public class FullScreenMagnificationControllerTest {
         register(DISPLAY_1);
         ArgumentCaptor<BroadcastReceiver> broadcastReceiverCaptor =
                 ArgumentCaptor.forClass(BroadcastReceiver.class);
+        ArgumentMatcher<IntentFilter> screenOffFilterMatcher =
+                filter -> filter.hasAction(Intent.ACTION_SCREEN_OFF);
         verify(mMockContext).registerReceiver(
-                broadcastReceiverCaptor.capture(), any(IntentFilter.class));
+            broadcastReceiverCaptor.capture(), argThat(screenOffFilterMatcher));
         BroadcastReceiver br = broadcastReceiverCaptor.getValue();
         zoomIn2xToMiddle(DISPLAY_0);
         zoomIn2xToMiddle(DISPLAY_1);
