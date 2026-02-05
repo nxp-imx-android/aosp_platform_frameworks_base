@@ -143,6 +143,21 @@ final class ContentRecorder implements WindowContainerListener {
      * has content or the display is not on.
      */
     void updateRecording() {
+        // If a display allows content mode switch and should not show system decorations, it is
+        // expected to be empty to start content recording. Log an error if any existing content
+        // is blocking the content recording.
+        if (mDisplayContent.allowContentModeSwitch()
+                && !mDisplayContent.mWmService.mDisplayWindowSettings
+                .shouldShowSystemDecorsLocked(mDisplayContent)
+                && mDisplayContent.getLastHasContent()) {
+            ProtoLog.e(WM_DEBUG_CONTENT_RECORDING, "Content Recording: Display %d should start"
+                    + " recording but failed because has content on it: ",
+                    mDisplayContent.getDisplayId());
+            mDisplayContent.forAllWindows((w) -> {
+                ProtoLog.e(WM_DEBUG_CONTENT_RECORDING, "\t%s, displayId=%d", w, w.getDisplayId());
+            }, true /* traverseTopToBottom */);
+        }
+
         if (isCurrentlyRecording() && (mDisplayContent.getLastHasContent()
                 || mDisplayContent.getDisplayInfo().state == Display.STATE_OFF)) {
             pauseRecording();
