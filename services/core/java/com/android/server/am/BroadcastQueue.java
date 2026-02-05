@@ -31,7 +31,7 @@ import android.util.proto.ProtoOutputStream;
 import com.android.internal.annotations.GuardedBy;
 import com.android.server.DropBoxManagerInternal;
 import com.android.server.LocalServices;
-import com.android.server.am.psc.Constants;
+import com.android.server.am.psc.Constants.SchedGroup;
 
 import java.io.FileDescriptor;
 import java.io.FileOutputStream;
@@ -102,7 +102,7 @@ public abstract class BroadcastQueue {
      *         has no opinion.
      */
     @GuardedBy("mService")
-    public abstract int getPreferredSchedulingGroupLocked(@NonNull ProcessRecord app);
+    public abstract @SchedGroup int getPreferredSchedulingGroupLocked(@NonNull ProcessRecord app);
 
     /**
      * Enqueue the given broadcast to be eventually dispatched.

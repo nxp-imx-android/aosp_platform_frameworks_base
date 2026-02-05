@@ -100,6 +100,7 @@ import com.android.server.am.BroadcastProcessQueue.BroadcastConsumer;
 import com.android.server.am.BroadcastProcessQueue.BroadcastPredicate;
 import com.android.server.am.BroadcastProcessQueue.BroadcastRecordConsumer;
 import com.android.server.am.BroadcastRecord.DeliveryState;
+import com.android.server.am.psc.Constants.SchedGroup;
 import com.android.server.pm.UserJourneyLogger;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.utils.AnrTimer;
@@ -795,7 +796,7 @@ class BroadcastQueueImpl extends BroadcastQueue {
 
     @GuardedBy("mService")
     @Override
-    public int getPreferredSchedulingGroupLocked(@NonNull ProcessRecord app) {
+    public @SchedGroup int getPreferredSchedulingGroupLocked(@NonNull ProcessRecord app) {
         final BroadcastProcessQueue queue = getProcessQueue(app);
         if ((queue != null) && getRunningIndexOf(queue) >= 0) {
             return queue.getPreferredSchedulingGroupLocked();
