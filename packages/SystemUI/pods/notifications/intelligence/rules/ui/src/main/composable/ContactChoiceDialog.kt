@@ -16,7 +16,6 @@
 
 package com.android.systemui.notifications.intelligence.rules.ui.composable
 
-import android.content.Context
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -44,6 +43,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRuleEditViewModel
@@ -57,8 +57,8 @@ fun ContactChoiceDialog(
     initialSelection: List<ContactModel>,
     onContactsSaved: (List<ContactModel>) -> Unit,
     viewModel: NotificationRuleEditViewModel,
-    context: Context,
 ) {
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
     val currentSelectedContacts = remember { mutableStateSetOf(*initialSelection.toTypedArray()) }
