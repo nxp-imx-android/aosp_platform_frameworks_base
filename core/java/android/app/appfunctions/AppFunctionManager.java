@@ -690,8 +690,8 @@ public final class AppFunctionManager {
     }
 
     /**
-     * Registers an observer to monitor changes to {@link AppFunctionMetadata} for the given
-     * packages.
+     * Registers an observer to monitor changes to {@link AppFunctionMetadata} for all packages that
+     * expose app functions and the caller can query.
      *
      * <p>When a change occurs, the registered {@link AppFunctionObserver} will be notified with
      * information about the changed app functions.
@@ -721,7 +721,6 @@ public final class AppFunctionManager {
      * <strong>Note:</strong> If app functions are reported to have changed but are not returned
      * from {@link #searchAppFunctions}, it means that they have been removed.
      *
-     * @param packageNames the names of the packages to observe for changes.
      * @param executor the executor to run the {@link AppFunctionObserver} callbacks.
      * @param appFunctionObserver the observer to receive updates to registered app functions.
      * @return An {@link AppFunctionObservation} used to cancel this observation.
@@ -738,7 +737,6 @@ public final class AppFunctionManager {
     @UserHandleAware
     @NonNull
     public AppFunctionObservation observeAppFunctions(
-            @Nullable Set<String> packageNames,
             @NonNull @CallbackExecutor Executor executor,
             @NonNull AppFunctionObserver appFunctionObserver) {
         Objects.requireNonNull(executor);
@@ -747,9 +745,7 @@ public final class AppFunctionManager {
         AppFunctionAidlSearchSpec aidlSearchSpec =
                 new AppFunctionAidlSearchSpec(
                         mContext.getPackageName(),
-                        new AppFunctionSearchSpec.Builder()
-                                .setPackageNames(packageNames)
-                                .build(),
+                        new AppFunctionSearchSpec.Builder().build(),
                         mContext.getUserId());
 
         IObserveAppFunctionChangesCallback internalCallback =
@@ -843,19 +839,20 @@ public final class AppFunctionManager {
      *
      * <h3>Function Scoping and Context</h3>
      *
-     * <p>The behavior of this method depends on the {@link AppFunctionMetadata#getScope()}
-     * defined for the function in the app's XML resource:
+     * <p>The behavior of this method depends on the {@link AppFunctionMetadata#getScope()} defined
+     * for the function in the app's XML resource:
+     *
      * <ul>
-     * <li><b>{@link AppFunctionMetadata#SCOPE_GLOBAL}:</b> Only one implementation
-     * can be registered for a given {@code functionIdentifier} across the entire application.
-     * Subsequent registration attempts without unregistering the existing one will throw an
-     * {@link IllegalStateException}.</li>
-     * <li><b>{@link AppFunctionMetadata#SCOPE_ACTIVITY}:</b> This method
-     * <b>must</b> be called on an {@link AppFunctionManager} that was created from an
-     * {@link android.app.Activity} context. The registration is tied to that specific Activity
-     * instance via its {@link android.app.appfunctions.AppFunctionActivityId}. This allows multiple
-     * instances of the same function to be registered simultaneously (e.g., if the same Activity is
-     * open in split-screen), each associated with its own context.</li>
+     *   <li><b>{@link AppFunctionMetadata#SCOPE_GLOBAL}:</b> Only one implementation can be
+     *       registered for a given {@code functionIdentifier} across the entire application.
+     *       Subsequent registration attempts without unregistering the existing one will throw an
+     *       {@link IllegalStateException}.
+     *   <li><b>{@link AppFunctionMetadata#SCOPE_ACTIVITY}:</b> This method <b>must</b> be called on
+     *       an {@link AppFunctionManager} that was created from an {@link android.app.Activity}
+     *       context. The registration is tied to that specific Activity instance via its {@link
+     *       android.app.appfunctions.AppFunctionActivityId}. This allows multiple instances of the
+     *       same function to be registered simultaneously (e.g., if the same Activity is open in
+     *       split-screen), each associated with its own context.
      * </ul>
      *
      * <h3>Function Execution</h3>
@@ -864,6 +861,14 @@ public final class AppFunctionManager {
      * with the app's package name and the provided {@code functionId} in the request will be routed
      * to the {@link AppFunction} implementation provided here. The implementation will be invoked
      * on the provided {@link Executor}.
+     *
+     * <p><b>Note:</b> For activity-scoped functions, the calling agent must provide the
+     * corresponding {@link android.app.appfunctions.AppFunctionActivityId} in the execution request
+     * to ensure the call is routed to the correct Activity instance, otherwise the execution will
+     * fail with {@link AppFunctionException#ERROR_NOT_FOUND}.
+     *
+     * <p>If an application-level function is called but no implementation is currently registered,
+     * the execution will fail with {@link AppFunctionException#ERROR_DISABLED}.
      *
      * <h3>Lifecycle management</h3>
      *
@@ -897,8 +902,8 @@ public final class AppFunctionManager {
      * @throws IllegalStateException if a function with the same {@code functionId} is already
      *     registered by this app.
      * @throws IllegalArgumentException if the provided {@code functionId} is not declared in the
-     *     app's application-level XML resources or if an activity-scoped function is
-     *     registered from a non-Activity context.
+     *     app's application-level XML resources or if an activity-scoped function is registered
+     *     from a non-Activity context.
      */
     @NonNull
     @FlaggedApi(FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
