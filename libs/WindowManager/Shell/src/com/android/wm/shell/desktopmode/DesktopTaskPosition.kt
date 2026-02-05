@@ -33,6 +33,7 @@ import com.android.wm.shell.desktopmode.DesktopTaskPosition.Maximized
 import com.android.wm.shell.desktopmode.DesktopTaskPosition.RightSnapped
 import com.android.wm.shell.desktopmode.DesktopTaskPosition.TopLeft
 import com.android.wm.shell.desktopmode.DesktopTaskPosition.TopRight
+import kotlin.math.abs
 
 /** The position of a task window in desktop mode. */
 sealed class DesktopTaskPosition {
@@ -166,6 +167,24 @@ internal fun cascadeWindow(
     dest.offsetTo(destCoord.x, destCoord.y)
 }
 
+fun cascadeWindowStepped(
+    res: Resources,
+    frame: Rect,
+    prev: Rect,
+    dest: Rect,
+    isRememberedBounds: Boolean,
+) {
+    val offset = res.getDimensionPixelSize(R.dimen.desktop_mode_cascading_offset)
+    if (haveSameBoundsWithThreshold(offset, prev, dest)) {
+        // TODO(b/410787173): Implement multi-step cascading and screen wrapping.
+        cascadeOneStep(offset, dest)
+    } else {
+        // Default to center
+        val centerPos = Center.getTopLeftCoordinates(frame, dest)
+        dest.offsetTo(centerPos.x, centerPos.y)
+    }
+}
+
 fun cascadeWindowForRememberedBounds(res: Resources, frame: Rect, prev: Rect, dest: Rect) {
     val candidatePos = frame.getDesktopTaskPosition(dest)
     if (candidatePos == Maximized || candidatePos == LeftSnapped || candidatePos == RightSnapped) {
@@ -192,4 +211,20 @@ internal fun prevBoundsMovedAboveThreshold(res: Resources, prev: Rect, newBounds
     val bottomFar = prev.bottom - newBounds.bottom > moveThresholdPx
 
     return leftFar || topFar || rightFar || bottomFar
+}
+
+private fun haveSameBoundsWithThreshold(cascadingOffset: Int, a: Rect, b: Rect): Boolean {
+    // The threshold is set this way as this is especially useful for checking whether the bounds of
+    // the new window is closer to the bounds of the previous window or the cascaded bounds.
+    val thresholdPx = cascadingOffset / 2
+    val leftClose = abs(b.left - a.left) < thresholdPx
+    val topClose = abs(b.top - a.top) < thresholdPx
+    val rightClose = abs(b.right - a.right) < thresholdPx
+    val bottomClose = abs(b.bottom - a.bottom) < thresholdPx
+
+    return leftClose && topClose && rightClose && bottomClose
+}
+
+private fun cascadeOneStep(offset: Int, bounds: Rect) {
+    bounds.offset(offset, offset)
 }
