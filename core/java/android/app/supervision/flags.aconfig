@@ -159,17 +159,6 @@ flag {
 }
 
 flag {
-  name: "supervision_recovery_improvements"
-  is_exported: false
-  namespace: "supervision"
-  description: "Fixes some performance issues with supervision recovery"
-  bug: "454885259"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
     name: "enable_supervision_manager_cache"
     is_exported: false
     namespace: "supervision"
