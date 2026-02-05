@@ -739,6 +739,7 @@ constructor(
                     createOriginTransition(
                         createController = { controllerFactory.createController(isLaunch) },
                         scope,
+                        isLongLived = isLongLived,
                         isDialogLaunch = isDialogLaunch,
                         cleanUp = cleanUp,
                     ),
@@ -905,6 +906,7 @@ constructor(
     fun createOriginTransition(
         controller: Controller,
         scope: CoroutineScope,
+        isLongLived: Boolean = false,
         isDialogLaunch: Boolean = false,
         transitionHelper: RemoteTransitionHelper = DefaultTransitionHelper(),
     ): IRemoteTransition {
@@ -915,6 +917,7 @@ constructor(
         return createOriginTransition(
             createController = { controller },
             scope,
+            isLongLived = isLongLived,
             isDialogLaunch = isDialogLaunch,
             transitionHelper = transitionHelper,
         )
@@ -923,6 +926,7 @@ constructor(
     private fun createOriginTransition(
         createController: suspend () -> Controller,
         scope: CoroutineScope,
+        isLongLived: Boolean = false,
         isDialogLaunch: Boolean = false,
         cleanUp: (() -> Unit)? = null,
         transitionHelper: RemoteTransitionHelper = DefaultTransitionHelper(),
@@ -944,6 +948,7 @@ constructor(
             cleanUp,
             transitionHelper,
             mainExecutor,
+            isLongLived,
             disableWmTimeout,
             skipReparentTransaction,
         )
@@ -1303,8 +1308,9 @@ constructor(
      * contained inside the [Controller] returned by [createController]. [scope] must be a valid
      * [CoroutineScope] which [createController] will use to provide the [Controller].
      */
-    private class OriginTransition(
-        private val createController: suspend () -> Controller,
+    @VisibleForTesting
+    class OriginTransition(
+        createController: suspend () -> Controller,
         private val scope: CoroutineScope,
         private val callback: Callback,
         private val transitionAnimator: TransitionAnimator,
@@ -1312,6 +1318,7 @@ constructor(
         private val cleanUp: (() -> Unit)? = null,
         private val transitionHelper: RemoteTransitionHelper,
         private val mainExecutor: Executor,
+        private val isLongLived: Boolean = false,
         private val disableWmTimeout: Boolean = false,
         private val skipReparentTransaction: Boolean = false,
     ) : RemoteTransitionStub() {
@@ -1323,9 +1330,10 @@ constructor(
                 Handler(Looper.getMainLooper())
             }
 
-        // This is being passed across IPC boundaries and cycles (through PendingIntentRecords,
+        // This class is passed across IPC boundaries and cycles (through PendingIntentRecords,
         // etc.) are possible. So we need to make sure we drop any references that might
         // transitively cause leaks when we're done with animation.
+        @VisibleForTesting var createController: (suspend () -> Controller)? = createController
         private var delegate: TransitionAnimationDelegate? = null
         private var cancelled = false
         private var timedOut = false
@@ -1442,10 +1450,12 @@ constructor(
             scope.launch {
                 val success =
                     withTimeoutOrNull(TRANSITION_TIMEOUT) {
+                        val controller =
+                            createController?.invoke() ?: return@withTimeoutOrNull false
                         delegate =
                             TransitionAnimationDelegate(
                                 mainExecutor,
-                                createController(),
+                                controller,
                                 callback,
                                 DelegatingAnimationCompletionListener(
                                     listener,
@@ -1519,7 +1529,7 @@ constructor(
                 )
             }
 
-            scope.launch { createController().onTransitionAnimationCancelled() }
+            scope.launch { createController?.invoke()?.onTransitionAnimationCancelled() }
             listener?.onTransitionAnimationCancelled()
         }
 
@@ -1543,6 +1553,7 @@ constructor(
             mainExecutor.execute {
                 cleanUp?.invoke()
 
+                if (!isLongLived) createController = null
                 delegate = null
                 cancelled = false
                 timedOut = false
