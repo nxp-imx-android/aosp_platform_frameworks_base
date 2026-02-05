@@ -852,7 +852,7 @@ public class UsbPortManager implements IBinder.DeathRecipient {
 
     public void addSimulatedPort(String portId, int supportedModes,
             boolean supportsComplianceWarnings, boolean supportsDisplayPortAltMode,
-            IndentingPrintWriter pw) {
+            boolean supportsPowerProfiles, IndentingPrintWriter pw) {
         int supportedAltModes = supportsDisplayPortAltMode ?
                 UsbPort.FLAG_ALT_MODE_TYPE_DISPLAYPORT : 0;
         DisplayPortAltModeInfo displayPortAltModeInfo = null;
@@ -873,7 +873,8 @@ public class UsbPortManager implements IBinder.DeathRecipient {
             builder.setSupportedModes(supportedModes)
                     .setSupportsComplianceWarnings(supportsComplianceWarnings)
                     .setSupportedAltModes(supportedAltModes)
-                    .setDisplayPortAltModeInfo(displayPortAltModeInfo);
+                    .setDisplayPortAltModeInfo(displayPortAltModeInfo)
+                    .setSupportsPowerProfiles(supportsPowerProfiles);
             mSimulatedPorts.put(portId, builder.build());
             updatePortsLocked(pw, null);
         }
@@ -982,6 +983,66 @@ public class UsbPortManager implements IBinder.DeathRecipient {
             updatePortsLocked(pw, null);
         }
 
+    }
+
+    /**
+     * Adds a PowerProfileInfo object to a simulated USB port object
+     *
+     * @hide
+     */
+    public void simulatePowerProfileInfo(String portId, PowerProfileInfo info,
+            boolean portProfile, boolean sinkProfile, IndentingPrintWriter pw) {
+        synchronized (mLock) {
+            final RawPortInfo portInfo = mSimulatedPorts.get(portId);
+            if (portInfo == null) {
+                pw.println("Simulated port not found");
+                return;
+            }
+
+            if (!portInfo.supportsPowerProfiles) {
+                pw.println("Simulated port does not support power profiles");
+                return;
+            }
+
+            if (portProfile) {
+                if (sinkProfile) {
+                    portInfo.portSinkPowerProfiles.add(info);
+                } else {
+                    portInfo.portSourcePowerProfiles.add(info);
+                }
+            } else {
+                if (sinkProfile) {
+                    portInfo.partnerSinkPowerProfiles.add(info);
+                } else {
+                    portInfo.partnerSourcePowerProfiles.add(info);
+                }
+            }
+        }
+    }
+
+    /**
+     * Clears PowerProfileInfo objects on a simulated USB port object
+     *
+     * @hide
+     */
+    public void clearSimulatedPowerProfileInfo(String portId, IndentingPrintWriter pw) {
+        synchronized (mLock) {
+            final RawPortInfo portInfo = mSimulatedPorts.get(portId);
+            if (portInfo == null) {
+                pw.println("Simulated port not found");
+                return;
+            }
+
+            if (!portInfo.supportsPowerProfiles) {
+                pw.println("Simulated port does not support power profiles");
+                return;
+            }
+
+            portInfo.portSinkPowerProfiles.clear();
+            portInfo.portSourcePowerProfiles.clear();
+            portInfo.partnerSinkPowerProfiles.clear();
+            portInfo.partnerSourcePowerProfiles.clear();
+        }
     }
 
     public void disconnectSimulatedPort(String portId, IndentingPrintWriter pw) {
