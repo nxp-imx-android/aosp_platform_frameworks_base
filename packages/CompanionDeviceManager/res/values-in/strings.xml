@@ -68,7 +68,7 @@
     <string name="permission_media_routing_control" msgid="5498639511586715253">"Mengubah output media"</string>
     <string name="permission_storage" msgid="6831099350839392343">"Foto dan media"</string>
     <string name="permission_notifications" msgid="4099418516590632909">"Notifikasi"</string>
-    <string name="permission_app_streaming" msgid="4488910074894929222">"Cerminkan layar dan streaming apl"</string>
+    <string name="permission_app_streaming" msgid="4488910074894929222">"Cerminkan layar &amp; stream apl"</string>
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Streaming data ke <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> Anda"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Cerminkan layar Anda"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Streaming aplikasi"</string>
