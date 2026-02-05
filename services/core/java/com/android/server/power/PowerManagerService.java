@@ -755,6 +755,7 @@ public final class PowerManagerService extends SystemService
 
     private final class PowerGroupWakefulnessChangeListener implements
             PowerGroup.PowerGroupListener {
+        @SuppressWarnings("AndroidFrameworkSystemServerLock")
         @GuardedBy("mLock")
         @Override
         public void onWakefulnessChangedLocked(int groupId, int wakefulness, long eventTime,
@@ -880,6 +881,7 @@ public final class PowerManagerService extends SystemService
     // 1. The device will lock only when all the groups with this flag and the default group are
     // made non interactive
     // 2. The power button will sleep only these groups and the default group
+    @SuppressWarnings("AndroidFrameworkSystemServerLock")
     private boolean isDefaultGroupAdjacent(int groupId) {
         long flags = mDisplayManagerInternal.getDisplayGroupFlags(groupId);
         return (flags & DisplayGroup.FLAG_DEFAULT_GROUP_ADJACENT) != 0;
@@ -1419,6 +1421,7 @@ public final class PowerManagerService extends SystemService
         }
     }
 
+    @SuppressWarnings("AndroidFrameworkSystemServerLock")
     private void systemReady() {
         synchronized (mLock) {
             mSystemReady = true;
@@ -2185,7 +2188,7 @@ public final class PowerManagerService extends SystemService
         }
     }
 
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings({"AndroidFrameworkSystemServerLock", "deprecation"})
     private boolean isWakeLockLevelSupportedInternal(int level, int displayId) {
         synchronized (mLock) {
             switch (level) {
@@ -2994,6 +2997,7 @@ public final class PowerManagerService extends SystemService
      *
      * This function must have no other side effects.
      */
+    @SuppressWarnings("AndroidFrameworkSystemServerLock")
     @GuardedBy("mLock")
     private void updateWakeLockSummaryLocked(int dirty) {
         if ((dirty & (DIRTY_WAKE_LOCKS | DIRTY_WAKEFULNESS | DIRTY_DISPLAY_GROUP_WAKEFULNESS))
@@ -3962,6 +3966,7 @@ public final class PowerManagerService extends SystemService
      *
      * @return {@code true} if all {@link PowerGroup}s became ready; {@code false} otherwise
      */
+    @SuppressWarnings("AndroidFrameworkSystemServerLock")
     @GuardedBy("mLock")
     private boolean updatePowerGroupsLocked(int dirty) {
         final boolean oldPowerGroupsReady = areAllPowerGroupsReadyLocked();
@@ -5003,6 +5008,7 @@ public final class PowerManagerService extends SystemService
         }
     }
 
+    @SuppressWarnings("AndroidFrameworkSystemServerLock")
     @GuardedBy("mLock")
     private void addPowerGroupsForNonDefaultDisplayGroupLocked() {
         IntArray displayGroupIds = mDisplayManagerInternal.getDisplayGroupIds();
