@@ -24,6 +24,9 @@ public interface NotificationRulesScreenViewModel : Activatable {
     /** The list of current saved rules for the user. */
     public val rules: List<RuleModel>
 
+    /** Creates a new rule and adds it to the list of saved rules. */
+    public fun createRule(newRule: RuleModel)
+
     public interface Factory {
         public fun create(): NotificationRulesScreenViewModel
     }

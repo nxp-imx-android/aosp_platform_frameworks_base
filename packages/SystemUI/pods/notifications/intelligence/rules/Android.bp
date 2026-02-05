@@ -56,3 +56,8 @@ java_library {
         "com.android.systemui.notifications.intelligence.rules_main",
     ],
 }
+
+filegroup {
+    name: "com.android.systemui.notifications.intelligence.rules_fixtureFiles",
+    defaults: ["sysui_fixtureFiles"],
+}

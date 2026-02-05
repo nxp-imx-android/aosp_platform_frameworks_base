@@ -20,6 +20,8 @@ import com.android.systemui.notifications.intelligence.rules.data.repository.Con
 import com.android.systemui.notifications.intelligence.rules.data.repository.ContactsRepositoryImpl
 import com.android.systemui.notifications.intelligence.rules.data.repository.InstalledAppsRepository
 import com.android.systemui.notifications.intelligence.rules.data.repository.InstalledAppsRepositoryImpl
+import com.android.systemui.notifications.intelligence.rules.data.repository.NotificationRulesRepository
+import com.android.systemui.notifications.intelligence.rules.data.repository.NotificationRulesRepositoryImpl
 import dagger.Binds
 import dagger.Module
 
@@ -31,4 +33,9 @@ interface NotificationRulesDataModule {
     public fun bindInstalledAppsRepository(
         impl: InstalledAppsRepositoryImpl
     ): InstalledAppsRepository
+
+    @Binds
+    public fun bindRulesRepository(
+        impl: NotificationRulesRepositoryImpl
+    ): NotificationRulesRepository
 }

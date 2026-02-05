@@ -16,41 +16,22 @@
 
 package com.android.systemui.notifications.intelligence.rules.ui.viewmodel
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import com.android.systemui.lifecycle.HydratedActivatable
-import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
-import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
-import com.android.systemui.notifications.intelligence.rules.shared.model.ContactsModel
-import com.android.systemui.notifications.intelligence.rules.shared.model.FilterModel
+import com.android.systemui.notifications.intelligence.rules.domain.interactor.NotificationRulesInteractor
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleModel
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 
-class NotificationRulesScreenViewModelImpl @AssistedInject constructor() :
+class NotificationRulesScreenViewModelImpl
+@AssistedInject
+constructor(private val interactor: NotificationRulesInteractor) :
     NotificationRulesScreenViewModel, HydratedActivatable() {
-    // TODO: b/478225883 - Fetch the current rules.
-    override val rules: List<RuleModel> by
-        mutableStateOf(
-            listOf(
-                RuleModel(
-                    action = ActionModel.Bundle,
-                    filter =
-                        FilterModel(
-                            contacts = ContactsModel(listOf(ContactModel("spam"))),
-                            includedApps = null,
-                        ),
-                ),
-                RuleModel(
-                    action = ActionModel.Highlight,
-                    filter =
-                        FilterModel(
-                            contacts = ContactsModel(listOf(ContactModel("mom"), ContactModel("dad"))),
-                            includedApps = null,
-                        ),
-                ),
-            )
-        )
+    override val rules: List<RuleModel>
+        get() = interactor.rules
+
+    override fun createRule(newRule: RuleModel) {
+        interactor.createRule(newRule)
+    }
 
     @AssistedFactory
     interface Factory : NotificationRulesScreenViewModel.Factory {

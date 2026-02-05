@@ -18,11 +18,11 @@ package com.android.systemui.notifications.intelligence.rules.ui.composable
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Star
@@ -32,14 +32,20 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.android.systemui.lifecycle.rememberViewModel
-import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRulesScreenViewModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.ContactsModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.FilterModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleModel
+import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRulesScreenViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.launch
 
 class NotificationRulesScreenImpl @Inject constructor() : NotificationRulesScreen {
     @Composable
@@ -49,33 +55,42 @@ class NotificationRulesScreenImpl @Inject constructor() : NotificationRulesScree
         modifier: Modifier,
     ) {
         val viewModel = rememberViewModel("NotificationRulesScreen") { viewModelFactory.create() }
+        val scope = rememberCoroutineScope()
 
-        Column(
+        LazyColumn(
             verticalArrangement = Arrangement.spacedBy(8.dp, alignment = Alignment.Top),
             modifier = modifier.background(MaterialTheme.colorScheme.background).padding(16.dp),
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Button(onClick = dismissRulesScreen, modifier = Modifier) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        // TODO: b/478225883 - Translate content description (requires moving
-                        // resources to pods)
-                        contentDescription = "Back",
+            item("Title") {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Button(onClick = dismissRulesScreen, modifier = Modifier) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            // TODO: b/478225883 - Translate content description (requires moving
+                            // resources to pods)
+                            contentDescription = "Back",
+                        )
+                    }
+                    Text(
+                        text = "Notification Rules",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(start = 8.dp),
                     )
                 }
-                Text(
-                    text = "Notification Rules",
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(start = 8.dp),
-                )
             }
 
-            viewModel.rules.forEach { rule -> CurrentRule(rule) }
+            viewModel.rules.forEach { rule -> item(rule.toString()) { CurrentRule(rule) } }
+
+            item("Fake rule button") {
+                Button(onClick = { scope.launch { viewModel.createRule(generateFakeRule()) } }) {
+                    Text("Add fake rule")
+                }
+            }
         }
     }
 }
@@ -119,4 +134,16 @@ private fun RuleModel.toText(): String {
         }
 
     return "${action.name} notifications$contactsString"
+}
+
+private fun generateFakeRule(): RuleModel {
+    val contactId = (0..1000).random()
+    return RuleModel(
+        ActionModel.Silence,
+        filter =
+            FilterModel(
+                contacts = ContactsModel(listOf(ContactModel("Contact #$contactId"))),
+                includedApps = null,
+            ),
+    )
 }

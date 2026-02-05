@@ -20,6 +20,8 @@ import com.android.systemui.notifications.intelligence.rules.domain.interactor.C
 import com.android.systemui.notifications.intelligence.rules.domain.interactor.ContactsInteractorImpl
 import com.android.systemui.notifications.intelligence.rules.domain.interactor.InstalledAppsInteractor
 import com.android.systemui.notifications.intelligence.rules.domain.interactor.InstalledAppsInteractorImpl
+import com.android.systemui.notifications.intelligence.rules.domain.interactor.NotificationRulesInteractor
+import com.android.systemui.notifications.intelligence.rules.domain.interactor.NotificationRulesInteractorImpl
 import dagger.Binds
 import dagger.Module
 
@@ -31,4 +33,9 @@ interface NotificationRulesDomainModule {
     public fun bindInstalledAppsInteractor(
         impl: InstalledAppsInteractorImpl
     ): InstalledAppsInteractor
+
+    @Binds
+    public fun bindRulesInteractor(
+        impl: NotificationRulesInteractorImpl
+    ): NotificationRulesInteractor
 }
