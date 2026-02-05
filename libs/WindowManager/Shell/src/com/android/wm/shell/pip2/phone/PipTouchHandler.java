@@ -1114,6 +1114,8 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
      * resized.
      */
     void updateMovementBounds() {
+        mPipDisplayLayoutState.setEnableNavigationBarsInsets(
+                mPipDesktopState.isPipInDesktopMode());
         Rect insetBounds = new Rect();
         mPipBoundsState.setImeVisibility(mIsImeShowing, mIsImeShowing ? mImeHeight : 0);
         mPipBoundsAlgorithm.getInsetBounds(insetBounds);
