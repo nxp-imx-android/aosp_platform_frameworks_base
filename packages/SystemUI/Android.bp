@@ -462,6 +462,20 @@ java_defaults {
     },
 }
 
+java_defaults {
+    name: "SystemUI_compile_dagger",
+
+    plugins: ["dagger2-compiler"],
+
+    annotation_processor_flags: [
+        "dagger.fastInit=ENABLED",
+        "dagger.explicitBindingConflictsWithInject=ERROR",
+        "dagger.useBindingGraphFix=ENABLED",
+    ],
+
+    defaults_visibility: ["//visibility:public"],
+}
+
 // The set of sources that instantiate the AOSP System UI Application (including Dagger graph)
 filegroup {
     name: "SystemUI-application-srcs",

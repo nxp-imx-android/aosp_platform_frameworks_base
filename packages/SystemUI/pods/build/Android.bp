@@ -20,7 +20,10 @@
 // Represents code in the "main" folder of a pod
 java_defaults {
     name: "sysui_main",
-    defaults: ["sysui_pod_defaults"],
+    defaults: [
+        "sysui_pod_defaults",
+        "SystemUI_compile_dagger",
+    ],
     srcs: [
         "src/main/**/*.kt",
         "src/main/**/*.java",
@@ -28,10 +31,6 @@ java_defaults {
     libs: [
         "jsr330", // javax.inject.*
         "dagger2", // Dagger-specific annotations
-    ],
-    plugins: [
-        // Needed to create factories for @Inject constructors
-        "dagger2-compiler",
     ],
     defaults_visibility: ["//frameworks/base/packages/SystemUI/pods:__subpackages__"],
 }
@@ -57,7 +56,10 @@ java_defaults {
 // Represents code in the "dagger" folder of a pod
 java_defaults {
     name: "sysui_dagger",
-    defaults: ["sysui_pod_defaults"],
+    defaults: [
+        "sysui_pod_defaults",
+        "SystemUI_compile_dagger",
+    ],
     srcs: [
         "src/dagger/**/*.kt",
         "src/dagger/**/*.java",
@@ -65,9 +67,6 @@ java_defaults {
     libs: [
         "jsr330", // javax.inject.*
         "dagger2", // Dagger-specific annotations
-    ],
-    plugins: [
-        "dagger2-compiler",
     ],
     defaults_visibility: ["//frameworks/base/packages/SystemUI/pods:__subpackages__"],
 }
