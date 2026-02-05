@@ -86,11 +86,9 @@ import androidx.compose.ui.util.lerp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentKey
 import com.android.compose.animation.scene.ContentScope
-import com.android.compose.animation.scene.ElementContentPicker
 import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.HeadsUpContentPicker
 import com.android.compose.animation.scene.SceneTransitionLayoutState
-import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.compose.gesture.effect.OffsetOverscrollEffect
 import com.android.compose.gesture.effect.rememberOffsetOverscrollEffect
 import com.android.compose.modifiers.onUnplaced
@@ -218,6 +216,7 @@ fun ContentScope.ScrollingNotificationPanel(
     shouldFillMaxHeight: Boolean = false,
     shouldIncludeHeadsUpSpace: Boolean = true,
     shouldDrawScrimBackground: Boolean = true,
+    useVerticalOverscrollEffect: Boolean = true,
     isActivated: Boolean = true,
     contentScrollState: ScrollState =
         shadeSession.rememberSaveableSession(saver = ScrollState.Saver, key = "ScrollState") {
@@ -276,6 +275,7 @@ fun ContentScope.ScrollingNotificationPanel(
         shouldScrimBackgroundFillMaxHeight = false,
         shouldDrawScrimBackground = shouldDrawScrimBackground,
         shouldIncludeHeadsUpSpace = shouldIncludeHeadsUpSpace,
+        useVerticalOverscrollEffect = useVerticalOverscrollEffect,
         isActivated = isActivated,
         contentScrollState = contentScrollState,
         scrollingContentOverscrollEffect = scrollingContentOverscrollEffect,
@@ -304,6 +304,7 @@ fun ContentScope.NestedScrollingNotificationPanel(
     shouldScrimBackgroundFillMaxHeight: Boolean,
     shouldIncludeHeadsUpSpace: Boolean = true,
     shouldDrawScrimBackground: Boolean = true,
+    useVerticalOverscrollEffect: Boolean = true,
     isActivated: Boolean = true,
     onEmptySpaceClick: (() -> Unit)? = null,
     onStackHeightChanged: (Int) -> Unit = {},
@@ -473,7 +474,10 @@ fun ContentScope.NestedScrollingNotificationPanel(
                 // Only apply visual effects when the background is drawn.
                 .thenIf(shouldDrawScrimBackground) {
                     // Apply overscroll visuals (visuals only, no event handling):
-                    Modifier.overscroll(verticalOverscrollEffect) // SceneContainer transitions
+                    Modifier.thenIf(useVerticalOverscrollEffect) {
+                            // SceneContainer transitions
+                            Modifier.overscroll(verticalOverscrollEffect)
+                        }
                         .overscroll(scrollingContentOverscrollEffect) // Content scrolling
                         .overscroll(shortContentOverscrollEffect) // Short/Empty content swipes
                 }
