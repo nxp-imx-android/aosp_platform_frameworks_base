@@ -1993,6 +1993,13 @@ constructor(
             var state: WindowAnimationState? = null
 
             for ((index, it) in info.changes.withIndex()) {
+                // Ignore changes that are not standalone tasks or activities, as these are not new
+                // containers to animate (e.g. they are changes within an existing and already
+                // showing task or activity window).
+                val isLeafTask = TransitionUtil.LeafTaskFilter().test(it)
+                val isActivity = it.activityComponent != null
+                if (!isLeafTask && !isActivity) continue
+
                 if (
                     !controller.isLaunching &&
                         TransitionUtil.isOpeningType(info.type) &&
@@ -2275,7 +2282,9 @@ constructor(
             startTransaction: SurfaceControl.Transaction? = null,
             onAnimationFinished: (SurfaceControl.Transaction?) -> Unit,
         ) {
-            val window = setUpAnimation(resolveAnimatedSurface, onAnimationFinished) ?: return
+            val window =
+                setUpAnimation(resolveAnimatedSurface, startTransaction, onAnimationFinished)
+                    ?: return
 
             if (controller.windowAnimatorState == null) {
                 startAnimation(
@@ -2296,7 +2305,9 @@ constructor(
             startTransaction: SurfaceControl.Transaction,
             onAnimationFinished: (SurfaceControl.Transaction?) -> Unit,
         ) {
-            val window = setUpAnimation(resolveAnimatedSurface, onAnimationFinished) ?: return
+            val window =
+                setUpAnimation(resolveAnimatedSurface, startTransaction, onAnimationFinished)
+                    ?: return
             takeOverAnimationInternal(window, startTransaction, onAnimationFinished)
         }
 
@@ -2313,6 +2324,7 @@ constructor(
         @UiThread
         private fun setUpAnimation(
             resolveAnimatedSurface: () -> AnimatedSurface?,
+            startTransaction: SurfaceControl.Transaction?,
             onAnimationFinished: (SurfaceControl.Transaction?) -> Unit,
         ): AnimatedSurface? {
             removeTimeouts()
@@ -2320,6 +2332,8 @@ constructor(
             // The animation was started too late and we already notified the controller that it
             // timed out.
             if (timedOut) {
+                // The setup steps still needs to get applied or the end state might be wrong.
+                startTransaction?.apply()
                 onAnimationFinished(null)
                 return null
             }
@@ -2327,12 +2341,16 @@ constructor(
             // This should not happen, but let's make sure we don't start the animation if it was
             // cancelled before and we already notified the controller.
             if (cancelled) {
+                // The setup steps still needs to get applied or the end state might be wrong.
+                startTransaction?.apply()
                 return null
             }
 
             val window = resolveAnimatedSurface()
             if (window == null) {
                 Log.i(TAG, "Aborting the animation as no window is opening")
+                // The setup steps still needs to get applied or the end state might be wrong.
+                startTransaction?.apply()
                 onAnimationFinished(null)
 
                 if (DEBUG_TRANSITION_ANIMATION) {
