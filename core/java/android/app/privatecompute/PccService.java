@@ -125,9 +125,8 @@ public abstract class PccService extends Service {
      *    <li>{@link android.os.SharedMemory}. If it has write access, it will be silently
      *    restricted to read-only.
      *    <li>{@link android.graphics.Bitmap}
-     *    <li>Custom {@link android.os.Parcelable} objects, must be serialized as a
-     *    {@code byte []} if the bundle contains any active objects like
-     *    {@link android.os.ParcelFileDescriptor} or {@link android.os.SharedMemory}.
+     *    <li>Custom {@link android.os.Parcelable} objects must be serialized as a
+     *    {@code byte []}.
      *    <li>Nested {@code Bundle} objects, which are recursively sanitized up to a depth of 100.
      *  </ul>
      *

@@ -20,6 +20,7 @@ import static org.junit.Assert.assertThrows;
 
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.BaseBundle;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Parcel;
@@ -43,11 +44,22 @@ import java.io.IOException;
 public class PccBundleSanitizationUtilTest {
 
     @Test
-    public void sanitizeBundle_allowsSafeTypes() throws Exception {
+    public void sanitizeBundle_bundle_allowsSafeTypes() throws Exception {
         Bundle bundle = getBundleWithPersistableTypes();
 
         try {
             PccBundleSanitizationUtil.sanitizeBundle(parcelAndUnparcel(bundle));
+        } catch (IllegalArgumentException e) {
+            throw new AssertionError("Sanitization failed for safe types.", e);
+        }
+    }
+
+    @Test
+    public void sanitizeBundle_persistableBundle_allowsSafeTypes() throws Exception {
+        PersistableBundle bundle = getPersistableBundleWithPersistableTypes();
+
+        try {
+            PccBundleSanitizationUtil.sanitizeBundle(bundle);
         } catch (IllegalArgumentException e) {
             throw new AssertionError("Sanitization failed for safe types.", e);
         }
@@ -121,7 +133,7 @@ public class PccBundleSanitizationUtilTest {
     }
 
     @Test
-    public void sanitizeBundle_disallowsCustomParcelable_whenFdPresent() throws Exception {
+    public void sanitizeBundle_disallowsCustomParcelable() throws Exception {
         Bundle bundle = new Bundle();
         bundle.putParcelable("custom_parcelable", Uri.EMPTY);
         bundle.putParcelableArray("custom_parcelable_array", new Parcelable[]{Uri.EMPTY});
@@ -133,20 +145,18 @@ public class PccBundleSanitizationUtilTest {
     }
 
     @Test
-    public void sanitizeBundle_skipsCheckForCustomParcelable_withNoFdPresent() {
+    public void sanitizeBundle_doesNotSkipCheckForCustomParcelable_withNoFdPresent() {
         Bundle bundle = new Bundle();
         bundle.putParcelable("custom_parcelable", Uri.EMPTY);
         bundle.putParcelableArray("custom_parcelable_array", new Parcelable[]{Uri.EMPTY});
 
-        try {
+        assertThrows(IllegalArgumentException.class, () -> {
             PccBundleSanitizationUtil.sanitizeBundle(parcelAndUnparcel(bundle));
-        } catch (IllegalArgumentException e) {
-            throw new AssertionError("Sanitization should not fail for custom parcelable.", e);
-        }
+        });
     }
 
     @Test
-    public void sanitizeBundle_checkRecursiveDepthLimit_whenFdPresent() throws Exception {
+    public void sanitizeBundle_withFd_checkRecursiveDepthLimit() throws Exception {
         Bundle nestedBundle100 = getDeepNestedBundle100();
         addTriggerPfd(nestedBundle100);
 
@@ -166,7 +176,25 @@ public class PccBundleSanitizationUtilTest {
     }
 
     @Test
-    public void sanitizeBundle_allowsAllBitmaps_whenFdPresent() throws Exception {
+    public void sanitizeBundle_withoutFd_checkRecursiveDepthLimit() throws Exception {
+        Bundle nestedBundle100 = getDeepNestedBundle100();
+
+        try {
+            PccBundleSanitizationUtil.sanitizeBundle(parcelAndUnparcel(nestedBundle100));
+        } catch (IllegalArgumentException e) {
+            throw new AssertionError("Bundle of depth 100 not accepted.", e);
+        }
+
+        Bundle nestedBundle101 = new Bundle();
+        nestedBundle101.putBundle("NESTED_BUNDLE_KEY", nestedBundle100);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            PccBundleSanitizationUtil.sanitizeBundle(parcelAndUnparcel(nestedBundle101));
+        });
+    }
+
+    @Test
+    public void sanitizeBundle_allowsAllBitmaps() throws Exception {
         Bundle bundle = new Bundle();
         addVariousBitmaps(bundle);
         addTriggerPfd(bundle);
@@ -246,6 +274,23 @@ public class PccBundleSanitizationUtilTest {
 
         return bundle;
     }
+
+    private PersistableBundle getPersistableBundleWithPersistableTypes() {
+        PersistableBundle bundle = new PersistableBundle();
+        bundle.putByteArray("byte_array", new byte[]{(byte) 1, (byte) 2});
+        bundle.putInt("int", 3);
+        bundle.putIntArray("int_array", new int[]{3, 4});
+        bundle.putLong("long", 4L);
+        bundle.putLongArray("long_array", new long[]{4L, 5L});
+        bundle.putDouble("double", 6.0);
+        bundle.putDoubleArray("double_array", new double[]{6.0, 7.0});
+        bundle.putBoolean("boolean", true);
+        bundle.putBooleanArray("boolean_array", new boolean[]{true, false});
+        bundle.putString("string", "hello");
+        bundle.putStringArray("string_array", new String[]{"hello", "world"});
+        return bundle;
+    }
+
 
     /** Create a nested bundle of depth 100. */
     private static Bundle getDeepNestedBundle100() {
