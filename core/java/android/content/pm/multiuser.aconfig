@@ -53,6 +53,16 @@ flag {
     bug: "308105403"
 }
 
+flag {
+    name: "upgrade_user_summary_behaviour"
+    namespace: "multiuser"
+    description: "Make \"Not set up\" status reflect whether SUW has been completed instead of started."
+    bug: "463339398"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
 # Begin Multiuser Widget flags #
 
 flag {
