@@ -24,6 +24,7 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.swipe
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -64,7 +65,6 @@ import com.android.systemui.statusbar.phone.ui.tintedIconManagerFactory
 import com.android.systemui.testKosmos
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.flow.MutableStateFlow
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -75,10 +75,10 @@ import platform.test.motion.compose.asDataPoint
 import platform.test.motion.compose.feature
 import platform.test.motion.compose.recordMotion
 import platform.test.motion.compose.runTest
+import platform.test.motion.golden.asDataPoint
 import platform.test.screenshot.DeviceEmulationSpec
 import platform.test.screenshot.Displays.Phone
 
-@Ignore("b/467228678")
 @RunWith(AndroidJUnit4::class)
 @MotionTest
 @LargeTest
@@ -159,6 +159,50 @@ class ShadeSceneToQuickSettingsSceneTest : SysuiTestCase() {
                                 "quick_settings_panel_position",
                                 useUnmergedTree = true,
                             )
+                        },
+                )
+            assertThat(motion).timeSeriesMatchesGolden()
+        }
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
+    fun swipeDownFromShadeNotCrossingThreshold_recordingQSPanelYCoordinate() {
+        motionTestRule.runTest(60.seconds) {
+            kosmos.enableSingleShade()
+            kosmos.usingMediaInComposeFragment = true
+            kosmos.populateQuickSettings(tileCount = 10)
+            val motion =
+                recordMotion(
+                    content = { ShadeSceneToQSSceneContainer() },
+                    recordingSpec =
+                        ComposeRecordingSpec(
+                            MotionControl(
+                                delayRecording = {
+                                    awaitCondition {
+                                        kosmos.sceneInteractor.transitionStateFlow.value.isIdle()
+                                    }
+                                }
+                            ) {
+                                performTouchInputAsync(onRoot()) {
+                                    swipe(
+                                        start = Offset(x = centerX, y = top),
+                                        end = Offset(x = centerX, y = height * 0.05f),
+                                        durationMillis = 500,
+                                    )
+                                }
+                                awaitCondition {
+                                    kosmos.sceneInteractor.transitionStateFlow.value.isIdle()
+                                }
+                            }
+                        ) {
+                            val qsPanelYCoordinate =
+                                motionTestRule.toolkit.composeContentTestRule
+                                    .onNodeWithTag(Elements.QuickSettingsContent.testTag, true)
+                                    .fetchSemanticsNode()
+                                    .positionInRoot
+                                    .y
+                            feature("qs_panel_position.y") { qsPanelYCoordinate.asDataPoint() }
                         },
                 )
             assertThat(motion).timeSeriesMatchesGolden()
