@@ -459,6 +459,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 name, displayWidth, displayHeight,
                 mainDisplayInfo.logicalDensityDpi)
                 .setFlags(displayFlags)
+                .setIgnoreActivitySizeRestrictions(true)
                 .build();
     }
 
