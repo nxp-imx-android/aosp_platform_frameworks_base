@@ -21869,6 +21869,14 @@ public final class Settings {
              */
             public static final String WEAR_SYSTEM_STATUS_TRAY_CONFIGURATION =
                     "wear_system_status_tray_configuration";
+
+            /**
+             * Whether the show warning message, on bug report notification's confirmation screen.
+             *
+             * @hide
+             */
+            public static final String WEAR_BUG_REPORT_WARNING_VISIBILITY_STATE =
+                    "wear_bug_report_warning_visibility_state";
         }
     }
 
