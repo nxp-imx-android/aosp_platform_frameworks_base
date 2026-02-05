@@ -49,8 +49,11 @@ import static com.android.server.am.psc.OomAdjusterImpl.Connection.CPU_TIME_TRAN
 import static com.android.server.am.psc.OomAdjusterImpl.Connection.CPU_TIME_TRANSMISSION_NONE;
 import static com.android.server.am.psc.OomAdjusterImpl.Connection.CPU_TIME_TRANSMISSION_NORMAL;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import static org.junit.Assert.assertEquals;
 
+import android.annotation.NonNull;
 import android.app.ActivityManager.ProcessCapability;
 import android.app.ActivityManager.ProcessState;
 import android.platform.test.annotations.Presubmit;
@@ -58,14 +61,19 @@ import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 
+import com.android.server.am.psc.TestGraphElements.TestEdge;
 import com.android.server.am.psc.TestGraphElements.TestProcessNode;
 import com.android.server.am.psc.TestGraphElements.TestProviderBindingEdge;
 import com.android.server.am.psc.TestGraphElements.TestServiceBindingEdge;
 import com.android.server.am.psc.TestGraphElements.TestServiceRecord;
+import com.android.server.am.psc.TestGraphElements.TestSystemNode;
 import com.android.server.tests.assertutils.FlagAssert;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+
+import java.util.ArrayList;
 
 /**
  * Unit tests for {@link CapabilityController}.
@@ -77,6 +85,13 @@ import org.junit.Test;
 public class CapabilityControllerTest {
     @Rule
     public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
+
+    private CapabilityController mCapabilityController;
+
+    @Before
+    public void setUp() {
+        mCapabilityController = new CapabilityController();
+    }
 
     @Test
     public void testDefaultNode_GrantsNoCapabilities() {
@@ -442,5 +457,131 @@ public class CapabilityControllerTest {
                 .build();
         FlagAssert.assertThat(edge3.evaluateCapabilityFilter()).hasNotSet(
                 ALL_CPU_TIME_CAPABILITIES);
+    }
+
+    @Test
+    public void testEvaluateOutputCapability_ProcessSource() {
+        final TestProcessNode source = new TestProcessNode.Builder().build();
+        source.setCapability(PROCESS_CAPABILITY_FOREGROUND_CAMERA
+                | PROCESS_CAPABILITY_FOREGROUND_LOCATION
+                | PROCESS_CAPABILITY_CPU_TIME);
+        final TestProcessNode target = new TestProcessNode.Builder().build();
+        final TestEdge edge = createTestEdge(source, target, PROCESS_CAPABILITY_FOREGROUND_CAMERA
+                | PROCESS_CAPABILITY_FOREGROUND_LOCATION
+                | PROCESS_CAPABILITY_FOREGROUND_MICROPHONE);
+
+        assertThat(CapabilityController.evaluateOutputCapability(edge)).isEqualTo(
+                PROCESS_CAPABILITY_FOREGROUND_CAMERA
+                        | PROCESS_CAPABILITY_FOREGROUND_LOCATION);
+    }
+
+    @Test
+    public void testEvaluateOutputCapability_SystemSource() {
+        final TestProcessNode target = new TestProcessNode.Builder().build();
+        final TestEdge edge = createTestEdge(new TestSystemNode(), target,
+                PROCESS_CAPABILITY_FOREGROUND_CAMERA);
+
+        assertThat(CapabilityController.evaluateOutputCapability(edge)).isEqualTo(
+                PROCESS_CAPABILITY_FOREGROUND_CAMERA);
+    }
+
+    @Test
+    public void testEvaluateAttachingProcessCapability_NoForegroundActivities() {
+        final TestProcessNode node = new TestProcessNode.Builder()
+                .withHasForegroundActivities(false)
+                .build();
+
+        assertThat(CapabilityController.evaluateAttachingProcessCapability(node)).isEqualTo(
+                ALL_CPU_TIME_CAPABILITIES);
+    }
+
+    @Test
+    public void testEvaluateAttachingProcessCapability_WithForegroundActivities() {
+        final TestProcessNode node = new TestProcessNode.Builder()
+                .withHasForegroundActivities(true)
+                .build();
+
+        assertThat(CapabilityController.evaluateAttachingProcessCapability(node)).isEqualTo(
+                PROCESS_CAPABILITY_ALL);
+    }
+
+    @Test
+    public void testUpdateTargetCapability_NoChange_ReturnsFalse() {
+        final TestProcessNode target = new TestProcessNode.Builder().build();
+        // Assume the target node has already got some capabilities.
+        target.setCapability(PROCESS_CAPABILITY_FOREGROUND_CAMERA
+                | PROCESS_CAPABILITY_FOREGROUND_LOCATION);
+        final TestProcessNode source = new TestProcessNode.Builder().build();
+        source.setCapability(PROCESS_CAPABILITY_FOREGROUND_CAMERA);
+        // The edge does not bring any new capability to the target.
+        final TestEdge edge = createTestEdge(source, target, PROCESS_CAPABILITY_FOREGROUND_CAMERA);
+
+        assertThat(CapabilityController.updateTargetCapability(edge)).isFalse();
+    }
+
+    @Test
+    public void testUpdate_BfslRestriction() {
+        final TestProcessNode node1 = new TestProcessNode.Builder()
+                // BFSL allowed.
+                .withProcState(PROCESS_STATE_BOUND_FOREGROUND_SERVICE)
+                .build();
+        final TestProcessNode node2 = new TestProcessNode.Builder()
+                // IMPF (6) > BFGS (5), thus BFSL is not allowed on this node.
+                .withProcState(PROCESS_STATE_IMPORTANT_FOREGROUND)
+                .build();
+        final TestEdge edge1 = createTestEdge(new TestSystemNode(), node1, PROCESS_CAPABILITY_ALL);
+        final TestEdge edge2 = createTestEdge(new TestSystemNode(), node2, PROCESS_CAPABILITY_ALL);
+
+        final ArrayList<GraphEdge> edges = new ArrayList<>();
+        final ArrayList<ProcessNode> reachableNodes = new ArrayList<>();
+        edges.add(edge1);
+        edges.add(edge2);
+        reachableNodes.add(node1);
+        reachableNodes.add(node2);
+
+        mCapabilityController.update(edges, reachableNodes);
+
+        FlagAssert.assertThat(node1.getCapability()).hasSet(PROCESS_CAPABILITY_BFSL);
+        FlagAssert.assertThat(node2.getCapability()).hasNotSet(PROCESS_CAPABILITY_BFSL);
+    }
+
+    /**
+     * Tests that in a partial update, the capabilities on a reachable node are cleared and
+     * re-initialized from the incoming edge.
+     */
+    @Test
+    public void testUpdate_ClearsAndInitializesCapabilities() {
+        final TestProcessNode target = new TestProcessNode.Builder().build();
+        // The node has a capability before the update.
+        target.setCapability(PROCESS_CAPABILITY_CPU_TIME);
+        // The incoming edge grants a different capability to the target.
+        final TestEdge edge = createTestEdge(new TestSystemNode(), target,
+                PROCESS_CAPABILITY_FOREGROUND_LOCATION);
+
+        final ArrayList<GraphEdge> edges = new ArrayList<>();
+        final ArrayList<ProcessNode> reachableNodes = new ArrayList<>();
+        edges.add(edge);
+        reachableNodes.add(target);
+
+        mCapabilityController.update(edges, reachableNodes);
+
+        // Target capabilities should be cleared, then updated from its incoming edge.
+        assertThat(target.getCapability()).isEqualTo(PROCESS_CAPABILITY_FOREGROUND_LOCATION);
+    }
+
+    private static @NonNull TestEdge createTestEdge(@NonNull GraphNode source,
+            @NonNull TestProcessNode target, @ProcessCapability int capabilityFilter) {
+        TestEdge edge = new TestEdge.Builder(source, target)
+                .withCapabilityFilter(capabilityFilter)
+                .build();
+        if (source instanceof TestSystemNode) {
+            ((TestSystemNode) source).addOutgoingEdge(edge);
+        } else if (source instanceof TestProcessNode) {
+            ((TestProcessNode) source).addOutgoingEdge(edge);
+        } else {
+            throw new IllegalArgumentException("Unknown source type");
+        }
+        target.addIncomingEdge(edge);
+        return edge;
     }
 }
