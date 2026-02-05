@@ -194,8 +194,6 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.Region;
 import android.hardware.HardwareBuffer;
-import android.hardware.configstore.V1_0.OptionalBool;
-import android.hardware.configstore.V1_1.ISurfaceFlingerConfigs;
 import android.hardware.devicestate.DeviceState;
 import android.hardware.devicestate.DeviceStateManager;
 import android.hardware.display.DisplayManager;
@@ -6046,43 +6044,11 @@ public class WindowManagerService extends IWindowManager.Stub
     // Keep logic in sync with SurfaceFlingerProperties.cpp
     // Consider exposing properties via ISurfaceComposer instead.
     private static boolean queryWideColorGamutSupport() {
-        boolean defaultValue = false;
-        Optional<Boolean> hasWideColorProp = SurfaceFlingerProperties.has_wide_color_display();
-        if (hasWideColorProp.isPresent()) {
-            return hasWideColorProp.get();
-        }
-        try {
-            ISurfaceFlingerConfigs surfaceFlinger = ISurfaceFlingerConfigs.getService();
-            OptionalBool hasWideColor = surfaceFlinger.hasWideColorDisplay();
-            if (hasWideColor != null) {
-                return hasWideColor.value;
-            }
-        } catch (RemoteException e) {
-            // Ignore, we're in big trouble if we can't talk to SurfaceFlinger's config store
-        } catch (NoSuchElementException e) {
-            return defaultValue;
-        }
-        return false;
+        return SurfaceFlingerProperties.has_wide_color_display().orElse(false);
     }
 
     private static boolean queryHdrSupport() {
-        boolean defaultValue = false;
-        Optional<Boolean> hasHdrProp = SurfaceFlingerProperties.has_HDR_display();
-        if (hasHdrProp.isPresent()) {
-            return hasHdrProp.get();
-        }
-        try {
-            ISurfaceFlingerConfigs surfaceFlinger = ISurfaceFlingerConfigs.getService();
-            OptionalBool hasHdr = surfaceFlinger.hasHDRDisplay();
-            if (hasHdr != null) {
-                return hasHdr.value;
-            }
-        } catch (RemoteException e) {
-            // Ignore, we're in big trouble if we can't talk to SurfaceFlinger's config store
-        } catch (NoSuchElementException e) {
-            return defaultValue;
-        }
-        return false;
+        return SurfaceFlingerProperties.has_HDR_display().orElse(false);
     }
 
     // Returns an input target which is mapped to the given input token. This can be a WindowState
