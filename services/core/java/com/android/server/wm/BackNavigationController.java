@@ -848,8 +848,7 @@ class BackNavigationController {
                     @BinderThread
                     public void binderDied() {
                         synchronized (mWindowManagerService.mGlobalLock) {
-                            stopMonitorForRemote();
-                            stopMonitorTransition();
+                            clearBackAnimations(true /* cancel */);
                         }
                     }
                 };
@@ -1109,6 +1108,7 @@ class BackNavigationController {
      */
     void clearBackAnimations(boolean cancel) {
         mAnimationHandler.clearBackAnimateTarget(cancel);
+        mNavigationMonitor.stopMonitorForRemote();
         mNavigationMonitor.stopMonitorTransition();
     }
 
@@ -2221,7 +2221,9 @@ class BackNavigationController {
                     + "triggerBack=%b", backType, triggerBack);
 
             synchronized (mWindowManagerService.mGlobalLock) {
-                mNavigationMonitor.stopMonitorForRemote();
+                if (!mAnimationHandler.mComposed) {
+                    mNavigationMonitor.stopMonitorForRemote();
+                }
                 mBackAnimationInProgress = false;
                 mShowWallpaper = false;
                 // All animation should be done, clear any un-send animation.
