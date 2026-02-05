@@ -34,8 +34,8 @@ import android.app.privatecompute.DataMigrationToPccService;
 import android.app.privatecompute.IDataMigrationToPccService;
 import android.app.privatecompute.IMigrationRequestResultReceiver;
 import android.app.privatecompute.IMigrationRequestResultSender;
+import android.app.privatecompute.MigrationException;
 import android.app.privatecompute.MigrationRequestResult;
-import android.app.privatecompute.MigrationRequestResultReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.ServiceConnection;
@@ -279,7 +279,7 @@ public class PccSandboxManagerServiceImplTest {
 
         mService.startNonPccProcessForDataMigration(mCallback);
 
-        verify(mCallback).onError(eq(MigrationRequestResultReceiver.ERROR_INVOCATION_FAILED),
+        verify(mCallback).onError(eq(MigrationException.ERROR_INVOCATION_FAILED),
                 anyString());
     }
 
@@ -291,7 +291,7 @@ public class PccSandboxManagerServiceImplTest {
 
         mService.startNonPccProcessForDataMigration(mCallback);
 
-        verify(mCallback).onError(eq(MigrationRequestResultReceiver.ERROR_INVOCATION_FAILED),
+        verify(mCallback).onError(eq(MigrationException.ERROR_INVOCATION_FAILED),
                 anyString());
         verify(mContext, never()).bindServiceAsUser(any(), any(), anyInt(), any());
     }
@@ -302,7 +302,7 @@ public class PccSandboxManagerServiceImplTest {
 
         mService.startNonPccProcessForDataMigration(mCallback);
 
-        verify(mCallback).onError(eq(MigrationRequestResultReceiver.ERROR_INVOCATION_FAILED),
+        verify(mCallback).onError(eq(MigrationException.ERROR_INVOCATION_FAILED),
                 anyString());
     }
 
@@ -336,7 +336,7 @@ public class PccSandboxManagerServiceImplTest {
         runnableCaptor.getValue().run();
 
         // Verify onError called
-        verify(mCallback).onError(eq(MigrationRequestResultReceiver.ERROR_TIMEOUT), anyString());
+        verify(mCallback).onError(eq(MigrationException.ERROR_TIMEOUT), anyString());
 
         // Verify unbind
         verify(mContext).unbindService(connectionCaptor.getValue());
