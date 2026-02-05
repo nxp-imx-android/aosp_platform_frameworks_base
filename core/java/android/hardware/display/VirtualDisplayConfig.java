@@ -176,7 +176,6 @@ public final class VirtualDisplayConfig implements Parcelable {
      *
      * @see Builder#setDefaultBrightness(float)
      */
-    @FlaggedApi(android.companion.virtualdevice.flags.Flags.FLAG_DEVICE_AWARE_DISPLAY_POWER)
     public @FloatRange(from = 0.0f, to = 1.0f) float getDefaultBrightness() {
         return mDefaultBrightness;
     }
@@ -189,7 +188,6 @@ public final class VirtualDisplayConfig implements Parcelable {
      *
      * @see Builder#setDimBrightness(float)
      */
-    @FlaggedApi(android.companion.virtualdevice.flags.Flags.FLAG_DEVICE_AWARE_DISPLAY_POWER)
     public @FloatRange(from = 0.0f, to = 1.0f) float getDimBrightness() {
         return mDimBrightness;
     }
@@ -386,7 +384,6 @@ public final class VirtualDisplayConfig implements Parcelable {
     /**
      * Listener for display brightness changes.
      */
-    @FlaggedApi(android.companion.virtualdevice.flags.Flags.FLAG_DEVICE_AWARE_DISPLAY_POWER)
     public interface BrightnessListener {
 
         /**
@@ -657,7 +654,6 @@ public final class VirtualDisplayConfig implements Parcelable {
          * @see android.view.View#setKeepScreenOn(boolean)
          * @see #setBrightnessListener(Executor, BrightnessListener)
          */
-        @FlaggedApi(android.companion.virtualdevice.flags.Flags.FLAG_DEVICE_AWARE_DISPLAY_POWER)
         @NonNull
         public Builder setDefaultBrightness(@FloatRange(from = 0.0f, to = 1.0f) float brightness) {
             if (!isValidBrightness(brightness)) {
@@ -684,7 +680,6 @@ public final class VirtualDisplayConfig implements Parcelable {
          * @see Builder#setDefaultBrightness(float)
          * @see #setBrightnessListener(Executor, BrightnessListener)
          */
-        @FlaggedApi(android.companion.virtualdevice.flags.Flags.FLAG_DEVICE_AWARE_DISPLAY_POWER)
         @NonNull
         public Builder setDimBrightness(@FloatRange(from = 0.0f, to = 1.0f) float brightness) {
             if (!isValidBrightness(brightness)) {
@@ -702,7 +697,6 @@ public final class VirtualDisplayConfig implements Parcelable {
          * @param listener The listener to get notified when the display brightness has changed.
          */
         @SuppressLint("MissingGetterMatchingBuilder") // The hidden getter returns the AIDL object
-        @FlaggedApi(android.companion.virtualdevice.flags.Flags.FLAG_DEVICE_AWARE_DISPLAY_POWER)
         @NonNull
         public Builder setBrightnessListener(@NonNull @CallbackExecutor Executor executor,
                 @NonNull BrightnessListener listener) {

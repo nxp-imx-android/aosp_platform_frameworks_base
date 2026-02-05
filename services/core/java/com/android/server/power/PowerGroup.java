@@ -127,8 +127,7 @@ public class PowerGroup {
 
         long dimDuration = INVALID_TIMEOUT;
         long screenOffTimeout = INVALID_TIMEOUT;
-        if (android.companion.virtualdevice.flags.Flags.deviceAwareDisplayPower()
-                && mGroupId != Display.DEFAULT_DISPLAY_GROUP) {
+        if (mGroupId != Display.DEFAULT_DISPLAY_GROUP) {
             VirtualDeviceManagerInternal vdm =
                     LocalServices.getService(VirtualDeviceManagerInternal.class);
             if (vdm != null) {

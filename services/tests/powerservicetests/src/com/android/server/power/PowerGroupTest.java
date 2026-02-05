@@ -58,7 +58,6 @@ import android.content.Context;
 import android.hardware.display.DisplayManagerInternal;
 import android.os.PowerManager;
 import android.os.PowerSaveState;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
@@ -859,7 +858,6 @@ public class PowerGroupTest {
                 .isEqualTo(DEFAULT_TIMEOUT);
     }
 
-    @EnableFlags(android.companion.virtualdevice.flags.Flags.FLAG_DEVICE_AWARE_DISPLAY_POWER)
     @Test
     public void testTimeoutsOverride_noVdm_noOverride() {
         LocalServices.removeServiceForTest(VirtualDeviceManagerInternal.class);
@@ -888,7 +886,6 @@ public class PowerGroupTest {
         assertFalse(mPowerGroup.isDefaultGroupAdjacent());
     }
 
-    @EnableFlags(android.companion.virtualdevice.flags.Flags.FLAG_DEVICE_AWARE_DISPLAY_POWER)
     @Test
     public void testTimeoutsOverride_notValidVirtualDeviceId_noOverride() {
         LocalServices.removeServiceForTest(VirtualDeviceManagerInternal.class);
@@ -912,7 +909,6 @@ public class PowerGroupTest {
                 .isEqualTo(DEFAULT_TIMEOUT);
     }
 
-    @EnableFlags(android.companion.virtualdevice.flags.Flags.FLAG_DEVICE_AWARE_DISPLAY_POWER)
     @Test
     public void testTimeoutsOverride_validVirtualDeviceId_timeoutsAreOverridden() {
         LocalServices.removeServiceForTest(VirtualDeviceManagerInternal.class);
@@ -943,7 +939,6 @@ public class PowerGroupTest {
                 .isEqualTo(screenOffTimeoutOverride);
     }
 
-    @EnableFlags(android.companion.virtualdevice.flags.Flags.FLAG_DEVICE_AWARE_DISPLAY_POWER)
     @Test
     public void testTimeoutsOverrides_dimDurationIsCapped() {
         LocalServices.removeServiceForTest(VirtualDeviceManagerInternal.class);

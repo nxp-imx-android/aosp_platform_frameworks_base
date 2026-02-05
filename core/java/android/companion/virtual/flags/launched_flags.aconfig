@@ -44,3 +44,11 @@ flag {
     bug: "291748430"
     is_exported: true
 }
+
+flag {
+    namespace: "virtual_devices"
+    name: "device_aware_display_power"
+    description: "Device awareness in power and display APIs"
+    bug: "285020111"
+    is_exported: true
+}

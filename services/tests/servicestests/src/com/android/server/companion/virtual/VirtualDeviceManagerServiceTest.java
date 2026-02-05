@@ -97,7 +97,6 @@ import android.net.MacAddress;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.IPowerManager;
 import android.os.IThermalService;
 import android.os.LocaleList;
@@ -107,7 +106,6 @@ import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.os.WorkSource;
-import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
@@ -1056,63 +1054,6 @@ public class VirtualDeviceManagerServiceTest {
         verify(mIPowerManagerMock, never()).acquireWakeLock(any(Binder.class), anyInt(),
                 nullable(String.class), nullable(String.class), nullable(WorkSource.class),
                 nullable(String.class), anyInt(), eq(null));
-    }
-
-    @DisableFlags(Flags.FLAG_DEVICE_AWARE_DISPLAY_POWER)
-    @Test
-    public void onVirtualDisplayCreatedLocked_wakeLockIsAcquired() throws RemoteException {
-        verify(mIPowerManagerMock, never()).acquireWakeLock(any(Binder.class), anyInt(),
-                nullable(String.class), nullable(String.class), nullable(WorkSource.class),
-                nullable(String.class), anyInt(), eq(null));
-        addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1, Display.FLAG_TRUSTED);
-        verify(mIPowerManagerMock).acquireWakeLock(any(Binder.class), anyInt(),
-                nullable(String.class), nullable(String.class), nullable(WorkSource.class),
-                nullable(String.class), eq(DISPLAY_ID_1), eq(null));
-    }
-
-    @DisableFlags(Flags.FLAG_DEVICE_AWARE_DISPLAY_POWER)
-    @Test
-    public void onVirtualDisplayCreatedLocked_duplicateCalls_onlyOneWakeLockIsAcquired()
-            throws RemoteException {
-        addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1, Display.FLAG_TRUSTED);
-        addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1, Display.FLAG_TRUSTED);
-        TestableLooper.get(this).processAllMessages();
-        verify(mIPowerManagerMock).acquireWakeLock(any(Binder.class), anyInt(),
-                nullable(String.class), nullable(String.class), nullable(WorkSource.class),
-                nullable(String.class), eq(DISPLAY_ID_1), eq(null));
-    }
-
-    @DisableFlags(Flags.FLAG_DEVICE_AWARE_DISPLAY_POWER)
-    @Test
-    public void onVirtualDisplayRemovedLocked_wakeLockIsReleased() throws RemoteException {
-        addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1, Display.FLAG_TRUSTED);
-        ArgumentCaptor<IBinder> wakeLockCaptor = ArgumentCaptor.forClass(IBinder.class);
-        TestableLooper.get(this).processAllMessages();
-        verify(mIPowerManagerMock).acquireWakeLock(wakeLockCaptor.capture(),
-                anyInt(),
-                nullable(String.class), nullable(String.class), nullable(WorkSource.class),
-                nullable(String.class), eq(DISPLAY_ID_1), eq(null));
-
-        IBinder wakeLock = wakeLockCaptor.getValue();
-        mDeviceImpl.onVirtualDisplayRemoved(DISPLAY_ID_1);
-        verify(mIPowerManagerMock).releaseWakeLock(eq(wakeLock), anyInt());
-    }
-
-    @DisableFlags(Flags.FLAG_DEVICE_AWARE_DISPLAY_POWER)
-    @Test
-    public void addVirtualDisplay_displayNotReleased_wakeLockIsReleased() throws RemoteException {
-        addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1, Display.FLAG_TRUSTED);
-        ArgumentCaptor<IBinder> wakeLockCaptor = ArgumentCaptor.forClass(IBinder.class);
-        TestableLooper.get(this).processAllMessages();
-        verify(mIPowerManagerMock).acquireWakeLock(wakeLockCaptor.capture(),
-                anyInt(),
-                nullable(String.class), nullable(String.class), nullable(WorkSource.class),
-                nullable(String.class), eq(DISPLAY_ID_1), eq(null));
-        IBinder wakeLock = wakeLockCaptor.getValue();
-
-        // Close the VirtualDevice without first notifying it of the VirtualDisplay removal.
-        mDeviceImpl.close();
-        verify(mIPowerManagerMock).releaseWakeLock(eq(wakeLock), anyInt());
     }
 
     @Test
