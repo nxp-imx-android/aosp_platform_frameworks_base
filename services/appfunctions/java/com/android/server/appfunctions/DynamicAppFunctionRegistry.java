@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,6 +18,8 @@ package com.android.server.appfunctions;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.appfunctions.AppFunctionActivityId;
+import android.app.appfunctions.AppFunctionActivityState;
 import android.app.appfunctions.AppFunctionException;
 import android.app.appfunctions.AppFunctionName;
 import android.app.appfunctions.ExecuteAppFunctionRequest;
@@ -52,6 +54,9 @@ final class DynamicAppFunctionRegistry {
     private static final String TAG = "DynamicAppFuncRegistry";
     private final Object mLock = new Object();
 
+    // TODO: Considering adding our own collection class to enabling indexing with different keys.
+    // Our own collection class should maintain all those maps, without the caller to keep those
+    // maps in sync.
     @GuardedBy("mLock")
     private final ArrayMap<AppFunctionName, ArrayMap<RegistrationScopeId, IAppFunctionExecutor>>
             mRegistrations = new ArrayMap<>();
@@ -90,7 +95,7 @@ final class DynamicAppFunctionRegistry {
                                     Log.w(TAG, "Couldn't find registration " + registrationId);
                                 } else {
                                     Objects.requireNonNull(mRegistrations.get(removedName))
-                                            .remove(registrationId.getActivityToken());
+                                            .remove(registrationId.getScopeId());
                                     if (Objects.requireNonNull(mRegistrations.get(removedName))
                                             .isEmpty()) {
                                         mRegistrations.remove(removedName);
@@ -147,7 +152,7 @@ final class DynamicAppFunctionRegistry {
             for (AppFunctionRegistrationId registrationId : registrationIds) {
                 mRegistrations.putIfAbsent(registrationId.getFunctionName(), new ArrayMap<>());
                 Objects.requireNonNull(mRegistrations.get(registrationId.getFunctionName()))
-                        .put(registrationId.getActivityToken(), executor);
+                        .put(registrationId.getScopeId(), executor);
 
                 if (!mExecutorToRegistrations.containsKey(executor.asBinder())) {
                     mExecutorToRegistrations.put(executor.asBinder(), new ArraySet<>());
@@ -174,8 +179,8 @@ final class DynamicAppFunctionRegistry {
      * @param functionIdentifiers List of identifier of the app functions.
      * @param executor Executor of the app function.
      * @param scopeIds Identifiers of the registration source corresponding to each
-     *     functionIdentifier. Activity identifier for activity scoped functions, empty class for
-     *     global scoped functions, empty class for global scoped functions.
+     * functionIdentifier. Activity identifier for activity scoped functions, empty class for
+     * global scoped functions, empty class for global scoped functions.
      */
     public void unregisterAppFunctions(
             @NonNull String packageName,
@@ -298,15 +303,46 @@ final class DynamicAppFunctionRegistry {
         }
     }
 
+    // TODO(b/481676087): Either disallow registering disabled appfunctions or update this method
+    // to filter them out.
+    @NonNull
+    public List<AppFunctionActivityState> getAppFunctionActivityStates(
+            @NonNull List<AppFunctionActivityId> activityIds) {
+        List<AppFunctionActivityState> result = new ArrayList<>();
+        synchronized (mLock) {
+            // With the reverted structure, we must iterate all functions to find those
+            // bound to the requested activity IDs.
+            for (AppFunctionActivityId activityId : activityIds) {
+                RegistrationScopeId targetScope = new RegistrationScopeId(activityId);
+                ArraySet<AppFunctionName> functionsForScope = new ArraySet<>();
+
+                for (int i = 0; i < mRegistrations.size(); i++) {
+                    AppFunctionName functionName = mRegistrations.keyAt(i);
+                    ArrayMap<RegistrationScopeId, IAppFunctionExecutor> scopes =
+                            mRegistrations.valueAt(i);
+
+                    if (scopes.containsKey(targetScope)) {
+                        functionsForScope.add(functionName);
+                    }
+                }
+
+                if (!functionsForScope.isEmpty()) {
+                    result.add(new AppFunctionActivityState(activityId, functionsForScope));
+                }
+            }
+        }
+        return result;
+    }
+
     static class AppFunctionRegistrationId {
-        @Nullable private final RegistrationScopeId mActivityToken;
+        @Nullable private final RegistrationScopeId mScopeId;
 
         @NonNull private final AppFunctionName mName;
 
         AppFunctionRegistrationId(
-                @NonNull AppFunctionName name, @Nullable RegistrationScopeId activityToken) {
+                @NonNull AppFunctionName name, @Nullable RegistrationScopeId scopeId) {
             mName = name;
-            mActivityToken = activityToken;
+            mScopeId = scopeId;
         }
 
         @NonNull
@@ -315,18 +351,18 @@ final class DynamicAppFunctionRegistry {
         }
 
         @Nullable
-        RegistrationScopeId getActivityToken() {
-            return mActivityToken;
+        RegistrationScopeId getScopeId() {
+            return mScopeId;
         }
 
         @Override
         public String toString() {
-            return "AppFunctionRegistrationId{" + mName + ":activityToken(" + mActivityToken + ")}";
+            return "AppFunctionRegistrationId{" + mName + ":scopeId(" + mScopeId + ")}";
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(mName, mActivityToken);
+            return Objects.hash(mName, mScopeId);
         }
 
         @Override
@@ -338,8 +374,7 @@ final class DynamicAppFunctionRegistry {
                 return true;
             }
             AppFunctionRegistrationId that = (AppFunctionRegistrationId) o;
-            return Objects.equals(mName, that.mName)
-                    && Objects.equals(mActivityToken, that.mActivityToken);
+            return Objects.equals(mName, that.mName) && Objects.equals(mScopeId, that.mScopeId);
         }
     }
 

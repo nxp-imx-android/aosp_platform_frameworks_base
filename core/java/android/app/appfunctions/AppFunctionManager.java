@@ -57,6 +57,7 @@ import android.permission.flags.Flags;
 import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.Log;
+import java.util.Set;
 
 import com.android.internal.annotations.GuardedBy;
 
@@ -522,6 +523,77 @@ public final class AppFunctionManager {
                     new IGetAppFunctionStatesCallback.Stub() {
                         @Override
                         public void onSuccess(AppFunctionStateList states) {
+                            executor.execute(
+                                    () -> {
+                                        callback.onResult(states.getList());
+                                    });
+                        }
+
+                        @Override
+                        public void onError(ParcelableException exception) {
+                            executor.execute(
+                                    () -> {
+                                        if (exception.getCause() == null) {
+                                            callback.onError(
+                                                    new RuntimeException(
+                                                            "Unknown remote failure."));
+                                        } else {
+                                            callback.onError(
+                                                    new RuntimeException(exception.getCause()));
+                                        }
+                                    });
+                        }
+                    });
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Retrieves the registered app functions for the specified activities.
+     *
+     * <p>This method returns a list of {@link AppFunctionActivityState} where each entry represents
+     * a requested {@link AppFunctionActivityId} and the set of registered function names associated
+     * with it.
+     *
+     * <p>Functions that do not exist or are not visible to the calling application will be silently
+     * omitted from the result.
+     *
+     * <p>A {@link android.service.voice.VoiceInteractionSession} can convert the {@link
+     * android.service.voice.VoiceInteractionSession.ActivityId} to {@link AppFunctionActivityId}
+     * and then use this method to get the registered functions from that activity.
+     *
+     * @param activityIds The set of activity IDs to retrieve function states for.
+     * @param executor The executor to run the callback.
+     * @param callback The callback to receive the list of activity states.
+     *
+     * @see VoiceInteractionSession#getAppFunctionActivityId
+     */
+    @FlaggedApi(FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
+    @RequiresPermission(
+            anyOf = {
+                Manifest.permission.EXECUTE_APP_FUNCTIONS,
+                Manifest.permission.DISCOVER_APP_FUNCTIONS,
+                Manifest.permission.EXECUTE_APP_FUNCTIONS_SYSTEM,
+            },
+            conditional = true)
+    @UserHandleAware
+    public void getAppFunctionActivityStates(
+            @NonNull Set<AppFunctionActivityId> activityIds,
+            @NonNull @CallbackExecutor Executor executor,
+            @NonNull OutcomeReceiver<List<AppFunctionActivityState>, Exception> callback) {
+        Objects.requireNonNull(activityIds);
+        Objects.requireNonNull(executor);
+        Objects.requireNonNull(callback);
+
+        try {
+            mService.getAppFunctionActivityStates(
+                    new ArrayList<>(activityIds),
+                    mContext.getPackageName(),
+                    mContext.getUserId(),
+                    new IGetAppFunctionActivityStatesCallback.Stub() {
+                        @Override
+                        public void onSuccess(AppFunctionActivityStateList states) {
                             executor.execute(
                                     () -> {
                                         callback.onResult(states.getList());

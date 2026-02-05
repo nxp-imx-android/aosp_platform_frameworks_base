@@ -19,6 +19,7 @@ package com.android.server.appfunctions;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.appfunctions.AppFunctionActivityId;
+import android.app.appfunctions.AppFunctionActivityState;
 import android.app.appfunctions.ExecuteAppFunctionAidlRequest;
 import android.app.appfunctions.IAppFunctionExecutor;
 import android.app.appfunctions.SafeOneTimeExecuteAppFunctionCallback;
@@ -182,6 +183,12 @@ public final class MultiUserDynamicAppFunctionRegistry {
                         request.getClientRequest(),
                         safeExecuteAppFunctionCallback,
                         cancellationTransport);
+    }
+
+    @NonNull
+    public List<AppFunctionActivityState> getAppFunctionActivityStates(
+            @NonNull List<AppFunctionActivityId> activityIds, @NonNull UserHandle userHandle) {
+        return getPerUserRegistry(userHandle).getAppFunctionActivityStates(activityIds);
     }
 
     public static class RegistrationScopeId {
