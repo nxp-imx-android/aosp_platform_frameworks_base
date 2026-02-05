@@ -16,6 +16,7 @@
 
 package android.media;
 
+import static android.media.audio.Flags.FLAG_AMBISONICS_SUPPORT_API;
 import static android.media.audio.Flags.FLAG_ENABLE_MULTICHANNEL_GROUP_DEVICE;
 import static android.media.audio.Flags.FLAG_SPEAKER_LAYOUT_API;
 import static android.media.audio.Flags.FLAG_BLE_HEARING_AID_DEVICE;
@@ -29,7 +30,6 @@ import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.RequiresPermission;
 import android.annotation.TestApi;
-import android.media.audio.DeviceIdentity;
 import android.media.audio.Flags;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.util.SparseIntArray;
@@ -556,6 +556,20 @@ public final class AudioDeviceInfo {
      */
     public @NonNull int[] getChannelIndexMasks() {
         return mPort.channelIndexMasks();
+    }
+
+    /**
+     * @return An array of Ambisonics channel masks for which this audio device can be configured.
+     *
+     * @see AudioFormat
+     *
+     * Note: an empty array indicates that the device supports arbitrary Ambisonics channel masks.
+     * @hide
+     */
+    @FlaggedApi(FLAG_AMBISONICS_SUPPORT_API)
+    @TestApi
+    public @NonNull int[] getChannelAcnMasks() {
+        return mPort.channelAcnMasks();
     }
 
     /**
