@@ -16,11 +16,15 @@
 
 package com.android.systemui.statusbar.quickactions.ime.domain.interactor
 
+import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.inputmethod.data.repository.fakeInputMethodRepository
 import com.android.systemui.inputmethod.domain.interactor.inputMethodInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.statusbar.policy.domain.interactor.deviceProvisioningInteractor
+import com.android.systemui.statusbar.policy.domain.interactor.userSetupInteractor
 import com.android.systemui.user.data.repository.fakeUserRepository
+import com.android.systemui.user.domain.interactor.userLogoutInteractor
 import com.android.systemui.util.settings.fakeSettings
 
 val Kosmos.imeIndicatorChipInteractor: ImeIndicatorChipInteractor by
@@ -31,5 +35,9 @@ val Kosmos.imeIndicatorChipInteractor: ImeIndicatorChipInteractor by
             inputMethodRepository = fakeInputMethodRepository,
             userRepository = fakeUserRepository,
             secureSettings = fakeSettings,
+            userSetupInteractor = userSetupInteractor,
+            userLogoutInteractor = userLogoutInteractor,
+            deviceProvisioningInteractor = deviceProvisioningInteractor,
+            deviceEntryInteractor = deviceEntryInteractor,
         )
     }
