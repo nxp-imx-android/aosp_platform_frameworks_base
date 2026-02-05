@@ -16,8 +16,8 @@
 package com.android.internal.widget.remotecompose.core.operations;
 
 import static com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation.FLOAT;
-import static com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation.FLOAT_ARRAY;
 import static com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation.INT;
+import static com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation.REPEATED_FLOAT;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -31,6 +31,7 @@ import com.android.internal.widget.remotecompose.core.WireBuffer;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentationBuilder;
 import com.android.internal.widget.remotecompose.core.operations.layout.Component;
 import com.android.internal.widget.remotecompose.core.operations.layout.RootLayoutComponent;
+import com.android.internal.widget.remotecompose.core.operations.layout.managers.LayoutManager;
 import com.android.internal.widget.remotecompose.core.operations.utilities.AnimatedFloatExpression;
 import com.android.internal.widget.remotecompose.core.operations.utilities.NanMap;
 import com.android.internal.widget.remotecompose.core.operations.utilities.touch.VelocityEasing;
@@ -393,29 +394,36 @@ public class TouchExpression extends Operation
         }
     }
 
-    private void updateBounds() {
+    private void updateBounds(@NonNull RemoteContext context) {
         Component comp = mComponent;
         if (comp != null) {
-            float x = comp.getX();
-            float y = comp.getY();
-            float w = comp.getWidth();
-            float h = comp.getHeight();
-            comp = comp.getParent();
-            while (comp != null) {
-                x += comp.getX();
-                y += comp.getY();
+            if (context.getTouchVersion() == LayoutManager.FIX_TOUCH_EVENT) {
+                mScrLeft = 0;
+                mScrTop = 0;
+                mScrRight = comp.getWidth();
+                mScrBottom = comp.getHeight();
+            } else {
+                float x = comp.getX();
+                float y = comp.getY();
+                float w = comp.getWidth();
+                float h = comp.getHeight();
                 comp = comp.getParent();
+                while (comp != null) {
+                    x += comp.getX();
+                    y += comp.getY();
+                    comp = comp.getParent();
+                }
+                mScrLeft = x;
+                mScrTop = y;
+                mScrRight = w + x;
+                mScrBottom = h + y;
             }
-            mScrLeft = x;
-            mScrTop = y;
-            mScrRight = w + x;
-            mScrBottom = h + y;
         }
     }
 
     @Override
     public void apply(@NonNull RemoteContext context) {
-        updateBounds();
+        updateBounds(context);
         if (mUnmodified) {
             mCurrentValue = mOutDefValue;
             context.loadFloat(mId, wrap(mCurrentValue));
@@ -457,8 +465,11 @@ public class TouchExpression extends Operation
             mCurrentValue = Math.min(mMaxAtDown, mCurrentValue);
             mCurrentValue = Math.max(mMinAtDown, mCurrentValue);
         }
+        if (!mWrapMode) {
+            if (!Float.isNaN(mOutMin)) mCurrentValue = Math.max(mCurrentValue, mOutMin);
+            if (!Float.isNaN(mOutMax)) mCurrentValue = Math.min(mCurrentValue, mOutMax);
+        }
         context.loadFloat(mId, wrap(mCurrentValue));
-
     }
 
     float mValueAtDown; // The currently "displayed" value at down
@@ -503,13 +514,26 @@ public class TouchExpression extends Operation
             return;
         }
         float v = mExp.eval(context.getCollectionsAccess(), mPreCalcValue, mPreCalcValue.length);
-        for (int i = 0; i < mSrcExp.length; i++) {
-            if (Float.isNaN(mSrcExp[i])) {
-                int id = Utils.idFromNan(mSrcExp[i]);
-                if (id == RemoteContext.ID_TOUCH_POS_X) {
-                    mPreCalcValue[i] = x + dx * dt;
-                } else if (id == RemoteContext.ID_TOUCH_POS_Y) {
-                    mPreCalcValue[i] = y + dy * dt;
+        if (context.getTouchVersion() == LayoutManager.FIX_TOUCH_EVENT) {
+            for (int i = 0; i < mSrcExp.length; i++) {
+                if (Float.isNaN(mSrcExp[i])) {
+                    int id = Utils.idFromNan(mSrcExp[i]);
+                    if (id == RemoteContext.ID_TOUCH_POS_X) {
+                        mPreCalcValue[i] += dx * dt;
+                    } else if (id == RemoteContext.ID_TOUCH_POS_Y) {
+                        mPreCalcValue[i] += dy * dt;
+                    }
+                }
+            }
+        } else {
+            for (int i = 0; i < mSrcExp.length; i++) {
+                if (Float.isNaN(mSrcExp[i])) {
+                    int id = Utils.idFromNan(mSrcExp[i]);
+                    if (id == RemoteContext.ID_TOUCH_POS_X) {
+                        mPreCalcValue[i] = x + dx * dt;
+                    } else if (id == RemoteContext.ID_TOUCH_POS_Y) {
+                        mPreCalcValue[i] = y + dy * dt;
+                    }
                 }
             }
         }
@@ -722,12 +746,12 @@ public class TouchExpression extends Operation
                 .field(FLOAT, "velocityId", "Reserved for velocity ID")
                 .field(INT, "touchEffects", "Haptic feedback and touch behavior flags")
                 .field(INT, "expression_length", "The length of the touch mapping expression")
-                .field(FLOAT_ARRAY, "expression",
+                .field(REPEATED_FLOAT, "expression",
                         "Sequence of floats representing touch mapping (RPN)")
                 .field(INT, "stopModeAndLen", "Encoded stop mode and length of stop spec")
-                .field(FLOAT_ARRAY, "stopSpec", "Parameters for stop behavior (e.g., notches)")
+                .field(REPEATED_FLOAT, "stopSpec", "Parameters for stop behavior (e.g., notches)")
                 .field(INT, "easingLen", "The length of the easing spec")
-                .field(FLOAT_ARRAY, "easingSpec", "Parameters for deceleration easing");
+                .field(REPEATED_FLOAT, "easingSpec", "Parameters for deceleration easing");
     }
 
     @NonNull

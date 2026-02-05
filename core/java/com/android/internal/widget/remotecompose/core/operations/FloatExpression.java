@@ -15,7 +15,9 @@
  */
 package com.android.internal.widget.remotecompose.core.operations;
 
-import static com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation.FLOAT_ARRAY;
+import static com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation.FLOAT;
+import static com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation.INT;
+import static com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation.REPEATED_FLOAT;
 import static com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation.SHORT;
 
 import android.annotation.NonNull;
@@ -27,7 +29,6 @@ import com.android.internal.widget.remotecompose.core.RemoteContext;
 import com.android.internal.widget.remotecompose.core.VariableSupport;
 import com.android.internal.widget.remotecompose.core.WireBuffer;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentationBuilder;
-import com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation;
 import com.android.internal.widget.remotecompose.core.operations.utilities.AnimatedFloatExpression;
 import com.android.internal.widget.remotecompose.core.operations.utilities.NanMap;
 import com.android.internal.widget.remotecompose.core.operations.utilities.easing.FloatAnimation;
@@ -339,17 +340,24 @@ public class FloatExpression extends Operation
     public static void documentation(@NonNull DocumentationBuilder doc) {
         doc.operation("Logic & Expressions Operations", OP_CODE, CLASS_NAME)
                 .description("Define a float via dynamic expression and optional animation")
-                .field(DocumentedOperation.INT, "id", "The ID of the resulting float")
+                .field(INT, "id", "The ID of the resulting float")
                 .field(SHORT, "expression_length", "The length of the expression")
                 .field(SHORT, "animation_length", "The length of the animation spec")
                 .field(
-                        FLOAT_ARRAY,
+                        REPEATED_FLOAT,
                         "expression",
                         "Sequence of floats representing an expression (RPN)")
                 .field(
-                        FLOAT_ARRAY,
+                        REPEATED_FLOAT,
                         "animationSpec",
-                        "Sequence of floats representing an animation curve");
+                        "Sequence of floats representing an animation curve")
+                .startSubsection("")
+                .field(FLOAT, "duration", "Time in sec")
+                .field(INT, "bits", "WRAP | INITIAL VALUE | TYPE ")
+                .field(REPEATED_FLOAT, "spec", "SPEC PARAMETERS")
+                .field(FLOAT, "initialValue", "Initial value")
+                .field(FLOAT, "wrapValue", "Wrap value")
+                .endSubsection();
     }
 
     @NonNull

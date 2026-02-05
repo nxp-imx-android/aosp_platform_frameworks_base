@@ -32,8 +32,9 @@ import com.android.internal.widget.remotecompose.core.serialize.Serializable;
 import java.util.List;
 
 /** Operation to deal with Text data */
-public class TextMerge extends Operation implements VariableSupport, Serializable {
+public class TextMerge extends Operation implements VariableSupport, ComponentData, Serializable {
     private static final int OP_CODE = Operations.TEXT_MERGE;
+    private static final int MAX_TEXT_LENGTH = 16 * 1024;
     private static final String CLASS_NAME = "TextMerge";
     public int mTextId;
     public int mSrcId1;
@@ -121,7 +122,11 @@ public class TextMerge extends Operation implements VariableSupport, Serializabl
     public void apply(@NonNull RemoteContext context) {
         String str1 = context.getText(mSrcId1);
         String str2 = context.getText(mSrcId2);
-        context.loadText(mTextId, str1 + str2);
+        String merge = str1 + str2;
+        if (merge.length() > MAX_TEXT_LENGTH) {
+            throw new RuntimeException("Text too long: " + merge.substring(0, 20) + "...");
+        }
+        context.loadText(mTextId, merge);
     }
 
     @Override

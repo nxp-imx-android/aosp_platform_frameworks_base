@@ -55,7 +55,7 @@ public class PathExpression extends Operation implements VariableSupport, Serial
     private final float mMax;
     private float mOutMax;
     private float mCount;
-    private final float mOutCount;
+    private float mOutCount;
     private final int mFlags;
     private boolean mPathChanged = true;
     private final int mWinding;
@@ -99,7 +99,7 @@ public class PathExpression extends Operation implements VariableSupport, Serial
             mOutMin = context.getFloat(Utils.idFromNan(mMin));
         }
         if (Float.isNaN(mCount)) {
-            mCount = context.getFloat(Utils.idFromNan(mCount));
+            mOutCount = context.getFloat(Utils.idFromNan(mCount));
         }
         for (int i = 0; i < mExpressionX.length; i++) {
             float v = mExpressionX[i];
@@ -321,6 +321,7 @@ public class PathExpression extends Operation implements VariableSupport, Serial
      */
     public static void documentation(@NonNull DocumentationBuilder doc) {
         doc.operation("Canvas Operations", OP_CODE, CLASS_NAME)
+                .addedVersion(7)
                 .description("Generate a path from dynamic expressions (X, Y over a range)")
                 .field(DocumentedOperation.INT, "id", "The ID of the resulting path")
                 .field(INT, "flags", "Configuration flags (LOOP, POLAR, etc.)")
@@ -338,7 +339,11 @@ public class PathExpression extends Operation implements VariableSupport, Serial
 
         if (mPathChanged) {
             boolean loop = (mFlags & 0x1) == LOOP;
-            int len = mPathGenerator.getReturnLength((int) mOutCount, loop);
+            int countSize = (int) mOutCount;
+            if (countSize == 0) {
+                throw new IllegalArgumentException("path length must be > 1");
+            }
+            int len = mPathGenerator.getReturnLength(countSize, loop);
             if (mOutputPath.length != len) {
                 mOutputPath = new float[len];
             }
@@ -349,7 +354,7 @@ public class PathExpression extends Operation implements VariableSupport, Serial
                         mOutExpressionY,
                         mOutMin,
                         mOutMax,
-                        (int) mOutCount,
+                        countSize,
                         (mFlags & 0x6),
                         loop,
                         Objects.requireNonNull(context.getCollectionsAccess()));
@@ -360,7 +365,7 @@ public class PathExpression extends Operation implements VariableSupport, Serial
                         mOutExpressionY,
                         mOutMin,
                         mOutMax,
-                        (int) mOutCount,
+                        countSize,
                         (mFlags & 0x6),
                         loop,
                         context.getCollectionsAccess());

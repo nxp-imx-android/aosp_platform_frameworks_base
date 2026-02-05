@@ -38,6 +38,9 @@ public abstract class LayoutManager extends LayoutComponent implements Measurabl
 
     public static final int DEFAULT_MEASURE_TYPE = INSET_WRAP_MEASURE;
 
+    public static final int FIX_TOUCH_EVENT = 1;
+    public static final int DEFAULT_TOUCH_VERSION = FIX_TOUCH_EVENT;
+
     public LayoutManager(
             @Nullable Component parent,
             int componentId,

@@ -16,6 +16,9 @@
 
 package com.android.internal.widget.remotecompose.core.operations.layout.managers;
 
+import static com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation.FLOAT;
+import static com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation.INT;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 
@@ -41,6 +44,15 @@ import java.util.List;
  * the next line if space is exhausted.
  */
 public class FlowLayout extends RowLayout {
+
+    public static final int START = 1;
+    public static final int CENTER = 2;
+    public static final int END = 3;
+    public static final int TOP = 4;
+    public static final int BOTTOM = 5;
+    public static final int SPACE_BETWEEN = 6;
+    public static final int SPACE_EVENLY = 7;
+    public static final int SPACE_AROUND = 8;
 
     public FlowLayout(
             @Nullable Component parent,
@@ -280,15 +292,26 @@ public class FlowLayout extends RowLayout {
      * @param doc to append the description to.
      */
     public static void documentation(@NonNull DocumentationBuilder doc) {
-        doc.operation("Layout Operations", id(), "FlowLayout")
+        doc.operation("Layout Managers", id(), "FlowLayout")
+                .addedVersion(7)
+                .experimental(true)
+                .additionalDocumentation("flow")
                 .description("Flow layout implementation. Positions components one after the"
                         + " other horizontally and wraps to the next line if space is exhausted.")
                 .field(DocumentedOperation.INT, "componentId", "Unique ID for this component")
                 .field(DocumentedOperation.INT, "animationId", "ID for animation purposes")
-                .field(DocumentedOperation.INT, "horizontalPositioning",
-                        "Horizontal positioning value")
-                .field(DocumentedOperation.INT, "verticalPositioning", "Vertical positioning value")
-                .field(DocumentedOperation.FLOAT, "spacedBy", "Spacing between components");
+                .field(INT, "horizontalPositioning", "Horizontal positioning value")
+                .possibleValues("START", START)
+                .possibleValues("CENTER", CENTER)
+                .possibleValues("END", END)
+                .possibleValues("SPACE_BETWEEN", SPACE_BETWEEN)
+                .possibleValues("SPACE_EVENLY", SPACE_EVENLY)
+                .possibleValues("SPACE_AROUND", SPACE_AROUND)
+                .field(INT, "verticalPositioning", "Vertical positioning value")
+                .possibleValues("TOP", TOP)
+                .possibleValues("CENTER", CENTER)
+                .possibleValues("BOTTOM", BOTTOM)
+                .field(FLOAT, "spacedBy", "Horizontal spacing between components");
     }
 
 }
