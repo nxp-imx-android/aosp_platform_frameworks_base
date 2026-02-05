@@ -49,6 +49,8 @@ class DialogTransitionAnimatorTest : SysuiTestCase() {
     private val kosmos = testKosmos()
     private lateinit var mDialogTransitionAnimator: DialogTransitionAnimator
     private val attachedViews = mutableSetOf<View>()
+    /** Set of dialogs to dismiss at the end of the test. */
+    private val createdDialogs = mutableSetOf<TestDialog>()
     @get:Rule val rule: MockitoRule = MockitoJUnit.rule()
 
     @Before
@@ -59,6 +61,17 @@ class DialogTransitionAnimatorTest : SysuiTestCase() {
     @After
     fun tearDown() {
         runOnMainThreadAndWaitForIdleSync { attachedViews.forEach { ViewUtils.detachView(it) } }
+        var anyShowing = false
+        runOnMainThreadAndWaitForIdleSync {
+            createdDialogs.forEach {
+                anyShowing = anyShowing or it.isShowing
+                it.dismiss()
+            }
+        }
+        if (anyShowing) {
+            sleepForSpringAnimation()
+            createdDialogs.forEach { assertFalse(it.isShowing) }
+        }
     }
 
     @Test
@@ -89,12 +102,12 @@ class DialogTransitionAnimatorTest : SysuiTestCase() {
         assertEquals(2, transparentBackground.childCount)
         touchInterceptorView.apply {
             assertEquals(View.GONE, visibility)
-            assertEquals(TestDialog.DIALOG_WIDTH, layoutParams.width)
-            assertEquals(TestDialog.DIALOG_HEIGHT, layoutParams.height)
+            assertEquals(DIALOG_WIDTH, layoutParams.width)
+            assertEquals(DIALOG_HEIGHT, layoutParams.height)
         }
 
-        assertEquals(TestDialog.DIALOG_WIDTH, dialogContentWithBackground.layoutParams.width)
-        assertEquals(TestDialog.DIALOG_HEIGHT, dialogContentWithBackground.layoutParams.height)
+        assertEquals(DIALOG_WIDTH, dialogContentWithBackground.layoutParams.width)
+        assertEquals(DIALOG_HEIGHT, dialogContentWithBackground.layoutParams.height)
         assertEquals(dialog.windowBackground, dialogContentWithBackground.background)
 
         // The dialog content is inside this fake window view.
@@ -134,12 +147,12 @@ class DialogTransitionAnimatorTest : SysuiTestCase() {
         assertEquals(2, transparentBackground.childCount)
         touchInterceptorView.apply {
             assertEquals(View.GONE, visibility)
-            assertEquals(TestDialog.DIALOG_WIDTH, layoutParams.width)
-            assertEquals(TestDialog.DIALOG_HEIGHT, layoutParams.height)
+            assertEquals(DIALOG_WIDTH, layoutParams.width)
+            assertEquals(DIALOG_HEIGHT, layoutParams.height)
         }
 
-        assertEquals(TestDialog.DIALOG_WIDTH, dialogContentWithBackground.layoutParams.width)
-        assertEquals(TestDialog.DIALOG_HEIGHT, dialogContentWithBackground.layoutParams.height)
+        assertEquals(DIALOG_WIDTH, dialogContentWithBackground.layoutParams.width)
+        assertEquals(DIALOG_HEIGHT, dialogContentWithBackground.layoutParams.height)
         assertEquals(dialog.windowBackground, dialogContentWithBackground.background)
 
         // The dialog content is inside this fake window view.
@@ -500,11 +513,7 @@ class DialogTransitionAnimatorTest : SysuiTestCase() {
         }
     }
 
-    private class TestDialog(context: Context) : Dialog(context) {
-        companion object {
-            const val DIALOG_WIDTH = 100
-            const val DIALOG_HEIGHT = 200
-        }
+    private inner class TestDialog(context: Context) : Dialog(context) {
 
         val contentView = View(context)
         val windowBackground = ColorDrawable(Color.RED)
@@ -521,6 +530,13 @@ class DialogTransitionAnimatorTest : SysuiTestCase() {
             val window = checkNotNull(window)
             window.setLayout(DIALOG_WIDTH, DIALOG_HEIGHT)
             window.setBackgroundDrawable(windowBackground)
+
+            createdDialogs.add(this)
         }
+    }
+
+    companion object {
+        const val DIALOG_WIDTH = 100
+        const val DIALOG_HEIGHT = 200
     }
 }
