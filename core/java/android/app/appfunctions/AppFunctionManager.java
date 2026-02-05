@@ -567,7 +567,7 @@ public final class AppFunctionManager {
      * @param executor The executor to run the callback.
      * @param callback The callback to receive the list of activity states.
      *
-     * @see VoiceInteractionSession#getAppFunctionActivityId
+     * @see android.service.voice.VoiceInteractionSession#getAppFunctionActivityId
      */
     @FlaggedApi(FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
     @RequiresPermission(
