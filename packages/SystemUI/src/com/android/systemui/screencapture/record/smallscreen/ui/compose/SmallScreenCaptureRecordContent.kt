@@ -238,26 +238,21 @@ constructor(
                                 },
                             )
                         }
-                        AnimatedVisibility(
-                            visible =
-                                viewModel.shouldShowMarkupButton && viewModel.markupEnabled == true
-                        ) {
+                        AnimatedVisibility(visible = viewModel.shouldShowColorPickerButton) {
                             ToggleToolbarButton(
                                 checked =
-                                    viewModel.detailsPopup ==
-                                        RecordDetailsPopupType.MarkupColorSelector,
+                                    viewModel.detailsPopup == RecordDetailsPopupType.ColorSelector,
                                 onCheckedChange = {
                                     if (it) {
-                                        viewModel.showMarkupColorSelector()
+                                        viewModel.showCameraColorSelector()
                                     } else {
                                         viewModel.resetDetailsPopup()
                                     }
                                 },
                                 icon = {
                                     val colorInt =
-                                        viewModel.recordDetailsMarkupColorPickerViewModel.color
-                                            ?: return@ToggleToolbarButton
-                                    MarkupColorItem(
+                                        viewModel.recordDetailsColorPickerViewModel.cameraColor
+                                    RecordDetailsColorItem(
                                         color = Color(colorInt),
                                         selected = false,
                                         modifier = Modifier.size(20.dp),
@@ -333,10 +328,9 @@ constructor(
                                     )
                                 }
 
-                                RecordDetailsPopupType.MarkupColorSelector ->
-                                    RecordDetailsMarkupColorPicker(
-                                        viewModel =
-                                            viewModel.recordDetailsMarkupColorPickerViewModel,
+                                RecordDetailsPopupType.ColorSelector ->
+                                    RecordDetailsColorPicker(
+                                        viewModel = viewModel.recordDetailsColorPickerViewModel,
                                         modifier = contentModifier,
                                     )
 

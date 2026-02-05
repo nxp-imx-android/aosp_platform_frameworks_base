@@ -22,18 +22,24 @@ import androidx.core.content.res.use
 import com.android.systemui.content.res.map
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.res.R
+import com.android.systemui.screencapture.common.ScreenCapture
 import com.android.systemui.screencapture.common.ScreenCaptureScope
 import com.android.systemui.screencapture.common.data.repository.ScreenCaptureMarkupRepository
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 
 @ScreenCaptureScope
 class ScreenCaptureMarkupInteractor
 @Inject
 constructor(
     @Main resources: Resources,
+    @ScreenCapture private val coroutineScope: CoroutineScope,
     private val repository: ScreenCaptureMarkupRepository,
     private val screenCaptureRecordFeaturesInteractor: ScreenCaptureRecordFeaturesInteractor,
 ) {
@@ -41,7 +47,14 @@ constructor(
         resources.obtainTypedArray(R.array.screen_record_color_palette).use { array ->
             array.map { index -> getColor(index, Color.TRANSPARENT) }
         }
-    val color: Flow<Int> = repository.color.map { it ?: availableColors.first() }
+    val color: StateFlow<Int> =
+        repository.color
+            .map { it ?: availableColors.first() }
+            .stateIn(
+                coroutineScope,
+                SharingStarted.Eagerly,
+                repository.color.value ?: availableColors.first(),
+            )
     val enabled: Flow<Boolean> =
         repository.enabled.map { enabled ->
             enabled && screenCaptureRecordFeaturesInteractor.isMarkupAvailable

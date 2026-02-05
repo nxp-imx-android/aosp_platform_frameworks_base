@@ -97,9 +97,7 @@ constructor(
     val canUseFrontCamera: Boolean by
         if (screenCaptureRecordFeaturesInteractor.isSelfieAvailable) {
                 combine(
-                    recordDetailsTargetInteractor.model.map {
-                        it?.currentTargetModel?.canUseCamera ?: false
-                    },
+                    recordDetailsTargetInteractor.model.map { it.currentTargetModel.canUseCamera },
                     screenRecordCameraInteractor.isCameraSupported,
                 ) { canUseCameraForTarget, isCameraSupported ->
                     canUseCameraForTarget && isCameraSupported

@@ -35,6 +35,7 @@ import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
 import com.android.systemui.screencapture.record.camera.domain.interactor.ScreenCaptureCameraTransformationInteractor
+import com.android.systemui.screencapture.record.camera.domain.interactor.ScreenRecordCameraInteractor
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
 import com.android.systemui.screencapture.record.smallscreen.domain.interactor.RecordDetailsStateInteractor
 import com.android.systemui.screencapture.record.smallscreen.domain.interactor.RecordDetailsTargetInteractor
@@ -64,7 +65,7 @@ constructor(
     recordDetailsAppSelectorViewModelFactory: RecordDetailsAppSelectorViewModel.Factory,
     screenCaptureRecordParametersViewModelFactory: ScreenCaptureRecordParametersViewModel.Factory,
     recordDetailsTargetViewModelFactory: RecordDetailsTargetViewModel.Factory,
-    recordDetailsMarkupColorPickerViewModelFactory: RecordDetailsMarkupColorPickerViewModel.Factory,
+    recordDetailsColorPickerViewModelFactory: RecordDetailsColorPickerViewModel.Factory,
     private val drawableLoaderViewModel: DrawableLoaderViewModel,
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
     private val markupInteractor: ScreenCaptureMarkupInteractor,
@@ -72,6 +73,7 @@ constructor(
     private val screenCaptureRecordFeaturesInteractor: ScreenCaptureRecordFeaturesInteractor,
     recordDetailsTargetInteractor: RecordDetailsTargetInteractor,
     private val recordDetailsStateInteractor: RecordDetailsStateInteractor,
+    private val screenRecordCameraInteractor: ScreenRecordCameraInteractor,
     private val defaultDetailsPopupType: RecordDetailsPopupType,
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModel {
 
@@ -84,8 +86,7 @@ constructor(
         screenCaptureRecordParametersViewModelFactory:
             ScreenCaptureRecordParametersViewModel.Factory,
         recordDetailsTargetViewModelFactory: RecordDetailsTargetViewModel.Factory,
-        recordDetailsMarkupColorPickerViewModelFactory:
-            RecordDetailsMarkupColorPickerViewModel.Factory,
+        recordDetailsColorPickerViewModelFactory: RecordDetailsColorPickerViewModel.Factory,
         drawableLoaderViewModel: DrawableLoaderViewModel,
         screenCaptureUiInteractor: ScreenCaptureUiInteractor,
         markupInteractor: ScreenCaptureMarkupInteractor,
@@ -93,6 +94,7 @@ constructor(
         screenCaptureRecordFeaturesInteractor: ScreenCaptureRecordFeaturesInteractor,
         recordDetailsTargetInteractor: RecordDetailsTargetInteractor,
         recordDetailsStateInteractor: RecordDetailsStateInteractor,
+        screenRecordCameraInteractor: ScreenRecordCameraInteractor,
     ) : this(
         bgContext,
         screenRecordingServiceInteractor,
@@ -100,7 +102,7 @@ constructor(
         recordDetailsAppSelectorViewModelFactory,
         screenCaptureRecordParametersViewModelFactory,
         recordDetailsTargetViewModelFactory,
-        recordDetailsMarkupColorPickerViewModelFactory,
+        recordDetailsColorPickerViewModelFactory,
         drawableLoaderViewModel,
         screenCaptureUiInteractor,
         markupInteractor,
@@ -108,6 +110,7 @@ constructor(
         screenCaptureRecordFeaturesInteractor,
         recordDetailsTargetInteractor,
         recordDetailsStateInteractor,
+        screenRecordCameraInteractor,
         RecordDetailsPopupType.Invisible,
     )
 
@@ -117,8 +120,8 @@ constructor(
         screenCaptureRecordParametersViewModelFactory.create()
     val recordDetailsTargetViewModel: RecordDetailsTargetViewModel =
         recordDetailsTargetViewModelFactory.create()
-    val recordDetailsMarkupColorPickerViewModel: RecordDetailsMarkupColorPickerViewModel =
-        recordDetailsMarkupColorPickerViewModelFactory.create()
+    val recordDetailsColorPickerViewModel: RecordDetailsColorPickerViewModel =
+        recordDetailsColorPickerViewModelFactory.create()
 
     val isRecording: Boolean by
         screenRecordingServiceInteractor.status
@@ -140,7 +143,7 @@ constructor(
     val markupEnabled: Boolean? by
         markupInteractor.enabled
             .onEach { enabled ->
-                if (!enabled && detailsPopup == RecordDetailsPopupType.MarkupColorSelector) {
+                if (!enabled && detailsPopup == RecordDetailsPopupType.ColorSelector) {
                     resetDetailsPopup()
                 }
             }
@@ -154,6 +157,18 @@ constructor(
             initialValue = null,
         )
 
+    private val isCameraBackgroundColorSupported: Boolean by
+        screenRecordCameraInteractor.isBackgroundColorSupported.hydratedStateOf(
+            traceName = "SmallScreenCaptureRecordViewModel#isBackgroundColorSupported",
+            initialValue = false,
+        )
+    val shouldShowColorPickerButton: Boolean by derivedStateOf {
+        val canSelectCameraBackgroundColor =
+            recordDetailsParametersViewModel.shouldShowFrontCamera &&
+                isCameraBackgroundColorSupported
+        val canSelectMarkupBackgroundColor = shouldShowMarkupButton && markupEnabled == true
+        canSelectCameraBackgroundColor || canSelectMarkupBackgroundColor
+    }
     val shouldShowMarkupButton: Boolean by derivedStateOf {
         screenCaptureRecordFeaturesInteractor.isMarkupAvailable &&
             captureTargetModel?.currentTargetModel?.canUseMarkup == true
@@ -181,7 +196,7 @@ constructor(
             launchTraced(
                 "ScreenCaptureRecordSmallScreenViewModel#recordDetailsMarkupColorPickerViewModel"
             ) {
-                recordDetailsMarkupColorPickerViewModel.activate()
+                recordDetailsColorPickerViewModel.activate()
             }
         }
     }
@@ -194,8 +209,8 @@ constructor(
         detailsPopup = RecordDetailsPopupType.AppSelector
     }
 
-    fun showMarkupColorSelector() {
-        detailsPopup = RecordDetailsPopupType.MarkupColorSelector
+    fun showCameraColorSelector() {
+        detailsPopup = RecordDetailsPopupType.ColorSelector
     }
 
     fun resetDetailsPopup() {
