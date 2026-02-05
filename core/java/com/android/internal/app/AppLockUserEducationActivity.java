@@ -39,6 +39,7 @@ import android.widget.TextView;
 import com.android.internal.R;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.widget.LockPatternUtils;
+import com.android.internal.widget.ResolverDrawerLayout;
 
 /**
  * An activity that educates the user about the App Lock feature and prompts for its enablement.
@@ -178,6 +179,14 @@ public class AppLockUserEducationActivity extends Activity {
         cancelButton.setOnClickListener(v -> {
             onBackPressed();
         });
+
+        // Dismiss App Lock flow when the transparent background is tapped.
+        final View rootLayout = findViewById(R.id.app_lock_edu_layout);
+        if (rootLayout instanceof ResolverDrawerLayout) {
+            ((ResolverDrawerLayout) rootLayout).setOnDismissListener(this::onBackPressed);
+        } else {
+            rootLayout.setOnClickListener(v -> onBackPressed());
+        }
     }
 
     /** Returns the current user's screen lock type as a string (e.g., PIN, Password). */
