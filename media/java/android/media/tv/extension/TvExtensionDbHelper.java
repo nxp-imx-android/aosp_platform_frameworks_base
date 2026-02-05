@@ -88,6 +88,7 @@ public class TvExtensionDbHelper extends SQLiteOpenHelper {
                 + "('" + GlobalSettings.KEY_TIMESHIFT_FREE_SIZE + "'),"
                 + "('" + GlobalSettings.KEY_TIMESHIFT_MODE + "'),"
                 + "('" + GlobalSettings.KEY_TIMESHIFT_PATH + "'),"
+                + "('" + GlobalSettings.KEY_RECORDING_PATH + "'),"
                 + "('" + GlobalSettings.KEY_TUNER_SATELLITE_TYPE + "');");
 
         // Tuner Operators Table
@@ -98,7 +99,7 @@ public class TvExtensionDbHelper extends SQLiteOpenHelper {
                 + " INTEGER DEFAULT 0, "
                 + TunerOperators.COLUMN_OPERATOR_NAME
                 + " TEXT,"
-                + "CHECK (" + TunerOperators.COLUMN_OPERATOR_ID + " BETWEEN 0 AND 2)"
+                + "CHECK (" + TunerOperators.COLUMN_TUNER_NAME + " BETWEEN 0 AND 2)"
                 + ");");
 
         db.execSQL("INSERT INTO " + TvExtensionContract.TUNER_OPERATOR_TABLE
@@ -157,10 +158,13 @@ public class TvExtensionDbHelper extends SQLiteOpenHelper {
                 + " INTEGER, "
                 + DigitalTunerSettings.COLUMN_SUPERIMPOSE
                 + " INTEGER DEFAULT 0 "
+                + DigitalTunerSettings.COLUMN_CC_DISPLAY
+                + " INTEGER DEFAULT 0, "
                 + "CHECK (" + DigitalTunerSettings.COLUMN_DIGITAL_SUBTITLE_DISPLAY
                 + " BETWEEN 0 AND 2), "
                 + "CHECK (" + DigitalTunerSettings.COLUMN_SUPERIMPOSE
                 + " BETWEEN 0 AND 2) "
+                + "CHECK (" + DigitalTunerSettings.COLUMN_CC_DISPLAY + " BETWEEN 0 AND 2) "
                 + ");");
         db.execSQL("INSERT INTO " + TvExtensionContract.DIGITAL_TUNER_SETTING_TABLE
                 + " DEFAULT VALUES;");
