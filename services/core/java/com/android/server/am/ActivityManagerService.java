@@ -17259,17 +17259,15 @@ public class ActivityManagerService extends IActivityManager.Stub
         @FlaggedApi(FLAG_GET_PACKAGE_NAMES_FOR_PID_API)
         @NonNull
         public String[] getPackageNamesForPid(int pid, int uid) {
+            final ProcessRecord proc;
             synchronized (mPidsSelfLocked) {
-                ProcessRecord proc = mPidsSelfLocked.get(pid);
-                if (proc == null || proc.uid != uid) {
-                    return new String[0];
-                }
-                String[] packageNames = proc.getProcessPackageNames();
-                if (packageNames == null || packageNames.length == 0) {
-                    return new String[0];
-                }
-                return Arrays.copyOf(packageNames, packageNames.length);
+                proc = mPidsSelfLocked.get(pid);
             }
+            if (proc == null || proc.uid != uid) {
+                return new String[0];
+            }
+            String[] packageNames = proc.getProcessPackageNames();
+            return Objects.requireNonNullElseGet(packageNames, () -> new String[0]);
         }
 
         private boolean bindSdkSandboxServiceInternal(Intent service, ServiceConnection conn,
