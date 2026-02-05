@@ -34,6 +34,7 @@ import android.content.res.Configuration;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.os.Binder;
+import android.os.Handler;
 import android.util.Log;
 import android.view.IWindow;
 import android.view.SurfaceControl;
@@ -302,7 +303,12 @@ public abstract class CompatUIWindowManagerAbstract extends WindowlessWindowMana
         // Hiding before releasing to avoid flickering when transitioning to the Home screen.
         View layout = getLayout();
         if (layout != null) {
-            layout.setVisibility(View.GONE);
+            final Handler handler = layout.getHandler();
+            if (handler != null && !handler.getLooper().isCurrentThread()) {
+                handler.post(() -> layout.setVisibility(View.GONE));
+            } else {
+                layout.setVisibility(View.GONE);
+            }
         }
         removeLayout();
 
