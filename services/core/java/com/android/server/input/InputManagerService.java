@@ -882,7 +882,7 @@ public class InputManagerService extends IInputManager.Stub
         synchronized (mInputMonitors) {
             mInputMonitors.put(channel.getToken(),
                     new GestureMonitorSpyWindow(monitorToken, name, displayId, pid, uid, sc,
-                            channel));
+                            channel.getToken()));
         }
         return channel;
     }
