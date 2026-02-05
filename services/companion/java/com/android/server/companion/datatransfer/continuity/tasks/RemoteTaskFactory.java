@@ -19,7 +19,6 @@ package com.android.server.companion.datatransfer.continuity.tasks;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.companion.datatransfer.continuity.RemoteTask;
-import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.util.Slog;
@@ -30,37 +29,32 @@ public class RemoteTaskFactory {
 
     private static final String TAG = RemoteTaskFactory.class.getSimpleName();
 
-    private final PackageManager mPackageManager;
-    private final String mBrowserPackageName;
-    private final int mUserId;
-
-    public RemoteTaskFactory(
-            int userId, @NonNull Context context, @NonNull PackageManager packageManager) {
-        mUserId = userId;
-        mPackageManager = Objects.requireNonNull(packageManager);
-        mBrowserPackageName = packageManager.getDefaultBrowserPackageNameAsUser(userId);
-    }
-
     @Nullable
-    public RemoteTask create(
+    public static RemoteTask create(
+            @NonNull PackageManager packageManager,
+            int userId,
             int associationId,
             @Nullable String associationDisplayName,
             @NonNull RemoteTaskInfo remoteTaskInfo) {
         Objects.requireNonNull(remoteTaskInfo);
 
-        boolean canTaskBeHandedOffLocally = canTaskBeHandedOffNatively(remoteTaskInfo);
-        boolean canTaskBeHandedOffByBrowser = canTaskBeHandedOffByBrowser(remoteTaskInfo);
+        boolean canTaskBeHandedOffLocally =
+                canTaskBeHandedOffNatively(packageManager, remoteTaskInfo);
+        boolean canTaskBeHandedOffByBrowser =
+                canTaskBeHandedOffByBrowser(userId, packageManager, remoteTaskInfo);
 
         if (!canTaskBeHandedOffLocally && !canTaskBeHandedOffByBrowser) {
             return null;
         }
 
         String packageName =
-                canTaskBeHandedOffLocally ? remoteTaskInfo.packageName() : mBrowserPackageName;
+                canTaskBeHandedOffLocally
+                        ? remoteTaskInfo.packageName()
+                        : packageManager.getDefaultBrowserPackageNameAsUser(userId);
 
         return new RemoteTask.Builder(associationId, remoteTaskInfo.id())
                 .setPackageName(packageName)
-                .setLabel(getPackageLabel(packageName))
+                .setLabel(getPackageLabel(packageManager, packageName))
                 .setLastUsedTimestampMillis(remoteTaskInfo.lastUsedTimeMillis())
                 .setAssociationDisplayName(associationDisplayName)
                 .setTaskInForeground(remoteTaskInfo.isInForeground())
@@ -69,38 +63,44 @@ public class RemoteTaskFactory {
     }
 
     @Nullable
-    private String getPackageLabel(@NonNull String packageName) {
-        PackageInfo packageInfo = getPackageInfo(packageName);
+    private static String getPackageLabel(
+            @NonNull PackageManager packageManager, @NonNull String packageName) {
+        PackageInfo packageInfo = getPackageInfo(packageManager, packageName);
         if (packageInfo == null) {
             return null;
         }
 
-        return mPackageManager.getApplicationLabel(packageInfo.applicationInfo).toString();
+        return packageManager.getApplicationLabel(packageInfo.applicationInfo).toString();
     }
 
     @Nullable
-    private PackageInfo getPackageInfo(@NonNull String packageName) {
+    private static PackageInfo getPackageInfo(
+            @NonNull PackageManager packageManager, @NonNull String packageName) {
         try {
-            return mPackageManager.getPackageInfo(packageName, PackageManager.GET_META_DATA);
+            return packageManager.getPackageInfo(packageName, PackageManager.GET_META_DATA);
         } catch (PackageManager.NameNotFoundException e) {
             Slog.w(TAG, "Could not find package info for package: " + packageName);
             return null;
         }
     }
 
-    private boolean canTaskBeHandedOffNatively(@NonNull RemoteTaskInfo remoteTaskInfo) {
+    private static boolean canTaskBeHandedOffNatively(
+            @NonNull PackageManager packageManager, @NonNull RemoteTaskInfo remoteTaskInfo) {
         Objects.requireNonNull(remoteTaskInfo);
 
         if (!remoteTaskInfo.handoffOptions().isHandoffEnabled()) {
             return false;
         }
 
-        return getPackageInfo(remoteTaskInfo.packageName()) != null;
+        return getPackageInfo(packageManager, remoteTaskInfo.packageName()) != null;
     }
 
-    private boolean canTaskBeHandedOffByBrowser(@NonNull RemoteTaskInfo remoteTaskInfo) {
+    private static boolean canTaskBeHandedOffByBrowser(
+            int userId,
+            @NonNull PackageManager packageManager,
+            @NonNull RemoteTaskInfo remoteTaskInfo) {
         Objects.requireNonNull(remoteTaskInfo);
-        return mBrowserPackageName != null
+        return packageManager.getDefaultBrowserPackageNameAsUser(userId) != null
                 && remoteTaskInfo.handoffOptions().isHandoffEnabled()
                 && !remoteTaskInfo.handoffOptions().requirePackageInstalled();
     }

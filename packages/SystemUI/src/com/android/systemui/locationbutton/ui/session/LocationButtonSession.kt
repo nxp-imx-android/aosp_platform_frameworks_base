@@ -27,11 +27,13 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.hardware.display.DisplayManager
+import android.os.Build
 import android.os.IBinder
 import android.os.ParcelableException
 import android.os.Process
 import android.os.RemoteCallback
 import android.os.RemoteException
+import android.util.Log
 import android.util.Slog
 import android.view.SurfaceControlViewHost
 import android.view.WindowManager
@@ -80,7 +82,7 @@ import java.util.concurrent.Executor
 class LocationButtonSession(
     val context: Context,
     hostToken: IBinder,
-    displayId: Int,
+    val displayId: Int,
     val packageName: String,
     val packageUid: Int,
     request: LocationButtonRequest,
@@ -90,6 +92,8 @@ class LocationButtonSession(
     private val viewModelFactory: LocationButtonViewModel.Factory,
     private val sessionId: Int,
 ) : ILocationButtonSession.Stub(), IBinder.DeathRecipient {
+    val displayManager = context.getSystemService(DisplayManager::class.java)!!
+
     private val surfaceControlViewHost: SurfaceControlViewHost
 
     // Service set up this listener to track active sessions.
@@ -99,25 +103,24 @@ class LocationButtonSession(
 
     init {
         if (DEBUG) {
-            Slog.d(TAG, "Creating new location button session $sessionId for request: $request")
+            Slog.d(LOG_TAG, "Creating new location button session $sessionId for request: $request")
         }
         // TODO handle default values for optional properties in the request
-        interactor.setButtonState(sessionId, request.toButtonModel())
-        surfaceControlViewHost = setupSurfaceControlViewHost(hostToken, displayId)
-        setupComposeView(request)
+        val display = displayManager.getDisplay(displayId)
+        requireNotNull(display) { "Invalid display Id, display must not be null." }
+        val displayContext = context.createDisplayContext(display)
+        interactor.setButtonState(
+            sessionId,
+            request.toButtonModel(displayContext.resources.displayMetrics.density),
+        )
+        surfaceControlViewHost = SurfaceControlViewHost(context, display, hostToken)
+        setupComposeView()
         registerTrustedPresentationListener()
         linkToDeath()
     }
 
-    private fun setupSurfaceControlViewHost(
-        hostToken: IBinder,
-        displayId: Int,
-    ): SurfaceControlViewHost {
-        val displayManager = context.getSystemService(DisplayManager::class.java)!!
-        return SurfaceControlViewHost(context, displayManager.getDisplay(displayId), hostToken)
-    }
-
-    private fun setupComposeView(request: LocationButtonRequest) {
+    private fun setupComposeView() {
+        val buttonModel = interactor.getButtonState(sessionId) ?: return
         val rootView = LocationButtonRootView(context)
         val composeView = ComposeView(context)
         rootView.addView(composeView)
@@ -128,7 +131,7 @@ class LocationButtonSession(
                 onClick = { handleLocationButtonClick() },
             )
         }
-        surfaceControlViewHost.setView(rootView, request.width, request.height)
+        surfaceControlViewHost.setView(rootView, buttonModel.width, buttonModel.height)
     }
 
     private fun linkToDeath() {
@@ -136,7 +139,7 @@ class LocationButtonSession(
             locationButtonClient.asBinder().linkToDeath(this, 0)
             isActive = true
         } catch (ex: RemoteException) {
-            Slog.e(TAG, "Client died, closing new session.", ex)
+            Slog.e(LOG_TAG, "Client died, closing new session.", ex)
             close()
         }
     }
@@ -145,7 +148,7 @@ class LocationButtonSession(
 
     private fun handleLocationButtonClick() {
         if (!isButtonUiInTrustedState) {
-            Slog.w(TAG, "Location button click received, but not trusted.")
+            Slog.w(LOG_TAG, "Location button clicked, but ui state not trusted.")
             return
         }
         if (
@@ -176,7 +179,7 @@ class LocationButtonSession(
         try {
             locationButtonClient.onRequestPermissions(pendingIntent)
         } catch (e: RemoteException) {
-            Slog.e(TAG, "Client died or failed to respond on button click, close session.", e)
+            Slog.e(LOG_TAG, "Client died or failed to respond on button click, close session.", e)
             close()
         }
     }
@@ -194,20 +197,30 @@ class LocationButtonSession(
             trustedPresentationThresholds,
             executor,
         ) { inTrustedPresentationState ->
-            Slog.i(TAG, "TPL callback received with trusted state as $inTrustedPresentationState")
+            if (DEBUG) {
+                Slog.d(LOG_TAG, "TPL callback for session $sessionId: $inTrustedPresentationState")
+            }
             isButtonUiInTrustedState = inTrustedPresentationState
         }
     }
 
     override fun setCornerRadius(cornerRadius: Float) {
         executor.execute {
+            if (DEBUG) {
+                Slog.d(LOG_TAG, "setCornerRadius() for session $sessionId: $cornerRadius")
+            }
             ensureActiveSession()
             interactor.setCornerRadius(sessionId, cornerRadius)
         }
     }
 
     override fun setBackgroundColor(color: Int) {
-        Slog.i(TAG, "setBackgroundColor: $color")
+        if (DEBUG) {
+            Slog.d(
+                LOG_TAG,
+                "setBackgroundColor() for session $sessionId: #${Integer.toHexString(color)}",
+            )
+        }
         executor.execute {
             ensureActiveSession()
             // For security, ensure the background is always opaque.
@@ -218,6 +231,12 @@ class LocationButtonSession(
 
     override fun setTextColor(textColor: Int) {
         executor.execute {
+            if (DEBUG) {
+                Slog.d(
+                    LOG_TAG,
+                    "setTextColor() for session $sessionId: #${Integer.toHexString(textColor)}",
+                )
+            }
             ensureActiveSession()
             interactor.setTextColor(sessionId, textColor)
         }
@@ -225,6 +244,12 @@ class LocationButtonSession(
 
     override fun setIconTint(color: Int) {
         executor.execute {
+            if (DEBUG) {
+                Slog.d(
+                    LOG_TAG,
+                    "setIconTint() for session $sessionId: #${Integer.toHexString(color)}",
+                )
+            }
             ensureActiveSession()
             interactor.setIconTint(sessionId, color)
         }
@@ -232,6 +257,9 @@ class LocationButtonSession(
 
     override fun setTextType(textType: Int) {
         executor.execute {
+            if (DEBUG) {
+                Slog.d(LOG_TAG, "setTextType() for session $sessionId: $textType")
+            }
             ensureActiveSession()
             interactor.setTextId(sessionId, getTextResourceId(textType))
         }
@@ -239,14 +267,30 @@ class LocationButtonSession(
 
     override fun resize(width: Int, height: Int) {
         executor.execute {
+            if (DEBUG) {
+                Slog.d(LOG_TAG, "resize() called for session $sessionId: $width x $height")
+            }
             ensureActiveSession()
             interactor.setSize(sessionId, width, height)
-            surfaceControlViewHost.relayout(width, height)
+            val model = interactor.getButtonState(sessionId) ?: return@execute
+            if (DEBUG) {
+                Slog.d(
+                    LOG_TAG,
+                    "relayout() session $sessionId to validated size: ${model.width} x ${model.height}",
+                )
+            }
+            surfaceControlViewHost.relayout(model.width, model.height)
         }
     }
 
     override fun setStrokeColor(color: Int) {
         executor.execute {
+            if (DEBUG) {
+                Slog.d(
+                    LOG_TAG,
+                    "setStrokeColor() for session $sessionId: #${Integer.toHexString(color)}",
+                )
+            }
             ensureActiveSession()
             interactor.setStrokeColor(sessionId, color)
         }
@@ -254,6 +298,9 @@ class LocationButtonSession(
 
     override fun setStrokeWidth(width: Int) {
         executor.execute {
+            if (DEBUG) {
+                Slog.d(LOG_TAG, "setStrokeWidth() for session $sessionId: $width")
+            }
             ensureActiveSession()
             interactor.setStrokeWidth(sessionId, width)
         }
@@ -261,10 +308,17 @@ class LocationButtonSession(
 
     override fun changeConfiguration(newConfig: Configuration) {
         executor.execute {
-            executor.execute {
-                ensureActiveSession()
-                interactor.setConfiguration(sessionId, newConfig)
+            if (DEBUG) {
+                Slog.d(LOG_TAG, "changeConfiguration() for session $sessionId: $newConfig")
             }
+            ensureActiveSession()
+            val display = displayManager.getDisplay(displayId)
+            val displayContext = context.createDisplayContext(display)
+            interactor.setConfiguration(
+                sessionId,
+                newConfig,
+                displayContext.resources.displayMetrics.density,
+            )
         }
     }
 
@@ -287,7 +341,7 @@ class LocationButtonSession(
 
     private fun ensureActiveSession() {
         if (!isActive) {
-            Slog.w(TAG, "Session is already closed, can't use a closed session.")
+            Slog.w(LOG_TAG, "Session is already closed, can't use a closed session.")
             try {
                 locationButtonClient.onSessionError(
                     ParcelableException(
@@ -297,7 +351,11 @@ class LocationButtonSession(
                     )
                 )
             } catch (e: RemoteException) {
-                Slog.w(TAG, "ensureActiveSession: Failed to notify client of closed session.", e)
+                Slog.w(
+                    LOG_TAG,
+                    "ensureActiveSession: Failed to notify client of closed session.",
+                    e,
+                )
             }
         }
     }
@@ -339,31 +397,36 @@ class LocationButtonSession(
         fun onSessionClose(locationButtonSession: LocationButtonSession)
     }
 
-    fun LocationButtonRequest.toButtonModel(): ButtonModel {
+    fun LocationButtonRequest.toButtonModel(density: Float): ButtonModel {
         return ButtonModel(
             width = width,
             height = height,
-            // For security, ensure the background is always opaque.
-            backgroundColor = Color(ColorUtils.setAlphaComponent(backgroundColor, 255)),
+            paddingLeft = paddingLeft,
+            paddingTop = paddingTop,
+            paddingRight = paddingRight,
+            paddingBottom = paddingBottom,
+            backgroundColor = Color(backgroundColor),
             strokeColor = Color(strokeColor),
             strokeWidth = strokeWidth,
             cornerRadius = cornerRadius,
+            pressedCornerRadius = pressedCornerRadius,
             iconTint = Color(iconTint),
             textResId = getTextResourceId(textType),
             textColor = Color(textColor),
             configuration = configuration,
+            density = density,
         )
     }
 
     companion object {
-        private const val TAG = "LocationButtonSessionBinder"
-        private const val DEBUG = false
+        private const val LOG_TAG = "LocationButtonSession"
+        private val DEBUG = Build.IS_DEBUGGABLE || Log.isLoggable(LOG_TAG, Log.DEBUG)
 
-        /** The minimum alpha the button must have to be considered trusted. 90% opaque. */
-        private const val MIN_ALPHA_FOR_TRUSTED_PRESENTATION = 0.9f
+        /** The minimum alpha the button must have to be considered trusted. 95% opaque. */
+        private const val MIN_ALPHA_FOR_TRUSTED_PRESENTATION = 0.95f
 
-        /** The minimum fraction of the button that must be visible. 90% visible. */
-        private const val MIN_FRACTION_RENDERED_FOR_TRUSTED_PRESENTATION = 0.9f
+        /** The minimum fraction of the button that must be visible. 95% visible. */
+        private const val MIN_FRACTION_RENDERED_FOR_TRUSTED_PRESENTATION = 0.95f
 
         /** The minimum time in ms the button must be stable to be considered trusted. */
         private const val TRUSTED_PRESENTATION_STABILITY_MS = 200

@@ -459,6 +459,10 @@ public abstract class ActivityTaskManagerInternal implements ActiveUids.Observer
     @Nullable
     public abstract ComponentName getActivityName(IBinder activityToken);
 
+    /** Returns the assist token for the given activity token, or null if not found in root task. */
+    @Nullable
+    public abstract IBinder getAssistTokenForActivityToken(@NonNull IBinder activityToken);
+
     /**
      * Returns non-finishing Activity that have a process attached for the given task and the token
      * with the activity token and the IApplicationThread or null if there is no Activity with a

@@ -15,6 +15,7 @@
  */
 package com.android.systemui.locationbutton.ui.viewmodel
 
+import androidx.compose.ui.unit.dp
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.locationbutton.domain.interactor.LocationButtonInteractor
 import com.android.systemui.locationbutton.shared.model.ButtonModel
@@ -37,13 +38,20 @@ constructor(
     }
 
     private fun ButtonModel.toViewModel(): ButtonViewModel {
+        val contentWidthPx = width - paddingLeft - paddingRight
+        val contentHeightPx = height - paddingTop - paddingBottom
         return ButtonViewModel(
-            width = width,
-            height = height,
+            width = (contentWidthPx / density).dp,
+            height = (contentHeightPx / density).dp,
+            paddingLeft = (paddingLeft / density).dp,
+            paddingTop = (paddingTop / density).dp,
+            paddingRight = (paddingRight / density).dp,
+            paddingBottom = (paddingBottom / density).dp,
             backgroundColor = backgroundColor,
             strokeColor = strokeColor,
-            strokeWidth = strokeWidth,
-            cornerRadius = cornerRadius,
+            strokeWidth = (strokeWidth / density).dp,
+            cornerRadius = (cornerRadius / density).dp,
+            pressedCornerRadius = (pressedCornerRadius / density).dp,
             iconTint = iconTint,
             textResId = textResId,
             textColor = textColor,

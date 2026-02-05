@@ -16,9 +16,15 @@
 
 package com.android.server.notification;
 
+import static android.app.Notification.FLAG_PROMOTED_ONGOING;
 import static android.app.NotificationManager.IMPORTANCE_DEFAULT;
 import static android.app.NotificationManager.IMPORTANCE_LOW;
 import static android.app.NotificationManager.IMPORTANCE_NONE;
+import static android.app.NotificationRule.Action.PRIMARY_ACTION_BLOCK;
+import static android.app.NotificationRule.Action.PRIMARY_ACTION_BUNDLE;
+import static android.app.NotificationRule.Action.PRIMARY_ACTION_DEFAULT;
+import static android.app.NotificationRule.Action.PRIMARY_ACTION_HIGHLIGHT;
+import static android.app.NotificationRule.Filter.CONVERSATION_LEVEL_PRIORITY;
 import static android.app.NotificationRule.RESERVED_ID_IMPORTANT_NOTIFICATIONS;
 import static android.app.NotificationRule.RESERVED_ID_PRIORITY_CONVERSATIONS;
 import static android.app.NotificationRule.RESERVED_ID_PROMOTED;
@@ -36,18 +42,23 @@ import static android.service.notification.Adjustment.KEY_TYPE;
 import static android.app.NotificationLoggingConstants.DATA_TYPE_NOTIFICATION_RULES;
 import static android.app.NotificationLoggingConstants.ERROR_XML_PARSING;
 
+import static com.android.server.notification.NotificationManagerService.DEFAULT_ALLOWED_ADJUSTMENT_KEY_TYPES;
+
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.app.NotificationRule;
 import android.app.backup.BackupRestoreEventLogger;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.UserHandle;
 import android.service.notification.Adjustment;
 import android.util.ArrayMap;
 import android.util.Slog;
 
 import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
+import com.android.server.LocalServices;
+import com.android.server.pm.UserManagerInternal;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -70,6 +81,7 @@ public class NotificationRuleManager {
     private final Object mLock = new Object();
     private Context mContext;
     private NotificationManagerPrivate mNmPrivate;
+    private UserManagerInternal mUmInternal;
 
     // tags and attributes for persistence
     private final int mVersion = 1;
@@ -83,6 +95,7 @@ public class NotificationRuleManager {
     public NotificationRuleManager(Context context, NotificationManagerPrivate nmPrivate) {
         mContext = context;
         mNmPrivate = nmPrivate;
+        mUmInternal = LocalServices.getService(UserManagerInternal.class);
     }
 
     // for bugreports
@@ -101,6 +114,9 @@ public class NotificationRuleManager {
     // for backup and restore
     void readXml(TypedXmlPullParser parser, boolean forRestore, @UserIdInt int userId,
             @Nullable BackupRestoreEventLogger logger) throws XmlPullParserException, IOException {
+        if (!forRestore && userId != USER_ALL) {
+            throw new IllegalArgumentException("reading from disk with userId != USER_ALL");
+        }
         int type = parser.getEventType();
         if (type != XmlPullParser.START_TAG) return;
         String tag = parser.getName();
@@ -115,19 +131,22 @@ public class NotificationRuleManager {
                 tag = parser.getName();
                 if (RULE_TAG.equals(tag) && type == XmlPullParser.START_TAG) {
                     int ruleUser = parser.getAttributeInt(null, USER_ATTR, USER_ALL);
-                    if (userId == USER_ALL || userId == ruleUser) {
+                    int targetUser = forRestore ? userId : ruleUser;
+                    if (targetUser != USER_ALL) {
                         try {
                             NotificationRule rule = NotificationRule.readXml(parser, forRestore,
                                     mContext);
                             List<NotificationRule> rulesForUser =
-                                    mNotificationRules.getOrDefault(ruleUser, new ArrayList<>());
+                                    mNotificationRules.getOrDefault(targetUser, new ArrayList<>());
                             rulesForUser.add(rule);
-                            mNotificationRules.put(ruleUser, rulesForUser);
+                            mNotificationRules.put(targetUser, rulesForUser);
                             successfulReads++;
                         } catch (Exception e) {
                             Slog.d(TAG, "failed to restore rule", e);
                             unsuccessfulReads++;
                         }
+                    } else {
+                        unsuccessfulReads++;
                     }
                 }
                 type = parser.next();
@@ -147,6 +166,9 @@ public class NotificationRuleManager {
     void writeXml(TypedXmlSerializer out, boolean forBackup, @UserIdInt int userId,
             @Nullable BackupRestoreEventLogger logger, boolean useLegacyBundleStorage)
             throws IOException {
+        if (!forBackup && userId != USER_ALL) {
+            throw new IllegalArgumentException("writing to disk with userId != USER_ALL");
+        }
         synchronized (mLock) {
             out.startTag(null, NOTIFICATION_RULES_TAG);
             out.attributeInt(null, VERSION_ATTR, mVersion);
@@ -245,9 +267,7 @@ public class NotificationRuleManager {
      * @return true if there was a rule removed, false otherwise
      */
     boolean removeNotificationRule(@UserIdInt int user, int ruleId) {
-        if (ruleId == RESERVED_ID_PROMOTED || ruleId == RESERVED_ID_PRIORITY_CONVERSATIONS
-                || ruleId == RESERVED_ID_IMPORTANT_NOTIFICATIONS
-                || ruleId == RESERVED_ID_STATIC_BUNDLES) {
+        if (NotificationRule.isSystemRule(ruleId)) {
             return false;
         }
         boolean removed = false;
@@ -275,7 +295,12 @@ public class NotificationRuleManager {
      * Adds system/NAS rules for the given user.
      */
     void onUserAdded(@UserIdInt int user) {
-        // TODO(b/477961511): add system rules
+        int potentialParent = mUmInternal.getProfileParentId(user);
+        if (potentialParent == user) {
+            synchronized (mLock) {
+                mNotificationRules.put(user, getDefaultSystemRules(user));
+            }
+        }
     }
 
     /**
@@ -308,20 +333,20 @@ public class NotificationRuleManager {
                 NotificationRule.Action action = rule.getAction();
                 Bundle signals = new Bundle();
                 switch (action.getPrimaryAction()) {
-                    case NotificationRule.Action.PRIMARY_ACTION_HIGHLIGHT:
+                    case PRIMARY_ACTION_HIGHLIGHT:
                         signals.putBoolean(KEY_HIGHLIGHT, true);
                         // TODO(b/438704204): Add highlight default behaviors
                         break;
-                    case NotificationRule.Action.PRIMARY_ACTION_DEFAULT:
+                    case PRIMARY_ACTION_DEFAULT:
                         signals.putInt(KEY_IMPORTANCE, IMPORTANCE_DEFAULT);
                         break;
                     case NotificationRule.Action.PRIMARY_ACTION_LOW:
                         signals.putInt(KEY_IMPORTANCE, IMPORTANCE_LOW);
                         break;
-                    case NotificationRule.Action.PRIMARY_ACTION_BUNDLE:
+                    case PRIMARY_ACTION_BUNDLE:
                         signals.putInt(KEY_TYPE, rule.getId());
                         break;
-                    case NotificationRule.Action.PRIMARY_ACTION_BLOCK:
+                    case PRIMARY_ACTION_BLOCK:
                         signals.putInt(KEY_IMPORTANCE, IMPORTANCE_NONE);
                         break;
                     default:
@@ -364,5 +389,45 @@ public class NotificationRuleManager {
                             || RESERVED_ID_PROMOTED == notificationRule.getId()));
             mNotificationRules.put(user, rulesForUser);
         }
+    }
+
+    private ArrayList<NotificationRule> getDefaultSystemRules(@UserIdInt int userId) {
+        ArrayList<NotificationRule> rules = new ArrayList<>();
+        NotificationRule promoted = new NotificationRule.Builder(RESERVED_ID_PROMOTED, "Promoted")
+                .setAction(new NotificationRule.Action.Builder(PRIMARY_ACTION_HIGHLIGHT).build())
+                .setCanBeDisabled(false)
+                .setEditIntentAction("android.settings.MANAGE_APP_POST_PROMOTED_NOTIFICATIONS")
+                .addFilter(new NotificationRule.Filter.Builder().setFlags(FLAG_PROMOTED_ONGOING)
+                        .build())
+                .build();
+        rules.add(promoted);
+        NotificationRule convos = new NotificationRule.Builder(RESERVED_ID_PRIORITY_CONVERSATIONS,
+                "Conversations")
+                .setAction(new NotificationRule.Action.Builder(PRIMARY_ACTION_HIGHLIGHT).build())
+                .setCanBeDisabled(false)
+                .setEditIntentAction("android.settings.CONVERSATION_SETTINGS")
+                .addFilter(new NotificationRule.Filter.Builder().setConversationLevel(
+                        CONVERSATION_LEVEL_PRIORITY).build())
+                .build();
+        rules.add(convos);
+        NotificationRule bundle = new NotificationRule.Builder(RESERVED_ID_STATIC_BUNDLES, "Bundle")
+                .setAction(new NotificationRule.Action.Builder(PRIMARY_ACTION_BUNDLE).build())
+                .setEditIntentAction("android.settings.NOTIFICATION_BUNDLES")
+                .addFilter(new NotificationRule.Filter.Builder()
+                        .setStaticBundleTypes(List.of(DEFAULT_ALLOWED_ADJUSTMENT_KEY_TYPES))
+                        // bundles are only enabled for primary users by default
+                        .addUser(UserHandle.of(userId))
+                        .build())
+                .setCanBeDisabled(true)
+                .build();
+        rules.add(bundle);
+        NotificationRule important = new NotificationRule.Builder(
+                RESERVED_ID_IMPORTANT_NOTIFICATIONS, "Important")
+                .setAction(new NotificationRule.Action.Builder(PRIMARY_ACTION_HIGHLIGHT).build())
+                .setCanBeDisabled(true)
+                .build();
+        rules.add(important);
+
+        return rules;
     }
 }

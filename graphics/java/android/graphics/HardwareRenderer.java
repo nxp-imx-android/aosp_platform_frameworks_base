@@ -1735,6 +1735,9 @@ public class HardwareRenderer {
      */
     public static native int preload();
 
+    /** @hide */
+    public static native void waitForRenderThreadPriorityInitialized();
+
     /**
      * Initialize the Buffer Allocator singleton
      *

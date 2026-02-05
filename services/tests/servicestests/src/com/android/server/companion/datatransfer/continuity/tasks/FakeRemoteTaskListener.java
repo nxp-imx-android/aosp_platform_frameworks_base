@@ -23,7 +23,7 @@ import android.companion.datatransfer.continuity.RemoteTask;
 import java.util.ArrayList;
 import java.util.List;
 
-final class FakeRemoteTaskListener extends IRemoteTaskListener.Stub {
+public final class FakeRemoteTaskListener extends IRemoteTaskListener.Stub {
     List<List<RemoteTask>> remoteTasksReportedToListener = new ArrayList<>();
 
     @Override

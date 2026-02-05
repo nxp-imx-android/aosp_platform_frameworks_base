@@ -29,41 +29,35 @@ import android.app.ActivityManager;
 import android.app.HandoffActivityData;
 import android.companion.datatransfer.continuity.TaskContinuityManager;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.os.PersistableBundle;
+import com.android.server.companion.datatransfer.continuity.TaskContinuityTest;
 import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffActivityDataMessage;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestMessage;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestResultMessage;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
-import com.android.server.companion.datatransfer.continuity.tasks.TaskSyncController;
+import com.android.server.companion.datatransfer.continuity.tasks.RemoteTaskListenerHolder;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
-public class OutboundHandoffRequestHandlerTest {
+public class OutboundHandoffRequestHandlerTest extends TaskContinuityTest {
 
-    @Mock private Context mMockContext;
-    @Mock private TaskContinuityMessenger mMockTaskContinuityMessenger;
-    @Mock private PackageManager mMockPackageManager;
-    @Mock private TaskSyncController mMockTaskSyncController;
+    @Mock private RemoteTaskListenerHolder mMockRemoteTaskListenerHolder;
 
     private OutboundHandoffRequestHandler mOutboundHandoffRequestHandler;
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
-        doReturn(mMockPackageManager).when(mMockContext).getPackageManager();
         mOutboundHandoffRequestHandler =
                 new OutboundHandoffRequestHandler(
-                        mMockContext, mMockTaskContinuityMessenger, mMockTaskSyncController);
+                        mMockContext, mMockTaskContinuityMessenger, mMockRemoteTaskListenerHolder);
     }
 
     @Test
@@ -127,7 +121,7 @@ public class OutboundHandoffRequestHandlerTest {
                 associationId, taskId, TaskContinuityManager.HANDOFF_REQUEST_RESULT_SUCCESS);
 
         // Verify the task was removed from the store.
-        verify(mMockTaskSyncController).removeTask(associationId, taskId);
+        verify(mMockRemoteTaskListenerHolder).notifyTaskHandedOff(associationId, taskId);
     }
 
     @Test

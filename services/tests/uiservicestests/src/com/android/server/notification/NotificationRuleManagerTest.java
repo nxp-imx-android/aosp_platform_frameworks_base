@@ -29,6 +29,7 @@ import static android.app.NotificationRule.Action.PRIMARY_ACTION_BUNDLE;
 import static android.app.NotificationRule.Action.PRIMARY_ACTION_DEFAULT;
 import static android.app.NotificationRule.Action.PRIMARY_ACTION_HIGHLIGHT;
 import static android.app.NotificationRule.Action.PRIMARY_ACTION_LOW;
+import static android.app.NotificationRule.Filter.CONVERSATION_LEVEL_PRIORITY;
 import static android.app.NotificationRule.RESERVED_ID_IMPORTANT_NOTIFICATIONS;
 import static android.app.NotificationRule.RESERVED_ID_PRIORITY_CONVERSATIONS;
 import static android.app.NotificationRule.RESERVED_ID_PROMOTED;
@@ -40,6 +41,8 @@ import static android.service.notification.Adjustment.KEY_MODE_BREAKTHROUGHS;
 import static android.service.notification.Adjustment.KEY_NOTIFICATION_RULES;
 import static android.service.notification.Adjustment.KEY_SOUND;
 import static android.service.notification.Adjustment.KEY_TYPE;
+import static android.service.notification.Adjustment.TYPE_NEWS;
+import static android.service.notification.Adjustment.TYPE_PROMOTION;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -47,6 +50,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import android.app.ActivityManager;
 import android.app.Flags;
@@ -68,7 +72,9 @@ import androidx.test.runner.AndroidJUnit4;
 
 import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
+import com.android.server.LocalServices;
 import com.android.server.UiServiceTestCase;
+import com.android.server.pm.UserManagerInternal;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -96,6 +102,10 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
     @Mock
     private NotificationManagerPrivate mNmPrivate;
     private int mUser;
+    private int mUserSecondary;
+    private int mUserProfile;
+    @Mock
+    private UserManagerInternal mUmInternal;
 
     private NotificationRuleManager underTest;
 
@@ -103,8 +113,19 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        underTest = new NotificationRuleManager(mContext, mNmPrivate);
         mUser = ActivityManager.getCurrentUser();
+        mUserSecondary = mUser + 10;
+        mUserProfile = mUser + 1;
+
+        LocalServices.removeServiceForTest(UserManagerInternal.class);
+        LocalServices.addService(UserManagerInternal.class, mUmInternal);
+
+        when(mUmInternal.getProfileParentId(mUser)).thenReturn(mUser);
+        when(mUmInternal.getProfileParentId(mUserSecondary)).thenReturn(mUserSecondary);
+        when(mUmInternal.getProfileParentId(mUserProfile)).thenReturn(mUser);
+
+        underTest = new NotificationRuleManager(mContext, mNmPrivate);
+
     }
 
     private NotificationRule createRule(int id, String name, boolean isEnabled) {
@@ -121,7 +142,7 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
         Uri soundHaptics = Settings.System.DEFAULT_NOTIFICATION_URI;
         List<String> categories = List.of(CATEGORY_MESSAGE, CATEGORY_ALARM);
         int contactLevel = NotificationRule.Filter.CONTACT_LEVEL_CONTACT;
-        int conversationLevel = NotificationRule.Filter.CONVERSATION_LEVEL_PRIORITY;
+        int conversationLevel = CONVERSATION_LEVEL_PRIORITY;
         List<Uri> contacts = List.of(Uri.EMPTY, Uri.fromParts("hi", "hi", "hi"));
         List<Integer> excludedPackages = List.of(1234, 4321);
         List<Integer> includedPackages = List.of(5678, 8765);
@@ -212,10 +233,10 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
         NotificationRule rule = createRule(100, "test", true);
         underTest.addNotificationRule(mUser, 0, rule);
         NotificationRule rule2 = createRule(100, "test2", true);
-        underTest.addNotificationRule(mUser + 1, 0, rule2);
+        underTest.addNotificationRule(mUserSecondary, 0, rule2);
 
         assertThat(underTest.getNotificationRules(mUser)).containsExactly(rule);
-        assertThat(underTest.getNotificationRules(mUser + 1)).containsExactly(rule2);
+        assertThat(underTest.getNotificationRules(mUserSecondary)).containsExactly(rule2);
     }
 
     @Test
@@ -487,7 +508,7 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
         underTest.setNotificationRules(mUser, List.of(rule1User1, rule2User1, rule3User1));
         NotificationRule rule1User2 = createFullRule(101, "secondary", true);
         NotificationRule rule2User2 = createFullRule(102, "third", false);
-        underTest.setNotificationRules(mUser + 1, List.of(rule1User2, rule2User2));
+        underTest.setNotificationRules(mUserSecondary, List.of(rule1User2, rule2User2));
 
         underTest.writeXml(serializer, false, UserHandle.USER_ALL, null, false);
         serializer.endDocument();
@@ -506,9 +527,49 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
 
         assertThat(underTest.getNotificationRules(mUser))
                 .containsExactly(rule1User1, rule2User1, rule3User1).inOrder();
-        assertThat(underTest.getNotificationRules(mUser + 1)).containsExactly(
+        assertThat(underTest.getNotificationRules(mUserSecondary)).containsExactly(
                 rule1User2, rule2User2).inOrder();
         assertThat(underTest.getNotificationRules(UserHandle.USER_ALL)).isEmpty();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void readWriteXml_local_wrongUser_onWrite() throws Exception {
+        TypedXmlSerializer serializer = Xml.newFastSerializer();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        serializer.setOutput(new BufferedOutputStream(baos), "utf-8");
+        serializer.startDocument(null, true);
+
+        NotificationRule rule1User1 = createFullRule(100, "test", true);
+        underTest.setNotificationRules(mUser, List.of(rule1User1));
+
+        underTest.writeXml(serializer, false, mUser, null, false);
+        serializer.endDocument();
+        serializer.flush();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void readWriteXml_local_wrongUser_onRead() throws Exception {
+        TypedXmlSerializer serializer = Xml.newFastSerializer();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        serializer.setOutput(new BufferedOutputStream(baos), "utf-8");
+        serializer.startDocument(null, true);
+
+        NotificationRule rule1User1 = createFullRule(100, "test", true);
+        underTest.setNotificationRules(mUser, List.of(rule1User1));
+
+        underTest.writeXml(serializer, false, UserHandle.USER_ALL, null, false);
+        serializer.endDocument();
+        serializer.flush();
+
+        TypedXmlPullParser parser = Xml.newFastPullParser();
+        byte[] byteArray = baos.toByteArray();
+        parser.setInput(new BufferedInputStream(new ByteArrayInputStream(byteArray)), null);
+        parser.nextTag();
+
+        underTest = new NotificationRuleManager(mContext, mNmPrivate);
+        underTest.readXml(parser, false, mUser, null);
+
+        assertThat(underTest.getNotificationRules(mUser)).isEmpty();
     }
 
     @Test
@@ -524,7 +585,7 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
         underTest.setNotificationRules(mUser, List.of(rule1User1, rule2User1, rule3User1));
         NotificationRule rule1User2 = createFullRule(101, "secondary", true);
         NotificationRule rule2User2 = createFullRule(102, "third", false);
-        underTest.setNotificationRules(mUser + 1, List.of(rule1User2, rule2User2));
+        underTest.setNotificationRules(mUserSecondary, List.of(rule1User2, rule2User2));
 
         underTest.writeXml(serializer, true, mUser,
                 android.app.Flags.backupRestoreLogging() ? mLogger : null, false);
@@ -544,15 +605,107 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
         parser.nextTag();
 
         underTest = new NotificationRuleManager(mContext, mNmPrivate);
-        underTest.readXml(parser, true, mUser, mLogger);
+        underTest.readXml(parser, true, mUserSecondary, mLogger);
 
         if (android.app.Flags.backupRestoreLogging()) {
             verify(mLogger).logItemsRestored(DATA_TYPE_NOTIFICATION_RULES, 3);
             verify(mLogger, never()).logItemsRestoreFailed(anyString(), anyInt(), anyString());
         }
 
-        assertThat(underTest.getNotificationRules(mUser))
+        assertThat(underTest.getNotificationRules(mUserSecondary))
                 .containsExactly(rule1User1, rule2User1, rule3User1).inOrder();
-        assertThat(underTest.getNotificationRules(mUser + 1)).isEmpty();
+        assertThat(underTest.getNotificationRules(mUser)).isEmpty();
+    }
+
+    @Test
+    public void onUserAdded_primary() {
+        underTest.onUserAdded(mUser);
+
+        assertThat(underTest.getNotificationRules(mUser)).hasSize(4);
+        assertThat(underTest.getNotificationRules(mUserSecondary)).hasSize(0);
+        assertThat(underTest.getNotificationRules(mUserProfile)).hasSize(0);
+
+        assertThat(underTest.getNotificationRules(mUser).stream().mapToInt(NotificationRule::getId))
+                .containsExactly(RESERVED_ID_PROMOTED, RESERVED_ID_PRIORITY_CONVERSATIONS,
+                        RESERVED_ID_STATIC_BUNDLES, RESERVED_ID_IMPORTANT_NOTIFICATIONS);
+    }
+
+    @Test
+    public void onUserAdded_secondary() {
+        underTest.onUserAdded(mUserSecondary);
+
+        assertThat(underTest.getNotificationRules(mUserSecondary)).hasSize(4);
+    }
+
+    @Test
+    public void onUserAdded_profile() {
+        underTest.onUserAdded(mUserProfile);
+        assertThat(underTest.getNotificationRules(mUserProfile)).hasSize(0);
+    }
+
+    @Test
+    public void onUserAdded_bundleRule() {
+        underTest.onUserAdded(mUser);
+
+        NotificationRule actual = underTest.getNotificationRule(
+                mUser, RESERVED_ID_STATIC_BUNDLES);
+
+        assertThat(actual.getConditions()).isEmpty();
+        assertThat(actual.getFilters().size()).isEqualTo(1);
+        assertThat(actual.getFilters().getFirst().getUsers()).containsExactly(UserHandle.of(mUser));
+        assertThat(actual.getFilters().getFirst().getStaticBundleTypes())
+                .containsExactly(TYPE_NEWS, TYPE_PROMOTION);
+        assertThat(actual.getAction().getPrimaryAction()).isEqualTo(PRIMARY_ACTION_BUNDLE);
+        assertThat(actual.canBeDisabled()).isTrue();
+        assertThat(actual.isEnabled()).isTrue();
+        assertThat(actual.getEditIntentAction()).contains("BUNDLE");
+    }
+
+    @Test
+    public void onUserAdded_importantRule() {
+        underTest.onUserAdded(mUser);
+
+        NotificationRule actual = underTest.getNotificationRule(
+                mUser, RESERVED_ID_IMPORTANT_NOTIFICATIONS);
+
+        assertThat(actual.getConditions()).isEmpty();
+        assertThat(actual.getFilters()).isEmpty();
+        assertThat(actual.getAction().getPrimaryAction()).isEqualTo(PRIMARY_ACTION_HIGHLIGHT);
+        assertThat(actual.canBeDisabled()).isTrue();
+        assertThat(actual.isEnabled()).isTrue();
+        assertThat(actual.getEditIntentAction()).isNull();
+    }
+
+    @Test
+    public void onUserAdded_promotedRule() {
+        underTest.onUserAdded(mUser);
+
+        NotificationRule actual = underTest.getNotificationRule(
+                mUser, RESERVED_ID_PROMOTED);
+
+        assertThat(actual.getConditions()).isEmpty();
+        assertThat(actual.getFilters().size()).isEqualTo(1);
+        assertThat(actual.getFilters().getFirst().getFlags()).isEqualTo(FLAG_PROMOTED_ONGOING);
+        assertThat(actual.getAction().getPrimaryAction()).isEqualTo(PRIMARY_ACTION_HIGHLIGHT);
+        assertThat(actual.canBeDisabled()).isFalse();
+        assertThat(actual.isEnabled()).isTrue();
+        assertThat(actual.getEditIntentAction()).contains("PROMOTED");
+    }
+
+    @Test
+    public void onUserAdded_conversationRule() {
+        underTest.onUserAdded(mUser);
+
+        NotificationRule actual = underTest.getNotificationRule(
+                mUser, RESERVED_ID_PRIORITY_CONVERSATIONS);
+
+        assertThat(actual.getConditions()).isEmpty();
+        assertThat(actual.getFilters().size()).isEqualTo(1);
+        assertThat(actual.getFilters().getFirst().getConversationLevel())
+                .isEqualTo(CONVERSATION_LEVEL_PRIORITY);
+        assertThat(actual.getAction().getPrimaryAction()).isEqualTo(PRIMARY_ACTION_HIGHLIGHT);
+        assertThat(actual.canBeDisabled()).isFalse();
+        assertThat(actual.isEnabled()).isTrue();
+        assertThat(actual.getEditIntentAction()).contains("CONVERSATION");
     }
 }

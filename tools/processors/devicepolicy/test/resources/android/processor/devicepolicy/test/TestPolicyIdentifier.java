@@ -175,6 +175,29 @@ public final class PolicyIdentifier<T> {
     public static final PolicyIdentifier<Integer> SIMPLE_INTEGER_POLICY_WITH_RANGE =
             new PolicyIdentifier<>("SIMPLE_INTEGER_POLICY_WITH_RANGE");
 
+    /** Test long policy with min and max values. */
+    @LongPolicyDefinition(
+            base =
+                    @PolicyDefinition(
+                            allowedScopes = {
+                                1 // POLICY_SCOPE_USER
+                            },
+                            affectedResource = 1, // RESOURCE_DEVICE_WIDE
+                            // requiredPermission and requiredCrossUserPermission using the default
+                            // values.
+                            allowedDpcTypes =
+                                    @AllowedDpcTypes(
+                                            deviceOwner = DISALLOWED,
+                                            managedProfileOwnerOfOrganizationOwnedDevice =
+                                                    DISALLOWED,
+                                            managedProfileOwnerOfPersonalOwnedDevice = DISALLOWED,
+                                            unaffiliatedFullUserProfileOwner = DISALLOWED)),
+            minValue = 10,
+            maxValue = 100
+    )
+    public static final PolicyIdentifier<Long> SIMPLE_LONG_POLICY_WITH_RANGE =
+            new PolicyIdentifier<>("SIMPLE_LONG_POLICY_WITH_RANGE");
+
     /** Test policy 4 */
     @StringPolicyDefinition(
             base =

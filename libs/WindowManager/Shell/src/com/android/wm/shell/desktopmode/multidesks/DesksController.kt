@@ -20,11 +20,14 @@ import android.os.UserHandle
 import android.os.UserManager
 import android.view.Display.INVALID_DISPLAY
 import android.window.DesktopExperienceFlags
+import android.window.WindowContainerTransaction
 import com.android.internal.protolog.ProtoLog
+import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.EnterReason
 import com.android.wm.shell.desktopmode.DesktopTasksController
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
+import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializer.DeskRootHelper
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.desktopmode.DesktopConfig
 import com.android.wm.shell.shared.desktopmode.DesktopState
@@ -39,7 +42,8 @@ class DesksController(
     private val desktopState: DesktopState,
     private val displayController: DisplayController,
     private val desksOrganizer: DesksOrganizer,
-) {
+    private val shellTaskOrganizer: ShellTaskOrganizer,
+) : DeskRootHelper {
 
     // Temporal reference back to the DesktopTasksController to allow an incremental moving of the
     // code. it'll be eventually removed.
@@ -48,6 +52,28 @@ class DesksController(
 
     fun setBackDependency(backDep: DesktopTasksController) {
         backDependency = backDep
+    }
+
+    override suspend fun recreateDeskRoot(
+        userId: Int,
+        destinationDisplayId: Int,
+        deskId: Int
+    ): Int? = createDeskRootSuspending(displayId = destinationDisplayId, userId = userId)
+
+    override suspend fun removeDeskRoots(
+        requests: List<DeskRootHelper.DeskRootRemovalRequest>
+    ) {
+        val wct = WindowContainerTransaction()
+        for (request in requests) {
+            desksOrganizer.removeDesk(wct, request.deskId, request.userId)
+        }
+        if (!wct.isEmpty()) {
+            ProtoLog.d(
+                WM_SHELL_DESKTOP_MODE, "$TAG: removeDeskRoots: applying removal of %s",
+                requests,
+            )
+            shellTaskOrganizer.applyTransaction(wct)
+        }
     }
 
     /** Returns whether the given display has an active desk. */
@@ -105,7 +131,7 @@ class DesksController(
             userId,
             enforceDeskLimit,
         )
-        if (!canCreateDeskInDisplay(displayId, userId)) {
+        if (!canCreateDeskInDisplay(displayId, userId, enforceDeskLimit)) {
             logW("createDesk new desk cannot be created, ignoring request")
             return
         }

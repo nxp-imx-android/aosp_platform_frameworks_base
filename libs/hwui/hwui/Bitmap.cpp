@@ -16,13 +16,13 @@
 #include "Bitmap.h"
 
 #include <android-base/file.h>
+#include <utils/Trace.h>
 
 #include "FeatureFlags.h"
 #include "HardwareBitmapUploader.h"
 #include "OutOfProcessRendering.h"
 #include "Properties.h"
 #include "utils/Color.h"
-#include <utils/Trace.h>
 
 #ifdef __ANDROID__  // Layoutlib does not support render thread
 #include <com_android_graphics_surfaceflinger_flags.h>
@@ -374,7 +374,7 @@ Bitmap::Bitmap(AHardwareBuffer* buffer, const SkImageInfo& info, size_t rowBytes
     setImmutable();  // HW bitmaps are always immutable
     mImage = SkImages::DeferredFromAHardwareBuffer(buffer, mInfo.alphaType(),
                                                    mInfo.refColorSpace());
-    uirenderer::oopr::registerBuffer(buffer, mImage);
+    uirenderer::oopr::registerBuffer(GraphicBuffer::fromAHardwareBuffer(buffer), mImage);
     traceBitmapCreate();
 }
 #endif

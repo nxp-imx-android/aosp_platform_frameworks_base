@@ -16,19 +16,19 @@
 
 package com.android.systemui.notifications.intelligence.rules.shared.model
 
-/** Represents a notification rule controlling when and how notifications are presented. */
-public data class RuleModel(val action: ActionModel)
+import android.graphics.drawable.Drawable
 
-/** Represents various actions that a rule can apply to a notification. */
-public enum class ActionModel {
-    /** See [android.app.NotificationRule.Action.PRIMARY_ACTION_HIGHLIGHT]. */
-    Highlight,
-    /** See [android.app.NotificationRule.Action.PRIMARY_ACTION_DEFAULT]. */
-    Default,
-    /** See [android.app.NotificationRule.Action.PRIMARY_ACTION_LOW]. */
-    Silence,
-    /** See [android.app.NotificationRule.Action.PRIMARY_ACTION_BUNDLE]. */
-    Bundle,
-    /** See [android.app.NotificationRule.Action.PRIMARY_ACTION_BLOCK]. */
-    Block,
+/** Represents an app installed on the device. */
+public data class AppModel(
+    // TODO: b/478225883 - Support UIDs, since that's the API used by
+    // [android.app.NotificationRule].
+    val label: String,
+    val icon: Drawable,
+)
+
+/** Represents a set of apps that are included as part of a notification rule filter. */
+public data class IncludedAppsModel(val apps: List<AppModel>) {
+    init {
+        require(apps.isNotEmpty()) { "Apps list cannot be empty" }
+    }
 }

@@ -237,7 +237,7 @@ constructor(
             contentBuilder.shortCriticalText = notification.shortCriticalText
         }
         contentBuilder.lastAudiblyAlertedMs = lastAudiblyAlertedMs
-        contentBuilder.profileBadgeBitmap = Notification.getProfileBadge(packageContext)
+        contentBuilder.profileBadgeBitmap = recoveredBuilder.getProfileBadge()
         contentBuilder.title = notification.title(recoveredBuilder.style?.javaClass)
         contentBuilder.text = notification.text(recoveredBuilder.style?.javaClass)
         contentBuilder.skeletonLargeIcon = notification.skeletonLargeIcon(imageModelProvider)

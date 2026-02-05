@@ -1212,16 +1212,6 @@ flag {
 }
 
 flag {
-    name: "remove_desk_on_last_task_removal"
-    namespace: "lse_desktop_experience"
-    description: "Removes the desk when its last task is removed in touch-first displays"
-    bug: "414845396"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "reparent_desk_leaf_tasks_if_relaunched"
     namespace: "lse_desktop_experience"
     description: "Reparents the leaf tasks of a desk to the task display area if they are /n"
@@ -1247,6 +1237,16 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enables repository based persistence to run on background thread."
     bug: "436785583"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "respect_system_default_min_size"
+    namespace: "lse_desktop_experience"
+    description: "Enables the bug fix to respect system-default min size over app-requested."
+    bug: "478712811"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

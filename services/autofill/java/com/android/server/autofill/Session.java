@@ -2088,8 +2088,8 @@ final class Session
             // It's possible that this maybe overwritten later on after PCC filtering.
             mFillResponseEventLogger.maybeSetAvailableCount(datasetCount);
 
-            // TODO(b/266379948): Ideally wait for PCC request to finish for a while more
-            // (say 100ms) before proceeding further on.
+            // A small delay to wait for the PCC request to finish was considered, but not
+            // implemented. See b/266379948 for context.
 
             processResponseLockedForPcc(response, response.getClientState(), requestFlags);
             mFillResponseEventLogger.maybeSetLatencyResponseProcessingMillis();

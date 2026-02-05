@@ -59,7 +59,7 @@ public final class RouterInfoMediaManager extends InfoMediaManager {
 
     private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
 
-    private final MediaRouter2 mRouter;
+    @NonNull private final MediaRouter2 mRouter;
     @VisibleForTesting
     MediaRouter2Manager mRouterManager;
 
@@ -100,7 +100,7 @@ public final class RouterInfoMediaManager extends InfoMediaManager {
                 public void onSuggestionsRequested() {} // no-op
             };
 
-    @GuardedBy("InfoMediaManager.this.fieldName")
+    @GuardedBy("mLock")
     @Nullable
     private MediaRouter2.ScanToken mScanToken;
 
@@ -114,19 +114,14 @@ public final class RouterInfoMediaManager extends InfoMediaManager {
             throws PackageNotAvailableException {
         super(context, packageName, userHandle, localBluetoothManager, mediaController);
 
-        MediaRouter2 router = null;
-
         try {
-            router = MediaRouter2.getInstance(context, packageName, userHandle);
+            mRouter = MediaRouter2.getInstance(context, packageName, userHandle);
         } catch (IllegalArgumentException ex) {
-            // Do nothing
-        }
-        if (router == null) {
             throw new PackageNotAvailableException(
-                    "Package name " + packageName + " does not exist.");
+                    "Couldn't create MediaRouter2 for " + packageName + "/" + userHandle
+                            + ". Does package exist?",
+                    ex);
         }
-        // We have to defer initialization because mRouter is final.
-        mRouter = router;
 
         mRouterManager = MediaRouter2Manager.getInstance(context);
     }
@@ -138,7 +133,7 @@ public final class RouterInfoMediaManager extends InfoMediaManager {
             @NonNull UserHandle userHandle,
             LocalBluetoothManager localBluetoothManager,
             @Nullable MediaController mediaController,
-            MediaRouter2 mediaRouter2,
+            @NonNull MediaRouter2 mediaRouter2,
             MediaRouter2Manager mediaRouter2Manager) {
         super(context, packageName, userHandle, localBluetoothManager, mediaController);
         mRouter = mediaRouter2;
@@ -147,16 +142,12 @@ public final class RouterInfoMediaManager extends InfoMediaManager {
 
     @Override
     protected void startScanOnRouter() {
-        if (Flags.enableScreenOffScanning()) {
-            synchronized (super.mLock) {
-                if (mScanToken == null) {
-                    MediaRouter2.ScanRequest request =
-                            new MediaRouter2.ScanRequest.Builder().build();
-                    mScanToken = mRouter.requestScan(request);
-                }
+        synchronized (mLock) {
+            if (mScanToken == null) {
+                MediaRouter2.ScanRequest request =
+                        new MediaRouter2.ScanRequest.Builder().build();
+                mScanToken = mRouter.requestScan(request);
             }
-        } else {
-            mRouter.startScan();
         }
     }
 
@@ -179,15 +170,11 @@ public final class RouterInfoMediaManager extends InfoMediaManager {
 
     @Override
     protected void stopScanOnRouter() {
-        if (Flags.enableScreenOffScanning()) {
-            synchronized (super.mLock) {
-                if (mScanToken != null) {
-                    mRouter.cancelScanRequest(mScanToken);
-                    mScanToken = null;
-                }
+        synchronized (mLock) {
+            if (mScanToken != null) {
+                mRouter.cancelScanRequest(mScanToken);
+                mScanToken = null;
             }
-        } else {
-            mRouter.stopScan();
         }
     }
 

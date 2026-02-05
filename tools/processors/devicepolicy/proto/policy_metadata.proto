@@ -86,7 +86,10 @@ message TypeSpecificPolicyMetadata {
     optional int32 max_value = 2;
   }
 
-  message LongPolicyMetadata {}
+  message LongPolicyMetadata {
+    optional int64 min_value = 1;
+    optional int64 max_value = 2;
+  }
 
   message EnumPolicyMetadata {
     int32 default_value = 1;

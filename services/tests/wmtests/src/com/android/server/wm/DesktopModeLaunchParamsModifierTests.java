@@ -57,6 +57,7 @@ import static com.android.server.wm.LaunchParamsController.LaunchParamsModifier.
 import static com.android.server.wm.SizeCompatTests.rotateDisplay;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -212,6 +213,7 @@ public class DesktopModeLaunchParamsModifierTests extends
         assertEquals(RESULT_DONE,
                 new CalculateRequestBuilder().setTask(task).setOptions(options).calculate());
         assertEquals(WINDOWING_MODE_FULLSCREEN, mResult.mWindowingMode);
+        assertTrue(mResult.mIsTaskMoveDisallowed);
     }
 
     @Test
@@ -348,6 +350,7 @@ public class DesktopModeLaunchParamsModifierTests extends
 
         assertEquals(RESULT_DONE, new CalculateRequestBuilder().setTask(task).calculate());
         assertEquals(WINDOWING_MODE_FULLSCREEN, mResult.mWindowingMode);
+        assertTrue(mResult.mIsTaskMoveDisallowed);
     }
 
     @Test
@@ -384,8 +387,8 @@ public class DesktopModeLaunchParamsModifierTests extends
 
         assertEquals(RESULT_DONE, new CalculateRequestBuilder().setTask(task).calculate());
         assertEquals(WINDOWING_MODE_FULLSCREEN, mResult.mWindowingMode);
+        assertTrue(mResult.mIsTaskMoveDisallowed);
     }
-
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
@@ -2064,6 +2067,7 @@ public class DesktopModeLaunchParamsModifierTests extends
         final Rect emptyRect = new Rect();
         assertEquals(emptyRect, mResult.mBounds);
         assertEquals(emptyRect, mResult.mAppBounds);
+        assertTrue(mResult.mIsTaskMoveDisallowed);
     }
 
     @Test
@@ -2087,6 +2091,7 @@ public class DesktopModeLaunchParamsModifierTests extends
         assertEquals(RESULT_DONE,
                 new CalculateRequestBuilder().setTask(launchingTask).calculate());
         assertEquals(WINDOWING_MODE_FREEFORM, mResult.mWindowingMode);
+        assertFalse(mResult.mIsTaskMoveDisallowed);
     }
 
     @Test
@@ -2106,6 +2111,7 @@ public class DesktopModeLaunchParamsModifierTests extends
         assertEquals(RESULT_DONE,
                 new CalculateRequestBuilder().setTask(null).setOptions(options).calculate());
         assertEquals(WINDOWING_MODE_FREEFORM, mResult.mWindowingMode);
+        assertFalse(mResult.mIsTaskMoveDisallowed);
     }
 
     @Test
@@ -2129,6 +2135,7 @@ public class DesktopModeLaunchParamsModifierTests extends
                         ActivityOptions.makeBasic().setLaunchDisplayId(
                                 dc.getDisplayId())).calculate());
         assertEquals(WINDOWING_MODE_FREEFORM, mResult.mWindowingMode);
+        assertFalse(mResult.mIsTaskMoveDisallowed);
     }
 
     @Test
@@ -2156,6 +2163,7 @@ public class DesktopModeLaunchParamsModifierTests extends
                         ActivityOptions.makeBasic().setLaunchDisplayId(
                                 dc.getDisplayId())).calculate());
         assertEquals(WINDOWING_MODE_FREEFORM, mResult.mWindowingMode);
+        assertFalse(mResult.mIsTaskMoveDisallowed);
     }
 
     @Test
@@ -2175,6 +2183,7 @@ public class DesktopModeLaunchParamsModifierTests extends
                         ActivityOptions.makeBasic().setLaunchDisplayId(
                                 dc.getDisplayId())).calculate());
         assertEquals(WINDOWING_MODE_FREEFORM, mResult.mWindowingMode);
+        assertFalse(mResult.mIsTaskMoveDisallowed);
     }
 
     @Test
@@ -2191,6 +2200,7 @@ public class DesktopModeLaunchParamsModifierTests extends
                         ActivityOptions.makeBasic().setLaunchDisplayId(
                                 dc.getDisplayId())).calculate());
         assertEquals(WINDOWING_MODE_FULLSCREEN, mResult.mWindowingMode);
+        assertTrue(mResult.mIsTaskMoveDisallowed);
     }
 
     @Test
@@ -2212,6 +2222,7 @@ public class DesktopModeLaunchParamsModifierTests extends
         assertEquals(RESULT_DONE,
                 new CalculateRequestBuilder().setTask(launchingTask).setSource(source).calculate());
         assertEquals(WINDOWING_MODE_FULLSCREEN, mResult.mWindowingMode);
+        assertTrue(mResult.mIsTaskMoveDisallowed);
     }
 
     @Test
@@ -2254,6 +2265,7 @@ public class DesktopModeLaunchParamsModifierTests extends
         assertEquals(RESULT_DONE,
                 new CalculateRequestBuilder().setTask(null).setOptions(options).calculate());
         assertEquals(WINDOWING_MODE_FULLSCREEN, mResult.mWindowingMode);
+        assertTrue(mResult.mIsTaskMoveDisallowed);
     }
 
     @Test
@@ -2277,6 +2289,7 @@ public class DesktopModeLaunchParamsModifierTests extends
                 new CalculateRequestBuilder().setTask(launchingTask).setOptions(
                         options).calculate());
         assertEquals(WINDOWING_MODE_FULLSCREEN, mResult.mWindowingMode);
+        assertTrue(mResult.mIsTaskMoveDisallowed);
     }
 
     @Test

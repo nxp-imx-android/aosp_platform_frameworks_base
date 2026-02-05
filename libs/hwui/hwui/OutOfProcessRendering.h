@@ -17,8 +17,18 @@
 #pragma once
 
 #include <SkImage.h>
+#include <SkSurface.h>
 #include <binder/Binder.h>
+#include <ui/GraphicBuffer.h>
 #include <utils/StrongPointer.h>
+
+class GrDirectContext;
+
+namespace android {
+namespace uirenderer {
+class AutoBackendTextureRelease;
+}
+}  // namespace android
 
 #ifdef __ANDROID__
 #include <android/hardware_buffer.h>
@@ -33,10 +43,25 @@ namespace uirenderer {
 namespace oopr {
 
 #ifdef __ANDROID__
+struct NodeResources {
+    sp<GraphicBuffer> buffer;
+    AutoBackendTextureRelease* textureRelease = nullptr;
+    sk_sp<SkImage> lastImage;
+    ~NodeResources();
+};
+
 IPCClientResourceCache& getIPCResourceCache();
 sp<BBinder> getDefaultRenderResourceToken();
 void enableOutOfProcessRendering();
-void registerBuffer(AHardwareBuffer* buffer, const sk_sp<SkImage>& image);
+
+struct AllocationResult {
+    sk_sp<SkSurface> surface;
+    std::unique_ptr<NodeResources> resources;
+};
+
+AllocationResult createLayerSurface(uint32_t width, uint32_t height, GrDirectContext* context);
+void registerSnapshot(NodeResources* resources, const sk_sp<SkImage>& image);
+void registerBuffer(const sp<GraphicBuffer>& buffer, const sk_sp<SkImage>& image);
 void registerPendingBitmaps();
 void deregisterBuffer(const sk_sp<SkImage>& image);
 #endif

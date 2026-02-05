@@ -20,36 +20,19 @@ import android.annotation.NonNull;
 import android.content.Context;
 import com.android.server.companion.datatransfer.continuity.MultiUserResourceCache;
 import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
-import com.android.server.companion.datatransfer.continuity.tasks.TaskSyncController;
 import java.util.Objects;
 
 public class HandoffControllerCache extends MultiUserResourceCache<HandoffController> {
 
     private final Context mContext;
-    private final MultiUserResourceCache<TaskContinuityMessenger> mTaskContinuityMessengerCache;
-    private final MultiUserResourceCache<TaskSyncController> mTaskSyncControllerCache;
 
-    public HandoffControllerCache(
-            @NonNull Context context,
-            @NonNull MultiUserResourceCache<TaskContinuityMessenger> taskContinuityMessengerCache,
-            @NonNull MultiUserResourceCache<TaskSyncController> taskSyncControllerCache) {
+    public HandoffControllerCache(@NonNull Context context) {
         mContext = Objects.requireNonNull(context);
-        mTaskContinuityMessengerCache = Objects.requireNonNull(taskContinuityMessengerCache);
-        mTaskSyncControllerCache = Objects.requireNonNull(taskSyncControllerCache);
     }
 
     @Override
     protected HandoffController createResourceForUser(int userId) {
-        TaskContinuityMessenger taskContinuityMessenger =
-                mTaskContinuityMessengerCache.getOrCreateResource(userId);
         return new HandoffController(
-                userId,
-                taskContinuityMessenger,
-                mTaskSyncControllerCache.getOrCreateResource(userId),
-                new InboundHandoffRequestHandler(taskContinuityMessenger),
-                new OutboundHandoffRequestHandler(
-                        mContext,
-                        taskContinuityMessenger,
-                        mTaskSyncControllerCache.getOrCreateResource(userId)));
+                userId, mContext, new TaskContinuityMessenger(userId, mContext));
     }
 }

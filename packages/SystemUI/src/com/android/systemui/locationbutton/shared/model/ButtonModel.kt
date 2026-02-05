@@ -22,12 +22,18 @@ import androidx.compose.ui.graphics.Color
 data class ButtonModel(
     val width: Int,
     val height: Int,
+    val paddingLeft: Int,
+    val paddingTop: Int,
+    val paddingRight: Int,
+    val paddingBottom: Int,
     val backgroundColor: Color,
     val strokeColor: Color,
     val strokeWidth: Int,
     val cornerRadius: Float,
+    val pressedCornerRadius: Float,
     val iconTint: Color,
     @StringRes val textResId: Int?,
     val textColor: Color,
     val configuration: Configuration,
+    val density: Float,
 )

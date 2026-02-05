@@ -17,35 +17,71 @@
 package com.android.server.companion.datatransfer.continuity.handoff;
 
 import android.annotation.NonNull;
-import android.companion.datatransfer.continuity.TaskContinuityManager;
+import android.app.ActivityTaskManager;
+import android.companion.AssociationInfo;
 import android.companion.datatransfer.continuity.IHandoffRequestCallback;
+import android.companion.datatransfer.continuity.IRemoteTaskListener;
+import android.companion.datatransfer.continuity.RemoteTask;
+import android.companion.datatransfer.continuity.TaskContinuityManager;
+import android.content.Context;
 import android.os.RemoteException;
+import android.os.Trace;
 import android.util.Slog;
-
+import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.VisibleForTesting;
+import com.android.server.LocalServices;
 import com.android.server.companion.datatransfer.continuity.FeatureController;
 import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestMessage;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestResultMessage;
-import com.android.server.companion.datatransfer.continuity.tasks.TaskSyncController;
-
+import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
+import com.android.server.companion.datatransfer.continuity.messages.TaskStackBroadcastMessage;
+import com.android.server.companion.datatransfer.continuity.tasks.RemoteTaskFactory;
+import com.android.server.companion.datatransfer.continuity.tasks.RemoteTaskListenerHolder;
+import com.android.server.companion.datatransfer.continuity.tasks.TaskBroadcaster;
+import com.android.server.wm.ActivityTaskManagerInternal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class HandoffController extends FeatureController {
 
-    private final TaskSyncController mTaskSyncController;
-    private final InboundHandoffRequestHandler mInboundHandoffRequestHandler;
-    private final OutboundHandoffRequestHandler mOutboundHandoffRequestHandler;
+    @GuardedBy("this")
+    private boolean mIsRegistered = false;
+
+    private final RemoteTaskListenerHolder mRemoteTaskListenerHolder =
+            new RemoteTaskListenerHolder();
+
+    private final Context mContext;
+
+    @VisibleForTesting
+    final AtomicReference<InboundHandoffRequestHandler> mInboundHandoffRequestHandler;
+
+    @VisibleForTesting
+    final AtomicReference<OutboundHandoffRequestHandler> mOutboundHandoffRequestHandler;
+
+    @VisibleForTesting final AtomicReference<TaskBroadcaster> mTaskBroadcaster;
 
     public HandoffController(
             int userId,
-            @NonNull TaskContinuityMessenger taskContinuityMessenger,
-            @NonNull TaskSyncController taskSyncController,
-            @NonNull InboundHandoffRequestHandler inboundHandoffRequestHandler,
-            @NonNull OutboundHandoffRequestHandler outboundHandoffRequestHandler) {
+            @NonNull Context context,
+            @NonNull TaskContinuityMessenger taskContinuityMessenger) {
         super(userId, Objects.requireNonNull(taskContinuityMessenger));
-        this.mTaskSyncController = Objects.requireNonNull(taskSyncController);
-        this.mInboundHandoffRequestHandler = Objects.requireNonNull(inboundHandoffRequestHandler);
-        this.mOutboundHandoffRequestHandler = Objects.requireNonNull(outboundHandoffRequestHandler);
+        mContext = Objects.requireNonNull(context);
+        mInboundHandoffRequestHandler = new AtomicReference<>(null);
+        mOutboundHandoffRequestHandler = new AtomicReference<>(null);
+        mTaskBroadcaster = new AtomicReference<>(null);
+    }
+
+    public void registerTaskListener(@NonNull IRemoteTaskListener listener) {
+        Slog.v(getTag(), "Registering task listener");
+        mRemoteTaskListenerHolder.addListener(Objects.requireNonNull(listener));
+    }
+
+    public void unregisterTaskListener(@NonNull IRemoteTaskListener listener) {
+        Slog.v(getTag(), "Unregistering task listener");
+        mRemoteTaskListenerHolder.removeListener(Objects.requireNonNull(listener));
     }
 
     public void requestHandoff(
@@ -65,27 +101,91 @@ public class HandoffController extends FeatureController {
         }
 
         Slog.v(getTag(), "Requesting handoff from association " + associationId);
-        mOutboundHandoffRequestHandler.requestHandoff(
-                associationId, remoteTaskId, Objects.requireNonNull(callback));
+        getOutboundHandoffRequestHandler()
+                .requestHandoff(associationId, remoteTaskId, Objects.requireNonNull(callback));
+    }
+
+    @Override
+    public void onEnabled() {
+        Slog.v(getTag(), "Registering listeners from ActivityTaskManager");
+        maybeListenToActivityTaskManager();
     }
 
     @Override
     public void onDisabled() {
         Slog.v(getTag(), "Cancelling all outbound handoff requests.");
-        mOutboundHandoffRequestHandler.cancelAllOutboundRequests();
+        OutboundHandoffRequestHandler outboundHandoffRequestHandler =
+                mOutboundHandoffRequestHandler.getAndSet(null);
+        if (outboundHandoffRequestHandler != null) {
+            outboundHandoffRequestHandler.cancelAllOutboundRequests();
+        }
+
+        Slog.v(getTag(), "Unregistering listeners from ActivityTaskManager");
+        unlistenFromActivityTaskManager();
+        Slog.v(getTag(), "Clearing all tasks from RemoteTaskStore");
+        mRemoteTaskListenerHolder.notifyAllRemoteTasksChanged(null);
     }
 
     @Override
     public String getTag() {
-        return "HandoffController";
+        return HandoffController.class.getSimpleName();
     }
 
     @Override
     protected void onHandoffRequestMessageReceived(
             int associationId, @NonNull HandoffRequestMessage handoffRequestMessage) {
         Slog.v(getTag(), "Handoff request message received from association " + associationId);
-        mInboundHandoffRequestHandler.onHandoffRequestMessageReceived(
-                associationId, Objects.requireNonNull(handoffRequestMessage));
+        getInboundHandoffRequestHandler()
+                .onHandoffRequestMessageReceived(
+                        associationId, Objects.requireNonNull(handoffRequestMessage));
+    }
+
+    @Override
+    public void onAssociationConnected(@NonNull AssociationInfo associationInfo) {
+        maybeListenToActivityTaskManager();
+        Slog.v(getTag(), "Association connected: " + associationInfo.getId());
+        getTaskBroadcaster().onDeviceConnected();
+    }
+
+    @Override
+    public void onAssociationDisconnected(int associationId) {
+        Slog.v(getTag(), "Association disconnected: " + associationId);
+        synchronized (this) {
+            if (mTaskContinuityMessenger.getConnectedAssociations().isEmpty()) {
+                unlistenFromActivityTaskManager();
+            }
+        }
+
+        mRemoteTaskListenerHolder.notifyRemoteTasksChangedForAssociation(associationId, null);
+    }
+
+    @Override
+    protected void onTaskStackBroadcastMessageReceived(
+            int associationId, @NonNull TaskStackBroadcastMessage taskStackBroadcastMessage) {
+        Trace.traceBegin(Trace.TRACE_TAG_SYSTEM_SERVER, "onTaskStackBroadcastMessageReceived");
+        Slog.v(getTag(), "Received task stack broadcast message from association " + associationId);
+        AssociationInfo associationInfo =
+                mTaskContinuityMessenger.getAssociationInfo(associationId);
+        if (associationInfo != null) {
+            List<RemoteTask> remoteTasks = new ArrayList<>();
+            for (RemoteTaskInfo taskInfo :
+                    Objects.requireNonNull(taskStackBroadcastMessage).remoteTasks()) {
+                RemoteTask remoteTask =
+                        RemoteTaskFactory.create(
+                                mContext.getPackageManager(),
+                                mUserId,
+                                associationInfo.getId(),
+                                associationInfo.getDisplayName().toString(),
+                                taskInfo);
+                if (remoteTask != null) {
+                    remoteTasks.add(remoteTask);
+                }
+            }
+
+            mRemoteTaskListenerHolder.notifyRemoteTasksChangedForAssociation(
+                    associationId, remoteTasks);
+        }
+        Trace.traceEnd(Trace.TRACE_TAG_SYSTEM_SERVER);
     }
 
     @Override
@@ -94,7 +194,64 @@ public class HandoffController extends FeatureController {
         Slog.v(
                 getTag(),
                 "Handoff request result message received from association " + associationId);
-        mOutboundHandoffRequestHandler.onHandoffRequestResultMessageReceived(
-                associationId, Objects.requireNonNull(handoffRequestResultMessage));
+        getOutboundHandoffRequestHandler()
+                .onHandoffRequestResultMessageReceived(
+                        associationId, Objects.requireNonNull(handoffRequestResultMessage));
+    }
+
+    private void maybeListenToActivityTaskManager() {
+        synchronized (this) {
+            if (!mIsRegistered && !mTaskContinuityMessenger.getConnectedAssociations().isEmpty()) {
+                TaskBroadcaster taskBroadcaster = getTaskBroadcaster();
+                ((ActivityTaskManager) mContext.getSystemService(Context.ACTIVITY_TASK_SERVICE))
+                        .registerTaskStackListener(taskBroadcaster);
+                LocalServices.getService(ActivityTaskManagerInternal.class)
+                        .registerHandoffEnablementListener(taskBroadcaster);
+                mIsRegistered = true;
+            }
+        }
+    }
+
+    private void unlistenFromActivityTaskManager() {
+        synchronized (this) {
+            if (mIsRegistered) {
+                ((ActivityTaskManager) mContext.getSystemService(Context.ACTIVITY_TASK_SERVICE))
+                        .unregisterTaskStackListener(getTaskBroadcaster());
+                LocalServices.getService(ActivityTaskManagerInternal.class)
+                        .unregisterHandoffEnablementListener(getTaskBroadcaster());
+                mIsRegistered = false;
+            }
+        }
+    }
+
+    private InboundHandoffRequestHandler getInboundHandoffRequestHandler() {
+        return mInboundHandoffRequestHandler.updateAndGet(
+                (handler) -> {
+                    if (handler == null) {
+                        return new InboundHandoffRequestHandler(mTaskContinuityMessenger);
+                    }
+                    return handler;
+                });
+    }
+
+    private OutboundHandoffRequestHandler getOutboundHandoffRequestHandler() {
+        return mOutboundHandoffRequestHandler.updateAndGet(
+                (handler) -> {
+                    if (handler == null) {
+                        return new OutboundHandoffRequestHandler(
+                                mContext, mTaskContinuityMessenger, mRemoteTaskListenerHolder);
+                    }
+                    return handler;
+                });
+    }
+
+    private TaskBroadcaster getTaskBroadcaster() {
+        return mTaskBroadcaster.updateAndGet(
+                (broadcaster) -> {
+                    if (broadcaster == null) {
+                        return new TaskBroadcaster(mUserId, mContext, mTaskContinuityMessenger);
+                    }
+                    return broadcaster;
+                });
     }
 }

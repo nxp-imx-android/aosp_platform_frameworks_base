@@ -36,7 +36,8 @@ import com.android.systemui.privacy.PrivacyItem
 import com.android.systemui.privacy.PrivacyItemController
 import com.android.systemui.privacy.PrivacyType
 import com.android.systemui.res.R
-import com.android.systemui.statusbar.policy.BatteryController
+import com.android.systemui.statusbar.policy.FakeBatteryControllerImpl
+import com.android.systemui.statusbar.policy.batteryController
 import com.android.systemui.testKosmosNew
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.argThat
@@ -52,6 +53,7 @@ import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.verifyNoMoreInteractions
 import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.never
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4
 import platform.test.runner.parameterized.Parameters
 
@@ -65,12 +67,24 @@ class SystemEventCoordinatorTest(flags: FlagsParameterization) : SysuiTestCase()
     private val fakeSystemClock = kosmos.fakeSystemClock
     private val testScope = kosmos.testScope
     private val connectedDisplayInteractor = FakeConnectedDisplayInteractor()
+    private val batteryController = FakeBatteryControllerImpl()
 
-    @Mock lateinit var batteryController: BatteryController
     @Mock lateinit var privacyController: PrivacyItemController
     @Mock lateinit var scheduler: SystemStatusAnimationScheduler
 
-    private lateinit var systemEventCoordinator: SystemEventCoordinator
+    private val systemEventCoordinator: SystemEventCoordinator by lazy {
+        SystemEventCoordinator(
+                fakeSystemClock,
+                batteryController,
+                privacyController,
+                context,
+                testScope.backgroundScope,
+                connectedDisplayInteractor,
+                logcatLogBuffer("SystemEventCoordinatorTest"),
+                kosmos.mainCoroutineContext,
+            )
+            .apply { attachScheduler(scheduler) }
+    }
 
     companion object {
         @JvmStatic
@@ -95,19 +109,40 @@ class SystemEventCoordinatorTest(flags: FlagsParameterization) : SysuiTestCase()
     fun setup() {
         MockitoAnnotations.initMocks(this)
         overrideResource(R.string.config_cameraGesturePackage, DEFAULT_CAMERA_PACKAGE_NAME)
-        systemEventCoordinator =
-            SystemEventCoordinator(
-                    fakeSystemClock,
-                    batteryController,
-                    privacyController,
-                    context,
-                    testScope.backgroundScope,
-                    connectedDisplayInteractor,
-                    logcatLogBuffer("SystemEventCoordinatorTest"),
-                    kosmos.mainCoroutineContext,
-                )
-                .apply { attachScheduler(scheduler) }
     }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SYSTEM_STATUS_ANIMATION_PER_DISPLAY)
+    fun startObserving_flagEnabled_batteryPluggedIn_doesNotPropagateOnStart() =
+        testScope.runTest {
+            batteryController._isPluggedIn = true
+
+            systemEventCoordinator.startObserving()
+
+            verify(scheduler, never()).onStatusEvent(any())
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SYSTEM_STATUS_ANIMATION_PER_DISPLAY)
+    fun startObserving_flagEnabled_batteryPluggedInAfterStart_propagatesEvent() =
+        testScope.runTest {
+            systemEventCoordinator.startObserving()
+
+            batteryController._isPluggedIn = true
+
+            verify(scheduler).onStatusEvent(any<BatteryEvent>())
+        }
+
+    @Test
+    @DisableFlags(Flags.FLAG_SYSTEM_STATUS_ANIMATION_PER_DISPLAY)
+    fun startObserving_flagDisabled_propagatesOnStart() =
+        testScope.runTest {
+            batteryController._isPluggedIn = true
+
+            systemEventCoordinator.startObserving()
+
+            verify(scheduler).onStatusEvent(any())
+        }
 
     @Test
     fun startObserving_propagatesConnectedDisplayStatusEvents() =

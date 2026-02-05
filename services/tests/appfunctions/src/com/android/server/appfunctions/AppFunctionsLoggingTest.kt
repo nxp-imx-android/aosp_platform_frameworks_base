@@ -43,6 +43,7 @@ import com.android.modules.utils.testing.ExtendedMockitoRule
 import com.android.server.LocalServices
 import com.android.server.appinteraction.AppInteractionService
 import com.android.server.uri.UriGrantsManagerInternal
+import com.android.server.wm.ActivityTaskManagerInternal
 import com.google.common.util.concurrent.MoreExecutors
 import org.junit.Before
 import org.junit.Rule
@@ -92,6 +93,7 @@ class AppFunctionsLoggingTest {
             mock<MultiUserDynamicAppFunctionRegistry>(),
             mock<AppInteractionService>(),
             mMetadataReader,
+            mock<ActivityTaskManagerInternal>(),
         )
 
     @Before

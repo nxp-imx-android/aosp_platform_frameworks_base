@@ -851,6 +851,15 @@ public class AudioService extends IAudioService.Stub
                     AudioSystem.DEVICE_OUT_BLE_HEARING_AID, AudioSystem.STREAM_MUSIC
             ));
 
+    private final Object mInModeAssistantVolumeLock = new Object();
+    // Contains for all the device types AudioSystem.DEVICE_OUT_* which support absolute volume
+    // the current assistant stream volume while it was driving the external volume controller
+    @GuardedBy("mInModeAssistantVolumeLock")
+    private final SparseIntArray mInModeAssistantVolume = new SparseIntArray();
+    // Used to track whether the cached Assistant value outside of MODE_ASSISTANT_CONVERSATION
+    // needs to be applied when the mode is reset
+    private final AtomicBoolean mModeSwitchedToAssistantConversation = new AtomicBoolean();
+
     /**
     * Default stream type used for volume control in the absence of playback
     * e.g. user on homescreen, no app playing anything, presses hardware volume buttons, this
@@ -4565,7 +4574,8 @@ public class AudioService extends IAudioService.Stub
                 final VolumeStreamState vss = getVssForStreamOrDefault(streamDrivesAbs);
                 final int oldDriveIndex = vss.getIndex(deviceType);
                 if (driveIndex > oldDriveIndex) {
-                    vss.setIndex(driveIndex, deviceType, "updateToAbsoluteVolumeDrivingStreams",
+                    vss.setIndex(driveIndex, deviceType,
+                            "updateToAbsoluteVolumeDrivingStreams(raiseAbs)",
                             hasModifyAudioSettings);
                     sendMsg(mAudioHandler,
                             MSG_SET_DEVICE_VOLUME,
@@ -4591,7 +4601,8 @@ public class AudioService extends IAudioService.Stub
                 final int oldAssistIndex = vss.getIndex(deviceType);
                 if (oldAssistIndex > assistIndex) {
                     vss.setIndex(assistIndex, deviceType,
-                            "updateToAbsoluteVolumeDrivingStreams", hasModifyAudioSettings);
+                            "updateToAbsoluteVolumeDrivingStreams(lowerAbs)",
+                            hasModifyAudioSettings);
                     sendMsg(mAudioHandler,
                             MSG_SET_DEVICE_VOLUME,
                             SENDMSG_QUEUE,
@@ -4599,6 +4610,49 @@ public class AudioService extends IAudioService.Stub
                             0,
                             vss,
                             0);
+                }
+            }
+            if (streamType == AudioSystem.STREAM_ASSISTANT
+                    && mMode.get() == MODE_ASSISTANT_CONVERSATION
+                    && streamType == streamDrivesAbs
+                    && streamTypeAlias == streamType
+                    && mModeSwitchedToAssistantConversation.getAndSet(false)) {
+                final VolumeStreamState vss = getVssForStreamOrDefault(
+                        AudioSystem.STREAM_ASSISTANT);
+                int cachedIdx = -1;
+                synchronized (mInModeAssistantVolumeLock) {
+                    if (mInModeAssistantVolume.indexOfKey(deviceType) >= 0) {
+                        cachedIdx = mInModeAssistantVolume.get(deviceType);
+                    }
+                }
+                if (cachedIdx >= 0) {
+                    vss.setIndex(cachedIdx, deviceType,
+                            "updateToAbsoluteVolumeDrivingStreams(cache)",
+                            hasModifyAudioSettings);
+                    sendMsg(mAudioHandler,
+                            MSG_SET_DEVICE_VOLUME,
+                            SENDMSG_QUEUE,
+                            deviceType,
+                            0,
+                            vss,
+                            0);
+                }
+            } else if (streamType == AudioSystem.STREAM_ASSISTANT
+                    && streamTypeAlias == streamType
+                    && mMode.get() != MODE_ASSISTANT_CONVERSATION
+                    && !mModeSwitchedToAssistantConversation.get()) {
+                // STREAM_ASSISTANT is set outside of conversation mode, reset the cached values
+                synchronized (mInModeAssistantVolumeLock) {
+                    mInModeAssistantVolume.delete(deviceType);
+                    if (AudioSystem.DEVICE_OUT_ALL_SCO_SET.contains(deviceType)
+                            || AudioSystem.DEVICE_OUT_ALL_A2DP_SET.contains(deviceType)) {
+                        for (Integer device : AudioSystem.DEVICE_OUT_ALL_SCO_SET) {
+                            mInModeAssistantVolume.delete(device);
+                        }
+                        for (Integer device : AudioSystem.DEVICE_OUT_ALL_A2DP_SET) {
+                            mInModeAssistantVolume.delete(device);
+                        }
+                    }
                 }
             }
         }
@@ -7563,6 +7617,9 @@ public class AudioService extends IAudioService.Stub
                         requesterPackage, true /*hasModifyAudioSettings*/);
 
                 updateStreamVolumeAlias(true /*updateVolumes*/, requesterPackage);
+
+                mModeSwitchedToAssistantConversation.set(
+                        mode == AudioSystem.MODE_ASSISTANT_CONVERSATION);
 
                 // change of mode may require volume to be re-applied on some devices
                 onUpdateContextualVolumes();
@@ -11011,16 +11068,18 @@ public class AudioService extends IAudioService.Stub
                             mIndexMap.put(AudioSystem.DEVICE_OUT_BLE_HEADSET, index);
                         }
 
-                        // Mirror STREAM_ASSISTANT on A2DP and SCO
                         if (mStreamType == AudioSystem.STREAM_ASSISTANT) {
+                            updateAssistantStreamDrivingVolume(device, index);
+                            // Mirror STREAM_ASSISTANT on A2DP and SCO
                             for (int i = 0; i < mIndexMap.size(); i++) {
                                 int otherDevice = mIndexMap.keyAt(i);
                                 if ((AudioSystem.DEVICE_OUT_ALL_SCO_SET.contains(otherDevice)
                                         && AudioSystem.DEVICE_OUT_ALL_A2DP_SET.contains(device))
                                         || (AudioSystem.DEVICE_OUT_ALL_A2DP_SET.contains(
-                                        otherDevice) && AudioSystem.DEVICE_OUT_ALL_SCO_SET.contains(
-                                        device))) {
+                                        otherDevice)
+                                        && AudioSystem.DEVICE_OUT_ALL_SCO_SET.contains(device))) {
                                     mIndexMap.put(otherDevice, index);
+                                    updateAssistantStreamDrivingVolume(otherDevice, index);
                                 }
                             }
                         }
@@ -11094,6 +11153,16 @@ public class AudioService extends IAudioService.Stub
                         }
                     }
                     return changed;
+                }
+            }
+        }
+
+        private void updateAssistantStreamDrivingVolume(int device, int index) {
+            synchronized (mInModeAssistantVolumeLock) {
+                if (AudioSystem.isBluetoothOutDevice(device)) {
+                    if (mMode.get() == AudioSystem.MODE_ASSISTANT_CONVERSATION) {
+                        mInModeAssistantVolume.put(device, index);
+                    }
                 }
             }
         }
@@ -11425,6 +11494,21 @@ public class AudioService extends IAudioService.Stub
             pw.println();
             pw.print("   Volume Group: ");
             pw.println(mVolumeGroupState != null ? mVolumeGroupState.name() : "n/a");
+            if (mStreamType == AudioSystem.STREAM_ASSISTANT) {
+                pw.print("   Cached [device, index] when driving absolute volume: ");
+                synchronized (mInModeAssistantVolumeLock) {
+                    for (int i = 0; i < mInModeAssistantVolume.size(); ++i) {
+                        if (i != 0) {
+                            pw.print(", ");
+                        }
+                        pw.print(Integer.toHexString(mInModeAssistantVolume.keyAt(i)));
+                        pw.print(": ");
+                        final int index = (mInModeAssistantVolume.valueAt(i) + 5) / 10;
+                        pw.print(index);
+                    }
+                }
+            }
+            pw.println();
         }
     }
 

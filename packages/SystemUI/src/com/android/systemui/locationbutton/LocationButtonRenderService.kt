@@ -23,11 +23,13 @@ import android.app.permissionui.LocationButtonSessionResponse
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Binder
+import android.os.Build
 import android.os.IBinder
 import android.os.ParcelableException
 import android.os.RemoteException
 import android.os.UserHandle
 import android.permission.flags.Flags
+import android.util.Log
 import android.util.Slog
 import com.android.server.ServiceThread
 import com.android.systemui.locationbutton.domain.interactor.LocationButtonInteractor
@@ -119,7 +121,7 @@ constructor(
                 )
                 activeLocationButtonSessions.add(locationButtonSession)
             } catch (ex: RemoteException) {
-                Slog.e(TAG, "Client failed to respond, closing new session.", ex)
+                Slog.e(LOG_TAG, "Client failed to respond, closing new session.", ex)
                 locationButtonSession.close()
             }
         }
@@ -136,7 +138,7 @@ constructor(
             ) {
                 val callerUid = Binder.getCallingUid()
                 if (!isValidHostPackage(packageName, callerUid)) {
-                    Slog.e(TAG, "Package name doesn't belong to the caller $callerUid")
+                    Slog.e(LOG_TAG, "Package name doesn't belong to the caller $callerUid")
                     try {
                         client.onSessionError(
                             ParcelableException(
@@ -169,7 +171,7 @@ constructor(
                     val packageUid = packageManager.getPackageUidAsUser(packageName, userId)
                     return callerUid == packageUid
                 } catch (e: PackageManager.NameNotFoundException) {
-                    Slog.e(TAG, "Package name not found." + e.message)
+                    Slog.e(LOG_TAG, "Package name not found." + e.message)
                 }
                 return false
             }
@@ -178,8 +180,22 @@ constructor(
     override fun onBind(intent: Intent): IBinder? =
         if (Flags.locationButtonEnabled()) service.asBinder() else null
 
+    override fun onCreate() {
+        super.onCreate()
+        if (DEBUG) {
+            Slog.d(LOG_TAG, "Location button service created.")
+        }
+    }
+
     override fun onDestroy() {
         super.onDestroy()
+        if (DEBUG) {
+            Slog.d(
+                LOG_TAG,
+                "Location button service destroyed, " +
+                    "cleaning up ${activeLocationButtonSessions.size} sessions.",
+            )
+        }
         executor.execute {
             if (activeLocationButtonSessions.isEmpty()) {
                 return@execute
@@ -206,6 +222,7 @@ constructor(
     }
 
     companion object {
-        private const val TAG = "LocationButtonService"
+        private const val LOG_TAG = "LocationButtonService"
+        private val DEBUG = Build.IS_DEBUGGABLE || Log.isLoggable(LOG_TAG, Log.DEBUG)
     }
 }

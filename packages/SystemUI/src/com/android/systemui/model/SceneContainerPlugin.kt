@@ -83,6 +83,8 @@ constructor(
             return null
         }
 
+        val evaluator = EvaluatorByFlag[flag] ?: return null
+
         if (shadeDisplayId.value != displayId) {
             // The shade is in another display. All flags related to the shade container will map to
             // false on other displays now.
@@ -97,7 +99,7 @@ constructor(
             val sceneBehind = sceneBackInteractor.get().backStack.value.peek()
             val shadeMode = shadeModeInteractor.get().shadeMode.value
             return idleTransitionStateOrNull.let { idleState ->
-                EvaluatorByFlag[flag]?.invoke(
+                evaluator.invoke(
                     SceneContainerPlugin.SceneContainerPluginState(
                         scene = idleState.currentScene,
                         sceneBehind = sceneBehind,

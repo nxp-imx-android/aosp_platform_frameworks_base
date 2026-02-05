@@ -16,9 +16,6 @@
 
 package android.view;
 
-import static android.view.accessibility.Flags.FLAG_REQUEST_RECTANGLE_WITH_SOURCE;
-
-import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.graphics.Matrix;
@@ -376,7 +373,6 @@ public interface ViewParent {
      * @param source The parameter for the source of this request.
      * @return Whether the group scrolled to handle the operation
      */
-    @FlaggedApi(FLAG_REQUEST_RECTANGLE_WITH_SOURCE)
     default boolean requestChildRectangleOnScreen(@NonNull View child, @NonNull Rect rectangle,
             boolean immediate, @View.RectangleOnScreenRequestSource int source) {
         return requestChildRectangleOnScreen(child, rectangle, immediate);

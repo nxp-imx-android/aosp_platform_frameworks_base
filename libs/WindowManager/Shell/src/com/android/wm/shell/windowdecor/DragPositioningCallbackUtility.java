@@ -45,6 +45,7 @@ import android.view.MotionEvent;
 import android.view.SurfaceControl;
 import android.window.DesktopModeFlags;
 
+import com.android.window.flags.Flags;
 import com.android.wm.shell.R;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.InputMethod;
@@ -328,16 +329,30 @@ public class DragPositioningCallbackUtility {
 
     private static float getMinWidth(DisplayController displayController,
             WindowDecorationWrapper windowDecoration, boolean canEnterDesktopMode) {
-        return windowDecoration.getTaskInfo().minWidth < 0 ? getDefaultMinWidth(displayController,
-                windowDecoration, canEnterDesktopMode)
-                : windowDecoration.getTaskInfo().minWidth;
+        if (!Flags.respectSystemDefaultMinSize()) {
+            return windowDecoration.getTaskInfo().minWidth < 0
+                    ? getDefaultMinWidth(displayController, windowDecoration, canEnterDesktopMode)
+                    : windowDecoration.getTaskInfo().minWidth;
+        }
+
+        return Math.max(
+                windowDecoration.getTaskInfo().minWidth,
+                getDefaultMinWidth(displayController, windowDecoration, canEnterDesktopMode)
+        );
     }
 
     private static float getMinHeight(DisplayController displayController,
             WindowDecorationWrapper windowDecoration, boolean canEnterDesktopMode) {
-        return windowDecoration.getTaskInfo().minHeight < 0 ? getDefaultMinHeight(displayController,
-                windowDecoration, canEnterDesktopMode)
-                : windowDecoration.getTaskInfo().minHeight;
+        if (!Flags.respectSystemDefaultMinSize()) {
+            return windowDecoration.getTaskInfo().minHeight < 0
+                    ? getDefaultMinHeight(displayController, windowDecoration, canEnterDesktopMode)
+                    : windowDecoration.getTaskInfo().minHeight;
+        }
+
+        return Math.max(
+                windowDecoration.getTaskInfo().minHeight,
+                getDefaultMinHeight(displayController, windowDecoration, canEnterDesktopMode)
+        );
     }
 
     private static float getDefaultMinWidth(DisplayController displayController,

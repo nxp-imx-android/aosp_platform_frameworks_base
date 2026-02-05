@@ -16,6 +16,7 @@
 
 package com.android.systemui.dagger;
 
+import com.android.internal.widget.LockPatternUtils;
 import com.android.systemui.BootCompleteCacheImpl;
 import com.android.systemui.CoreStartable;
 import com.android.systemui.Dependency;
@@ -193,6 +194,11 @@ public interface SysUIComponent {
      * Returns {@link CoreStartable} dependencies if there are any.
      */
     @Dependencies Map<Class<?>, Set<Class<? extends CoreStartable>>> getStartableDependencies();
+
+    /**
+     * Returns a {@link LockPatternUtils}.
+     */
+    LockPatternUtils getLockPatternUtils();
 
     /**
      * Member injection into the supplied argument.

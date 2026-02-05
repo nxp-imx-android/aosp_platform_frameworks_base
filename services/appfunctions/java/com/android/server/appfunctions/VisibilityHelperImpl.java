@@ -30,7 +30,6 @@ import android.content.pm.PackageManagerInternal;
 import android.os.Binder;
 import android.util.ArraySet;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -70,8 +69,8 @@ public final class VisibilityHelperImpl implements VisibilityHelper {
 
     @NonNull
     @Override
-    public List<AppFunctionName> filterVisibleAppFunctions(
-            @NonNull List<AppFunctionName> functionNames,
+    public Set<AppFunctionName> filterVisibleAppFunctions(
+            @NonNull Set<AppFunctionName> functionNames,
             @NonNull String callingPackageName,
             int callingUid,
             int callingPid) {
@@ -84,9 +83,9 @@ public final class VisibilityHelperImpl implements VisibilityHelper {
                 if (mContext.checkPermission(
                                 Manifest.permission.QUERY_ALL_PACKAGES, callingPid, callingUid)
                         == PackageManager.PERMISSION_GRANTED) {
-                    return new ArrayList<>(functionNames);
+                    return new ArraySet<>(functionNames);
                 } else {
-                    List<AppFunctionName> visibleFunctionNames = new ArrayList<>();
+                    Set<AppFunctionName> visibleFunctionNames = new ArraySet<>();
                     for (AppFunctionName functionName : functionNames) {
                         if (mPmInternal.canQueryPackage(
                                 callingUid, functionName.getPackageName())) {
@@ -97,7 +96,7 @@ public final class VisibilityHelperImpl implements VisibilityHelper {
                 }
             }
 
-            List<AppFunctionName> selfFunctionNames = new ArrayList<>();
+            Set<AppFunctionName> selfFunctionNames = new ArraySet<>();
             for (AppFunctionName functionName : functionNames) {
                 if (functionName.getPackageName().equals(callingPackageName)) {
                     selfFunctionNames.add(functionName);
@@ -116,8 +115,8 @@ public final class VisibilityHelperImpl implements VisibilityHelper {
         Objects.requireNonNull(aidlSearchSpec);
 
         AppFunctionSearchSpec clientSearchSpec = aidlSearchSpec.getClientSearchSpec();
-        List<String> originalSearchPackages = clientSearchSpec.getPackageNames();
-        List<AppFunctionName> originalSearchFunctions = clientSearchSpec.getFunctionNames();
+        Set<String> originalSearchPackages = clientSearchSpec.getPackageNames();
+        Set<AppFunctionName> originalSearchFunctions = clientSearchSpec.getFunctionNames();
 
         final long token = Binder.clearCallingIdentity();
         try {
@@ -126,9 +125,9 @@ public final class VisibilityHelperImpl implements VisibilityHelper {
             if (!hasPermissionsToQueryRuntimeMetadata(callingUid, callingPid)) {
                 Set<String> visiblePackages = new ArraySet<>();
                 visiblePackages.add(aidlSearchSpec.getCallingPackageName());
-                List<String> filteredPackages =
+                Set<String> filteredPackages =
                         getFilteredPackages(visiblePackages, originalSearchPackages);
-                List<AppFunctionName> filteredFunctionNames =
+                Set<AppFunctionName> filteredFunctionNames =
                         getFilteredFunctionNames(visiblePackages, originalSearchFunctions);
                 if (isInvalidSearch(filteredPackages, filteredFunctionNames)) {
                     return null;
@@ -152,9 +151,8 @@ public final class VisibilityHelperImpl implements VisibilityHelper {
 
         Set<String> visiblePackages =
                 getVisiblePackages(callingUid, aidlSearchSpec.getTargetUserId());
-        List<String> filteredPackages =
-                getFilteredPackages(visiblePackages, originalSearchPackages);
-        List<AppFunctionName> filteredFunctionNames =
+        Set<String> filteredPackages = getFilteredPackages(visiblePackages, originalSearchPackages);
+        Set<AppFunctionName> filteredFunctionNames =
                 getFilteredFunctionNames(visiblePackages, originalSearchFunctions);
         if (isInvalidSearch(filteredPackages, filteredFunctionNames)) {
             return null;
@@ -188,9 +186,9 @@ public final class VisibilityHelperImpl implements VisibilityHelper {
     }
 
     @NonNull
-    private List<String> getFilteredPackages(
-            @NonNull Set<String> visiblePackages, @Nullable List<String> originalPackages) {
-        ArrayList<String> updatedPackages = new ArrayList<>();
+    private Set<String> getFilteredPackages(
+            @NonNull Set<String> visiblePackages, @Nullable Set<String> originalPackages) {
+        ArraySet<String> updatedPackages = new ArraySet<>();
         if (originalPackages == null) {
             // Missing package means search all packages, therefore use all visible packages here
             updatedPackages.addAll(visiblePackages);
@@ -205,12 +203,12 @@ public final class VisibilityHelperImpl implements VisibilityHelper {
     }
 
     @Nullable
-    private List<AppFunctionName> getFilteredFunctionNames(
+    private Set<AppFunctionName> getFilteredFunctionNames(
             @NonNull Set<String> visiblePackages,
-            @Nullable List<AppFunctionName> originalFunctionNames) {
-        ArrayList<AppFunctionName> updatedFunctionNames = null;
+            @Nullable Set<AppFunctionName> originalFunctionNames) {
+        ArraySet<AppFunctionName> updatedFunctionNames = null;
         if (originalFunctionNames != null) {
-            updatedFunctionNames = new ArrayList<>();
+            updatedFunctionNames = new ArraySet<>();
             for (AppFunctionName functionName : originalFunctionNames) {
                 if (visiblePackages.contains(functionName.getPackageName())) {
                     updatedFunctionNames.add(functionName);
@@ -243,7 +241,7 @@ public final class VisibilityHelperImpl implements VisibilityHelper {
      * since it would always return empty search result.
      */
     private boolean isInvalidSearch(
-            @NonNull List<String> packageNames, @Nullable List<AppFunctionName> functionNames) {
+            @NonNull Set<String> packageNames, @Nullable Set<AppFunctionName> functionNames) {
         return packageNames.isEmpty() || (functionNames != null && functionNames.isEmpty());
     }
 }

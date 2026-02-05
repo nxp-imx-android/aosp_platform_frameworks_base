@@ -16,16 +16,26 @@
 
 #include "OutOfProcessRendering.h"
 
+#include <include/gpu/ganesh/GrDirectContext.h>
+#include <include/gpu/ganesh/SkSurfaceGanesh.h>
+
 #ifdef __ANDROID__
 #include <android/ipcrenderbuffer/RenderBufferOps.h>
 #include <com_android_graphics_libgui_flags.h>
 #include <gui/GraphicBuffersRegisterInfo.h>
 #include <gui/GraphicBuffersUnregisterInfo.h>
+#include <include/android/GrAHardwareBufferUtils.h>
+#include <inttypes.h>
 #include <log/log.h>
+#include <private/android/AHardwareBufferHelpers.h>
 #include <private/gui/ComposerServiceAIDL.h>
 #include <ui/GraphicBuffer.h>
 
 #include <mutex>
+#include <thread>
+#include <unordered_map>
+
+#include "../AutoBackendTextureRelease.h"
 #endif
 
 namespace android {
@@ -33,6 +43,15 @@ namespace uirenderer {
 namespace oopr {
 
 #ifdef __ANDROID__
+
+NodeResources::~NodeResources() {
+    if (lastImage) {
+        deregisterBuffer(lastImage);
+    }
+    if (textureRelease) {
+        textureRelease->unref(false);
+    }
+}
 
 static bool sEnableOOPR;
 static sp<BBinder> sRenderResourceToken = sp<BBinder>::make();
@@ -56,19 +75,85 @@ sp<BBinder> getDefaultRenderResourceToken() {
     return sRenderResourceToken;
 }
 
-void registerBuffer(AHardwareBuffer* buffer, const sk_sp<SkImage>& image) {
-    if (!sEnableOOPR) {
-        return;
+AllocationResult createLayerSurface(uint32_t width, uint32_t height, GrDirectContext* context) {
+    LOG_ALWAYS_FATAL_IF(
+            !sEnableOOPR,
+            "Flag com.android.graphics.libgui.flags.out_of_process_rendering is disabled!");
+
+    LOG_ALWAYS_FATAL_IF(!context, "Skia GrDirectContext is null");
+
+    sp<GraphicBuffer> buffer = new GraphicBuffer(
+            width, height, PIXEL_FORMAT_RGBA_8888, 1,
+            AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE | AHARDWAREBUFFER_USAGE_GPU_FRAMEBUFFER,
+            "OOPRLayer");
+    if (buffer->initCheck() != NO_ERROR) {
+        ALOGE("Failed to allocate GraphicBuffer for layer");
+        return {};
     }
-    if (!image) {
-        LOG_ALWAYS_FATAL("Trying to register null image.");
+
+    AutoBackendTextureRelease* textureRelease =
+            new AutoBackendTextureRelease(context, buffer->toAHardwareBuffer());
+    if (!textureRelease->getTexture().isValid()) {
+        textureRelease->unref(false);
+        return {};
+    }
+
+    // We don't need to know when the surface / SkImage is released because
+    // the NodeResources lifetime matches the RenderNode will outlive the SkImage.
+    sk_sp<SkSurface> surface = SkSurfaces::WrapBackendTexture(
+            context, textureRelease->getTexture(), kTopLeft_GrSurfaceOrigin, 0,
+            kRGBA_8888_SkColorType, nullptr, nullptr, nullptr, nullptr);
+
+    if (!surface) {
+        textureRelease->unref(false);
+        return {};
+    }
+
+    AllocationResult result;
+    result.surface = std::move(surface);
+    result.resources = std::make_unique<NodeResources>();
+    result.resources->buffer = buffer;
+    result.resources->textureRelease = textureRelease;
+
+    return result;
+}
+
+void registerSnapshot(NodeResources* resources, const sk_sp<SkImage>& image) {
+    if (!sEnableOOPR || !image || !resources) return;
+
+    sp<GraphicBuffer> buffer = resources->buffer;
+    sk_sp<SkImage> lastImage = resources->lastImage;
+
+    if (lastImage && lastImage->uniqueID() == image->uniqueID()) {
         return;
     }
 
+    resources->lastImage = image;
+
+    LOG_ALWAYS_FATAL_IF(!buffer, "buffer should never be null");
+
     std::lock_guard lock{sRenderResourceLock};
-    sp<GraphicBuffer> graphicBuffer = GraphicBuffer::fromAHardwareBuffer(buffer);
+    auto& bitmaps = sRenderResourceCache.bitmaps;
+    if (lastImage) {
+        auto it = bitmaps.find(lastImage->uniqueID());
+        if (it != bitmaps.end()) {
+            // Move entry to new image ID
+            auto nodeHandler = bitmaps.extract(it);
+            nodeHandler.key() = image->uniqueID();
+            bitmaps.insert(std::move(nodeHandler));
+            return;
+        }
+    }
+
     sRenderResourceCache.bitmaps[image->uniqueID()] =
-            IPCClientBitmap{graphicBuffer->getId(), false, graphicBuffer};
+            IPCClientBitmap{buffer->getId(), false, buffer};
+}
+
+void registerBuffer(const sp<GraphicBuffer>& buffer, const sk_sp<SkImage>& image) {
+    if (!sEnableOOPR || !image) return;
+    std::lock_guard lock{sRenderResourceLock};
+    sRenderResourceCache.bitmaps[image->uniqueID()] =
+            IPCClientBitmap{buffer->getId(), false, buffer};
 }
 
 void registerPendingBitmaps() {
@@ -114,7 +199,6 @@ void deregisterBuffer(const sk_sp<SkImage>& image) {
     if (!registered) {
         return;
     }
-
     // Deregister with SF
     // TODO: b/448196792 - batching
     gui::GraphicBuffersUnregisterInfo unregisterInfo;

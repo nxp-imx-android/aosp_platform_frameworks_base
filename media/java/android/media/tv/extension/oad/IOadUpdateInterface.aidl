@@ -16,6 +16,7 @@
 
 package android.media.tv.extension.oad;
 
+import android.media.tv.extension.oad.IOadListener;
 import android.os.Bundle;
 
 /**
@@ -35,32 +36,41 @@ interface IOadUpdateInterface {
      */
     boolean getOadStatus();
     /**
+     * Registers a listener to receive OAD events instead of relying on sessionEvent.
+     */
+    void registerListener(in IOadListener listener);
+
+    /**
+     * Unregisters the listener.
+     */
+    void unregisterListener(in IOadListener listener);
+    /**
      * Starts an OAD scan across all frequencies in the program list to search for updates.
      * This API can be called after OAD is enabled.
      */
-    void startScan();
+    oneway void startScan();
     /**
      * Stops an in-progress OAD scan. This API can be called after scan has started.
      */
-    void stopScan();
+    oneway void stopScan();
     /**
      * Starts OAD detection on the currently tuned channel to check for an available update.
      * This API can be called after OAD is enabled.
      */
-    void startDetect();
+    oneway void startDetect();
     /*
      * Stops the OAD detection process on the current channel.
      * This API can be called detect has started.
      */
-    void stopDetect();
+    oneway void stopDetect();
     /**
      * Starts the OAD download process for an update that has been found via scan or detection.
      */
-    void startDownload();
+    oneway void startDownload();
     /**
      * Stops an in-progress OAD download. This API can be called after download has started.
      */
-    void stopDownload();
+    oneway void stopDownload();
     /**
      * Retrieves the current OAD software version.
      *

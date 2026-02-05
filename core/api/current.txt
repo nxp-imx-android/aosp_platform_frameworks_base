@@ -90,6 +90,7 @@ package android {
     field public static final String CHANGE_COMPONENT_ENABLED_STATE = "android.permission.CHANGE_COMPONENT_ENABLED_STATE";
     field public static final String CHANGE_CONFIGURATION = "android.permission.CHANGE_CONFIGURATION";
     field public static final String CHANGE_NETWORK_STATE = "android.permission.CHANGE_NETWORK_STATE";
+    field @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final String CHANGE_PERSONAL_CONTEXT_MODE = "android.permission.CHANGE_PERSONAL_CONTEXT_MODE";
     field public static final String CHANGE_WIFI_MULTICAST_STATE = "android.permission.CHANGE_WIFI_MULTICAST_STATE";
     field public static final String CHANGE_WIFI_STATE = "android.permission.CHANGE_WIFI_STATE";
     field public static final String CLEAR_APP_CACHE = "android.permission.CLEAR_APP_CACHE";
@@ -9385,12 +9386,12 @@ package android.app.appfunctions {
 
   @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") public final class AppFunctionSearchSpec implements android.os.Parcelable {
     method public int describeContents();
-    method @Nullable public java.util.List<android.app.appfunctions.AppFunctionName> getFunctionNames();
+    method @Nullable public java.util.Set<android.app.appfunctions.AppFunctionName> getFunctionNames();
     method public long getMinSchemaVersion();
-    method @Nullable public java.util.List<java.lang.String> getPackageNames();
+    method @Nullable public java.util.Set<java.lang.String> getPackageNames();
     method @Nullable public String getSchemaCategory();
     method @Nullable public String getSchemaName();
-    method @Nullable public java.util.List<java.lang.Integer> getScopes();
+    method @Nullable public java.util.Set<java.lang.Integer> getScopes();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.app.appfunctions.AppFunctionSearchSpec> CREATOR;
   }
@@ -9398,12 +9399,12 @@ package android.app.appfunctions {
   public static final class AppFunctionSearchSpec.Builder {
     ctor public AppFunctionSearchSpec.Builder();
     method @NonNull public android.app.appfunctions.AppFunctionSearchSpec build();
-    method @NonNull public android.app.appfunctions.AppFunctionSearchSpec.Builder setFunctionNames(@Nullable java.util.List<android.app.appfunctions.AppFunctionName>);
+    method @NonNull public android.app.appfunctions.AppFunctionSearchSpec.Builder setFunctionNames(@Nullable java.util.Set<android.app.appfunctions.AppFunctionName>);
     method @NonNull public android.app.appfunctions.AppFunctionSearchSpec.Builder setMinSchemaVersion(long);
-    method @NonNull public android.app.appfunctions.AppFunctionSearchSpec.Builder setPackageNames(@Nullable java.util.List<java.lang.String>);
+    method @NonNull public android.app.appfunctions.AppFunctionSearchSpec.Builder setPackageNames(@Nullable java.util.Set<java.lang.String>);
     method @NonNull public android.app.appfunctions.AppFunctionSearchSpec.Builder setSchemaCategory(@Nullable String);
     method @NonNull public android.app.appfunctions.AppFunctionSearchSpec.Builder setSchemaName(@Nullable String);
-    method @NonNull public android.app.appfunctions.AppFunctionSearchSpec.Builder setScopes(@Nullable java.util.List<java.lang.Integer>);
+    method @NonNull public android.app.appfunctions.AppFunctionSearchSpec.Builder setScopes(@Nullable java.util.Set<java.lang.Integer>);
   }
 
   @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public abstract class AppFunctionService extends android.app.Service {
@@ -12423,6 +12424,7 @@ package android.content {
     field public static final String ACTION_PACKAGE_UNSTOPPED = "android.intent.action.PACKAGE_UNSTOPPED";
     field public static final String ACTION_PACKAGE_VERIFIED = "android.intent.action.PACKAGE_VERIFIED";
     field public static final String ACTION_PASTE = "android.intent.action.PASTE";
+    field @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final String ACTION_PERSONAL_CONTEXT_MODE_CHANGED = "android.intent.action.PERSONAL_CONTEXT_MODE_CHANGED";
     field public static final String ACTION_PICK = "android.intent.action.PICK";
     field public static final String ACTION_PICK_ACTIVITY = "android.intent.action.PICK_ACTIVITY";
     field public static final String ACTION_POWER_CONNECTED = "android.intent.action.ACTION_POWER_CONNECTED";
@@ -21814,7 +21816,7 @@ package android.hardware.display {
     method public android.view.Surface getSurface();
     method public void release();
     method public void resize(int, int, int);
-    method @FlaggedApi("android.companion.virtualdevice.flags.virtual_display_rotation_api") public void setRotation(int);
+    method public void setRotation(int);
     method public void setSurface(android.view.Surface);
   }
 
@@ -26325,7 +26327,7 @@ package android.media {
   }
 
   public final class MediaRouter2 {
-    method @FlaggedApi("com.android.media.flags.enable_screen_off_scanning") public void cancelScanRequest(@NonNull android.media.MediaRouter2.ScanToken);
+    method public void cancelScanRequest(@NonNull android.media.MediaRouter2.ScanToken);
     method @FlaggedApi("com.android.media.flags.enable_suggested_device_api") public void clearDeviceSuggestions();
     method @Nullable public android.media.MediaRouter2.RoutingController getController(@NonNull String);
     method @NonNull public java.util.List<android.media.MediaRouter2.RoutingController> getControllers();
@@ -26340,7 +26342,7 @@ package android.media {
     method public void registerRouteCallback(@NonNull java.util.concurrent.Executor, @NonNull android.media.MediaRouter2.RouteCallback, @NonNull android.media.RouteDiscoveryPreference);
     method public void registerRouteListingPreferenceUpdatedCallback(@NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<android.media.RouteListingPreference>);
     method public void registerTransferCallback(@NonNull java.util.concurrent.Executor, @NonNull android.media.MediaRouter2.TransferCallback);
-    method @FlaggedApi("com.android.media.flags.enable_screen_off_scanning") @NonNull public android.media.MediaRouter2.ScanToken requestScan(@NonNull android.media.MediaRouter2.ScanRequest);
+    method @NonNull public android.media.MediaRouter2.ScanToken requestScan(@NonNull android.media.MediaRouter2.ScanRequest);
     method @FlaggedApi("com.android.media.flags.enable_suggested_device_api") public void setDeviceSuggestions(@NonNull java.util.List<android.media.SuggestedDeviceInfo>);
     method public void setOnGetControllerHintsListener(@Nullable android.media.MediaRouter2.OnGetControllerHintsListener);
     method public void setRouteListingPreference(@Nullable android.media.RouteListingPreference);
@@ -26398,7 +26400,7 @@ package android.media {
     method public boolean wasTransferInitiatedBySelf();
   }
 
-  @FlaggedApi("com.android.media.flags.enable_screen_off_scanning") public static final class MediaRouter2.ScanRequest {
+  public static final class MediaRouter2.ScanRequest {
     method public boolean isScreenOffScan();
   }
 
@@ -26408,7 +26410,7 @@ package android.media {
     method @NonNull public android.media.MediaRouter2.ScanRequest.Builder setScreenOffScan(boolean);
   }
 
-  @FlaggedApi("com.android.media.flags.enable_screen_off_scanning") public static final class MediaRouter2.ScanToken {
+  public static final class MediaRouter2.ScanToken {
   }
 
   public abstract static class MediaRouter2.TransferCallback {
@@ -44060,6 +44062,7 @@ package android.service.personalcontext {
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class PersonalContextManager {
+    method @RequiresPermission(android.Manifest.permission.QUERY_ALL_PACKAGES) public boolean isPersonalContextModeEnabled(@NonNull String);
     method public void publishTriggeringHint(@NonNull android.service.personalcontext.insight.interaction.ReturnHintReport, @NonNull java.util.List<android.service.personalcontext.hint.ContextHint>);
     method public void reportUserFeedback(@NonNull android.service.personalcontext.insight.ContextInsight, @Nullable android.os.Bundle);
     method public void showAttribution(@NonNull android.service.personalcontext.insight.ContextInsight);
@@ -55512,7 +55515,7 @@ package android.view {
     method @FlaggedApi("com.android.hardware.input.pointer_capture_modes") public void requestPointerCapture(int);
     method public boolean requestRectangleOnScreen(android.graphics.Rect);
     method public boolean requestRectangleOnScreen(android.graphics.Rect, boolean);
-    method @FlaggedApi("android.view.accessibility.request_rectangle_with_source") public boolean requestRectangleOnScreen(@NonNull android.graphics.Rect, boolean, int);
+    method public boolean requestRectangleOnScreen(@NonNull android.graphics.Rect, boolean, int);
     method public final void requestUnbufferedDispatch(android.view.MotionEvent);
     method public final void requestUnbufferedDispatch(int);
     method @NonNull public final <T extends android.view.View> T requireViewById(@IdRes int);
@@ -55841,10 +55844,10 @@ package android.view {
     field protected static final int[] PRESSED_SELECTED_WINDOW_FOCUSED_STATE_SET;
     field protected static final int[] PRESSED_STATE_SET;
     field protected static final int[] PRESSED_WINDOW_FOCUSED_STATE_SET;
-    field @FlaggedApi("android.view.accessibility.request_rectangle_with_source") public static final int RECTANGLE_ON_SCREEN_REQUEST_SOURCE_INPUT_FOCUS = 3; // 0x3
-    field @FlaggedApi("android.view.accessibility.request_rectangle_with_source") public static final int RECTANGLE_ON_SCREEN_REQUEST_SOURCE_SCROLL_ONLY = 1; // 0x1
-    field @FlaggedApi("android.view.accessibility.request_rectangle_with_source") public static final int RECTANGLE_ON_SCREEN_REQUEST_SOURCE_TEXT_CURSOR = 2; // 0x2
-    field @FlaggedApi("android.view.accessibility.request_rectangle_with_source") public static final int RECTANGLE_ON_SCREEN_REQUEST_SOURCE_UNDEFINED = 0; // 0x0
+    field public static final int RECTANGLE_ON_SCREEN_REQUEST_SOURCE_INPUT_FOCUS = 3; // 0x3
+    field public static final int RECTANGLE_ON_SCREEN_REQUEST_SOURCE_SCROLL_ONLY = 1; // 0x1
+    field public static final int RECTANGLE_ON_SCREEN_REQUEST_SOURCE_TEXT_CURSOR = 2; // 0x2
+    field public static final int RECTANGLE_ON_SCREEN_REQUEST_SOURCE_UNDEFINED = 0; // 0x0
     field @FlaggedApi("android.view.flags.toolkit_set_frame_rate_read_only") public static final float REQUESTED_FRAME_RATE_CATEGORY_DEFAULT = (0.0f/0.0f);
     field @FlaggedApi("android.view.flags.toolkit_set_frame_rate_read_only") public static final float REQUESTED_FRAME_RATE_CATEGORY_HIGH = -4.0f;
     field @FlaggedApi("android.view.flags.toolkit_set_frame_rate_read_only") public static final float REQUESTED_FRAME_RATE_CATEGORY_LOW = -2.0f;
@@ -56405,7 +56408,7 @@ package android.view {
     method public void recomputeViewAttributes(android.view.View);
     method public void requestChildFocus(android.view.View, android.view.View);
     method public boolean requestChildRectangleOnScreen(@NonNull android.view.View, android.graphics.Rect, boolean);
-    method @FlaggedApi("android.view.accessibility.request_rectangle_with_source") public default boolean requestChildRectangleOnScreen(@NonNull android.view.View, @NonNull android.graphics.Rect, boolean, int);
+    method public default boolean requestChildRectangleOnScreen(@NonNull android.view.View, @NonNull android.graphics.Rect, boolean, int);
     method public void requestDisallowInterceptTouchEvent(boolean);
     method public void requestFitSystemWindows();
     method public void requestLayout();

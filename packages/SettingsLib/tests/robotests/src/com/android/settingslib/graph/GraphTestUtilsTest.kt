@@ -26,8 +26,10 @@ import com.android.settingslib.metadata.PreferenceAvailabilityProvider
 import com.android.settingslib.metadata.PreferenceRestrictionProvider
 import com.android.settingslib.metadata.PreferenceScreenRegistry
 import com.android.settingslib.metadata.ReadWritePermit
+import com.android.settingslib.robotests.R
 import com.android.settingslib.testutils.GraphTestUtils
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertThrows
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -42,30 +44,88 @@ class GraphTestUtilsTest {
 
     @Test
     fun setRegistryFactories_setsFactoriesCorrectly() {
-        val screen = GraphTestUtils.createScreen("test_screen")
+        val screen = GraphTestUtils.createScreen(
+                GraphTestUtils.PreferenceScreenConfig(
+                "test_screen",
+                R.string.preference_screen_purpose
+            )
+        )
         GraphTestUtils.setRegistryFactories(screen)
-
         val factory = PreferenceScreenRegistry.preferenceScreenMetadataFactories?.get("test_screen")
         assertThat(factory).isNotNull()
         assertThat(factory?.create(context)).isEqualTo(screen)
     }
 
     @Test
-    fun createScreen_createsScreenWithCorrectKey() {
-        val screen = GraphTestUtils.createScreen("test_screen")
+    fun createScreen_hasCorrectKeyTitleAndPurpose() {
+        val screen = GraphTestUtils.createScreen(
+            GraphTestUtils.PreferenceScreenConfig(
+                "test_screen",
+                title = R.string.preference_screen_title,
+                purpose = R.string.preference_screen_purpose,
+                preferences = listOf()
+            )
+        )
         assertThat(screen.key).isEqualTo("test_screen")
+        assertThat(screen.title).isEqualTo(R.string.preference_screen_title)
+        assertThat(screen.purpose).isEqualTo(R.string.preference_screen_purpose)
     }
 
     @Test
-    fun createSimplePreference_createsPreferenceWithCorrectKey() {
-        val preference = GraphTestUtils.createSimplePreference("test_preference")
+    fun createScreen_withTwoPreferences_hasCorrectPreferences() = runTest {
+        val metadata1 = GraphTestUtils.createSimplePreference(
+            GraphTestUtils.PreferenceConfig(
+                "preference_key",
+                R.string.preference_purpose,
+            )
+        )
+        val metadata2 = GraphTestUtils.createSimplePreference(
+            GraphTestUtils.PreferenceConfig(
+                "preference_key2",
+                R.string.preference_purpose
+            )
+        )
+        val screen = GraphTestUtils.createScreen(
+            GraphTestUtils.PreferenceScreenConfig(
+                "test_screen",
+                purpose = R.string.preference_screen_purpose,
+                title = R.string.preference_screen_title,
+                preferences = listOf(metadata1, metadata2)
+            )
+        )
+        assertThat(screen.getPreferenceHierarchy(context, this)
+            .find("preference_key")
+        ).isEqualTo(metadata1)
+        assertThat(screen.getPreferenceHierarchy(context, this)
+            .find("preference_key2")
+        ).isEqualTo(metadata2)
+    }
+
+    @Test
+    fun createSimplePreference_createsPreferenceWithCorrectValues() {
+        val preference = GraphTestUtils.createSimplePreference(
+            GraphTestUtils.PreferenceConfig(
+                "test_preference",
+                purpose = R.string.preference_purpose,
+                isAvailable = false,
+                isRestricted = true,
+                isEnabled = false,
+            )
+        )
         assertThat(preference.key).isEqualTo("test_preference")
+        assertThat(preference.purpose).isEqualTo(R.string.preference_purpose)
+        assertThat(preference.isEnabled(context)).isEqualTo(false)
+        assertThat((preference as PreferenceAvailabilityProvider).isAvailable(context))
+            .isEqualTo(false)
+        assertThat((preference as PreferenceRestrictionProvider).isRestricted(context))
+            .isEqualTo(true)
     }
 
     @Test
     fun createPersistentPreference_respectsPreferenceConfigFlags() {
         val config = GraphTestUtils.PreferenceConfig(
             key = "test_key",
+            purpose = R.string.preference_purpose,
             isAvailable = false,
             isRestricted = true,
             isEnabled = false
@@ -75,6 +135,7 @@ class GraphTestUtilsTest {
         )
 
         assertThat(preference.key).isEqualTo("test_key")
+        assertThat(preference.purpose).isEqualTo(R.string.preference_purpose)
         assertThat((preference as PreferenceAvailabilityProvider).isAvailable(context)).isFalse()
         assertThat((preference as PreferenceRestrictionProvider).isRestricted(context)).isTrue()
         assertThat((preference).isEnabled(context)).isFalse()
@@ -83,7 +144,10 @@ class GraphTestUtilsTest {
     @Test
     fun createPersistentPreference_respectsPersistentPreferenceConfigPermits() {
         val persistentConfig = GraphTestUtils.PersistentPreferenceConfig(
-            preferenceConfig = GraphTestUtils.PreferenceConfig("test_key"),
+            preferenceConfig = GraphTestUtils.PreferenceConfig(
+                key = "test_key",
+                purpose = R.string.preference_purpose
+            ),
             valueType = Boolean::class.javaObjectType,
             readPermit = ReadWritePermit.DISALLOW,
             writePermit = ReadWritePermit.REQUIRE_USER_AGREEMENT,
@@ -102,10 +166,15 @@ class GraphTestUtilsTest {
     }
 
     @Test
-    fun createPersistentPreference_throwsErrorWhenConfigured() {
-        val config = GraphTestUtils.PreferenceConfig(key = "test_key", throwsError = true)
+    fun createPersistentPreference_WithThrowsError_throwsErrorWhenConfigured() {
         val preference = GraphTestUtils.createPersistentPreference<Boolean>(
-            GraphTestUtils.PersistentPreferenceConfig(config)
+            GraphTestUtils.PersistentPreferenceConfig(
+                GraphTestUtils.PreferenceConfig(
+                    key = "test_key",
+                    purpose = R.string.preference_purpose,
+                ),
+                throwsError = true
+            )
         )
 
         @Suppress("UNCHECKED_CAST")
@@ -117,8 +186,15 @@ class GraphTestUtilsTest {
 
     @Test
     fun createIntRangePreference_createsPreferenceWithCorrectValues() {
-        val preference = GraphTestUtils.createIntRangePreference("test_key", 1, 10, 5)
+        val preference = GraphTestUtils.createIntRangePreference(
+            "test_key",
+            purpose = R.string.preference_purpose,
+            1,
+            10,
+            5
+        )
         assertThat(preference.key).isEqualTo("test_key")
+        assertThat(preference.purpose).isEqualTo(R.string.preference_purpose)
         assertThat(preference.getMinValue(context)).isEqualTo(1)
         assertThat(preference.getMaxValue(context)).isEqualTo(10)
         assertThat(preference.storage(context).getInt("test_key")).isEqualTo(5)

@@ -93,6 +93,8 @@ public class SerialManagerService extends ISerialManager.Stub implements
 
     private final Context mContext;
 
+    private final boolean mNativeServiceSupported;
+
     private final String[] mPortsInConfig;
 
     private final String[] mBlockedPortsInConfig;
@@ -130,9 +132,11 @@ public class SerialManagerService extends ISerialManager.Stub implements
                 context.getResources().getStringArray(R.array.config_blockedSerialPorts),
                 context.getResources().getString(R.string.config_portAccessDialogComponent),
                 () -> android.hardware.serialservice.ISerialManager.Stub.asInterface(
-                        ServiceManager.getService(NATIVE_SERIAL_SERVICE_NAME)),
+                        ServiceManager.waitForService(NATIVE_SERIAL_SERVICE_NAME)),
                 SerialUserAccessManager::new,
-                new PortAccessSerializer(BackgroundThread.getExecutor()));
+                new PortAccessSerializer(BackgroundThread.getExecutor()),
+                context.getResources().getBoolean(
+                        com.android.internal.R.bool.config_supportNativeSerialService));
     }
 
     @VisibleForTesting
@@ -140,7 +144,8 @@ public class SerialManagerService extends ISerialManager.Stub implements
             String dialogComponent,
             Supplier<android.hardware.serialservice.ISerialManager> nativeServiceSupplier,
             SerialUserAccessManagerFactory accessManagerFactory,
-            PortAccessSerializerInterface portAccessSerializer) {
+            PortAccessSerializerInterface portAccessSerializer,
+            boolean nativeServiceSupported) {
         mContext = context;
         mDialogComponent = dialogComponent;
         mPortsInConfig = stripDevPrefix(portsInConfig);
@@ -148,6 +153,7 @@ public class SerialManagerService extends ISerialManager.Stub implements
         mNativeServiceSupplier = nativeServiceSupplier;
         mAccessManagerFactory = accessManagerFactory;
         mPortAccessSerializer = portAccessSerializer;
+        mNativeServiceSupported = nativeServiceSupported;
     }
 
     private static String[] stripDevPrefix(String[] portPaths) {
@@ -423,6 +429,9 @@ public class SerialManagerService extends ISerialManager.Stub implements
     private boolean connectToNativeService() {
         if (mIsConnectedToNativeService) {
             return true;
+        }
+        if (!mNativeServiceSupported) {
+            return false;
         }
         traceBegin("obtainNativeService", 0);
         mNativeService = mNativeServiceSupplier.get();

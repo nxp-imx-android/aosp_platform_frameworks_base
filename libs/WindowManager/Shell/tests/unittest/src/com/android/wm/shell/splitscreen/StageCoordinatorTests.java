@@ -1002,29 +1002,28 @@ public class StageCoordinatorTests extends ShellTestCase {
 
     @Test
     @EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX)
-    public void startIntent_onNonDefaultDisplay_updatesSplitLayoutConfiguration() {
-        // Setup: Define a non-default display and its configuration.
+    public void startTask_onNonDefaultDisplay_updatesSplitLayoutConfiguration() {
+        // Set up non-default display.
         final int nonDefaultDisplayId = DEFAULT_DISPLAY + 1;
         final WindowContainerToken displayAreaToken = new MockToken().token();
         final DisplayAreaInfo displayAreaInfo = new DisplayAreaInfo(displayAreaToken,
                 nonDefaultDisplayId, 0);
         displayAreaInfo.configuration.setTo(mContext.getResources().getConfiguration());
-        displayAreaInfo.configuration.densityDpi = 320; // Set a distinct value to verify.
-
-        // Mock the RootTaskDisplayAreaOrganizer to return the display area info.
+        displayAreaInfo.configuration.densityDpi = 480;
         when(mRootTDAOrganizer.getDisplayAreaInfo(nonDefaultDisplayId)).thenReturn(displayAreaInfo);
+        // Activity options specifying non-default display.
+        ActivityOptions options = ActivityOptions.makeBasic();
+        options.setLaunchDisplayId(nonDefaultDisplayId);
+        Bundle optionsBundle = options.toBundle();
 
-        // Mock necessary objects for startIntent.
-        PendingIntent pendingIntent = mock(PendingIntent.class);
-        Intent intent = mock(Intent.class);
-        when(pendingIntent.getIntent()).thenReturn(intent);
+        mStageCoordinator.startTask(
+                mTaskId,
+                SPLIT_POSITION_TOP_OR_LEFT,
+                optionsBundle,
+                /* hideTaskToken= */ null,
+                SPLIT_INDEX_UNDEFINED
+        );
 
-        // Action: Call startIntent for the non-default display.
-        mStageCoordinator.startIntent(pendingIntent, null /* fillInIntent */,
-                SPLIT_POSITION_TOP_OR_LEFT, null /* options */, null /* hideTaskToken */,
-                null /* transaction */, SPLIT_INDEX_UNDEFINED, nonDefaultDisplayId);
-
-        // Verification: Check that the split layout's configuration was updated.
         verify(mSplitLayout).updateConfiguration(eq(displayAreaInfo.configuration),
                 eq(nonDefaultDisplayId));
     }

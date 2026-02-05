@@ -3855,22 +3855,11 @@ package android.apphibernation {
 package android.attention {
 
   @FlaggedApi("com.android.input.flags.enable_attention_service_apis") public final class AttentionManager {
-    method @FlaggedApi("com.android.input.flags.enable_attention_service_apis") @RequiresPermission(android.Manifest.permission.ACCESS_ATTENTION_LISTENER) public void registerInteractionListener(int, @NonNull java.time.Duration, @NonNull java.util.concurrent.Executor, @NonNull android.attention.InteractionListener);
-    method @FlaggedApi("com.android.input.flags.enable_attention_service_apis") @RequiresPermission(android.Manifest.permission.ACCESS_ATTENTION_LISTENER) public void unregisterInteractionListener();
     field @FlaggedApi("com.android.input.flags.enable_attention_service_apis") public static final int INTERACTION_TYPE_ALL = -1; // 0xffffffff
     field @FlaggedApi("com.android.input.flags.enable_attention_service_apis") public static final int INTERACTION_TYPE_GESTURE = 4; // 0x4
     field @FlaggedApi("com.android.input.flags.enable_attention_service_apis") public static final int INTERACTION_TYPE_HOVER = 2; // 0x2
     field @FlaggedApi("com.android.input.flags.enable_attention_service_apis") public static final int INTERACTION_TYPE_KEY = 1; // 0x1
     field @FlaggedApi("com.android.input.flags.enable_attention_service_apis") public static final int INTERACTION_TYPE_NONE = 0; // 0x0
-  }
-
-  @FlaggedApi("com.android.input.flags.enable_attention_service_apis") public final class InteractionInfo {
-    method public long getInteractionTimeMillis();
-    method public int getInteractionTypes();
-  }
-
-  @FlaggedApi("com.android.input.flags.enable_attention_service_apis") public interface InteractionListener {
-    method @FlaggedApi("com.android.input.flags.enable_attention_service_apis") public void onInteraction(@NonNull android.attention.InteractionInfo);
   }
 
 }
@@ -6764,6 +6753,21 @@ package android.hardware.input {
     method @FlaggedApi("com.android.hardware.input.create_virtual_keyboard_api") @NonNull @RequiresPermission(anyOf={android.Manifest.permission.INJECT_KEY_EVENTS, android.Manifest.permission.INJECT_EVENTS}) public android.hardware.input.VirtualKeyboard createVirtualKeyboard(@NonNull android.hardware.input.VirtualKeyboardConfig);
   }
 
+  @FlaggedApi("android.companion.virtualdevice.flags.virtual_input_view_behavior") public final class ViewBehaviorConfig implements android.os.Parcelable {
+    method public int describeContents();
+    method public int getPrimaryDirectionalMotionAxis();
+    method public boolean shouldSmoothScroll();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.hardware.input.ViewBehaviorConfig> CREATOR;
+  }
+
+  @FlaggedApi("android.companion.virtualdevice.flags.virtual_input_view_behavior") public static final class ViewBehaviorConfig.Builder {
+    ctor public ViewBehaviorConfig.Builder();
+    method @NonNull public android.hardware.input.ViewBehaviorConfig build();
+    method @NonNull public android.hardware.input.ViewBehaviorConfig.Builder setPrimaryDirectionalMotionAxis(int);
+    method @NonNull public android.hardware.input.ViewBehaviorConfig.Builder setShouldSmoothScroll(boolean);
+  }
+
   public class VirtualDpad implements java.io.Closeable {
     method public void close();
     method @FlaggedApi("com.android.hardware.input.create_virtual_keyboard_api") public int getInputDeviceId();
@@ -6788,6 +6792,7 @@ package android.hardware.input {
     method @NonNull public String getInputDeviceName();
     method public int getProductId();
     method public int getVendorId();
+    method @FlaggedApi("android.companion.virtualdevice.flags.virtual_input_view_behavior") @Nullable public android.hardware.input.ViewBehaviorConfig getViewBehaviorConfig();
   }
 
   public abstract static class VirtualInputDeviceConfig.Builder<T extends android.hardware.input.VirtualInputDeviceConfig.Builder<T>> {
@@ -6796,6 +6801,7 @@ package android.hardware.input {
     method @NonNull public T setInputDeviceName(@NonNull String);
     method @NonNull public T setProductId(int);
     method @NonNull public T setVendorId(int);
+    method @FlaggedApi("android.companion.virtualdevice.flags.virtual_input_view_behavior") @NonNull public T setViewBehaviorConfig(@NonNull android.hardware.input.ViewBehaviorConfig);
   }
 
   public final class VirtualKeyEvent implements android.os.Parcelable {
@@ -14944,6 +14950,7 @@ package android.service.personalcontext {
     method public void publishTriggeringHint(@NonNull java.util.List<android.service.personalcontext.hint.ContextHint>, @Nullable java.util.List<android.service.personalcontext.RenderToken>);
     method public void publishTriggeringHint(@NonNull java.util.List<android.service.personalcontext.hint.ContextHint>, @Nullable java.util.List<android.service.personalcontext.RenderToken>, @Nullable java.util.List<android.service.personalcontext.hint.ContextHint>);
     method public void setEnabled(boolean);
+    method @RequiresPermission(android.Manifest.permission.CHANGE_PERSONAL_CONTEXT_MODE) public void setPersonalContextModeEnabled(@NonNull String, boolean);
     method @NonNull public android.service.personalcontext.hint.ContextHintWithSignature signHint(@NonNull android.service.personalcontext.hint.ContextHint, @Nullable java.util.List<android.service.personalcontext.hint.ContextHint>);
   }
 

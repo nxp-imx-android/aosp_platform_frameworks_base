@@ -48,7 +48,13 @@ class InternetDetailsViewModelTest : SysuiTestCase() {
     fun setUp() {
         whenever(accessPointController.canConfigMobileData()).thenReturn(true)
         whenever(accessPointController.canConfigWifi()).thenReturn(true)
-        whenever(contentManagerFactory.create(canConfigMobileData = true, canConfigWifi = true))
+        whenever(
+                contentManagerFactory.create(
+                    canConfigMobileData = true,
+                    canConfigWifi = true,
+                    isInDialog = false,
+                )
+            )
             .thenReturn(internetDetailsContentManager)
 
         viewModel =

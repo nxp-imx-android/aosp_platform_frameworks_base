@@ -22,7 +22,10 @@ import android.graphics.Color;
 import android.graphics.HardwareRenderer;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
+import android.graphics.RenderNode;
+import android.view.View;
 
+import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ActivityTestRule;
 import androidx.test.runner.AndroidJUnit4;
 
@@ -79,7 +82,57 @@ public class IPCRenderingJUnitTest {
             if (!result) {
                 throw new RuntimeException("Timed out waiting for surface creation");
             }
-            Thread.sleep(1000000);
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+        }
+    }
+
+    @Test
+    public void testLayerRendering() {
+        final IPCRenderingTest activity = mActivityRule.getActivity();
+        final CountDownLatch latch = new CountDownLatch(1);
+        activity.setRenderer(new IPCRenderingTest.Renderer() {
+            @Override
+            public void onSurfaceCreated(IPCRenderingTest.IpcCanvasContext context) {
+                RenderNode layerNode = RenderNode.create("layer", null);
+                layerNode.setLayerType(View.LAYER_TYPE_HARDWARE);
+                layerNode.setAlpha(0.5f);
+
+                Canvas lc = layerNode.beginRecording(200, 200);
+                lc.drawColor(0xFFFF0000); // Red
+                layerNode.endRecording();
+
+                for (int i = 0; i < 200; i++) {
+                    Canvas c = context.lockCanvas(512, 512);
+                    c.drawColor(0xFFFFFFFF);
+
+                    // Opaque blue rect under the node
+                    Paint p = new Paint();
+                    p.setColor(0xFF0000FF);
+                    c.drawRect(100, 100, 400, 400, p);
+
+                    // Animate back and forth
+                    int offset = (int) (Math.sin(i * 0.05) * 100);
+                    layerNode.setPosition(156 + offset, 156, 356 + offset, 356);
+
+                    c.drawRenderNode(layerNode);
+
+                    context.unlockAndPost(c);
+                    try {
+                        Thread.sleep(16);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                latch.countDown();
+            }
+        });
+
+        try {
+            boolean result = latch.await(10, TimeUnit.SECONDS);
+            if (!result) {
+                throw new RuntimeException("Timed out waiting for layer rendering");
+            }
         } catch (InterruptedException e) {
         }
     }

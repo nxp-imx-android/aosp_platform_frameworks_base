@@ -103,6 +103,7 @@ constructor(
     private val logger: NotificationRowContentBinderLogger,
 ) : NotificationRowContentBinder {
     private var inflateSynchronously = false
+    private var userProfileBadgeProvider: Notification.UserProfileBadgeProvider? = null
 
     override fun bindContent(
         entry: NotificationEntry,
@@ -134,6 +135,7 @@ constructor(
             AsyncInflationTask(
                 inflationExecutor,
                 inflateSynchronously,
+                userProfileBadgeProvider,
                 /* reInflateFlags = */ contentToBind,
                 remoteViewCache,
                 entry,
@@ -341,9 +343,21 @@ constructor(
         this.inflateSynchronously = inflateSynchronously
     }
 
+    /**
+     * Sets the user profile badge provider. This method should only be used in tests, not in
+     * production.
+     */
+    @VisibleForTesting
+    override fun setUserProfileBadgeProvider(
+        userProfileBadgeProvider: Notification.UserProfileBadgeProvider?
+    ): Unit {
+        this.userProfileBadgeProvider = userProfileBadgeProvider
+    }
+
     class AsyncInflationTask(
         private val inflationExecutor: Executor,
         private val inflateSynchronously: Boolean,
+        private val userProfileBadgeProvider: Notification.UserProfileBadgeProvider?,
         @get:InflationFlag @get:VisibleForTesting @InflationFlag val reInflateFlags: Int,
         private val remoteViewCache: NotifRemoteViewCache,
         private val entry: NotificationEntry,
@@ -407,6 +421,10 @@ constructor(
             // Ensure the ApplicationInfo is updated before a builder is recovered.
             updateApplicationInfo(sbn)
             val recoveredBuilder = Notification.Builder.recoverBuilder(context, sbn.notification)
+            // In some tests, we want to replace the static badge logic with a fake.
+            if (userProfileBadgeProvider != null) {
+                recoveredBuilder.setUserProfileBadgeProvider(userProfileBadgeProvider)
+            }
             var packageContext: Context = sbn.getPackageContext(context)
             if (recoveredBuilder.usesTemplate()) {
                 // For all of our templates, we want it to be RTL

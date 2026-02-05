@@ -14,28 +14,19 @@
  * limitations under the License.
  */
 
-package android.attention;
+package android.media.tv.extension.cam;
 
-import android.annotation.FlaggedApi;
-import android.annotation.NonNull;
-import android.annotation.SystemApi;
-
-import com.android.input.flags.Flags;
+import android.os.Bundle;
 
 /**
- * Listener for interaction state changes.
- * @see AttentionManager
  * @hide
  */
-@SystemApi
-@FlaggedApi(Flags.FLAG_ENABLE_ATTENTION_SERVICE_APIS)
-public interface InteractionListener {
+oneway interface ICiOperatorListener {
     /**
-     * Called when the interaction state changes.
-     * @hide
-     * @param interactionInfo current interaction info.
+     * Called when the updateCiOPControl or deleteProfile operation finishes.
+     *
+     * @param operationId  Optional ID to track which request this is for.
+     * @param result       @CamConstants.OpResult
      */
-    @SystemApi
-    @FlaggedApi(Flags.FLAG_ENABLE_ATTENTION_SERVICE_APIS)
-    void onInteraction(@NonNull InteractionInfo interactionInfo);
+    void onOperationResult(int operationId, int result);
 }

@@ -37,6 +37,7 @@ import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.desktopmode.data.DesktopDisplay
 import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializer
+import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializer.DeskRootHelper
 import com.android.wm.shell.desktopmode.desktopfirst.DESKTOP_FIRST_DISPLAY_WINDOWING_MODE
 import com.android.wm.shell.desktopmode.desktopfirst.DesktopDisplayModeController
 import com.android.wm.shell.desktopmode.desktopfirst.TOUCH_FIRST_DISPLAY_WINDOWING_MODE
@@ -671,8 +672,19 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
         DisplayAreaInfo(/* token= */ mock(), displayId, /* featureId= */ 0)
 
     private class FakeDesktopRepositoryInitializer : DesktopRepositoryInitializer {
-        override var deskRecreationFactory: DesktopRepositoryInitializer.DeskRecreationFactory =
-            DesktopRepositoryInitializer.DeskRecreationFactory { _, _, deskId -> deskId }
+        override var deskRootHelper: DeskRootHelper = object : DeskRootHelper {
+            override suspend fun recreateDeskRoot(
+                userId: Int,
+                destinationDisplayId: Int,
+                deskId: Int,
+            ): Int? = deskId
+
+            override suspend fun removeDeskRoots(
+                requests: List<DeskRootHelper.DeskRootRemovalRequest>
+            ) {
+                // Do nothing.
+            }
+        }
 
         override val isInitialized: MutableStateFlow<Boolean> = MutableStateFlow(false)
 

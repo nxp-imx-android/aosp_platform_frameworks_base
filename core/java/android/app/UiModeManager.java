@@ -1766,8 +1766,8 @@ public class UiModeManager {
      *
      * @hide
      */
-    public List<String> getAllForceInvertAlwaysDisableApps() {
-        return sGlobals.getAllForceInvertAlwaysDisableApps(getUserId());
+    public List<String> getAllForceInvertAlwaysDisableApps(@UserIdInt int userId) {
+        return sGlobals.getAllForceInvertAlwaysDisableApps(userId);
     }
 
     /**
@@ -1777,13 +1777,15 @@ public class UiModeManager {
      */
     @RequiresPermission(android.Manifest.permission.WRITE_SETTINGS)
     public boolean setForceInvertOverrideStateForApp(
-            String packageName, @ForceInvertPackageOverrideState int newState) {
+            String packageName,
+            @ForceInvertPackageOverrideState int newState,
+            @UserIdInt int userId) {
         if (mContext == null) {
             // This shouldn't really happen in practice because ViewRootImpl uses the
             // proper constructor that fills out the context.
             return false;
         }
-        return sGlobals.setForceInvertOverrideState(getUserId(), packageName, newState);
+        return sGlobals.setForceInvertOverrideState(userId, packageName, newState);
     }
 
     /**

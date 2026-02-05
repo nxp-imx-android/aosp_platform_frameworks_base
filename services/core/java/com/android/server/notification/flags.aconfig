@@ -160,6 +160,13 @@ flag {
   }
 }
 
+flag {
+  name: "favorites_incoming_call_lights"
+  namespace: "notifications"
+  description: "Apply priority_notification lights for incoming calls from favorites."
+  bug: "480207922"
+}
+
 # Start: Flags that have been cleaned up in code but must remain defined for CTS
 
 flag {

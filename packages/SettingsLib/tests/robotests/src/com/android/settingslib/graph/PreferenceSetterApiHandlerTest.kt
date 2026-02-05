@@ -31,6 +31,8 @@ import com.android.settingslib.testutils.GraphTestUtils.PreferenceConfig
 import com.android.settingslib.testutils.GraphTestUtils.setRegistryFactories
 import com.android.settingslib.metadata.ReadWritePermit
 import com.android.settingslib.metadata.SensitivityLevel
+import com.android.settingslib.robotests.R
+import com.android.settingslib.testutils.GraphTestUtils.PreferenceScreenConfig
 import com.android.settingslib.testutils.GraphTestUtils.createIntRangePreference
 import com.android.settingslib.testutils.GraphTestUtils.createPersistentPreference
 import com.android.settingslib.testutils.GraphTestUtils.createScreen
@@ -115,9 +117,17 @@ class PreferenceSetterApiHandlerTest {
     {
         setRegistryFactories(
             createScreen(
-                "screen_key",
-                createSimplePreference(
-                    "preference_key"
+                PreferenceScreenConfig(
+                    screenKey = "screen_key",
+                    purpose = R.string.preference_screen_purpose,
+                    preferences = listOf(
+                        createSimplePreference(
+                            PreferenceConfig(
+                                key = "preference_key",
+                                purpose = R.string.preference_purpose
+                            )
+                        )
+                    )
                 )
             )
         )
@@ -130,9 +140,17 @@ class PreferenceSetterApiHandlerTest {
     fun invoke_onInexistentPreference_returnsUnsupported() {
         setRegistryFactories(
             createScreen(
-                "screen_key",
-                createSimplePreference(
-                    "preference_key"
+                PreferenceScreenConfig(
+                    screenKey = "screen_key",
+                    purpose = R.string.preference_screen_purpose,
+                    preferences = listOf(
+                        createSimplePreference(
+                            PreferenceConfig(
+                                key = "preference_key",
+                                purpose = R.string.preference_purpose
+                            )
+                        )
+                    )
                 )
             )
         )
@@ -145,9 +163,17 @@ class PreferenceSetterApiHandlerTest {
     fun invoke_onNonPersistentPreference_returnsUnsupported() {
         setRegistryFactories(
             createScreen(
-                "screen_key",
-                createSimplePreference(
-                    "preference_key"
+                PreferenceScreenConfig(
+                    screenKey = "screen_key",
+                    purpose = R.string.preference_screen_purpose,
+                    preferences = listOf(
+                        createSimplePreference(
+                            PreferenceConfig(
+                                key = "preference_key",
+                                purpose = R.string.preference_purpose
+                            )
+                        )
+                    )
                 )
             )
         )
@@ -162,14 +188,20 @@ class PreferenceSetterApiHandlerTest {
             PersistentPreferenceConfig(
                 preferenceConfig = PreferenceConfig(
                     key = "preference_key",
+                    purpose = R.string.preference_purpose,
                     isEnabled = false
                 )
             )
         )
         setRegistryFactories(
             createScreen(
-                "screen_key",
-                disabledPreference
+                PreferenceScreenConfig(
+                    screenKey = "screen_key",
+                    purpose = R.string.preference_screen_purpose,
+                    preferences = listOf(
+                        disabledPreference
+                    )
+                )
             )
         )
         assertThat(
@@ -184,14 +216,19 @@ class PreferenceSetterApiHandlerTest {
             PersistentPreferenceConfig(
                 preferenceConfig = PreferenceConfig (
                     key = "preference_key",
+                    purpose = R.string.preference_purpose,
                     isRestricted = true
                 )
             )
         )
         setRegistryFactories(
             createScreen(
-                "screen_key",
-                restrictedPreference
+                PreferenceScreenConfig(
+                    screenKey = "screen_key",
+                    purpose = R.string.preference_screen_purpose,
+                    preferences = listOf(restrictedPreference)
+                )
+
             )
         )
         assertThat(
@@ -206,14 +243,18 @@ class PreferenceSetterApiHandlerTest {
             PersistentPreferenceConfig(
                 preferenceConfig = PreferenceConfig (
                     key = "preference_key",
+                    purpose = R.string.preference_purpose,
                     isAvailable = false
                 )
             )
         )
         setRegistryFactories(
             createScreen(
-                "screen_key",
-                unavailablePreference
+                PreferenceScreenConfig(
+                    screenKey = "screen_key",
+                    purpose = R.string.preference_screen_purpose,
+                    preferences = listOf(unavailablePreference)
+                )
             )
         )
         assertThat(
@@ -226,15 +267,21 @@ class PreferenceSetterApiHandlerTest {
     fun invoke_onIntPreferenceWithBooleanValueType_returnsInvalid() {
         val intPreference = createPersistentPreference<Int>(
             persistentPreferenceConfig = PersistentPreferenceConfig(
-                preferenceConfig = PreferenceConfig(key = "preference_key"),
+                preferenceConfig = PreferenceConfig(
+                    key = "preference_key",
+                    purpose = R.string.preference_purpose,
+                ),
                 valueType = Int::class.javaObjectType,
                 defaultValue = 3
             )
         )
         setRegistryFactories(
             createScreen(
-                "screen_key",
-                intPreference
+                PreferenceScreenConfig(
+                    screenKey = "screen_key",
+                    purpose = R.string.preference_screen_purpose,
+                    preferences = listOf(intPreference)
+                )
             )
         )
         assertThat(
@@ -247,7 +294,10 @@ class PreferenceSetterApiHandlerTest {
     fun invoke_onHighSensitivityPreference_returnsDisallow() {
         val highSensitivityPreference = createPersistentPreference<Boolean>(
             persistentPreferenceConfig = PersistentPreferenceConfig(
-                preferenceConfig = PreferenceConfig (key = "preference_key"),
+                preferenceConfig = PreferenceConfig(
+                    key = "preference_key",
+                    purpose = R.string.preference_purpose,
+                ),
                 valueType = Boolean::class.javaObjectType,
                 defaultValue = false,
                 sensitivityLevel = SensitivityLevel.HIGH_SENSITIVITY,
@@ -255,8 +305,11 @@ class PreferenceSetterApiHandlerTest {
         )
         setRegistryFactories(
             createScreen(
-                "screen_key",
-                highSensitivityPreference
+                PreferenceScreenConfig(
+                    screenKey = "screen_key",
+                    purpose = R.string.preference_screen_purpose,
+                    preferences = listOf(highSensitivityPreference)
+                )
             )
         )
         assertThat(
@@ -271,7 +324,10 @@ class PreferenceSetterApiHandlerTest {
         ShadowBuild.setType("user")
         val unknownSensitivityPreference = createPersistentPreference<Boolean>(
             PersistentPreferenceConfig(
-                preferenceConfig = PreferenceConfig (key = "preference_key"),
+                preferenceConfig = PreferenceConfig(
+                    key = "preference_key",
+                    purpose = R.string.preference_purpose,
+                ),
                 valueType = Boolean::class.javaObjectType,
                 defaultValue = false,
                 sensitivityLevel = SensitivityLevel.UNKNOWN_SENSITIVITY
@@ -279,8 +335,11 @@ class PreferenceSetterApiHandlerTest {
         )
         setRegistryFactories(
             createScreen(
-                "screen_key",
-                unknownSensitivityPreference
+                PreferenceScreenConfig(
+                    screenKey = "screen_key",
+                    purpose = R.string.preference_screen_purpose,
+                    preferences = listOf(unknownSensitivityPreference)
+                )
             )
         )
         assertThat(
@@ -295,7 +354,10 @@ class PreferenceSetterApiHandlerTest {
         ShadowBuild.setType("userdebug")
         val unknownSensitivityPreference = createPersistentPreference<Boolean>(
             PersistentPreferenceConfig(
-                preferenceConfig = PreferenceConfig (key = "preference_key"),
+                preferenceConfig = PreferenceConfig(
+                    key = "preference_key",
+                    purpose = R.string.preference_purpose,
+                ),
                 valueType = Boolean::class.javaObjectType,
                 defaultValue = false,
                 sensitivityLevel = SensitivityLevel.UNKNOWN_SENSITIVITY
@@ -303,8 +365,11 @@ class PreferenceSetterApiHandlerTest {
         )
         setRegistryFactories(
             createScreen(
-                "screen_key",
-                unknownSensitivityPreference
+                PreferenceScreenConfig(
+                    screenKey = "screen_key",
+                    purpose = R.string.preference_screen_purpose,
+                    preferences = listOf(unknownSensitivityPreference)
+                )
             )
         )
         assertThat(
@@ -317,7 +382,10 @@ class PreferenceSetterApiHandlerTest {
     fun invoke_onFailingPermission_returnsRequireAppPermission() {
         val preference = createPersistentPreference<Boolean>(
             PersistentPreferenceConfig(
-                preferenceConfig = PreferenceConfig (key = "preference_key"),
+                preferenceConfig = PreferenceConfig(
+                    key = "preference_key",
+                    purpose = R.string.preference_purpose,
+                ),
                 valueType = Boolean::class.javaObjectType,
                 writePermission = INTERACT_ACROSS_PROFILES,
                 defaultValue = false
@@ -325,8 +393,11 @@ class PreferenceSetterApiHandlerTest {
         )
         setRegistryFactories(
             createScreen(
-                "screen_key",
-                preference
+                PreferenceScreenConfig(
+                    screenKey = "screen_key",
+                    purpose = R.string.preference_screen_purpose,
+                    preferences = listOf(preference)
+                )
             )
         )
         makePermissionPass(application,INTERACT_ACROSS_PROFILES, false)
@@ -340,7 +411,10 @@ class PreferenceSetterApiHandlerTest {
     fun invoke_onPermissionPassing_returnsWritePermit() {
         val preference = createPersistentPreference<Boolean>(
             PersistentPreferenceConfig(
-                preferenceConfig = PreferenceConfig (key = "preference_key"),
+                preferenceConfig = PreferenceConfig(
+                    key = "preference_key",
+                    purpose = R.string.preference_purpose,
+                ),
                 valueType = Boolean::class.javaObjectType,
                 defaultValue = false,
                 writePermission = INTERACT_ACROSS_PROFILES,
@@ -349,8 +423,11 @@ class PreferenceSetterApiHandlerTest {
         )
         setRegistryFactories(
             createScreen(
-                "screen_key",
-                preference
+                PreferenceScreenConfig(
+                    screenKey = "screen_key",
+                    purpose = R.string.preference_screen_purpose,
+                    preferences = listOf(preference)
+                )
             )
         )
         makePermissionPass(application,INTERACT_ACROSS_PROFILES, true)
@@ -364,7 +441,10 @@ class PreferenceSetterApiHandlerTest {
     fun invoke_onWritePermissionAbsent_returnsWritePermit() {
         val preference = createPersistentPreference<Boolean>(
             PersistentPreferenceConfig(
-                preferenceConfig = PreferenceConfig (key = "preference_key"),
+                preferenceConfig = PreferenceConfig(
+                    key = "preference_key",
+                    purpose = R.string.preference_purpose,
+                ),
                 valueType = Boolean::class.javaObjectType,
                 defaultValue = false,
                 writePermission = null,
@@ -373,8 +453,11 @@ class PreferenceSetterApiHandlerTest {
         )
         setRegistryFactories(
             createScreen(
-                "screen_key",
-                preference
+                PreferenceScreenConfig(
+                    screenKey = "screen_key",
+                    purpose = R.string.preference_screen_purpose,
+                    preferences = listOf(preference)
+                )
             )
         )
         assertThat(
@@ -388,7 +471,10 @@ class PreferenceSetterApiHandlerTest {
         PreferenceScreenRegistry.defaultWritePermit = ReadWritePermit.REQUIRE_USER_AGREEMENT
         val preference = createPersistentPreference<Boolean>(
             PersistentPreferenceConfig(
-                preferenceConfig = PreferenceConfig (key = "preference_key"),
+                preferenceConfig = PreferenceConfig(
+                    key = "preference_key",
+                    purpose = R.string.preference_purpose,
+                ),
                 valueType = Boolean::class.javaObjectType,
                 defaultValue = false,
                 writePermission = null,
@@ -397,8 +483,11 @@ class PreferenceSetterApiHandlerTest {
         )
         setRegistryFactories(
             createScreen(
-                "screen_key",
-                preference
+                PreferenceScreenConfig(
+                    screenKey = "screen_key",
+                    purpose = R.string.preference_screen_purpose,
+                    preferences = listOf(preference)
+                )
             )
         )
         assertThat(
@@ -411,7 +500,10 @@ class PreferenceSetterApiHandlerTest {
     fun invoke_onSetToTrue_succeeds() {
         val preference = createPersistentPreference<Boolean>(
             PersistentPreferenceConfig(
-                preferenceConfig = PreferenceConfig (key = "preference_key"),
+                preferenceConfig = PreferenceConfig(
+                    key = "preference_key",
+                    purpose = R.string.preference_purpose,
+                ),
                 valueType = Boolean::class.javaObjectType,
                 sensitivityLevel = SensitivityLevel.LOW_SENSITIVITY,
                 writePermission = INTERACT_ACROSS_PROFILES,
@@ -421,8 +513,11 @@ class PreferenceSetterApiHandlerTest {
         )
         setRegistryFactories(
             createScreen(
-                "screen_key",
-                preference
+                PreferenceScreenConfig(
+                    screenKey = "screen_key",
+                    purpose = R.string.preference_screen_purpose,
+                    preferences = listOf(preference)
+                )
             )
         )
         makePermissionPass(application, INTERACT_ACROSS_PROFILES, true)
@@ -436,7 +531,10 @@ class PreferenceSetterApiHandlerTest {
     fun invoke_onSetToFalse_succeeds() {
         val preference = createPersistentPreference<Boolean>(
             PersistentPreferenceConfig(
-                preferenceConfig = PreferenceConfig (key = "preference_key"),
+                preferenceConfig = PreferenceConfig(
+                    key = "preference_key",
+                    purpose = R.string.preference_purpose,
+                ),
                 valueType = Boolean::class.javaObjectType,
                 sensitivityLevel = SensitivityLevel.LOW_SENSITIVITY,
                 writePermission = INTERACT_ACROSS_PROFILES,
@@ -446,8 +544,11 @@ class PreferenceSetterApiHandlerTest {
         )
         setRegistryFactories(
             createScreen(
-                "screen_key",
-                preference
+                PreferenceScreenConfig(
+                    screenKey = "screen_key",
+                    purpose = R.string.preference_screen_purpose,
+                    preferences = listOf(preference)
+                )
             )
         )
         makePermissionPass(application, INTERACT_ACROSS_PROFILES, true)
@@ -461,7 +562,10 @@ class PreferenceSetterApiHandlerTest {
     fun invoke_onIntPreference_succeeds() {
         val intPreference = createPersistentPreference<Int>(
             PersistentPreferenceConfig(
-                preferenceConfig = PreferenceConfig (key = "preference_key"),
+                preferenceConfig = PreferenceConfig(
+                    key = "preference_key",
+                    purpose = R.string.preference_purpose,
+                ),
                 valueType = Int::class.javaObjectType,
                 sensitivityLevel = SensitivityLevel.MEDIUM_SENSITIVITY,
                 writePermission = INTERACT_ACROSS_PROFILES,
@@ -471,8 +575,11 @@ class PreferenceSetterApiHandlerTest {
         )
         setRegistryFactories(
             createScreen(
-                "screen_key",
-                intPreference
+                PreferenceScreenConfig(
+                    screenKey = "screen_key",
+                    purpose = R.string.preference_screen_purpose,
+                    preferences = listOf(intPreference)
+                )
             )
         )
         makePermissionPass(application, INTERACT_ACROSS_PROFILES, true)
@@ -486,7 +593,10 @@ class PreferenceSetterApiHandlerTest {
     fun invoke_onIntPreferenceWithStringValueType_returnsInvalid() {
         val intPreference = createPersistentPreference<Int>(
             PersistentPreferenceConfig(
-                preferenceConfig = PreferenceConfig (key = "preference_key"),
+                preferenceConfig = PreferenceConfig(
+                    key = "preference_key",
+                    purpose = R.string.preference_purpose,
+                ),
                 valueType = Int::class.javaObjectType,
                 sensitivityLevel = SensitivityLevel.MEDIUM_SENSITIVITY,
                 writePermission = INTERACT_ACROSS_PROFILES,
@@ -496,8 +606,11 @@ class PreferenceSetterApiHandlerTest {
         )
         setRegistryFactories(
             createScreen(
-                "screen_key",
-                intPreference
+                PreferenceScreenConfig(
+                    screenKey = "screen_key",
+                    purpose = R.string.preference_screen_purpose,
+                    preferences = listOf(intPreference)
+                )
             )
         )
         makePermissionPass(application, INTERACT_ACROSS_PROFILES, true)
@@ -512,7 +625,10 @@ class PreferenceSetterApiHandlerTest {
     fun invoke_onStringPreferenceWithFloatValueType_succeeds() {
         val stringPreference = createPersistentPreference<String>(
             PersistentPreferenceConfig(
-                PreferenceConfig (key = "preference_key"),
+                preferenceConfig = PreferenceConfig(
+                    key = "preference_key",
+                    purpose = R.string.preference_purpose,
+                ),
                 valueType = String::class.javaObjectType,
                 sensitivityLevel = SensitivityLevel.MEDIUM_SENSITIVITY,
                 writePermission = INTERACT_ACROSS_PROFILES,
@@ -523,8 +639,11 @@ class PreferenceSetterApiHandlerTest {
         makePermissionPass(application, INTERACT_ACROSS_PROFILES, true)
         setRegistryFactories(
             createScreen(
-                "screen_key",
-                stringPreference
+                PreferenceScreenConfig(
+                    screenKey = "screen_key",
+                    purpose = R.string.preference_screen_purpose,
+                    preferences = listOf(stringPreference)
+                )
             )
         )
         assertThat(
@@ -537,14 +656,18 @@ class PreferenceSetterApiHandlerTest {
     fun invoke_onIntRangeWithHigherValue_returnsInvalid() {
         val intRangePreference = createIntRangePreference(
             "preference_key",
+            purpose = R.string.preference_purpose,
             minValue = 3,
             maxValue = 6,
             defaultValue = 4
         )
         setRegistryFactories(
             createScreen(
-                "screen_key",
-                intRangePreference
+                PreferenceScreenConfig(
+                    screenKey = "screen_key",
+                    purpose = R.string.preference_screen_purpose,
+                    preferences = listOf(intRangePreference)
+                )
             )
         )
         assertThat(
@@ -557,14 +680,18 @@ class PreferenceSetterApiHandlerTest {
     fun invoke_onIntRangeWithLowerValue_returnsInvalid() {
         val intRangePreference = createIntRangePreference(
             "preference_key",
+            purpose = R.string.preference_purpose,
             minValue = 3,
             maxValue = 6,
             defaultValue = 4
         )
         setRegistryFactories(
             createScreen(
-                "screen_key",
-                intRangePreference
+                PreferenceScreenConfig(
+                    screenKey = "screen_key",
+                    purpose = R.string.preference_screen_purpose,
+                    preferences = listOf(intRangePreference)
+                )
             )
         )
         assertThat(
@@ -577,14 +704,18 @@ class PreferenceSetterApiHandlerTest {
     fun invoke_onIntRangeWithInRageValue_succeeds() {
         val intRangePreference = createIntRangePreference(
             "preference_key",
+            purpose = R.string.preference_purpose,
             minValue = 3,
             maxValue = 6,
             defaultValue = 4
         )
         setRegistryFactories(
             createScreen(
-                "screen_key",
-                intRangePreference
+                PreferenceScreenConfig(
+                    screenKey = "screen_key",
+                    purpose = R.string.preference_screen_purpose,
+                    preferences = listOf(intRangePreference)
+                )
             )
         )
         assertThat(
@@ -597,7 +728,10 @@ class PreferenceSetterApiHandlerTest {
     fun invoke_onFloatValueType_succeeds() {
         val floatPreference = createPersistentPreference<Float>(
             PersistentPreferenceConfig(
-                preferenceConfig = PreferenceConfig(key = "preference_key"),
+                preferenceConfig = PreferenceConfig(
+                    key = "preference_key",
+                    purpose = R.string.preference_purpose,
+                ),
                 valueType = Float::class.javaObjectType,
                 sensitivityLevel = SensitivityLevel.MEDIUM_SENSITIVITY,
                 writePermission = INTERACT_ACROSS_PROFILES,
@@ -608,8 +742,11 @@ class PreferenceSetterApiHandlerTest {
         makePermissionPass(application, INTERACT_ACROSS_PROFILES, true)
         setRegistryFactories(
             createScreen(
-                "screen_key",
-                floatPreference
+                PreferenceScreenConfig(
+                    screenKey = "screen_key",
+                    purpose = R.string.preference_screen_purpose,
+                    preferences = listOf(floatPreference)
+                )
             )
         )
         assertThat(
@@ -621,9 +758,11 @@ class PreferenceSetterApiHandlerTest {
     @Test
     fun invoke_onStringPreference_succeeds() {
         val stringPreference = createPersistentPreference<String>(
-
             PersistentPreferenceConfig(
-                preferenceConfig = PreferenceConfig(key = "preference_key"),
+                preferenceConfig = PreferenceConfig(
+                    key = "preference_key",
+                    purpose = R.string.preference_purpose,
+                ),
                 valueType = String::class.javaObjectType,
                 sensitivityLevel = SensitivityLevel.LOW_SENSITIVITY,
                 writePermission = INTERACT_ACROSS_PROFILES,
@@ -633,14 +772,11 @@ class PreferenceSetterApiHandlerTest {
         )
         setRegistryFactories(
             createScreen(
-                "screen_key",
-                stringPreference
-            )
-        )
-        setRegistryFactories(
-            createScreen(
-                "screen_key",
-                stringPreference
+                PreferenceScreenConfig(
+                    screenKey = "screen_key",
+                    purpose = R.string.preference_screen_purpose,
+                    preferences = listOf(stringPreference)
+                )
             )
         )
         makePermissionPass(application, INTERACT_ACROSS_PROFILES, true)
@@ -654,7 +790,10 @@ class PreferenceSetterApiHandlerTest {
     fun invoke_onStringPreferenceWithFailingWritePermit_returnsWritePermit() {
         val stringPreference = createPersistentPreference<String>(
             PersistentPreferenceConfig(
-                preferenceConfig = PreferenceConfig(key = "preference_key"),
+                preferenceConfig = PreferenceConfig(
+                    key = "preference_key",
+                    purpose = R.string.preference_purpose,
+                ),
                 valueType = String::class.javaObjectType,
                 sensitivityLevel = SensitivityLevel.LOW_SENSITIVITY,
                 writePermission = INTERACT_ACROSS_PROFILES,
@@ -664,8 +803,11 @@ class PreferenceSetterApiHandlerTest {
         )
         setRegistryFactories(
             createScreen(
-                "screen_key",
-                stringPreference
+                PreferenceScreenConfig(
+                    screenKey = "screen_key",
+                    purpose = R.string.preference_screen_purpose,
+                    preferences = listOf(stringPreference)
+                )
             )
         )
         makePermissionPass(application, INTERACT_ACROSS_PROFILES, true)
@@ -681,7 +823,10 @@ class PreferenceSetterApiHandlerTest {
     fun invoke_onStringPreferenceWithIntValueType_succeeds() {
         val stringPreference = createPersistentPreference<String>(
             PersistentPreferenceConfig(
-                preferenceConfig = PreferenceConfig("preference_key"),
+                preferenceConfig = PreferenceConfig(
+                    key = "preference_key",
+                    purpose = R.string.preference_purpose,
+                ),
                 valueType = String::class.javaObjectType,
                 sensitivityLevel = SensitivityLevel.LOW_SENSITIVITY,
                 writePermission = INTERACT_ACROSS_PROFILES,
@@ -691,8 +836,11 @@ class PreferenceSetterApiHandlerTest {
         )
         setRegistryFactories(
             createScreen(
-                "screen_key",
-                stringPreference
+                PreferenceScreenConfig(
+                    screenKey = "screen_key",
+                    purpose = R.string.preference_screen_purpose,
+                    preferences = listOf(stringPreference)
+                )
             )
         )
         makePermissionPass(application, INTERACT_ACROSS_PROFILES, true)
@@ -708,20 +856,24 @@ class PreferenceSetterApiHandlerTest {
 
             PersistentPreferenceConfig(
                 preferenceConfig = PreferenceConfig(
-                    "preference_key",
-                    throwsError = true,
+                    key = "preference_key",
+                    purpose = R.string.preference_purpose,
                 ),
                 valueType = String::class.javaObjectType,
                 sensitivityLevel = SensitivityLevel.LOW_SENSITIVITY,
                 writePermission = INTERACT_ACROSS_PROFILES,
                 writePermit = ReadWritePermit.REQUIRE_USER_AGREEMENT,
-                defaultValue = "hello"
+                defaultValue = "hello",
+                throwsError = true,
             )
         )
         setRegistryFactories(
             createScreen(
-                "screen_key",
-                stringPreference
+                PreferenceScreenConfig(
+                    screenKey = "screen_key",
+                    purpose = R.string.preference_screen_purpose,
+                    preferences = listOf(stringPreference)
+                )
             )
         )
         makePermissionPass(application, INTERACT_ACROSS_PROFILES, true)

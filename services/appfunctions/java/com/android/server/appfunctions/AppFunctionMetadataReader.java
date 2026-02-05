@@ -64,6 +64,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
@@ -129,6 +130,23 @@ final class AppFunctionMetadataReader {
     public boolean isDynamicFunction(
             String packageName, String functionIdentifier, UserHandle user) {
         return mCache.isDynamicFunction(packageName, functionIdentifier, user);
+    }
+
+    /**
+     * Returns whether the function is activity scoped dynamic app function.
+     * Activity scoped dynamic app functions must be registered within the activity context and
+     * support multiregistration (so the same app function can be registered by multiple
+     * activities).
+     *
+     * See {@link android.app.appfunctions.AppFunctionActivityId}.
+     *
+     * @param packageName The package name of the application containing the function.
+     * @param functionIdentifier The unique identifier for the function within the package.
+     * @return {boolean} Whether app function is activity scoped dynamic.
+     */
+    public boolean isActivityScopedDynamicFunction(
+            String packageName, String functionIdentifier, UserHandle user) {
+        return mCache.isActivityScopedDynamicFunction(packageName, functionIdentifier, user);
     }
 
     /**
@@ -234,7 +252,7 @@ final class AppFunctionMetadataReader {
     @NonNull
     AndroidFuture<List<AppFunctionState>> getAppFunctionStates(
             @NonNull FutureGlobalSearchSession futureGlobalSearchSession,
-            @NonNull List<AppFunctionName> appFunctionNames,
+            @NonNull Set<AppFunctionName> appFunctionNames,
             int userId) {
         Objects.requireNonNull(futureGlobalSearchSession);
         Objects.requireNonNull(appFunctionNames);

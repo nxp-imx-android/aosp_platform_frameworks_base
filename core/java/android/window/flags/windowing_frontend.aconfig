@@ -315,12 +315,6 @@ flag {
     bug: "402454136"
 }
 
-flag {
-    name: "enable_multidisplay_trackpad_back_gesture"
-    namespace: "lse_desktop_experience"
-    description: "Adds support for trackpad back gestures on connected displays"
-    bug: "382774299"
-}
 
 flag {
     name: "transition_handler_cuj_tags"
@@ -478,16 +472,6 @@ flag {
     namespace: "windowing_frontend"
     description: "Foundation for shell-side transition Mixpatcher."
     bug: "469422564"
-}
-
-flag {
-    name: "no_pause_task_snapshot_persister"
-    namespace: "windowing_frontend"
-    description: "The system server does not use render thread anymore, allow the persis thread to continuously execute in the background."
-    bug: "238206323"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {

@@ -74,6 +74,29 @@ flag {
 }
 
 flag {
+  name: "enable_supervision_pin_ui_updates_bugfix"
+  is_exported: false
+  namespace: "supervision"
+  description: "Flag that enables supervision PIN UI updates to match the latest UI mocks"
+  bug: "470290511"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
+  name: "enable_supervision_auth_controller_updates_bugfix"
+  is_exported: false
+  namespace: "supervision"
+  description: "Flag that enables supervision auth controller updates to support two pane settings"
+  bug: "459821424"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+
+flag {
   name: "enable_supervision_settings_session_updates"
   is_exported: false
   namespace: "supervision"

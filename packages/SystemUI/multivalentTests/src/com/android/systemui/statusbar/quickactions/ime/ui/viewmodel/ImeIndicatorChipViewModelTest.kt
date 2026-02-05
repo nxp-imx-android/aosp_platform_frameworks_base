@@ -64,8 +64,14 @@ class ImeIndicatorChipViewModelTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_STATUS_BAR_IME_CHIP)
-    fun chip_flagEnabled_isShown() =
+    fun chip_multipleImesEnabled_isShown() =
         kosmos.runTest {
+            fakeInputMethodRepository.selectedInputMethodSubtypes =
+                listOf(
+                    InputMethodModel.Subtype(subtypeId = 1, isAuxiliary = false),
+                    InputMethodModel.Subtype(subtypeId = 2, isAuxiliary = false),
+                )
+
             assertThat(underTest.chip).isInstanceOf(QuickActionChipUiState.PopupChip::class.java)
         }
 
@@ -85,7 +91,8 @@ class ImeIndicatorChipViewModelTest : SysuiTestCase() {
                     icon = subtypeIcon,
                     shortLabel = "EN",
                 )
-            fakeInputMethodRepository.selectedInputMethodSubtypes = listOf(subtype)
+            fakeInputMethodRepository.selectedInputMethodSubtypes =
+                listOf(subtype, InputMethodModel.Subtype(subtypeId = 1, isAuxiliary = false))
             fakeInputMethodRepository.setSelectedInputMethodSubtypeId(subtype.subtypeId)
 
             val chip = underTest.chip as QuickActionChipUiState.PopupChip
@@ -115,7 +122,8 @@ class ImeIndicatorChipViewModelTest : SysuiTestCase() {
                     icon = null,
                     shortLabel = "EN",
                 )
-            fakeInputMethodRepository.selectedInputMethodSubtypes = listOf(subtype)
+            fakeInputMethodRepository.selectedInputMethodSubtypes =
+                listOf(subtype, InputMethodModel.Subtype(subtypeId = 1, isAuxiliary = false))
             fakeInputMethodRepository.setSelectedInputMethodSubtypeId(subtype.subtypeId)
 
             val chip = underTest.chip as QuickActionChipUiState.PopupChip
@@ -135,7 +143,8 @@ class ImeIndicatorChipViewModelTest : SysuiTestCase() {
                     icon = null,
                     shortLabel = null,
                 )
-            fakeInputMethodRepository.selectedInputMethodSubtypes = listOf(subtype)
+            fakeInputMethodRepository.selectedInputMethodSubtypes =
+                listOf(subtype, InputMethodModel.Subtype(subtypeId = 1, isAuxiliary = false))
             fakeInputMethodRepository.setSelectedInputMethodSubtypeId(subtype.subtypeId)
 
             val chip = underTest.chip as QuickActionChipUiState.PopupChip
@@ -156,7 +165,11 @@ class ImeIndicatorChipViewModelTest : SysuiTestCase() {
     @EnableFlags(Flags.FLAG_STATUS_BAR_IME_CHIP)
     fun chip_noSubtypeSelected_showsDefaultKeyboardIcon() =
         kosmos.runTest {
-            fakeInputMethodRepository.selectedInputMethodSubtypes = listOf()
+            fakeInputMethodRepository.selectedInputMethodSubtypes =
+                listOf(
+                    InputMethodModel.Subtype(subtypeId = 1, isAuxiliary = false),
+                    InputMethodModel.Subtype(subtypeId = 2, isAuxiliary = false),
+                )
 
             val chip = underTest.chip as QuickActionChipUiState.PopupChip
 
@@ -176,6 +189,11 @@ class ImeIndicatorChipViewModelTest : SysuiTestCase() {
     @EnableFlags(Flags.FLAG_STATUS_BAR_IME_CHIP)
     fun chip_showPopup_callsShowInputMethodPicker() =
         kosmos.runTest {
+            fakeInputMethodRepository.selectedInputMethodSubtypes =
+                listOf(
+                    InputMethodModel.Subtype(subtypeId = 1, isAuxiliary = false),
+                    InputMethodModel.Subtype(subtypeId = 2, isAuxiliary = false),
+                )
             val chip = underTest.chip
             assertThat(chip).isInstanceOf(QuickActionChipUiState.PopupChip::class.java)
             val shownChip = chip as QuickActionChipUiState.PopupChip

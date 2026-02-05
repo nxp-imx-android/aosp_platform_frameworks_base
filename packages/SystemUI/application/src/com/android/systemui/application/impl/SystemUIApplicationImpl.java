@@ -126,6 +126,14 @@ public class SystemUIApplicationImpl extends SystemUIApplication implements
         mBootCompleteCache = mSysUIComponent.provideBootCacheImpl();
         log.traceEnd();
 
+        log.traceBegin("LockPatterUtils");
+        // This is only here to ensure that LockPatternUtils is instantiated from the main thread
+        // first to help avoid situations when it's instantiated from a background thread, which
+        // makes it unsafe to use with the version of checkCredential that takes a non-null
+        // progressCallback.
+        mSysUIComponent.getLockPatternUtils();
+        log.traceEnd();
+
         GlobalRootComponent rootComponent = mInitializer.getRootComponent();
 
         // Enable Looper trace points.

@@ -4106,6 +4106,24 @@
     <!-- Message of notification shown when contaminant is no longer detected on the USB port. [CHAR LIMIT=NONE] -->
     <string name="usb_contaminant_not_detected_message">Phone no longer detects liquid or debris.</string>
 
+    <!-- Title of notification shown when new devices are added while screen is locked. [CHAR LIMIT=NONE] -->
+    <string name="usb_authorization_notify_on_screenlock_title">New USB device connected</string>
+    <!-- Message of notification shown when a single new device is added while screen is locked. [CHAR LIMIT=NONE] -->
+    <string name="usb_authorization_notify_on_screenlock_message">Sign in to trust this USB device and start using it.</string>
+    <!-- Message of notification shown when multiple new devices are added while screen is locked. [CHAR LIMIT=NONE] -->
+    <string name="usb_authorization_notify_on_screenlock_message_multiple">Sign in to trust these USB devices and start using them.</string>
+    <!-- Title of notification shown to tell user to finish logging in to trust a single new device. [CHAR LIMIT=NONE] -->
+    <string name="usb_authorization_notify_finish_logging_in_title">New USB device connected</string>
+    <!-- Message of notification shown to tell user to finish logging in to trust a single new device. [CHAR LIMIT=NONE] -->
+    <string name="usb_authorization_notify_finish_logging_in_message">Sign in within <xliff:g id="num_seconds" example="60">%1$d</xliff:g> seconds to fully trust this USB device. If you don\'t, you\'ll have to disconnect and reconnect it.</string>
+    <!-- Title of notification shown to tell user to finish logging in to trust multiple new devices. [CHAR LIMIT=NONE] -->
+    <string name="usb_authorization_notify_finish_logging_in_title_multiple">New USB devices connected</string>
+    <!-- Message of notification shown to tell user to finish logging in to trust multiple new devices. [CHAR LIMIT=NONE] -->
+    <string name="usb_authorization_notify_finish_logging_in_message_multiple">Sign in within <xliff:g id="num_seconds" example="60">%1$d</xliff:g> seconds to fully trust these USB devices. If you don\'t, you\'ll have to disconnect and reconnect them.</string>
+
+    <!-- Text shown when viewing channel settings for notifications related to a usb device authorization -->
+    <string name="notification_channel_usb_authorization">USB Device Authorization</string>
+
     <!-- Title of notification shown to indicate that bug report is being collected. -->
     <string name="taking_remote_bugreport_notification_title">Taking bug report\u2026</string>
     <!-- Title of notification shown to ask for user consent for sharing a bugreport that was requested remotely by the IT administrator. -->

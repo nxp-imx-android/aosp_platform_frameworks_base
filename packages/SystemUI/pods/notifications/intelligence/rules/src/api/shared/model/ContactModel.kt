@@ -21,3 +21,14 @@ public data class ContactModel(
     /** The display name for the contact. */
     val name: String
 )
+
+/**
+ * Represents the list of contacts inside a rule filter.
+ *
+ * @param contacts must be non-empty.
+ */
+public data class ContactsModel(val contacts: List<ContactModel>) {
+    init {
+        require(contacts.isNotEmpty()) { "Contacts list cannot be empty" }
+    }
+}

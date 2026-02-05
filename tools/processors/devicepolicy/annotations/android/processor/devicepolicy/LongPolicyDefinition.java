@@ -31,4 +31,14 @@ public @interface LongPolicyDefinition {
      * Base data for all policies.
      */
     PolicyDefinition base();
+
+    /**
+     * The minimum value this long policy can take, inclusive.
+     */
+    long minValue() default Long.MIN_VALUE;
+
+    /**
+     * The maximum value this long policy can take, inclusive.
+     */
+    long maxValue() default Long.MAX_VALUE;
 }

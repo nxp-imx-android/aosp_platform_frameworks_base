@@ -562,6 +562,42 @@ class DragPositioningCallbackUtilityTest {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_RESPECT_SYSTEM_DEFAULT_MIN_SIZE)
+    fun testTinyAppRequestedMinSize_changeBoundsInDesktopModeLessThanMin_respectSystemDefault() {
+        // Set app-requested min size to a very small value.
+        initializeTaskInfo(taskMinWidth = 1, taskMinHeight = 1)
+        // Set system-default min size to a larger value.
+        whenever(mockResources.getDimensionPixelSize(R.dimen.desktop_mode_minimum_window_width))
+            .thenReturn(50)
+        whenever(mockResources.getDimensionPixelSize(R.dimen.desktop_mode_minimum_window_height))
+            .thenReturn(50)
+
+        val startingPoint =
+            PointF(STARTING_BOUNDS.right.toFloat(), STARTING_BOUNDS.bottom.toFloat())
+        val repositionTaskBounds = Rect(STARTING_BOUNDS)
+        // Shrink height and width to 10px. Even if the new size is allowed by the app-requested
+        // min size, the system default min size should block the resize.
+        val newX = STARTING_BOUNDS.right.toFloat() - 90
+        val newY = STARTING_BOUNDS.bottom.toFloat() - 90
+        val delta = DragPositioningCallbackUtility.calculateDelta(newX, newY, startingPoint)
+
+        DragPositioningCallbackUtility.changeBounds(
+            CTRL_TYPE_RIGHT or CTRL_TYPE_BOTTOM,
+            repositionTaskBounds,
+            STARTING_BOUNDS,
+            STABLE_BOUNDS,
+            delta,
+            mockDisplayController,
+            mockWindowDecoration,
+            /* canEnterDesktopMode= */ true,
+        )
+        assertThat(repositionTaskBounds.left).isEqualTo(STARTING_BOUNDS.left)
+        assertThat(repositionTaskBounds.top).isEqualTo(STARTING_BOUNDS.top)
+        assertThat(repositionTaskBounds.right).isEqualTo(STARTING_BOUNDS.right)
+        assertThat(repositionTaskBounds.bottom).isEqualTo(STARTING_BOUNDS.bottom)
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_SIZE_CONSTRAINTS)
     fun taskMinWidthHeightUndefined_changeBoundsInDesktopModeLessThanMin_shouldNotChangeBounds() {
         initializeTaskInfo(taskMinWidth = -1, taskMinHeight = -1)

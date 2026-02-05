@@ -393,11 +393,11 @@ public final class LocationButtonRequest implements Parcelable {
         private int mTextColor;
 
         /**
-         * Creates a new Builder with mandatory arguments.
+         * Creates a new Builder with the required initial properties.
          *
-         * @param width         The width of the button.
-         * @param height        The height of the button.
-         * @param configuration The configuration of the button.
+         * @param width The total width of the button in pixels. Must be at least 48dp.
+         * @param height The total height of the button in pixels. Must be between 48dp and 136dp.
+         * @param configuration The {@link Configuration} of the context hosting the button.
          */
         public Builder(int width, int height, @NonNull Configuration configuration) {
             mWidth = width;

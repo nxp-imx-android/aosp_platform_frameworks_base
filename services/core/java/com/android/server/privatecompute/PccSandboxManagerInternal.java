@@ -485,6 +485,8 @@ public final class PccSandboxManagerInternal implements OnRoleHoldersChangedList
             @ActivityManagerService.AssociationType int associationType, @Nullable Bundle extras) {
         Trace.traceBegin(Trace.TRACE_TAG_SYSTEM_SERVER,
                 "PccSandboxManagerInternal#validateAssociationAllowed");
+        Slog.d(TAG, "AllowAssociation validation for callerUid :" + callerUid
+                + " and callerPackage :" + callerPackage);
         try {
             // Self-association is allowed.
             if (callerUid == targetUid) {
@@ -509,7 +511,9 @@ public final class PccSandboxManagerInternal implements OnRoleHoldersChangedList
                     case ActivityManagerService.ASSOCIATION_TYPE_RECEIVER,
                          ActivityManagerService.ASSOCIATION_TYPE_SERVICE -> {
                         try {
-                            PccBundleSanitizationUtil.sanitizeBundle(extras);
+                            if (!isPccTrustedApp(callerUid, callerPackage)) {
+                                PccBundleSanitizationUtil.sanitizeBundle(extras);
+                            }
                             return true;
                         } catch (IllegalArgumentException e) {
                             Slog.e(TAG, "Intent extras have disallowed data types", e);

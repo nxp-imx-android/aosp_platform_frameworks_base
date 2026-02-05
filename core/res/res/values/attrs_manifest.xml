@@ -3047,12 +3047,14 @@
 
     <!-- The <code>additional-certificate</code> specifies the SHA-256 digest of a static
          shared library's additional signing certificate. You need to use this tag if the
-         library is singed with more than one certificate.
+         library is signed with more than one certificate.
 
          <p>This appears as a child tag of the
          {@link #AndroidManifestUsesStaticLibrary uses-static-library} or
-         {@link #AndroidManifestUsesPackage uses-package} tag. -->
-    <declare-styleable name="AndroidManifestAdditionalCertificate" parent="AndroidManifestUsesStaticLibrary">
+         {@link #AndroidManifestUsesPackage uses-package} tag or
+         {@link #AndroidManifestAllowComponentAccessPackage package} tag. -->
+    <declare-styleable name="AndroidManifestAdditionalCertificate"
+        parent="AndroidManifestUsesStaticLibrary AndroidManifestAllowComponentAccessPackage">
         <!-- The SHA-256 digest of the library signing certificate. -->
         <attr name="certDigest" />
     </declare-styleable>

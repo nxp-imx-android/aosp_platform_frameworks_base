@@ -46,6 +46,7 @@ import android.os.PersistableBundle;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.platform.test.annotations.Postsubmit;
+import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.provider.Settings;
 import android.util.ArraySet;
@@ -1400,18 +1401,71 @@ public final class UserManagerTest {
         }
     }
 
-    // Make sure createUser would fail if we have DISALLOW_ADD_GUEST.
+    // Make sure createUser would fail if we have DISALLOW_ADD_GUEST or DISALLOW_ADD_USER
+    // user restrictions enabled.
     @MediumTest
     @Test
     @RequiresFlagsEnabled(android.os.Flags.FLAG_DISALLOW_ADD_GUEST)
     public void testCreateUser_disallowAddGuest() throws Exception {
         final int creatorId = ActivityManager.getCurrentUser();
         final UserHandle creatorHandle = asHandle(creatorId);
-        mUserManager.setUserRestriction(UserManager.DISALLOW_ADD_GUEST, true, creatorHandle);
+
+        // Setting either DISALLOW_ADD_USER or DISALLOW_ADD_GUEST to true, guest
+        // creation should fail.
+        testCreateGuestWithRestrictions(/*disallowAddUser=*/ false, /*disallowAddGuest=*/ true,
+                                        /*expectedGuestCreationFail=*/ true, creatorHandle);
+        testCreateGuestWithRestrictions(/*disallowAddUser=*/ true, /*disallowAddGuest=*/ false,
+                                        /*expectedGuestCreationFail=*/ true, creatorHandle);
+        testCreateGuestWithRestrictions(/*disallowAddUser=*/ true, /*disallowAddGuest=*/ true,
+                                        /*expectedGuestCreationFail=*/ true, creatorHandle);
+
+        // Setting both DISALLOW_ADD_USER and DISALLOW_ADD_GUEST to false, guest
+        // creation should succeed
+        testCreateGuestWithRestrictions(/*disallowAddUser=*/ false, /*disallowAddGuest=*/ false,
+                                        /*expectedGuestCreationFail=*/ false, creatorHandle);
+    }
+
+    @MediumTest
+    @Test
+    @RequiresFlagsDisabled(android.os.Flags.FLAG_DISALLOW_ADD_GUEST)
+    public void testCreateUser_disallowAddGuestFlagDisabled() throws Exception {
+        final int creatorId = ActivityManager.getCurrentUser();
+        final UserHandle creatorHandle = asHandle(creatorId);
+
+        // Only enabling DISALLOW_ADD_USER should cause guest creation to fail.
+        testCreateGuestWithRestrictions(/*disallowAddUser=*/ false, /*disallowAddGuest=*/ false,
+                                        /*expectedGuestCreationFail*/ false, creatorHandle);
+        // Guest creation still succeeds since DISALLOW_ADD_GUEST is ignored when
+        // FLAG_DISALLOW_ADD_GUEST is disabled.
+        testCreateGuestWithRestrictions(/*disallowAddUser=*/ false, /*disallowAddGuest=*/ true,
+                                        /*expectedGuestCreationFail=*/ false, creatorHandle);
+        testCreateGuestWithRestrictions(/*disallowAddUser=*/ true, /*disallowAddGuest=*/ false,
+                                        /*expectedGuestCreationFail=*/ true, creatorHandle);
+        testCreateGuestWithRestrictions(/*disallowAddUser=*/ true, /*disallowAddGuest=*/ true,
+                                        /*expectedGuestCreationFail=*/ true, creatorHandle);
+    }
+
+    /**
+     * Tests that UserManager restricts guest creation based on DISALLOW_ADD_USER and
+     * DISALLOW_ADD_GUEST user restrictions
+     */
+    private void testCreateGuestWithRestrictions(boolean disallowAddUser, boolean disallowAddGuest,
+            boolean expectedGuestCreationFail, UserHandle creatorHandle) throws Exception {
+        mUserManager.setUserRestriction(UserManager.DISALLOW_ADD_USER,
+                                        disallowAddUser, creatorHandle);
+        mUserManager.setUserRestriction(UserManager.DISALLOW_ADD_GUEST,
+                                        disallowAddGuest, creatorHandle);
         try {
-            UserInfo createadInfo = createUser("GuestUser", /*flags=*/ UserInfo.FLAG_GUEST);
-            assertThat(createadInfo).isNull();
+            UserInfo createdInfo = createUser("GuestUser", /*flags=*/ UserInfo.FLAG_GUEST);
+            if (expectedGuestCreationFail) {
+                assertThat(createdInfo).isNull();
+            } else {
+                assertThat(createdInfo).isNotNull();
+                removeUser(createdInfo.id);
+            }
         } finally {
+            mUserManager.setUserRestriction(UserManager.DISALLOW_ADD_USER, false,
+                    creatorHandle);
             mUserManager.setUserRestriction(UserManager.DISALLOW_ADD_GUEST, false,
                     creatorHandle);
         }

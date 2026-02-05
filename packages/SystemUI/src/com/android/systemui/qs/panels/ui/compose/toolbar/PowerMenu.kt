@@ -35,6 +35,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
@@ -96,6 +97,7 @@ private fun ActionRow(viewModel: GlobalActionUiState.Visible, modifier: Modifier
             modifier
                 .fillMaxWidth()
                 .clickable(
+                    role = Role.Button,
                     onClick = viewModel.onClick,
                     indication = ripple(bounded = true, radius = Dp.Unspecified),
                     interactionSource = remember { MutableInteractionSource() },

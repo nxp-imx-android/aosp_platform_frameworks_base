@@ -18,6 +18,7 @@ package com.android.systemui.keyguard.domain.interactor
 
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.internal.widget.LockPatternUtils
+import com.android.systemui.CoreStartable
 import com.android.systemui.authentication.domain.interactor.AuthenticationInteractor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -31,6 +32,9 @@ import com.android.systemui.log.table.logDiffsForTable
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import com.android.systemui.util.kotlin.sample
+import dagger.Binds
+import dagger.multibindings.ClassKey
+import dagger.multibindings.IntoMap
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -67,12 +71,13 @@ constructor(
     val biometricSettingsRepository: BiometricSettingsRepository,
     private val selectedUserInteractor: SelectedUserInteractor,
     private val lockPatternUtils: LockPatternUtils,
-    keyguardDismissTransitionInteractor: dagger.Lazy<KeyguardDismissTransitionInteractor>,
-    internalTransitionInteractor: InternalKeyguardTransitionInteractor,
+    private val keyguardDismissTransitionInteractor:
+        dagger.Lazy<KeyguardDismissTransitionInteractor>,
+    private val internalTransitionInteractor: InternalKeyguardTransitionInteractor,
     deviceEntryInteractor: DeviceEntryInteractor,
     authenticationInteractor: AuthenticationInteractor,
     keyguardServiceShowLockscreenInteractor: KeyguardServiceShowLockscreenInteractor,
-) {
+) : CoreStartable {
 
     /**
      * Whether the keyguard is enabled, per [KeyguardService]. If the keyguard is not enabled, the
@@ -126,13 +131,13 @@ constructor(
                 .map { true },
         )
 
-    init {
-        /**
+    override fun start() {
+        /*
          * Whenever keyguard is disabled, transition to GONE unless we're in lockdown or already
          * GONE.
          */
-        scope.launch {
-            if (!SceneContainerFlag.isEnabled) {
+        if (!SceneContainerFlag.isEnabled) {
+            scope.launch {
                 repository.isKeyguardEnabled
                     .filter { enabled -> !enabled }
                     .sample(biometricSettingsRepository.isCurrentUserInLockdown, ::Pair)
@@ -194,5 +199,13 @@ constructor(
                 initialValue = isKeyguardEnabled.value,
             )
             .collect()
+    }
+
+    @dagger.Module
+    interface Module {
+        @Binds
+        @IntoMap
+        @ClassKey(KeyguardEnabledInteractor::class)
+        fun coreStartable(impl: KeyguardEnabledInteractor): CoreStartable
     }
 }

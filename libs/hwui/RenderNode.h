@@ -17,16 +17,15 @@
 #pragma once
 
 #include <SkMatrix.h>
-
+#include <androidfw/ResourceTypes.h>
+#include <cutils/compiler.h>
+#include <pipeline/skia/StretchMask.h>
+#include <ui/FatVector.h>
 #include <utils/LinearAllocator.h>
 #include <utils/RefBase.h>
 #include <utils/String8.h>
 
-#include <cutils/compiler.h>
-
-#include <androidfw/ResourceTypes.h>
-
-#include <ui/FatVector.h>
+#include <vector>
 
 #include "AnimatorManager.h"
 #include "CanvasTransform.h"
@@ -34,12 +33,10 @@
 #include "DisplayList.h"
 #include "Matrix.h"
 #include "RenderProperties.h"
+#include "hwui/OutOfProcessRendering.h"
 #include "pipeline/skia/HolePunch.h"
 #include "pipeline/skia/SkiaDisplayList.h"
 #include "pipeline/skia/SkiaLayer.h"
-
-#include <vector>
-#include <pipeline/skia/StretchMask.h>
 
 class SkBitmap;
 class SkPaint;
@@ -299,6 +296,9 @@ private:
 
     // METHODS & FIELDS ONLY USED BY THE SKIA RENDERER
 public:
+#ifdef __ANDROID__
+    std::unique_ptr<oopr::NodeResources>& getOoprResources() { return mOoprResources; }
+#endif
     /**
      * Detach and transfer ownership of an already allocated displayList for use
      * in recording updated content for this renderNode
@@ -391,6 +391,10 @@ private:
      *  3) It is detached and used to to record a new displayList for a later frame
      */
     std::unique_ptr<skiapipeline::SkiaDisplayList> mAvailableDisplayList;
+
+#ifdef __ANDROID__
+    std::unique_ptr<oopr::NodeResources> mOoprResources;
+#endif
 
     /**
      * An offscreen rendering target used to contain the contents this RenderNode

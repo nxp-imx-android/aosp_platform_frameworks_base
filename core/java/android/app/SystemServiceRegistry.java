@@ -85,8 +85,6 @@ import android.app.wearable.IWearableSensingManager;
 import android.app.wearable.WearableSensingManager;
 import android.apphibernation.AppHibernationManager;
 import android.appwidget.AppWidgetManager;
-import android.attention.AttentionManager;
-import android.attention.IAttentionManager;
 import android.bluetooth.BluetoothFrameworkInitializer;
 import android.companion.CompanionDeviceManager;
 import android.companion.ICompanionDeviceManager;
@@ -2087,21 +2085,6 @@ public final class SystemServiceRegistry {
                         return new DynamicInstrumentationManager(ctx);
                     }
                 });
-
-        if (com.android.input.flags.Flags.enableAttentionServiceApis()) {
-            registerService(Context.ATTENTION_SERVICE, AttentionManager.class,
-                    new CachedServiceFetcher<>() {
-                        @Override
-                        public AttentionManager createService(ContextImpl ctx)
-                                throws ServiceNotFoundException {
-                            return new AttentionManager(
-                                    Objects.requireNonNull(IAttentionManager.Stub.asInterface(
-                                            ServiceManager.getService(
-                                                    Context.ATTENTION_SERVICE))));
-                        }
-                    });
-        }
-
 
         sInitializing = true;
         try {

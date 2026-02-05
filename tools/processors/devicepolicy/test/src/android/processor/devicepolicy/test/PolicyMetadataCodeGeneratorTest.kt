@@ -296,15 +296,22 @@ class PolicyMetadataCodeGeneratorTest {
             )
     }
 
-    private fun longTestPolicy(name: String): PolicyMetadata.Builder =
-        PolicyMetadata.newBuilder()
+    private fun longTestPolicy(name: String, minValue: Long? = null, maxValue: Long? = null): PolicyMetadata.Builder {
+        val longMetadata = TypeSpecificPolicyMetadata.LongPolicyMetadata.newBuilder()
+        if (minValue != null) {
+            longMetadata.setMinValue(minValue)
+        }
+        if (maxValue != null) {
+            longMetadata.setMaxValue(maxValue)
+        }
+
+        return PolicyMetadata.newBuilder()
             .setIdentifier(simpleNameToFieldName(name))
             .setTypeSpecificMetadata(
                 TypeSpecificPolicyMetadata.newBuilder()
-                    .setLongMetadata(
-                        TypeSpecificPolicyMetadata.LongPolicyMetadata.newBuilder()
-                    )
+                    .setLongMetadata(longMetadata)
             )
+    }
 
     @Test
     fun test_longPolicy_outputMatches() {
@@ -333,7 +340,47 @@ class PolicyMetadataCodeGeneratorTest {
                     /* affectedResource= */ 1,
                     /* requiredPermission= */ null,
                     /* requiredCrossUserPermission= */ null,
-                    /* allowedDpcTypes= */ Set.of()
+                    /* allowedDpcTypes= */ Set.of(),
+                    /* minValue= */ Long.MIN_VALUE,
+                    /* maxValue= */ Long.MAX_VALUE
+                ));
+                """,
+                )
+            )
+    }
+
+    @Test
+    fun test_longPolicyWithMinMax_outputMatches() {
+        val policyList =
+            PolicyMetadataList.newBuilder()
+                .addPolicyMetadata(
+                    longTestPolicy("test.package.PolicyContainer.SIMPLE_LONG_POLICY_WITH_RANGE",
+                        minValue = 10,
+                        maxValue = 100)
+                        .addAllAllowedScopes(listOf(PolicyMetadata.PolicyScope.POLICY_SCOPE_DEVICE))
+                        .setAffectedResource(PolicyMetadata.ResourceType.RESOURCE_DEVICE_WIDE)
+                )
+                .build()
+
+        val javaFile = PolicyMetadataCodeGenerator.generate(policyList)
+
+        assertThat(javaFileToString(javaFile))
+            .isEqualTo(
+                fillInFile(
+                    staticImports = listOf("test.package.PolicyContainer.SIMPLE_LONG_POLICY_WITH_RANGE"),
+                    code =
+                        """
+                policies.add(new LongPolicyMetadata(
+                    /* id= */ SIMPLE_LONG_POLICY_WITH_RANGE,
+                    /* allowedScopes= */ Set.of(
+                        2
+                    ),
+                    /* affectedResource= */ 1,
+                    /* requiredPermission= */ null,
+                    /* requiredCrossUserPermission= */ null,
+                    /* allowedDpcTypes= */ Set.of(),
+                    /* minValue= */ 10L,
+                    /* maxValue= */ 100L
                 ));
                 """,
                 )

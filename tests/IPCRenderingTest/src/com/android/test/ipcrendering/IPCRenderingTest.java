@@ -79,6 +79,7 @@ public class IPCRenderingTest extends Activity implements SurfaceHolder.Callback
             mHardwareRenderer.setContentRoot(mRenderNode);
             mHardwareRenderer.setSurfaceControl(sc, null);
             mWidth = mHeight = 512;
+            mHardwareRenderer.updateRenderTargetSize(mWidth, mHeight);
         }
 
         void destroy() {
@@ -92,6 +93,7 @@ public class IPCRenderingTest extends Activity implements SurfaceHolder.Callback
             if (mWidth != width || mHeight != height) {
                 mWidth = width;
                 mHeight = height;
+                mHardwareRenderer.updateRenderTargetSize(width, height);
             }
             mCanvas = mRenderNode.beginRecording(width, height);
             return mCanvas;

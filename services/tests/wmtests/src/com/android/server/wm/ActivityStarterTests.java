@@ -114,6 +114,7 @@ import androidx.test.filters.SmallTest;
 
 import com.android.server.pm.pkg.AndroidPackage;
 import com.android.server.wm.BackgroundActivityStartController.BalVerdict;
+import com.android.server.wm.LaunchParamsController.LaunchParams;
 import com.android.server.wm.LaunchParamsController.LaunchParamsModifier;
 import com.android.server.wm.utils.MockTracker;
 import com.android.window.flags.Flags;
@@ -1214,6 +1215,34 @@ public final class ActivityStarterTests extends ActivityStarterTestBase {
                 .execute();
 
         assertEquals(START_SUCCESS, result);
+    }
+
+    @Test
+    public void testMovableTaskRequired_prioritizesLpmOverrideToFalse() {
+        final LaunchParamsModifier modifier = mock(LaunchParamsModifier.class);
+        mAtm.mTaskSupervisor.getLaunchParamsController().registerModifier(modifier);
+        doAnswer(invocation -> {
+            final LaunchParams out = invocation.getArgument(8);
+            out.mIsTaskMoveDisallowed = true;
+            return LaunchParamsModifier.RESULT_DONE;
+        }).when(modifier).onCalculate(any(), any(), any(), any(), any(), any(), anyInt(), any(),
+                any(LaunchParams.class));
+
+        final ActivityStarter starter = prepareStarter(FLAG_ACTIVITY_NEW_TASK);
+        final ActivityOptions options = ActivityOptions.makeBasic().setMovableTaskRequired(true);
+
+        final TaskDisplayArea tda = mRootWindowContainer.getDefaultTaskDisplayArea();
+        spyOn(tda);
+        doReturn(true).when(tda).getIsTaskMoveAllowed();
+
+        final int result = starter
+                .setActivityOptions(
+                        options.toBundle(),
+                        Binder.getCallingPid(),
+                        Binder.getCallingUid())
+                .execute();
+
+        assertEquals(START_CANNOT_GUARANTEE_TASK_MOVABILITY, result);
     }
 
     @Test

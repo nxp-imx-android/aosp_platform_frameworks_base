@@ -321,6 +321,26 @@ policy_metadata {
 }
 policy_metadata {
   identifier {
+    field_name: "SIMPLE_LONG_POLICY_WITH_RANGE"
+    class_name: "PolicyIdentifier"
+    package_name: "android.app.admin"
+  }
+  type {
+    class_name: "Long"
+    package_name: "java.lang"
+  }
+  documentation: "Test long policy with min and max values. "
+  type_specific_metadata {
+    long_metadata {
+      min_value: 10
+      max_value: 100
+    }
+  }
+  allowed_scopes: POLICY_SCOPE_USER
+  affected_resource: RESOURCE_DEVICE_WIDE
+}
+policy_metadata {
+  identifier {
     field_name: "SIMPLE_STRING_POLICY"
     class_name: "PolicyIdentifier"
     package_name: "android.app.admin"

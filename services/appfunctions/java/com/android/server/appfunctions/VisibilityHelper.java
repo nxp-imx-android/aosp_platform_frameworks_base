@@ -22,7 +22,7 @@ import android.app.appfunctions.AppFunctionAidlSearchSpec;
 import android.app.appfunctions.AppFunctionName;
 import android.app.appfunctions.AppFunctionSearchSpec;
 
-import java.util.List;
+import java.util.Set;
 
 /** Helper for handling AppFunction visibility. */
 public interface VisibilityHelper {
@@ -47,8 +47,8 @@ public interface VisibilityHelper {
      * @return The list of {@link AppFunctionName} that the caller has visibility with.
      */
     @NonNull
-    List<AppFunctionName> filterVisibleAppFunctions(
-            @NonNull List<AppFunctionName> functionNames,
+    Set<AppFunctionName> filterVisibleAppFunctions(
+            @NonNull Set<AppFunctionName> functionNames,
             @NonNull String callingPackageName,
             int callingUid,
             int callingPid);

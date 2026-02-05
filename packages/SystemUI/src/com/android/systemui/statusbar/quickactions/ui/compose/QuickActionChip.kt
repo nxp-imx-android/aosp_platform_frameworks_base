@@ -105,9 +105,10 @@ fun QuickActionChip(
                     )
                 },
     ) {
-        // End padding should be symmetrical if the text is omitted.
+        // Symmetrical padding unless there are both icons and text.
         val startPadding = 4.dp
-        val endPadding = if (chipContent is ChipContent.Text) 8.dp else startPadding
+        val endPadding =
+            if (chipContent is ChipContent.Text && icons.isNotEmpty()) 8.dp else startPadding
         Row(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically,

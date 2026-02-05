@@ -84,6 +84,12 @@ void SkiaIpcPipeline::renderLayersImpl(const LayerUpdateQueue& layers, bool opaq
             return;
         }
     }
+
+    if (auto* context = mRenderThread.getGrContext()) {
+        // Ensure work is submitted for offscreen layers since OOPR does not
+        // submit work for the main pass.
+        context->flushAndSubmit();
+    }
 }
 
 // If the given node didn't have a layer surface, or had one of the wrong size, this method
@@ -91,7 +97,20 @@ void SkiaIpcPipeline::renderLayersImpl(const LayerUpdateQueue& layers, bool opaq
 bool SkiaIpcPipeline::createOrUpdateLayer(RenderNode* node,
                                           const DamageAccumulator& damageAccumulator,
                                           ErrorHandler* errorHandler) {
-    return false;
+    if (node->getLayerSurface() && node->getLayerSurface()->width() == node->getWidth() &&
+        node->getLayerSurface()->height() == node->getHeight()) {
+        return false;
+    }
+
+    auto result = oopr::createLayerSurface(node->getWidth(), node->getHeight(),
+                                           mRenderThread.getGrContext());
+    if (!result.surface) {
+        return false;
+    }
+
+    node->setLayerSurface(std::move(result.surface));
+    node->getOoprResources() = std::move(result.resources);
+    return true;
 }
 
 MakeCurrentResult SkiaIpcPipeline::makeCurrent() {
@@ -112,11 +131,17 @@ IRenderPipeline::DrawResult SkiaIpcPipeline::draw(
     std::function<void(SurfaceComposerClient::Transaction*)> transactionReadyCallback;
     LightingInfo::updateLighting(lightGeometry, lightInfo);
     SkCanvas* canvas = mIPCRecordingCanvas.get();
-    // draw all layers up front
-    mIPCRecordingCanvas->startRecording();
+
+    if (!mIPCRecordingCanvas->canRecord()) {
+        IRenderPipeline::DrawResult result;
+        result.success = false;
+        return result;
+    }
 
     // This should be the size plummed down from ViewRoot instead.
     mIPCRecordingCanvas->storeSize(mWidth, mHeight);
+    // draw all layers up front
+    mIPCRecordingCanvas->startRecording();
 
     renderLayersImpl(*layerUpdateQueue, opaque);
     layerUpdateQueue->clear();
@@ -136,7 +161,6 @@ IRenderPipeline::DrawResult SkiaIpcPipeline::draw(
         mSyncTransaction = nullptr;
         mTransactionReadyCallback = nullptr;
     }
-
 
     // Register any pending bitmaps (e.g. created during this frame)
     oopr::registerPendingBitmaps();

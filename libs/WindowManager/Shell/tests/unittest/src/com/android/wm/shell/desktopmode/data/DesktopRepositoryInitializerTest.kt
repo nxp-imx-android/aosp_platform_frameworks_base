@@ -61,6 +61,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.spy
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 @SmallTest
@@ -80,6 +81,7 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
     private val testExecutor = mock<ShellExecutor>()
     private val shellController = mock<ShellController>()
     private val displayController = mock<DisplayController>()
+    private val deskRootHelper = TestDeskRootHelper()
 
     @Before
     fun setUp() {
@@ -97,6 +99,7 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
                 desktopState,
                 displayController,
             )
+        repositoryInitializer.deskRootHelper = deskRootHelper
         desktopUserRepositories =
             DesktopUserRepositories(
                 shellInit,
@@ -148,69 +151,27 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
 
             repositoryInitializer.initialize(desktopUserRepositories)
 
-            assertThat(
-                    desktopUserRepositories
-                        .getProfile(USER_ID_1)
-                        .getActiveTaskIdsInDesk(DESKTOP_ID_1)
-                )
-                .containsExactly(1, 3)
-                .inOrder()
-            assertThat(
-                    desktopUserRepositories
-                        .getProfile(USER_ID_1)
-                        .getActiveTaskIdsInDesk(DESKTOP_ID_2)
-                )
-                .containsExactly(4, 5)
-                .inOrder()
-            assertThat(
-                    desktopUserRepositories
-                        .getProfile(USER_ID_2)
-                        .getActiveTaskIdsInDesk(DESKTOP_ID_3)
-                )
-                .containsExactly(7, 8)
-                .inOrder()
-            assertThat(
-                    desktopUserRepositories
-                        .getProfile(USER_ID_1)
-                        .getExpandedTasksIdsInDeskOrdered(DESKTOP_ID_1)
-                )
-                .containsExactly(1)
-                .inOrder()
-            assertThat(
-                    desktopUserRepositories
-                        .getProfile(USER_ID_1)
-                        .getExpandedTasksIdsInDeskOrdered(DESKTOP_ID_2)
-                )
-                .containsExactly(5)
-                .inOrder()
-            assertThat(
-                    desktopUserRepositories
-                        .getProfile(USER_ID_2)
-                        .getExpandedTasksIdsInDeskOrdered(DESKTOP_ID_3)
-                )
-                .containsExactly(7)
-                .inOrder()
-            assertThat(
-                    desktopUserRepositories
-                        .getProfile(USER_ID_1)
-                        .getMinimizedTaskIdsInDesk(DESKTOP_ID_1)
-                )
-                .containsExactly(3)
-                .inOrder()
-            assertThat(
-                    desktopUserRepositories
-                        .getProfile(USER_ID_1)
-                        .getMinimizedTaskIdsInDesk(DESKTOP_ID_2)
-                )
-                .containsExactly(4)
-                .inOrder()
-            assertThat(
-                    desktopUserRepositories
-                        .getProfile(USER_ID_2)
-                        .getMinimizedTaskIdsInDesk(DESKTOP_ID_3)
-                )
-                .containsExactly(8)
-                .inOrder()
+            // Check user 1's desk 1 and 2 are restored correctly.
+            assertRestoredDeskIds(
+                deskRootHelper,
+                USER_ID_1,
+                DEFAULT_DISPLAY,
+                listOf(DESKTOP_ID_1, DESKTOP_ID_2),
+            )
+            // Check user 1's desk 1's tasks.
+            assertRestoredDeskActiveTasks(deskRootHelper, USER_ID_1, DESKTOP_ID_1, listOf(1, 3))
+            assertRestoredDeskExpandedTasks(deskRootHelper, USER_ID_1, DESKTOP_ID_1, listOf(1))
+            assertRestoredDeskMinimizedTasks(deskRootHelper, USER_ID_1, DESKTOP_ID_1, listOf(3))
+            // Check user 1's desk 2's tasks.
+            assertRestoredDeskActiveTasks(deskRootHelper, USER_ID_1, DESKTOP_ID_2, listOf(4, 5))
+            assertRestoredDeskExpandedTasks(deskRootHelper, USER_ID_1, DESKTOP_ID_2, listOf(5))
+            assertRestoredDeskMinimizedTasks(deskRootHelper, USER_ID_1, DESKTOP_ID_2, listOf(4))
+            // Check user 2's desk 3 is restored correctly.
+            assertRestoredDeskIds(deskRootHelper, USER_ID_2, DEFAULT_DISPLAY, listOf(DESKTOP_ID_3))
+            // Check user 2's desk 3's tasks.
+            assertRestoredDeskActiveTasks(deskRootHelper, USER_ID_2, DESKTOP_ID_3, listOf(7, 8))
+            assertRestoredDeskExpandedTasks(deskRootHelper, USER_ID_2, DESKTOP_ID_3, listOf(7))
+            assertRestoredDeskMinimizedTasks(deskRootHelper, USER_ID_2, DESKTOP_ID_3, listOf(8))
         }
 
     @Test
@@ -227,54 +188,28 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
 
             repositoryInitializer.initialize(desktopUserRepositories)
 
-            assertThat(
-                    desktopUserRepositories
-                        .getProfile(USER_ID_1)
-                        .getActiveTaskIdsInDesk(DESKTOP_ID_1)
-                )
-                .containsExactly(1, 3)
-                .inOrder()
-            assertThat(
-                    desktopUserRepositories
-                        .getProfile(USER_ID_1)
-                        .getActiveTaskIdsInDesk(DESKTOP_ID_2)
-                )
-                .containsExactly(4, 5)
-                .inOrder()
-            assertThat(
-                    desktopUserRepositories
-                        .getProfile(USER_ID_1)
-                        .getExpandedTasksIdsInDeskOrdered(DESKTOP_ID_1)
-                )
-                .containsExactly(1)
-                .inOrder()
-            assertThat(
-                    desktopUserRepositories
-                        .getProfile(USER_ID_1)
-                        .getExpandedTasksIdsInDeskOrdered(DESKTOP_ID_2)
-                )
-                .containsExactly(5)
-                .inOrder()
-            assertThat(
-                    desktopUserRepositories
-                        .getProfile(USER_ID_1)
-                        .getMinimizedTaskIdsInDesk(DESKTOP_ID_1)
-                )
-                .containsExactly(3)
-                .inOrder()
-            assertThat(
-                    desktopUserRepositories
-                        .getProfile(USER_ID_1)
-                        .getMinimizedTaskIdsInDesk(DESKTOP_ID_2)
-                )
-                .containsExactly(4)
-                .inOrder()
-            assertThat(desktopUserRepositories.getProfile(USER_ID_1).getLeftTiledTask(DESKTOP_ID_2))
-                .isEqualTo(4)
-            assertThat(
-                    desktopUserRepositories.getProfile(USER_ID_1).getRightTiledTask(DESKTOP_ID_2)
-                )
-                .isEqualTo(5)
+            // Check user 1's desk 1 and 2 are restored correctly.
+            assertRestoredDeskIds(
+                deskRootHelper,
+                USER_ID_1,
+                DEFAULT_DISPLAY,
+                listOf(DESKTOP_ID_1, DESKTOP_ID_2),
+            )
+            // Check user 1's desk 1's tasks.
+            assertRestoredDeskActiveTasks(deskRootHelper, USER_ID_1, DESKTOP_ID_1, listOf(1, 3))
+            assertRestoredDeskExpandedTasks(deskRootHelper, USER_ID_1, DESKTOP_ID_1, listOf(1))
+            assertRestoredDeskMinimizedTasks(deskRootHelper, USER_ID_1, DESKTOP_ID_1, listOf(3))
+            // Check user 1's desk 2's tasks.
+            assertRestoredDeskActiveTasks(deskRootHelper, USER_ID_1, DESKTOP_ID_2, listOf(4, 5))
+            assertRestoredDeskExpandedTasks(deskRootHelper, USER_ID_1, DESKTOP_ID_2, listOf(5))
+            assertRestoredDeskMinimizedTasks(deskRootHelper, USER_ID_1, DESKTOP_ID_2, listOf(4))
+            assertRestoredDeskTiledTasks(
+                deskRootHelper,
+                USER_ID_1,
+                DESKTOP_ID_2,
+                leftTaskId = 4,
+                rightTaskId = 5,
+            )
         }
 
     @Test
@@ -290,21 +225,19 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
             whenever(persistentRepository.readDesktop(USER_ID_1, DESKTOP_ID_2)).thenReturn(desktop2)
 
             // Make [DESKTOP_ID_2] re-creation fail.
-            repositoryInitializer.deskRecreationFactory =
-                DesktopRepositoryInitializer.DeskRecreationFactory {
-                    userId,
-                    destinationDisplayId,
-                    deskId ->
-                    if (deskId == DESKTOP_ID_2) {
-                        null
-                    } else {
-                        deskId
-                    }
-                }
+            val testDeskRootHelper = TestDeskRootHelper(
+                deskIdsToFailRecreation = listOf(DESKTOP_ID_2)
+            )
+            repositoryInitializer.deskRootHelper = testDeskRootHelper
+
             repositoryInitializer.initialize(desktopUserRepositories)
 
-            assertThat(desktopUserRepositories.getProfile(USER_ID_1).getDeskIds(DEFAULT_DISPLAY))
-                .containsExactly(DESKTOP_ID_1)
+            assertRestoredDeskIds(
+                testDeskRootHelper,
+                USER_ID_1,
+                DEFAULT_DISPLAY,
+                listOf(DESKTOP_ID_1), // Does not contain DESKTOP_ID_2.
+            )
         }
 
     @Test
@@ -320,8 +253,12 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
 
             repositoryInitializer.initialize(desktopUserRepositories)
 
-            assertThat(desktopUserRepositories.getProfile(USER_ID_1).getDeskIds(DEFAULT_DISPLAY))
-                .isEmpty()
+            assertRestoredDeskIds(
+                deskRootHelper,
+                USER_ID_1,
+                DEFAULT_DISPLAY,
+                listOf(), // No desks are restored.
+            )
         }
 
     @Test
@@ -340,13 +277,13 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
 
             repositoryInitializer.initialize(desktopUserRepositories)
 
-            assertThat(
-                    desktopUserRepositories
-                        .getProfile(USER_ID_1)
-                        .getActiveTaskIdsInDesk(DESKTOP_ID_4)
-                )
-                .containsExactly(7, 8)
-                .inOrder()
+            assertRestoredDeskIds(
+                deskRootHelper,
+                USER_ID_1,
+                SECOND_DISPLAY_ON_REBOOT,
+                listOf(DESKTOP_ID_4),
+            )
+            assertRestoredDeskActiveTasks(deskRootHelper, USER_ID_1, DESKTOP_ID_4, listOf(7, 8))
         }
 
     @Test
@@ -366,12 +303,16 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
 
             repositoryInitializer.initialize(desktopUserRepositories)
 
-            assertThat(
-                    desktopUserRepositories
-                        .getProfile(USER_ID_1)
-                        .getActiveTaskIdsInDesk(DESKTOP_ID_4)
-                )
-                .isEmpty()
+            // The transient desk is removed from the repository.
+            assertRestoredDeskIds(
+                deskRootHelper,
+                USER_ID_1,
+                DEFAULT_DISPLAY,
+                listOf()
+            )
+            assertRestoredDeskActiveTasks(deskRootHelper, USER_ID_1, DESKTOP_ID_4, listOf())
+            // The transient desk was preserved again.
+             val recreatedDeskId = deskRootHelper.getRecreatedDeskId(DESKTOP_ID_4)
             assertThat(
                     desktopUserRepositories
                         .getProfile(USER_ID_1)
@@ -379,19 +320,24 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
                         ?.orderedDesks
                         ?.map { desk -> desk.deskId }
                 )
-                .containsExactly(DESKTOP_ID_4)
+                .containsExactly(recreatedDeskId)
+            // The desk root was removed.
+            assertThat(deskRootHelper.isDeskRootRemoved(USER_ID_1, recreatedDeskId)).isTrue()
         }
 
     @Test
     @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE, FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun initDisplayNotFound_defaultDisplaySupportsDesktop_preservesNonTransientDesk() =
         runTest(StandardTestDispatcher()) {
-            desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
+            // Has DESKTOP_ID_4 in UNIQUE_DISPLAY_ID with two desktop tasks.
             whenever(persistentRepository.getUserDesktopRepositoryMap())
                 .thenReturn(mapOf(USER_ID_1 to desktopRepositoryState3))
             whenever(persistentRepository.getDesktopRepositoryState(USER_ID_1))
                 .thenReturn(desktopRepositoryState3)
             whenever(persistentRepository.readDesktop(USER_ID_1, DESKTOP_ID_4)).thenReturn(desktop4)
+            // There is only one display available, DEFAULT_DISPLAY, which supports desktop.
+            // The display with UNIQUE_DISPLAY_ID is not found.
+            desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
             whenever(displayController.getAllDisplaysByUniqueId())
                 .thenReturn(mapOf(UNIQUE_DISPLAY_ID2 to DEFAULT_DISPLAY))
             whenever(displayController.getDisplayIdByUniqueIdBlocking(UNIQUE_DISPLAY_ID))
@@ -399,12 +345,19 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
 
             repositoryInitializer.initialize(desktopUserRepositories)
 
-            assertThat(
-                    desktopUserRepositories
-                        .getProfile(USER_ID_1)
-                        .getActiveTaskIdsInDesk(DESKTOP_ID_4)
-                )
-                .containsExactly(7, 8)
+            assertRestoredDeskIds(
+                deskRootHelper,
+                USER_ID_1,
+                DEFAULT_DISPLAY,
+                listOf(DESKTOP_ID_4)
+            )
+            assertRestoredDeskActiveTasks(
+                deskRootHelper,
+                USER_ID_1,
+                DESKTOP_ID_4,
+                listOf(7, 8),
+            )
+            val recreatedDeskId = deskRootHelper.getRecreatedDeskId(DESKTOP_ID_4)
             assertThat(
                     desktopUserRepositories
                         .getProfile(USER_ID_1)
@@ -412,7 +365,7 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
                         ?.orderedDesks
                         ?.map { desk -> desk.deskId }
                 )
-                .containsExactly(DESKTOP_ID_4)
+                .containsExactly(recreatedDeskId)
         }
 
     @Test
@@ -432,12 +385,18 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
 
             repositoryInitializer.initialize(desktopUserRepositories)
 
-            assertThat(
-                    desktopUserRepositories
-                        .getProfile(USER_ID_1)
-                        .getActiveTaskIdsInDesk(DESKTOP_ID_4)
-                )
-                .containsExactly(7, 8)
+            assertRestoredDeskIds(
+                deskRootHelper,
+                USER_ID_1,
+                SECOND_DISPLAY_ON_REBOOT,
+                listOf(DESKTOP_ID_4),
+            )
+            assertRestoredDeskActiveTasks(
+                deskRootHelper,
+                USER_ID_1,
+                DESKTOP_ID_4,
+                listOf(7, 8),
+            )
             assertThat(
                     desktopUserRepositories
                         .getProfile(USER_ID_1)
@@ -460,12 +419,20 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
 
             repositoryInitializer.initialize(desktopUserRepositories)
 
-            assertThat(
-                    desktopUserRepositories
-                        .getProfile(USER_ID_1)
-                        .getActiveTaskIdsInDesk(DESKTOP_ID_4)
-                )
-                .isEmpty()
+            // The preserved desk isn't restored.
+            assertRestoredDeskIds(
+                deskRootHelper,
+                USER_ID_1,
+                DEFAULT_DISPLAY,
+                listOf(),
+            )
+            assertRestoredDeskActiveTasks(
+                deskRootHelper,
+                USER_ID_1,
+                DESKTOP_ID_4,
+                listOf(),
+            )
+            // The preserved desk was preserved again.
             assertThat(
                     desktopUserRepositories
                         .getProfile(USER_ID_1)
@@ -473,7 +440,7 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
                         ?.orderedDesks
                         ?.map { desk -> desk.deskId }
                 )
-                .containsExactly(DESKTOP_ID_4)
+                .containsExactly(deskRootHelper.getRecreatedDeskId(DESKTOP_ID_4))
         }
 
     @Test
@@ -604,6 +571,118 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
     @After
     fun tearDown() {
         datastoreScope.cancel()
+        deskRootHelper.reset()
+    }
+
+
+    private fun assertRestoredDeskIds(
+        deskRootHelper: TestDeskRootHelper,
+        userId: Int,
+        displayId: Int,
+        originalDeskIds: List<Int>,
+    ) {
+        assertThat(desktopUserRepositories.getProfile(userId).getDeskIds(displayId))
+            .containsExactlyElementsIn(originalDeskIds.map { deskRootHelper.getRecreatedDeskId(it) })
+    }
+
+    /**
+     * Asserts that the active tasks in the restored desk whose original desk id is [originalDeskId]
+     * are the same as the given [taskIds]. The original desk should be empty after recreation.
+     */
+    private fun assertRestoredDeskActiveTasks(
+        deskRootHelper: TestDeskRootHelper,
+        userId: Int,
+        originalDeskId: Int,
+        taskIds: List<Int>,
+    ) {
+        val tasksInOriginalDesk =
+            desktopUserRepositories
+                .getProfile(userId)
+                .getActiveTaskIdsInDesk(originalDeskId)
+        assertThat(tasksInOriginalDesk).isEmpty()
+
+        val recreatedDeskId = deskRootHelper.getRecreatedDeskId(originalDeskId)
+        val tasksInRestoredDesk =
+            desktopUserRepositories
+                .getProfile(userId)
+                .getActiveTaskIdsInDesk(recreatedDeskId)
+        assertThat(tasksInRestoredDesk).containsExactlyElementsIn(taskIds).inOrder()
+    }
+
+    /**
+     * Asserts that the expanded tasks in the restored desk whose original desk id is
+     * [originalDeskId] are the same as the given [taskIds]. The original desk should have no
+     * expanded tasks after recreation.
+     */
+    private fun assertRestoredDeskExpandedTasks(
+        deskRootHelper: TestDeskRootHelper,
+        userId: Int,
+        originalDeskId: Int,
+        taskIds: List<Int>,
+    ) {
+        val tasksInOriginalDesk =
+            desktopUserRepositories
+                .getProfile(userId)
+                .getExpandedTasksIdsInDeskOrdered(originalDeskId)
+        assertThat(tasksInOriginalDesk).isEmpty()
+
+        val recreatedDeskId = deskRootHelper.getRecreatedDeskId(originalDeskId)
+        val tasksInRestoredDesk =
+            desktopUserRepositories
+                .getProfile(userId)
+                .getExpandedTasksIdsInDeskOrdered(recreatedDeskId)
+        assertThat(tasksInRestoredDesk).containsExactlyElementsIn(taskIds).inOrder()
+    }
+
+    /**
+     * Asserts that the minimized tasks in the restored desk whose original desk id is
+     * [originalDeskId] are the same as the given [taskIds]. The original desk should have no
+     * minimized tasks after recreation.
+     */
+    private fun assertRestoredDeskMinimizedTasks(
+        deskRootHelper: TestDeskRootHelper,
+        userId: Int,
+        originalDeskId: Int,
+        taskIds: List<Int>,
+    ) {
+        val tasksInOriginalDesk =
+            desktopUserRepositories.getProfile(userId).getMinimizedTaskIdsInDesk(originalDeskId)
+        assertThat(tasksInOriginalDesk).isEmpty()
+
+        val recreatedDeskId = deskRootHelper.getRecreatedDeskId(originalDeskId)
+        val tasksInRestoredDesk =
+            desktopUserRepositories
+                .getProfile(userId)
+                .getMinimizedTaskIdsInDesk(recreatedDeskId)
+        assertThat(tasksInRestoredDesk).containsExactlyElementsIn(taskIds).inOrder()
+    }
+
+    /**
+     * Asserts that the left and right tiled tasks in the restored desk whose original desk id is
+     * [originalDeskId] are the same as the given [leftTaskId] and [rightTaskId]. The original desk
+     * should have no tiled tasks after recreation.
+     */
+    private fun assertRestoredDeskTiledTasks(
+        deskRootHelper: TestDeskRootHelper,
+        userId: Int,
+        originalDeskId: Int,
+        leftTaskId: Int,
+        rightTaskId: Int,
+    ) {
+        val leftTaskInOriginalDesk =
+            desktopUserRepositories.getProfile(userId).getLeftTiledTask(originalDeskId)
+        val rightTaskInOriginalDesk =
+            desktopUserRepositories.getProfile(userId).getRightTiledTask(originalDeskId)
+        assertThat(leftTaskInOriginalDesk).isNull()
+        assertThat(rightTaskInOriginalDesk).isNull()
+
+        val recreatedDeskId = deskRootHelper.getRecreatedDeskId(originalDeskId)
+        val leftTaskInRestoredDesk =
+            desktopUserRepositories.getProfile(userId).getLeftTiledTask(recreatedDeskId)
+        val rightTaskInRestoredDesk =
+            desktopUserRepositories.getProfile(userId).getRightTiledTask(recreatedDeskId)
+        assertThat(leftTaskInRestoredDesk).isEqualTo(leftTaskId)
+        assertThat(rightTaskInRestoredDesk).isEqualTo(rightTaskId)
     }
 
     private companion object {
@@ -720,5 +799,49 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
             DesktopRepositoryState.newBuilder()
                 .putPreservedDisplayByUniqueId(UNIQUE_DISPLAY_ID, preservedDisplay1)
                 .build()
+    }
+
+    /**
+     * A test implementation of [DeskRootHelper] that recreates desk roots by adding an offset to
+     * the original desk id.
+     *
+     * If the original desk id is in [deskIdsToFailRecreation], desk root recreation will fail.
+     */
+    private class TestDeskRootHelper(
+        private val deskIdsToFailRecreation: List<Int> = emptyList(),
+    ) : DesktopRepositoryInitializer.DeskRootHelper {
+        private val DESKTOP_ID_RECREATION_OFFSET = 1000
+        private val removedDeskRoots =
+            mutableListOf<DesktopRepositoryInitializer.DeskRootHelper.DeskRootRemovalRequest>()
+
+        override suspend fun recreateDeskRoot(
+            userId: Int,
+            destinationDisplayId: Int,
+            deskId: Int,
+        ): Int? {
+            if (deskIdsToFailRecreation.contains(deskId)) {
+                return null
+            }
+            return DESKTOP_ID_RECREATION_OFFSET + deskId
+        }
+
+        override suspend fun removeDeskRoots(
+            requests: List<DesktopRepositoryInitializer.DeskRootHelper.DeskRootRemovalRequest>
+        ) {
+            removedDeskRoots.addAll(requests)
+        }
+
+        /** Returns the desk id that is recreated from the given [originalDeskId]. */
+        fun getRecreatedDeskId(originalDeskId: Int): Int =
+            DESKTOP_ID_RECREATION_OFFSET + originalDeskId
+
+        /** Returns true if the desk root with the given [userId] and [deskId] was removed. */
+        fun isDeskRootRemoved(userId: Int, deskId: Int): Boolean =
+            removedDeskRoots.any { it.userId == userId && it.deskId == deskId }
+
+        /** Resets the state of the helper. */
+        fun reset() {
+            removedDeskRoots.clear()
+        }
     }
 }
