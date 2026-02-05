@@ -25,6 +25,8 @@ import static org.mockito.Mockito.when;
 
 import android.app.assist.AssistStructure;
 import android.content.ComponentName;
+import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.text.InputType;
 import android.view.View;
 import android.widget.EditText;
@@ -32,6 +34,7 @@ import android.widget.EditText;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -47,6 +50,11 @@ public class AutofillNoiseInjectorTest {
     private static final String MASTER_SEED2 = "anotherMasterSeed456";
     private static final ComponentName TEST_COMPONENT =
             new ComponentName("com.example", "com.example.TestActivity");
+    private static final int USER_ID = 0;
+    private static final int USER_ID2 = 10;
+
+    @Rule
+    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     @Mock private AssistStructure.ViewNode mMockViewNode;
     private AutofillId mTestAutofillId;
@@ -61,7 +69,8 @@ public class AutofillNoiseInjectorTest {
     @Test
     public void testInjectNoise_nullText() {
         when(mMockViewNode.getText()).thenReturn(null);
-        AutofillNoiseInjector injector = new AutofillNoiseInjector(MASTER_SEED1, TEST_COMPONENT);
+        AutofillNoiseInjector injector =
+                new AutofillNoiseInjector(MASTER_SEED1, TEST_COMPONENT, USER_ID);
         AutofillNoiseInjectedData result = injector.injectNoise(mMockViewNode);
         assertNull(result);
     }
@@ -69,7 +78,8 @@ public class AutofillNoiseInjectorTest {
     @Test
     public void testInjectNoise_emptyText() {
         when(mMockViewNode.getText()).thenReturn(null);
-        AutofillNoiseInjector injector = new AutofillNoiseInjector(MASTER_SEED1, TEST_COMPONENT);
+        AutofillNoiseInjector injector =
+                new AutofillNoiseInjector(MASTER_SEED1, TEST_COMPONENT, USER_ID);
         AutofillNoiseInjectedData result = injector.injectNoise(mMockViewNode);
         assertNull(result);
     }
@@ -77,7 +87,8 @@ public class AutofillNoiseInjectorTest {
     @Test
     public void testInjectNoise_padding() {
         when(mMockViewNode.getText()).thenReturn("Test"); // Short string
-        AutofillNoiseInjector injector = new AutofillNoiseInjector(MASTER_SEED1, TEST_COMPONENT);
+        AutofillNoiseInjector injector =
+                new AutofillNoiseInjector(MASTER_SEED1, TEST_COMPONENT, USER_ID);
         AutofillNoiseInjectedData result = injector.injectNoise(mMockViewNode);
         assertNotNull(result);
         assertEquals(
@@ -93,7 +104,8 @@ public class AutofillNoiseInjectorTest {
                 longString.getBytes(StandardCharsets.UTF_16BE).length
                         > AutofillNoiseInjector.FIXED_LENGTH_BYTES);
 
-        AutofillNoiseInjector injector = new AutofillNoiseInjector(MASTER_SEED1, TEST_COMPONENT);
+        AutofillNoiseInjector injector =
+                new AutofillNoiseInjector(MASTER_SEED1, TEST_COMPONENT, USER_ID);
         AutofillNoiseInjectedData result = injector.injectNoise(mMockViewNode);
         assertNotNull(result);
         assertEquals(
@@ -103,10 +115,12 @@ public class AutofillNoiseInjectorTest {
     @Test
     public void testInjectNoise_deterministicDifferentInjectorInstances() {
         when(mMockViewNode.getText()).thenReturn("SameText");
-        AutofillNoiseInjector injector1 = new AutofillNoiseInjector(MASTER_SEED1, TEST_COMPONENT);
+        AutofillNoiseInjector injector1 =
+                new AutofillNoiseInjector(MASTER_SEED1, TEST_COMPONENT, USER_ID);
         AutofillNoiseInjectedData result1 = injector1.injectNoise(mMockViewNode);
 
-        AutofillNoiseInjector injector2 = new AutofillNoiseInjector(MASTER_SEED1, TEST_COMPONENT);
+        AutofillNoiseInjector injector2 =
+                new AutofillNoiseInjector(MASTER_SEED1, TEST_COMPONENT, USER_ID);
         AutofillNoiseInjectedData result2 = injector2.injectNoise(mMockViewNode);
 
         assertNotNull(result1);
@@ -120,7 +134,8 @@ public class AutofillNoiseInjectorTest {
     @Test
     public void testInjectNoise_deterministicSameInjectorInstance() {
         when(mMockViewNode.getText()).thenReturn("SameText");
-        AutofillNoiseInjector injector = new AutofillNoiseInjector(MASTER_SEED1, TEST_COMPONENT);
+        AutofillNoiseInjector injector =
+                new AutofillNoiseInjector(MASTER_SEED1, TEST_COMPONENT, USER_ID);
         AutofillNoiseInjectedData result1 = injector.injectNoise(mMockViewNode);
         // Inject the noise again with the same injector instance on the same ViewNode
         AutofillNoiseInjectedData result2 = injector.injectNoise(mMockViewNode);
@@ -140,7 +155,8 @@ public class AutofillNoiseInjectorTest {
     @Test
     public void testBitRemoval() {
         when(mMockViewNode.getText()).thenReturn("ABCDEF");
-        AutofillNoiseInjector injector = new AutofillNoiseInjector(MASTER_SEED1, TEST_COMPONENT);
+        AutofillNoiseInjector injector =
+                new AutofillNoiseInjector(MASTER_SEED1, TEST_COMPONENT, USER_ID);
         AutofillNoiseInjectedData result = injector.injectNoise(mMockViewNode);
         byte[] payload = result.getNoiseInjectedPayload();
         byte retainedBitMask = result.getRetainedBitMask();
@@ -163,10 +179,12 @@ public class AutofillNoiseInjectorTest {
     @Test
     public void testInjectNoise_differentSeedDifferentResult() {
         when(mMockViewNode.getText()).thenReturn("SameText");
-        AutofillNoiseInjector injector1 = new AutofillNoiseInjector(MASTER_SEED1, TEST_COMPONENT);
+        AutofillNoiseInjector injector1 =
+                new AutofillNoiseInjector(MASTER_SEED1, TEST_COMPONENT, USER_ID);
         AutofillNoiseInjectedData result1 = injector1.injectNoise(mMockViewNode);
 
-        AutofillNoiseInjector injector2 = new AutofillNoiseInjector(MASTER_SEED2, TEST_COMPONENT);
+        AutofillNoiseInjector injector2 =
+                new AutofillNoiseInjector(MASTER_SEED2, TEST_COMPONENT, USER_ID);
         AutofillNoiseInjectedData result2 = injector2.injectNoise(mMockViewNode);
 
         assertNotNull(result1);
@@ -182,7 +200,8 @@ public class AutofillNoiseInjectorTest {
     public void testInjectNoise_autofillTypeNotNone() {
         when(mMockViewNode.getText()).thenReturn("Test");
         when(mMockViewNode.getAutofillType()).thenReturn(View.AUTOFILL_TYPE_TEXT);
-        AutofillNoiseInjector injector = new AutofillNoiseInjector(MASTER_SEED1, TEST_COMPONENT);
+        AutofillNoiseInjector injector =
+                new AutofillNoiseInjector(MASTER_SEED1, TEST_COMPONENT, USER_ID);
         AutofillNoiseInjectedData result = injector.injectNoise(mMockViewNode);
         assertNull(result);
     }
@@ -191,7 +210,8 @@ public class AutofillNoiseInjectorTest {
     public void testInjectNoise_editTextClass() {
         when(mMockViewNode.getText()).thenReturn("Test");
         when(mMockViewNode.getClassName()).thenReturn(EditText.class.getName());
-        AutofillNoiseInjector injector = new AutofillNoiseInjector(MASTER_SEED1, TEST_COMPONENT);
+        AutofillNoiseInjector injector =
+                new AutofillNoiseInjector(MASTER_SEED1, TEST_COMPONENT, USER_ID);
         AutofillNoiseInjectedData result = injector.injectNoise(mMockViewNode);
         assertNull(result);
     }
@@ -200,8 +220,30 @@ public class AutofillNoiseInjectorTest {
     public void testInjectNoise_inputTypeNotNone() {
         when(mMockViewNode.getText()).thenReturn("Test");
         when(mMockViewNode.getInputType()).thenReturn(InputType.TYPE_CLASS_TEXT);
-        AutofillNoiseInjector injector = new AutofillNoiseInjector(MASTER_SEED1, TEST_COMPONENT);
+        AutofillNoiseInjector injector =
+                new AutofillNoiseInjector(MASTER_SEED1, TEST_COMPONENT, USER_ID);
         AutofillNoiseInjectedData result = injector.injectNoise(mMockViewNode);
         assertNull(result);
+    }
+
+    @Test
+    @EnableFlags(android.service.autofill.Flags.FLAG_STRING_REBUILD_PERSISTENT_MASTERSEED)
+    public void testInjectNoise_differentUserIdDifferentResult() {
+        when(mMockViewNode.getText()).thenReturn("SameText");
+        AutofillNoiseInjector injector1 =
+                new AutofillNoiseInjector(MASTER_SEED1, TEST_COMPONENT, USER_ID);
+        AutofillNoiseInjectedData result1 = injector1.injectNoise(mMockViewNode);
+
+        AutofillNoiseInjector injector2 =
+                new AutofillNoiseInjector(MASTER_SEED1, TEST_COMPONENT, USER_ID2);
+        AutofillNoiseInjectedData result2 = injector2.injectNoise(mMockViewNode);
+
+        assertNotNull(result1);
+        assertNotNull(result2);
+
+        // Results should be different due to different userIds
+        assertFalse(
+                Arrays.equals(
+                        result1.getNoiseInjectedPayload(), result2.getNoiseInjectedPayload()));
     }
 }
