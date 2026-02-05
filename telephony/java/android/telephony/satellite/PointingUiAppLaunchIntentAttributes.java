@@ -144,4 +144,61 @@ public final class PointingUiAppLaunchIntentAttributes implements Parcelable {
     public boolean isEmergencyMode() {
         return mIsEmergencyMode;
     }
+
+    /**
+     * Builder for {@link PointingUiAppLaunchIntentAttributes}.
+     */
+    @FlaggedApi(Flags.FLAG_SYSTEM_SELECTION_SPECIFIER_ENHANCEMENT)
+    public static final class Builder {
+        private boolean mNeedFullScreen;
+        private boolean mIsDemoMode;
+        private boolean mIsEmergencyMode;
+
+        /**
+         * Sets whether the PointingUI app should be launched in full screen mode.
+         *
+         * @param isFullScreen Whether the PointingUI app should be launched in full screen mode.
+         * @return The Builder to allow chaining.
+         */
+        @NonNull
+        public Builder setFullScreen(boolean isFullScreen) {
+            mNeedFullScreen = isFullScreen;
+            return this;
+        }
+
+        /**
+         * Sets whether the PointingUI app should be launched in demo mode.
+         *
+         * @param isDemoMode Whether the PointingUI app should be launched in demo mode.
+         * @return The Builder to allow chaining.
+         */
+        @NonNull
+        public Builder setDemoMode(boolean isDemoMode) {
+            mIsDemoMode = isDemoMode;
+            return this;
+        }
+
+        /**
+         * Sets whether the PointingUI app should be launched in emergency mode.
+         *
+         * @param isEmergencyMode Whether the PointingUI app should be launched in emergency mode.
+         * @return The Builder to allow chaining.
+         */
+        @NonNull
+        public Builder setEmergencyMode(boolean isEmergencyMode) {
+            mIsEmergencyMode = isEmergencyMode;
+            return this;
+        }
+
+        /**
+         * Builds the {@link PointingUiAppLaunchIntentAttributes} instance.
+         *
+         * @return The built {@link PointingUiAppLaunchIntentAttributes} instance.
+         */
+        @NonNull
+        public PointingUiAppLaunchIntentAttributes build() {
+            return new PointingUiAppLaunchIntentAttributes(
+                    mNeedFullScreen, mIsDemoMode, mIsEmergencyMode);
+        }
+    }
 }
