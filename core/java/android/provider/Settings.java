@@ -3805,11 +3805,9 @@ public final class Settings {
                 final @CanBeCURRENT @UserIdInt int userId) {
             final boolean isSelf = (userId == UserHandle.myUserId());
             final AttributionSource attributionSource = cr.getAttributionSource();
-            final int deviceId =
-                    android.companion.virtualdevice.flags.Flags.deviceAwareSettingsOverride()
-                            && android.permission.flags.Flags.deviceAwarePermissionApisEnabled()
-                            && attributionSource != null
-                            ? attributionSource.getDeviceId() : Context.DEVICE_ID_DEFAULT;
+            final int deviceId = android.permission.flags.Flags.deviceAwarePermissionApisEnabled()
+                    && attributionSource != null
+                    ? attributionSource.getDeviceId() : Context.DEVICE_ID_DEFAULT;
             final GenerationTracker.Key key = new GenerationTracker.Key(name, deviceId);
             final boolean useCache = isSelf && !isInSystemServer();
             boolean needsGenerationTracker = false;

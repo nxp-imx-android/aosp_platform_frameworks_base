@@ -388,51 +388,37 @@ class CoreSettingsObserver extends ContentObserver {
             deviceConfigBundle = new Bundle(mDeviceConfigBundle);
         }
 
-        Bundle userSettingsBundle;
-        if (android.companion.virtualdevice.flags.Flags.deviceAwareSettingsOverride()) {
-            IntArray deviceIds = getVirtualDeviceIds();
-            deviceIds.add(Context.DEVICE_ID_DEFAULT);
-            userSettingsBundle = new Bundle(deviceIds.size());
-
-            for (int i = 0; i < deviceIds.size(); i++) {
-                int deviceId = deviceIds.get(i);
-                Context deviceContext;
-                if (deviceId == Context.DEVICE_ID_DEFAULT) {
-                    deviceContext = context;
-                } else {
-                    try {
-                        deviceContext = context.createDeviceContext(deviceId);
-                    } catch (IllegalArgumentException e) {
-                        Slogf.e(TAG, e, "Exception during Context#createDeviceContext "
-                                + "for deviceId: %d", deviceId);
-                        continue;
-                    }
+        final IntArray deviceIds = getVirtualDeviceIds();
+        deviceIds.add(Context.DEVICE_ID_DEFAULT);
+        final Bundle userSettingsBundle = new Bundle(deviceIds.size());
+        for (int i = 0; i < deviceIds.size(); i++) {
+            int deviceId = deviceIds.get(i);
+            Context deviceContext;
+            if (deviceId == Context.DEVICE_ID_DEFAULT) {
+                deviceContext = context;
+            } else {
+                try {
+                    deviceContext = context.createDeviceContext(deviceId);
+                } catch (IllegalArgumentException e) {
+                    Slogf.e(TAG, e, "Exception during Context#createDeviceContext "
+                            + "for deviceId: %d", deviceId);
+                    continue;
                 }
-
-                if (DEBUG) {
-                    Slogf.d(TAG, "Populating settings for userId: %d, deviceId: %d",
-                            userId, deviceId);
-                }
-                Bundle deviceBundle = new Bundle();
-                populateSettings(deviceContext, userId, deviceBundle, sSecureSettingToTypeMap);
-                populateSettings(deviceContext, userId, deviceBundle, sSystemSettingToTypeMap);
-
-                // Copy global settings and device config values.
-                deviceBundle.putAll(globalSettingsBundle);
-                deviceBundle.putAll(deviceConfigBundle);
-
-                userSettingsBundle.putBundle(String.valueOf(deviceId), deviceBundle);
             }
-        } else {
+
             if (DEBUG) {
-                Slogf.d(TAG, "Populating settings for userId: %d, default device", userId);
+                Slogf.d(TAG, "Populating settings for userId: %d, deviceId: %d",
+                        userId, deviceId);
             }
-            // For non-device-aware case, populate all settings into the single bundle.
-            userSettingsBundle = new Bundle();
-            populateSettings(context, userId, userSettingsBundle, sSecureSettingToTypeMap);
-            populateSettings(context, userId, userSettingsBundle, sSystemSettingToTypeMap);
-            userSettingsBundle.putAll(globalSettingsBundle);
-            userSettingsBundle.putAll(deviceConfigBundle);
+            final Bundle deviceBundle = new Bundle();
+            populateSettings(deviceContext, userId, deviceBundle, sSecureSettingToTypeMap);
+            populateSettings(deviceContext, userId, deviceBundle, sSystemSettingToTypeMap);
+
+            // Copy global settings and device config values.
+            deviceBundle.putAll(globalSettingsBundle);
+            deviceBundle.putAll(deviceConfigBundle);
+
+            userSettingsBundle.putBundle(String.valueOf(deviceId), deviceBundle);
         }
         return userSettingsBundle;
     }
