@@ -24,7 +24,6 @@ import android.companion.virtual.audio.AudioInjection;
 import android.companion.virtual.audio.VirtualAudioDevice;
 import android.media.AudioFormat;
 import android.media.AudioTrack;
-import android.os.SystemClock;
 import android.util.Slog;
 
 /**
@@ -58,7 +57,8 @@ final class ComputerControlAudioInjector {
             mIsRunning = true;
             while (mIsRunning) {
                 try {
-                    int ret = mAudioInjection.write(buffer, 0, buffer.length);
+                    int ret = mAudioInjection.write(buffer, 0, buffer.length,
+                            AudioTrack.WRITE_NON_BLOCKING);
                     if (ret < 0) {
                         mIsRunning = false;
                         Slog.e(TAG, "Error injecting audio data: " + ret);
@@ -66,8 +66,10 @@ final class ComputerControlAudioInjector {
                     }
 
                     if (ret == 0) {
-                        SystemClock.sleep(SLEEP_MS);
+                        Thread.sleep(SLEEP_MS);
                     }
+                } catch (InterruptedException e) {
+                    Slog.i(TAG, "Audio injection Thread interrupted. Ignoring.");
                 } catch (Exception e) {
                     mIsRunning = false;
                     Slog.e(TAG, "Exception injecting audio data", e);
@@ -85,6 +87,7 @@ final class ComputerControlAudioInjector {
     void stopAudioInjection() {
         mAudioInjection.stop();
         mIsRunning = false;
+        mAudioInjectionThread.interrupt();
         try {
             mAudioInjectionThread.join();
         } catch (InterruptedException e) {

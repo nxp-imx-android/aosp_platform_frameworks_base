@@ -24,7 +24,6 @@ import android.companion.virtual.audio.AudioCapture;
 import android.companion.virtual.audio.VirtualAudioDevice;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
-import android.os.SystemClock;
 import android.util.Slog;
 
 /**
@@ -58,7 +57,8 @@ final class ComputerControlAudioCapture {
             mIsRunning = true;
             while (mIsRunning) {
                 try {
-                    int ret = mAudioCapture.read(buffer, 0, buffer.length);
+                    int ret = mAudioCapture.read(buffer, 0, buffer.length,
+                            AudioRecord.READ_NON_BLOCKING);
                     if (ret < 0) {
                         mIsRunning = false;
                         Slog.e(TAG, "Error capturing audio data: " + ret);
@@ -66,8 +66,10 @@ final class ComputerControlAudioCapture {
                     }
 
                     if (ret == 0) {
-                        SystemClock.sleep(SLEEP_MS);
+                        Thread.sleep(SLEEP_MS);
                     }
+                } catch (InterruptedException e) {
+                    Slog.i(TAG, "Audio capture Thread interrupted. Ignoring.");
                 } catch (Exception e) {
                     mIsRunning = false;
                     Slog.e(TAG, "Exception capturing audio data", e);
@@ -85,6 +87,7 @@ final class ComputerControlAudioCapture {
     void stopAudioCapture() {
         mAudioCapture.stop();
         mIsRunning = false;
+        mAudioCaptureThread.interrupt();
         try {
             mAudioCaptureThread.join();
         } catch (InterruptedException e) {
