@@ -506,7 +506,7 @@ public abstract class PowerStatsCollector {
             }
 
             for (EnergyConsumerAttribution attribution : perUid) {
-                int uid = mUidResolver.mapUid(attribution.uid);
+                int uid = mUidResolver.getOwnerUid(attribution.uid);
                 long lastEnergy = mLastConsumerEnergyPerUid.get(uid, ENERGY_UNSPECIFIED);
                 mLastConsumerEnergyPerUid.put(uid, attribution.energyUWs);
                 if (lastEnergy == ENERGY_UNSPECIFIED) {
