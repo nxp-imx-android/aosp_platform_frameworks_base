@@ -3528,6 +3528,10 @@ public class AudioService extends IAudioService.Stub
         mMuteAffectedStreams = mSettings.getSystemIntForUser(cr,
                 System.MUTE_STREAMS_AFFECTED, AudioSystem.DEFAULT_MUTE_STREAMS_AFFECTED,
                 UserHandle.USER_CURRENT);
+        if (streamAssistantNotAliasedToMusic()) {
+            // When flag is rolled out add to AudioSyste.DEFAULT_MUTE_STREAMS_AFFECTED
+            mMuteAffectedStreams |= (1 << AudioSystem.STREAM_ASSISTANT);
+        }
         updateUserMutableStreams();
 
         updateMasterMono(cr);
