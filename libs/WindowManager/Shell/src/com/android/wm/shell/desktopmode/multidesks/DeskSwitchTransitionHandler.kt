@@ -227,14 +227,7 @@ class DeskSwitchTransitionHandler(
         // Now actually start the animations.
         logD("startAnimation: changes=%s", changes)
         val tx = transactionProvider()
-        // First the wallpaper animation.
-        startWallpaperAnimation(
-            displayId = changes.displayId,
-            numberOfDesks = changes.totalDesks,
-            fromDeskIndex = changes.fromDeskPosition,
-            toDeskIndex = changes.toDeskPosition,
-        )
-        // Then the bounds animation, which triggers fade-in/out animations within it.
+        // Animate the bounds animation, which triggers fade-in/out animations within it.
         PhysicsAnimator.getInstance(
                 DeskSwitchAnimationUtils.DeskBoundsChange(
                     fromDeskBounds = Rect(fromDeskStartBounds),
@@ -380,28 +373,6 @@ class DeskSwitchTransitionHandler(
         request: TransitionRequestInfo,
     ): WindowContainerTransaction? = null
 
-    override fun onTransitionConsumed(
-        transition: IBinder,
-        aborted: Boolean,
-        finishTransaction: SurfaceControl.Transaction?,
-    ) {
-        interactionJankMonitor.end(CUJ_DESKTOP_MODE_DESK_SWITCH)
-        // An aborted pending switch transition might mean we're moving from an empty desk to
-        // another empty desk, so there won't be animation targets. The desktop wallpaper still
-        // needs to be animated though.
-        if (!aborted) return
-        val pendingSwitch = pendingTransitions.remove(transition) ?: return
-        val repository = desktopUserRepositories.getProfile(pendingSwitch.userId)
-        val fromDeskIndex = repository.getDeskPosition(pendingSwitch.fromDeskId) ?: return
-        val toDeskIndex = repository.getDeskPosition(pendingSwitch.toDeskId) ?: return
-        startWallpaperAnimation(
-            displayId = pendingSwitch.displayId,
-            numberOfDesks = repository.getNumberOfDesks(pendingSwitch.displayId),
-            fromDeskIndex = fromDeskIndex,
-            toDeskIndex = toDeskIndex,
-        )
-    }
-
     private fun getDeskSwitchChanges(
         pendingSwitch: PendingSwitch,
         info: TransitionInfo,
@@ -447,28 +418,6 @@ class DeskSwitchTransitionHandler(
             toDeskPosition = toDeskPosition,
             totalDesks = repository.getNumberOfDesks(displayId),
         )
-    }
-
-    private fun startWallpaperAnimation(
-        displayId: Int,
-        numberOfDesks: Int,
-        fromDeskIndex: Int,
-        toDeskIndex: Int,
-    ) {
-        if (Flags.disableDeskSwitchWallpaperOffsets()) {
-            return
-        }
-        if (!desktopState.shouldShowHomeBehindDesktop) {
-            logD("startWallpaperAnimation: sending broadcast")
-            context.sendBroadcast(
-                DesktopWallpaperActivity.createWallpaperSlideAnimationIntent(
-                    displayId = displayId,
-                    numberOfDesks = numberOfDesks,
-                    fromDeskIndex = fromDeskIndex,
-                    toDeskIndex = toDeskIndex,
-                )
-            )
-        }
     }
 
     private fun getAnimationFraction(startBounds: Rect, endBounds: Rect, animBounds: Rect): Float {
