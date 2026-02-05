@@ -52,7 +52,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -111,7 +110,7 @@ import java.util.stream.Collectors;
     private final DeviceStateChangedReceiver mDeviceStateChangedReceiver =
             new DeviceStateChangedReceiver();
 
-    @NonNull private Map<String, BluetoothDevice> mAddressToBondedDevice = new HashMap<>();
+    @NonNull private Map<String, BluetoothDeviceHolder> mAddressToBondedDevice = new HashMap<>();
 
     @NonNull
     private final Map<String, BluetoothRouteInfo> mAddressToConnectedBluetoothRoutes =
@@ -187,16 +186,19 @@ import java.util.stream.Collectors;
 
     @Nullable
     public synchronized String getRouteIdForBluetoothAddress(@Nullable String address) {
-        BluetoothDevice bluetoothDevice = mAddressToBondedDevice.get(address);
-        return bluetoothDevice != null
-                ? getRouteIdForType(bluetoothDevice, getDeviceType(bluetoothDevice))
-                : null;
+        var bluetoothDeviceHolder = mAddressToBondedDevice.get(address);
+        if (bluetoothDeviceHolder == null) {
+            return null;
+        }
+        var bluetoothDevice = bluetoothDeviceHolder.mBluetoothDevice;
+        return getRouteIdForType(
+                bluetoothDevice, getDeviceType(bluetoothDevice));
     }
 
     @Nullable
     public synchronized String getNameForBluetoothAddress(@NonNull String address) {
-        BluetoothDevice bluetoothDevice = mAddressToBondedDevice.get(address);
-        return bluetoothDevice != null ? getDeviceName(bluetoothDevice) : null;
+        BluetoothDeviceHolder bluetoothDevice = mAddressToBondedDevice.get(address);
+        return bluetoothDevice != null ? getDeviceName(bluetoothDevice.mBluetoothDevice) : null;
     }
 
     public synchronized void activateBluetoothDeviceWithAddress(String address) {
@@ -251,7 +253,8 @@ import java.util.stream.Collectors;
                     bondedDevices.stream()
                             .collect(
                                     Collectors.toMap(
-                                            BluetoothDevice::getAddress, Function.identity()));
+                                            BluetoothDevice::getAddress,
+                                            BluetoothDeviceHolder::new));
             for (BluetoothDevice device : bondedDevices) {
                 if (device.isConnected()) {
                     BluetoothRouteInfo newBtRoute =
@@ -538,4 +541,6 @@ import java.util.stream.Collectors;
             }
         }
     }
+
+    private record BluetoothDeviceHolder(BluetoothDevice mBluetoothDevice) {}
 }
