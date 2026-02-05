@@ -51,14 +51,6 @@ class AHBUploader;
 // interface.
 static sp<AHBUploader> sUploader = nullptr;
 
-struct FormatInfo {
-    AHardwareBuffer_Format bufferFormat;
-    GLint format, type;
-    VkFormat vkFormat;
-    bool isSupported = false;
-    bool valid = true;
-};
-
 class AHBUploader : public RefBase {
 public:
     virtual ~AHBUploader() {}
@@ -328,7 +320,7 @@ bool HardwareBitmapUploader::hasAlpha8Support() {
     return hasAlpha8Support;
 }
 
-static FormatInfo determineFormat(const SkBitmap& skBitmap, bool usingGL) {
+FormatInfo HardwareBitmapUploader::determineFormat(const SkBitmap& skBitmap, bool usingGL) {
     FormatInfo formatInfo;
     switch (skBitmap.info().colorType()) {
         case kRGBA_8888_SkColorType:

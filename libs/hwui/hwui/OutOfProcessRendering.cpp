@@ -19,6 +19,8 @@
 #include <include/gpu/ganesh/GrDirectContext.h>
 #include <include/gpu/ganesh/SkSurfaceGanesh.h>
 
+#include "HardwareBitmapUploader.h"
+
 #ifdef __ANDROID__
 #include <android/ipcrenderbuffer/RenderBufferOps.h>
 #include <com_android_graphics_libgui_flags.h>
@@ -41,44 +43,103 @@
 
 namespace android {
 namespace uirenderer {
-namespace oopr {
 
 #ifdef __ANDROID__
 
-NodeResources::~NodeResources() {
-    if (lastImage) {
-        deregisterBuffer(lastImage);
+sp<GraphicBuffer> allocGraphicBufferFromBitmap(const SkImageInfo& info) {
+    uint32_t usage = GRALLOC_USAGE_HW_TEXTURE | GRALLOC_USAGE_SW_WRITE_RARELY;
+
+    // Map SkColorType to Android PixelFormat
+    SkBitmap bitmap;
+    bitmap.setInfo(info);
+    auto formatInfo = HardwareBitmapUploader::determineFormat(bitmap);
+    if (!formatInfo.isSupported || !formatInfo.valid) {
+        ALOGE("Missing format: %d", info.colorType());
+        // Fallback or skip if format is not supported by GraphicBuffer easily
+        return nullptr;
     }
-    if (textureRelease) {
-        textureRelease->unref(false);
+    PixelFormat format = static_cast<PixelFormat>(formatInfo.bufferFormat);
+
+    sp<GraphicBuffer> buffer = sp<GraphicBuffer>::make(info.width(), info.height(), format, 1,
+                                                       usage, "Bitmap::makeImage-Shadow");
+
+    status_t err = buffer->initCheck();
+    if (err != NO_ERROR) {
+        ALOGE("Failed to allocate GraphicBuffer shadow: %d", err);
+        return nullptr;
+    }
+
+    return buffer;
+}
+
+void copyBitmapToGraphicBuffer(sp<GraphicBuffer> dst, const SkBitmap& src) {
+    ATRACE_CALL();
+
+    void* data = nullptr;
+    status_t err = dst->lock(GRALLOC_USAGE_SW_WRITE_RARELY, &data);
+    if (err != NO_ERROR || !data) {
+        ALOGE("Failed to lock GraphicBuffer shadow: %d", err);
+        return;
+    }
+
+    size_t bufferRowBytes = dst->getStride() * src.info().bytesPerPixel();
+    SkPixmap dstPixmap(src.info(), data, bufferRowBytes);
+    bool result = src.readPixels(dstPixmap);
+
+    dst->unlock();
+
+    if (!result) {
+        ALOGE("Failed to copy pixels to GraphicBuffer shadow");
+        return;
     }
 }
 
-static bool sEnableOOPR;
-static sp<BBinder> sRenderResourceToken = sp<BBinder>::make();
-static IPCClientResourceCache sRenderResourceCache;
-static LocklessQueue<std::function<void()>> sRenderResourceQueue;
+OoprNode::~OoprNode() {
+    if (mLastImage) {
+        OoprClient::getInstance()->deregisterBuffer(mLastImage);
+    }
+    if (mTextureRelease) {
+        mTextureRelease->unref(false);
+    }
+}
 
-void enableOutOfProcessRendering() {
+OoprBitmap::~OoprBitmap() {
+    if (mLastImage) {
+        OoprClient::getInstance()->deregisterBuffer(mLastImage);
+    }
+}
+
+OoprClient* OoprClient::getInstance() {
+    static OoprClient sInstance;
+    return &sInstance;
+}
+
+OoprClient::OoprClient()
+        : mToken(sp<BBinder>::make()), mCache(std::make_unique<IPCClientResourceCache>()) {}
+
+OoprClient::~OoprClient() = default;
+
+void OoprClient::enableOutOfProcessRendering() {
     if (com_android_graphics_libgui_flags_out_of_process_rendering()) {
-        sEnableOOPR = true;
+        mEnableOOPR = true;
     } else {
         LOG_ALWAYS_FATAL(
                 "Flag com.android.graphics.libgui.flags.out_of_process_rendering is disabled!");
     }
 }
 
-IPCClientResourceCache& getIPCResourceCache() {
-    return sRenderResourceCache;
+IPCClientResourceCache& OoprClient::getIPCResourceCache() {
+    return *mCache;
 }
 
-sp<BBinder> getDefaultRenderResourceToken() {
-    return sRenderResourceToken;
+sp<BBinder> OoprClient::getDefaultRenderResourceToken() {
+    return mToken;
 }
 
-AllocationResult createLayerSurface(uint32_t width, uint32_t height, GrDirectContext* context) {
+OoprLayerResult OoprClient::createLayerSurface(uint32_t width, uint32_t height,
+                                               GrDirectContext* context) {
     LOG_ALWAYS_FATAL_IF(
-            !sEnableOOPR,
+            !mEnableOOPR,
             "Flag com.android.graphics.libgui.flags.out_of_process_rendering is disabled!");
 
     LOG_ALWAYS_FATAL_IF(!context, "Skia GrDirectContext is null");
@@ -110,91 +171,150 @@ AllocationResult createLayerSurface(uint32_t width, uint32_t height, GrDirectCon
         return {};
     }
 
-    AllocationResult result;
+    OoprLayerResult result;
     result.surface = std::move(surface);
-    result.resources = std::make_unique<NodeResources>();
-    result.resources->buffer = buffer;
-    result.resources->textureRelease = textureRelease;
+    result.resources = std::make_unique<OoprNode>();
+    result.resources->mBuffer = buffer;
+    result.resources->mTextureRelease = textureRelease;
 
     return result;
 }
 
-// This function is called from SkiaIpcPipeline::renderLayersImpl on the RenderThread.
-// Since the RenderThread also executes the pending bitmap registration (via
-// registerPendingBitmaps), it is safe to update the cache directly here.
-void registerSnapshot(NodeResources* resources, const sk_sp<SkImage>& image) {
-    if (!sEnableOOPR || !image || !resources) return;
+void OoprNode::registerSnapshot(const sk_sp<SkImage>& image) {
+    auto oopr = OoprClient::getInstance();
 
-    sp<GraphicBuffer> buffer = resources->buffer;
-    sk_sp<SkImage> lastImage = resources->lastImage;
+    if (!oopr->isEnabled()) return;
 
-    if (lastImage && lastImage->uniqueID() == image->uniqueID()) {
+    if (!image) return;
+
+    if (mLastImage && mLastImage->uniqueID() == image->uniqueID()) {
         return;
     }
 
-    resources->lastImage = image;
+    sk_sp<SkImage> oldImage = mLastImage;
+    mLastImage = image;
 
-    LOG_ALWAYS_FATAL_IF(!buffer, "buffer should never be null");
+    LOG_ALWAYS_FATAL_IF(!mBuffer, "buffer should never be null");
 
-    // We are on the render thread, so we can update the cache directly.
-    auto& bitmaps = sRenderResourceCache.bitmaps;
-    if (lastImage) {
-        auto it = bitmaps.find(lastImage->uniqueID());
-        if (it != bitmaps.end()) {
-            // Move entry to new image ID
-            auto nodeHandler = bitmaps.extract(it);
-            nodeHandler.key() = image->uniqueID();
-            bitmaps.insert(std::move(nodeHandler));
+    if (oldImage) {
+        oopr->deregisterBuffer(oldImage);
+    }
+    oopr->registerBuffer(mBuffer, image);
+    ATRACE_FORMAT("registerBuffer bufferId=%llu imageId=%u", mBuffer->getId(), image->uniqueID());
+}
+
+bool OoprClient::isEnabled() {
+    return mEnableOOPR;
+}
+
+void OoprBitmap::createAndRegisterShadowBuffer(const SkBitmap& bitmap, sk_sp<SkImage> image) {
+    auto oopr = OoprClient::getInstance();
+
+    if (!oopr->isEnabled()) return;
+
+    ATRACE_CALL();
+
+    // Shadow the heap buffer with a GraphicBuffer
+    // Note: This creates a copy of the pixel data into the GraphicBuffer.
+
+    // Check if the image has changed. If not, we're done.
+    if (mShadowBuffer && mLastImage && mLastImage->uniqueID() == image->uniqueID()) {
+        return;
+    }
+
+    sk_sp<SkImage> oldImage = mLastImage;
+
+    // Allocate or re-allocate the shadow buffer if needed.
+    bool needsAllocation = !mShadowBuffer;
+    if (mShadowBuffer) {
+        if (!oldImage || oldImage->imageInfo() != bitmap.info()) {
+            needsAllocation = true;
+        }
+    }
+
+    if (needsAllocation) {
+        mShadowBuffer = allocGraphicBufferFromBitmap(bitmap.info());
+        if (!mShadowBuffer) {
+            // Error logging handled inside allocGraphicBufferFromBitmap
             return;
         }
     }
+
+    copyBitmapToGraphicBuffer(mShadowBuffer, bitmap);
+    mLastImage = image;
+
+    // If there was a previous image, we should deregister it.
+    if (oldImage && oldImage->uniqueID() != image->uniqueID()) {
+        oopr->deregisterBuffer(oldImage);
+    }
+
+    oopr->registerBitmap(bitmap, image, mShadowBuffer);
+}
+
+// This function is called from Bitmap.cpp, potentially from any thread.
+// However, all bitmap mutation must be finished before work is submitted to the render thread
+// so there is no chance of races.
+void OoprClient::registerBuffer(const sp<GraphicBuffer>& buffer, const sk_sp<SkImage>& image) {
+    if (!mEnableOOPR || !image) return;
     ATRACE_FORMAT("registerBuffer bufferId=%llu imageId=%u", buffer->getId(), image->uniqueID());
-
-    sRenderResourceCache.bitmaps[image->uniqueID()] =
-            IPCClientBitmap{buffer->getId(), false, buffer};
+    mCache->bitmaps[image->uniqueID()] =
+            IPCClientBitmap{buffer->getId(), IPCClientBitmap::PENDING_REGISTER, buffer};
 }
 
-// This function is called from Bitmap.cpp, potentially from any thread (e.g. background loading).
-// Therefore, we must use the thread-safe lockless queue to defer the cache update to the
-// RenderThread (in registerPendingBitmaps).
-void registerBuffer(const sp<GraphicBuffer>& buffer, const sk_sp<SkImage>& image) {
-    if (!sEnableOOPR || !image) return;
-    sRenderResourceQueue.push([buffer, image]() {
-        ATRACE_FORMAT("registerBuffer bufferId=%llu imageId=%u", buffer->getId(),
-                      image->uniqueID());
-        sRenderResourceCache.bitmaps[image->uniqueID()] =
-                IPCClientBitmap{buffer->getId(), false, buffer};
-    });
+void OoprClient::registerBitmap(const SkBitmap& bitmap, const sk_sp<SkImage>& image,
+                                const sp<GraphicBuffer>& buffer) {
+    if (!mEnableOOPR || !image) return;
+    ATRACE_FORMAT("registerBitmap bufferId=%llu imageId=%u bitmap=%u", buffer->getId(),
+                  image->uniqueID(), bitmap.getGenerationID());
+
+    mCache->bitmaps[image->uniqueID()] = IPCClientBitmap{.id = buffer->getId(),
+                                                         .state = IPCClientBitmap::PENDING_REGISTER,
+                                                         .buffer = buffer,
+                                                         .bitmap = bitmap};
 }
 
-void registerPendingBitmaps() {
-    if (!sEnableOOPR) {
+void OoprClient::registerPendingBitmaps() {
+    if (!mEnableOOPR) {
         return;
     }
     ATRACE_CALL();
 
-    while (auto op = sRenderResourceQueue.pop()) {
-        (*op)();
-    }
-
+    // TODO: deregister here too
+    gui::GraphicBuffersUnregisterInfo unregisterInfo;
     gui::GraphicBuffersRegisterInfo registerInfo;
-    registerInfo.renderResourceToken = sRenderResourceToken;
-    for (auto& [id, bitmap] : sRenderResourceCache.bitmaps) {
-        if (!bitmap.registeredWithServer) {
+
+    registerInfo.renderResourceToken = mToken;
+    unregisterInfo.renderResourceToken = mToken;
+
+    // We need to iterate and possibly remove elements, so use iterator
+    auto it = mCache->bitmaps.begin();
+    while (it != mCache->bitmaps.end()) {
+        IPCClientBitmap& bitmap = it->second;
+
+        if (bitmap.state == IPCClientBitmap::PENDING_REGISTER) {
             registerInfo.buffers.push_back(bitmap.buffer);
-            bitmap.registeredWithServer = true;
+            bitmap.state = IPCClientBitmap::REGISTERED;
+            ++it;
+        } else if (bitmap.state == IPCClientBitmap::PENDING_DEREGISTER) {
+            unregisterInfo.bufferIds.push_back(bitmap.id);
+            // Remove from map as it is being unregistered
+            it = mCache->bitmaps.erase(it);
+        } else {
+            ++it;
         }
     }
 
-    if (registerInfo.buffers.empty()) {
-        return;
+    if (!registerInfo.buffers.empty()) {
+        ComposerServiceAIDL::getComposerService()->registerGraphicBuffers(registerInfo);
     }
 
-    ComposerServiceAIDL::getComposerService()->registerGraphicBuffers(registerInfo);
+    if (!unregisterInfo.bufferIds.empty()) {
+        ComposerServiceAIDL::getComposerService()->unregisterGraphicBuffers(unregisterInfo);
+    }
 }
 
-void deregisterBuffer(const sk_sp<SkImage>& image) {
-    if (!sEnableOOPR) {
+void OoprClient::deregisterBuffer(const sk_sp<SkImage>& image) {
+    if (!mEnableOOPR) {
         return;
     }
     if (!image) {
@@ -202,33 +322,25 @@ void deregisterBuffer(const sk_sp<SkImage>& image) {
         return;
     }
 
-    sRenderResourceQueue.push([image]() {
-        auto it = sRenderResourceCache.bitmaps.find(image->uniqueID());
-        if (it == sRenderResourceCache.bitmaps.end()) {
-            LOG_ALWAYS_FATAL("Trying to deregister image that was never registered.");
-            return;
-        }
+    auto it = mCache->bitmaps.find(image->uniqueID());
+    if (it == mCache->bitmaps.end()) {
+        // LOG_ALWAYS_FATAL("Trying to deregister image that was never registered.");
+        return;
+    }
 
-        uint64_t bufferId = it->second.id;
-        bool registered = it->second.registeredWithServer;
-        sRenderResourceCache.bitmaps.erase(it);
-
-        ATRACE_FORMAT("deregisterBuffer bufferId=%llu imageId=%u", bufferId, image->uniqueID());
-
-        if (!registered) {
-            return;
-        }
-        // Deregister with SF
-        // TODO: b/448196792 - batching
-        gui::GraphicBuffersUnregisterInfo unregisterInfo;
-        unregisterInfo.renderResourceToken = sRenderResourceToken;
-        unregisterInfo.bufferIds.push_back(bufferId);
-        ComposerServiceAIDL::getComposerService()->unregisterGraphicBuffers(unregisterInfo);
-    });
+    switch (it->second.state) {
+        case IPCClientBitmap::PENDING_REGISTER:
+        case IPCClientBitmap::PENDING_DEREGISTER:
+        case IPCClientBitmap::UNREGISTERED:
+            mCache->bitmaps.erase(it);
+            break;
+        case IPCClientBitmap::REGISTERED:
+            it->second.state = IPCClientBitmap::PENDING_DEREGISTER;
+            break;
+    }
 }
 
 #endif
 
-}  // namespace oopr
 }  // namespace uirenderer
 }  // namespace android

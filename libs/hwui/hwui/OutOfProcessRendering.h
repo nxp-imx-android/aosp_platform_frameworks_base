@@ -19,10 +19,15 @@
 #include <SkImage.h>
 #include <SkSurface.h>
 #include <binder/Binder.h>
-#include <ui/GraphicBuffer.h>
 #include <utils/StrongPointer.h>
 
+#include <mutex>
+
 class GrDirectContext;
+
+namespace android {
+class GraphicBuffer;
+}
 
 namespace android {
 namespace uirenderer {
@@ -40,32 +45,66 @@ struct IPCClientResourceCache;
 #endif
 
 namespace uirenderer {
-namespace oopr {
 
 #ifdef __ANDROID__
-struct NodeResources {
-    sp<GraphicBuffer> buffer;
-    AutoBackendTextureRelease* textureRelease = nullptr;
-    sk_sp<SkImage> lastImage;
-    ~NodeResources();
+class OoprClient;
+
+struct OoprNode {
+public:
+    ~OoprNode();
+    void registerSnapshot(const sk_sp<SkImage>& image);
+
+    const sp<GraphicBuffer>& getBuffer() const { return mBuffer; }
+
+private:
+    friend class OoprClient;
+    sp<GraphicBuffer> mBuffer;
+    AutoBackendTextureRelease* mTextureRelease = nullptr;
+    sk_sp<SkImage> mLastImage;
 };
 
-IPCClientResourceCache& getIPCResourceCache();
-sp<BBinder> getDefaultRenderResourceToken();
-void enableOutOfProcessRendering();
+struct OoprBitmap {
+public:
+    ~OoprBitmap();
+    void createAndRegisterShadowBuffer(const SkBitmap& bitmap, sk_sp<SkImage> image);
 
-struct AllocationResult {
+private:
+    sp<GraphicBuffer> mShadowBuffer;
+    sk_sp<SkImage> mLastImage;
+};
+
+struct OoprLayerResult {
     sk_sp<SkSurface> surface;
-    std::unique_ptr<NodeResources> resources;
+    std::unique_ptr<OoprNode> resources;
 };
 
-AllocationResult createLayerSurface(uint32_t width, uint32_t height, GrDirectContext* context);
-void registerSnapshot(NodeResources* resources, const sk_sp<SkImage>& image);
-void registerBuffer(const sp<GraphicBuffer>& buffer, const sk_sp<SkImage>& image);
-void registerPendingBitmaps();
-void deregisterBuffer(const sk_sp<SkImage>& image);
+class OoprClient {
+public:
+    static OoprClient* getInstance();
+
+    IPCClientResourceCache& getIPCResourceCache();
+    sp<BBinder> getDefaultRenderResourceToken();
+    void enableOutOfProcessRendering();
+    bool isEnabled();
+
+    OoprLayerResult createLayerSurface(uint32_t width, uint32_t height, GrDirectContext* context);
+    void registerBuffer(const sp<GraphicBuffer>& buffer, const sk_sp<SkImage>& image);
+    void registerBitmap(const SkBitmap& bitmap, const sk_sp<SkImage>& image,
+                        const sp<GraphicBuffer>& buffer);
+    void deregisterBuffer(const sk_sp<SkImage>& image);
+
+    void registerPendingBitmaps();
+
+private:
+    OoprClient();
+    virtual ~OoprClient();
+
+    bool mEnableOOPR = false;
+    sp<BBinder> mToken;
+    std::unique_ptr<IPCClientResourceCache> mCache;
+};
+
 #endif
 
-}  // namespace oopr
 }  // namespace uirenderer
 }  // namespace android

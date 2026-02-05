@@ -39,6 +39,7 @@ cc_defaults {
     ],
 
     shared_libs: [
+        "libbase",
         "libhwui",
         "liblog",
     ],
