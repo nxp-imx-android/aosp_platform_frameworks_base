@@ -83,6 +83,23 @@ class DesktopRemoteListener @Inject constructor() {
         }
     }
 
+    /**
+     * [hasTasksRequiringTaskbarRounding] is true when a task is either maximized or snapped
+     * left/right and rounded corners are enabled.
+     */
+    fun onTaskbarCornerRoundingUpdate(hasTasksRequiringTaskbarRounding: Boolean, displayId: Int) {
+        ProtoLog.v(
+            WM_SHELL_DESKTOP_MODE,
+            "$TAG: onTaskbarCornerRoundingUpdate doesAnyTaskRequireTaskbarRounding=%b, displayId=%d",
+            hasTasksRequiringTaskbarRounding,
+            displayId,
+        )
+
+        remoteListener?.call { l ->
+            l.onTaskbarCornerRoundingUpdate(hasTasksRequiringTaskbarRounding, displayId)
+        }
+    }
+
     private companion object {
         private val TAG = "DesktopRemoteListener"
     }

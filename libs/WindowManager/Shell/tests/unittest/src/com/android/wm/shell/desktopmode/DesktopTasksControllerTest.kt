@@ -137,7 +137,6 @@ import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.Minimiz
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ResizeTrigger
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.UnminimizeReason
 import com.android.wm.shell.desktopmode.DesktopTasksController.SnapPosition
-import com.android.wm.shell.desktopmode.DesktopTasksController.TaskbarDesktopTaskListener
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFullscreenTask
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createHomeTask
@@ -292,7 +291,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Mock lateinit var pipScheduler: PipScheduler
     @Mock private lateinit var mockInteractionJankMonitor: InteractionJankMonitor
     @Mock private lateinit var mockSurface: SurfaceControl
-    @Mock private lateinit var taskbarDesktopTaskListener: TaskbarDesktopTaskListener
     @Mock private lateinit var freeformTaskTransitionStarter: FreeformTaskTransitionStarter
     @Mock private lateinit var mockHandler: Handler
     @Mock private lateinit var focusTransitionObserver: FocusTransitionObserver
@@ -305,7 +303,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     private lateinit var mockitoSession: StaticMockitoSession
     @Mock private lateinit var bubbleController: BubbleController
     @Mock private lateinit var resources: Resources
-    @Mock lateinit var desktopRemoteListener: DesktopRemoteListener
+    @Mock private lateinit var desktopRemoteListener: DesktopRemoteListener
     @Mock private lateinit var userManager: UserManager
     @Mock
     private lateinit var desktopWallpaperActivityTokenProvider:
@@ -535,7 +533,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         verify(recentsTransitionHandler).addTransitionStateListener(captor.capture())
         recentsTransitionStateListener = captor.firstValue
 
-        controller.taskbarDesktopTaskListener = taskbarDesktopTaskListener
         snapController.start(snapEventHandler)
         controller.setPipScheduler(pipScheduler)
 
@@ -657,7 +654,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             ),
         )
 
-        verify(taskbarDesktopTaskListener)
+        verify(desktopRemoteListener)
             .onTaskbarCornerRoundingUpdate(argumentCaptor.capture(), displayIdCaptor.capture())
         verify(desktopModeEventLogger, times(1))
             .logTaskResizingEnded(
@@ -702,7 +699,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             ),
         )
 
-        verify(taskbarDesktopTaskListener)
+        verify(desktopRemoteListener)
             .onTaskbarCornerRoundingUpdate(argumentCaptor.capture(), displayIdCaptor.capture())
         verify(desktopModeEventLogger, times(1))
             .logTaskResizingEnded(
@@ -4370,7 +4367,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         )
         controller.moveToNextDisplay(task.taskId, EnterReason.UNKNOWN_ENTER)
 
-        verify(taskbarDesktopTaskListener).onTaskbarCornerRoundingUpdate(anyBoolean(), anyInt())
+        verify(desktopRemoteListener).onTaskbarCornerRoundingUpdate(anyBoolean(), anyInt())
     }
 
     @Test
@@ -4397,7 +4394,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             removingLastTaskId = null,
             exitReason = ExitReason.RETURN_HOME_OR_OVERVIEW,
         )
-        verify(taskbarDesktopTaskListener).onTaskbarCornerRoundingUpdate(false, DEFAULT_DISPLAY)
+        verify(desktopRemoteListener).onTaskbarCornerRoundingUpdate(false, DEFAULT_DISPLAY)
     }
 
     @Test
@@ -5010,7 +5007,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         minimizePipTask(task)
 
-        verify(taskbarDesktopTaskListener).onTaskbarCornerRoundingUpdate(anyBoolean(), anyInt())
+        verify(desktopRemoteListener).onTaskbarCornerRoundingUpdate(anyBoolean(), anyInt())
     }
 
     @Test
@@ -5281,7 +5278,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         controller.minimizeTask(task, MinimizeReason.MINIMIZE_BUTTON)
 
-        verify(taskbarDesktopTaskListener).onTaskbarCornerRoundingUpdate(anyBoolean(), anyInt())
+        verify(desktopRemoteListener).onTaskbarCornerRoundingUpdate(anyBoolean(), anyInt())
     }
 
     @Test

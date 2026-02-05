@@ -68,6 +68,19 @@ class DesktopRemoteListenerTest : ShellTestCase() {
     }
 
     @Test
+    fun onTaskbarCornerRoundingUpdate_callsRemoteListener() {
+        listener.onTaskbarCornerRoundingUpdate(
+            hasTasksRequiringTaskbarRounding = true,
+            displayId = 2,
+        )
+        verify(desktopTaskListener)
+            .onTaskbarCornerRoundingUpdate(
+                /* hasTasksRequiringTaskbarRounding= */ true,
+                /* displayId= */ 2,
+            )
+    }
+
+    @Test
     fun testUnregister() {
         listener.unregister()
         // After stopping, the remote listener should not be called.
@@ -78,8 +91,13 @@ class DesktopRemoteListenerTest : ShellTestCase() {
 
         listener.onEnterDesktopModeTransitionStarted(transitionDuration)
         listener.onExitDesktopModeTransitionStarted(transitionDuration, shouldEndUpAtHome)
+        listener.onTaskbarCornerRoundingUpdate(
+            hasTasksRequiringTaskbarRounding = true,
+            displayId = 2,
+        )
 
         verify(desktopTaskListener, never()).onEnterDesktopModeTransitionStarted(any())
         verify(desktopTaskListener, never()).onExitDesktopModeTransitionStarted(any(), any())
+        verify(desktopTaskListener, never()).onTaskbarCornerRoundingUpdate(any(), any())
     }
 }

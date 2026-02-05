@@ -357,8 +357,6 @@ class DesktopTasksController(
             }
         }
 
-    @VisibleForTesting var taskbarDesktopTaskListener: TaskbarDesktopTaskListener? = null
-
     /** Task id of the task currently being dragged from fullscreen/split. */
     val draggingTaskId
         get() = dragToDesktopTransitionHandler.draggingTaskId
@@ -6820,7 +6818,7 @@ class DesktopTasksController(
     }
 
     private fun updateTaskBarAndWallpaperDim(displayId: Int, shouldApplyEffect: Boolean) {
-        taskbarDesktopTaskListener?.onTaskbarCornerRoundingUpdate(shouldApplyEffect, displayId)
+        desktopRemoteListener.onTaskbarCornerRoundingUpdate(shouldApplyEffect, displayId)
         wallpaperService.setWallpaperDimAmount(
             if (shouldApplyEffect) wallpaperDimAmount else 0f,
             displayId,
@@ -6915,26 +6913,6 @@ class DesktopTasksController(
                     )
                     remoteListener.call { l ->
                         l.onTasksVisibilityChanged(displayId, visibleTasksCount)
-                    }
-                }
-            }
-
-        private val taskbarDesktopTaskListener: TaskbarDesktopTaskListener =
-            object : TaskbarDesktopTaskListener {
-                override fun onTaskbarCornerRoundingUpdate(
-                    hasTasksRequiringTaskbarRounding: Boolean,
-                    displayId: Int,
-                ) {
-                    ProtoLog.v(
-                        WM_SHELL_DESKTOP_MODE,
-                        "IDesktopModeImpl: onTaskbarCornerRoundingUpdate " +
-                            "doesAnyTaskRequireTaskbarRounding=%b, displayId=%d",
-                        hasTasksRequiringTaskbarRounding,
-                        displayId,
-                    )
-
-                    remoteListener.call { l ->
-                        l.onTaskbarCornerRoundingUpdate(hasTasksRequiringTaskbarRounding, displayId)
                     }
                 }
             }
@@ -7131,7 +7109,6 @@ class DesktopTasksController(
                 c.userRepositories.current.addDeskChangeListener(deskChangeListener, c.mainExecutor)
             }
             c.userRepositories.current.addVisibleTasksListener(visibleTasksListener, c.mainExecutor)
-            c.taskbarDesktopTaskListener = taskbarDesktopTaskListener
             desktopRemoteListener.register(remoteListener)
         }
 
@@ -7140,7 +7117,6 @@ class DesktopTasksController(
                 c.userRepositories.current.removeDeskChangeListener(deskChangeListener)
             }
             c.userRepositories.current.removeVisibleTasksListener(visibleTasksListener)
-            c.taskbarDesktopTaskListener = null
             desktopRemoteListener.unregister()
         }
     }
@@ -7207,16 +7183,6 @@ class DesktopTasksController(
                 /* shouldOverrideByDevOption= */ true,
                 com.android.launcher3.Flags.FLAG_ENABLE_ALT_TAB_KQS_FLATENNING,
             )
-    }
-
-    /** Defines interface for classes that can listen to changes for task resize. */
-    // TODO(b/343931111): Migrate to using TransitionObservers when ready
-    interface TaskbarDesktopTaskListener {
-        /**
-         * [hasTasksRequiringTaskbarRounding] is true when a task is either maximized or snapped
-         * left/right and rounded corners are enabled.
-         */
-        fun onTaskbarCornerRoundingUpdate(hasTasksRequiringTaskbarRounding: Boolean, displayId: Int)
     }
 
     /**
