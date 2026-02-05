@@ -18,7 +18,6 @@
 metric_template_spec: {
   id_prefix: "max_consecutive"
   dimensions: "cuj_name"
-  dimensions: "cuj_start"
   value_columns: "missed_frames"
   value_columns: "missed_sf_frames"
   value_columns: "missed_app_frames"
@@ -95,7 +94,6 @@ metric_template_spec: {
         -- where the frames were actually janky
         SELECT
           cuj_name,
-          cuj_start,
           -- If is_jank is 0, we treat the length as 0 so it doesn't become the MAX
           CAST(MAX(CASE WHEN is_jank = 1 THEN streak_length ELSE 0 END) AS REAL)
             AS missed_frames,
@@ -104,7 +102,7 @@ metric_template_spec: {
           CAST(MAX(CASE WHEN is_app_jank = 1 THEN app_streak_length ELSE 0 END) AS REAL)
             AS missed_app_frames
         FROM all_streak_lengths
-        GROUP BY cuj_name, cuj_start;
+        GROUP BY cuj_name;
       "
     }
   }
