@@ -2056,7 +2056,7 @@ public class BatteryStatsImpl extends BatteryStats {
     }
 
     @VisibleForTesting
-    final class PowerStatsCollectorInjector implements CpuPowerStatsCollector.Injector,
+    final class PowerStatsCollectorInjector implements CpuTimeInStateCollector.Injector,
             ScreenPowerStatsCollector.Injector, MobileRadioPowerStatsCollector.Injector,
             WifiPowerStatsCollector.Injector, BluetoothPowerStatsCollector.Injector,
             EnergyConsumerPowerStatsCollector.Injector, WakelockPowerStatsCollector.Injector {
@@ -2113,8 +2113,8 @@ public class BatteryStatsImpl extends BatteryStats {
         }
 
         @Override
-        public CpuPowerStatsCollector.KernelCpuStatsReader getKernelCpuStatsReader() {
-            return new CpuPowerStatsCollector.KernelCpuStatsReader();
+        public CpuTimeInStateCollector.KernelCpuStatsReader getKernelCpuStatsReader() {
+            return new CpuTimeInStateCollector.KernelCpuStatsReader();
         }
 
         @Override
@@ -10766,7 +10766,7 @@ public class BatteryStatsImpl extends BatteryStats {
         mHistory = new BatteryStatsHistory(null /* historyBuffer */, mConstants.MAX_HISTORY_BUFFER,
                 mBatteryHistoryDirectory, mClock, mMonotonicClock, traceDelegate, eventLogger);
 
-        mCpuPowerStatsCollector = new CpuPowerStatsCollector(mPowerStatsCollectorInjector);
+        mCpuPowerStatsCollector = new CpuTimeInStateCollector(mPowerStatsCollectorInjector);
         mCpuPowerStatsCollector.addConsumer(this::recordPowerStats);
 
         mWakelockPowerStatsCollector = new WakelockPowerStatsCollector(
@@ -16149,7 +16149,7 @@ public class BatteryStatsImpl extends BatteryStats {
             dumpConstantsLocked(pw);
 
             pw.println();
-            mCpuPowerStatsCollector.dumpCpuPowerBracketsLocked(pw);
+            mCpuPowerStatsCollector.dumpLocked(pw);
         }
     }
 }
