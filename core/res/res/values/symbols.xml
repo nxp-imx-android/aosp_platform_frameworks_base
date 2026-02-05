@@ -6222,6 +6222,7 @@
   <java-symbol type="string" name="satellite_messaging_unsupported_default_sms_app_notification_summary" />
   <java-symbol type="string" name="satellite_messaging_location_disabled_notification_title" />
   <java-symbol type="string" name="satellite_messaging_location_disabled_notification_summary" />
+  <java-symbol type="string" name="satellite_indicator" />
 
   <!-- DisplayManager configs. -->
   <java-symbol type="bool" name="config_evenDimmerEnabled" />
