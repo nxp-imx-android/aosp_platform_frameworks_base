@@ -20,6 +20,7 @@
     <style name="Banner.Preference.SettingsLib.Expressive">
         <item name="android:padding">@dimen/settingslib_expressive_space_small1</item>
         <item name="android:background">@drawable/settingslib_expressive_card_background</item>
+        <item name="android:layout_marginBottom">@dimen/settingslib_expressive_space_extrasmall5</item>
     </style>
 
     <style name="Banner.Header.SettingsLib.Expressive"

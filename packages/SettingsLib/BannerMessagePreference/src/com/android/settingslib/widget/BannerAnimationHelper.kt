@@ -165,6 +165,8 @@ class BannerAnimationHelper(
 
         updateFrameLogic(startValue.toInt())
 
+        val invisibleThresholdPixels = measuredFullHeight * 0.02f
+
         // Initialize and start the spring animation
         springAnim = SpringAnimation(bannerView, heightProperty).apply {
             spring = SpringForce(targetValue).apply {
@@ -173,6 +175,7 @@ class BannerAnimationHelper(
             }
             setStartValue(startValue)
             setMinValue(0f)
+            minimumVisibleChange = invisibleThresholdPixels.coerceAtLeast(1f)
             addEndListener { _, _, _, _ ->
                 bannerView.setLayerType(View.LAYER_TYPE_NONE, null)
                 finishAnimation(expand, onEnd)

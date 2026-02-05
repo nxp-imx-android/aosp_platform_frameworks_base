@@ -233,6 +233,11 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
             val keepCount = visiblePreferencesWhenCollapsedCount
             var isFenceVisible = false
 
+            if (collapsiblePreferenceCount > 0) {
+                activeSection.collapsePref?.isVisible = false
+                activeSection.expandPref?.isVisible = true
+            }
+
             if (recyclerView != null && activeSection.list.isNotEmpty()) {
                 val adapter = recyclerView.adapter as? PreferenceGroupAdapter
                 val layoutManager = recyclerView.layoutManager as? LinearLayoutManager
@@ -279,11 +284,6 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
                                         if (i >= keepCount) {
                                             p.isVisible = false
                                         }
-                                    }
-
-                                    if (collapsiblePreferenceCount > 0) {
-                                        activeSection.collapsePref?.isVisible = false
-                                        activeSection.expandPref?.isVisible = true
                                     }
                                 }
                             } else {
