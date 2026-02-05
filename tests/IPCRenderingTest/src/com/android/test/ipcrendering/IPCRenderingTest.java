@@ -75,7 +75,7 @@ public class IPCRenderingTest extends Activity implements SurfaceHolder.Callback
         IpcCanvasContext(SurfaceControl sc) {
             mRenderNode = RenderNode.create("HwuiCanvas", null);
             mRenderNode.setPosition(0, 0, 512, 512); // Explicitly set size
-            mHardwareRenderer = new HardwareRenderer(true);
+            mHardwareRenderer = new HardwareRenderer(/*useIpcCanvas=*/true);
             mHardwareRenderer.setContentRoot(mRenderNode);
             mHardwareRenderer.setSurfaceControl(sc, null);
             mWidth = mHeight = 512;

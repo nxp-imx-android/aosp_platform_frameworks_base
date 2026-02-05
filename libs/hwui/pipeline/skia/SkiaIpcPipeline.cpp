@@ -198,7 +198,6 @@ IRenderPipeline::DrawResult SkiaIpcPipeline::draw(
 }
 
 bool SkiaIpcPipeline::setSurface(ANativeWindow* surface, SwapBehavior swapBehavior) {
-    LOG_ALWAYS_FATAL("SkiaIpcPipeline::setSurface unexpected");
     return true;
 }
 
