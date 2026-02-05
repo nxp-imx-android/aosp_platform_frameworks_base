@@ -113,7 +113,6 @@ import android.os.SystemClock;
 import android.os.UserHandle;
 import android.os.WorkSource;
 import android.os.WorkSource.WorkChain;
-import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.platform.test.annotations.RequiresFlagsEnabled;
@@ -2463,35 +2462,10 @@ public class JobSchedulerServiceTest {
     }
 
     /**
-     * Tests that jobs scheduled through a proxy (eg. system server) count towards scheduling
-     * limits.
-     */
-    @Test
-    @DisableFlags(Flags.FLAG_ENFORCE_SCHEDULE_LIMIT_TO_PROXY_JOBS)
-    public void testScheduleLimiting_Proxy_NotCountTowardsLimit() {
-        mService.mConstants.ENABLE_API_QUOTAS = true;
-        mService.mConstants.API_QUOTA_SCHEDULE_COUNT = 300;
-        mService.mConstants.API_QUOTA_SCHEDULE_WINDOW_MS = 300000;
-        mService.mConstants.API_QUOTA_SCHEDULE_THROW_EXCEPTION = false;
-        mService.mConstants.API_QUOTA_SCHEDULE_RETURN_FAILURE_RESULT = true;
-        mService.updateQuotaTracker();
-        mService.resetScheduleQuota();
-
-        final JobInfo job = createJobInfo().setPersisted(true).build();
-        for (int i = 0; i < 500; ++i) {
-            assertEquals("Got unexpected result for schedule #" + (i + 1),
-                    JobScheduler.RESULT_SUCCESS,
-                    mService.scheduleAsPackage(job, null, TEST_UID, "proxied.package", 0, "JSSTest",
-                            ""));
-        }
-    }
-
-    /**
      * Tests that jobs scheduled through a proxy (eg. system server) don't count towards scheduling
      * limits.
      */
     @Test
-    @EnableFlags(Flags.FLAG_ENFORCE_SCHEDULE_LIMIT_TO_PROXY_JOBS)
     public void testScheduleLimiting_Proxy_CountTowardsLimit() {
         mService.mConstants.ENABLE_API_QUOTAS = true;
         mService.mConstants.API_QUOTA_SCHEDULE_COUNT = 300;
