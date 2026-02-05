@@ -559,7 +559,7 @@
     <!-- Content description for the delete button in the post recording shelf. [CHAR LIMIT=NONE] -->
     <string name="screen_capture_post_recording_shelf_delete_button_a11y">Delete screen recording</string>
     <!-- Content description for the thumbnail in the post recording shelf. [CHAR LIMIT=NONE] -->
-    <string name="screen_capture_post_recording_shelf_thumbnail_a11y">Open screen recording in video viewer</string>
+    <string name="screen_capture_post_recording_shelf_thumbnail_a11y">Open screen recording in viewing app</string>
 
     <!-- Screen capture setting to show clicks and keys when recording [CHAR LIMIT=35] -->
     <string name="screen_capture_show_clicks_and_keys">Show clicks and keys</string>
