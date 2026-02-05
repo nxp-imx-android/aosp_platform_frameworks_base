@@ -1494,8 +1494,8 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
                         serviceInfo.flags));
     }
 
-    public AppBindRecord retrieveAppBindingLocked(Intent intent,
-            ProcessRecord app, ProcessRecord attributedApp) {
+    public @NonNull AppBindRecord retrieveAppBindingLocked(Intent intent,
+            @NonNull ProcessRecord app, ProcessRecord attributedApp) {
         Intent.FilterComparison filter = new Intent.FilterComparison(intent);
         IntentBindRecord i = bindings.get(filter);
         if (i == null) {

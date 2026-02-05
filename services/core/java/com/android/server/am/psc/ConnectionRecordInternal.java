@@ -16,6 +16,7 @@
 
 package com.android.server.am.psc;
 
+import android.annotation.NonNull;
 import android.content.Context;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.util.Slog;
@@ -44,7 +45,7 @@ public abstract class ConnectionRecordInternal implements OomAdjusterImpl.Connec
     public abstract ServiceRecordInternal getService();
 
     /** Returns the client process associated with this connection. */
-    public abstract ProcessRecordInternal getClient();
+    public abstract @NonNull ProcessRecordInternal getClient();
 
     /**
      * Returns the attributed client process associated with this connection, if applicable (e.g.,
