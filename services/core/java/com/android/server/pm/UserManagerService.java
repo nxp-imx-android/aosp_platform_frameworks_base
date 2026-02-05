@@ -5545,6 +5545,11 @@ public class UserManagerService extends IUserManager.Stub {
         } else {
             // File exists and flag is on, make sure file has correct permissions
             // TODO: annabauza - Remove with flag cleanup. Temporary for current testing population.
+            FileUtils.setPermissions(
+                    mPerfUserListFile.toString(),
+                    FileUtils.S_IRUSR | FileUtils.S_IWUSR | FileUtils.S_IRGRP
+                            | FileUtils.S_IWGRP | FileUtils.S_IROTH,
+                    -1, -1);
             SELinux.restorecon(mPerfUserListFile);
         }
     }
