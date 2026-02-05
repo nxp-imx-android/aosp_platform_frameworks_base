@@ -66,6 +66,7 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.os.Environment;
 import android.os.IBinder;
+import android.os.Process;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.os.UserHandle;
@@ -447,7 +448,7 @@ class RecentTasks {
      * @return whether the current caller has the same uid as the recents component.
      */
     boolean isCallerRecents(int callingUid) {
-        return UserHandle.isSameApp(callingUid, mRecentsUid);
+        return isSameApp(callingUid, mRecentsUid);
     }
 
     /**
@@ -455,7 +456,19 @@ class RecentTasks {
      * recents component.
      */
     boolean isRecentsComponent(ComponentName cn, int uid) {
-        return UserHandle.isSameApp(uid, mRecentsUid) && cn.equals(mRecentsComponent);
+        return isSameApp(uid, mRecentsUid) && cn.equals(mRecentsComponent);
+    }
+
+    private boolean isSameApp(int uid1, int uid2) {
+        if (uid1 == uid2) {
+            return true;
+        }
+        final PackageManager pm = mService.mContext.getPackageManager();
+        final int mappedUid1 = pm.getAppUidForPrivateComputeCoreUid(uid1);
+        final int mappedUid2 = pm.getAppUidForPrivateComputeCoreUid(uid2);
+        return UserHandle.isSameApp(
+                mappedUid1 != Process.INVALID_UID ? mappedUid1 : uid1,
+                mappedUid2 != Process.INVALID_UID ? mappedUid2 : uid2);
     }
 
     /**

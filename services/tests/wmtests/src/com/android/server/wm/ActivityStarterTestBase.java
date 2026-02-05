@@ -19,7 +19,6 @@ import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.content.pm.ActivityInfo.LAUNCH_MULTIPLE;
 
-import static com.android.dx.mockito.inline.extended.ExtendedMockito.clearInvocations;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doNothing;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mock;
@@ -149,6 +148,7 @@ abstract class ActivityStarterTestBase extends WindowTestsBase {
                 });
         doReturn(null).when(mMockPackageManager).getDefaultHomeActivity(anyInt());
         doReturn(mMockPackageManager).when(mAtm).getPackageManagerInternalLocked();
+        doReturn(true).when(mMockPackageManager).isSameApp(anyString(), anyInt(), anyInt());
         doReturn("packageName").when(mMockPackageManager).getNameForUid(anyInt());
         doReturn(false).when(mMockPackageManager).isInstantAppInstallerComponent(any());
         doReturn(null).when(mMockPackageManager).resolveIntent(any(), any(), anyLong(), anyLong(),
