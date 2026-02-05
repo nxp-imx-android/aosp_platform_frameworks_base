@@ -28,6 +28,8 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -44,7 +46,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInstaller;
 import android.content.pm.PackageManager;
+import android.content.pm.VersionedPackage;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
@@ -88,7 +92,8 @@ public class LockedAppActivityTest {
 
     private enum ActivityMode {
         INTERCEPT,
-        LOCKED_TASK
+        LOCKED_TASK,
+        UNINSTALL
     }
 
     private static final String SYSTEM_PACKAGE_NAME = "android";
@@ -118,6 +123,10 @@ public class LockedAppActivityTest {
     private OnBackInvokedDispatcher mOnBackInvokedDispatcher;
     @Mock
     private PackageManager mPackageManager;
+    @Mock
+    private PackageInstaller mPackageInstaller;
+    @Mock
+    private IntentSender mUninstallStatusReceiver;
 
     @Before
     public void setUp() throws Exception {
@@ -132,6 +141,9 @@ public class LockedAppActivityTest {
         when(mPackageManager.getApplicationInfo(eq(TEST_PACKAGE_NAME),
                 anyInt())).thenReturn(mApplicationInfo);
         when(mApplicationInfo.loadLabel(mPackageManager)).thenReturn(TEST_APP_LABEL);
+
+        // Mock PackageInstaller for uninstall tests.
+        when(mPackageManager.getPackageInstaller()).thenReturn(mPackageInstaller);
 
         // Default to the package being locked. Tests that need a different state can override.
         when(mAppLockInternal.isPackageLocked(TEST_PACKAGE_NAME, TEST_USER_ID)).thenReturn(true);
@@ -231,8 +243,23 @@ public class LockedAppActivityTest {
 
     @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
     @Test
-    public void launchActivity_inInterceptMode_setsCorrectThemeAndIsTranslucent() {
-        Intent intent = createTestLockedAppActivityIntent(ActivityMode.INTERCEPT);
+    public void launchActivity_inUninstallMode_withoutRequiredExtras_finishes() {
+        Intent intent = createTestLockedAppActivityIntent(ActivityMode.UNINSTALL);
+        intent.removeExtra(LockedAppActivity.EXTRA_VERSIONED_PACKAGE);
+        intent.removeExtra(LockedAppActivity.EXTRA_STATUS_RECEIVER);
+
+        try (ActivityScenario<LockedAppActivity> scenario = ActivityScenario.launch(intent)) {
+            assertThat(scenario.getState()).isEqualTo(Lifecycle.State.DESTROYED);
+            verify(mPackageInstaller, never()).uninstall(any(VersionedPackage.class), anyInt(),
+                    any());
+        }
+    }
+
+    @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
+    @Test
+    public void launchActivity_inTranslucentModes_setsCorrectThemeAndIsTranslucent(
+            @TestParameter(value = {"INTERCEPT", "UNINSTALL"}) ActivityMode activityMode) {
+        Intent intent = createTestLockedAppActivityIntent(activityMode);
 
         try (ActivityScenario<LockedAppActivity> scenario = ActivityScenario.launch(intent)) {
             assertThat(mTestInjector.getThemeResId()).isEqualTo(
@@ -244,8 +271,9 @@ public class LockedAppActivityTest {
 
     @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
     @Test
-    public void onConfigurationChanged_inInterceptMode_retainsThemeAndTranslucency() {
-        Intent intent = createTestLockedAppActivityIntent(ActivityMode.INTERCEPT);
+    public void onConfigurationChanged_inTranslucentModes_retainsThemeAndTranslucency(
+            @TestParameter(value = {"INTERCEPT", "UNINSTALL"}) ActivityMode activityMode) {
+        Intent intent = createTestLockedAppActivityIntent(activityMode);
 
         try (ActivityScenario<LockedAppActivity> scenario = ActivityScenario.launch(intent)) {
             scenario.onActivity(activity -> {
@@ -340,12 +368,24 @@ public class LockedAppActivityTest {
     @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
     @Test
     public void launchActivity_withPackageUnlocked_finishes(
-            @TestParameter ActivityMode activityMode) {
+            @TestParameter(value = {"INTERCEPT", "LOCKED_TASK"}) ActivityMode activityMode) {
         Intent intent = createTestLockedAppActivityIntent(activityMode);
         when(mAppLockInternal.isPackageLocked(TEST_PACKAGE_NAME, TEST_USER_ID)).thenReturn(false);
 
         try (ActivityScenario<LockedAppActivity> scenario = ActivityScenario.launch(intent)) {
             assertThat(scenario.getState()).isEqualTo(Lifecycle.State.DESTROYED);
+        }
+    }
+
+    @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
+    @Test
+    public void launchActivity_inUninstallMode_withPackageUnlocked_doesNotFinish() {
+        Intent intent = createTestLockedAppActivityIntent(ActivityMode.UNINSTALL);
+
+        when(mAppLockInternal.isPackageLocked(TEST_PACKAGE_NAME, TEST_USER_ID)).thenReturn(false);
+        try (ActivityScenario<LockedAppActivity> scenario = ActivityScenario.launch(intent)) {
+            assertThat(scenario.getState()).isNotEqualTo(Lifecycle.State.DESTROYED);
+            verify(mBiometricPrompt).authenticate(any(), any(), any());
         }
     }
 
@@ -461,6 +501,26 @@ public class LockedAppActivityTest {
 
     @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
     @Test
+    public void authSucceeded_inUninstallMode_triggersUninstallAndFinishes() {
+        Intent intent = createTestLockedAppActivityIntent(ActivityMode.UNINSTALL);
+
+        try (ActivityScenario<LockedAppActivity> scenario = ActivityScenario.launch(intent)) {
+            captureAuthenticationCallback().onAuthenticationSucceeded(
+                    mock(BiometricPrompt.AuthenticationResult.class));
+
+            verify(mPackageInstaller).uninstall(
+                    eq(new VersionedPackage(TEST_PACKAGE_NAME, /* versionCode= */ 1)),
+                    /* flags= */ eq(0),
+                    eq(mUninstallStatusReceiver)
+            );
+            verify(mAppLockInternal, never()).setAppLockEnabledPackageSuccessfullyAuthenticated(
+                    anyString(), anyInt());
+            scenario.onActivity(activity -> assertThat(activity.isFinishing()).isTrue());
+        }
+    }
+
+    @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
+    @Test
     public void authError_inInterceptMode_finishesWithoutUnlockingAndSendingIntent() {
         Intent intent = createTestLockedAppActivityIntent(ActivityMode.INTERCEPT);
 
@@ -488,6 +548,26 @@ public class LockedAppActivityTest {
             verify(mBiometricPrompt, times(1)).authenticate(any(), any(), any());
             verifyPackageNotUnlockedAndDoesNotSendTargetIntent();
             scenario.onActivity(activity -> assertThat(activity.isFinishing()).isFalse());
+        }
+    }
+
+    @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
+    @Test
+    public void authError_inUninstallMode_sendsAbortAndFinishes() throws
+            IntentSender.SendIntentException {
+        Intent intent = createTestLockedAppActivityIntent(ActivityMode.UNINSTALL);
+
+        try (ActivityScenario<LockedAppActivity> scenario = ActivityScenario.launch(intent)) {
+            captureAuthenticationCallback().onAuthenticationError(
+                    BiometricPrompt.BIOMETRIC_ERROR_USER_CANCELED, "User canceled");
+            verify(mUninstallStatusReceiver).sendIntent(
+                    /* context= */ any(),
+                    /* code= */ eq(0),
+                    argThat(result -> result.getIntExtra(PackageInstaller.EXTRA_STATUS, 0)
+                            == PackageInstaller.STATUS_FAILURE_ABORTED),
+                    /* onFinished= */ any(),
+                    /* handler= */ any());
+            scenario.onActivity(activity -> assertThat(activity.isFinishing()).isTrue());
         }
     }
 
@@ -598,7 +678,8 @@ public class LockedAppActivityTest {
     @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
     @Test
     public void onWindowFocusChanged_whenPackageUnlockedWhileNotFocused_finishes(
-            @TestParameter ActivityMode activityMode) throws Exception {
+            @TestParameter(value = {"INTERCEPT", "LOCKED_TASK"}) ActivityMode activityMode)
+            throws Exception {
         Intent intent = createTestLockedAppActivityIntent(activityMode);
 
         try (ActivityScenario<LockedAppActivity> scenario = ActivityScenario.launch(intent)) {
@@ -634,6 +715,27 @@ public class LockedAppActivityTest {
 
             // Verify that authenticate was still only called once.
             verify(mBiometricPrompt, times(1)).authenticate(any(), any(), any());
+        }
+    }
+
+    @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
+    @Test
+    public void onWindowFocusChanged_inUninstallMode_whenPackageUnlocked_doesNotFinish() {
+        Intent intent = createTestLockedAppActivityIntent(ActivityMode.UNINSTALL);
+
+        when(mAppLockInternal.isPackageLocked(TEST_PACKAGE_NAME, TEST_USER_ID)).thenReturn(true);
+        try (ActivityScenario<LockedAppActivity> scenario = ActivityScenario.launch(intent)) {
+            // Simulate losing focus.
+            scenario.onActivity(activity -> activity.onWindowFocusChanged(false));
+
+            // Mock that the package is now unlocked.
+            when(mAppLockInternal.isPackageLocked(TEST_PACKAGE_NAME, TEST_USER_ID)).thenReturn(
+                    false);
+
+            // Simulate regaining focus.
+            scenario.onActivity(activity -> activity.onWindowFocusChanged(true));
+
+            scenario.onActivity(activity -> assertThat(activity.isFinishing()).isFalse());
         }
     }
 
@@ -680,7 +782,7 @@ public class LockedAppActivityTest {
     @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
     @Test
     public void differentPackageUnlockedViaListener_doesNotFinish(
-            @TestParameter ActivityMode activityMode) {
+            @TestParameter(value = {"INTERCEPT", "LOCKED_TASK"}) ActivityMode activityMode) {
         final Intent intent = createTestLockedAppActivityIntent(activityMode);
         final String otherPackage = TEST_PACKAGE_NAME + "other";
 
@@ -716,8 +818,9 @@ public class LockedAppActivityTest {
 
     @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
     @Test
-    public void onBackInvoked_inInterceptMode_callbackNotRegistered() {
-        Intent intent = createTestLockedAppActivityIntent(ActivityMode.INTERCEPT);
+    public void onBackInvoked_inTranslucentModes_callbackNotRegistered(
+            @TestParameter(value = {"INTERCEPT", "UNINSTALL"}) ActivityMode activityMode) {
+        Intent intent = createTestLockedAppActivityIntent(activityMode);
 
         try (ActivityScenario<LockedAppActivity> scenario = ActivityScenario.launch(intent)) {
             verify(mOnBackInvokedDispatcher, never()).registerOnBackInvokedCallback(
@@ -803,12 +906,23 @@ public class LockedAppActivityTest {
     }
 
     private Intent createTestLockedAppActivityIntent(ActivityMode activityMode) {
-        IntentSender intentSender = (activityMode == ActivityMode.INTERCEPT) ? mIntentSender : null;
-        return createBaseTestLockedAppActivityIntent()
+        final Intent intent = createBaseTestLockedAppActivityIntent()
                 .putExtra(Intent.EXTRA_PACKAGE_NAME, TEST_PACKAGE_NAME)
                 .putExtra(Intent.EXTRA_USER_ID, TEST_USER_ID)
-                .putExtra(Intent.EXTRA_INTENT, intentSender)
                 .setFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+
+        if (activityMode == ActivityMode.UNINSTALL) {
+            intent.putExtra(LockedAppActivity.EXTRA_IS_UNINSTALL, true)
+                    .putExtra(LockedAppActivity.EXTRA_VERSIONED_PACKAGE,
+                            new VersionedPackage(TEST_PACKAGE_NAME, /* versionCode= */ 1))
+                    .putExtra(LockedAppActivity.EXTRA_UNINSTALL_FLAGS, 0)
+                    .putExtra(LockedAppActivity.EXTRA_STATUS_RECEIVER, mUninstallStatusReceiver);
+        } else {
+            IntentSender intentSender = (activityMode == ActivityMode.INTERCEPT) ? mIntentSender :
+                    null;
+            intent.putExtra(Intent.EXTRA_INTENT, intentSender);
+        }
+        return intent;
     }
 
     private class TestLockedAppActivityInjector extends LockedAppActivity.Injector {
@@ -876,6 +990,11 @@ public class LockedAppActivityTest {
                 mOriginalIntentSender = mIntentSender;
             }
             return mOriginalIntentSender;
+        }
+
+        @Override
+        public IntentSender getUninstallStatusReceiver(Intent intent) {
+            return mUninstallStatusReceiver;
         }
 
         @Override

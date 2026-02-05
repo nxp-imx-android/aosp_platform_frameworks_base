@@ -199,6 +199,14 @@ class UninstallLaunch : FragmentActivity(), UninstallActionListener {
         if (localLogv) {
             Log.d(LOG_TAG, "Staring uninstall")
         }
+
+        // Dismiss the dialog UI immediately to ensure it doesn't visually persist
+        // (e.g. behind the App Lock authentication screen).
+        // The Activity remains alive to receive the final result.
+        val fragment = getUninstallationFragment()
+        if (fragment is DialogFragment) {
+            fragment.dismiss()
+        }
         uninstallViewModel!!.initiateUninstall(keepData)
     }
 

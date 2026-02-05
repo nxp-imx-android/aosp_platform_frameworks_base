@@ -33,6 +33,7 @@ import static android.content.pm.PackageManager.INSTALL_UNARCHIVE_DRAFT;
 import static android.os.Process.INVALID_UID;
 import static android.os.Process.SYSTEM_UID;
 
+import static com.android.internal.app.LockedAppActivity.createLockedAppActivityUninstallIntent;
 import static com.android.server.pm.PackageArchiver.isArchivingEnabled;
 import static com.android.server.pm.PackageInstallerSession.isValidVerificationPolicy;
 import static com.android.server.pm.PackageManagerService.SHELL_PACKAGE_NAME;
@@ -47,6 +48,7 @@ import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.app.ActivityManager;
 import android.app.AppGlobals;
+import android.app.AppLockInternal;
 import android.app.AppOpsManager;
 import android.app.BroadcastOptions;
 import android.app.Notification;
@@ -1601,6 +1603,33 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
         final PackageDeleteObserverAdapter adapter = new PackageDeleteObserverAdapter(mContext,
                 statusReceiver, versionedPackage.getPackageName(),
                 canSilentlyInstallPackage, userId, mPackageArchiver, flags);
+
+        // App Lock enabled apps require user authentication before uninstall.
+        if (android.security.Flags.appLockApis() && android.security.Flags.appLockCore()) {
+            final String packageName = versionedPackage.getPackageName();
+            final boolean isAppLockEnabled = LocalServices.getService(AppLockInternal.class)
+                    .isPackageAppLockEnabled(packageName, userId);
+            if (isAppLockEnabled && callingUid != SYSTEM_UID) {
+                final long identity = Binder.clearCallingIdentity();
+                try {
+                    final Intent uninstallAuthIntent = createLockedAppActivityUninstallIntent(
+                            versionedPackage, userId, flags, statusReceiver);
+                    PendingIntent pendingIntent = PendingIntent.getActivity(
+                            mContext,
+                            /* requestCode= */ 0,
+                            uninstallAuthIntent,
+                            PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+                    );
+                    Intent wrapperIntent = new Intent();
+                    wrapperIntent.putExtra(Intent.EXTRA_INTENT, pendingIntent);
+                    adapter.onUserActionRequired(wrapperIntent);
+                    return;
+                } finally {
+                    Binder.restoreCallingIdentity(identity);
+                }
+            }
+        }
+
         if (mContext.checkPermission(Manifest.permission.DELETE_PACKAGES, callingPid, callingUid)
                 == PackageManager.PERMISSION_GRANTED) {
             // Sweet, call straight through!
@@ -2279,7 +2308,12 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
             fillIn.putExtra(PackageInstaller.EXTRA_PACKAGE_NAME, mPackageName);
             fillIn.putExtra(PackageInstaller.EXTRA_STATUS,
                     PackageInstaller.STATUS_PENDING_USER_ACTION);
-            fillIn.putExtra(Intent.EXTRA_INTENT, intent);
+            PendingIntent pi = intent.getParcelableExtra(Intent.EXTRA_INTENT, PendingIntent.class);
+            if (pi != null) {
+                fillIn.putExtra(Intent.EXTRA_INTENT, pi);
+            } else {
+                fillIn.putExtra(Intent.EXTRA_INTENT, intent);
+            }
             try {
                 final BroadcastOptions options = BroadcastOptions.makeBasic();
                 options.setPendingIntentBackgroundActivityLaunchAllowed(false);

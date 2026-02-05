@@ -132,7 +132,7 @@ public class UninstallUninstalling extends Activity implements
         } catch (EventResultPersister.OutOfIdsException | IllegalArgumentException e) {
             Log.e(LOG_TAG, "Fails to start uninstall", e);
             onResult(PackageInstaller.STATUS_FAILURE, PackageManager.DELETE_FAILED_INTERNAL_ERROR,
-                    null, 0);
+                    null, 0, null);
         }
     }
 
@@ -149,7 +149,8 @@ public class UninstallUninstalling extends Activity implements
     }
 
     @Override
-    public void onResult(int status, int legacyStatus, @Nullable String message, int serviceId) {
+    public void onResult(int status, int legacyStatus, @Nullable String message, int serviceId,
+            Intent intent) {
         if (mCallback != null) {
             // The caller will be informed about the result via a callback
             mCallback.onUninstallComplete(mAppInfo.packageName, legacyStatus, message);

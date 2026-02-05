@@ -5873,7 +5873,7 @@
     </string>
     <!-- Message shown on the system-provided BiometricPrompt, informing the user the app they're trying to open is locked by App Lock. [CHAR LIMIT=NONE] -->
     <string name="locked_app_biometric_prompt_description">
-        <xliff:g id="app_name" example="Gmail">%1$s</xliff:g> is locked
+        This app is protected with app lock
     </string>
     <!-- Message shown on the system-provided activity, informing the user who is using an external display that the app they're trying to open needs to be unlocked on their other device. [CHAR LIMIT=NONE] -->
     <string name="locked_app_external_display_message">

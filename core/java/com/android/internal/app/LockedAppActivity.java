@@ -24,7 +24,9 @@ import android.app.AppLockInternal;
 import android.app.AppLockInternal.PackageLockedStateListener;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.content.pm.PackageInstaller;
 import android.content.pm.PackageManager;
+import android.content.pm.VersionedPackage;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -51,23 +53,29 @@ import com.android.server.LocalServices;
 import java.util.Objects;
 
 /**
- * An activity that presents a {@link BiometricPrompt} to the user for unlocking a package locked by
- * App Lock.
+ * An activity that presents a {@link BiometricPrompt} to the user for authenticating actions
+ * related to a package locked by App Lock.
  *
- * <p>This activity is launched when the user attempts to open an application that is currently
- * locked by the App Lock feature. It handles the full authentication lifecycle, including showing
- * the {@link BiometricPrompt}, processing the result, and unlocking the package upon success.
+ * <p>This activity is launched when the user attempts to interact with a package locked by App Lock
+ * , such as launching a locked app or attempting to uninstall it. It handles the full
+ * authentication lifecycle, including showing the {@link BiometricPrompt}, processing the result,
+ * and performing the requested action upon success.
  *
- * <p>This activity operates in two modes, depending on the presence of a target
- * {@link IntentSender}:
+ * <p>The activity operates in three primary modes, determined by the launching intent:
  * <ul>
  *     <li><b>Intercept Mode (target exists):</b> The activity acts as a transparent overlay that
  *         intercepts the launch of a locked app. It immediately shows a {@link BiometricPrompt},
- *         and upon successful authentication, it launches the original target intent.
+ *         and upon successful authentication, it launches the original target intent. This mode is
+ *         identified by {@link #EXTRA_INTENT} being non {@code null}.
  *     <li><b>Locked Task Mode (target is {@code null}):</b> The activity provides a default UI that
  *         acts as a locked task overlay. It automatically shows a {@link BiometricPrompt} on
  *         creation and when resumed, and allows the user to re-trigger the prompt by tapping the
- *         background. The back button is disabled in this mode.
+ *         background. The back button is disabled in this mode. This mode is identified by
+ *         {@link #EXTRA_INTENT} being {@code null}.
+ *     <li><b>Uninstall Mode:</b> The activity acts as a transparent overlay that intercepts the
+ *         uninstallation of an App Lock enabled app. It immediately shows a {@link BiometricPrompt}
+ *         and upon successful authentication, it initiates the uninstallation. This mode is
+ *         identified by {@link #EXTRA_IS_UNINSTALL} being true.
  * </ul>
  *
  * <p>The activity is designed to be transient and will finish itself under several conditions:
@@ -75,7 +83,8 @@ import java.util.Objects;
  *     <li>If the App Lock feature is disabled.</li>
  *     <li>If the initiating intent is missing required data (package name or user ID).</li>
  *     <li>If the target package is already unlocked when the activity starts or becomes unlocked
- *         while the activity is visible.</li>
+ *         while the activity is visible (this does not apply to uninstall mode, which always
+ *         requires user confirmation).</li>
  *     <li>If critical UI components cannot be initialized.</li>
  *     <li>After a successful authentication.</li>
  * </ul>
@@ -89,6 +98,14 @@ public final class LockedAppActivity extends Activity {
     private static final String TAG = "LockedAppActivity";
     private static final boolean DEBUG = Build.IS_DEBUGGABLE && Log.isLoggable(TAG, Log.DEBUG);
     private static final String SYSTEM_PACKAGE_NAME = "android";
+
+    public static final String EXTRA_IS_UNINSTALL = "com.android.internal.app.extra.IS_UNINSTALL";
+    public static final String EXTRA_VERSIONED_PACKAGE =
+            "com.android.internal.app.extra.VERSIONED_PACKAGE";
+    public static final String EXTRA_UNINSTALL_FLAGS =
+            "com.android.internal.app.extra.UNINSTALL_FLAGS";
+    public static final String EXTRA_STATUS_RECEIVER =
+            "com.android.internal.app.extra.STATUS_RECEIVER";
 
     @Nullable
     private static Injector sInjector;
@@ -109,6 +126,13 @@ public final class LockedAppActivity extends Activity {
                         Slog.d(TAG, "Authentication succeeded");
                     }
                     mIsBiometricPromptShowing = false;
+                    if (mIsUninstall) {
+                        mInjector.getPackageManager(LockedAppActivity.this).getPackageInstaller()
+                                .uninstall(mUninstallVersionedPackage, mUninstallFlags,
+                                mUninstallStatusReceiver);
+                        finish();
+                        return;
+                    }
                     mAppLockInternal.setAppLockEnabledPackageSuccessfullyAuthenticated(
                             mPackageName, mUserId);
                     // In intercept mode, send the original target intent after unlocking.
@@ -123,6 +147,13 @@ public final class LockedAppActivity extends Activity {
                     super.onAuthenticationError(errorCode, errString);
                     Slog.w(TAG, "Authentication error: " + errorCode + " " + errString);
                     mIsBiometricPromptShowing = false;
+                    // In uninstall mode, send uninstall aborted status and finish.
+                    if (mIsUninstall) {
+                        sendUninstallFailure(PackageInstaller.STATUS_FAILURE_ABORTED,
+                                "App lock user authentication failed");
+                        finish();
+                    }
+
                     // In intercept mode, finish the activity to unblock the UI.
                     if (isInterceptMode()) {
                         finish();
@@ -144,6 +175,10 @@ public final class LockedAppActivity extends Activity {
     private IntentSender mTarget;
     @Nullable
     private Bitmap mPackageLogo;
+    private boolean mIsUninstall;
+    private VersionedPackage mUninstallVersionedPackage;
+    private int mUninstallFlags;
+    private IntentSender mUninstallStatusReceiver;
 
     /**
      * Creates an {@link Intent} to launch {@link LockedAppActivity}.
@@ -174,6 +209,33 @@ public final class LockedAppActivity extends Activity {
                 .putExtra(Intent.EXTRA_USER_ID, userId)
                 .putExtra(Intent.EXTRA_INTENT, target)
                 .setFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+    }
+
+    /**
+     * Creates an {@link Intent} to launch {@link LockedAppActivity} for the purpose of
+     * authenticating an uninstall request.
+     *
+     * Upon successful authentication, the activity will trigger the uninstallation using the
+     * provided flags and status receiver.
+     *
+     * @param versionedPackage The package to be uninstalled.
+     * @param userId           The user ID for which the package is installed.
+     * @param uninstallFlags   The flags to be used for the uninstallation.
+     * @param statusReceiver   The {@link IntentSender} to receive the uninstallation status.
+     * @return a configured {@link Intent} to start {@link LockedAppActivity}.
+     */
+    public static Intent createLockedAppActivityUninstallIntent(
+            @NonNull VersionedPackage versionedPackage, int userId, int uninstallFlags,
+            @NonNull IntentSender statusReceiver) {
+        Objects.requireNonNull(versionedPackage);
+        Objects.requireNonNull(statusReceiver);
+
+        return createLockedAppActivityIntent(
+                versionedPackage.getPackageName(), userId, /* target= */ null)
+                .putExtra(EXTRA_IS_UNINSTALL, true)
+                .putExtra(EXTRA_VERSIONED_PACKAGE, versionedPackage)
+                .putExtra(EXTRA_UNINSTALL_FLAGS, uninstallFlags)
+                .putExtra(EXTRA_STATUS_RECEIVER, statusReceiver);
     }
 
     /**
@@ -229,7 +291,8 @@ public final class LockedAppActivity extends Activity {
             return;
         }
 
-        if (finishIfUnlocked(mPackageName, mUserId)) {
+        // In uninstall mode, we always want to confirm with the user.
+        if (!mIsUninstall && finishIfUnlocked(mPackageName, mUserId)) {
             return;
         }
 
@@ -241,13 +304,16 @@ public final class LockedAppActivity extends Activity {
         }
         mPackageLogo = convertDrawableToBitmap(getPackageLogo(mPackageName));
 
-        // Register locked state listener.
-        mPackageLockedStateListener = new AppLockLockedStateListener(this, mPackageName, mUserId,
-                mTarget);
-        mAppLockInternal.registerPackageLockedStateListener(mPackageLockedStateListener);
+        if (!mIsUninstall) {
+            // Register locked state listener. This is unnecessary for the uninstall flow
+            // because we do not unlock the package upon successful authentication.
+            mPackageLockedStateListener = new AppLockLockedStateListener(this, mPackageName,
+                    mUserId, mTarget);
+            mAppLockInternal.registerPackageLockedStateListener(mPackageLockedStateListener);
+        }
 
-        if (isInterceptMode()) {
-            // In intercept mode, show the BiometricPrompt immediately.
+        if (isInterceptMode() || mIsUninstall) {
+            // In intercept and uninstall mode, show the BiometricPrompt immediately.
             showBiometricPrompt();
         } else {
             // In locked task mode, disable the back button to prevent bypassing the
@@ -268,8 +334,24 @@ public final class LockedAppActivity extends Activity {
         mUserId = intent.getIntExtra(Intent.EXTRA_USER_ID, UserHandle.USER_NULL);
         mTarget = mInjector.getIntentSender(intent);
 
+        mIsUninstall = intent.getBooleanExtra(EXTRA_IS_UNINSTALL, /* default= */ false);
+        if (mIsUninstall) {
+            mUninstallVersionedPackage = intent.getParcelableExtra(EXTRA_VERSIONED_PACKAGE,
+                    VersionedPackage.class);
+            mUninstallFlags = intent.getIntExtra(EXTRA_UNINSTALL_FLAGS, /* default= */ 0);
+            mUninstallStatusReceiver = mInjector.getUninstallStatusReceiver(intent);
+
+            if (mUninstallVersionedPackage == null || mUninstallStatusReceiver == null) {
+                Slog.e(TAG, "Missing extras for uninstall: EXTRA_VERSIONED_PACKAGE or"
+                        + " EXTRA_STATUS_RECEIVER, finishing");
+                finish();
+                return;
+            }
+        }
+
         if (DEBUG) {
-            Slog.d(TAG, "In " + (isInterceptMode() ? "intercept" : "locked task") + " mode");
+            Slog.d(TAG, "In " + (mIsUninstall ? "uninstall"
+                    : (isInterceptMode() ? "intercept" : "locked task")) + " mode");
         }
     }
 
@@ -277,12 +359,14 @@ public final class LockedAppActivity extends Activity {
      * Determines and applies the appropriate theme for the activity based on its mode. This must be
      * called before {@code super.onCreate()}.
      * <ul>
-     *     <li>In intercept mode, a transparent panel theme is used to overlay the locked app.</li>
+     *     <li>In intercept and uninstall mode, a transparent panel theme is used to overlay the
+     * locked app.</li>
      *     <li>In locked task mode, a standard theme with no action bar is used.</li>
      * </ul>
      */
     private void applyTheme() {
-        mInjector.setTheme(this, isInterceptMode() ? android.R.style.Theme_DeviceDefault_Panel
+        mInjector.setTheme(this, (isInterceptMode() || mIsUninstall)
+                ? android.R.style.Theme_DeviceDefault_Panel
                 : android.R.style.Theme_DeviceDefault_NoActionBar);
     }
 
@@ -295,14 +379,15 @@ public final class LockedAppActivity extends Activity {
     }
 
     /**
-     * Configures the user interface based on the current mode (intercept or locked task). This must
-     * be called after {@code super.onCreate()} and in {@code super.onConfigurationChanged()}.
+     * Configures the user interface based on the current mode (intercept, uninstall or locked task)
+     * . This must be called after {@code super.onCreate()} and in
+     * {@code super.onConfigurationChanged()}.
      *
      * @return {@code true} if the UI was successfully configured, {@code false} otherwise.
      */
     private boolean setupUi() {
-        if (isInterceptMode()) {
-            // In intercept mode, ensure the activity is translucent.
+        if (isInterceptMode() || mIsUninstall) {
+            // In intercept and uninstall mode, ensure the activity is translucent.
             mInjector.setTranslucent(this, true);
             return true;
         }
@@ -343,6 +428,7 @@ public final class LockedAppActivity extends Activity {
         return true;
     }
 
+    // TODO(b/479140664): Refactor modes into constants and use a dedicated field mCurrentMode.
     private boolean isInterceptMode() {
         return mTarget != null;
     }
@@ -370,14 +456,18 @@ public final class LockedAppActivity extends Activity {
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
 
-        // Finish if the package is no longer locked upon focus change.
+        // In uninstall mode, always require user confirmation. Otherwise, finish if the package is
+        // no longer locked upon focus change. The BiometricPrompt should only be shown if the
+        // package is locked and the activity has window focus.
         if (mPackageName == null) {
             Slog.w(TAG, "Package name is null in onWindowFocusChanged, finishing");
             finish();
             return;
         }
 
-        finishIfUnlocked(mPackageName, mUserId);
+        if (!mIsUninstall && finishIfUnlocked(mPackageName, mUserId)) {
+            return;
+        }
     }
 
     @Override
@@ -423,8 +513,7 @@ public final class LockedAppActivity extends Activity {
         final BiometricPrompt.Builder biometricPromptBuilder = mInjector.getBiometricPromptBuilder(
                         this)
                 .setTitle(getString(R.string.biometric_dialog_default_title))
-                .setDescription(getString(R.string.locked_app_biometric_prompt_description,
-                        mPackageLabel))
+                .setDescription(getString(R.string.locked_app_biometric_prompt_description))
                 .setLogoDescription(mPackageLabel.toString())
                 .setAllowedAuthenticators(
                         Authenticators.BIOMETRIC_STRONG | Authenticators.DEVICE_CREDENTIAL);
@@ -469,6 +558,22 @@ public final class LockedAppActivity extends Activity {
             return null;
         }
     }
+
+    private void sendUninstallFailure(int status, String message) {
+        if (mUninstallStatusReceiver == null) {
+            return;
+        }
+        try {
+            final Intent fillIn = new Intent();
+            fillIn.putExtra(PackageInstaller.EXTRA_STATUS, status);
+            fillIn.putExtra(PackageInstaller.EXTRA_STATUS_MESSAGE, message);
+            mUninstallStatusReceiver.sendIntent(this, /* code= */ 0, fillIn,
+                    /* onFinished= */ null, /* handler= */ null);
+        } catch (IntentSender.SendIntentException e) {
+            Slog.e(TAG, "Unable to send uninstall failure status", e);
+        }
+    }
+
 
     /**
      * A {@link PackageLockedStateListener} that finishes the {@link LockedAppActivity} if the
@@ -647,6 +752,16 @@ public final class LockedAppActivity extends Activity {
          */
         public IntentSender getIntentSender(Intent intent) {
             return intent.getParcelableExtra(Intent.EXTRA_INTENT, IntentSender.class);
+        }
+
+        /**
+         * Retrieves the {@link IntentSender} from the given Intent to send uninstall status.
+         *
+         * @param intent the intent to extract the sender from.
+         * @return the intent sender, or {@code null} if not present.
+         */
+        public IntentSender getUninstallStatusReceiver(Intent intent) {
+            return intent.getParcelableExtra(EXTRA_STATUS_RECEIVER, IntentSender.class);
         }
 
         /**
