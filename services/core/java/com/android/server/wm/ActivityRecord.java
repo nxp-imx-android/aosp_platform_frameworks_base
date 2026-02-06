@@ -4350,7 +4350,14 @@ final class ActivityRecord extends WindowToken {
     @Override
     void removeImmediately() {
         if (mState != DESTROYED) {
-            Slog.w(TAG, "Force remove immediately " + this + " state=" + mState);
+            if (isVisibleRequested()) {
+                // Log the trace to help debug if the activity was forced removed when it was still
+                // visible.
+                Slog.w(TAG, "Force remove immediately " + this + " state=" + mState,
+                        new Throwable());
+            } else {
+                Slog.w(TAG, "Force remove immediately " + this + " state=" + mState);
+            }
             // If Task#removeImmediately is called directly with alive activities, ensure that the
             // activities are destroyed and detached from process.
             destroyImmediately("removeImmediately");
