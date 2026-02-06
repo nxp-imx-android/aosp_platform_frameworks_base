@@ -16,6 +16,7 @@
 
 package com.android.server.privatecompute;
 
+import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_DATA_MIGRATION_STATE_CHANGED__MIGRATION_STATE__NON_PCC_DATA_MIGRATION_SERVICE_STARTED;
 import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_WRITE_TO_AUDIT_LOG__WRITE_TYPE__BATCHED;
 import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_WRITE_TO_AUDIT_LOG__WRITE_TYPE__DIRECT;
 import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_WRITE_TO_AUDIT_LOG__WRITE_TYPE__NATIVE;
@@ -481,8 +482,10 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
             boolean bound = mContext.bindServiceAsUser(bindIntent,
                     new MigrationServiceConnection(mContext, mInjector, callback),
                     Context.BIND_AUTO_CREATE, UserHandle.getUserHandleForUid(callingUid));
-
-            if (!bound) {
+            if (bound) {
+                PrivateComputeStatsLogUtil.logPccDataMigrationStateChanged(
+                        PCC_DATA_MIGRATION_STATE_CHANGED__MIGRATION_STATE__NON_PCC_DATA_MIGRATION_SERVICE_STARTED);
+            } else {
                 try {
                     callback.onError(MigrationException.ERROR_INVOCATION_FAILED,
                             "Failed to bind to service");
