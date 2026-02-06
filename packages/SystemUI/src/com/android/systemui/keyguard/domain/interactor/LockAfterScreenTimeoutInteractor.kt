@@ -26,6 +26,7 @@ import android.content.IntentFilter
 import android.provider.Settings
 import android.provider.Settings.Secure
 import android.util.Log
+import com.android.internal.annotations.VisibleForTesting
 import com.android.systemui.authentication.domain.interactor.AuthenticationInteractor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -99,6 +100,11 @@ constructor(
                 }
             }
         }
+
+    @VisibleForTesting
+    fun timeoutElapsedForTesting() {
+        repository.lockAfterScreenTimeoutState.value = LockAfterScreenTimeoutTimerState.ELAPSED
+    }
 
     init {
         registerBroadcastReceiver()

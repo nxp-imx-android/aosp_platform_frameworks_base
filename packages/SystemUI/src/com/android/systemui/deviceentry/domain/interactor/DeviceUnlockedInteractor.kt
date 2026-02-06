@@ -16,7 +16,6 @@
 
 package com.android.systemui.deviceentry.domain.interactor
 
-import android.provider.Settings
 import android.security.Flags.secureLockDevice
 import android.util.Log
 import androidx.annotation.VisibleForTesting
@@ -30,12 +29,13 @@ import com.android.systemui.deviceentry.shared.model.DeviceEntryRestrictionReaso
 import com.android.systemui.deviceentry.shared.model.DeviceUnlockSource
 import com.android.systemui.deviceentry.shared.model.DeviceUnlockStatus
 import com.android.systemui.flags.SystemPropertiesHelper
-import com.android.systemui.keyguard.KeyguardViewMediator
 import com.android.systemui.keyguard.domain.interactor.BiometricUnlockInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardEnabledInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
+import com.android.systemui.keyguard.domain.interactor.LockAfterScreenTimeoutInteractor
 import com.android.systemui.keyguard.domain.interactor.TrustInteractor
 import com.android.systemui.keyguard.shared.model.AuthenticationFlags
+import com.android.systemui.keyguard.shared.model.LockAfterScreenTimeoutTimerState
 import com.android.systemui.keyguard.shared.model.toDeviceUnlockSource
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.log.table.TableLogBuffer
@@ -49,12 +49,10 @@ import com.android.systemui.shared.settings.data.repository.SecureSettingsReposi
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import dagger.Lazy
 import javax.inject.Inject
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -91,6 +89,7 @@ constructor(
     @SceneFrameworkTableLog private val tableLogBuffer: TableLogBuffer,
     biometricUnlockInteractor: BiometricUnlockInteractor,
     private val keyguardEnabledInteractor: KeyguardEnabledInteractor,
+    private val lockAfterScreenTimeoutInteractor: LockAfterScreenTimeoutInteractor,
 ) : ExclusiveActivatable() {
     private val faceEnrolledAndEnabled = biometricSettingsInteractor.isFaceAuthEnrolledAndEnabled
     private val fingerprintEnrolledAndEnabled =
@@ -340,7 +339,7 @@ constructor(
                         // When entering a trusted environment, power-related lock events are
                         // ignored.
                         Log.d(TAG, "In trusted environment, ignoring power-related lock events")
-                        flowOf(CancelDelayedLock("in trusted environment"))
+                        emptyFlow()
                     } else {
                         // When not in a trusted environment, power-related lock events are treated
                         // as normal.
@@ -359,47 +358,58 @@ constructor(
                                     )
                                 }
                                 .distinctUntilChangedBy { it.first }
-                                .map { (isAsleep, lastSleepReason, launchGestureTriggered) ->
+                                .flatMapLatestConflated {
+                                    (isAsleep, lastSleepReason, launchGestureTriggered) ->
                                     if (isAsleep) {
-                                        if (
-                                            (lastSleepReason == WakeSleepReason.POWER_BUTTON) &&
+                                        if (lastSleepReason == WakeSleepReason.POWER_BUTTON) {
+                                            if (
                                                 !launchGestureTriggered &&
-                                                authenticationInteractor
-                                                    .getPowerButtonInstantlyLocks()
-                                        ) {
-                                            LockImmediately("locked instantly from power button")
+                                                    authenticationInteractor
+                                                        .getPowerButtonInstantlyLocks()
+                                            ) {
+                                                flowOf(
+                                                    LockImmediately(
+                                                        "locked instantly from power button"
+                                                    )
+                                                )
+                                            } else {
+                                                flowOf(
+                                                    ExpectLockWithDelay(
+                                                        "lock with delay from power button"
+                                                    )
+                                                )
+                                            }
                                         } else if (
                                             lastSleepReason == WakeSleepReason.SLEEP_BUTTON
                                         ) {
-                                            LockImmediately("locked instantly from sleep button")
+                                            flowOf(
+                                                LockImmediately(
+                                                    "locked instantly from sleep button"
+                                                )
+                                            )
                                         } else if (lastSleepReason == WakeSleepReason.FOLD) {
-                                            LockImmediately("locked instantly from fold")
+                                            flowOf(LockImmediately("locked instantly from fold"))
                                         } else if (lastSleepReason == WakeSleepReason.LID_CLOSE) {
-                                            LockImmediately("locked instantly from lid close")
+                                            flowOf(
+                                                LockImmediately("locked instantly from lid close")
+                                            )
+                                        } else if (lastSleepReason == WakeSleepReason.TIMEOUT) {
+                                            flowOf(ExpectLockWithDelay("screen timeout with delay"))
                                         } else {
-                                            LockWithDelay("entering sleep")
+                                            flowOf(ExpectLockWithDelay("unknown sleep reason"))
                                         }
                                     } else {
-                                        CancelDelayedLock("waking up")
+                                        emptyFlow<LockEvent>()
                                     }
                                 },
-                            // Started dreaming
-                            powerInteractor.isInteractive.flatMapLatestConflated { isInteractive ->
-                                // Only respond to dream state changes while the device is
-                                // interactive.
-                                if (isInteractive) {
-                                    keyguardInteractor.isDreamingAny.distinctUntilChanged().map {
-                                        isDreaming ->
-                                        if (isDreaming) {
-                                            LockWithDelay("started dreaming")
-                                        } else {
-                                            CancelDelayedLock("stopped dreaming")
-                                        }
+                            lockAfterScreenTimeoutInteractor.lockAfterScreenTimeoutState
+                                .flatMapLatestConflated { state ->
+                                    if (state == LockAfterScreenTimeoutTimerState.ELAPSED) {
+                                        flowOf(LockImmediately("lock screen timeout elapsed"))
+                                    } else {
+                                        emptyFlow<LockEvent>()
                                     }
-                                } else {
-                                    emptyFlow()
-                                }
-                            },
+                                },
                         )
                     }
                 },
@@ -421,67 +431,15 @@ constructor(
                 repository.deviceUnlockStatus.value = DeviceUnlockStatus(false, null)
             }
 
-            is LockWithDelay -> {
-                val lockDelay = lockDelay()
-                Log.d(TAG, "locking in ${lockDelay}ms due to \"$debugReason\"")
-                try {
-                    delay(lockDelay)
-                    Log.d(
-                        TAG,
-                        "locking after having waited for ${lockDelay}ms due to \"$debugReason\"",
-                    )
+            is ExpectLockWithDelay -> {
+                if (lockAfterScreenTimeoutInteractor.delayLockIsImmediate()) {
+                    Log.d(TAG, "lock timeout is 0, so locking immediately due to \"$debugReason\"")
                     repository.deviceUnlockStatus.value = DeviceUnlockStatus(false, null)
-                } catch (_: CancellationException) {
-                    Log.d(
-                        TAG,
-                        "delayed locking canceled, original delay was ${lockDelay}ms and reason was \"$debugReason\"",
-                    )
+                } else {
+                    Log.d(TAG, "waiting for lock timeout due to \"$debugReason\"")
                 }
             }
-
-            is CancelDelayedLock -> {
-                // Do nothing, the mere receipt of this inside of a "latest" block means that any
-                // previous coroutine is automatically canceled.
-            }
         }
-    }
-
-    /**
-     * Returns the amount of time to wait before locking down the device after the device has been
-     * put to sleep by the user, in milliseconds.
-     */
-    private suspend fun lockDelay(): Long {
-        val lockAfterScreenTimeoutSetting =
-            secureSettingsRepository
-                .getInt(
-                    Settings.Secure.LOCK_SCREEN_LOCK_AFTER_TIMEOUT,
-                    KeyguardViewMediator.KEYGUARD_LOCK_AFTER_DELAY_DEFAULT,
-                )
-                .toLong()
-        Log.d(TAG, "Lock after screen timeout setting set to ${lockAfterScreenTimeoutSetting}ms")
-
-        val maxTimeToLockDevicePolicy = authenticationInteractor.getMaximumTimeToLock()
-        Log.d(TAG, "Device policy max set to ${maxTimeToLockDevicePolicy}ms")
-
-        if (maxTimeToLockDevicePolicy <= 0) {
-            // No device policy enforced maximum.
-            Log.d(TAG, "No device policy max, delay is ${lockAfterScreenTimeoutSetting}ms")
-            return lockAfterScreenTimeoutSetting
-        }
-
-        val screenOffTimeoutSetting =
-            secureSettingsRepository
-                .getInt(
-                    Settings.System.SCREEN_OFF_TIMEOUT,
-                    KeyguardViewMediator.KEYGUARD_DISPLAY_TIMEOUT_DELAY_DEFAULT,
-                )
-                .coerceAtLeast(0)
-                .toLong()
-        Log.d(TAG, "Screen off timeout setting set to ${screenOffTimeoutSetting}ms")
-
-        return (maxTimeToLockDevicePolicy - screenOffTimeoutSetting)
-            .coerceIn(minimumValue = 0, maximumValue = lockAfterScreenTimeoutSetting)
-            .also { Log.d(TAG, "Device policy max enforced, delay is ${it}ms") }
     }
 
     private fun DeviceEntryRestrictionReason?.isInLockdown(): Boolean {
@@ -567,9 +525,7 @@ constructor(
 
     private data class LockImmediately(override val debugReason: String) : LockEvent
 
-    private data class LockWithDelay(override val debugReason: String) : LockEvent
-
-    private data class CancelDelayedLock(override val debugReason: String) : LockEvent
+    private data class ExpectLockWithDelay(override val debugReason: String) : LockEvent
 
     companion object {
         private val TAG = "DeviceUnlockedInteractor"

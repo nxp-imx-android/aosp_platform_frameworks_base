@@ -32,7 +32,6 @@
 
 package com.android.systemui.keyguard.domain.interactor
 
-import android.provider.Settings
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
@@ -41,7 +40,6 @@ import com.android.systemui.authentication.data.repository.fakeAuthenticationRep
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
-import com.android.systemui.keyguard.KeyguardViewMediator
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.data.repository.keyguardOcclusionRepository
 import com.android.systemui.keyguard.shared.model.BiometricUnlockSource
@@ -60,12 +58,10 @@ import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.statusbar.phone.BiometricUnlockController
 import com.android.systemui.testKosmos
-import com.android.systemui.util.settings.data.repository.userAwareSecureSettingsRepository
 import com.google.common.truth.Truth.assertThat
 import junit.framework.Assert.assertFalse
 import junit.framework.Assert.assertTrue
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
 import org.junit.Before
 import org.junit.Test
@@ -270,14 +266,9 @@ class KeyguardOcclusionInteractorTest : SysuiTestCase() {
 
             // Re-lock device:
             powerInteractor.setAsleepForTest()
-            testScope.advanceTimeBy(
-                userAwareSecureSettingsRepository
-                    .getInt(
-                        Settings.Secure.LOCK_SCREEN_LOCK_AFTER_TIMEOUT,
-                        KeyguardViewMediator.KEYGUARD_LOCK_AFTER_DELAY_DEFAULT,
-                    )
-                    .toLong()
-            )
+            testScope.runCurrent()
+            kosmos.lockAfterScreenTimeoutInteractor.timeoutElapsedForTesting()
+            testScope.runCurrent()
             assertThat(occludingActivityWillDismissKeyguard).isFalse()
         }
 

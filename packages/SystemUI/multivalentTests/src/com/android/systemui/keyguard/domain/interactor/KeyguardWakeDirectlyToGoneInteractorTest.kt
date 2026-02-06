@@ -134,7 +134,9 @@ class KeyguardWakeDirectlyToGoneInteractorTest : SysuiTestCase() {
                 canWake,
             )
 
-            kosmos.powerInteractor.setAsleepForTest()
+            kosmos.powerInteractor.setAsleepForTest(
+                sleepReason = PowerManager.GO_TO_SLEEP_REASON_TIMEOUT
+            )
             repository.lockAfterScreenTimeoutState.value = LockAfterScreenTimeoutTimerState.RUNNING
             runCurrent()
 
@@ -150,7 +152,9 @@ class KeyguardWakeDirectlyToGoneInteractorTest : SysuiTestCase() {
             kosmos.powerInteractor.setAwakeForTest()
             runCurrent()
 
-            kosmos.powerInteractor.setAsleepForTest()
+            kosmos.powerInteractor.setAsleepForTest(
+                sleepReason = PowerManager.GO_TO_SLEEP_REASON_TIMEOUT
+            )
             repository.lockAfterScreenTimeoutState.value = LockAfterScreenTimeoutTimerState.RUNNING
             runCurrent()
 
