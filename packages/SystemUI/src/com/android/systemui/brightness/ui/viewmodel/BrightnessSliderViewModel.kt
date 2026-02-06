@@ -60,7 +60,7 @@ constructor(
     val hapticsViewModelFactory: SliderHapticsViewModel.Factory,
     private val brightnessMirrorShowingInteractorLazy: Lazy<BrightnessMirrorShowingInteractor>,
     private val falsingInteractor: FalsingInteractor,
-    @Assisted private val supportsMirroring: Boolean,
+    @Assisted val supportsMirroring: Boolean,
     private val brightnessWarningToast: BrightnessWarningToast,
     private val imageLoader: ImageLoader,
 ) : ExclusiveActivatable() {

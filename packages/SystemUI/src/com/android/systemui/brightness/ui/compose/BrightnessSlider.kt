@@ -383,7 +383,11 @@ fun BrightnessSliderContainer(
     // when stopping dragging
     val containerColor by
         animateColorAsState(
-            if (dragging) containerColors.mirrorColor else containerColors.idleColor
+            if (dragging && viewModel.supportsMirroring) {
+                containerColors.mirrorColor
+            } else {
+                containerColors.idleColor
+            }
         )
 
     val backgroundFrameHeight = dimensions.verticalPadding
