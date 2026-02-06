@@ -42,6 +42,8 @@ public final class EqualizerCapabilities implements Parcelable {
      * @param maxLevelDb The maximum supported gain level in decibels (dB).
      * @param supportedFrequenciesHz An array of all supported band center frequencies in Hertz.
      * @param hasAdjustableQ Indicates whether the equalizer supports an adjustable Q factor.
+     *
+     * @hide
      */
     public EqualizerCapabilities(int minLevelDb, int maxLevelDb,
             @NonNull List<Integer> supportedFrequenciesHz, boolean hasAdjustableQ) {
