@@ -18,6 +18,7 @@ package com.android.server.serial
 
 import android.app.admin.DevicePolicyManagerInternal
 import android.content.Context
+import android.hardware.serial.SerialPort
 import android.hardware.serialservice.SerialPortInfo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.server.LocalServices
@@ -152,12 +153,13 @@ class SerialDeviceFilterTest {
 
     @Test
     fun testIsAvailable_blockPort() {
-        val filter = SerialDeviceFilter(context, arrayOf("test"), nativeService, lock)
+        val filter = SerialDeviceFilter(
+            context, arrayOf("0012:0013", "03f0:0620"), nativeService, lock)
         val info = SerialPortInfo()
         with (info) {
             name = "test"
-            vendorId = -1
-            productId = -1
+            vendorId = 0x3f0
+            productId = 0x620
             subsystem = "usb"
             driverType = "serial"
         }
@@ -165,6 +167,42 @@ class SerialDeviceFilterTest {
         val actual = filter.isAvailable(info)
 
         assertFalse(actual)
+    }
+
+    @Test
+    fun testIsAvailable_notInBlockList() {
+        val filter = SerialDeviceFilter(
+            context, arrayOf("0012:0013", "03f0:0620"), nativeService, lock)
+        val info = SerialPortInfo()
+        with (info) {
+            name = "test"
+            vendorId = 0x0013
+            productId = 0x0014
+            subsystem = "usb"
+            driverType = "serial"
+        }
+
+        val actual = filter.isAvailable(info)
+
+        assertTrue(actual)
+    }
+
+    @Test
+    fun testIsAvailable_notUsbPort() {
+        val filter = SerialDeviceFilter(
+            context, arrayOf("0012:0013", "03f0:0620"), nativeService, lock)
+        val info = SerialPortInfo()
+        with (info) {
+            name = "test"
+            vendorId = SerialPort.INVALID_ID
+            productId = SerialPort.INVALID_ID
+            subsystem = "tty"
+            driverType = "serial"
+        }
+
+        val actual = filter.isAvailable(info)
+
+        assertTrue(actual)
     }
 
     @Test

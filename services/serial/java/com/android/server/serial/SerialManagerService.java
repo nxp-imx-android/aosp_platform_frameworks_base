@@ -97,7 +97,7 @@ public class SerialManagerService extends ISerialManager.Stub implements
 
     private final String[] mPortsInConfig;
 
-    private final String[] mBlockedPortsInConfig;
+    private final String[] mBlockedUsbIdsInConfig;
 
     private final String mDialogComponent;
 
@@ -129,7 +129,7 @@ public class SerialManagerService extends ISerialManager.Stub implements
 
     private SerialManagerService(Context context) {
         this(context, context.getResources().getStringArray(R.array.config_serialPorts),
-                context.getResources().getStringArray(R.array.config_blockedSerialPorts),
+                context.getResources().getStringArray(R.array.config_blockedUsbSerialIds),
                 context.getResources().getString(R.string.config_portAccessDialogComponent),
                 () -> android.hardware.serialservice.ISerialManager.Stub.asInterface(
                         ServiceManager.waitForService(NATIVE_SERIAL_SERVICE_NAME)),
@@ -140,7 +140,7 @@ public class SerialManagerService extends ISerialManager.Stub implements
     }
 
     @VisibleForTesting
-    SerialManagerService(Context context, String[] portsInConfig, String[] blockedPortsInConfig,
+    SerialManagerService(Context context, String[] portsInConfig, String[] blockedUsbIdsInConfig,
             String dialogComponent,
             Supplier<android.hardware.serialservice.ISerialManager> nativeServiceSupplier,
             SerialUserAccessManagerFactory accessManagerFactory,
@@ -149,7 +149,7 @@ public class SerialManagerService extends ISerialManager.Stub implements
         mContext = context;
         mDialogComponent = dialogComponent;
         mPortsInConfig = stripDevPrefix(portsInConfig);
-        mBlockedPortsInConfig = stripDevPrefix(blockedPortsInConfig);
+        mBlockedUsbIdsInConfig = blockedUsbIdsInConfig;
         mNativeServiceSupplier = nativeServiceSupplier;
         mAccessManagerFactory = accessManagerFactory;
         mPortAccessSerializer = portAccessSerializer;
@@ -442,7 +442,7 @@ public class SerialManagerService extends ISerialManager.Stub implements
         }
         traceBegin("createDeviceFilter", 0);
         try {
-            mSerialDeviceFilter = new SerialDeviceFilter(mContext, mBlockedPortsInConfig,
+            mSerialDeviceFilter = new SerialDeviceFilter(mContext, mBlockedUsbIdsInConfig,
                     mNativeService, mLock);
         } catch (RemoteException e) {
             Slog.e(TAG, "Error communicating with native service", e);

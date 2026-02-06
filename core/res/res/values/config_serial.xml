@@ -22,10 +22,10 @@
     <string-array translatable="false" name="config_serialPorts">
     </string-array>
 
-    <!-- List of paths to serial ports that are blocked from being available to the serial manager,
-         for example, /dev/ttyUSB0
+    <!-- List of vid:pid to USB serial ports that are blocked from being available to the serial
+         manager, for example, 18d1:4ee7
     -->
-    <string-array translatable="false" name="config_blockedSerialPorts">
+    <string-array translatable="false" name="config_blockedUsbSerialIds">
     </string-array>
 
     <!-- Component name of the activity that shows the request for access to a serial port. -->

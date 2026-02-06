@@ -23,16 +23,17 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.hardware.serial.SerialPort;
 import android.hardware.serial.SerialPortInfo;
 import android.hardware.serialservice.ISerialManager;
 import android.os.RemoteException;
 import android.os.UserHandle;
+import android.util.Slog;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.LocalServices;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +51,9 @@ class SerialDeviceFilter {
     private static final String SERIAL_DRIVER_TYPE = "serial";
     private static final String BUILT_IN_SERIAL_SUBSYSTEM = "serial-base";
 
-    private final List<String> mBlockedPortsInConfig;
+    // An array of integers compressing vid in the most significant 16 bits and pid in the
+    // least significant 16 bits.
+    private final int[] mBlockedUsbIdsInConfig;
     private final DevicePolicyManagerInternal mDevicePolicyManager;
     private final Object mLock;
 
@@ -73,9 +76,9 @@ class SerialDeviceFilter {
     @GuardedBy("mLock")
     private boolean mIsPtyExposed;
 
-    SerialDeviceFilter(Context context, String[] blockedPortsInConfig,
+    SerialDeviceFilter(Context context, String[] blockedUsbIdsInConfig,
             ISerialManager nativeService, Object lock) throws RemoteException {
-        mBlockedPortsInConfig = Arrays.asList(blockedPortsInConfig);
+        mBlockedUsbIdsInConfig = parseUsbIdList(blockedUsbIdsInConfig);
         mLock = lock;
         mDevicePolicyManager = LocalServices.getService(DevicePolicyManagerInternal.class);
         mIsAccessForbidden = isAccessForbidden();
@@ -130,8 +133,13 @@ class SerialDeviceFilter {
         }
 
         // Ports blocked by the configuration parameter.
-        if (mBlockedPortsInConfig.contains(info.name)) {
-            return false;
+        if (info.vendorId != SerialPort.INVALID_ID && info.productId != SerialPort.INVALID_ID) {
+            final int compressedId = compressIds(info.vendorId, info.productId);
+            for (int i = 0; i < mBlockedUsbIdsInConfig.length; ++i) {
+                if (compressedId == mBlockedUsbIdsInConfig[i]) {
+                    return false;
+                }
+            }
         }
 
         // Expose only devices having "serial" driver type.
@@ -201,6 +209,41 @@ class SerialDeviceFilter {
     @GuardedBy("mLock")
     void setFilteredSerialPortListener(FilteredSerialPortListener filteredSerialPortListener) {
         mFilteredSerialPortListener = filteredSerialPortListener;
+    }
+
+    private static int[] parseUsbIdList(String[] blockedUsbIdsInConfig) {
+        final int[] result = new int[blockedUsbIdsInConfig.length];
+        for (int i = 0; i < blockedUsbIdsInConfig.length; ++i) {
+            final String[] ids = blockedUsbIdsInConfig[i].split(":");
+            if (ids.length != 2) {
+                Slog.w(TAG, "Unrecognized USB ID " + blockedUsbIdsInConfig[i]);
+                // Safe to leave the value to be 0 because that's the USB implementer forum and not
+                // any serial ports.
+                continue;
+            }
+
+            final int vid;
+            final int pid;
+            try {
+                vid = Integer.parseUnsignedInt(ids[0], 16);
+                pid = Integer.parseUnsignedInt(ids[1], 16);
+            } catch (NumberFormatException e) {
+                Slog.w(TAG, "Failed to parse USB ID " + blockedUsbIdsInConfig[i], e);
+                continue;
+            }
+
+            result[i] = compressIds(vid, pid);
+        }
+        return result;
+    }
+
+    private static int compressIds(int vid, int pid) {
+        if (vid < 0 || vid > Short.MAX_VALUE || pid < 0 || pid > Short.MAX_VALUE) {
+            Slog.e(TAG, "Invalid USB ID "
+                    + Integer.toHexString(vid) + ":" + Integer.toHexString(pid));
+            return 0;
+        }
+        return ((vid << 16) | pid);
     }
 
     /**
