@@ -6838,9 +6838,9 @@ public abstract class Context {
 
     /**
      * Use with {@link #getSystemService(String)} to retrieve an
-     * {@link android.security.talisman.TrustTokenManager}.
+     * {@link android.security.trusttoken.TrustTokenManager}.
      * @see #getSystemService(String)
-     * @see android.security.talisman.TrustTokenManager
+     * @see android.security.trusttoken.TrustTokenManager
      * @hide
      */
     public static final String TRUST_TOKEN_SERVICE = "trust_token";
