@@ -21,12 +21,9 @@ import android.tools.traces.monitors.PerfettoTraceMonitor
 import android.tools.traces.monitors.ScreenRecorder
 import android.tools.traces.monitors.events.EventLogMonitor
 import android.tools.traces.monitors.withTracing
-import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
-import org.junit.AssumptionViolatedException
 import org.junit.rules.TestRule
 import org.junit.runner.Description
-import org.junit.runners.model.MultipleFailureException
 import org.junit.runners.model.Statement
 
 /**
@@ -49,44 +46,23 @@ class RecordTraceWithTransitionRule(
 
     override fun apply(base: Statement, description: Description?): Statement {
         return object : Statement() {
+            @Throws(Throwable::class)
             override fun evaluate() {
-                val errors = ArrayList<Throwable>()
                 try {
                     recordTraceWithTransition()
-                } catch (e: Throwable) {
-                    errors.add(e)
                 } finally {
-                    // In case the crash during transition and test App is not removed.
                     tearDownAfterTransition()
                 }
 
-                try {
-                    // Ensure the base is executed even if #recordTraceWithTransition crashes.
-                    base.evaluate()
-                } catch (e: Throwable) {
-                    errors.add(e)
-                }
-                // If the tests should be skipped, don't need to throw exceptions.
-                if (!errors.any { e -> e is AssumptionViolatedException }) {
-                    MultipleFailureException.assertEmpty(errors)
-                }
+                base.evaluate()
             }
         }
     }
 
+    @Throws(Throwable::class)
     private fun recordTraceWithTransition() {
         setUpBeforeTransition()
-        var error: Throwable? = null
-        reader = runTransitionWithTrace {
-            try {
-                transition()
-            } catch (e: Throwable) {
-                Log.e(TAG, "Transition is aborted due to the exception:\n $e", e)
-                // Don't throw yet to allow reader to be initialized
-                error = e
-            }
-        }
-        error?.let { throw it }
+        reader = runTransitionWithTrace { transition() }
     }
 
     /**
@@ -111,8 +87,4 @@ class RecordTraceWithTransitionRule(
                 ),
             predicate = transition,
         )
-
-    companion object {
-        private const val TAG = "TransitionRule"
-    }
 }
