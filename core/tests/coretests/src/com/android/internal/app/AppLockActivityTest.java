@@ -270,7 +270,7 @@ public class AppLockActivityTest {
                             Activity.RESULT_OK, null);
                 }
                 assertThat(activity.mBiometricPromptShown).isTrue();
-                verifyBiometricPromptDisplayed();
+                verifyBiometricPromptDisplayed(newAppLockEnabled);
             });
         }
     }
@@ -573,10 +573,13 @@ public class AppLockActivityTest {
                 .putExtra(PackageManager.EXTRA_APP_LOCK_NEW_STATE, newAppLockEnabled);
     }
 
-    private void verifyBiometricPromptDisplayed() {
+    private void verifyBiometricPromptDisplayed(boolean newAppLockEnabled) {
         final String expectedTitle = mContext.getString(R.string.biometric_dialog_default_title);
-        final String expectedSubtitle = mContext.getString(
-                R.string.biometric_or_screen_lock_dialog_default_subtitle);
+        final String expectedSubtitle = newAppLockEnabled
+                ? mContext.getString(R.string.enable_app_lock_biometric_prompt_subtitle,
+                        TEST_APP_LABEL)
+                : mContext.getString(R.string.disable_app_lock_biometric_prompt_subtitle,
+                        TEST_APP_LABEL);
 
         verify(mBiometricPromptBuilder).setTitle(expectedTitle);
         verify(mBiometricPromptBuilder).setSubtitle(expectedSubtitle);

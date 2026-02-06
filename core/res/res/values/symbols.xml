@@ -3702,11 +3702,13 @@
   <java-symbol type="id" name="app_lock_permission_review_bottom_sheet_divider" />
   <java-symbol type="id" name="app_lock_permission_review_list_app_icon" />
   <java-symbol type="id" name="app_lock_permission_review_list_app_name" />
+  <java-symbol type="id" name="locked_app_activity_external_display_message_id" />
 
   <java-symbol type="layout" name="app_lock_add_screen_lock_dialog" />
   <java-symbol type="layout" name="app_lock_edu_activity" />
   <java-symbol type="layout" name="app_lock_permission_app_item" />
   <java-symbol type="layout" name="app_lock_permission_review_sheet" />
+  <java-symbol type="layout" name="locked_app_activity_layout" />
 
   <java-symbol type="string" name="app_lock_add_screen_lock_button_text" />
   <java-symbol type="string" name="app_lock_add_screen_lock_message" />
@@ -3721,11 +3723,11 @@
   <java-symbol type="string" name="app_lock_edu_dialog_lockscreen_password_name" />
   <java-symbol type="string" name="app_lock_edu_dialog_lockscreen_pattern_name" />
   <java-symbol type="string" name="app_lock_edu_dialog_lockscreen_pin_name" />
+  <java-symbol type="string" name="disable_app_lock_biometric_prompt_subtitle" />
   <java-symbol type="string" name="disable_app_lock_success_toast_message" />
+  <java-symbol type="string" name="enable_app_lock_biometric_prompt_subtitle" />
   <java-symbol type="string" name="enable_app_lock_failure_toast_message" />
   <java-symbol type="string" name="enable_app_lock_success_toast_message" />
-  <java-symbol type="id" name="locked_app_activity_external_display_message_id" />
-  <java-symbol type="layout" name="locked_app_activity_layout" />
   <java-symbol type="string" name="locked_app_biometric_prompt_description" />
 
   <java-symbol type="string" name="app_blocked_title" />
