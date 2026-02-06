@@ -29,7 +29,7 @@ class DesktopWallpaperActivityTokenProvider {
     private val wallpaperActivityTokenByDisplayId = SparseArray<WindowContainerToken>()
 
     fun setToken(token: WindowContainerToken, displayId: Int = DEFAULT_DISPLAY) {
-        logV("Setting desktop wallpaper activity token for display %s", displayId)
+        logV("Setting desktop wallpaper activity token for display %d", displayId)
         wallpaperActivityTokenByDisplayId[displayId] = token
     }
 
@@ -38,7 +38,7 @@ class DesktopWallpaperActivityTokenProvider {
     }
 
     fun removeToken(displayId: Int = DEFAULT_DISPLAY) {
-        logV("Remove desktop wallpaper activity token for display %s", displayId)
+        logV("Remove desktop wallpaper activity token for display %d", displayId)
         wallpaperActivityTokenByDisplayId.delete(displayId)
     }
 
@@ -48,7 +48,7 @@ class DesktopWallpaperActivityTokenProvider {
                 wallpaperActivityTokenByDisplayId[it] == token
             }
         if (displayId != null) {
-            logV("Remove desktop wallpaper activity token for display %s", displayId)
+            logV("Remove desktop wallpaper activity token for display %d", displayId)
             wallpaperActivityTokenByDisplayId.delete(displayId)
         }
     }

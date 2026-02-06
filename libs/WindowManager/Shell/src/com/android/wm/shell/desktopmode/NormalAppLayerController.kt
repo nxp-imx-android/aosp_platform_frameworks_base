@@ -149,7 +149,7 @@ class NormalAppLayerController(
             desktopState.isDesktopModeSupportedOnDisplay(taskInfo.displayId)
         val isDesktopWindow = desktopRepository.isActiveTask(taskInfo.taskId)
         logV(
-            "Checking moving to the desk: taskId=%s, displayId=%s " +
+            "Checking moving to the desk: taskId=%d, displayId=%d " +
                 "isDesktopModeSupportedOnDisplay=%b, isDesktopWindow=%b",
             taskInfo.taskId,
             taskInfo.displayId,
@@ -162,7 +162,7 @@ class NormalAppLayerController(
             val displayId = taskInfo.displayId
             val deskId = desktopRepository.getActiveDeskId(displayId)
             if (deskId != null) {
-                logV("Normal layer is an active desk with id=%s", deskId)
+                logV("Normal layer is an active desk with id=%d", deskId)
                 desktopTasksController!!.moveTaskToDesk(
                     taskId = taskInfo.taskId,
                     deskId = deskId,
@@ -178,7 +178,7 @@ class NormalAppLayerController(
                 }
             } else {
                 logV(
-                    "Couldn't find an active desk on displayId=%s for the normal layer " +
+                    "Couldn't find an active desk on displayId=%d for the normal layer " +
                         "request. Trying to move to the default desk as a fallback.",
                     displayId,
                 )
@@ -230,7 +230,7 @@ class NormalAppLayerController(
         try {
             callback.sendResult(bundle)
         } catch (e: RemoteException) {
-            logW("Failed to invoke callback", e)
+            logW("Failed to invoke callback: %s", e.toString())
         }
     }
 

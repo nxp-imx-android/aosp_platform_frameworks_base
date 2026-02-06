@@ -57,19 +57,18 @@ class DesksController(
     override suspend fun recreateDeskRoot(
         userId: Int,
         destinationDisplayId: Int,
-        deskId: Int
+        deskId: Int,
     ): Int? = createDeskRootSuspending(displayId = destinationDisplayId, userId = userId)
 
-    override suspend fun removeDeskRoots(
-        requests: List<DeskRootHelper.DeskRootRemovalRequest>
-    ) {
+    override suspend fun removeDeskRoots(requests: List<DeskRootHelper.DeskRootRemovalRequest>) {
         val wct = WindowContainerTransaction()
         for (request in requests) {
             desksOrganizer.removeDesk(wct, request.deskId, request.userId)
         }
         if (!wct.isEmpty()) {
             ProtoLog.d(
-                WM_SHELL_DESKTOP_MODE, "$TAG: removeDeskRoots: applying removal of %s",
+                WM_SHELL_DESKTOP_MODE,
+                "$TAG: removeDeskRoots: applying removal of %s",
                 requests,
             )
             shellTaskOrganizer.applyTransaction(wct)
@@ -177,7 +176,7 @@ class DesksController(
 
     private fun createDeskRoot(displayId: Int, userId: Int, onResult: (Int?) -> Unit) {
         if (displayId == INVALID_DISPLAY) {
-            logW("createDesk attempt with invalid displayId", displayId)
+            logW("createDesk attempt with invalid displayId: %d", displayId)
             onResult(null)
             return
         }

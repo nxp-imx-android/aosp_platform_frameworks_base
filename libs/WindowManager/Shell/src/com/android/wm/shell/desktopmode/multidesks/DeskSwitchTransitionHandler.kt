@@ -337,7 +337,7 @@ class DeskSwitchTransitionHandler(
 
                 if (DeskSwitchAnimationUtils.DEBUG_ANIMATION) {
                     logD(
-                        "tick(%d): fromAnimBounds=%s toAnimBounds=%s fadeOut=%d fadeIn=%d",
+                        "tick(%f): fromAnimBounds=%s toAnimBounds=%s fadeOut=%f fadeIn=%f",
                         animFraction,
                         fromDeskAnimBounds,
                         toDeskAnimBounds,

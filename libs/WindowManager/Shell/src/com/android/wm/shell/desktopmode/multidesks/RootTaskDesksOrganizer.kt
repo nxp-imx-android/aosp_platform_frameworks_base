@@ -113,7 +113,7 @@ class RootTaskDesksOrganizer(
     }
 
     override fun createDesk(displayId: Int, userId: Int, callback: OnCreateCallback) {
-        logV("createDesk in displayId=%d userId=%s", displayId, userId)
+        logV("createDesk in displayId=%d userId=%d", displayId, userId)
         // Find an existing desk that is not yet used by this user.
         val unassignedDesk = firstUnassignedDesk(displayId, userId)
         if (unassignedDesk != null) {
@@ -142,7 +142,7 @@ class RootTaskDesksOrganizer(
 
     @Deprecated("Use createDesk() instead.", replaceWith = ReplaceWith("createDesk()"))
     override fun createDeskImmediate(displayId: Int, userId: Int): Int? {
-        logV("createDeskImmediate in displayId=%d userId=%s", displayId, userId)
+        logV("createDeskImmediate in displayId=%d userId=%d", displayId, userId)
         // Find an existing desk that is not yet used by this user.
         val unassignedDesk = firstUnassignedDesk(displayId, userId)
         if (unassignedDesk != null) {
@@ -186,13 +186,7 @@ class RootTaskDesksOrganizer(
         }
         val deskId = taskAppearedInfo.taskInfo.taskId
         logV("createDeskRoot created desk root using taskId=%d", deskId)
-        createDeskRootRequests +=
-            CreateDeskRequest(
-                deskId,
-                displayId,
-                userId,
-                callback,
-            )
+        createDeskRootRequests += CreateDeskRequest(deskId, displayId, userId, callback)
         val token = taskAppearedInfo.taskInfo.token
         val wct = WindowContainerTransaction()
         if (Flags.enableBackNavigationDesktopAppNoMinimize()) {
@@ -863,7 +857,7 @@ class RootTaskDesksOrganizer(
     }
 
     private data class CreateDeskRequest(
-         val deskId: Int,
+        val deskId: Int,
         val displayId: Int,
         val userId: Int?,
         val onCreateCallback: OnCreateCallback,

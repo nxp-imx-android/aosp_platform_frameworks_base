@@ -345,14 +345,14 @@ class AppHandleViewHolder(
             when (decorThemeUtil.getAppTheme(description)) {
                 Theme.LIGHT -> {
                     logD(
-                        "color calculation: using light color, reason: light app theme (bgColor=%s)",
+                        "color calculation: using light color, reason: light app theme (bgColor=%d)",
                         bgColor,
                     )
                     return false
                 }
                 Theme.DARK -> {
                     logD(
-                        "color calculation: using dark color, reason: dark app theme (bgColor=%s)",
+                        "color calculation: using dark color, reason: dark app theme (bgColor=%d)",
                         bgColor,
                     )
                     return true

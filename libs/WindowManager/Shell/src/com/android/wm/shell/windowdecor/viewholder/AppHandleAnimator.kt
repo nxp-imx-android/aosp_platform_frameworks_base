@@ -187,7 +187,7 @@ class AppHandleAnimator(appHandleView: View, private val captionHandle: ImageBut
                 if (DEBUG_ANIMATOR_STEPS) {
                     addUpdateListener { animator ->
                         logD(
-                            "update: animator=ObjectAnimator@%s f=%f alpha=%f",
+                            "update: animator=ObjectAnimator@%s f=%f alpha=%s",
                             animator.hashCode().toHexString(),
                             animator.animatedFraction,
                             animator.animatedValue,
@@ -288,7 +288,7 @@ class AppHandleAnimator(appHandleView: View, private val captionHandle: ImageBut
                             ColorStateList.valueOf(animator.animatedValue as Int)
                         if (DEBUG_ANIMATOR_STEPS) {
                             logD(
-                                "update: animator=ValueAnimator@%s f=%f color=%f",
+                                "update: animator=ValueAnimator@%s f=%f color=%s",
                                 animator.hashCode().toHexString(),
                                 animator.animatedFraction,
                                 (animator.animatedValue as Int).toArgbString(),

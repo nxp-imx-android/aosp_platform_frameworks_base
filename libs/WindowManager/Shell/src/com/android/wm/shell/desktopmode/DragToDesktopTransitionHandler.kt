@@ -14,7 +14,6 @@ import android.app.PendingIntent.FLAG_ALLOW_UNSAFE_IMPLICIT_INTENT
 import android.app.PendingIntent.FLAG_MUTABLE
 import android.app.WindowConfiguration.ACTIVITY_TYPE_HOME
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
-import android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.FILL_IN_COMPONENT
@@ -31,7 +30,6 @@ import android.view.SurfaceControl.Transaction
 import android.view.WindowManager.TRANSIT_CHANGE
 import android.view.WindowManager.TRANSIT_CLOSE
 import android.window.DesktopExperienceFlags
-import android.window.DesktopModeFlags
 import android.window.TransitionInfo
 import android.window.TransitionInfo.Change
 import android.window.TransitionRequestInfo
@@ -302,7 +300,7 @@ sealed class DragToDesktopTransitionHandler(
                 }
             logV(
                 "cancelDragToDesktop finishing start-transition and starting split-select " +
-                    "request to position=%s with state=%s",
+                    "request to position=%d with state=%s",
                 splitPosition,
                 state,
             )

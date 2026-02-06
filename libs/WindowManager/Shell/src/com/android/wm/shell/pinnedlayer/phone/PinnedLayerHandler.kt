@@ -175,7 +175,7 @@ class PinnedLayerHandler(
             )
         if (!isLastTask) {
             logV(
-                "cleanUpDesktopIfNeeded: task with id=%s is not the last one, skipping.",
+                "cleanUpDesktopIfNeeded: task with id=%d is not the last one, skipping.",
                 taskInfo.taskId,
             )
             return
@@ -214,7 +214,7 @@ class PinnedLayerHandler(
             WINDOWING_LAYER_UNDEFINED,
             null -> {}
             else -> {
-                logW("PinnedLayerHandler tried to move a task=%s, but the layer=%s is skipped.")
+                logW("PinnedLayerHandler tried to move a task, but the layer is skipped.")
             }
         }
     }

@@ -414,6 +414,7 @@ class DesksTransitionObserver(
                                 "Desktop wallpaper of user=%d moved to back without a visible " +
                                     "desk (hasFullImmersiveTask=%b isKeyguardAppearing=%b) - " +
                                     "deactivateDeskInRepo=%b deactivateDeskInOrganizer=%b",
+                                userId,
                                 hasFullImmersiveTask,
                                 isKeyguardAppearing(info),
                                 deactivateDeskInRepo,
