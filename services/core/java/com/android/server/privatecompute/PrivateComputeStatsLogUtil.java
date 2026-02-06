@@ -20,6 +20,7 @@ import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_BINDER_PR
 import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_BINDER_PROXY_TRANSACTION_REPORTED__TRANSACTION_STATUS__STATUS_FAILED;
 import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_BINDER_PROXY_TRANSACTION_REPORTED__TRANSACTION_STATUS__STATUS_SUCCESS;
 import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_INPUT_SANITIZATION_REPORTED;
+import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_PERMISSION_CHECK_RESULT;
 
 import com.android.os.privatecompute.PrivateComputeAtomsLog;
 
@@ -54,5 +55,12 @@ public class PrivateComputeStatsLogUtil {
                 PCC_BINDER_PROXY_TRANSACTION_REPORTED__TRANSACTION_STATUS__STATUS_FAILED,
                 failureReason
         );
+    }
+
+    /**
+     * Logs the result of a PCC permission check.
+     */
+    public static void logPccPermissionCheckResult(int result, String permissionName, int uid) {
+        PrivateComputeAtomsLog.write(PCC_PERMISSION_CHECK_RESULT, result, permissionName, uid);
     }
 }
