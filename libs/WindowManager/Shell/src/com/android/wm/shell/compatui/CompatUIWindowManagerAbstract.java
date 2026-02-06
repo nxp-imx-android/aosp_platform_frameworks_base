@@ -300,21 +300,30 @@ public abstract class CompatUIWindowManagerAbstract extends WindowlessWindowMana
 
     /** Releases the surface control and tears down the view hierarchy. */
     public void release() {
+        Runnable removeViews = () -> {
+            removeLayout();
+
+            if (mViewHost != null) {
+                mViewHost.release();
+                mViewHost = null;
+            }
+        };
+
         // Hiding before releasing to avoid flickering when transitioning to the Home screen.
         View layout = getLayout();
         if (layout != null) {
             final Handler handler = layout.getHandler();
             if (handler != null && !handler.getLooper().isCurrentThread()) {
-                handler.post(() -> layout.setVisibility(View.GONE));
+                handler.post(() -> {
+                    layout.setVisibility(View.GONE);
+                    removeViews.run();
+                });
             } else {
                 layout.setVisibility(View.GONE);
+                removeViews.run();
             }
-        }
-        removeLayout();
-
-        if (mViewHost != null) {
-            mViewHost.release();
-            mViewHost = null;
+        } else {
+            removeViews.run();
         }
 
         if (mLeash != null) {
