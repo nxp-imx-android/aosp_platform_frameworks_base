@@ -338,6 +338,17 @@ public class PowerGroup {
 
     boolean dreamLocked(long eventTime, int uid, boolean allowWake) {
         if (eventTime < mLastWakeTime || (!allowWake && mWakefulness != WAKEFULNESS_AWAKE)) {
+            Slog.w(
+                    TAG,
+                    "Dream request ignored (eventTime: "
+                            + eventTime
+                            + " mLastWakeTime: "
+                            + mLastWakeTime
+                            + " allowWake: "
+                            + allowWake
+                            + " mWakefulness: "
+                            + PowerManagerInternal.wakefulnessToString(mWakefulness)
+                            + ")");
             return false;
         }
 
@@ -345,8 +356,14 @@ public class PowerGroup {
         try {
             Slog.i(TAG, "Napping power group (groupId=" + getGroupId() + ", uid=" + uid + ")...");
             setSandmanSummonedLocked(true);
-            setWakefulnessLocked(WAKEFULNESS_DREAMING, eventTime, uid, /* reason= */0,
-                    /* opUid= */ 0, /* opPackageName= */ null, /* details= */ null);
+            setWakefulnessLocked(
+                    WAKEFULNESS_DREAMING,
+                    eventTime,
+                    uid,
+                    /* reason= */ 0,
+                    /* opUid= */ 0,
+                    /* opPackageName= */ null,
+                    /* details= */ null);
         } finally {
             Trace.traceEnd(Trace.TRACE_TAG_POWER);
         }
