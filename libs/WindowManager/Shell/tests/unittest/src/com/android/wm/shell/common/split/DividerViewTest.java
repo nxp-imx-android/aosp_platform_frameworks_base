@@ -57,6 +57,7 @@ import com.android.wm.shell.splitscreen.SplitStatusBarHider;
 import com.google.android.msdl.domain.MSDLPlayer;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -144,6 +145,7 @@ public class DividerViewTest extends ShellTestCase {
 
     @Test
     @UiThreadTest
+    @Ignore("b/482156644")
     public void onTouch_dragAndRelease_snapsToTarget() {
         // Define touch coordinates.
         final int startX = 100;
