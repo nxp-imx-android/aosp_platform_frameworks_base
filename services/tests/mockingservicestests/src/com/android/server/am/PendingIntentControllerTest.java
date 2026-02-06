@@ -40,6 +40,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -53,6 +54,7 @@ import android.app.BackgroundStartPrivileges;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.pm.IPackageManager;
+import android.content.pm.PackageManagerInternal;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Looper;
@@ -62,6 +64,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.android.server.AlarmManagerInternal;
 import com.android.server.LocalServices;
+import com.android.server.wm.ActivityTaskManagerInternal;
 
 import org.junit.After;
 import org.junit.Before;
@@ -87,7 +90,11 @@ public class PendingIntentControllerTest {
     @Mock
     private ActivityManagerInternal mActivityManagerInternal;
     @Mock
+    private ActivityTaskManagerInternal mActivityTaskManagerInternal;
+    @Mock
     private IPackageManager mIPackageManager;
+    @Mock
+    private PackageManagerInternal mPackageManagerInternal;
 
     private MockitoSession mMockingSession;
     private PendingIntentController mPendingIntentController;
@@ -104,9 +111,19 @@ public class PendingIntentControllerTest {
                 () -> LocalServices.getService(AlarmManagerInternal.class));
         doReturn(mActivityManagerInternal).when(
                 () -> LocalServices.getService(ActivityManagerInternal.class));
+        doReturn(mActivityTaskManagerInternal).when(
+                () -> LocalServices.getService(ActivityTaskManagerInternal.class));
+        doReturn(mPackageManagerInternal).when(
+                () -> LocalServices.getService(PackageManagerInternal.class));
         doReturn(mIPackageManager).when(() -> AppGlobals.getPackageManager());
         when(mIPackageManager.getPackageUid(eq(TEST_PACKAGE_NAME), anyLong(), anyInt())).thenReturn(
                 TEST_CALLING_UID);
+        when(mPackageManagerInternal.isSameApp(anyString(),
+                anyInt(), anyInt())).thenReturn(true);
+        when(mActivityManagerInternal.broadcastIntentInPackage(any(), any(), anyInt(), anyInt(),
+                anyInt(), any(), any(), any(), any(), anyInt(), any(), any(), any(), any(),
+                anyBoolean(), anyBoolean(), anyInt(), any(), any()))
+                .thenReturn(ActivityManager.BROADCAST_SUCCESS);
         ActivityManagerConstants constants = mock(ActivityManagerConstants.class);
         constants.PENDINGINTENT_WARNING_THRESHOLD = 2000;
         mPendingIntentController = new PendingIntentController(Looper.getMainLooper(),

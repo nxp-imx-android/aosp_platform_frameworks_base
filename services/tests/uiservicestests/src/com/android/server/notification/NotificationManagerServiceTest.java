@@ -229,6 +229,7 @@ import android.content.pm.IPackageManager;
 import android.content.pm.LauncherApps;
 import android.content.pm.ModuleInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManagerInternal;
 import android.content.pm.ParceledListSlice;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
@@ -298,7 +299,6 @@ import android.util.AtomicFile;
 import android.util.IntArray;
 import android.util.Log;
 import android.util.Pair;
-import android.util.Slog;
 import android.util.SparseArray;
 import android.util.Xml;
 import android.view.accessibility.AccessibilityManager;
@@ -343,12 +343,12 @@ import com.android.server.utils.quota.MultiRateLimiter;
 import com.android.server.wm.ActivityTaskManagerInternal;
 import com.android.server.wm.WindowManagerInternal;
 
-import libcore.junit.util.compat.CoreCompatChangeRule.DisableCompatChanges;
-import libcore.junit.util.compat.CoreCompatChangeRule.EnableCompatChanges;
-
 import com.google.android.collect.Lists;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+
+import libcore.junit.util.compat.CoreCompatChangeRule.DisableCompatChanges;
+import libcore.junit.util.compat.CoreCompatChangeRule.EnableCompatChanges;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -365,6 +365,9 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
+import platform.test.runner.parameterized.Parameters;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
@@ -379,9 +382,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
-
-import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
-import platform.test.runner.parameterized.Parameters;
 
 @SmallTest
 @RunWithLooper
@@ -691,6 +691,9 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         LocalServices.removeServiceForTest(PersonalContextManagerInternal.class);
         LocalServices.addService(PersonalContextManagerInternal.class,
                 mPersonalContextManagerInternal);
+        LocalServices.removeServiceForTest(PackageManagerInternal.class);
+        LocalServices.addService(PackageManagerInternal.class, mPmi);
+        when(mPmi.isSameApp(anyString(), anyInt(), anyInt())).thenReturn(true);
         LocalServices.removeServiceForTest(AppLockInternal.class);
         LocalServices.addService(AppLockInternal.class, mAppLockInternal);
         mContext.addMockSystemService(Context.ALARM_SERVICE, mAlarmManager);

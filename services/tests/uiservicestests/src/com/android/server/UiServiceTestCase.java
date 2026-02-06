@@ -31,7 +31,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.UserHandle;
 import android.testing.TestableContext;
-import android.util.Slog;
 
 import androidx.test.InstrumentationRegistry;
 
@@ -108,6 +107,7 @@ public class UiServiceTestCase {
         when(mPmi.isSameApp(eq(PKG_R), anyLong(), eq(UID_R), eq(mUserId))).thenReturn(true);
         when(mPmi.isSameApp(eq(mContext.getPackageName()), anyLong(), eq(mUid), eq(mUserId)))
                 .thenReturn(true);
+        when(mPmi.isSameApp(anyString(), anyInt(), anyInt())).thenReturn(true);
         when(mPmi.getPackageUid(eq(PKG_N_MR1), anyLong(), anyInt())).thenReturn(UID_N_MR1);
         when(mPmi.getPackageUid(eq(PKG_O), anyLong(),  anyInt())).thenReturn(UID_O);
         when(mPmi.getPackageUid(eq(PKG_P), anyLong(),  anyInt())).thenReturn(UID_P);

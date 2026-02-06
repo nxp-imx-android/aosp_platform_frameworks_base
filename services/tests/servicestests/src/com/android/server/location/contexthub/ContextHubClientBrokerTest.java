@@ -18,11 +18,14 @@ package com.android.server.location.contexthub;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManagerInternal;
 import android.hardware.location.ContextHubInfo;
 import android.hardware.location.IContextHubClientCallback;
 import android.os.Binder;
@@ -33,6 +36,8 @@ import android.platform.test.flag.junit.SetFlagsRule;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
+
+import com.android.server.LocalServices;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -56,6 +61,7 @@ public class ContextHubClientBrokerTest {
     @Mock private IContextHubWrapper mMockContextHubWrapper;
     @Mock private ContextHubInfo mMockContextHubInfo;
     @Mock private IContextHubClientCallback mMockCallback;
+    @Mock private PackageManagerInternal mMockPackageManagerInternal;
     @Rule public final MockitoRule mockito = MockitoJUnit.rule();
     @Rule
     public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
@@ -65,6 +71,11 @@ public class ContextHubClientBrokerTest {
         mContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
         mClientManager = new ContextHubClientManager(mContext, mMockContextHubWrapper);
         when(mMockCallback.asBinder()).thenReturn(new Binder());
+
+        LocalServices.removeServiceForTest(PackageManagerInternal.class);
+        LocalServices.addService(PackageManagerInternal.class, mMockPackageManagerInternal);
+        when(mMockPackageManagerInternal.isSameApp(anyString(), anyInt(), anyInt()))
+                .thenReturn(true);
     }
 
     private ContextHubClientBroker createFromCallback() {
