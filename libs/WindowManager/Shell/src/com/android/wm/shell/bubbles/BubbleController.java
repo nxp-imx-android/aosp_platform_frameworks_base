@@ -431,7 +431,7 @@ public class BubbleController implements ConfigurationChangeListener,
                 TaskViewTaskController taskViewTaskController = new TaskViewTaskController(
                         context, organizer, mTaskViewController, syncQueue);
                 TaskView taskView = new TaskView(context, mTaskViewController,
-                        taskViewTaskController);
+                        taskViewTaskController, mainHandler);
                 return new BubbleTaskView(taskView, mainExecutor, BubbleController.this);
             }
         };
