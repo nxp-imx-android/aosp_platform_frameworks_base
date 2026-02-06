@@ -89,6 +89,12 @@ interface IComputerControlSession {
      */
     boolean requestScreenshot();
 
+    /**
+     * Notifies the system that the caller is blocked and unable to perform any further
+     * interactions in the session.
+     */
+    void notifyBlocked();
+
     /** Closes this session. */
     void close();
 }

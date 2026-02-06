@@ -16,6 +16,7 @@
 
 package com.android.server.companion.virtual.computercontrol;
 
+import static android.companion.virtual.computercontrol.ComputerControlSession.BLOCK_REASON_CALLER_INITIATED;
 import static android.companion.virtual.computercontrol.ComputerControlSession.BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH;
 import static android.companion.virtual.computercontrol.ComputerControlSession.BLOCK_REASON_SECURE_CONTENT;
 import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_CALLER_INITIATED;
@@ -141,6 +142,11 @@ public class SessionLifecycleTest {
         verify(mRemoteCallback).onBlocked(BLOCK_REASON_SECURE_CONTENT, TEST_PKG);
 
         state = mLifecycle.updateLifecycleState((config) -> config.mSecureWindowPackage = null);
+        assertThat(state).isInstanceOf(Blocked.class);
+        verify(mLocalCallback, never()).onActive();
+        verify(mRemoteCallback, never()).onActive();
+
+        state = mLifecycle.exitBlockedState();
         assertThat(state).isInstanceOf(Active.class);
         verify(mLocalCallback).onActive();
         verify(mRemoteCallback).onActive();
@@ -159,6 +165,12 @@ public class SessionLifecycleTest {
         verify(mRemoteCallback).onBlocked(BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH, TEST_PKG);
 
         state = mLifecycle.updateLifecycleState((config) -> config.mBlockingActivityPackage = null);
+
+        assertThat(state).isInstanceOf(Blocked.class);
+        verify(mLocalCallback, never()).onActive();
+        verify(mRemoteCallback, never()).onActive();
+
+        state = mLifecycle.exitBlockedState();
 
         assertThat(state).isInstanceOf(Active.class);
         verify(mLocalCallback).onActive();
@@ -183,7 +195,7 @@ public class SessionLifecycleTest {
     }
 
     @Test
-    public void updateLifecycle_blockReasonCanChange() throws Exception {
+    public void updateLifecycle_blockReasonCannotChange() throws Exception {
         initializeCallbacksAndReset();
 
         var state = mLifecycle.updateLifecycleState((config) -> {
@@ -196,10 +208,94 @@ public class SessionLifecycleTest {
         verify(mLocalCallback).onBlocked(BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH, TEST_PKG);
         verify(mRemoteCallback).onBlocked(BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH, TEST_PKG);
 
+        Mockito.reset(mLocalCallback, mRemoteCallback);
         state = mLifecycle.updateLifecycleState((config) -> {
             config.mBlockingActivityPackage = null;
             config.mSecureWindowPackage = TEST_PKG;
         });
+
+        assertThat(state).isInstanceOf(Blocked.class);
+        // The block reason does not change until the blocked state is exited.
+        assertThat(((Blocked) state).reason).isEqualTo(BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH);
+        verify(mLocalCallback, never()).onBlocked(anyInt(), any());
+        verify(mRemoteCallback, never()).onBlocked(anyInt(), any());
+    }
+
+    @Test
+    public void updateLifecycle_transitionFromBlockedToActive() throws Exception {
+        initializeCallbacksAndReset();
+
+        var state = mLifecycle.updateLifecycleState((config) -> {
+            config.mBlockingActivityPackage = TEST_PKG;
+        });
+        assertThat(state).isInstanceOf(Blocked.class);
+        verify(mLocalCallback).onBlocked(BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH, TEST_PKG);
+
+        Mockito.reset(mLocalCallback, mRemoteCallback);
+        state = mLifecycle.updateLifecycleState((config) -> {
+            config.mBlockingActivityPackage = null;
+        });
+
+        assertThat(state).isInstanceOf(Blocked.class);
+        verify(mLocalCallback, never()).onActive();
+        verify(mRemoteCallback, never()).onActive();
+
+        state = mLifecycle.exitBlockedState();
+        assertThat(state).isInstanceOf(Active.class);
+        verify(mLocalCallback).onActive();
+        verify(mRemoteCallback).onActive();
+    }
+
+    @Test
+    public void updateLifecycle_transitionFromBlockedToClosed() throws Exception {
+        initializeCallbacksAndReset();
+
+        var state = mLifecycle.updateLifecycleState((config) -> {
+            config.mBlockingActivityPackage = TEST_PKG;
+        });
+        assertThat(state).isInstanceOf(Blocked.class);
+        verify(mLocalCallback).onBlocked(BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH, TEST_PKG);
+        verify(mRemoteCallback).onBlocked(BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH, TEST_PKG);
+
+        Mockito.reset(mLocalCallback, mRemoteCallback);
+        state = mLifecycle.updateLifecycleState((config) -> {
+            config.mClosed = new Closed(CLOSE_REASON_CALLER_INITIATED);
+        });
+
+        assertThat(state).isInstanceOf(Closed.class);
+        assertThat(((Closed) state).reason).isEqualTo(CLOSE_REASON_CALLER_INITIATED);
+        verify(mLocalCallback).onClosed(CLOSE_REASON_CALLER_INITIATED);
+        verify(mRemoteCallback).onClosed(CLOSE_REASON_CALLER_INITIATED);
+    }
+
+    @Test
+    public void exitBlockedState_transitionsToActive() throws Exception {
+        initializeCallbacksAndReset();
+
+        mLifecycle.updateLifecycleState((config) -> config.mCallerInitiatedBlock = true);
+        verify(mLocalCallback).onBlocked(BLOCK_REASON_CALLER_INITIATED, null);
+
+        Mockito.reset(mLocalCallback, mRemoteCallback);
+        final var state = mLifecycle.exitBlockedState();
+
+        assertThat(state).isInstanceOf(Active.class);
+        verify(mLocalCallback).onActive();
+        verify(mRemoteCallback).onActive();
+    }
+
+    @Test
+    public void exitBlockedState_transitionsToNextBlockedState() throws Exception {
+        initializeCallbacksAndReset();
+
+        mLifecycle.updateLifecycleState((config) -> {
+            config.mCallerInitiatedBlock = true;
+            config.mSecureWindowPackage = TEST_PKG;
+        });
+        verify(mLocalCallback).onBlocked(BLOCK_REASON_CALLER_INITIATED, null);
+
+        Mockito.reset(mLocalCallback, mRemoteCallback);
+        // Exiting the caller-initiated block should transition to the next highest priority block.
+        final var state = mLifecycle.exitBlockedState();
 
         assertThat(state).isInstanceOf(Blocked.class);
         assertThat(((Blocked) state).reason).isEqualTo(BLOCK_REASON_SECURE_CONTENT);

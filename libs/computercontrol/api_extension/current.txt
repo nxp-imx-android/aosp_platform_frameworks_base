@@ -21,6 +21,7 @@ package com.android.extensions.computercontrol {
     method public void launchApplication(@NonNull String);
     method public void launchApplication(@NonNull android.content.ComponentName);
     method public void longPress(@IntRange(from=0) int, @IntRange(from=0) int);
+    method public void notifyBlocked();
     method public void performAction(int);
     method public void requestScreenshot(@NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<android.media.Image,com.android.extensions.computercontrol.ComputerControlSession.ScreenshotException>, @Nullable android.os.CancellationSignal);
     method public void setLifecycleCallback(@NonNull java.util.concurrent.Executor, @NonNull com.android.extensions.computercontrol.ComputerControlSession.LifecycleCallback);
@@ -31,6 +32,7 @@ package com.android.extensions.computercontrol {
     method public void swipe(@IntRange(from=0) int, @IntRange(from=0) int, @IntRange(from=0) int, @IntRange(from=0) int);
     method public void tap(@IntRange(from=0) int, @IntRange(from=0) int);
     field public static final int ACTION_GO_BACK = 1; // 0x1
+    field public static final int BLOCK_REASON_CALLER_INITIATED = 3; // 0x3
     field public static final int BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH = 2; // 0x2
     field public static final int BLOCK_REASON_SECURE_CONTENT = 1; // 0x1
     field public static final int BLOCK_REASON_UNKNOWN = 0; // 0x0

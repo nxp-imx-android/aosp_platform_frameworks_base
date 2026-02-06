@@ -853,6 +853,13 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     }
 
     @Override
+    public void notifyBlocked() {
+        mLifecycle.updateLifecycleState((config) -> {
+            config.mCallerInitiatedBlock = true;
+        });
+    }
+
+    @Override
     public void close() throws RemoteException {
         close(CLOSE_REASON_CALLER_INITIATED);
     }
