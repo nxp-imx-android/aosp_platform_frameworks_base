@@ -48,12 +48,15 @@ import android.os.UserHandle;
 import android.provider.Settings;
 import android.util.Log;
 
+import com.android.server.appfunctions.allowlist.SystemAppFunctionAllowlistReader;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -238,6 +241,30 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
                         return -1;
                     }
                     return resetTestPageSize();
+                case "set-test-allowlist-entry":
+                    // TODO(b/457349791): Remove once allowlist service is ready
+                    if (!android.app.appfunctions.flags.Flags.enableAppFunctionPermissionV2()) {
+                        return -1;
+                    }
+                    return setTestAllowlistEntry();
+                case "clear-test-allowlist":
+                    // TODO(b/457349791): Remove once allowlist service is ready
+                    if (!android.app.appfunctions.flags.Flags.enableAppFunctionPermissionV2()) {
+                        return -1;
+                    }
+                    return clearTestAllowlist();
+                case "enable-allowlist":
+                    // TODO(b/457349791): Remove this once the source is stable to avoid disruption
+                    if (!android.app.appfunctions.flags.Flags.enableAppFunctionPermissionV2()) {
+                        return -1;
+                    }
+                    return enableAllowlist();
+                case "disable-allowlist":
+                    // TODO(b/457349791): Remove this once the source is stable to avoid disruption
+                    if (!android.app.appfunctions.flags.Flags.enableAppFunctionPermissionV2()) {
+                        return -1;
+                    }
+                    return disableAllowlist();
                 default:
                     return handleDefaultCommands(cmd);
             }
@@ -705,6 +732,65 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
         }
         ServiceConfig.sTestPageSize.set(pageSize);
         pw.println("Set test page size to " + pageSize);
+        return 0;
+    }
+
+    private int setTestAllowlistEntry() {
+        final PrintWriter pw = getOutPrintWriter();
+        String agentPackage = null;
+        List<String> appPackages = null;
+
+        String opt;
+        while ((opt = getNextOption()) != null) {
+            if (opt.equals("--agent-package")) {
+                agentPackage = getNextArgRequired();
+            } else if (opt.equals("--app-packages")) {
+                String rawAppPackages = getNextArgRequired();
+                try {
+                    appPackages = Arrays.asList(rawAppPackages.split(","));
+                } catch (Exception e) {
+                    pw.println("Unable to parse " + rawAppPackages);
+                }
+            } else {
+                pw.println("Unknown option: " + opt);
+                return -1;
+            }
+        }
+
+        if (agentPackage == null) {
+            pw.println("Error: --agent-package is required");
+            return -1;
+        }
+
+        if (appPackages == null) {
+            pw.println("Error: --app-packages is required");
+            return -1;
+        }
+
+        SystemAppFunctionAllowlistReader.getInstance().setTestAllowlist(agentPackage, appPackages);
+
+        pw.println("Set test allowlist entry");
+        return 0;
+    }
+
+    private int clearTestAllowlist() {
+        final PrintWriter pw = getOutPrintWriter();
+        SystemAppFunctionAllowlistReader.getInstance().clearTestAllowlist();
+        pw.println("Clear test allowlist");
+        return 0;
+    }
+
+    private int enableAllowlist() {
+        final PrintWriter pw = getOutPrintWriter();
+        SystemAppFunctionAllowlistReader.getInstance().enableAllowlist();
+        pw.println("Enable allowlist");
+        return 0;
+    }
+
+    private int disableAllowlist() {
+        final PrintWriter pw = getOutPrintWriter();
+        SystemAppFunctionAllowlistReader.getInstance().disableAllowlist();
+        pw.println("Disable allowlist");
         return 0;
     }
 

@@ -109,6 +109,7 @@ import com.android.internal.infra.AndroidFuture;
 import com.android.internal.util.DumpUtils;
 import com.android.server.SystemService.TargetUser;
 import com.android.server.appfunctions.MultiUserDynamicAppFunctionRegistry.RegistrationScopeId;
+import com.android.server.appfunctions.allowlist.SystemAppFunctionAllowlistReader;
 import com.android.server.appinteraction.AppInteractionService;
 import com.android.server.uri.UriGrantsManagerInternal;
 import com.android.server.wm.ActivityTaskManagerInternal;
@@ -177,8 +178,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                         context, IAppFunctionService.Stub::asInterface, THREAD_POOL_EXECUTOR),
                 new CallerValidatorImpl(
                         context,
-                        appFunctionAccessServiceInterface,
-                        Objects.requireNonNull(context.getSystemService(UserManager.class))),
+                        Objects.requireNonNull(context.getSystemService(UserManager.class)),
+                        SystemAppFunctionAllowlistReader.getInstance()),
                 new ServiceHelperImpl(context),
                 new ServiceConfigImpl(),
                 loggerWrapper,
