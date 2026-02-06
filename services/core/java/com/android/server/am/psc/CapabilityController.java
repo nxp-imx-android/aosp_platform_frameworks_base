@@ -47,15 +47,19 @@ import android.app.ActivityManager.ProcessCapability;
 import android.app.ActivityManager.ProcessState;
 import android.net.NetworkPolicyManager;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
+import android.util.Slog;
 
 import com.android.internal.annotations.VisibleForTesting;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.function.Consumer;
 
 /** The class that computes capabilities and CPU time reasons for processes. */
 @RavenwoodKeepWholeClass
 final class CapabilityController {
+    private static final String TAG = "CapabilityController";
+
     /**
      * A bitmask of all capabilities that can be granted by a foreground service.
      * Used for an optimization in {@link #evaluateForegroundServicePolicy}.
@@ -64,6 +68,9 @@ final class CapabilityController {
             PROCESS_CAPABILITY_FOREGROUND_LOCATION | PROCESS_CAPABILITY_FOREGROUND_CAMERA
                     | PROCESS_CAPABILITY_FOREGROUND_MICROPHONE
                     | PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL;
+
+    private static final Consumer<GraphEdge> sUpdateTargetConsumer =
+            CapabilityController::updateTargetCapability;
 
     /**
      * Evaluates a filter by combining all the policies of a process edge and also updates its CPU
@@ -340,8 +347,11 @@ final class CapabilityController {
         }
     }
 
-    private final Consumer<GraphEdge> mUpdateTargetConsumer =
-            CapabilityController::updateTargetCapability;
+    private final Consumer<GraphEdge> mUpdateAndEnqueueTargetConsumer =
+            this::updateAndEnqueueTarget;
+
+    /** Queue for nodes whose output capabilities need to be propagated. */
+    private final ArrayDeque<GraphNode> mPropagationQueue = new ArrayDeque<>();
 
     /**
      * Performs a partial update from a list of edges.
@@ -352,6 +362,11 @@ final class CapabilityController {
      */
     void update(@NonNull ArrayList<GraphEdge> edges,
             @NonNull ArrayList<ProcessNode> reachableNodes) {
+        if (!mPropagationQueue.isEmpty()) {
+            Slog.w(TAG, "mPropagationQueue is not empty before partial update");
+            mPropagationQueue.clear();
+        }
+
         // Update the filter for all target edges.
         for (int i = 0, size = edges.size(); i < size; i++) {
             edges.get(i).updateCachedCapabilityFilter();
@@ -376,14 +391,50 @@ final class CapabilityController {
             //    step below.
             // TODO: b/493522532 - Consider whether to use caching to avoid recomputing the first
             //  type of edges' output capabilities.
-            reachableNodes.get(i).forEachIncomingEdge(mUpdateTargetConsumer);
+            final ProcessNode node = reachableNodes.get(i);
+            node.forEachIncomingEdge(sUpdateTargetConsumer);
+            if (node.getCapability() != PROCESS_CAPABILITY_NONE) {
+                enqueueNode(node);
+            }
         }
 
-        // TODO(b/466961280): Propagate capabilities.
+        // Propagate capabilities from nodes in the queue until no more capabilities can be added.
+        propagate();
 
         // Revoke PROCESS_CAPABILITY_BFSL for nodes whose procState is worse than BFGS.
         for (int i = 0, size = reachableNodes.size(); i < size; i++) {
             revokeBfslCapability(reachableNodes.get(i));
+        }
+    }
+
+    /**
+     * Propagates capabilities from nodes in {@link #mPropagationQueue} until the queue becomes
+     * empty.
+     */
+    private void propagate() {
+        while (!mPropagationQueue.isEmpty()) {
+            final GraphNode node = mPropagationQueue.pollFirst();
+            node.setEnqueued(false);
+            // Check all its outgoing edges and enqueue targets that have gained new capabilities.
+            node.forEachOutgoingEdge(mUpdateAndEnqueueTargetConsumer);
+        }
+    }
+
+    /**
+     * Updates the target node of {@code edge} and adds it to {@link #mPropagationQueue} if it has
+     * gained any new capability.
+     */
+    private void updateAndEnqueueTarget(@NonNull GraphEdge edge) {
+        if (updateTargetCapability(edge)) {
+            enqueueNode(edge.getTarget());
+        }
+    }
+
+    /** Adds {@code node} to {@link #mPropagationQueue} if it is not enqueued. */
+    private void enqueueNode(@NonNull GraphNode node) {
+        if (!node.isEnqueued()) {
+            node.setEnqueued(true);
+            mPropagationQueue.add(node);
         }
     }
 }

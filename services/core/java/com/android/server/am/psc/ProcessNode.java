@@ -42,7 +42,7 @@ import java.util.function.Consumer;
  * bindings, to determine the importance of the edges' target processes during graph traversal.
  */
 @RavenwoodKeepWholeClass
-class ProcessNode implements GraphNode {
+class ProcessNode extends GraphNode {
     /** A reference to the underlying ProcessRecordInternal. */
     private final @NonNull ProcessRecordInternal mProc;
 

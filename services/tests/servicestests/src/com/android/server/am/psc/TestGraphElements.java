@@ -275,7 +275,7 @@ final class TestGraphElements {
     /**
      * System node used in tests.
      */
-    static class TestSystemNode implements GraphNode {
+    static class TestSystemNode extends GraphNode {
         private final ArrayList<GraphEdge> mOutgoingEdges = new ArrayList<>();
 
         @Override
