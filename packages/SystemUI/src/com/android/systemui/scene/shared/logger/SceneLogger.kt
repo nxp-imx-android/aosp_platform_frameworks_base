@@ -175,8 +175,8 @@ constructor(
                     tag = TAG,
                     level = LogLevel.INFO,
                     messageInitializer = {
-                        str1 = transitionState.fromContent.toString()
-                        str2 = transitionState.toContent.toString()
+                        str1 = transitionState.fromContent.debugName
+                        str2 = transitionState.toContent.debugName
                     },
                     messagePrinter = { "Scene transition started: $str1 → $str2" },
                 )
@@ -186,10 +186,10 @@ constructor(
                     tag = TAG,
                     level = LogLevel.INFO,
                     messageInitializer = {
-                        str1 = transitionState.currentScene.toString()
-                        str2 = transitionState.currentOverlays.joinToString()
+                        str1 = transitionState.currentScene.debugName
+                        str2 = transitionState.currentOverlays.joinToString { it.debugName }
                     },
-                    messagePrinter = { "Scene transition idle on: $str1, overlays: $str2" },
+                    messagePrinter = { "Scene transition idle on: $str1, overlays: [$str2]" },
                 )
             }
         }
@@ -204,8 +204,8 @@ constructor(
             tag = TAG,
             level = LogLevel.INFO,
             messageInitializer = {
-                str1 = from?.toString()
-                str2 = to?.toString()
+                str1 = from?.debugName
+                str2 = to?.debugName
                 str3 = reason
             },
             messagePrinter = {
@@ -245,7 +245,7 @@ constructor(
                 str2 = asWord(to)
                 str3 = reason
             },
-            messagePrinter = { "$str1 → $str2, reason: $str3" },
+            messagePrinter = { "VISIBILITY CHANGED: $str1 → $str2, reason: $str3" },
         )
     }
 
@@ -261,7 +261,7 @@ constructor(
                 str1 = asWord(to)
                 str2 = reason
             },
-            messagePrinter = { "REJECTED visibility change to $str1 with reason: $str2" },
+            messagePrinter = { "VISIBILITY UNCHANGED: still $str1, new reason: $str2" },
         )
     }
 
@@ -281,8 +281,8 @@ constructor(
                     tag = TAG,
                     level = LogLevel.INFO,
                     messageInitializer = {
-                        str1 = transitionState.fromContent.toString()
-                        str2 = transitionState.toContent.toString()
+                        str1 = transitionState.fromContent.debugName
+                        str2 = transitionState.toContent.debugName
                     },
                     messagePrinter = { "User interaction finished during: $str1 → $str2" },
                 )
@@ -292,10 +292,10 @@ constructor(
                     tag = TAG,
                     level = LogLevel.INFO,
                     messageInitializer = {
-                        str1 = transitionState.currentScene.toString()
-                        str2 = transitionState.currentOverlays.joinToString()
+                        str1 = transitionState.currentScene.debugName
+                        str2 = transitionState.currentOverlays.joinToString { it.debugName }
                     },
-                    messagePrinter = { "User interaction finished on: $str1, overlays: $str2" },
+                    messagePrinter = { "User interaction finished on: $str1, overlays: [$str2]" },
                 )
             }
         }
