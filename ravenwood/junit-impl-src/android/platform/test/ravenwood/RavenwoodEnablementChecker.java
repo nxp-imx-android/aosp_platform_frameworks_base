@@ -279,7 +279,8 @@ public abstract class RavenwoodEnablementChecker {
                 if (description.isTest()) {
                     return shouldRunMethodOnRavenwood(description);
                 } else {
-                    return shouldRunClassOnRavenwood(description.getTestClass());
+                    return shouldRunClassOnRavenwood(
+                            RavenwoodImplUtils.getDescriptionTestClass(description));
                 }
             }
 
@@ -461,7 +462,7 @@ class AnnotationPolicyChecker implements PolicyChecker {
             }
         }
         // Otherwise, consult any class-level annotations
-        return getClassPolicy(description.getTestClass());
+        return getClassPolicy(RavenwoodImplUtils.getDescriptionTestClass(description));
     }
 }
 
@@ -579,7 +580,8 @@ class PatternBasedChecker implements PolicyChecker {
         // method policy.
         // This is to easily disable certain tests in a policy file, even if it already
         // has enabled methods.
-        var classPolicy = getPureClassPolicy(description.getTestClass());
+        var classPolicy = getPureClassPolicy(
+                RavenwoodImplUtils.getDescriptionTestClass(description));
         if (classPolicy == RunPolicy.NeverRun) {
             return classPolicy;
         }
@@ -847,6 +849,7 @@ class RegexRunFilter implements PolicyChecker {
         if (mRegex.matcher(toCanonicalTestName(description)).find()) {
             return mMatchingPolicy;
         }
-        return classMatches(description.getTestClass()) ? mMatchingPolicy : mNonMatchingPolicy;
+        return classMatches(RavenwoodImplUtils.getDescriptionTestClass(description))
+                ? mMatchingPolicy : mNonMatchingPolicy;
     }
 }

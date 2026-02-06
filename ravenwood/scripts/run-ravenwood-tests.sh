@@ -78,9 +78,10 @@ exclude_large_tests=0
 atest_opts=""
 list_options=""
 with_tools_tests=1
+no_experimental_api=0
 target_args=()
 
-while getopts "sx:f:dtbLa:rDRhXcTtwPF:Im:" opt; do
+while getopts "sx:f:dtbLa:rDRhXcTtwPF:Im:E" opt; do
 case "$opt" in
 # OPTIONS-START
     s) # Remove slow tests
@@ -157,6 +158,9 @@ case "$opt" in
         # (without -m), but it'll allow adding flags after test module
         # names, which is sometimes handy.
         target_args+=($OPTARG)
+        ;;
+    E) # Do not enable experimental API
+        no_experimental_api=1
         ;;
     h) # Show help
         show_help
@@ -293,10 +297,14 @@ fi
 echo "RAVENWOOD_TEST_ENABLEMENT_POLICY=$RAVENWOOD_TEST_ENABLEMENT_POLICY"
 
 # Set experimental API flag
-for test in $(remove_comments ../texts/experimental-api-allowed-tests.txt); do
-    echo "Test \"$test\" can use experimental APIs".
-    export RAVENWOOD_ENABLE_EXP_API_${test}=1
-done
+if (( $no_experimental_api )) ; then
+    echo "Not enabling experimental APIs".
+else
+    for test in $(remove_comments ../texts/experimental-api-allowed-tests.txt); do
+        echo "Test \"$test\" can use experimental APIs".
+        export RAVENWOOD_ENABLE_EXP_API_${test}=1
+    done
+fi
 
 if (( $exclude_large_tests )) ; then
     run export RAVENWOOD_SKIP_LARGE_TESTS=1

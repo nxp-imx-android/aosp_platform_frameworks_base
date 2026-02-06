@@ -25,6 +25,7 @@ import android.util.Singleton;
 import com.android.ravenwood.common.StackTrace;
 
 import org.junit.internal.management.ManagementFactory;
+import org.junit.runner.Description;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -168,5 +169,38 @@ public class RavenwoodImplUtils {
             RavenwoodErrorHandler.onWarningDetected(msg);
         }
         return bst.toString();
+    }
+
+    /**
+     * Safer version of {@link Description#getTestClass()}, which normally returns
+     * a class. However, it can return null, which we observed with
+     * {@link org.junit.runners.Parameterized}. In this case, the description is a suite
+     * and has children, which do have a test class set. So this method digs into children
+     * recursively and returns the test class that's found first.
+     */
+    @NonNull
+    public static Class<?> getDescriptionTestClass(@NonNull Description desc ) {
+        var ret = getDescriptionTestClassInner(desc);
+        if (ret != null) {
+            return ret;
+        }
+        throw new IllegalStateException("Cannot get test class from Description: " + desc);
+    }
+
+    @Nullable
+    private static Class<?> getDescriptionTestClassInner(@NonNull Description desc ) {
+        // Normally, a Description has a test class.
+        if (desc.getTestClass() != null) {
+            return desc.getTestClass();
+        }
+        // If not, which can happen with some parameterized runner,
+        // we look into children and
+        for (var child : desc.getChildren()) {
+            var childClass = getDescriptionTestClassInner(child);
+            if (childClass != null) {
+                return childClass;
+            }
+        }
+        return null;
     }
 }

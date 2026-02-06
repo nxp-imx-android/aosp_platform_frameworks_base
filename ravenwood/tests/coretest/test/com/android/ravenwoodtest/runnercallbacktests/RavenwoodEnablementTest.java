@@ -24,6 +24,9 @@ import android.platform.test.ravenwood.RavenwoodEnablementChecker.RunMode;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
+import org.junit.runners.Parameterized.Parameter;
 
 public class RavenwoodEnablementTest extends RavenwoodRunnerTestBase {
     @RunWith(BlockJUnit4ClassRunner.class)
@@ -925,6 +928,98 @@ public class RavenwoodEnablementTest extends RavenwoodRunnerTestBase {
     public static class DumpTestsOnly {
         public DumpTestsOnly() {
         }
+
+        @Test
+        public void test1() {
+        }
+
+        @Test
+        public void test2() {
+        }
+    }
+
+    /**
+     * Simple test using the Parameterized runner.
+     */
+    @RunWith(Parameterized.class)
+    // CHECKSTYLE:OFF Generated code
+    @Expected(value = """
+    testRunStarted: classes
+    testSuiteStarted: classes
+    testSuiteStarted: com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$ParametrizedTest
+    testSuiteStarted: [0]
+    testStarted: test1[0](com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$ParametrizedTest)
+    testFinished: test1[0](com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$ParametrizedTest)
+    testStarted: test2[0](com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$ParametrizedTest)
+    testFinished: test2[0](com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$ParametrizedTest)
+    testSuiteFinished: [0]
+    testSuiteStarted: [1]
+    testStarted: test1[1](com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$ParametrizedTest)
+    testFinished: test1[1](com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$ParametrizedTest)
+    testStarted: test2[1](com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$ParametrizedTest)
+    testFinished: test2[1](com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$ParametrizedTest)
+    testSuiteFinished: [1]
+    testSuiteFinished: com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$ParametrizedTest
+    testSuiteFinished: classes
+    testRunFinished: 4,0,0,0
+    """, runMode = RunMode.Normal
+    )
+    // CHECKSTYLE:ON
+    public static class ParametrizedTest {
+        @Parameters
+        public static Object[] data() {
+            return new Object[] { "test1", "test2"};
+        }
+
+        @Parameter(0)
+        public String parameter;
+
+        @Test
+        public void test1() {
+        }
+
+        @Test
+        public void test2() {
+        }
+    }
+
+    /**
+     */
+    @RunWith(Parameterized.class)
+    // CHECKSTYLE:OFF Generated code
+    @Expected(value = """
+    testRunStarted: classes
+    testSuiteStarted: classes
+    testSuiteStarted: com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$ParametrizedWithRegexFilterTest
+    testSuiteStarted: [0]
+    testStarted: test1[0](com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$ParametrizedWithRegexFilterTest)
+    testFinished: test1[0](com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$ParametrizedWithRegexFilterTest)
+    testStarted: test2[0](com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$ParametrizedWithRegexFilterTest)
+    testAssumptionFailure: This test is disabled on Ravenwood: test2[0](com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$ParametrizedWithRegexFilterTest)
+    testFinished: test2[0](com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$ParametrizedWithRegexFilterTest)
+    testSuiteFinished: [0]
+    testSuiteStarted: [1]
+    testStarted: test1[1](com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$ParametrizedWithRegexFilterTest)
+    testFinished: test1[1](com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$ParametrizedWithRegexFilterTest)
+    testStarted: test2[1](com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$ParametrizedWithRegexFilterTest)
+    testAssumptionFailure: This test is disabled on Ravenwood: test2[1](com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$ParametrizedWithRegexFilterTest)
+    testFinished: test2[1](com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$ParametrizedWithRegexFilterTest)
+    testSuiteFinished: [1]
+    testSuiteFinished: com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$ParametrizedWithRegexFilterTest
+    testSuiteFinished: classes
+    testRunFinished: 4,0,2,0
+    """, runMode = RunMode.Normal,
+    overridingRegex = "test1"
+    )
+    // CHECKSTYLE:ON
+    public static class ParametrizedWithRegexFilterTest {
+        @Parameters
+        public static Object[] data() {
+            return new Object[] { "test1", "test2"};
+        }
+
+        @Parameter(0)
+        public String parameter;
 
         @Test
         public void test1() {
