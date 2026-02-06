@@ -257,9 +257,10 @@ public class Notifier {
                         continue;
                     }
 
-                    if (wakeLock.mWorkSource.size() <= 1
-                            || (wakeLock.mWorkSource.getWorkChains() != null
-                            && wakeLock.mWorkSource.getWorkChains().size() <= 1)) {
+                    WorkSource worksource = wakeLock.mWorkSource;
+                    if (worksource != null && (worksource.size() <= 1
+                            || (worksource.getWorkChains() != null
+                            && worksource.getWorkChains().size() <= 1))) {
                         wakeLock.setAttributedUidCached(true);
                         if (mWakeLockChangedListener != null) {
                             final WakeLockChangedListener listener = mWakeLockChangedListener;
@@ -300,9 +301,10 @@ public class Notifier {
                         continue;
                     }
 
-                    if (wakeLock.mWorkSource.size() <= 1
-                            || (wakeLock.mWorkSource.getWorkChains() != null
-                            && wakeLock.mWorkSource.getWorkChains().size() <= 1)) {
+                    WorkSource workSource = wakeLock.mWorkSource;
+                    if (workSource != null && (workSource.size() <= 1
+                            || (workSource.getWorkChains() != null
+                            && workSource.getWorkChains().size() <= 1))) {
                         wakeLock.setAttributedUidCached(cached);
                         if (mWakeLockChangedListener != null) {
                             final WakeLockChangedListener listener = mWakeLockChangedListener;
@@ -311,11 +313,11 @@ public class Notifier {
                         continue;
                     }
                     onWakeLockChanging(wakeLock.mFlags, wakeLock.mTag, wakeLock.mPackageName,
-                            wakeLock.mOwnerUid, wakeLock.mOwnerPid, wakeLock.mWorkSource,
+                            wakeLock.mOwnerUid, wakeLock.mOwnerPid, workSource,
                             wakeLock.mHistoryTag,
                             wakeLock.mCallback, wakeLock.mFlags, wakeLock.mTag,
                             wakeLock.mPackageName, wakeLock.mOwnerUid, wakeLock.mOwnerPid,
-                            wakeLock.mWorkSource, wakeLock.mHistoryTag, wakeLock.mCallback,
+                            workSource, wakeLock.mHistoryTag, wakeLock.mCallback,
                             /* isCached */ true, cached, uid);
                 }
             }
