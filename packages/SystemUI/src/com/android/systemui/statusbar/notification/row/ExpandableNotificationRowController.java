@@ -19,7 +19,6 @@ package com.android.systemui.statusbar.notification.row;
 import static com.android.systemui.Dependency.ALLOW_NOTIFICATION_LONG_PRESS_NAME;
 import static com.android.systemui.statusbar.NotificationRemoteInputManager.ENABLE_REMOTE_INPUT;
 import static com.android.systemui.statusbar.StatusBarState.KEYGUARD;
-import static com.android.systemui.statusbar.notification.NotificationUtils.logKey;
 import static com.android.systemui.util.kotlin.JavaAdapterKt.collectFlow;
 
 import android.content.Context;
@@ -402,9 +401,7 @@ public class ExpandableNotificationRowController implements NotifViewController 
             }
 
             mView.setLongPressListener((v, x, y, item) -> {
-                if (com.android.systemui.Flags.msdlFeedback()) {
-                    mMSDLPlayer.playToken(MSDLToken.LONG_PRESS, null);
-                }
+                mMSDLPlayer.playToken(MSDLToken.LONG_PRESS, null);
 
                 if (mView.isSummaryWithChildren() && !mView.isBundle()) {
                     mView.expandNotification();
