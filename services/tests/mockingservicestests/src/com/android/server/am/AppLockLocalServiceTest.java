@@ -642,6 +642,37 @@ public class AppLockLocalServiceTest {
     }
 
     @Test
+    public void handleUidChangeLocked_alreadyLocked_noOp() throws Exception {
+        mAppLockLocalService.systemServicesReady();
+        UidRecord record = setupProcessAndUidRecord(PROCESS_STATE_IMPORTANT_BACKGROUND);
+        when(mActivityTaskManagerInternal.getTopVisibleActivities()).thenReturn(List.of());
+
+        // 1. Move package to background and let it become locked.
+        mAppLockLocalService.handleUidChangeLocked(record, TEST_UID, UidRecord.CHANGE_PROCSTATE,
+                PROCESS_STATE_IMPORTANT_BACKGROUND);
+        // The TestHandler in this suite executes delayed runnables immediately upon executing
+        // the queue, so we can process it right away without waiting.
+        mTestHandler.executeRunnables();
+
+        // Verify it's locked and the listener was notified.
+        assertThat(mListener.mLocked).isTrue();
+        assertThat(mListener.mPackageName).isEqualTo(TEST_PACKAGE_1);
+
+        // Reset listener state to detect any new notifications.
+        mListener.mLocked = null;
+        mListener.mPackageName = "";
+        mListener.mUserId = -1;
+
+        // 2. Trigger another UID change while still in the background.
+        mAppLockLocalService.handleUidChangeLocked(record, TEST_UID, UidRecord.CHANGE_PROCSTATE,
+                PROCESS_STATE_IMPORTANT_BACKGROUND);
+        mTestHandler.executeRunnables();
+
+        // 3. Verify that the listener was not notified again, as there was no state change.
+        assertThat(mListener.hasDefaultValues()).isTrue();
+    }
+
+    @Test
     public void handleLockedState_runnable_abortsIfAppReturnsToForeground() throws Exception {
         mAppLockLocalService.systemServicesReady();
         mAppLockLocalService.handleAppLockEnabled(TEST_PACKAGE_1, TEST_USER_ID_1);
@@ -761,6 +792,27 @@ public class AppLockLocalServiceTest {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_APP_LOCK_APIS)
+    public void onPackageAppLockDisabled_pendingLockJob_jobCanceled() throws Exception {
+        mAppLockLocalService.systemServicesReady();
+        // 1. Queue a delayed lock job.
+        mAppLockLocalService.handleLockedStateLocked(TEST_PACKAGE_1, TEST_USER_ID_1,
+                /* lockImmediately= */ false);
+        assertThat(mAppLockLocalService.packageHasQueuedAppLockedJob(TEST_USER_ID_1,
+                TEST_PACKAGE_1)).isTrue();
+
+        // 2. Simulate App Lock being disabled for the package.
+        Intent intent = createPackageAppLockBroadcast(TEST_PACKAGE_1, TEST_USER_ID_1,
+                PackageManager.ACTION_PACKAGE_APP_LOCK_ENABLED_STATE_CHANGED, false);
+        mAppLockLocalService.mPackageMonitor.doHandlePackageEvent(intent);
+        mTestHandler.executeRunnables();
+
+        // 3. Assert that the pending lock job was canceled.
+        assertThat(mAppLockLocalService.packageHasQueuedAppLockedJob(TEST_USER_ID_1,
+                TEST_PACKAGE_1)).isFalse();
+    }
+
+    @Test
     public void onPackageRemoved_packageRemovedFromMap() throws Exception {
         mAppLockLocalService.systemServicesReady();
         Intent intent = createPackageRemovedBroadcast(TEST_PACKAGE_2, TEST_USER_ID_2,
@@ -779,6 +831,26 @@ public class AppLockLocalServiceTest {
         assertThat(packagesForUser2).containsExactly(TEST_PACKAGE_1);
 
         assertThat(appLockEnabledPackages.get(TEST_USER_ID_3)).isNull();
+    }
+
+    @Test
+    public void onPackageRemoved_pendingLockJob_jobCanceled() throws Exception {
+        mAppLockLocalService.systemServicesReady();
+        // 1. Queue a delayed lock job.
+        mAppLockLocalService.handleLockedStateLocked(TEST_PACKAGE_1, TEST_USER_ID_1,
+                /* lockImmediately= */ false);
+        assertThat(mAppLockLocalService.packageHasQueuedAppLockedJob(TEST_USER_ID_1,
+                TEST_PACKAGE_1)).isTrue();
+
+        // 2. Simulate the package being removed.
+        Intent intent = createPackageRemovedBroadcast(TEST_PACKAGE_1, TEST_USER_ID_1,
+                Intent.ACTION_PACKAGE_REMOVED);
+        mAppLockLocalService.mPackageMonitor.doHandlePackageEvent(intent);
+        mTestHandler.executeRunnables();
+
+        // 3. Assert that the pending lock job was canceled.
+        assertThat(mAppLockLocalService.packageHasQueuedAppLockedJob(TEST_USER_ID_1,
+                TEST_PACKAGE_1)).isFalse();
     }
 
     private UidRecord setupProcessAndUidRecord(int processState) {
