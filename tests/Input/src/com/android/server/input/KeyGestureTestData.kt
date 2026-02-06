@@ -429,6 +429,18 @@ object KeyGestureTestData {
                 intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
             ),
             KeyGestureData(
+                "META + SHIFT + F23 -> Launch Assistant",
+                intArrayOf(
+                    KeyEvent.KEYCODE_META_LEFT,
+                    KeyEvent.KEYCODE_SHIFT_LEFT,
+                    KeyEvent.KEYCODE_F23,
+                ),
+                KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_ASSISTANT,
+                intArrayOf(KeyEvent.KEYCODE_F23),
+                KeyEvent.META_META_ON or KeyEvent.META_SHIFT_ON,
+                intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
+            ),
+            KeyGestureData(
                 "META + I -> Launch System Settings",
                 intArrayOf(KeyEvent.KEYCODE_META_LEFT, KeyEvent.KEYCODE_I),
                 KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_SYSTEM_SETTINGS,
