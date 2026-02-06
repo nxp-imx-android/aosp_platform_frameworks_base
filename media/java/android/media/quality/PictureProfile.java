@@ -88,7 +88,8 @@ public final class PictureProfile implements Parcelable {
             NAME_GAME,
             NAME_MOVIE,
             NAME_ENERGY_SAVING,
-            NAME_USER
+            NAME_USER,
+            NAME_UNKNOWN
     })
     public @interface ProfileName {}
 
@@ -162,6 +163,16 @@ public final class PictureProfile implements Parcelable {
      */
     @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
     public static final String NAME_USER = "user";
+
+    /**
+     * Name for an unknown picture profile.
+     *
+     * <p>This value is used to represent a profile name that is not recognized by the current
+     * version of the SDK. It serves as a fallback to ensure backwards compatibility when new
+     * profile names are introduced in future platform versions.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String NAME_UNKNOWN = "unknown";
 
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
@@ -306,6 +317,12 @@ public final class PictureProfile implements Parcelable {
      * @hide
      */
     public static final String STATUS_FMM_HDR_VIVID = "FMM_HDR_VIVID";
+
+    /**
+     * Unknown status.
+     * @hide
+     */
+    public static final String STATUS_UNKNOWN = "UNKNOWN";
 
     private PictureProfile(@NonNull Parcel in) {
         mId = in.readString();
