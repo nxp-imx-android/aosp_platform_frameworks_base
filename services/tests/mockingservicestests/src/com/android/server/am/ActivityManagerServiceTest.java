@@ -528,51 +528,20 @@ public class ActivityManagerServiceTest {
         assertTrue("When flag is disabled, manifest policies must be ignored", result);
     }
     // ------------------------------------------------------------------------
-    // --- PCC Component Access Tests (Trusted Apps & Manifest Fallback) ------
+    // --- PCC Component Access Tests ------
     // ------------------------------------------------------------------------
-
     @Test
     @RequiresFlagsEnabled({
             android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT,
             android.app.privatecompute.flags.Flags.FLAG_ENABLE_ALLOW_COMPONENT_ACCESS
     })
-    public void testValidateAssociation_ComponentAccess_PccUidToTrustedApp_Allowed() {
+    public void testValidateAssociation_ComponentAccess_PccUidNoTag_Denied() {
         setupAllowComponentAccessPolicy(TEST_TARGET_PKG, TEST_USER_ID, List.of());
         setupPackageSigning(TEST_TARGET_PKG, CERT_B);
 
         when(mMockPccSandboxManagerInternal.validateAssociationAllowed(
                 anyInt(), anyString(), anyInt(), anyString(), anyInt(), nullable(Bundle.class)))
                 .thenReturn(true);
-
-        when(mMockPccSandboxManagerInternal.isPccTrustedSystemComponent(
-                TEST_TARGET_UID, TEST_TARGET_PKG))
-                .thenReturn(true);
-
-        boolean result = mAms.validateAssociationAllowedLocked(
-                PCC_PACKAGE_1, PCC_UID_1, TEST_TARGET_PKG, TEST_TARGET_UID,
-                ActivityManagerService.ASSOCIATION_TYPE_SERVICE, /* debugTag= */ null);
-
-        assertTrue("PCC UID accessing a Trusted App should bypass "
-                + "component access restrictions", result);
-    }
-
-    @Test
-    @RequiresFlagsEnabled({
-            android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT,
-            android.app.privatecompute.flags.Flags.FLAG_ENABLE_ALLOW_COMPONENT_ACCESS
-    })
-    public void testValidateAssociation_ComponentAccess_PccUidToUntrustedApp_Denied() {
-        setupAllowComponentAccessPolicy(TEST_TARGET_PKG, TEST_USER_ID, List.of());
-        setupPackageSigning(TEST_TARGET_PKG, CERT_B);
-
-        when(mMockPccSandboxManagerInternal.validateAssociationAllowed(
-                anyInt(), anyString(), anyInt(), anyString(), anyInt(), nullable(Bundle.class)))
-                .thenReturn(true);
-
-        // Trusted App check fails -> Fallback to manifest (Denied)
-        when(mMockPccSandboxManagerInternal.isPccTrustedSystemComponent(
-                TEST_TARGET_UID, TEST_TARGET_PKG))
-                .thenReturn(false);
 
         boolean result = mAms.validateAssociationAllowedLocked(
                 PCC_PACKAGE_1, PCC_UID_1, TEST_TARGET_PKG, TEST_TARGET_UID,
@@ -587,7 +556,7 @@ public class ActivityManagerServiceTest {
             android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT,
             android.app.privatecompute.flags.Flags.FLAG_ENABLE_ALLOW_COMPONENT_ACCESS
     })
-    public void testValidateAssociation_ComponentAccess_PccUidToUntrustedApp_AllowedByManifest() {
+    public void testValidateAssociation_ComponentAccess_PccUid_AllowedByManifest() {
         // Manifest explicitly allows PCC package
         List<SignedPackage> targetRules =
                 List.of(createSignedPackage(PCC_PACKAGE_1, /* cert= */ null));
@@ -603,11 +572,6 @@ public class ActivityManagerServiceTest {
         when(mMockPccSandboxManagerInternal.validateAssociationAllowed(
                 anyInt(), anyString(), anyInt(), anyString(), anyInt(), nullable(Bundle.class)))
                 .thenReturn(true);
-
-        // Trusted App check fails -> Fallback to manifest (Allowed)
-        when(mMockPccSandboxManagerInternal.isPccTrustedSystemComponent(
-                TEST_TARGET_UID, TEST_TARGET_PKG))
-                .thenReturn(false);
 
         boolean result = mAms.validateAssociationAllowedLocked(
                 PCC_PACKAGE_1, PCC_UID_1, TEST_TARGET_PKG, TEST_TARGET_UID,
