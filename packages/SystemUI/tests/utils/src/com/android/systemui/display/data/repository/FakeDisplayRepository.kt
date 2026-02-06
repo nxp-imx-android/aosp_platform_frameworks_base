@@ -135,6 +135,8 @@ class FakeDisplayRepository @Inject constructor() : DisplayRepository {
 
     override val defaultDisplayOff = MutableStateFlow(false)
 
+    override val defaultDisplayType = MutableStateFlow(Display.TYPE_UNKNOWN)
+
     override val isMirroringEnabled = MutableStateFlow(false)
 
     override fun getDisplay(displayId: Int): Display? {
