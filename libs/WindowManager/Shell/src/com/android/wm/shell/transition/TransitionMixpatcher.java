@@ -40,6 +40,7 @@ import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.keyguard.KeyguardTransitionPlanner;
+import com.android.wm.shell.shared.annotations.ShellMainThread;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -485,7 +486,8 @@ public class TransitionMixpatcher {
             final ITransitionAnimation anim = start.mAnims.keyAt(i);
             ProtoLog.v(WM_SHELL_MIXPATCHER, "animating #%d| start %s", transit.mDebugId,
                     anim.getDebugName());
-            anim.start(start.mAnims.valueAt(i), startStates, (finishT) -> onFinish(anim, finishT));
+            anim.start(start.mAnims.valueAt(i), startStates,
+                    (finishT) -> mMainExecutor.execute(() -> onFinish(anim, finishT)));
         }
         if (start.mAnims.isEmpty()) {
             // There weren't any animations, so there will be no onFinish callback. This means
@@ -502,8 +504,10 @@ public class TransitionMixpatcher {
         }
     }
 
+    @ShellMainThread
     private void onFinish(@NonNull ITransitionAnimation animation,
             @Nullable SurfaceControl.Transaction finishT) {
+        mMainExecutor.assertCurrentThread();
         int transitIdx = -1;
         for (int i = 0; i < mPlaying.size(); ++i) {
             if (mPlaying.get(i).mAnimations.remove(animation)) {

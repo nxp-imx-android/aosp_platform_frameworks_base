@@ -1616,10 +1616,10 @@ public class Transitions implements RemoteCallable<Transitions>,
         public DetachResult detach(
                 @NonNull List<WindowContainerToken> containers,
                 @NonNull SurfaceControl.Transaction startTransaction) {
-            final WindowAnimationState[] states = new WindowAnimationState[containers.size()];
+            final ArrayList<WindowAnimationState> states = new ArrayList<>(containers.size());
             for (int i = 0; i < containers.size(); ++i) {
                 final WindowAnimationState state = new WindowAnimationState();
-                states[i] = state;
+                states.add(state);
                 final TransitionInfo.Change chg = mInfo.getChange(containers.get(i));
                 if (chg == null) {
                     Log.wtf(TAG, "Trying to detach container that was never in animation");

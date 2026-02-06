@@ -29,15 +29,20 @@ import android.window.TransitionInfo;
  */
 public interface ITransitionPlanner {
     /**
-     * Distributes a subset of changes in {@param info} to animators via
-     * {@link AnimationPlan#setAnimation}. Also perform custom detach preparation if desired
-     * via {@link AnimationPlan#detach} or {@link AnimationPlan#detachAsync}.
+     * Distributes a subset of changes in {@param plannableInfo} to animators via
+     * {@link AnimationPlan#setAnimation}.
      *
-     * @param fullInfo This is the full info as received from WM. Used to determine potential
-     *                 detachments.
+     * May optionally perform custom detach preparation via {@link AnimationPlan#detach}
+     * or {@link AnimationPlan#detachAsync}. Since this aspect usually cares about containers that
+     * are "leaving" the responsibility of this planner (and thus may have already been planned),
+     * the {@param fullInfo} is made available.
+     *
+     * @param plannableInfo Contains changes which haven't been assigned an animation yet.
+     * @param fullInfo This is the full info as received from WM (including changes which have
+     *                 already been assigned to animations).
      */
     void plan(@NonNull AnimationPlan plan, @NonNull TransitionInfo fullInfo,
-            @NonNull IBinder transition, @NonNull TransitionInfo info,
+            @NonNull IBinder transition, @NonNull TransitionInfo plannableInfo,
             @NonNull SurfaceControl.Transaction startTransaction);
 
     /** for debugging/logging */

@@ -412,11 +412,9 @@ public class TransitionMixpatcherTests extends ShellTestCase {
             mMainHandler = mainHandler;
         }
 
-        private WindowAnimationState[] finishDetachInner() {
-            final WindowAnimationState[] states = new WindowAnimationState[mDetaching.size()];
-            for (int i = 0; i < mDetaching.size(); ++i) {
-                states[i] = buildAnimState();
-            }
+        private List<WindowAnimationState> finishDetachInner() {
+            final ArrayList<WindowAnimationState> states = new ArrayList<>();
+            mDetaching.forEach(s -> states.add(buildAnimState()));
             mContainersAnimating.removeAll(mDetaching);
             return states;
         }
@@ -488,7 +486,7 @@ public class TransitionMixpatcherTests extends ShellTestCase {
         void finishDetachNow() {
             for (int i = 0; i < mDetachCB.size(); ++i) {
                 if (mDetachCB.get(i) != null) {
-                    mDetachCB.get(i).complete(new WindowAnimationState[]{buildAnimState()});
+                    mDetachCB.get(i).complete(List.of(buildAnimState()));
                 }
                 mDetachCB.set(i, null);
             }
