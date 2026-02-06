@@ -174,6 +174,7 @@ constructor(
                 initialValue = false,
             )
 
+    private var previouslyLoggedIsVisible: IsVisibleWithLoggingReason? = null
     /**
      * Whether the scene container is visible.
      *
@@ -190,7 +191,27 @@ constructor(
      * and the methods that ends up mutating those states.
      */
     val isVisible: Boolean
-        get() = isVisibleWithLoggingReason().value
+        get() {
+            val calculated = isVisibleWithLoggingReason()
+            if (calculated != previouslyLoggedIsVisible) {
+                if (calculated.value != previouslyLoggedIsVisible?.value) {
+                    logger.logVisibilityChange(
+                        from = previouslyLoggedIsVisible?.value ?: true,
+                        to = calculated.value,
+                        reason = calculated.loggingReason,
+                    )
+                } else {
+                    logger.logVisibilityRejection(
+                        to = calculated.value,
+                        reason = calculated.loggingReason,
+                    )
+                }
+
+                previouslyLoggedIsVisible = calculated
+            }
+
+            return calculated.value
+        }
 
     @Deprecated("Prefer the more performant, non-Flow version.", ReplaceWith("isVisible"))
     val isVisibleFlow: StateFlow<Boolean> =
@@ -557,31 +578,11 @@ constructor(
      * the event.
      */
     fun handleEvent(event: Event) {
-        // Save the original value of isVisible to later detect if it changed.
-        val oldIsVisible = isVisible
-
         logger.logEvent(event)
 
         // Apply the event to modify all the necessary states so the next read from isVisible
         // reflects the right value.
         updateStates(event)
-
-        // Calculate the new value of isVisible and get the logging reason for why it's set to that.
-        val isVisibleWithLoggingReason = isVisibleWithLoggingReason()
-
-        // Log the change to isVisible (or the rejection of the change).
-        if (oldIsVisible != isVisibleWithLoggingReason.value) {
-            logger.logVisibilityChange(
-                from = oldIsVisible,
-                to = isVisibleWithLoggingReason.value,
-                reason = isVisibleWithLoggingReason.loggingReason,
-            )
-        } else {
-            logger.logVisibilityRejection(
-                to = oldIsVisible,
-                reason = isVisibleWithLoggingReason.loggingReason,
-            )
-        }
     }
 
     fun dump(printWriter: PrintWriter) {
