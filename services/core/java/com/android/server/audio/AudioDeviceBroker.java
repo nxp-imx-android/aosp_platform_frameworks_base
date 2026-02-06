@@ -487,10 +487,10 @@ public class AudioDeviceBroker {
         if (mScoManagedByAudio) {
             if (isBtScoRequested) {
                 mBtHelper.startBluetoothSco(eventSource, client.getAttributionSource());
-                setBluetoothScoOn(true, "setCommunicationRouteForClient");
+                sendIMsg(MSG_I_MUTE_CALL, SENDMSG_REPLACE,
+                        0 /*unmute*/, 0);
             } else if (!isBtScoRequested) {
                 mBtHelper.stopBluetoothSco(eventSource);
-                setBluetoothScoOn(false, "setCommunicationRouteForClient");
             }
         } else {
             if (isBtScoRequested && (!wasBtScoRequested || !isBluetoothScoActive()
@@ -1120,15 +1120,9 @@ public class AudioDeviceBroker {
         synchronized (mBluetoothAudioStateLock) {
             Log.i(TAG, "setBluetoothScoOn: " + on + ", mBluetoothScoOn: "
                     + mBluetoothScoOn + ", from: " + eventSource);
-            // TODO: b/460593503 - Temporary workaround for certain AHAL implementations to still
-            // receive KVP under AMSCO
-            if (!mScoManagedByAudio
-                    || getContext().getPackageManager().hasSystemFeature(
-                            PackageManager.FEATURE_PC)) {
+            if (!mScoManagedByAudio) {
                 mBluetoothScoOn = on;
                 updateAudioHalBluetoothState();
-            }
-            if (!mScoManagedByAudio) {
                 postUpdateCommunicationRouteClient(eventSource);
             }
             if (on) {
