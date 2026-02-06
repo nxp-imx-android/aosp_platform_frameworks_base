@@ -47,6 +47,7 @@ import android.provider.DeviceConfig;
 import android.util.Slog;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
+import android.util.SparseLongArray;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
@@ -55,6 +56,7 @@ import com.android.internal.infra.ServiceConnector;
 import com.android.server.pm.Computer;
 import com.android.server.pm.PackageInstallerSession;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -140,6 +142,10 @@ public class DeveloperVerifierController {
     @GuardedBy("mVerificationStatusTrackers")
     // Counter of active verification sessions per user; must be synced with the trackers map.
     private final SparseIntArray mSessionsCountPerUser = new SparseIntArray();
+
+    @GuardedBy("mVerificationStatusTrackers")
+    // Map of userId -> next scheduled timeout check time in millis.
+    private final SparseLongArray mNextTimeoutCheckPerUser = new SparseLongArray();
 
     private final DeveloperVerifierExperimentProvider mExperimentProvider;
 
@@ -310,7 +316,7 @@ public class DeveloperVerifierController {
 
     private void destroy(int userId) {
         synchronized (mRemoteServices) {
-            if (mRemoteServices.contains(userId)) {
+            if (mRemoteServices.indexOfKey(userId) >= 0) {
                 var remoteService = mRemoteServices.get(userId);
                 if (remoteService != null) {
                     remoteService.getService().unbind();
@@ -463,7 +469,7 @@ public class DeveloperVerifierController {
         final long maxExtendedTimeoutMillis = mInjector.getMaxVerificationExtendedTimeoutMillis();
         final DeveloperVerificationRequestStatusTracker
                 tracker = new DeveloperVerificationRequestStatusTracker(
-                defaultTimeoutMillis, maxExtendedTimeoutMillis, mInjector, userId);
+                defaultTimeoutMillis, maxExtendedTimeoutMillis, mInjector, userId, callback);
         synchronized (mVerificationStatusTrackers) {
             mVerificationStatusTrackers.put(verificationId, tracker);
             if (mSessionsCountPerUser.indexOfKey(userId) < 0) {
@@ -471,35 +477,81 @@ public class DeveloperVerifierController {
             }
             final int sessionsCount = mSessionsCountPerUser.get(userId);
             mSessionsCountPerUser.put(userId, sessionsCount + 1);
+            // Start or reschedule the unified timeout reaper for this user.
+            startTimeoutCountdown(userId);
         }
-        startTimeoutCountdown(verificationId, tracker, callback, defaultTimeoutMillis);
         return true;
     }
 
-    private void startTimeoutCountdown(int verificationId,
-            DeveloperVerificationRequestStatusTracker tracker,
-            PackageInstallerSession.DeveloperVerifierCallback callback, long delayMillis) {
-        mHandler.postDelayed(() -> {
-            if (DEBUG) {
-                Slog.i(TAG, "Checking request timeout for " + verificationId);
+    private void startTimeoutCountdown(int userId) {
+        final Object token;
+        synchronized (mRemoteServices) {
+            final var service = mRemoteServices.get(userId);
+            if (service == null) {
+                // Not connected, no need to track.
+                return;
             }
-            if (!tracker.isTimeout()) {
-                if (DEBUG) {
-                    Slog.i(TAG, "Timeout is not met for " + verificationId + "; check later.");
+            token = service.getReaperToken();
+        }
+
+        synchronized (mVerificationStatusTrackers) {
+            long nextTimeoutTime = Long.MAX_VALUE;
+            for (int i = 0; i < mVerificationStatusTrackers.size(); i++) {
+                final var tracker = mVerificationStatusTrackers.valueAt(i);
+                if (tracker.getUserId() == userId) {
+                    nextTimeoutTime = Math.min(nextTimeoutTime, tracker.getTimeoutTime());
                 }
-                // If the current session is not timed out yet, check again later.
-                startTimeoutCountdown(verificationId, tracker, callback,
-                        /* delayMillis= */ tracker.getRemainingTime());
-            } else {
-                if (DEBUG) {
-                    Slog.i(TAG, "Request " + verificationId + " has timed out.");
-                }
-                // The request has timed out. Notify the installation session.
-                callback.onTimeout();
-                // Remove status tracking and stop the timeout countdown
-                removeStatusTracker(verificationId);
             }
-        }, /* token= */ tracker, delayMillis);
+
+            if (nextTimeoutTime == Long.MAX_VALUE) {
+                // No more sessions for this user.
+                mInjector.stopTimeoutCountdown(mHandler, token);
+                mNextTimeoutCheckPerUser.delete(userId);
+                return;
+            }
+
+            final long currentTime = mInjector.getCurrentTimeMillis();
+            final long delayMillis = Math.max(0, nextTimeoutTime - currentTime);
+
+            // Only reschedule if needed.
+            final long currentScheduledTime = mNextTimeoutCheckPerUser.get(userId, 0);
+            if (currentScheduledTime == 0
+                    || Math.abs(currentScheduledTime - nextTimeoutTime) > 100) {
+                mInjector.stopTimeoutCountdown(mHandler, token);
+                mNextTimeoutCheckPerUser.put(userId, nextTimeoutTime);
+                mHandler.postDelayed(() -> checkTimeouts(userId), token, delayMillis);
+            }
+        }
+    }
+
+    private void checkTimeouts(int userId) {
+        synchronized (mVerificationStatusTrackers) {
+            // Clear the scheduled time record to allow rescheduling in startTimeoutCountdown.
+            mNextTimeoutCheckPerUser.delete(userId);
+
+            final List<Integer> timedOutSessionIds = new ArrayList<>();
+            for (int i = 0; i < mVerificationStatusTrackers.size(); i++) {
+                final int sessionId = mVerificationStatusTrackers.keyAt(i);
+                final var tracker = mVerificationStatusTrackers.valueAt(i);
+                if (tracker.getUserId() == userId && tracker.isTimeout()) {
+                    timedOutSessionIds.add(sessionId);
+                }
+            }
+
+            for (int sessionId : timedOutSessionIds) {
+                if (DEBUG) {
+                    Slog.i(TAG, "Request " + sessionId + " has timed out.");
+                }
+                final var tracker = mVerificationStatusTrackers.get(sessionId);
+                if (tracker != null) {
+                    tracker.getCallback().onTimeout();
+                    removeStatusTracker(sessionId);
+                }
+            }
+
+            // After clearing expired ones, reschedule for the next one.
+            startTimeoutCountdown(userId);
+        }
     }
 
     /**
@@ -541,14 +593,14 @@ public class DeveloperVerifierController {
             final DeveloperVerificationRequestStatusTracker trackerRemoved =
                     mVerificationStatusTrackers.removeReturnOld(verificationId);
             if (trackerRemoved != null) {
-                // Stop the request timeout countdown
-                mInjector.stopTimeoutCountdown(mHandler, /* token= */ trackerRemoved);
                 final int userId = trackerRemoved.getUserId();
                 final int sessionCountForUser = mSessionsCountPerUser.get(userId);
                 if (sessionCountForUser >= 1) {
                     // Decrement the sessions count but don't go beyond zero
                     mSessionsCountPerUser.put(userId, sessionCountForUser - 1);
                 }
+                // Reschedule the reaper because the set of active trackers has changed.
+                startTimeoutCountdown(userId);
                 // Schedule auto-disconnect if there's no more active session on the user
                 if (mSessionsCountPerUser.get(userId) == 0) {
                     maybeScheduleAutoDisconnect(userId);
@@ -622,7 +674,10 @@ public class DeveloperVerifierController {
                             + " doesn't exist or has finished");
                 }
                 mCallback.onTimeoutExtensionRequested();
-                return tracker.extendTimeoutMillis(additionalMillis);
+                long result = tracker.extendTimeoutMillis(additionalMillis);
+                // Reschedule the reaper because the next timeout time for this user has changed.
+                startTimeoutCountdown(tracker.getUserId());
+                return result;
             }
         }
 
@@ -744,6 +799,7 @@ public class DeveloperVerifierController {
         // originally specified by the system.
         private final @NonNull String mVerifierPackageName;
         private final @NonNull Runnable mAutoDisconnectCallback;
+        private final @NonNull Object mReaperToken = new Object();
         ServiceConnectorWrapper(@NonNull ServiceConnector<IDeveloperVerifierService> service,
                 int uid, @NonNull String verifierPackageName) {
             mRemoteService = service;
@@ -768,6 +824,9 @@ public class DeveloperVerifierController {
         }
         @NonNull Runnable getAutoDisconnectCallback() {
             return mAutoDisconnectCallback;
+        }
+        @NonNull Object getReaperToken() {
+            return mReaperToken;
         }
     }
 
@@ -826,7 +885,7 @@ public class DeveloperVerifierController {
         }
 
         /**
-         * This is added so that we don't need to mock Handler.hasCallbacks which is final.
+         * This is added so that we can mock Handler.hasCallbacks which is final.
          */
         public boolean hasCallbacks(Handler handler, Runnable callback) {
             return handler.hasCallbacks(callback);
