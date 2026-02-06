@@ -245,6 +245,7 @@ import static android.provider.Telephony.Carriers.ENFORCE_KEY;
 import static android.provider.Telephony.Carriers.ENFORCE_MANAGED_URI;
 import static android.provider.Telephony.Carriers.INVALID_APN_ID;
 import static android.security.keystore.AttestationUtils.USE_INDIVIDUAL_ATTESTATION;
+
 import static com.android.internal.logging.nano.MetricsProto.MetricsEvent.PROVISIONING_ENTRY_POINT_ADB;
 import static com.android.internal.util.ConcurrentUtils.DIRECT_EXECUTOR;
 import static com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_NONE;
@@ -485,6 +486,7 @@ import android.util.StatsEvent;
 import android.util.Xml;
 import android.view.accessibility.IAccessibilityManager;
 import android.view.inputmethod.InputMethodInfo;
+
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
@@ -528,6 +530,9 @@ import com.android.server.storage.DeviceStorageMonitorInternal;
 import com.android.server.uri.NeededUriGrants;
 import com.android.server.uri.UriGrantsManagerInternal;
 import com.android.server.utils.Slogf;
+
+import org.xmlpull.v1.XmlPullParserException;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileDescriptor;
@@ -568,7 +573,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.xmlpull.v1.XmlPullParserException;
 
 /**
  * Implementation of the device policy APIs.
@@ -1421,19 +1425,23 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
      * post a notification if at least one private space profile is removed.
      */
     private void removePrivateSpaceWithinUserGroupIfExists(int userId) {
-        boolean removed = false;
-        if (mUserManager.isProfile(userId)) return;
-        for (int profileId : mUserManager.getProfileIdsWithDisabled(userId)) {
-            if (profileId == userId) continue;
-            if (mUserManager.getUserInfo(profileId).isPrivateProfile()) {
-                Slogf.i(LOG_TAG, "Removing private space %d due to DISALLOW_ADD_PRIVATE_PROFILE",
-                        profileId);
-                removed |= mUserManager.removeUserEvenWhenDisallowed(profileId);
+        mBackgroundHandler.post(() -> {
+            boolean removed = false;
+            if (mUserManager.isProfile(userId)) return;
+            for (int profileId : mUserManager.getProfileIdsWithDisabled(userId)) {
+                if (profileId == userId) continue;
+                UserInfo userInfo = mUserManager.getUserInfo(profileId);
+                if (userInfo != null && userInfo.isPrivateProfile()) {
+                    Slogf.i(LOG_TAG, "Removing private space %d due to "
+                                    + "DISALLOW_ADD_PRIVATE_PROFILE",
+                            profileId);
+                    removed |= mUserManager.removeUserEvenWhenDisallowed(profileId);
+                }
             }
-        }
-        if (removed) {
-            mHandler.post(() -> sendPrivateSpaceRemovedNotification(userId));
-        }
+            if (removed) {
+                mHandler.post(() -> sendPrivateSpaceRemovedNotification(userId));
+            }
+        });
     }
 
     private void sendPrivateSpaceRemovedNotification(int parentUserId) {
