@@ -103,6 +103,23 @@ public class ParsedAllowComponentAccessPolicyUtils {
 
                     SignedPackage signedPackage = new SignedPackage(packageName, certDigest);
                     allowedPackages.add(signedPackage);
+                    ParseResult<String[]> additionalCertsResult = ParsingPackageUtils
+                            .parseAdditionalCertificates(input, pkg, res, parser);
+                    if (additionalCertsResult.isError()) {
+                        return input.error(additionalCertsResult);
+                    }
+
+                    String[] additionalCerts = additionalCertsResult.getResult();
+                    for (String certStr : additionalCerts) {
+                        try {
+                            byte[] digest = HexDump.hexStringToByteArray(certStr);
+                            allowedPackages.add(new SignedPackage(packageName, digest));
+                        } catch (IllegalArgumentException e) {
+                            return input.error(
+                                    PackageManager.INSTALL_PARSE_FAILED_MANIFEST_MALFORMED,
+                                    "Invalid additional certificate digest: " + certStr, e);
+                        }
+                    }
                 } finally {
                     sa.recycle();
                 }

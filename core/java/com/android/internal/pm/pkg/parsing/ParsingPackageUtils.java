@@ -2948,7 +2948,25 @@ public class ParsingPackageUtils {
         }
     }
 
-    private static ParseResult<String[]> parseAdditionalCertificates(ParseInput input,
+    /**
+     * Parses all nested {@code <additional-certificate>} tags within the current XML element.
+     *
+     * <p>This method iterates through the child elements of the tag where the parser is
+     * currently positioned, <b>consuming the input until the {@code END_TAG} of the
+     * current element is reached</b>.
+     *
+     * <p>It extracts the certificate digests, cleans them by removing colon delimiters
+     * and converting to lowercase, and returns them as a string array.
+     *
+     * @param input The {@link ParseInput} used to track parsing status and errors.
+     * @param pkg The {@link ParsingPackage} being parsed, used for feature flag validation.
+     * @param resources The {@link Resources} to obtain attributes from.
+     * @param parser The {@link XmlResourceParser} currently positioned at the parent start tag.
+     * @return A {@link ParseResult} containing an array of SHA-256 certificate digests.
+     * @throws XmlPullParserException If an error occurs during XML parsing.
+     * @throws IOException If an I/O error occurs.
+     */
+    public static ParseResult<String[]> parseAdditionalCertificates(ParseInput input,
             ParsingPackage pkg, Resources resources, XmlResourceParser parser)
             throws XmlPullParserException, IOException {
         String[] certSha256Digests = EmptyArray.STRING;
