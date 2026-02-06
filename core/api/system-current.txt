@@ -19862,11 +19862,14 @@ package android.telephony.satellite {
     method @NonNull public android.telephony.satellite.EnableRequestAttributes.Builder setSatelliteEnablementRequestReason(int);
   }
 
-  @FlaggedApi("com.android.internal.telephony.flags.satellite_upsell") public class EnableResponse {
-    method @NonNull public java.util.List<java.lang.Integer> getSatelliteEnablementRequestReasons();
+  @FlaggedApi("com.android.internal.telephony.flags.satellite_upsell") public final class EnableResponse implements android.os.Parcelable {
+    method public int describeContents();
+    method @NonNull public int[] getSatelliteEnablementRequestReasons();
     method public boolean isDemoMode();
     method public boolean isEmergencyMode();
     method public boolean isEnabled();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.telephony.satellite.EnableResponse> CREATOR;
   }
 
   public interface NtnSignalStrengthCallback {
