@@ -89,6 +89,10 @@ constructor(
                 promptViewModel.modalities,
             ) { sensorBounds, size, position, modalities ->
                 when (position) {
+                    PromptPosition.Center -> {
+                        // Icon is positioned relative to rest of prompt in Center case
+                        Rect(0, 0, 0, 0)
+                    }
                     PromptPosition.Bottom ->
                         if (size.isSmall) {
                             Rect(0, 0, 0, portraitSmallBottomPadding)

@@ -42,6 +42,7 @@ import androidx.test.filters.SmallTest;
 import com.android.settingslib.bluetooth.HearingAidDeviceManager;
 import com.android.systemui.Prefs;
 import com.android.systemui.SysuiTestCase;
+import com.android.systemui.accessibility.Magnification;
 import com.android.systemui.accessibility.utils.TestUtils;
 import com.android.systemui.inputdevice.data.repository.FakePointerDeviceRepository;
 import com.android.systemui.keyboard.data.repository.FakeKeyboardRepository;
@@ -93,14 +94,8 @@ public class MenuAnimationControllerTest extends SysuiTestCase {
                         mHearingAidDeviceManager,
                         keyboardRepository,
                         pointerDeviceRepository);
-
-        mMenuView =
-                spy(
-                        new MenuView(
-                                mContext,
-                                stubMenuViewModel,
-                                stubMenuViewAppearance,
-                                secureSettings));
+        mMenuView = spy(new MenuView(mContext, stubMenuViewModel, stubMenuViewAppearance,
+                secureSettings, mock(Magnification.class)));
         mViewPropertyAnimator = spy(mMenuView.animate());
         doReturn(mViewPropertyAnimator).when(mMenuView).animate();
 

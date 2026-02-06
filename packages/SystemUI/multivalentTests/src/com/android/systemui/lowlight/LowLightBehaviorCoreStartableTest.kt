@@ -17,13 +17,15 @@ package com.android.systemui.lowlight
 
 import android.content.res.mockResources
 import android.platform.test.annotations.EnableFlags
-import android.provider.Settings
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.display.domain.interactor.displayStateInteractor
+import com.android.systemui.dreams.data.repository.dreamSettingsRepository
+import com.android.systemui.dreams.data.repository.fake
 import com.android.systemui.dreams.domain.interactor.dreamSettingsInteractorKosmos
+import com.android.systemui.dreams.shared.model.WhenToDream
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.keyguard.shared.model.DozeStateModel
@@ -56,7 +58,6 @@ import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.fakeUserRepository
 import com.android.systemui.user.domain.interactor.selectedUserInteractor
 import com.android.systemui.user.domain.interactor.userLockedInteractor
-import com.android.systemui.util.settings.fakeSettings
 import com.google.common.truth.Truth.assertThat
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.runBlocking
@@ -107,11 +108,7 @@ class LowLightBehaviorCoreStartableTest() : SysuiTestCase() {
     }
 
     private fun Kosmos.setDreamEnabled(enabled: Boolean) {
-        fakeSettings.putBoolForUser(
-            Settings.Secure.SCREENSAVER_ENABLED,
-            enabled,
-            selectedUserInteractor.getSelectedUserId(),
-        )
+        dreamSettingsRepository.fake.setDreamsEnabled(enabled)
     }
 
     private fun Kosmos.debounce() {
@@ -146,24 +143,7 @@ class LowLightBehaviorCoreStartableTest() : SysuiTestCase() {
         kosmos.setUserUnlocked(true)
         kosmos.powerInteractor.setAwakeForTest()
         kosmos.fakeKeyguardRepository.setKeyguardShowing(true)
-
-        // Activate dreams on charge by default
-        mContext.orCreateTestableResources.addOverride(
-            com.android.internal.R.bool.config_dreamsEnabledByDefault,
-            true,
-        )
-        mContext.orCreateTestableResources.addOverride(
-            com.android.internal.R.bool.config_dreamsActivatedOnSleepByDefault,
-            true,
-        )
-        mContext.orCreateTestableResources.addOverride(
-            com.android.internal.R.bool.config_dreamsActivatedOnDockByDefault,
-            false,
-        )
-        mContext.orCreateTestableResources.addOverride(
-            com.android.internal.R.bool.config_dreamsActivatedOnPosturedByDefault,
-            false,
-        )
+        kosmos.dreamSettingsRepository.fake.setWhenToDream(WhenToDream.WHILE_CHARGING)
 
         runBlocking {
             kosmos.lowLightSettingsRepository.setLowLightDisplayBehaviorEnabled(true)

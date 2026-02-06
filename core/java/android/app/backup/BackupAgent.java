@@ -54,6 +54,7 @@ import libcore.io.IoUtils;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.File;
+import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -1415,6 +1416,10 @@ public abstract class BackupAgent extends ContextWrapper {
             // we may be about to rewrite the file out from underneath
             waitForSharedPrefs();
 
+            if (Flags.enableDelayedRestoreApi()) {
+                cacheDataForDelayedRestoreIfSupported(data.getFileDescriptor());
+            }
+
             BackupDataInput input = new BackupDataInput(data.getFileDescriptor());
 
             // Ensure that we're running with the app's normal permission level
@@ -1735,10 +1740,12 @@ public abstract class BackupAgent extends ContextWrapper {
                 IBackupManager callbackBinder,
                 long appVersionCode,
                 int token) {
+            ParcelFileDescriptor dataPfd = null;
             final long ident = Binder.clearCallingIdentity();
             try {
-                // TODO: Add fetching of the delayed restore cache here.
-                BackupAgent.this.onDelayedRestore(request, null, appVersionCode, newState);
+                dataPfd = fetchCachedDataForDelayedRestore();
+                BackupDataInput data = new BackupDataInput(dataPfd.getFileDescriptor());
+                BackupAgent.this.onDelayedRestore(request, data, appVersionCode, newState);
             } catch (Exception e) {
                 Log.d(
                         TAG,
@@ -1755,9 +1762,38 @@ public abstract class BackupAgent extends ContextWrapper {
                 }
 
                 if (Binder.getCallingPid() != Process.myPid()) {
+                    IoUtils.closeQuietly(dataPfd);
                     IoUtils.closeQuietly(newState);
                 }
             }
+        }
+
+        private ParcelFileDescriptor fetchCachedDataForDelayedRestore() {
+            // TODO: Add implementation in followup
+            return null;
+        }
+
+        private void cacheDataForDelayedRestoreIfSupported(@NonNull FileDescriptor data) {
+            if (isDelayedRestoreSupported()) {
+                try {
+                    // TODO: Add implementation in followup
+                    Os.lseek(data, 0, OsConstants.SEEK_SET);
+                } catch (ErrnoException e) {
+                    Log.w(TAG, "Failed to set file pointer position for delayed restore", e);
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+
+        private boolean isDelayedRestoreSupported() {
+            return getPackageManager().checkPermission(
+                    android.Manifest.permission.SCHEDULE_DELAYED_RESTORE, getPackageName())
+                    == getPackageManager().PERMISSION_GRANTED;
+        }
+
+        @Override
+        public void doDelayedRestoreCachedDataExpired(int token, IBackupManager callbackBinder) {
+            // TODO: Add implementation in followup
         }
 
         @Override

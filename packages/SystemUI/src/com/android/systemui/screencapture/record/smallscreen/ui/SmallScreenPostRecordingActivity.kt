@@ -59,7 +59,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -88,7 +88,6 @@ import com.android.systemui.screencapture.ui.postRecordingConfirmDeletion
 import com.android.systemui.screenrecord.shared.model.ScreenRecording
 import com.android.systemui.statusbar.phone.SystemUIDialogFactory
 import javax.inject.Inject
-import kotlinx.coroutines.launch
 
 class SmallScreenPostRecordingActivity
 @Inject
@@ -110,7 +109,6 @@ constructor(
 
     @Composable
     private fun Content() {
-        val coroutineScope = rememberCoroutineScope()
         val shouldShowVideoSaved = intent.shouldWaitForVideo()
         val videoViewModel: PostRecordingVideoViewModel = createVideoViewModel(intent)
         val actionsViewModel: PostRecordingActionsViewModel =
@@ -126,6 +124,22 @@ constructor(
             if (shouldShowVideoSaved && recording is ScreenRecording.Saved) {
                 intent.clearShouldWaitForVideo()
                 postRecordSnackbarDialogs.showVideoSaved()
+            }
+        }
+        var isShowingDeletionDialog: Boolean by rememberSaveable(Unit) { mutableStateOf(false) }
+        LaunchedEffect(isShowingDeletionDialog) {
+            if (isShowingDeletionDialog) {
+                val shouldDeleteVideo =
+                    postRecordingConfirmDeletion(
+                        systemUIDialogFactory,
+                        this@SmallScreenPostRecordingActivity,
+                        actionsViewModel,
+                    )
+                if (shouldDeleteVideo) {
+                    postRecordSnackbarDialogs.showVideoDeleted(recording.uri)
+                    finish()
+                }
+                isShowingDeletionDialog = false
             }
         }
 
@@ -204,18 +218,7 @@ constructor(
                     PostRecordButton(
                         onClick = {
                             if (recording !is ScreenRecording.Saved) return@PostRecordButton
-                            coroutineScope.launch {
-                                if (
-                                    postRecordingConfirmDeletion(
-                                        systemUIDialogFactory,
-                                        this@SmallScreenPostRecordingActivity,
-                                        actionsViewModel,
-                                    )
-                                ) {
-                                    postRecordSnackbarDialogs.showVideoDeleted(recording.uri)
-                                    finish()
-                                }
-                            }
+                            isShowingDeletionDialog = true
                         },
                         enabled = recording is ScreenRecording.Saved,
                         drawableLoaderViewModel = actionsViewModel,

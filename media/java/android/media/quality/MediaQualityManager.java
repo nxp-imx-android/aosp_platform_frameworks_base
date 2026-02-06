@@ -462,7 +462,10 @@ public final class MediaQualityManager {
      *         equalizer bands, or {@code null} if the settings are not available.
      * @throws SecurityException if the caller does not have the required permission.
      *
+     * @hide
      */
+    @SystemApi
+    @RequiresPermission(android.Manifest.permission.MANAGE_GLOBAL_SOUND_QUALITY_SERVICE)
     @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
     @Nullable
     public EqualizerSettings getEqualizerSettings() {
@@ -480,10 +483,16 @@ public final class MediaQualityManager {
      * settings. The framework must ensure the bands provided in the {@code settings} object
      * match the frequencies reported by {@link #getEqualizerCapabilities()}.
      *
+     * <p>This method override the app equalizer settings.
+     *
      * @param settings The {@link EqualizerSettings} object containing the new desired settings.
+     *                 {@code null} means equalizer is not used.
      * @throws SecurityException if the caller does not have the required permission.
      *
+     * @hide
      */
+    @SystemApi
+    @RequiresPermission(android.Manifest.permission.MANAGE_GLOBAL_SOUND_QUALITY_SERVICE)
     @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
     public void setEqualizerSettings(@Nullable EqualizerSettings settings) {
         try {

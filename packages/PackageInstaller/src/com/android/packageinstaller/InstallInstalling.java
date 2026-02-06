@@ -268,9 +268,10 @@ public class InstallInstalling extends Activity {
      * @param statusMessage The detailed installation result.
      * @param serviceId     Id for PowerManager.WakeLock service. Used only by Wear devices
      *                      during an uninstall.
+     * @param intent        The result intent.
      */
     private void launchFinishBasedOnResult(int statusCode, int legacyStatus, String statusMessage,
-            int serviceId /* ignore */) {
+            int serviceId /* ignore */, Intent intent /* ignore */) {
         if (statusCode == PackageInstaller.STATUS_SUCCESS) {
             launchSuccess();
         } else {

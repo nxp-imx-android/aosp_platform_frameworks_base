@@ -36,6 +36,7 @@ import android.service.personalcontext.insight.ActionableInsight;
 import android.service.personalcontext.insight.BundleInsight;
 import android.service.personalcontext.insight.ContextInsight;
 import android.service.personalcontext.insight.InsightActionDetails;
+import android.service.personalcontext.insight.InsightCollection;
 import android.service.personalcontext.insight.InsightDisplayDetails;
 import android.view.textclassifier.TextClassification;
 
@@ -86,33 +87,7 @@ public class TextClassificationActionRendererTest {
 
     @Test
     public void testRender_actionableInsight_merge() throws Exception {
-        TextClassificationHint hint =
-                new TextClassificationHint.Builder(
-                                new TextClassification.Request.Builder("test-text", 0, 4).build(),
-                                "sessionId")
-                        .build();
-        InsightActionDetails actionDetails =
-                new InsightActionDetails.Builder()
-                        .setRemoteAction(
-                                new RemoteAction(
-                                        TEST_ICON,
-                                        "title",
-                                        "content-description",
-                                        PendingIntent.getBroadcast(
-                                                InstrumentationRegistry.getTargetContext(),
-                                                0,
-                                                new Intent(),
-                                                PendingIntent.FLAG_IMMUTABLE)))
-                        .build();
-        InsightDisplayDetails displayDetails =
-                new InsightDisplayDetails.Builder("title", TEST_ICON).build();
-        ActionableInsight insight =
-                new ActionableInsight.Builder(actionDetails, displayDetails)
-                        .addOriginHint(
-                                new ContextHintWithSignature.Builder(
-                                                hint, ContextHintTestUtils.generateSignedHintKey())
-                                        .build())
-                        .build();
+        ActionableInsight insight = buildActionableInsight("title", "sessionId");
 
         mRenderer.render(insight, null);
 
@@ -122,7 +97,57 @@ public class TextClassificationActionRendererTest {
         TextClassification response = captor.getValue();
         assertThat(response.getActions()).hasSize(1);
         RemoteAction action = response.getActions().getFirst();
-        assertThat(action.getTitle()).isEqualTo("title");
+        assertThat(action.getTitle().toString()).isEqualTo("title");
         assertThat(action.getIcon()).isEqualTo(TEST_ICON);
+    }
+
+    @Test
+    public void testRender_insightcollection_merge() throws Exception {
+        ActionableInsight insight = buildActionableInsight("title", "sessionId");
+        InsightCollection insightCollection =
+                new InsightCollection.Builder().addInsight(insight).build();
+
+        mRenderer.render(insightCollection, null);
+
+        ArgumentCaptor<TextClassification> captor =
+                ArgumentCaptor.forClass(TextClassification.class);
+        verify(mPersonalContextBridge, times(1)).merge(eq("sessionId"), captor.capture());
+        TextClassification response = captor.getValue();
+        assertThat(response.getActions()).hasSize(1);
+        RemoteAction action = response.getActions().getFirst();
+        assertThat(action.getTitle().toString()).isEqualTo("title");
+        assertThat(action.getIcon()).isEqualTo(TEST_ICON);
+    }
+
+    private static ActionableInsight buildActionableInsight(String title, String sessionId)
+            throws Exception {
+        TextClassificationHint hint =
+                new TextClassificationHint.Builder(
+                                new TextClassification.Request.Builder("test-text", 0, 4).build(),
+                                sessionId)
+                        .build();
+        InsightActionDetails actionDetails =
+                new InsightActionDetails.Builder()
+                        .setRemoteAction(
+                                new RemoteAction(
+                                        TEST_ICON,
+                                        title,
+                                        "content-description",
+                                        PendingIntent.getBroadcast(
+                                                InstrumentationRegistry.getTargetContext(),
+                                                0,
+                                                new Intent(),
+                                                PendingIntent.FLAG_IMMUTABLE)))
+                        .build();
+        InsightDisplayDetails displayDetails =
+                new InsightDisplayDetails.Builder(title, TEST_ICON).build();
+        ActionableInsight insight =
+                new ActionableInsight.Builder(actionDetails, displayDetails)
+                        .addOriginHint(
+                                new ContextHintWithSignature.Builder(
+                                                hint, ContextHintTestUtils.generateSignedHintKey())
+                                        .build())
+                        .build();
+        return insight;
     }
 }

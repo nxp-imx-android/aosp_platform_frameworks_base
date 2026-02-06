@@ -30,9 +30,9 @@ import android.os.CancellationSignal;
 import android.os.IBinder;
 import android.os.ICancellationSignal;
 import android.os.OutcomeReceiver;
-import android.security.talisman.TrustConfiguration;
 import android.security.trusttoken.ITrustTokenCallback;
 import android.security.trusttoken.ITrustTokenService;
+import android.security.trusttoken.TrustConfiguration;
 import android.security.trusttoken.TrustTokenRequest;
 import android.security.trusttoken.TrustTokenResponse;
 import android.security.trusttoken.TrustTokenService;
@@ -63,7 +63,8 @@ final class TrustTokenProvider {
             return null;
         }
         ServiceInfo si = resolved.serviceInfo;
-        if (!si.permission.equals(Manifest.permission.BIND_TRUST_TOKEN_SERVICE)) {
+        if (si.permission == null
+                || !si.permission.equals(Manifest.permission.BIND_TRUST_TOKEN_SERVICE)) {
             Slog.e(
                     TAG,
                     String.format(

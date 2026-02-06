@@ -25,6 +25,7 @@ import static android.media.AudioManager.AUDIO_DEVICE_CATEGORY_RECEIVER;
 import static android.media.AudioManager.AUDIO_DEVICE_CATEGORY_SPEAKER;
 import static android.media.AudioManager.AUDIO_DEVICE_CATEGORY_UNKNOWN;
 import static android.media.AudioManager.AUDIO_DEVICE_CATEGORY_WATCH;
+import static android.media.audio.Flags.blePeripheralDevices;
 
 import static com.android.media.audio.Flags.optimizeBtDeviceSwitch;
 
@@ -42,8 +43,8 @@ import android.bluetooth.BluetoothHearingAid;
 import android.bluetooth.BluetoothLeAudio;
 import android.bluetooth.BluetoothLeAudioCodecConfig;
 import android.bluetooth.BluetoothLeAudioCodecStatus;
+import android.bluetooth.BluetoothLeAudioPeripheral;
 import android.bluetooth.BluetoothProfile;
-import android.content.Context;
 import android.content.Intent;
 import android.media.AudioDeviceAttributes;
 import android.media.AudioManager;
@@ -108,6 +109,24 @@ public class BtHelper {
 
     @GuardedBy("BtHelper.this")
     private @Nullable BluetoothCodecConfig mA2dpCodecConfig;
+
+    @GuardedBy("BtHelper.this")
+    private @Nullable BluetoothLeAudioPeripheral mLeAudioPeripheral = null;
+
+    // bitmask of BLE peripheral profile stream types currently active as reported by the
+    // BLE peripheral profile proxy
+    private int mLeAudioPeripheralStreamTypes = 0;
+
+    static final int LE_PERIPHERAL_INPUT_STREAM_TYPES =
+            BluetoothLeAudioPeripheral.STREAM_TYPE_CALL
+                    | BluetoothLeAudioPeripheral.STREAM_TYPE_MEDIA
+                    | BluetoothLeAudioPeripheral.STREAM_TYPE_GAME
+                    |  BluetoothLeAudioPeripheral.STREAM_TYPE_VOICE_ASSISTANT;
+
+    static final int LE_PERIPHERAL_OUTPUT_STREAM_TYPES =
+            BluetoothLeAudioPeripheral.STREAM_TYPE_CALL
+                    |  BluetoothLeAudioPeripheral.STREAM_TYPE_RECORDING;
+
 
     @GuardedBy("BtHelper.this")
     private @AudioSystem.AudioFormatNativeEnumForBtCodec
@@ -536,6 +555,10 @@ public class BtHelper {
                     mBluetoothProfileServiceListener, BluetoothProfile.LE_AUDIO);
             adapter.getProfileProxy(mDeviceBroker.getContext(),
                     mBluetoothProfileServiceListener, BluetoothProfile.LE_AUDIO_BROADCAST);
+            if (blePeripheralDevices()) {
+                adapter.getProfileProxy(mDeviceBroker.getContext(),
+                        mBluetoothProfileServiceListener, BluetoothProfile.LE_AUDIO_PERIPHERAL);
+            }
         }
     }
 
@@ -668,6 +691,16 @@ public class BtHelper {
                 return new Pair<>(mLeAudioBroadcastCodec, changed);
             }
             default:
+                if (blePeripheralDevices() && profile == BluetoothProfile.LE_AUDIO_PERIPHERAL) {
+                    if (mLeAudioPeripheral == null) {
+                        return new Pair<>(AudioSystem.AUDIO_FORMAT_DEFAULT, false);
+                    }
+
+                    // Use LC3 for now as the codec config cannot be retrieved from the profile
+                    return new Pair<>(AudioSystem.bluetoothLeCodecToAudioFormat(
+                            BluetoothLeAudioCodecConfig.SOURCE_CODEC_TYPE_LC3), false);
+
+                }
                 return new Pair<>(AudioSystem.AUDIO_FORMAT_DEFAULT, false);
         }
     }
@@ -811,6 +844,19 @@ public class BtHelper {
                 // nothing to do in BtHelper
                 break;
             default:
+                if (blePeripheralDevices() && profile == BluetoothProfile.LE_AUDIO_PERIPHERAL) {
+                    if (mLeAudioPeripheral != null && mLeAudioPeripheralCallback != null) {
+                        try {
+                            mLeAudioPeripheral.unregisterCallback(mLeAudioPeripheralCallback);
+                        } catch (Exception e) {
+                            Log.e(TAG, "Unregistering LE audio peripheral callback failed: ", e);
+                        }
+                    }
+                    mLeAudioPeripheral = null;
+                    mLeAudioPeripheralCallback = null;
+                    mLeAudioPeripheralStreamTypes = 0;
+                    break;
+                }
                 // Not a valid profile to disconnect
                 Log.e(TAG, "onBtProfileDisconnected: Not a valid profile to disconnect "
                         + BluetoothProfile.getProfileName(profile));
@@ -844,6 +890,20 @@ public class BtHelper {
 
     @GuardedBy("BtHelper.this")
     MyLeAudioCallback mLeAudioCallback = null;
+
+    // BluetoothLeAudioPeripheral callback used to update the list of active use cases on
+    // an active LE Audio peripheral link.
+    class MyLeAudioPeripheralCallback implements BluetoothLeAudioPeripheral.Callback {
+        @Override
+        public void onStreamTypesChanged(
+                @NonNull BluetoothDevice device, int streamTypes) {
+            mLeAudioPeripheralStreamTypes = streamTypes;
+            //TODO b/423053144: see if anything needs to be done when the active stream
+            // types change
+        }
+    }
+
+    MyLeAudioPeripheralCallback mLeAudioPeripheralCallback = null;
 
     @GuardedBy("mDeviceBroker.mDeviceStateLock")
     /*package*/ synchronized void onBtProfileConnected(int profile, BluetoothProfile proxy) {
@@ -896,6 +956,22 @@ public class BtHelper {
                 // nothing to do in BtHelper
                 return;
             default:
+                if (blePeripheralDevices() && profile == BluetoothProfile.LE_AUDIO_PERIPHERAL) {
+                    if (((BluetoothLeAudioPeripheral) proxy).equals(mLeAudioPeripheral)) {
+                        return;
+                    }
+                    mLeAudioPeripheral = (BluetoothLeAudioPeripheral) proxy;
+                    mLeAudioPeripheralCallback = new MyLeAudioPeripheralCallback();
+                    try {
+                        mLeAudioPeripheral.registerCallback(
+                                mDeviceBroker.getContext().getMainExecutor(),
+                                mLeAudioPeripheralCallback);
+                    } catch (Exception e) {
+                        mLeAudioPeripheralCallback = null;
+                        Log.e(TAG, "Exception while registering callback for LE audio", e);
+                    }
+                    break;
+                }
                 // Not a valid profile to connect
                 Log.e(TAG, "onBtProfileConnected: Not a valid profile to connect "
                         + BluetoothProfile.getProfileName(profile));
@@ -956,6 +1032,25 @@ public class BtHelper {
                 }
             } break;
             default:
+                if (blePeripheralDevices()
+                        && profile == BluetoothProfile.LE_AUDIO_PERIPHERAL) {
+                    mLeAudioPeripheralStreamTypes =
+                            mLeAudioPeripheral.getEnabledStreamTypes(device);
+
+                    if ((mLeAudioPeripheralStreamTypes & LE_PERIPHERAL_OUTPUT_STREAM_TYPES) != 0) {
+                        BluetoothProfileConnectionInfo bpci =
+                                BluetoothProfileConnectionInfo.createLeAudioPeripheralInfo(
+                                        true /*isLeOutput*/);
+                        postBluetoothActiveDevice(device, bpci);
+                    }
+                    if ((mLeAudioPeripheralStreamTypes & LE_PERIPHERAL_INPUT_STREAM_TYPES) != 0) {
+                        BluetoothProfileConnectionInfo bpci =
+                                BluetoothProfileConnectionInfo.createLeAudioPeripheralInfo(
+                                        false /*isLeOutput*/);
+                        postBluetoothActiveDevice(device, bpci);
+                    }
+                    break;
+                }
                 // Not a valid profile to connect
                 Log.wtf(TAG, "Invalid profile! onBtProfileConnected");
                 break;
@@ -984,6 +1079,11 @@ public class BtHelper {
             case BluetoothProfile.A2DP_SINK:
             case BluetoothProfile.LE_AUDIO_BROADCAST:
             default:
+                if (blePeripheralDevices()
+                        && profile == BluetoothProfile.LE_AUDIO_PERIPHERAL) {
+                    return mLeAudioPeripheral != null;
+                }
+
                 // return true for profiles that are not managed by the BtHelper because
                 // the fact that the profile proxy is not connected does not affect
                 // the device connection handling.
@@ -1160,6 +1260,7 @@ public class BtHelper {
                         case BluetoothProfile.LE_AUDIO:
                         case BluetoothProfile.A2DP_SINK:
                         case BluetoothProfile.LE_AUDIO_BROADCAST:
+                        case BluetoothProfile.LE_AUDIO_PERIPHERAL:
                             AudioService.sDeviceLogger.enqueue(new EventLogger.StringEvent(
                                     "BT profile service: connecting "
                                     + BluetoothProfile.getProfileName(profile)
@@ -1180,6 +1281,7 @@ public class BtHelper {
                         case BluetoothProfile.LE_AUDIO:
                         case BluetoothProfile.A2DP_SINK:
                         case BluetoothProfile.LE_AUDIO_BROADCAST:
+                        case BluetoothProfile.LE_AUDIO_PERIPHERAL:
                             AudioService.sDeviceLogger.enqueue(new EventLogger.StringEvent(
                                     "BT profile service: disconnecting "
                                         + BluetoothProfile.getProfileName(profile)
@@ -1254,6 +1356,9 @@ public class BtHelper {
             return BluetoothProfile.HEADSET;
         } else if (AudioSystem.isBluetoothLeDevice(deviceType)) {
             return BluetoothProfile.LE_AUDIO;
+        } else if (blePeripheralDevices()
+                && AudioSystem.isBluetoothLeCentralDevice(deviceType)) {
+            return BluetoothProfile.LE_AUDIO_PERIPHERAL;
         }
         return 0; // 0 is not a valid profile
     }
@@ -1278,6 +1383,16 @@ public class BtHelper {
             case BluetoothProfile.HEADSET:
                 return btHeadsetDeviceToAudioDevice(device).getInternalType();
             default:
+                if (blePeripheralDevices()
+                        && profile == BluetoothProfile.LE_AUDIO_PERIPHERAL) {
+                    if (isLeOutput) {
+                        return AudioSystem.DEVICE_OUT_BLE_CENTRAL;
+                    } else {
+                        //TODO b/423053144: how do we identify the DEVICE_IN_BLE_CENTRAL_BROADCAST?
+                        // different BT profile of Profile API?
+                        return AudioSystem.DEVICE_IN_BLE_CENTRAL;
+                    }
+                }
                 throw new IllegalArgumentException("Invalid profile " + profile);
         }
     }
@@ -1418,6 +1533,7 @@ public class BtHelper {
         pw.println("\n" + prefix + "mHearingAid: " + mHearingAid);
         pw.println("\n" + prefix + "mLeAudio: " + mLeAudio);
         pw.println(prefix + "mA2dp: " + mA2dp);
+        pw.println(prefix + "mLeAudioPeripheral: " + mLeAudioPeripheral);
         pw.println(prefix + "mAvrcpAbsVolSupported: " + mAvrcpAbsVolSupported);
     }
 

@@ -284,10 +284,9 @@ public final class ThreadedRenderer extends HardwareRenderer {
         private BLASTBufferQueue mBLASTBufferQueue;
         private SurfaceControl mSurfaceControl;
 
-        public boolean setSurfaceControlOpaque(boolean opaque) {
+        public boolean getSurfaceControlOpacity(boolean opaque) {
             synchronized (this) {
                 if (mHasWebViewOverlays) return false;
-                mTransaction.setOpaque(mSurfaceControl, opaque).apply();
             }
             return opaque;
         }
@@ -580,22 +579,22 @@ public final class ThreadedRenderer extends HardwareRenderer {
 
     /**
      * Whether or not the renderer owns the SurfaceControl's opacity. If true, use
-     * {@link #setSurfaceControlOpaque(boolean)} to update the opacity
+     * {@link #getSurfaceControlOpacity(boolean)} to update the opacity
      */
     public boolean rendererOwnsSurfaceControlOpacity() {
         return mWebViewOverlayProvider.mSurfaceControl != null;
     }
 
     /**
-     * Sets the SurfaceControl's opacity that this HardwareRenderer is rendering onto. The renderer
+     * Gets the SurfaceControl's opacity that this HardwareRenderer is rendering onto. The renderer
      * may opt to override the opacity, and will return the value that is ultimately set
      *
      * @return true if the surface is opaque, false otherwise
      *
      * @hide
      */
-    public boolean setSurfaceControlOpaque(boolean opaque) {
-        return mWebViewOverlayProvider.setSurfaceControlOpaque(opaque);
+    public boolean getSurfaceControlOpacity(boolean opaque) {
+        return mWebViewOverlayProvider.getSurfaceControlOpacity(opaque);
     }
 
     private void updateWebViewOverlayCallbacks() {

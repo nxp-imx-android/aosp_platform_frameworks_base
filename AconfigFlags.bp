@@ -75,6 +75,7 @@ aconfig_declarations_group {
         "android.provider.flags-aconfig-java",
         "android.sdk.flags-aconfig-java",
         "android.security.flags-aconfig-java",
+        "android.security.identity.flags-aconfig-java",
         "android.service.appprediction.flags-aconfig-java",
         "android.service.autofill.flags-aconfig-java",
         "android.service.chooser.flags-aconfig-java",
@@ -538,6 +539,7 @@ aconfig_declarations {
     container: "system",
     srcs: [
         "core/java/android/security/flags.aconfig",
+        "core/java/android/security/keychain_flags.aconfig",
         "core/java/android/security/responsible_apis_flags.aconfig",
     ] + select(release_flag("RELEASE_CONSCRYPT_NSC"), {
         true: [
@@ -547,6 +549,21 @@ aconfig_declarations {
             "core/java/android/security/conscrypt_nsc_off.aconfig",
         ],
     }),
+}
+
+aconfig_declarations {
+    name: "android.security.identity.flags-aconfig",
+    package: "android.security.identity",
+    container: "system",
+    exportable: true,
+    srcs: ["identity/identity.aconfig"],
+}
+
+java_aconfig_library {
+    name: "android.security.identity.flags-aconfig-java",
+    aconfig_declarations: "android.security.identity.flags-aconfig",
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+    mode: "exported",
 }
 
 java_aconfig_library {
@@ -2328,6 +2345,12 @@ java_aconfig_library {
     aconfig_declarations: "backstage_power_flags",
     host_supported: true,
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
+}
+
+rust_aconfig_library {
+    name: "libbackstage_power_flags_rust",
+    crate_name: "backstage_power_flags",
+    aconfig_declarations: "backstage_power_flags",
 }
 
 // Dropbox data

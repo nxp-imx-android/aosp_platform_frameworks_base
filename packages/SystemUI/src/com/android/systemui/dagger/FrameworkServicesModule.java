@@ -70,6 +70,7 @@ import android.hardware.face.FaceManager;
 import android.hardware.fingerprint.FingerprintManager;
 import android.hardware.input.InputManager;
 import android.hardware.location.ContextHubManager;
+import android.hardware.usb.IUsbManager;
 import android.location.LocationManager;
 import android.media.AudioManager;
 import android.media.IAudioService;
@@ -852,5 +853,12 @@ public class FrameworkServicesModule {
     @Nullable
     static AutofillManager provideAutofillManager(Context context) {
         return context.getSystemService(AutofillManager.class);
+    }
+
+    @Provides
+    @Singleton
+    @Nullable
+    static IUsbManager provideIUsbManager() {
+        return IUsbManager.Stub.asInterface(ServiceManager.getService(Context.USB_SERVICE));
     }
 }

@@ -35,6 +35,7 @@ import android.view.accessibility.IUserInitializationCompleteCallback;
 
 import androidx.annotation.MainThread;
 
+import com.android.compose.animation.scene.OverlayKey;
 import com.android.compose.animation.scene.SceneKey;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.keyguard.KeyguardUpdateMonitor;
@@ -44,6 +45,7 @@ import com.android.systemui.Flags;
 import com.android.systemui.accessibility.AccessibilityButtonModeObserver;
 import com.android.systemui.accessibility.AccessibilityButtonModeObserver.AccessibilityButtonMode;
 import com.android.systemui.accessibility.AccessibilityButtonTargetsObserver;
+import com.android.systemui.accessibility.Magnification;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Application;
 import com.android.systemui.dagger.qualifiers.Main;
@@ -55,12 +57,16 @@ import com.android.systemui.navigationbar.NavigationModeController;
 import com.android.systemui.res.R;
 import com.android.systemui.scene.domain.interactor.SceneInteractor;
 import com.android.systemui.scene.shared.model.KeyguardScenesKt;
+import com.android.systemui.scene.shared.model.Overlays;
+import com.android.systemui.scene.shared.model.Scenes;
 import com.android.systemui.settings.DisplayTracker;
 import com.android.systemui.settings.UserTracker;
+import com.android.systemui.user.domain.interactor.HeadlessSystemUserMode;
 import com.android.systemui.util.settings.SecureSettings;
 
 import kotlinx.coroutines.CoroutineScope;
 
+import java.util.Set;
 import java.util.function.Consumer;
 
 import javax.inject.Inject;
@@ -88,13 +94,18 @@ public class AccessibilityFloatingMenuController implements
 
     private final SecureSettings mSecureSettings;
     private final DisplayTracker mDisplayTracker;
+    private final Magnification mMagnification;
     private final NavigationModeController mNavigationModeController;
     private final KeyboardRepository mKeyboardRepository;
     private final PointerDeviceRepository mPointerDeviceRepository;
     @VisibleForTesting IAccessibilityFloatingMenu mFloatingMenu;
+    private final HeadlessSystemUserMode mHeadlessSystemUserMode;
     private int mBtnMode;
     private String mBtnTargets;
     private boolean mIsKeyguardVisible;
+    private boolean mIsBouncerVisible;
+    private KeyguardState mKeyguardState = KeyguardState.GONE;
+    private SceneKey mSceneKey = Scenes.Gone;
     private boolean mIsUserInInitialization;
     @VisibleForTesting
     Handler mHandler;
@@ -126,15 +137,17 @@ public class AccessibilityFloatingMenuController implements
 
     @VisibleForTesting
     final Consumer<KeyguardState> mKeyguardStateConsumer = (state) -> {
-        mIsKeyguardVisible = switch(state) {
-            case KeyguardState.LOCKSCREEN, KeyguardState.DOZING, KeyguardState.AOD -> true;
-            default -> false;
-        };
+        mKeyguardState = state;
         handleFloatingMenuVisibility();
     };
 
     final Consumer<SceneKey> mSceneConsumer = (scene) -> {
-        mIsKeyguardVisible = KeyguardScenesKt.isKeyguardScene(scene);
+        mSceneKey = scene;
+        handleFloatingMenuVisibility();
+    };
+
+    final Consumer<Set<OverlayKey>> mOverlayConsumer = (set) -> {
+        mIsBouncerVisible = set.contains(Overlays.Bouncer);
         handleFloatingMenuVisibility();
     };
 
@@ -165,7 +178,9 @@ public class AccessibilityFloatingMenuController implements
             SceneInteractor sceneInteractor,
             UserTracker userTracker,
             KeyboardRepository keyboardRepository,
-            PointerDeviceRepository pointerDeviceRepository) {
+            PointerDeviceRepository pointerDeviceRepository,
+            HeadlessSystemUserMode headlessSystemUserMode,
+            Magnification magnification) {
         mContext = context;
         mWindowManager = windowManager;
         mDisplayManager = displayManager;
@@ -184,6 +199,8 @@ public class AccessibilityFloatingMenuController implements
         mUserTracker = userTracker;
         mKeyboardRepository = keyboardRepository;
         mPointerDeviceRepository = pointerDeviceRepository;
+        mHeadlessSystemUserMode = headlessSystemUserMode;
+        mMagnification = magnification;
 
         mIsKeyguardVisible = false;
     }
@@ -226,6 +243,8 @@ public class AccessibilityFloatingMenuController implements
                 if (Flags.sceneContainer()) {
                     collectFlow(mCoroutineScope,
                             mSceneInteractor.getCurrentScene(), mSceneConsumer);
+                    collectFlow(mCoroutineScope,
+                            mSceneInteractor.getCurrentOverlays(), mOverlayConsumer);
                 } else {
                     collectFlow(mCoroutineScope,
                             mKeyguardInteractor.getCurrentKeyguardState(), mKeyguardStateConsumer);
@@ -254,7 +273,29 @@ public class AccessibilityFloatingMenuController implements
         if (mIsUserInInitialization) {
             return false; // Not allowed during user initialization.
         }
-        return !mIsKeyguardVisible;
+
+        // Legacy path
+        if (!Flags.keyguardInteractorForFloatingButton()) {
+            return !mIsKeyguardVisible;
+        }
+
+        // Evaluate based on scene
+        if (Flags.sceneContainer()) {
+            // Condition for HSUM with visible bouncer
+            if (Flags.floatingMenuOnHeadlessUser()
+                    && mHeadlessSystemUserMode.isHeadlessSystemUserMode()
+                    && mIsBouncerVisible) {
+                return true;
+            }
+
+            return !KeyguardScenesKt.isKeyguardScene(mSceneKey);
+        }
+
+        // Evaluate based on keyguardState
+        return switch (mKeyguardState) {
+            case KeyguardState.LOCKSCREEN, KeyguardState.DOZING, KeyguardState.AOD -> false;
+            default -> true;
+        };
     }
 
     private boolean hasValidSettings() {
@@ -279,7 +320,8 @@ public class AccessibilityFloatingMenuController implements
                             mNavigationModeController,
                             mHearingAidDeviceManager,
                             mKeyboardRepository,
-                            mPointerDeviceRepository);
+                            mPointerDeviceRepository,
+                            mMagnification);
         }
 
         mFloatingMenu.show();

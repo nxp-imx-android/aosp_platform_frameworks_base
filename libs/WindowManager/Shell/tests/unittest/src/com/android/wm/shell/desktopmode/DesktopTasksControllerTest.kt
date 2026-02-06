@@ -4384,6 +4384,33 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    fun returnToHomeOrOverview_sendsTaskbarRoundingUpdate() {
+        val transition = Binder()
+        val deskId = 0
+        whenever(transitions.startTransition(eq(TRANSIT_CHANGE), any(), anyOrNull()))
+            .thenReturn(transition)
+        val wct = WindowContainerTransaction()
+        val task = setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = deskId)
+        taskRepository.addTaskToDesk(
+            displayId = DEFAULT_DISPLAY,
+            deskId = deskId,
+            taskId = task.taskId,
+            isVisible = true,
+            taskBounds = TASK_BOUNDS,
+        )
+        controller.performDesktopExitCleanUp(
+            wct = wct,
+            deskId = deskId,
+            displayId = DEFAULT_DISPLAY,
+            userId = task.userId,
+            willExitDesktop = true,
+            removingLastTaskId = null,
+            exitReason = ExitReason.RETURN_HOME_OR_OVERVIEW,
+        )
+        verify(taskbarDesktopTaskListener).onTaskbarCornerRoundingUpdate(false, DEFAULT_DISPLAY)
+    }
+
+    @Test
     fun moveToNextDesktopDisplay_projectedMode_movesToFullscreenOnDefaultDisplay() {
         // Setup state where a desktop task is running on a secondary display while the device is in
         // projected mode
@@ -10812,7 +10839,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 preservedDisplay = preservedDisplay,
                 userId = taskRepository.userId,
             )
-            runCurrent()
+            testScopeImmediate.runCurrent()
 
             verify(pipScheduler).scheduleExitPipViaExpand(eq(true), eq(SECOND_DISPLAY_ON_RECONNECT))
         }
@@ -10864,7 +10891,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 preservedDisplay = preservedDisplay,
                 userId = taskRepository.userId,
             )
-            runCurrent()
+            testScopeImmediate.runCurrent()
 
             verify(pipScheduler, never())
                 .scheduleExitPipViaExpand(eq(true), eq(SECOND_DISPLAY_ON_RECONNECT))

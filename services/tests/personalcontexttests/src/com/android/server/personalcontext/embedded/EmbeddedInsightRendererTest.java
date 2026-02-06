@@ -104,6 +104,8 @@ public class EmbeddedInsightRendererTest {
                 View.SCROLL_AXIS_NONE,
                 false,
                 false,
+                null,
+                "package.name",
                 new Configuration(),
                 client);
     }

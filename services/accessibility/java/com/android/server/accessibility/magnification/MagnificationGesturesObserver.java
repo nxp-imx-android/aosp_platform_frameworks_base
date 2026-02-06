@@ -26,6 +26,7 @@ import android.util.Log;
 import android.util.Slog;
 import android.view.MotionEvent;
 
+import com.android.server.accessibility.Flags;
 import com.android.server.accessibility.gestures.GestureMatcher;
 
 import java.util.LinkedList;
@@ -111,13 +112,20 @@ class MagnificationGesturesObserver implements GesturesObserver.Listener {
         if (DBG) {
             Slog.d(LOG_TAG, "DetectGesture: event = " + event);
         }
+        if (Flags.fixWindowMagnificationInactiveDoubleTap()) {
+            if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                mLastDownEventTime = event.getDownTime();
+            }
+        }
         cacheDelayedMotionEvent(event, rawEvent, policyFlags);
         if (mCallback.shouldStopDetection(event)) {
             notifyDetectionCancel();
             return false;
         }
-        if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-            mLastDownEventTime = event.getDownTime();
+        if (!Flags.fixWindowMagnificationInactiveDoubleTap()) {
+            if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                mLastDownEventTime = event.getDownTime();
+            }
         }
         return mGesturesObserver.onMotionEvent(event, rawEvent, policyFlags);
     }

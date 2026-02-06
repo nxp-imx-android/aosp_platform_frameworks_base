@@ -18,6 +18,7 @@ package com.android.packageinstaller.v2.model
 
 import android.Manifest
 import android.app.Activity
+import android.app.ActivityOptions
 import android.app.AppOpsManager
 import android.app.Notification
 import android.app.NotificationChannel
@@ -457,6 +458,14 @@ class UninstallRepository(private val context: Context) {
     }
 
     fun initiateUninstall(keepData: Boolean) {
+        if (!this::targetAppLabel.isInitialized) {
+            Log.e(LOG_TAG, "targetAppLabel not initialized")
+            handleUninstallResult(
+                PackageInstaller.STATUS_FAILURE,
+                PackageManager.DELETE_FAILED_INTERNAL_ERROR, null, 0
+            )
+            return
+        }
         // Get an uninstallId to track results and show a notification on non-TV devices.
         uninstallId = try {
             UninstallEventReceiver.addObserver(
@@ -505,8 +514,41 @@ class UninstallRepository(private val context: Context) {
         legacyStatus: Int,
         message: String?,
         serviceId: Int,
+        resultIntent: Intent? = null,
         hasDeveloperVerificationFailure: Boolean = false
     ) {
+        if (!this::intent.isInitialized) {
+            Log.e(LOG_TAG, "intent not initialized")
+            uninstallResult.value = UninstallAborted(UninstallAborted.ABORT_REASON_GENERIC_ERROR)
+            return
+        }
+        if (!this::targetAppLabel.isInitialized) {
+            Log.e(LOG_TAG, "targetAppLabel not initialized")
+            uninstallResult.value = UninstallAborted(UninstallAborted.ABORT_REASON_GENERIC_ERROR)
+            return
+        }
+        if (status == PackageInstaller.STATUS_PENDING_USER_ACTION) {
+            val pendingIntent = resultIntent?.getParcelableExtra(
+                Intent.EXTRA_INTENT,
+                PendingIntent::class.java
+            )
+
+            if (pendingIntent != null) {
+                try {
+                    val options = ActivityOptions.makeBasic()
+                    options.setPendingIntentBackgroundActivityLaunchAllowed(true)
+                    pendingIntent.send(/* context= */ null, /* code= */ 0, /* intent= */ null,
+                            /* onFinished= */ null, /* handler= */ null,
+                            /* requiredPermission= */ null, options.toBundle())
+                } catch (e: PendingIntent.CanceledException) {
+                    Log.e(LOG_TAG, "PendingIntent for user action was canceled", e)
+                }
+            } else {
+                Log.e(LOG_TAG, "STATUS_PENDING_USER_ACTION received but EXTRA_INTENT is null")
+            }
+            return
+        }
+
         if (callback != null) {
             // The caller will be informed about the result via a callback
             callback!!.onUninstallComplete(targetPackageName!!, legacyStatus, message)

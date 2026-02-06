@@ -18,6 +18,8 @@ package com.android.systemui.settings.brightness
 
 import android.content.Intent
 import android.graphics.Rect
+import android.os.UserHandle
+import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper
 import android.view.View
 import android.view.ViewGroup
@@ -33,6 +35,7 @@ import com.android.systemui.brightness.ui.viewmodel.brightnessSliderViewModelFac
 import com.android.systemui.broadcast.BroadcastSender
 import com.android.systemui.res.R
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
+import com.android.systemui.shared.Flags
 import com.android.systemui.statusbar.policy.AccessibilityManagerWrapper
 import com.android.systemui.testKosmos
 import com.android.systemui.util.concurrency.DelayableExecutor
@@ -77,6 +80,10 @@ class BrightnessDialogTest : SysuiTestCase() {
     private val mainExecutor = FakeExecutor(clock)
 
     private val onDestroyLatch = CountDownLatch(1)
+
+    companion object {
+        var sTestUserId: Int? = null
+    }
 
     @Rule(order = 200)
     @JvmField
@@ -205,6 +212,28 @@ class BrightnessDialogTest : SysuiTestCase() {
         assertThat(activityRule.activity.isFinishing()).isTrue()
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_BRIGHTNESS_DIALOG_ON_SYSTEM_USER)
+    fun testFinishIfNotUser0() = runTest {
+        sTestUserId = UserHandle.USER_CURRENT
+        activityRule.launchActivity(Intent(Intent.ACTION_SHOW_BRIGHTNESS_DIALOG))
+
+        activityRule.activity.finishing.timeout(100.milliseconds).takeWhile { !it }.collect {}
+        // Should be finished if not on user 0
+        assertThat(activityRule.activity.isFinishing()).isTrue()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_BRIGHTNESS_DIALOG_ON_SYSTEM_USER)
+    fun testDoesNotFinishIfUser0() = runTest {
+        sTestUserId = UserHandle.USER_SYSTEM
+        activityRule.launchActivity(Intent(Intent.ACTION_SHOW_BRIGHTNESS_DIALOG))
+
+        assertThat(activityRule.activity.isFinishing()).isFalse()
+        clock.advanceTime(BrightnessDialog.DIALOG_TIMEOUT_MILLIS.toLong())
+        assertThat(activityRule.activity.isFinishing()).isFalse()
+    }
+
     class TestDialog(
         mainExecutor: DelayableExecutor,
         accessibilityMgr: AccessibilityManagerWrapper,
@@ -217,7 +246,7 @@ class BrightnessDialogTest : SysuiTestCase() {
         BrightnessDialog(
             mainExecutor,
             accessibilityMgr,
-            shadeInteractor,
+            { shadeInteractor },
             brightnessSliderViewModelFactory,
             broadcastSender,
             expandedAudioTileDetailsFeatureInteractor,
@@ -235,6 +264,10 @@ class BrightnessDialogTest : SysuiTestCase() {
         override fun onDestroy() {
             super.onDestroy()
             countdownLatch.countDown()
+        }
+
+        override fun getUserId(): Int {
+            return sTestUserId ?: super.getUserId()
         }
     }
 }

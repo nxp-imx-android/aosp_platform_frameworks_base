@@ -674,7 +674,7 @@ package android.app {
 
   public class ActivityManager {
     method @RequiresPermission(android.Manifest.permission.PACKAGE_USAGE_STATS) public void addOnUidImportanceListener(android.app.ActivityManager.OnUidImportanceListener, int);
-    method @FlaggedApi("android.app.uid_importance_listener_for_uids") @RequiresPermission(android.Manifest.permission.PACKAGE_USAGE_STATS) public void addOnUidImportanceListener(@NonNull android.app.ActivityManager.OnUidImportanceListener, int, @NonNull int[]);
+    method @RequiresPermission(android.Manifest.permission.PACKAGE_USAGE_STATS) public void addOnUidImportanceListener(@NonNull android.app.ActivityManager.OnUidImportanceListener, int, @NonNull int[]);
     method @RequiresPermission(android.Manifest.permission.FORCE_STOP_PACKAGES) public void forceStopPackage(String);
     method @FlaggedApi("android.app.get_binding_uid_importance") @RequiresPermission(android.Manifest.permission.GET_BINDING_UID_IMPORTANCE) public int getBindingUidImportance(int);
     method @RequiresPermission(anyOf={"android.permission.INTERACT_ACROSS_USERS", "android.permission.INTERACT_ACROSS_USERS_FULL"}) public static int getCurrentUser();
@@ -1956,6 +1956,7 @@ package android.app.ambientcontext {
     field @NonNull public static final android.os.Parcelable.Creator<android.app.ambientcontext.AmbientContextEvent> CREATOR;
     field public static final int EVENT_BACK_DOUBLE_TAP = 3; // 0x3
     field public static final int EVENT_COUGH = 1; // 0x1
+    field @FlaggedApi("android.app.ambient_context_emergency_event") public static final int EVENT_EMERGENCY = 4; // 0x4
     field public static final int EVENT_SNORE = 2; // 0x2
     field public static final int EVENT_UNKNOWN = 0; // 0x0
     field public static final int EVENT_VENDOR_WEARABLE_START = 100000; // 0x186a0
@@ -2472,6 +2473,21 @@ package android.app.contentsafety {
     method @NonNull @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY) public String getRemoteSettingsServicePackageName();
     method @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY) public void requestCheckContent(int, @NonNull java.util.Map<java.lang.Integer,java.util.List<android.os.ParcelFileDescriptor>>, @Nullable android.os.CancellationSignal, @NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.util.Map<java.lang.Integer,java.util.List<java.lang.Integer>>>);
     method @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY) public void requestIsFeatureEnabled(int, @Nullable android.os.CancellationSignal, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Boolean,android.app.contentsafety.FeatureException>);
+    field public static final int CONTENT_SAFETY_CHECK_CONTENT_CANCELLED = 9; // 0x9
+    field public static final int CONTENT_SAFETY_CHECK_CONTENT_ERROR = 10; // 0xa
+    field public static final int CONTENT_SAFETY_CHECK_CONTENT_INVOKE_ERROR = 11; // 0xb
+    field public static final int CONTENT_SAFETY_FEATURE_NOT_READ_ONLY_ERROR = 7; // 0x7
+    field public static final int CONTENT_SAFETY_GET_FEATURE_ERROR = 5; // 0x5
+    field public static final int CONTENT_SAFETY_GET_FEATURE_INTERNAL_ERROR = 14; // 0xe
+    field public static final int CONTENT_SAFETY_GET_FEATURE_INVOKE_ERROR = 12; // 0xc
+    field public static final int CONTENT_SAFETY_LOAD_FEATURE_ERROR = 6; // 0x6
+    field public static final int CONTENT_SAFETY_LOAD_FEATURE_INTERNAL_ERROR = 15; // 0xf
+    field public static final int CONTENT_SAFETY_LOAD_FEATURE_INVOKE_ERROR = 13; // 0xd
+    field public static final int CONTENT_SAFETY_PAYLOAD_NOT_READ_ONLY_ERROR = 8; // 0x8
+    field public static final int CONTENT_SAFETY_SANDBOXED_SERVICE_ERROR_NOT_AVAILABLE = 4; // 0x4
+    field public static final int CONTENT_SAFETY_SANDBOXED_SERVICE_ERROR_UNKNOWN = 3; // 0x3
+    field public static final int CONTENT_SAFETY_SUCCESS_NONE = 1; // 0x1
+    field public static final int CONTENT_SAFETY_SUCCESS_SENSITIVE = 2; // 0x2
     field public static final int CONTENT_SAFETY_UNKNOWN = 0; // 0x0
   }
 
@@ -2568,6 +2584,7 @@ package android.app.contextualsearch {
     method public int describeContents();
     method public int getDisplayId();
     method @NonNull public android.os.Bundle getIntentExtras();
+    method @FlaggedApi("android.app.contextualsearch.flags.on_demand_screenshot_and_assist_state") public int getLaunchFlags();
     method @Nullable public android.graphics.Rect getSourceBounds();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.app.contextualsearch.ContextualSearchConfig> CREATOR;
@@ -2579,6 +2596,7 @@ package android.app.contextualsearch {
     method @NonNull public android.app.contextualsearch.ContextualSearchConfig build();
     method @NonNull public android.app.contextualsearch.ContextualSearchConfig.Builder setDisplayId(int);
     method @NonNull public android.app.contextualsearch.ContextualSearchConfig.Builder setIntentExtras(@Nullable android.os.Bundle);
+    method @FlaggedApi("android.app.contextualsearch.flags.on_demand_screenshot_and_assist_state") @NonNull public android.app.contextualsearch.ContextualSearchConfig.Builder setLaunchFlags(int);
     method @NonNull public android.app.contextualsearch.ContextualSearchConfig.Builder setSourceBounds(@Nullable android.graphics.Rect);
   }
 
@@ -2587,6 +2605,7 @@ package android.app.contextualsearch {
     method @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXTUAL_SEARCH) public void startContextualSearch(int);
     method @FlaggedApi("android.app.contextualsearch.flags.config_parameters") @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXTUAL_SEARCH) public void startContextualSearch(int, @Nullable android.app.contextualsearch.ContextualSearchConfig);
     method @FlaggedApi("android.app.contextualsearch.flags.config_parameters") public void startContextualSearch(@NonNull android.app.Activity, @Nullable android.app.contextualsearch.ContextualSearchConfig);
+    method @FlaggedApi("android.app.contextualsearch.flags.on_demand_screenshot_and_assist_state") public void startContextualSearch(@NonNull android.app.contextualsearch.ContextualSearchConfig);
     field public static final String ACTION_LAUNCH_CONTEXTUAL_SEARCH = "android.app.contextualsearch.action.LAUNCH_CONTEXTUAL_SEARCH";
     field @FlaggedApi("com.android.hardware.input.enable_contextual_search_desktop_entrypoints") public static final int ENTRYPOINT_KEYBOARD_SHORTCUT = 11; // 0xb
     field public static final int ENTRYPOINT_LONG_PRESS_HOME = 2; // 0x2
@@ -6792,7 +6811,7 @@ package android.hardware.input {
     method @NonNull public String getInputDeviceName();
     method public int getProductId();
     method public int getVendorId();
-    method @FlaggedApi("android.companion.virtualdevice.flags.virtual_input_view_behavior") @Nullable public android.hardware.input.ViewBehaviorConfig getViewBehaviorConfig();
+    method @FlaggedApi("android.companion.virtualdevice.flags.virtual_input_view_behavior") @NonNull public android.hardware.input.ViewBehaviorConfig getViewBehaviorConfig();
   }
 
   public abstract static class VirtualInputDeviceConfig.Builder<T extends android.hardware.input.VirtualInputDeviceConfig.Builder<T>> {
@@ -9127,6 +9146,7 @@ package android.media.quality {
     method @FlaggedApi("android.media.tv.flags.media_quality_fw_c") @Nullable public android.media.quality.PictureProfileHandle getCurrentPictureProfileHandleForTvInput(@NonNull String);
     method @FlaggedApi("android.media.tv.flags.media_quality_fw_c") @Nullable public android.media.quality.PictureProfile getDefaultPictureProfile();
     method @FlaggedApi("android.media.tv.flags.media_quality_fw_c") @Nullable public android.media.quality.SoundProfile getDefaultSoundProfile();
+    method @FlaggedApi("android.media.tv.flags.media_quality_fw_c") @Nullable public android.media.quality.EqualizerSettings getEqualizerSettings();
     method @NonNull public java.util.List<java.lang.String> getPictureProfileAllowList();
     method @FlaggedApi("android.media.tv.flags.media_quality_fw_c") @NonNull public java.util.List<android.media.quality.PictureProfileHandle> getPictureProfileHandleList(@NonNull String[]);
     method @NonNull public java.util.List<java.lang.String> getPictureProfilePackageNames();
@@ -9139,6 +9159,7 @@ package android.media.quality {
     method public void setAutoSoundQualityEnabled(boolean);
     method public boolean setDefaultPictureProfile(@Nullable String);
     method public boolean setDefaultSoundProfile(@Nullable String);
+    method @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public void setEqualizerSettings(@Nullable android.media.quality.EqualizerSettings);
     method public void setPictureProfileAllowList(@NonNull java.util.List<java.lang.String>);
     method public void setSoundProfileAllowList(@NonNull java.util.List<java.lang.String>);
     method public void setSuperResolutionEnabled(boolean);
@@ -14976,6 +14997,7 @@ package android.service.personalcontext.embedded {
     method public int getMeasureSpecWidth();
     method public int getNestedScrollAxes();
     method @NonNull public java.util.List<android.service.personalcontext.embedded.InsightSurfaceClient.InsightReceiver> getReceivers();
+    method @Nullable public String getThemeResourceName();
     method public boolean isNestedScrollAxisLocked();
     method public void register();
     method public boolean shouldBlur();
@@ -14993,6 +15015,7 @@ package android.service.personalcontext.embedded {
     method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClient.Builder setNestedScrollAxes(int);
     method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClient.Builder setNestedScrollAxisLocked(boolean);
     method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClient.Builder setShouldBlur(boolean);
+    method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClient.Builder setThemeResourceName(@Nullable String);
   }
 
   public static interface InsightSurfaceClient.ClientCallback {
@@ -15017,6 +15040,8 @@ package android.service.personalcontext.embedded {
     method public int getMeasureSpecWidth();
     method public int getNestedScrollAxes();
     method public boolean getNestedScrollAxisLocked();
+    method @NonNull public String getPackageName();
+    method @Nullable public String getThemeResourceName();
     method public void onReceiveInsight(@NonNull android.service.personalcontext.insight.ContextInsight);
     method public void onSizeChanged(int, int);
     method public boolean shouldBlur();
@@ -15032,6 +15057,7 @@ package android.service.personalcontext.embedded {
     method public int getMeasureSpecHeight();
     method public int getMeasureSpecWidth();
     method public int getNestedScrollAxes();
+    method @Nullable public String getThemeResourceName();
     method public boolean hasUpdate(@NonNull String);
     method public boolean isNestedScrollAxisLocked();
     method public boolean shouldBlur();
@@ -15045,6 +15071,7 @@ package android.service.personalcontext.embedded {
     field public static final String KEY_NESTED_SCROLL_AXES = "key_nested_scroll_axes";
     field public static final String KEY_NESTED_SCROLL_AXIS_LOCKED = "key_nested_scroll_axis_locked";
     field public static final String KEY_SHOULD_BLUR = "key_should_blur";
+    field public static final String KEY_THEME_RESOURCE_NAME = "key_theme_resource_name";
   }
 
   public static final class InsightSurfaceClientUpdate.Builder {
@@ -15058,6 +15085,7 @@ package android.service.personalcontext.embedded {
     method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClientUpdate.Builder setNestedScrollAxes(int);
     method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClientUpdate.Builder setNestedScrollAxisLocked(boolean);
     method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClientUpdate.Builder setShouldBlur(boolean);
+    method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClientUpdate.Builder setThemeResourceName(@Nullable String);
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public class InsightSurfaceSession implements java.lang.AutoCloseable {
@@ -19868,6 +19896,14 @@ package android.telephony.satellite {
     method public boolean isFullScreen();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.telephony.satellite.PointingUiAppLaunchIntentAttributes> CREATOR;
+  }
+
+  @FlaggedApi("com.android.internal.telephony.flags.system_selection_specifier_enhancement") public static final class PointingUiAppLaunchIntentAttributes.Builder {
+    ctor public PointingUiAppLaunchIntentAttributes.Builder();
+    method @NonNull public android.telephony.satellite.PointingUiAppLaunchIntentAttributes build();
+    method @NonNull public android.telephony.satellite.PointingUiAppLaunchIntentAttributes.Builder setDemoMode(boolean);
+    method @NonNull public android.telephony.satellite.PointingUiAppLaunchIntentAttributes.Builder setEmergencyMode(boolean);
+    method @NonNull public android.telephony.satellite.PointingUiAppLaunchIntentAttributes.Builder setFullScreen(boolean);
   }
 
   @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public final class SatelliteAccessConfiguration implements android.os.Parcelable {

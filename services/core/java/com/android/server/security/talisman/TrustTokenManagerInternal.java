@@ -16,7 +16,7 @@
 
 package com.android.server.security.talisman;
 
-import android.security.talisman.TrustConfiguration;
+import android.security.trusttoken.TrustConfiguration;
 
 import java.util.List;
 

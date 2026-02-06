@@ -84,8 +84,10 @@ public class StartingSurfaceDrawer {
 
         mSplashscreenWindowCreator = new SplashscreenWindowCreator(mSplashscreenContentDrawer,
                 context, splashScreenExecutor, displayManager, mWindowRecords);
-        mSnapshotWindowCreator = new SnapshotWindowCreator(splashScreenExecutor, bgExecutor,
-                mWindowRecords);
+        final float lowResTaskSnapshotScale = context.getResources().getFloat(
+                com.android.internal.R.dimen.config_lowResTaskSnapshotScale);
+        mSnapshotWindowCreator = new SnapshotWindowCreator(lowResTaskSnapshotScale,
+                splashScreenExecutor, bgExecutor, mWindowRecords);
         mWindowlessSplashWindowCreator = new WindowlessSplashWindowCreator(
                 mSplashscreenContentDrawer, context, splashScreenExecutor, displayManager,
                 mWindowlessRecords, pool);

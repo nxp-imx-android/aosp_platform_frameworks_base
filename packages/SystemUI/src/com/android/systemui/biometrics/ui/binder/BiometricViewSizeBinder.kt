@@ -29,6 +29,7 @@ import android.view.WindowInsets
 import android.view.accessibility.AccessibilityManager
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.constraintlayout.helper.widget.Flow
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.animation.addListener
@@ -39,6 +40,7 @@ import com.android.systemui.biometrics.Utils
 import com.android.systemui.biometrics.domain.interactor.BiometricPromptView
 import com.android.systemui.biometrics.ui.BiometricPromptLayoutState
 import com.android.systemui.biometrics.ui.PromptPosition
+import com.android.systemui.biometrics.ui.isCenter
 import com.android.systemui.biometrics.ui.isLarge
 import com.android.systemui.biometrics.ui.isLeft
 import com.android.systemui.biometrics.ui.isMedium
@@ -103,6 +105,16 @@ object BiometricViewSizeBinder {
                     }
 
                     when (currentPosition) {
+                        PromptPosition.Center -> {
+                            outline.setRoundRect(
+                                0,
+                                0,
+                                view.width,
+                                view.height,
+                                cornerRadiusPx.toFloat(),
+                            )
+                        }
+
                         PromptPosition.Right -> {
                             outline.setRoundRect(
                                 0,
@@ -213,6 +225,104 @@ object BiometricViewSizeBinder {
                     val isFallback = currentState.activeView == BiometricPromptView.FALLBACK
                     val isBiometric = currentState.activeView == BiometricPromptView.BIOMETRIC
 
+                    // Handle center positioning for large screen
+                    if (currentState.position.isCenter && Flags.largeScreenBp()) {
+                        val activeViewId =
+                            when {
+                                isFallback -> R.id.fallback_view
+                                isCredential -> R.id.compose_credential_view
+                                else -> R.id.biometric_flow
+                            }
+
+                        nextConstraintSet.clear(R.id.panel)
+                        nextConstraintSet.clear(activeViewId)
+
+                        if (activeViewId == R.id.biometric_flow) {
+                            nextConstraintSet.setVisibility(R.id.biometric_flow, View.VISIBLE)
+                            val flow = view.requireViewById<Flow>(R.id.biometric_flow)
+                            flow.referencedIds =
+                                intArrayOf(
+                                    R.id.scrollView,
+                                    R.id.biometric_icon,
+                                    R.id.indicator,
+                                    R.id.button_bar,
+                                )
+                        }
+
+                        nextConstraintSet.connect(
+                            activeViewId,
+                            ConstraintSet.TOP,
+                            ConstraintSet.PARENT_ID,
+                            ConstraintSet.TOP,
+                        )
+                        nextConstraintSet.connect(
+                            activeViewId,
+                            ConstraintSet.BOTTOM,
+                            ConstraintSet.PARENT_ID,
+                            ConstraintSet.BOTTOM,
+                        )
+                        nextConstraintSet.connect(
+                            activeViewId,
+                            ConstraintSet.START,
+                            ConstraintSet.PARENT_ID,
+                            ConstraintSet.START,
+                        )
+                        nextConstraintSet.connect(
+                            activeViewId,
+                            ConstraintSet.END,
+                            ConstraintSet.PARENT_ID,
+                            ConstraintSet.END,
+                        )
+
+                        nextConstraintSet.constrainHeight(activeViewId, ConstraintSet.WRAP_CONTENT)
+                        nextConstraintSet.constrainWidth(
+                            activeViewId,
+                            ConstraintSet.MATCH_CONSTRAINT,
+                        )
+                        nextConstraintSet.setVerticalBias(activeViewId, 0.5f)
+
+                        nextConstraintSet.connect(
+                            R.id.panel,
+                            ConstraintSet.TOP,
+                            activeViewId,
+                            ConstraintSet.TOP,
+                        )
+                        nextConstraintSet.connect(
+                            R.id.panel,
+                            ConstraintSet.BOTTOM,
+                            activeViewId,
+                            ConstraintSet.BOTTOM,
+                        )
+                        nextConstraintSet.connect(
+                            R.id.panel,
+                            ConstraintSet.START,
+                            activeViewId,
+                            ConstraintSet.START,
+                        )
+                        nextConstraintSet.connect(
+                            R.id.panel,
+                            ConstraintSet.END,
+                            activeViewId,
+                            ConstraintSet.END,
+                        )
+
+                        // Set the max width and height
+                        val maxPanelWidth =
+                            view.resources.getDimensionPixelSize(
+                                R.dimen.biometric_prompt_panel_max_width
+                            )
+                        val verticalPaddingPx =
+                            view.resources.getDimensionPixelSize(
+                                R.dimen.biometric_prompt_center_vertical_padding
+                            )
+                        val maxPanelHeight =
+                            view.resources.displayMetrics.heightPixels - (verticalPaddingPx * 2)
+                        nextConstraintSet.constrainMaxWidth(activeViewId, maxPanelWidth)
+                        nextConstraintSet.constrainMaxHeight(activeViewId, maxPanelHeight)
+                        nextConstraintSet.constrainHeight(R.id.panel, 0)
+                        nextConstraintSet.constrainWidth(R.id.panel, 0)
+                    }
+
                     // Handle hidden views for small prompt
                     viewsToHideWhenSmall.forEach { view -> view.showContentOrHide(isSmall) }
 
@@ -259,7 +369,7 @@ object BiometricViewSizeBinder {
                         if (showIcon) View.VISIBLE else View.GONE,
                     )
 
-                    // Handle icon position and size
+                    // Handle icon position and size - center icon is positioned relative to view
                     nextConstraintSet.constrainWidth(
                         R.id.biometric_icon,
                         currentState.iconSize.first,
@@ -268,31 +378,33 @@ object BiometricViewSizeBinder {
                         R.id.biometric_icon,
                         currentState.iconSize.second,
                     )
-                    currentState.iconPosition.let { iconPosition ->
-                        nextConstraintSet.applyMarginConstraint(
-                            R.id.biometric_icon,
-                            ConstraintSet.LEFT,
-                            iconPosition.left,
-                            ConstraintSet.RIGHT,
-                        )
-                        nextConstraintSet.applyMarginConstraint(
-                            R.id.biometric_icon,
-                            ConstraintSet.RIGHT,
-                            iconPosition.right,
-                            ConstraintSet.LEFT,
-                        )
-                        nextConstraintSet.applyMarginConstraint(
-                            R.id.biometric_icon,
-                            ConstraintSet.TOP,
-                            iconPosition.top,
-                            ConstraintSet.BOTTOM,
-                        )
-                        nextConstraintSet.applyMarginConstraint(
-                            R.id.biometric_icon,
-                            ConstraintSet.BOTTOM,
-                            iconPosition.bottom,
-                            ConstraintSet.TOP,
-                        )
+                    if (!currentState.position.isCenter) {
+                        currentState.iconPosition.let { iconPosition ->
+                            nextConstraintSet.applyMarginConstraint(
+                                R.id.biometric_icon,
+                                ConstraintSet.LEFT,
+                                iconPosition.left,
+                                ConstraintSet.RIGHT,
+                            )
+                            nextConstraintSet.applyMarginConstraint(
+                                R.id.biometric_icon,
+                                ConstraintSet.RIGHT,
+                                iconPosition.right,
+                                ConstraintSet.LEFT,
+                            )
+                            nextConstraintSet.applyMarginConstraint(
+                                R.id.biometric_icon,
+                                ConstraintSet.TOP,
+                                iconPosition.top,
+                                ConstraintSet.BOTTOM,
+                            )
+                            nextConstraintSet.applyMarginConstraint(
+                                R.id.biometric_icon,
+                                ConstraintSet.BOTTOM,
+                                iconPosition.bottom,
+                                ConstraintSet.TOP,
+                            )
+                        }
                     }
 
                     // Handle landscape flip logic
@@ -328,6 +440,8 @@ object BiometricViewSizeBinder {
                     previousLayoutState = currentState
                     currentPosition = currentState.position
                     currentView = currentState.activeView
+
+                    panelView.visibility = View.VISIBLE
                     panelView.invalidateOutline()
                 }
             }

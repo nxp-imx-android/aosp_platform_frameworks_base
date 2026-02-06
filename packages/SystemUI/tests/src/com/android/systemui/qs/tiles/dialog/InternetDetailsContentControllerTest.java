@@ -11,6 +11,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSess
 import static com.android.settingslib.wifi.WifiUtils.getHotspotIconResource;
 import static com.android.systemui.Flags.FLAG_QS_TILE_DETAILED_VIEW;
 import static com.android.systemui.Flags.FLAG_QS_WIFI_CONFIG;
+import static com.android.systemui.Flags.FLAG_QS_WIFI_MULTIUSER;
 import static com.android.systemui.qs.tiles.dialog.InternetDetailsContentController.TOAST_PARAMS_HORIZONTAL_WEIGHT;
 import static com.android.systemui.qs.tiles.dialog.InternetDetailsContentController.TOAST_PARAMS_VERTICAL_WEIGHT;
 import static com.android.wifitrackerlib.WifiEntry.WIFI_LEVEL_MAX;
@@ -693,7 +694,7 @@ public class InternetDetailsContentControllerTest extends SysuiTestCase {
     }
 
     @Test
-    @DisableFlags(FLAG_QS_WIFI_CONFIG)
+    @DisableFlags({FLAG_QS_WIFI_CONFIG, FLAG_QS_WIFI_MULTIUSER})
     public void onAccessPointsChanged_oneConnectedEntryAndThreeOthers_flagOff_callbackCutMore() {
         reset(mInternetDialogCallback);
         mAccessPoints.clear();
@@ -712,7 +713,7 @@ public class InternetDetailsContentControllerTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_QS_WIFI_CONFIG, FLAG_QS_TILE_DETAILED_VIEW})
+    @EnableFlags({FLAG_QS_WIFI_MULTIUSER, FLAG_QS_TILE_DETAILED_VIEW})
     public void onAccessPointsChanged_oneConnectedEntryAndThreeOthers_flagOn_callbackNoCutMore() {
         reset(mInternetDialogCallback);
         mAccessPoints.clear();
@@ -732,7 +733,7 @@ public class InternetDetailsContentControllerTest extends SysuiTestCase {
     }
 
     @Test
-    @DisableFlags(FLAG_QS_WIFI_CONFIG)
+    @DisableFlags({FLAG_QS_WIFI_CONFIG, FLAG_QS_WIFI_MULTIUSER})
     public void onAccessPointsChanged_fourWifiEntries_flagOff_callbackCutMore() {
         reset(mInternetDialogCallback);
         mAccessPoints.clear();
@@ -752,7 +753,7 @@ public class InternetDetailsContentControllerTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_QS_WIFI_CONFIG, FLAG_QS_TILE_DETAILED_VIEW})
+    @EnableFlags({FLAG_QS_WIFI_MULTIUSER, FLAG_QS_TILE_DETAILED_VIEW})
     public void onAccessPointsChanged_fourWifiEntries_flagOn_callbackNoCutMore() {
         reset(mInternetDialogCallback);
         mAccessPoints.clear();

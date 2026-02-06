@@ -171,9 +171,7 @@ public class DesktopModeTouchEventListener
         mTaskId = taskInfo.taskId;
         mTaskToken = taskInfo.token;
         final int touchSlop = ViewConfiguration.get(mContext).getScaledTouchSlop();
-        final long appHandleHoldToDragDuration =
-                DesktopModeFlags.ENABLE_HOLD_TO_DRAG_APP_HANDLE.isTrue()
-                        ? APP_HANDLE_HOLD_TO_DRAG_DURATION_MS : 0;
+        final long appHandleHoldToDragDuration = APP_HANDLE_HOLD_TO_DRAG_DURATION_MS;
         mHandleDragDetector = new DragDetector(this, appHandleHoldToDragDuration,
                 touchSlop);
         mHeaderDragDetector = new DragDetector(this, APP_HEADER_HOLD_TO_DRAG_DURATION_MS,

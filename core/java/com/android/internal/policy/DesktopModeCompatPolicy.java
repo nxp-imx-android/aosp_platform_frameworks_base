@@ -35,6 +35,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.provider.Settings;
 
 import com.android.internal.R;
 import com.android.window.flags.Flags;
@@ -146,7 +147,7 @@ public class DesktopModeCompatPolicy {
         // of desktop.
         // TODO: b/458693972 - Replace with permission and manifest check.
         return isTransparentTask(isActivityStackTransparent, numActivities)
-                && (hasFullscreenTransparentPermission(packageName, userId)
+                && (hasFullscreenTransparentPermission(packageName, userId, info)
                     || hasPlatformSignature(info)
                     || (Flags.enablePrivilegedAppTransparentWindowingExemptions()
                         && isPrivilegedApp(info)));
@@ -246,12 +247,19 @@ public class DesktopModeCompatPolicy {
     }
 
     // Checks if the app for the given package has the SYSTEM_ALERT_WINDOW permission.
-    private boolean hasFullscreenTransparentPermission(@NonNull String packageName, int userId) {
+    private boolean hasFullscreenTransparentPermission(
+            @NonNull String packageName, int userId, ActivityInfo info) {
+        if (info != null && info.applicationInfo != null) {
+            int uid = info.applicationInfo.uid;
+            Boolean appOpState = Settings.isCallingPackageAllowedToDrawOverlays(
+                    mContext, uid, packageName, false);
+            if (appOpState) return true;
+        }
+
         final String cacheKey = userId + "@" + packageName;
         if (mPackageInfoCache.containsKey(cacheKey)) {
             return mPackageInfoCache.get(cacheKey);
         }
-
         boolean hasPermission = false;
         try {
             PackageInfo packageInfo = getPackageManager().getPackageInfoAsUser(
@@ -277,7 +285,6 @@ public class DesktopModeCompatPolicy {
         }
         mPackageInfoCache.put(cacheKey, hasPermission);
         return hasPermission;
-
     }
 
     // Checks if the app is signed with the platform signature.

@@ -19,10 +19,12 @@ package android.app.privatecompute;
 import android.annotation.CallbackExecutor;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.annotation.RequiresNoPermission;
 import android.annotation.SuppressLint;
 import android.annotation.SystemService;
 import android.content.Context;
+import android.os.OutcomeReceiver;
 import android.os.PersistableBundle;
 import android.os.RemoteException;
 
@@ -68,6 +70,29 @@ public final class PccSandboxManager {
     }
 
     /**
+     * Returns whether the given package is considered a "Trusted System Component" by the
+     * framework. This also includes Private Compute Services apps, which are an extension to the
+     * framework's trust boundary.
+     * Trusted System components are allowed two-way communication with the PCC components.
+     *
+     * @param uid The UID of the application.
+     * @param packageName The package name of the application. This can be null when a single
+     * packagename isn't available, e.g. for SYSTEM_UID. If non-null, this API checks whether
+     * {@code uid} corresponds to {@code packageName}, and returns {@code false} if it doesn't.
+     * @return {@code true} if the app is a trusted system component, {@code false} otherwise.
+     *
+     */
+    @RequiresNoPermission
+    @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public boolean isPccTrustedSystemComponent(int uid, @Nullable String packageName) {
+        try {
+            return mService.isPccTrustedSystemComponent(uid, packageName);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Writes data to the audit log, if audit mode is enabled. Otherwise, does nothing.
      *
      * <p> Nested Bundles are supported up to a depth of 100.
@@ -104,7 +129,7 @@ public final class PccSandboxManager {
     @SuppressLint("RequiresPermission")
     public void startNonPccProcessForDataMigration(
             @NonNull @CallbackExecutor Executor executor,
-            @NonNull MigrationRequestResultReceiver callback) {
+            @NonNull OutcomeReceiver<MigrationRequestResult, MigrationException> callback) {
         try {
             mService.startNonPccProcessForDataMigration(new IMigrationRequestResultReceiver.Stub() {
                 @Override
@@ -114,7 +139,8 @@ public final class PccSandboxManager {
 
                 @Override
                 public void onError(int errorCode, String errorMessage) {
-                    executor.execute(() -> callback.onError(errorCode, errorMessage));
+                    executor.execute(() -> callback.onError(new MigrationException(errorCode,
+                            errorMessage)));
                 }
             });
         } catch (RemoteException e) {

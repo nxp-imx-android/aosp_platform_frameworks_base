@@ -763,6 +763,8 @@ public abstract class Context {
      *
      * @hide
      */
+    @TestApi
+    @SuppressWarnings("UnflaggedApi") // @TestApi without associated feature.
     public static final long BIND_ALLOW_FREEZE = 0x4_0000_0000L;
 
     /**
@@ -5026,6 +5028,16 @@ public abstract class Context {
 
     /**
      * Use with {@link #getSystemService(String)} to retrieve a
+     * {@link android.os.storage.FilesManager} for handling file operations.
+     *
+     * @see #getSystemService(String)
+     * @see android.os.storage.FilesManager
+     */
+    @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public static final String FILES_SERVICE = "files";
+
+    /**
+     * Use with {@link #getSystemService(String)} to retrieve a
      * {@link android.app.AlarmManager} for receiving intents at a
      * time of your choosing.
      *
@@ -6826,9 +6838,9 @@ public abstract class Context {
 
     /**
      * Use with {@link #getSystemService(String)} to retrieve an
-     * {@link android.security.talisman.TrustTokenManager}.
+     * {@link android.security.trusttoken.TrustTokenManager}.
      * @see #getSystemService(String)
-     * @see android.security.talisman.TrustTokenManager
+     * @see android.security.trusttoken.TrustTokenManager
      * @hide
      */
     public static final String TRUST_TOKEN_SERVICE = "trust_token";

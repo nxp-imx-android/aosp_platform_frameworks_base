@@ -43,6 +43,12 @@
       ]
     },
     {
+      "name": "FunctionalTestsDesktopMode-apptoweb-AppToWebFirstRunDialogTest",
+      "keywords": [
+        "desktop"
+      ]
+    },
+    {
       "name": "FunctionalTestsDesktopMode-clientfullscreenrequest-FullscreenModeRequestFromDesktopAndBackTest",
       "keywords": [
         "desktop"

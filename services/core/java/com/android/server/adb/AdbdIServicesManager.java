@@ -16,6 +16,8 @@
 
 package com.android.server.adb;
 
+import android.net.nsd.NsdManager;
+
 public interface AdbdIServicesManager {
 
     /** Register a service with the framework. */
@@ -26,7 +28,7 @@ public interface AdbdIServicesManager {
             String instanceName,
             String serviceType,
             int port,
-            AdbdServicesManager.RegistrationCallback registrationCallback);
+            NsdManager.RegistrationListener registrationCallback);
 
     /** Unregister a service with the framework. */
     void unregisterService(String instanceName, String serviceType);

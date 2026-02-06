@@ -26,7 +26,6 @@ import static android.net.NetworkCapabilities.TRANSPORT_CELLULAR;
 import static android.util.TimeUtils.formatDuration;
 
 import android.annotation.BytesLong;
-import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -770,7 +769,6 @@ public class JobInfo implements Parcelable {
     /**
      * @see JobInfo.Builder#addDebugTag(String)
      */
-    @FlaggedApi(Flags.FLAG_JOB_DEBUG_INFO_APIS)
     @NonNull
     public Set<String> getDebugTags() {
         return Collections.unmodifiableSet(mDebugTags);
@@ -788,7 +786,6 @@ public class JobInfo implements Parcelable {
     /**
      * @see JobInfo.Builder#setTraceTag(String)
      */
-    @FlaggedApi(Flags.FLAG_JOB_DEBUG_INFO_APIS)
     @Nullable
     public String getTraceTag() {
         return mTraceTag;
@@ -1358,7 +1355,6 @@ public class JobInfo implements Parcelable {
          * @param tag A debug tag that helps describe what the job is for.
          * @return This object for method chaining
          */
-        @FlaggedApi(Flags.FLAG_JOB_DEBUG_INFO_APIS)
         @NonNull
         public Builder addDebugTag(@NonNull String tag) {
             mDebugTags.add(validateDebugTag(tag));
@@ -1377,7 +1373,6 @@ public class JobInfo implements Parcelable {
          * @param tag The tag to remove
          * @return This object for method chaining
          */
-        @FlaggedApi(Flags.FLAG_JOB_DEBUG_INFO_APIS)
         @SuppressLint("BuilderSetStyle")
         @NonNull
         public Builder removeDebugTag(@NonNull String tag) {
@@ -2205,7 +2200,6 @@ public class JobInfo implements Parcelable {
          * @param traceTag The tag to use in traces.
          * @return This object for method chaining
          */
-        @FlaggedApi(Flags.FLAG_JOB_DEBUG_INFO_APIS)
         @NonNull
         public Builder setTraceTag(@Nullable String traceTag) {
             mTraceTag = validateTraceTag(traceTag);

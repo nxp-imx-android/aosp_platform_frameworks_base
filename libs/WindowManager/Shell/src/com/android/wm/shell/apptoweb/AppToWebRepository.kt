@@ -71,4 +71,10 @@ interface AppToWebRepository {
      * given task.
      */
     fun onFirstRunPromptAcked(taskInfo: RunningTaskInfo)
+
+    /** Clears the remembered first-run prompt acked packages for the given user and package. */
+    fun clearFirstRunPromptAckedPackages(userId: Int, packageName: String)
+
+    /** Clears all remembered first-run prompt acked packages for the given user. */
+    fun clearAllFirstRunPromptAckedPackages(userId: Int)
 }

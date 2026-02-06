@@ -85,18 +85,6 @@ flag {
 }
 
 flag {
-  name: "enable_supervision_auth_controller_updates_bugfix"
-  is_exported: false
-  namespace: "supervision"
-  description: "Flag that enables supervision auth controller updates to support two pane settings"
-  bug: "459821424"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-
-flag {
   name: "enable_supervision_settings_session_updates"
   is_exported: false
   namespace: "supervision"
@@ -168,17 +156,6 @@ flag {
   namespace: "supervision"
   description: "Flag that enables supervision policy APIs in Supervision Service"
   bug: "443997530"
-}
-
-flag {
-  name: "supervision_recovery_improvements"
-  is_exported: false
-  namespace: "supervision"
-  description: "Fixes some performance issues with supervision recovery"
-  bug: "454885259"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
 }
 
 flag {

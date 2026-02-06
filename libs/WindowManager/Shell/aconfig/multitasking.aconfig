@@ -41,6 +41,13 @@ flag {
 }
 
 flag {
+    name: "enable_bubble_transition_planner"
+    namespace: "multitasking"
+    description: "Enables BubbleTransitionsPlanner to handle bubble transitions"
+    bug: "473881387"
+}
+
+flag {
     name: "fix_bubbles_long_press_nav_handle"
     namespace: "multitasking"
     description: "Allows handling of long-press on nav handle when bubbles are expanded"
@@ -320,6 +327,16 @@ flag {
     namespace: "multitasking"
     description: "Load Bubble app icon from specific ActivityInfo rather than just the ApplicationInfo."
     bug: "462281202"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "update_bubble_bounds_during_rotation"
+    namespace: "multitasking"
+    description: "Update the bounds of the expanded bubble task as part of the rotation transition"
+    bug: "471756214"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

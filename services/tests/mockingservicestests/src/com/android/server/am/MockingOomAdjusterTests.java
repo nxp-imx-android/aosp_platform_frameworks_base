@@ -140,6 +140,7 @@ import android.util.SparseIntArray;
 
 import com.android.server.LocalServices;
 import com.android.server.am.psc.ActiveUidsInternal;
+import com.android.server.am.psc.Constants.SchedGroup;
 import com.android.server.am.psc.MockUtils;
 import com.android.server.am.psc.OomAdjuster;
 import com.android.server.am.psc.ProcessRecordInternal;
@@ -4809,7 +4810,7 @@ public class MockingOomAdjusterTests {
 
     @SuppressWarnings("GuardedBy")
     private void setIsReceivingBroadcast(ProcessRecord app, boolean isReceivingBroadcast,
-            int schedGroup) {
+            @SchedGroup int schedGroup) {
         if (isReceivingBroadcast) {
             mProcessStateController.noteBroadcastDeliveryStarted(app, schedGroup);
         } else {
@@ -4848,7 +4849,7 @@ public class MockingOomAdjusterTests {
 
     @SuppressWarnings("GuardedBy")
     private void assertProcStates(ProcessRecord app, int expectedProcState, int expectedAdj,
-            int expectedSchedGroup) {
+            @SchedGroup int expectedSchedGroup) {
         final ProcessRecordInternal state = app;
         final int pid = app.getPid();
         assertEquals(expectedProcState, state.getSetProcState());
@@ -4868,7 +4869,7 @@ public class MockingOomAdjusterTests {
 
     @SuppressWarnings("GuardedBy")
     private void assertProcStates(ProcessRecord app, int expectedProcState, int expectedAdj,
-            int expectedSchedGroup, String expectedAdjType) {
+            @SchedGroup int expectedSchedGroup, String expectedAdjType) {
         assertProcStates(app, expectedProcState, expectedAdj, expectedSchedGroup);
         final ProcessRecordInternal state = app;
         assertEquals(expectedAdjType, state.getAdjType());
@@ -4876,7 +4877,7 @@ public class MockingOomAdjusterTests {
 
     @SuppressWarnings("GuardedBy")
     private void assertProcStates(ProcessRecord app, int expectedProcState, int expectedAdj,
-            int expectedSchedGroup, String expectedAdjType, boolean expectedCached) {
+            @SchedGroup int expectedSchedGroup, String expectedAdjType, boolean expectedCached) {
         assertProcStates(app, expectedProcState, expectedAdj, expectedSchedGroup, expectedAdjType);
         final ProcessRecordInternal state = app;
         assertEquals(expectedCached, state.isCached());
@@ -4919,8 +4920,8 @@ public class MockingOomAdjusterTests {
         int mSetRawAdj = INVALID_ADJ;
         int mCurAdj = INVALID_ADJ;
         int mSetAdj = INVALID_ADJ;
-        int mCurSchedGroup = SCHED_GROUP_BACKGROUND;
-        int mSetSchedGroup = SCHED_GROUP_BACKGROUND;
+        @SchedGroup int mCurSchedGroup = SCHED_GROUP_BACKGROUND;
+        @SchedGroup int mSetSchedGroup = SCHED_GROUP_BACKGROUND;
         int mCurProcState = PROCESS_STATE_NONEXISTENT;
         int mRepProcState = PROCESS_STATE_NONEXISTENT;
         int mCurRawProcState = PROCESS_STATE_NONEXISTENT;

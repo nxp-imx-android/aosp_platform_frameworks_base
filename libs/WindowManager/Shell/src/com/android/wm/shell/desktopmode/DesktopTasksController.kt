@@ -286,6 +286,7 @@ class DesktopTasksController(
     private val desktopModeEnterExitTransitionListener: DesktopModeEnterExitTransitionListener,
 ) :
     RemoteCallable<DesktopTasksController>,
+    TransitionHandler,
     DragAndDropController.DragAndDropListener,
     UserChangeListener {
 
@@ -404,6 +405,7 @@ class DesktopTasksController(
         shellController.addUserChangeListener(this)
         // Update the current user id again because it might be updated between init and onInit().
         updateCurrentUser(ActivityManager.getCurrentUser())
+        transitions.addHandler(this)
         desktopFullscreenRequestHandler.desktopTasksController = this
         dragToDesktopTransitionHandler.dragToDesktopStateListener = dragToDesktopStateListener
         recentsTransitionHandler.addTransitionStateListener(
@@ -1774,9 +1776,6 @@ class DesktopTasksController(
     fun onDesktopSplitSelectChoice(taskInfo: RunningTaskInfo) {
         val wct = WindowContainerTransaction()
         wct.setBounds(taskInfo.token, Rect())
-        if (!DesktopModeFlags.ENABLE_INPUT_LAYER_TRANSITION_FIX.isTrue) {
-            wct.setWindowingMode(taskInfo.token, WINDOWING_MODE_UNDEFINED)
-        }
         shellTaskOrganizer.applyTransaction(wct)
     }
 
@@ -3701,6 +3700,10 @@ class DesktopTasksController(
                 shouldEndUpAtHome,
             )
         }
+        if (shouldEndUpAtHome && exitReason == ExitReason.RETURN_HOME_OR_OVERVIEW) {
+            // We are going back to home, remove any effects for the maximized/snapped tasks.
+            updateTaskBarAndWallpaperDim(displayId, shouldApplyEffect = false)
+        }
         val shouldHandleWallpaperAndHome =
             (!skipWallpaperAndHomeOrdering ||
                 !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) &&
@@ -3750,13 +3753,21 @@ class DesktopTasksController(
 
     override fun getRemoteCallExecutor(): ShellExecutor = mainExecutor
 
+    override fun startAnimation(
+        transition: IBinder,
+        info: TransitionInfo,
+        startTransaction: Transaction,
+        finishTransaction: Transaction,
+        finishCallback: TransitionFinishCallback,
+    ): Boolean {
+        // This handler should never be the sole handler, so should not animate anything.
+        return false
+    }
+
     private fun taskDisplaySupportDesktopMode(triggerTask: RunningTaskInfo) =
         desktopState.isDesktopModeSupportedOnDisplay(triggerTask.displayId)
 
-    // TODO b/457313894: this class is no longer a TransitionHandler - move this method to
-    // DesktopTasksTransitionHandler.
-    /** Handles transition requests related to Desktop tasks. */
-    fun handleRequest(
+    override fun handleRequest(
         transition: IBinder,
         request: TransitionRequestInfo,
     ): WindowContainerTransaction? {
@@ -5223,14 +5234,6 @@ class DesktopTasksController(
      * animation; see {@link onDesktopSplitSelectChoice}
      */
     private fun addMoveToSplitChanges(wct: WindowContainerTransaction, taskInfo: RunningTaskInfo) {
-        if (!DesktopModeFlags.ENABLE_INPUT_LAYER_TRANSITION_FIX.isTrue) {
-            // This windowing mode is to get the transition animation started; once we complete
-            // split select, we will change windowing mode to undefined and inherit from split
-            // stage.
-            // Going to undefined here causes task to flicker to the top left.
-            // Cancelling the split select flow will revert it to fullscreen.
-            wct.setWindowingMode(taskInfo.token, WINDOWING_MODE_MULTI_WINDOW)
-        }
         // The task's density may have been overridden in freeform; revert it here as we don't
         // want it overridden in multi-window.
         if (desktopConfig.useDesktopOverrideDensity) {

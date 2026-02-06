@@ -768,16 +768,6 @@ flag {
 }
 
 flag {
-    name: "glanceable_hub_enabled_by_default"
-    namespace: "systemui"
-    description: "Enable glanceable hub by default (this flag is intended to enable GH for DF only)."
-    bug: "428215526"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
   name: "glanceable_hub_v2"
   namespace: "systemui"
   description: "Gates the refreshed glanceable hub experience that also brings the glanceable hub to mobile phones"
@@ -1404,13 +1394,6 @@ flag {
     namespace: "systemui"
     description: "Enables the multi-user WiFi configuration UI in Interent detailed tiles. This flag depends on qs_tile_detailed_view flag"
     bug: "402214828"
-}
-
-flag {
-   name: "record_issue_qs_tile"
-   namespace: "systemui"
-   description: "Replace Record Trace QS Tile with expanded Record Issue QS Tile"
-   bug: "305049544"
 }
 
 flag {

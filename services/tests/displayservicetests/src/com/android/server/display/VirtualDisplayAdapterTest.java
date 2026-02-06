@@ -38,10 +38,6 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.Process;
-import android.platform.test.annotations.EnableFlags;
-import android.platform.test.flag.junit.CheckFlagsRule;
-import android.platform.test.flag.junit.DeviceFlagsValueProvider;
-import android.platform.test.flag.junit.SetFlagsRule;
 import android.testing.TestableContext;
 import android.view.Display;
 import android.view.Surface;
@@ -81,9 +77,6 @@ public class VirtualDisplayAdapterTest {
     public final TestableContext mContext = new TestableContext(
             InstrumentationRegistry.getInstrumentation().getContext());
 
-    @Rule
-    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
-
     @Mock
     private VirtualDisplayAdapter.SurfaceControlDisplayFactory mMockSufaceControlDisplayFactory;
 
@@ -115,9 +108,6 @@ public class VirtualDisplayAdapterTest {
     private DisplayManagerFlags mFeatureFlags;
 
     private VirtualDisplayAdapter mAdapter;
-
-    @Rule
-    public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
 
     @Before
     public void setUp() {
@@ -438,8 +428,6 @@ public class VirtualDisplayAdapterTest {
         assertThat(info.flags & DisplayDeviceInfo.FLAG_NEVER_BLANK).isEqualTo(0);
     }
 
-    @EnableFlags(
-            android.companion.virtualdevice.flags.Flags.FLAG_CORRECT_VIRTUAL_DISPLAY_POWER_STATE)
     @Test
     public void neverBlankDisplay_alwaysOn() {
         // A non-public non-mirror display is considered never blank.
@@ -454,8 +442,6 @@ public class VirtualDisplayAdapterTest {
                 .isEqualTo(DisplayDeviceInfo.FLAG_NEVER_BLANK);
     }
 
-    @EnableFlags(
-            android.companion.virtualdevice.flags.Flags.FLAG_CORRECT_VIRTUAL_DISPLAY_POWER_STATE)
     @Test
     public void virtualDisplayStateChange_propagatesToSurfaceControl() throws Exception {
         final String uniqueId = "uniqueId";
@@ -501,8 +487,6 @@ public class VirtualDisplayAdapterTest {
         verify(mMockCallback, timeout(CALLBACK_TIMEOUT_MILLIS)).onPaused();
     }
 
-    @EnableFlags(
-            android.companion.virtualdevice.flags.Flags.FLAG_CORRECT_VIRTUAL_DISPLAY_POWER_STATE)
     @Test
     public void createVirtualDisplayLocked_neverBlank_optimizesForPower() {
         final String uniqueId = "uniqueId";
@@ -522,8 +506,6 @@ public class VirtualDisplayAdapterTest {
                 eq(uniqueId), anyInt(), anyFloat());
     }
 
-    @EnableFlags(
-            android.companion.virtualdevice.flags.Flags.FLAG_CORRECT_VIRTUAL_DISPLAY_POWER_STATE)
     @Test
     public void createVirtualDisplayLocked_blankable_optimizesForPerformance() {
         final String uniqueId = "uniqueId";

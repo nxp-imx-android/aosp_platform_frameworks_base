@@ -11,13 +11,6 @@ package: "android.companion.virtualdevice.flags"
 container: "system"
 
 flag {
-    namespace: "virtual_devices"
-    name: "high_resolution_scroll"
-    description: "Enable high resolution scroll"
-    bug: "335160780"
-}
-
-flag {
     name: "camera_multiple_input_streams"
     is_exported: true
     namespace: "virtual_devices"
@@ -88,23 +81,6 @@ flag {
 }
 
 flag {
-    name: "correct_virtual_display_power_state"
-    namespace: "virtual_devices"
-    description: "Fix the virtual display power state"
-    bug: "371125136"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "device_aware_settings_override"
-    namespace: "virtual_devices"
-    description: "Settings override for virtual devices"
-    bug: "371801645"
-}
-
-flag {
     namespace: "virtual_devices"
     name: "viewconfiguration_apis"
     description: "APIs for setting ViewConfiguration attributes on virtual devices"
@@ -161,16 +137,6 @@ flag {
 }
 
 flag {
-    name: "handle_invalid_device_id"
-    namespace: "virtual_devices"
-    description: "Handle invalid device ids in various system services"
-    bug: "394613051"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "external_camera_default_policy"
     namespace: "virtual_devices"
     description: "Allow virtual external cameras to be aded to a virtual device with a default camera policy"
@@ -185,16 +151,6 @@ flag {
     namespace: "virtual_devices"
     description: "Assign the index at which a stream has been added to the virtual camera config as its id."
     bug: "430870772"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "gwpc_secure_window_state_tracking"
-    namespace: "virtual_devices"
-    description: "Track secure window states across activity launches in GenericWindowPolicyController"
-    bug: "449765707"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

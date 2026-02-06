@@ -21,7 +21,6 @@ import android.os.ParcelableException;
 
 /** @hide */
 oneway interface IObserveAppFunctionChangesCallback {
-    void onAppFunctionsChanged(in List<AppFunctionName> changedFunctionNames);
     void onPackagesChanged(in List<String> changedPackageNames);
     void onAppFunctionStatesChanged(in List<AppFunctionName> changedFunctionNames);
 }

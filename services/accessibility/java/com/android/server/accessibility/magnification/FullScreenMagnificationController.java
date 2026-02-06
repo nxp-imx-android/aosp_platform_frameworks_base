@@ -39,6 +39,7 @@ import android.content.res.CompatibilityInfo;
 import android.graphics.Rect;
 import android.graphics.Region;
 import android.hardware.display.DisplayManagerInternal;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
@@ -100,6 +101,7 @@ public class FullScreenMagnificationController implements
     private final ControllerContext mControllerCtx;
 
     private final ScreenStateObserver mScreenStateObserver;
+    private final FullScreenMagnificationActivationDebugger mDebugReceiver;
 
     @GuardedBy("mLock")
     private final ArrayList<MagnificationInfoChangedCallback>
@@ -1212,6 +1214,13 @@ public class FullScreenMagnificationController implements
             };
         }
         mSystemClock = systemClock;
+
+        if (Build.IS_DEBUGGABLE) {
+            mDebugReceiver = new FullScreenMagnificationActivationDebugger(
+                    mControllerCtx.getContext(), this);
+        } else {
+            mDebugReceiver = null;
+        }
     }
 
     private void onMagnificationThumbnailFeatureFlagChanged() {
@@ -1253,6 +1262,9 @@ public class FullScreenMagnificationController implements
             if (display.register()) {
                 mDisplays.put(displayId, display);
                 mScreenStateObserver.registerIfNecessary();
+                if (mDebugReceiver != null) {
+                    mDebugReceiver.registerIfNecessary();
+                }
             }
         }
     }
@@ -2178,6 +2190,9 @@ public class FullScreenMagnificationController implements
         }
         if (!hasRegister) {
             mScreenStateObserver.unregister();
+            if (mDebugReceiver != null) {
+                mDebugReceiver.unregister();
+            }
         }
     }
 

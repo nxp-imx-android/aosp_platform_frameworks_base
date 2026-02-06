@@ -86,7 +86,6 @@ import platform.test.motion.golden.asDataPoint
 import platform.test.screenshot.DeviceEmulationSpec
 import platform.test.screenshot.Displays.Phone
 
-@Ignore("b/467228678")
 @RunWith(AndroidJUnit4::class)
 @MotionTest
 @LargeTest
@@ -136,9 +135,9 @@ class GoneSceneToQuickQuickSettingsSceneTest : SysuiTestCase() {
     @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
     fun swipeDownFromGoneSceneToQQS_recordingQQSPanelSize() {
         motionTestRule.runTest(60.seconds) {
+            kosmos.enableSingleShade()
             kosmos.usingMediaInComposeFragment = true
             kosmos.populateQuickSettings(tileCount = 7)
-            kosmos.enableSingleShade()
             val motion =
                 recordMotion(
                     content = { GoneToShadeSceneContainer() },
@@ -177,11 +176,12 @@ class GoneSceneToQuickQuickSettingsSceneTest : SysuiTestCase() {
 
     @Test
     @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
+    @Ignore("b/480894331")
     fun swipeDownFromGoneSceneToQQS_recordingDayDatePosition() {
         motionTestRule.runTest(60.seconds) {
+            kosmos.enableSingleShade()
             kosmos.usingMediaInComposeFragment = true
             kosmos.populateQuickSettings(tileCount = 7)
-            kosmos.enableSingleShade()
             val motion =
                 recordMotion(
                     content = { GoneToShadeSceneContainer() },
@@ -222,6 +222,7 @@ class GoneSceneToQuickQuickSettingsSceneTest : SysuiTestCase() {
     @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
     fun swipeDownFromGoneSceneToQQS_recordingQQSTilesSquishiness() {
         motionTestRule.runTest(60.seconds) {
+            kosmos.enableSingleShade()
             kosmos.usingMediaInComposeFragment = true
             kosmos.populateQuickSettings(tileCount = 7)
             kosmos.fakeWindowRootViewBlurRepository.isBlurSupported.value = true
@@ -258,6 +259,7 @@ class GoneSceneToQuickQuickSettingsSceneTest : SysuiTestCase() {
     @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
     fun swipeDownFromGoneSceneToQQS_recordingQQSTilesHeight() {
         motionTestRule.runTest(60.seconds) {
+            kosmos.enableSingleShade()
             kosmos.usingMediaInComposeFragment = true
             kosmos.populateQuickSettings(tileCount = 7)
             kosmos.fakeWindowRootViewBlurRepository.isBlurSupported.value = true
@@ -300,6 +302,7 @@ class GoneSceneToQuickQuickSettingsSceneTest : SysuiTestCase() {
     @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
     fun swipeDownFromGoneSceneToQQS_recordingShadeHeaderClockAlpha() {
         motionTestRule.runTest(60.seconds) {
+            kosmos.enableSingleShade()
             kosmos.usingMediaInComposeFragment = true
             kosmos.populateQuickSettings(tileCount = 7)
             kosmos.fakeWindowRootViewBlurRepository.isBlurSupported.value = true

@@ -17,7 +17,6 @@ package com.android.internal.widget.remotecompose.player.accessibility;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.graphics.Rect;
 import android.util.Log;
 
 import com.android.internal.widget.remotecompose.core.operations.layout.Component;
@@ -86,9 +85,8 @@ public abstract class BaseSemanticNodeApplier<N> implements SemanticNodeApplier<
         }
     }
 
-    protected abstract void setBoundsInParentOrScreen(@NonNull N nodeInfo,
-            @NonNull Component component,
-            @Nullable Integer parentId);
+    protected abstract void setBoundsInParentOrScreen(
+            @NonNull N nodeInfo, @NonNull Component component, @Nullable Integer parentId);
 
     protected void applySemantics(
             @NonNull RemoteComposeDocumentAccessibility remoteComposeAccessibility,

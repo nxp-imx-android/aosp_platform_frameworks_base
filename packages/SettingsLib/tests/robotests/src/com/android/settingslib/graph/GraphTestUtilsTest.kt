@@ -26,6 +26,7 @@ import com.android.settingslib.metadata.PreferenceAvailabilityProvider
 import com.android.settingslib.metadata.PreferenceRestrictionProvider
 import com.android.settingslib.metadata.PreferenceScreenRegistry
 import com.android.settingslib.metadata.ReadWritePermit
+import com.android.settingslib.metadata.isUiOnlyPreference
 import com.android.settingslib.robotests.R
 import com.android.settingslib.testutils.GraphTestUtils
 import com.google.common.truth.Truth.assertThat
@@ -220,5 +221,55 @@ class GraphTestUtilsTest {
         GraphTestUtils.makePermissionPass(application, "test_permission", false)
         assertThat(application.checkPermission("test_permission", 0, 0))
             .isEqualTo(PackageManager.PERMISSION_DENIED)
+    }
+
+    @Test
+    fun createSimplePreference_whenNonUiOnly_returnsFalseIsUiOnlyPreference() {
+        val preference = GraphTestUtils.createSimplePreference(
+            GraphTestUtils.PreferenceConfig(
+                key = "preference_key",
+                purpose = R.string.preference_purpose,
+                isUiOnly = false
+            )
+        )
+        assertThat(preference.isUiOnlyPreference(context)).isFalse()
+    }
+
+    @Test
+    fun createSimplePreference_whenUiOnly_returnsTrueIsUiOnlyPreference() {
+        val preference = GraphTestUtils.createSimplePreference(
+            GraphTestUtils.PreferenceConfig(
+                key = "preference_key",
+                purpose = R.string.preference_purpose,
+                isUiOnly = true
+            )
+        )
+        assertThat(preference.isUiOnlyPreference(context)).isTrue()
+    }
+
+    @Test
+    fun createPersistentPreference_whenNonUiOnly_returnsFalseIsUiOnlyPreference() {
+        val persistentPreference = GraphTestUtils.createPersistentPreference<Boolean>(
+            GraphTestUtils.PersistentPreferenceConfig(
+                GraphTestUtils.PreferenceConfig(
+                    key = "preference_key",
+                    purpose = R.string.preference_purpose,
+                    isUiOnly = false
+                ),
+            )
+        )
+        assertThat(persistentPreference.isUiOnlyPreference(context)).isFalse()
+    }
+
+    @Test
+    fun createPersistentPreference_whenUiOnly_returnsTrueIsUiOnlyPreference() {
+        val persistentPreference = GraphTestUtils.createSimplePreference(
+            GraphTestUtils.PreferenceConfig(
+                key = "preference_key",
+                purpose = R.string.preference_purpose,
+                isUiOnly = true
+            )
+        )
+        assertThat(persistentPreference.isUiOnlyPreference(context)).isTrue()
     }
 }

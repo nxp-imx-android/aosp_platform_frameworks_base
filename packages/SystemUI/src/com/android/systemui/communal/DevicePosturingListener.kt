@@ -19,13 +19,14 @@ package com.android.systemui.communal
 import android.annotation.SuppressLint
 import android.app.DreamManager
 import android.os.PowerManager
-
 import com.android.app.tracing.coroutines.launchInTraced
 import com.android.app.tracing.coroutines.launchTraced
+import com.android.internal.logging.UiEventLogger
 import com.android.systemui.CoreStartable
 import com.android.systemui.communal.posturing.domain.interactor.PosturingInteractor
 import com.android.systemui.communal.posturing.domain.interactor.PosturingInteractor.Companion.SLIDING_WINDOW_DURATION
 import com.android.systemui.communal.posturing.shared.model.PosturedState
+import com.android.systemui.communal.shared.log.CommunalUiEvent
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dreams.domain.interactor.DreamSettingsInteractor
@@ -64,6 +65,7 @@ constructor(
     @CommunalTableLog private val tableLogBuffer: TableLogBuffer,
     private val wakeLockBuilder: WakeLock.Builder,
     private val powerInteractor: PowerInteractor,
+    private val uiEventLogger: UiEventLogger,
 ) : CoreStartable {
     private val command = DevicePosturingCommand()
 
@@ -116,7 +118,12 @@ constructor(
 
         postured
             .distinctUntilChanged()
-            .onEach { postured -> dreamManager.setDevicePostured(postured) }
+            .onEach { postured ->
+                dreamManager.setDevicePostured(postured)
+                if (postured) {
+                    uiEventLogger.log(CommunalUiEvent.COMMUNAL_DEVICE_POSTURED)
+                }
+            }
             .launchInTraced("$TAG#collectPostured", bgScope)
 
         bgScope.launchTraced("$TAG#collectMayBePosturedSoon") {

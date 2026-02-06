@@ -46,12 +46,6 @@ public class BubbleAnythingFlagHelper {
         if (!Flags.enableCreateAnyBubble()) {
             return false;
         }
-
-        // This is needed to allow the activity behind the root task remains in RESUMED state.
-        if (!com.android.window.flags.Flags.enableSeeThroughTaskFragments()) {
-            return false;
-        }
-
         return com.android.window.flags.Flags.enableBubbleRootTask();
     }
 

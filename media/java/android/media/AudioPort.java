@@ -202,6 +202,16 @@ public class AudioPort {
     }
 
     /**
+     * Get the list of supported Ambisonics channel mask configurations
+     * (e.g AudioFormat.CHANNEL_ACN_ORDER_1)
+     * Empty array if Ambisonics channel mask is not relevant for this audio port
+     * @hide
+     */
+    public int[] channelAcnMasks() {
+        return mChannelMasks.getAcnMasks();
+    }
+
+    /**
      * Get the channel masks.
      * @hide
      */

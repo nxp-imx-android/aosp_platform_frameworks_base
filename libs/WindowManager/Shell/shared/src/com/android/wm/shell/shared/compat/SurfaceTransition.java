@@ -163,6 +163,10 @@ public class SurfaceTransition {
         @Nullable
         public abstract AnimatedSurface[] getWallpapers();
 
+        /** Returns the non-app surfaces changing as part of the transition. */
+        @Nullable
+        public abstract AnimatedSurface[] getNonApps();
+
         /** Returns transaction to use to apply surface changes at the start of the transition. */
         @Nullable
         public abstract SurfaceControl.Transaction getStartTransaction();
@@ -191,6 +195,10 @@ public class SurfaceTransition {
         @Nullable public final RemoteAnimationTarget[] nonAppsCompat;
         @Nullable public final IRemoteAnimationFinishedCallback finishedCallbackCompat;
 
+        @Nullable private AnimatedSurface[] mApps;
+        @Nullable private AnimatedSurface[] mWallpapers;
+        @Nullable private AnimatedSurface[] mNonApps;
+
         ParamsLegacy(
                 long startTime, long fadeoutDuration, int transit,
                 @Nullable RemoteAnimationTarget[] appsCompat,
@@ -204,28 +212,39 @@ public class SurfaceTransition {
             this.wallpapersCompat = wallpapersCompat;
             this.nonAppsCompat = nonAppsCompat;
             this.finishedCallbackCompat = finishedCallbackCompat;
+
+            if (appsCompat != null) {
+                this.mApps = Arrays.stream(appsCompat).map(AnimatedSurface::from)
+                        .toArray(AnimatedSurface[]::new);
+            }
+
+            if (wallpapersCompat != null) {
+                this.mWallpapers = Arrays.stream(wallpapersCompat).map(AnimatedSurface::from)
+                        .toArray(AnimatedSurface[]::new);
+            }
+
+            if (nonAppsCompat != null) {
+                this.mNonApps = Arrays.stream(nonAppsCompat).map(AnimatedSurface::from)
+                        .toArray(AnimatedSurface[]::new);
+            }
         }
 
         @Nullable
         @Override
         public AnimatedSurface[] getApps() {
-            if (appsCompat == null) {
-                return null;
-            }
-
-            return Arrays.stream(appsCompat).map(AnimatedSurface::from)
-                    .toArray(AnimatedSurface[]::new);
+            return mApps;
         }
 
         @Nullable
         @Override
         public AnimatedSurface[] getWallpapers() {
-            if (wallpapersCompat == null) {
-                return null;
-            }
+            return mWallpapers;
+        }
 
-            return Arrays.stream(wallpapersCompat).map(AnimatedSurface::from)
-                    .toArray(AnimatedSurface[]::new);
+        @Nullable
+        @Override
+        public AnimatedSurface[] getNonApps() {
+            return mNonApps;
         }
 
         @Nullable
@@ -280,6 +299,10 @@ public class SurfaceTransition {
         @Nullable public final SurfaceControl.Transaction transaction;
         @Nullable public final IRemoteTransitionFinishedCallback finishedCallbackShell;
 
+        @Nullable private AnimatedSurface[] mApps;
+        @Nullable private AnimatedSurface[] mWallpapers;
+        @Nullable private AnimatedSurface[] mNonApps;
+
         ParamsShell(
                 long startTime, long fadeoutDuration, @Nullable IBinder token,
                 @Nullable TransitionInfo info, @Nullable SurfaceControl.Transaction transaction,
@@ -290,29 +313,36 @@ public class SurfaceTransition {
             this.info = info;
             this.transaction = transaction;
             this.finishedCallbackShell = finishedCallbackShell;
+
+            if (info != null) {
+                TransitionUtil.LeafTaskFilter filter = new TransitionUtil.LeafTaskFilter();
+                this.mApps = info.getChanges().stream().filter(filter).map(AnimatedSurface::from)
+                        .toArray(AnimatedSurface[]::new);
+
+                this.mWallpapers = info.getChanges().stream().filter(TransitionUtil::isWallpaper)
+                        .map(AnimatedSurface::from).toArray(AnimatedSurface[]::new);
+
+                this.mNonApps = info.getChanges().stream().filter(TransitionUtil::isNonApp)
+                        .map(AnimatedSurface::from).toArray(AnimatedSurface[]::new);
+            }
         }
 
         @Nullable
         @Override
         public AnimatedSurface[] getApps() {
-            if (info == null) {
-                return null;
-            }
-
-            TransitionUtil.LeafTaskFilter filter = new TransitionUtil.LeafTaskFilter();
-            return info.getChanges().stream().filter(filter).map(AnimatedSurface::from)
-                    .toArray(AnimatedSurface[]::new);
+            return mApps;
         }
 
         @Nullable
         @Override
         public AnimatedSurface[] getWallpapers() {
-            if (info == null) {
-                return null;
-            }
+            return mWallpapers;
+        }
 
-            return info.getChanges().stream().filter(TransitionUtil::isWallpaper)
-                    .map(AnimatedSurface::from).toArray(AnimatedSurface[]::new);
+        @Nullable
+        @Override
+        public AnimatedSurface[] getNonApps() {
+            return mNonApps;
         }
 
         @Nullable

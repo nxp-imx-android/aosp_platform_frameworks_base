@@ -20,7 +20,6 @@ import static com.android.hardware.input.Flags.createVirtualKeyboardApi;
 
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
-import android.annotation.Nullable;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.companion.virtualdevice.flags.Flags;
@@ -58,7 +57,7 @@ public abstract class VirtualInputDeviceConfig {
     /** The name of the virtual input device. */
     @NonNull
     private final String mInputDeviceName;
-    @Nullable
+    @NonNull
     private final ViewBehaviorConfig mViewBehaviorConfig;
 
     protected VirtualInputDeviceConfig(@NonNull Builder<? extends Builder<?>> builder) {
@@ -66,7 +65,8 @@ public abstract class VirtualInputDeviceConfig {
         mProductId = builder.mProductId;
         mAssociatedDisplayId = builder.mAssociatedDisplayId;
         mInputDeviceName = Objects.requireNonNull(builder.mInputDeviceName, "Missing device name");
-        mViewBehaviorConfig = builder.mViewBehaviorConfig;
+        mViewBehaviorConfig = Objects.requireNonNull(builder.mViewBehaviorConfig,
+                "Missing view behavior config");
 
         // Check if no display association is allowed.
         if (!createVirtualKeyboardApi()) {
@@ -90,8 +90,8 @@ public abstract class VirtualInputDeviceConfig {
         mProductId = in.readInt();
         mAssociatedDisplayId = in.readInt();
         mInputDeviceName = Objects.requireNonNull(in.readString8(), "Missing device name");
-        mViewBehaviorConfig = Flags.virtualInputViewBehavior()
-                ? in.readTypedObject(ViewBehaviorConfig.CREATOR) : null;
+        mViewBehaviorConfig = Objects.requireNonNull(in.readTypedObject(ViewBehaviorConfig.CREATOR),
+                "Missing view behavior config");
     }
 
     /**
@@ -133,24 +133,22 @@ public abstract class VirtualInputDeviceConfig {
     }
 
     /**
-     * Returns the {@link ViewBehaviorConfig} for the input device, {@code null} if not specified
-     * (in which case default behavior would get applied).
+     * Returns the {@link ViewBehaviorConfig} for the input device.
      *
      * @see android.view.InputDevice.ViewBehavior
      */
     @FlaggedApi(Flags.FLAG_VIRTUAL_INPUT_VIEW_BEHAVIOR)
-    @Nullable
+    @NonNull
     public ViewBehaviorConfig getViewBehaviorConfig() {
         return mViewBehaviorConfig;
     }
 
     /**
      * Checks if a display ID is valid.
+     *
      * @throws IllegalArgumentException if an invalid display is associated with this device.
-     *
-     * @see Builder#setAssociatedDisplayId(int)
-     *
      * @hide
+     * @see Builder#setAssociatedDisplayId(int)
      */
     public void checkForAssociatedDisplay() {
         if (getAssociatedDisplayId() == Display.INVALID_DISPLAY) {
@@ -164,9 +162,7 @@ public abstract class VirtualInputDeviceConfig {
         dest.writeInt(mProductId);
         dest.writeInt(mAssociatedDisplayId);
         dest.writeString8(mInputDeviceName);
-        if (Flags.virtualInputViewBehavior()) {
-            dest.writeTypedObject(mViewBehaviorConfig, flags);
-        }
+        dest.writeTypedObject(mViewBehaviorConfig, flags);
     }
 
     @Override
@@ -193,13 +189,15 @@ public abstract class VirtualInputDeviceConfig {
      */
     @SuppressWarnings({"StaticFinalBuilder", "MissingBuildMethod"})
     public abstract static class Builder<T extends Builder<T>> {
+        private static final ViewBehaviorConfig DEFAULT_VIEW_BEHAVIOR_CONFIG =
+                new ViewBehaviorConfig.Builder().build();
 
         private int mVendorId;
         private int mProductId;
         private int mAssociatedDisplayId = Display.INVALID_DISPLAY;
         private String mInputDeviceName;
-        @Nullable
-        private ViewBehaviorConfig mViewBehaviorConfig = null;
+        @NonNull
+        private ViewBehaviorConfig mViewBehaviorConfig = DEFAULT_VIEW_BEHAVIOR_CONFIG;
 
         /**
          * Sets the vendor id of the device, identifying the company who manufactured the device.
@@ -272,7 +270,6 @@ public abstract class VirtualInputDeviceConfig {
          * Sets an optional {@link ViewBehaviorConfig} for the input device.
          *
          * @return this builder, to allow for chaining of calls.
-         *
          * @see #getViewBehaviorConfig
          */
         @FlaggedApi(Flags.FLAG_VIRTUAL_INPUT_VIEW_BEHAVIOR)

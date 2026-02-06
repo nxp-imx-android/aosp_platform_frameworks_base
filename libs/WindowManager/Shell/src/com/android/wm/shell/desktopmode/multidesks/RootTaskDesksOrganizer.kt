@@ -163,7 +163,6 @@ class RootTaskDesksOrganizer(
 
     private fun createDeskRoot(displayId: Int, userId: Int?, callback: OnCreateCallback) {
         logV("createDeskRoot in display: %d for user: %d", displayId, userId)
-        createDeskRootRequests += CreateDeskRequest(displayId, userId, callback)
         val taskProperties =
             TaskPropertiesRequest()
                 .setReparentOnDisplayRemoval(
@@ -177,23 +176,37 @@ class RootTaskDesksOrganizer(
                 .setTaskPropertiesRequest(taskProperties)
                 .build()
         val taskAppearedInfo = shellTaskOrganizer.createTask(params, this)
-
-        taskAppearedInfo?.let {
-            val token = taskAppearedInfo.taskInfo.token
-            val wct = WindowContainerTransaction()
-            if (Flags.enableBackNavigationDesktopAppNoMinimize()) {
-                wct.setInterceptBackPressedOnTaskRoot(token, /* interceptBackPressed= */ true)
-            }
-            if (Flags.delegateRequestFullscreenHandlingToShell()) {
-                // Let any desktop task request to enter fullscreen mode.
-                wct.setFullscreenRequestAllowMode(token, REQUEST_ALLOW_MODE_ENTER)
-            }
-            if (Flags.enableAppRestartAfterUpdate()) {
-                wct.setHandlePackageUpdateForRootContainer(token, /* handlePackageUpdate= */ true)
-            }
-            if (!wct.isEmpty) {
-                shellTaskOrganizer.applyTransaction(wct)
-            }
+        if (taskAppearedInfo == null) {
+            logE(
+                "createDeskRoot failed to create task for displayId=%d userId=%d",
+                displayId,
+                userId,
+            )
+            return
+        }
+        val deskId = taskAppearedInfo.taskInfo.taskId
+        logV("createDeskRoot created desk root using taskId=%d", deskId)
+        createDeskRootRequests +=
+            CreateDeskRequest(
+                deskId,
+                displayId,
+                userId,
+                callback,
+            )
+        val token = taskAppearedInfo.taskInfo.token
+        val wct = WindowContainerTransaction()
+        if (Flags.enableBackNavigationDesktopAppNoMinimize()) {
+            wct.setInterceptBackPressedOnTaskRoot(token, /* interceptBackPressed= */ true)
+        }
+        if (Flags.delegateRequestFullscreenHandlingToShell()) {
+            // Let any desktop task request to enter fullscreen mode.
+            wct.setFullscreenRequestAllowMode(token, REQUEST_ALLOW_MODE_ENTER)
+        }
+        if (Flags.enableAppRestartAfterUpdate()) {
+            wct.setHandlePackageUpdateForRootContainer(token, /* handlePackageUpdate= */ true)
+        }
+        if (!wct.isEmpty) {
+            shellTaskOrganizer.applyTransaction(wct)
         }
     }
 
@@ -593,7 +606,9 @@ class RootTaskDesksOrganizer(
         )
         // Check if there's any pending desk creation requests under this display.
         val deskRequest =
-            createDeskRootRequests.firstOrNull { it.displayId == appearingInDisplayId }
+            createDeskRootRequests.firstOrNull {
+                it.deskId == taskInfo.taskId && it.displayId == appearingInDisplayId
+            }
         if (deskRequest != null) {
             // Appearing root matches desk request.
             val deskId = taskInfo.taskId
@@ -626,7 +641,9 @@ class RootTaskDesksOrganizer(
         }
         // Check if there's any pending minimization container creation requests under this display.
         val deskMinimizationRootRequest =
-            createDeskMinimizationRootRequests.firstOrNull { it.displayId == appearingInDisplayId }
+            createDeskMinimizationRootRequests.firstOrNull {
+                it.rootId == taskInfo.taskId && it.displayId == appearingInDisplayId
+            }
         if (deskMinimizationRootRequest == null) {
             logE(
                 "Did not find a matching desk minimization root request for task#%d in display#%d",
@@ -748,12 +765,6 @@ class RootTaskDesksOrganizer(
         deskId: Int,
         callback: OnCreateCallback,
     ) {
-        createDeskMinimizationRootRequests +=
-            CreateDeskMinimizationRootRequest(
-                displayId = displayId,
-                deskId = deskId,
-                callback = callback,
-            )
         val taskProperties =
             TaskPropertiesRequest()
                 .setReparentOnDisplayRemoval(
@@ -766,7 +777,18 @@ class RootTaskDesksOrganizer(
                 .setWindowingMode(WINDOWING_MODE_FREEFORM)
                 .setTaskPropertiesRequest(taskProperties)
                 .build()
-        shellTaskOrganizer.createTask(params, this)
+        val taskAppearedInfo = shellTaskOrganizer.createTask(params, this)
+        if (taskAppearedInfo == null) {
+            logE("Failed to create minimization root for desk #$deskId")
+            return
+        }
+        createDeskMinimizationRootRequests +=
+            CreateDeskMinimizationRootRequest(
+                rootId = taskAppearedInfo.taskInfo.taskId,
+                displayId = displayId,
+                deskId = deskId,
+                callback = callback,
+            )
     }
 
     @SuppressLint("MissingPermission")
@@ -841,12 +863,14 @@ class RootTaskDesksOrganizer(
     }
 
     private data class CreateDeskRequest(
+         val deskId: Int,
         val displayId: Int,
         val userId: Int?,
         val onCreateCallback: OnCreateCallback,
     )
 
     private data class CreateDeskMinimizationRootRequest(
+        val rootId: Int,
         val displayId: Int,
         val deskId: Int,
         val callback: OnCreateCallback,

@@ -33,6 +33,7 @@ import android.view.SurfaceControlViewHost;
 import android.view.View;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.Preconditions;
@@ -227,6 +228,7 @@ public class InsightSurfaceClient implements AutoCloseable {
             int nestedScrollAxes,
             boolean nestedScrollAxisLocked,
             boolean shouldBlur,
+            @Nullable String themeResourceName,
             @NonNull ClientCallback callbacks,
             @NonNull Executor callbacksExecutor,
             @NonNull List<ContextHint> hints,
@@ -246,6 +248,8 @@ public class InsightSurfaceClient implements AutoCloseable {
                 nestedScrollAxes,
                 nestedScrollAxisLocked,
                 shouldBlur,
+                themeResourceName,
+                mContext.getPackageName(),
                 mContext.getResources().getConfiguration(),
                 mClient);
     }
@@ -342,6 +346,17 @@ public class InsightSurfaceClient implements AutoCloseable {
     }
 
     /**
+     * Get the name of a theme resource to be passed to the connected visualizer. A visualizer
+     * can use this name to look up the theme, which can then be used when creating an embedded
+     * surface for the client. See {@link InsightSurfaceClientInfo#getThemeResourceName()} for more
+     * information.
+     */
+    @Nullable
+    public String getThemeResourceName() {
+        return mClientInfo.getThemeResourceName();
+    }
+
+    /**
      * Register with the personal context engine. Once registered, the client can receive a
      * {@link SurfaceControlViewHost.SurfacePackage} via {@link ClientCallback}.
      */
@@ -431,6 +446,7 @@ public class InsightSurfaceClient implements AutoCloseable {
         private int mNestedScrollAxes = View.SCROLL_AXIS_NONE;
         private boolean mNestedScrollAxisLocked = false;
         private boolean mShouldBlur = false;
+        private String mThemeResourceName;
 
         /**
          * Construct a new builder.
@@ -541,6 +557,27 @@ public class InsightSurfaceClient implements AutoCloseable {
         }
 
         /**
+         * Set the name of a custom {@link android.R.styleable#PersonalContextTheme} to be passed to
+         * a connected visualizer. A visualizer can use this name to look up the theme resource in
+         * the client's resources, which can then be used when creating an embedded surface for the
+         * client. The custom theme should be declared in the client app's xml resources as follows:
+         * <p/>
+         * <pre>
+         * &lt;style name="CustomTheme" parent="android:PersonalContextTheme">
+         *     ...
+         * &lt;style/>
+         * </pre>
+         * <p/>
+         * See {@link InsightSurfaceClientInfo#getThemeResourceName()} for
+         * more information.
+         */
+        @NonNull
+        public Builder setThemeResourceName(@Nullable String themeResourceName) {
+            mThemeResourceName = themeResourceName;
+            return this;
+        }
+
+        /**
          * Sets whether nested scrolling is locked (based on the bitmask past to
          * {@link #setNestedScrollAxes(int)}). A value of {@code true} is typical for Android UIs
          * where scroll axes are locked during a gesture, while a value of {@code false} can be
@@ -572,6 +609,7 @@ public class InsightSurfaceClient implements AutoCloseable {
                     mNestedScrollAxes,
                     mNestedScrollAxisLocked,
                     mShouldBlur,
+                    mThemeResourceName,
                     mCallbacks,
                     mCallbacksExecutor,
                     mHints,

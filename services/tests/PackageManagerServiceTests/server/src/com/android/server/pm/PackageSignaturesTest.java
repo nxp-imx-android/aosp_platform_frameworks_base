@@ -28,6 +28,9 @@ import android.content.Context;
 import android.content.pm.Signature;
 import android.content.pm.SigningDetails;
 import android.platform.test.annotations.Presubmit;
+import android.platform.test.annotations.RequiresFlagsEnabled;
+import android.platform.test.flag.junit.CheckFlagsRule;
+import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.util.Xml;
 
 import androidx.test.InstrumentationRegistry;
@@ -37,6 +40,7 @@ import com.android.internal.util.HexDump;
 import com.android.modules.utils.TypedXmlPullParser;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.xmlpull.v1.XmlPullParser;
@@ -51,6 +55,9 @@ import java.util.Set;
 @Presubmit
 @RunWith(AndroidJUnit4.class)
 public class PackageSignaturesTest {
+    @Rule
+    public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
+
     private static final String TEST_RESOURCES_FOLDER = "PackageSignaturesTest";
 
     private Context mContext;
@@ -376,6 +383,7 @@ public class PackageSignaturesTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(android.security.Flags.FLAG_APK_PQC_HYBRID_SIGNING)
     public void testReadXmlWithSigningLineageAndHybridMinorScheme() throws Exception {
         // Verifies a package signed with the hybrid signature scheme returns the expected signers
         // in the lineage as well as the v3.2 major / minor scheme version.

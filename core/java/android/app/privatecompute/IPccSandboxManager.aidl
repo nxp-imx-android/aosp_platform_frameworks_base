@@ -25,6 +25,8 @@ import android.os.PersistableBundle;
 interface IPccSandboxManager {
     boolean isPrivateComputeServicesUid(int uid);
 
+    boolean isPccTrustedSystemComponent(int uid, String packageName);
+
     oneway void writeToAuditLog(in PersistableBundle data, in String packageName);
     oneway void startNonPccProcessForDataMigration(in IMigrationRequestResultReceiver callback);
 }

@@ -70,4 +70,5 @@ flag {
     namespace: "sysui_integrations"
     description: "Allow the Circle to Search companion to request and receive fresh screenshot and assist state."
     bug: "474429707"
+    is_exported: true
 }

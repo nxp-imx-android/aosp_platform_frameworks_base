@@ -11087,6 +11087,33 @@ public class AudioManager {
     }
 
     /**
+     * @hide
+     * Default hardening mode: follows flag and other compatibility rules.
+     */
+    public static final int HARDENING_DEFAULT = IAudioPolicyService.HardeningOverride.DEFAULT;
+
+    /**
+     * @hide
+     * Enabled hardening mode: enforces restrictions regardless of compatibility.
+     */
+    public static final int HARDENING_ENABLE = IAudioPolicyService.HardeningOverride.ENABLE;
+
+    /**
+     * @hide
+     * Disabled hardening mode: disables restrictions regardless of compatibility.
+     */
+    public static final int HARDENING_DISABLE = IAudioPolicyService.HardeningOverride.DISABLE;
+
+    /** @hide */
+    @IntDef(prefix = { "HARDENING_" }, value = {
+            HARDENING_DEFAULT,
+            HARDENING_ENABLE,
+            HARDENING_DISABLE
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface HardeningMode {}
+
+    /**
      * Enable strict audio hardening (background) enforcement, regardless of release or temporary
      * exemptions for debugging purposes.
      * Enforced hardening can be found in the audio dumpsys with the API being restricted and the
@@ -11094,10 +11121,10 @@ public class AudioManager {
      * @hide
      */
     @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED)
-    public void setEnableHardening(boolean shouldEnable) {
+    public void setHardeningOverride(@HardeningMode int hardeningMode) {
         final IAudioService service = getService();
         try {
-            service.setEnableHardening(shouldEnable);
+            service.setHardeningOverride(hardeningMode);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

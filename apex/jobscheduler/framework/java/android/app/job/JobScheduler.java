@@ -251,7 +251,6 @@ public abstract class JobScheduler {
      *
      * @see JobInfo.Builder#setOverrideDeadline(long)
      */
-    @FlaggedApi(Flags.FLAG_GET_PENDING_JOB_REASONS_API)
     public static final int PENDING_JOB_REASON_CONSTRAINT_DEADLINE = 16;
 
     /**
@@ -512,7 +511,6 @@ public abstract class JobScheduler {
      * @see #getPendingJobReasonsHistory(int)
      * @see #getPendingJobReasonStats(int)
      */
-    @FlaggedApi(Flags.FLAG_GET_PENDING_JOB_REASONS_API)
     @NonNull
     @PendingJobReason
     public int[] getPendingJobReasons(int jobId) {
@@ -546,7 +544,6 @@ public abstract class JobScheduler {
      * @see #getPendingJobReasons(int)
      * @see #getPendingJobReasonStats(int)
      */
-    @FlaggedApi(Flags.FLAG_GET_PENDING_JOB_REASONS_HISTORY_API)
     @NonNull
     public List<PendingJobReasonsInfo> getPendingJobReasonsHistory(int jobId) {
         throw new UnsupportedOperationException("Not implemented by " + getClass());

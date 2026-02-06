@@ -5873,7 +5873,7 @@
     </string>
     <!-- Message shown on the system-provided BiometricPrompt, informing the user the app they're trying to open is locked by App Lock. [CHAR LIMIT=NONE] -->
     <string name="locked_app_biometric_prompt_description">
-        <xliff:g id="app_name" example="Gmail">%1$s</xliff:g> is locked
+        This app is protected with app lock
     </string>
     <!-- Message shown on the system-provided activity, informing the user who is using an external display that the app they're trying to open needs to be unlocked on their other device. [CHAR LIMIT=NONE] -->
     <string name="locked_app_external_display_message">
@@ -5908,6 +5908,10 @@
     <!-- An informational item explaining that widgets and shortcuts for a locked app will be removed. [CHAR LIMIT=60] -->
     <string name="app_lock_edu_dialog_info_widgets">
         Widgets and shortcuts will be removed
+    </string>
+    <!-- An informational item explaining that AI apps and services may still access data from a locked app. [CHAR LIMIT=200] -->
+    <string name="app_lock_edu_dialog_info_ai_disclaimer">
+        AI agents and services you’ve allowed to access %1$s will still be able to access its data
     </string>
     <!-- Text for the primary action button in the main App Lock user education dialog to confirm locking the app. [CHAR LIMIT=20] -->
     <string name="app_lock_edu_dialog_button_lock">

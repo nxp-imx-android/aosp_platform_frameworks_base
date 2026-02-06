@@ -23,12 +23,16 @@ import static java.util.Objects.requireNonNull;
 import android.app.Notification.Action;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
+import android.graphics.Color;
 import android.graphics.drawable.Icon;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.FlagsParameterization;
 import android.platform.test.flag.junit.SetFlagsRule;
+import android.text.SpannableStringBuilder;
 import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
 import android.text.style.ImageSpan;
 import android.view.View;
 import android.widget.Button;
@@ -38,6 +42,7 @@ import android.widget.RemoteViews;
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.internal.R;
+import com.android.internal.widget.EmphasizedNotificationButton;
 import com.android.internal.widget.NotificationActionListLayout;
 
 import org.junit.Before;
@@ -58,6 +63,7 @@ public class NotificationActionTest {
     public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     private Context mContext;
+    private Notification.Colors mDefaultColors;
 
     private Icon mIcon;
     private PendingIntent mPendingIntent;
@@ -81,6 +87,11 @@ public class NotificationActionTest {
         mPendingIntent = PendingIntent.getActivity(mContext, 0, new Intent("test1"),
                 PendingIntent.FLAG_IMMUTABLE);
         mPerson = new Person.Builder().setName("Someone").build();
+
+        mDefaultColors = new Notification.Colors();
+        boolean nightMode = (mContext.getResources().getConfiguration().uiMode
+                & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
+        mDefaultColors.resolvePalette(mContext, Notification.COLOR_DEFAULT, false, nightMode);
     }
 
     @Test
@@ -262,6 +273,52 @@ public class NotificationActionTest {
 
         assertThat(((Button) actionsLayout.getChildAt(0)).getText().toString())
                 .isEqualTo("Hidden text?");
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_API_NOTIFICATION_ACTION_CUSTOM)
+    public void makeExpandedContentView_callStyle_usesCustomActionColor() {
+        CharSequence redText = new SpannableStringBuilder().append("Red action",
+                new ForegroundColorSpan(Color.RED), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        Notification.Builder n = new Notification.Builder(mContext, "channel")
+                .setStyle(Notification.CallStyle.forIncomingCall(mPerson, mPendingIntent,
+                        mPendingIntent))
+                .addAction(
+                        new Action.Builder(/* icon= */ null, redText, mPendingIntent)
+                                .setEmphasisHint(Action.EMPHASIS_PRIMARY)
+                                .build());
+
+        NotificationActionListLayout actionsLayout = makeActionsLayout(n);
+
+        EmphasizedNotificationButton primaryButton =
+                (EmphasizedNotificationButton) actionsLayout.getChildAt(1);
+        assertThat(primaryButton.getText().toString()).contains("Red action");
+        assertThat(primaryButton.getButtonBackground().getDefaultColor()).isEqualTo(Color.RED);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_API_NOTIFICATION_ACTION_CUSTOM)
+    public void makeExpandedContentView_promotedOngoing_doesNotUseCustomActionColor() {
+        CharSequence redText = new SpannableStringBuilder().append("Not red action",
+                new ForegroundColorSpan(Color.RED), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        Notification.Builder n = new Notification.Builder(mContext, "channel")
+                .setFlag(Notification.FLAG_PROMOTED_ONGOING, true)
+                .addAction(
+                        new Action.Builder(/* icon= */ null, redText, mPendingIntent)
+                                .setEmphasisHint(Action.EMPHASIS_PRIMARY)
+                                .build())
+                // Needs a second action so that the first can be primary.
+                .addAction(new Action.Builder(null, "Another", mPendingIntent).build());
+
+        NotificationActionListLayout actionsLayout = makeActionsLayout(n);
+
+        EmphasizedNotificationButton primaryButton =
+                (EmphasizedNotificationButton) actionsLayout.getChildAt(0);
+        assertThat(primaryButton.getText().toString()).contains("Not red action");
+        assertThat(primaryButton.getButtonBackground().getDefaultColor())
+                .isEqualTo(mDefaultColors.getPrimaryEmphasisBackground());
     }
 
     private NotificationActionListLayout makeActionsLayout(Notification.Builder builder) {

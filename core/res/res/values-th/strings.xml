@@ -1123,6 +1123,7 @@
     <string name="lockscreen_access_pattern_cell_added_verbose" msgid="2931364927622563465">"เพิ่มแล้ว <xliff:g id="CELL_INDEX">%1$s</xliff:g> เซลล์"</string>
     <string name="lockscreen_access_pattern_detected" msgid="3931150554035194012">"วาดรูปแบบเสร็จสิ้น"</string>
     <string name="lockscreen_access_pattern_area" msgid="1288780416685002841">"พื้นที่สำหรับรูปแบบ"</string>
+    <string name="lockscreen_access_pattern_cell_verbose" msgid="6670905066468035137">"เซลล์ <xliff:g id="CELL_INDEX">%1$s</xliff:g>"</string>
     <string name="keyguard_accessibility_widget_changed" msgid="7298011259508200234">"%1$s วิดเจ็ต %2$d ของ %3$d"</string>
     <string name="keyguard_accessibility_add_widget" msgid="8245795023551343672">"เพิ่มวิดเจ็ต"</string>
     <string name="keyguard_accessibility_widget_empty_slot" msgid="544239307077644480">"ว่าง"</string>
@@ -2006,6 +2007,7 @@
     <string name="managed_profile_label_badge_3" msgid="6882151970556391957">"<xliff:g id="LABEL">%1$s</xliff:g> งานที่ 3"</string>
     <string name="clone_profile_label_badge" msgid="1871997694718793964">"โคลน <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="private_profile_label_badge" msgid="1712086003787839183">"<xliff:g id="LABEL">%1$s</xliff:g> ส่วนตัว"</string>
+    <string name="hsu_label_badge" msgid="1357272000281944932">"ระบบ <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="lock_to_app_unlock_pin" msgid="3890940811866290782">"ขอ PIN ก่อนเลิกปักหมุด"</string>
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"ขอรูปแบบการปลดล็อกก่อนเลิกปักหมุด"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"ขอรหัสผ่านก่อนเลิกปักหมุด"</string>
@@ -2617,6 +2619,8 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"หากต้องการรับส่งข้อความผ่านดาวเทียม ให้ตั้ง Google Messages เป็นแอปรับส่งข้อความเริ่มต้น"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"การรับส่งข้อความผ่านดาวเทียมไม่พร้อมใช้งาน"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"หากต้องการตรวจสอบว่าการรับส่งข้อความผ่านดาวเทียมพร้อมให้บริการในประเทศหรือภูมิภาคนี้หรือไม่ ให้เปิดการตั้งค่าตำแหน่ง"</string>
+    <!-- no translation found for satellite_indicator (6846063647532086110) -->
+    <skip />
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"ตั้งค่าการปลดล็อกด้วยลายนิ้วมืออีกครั้ง"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"ระบบไม่จดจำ <xliff:g id="FINGERPRINT">%s</xliff:g> อีกต่อไป"</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"ระบบไม่จดจำ <xliff:g id="FINGERPRINT_0">%1$s</xliff:g> และ <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> อีกต่อไป"</string>

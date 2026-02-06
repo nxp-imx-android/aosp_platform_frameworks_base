@@ -39,8 +39,8 @@ class FakeScreenRecordCameraRepository : ScreenRecordCameraRepository {
     private val _isConnected = MutableStateFlow(false)
     override val isConnected: StateFlow<Boolean> = _isConnected.asStateFlow()
 
-    private val _cameraBounds = MutableStateFlow<Region?>(null)
-    override val cameraSubjectBounds: StateFlow<Region?> = _cameraBounds.asStateFlow()
+    private val _cameraSubjectBounds = MutableStateFlow<Region?>(null)
+    override val cameraSubjectBounds: StateFlow<Region?> = _cameraSubjectBounds.asStateFlow()
 
     private val _taps: Channel<Unit> = Channel()
     val taps: Flow<Unit> = _taps.consumeAsFlow()
@@ -88,7 +88,7 @@ class FakeScreenRecordCameraRepository : ScreenRecordCameraRepository {
         _taps.trySend(Unit)
     }
 
-    fun setCameraRegion(bounds: Region) {
-        _cameraBounds.value = bounds
+    fun setCameraSubjectBounds(bounds: Region) {
+        _cameraSubjectBounds.value = bounds
     }
 }

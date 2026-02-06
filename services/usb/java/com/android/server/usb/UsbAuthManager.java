@@ -18,11 +18,14 @@ package com.android.server.usb;
 
 import android.annotation.RequiresNoPermission;
 import android.annotation.UserIdInt;
+import android.annotation.WorkerThread;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -34,7 +37,9 @@ import android.hardware.usb.UsbAuthDeviceInfo;
 import android.hardware.usb.UsbAuthorizationStatus;
 import android.hardware.usb.UsbAuthorizationSystemState;
 import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbManager;
 import android.os.Binder;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -45,16 +50,31 @@ import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.ArraySet;
+import android.util.AtomicFile;
 import android.util.Slog;
 import android.util.SparseBooleanArray;
+import android.util.Xml;
 
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.messages.nano.SystemMessageProto.SystemMessage;
 import com.android.internal.os.BackgroundThread;
+import com.android.internal.util.XmlUtils;
+import com.android.modules.utils.TypedXmlPullParser;
+import com.android.modules.utils.TypedXmlSerializer;
 import com.android.server.FgThread;
+import com.android.server.IoThread;
 import com.android.server.SystemServerInitThreadPool;
+
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 public class UsbAuthManager implements IBinder.DeathRecipient {
     private static final String TAG = "UsbAuthManager";
@@ -69,10 +89,17 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
     // Name of notification channel for Usb authorization notifications.
     private static final String USB_AUTHORIZATION_CHANNEL = "usb_authorization";
 
+    // Extra field in Intent we send to UsbAuthorizationActivity to indicate
+    // whether we are in Booted (untrusted) or LoggedIn (trusted) state.
+    private static final String AUTH_ACTIVITY_EXTRA_UNTRUSTED = "untrusted";
+
     @VisibleForTesting
     // Broadcast sent when auth notifications are dismissed.
     static final String ACTION_NOTIFICATION_DISMISSED =
             "com.android.server.usb.ACTION_NOTIFICATION_DISMISSED";
+
+    // Root XML tag for persisted USB device fingerprints.
+    private static final String XML_ROOT_NAME = "persisted-fingerprints";
 
     @GuardedBy("mLock")
     private @UserIdInt int mCurrentUserId;
@@ -128,6 +155,10 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
     @GuardedBy("mLock")
     private ArraySet<String> mPersistAfterLogin = new ArraySet<>();
 
+    // For devices that were used during setup, persist them after a user is logged in.
+    @GuardedBy("mLock")
+    private ArraySet<String> mPersistFromSetup = new ArraySet<>();
+
     // For devices that were deferred at the lock screen, used for notifications.
     @GuardedBy("mLock")
     private ArraySet<String> mDeferredAtLockscreen = new ArraySet<>();
@@ -142,6 +173,17 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
     // Set of devices that are waiting to check for persisted devices.
     @GuardedBy("mLock")
     private ArrayMap<String, UsbAuthDeviceInfo> mPendingAllowPersistedDevices = new ArrayMap<>();
+
+    // File containing persisted device fingerprints.
+    private final AtomicFile mPersistedDevicesFile;
+
+    // Currently writing persisted devices to file?
+    @GuardedBy("mLock")
+    private boolean mIsWritePersistedScheduled = false;
+
+    // Have we finished reading persisted file from disk?
+    @GuardedBy("mLock")
+    private boolean mIsReadPersistedDevicesComplete = false;
 
     private final Object mLock = new Object();
 
@@ -251,6 +293,10 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
         mAuthEventsListener = new UsbAuthEventsListener();
         mDeviceProvisionedListener = new ProvisioningListener(context, this);
         mTimerHandler = BackgroundThread.getHandler();
+        mPersistedDevicesFile = new AtomicFile(new File(
+                Environment.getDataSystemDeDirectory(UserHandle.USER_SYSTEM),
+                "usb_auth_persisted_devices.xml"), "usb-auth-persisted-devices");
+        readPersisted();
         listenForService();
     }
 
@@ -261,13 +307,16 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
             UsbHostManager hostManager,
             IUsbAuthManager service,
             ProvisioningListener deviceProvisionedListener,
-            Handler timerHandler) {
+            Handler timerHandler,
+            AtomicFile persistedDevicesFile) {
         mHostManager = hostManager;
         mUserManager = userManager;
         mContext = context;
         mAuthEventsListener = new UsbAuthEventsListener();
         mDeviceProvisionedListener = deviceProvisionedListener;
         mTimerHandler = timerHandler;
+        mPersistedDevicesFile = persistedDevicesFile;
+        readPersisted();
         setAndLinkService(service);
     }
 
@@ -467,6 +516,15 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
             // On every state change, clear any pending ask or allow-persisted.
             mPendingAskDevices.clear();
             mPendingAllowPersistedDevices.clear();
+
+            // On every screen locked, remove stale devices from persisted list. We do this on
+            // locked state specifically because a) we already clear stale entries when we read from
+            // disk (i.e. booted) and b) we don't want to trust stale devices in the lower trust
+            // state.
+            if (removeStaleFingerprintsFromPersistedLocked()) {
+                // If we removed stale fingerprints, write that back to disk.
+                scheduleWritePersistedLocked();
+            }
         }
 
         // When logged in, move all devices that are pending persistence
@@ -501,6 +559,9 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
         boolean notifyHostManager = false;
         Slog.d(TAG, TextUtils.formatSimple("Host added device %s", deviceAddress));
 
+        UsbDeviceFingerprint fingerprint =
+                mHostManager.getConnectedDeviceFingerprintForAddress(deviceAddress);
+
         synchronized (mLock) {
             AuthorizationState state = getOrCreateConnectedDeviceLocked(deviceAddress);
             state.mHostReady = true;
@@ -509,6 +570,14 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
                     && !state.mHostAuthorized) {
                 state.mHostAuthorized = true;
                 notifyHostManager = true;
+            }
+
+            // If we are persisting the fingerprint for this device, update when it was last seen so
+            // that we don't consider it stale.
+            int deviceIndex = mPersistedAuthorizedDevices.indexOf(fingerprint);
+            if (deviceIndex >= 0) {
+                mPersistedAuthorizedDevices.valueAt(deviceIndex).updateLastSeenToNow();
+                scheduleWritePersistedLocked();
             }
         }
 
@@ -557,6 +626,9 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
         UsbDeviceFingerprint fingerprint =
                 mHostManager.getConnectedDeviceFingerprintForAddress(deviceAddress);
 
+        // Wait for iothread to finish reading persisted devices data.
+        waitForPersistedDeviceData();
+
         synchronized (mLock) {
             if (!mPendingAllowPersistedDevices.containsKey(deviceAddress)) {
                 return;
@@ -584,16 +656,21 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
         boolean sendAskRequest = false;
         int status = UsbAuthorizationStatus.DENIED;
         UsbAuthDeviceInfo deviceInfo = null;
+        boolean isLoggedIn = false;
 
         UsbDeviceFingerprint fingerprint =
                 mHostManager.getConnectedDeviceFingerprintForAddress(deviceAddress);
         UsbDevice device = mHostManager.getConnectedDeviceForAddress(deviceAddress);
+
+        // Wait for iothread to finish reading persisted devices data.
+        waitForPersistedDeviceData();
 
         synchronized (mLock) {
             if (!mPendingAskDevices.containsKey(deviceAddress)) {
                 return;
             }
 
+            isLoggedIn = mCurrentState == UsbAuthorizationSystemState.LOGGED_IN;
             // Send a persisted result directly or queue up a user dialog.
             if (fingerprint != null && mPersistedAuthorizedDevices.contains(fingerprint)) {
                 sendAuthorization = true;
@@ -609,11 +686,41 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
         }
 
         if (sendAskRequest && device != null) {
-            // TODO(b/432527670) - Send this up to UsbAuthorizationActivity for user interaction.
-            //
-            // For now, always respond with a persisted "authorized".
-            setAuthorizationResponse(
-                    device, UsbAuthorizationStatus.AUTHORIZED, /* isPersistent= */ true);
+            startAuthorizationAlertActivity(device, isLoggedIn);
+        }
+    }
+
+    // Start a new authorization alert activity or update the existing one to display
+    // a prompt to allow a new device.
+    private void startAuthorizationAlertActivity(UsbDevice device, boolean isLoggedIn) {
+        Slog.d(TAG, TextUtils.formatSimple("Starting alert for device %s", device.getDeviceName()));
+
+        final long token = Binder.clearCallingIdentity();
+        try {
+            UserHandle userHandle;
+            synchronized (mLock) {
+                userHandle = UserHandle.of(mCurrentUserId);
+            }
+
+            Context userContext = mContext.createContextAsUser(userHandle, 0);
+            Intent intent = new Intent();
+            intent.putExtra(UsbManager.EXTRA_DEVICE, device);
+            intent.putExtra(AUTH_ACTIVITY_EXTRA_UNTRUSTED, !isLoggedIn);
+            intent.setComponent(
+                    ComponentName.unflattenFromString(
+                            userContext
+                                    .getResources()
+                                    .getString(
+                                            com.android.internal.R.string
+                                                    .config_usbAuthorizationActivity)));
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
+            userContext.startActivityAsUser(intent, userHandle);
+            Slog.d(TAG, "Started alert");
+        } catch (ActivityNotFoundException e) {
+            Slog.e(TAG, "unable to start UsbAuthorizationActivity");
+        } finally {
+            Binder.restoreCallingIdentity(token);
         }
     }
 
@@ -869,16 +976,20 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
 
     // need to be persisted, look up their fingerprints and persist them.
     private void persistDevicesAfterLogin() {
-        String[] devicesToPersist;
+        ArraySet<String> devicesToPersist = new ArraySet<>();
         ArraySet<UsbDeviceFingerprint> fingerprintsToPersist = new ArraySet<>();
         synchronized (mLock) {
             if (mCurrentState != UsbAuthorizationSystemState.LOGGED_IN
-                    || mPersistAfterLogin.isEmpty()) {
+                    || (mPersistAfterLogin.isEmpty() && mPersistFromSetup.isEmpty())) {
                 return;
             }
 
-            devicesToPersist = mPersistAfterLogin.toArray(new String[mPersistAfterLogin.size()]);
+            devicesToPersist.addAll(mPersistAfterLogin);
             mPersistAfterLogin.clear();
+
+            // We also persist devices that may have been added during set-up here.
+            devicesToPersist.addAll(mPersistFromSetup);
+            mPersistFromSetup.clear();
         }
 
         for (String deviceAddress : devicesToPersist) {
@@ -890,7 +1001,12 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
         }
 
         synchronized (mLock) {
+            int prevSize = mPersistedAuthorizedDevices.size();
             mPersistedAuthorizedDevices.addAll(fingerprintsToPersist);
+
+            if (mPersistedAuthorizedDevices.size() > prevSize) {
+                scheduleWritePersistedLocked();
+            }
         }
     }
 
@@ -931,7 +1047,9 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
                         mPersistAfterLogin.add(deviceAddress);
                         notifyDelayedPersistence = true;
                     } else {
-                        mPersistedAuthorizedDevices.add(fingerprint);
+                        if (mPersistedAuthorizedDevices.add(fingerprint)) {
+                            scheduleWritePersistedLocked();
+                        }
                     }
                 }
             }
@@ -1055,6 +1173,13 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
                     handleDenyDefers = true;
                 }
 
+                // All devices that were allowed during setup will be persisted once the user is set
+                // up and logged in.
+                if (status == UsbAuthorizationStatus.AUTHORIZED
+                        && mCurrentState == UsbAuthorizationSystemState.SET_UP) {
+                    mPersistFromSetup.add(deviceAddress);
+                }
+
                 // Hold authorized state for what message to send to host manager.
                 hostAuthorized = state.mHostAuthorized;
             }
@@ -1086,5 +1211,176 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
                 checkScreenLockedThenNotify(deviceAddress);
             }
         }
+    }
+
+    @WorkerThread
+    void waitForPersistedDeviceData() {
+        synchronized (mLock) {
+            while (!mIsReadPersistedDevicesComplete) {
+                try {
+                    mLock.wait();
+                } catch (InterruptedException unused) {
+                }
+            }
+        }
+    }
+
+    // Remove stale fingerprints from the list of persisted devices. This does not write back the
+    // resulting devices to disk intentionally as it is also called to clear stale fingerprints when
+    // reading.
+    //
+    // Only call this method while locked.
+    @GuardedBy("mLock")
+    @VisibleForTesting
+    boolean removeStaleFingerprintsFromPersistedLocked() {
+        int originalSize = mPersistedAuthorizedDevices.size();
+        boolean removed =
+                mPersistedAuthorizedDevices.removeIf(
+                        (f) -> {
+                            return f.isStale();
+                        });
+
+        if (removed) {
+            Slog.d(
+                    TAG,
+                    TextUtils.formatSimple(
+                            "Removed %d stale fingerprints.",
+                            (originalSize - mPersistedAuthorizedDevices.size())));
+        }
+
+        return removed;
+    }
+
+    // Read from given parser. This is not thread-safe so make sure the parser is protected if
+    // calling from multiple threads.
+    ArraySet<UsbDeviceFingerprint> readFromParser(TypedXmlPullParser parser)
+            throws XmlPullParserException, IOException {
+        // Skip the initial document tag
+        XmlUtils.nextElement(parser);
+
+        if (parser.getEventType() != XmlPullParser.START_TAG) {
+            throw new XmlPullParserException("No start tag found");
+        }
+
+        if (!XML_ROOT_NAME.equals(parser.getName())) {
+            throw new XmlPullParserException("Unexpected root tag: " + parser.getName());
+        }
+
+        ArraySet<UsbDeviceFingerprint> fingerprints = new ArraySet<>();
+
+        int outerDepth = parser.getDepth();
+        XmlUtils.nextElementWithin(parser, outerDepth);
+
+        while (parser.getEventType() != XmlPullParser.END_DOCUMENT) {
+            if (parser.getEventType() != XmlPullParser.START_TAG) {
+                XmlUtils.nextElementWithin(parser, outerDepth);
+                continue;
+            }
+
+            if (!parser.getName().equals(UsbDeviceFingerprint.XML_ROOT_NAME)) {
+                XmlUtils.nextElementWithin(parser, outerDepth);
+                continue;
+            }
+
+            UsbDeviceFingerprint fingerprint = UsbDeviceFingerprint.read(parser);
+            if (fingerprint != null) {
+                fingerprints.add(fingerprint);
+            } else {
+                Slog.e(TAG, "Error reading fingerprint on tag " + parser.getName());
+            }
+        }
+
+        return fingerprints;
+    }
+
+    // Mark reading as incomplete and push reading of file + unblocking readers to iothread.
+    void readPersisted() {
+        synchronized (mLock) {
+            mIsReadPersistedDevicesComplete = false;
+        }
+
+        IoThread.getHandler()
+                .post(
+                        () -> {
+                            ArraySet<UsbDeviceFingerprint> readFingerprints = new ArraySet<>();
+                            try {
+                                synchronized (mPersistedDevicesFile) {
+                                    try (FileInputStream in = mPersistedDevicesFile.openRead()) {
+                                        TypedXmlPullParser parser = Xml.resolvePullParser(in);
+                                        readFingerprints = readFromParser(parser);
+                                    } catch (FileNotFoundException e) {
+                                        Slog.d(TAG, "Persisted devices file not found");
+                                    } catch (XmlPullParserException | IOException e) {
+                                        Slog.e(
+                                                TAG,
+                                                "Error reading persisted device file. Deleting to"
+                                                        + " start fresh.",
+                                                e);
+                                        mPersistedDevicesFile.delete();
+                                    }
+                                }
+                            } finally {
+                                // Store read fingerprints and unblock any waiting threads.
+                                synchronized (mLock) {
+                                    mPersistedAuthorizedDevices = readFingerprints;
+                                    removeStaleFingerprintsFromPersistedLocked();
+                                    mIsReadPersistedDevicesComplete = true;
+                                    mLock.notifyAll();
+                                }
+                            }
+                        });
+    }
+
+    // Write to given serializer. This is not thread-safe so make sure the serializer is protected
+    // if calling from multiple threads.
+    void writeToSerializer(TypedXmlSerializer serializer, UsbDeviceFingerprint[] fingerprints)
+            throws IOException {
+        serializer.startDocument(null, true);
+        serializer.startTag(null, XML_ROOT_NAME);
+
+        if (fingerprints != null) {
+            for (UsbDeviceFingerprint fp : fingerprints) {
+                fp.write(serializer);
+            }
+        }
+
+        serializer.endTag(null, XML_ROOT_NAME);
+        serializer.endDocument();
+    }
+
+    @GuardedBy("mLock")
+    void scheduleWritePersistedLocked() {
+        if (mIsWritePersistedScheduled) {
+            return;
+        }
+
+        mIsWritePersistedScheduled = true;
+        IoThread.getHandler()
+                .post(
+                        () -> {
+                            UsbDeviceFingerprint[] fingerprints;
+
+                            // Make a copy of fingerprints.
+                            synchronized (mLock) {
+                                fingerprints =
+                                        mPersistedAuthorizedDevices.toArray(
+                                                new UsbDeviceFingerprint[0]);
+                                mIsWritePersistedScheduled = false;
+                            }
+
+                            // Create xml serializer and write to file.
+                            synchronized (mPersistedDevicesFile) {
+                                FileOutputStream out = null;
+                                try {
+                                    out = mPersistedDevicesFile.startWrite();
+                                    TypedXmlSerializer serializer = Xml.resolveSerializer(out);
+                                    writeToSerializer(serializer, fingerprints);
+                                    mPersistedDevicesFile.finishWrite(out);
+                                } catch (IOException e) {
+                                    Slog.e(TAG, "Failed to write persisted devices", e);
+                                    mPersistedDevicesFile.failWrite(out);
+                                }
+                            }
+                        });
     }
 }

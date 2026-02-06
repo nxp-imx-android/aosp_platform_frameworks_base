@@ -62,6 +62,12 @@ interface DisplayStateRepository {
     val isLargeScreen: StateFlow<Boolean>
 
     /**
+     * Provides whether the current display is a large screen (i.e. all edges are >= 1200). This is
+     * agnostic of display rotation.
+     */
+    val isExtraLargeScreen: StateFlow<Boolean>
+
+    /**
      * Provides whether the display's current horizontal width is large (>= 600dp).
      *
      * Note that unlike [isLargeScreen], which checks whether either one of the screen's width or
@@ -125,6 +131,11 @@ constructor(
             .map { it.smallestScreenWidthDp >= LARGE_SCREEN_MIN_DPS }
             .stateIn(bgDisplayScope, started = SharingStarted.Eagerly, initialValue = false)
 
+    override val isExtraLargeScreen: StateFlow<Boolean> =
+        configurationRepository.configurationValues
+            .map { it.smallestScreenWidthDp >= EXTRA_LARGE_SCREEN_MIN_DPS }
+            .stateIn(bgDisplayScope, started = SharingStarted.Eagerly, initialValue = false)
+
     override val isWideScreen: StateFlow<Boolean> =
         configurationRepository.configurationValues
             .map { it.screenWidthDp >= LARGE_SCREEN_MIN_DPS }
@@ -154,5 +165,6 @@ constructor(
     companion object {
         const val TAG = "DisplayStateRepositoryImpl"
         const val LARGE_SCREEN_MIN_DPS = 600f
+        const val EXTRA_LARGE_SCREEN_MIN_DPS = 1200f
     }
 }

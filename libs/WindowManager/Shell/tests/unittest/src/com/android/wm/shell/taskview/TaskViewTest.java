@@ -21,7 +21,6 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_ADD_INSETS_FRAME_PROVIDER;
 
-import static com.android.window.flags.Flags.FLAG_ENABLE_SEE_THROUGH_TASK_FRAGMENTS;
 import static com.android.window.flags.Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE;
 
@@ -111,7 +110,6 @@ public class TaskViewTest extends ShellTestCase {
     public static List<FlagsParameterization> getParams() {
         return FlagsParameterization.progressionOf(
                 FLAG_ENABLE_CREATE_ANY_BUBBLE,
-                FLAG_ENABLE_SEE_THROUGH_TASK_FRAGMENTS,
                 FLAG_ENABLE_BUBBLE_ROOT_TASK);
     }
 

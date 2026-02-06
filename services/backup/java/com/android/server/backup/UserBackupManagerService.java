@@ -2864,6 +2864,16 @@ public class UserBackupManagerService {
         // TODO: Add implementation in followup
     }
 
+    /**
+     * Clears any cached data for a delayed restore for the given package. This method is called by
+     * the system when the cached data (used for delayed restore) of a package has expired.
+     *
+     * @param packageName The package name for which the cached data should be cleared.
+     */
+    public void onDelayedRestoreCachedDataExpired(String packageName) {
+        // TODO: Add implementation in followup
+    }
+
     @SuppressWarnings("AndroidFrameworkRequiresPermission")
     private boolean startConfirmationUi(int token, String action) {
         try {

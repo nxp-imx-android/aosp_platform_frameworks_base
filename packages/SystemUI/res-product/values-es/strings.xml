@@ -70,4 +70,10 @@
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"Puedes localizar esta tablet con Encontrar mi dispositivo, aunque esté apagada"</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"Puedes localizar este teléfono con Localizador, aunque esté apagado"</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"Puedes localizar esta tablet con Localizador, aunque esté apagada"</string>
+    <!-- no translation found for dream_setup_description (5167691612621831552) -->
+    <skip />
+    <!-- no translation found for dream_setup_description (6296793330727926553) -->
+    <skip />
+    <!-- no translation found for dream_setup_description (3098487756905462324) -->
+    <skip />
 </resources>

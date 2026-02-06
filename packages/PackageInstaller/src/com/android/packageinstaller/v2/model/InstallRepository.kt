@@ -352,6 +352,11 @@ class InstallRepository(private val context: Context) : EventResultPersister.Eve
 
     @OptIn(DelicateCoroutinesApi::class)
     fun stageForInstall() {
+        if (!this::intent.isInitialized) {
+            Log.e(LOG_TAG, "intent not initialized")
+            _stagingResult.value = InstallAborted(ABORT_REASON_INTERNAL_ERROR)
+            return
+        }
         val uri = intent.data
         val action = intent.action
 
@@ -517,6 +522,10 @@ class InstallRepository(private val context: Context) : EventResultPersister.Eve
      *      * If AppOp grant is to be requested from the user
      */
     fun requestUserConfirmation(forceSourceCheck: Boolean = true): InstallStage? {
+        if (!this::intent.isInitialized) {
+            Log.e(LOG_TAG, "intent not initialized")
+            return InstallAborted(ABORT_REASON_INTERNAL_ERROR)
+        }
         return maybeDeferUserConfirmation(forceSourceCheck)
     }
 
@@ -540,6 +549,10 @@ class InstallRepository(private val context: Context) : EventResultPersister.Eve
                     Log.i(LOG_TAG, "Install allowed")
                 }
             } else {
+                if (!this::appOpRequestInfo.isInitialized) {
+                    Log.e(LOG_TAG, "appOpRequestInfo not initialized")
+                    return InstallAborted(ABORT_REASON_INTERNAL_ERROR)
+                }
                 val unknownSourceStage = handleUnknownSources(appOpRequestInfo)
                 if (unknownSourceStage.stageCode != InstallStage.STAGE_READY) {
                     return unknownSourceStage
@@ -949,6 +962,10 @@ class InstallRepository(private val context: Context) : EventResultPersister.Eve
      * doesn't have install permission.
      */
     fun reattemptInstall(): InstallStage {
+        if (!this::appOpRequestInfo.isInitialized) {
+            Log.e(LOG_TAG, "appOpRequestInfo not initialized")
+            return InstallAborted(ABORT_REASON_INTERNAL_ERROR)
+        }
         val unknownSourceStage = handleUnknownSources(appOpRequestInfo)
         return when (unknownSourceStage.stageCode) {
             InstallStage.STAGE_READY -> {
@@ -1026,6 +1043,11 @@ class InstallRepository(private val context: Context) : EventResultPersister.Eve
      * signal the PackageInstaller that the user has granted permission to proceed with the install
      */
     fun initiateInstall() {
+        if (!this::intent.isInitialized || !this::appSnippet.isInitialized) {
+            Log.e(LOG_TAG, "intent or appSnippet not initialized")
+            _installResult.value = InstallAborted(ABORT_REASON_INTERNAL_ERROR)
+            return
+        }
         if (sessionId > 0) {
             packageInstaller.setPermissionsResult(sessionId, true)
             if (localLogv) {
@@ -1191,6 +1213,7 @@ class InstallRepository(private val context: Context) : EventResultPersister.Eve
         legacyStatus: Int,
         message: String?,
         serviceId: Int,
+        intent: Intent?
     ) {
         setStageBasedOnResult(status, legacyStatus, message)
     }

@@ -46,6 +46,7 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.ServiceThread;
 import com.android.server.am.Flags;
+import com.android.server.am.psc.Constants.SchedGroup;
 import com.android.server.am.psc.annotation.RequiresEnclosingBatchSession;
 import com.android.server.wm.WindowProcessController;
 
@@ -1173,9 +1174,10 @@ public class ProcessStateController {
      * used.
      */
     @GuardedBy("mLock")
-    public void noteBroadcastDeliveryStarted(@NonNull ProcessRecordInternal proc, int schedGroup) {
+    public void noteBroadcastDeliveryStarted(@NonNull ProcessRecordInternal proc,
+            @SchedGroup int schedGroup) {
         final boolean prevReceivingState = proc.getReceivers().isReceivingBroadcast();
-        final int prevSchedGroup = proc.getReceivers().getBroadcastReceiverSchedGroup();
+        final @SchedGroup int prevSchedGroup = proc.getReceivers().getBroadcastReceiverSchedGroup();
         if (prevReceivingState && prevSchedGroup == schedGroup) {
             // isReceiveBroadcast is already true and the schedGroup is not changing, skip.
             return;
@@ -1196,7 +1198,7 @@ public class ProcessStateController {
     @GuardedBy("mLock")
     public void noteBroadcastDeliveryEnded(@NonNull ProcessRecordInternal proc) {
         final boolean prevReceivingState = proc.getReceivers().isReceivingBroadcast();
-        final int prevSchedGroup = proc.getReceivers().getBroadcastReceiverSchedGroup();
+        final @SchedGroup int prevSchedGroup = proc.getReceivers().getBroadcastReceiverSchedGroup();
         if (!prevReceivingState && prevSchedGroup == SCHED_GROUP_UNDEFINED) {
             // isReceiveBroadcast is already false and the schedGroup is already undefined, skip.
             return;

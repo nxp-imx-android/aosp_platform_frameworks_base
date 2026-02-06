@@ -25,6 +25,7 @@ import android.window.WindowContainerToken;
 
 import com.android.wm.shell.common.ShellExecutor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -42,12 +43,13 @@ public class NoAnimation implements ITransitionAnimation {
     @Override
     public DetachResult detach(@NonNull List<WindowContainerToken> containers,
             @NonNull SurfaceControl.Transaction startTransaction) {
-        final WindowAnimationState[] states = new WindowAnimationState[containers.size()];
+        final ArrayList<WindowAnimationState> states = new ArrayList<>(containers.size());
         for (int i = 0; i < containers.size(); ++i) {
-            states[i] = new WindowAnimationState();
-            states[i].bounds = new RectF(mInfo.getChange(containers.get(i)).getEndAbsBounds());
-            states[i].scale = 1.f;
-            states[i].timestamp = System.currentTimeMillis();
+            final WindowAnimationState state = new WindowAnimationState();
+            state.bounds = new RectF(mInfo.getChange(containers.get(i)).getEndAbsBounds());
+            state.scale = 1.f;
+            state.timestamp = System.currentTimeMillis();
+            states.add(state);
         }
         return new DetachResult(states);
     }

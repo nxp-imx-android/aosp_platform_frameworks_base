@@ -739,6 +739,7 @@ constructor(
                     createOriginTransition(
                         createController = { controllerFactory.createController(isLaunch) },
                         scope,
+                        isLongLived = isLongLived,
                         isDialogLaunch = isDialogLaunch,
                         cleanUp = cleanUp,
                     ),
@@ -905,6 +906,7 @@ constructor(
     fun createOriginTransition(
         controller: Controller,
         scope: CoroutineScope,
+        isLongLived: Boolean = false,
         isDialogLaunch: Boolean = false,
         transitionHelper: RemoteTransitionHelper = DefaultTransitionHelper(),
     ): IRemoteTransition {
@@ -915,6 +917,7 @@ constructor(
         return createOriginTransition(
             createController = { controller },
             scope,
+            isLongLived = isLongLived,
             isDialogLaunch = isDialogLaunch,
             transitionHelper = transitionHelper,
         )
@@ -923,6 +926,7 @@ constructor(
     private fun createOriginTransition(
         createController: suspend () -> Controller,
         scope: CoroutineScope,
+        isLongLived: Boolean = false,
         isDialogLaunch: Boolean = false,
         cleanUp: (() -> Unit)? = null,
         transitionHelper: RemoteTransitionHelper = DefaultTransitionHelper(),
@@ -944,6 +948,7 @@ constructor(
             cleanUp,
             transitionHelper,
             mainExecutor,
+            isLongLived,
             disableWmTimeout,
             skipReparentTransaction,
         )
@@ -1303,8 +1308,9 @@ constructor(
      * contained inside the [Controller] returned by [createController]. [scope] must be a valid
      * [CoroutineScope] which [createController] will use to provide the [Controller].
      */
-    private class OriginTransition(
-        private val createController: suspend () -> Controller,
+    @VisibleForTesting
+    class OriginTransition(
+        createController: suspend () -> Controller,
         private val scope: CoroutineScope,
         private val callback: Callback,
         private val transitionAnimator: TransitionAnimator,
@@ -1312,6 +1318,7 @@ constructor(
         private val cleanUp: (() -> Unit)? = null,
         private val transitionHelper: RemoteTransitionHelper,
         private val mainExecutor: Executor,
+        private val isLongLived: Boolean = false,
         private val disableWmTimeout: Boolean = false,
         private val skipReparentTransaction: Boolean = false,
     ) : RemoteTransitionStub() {
@@ -1323,9 +1330,10 @@ constructor(
                 Handler(Looper.getMainLooper())
             }
 
-        // This is being passed across IPC boundaries and cycles (through PendingIntentRecords,
+        // This class is passed across IPC boundaries and cycles (through PendingIntentRecords,
         // etc.) are possible. So we need to make sure we drop any references that might
         // transitively cause leaks when we're done with animation.
+        @VisibleForTesting var createController: (suspend () -> Controller)? = createController
         private var delegate: TransitionAnimationDelegate? = null
         private var cancelled = false
         private var timedOut = false
@@ -1442,10 +1450,12 @@ constructor(
             scope.launch {
                 val success =
                     withTimeoutOrNull(TRANSITION_TIMEOUT) {
+                        val controller =
+                            createController?.invoke() ?: return@withTimeoutOrNull false
                         delegate =
                             TransitionAnimationDelegate(
                                 mainExecutor,
-                                createController(),
+                                controller,
                                 callback,
                                 DelegatingAnimationCompletionListener(
                                     listener,
@@ -1519,7 +1529,7 @@ constructor(
                 )
             }
 
-            scope.launch { createController().onTransitionAnimationCancelled() }
+            scope.launch { createController?.invoke()?.onTransitionAnimationCancelled() }
             listener?.onTransitionAnimationCancelled()
         }
 
@@ -1543,6 +1553,7 @@ constructor(
             mainExecutor.execute {
                 cleanUp?.invoke()
 
+                if (!isLongLived) createController = null
                 delegate = null
                 cancelled = false
                 timedOut = false
@@ -1993,6 +2004,13 @@ constructor(
             var state: WindowAnimationState? = null
 
             for ((index, it) in info.changes.withIndex()) {
+                // Ignore changes that are not standalone tasks or activities, as these are not new
+                // containers to animate (e.g. they are changes within an existing and already
+                // showing task or activity window).
+                val isLeafTask = TransitionUtil.LeafTaskFilter().test(it)
+                val isActivity = it.activityComponent != null
+                if (!isLeafTask && !isActivity) continue
+
                 if (
                     !controller.isLaunching &&
                         TransitionUtil.isOpeningType(info.type) &&
@@ -2275,7 +2293,9 @@ constructor(
             startTransaction: SurfaceControl.Transaction? = null,
             onAnimationFinished: (SurfaceControl.Transaction?) -> Unit,
         ) {
-            val window = setUpAnimation(resolveAnimatedSurface, onAnimationFinished) ?: return
+            val window =
+                setUpAnimation(resolveAnimatedSurface, startTransaction, onAnimationFinished)
+                    ?: return
 
             if (controller.windowAnimatorState == null) {
                 startAnimation(
@@ -2296,7 +2316,9 @@ constructor(
             startTransaction: SurfaceControl.Transaction,
             onAnimationFinished: (SurfaceControl.Transaction?) -> Unit,
         ) {
-            val window = setUpAnimation(resolveAnimatedSurface, onAnimationFinished) ?: return
+            val window =
+                setUpAnimation(resolveAnimatedSurface, startTransaction, onAnimationFinished)
+                    ?: return
             takeOverAnimationInternal(window, startTransaction, onAnimationFinished)
         }
 
@@ -2313,6 +2335,7 @@ constructor(
         @UiThread
         private fun setUpAnimation(
             resolveAnimatedSurface: () -> AnimatedSurface?,
+            startTransaction: SurfaceControl.Transaction?,
             onAnimationFinished: (SurfaceControl.Transaction?) -> Unit,
         ): AnimatedSurface? {
             removeTimeouts()
@@ -2320,6 +2343,8 @@ constructor(
             // The animation was started too late and we already notified the controller that it
             // timed out.
             if (timedOut) {
+                // The setup steps still needs to get applied or the end state might be wrong.
+                startTransaction?.apply()
                 onAnimationFinished(null)
                 return null
             }
@@ -2327,12 +2352,16 @@ constructor(
             // This should not happen, but let's make sure we don't start the animation if it was
             // cancelled before and we already notified the controller.
             if (cancelled) {
+                // The setup steps still needs to get applied or the end state might be wrong.
+                startTransaction?.apply()
                 return null
             }
 
             val window = resolveAnimatedSurface()
             if (window == null) {
                 Log.i(TAG, "Aborting the animation as no window is opening")
+                // The setup steps still needs to get applied or the end state might be wrong.
+                startTransaction?.apply()
                 onAnimationFinished(null)
 
                 if (DEBUG_TRANSITION_ANIMATION) {

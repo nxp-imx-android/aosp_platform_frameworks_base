@@ -24,6 +24,7 @@ import android.os.Binder
 import android.view.WindowInsets
 import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
+import com.android.wm.shell.bubbles.Bubble
 import com.android.wm.shell.bubbles.BubbleHelper
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 
@@ -167,5 +168,16 @@ object BubbleUtils {
         bubbleHelper: BubbleHelper
     ): Boolean {
         return this?.hasParentTask() == true && !bubbleHelper.isAppBubbleTask(this)
+    }
+
+    /** The task token that should be used for the WCT when updating bounds. */
+    @JvmStatic
+    fun Bubble.getTaskTokenForBoundsUpdate(bubbleHelper: BubbleHelper): WindowContainerToken? {
+        val taskInfo = taskView?.taskInfo ?: return null
+        return if (bubbleHelper.isAppBubbleTask(taskInfo)) {
+            bubbleHelper.getAppBubbleRootTaskToken() ?: taskInfo.token
+        } else {
+            taskInfo.token
+        }
     }
 }

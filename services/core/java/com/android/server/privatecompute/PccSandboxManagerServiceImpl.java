@@ -24,8 +24,8 @@ import android.app.privatecompute.IDataMigrationToPccService;
 import android.app.privatecompute.IMigrationRequestResultReceiver;
 import android.app.privatecompute.IMigrationRequestResultSender;
 import android.app.privatecompute.IPccSandboxManager;
+import android.app.privatecompute.MigrationException;
 import android.app.privatecompute.MigrationRequestResult;
-import android.app.privatecompute.MigrationRequestResultReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -136,6 +136,15 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
         }
 
         return false;
+    }
+
+    @Override
+    @RequiresNoPermission
+    public boolean isPccTrustedSystemComponent(int uid, String packageName) {
+        if (mInternal == null) {
+            return false;
+        }
+        return mInternal.isPccTrustedSystemComponent(uid, packageName);
     }
 
     @Override
@@ -259,7 +268,7 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
         final String[] packages = pm.getPackagesForUid(callingUid);
         if (packages == null || packages.length == 0) {
             try {
-                callback.onError(MigrationRequestResultReceiver.ERROR_INVOCATION_FAILED,
+                callback.onError(MigrationException.ERROR_INVOCATION_FAILED,
                         "Could not find package for calling UID " + callingUid);
             } catch (RemoteException e) {
                 // Ignore
@@ -283,7 +292,7 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
 
         if (resolvedService == null) {
             try {
-                callback.onError(MigrationRequestResultReceiver.ERROR_INVOCATION_FAILED,
+                callback.onError(MigrationException.ERROR_INVOCATION_FAILED,
                         "No data migration service found for calling package.");
             } catch (RemoteException e) {
                 // Ignore
@@ -294,7 +303,7 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
         // Only non-PCC to PCC data migration is supported.
         if (resolvedService.serviceInfo.shouldRunInPccSandbox()) {
             try {
-                callback.onError(MigrationRequestResultReceiver.ERROR_INVOCATION_FAILED,
+                callback.onError(MigrationException.ERROR_INVOCATION_FAILED,
                         "Data migration service " + resolvedService.serviceInfo.name
                                 + " is marked as a PCC component");
             } catch (RemoteException e) {
@@ -306,7 +315,7 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
         if (!android.Manifest.permission.BIND_DATA_MIGRATION_FOR_PRIVATECOMPUTE.equals(
                 resolvedService.serviceInfo.permission)) {
             try {
-                callback.onError(MigrationRequestResultReceiver.ERROR_INVOCATION_FAILED,
+                callback.onError(MigrationException.ERROR_INVOCATION_FAILED,
                         "Service " + resolvedService.serviceInfo.name + " does not require "
                                 + "android.permission.BIND_DATA_MIGRATION_FOR_PRIVATECOMPUTE");
             } catch (RemoteException e) {
@@ -326,7 +335,7 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
 
             if (!bound) {
                 try {
-                    callback.onError(MigrationRequestResultReceiver.ERROR_INVOCATION_FAILED,
+                    callback.onError(MigrationException.ERROR_INVOCATION_FAILED,
                             "Failed to bind to service");
                 } catch (RemoteException e) {
                     // Ignore
@@ -359,7 +368,7 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
                     IDataMigrationToPccService.Stub.asInterface(service);
 
             // Unbind after a timeout.
-            mTimeoutRunnable = () -> reportError(MigrationRequestResultReceiver.ERROR_TIMEOUT,
+            mTimeoutRunnable = () -> reportError(MigrationException.ERROR_TIMEOUT,
                     "Migration timed out");
             mHandler.postDelayed(mTimeoutRunnable,
                     DataMigrationToPccService.MIGRATION_TIMEOUT_MS);
@@ -375,7 +384,7 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
                     }
                 });
             } catch (RemoteException e) {
-                reportError(MigrationRequestResultReceiver.ERROR_INVOCATION_FAILED,
+                reportError(MigrationException.ERROR_INVOCATION_FAILED,
                         "RemoteException during migration request");
             }
         }
@@ -386,12 +395,12 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
 
         @Override
         public void onBindingDied(ComponentName name) {
-            reportError(MigrationRequestResultReceiver.ERROR_INVOCATION_FAILED, "Binding died");
+            reportError(MigrationException.ERROR_INVOCATION_FAILED, "Binding died");
         }
 
         @Override
         public void onNullBinding(ComponentName name) {
-            reportError(MigrationRequestResultReceiver.ERROR_INVOCATION_FAILED, "Null binding");
+            reportError(MigrationException.ERROR_INVOCATION_FAILED, "Null binding");
         }
 
         private void reportResult(MigrationRequestResult result) {

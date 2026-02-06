@@ -240,13 +240,6 @@ flag {
 }
 
 flag {
-    name: "enable_caption_compat_inset_force_consumption"
-    namespace: "lse_desktop_experience"
-    description: "Enables force-consumption of caption bar insets for immersive apps in freeform"
-    bug: "316231589"
-}
-
-flag {
     name: "enable_caption_compat_inset_force_consumption_always"
     namespace: "lse_desktop_experience"
     description: "Enables force-consumption of caption bar insets for all apps in freeform"
@@ -699,26 +692,6 @@ flag {
 }
 
 flag {
-    name: "enable_hold_to_drag_app_handle"
-    namespace: "lse_desktop_experience"
-    description: "Requires hold-to-drag the App Handle when using touchscreen input"
-    bug: "356409496"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "enable_input_layer_transition_fix"
-    namespace: "lse_desktop_experience"
-    description: "Enables a bugfix for input layer disposal during certain transitions."
-    bug: "371473978"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_interaction_dependent_tab_tearing_bounds"
     namespace: "lse_desktop_experience"
     description: "Update bounds of a torn tab and position it with respect to user /n"
@@ -936,16 +909,6 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Whether to enable log collection for task resizing in desktop windowing mode"
     bug: "341319100"
-}
-
-flag {
-    name: "enable_see_through_task_fragments"
-    namespace: "lse_desktop_experience"
-    description: "Let see-through TaskFragments keep their siblings (in lower Z order) resumed"
-    bug: "407602007"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {

@@ -44,6 +44,8 @@ import android.view.RemotableViewMethod;
 import android.widget.Button;
 import android.widget.RemoteViews;
 
+import androidx.annotation.VisibleForTesting;
+
 import com.android.internal.R;
 
 /**
@@ -111,6 +113,12 @@ public class EmphasizedNotificationButton extends Button {
     public void setButtonBackground(ColorStateList color) {
         mBackground.setColor(color);
         invalidate();
+    }
+
+    @Nullable
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+    public ColorStateList getButtonBackground() {
+        return mBackground.getColor();
     }
 
     /**

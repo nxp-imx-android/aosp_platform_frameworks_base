@@ -85,6 +85,7 @@ android_test {
         "services.core",
         "services.credentials",
         "services.devicepolicy",
+        "services.files",
         "services.flags",
         "services.net",
         "services.people",

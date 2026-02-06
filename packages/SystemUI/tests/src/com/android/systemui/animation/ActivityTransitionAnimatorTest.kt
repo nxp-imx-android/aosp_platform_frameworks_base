@@ -58,6 +58,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.anyBoolean
+import org.mockito.ArgumentMatchers.isNull
 import org.mockito.Mock
 import org.mockito.junit.MockitoJUnit
 import org.mockito.kotlin.any
@@ -510,6 +511,82 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
 
     @EnableFlags(Flags.FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION)
     @Test
+    fun originTransitionStartAnimationDoesNotAnimate_ifNoWindows() {
+        kosmos.runTest {
+            val cookie = ActivityTransitionAnimator.TransitionCookie("testCookie")
+            val controllerWithCookie =
+                object : DelegateTransitionAnimatorController(createController()) {
+                    override val transitionCookie = cookie
+                }
+            val token = mock<IBinder>()
+            val info = mock<TransitionInfo>()
+            whenever(info.changes).thenReturn(emptyList())
+            val startTransaction = mock<SurfaceControl.Transaction>()
+            var finished = false
+            val finishCallback = finishedCallback { finished = true }
+
+            activityTransitionAnimator
+                .createOriginTransition(
+                    controllerWithCookie,
+                    testScope,
+                    isDialogLaunch = false,
+                    transitionHelper = transitionHelper,
+                )
+                .startAnimation(token, info, startTransaction, finishCallback)
+
+            // Need this to make sure that the animation runs until the end before the checks.
+            while (!finished) continue
+            waitForIdleSync()
+            verify(transitionHelper).setUpAnimation(token, info, startTransaction, finishCallback)
+            verify(listener, never()).onTransitionAnimationStart()
+            verify(listener, never()).onTransitionAnimationEnd(any())
+            verify(startTransaction).apply()
+            verify(transitionHelper).cleanUpAnimation(eq(token), isNull())
+        }
+    }
+
+    @EnableFlags(Flags.FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION)
+    @Test
+    fun originTransitionStartAnimationDoesNotAnimate_ifNoTaskOrActivityWindow() {
+        kosmos.runTest {
+            val cookie = ActivityTransitionAnimator.TransitionCookie("testCookie")
+            val controllerWithCookie =
+                object : DelegateTransitionAnimatorController(createController()) {
+                    override val transitionCookie = cookie
+                }
+            val token = mock<IBinder>()
+            val info = mock<TransitionInfo>()
+            val change =
+                createChange(mock<SurfaceControl>(), cookie, forLaunch = true).apply {
+                    taskInfo = null
+                }
+            whenever(info.changes).thenReturn(listOf(change))
+            val startTransaction = mock<SurfaceControl.Transaction>()
+            var finished = false
+            val finishCallback = finishedCallback { finished = true }
+
+            activityTransitionAnimator
+                .createOriginTransition(
+                    controllerWithCookie,
+                    testScope,
+                    isDialogLaunch = false,
+                    transitionHelper = transitionHelper,
+                )
+                .startAnimation(token, info, startTransaction, finishCallback)
+
+            // Need this to make sure that the animation runs until the end before the checks.
+            while (!finished) continue
+            waitForIdleSync()
+            verify(transitionHelper).setUpAnimation(token, info, startTransaction, finishCallback)
+            verify(listener, never()).onTransitionAnimationStart()
+            verify(listener, never()).onTransitionAnimationEnd(any())
+            verify(startTransaction).apply()
+            verify(transitionHelper).cleanUpAnimation(eq(token), isNull())
+        }
+    }
+
+    @EnableFlags(Flags.FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION)
+    @Test
     fun originTransitionTakeOverAnimationAnimatesLaunch() {
         kosmos.runTest {
             val cookie = ActivityTransitionAnimator.TransitionCookie("testCookie")
@@ -635,6 +712,160 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
             assertThat(finished).isTrue()
             assertThat(testShellTransitions.remotes).isEmpty()
             verify(listener, never()).onTransitionAnimationStart()
+        }
+    }
+
+    @EnableFlags(Flags.FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION)
+    @Test
+    fun originTransitionTakeOverAnimationDoesNotAnimate_ifNoWindows() {
+        kosmos.runTest {
+            val cookie = ActivityTransitionAnimator.TransitionCookie("testCookie")
+            val controllerWithCookie =
+                object : DelegateTransitionAnimatorController(createController()) {
+                    override val transitionCookie = cookie
+                }
+            val token = mock<IBinder>()
+            val info = mock<TransitionInfo>()
+            whenever(info.changes).thenReturn(emptyList())
+            val startTransaction = mock<SurfaceControl.Transaction>()
+            var finished = false
+            val finishCallback = finishedCallback { finished = true }
+
+            activityTransitionAnimator
+                .createOriginTransition(
+                    controllerWithCookie,
+                    testScope,
+                    isDialogLaunch = false,
+                    transitionHelper = transitionHelper,
+                )
+                .takeOverAnimation(
+                    token,
+                    info,
+                    startTransaction,
+                    finishCallback,
+                    arrayOf(WindowAnimationState()),
+                )
+            // Need this to make sure that the animation runs until the end before the checks.
+            while (!finished) continue
+            waitForIdleSync()
+            verify(transitionHelper).setUpAnimation(token, info, startTransaction, finishCallback)
+            verify(listener, never()).onTransitionAnimationStart()
+            verify(listener, never()).onTransitionAnimationEnd(any())
+            verify(startTransaction).apply()
+            verify(transitionHelper).cleanUpAnimation(eq(token), isNull())
+        }
+    }
+
+    @EnableFlags(Flags.FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION)
+    @Test
+    fun originTransitionTakeOverAnimationDoesNotAnimate_ifNoTaskOrActivityWindow() {
+        kosmos.runTest {
+            val cookie = ActivityTransitionAnimator.TransitionCookie("testCookie")
+            val controllerWithCookie =
+                object : DelegateTransitionAnimatorController(createController()) {
+                    override val transitionCookie = cookie
+                }
+            val token = mock<IBinder>()
+            val info = mock<TransitionInfo>()
+            val change =
+                createChange(mock<SurfaceControl>(), cookie, forLaunch = true).apply {
+                    taskInfo = null
+                }
+            whenever(info.changes).thenReturn(listOf(change))
+            val startTransaction = mock<SurfaceControl.Transaction>()
+            var finished = false
+            val finishCallback = finishedCallback { finished = true }
+
+            activityTransitionAnimator
+                .createOriginTransition(
+                    controllerWithCookie,
+                    testScope,
+                    isDialogLaunch = false,
+                    transitionHelper = transitionHelper,
+                )
+                .takeOverAnimation(
+                    token,
+                    info,
+                    startTransaction,
+                    finishCallback,
+                    arrayOf(WindowAnimationState()),
+                )
+
+            // Need this to make sure that the animation runs until the end before the checks.
+            while (!finished) continue
+            waitForIdleSync()
+            verify(transitionHelper).setUpAnimation(token, info, startTransaction, finishCallback)
+            verify(listener, never()).onTransitionAnimationStart()
+            verify(listener, never()).onTransitionAnimationEnd(any())
+            verify(startTransaction).apply()
+            verify(transitionHelper).cleanUpAnimation(eq(token), isNull())
+        }
+    }
+
+    @EnableFlags(Flags.FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION)
+    @Test
+    fun originTransitionCleansUpReferencesAfterRunning_whenEphemeral() {
+        kosmos.runTest {
+            val cookie = ActivityTransitionAnimator.TransitionCookie("testCookie")
+            val controllerWithCookie =
+                object : DelegateTransitionAnimatorController(createController()) {
+                    override val transitionCookie = cookie
+                }
+            val token = mock<IBinder>()
+            val info = mock<TransitionInfo>()
+            val change = listOf(createChange(mock<SurfaceControl>(), cookie, forLaunch = true))
+            whenever(info.changes).thenReturn(change)
+            val startTransaction = mock<SurfaceControl.Transaction>()
+            var finished = false
+            val finishCallback = finishedCallback { finished = true }
+
+            val transition =
+                activityTransitionAnimator.createOriginTransition(
+                    controllerWithCookie,
+                    testScope,
+                    isDialogLaunch = false,
+                    transitionHelper = transitionHelper,
+                ) as ActivityTransitionAnimator.OriginTransition
+            transition.startAnimation(token, info, startTransaction, finishCallback)
+
+            // Need this to make sure that the animation runs until the end before the checks.
+            while (!finished) continue
+            waitForIdleSync()
+            assertThat(transition.createController).isNull()
+        }
+    }
+
+    @EnableFlags(Flags.FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION)
+    @Test
+    fun originTransitionDoesNotCleanUpReferencesAfterRunning_whenLongLived() {
+        kosmos.runTest {
+            val cookie = ActivityTransitionAnimator.TransitionCookie("testCookie")
+            val controllerWithCookie =
+                object : DelegateTransitionAnimatorController(createController()) {
+                    override val transitionCookie = cookie
+                }
+            val token = mock<IBinder>()
+            val info = mock<TransitionInfo>()
+            val change = listOf(createChange(mock<SurfaceControl>(), cookie, forLaunch = true))
+            whenever(info.changes).thenReturn(change)
+            val startTransaction = mock<SurfaceControl.Transaction>()
+            var finished = false
+            val finishCallback = finishedCallback { finished = true }
+
+            val transition =
+                activityTransitionAnimator.createOriginTransition(
+                    controllerWithCookie,
+                    testScope,
+                    isLongLived = true,
+                    isDialogLaunch = false,
+                    transitionHelper = transitionHelper,
+                ) as ActivityTransitionAnimator.OriginTransition
+            transition.startAnimation(token, info, startTransaction, finishCallback)
+
+            // Need this to make sure that the animation runs until the end before the checks.
+            while (!finished) continue
+            waitForIdleSync()
+            assertThat(transition.createController).isNotNull()
         }
     }
 

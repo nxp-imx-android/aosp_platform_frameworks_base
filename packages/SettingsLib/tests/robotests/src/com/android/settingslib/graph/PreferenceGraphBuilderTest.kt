@@ -19,6 +19,7 @@ package com.android.settingslib.graph
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.pm.PackageManager
+import android.provider.Settings
 import androidx.test.core.app.ApplicationProvider
 import com.android.settingslib.datastore.Permissions
 import com.android.settingslib.metadata.PersistentPreference
@@ -35,15 +36,6 @@ import org.robolectric.shadows.ShadowBuild
 class PreferenceGraphBuilderTest {
 
     private val context: Context = ApplicationProvider.getApplicationContext()
-
-    private class TestContext(base: Context) : ContextWrapper(base) {
-        var permissionGranted = true
-
-        override fun checkPermission(permission: String, pid: Int, uid: Int): Int {
-            return if (permissionGranted) PackageManager.PERMISSION_GRANTED
-            else PackageManager.PERMISSION_DENIED
-        }
-    }
 
     private open class TestPreference(
         override val sensitivityLevel: Int,
@@ -68,86 +60,53 @@ class PreferenceGraphBuilderTest {
     }
 
     @Test
-    fun evalWritePermit_debuggableAndUnknownSensitivity_returnsWritePermit_onUserdebug() {
-        // Set Build.TYPE to "userdebug" to simulate a debuggable build
+    fun evalWritePermit_debuggableAndUnknownSensitivity_settingEnabled_returnsWritePermit_onUserdebug() {
         ShadowBuild.setType("userdebug")
-        val testContext = TestContext(context)
+        Settings.Global.putInt(context.contentResolver, SETTING_KEY, 1)
         val preference = TestPreference(SensitivityLevel.UNKNOWN_SENSITIVITY)
 
-        val result = preference.evalWritePermit(testContext, 0, 0)
+        val result = preference.evalWritePermit(context, 0, 0)
 
+        // Allowed because it is debuggable AND the flag is set
         assertThat(result).isEqualTo(ReadWritePermit.ALLOW)
     }
 
     @Test
-    fun evalWritePermit_debuggableAndUnknownSensitivity_returnsWritePermit_onEng() {
-        // Set Build.TYPE to "eng" to simulate a debuggable build
-        ShadowBuild.setType("eng")
-        val testContext = TestContext(context)
-        val preference = TestPreference(SensitivityLevel.UNKNOWN_SENSITIVITY)
-
-        val result = preference.evalWritePermit(testContext, 0, 0)
-
-        assertThat(result).isEqualTo(ReadWritePermit.ALLOW)
-    }
-
-    @Test
-    fun evalWritePermit_debuggableAndUnknownSensitivity_permissionCheckFails_returnsRequireAppPermission_onUserdebug() {
+    fun evalWritePermit_debuggableAndUnknownSensitivity_settingDisabled_returnsDisallow_onUserdebug() {
         ShadowBuild.setType("userdebug")
-        val testContext = TestContext(context).apply { permissionGranted = false }
-        val permissions = Permissions.allOf("test.permission")
-        val preference = TestPreference(SensitivityLevel.UNKNOWN_SENSITIVITY, permissions)
-
-        val result = preference.evalWritePermit(testContext, 0, 0)
-
-        assertThat(result).isEqualTo(ReadWritePermit.REQUIRE_APP_PERMISSION)
-    }
-
-    @Test
-    fun evalWritePermit_notDebuggableAndUnknownSensitivity_returnsDisallow() {
-        // Set Build.TYPE to "user" to simulate a non-debuggable build
-        ShadowBuild.setType("user")
-        val testContext = TestContext(context)
+        Settings.Global.putInt(context.contentResolver, SETTING_KEY, 0)
         val preference = TestPreference(SensitivityLevel.UNKNOWN_SENSITIVITY)
 
-        val result = preference.evalWritePermit(testContext, 0, 0)
+        val result = preference.evalWritePermit(context, 0, 0)
 
+        // Disallowed because the flag is off, even on userdebug
         assertThat(result).isEqualTo(ReadWritePermit.DISALLOW)
     }
 
     @Test
-    fun evalWritePermit_highSensitivity_returnsDisallow() {
-        // Even on userdebug, HIGH_SENSITIVITY should return DISALLOW
+    fun evalWritePermit_notDebuggableAndUnknownSensitivity_settingEnabled_returnsDisallow() {
+        ShadowBuild.setType("user")
+        Settings.Global.putInt(context.contentResolver, SETTING_KEY, 1)
+        val preference = TestPreference(SensitivityLevel.UNKNOWN_SENSITIVITY)
+
+        val result = preference.evalWritePermit(context, 0, 0)
+
+        // Disallowed because it is not a debuggable build
+        assertThat(result).isEqualTo(ReadWritePermit.DISALLOW)
+    }
+
+    @Test
+    fun evalWritePermit_highSensitivity_settingEnabled_returnsDisallow() {
         ShadowBuild.setType("userdebug")
-        val testContext = TestContext(context)
+        Settings.Global.putInt(context.contentResolver, SETTING_KEY, 1)
         val preference = TestPreference(SensitivityLevel.HIGH_SENSITIVITY)
 
-        val result = preference.evalWritePermit(testContext, 0, 0)
+        val result = preference.evalWritePermit(context, 0, 0)
 
         assertThat(result).isEqualTo(ReadWritePermit.DISALLOW)
     }
 
-    @Test
-    fun evalWritePermit_permissionCheckFails_returnsRequireAppPermission() {
-        ShadowBuild.setType("user")
-        val testContext = TestContext(context).apply { permissionGranted = false }
-        val permissions = Permissions.allOf("test.permission")
-        val preference = TestPreference(SensitivityLevel.NO_SENSITIVITY, permissions)
-
-        val result = preference.evalWritePermit(testContext, 0, 0)
-
-        assertThat(result).isEqualTo(ReadWritePermit.REQUIRE_APP_PERMISSION)
-    }
-
-    @Test
-    fun evalWritePermit_permissionCheckPasses_returnsWritePermit() {
-        ShadowBuild.setType("user")
-        val testContext = TestContext(context).apply { permissionGranted = true }
-        val permissions = Permissions.allOf("test.permission")
-        val preference = TestPreference(SensitivityLevel.NO_SENSITIVITY, permissions)
-
-        val result = preference.evalWritePermit(testContext, 0, 0)
-
-        assertThat(result).isEqualTo(ReadWritePermit.ALLOW)
+    companion object {
+        private const val SETTING_KEY = "com.android.settings.UNKNOWN_SENSITIVITY_IS_AVAILABLE"
     }
 }

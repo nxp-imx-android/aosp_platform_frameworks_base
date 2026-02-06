@@ -52,6 +52,7 @@ import com.android.systemui.scene.ui.composable.transitions.lockscreenToQuickSet
 import com.android.systemui.scene.ui.composable.transitions.lockscreenToQuickSettingsSceneTransition
 import com.android.systemui.scene.ui.composable.transitions.lockscreenToSingleShadeTransition
 import com.android.systemui.scene.ui.composable.transitions.lockscreenToSplitShadeTransition
+import com.android.systemui.scene.ui.composable.transitions.quickSettingsToAlwaysOnDisplayTransition
 import com.android.systemui.scene.ui.composable.transitions.quickSettingsToShadeTransition
 import com.android.systemui.scene.ui.composable.transitions.shadeToAlwaysOnDisplayTransition
 import com.android.systemui.scene.ui.composable.transitions.shadeToQuickSettingsTransition
@@ -254,6 +255,15 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 cujTag = TAG_COLLAPSE,
             ) {
                 reversed { lockscreenToQuickSettingsSceneTransition() }
+            }
+            from(
+                Scenes.QuickSettings,
+                to = Scenes.Lockscreen,
+                key = ToAlwaysOnDisplay,
+                cuj = Cuj.CUJ_NOTIFICATION_SHADE_QS_EXPAND_COLLAPSE,
+                cujTag = TAG_COLLAPSE,
+            ) {
+                quickSettingsToAlwaysOnDisplayTransition()
             }
             from(
                 Scenes.QuickSettings,

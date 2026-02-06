@@ -84,6 +84,7 @@ public class SupervisionSettings {
     private static final String KEY_ROLE_HOLDERS_LIST = "supervision_role_holders_list";
     private static final String KEY_ROLE_HOLDER = "supervision_role_holder";
     private static final String KEY_LOCK_SCREEN_ENABLED = "supervision_lockscreen_enabled";
+    private static final String KEY_ESCROW_TOKEN_REQUIRED = "supervision_escrow_token_required";
     private static final String KEY_LOCK_SCREEN_OPTIONS = "supervision_lockscreen_options";
 
     // Policy related keys.
@@ -223,6 +224,7 @@ public class SupervisionSettings {
                         data.supervisionAppPackage == null ? "" : data.supervisionAppPackage);
                 xml.attributeBoolean(
                         null, KEY_LOCK_SCREEN_ENABLED, data.supervisionLockScreenEnabled);
+                xml.attributeBoolean(null, KEY_ESCROW_TOKEN_REQUIRED, data.escrowTokenRequired);
                 if (data.supervisionRoleHolders != null && !data.supervisionRoleHolders.isEmpty()) {
                     xml.startTag(null, KEY_ROLE_HOLDERS_LIST);
                     for (String roleHolder : data.supervisionRoleHolders) {
@@ -349,6 +351,7 @@ public class SupervisionSettings {
         data.supervisionAppPackage = "".equals(appPackage) ? null : appPackage;
         data.supervisionLockScreenEnabled =
                 parser.getAttributeBoolean(null, KEY_LOCK_SCREEN_ENABLED);
+        data.escrowTokenRequired = parser.getAttributeBoolean(null, KEY_ESCROW_TOKEN_REQUIRED);
 
         final int depth = parser.getDepth();
         while (XmlUtils.nextElementWithin(parser, depth)) {

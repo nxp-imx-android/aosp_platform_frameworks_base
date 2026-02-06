@@ -1,0 +1,171 @@
+/*
+ * Copyright (C) 2026 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package android.os.storage.operations.sources;
+
+import android.annotation.FlaggedApi;
+import android.annotation.NonNull;
+import android.annotation.SuppressLint;
+import android.os.Parcel;
+import android.os.Parcelable;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
+
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.regex.Pattern;
+
+/**
+ * A source representing a file within the calling application's private app data directory.
+ *
+ * <p>This source is restricted to files located inside the application's internal data directory
+ * (as returned by {@link android.content.Context#getDataDir()}). Attempting to use files from other
+ * locations (such as external storage or system directories) will result in the operation being
+ * rejected.
+ *
+ * <p>The provided path must be absolute and should not contain path traversal elements (e.g., "..")
+ * or "unsafe" control characters.
+ *
+ * <p><b>Example Usage:</b>
+ *
+ * <pre>{@code
+ * // Obtain the application's data directory using Context
+ * Context context = getApplicationContext();
+ * File myDataFile = new File(context.getDataDir(), "subfolder/my_data.txt");
+ *
+ * // Construct the AppDataFileSource with the File object
+ * AppDataFileSource source = new AppDataFileSource(myDataFile);
+ *
+ * // The source can now be used in storage operations
+ * }</pre>
+ *
+ * @see android.content.Context#getDataDir()
+ */
+@FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+@SuppressLint("ParcelNotFinal")
+@RavenwoodKeepWholeClass
+public final class AppDataFileSource extends OperationSource {
+    /**
+     * Pattern to detect "suspicious" characters in file paths.
+     *
+     * <pre>
+     * Matches Unicode categories:
+     * - \p{C}: Other/Control characters (null, newline, surrogates, unassigned, etc.)
+     * - \p{Cf}: Format characters (zero-width spaces, joiners, layout marks, etc.)
+     * </pre>
+     */
+    private static final Pattern UNSAFE_PATH_PATTERN = Pattern.compile("[\\p{C}\\p{Cf}]");
+
+    /**
+     * Pattern to validate that the path points to an application's internal data directory.
+     *
+     * <pre>
+     * Supports:
+     * - /data/user/N/package/...
+     * - /data/user_de/N/package/...
+     *
+     * Regex breakdown:
+     * {@code ^/data/user(?:_de)?/} - Matches storage root for CE (/data/user/)
+     *                                  or DE (/data/user_de/)
+     * {@code \d+/} - Matches the user ID (e.g., "0/")
+     * {@code [^/]+} - Matches the package name (e.g., "com.example.app")
+     * {@code (/.*)?$} - Optional subpath within the package directory
+     * </pre>
+     *
+     * <p>This allows the package root itself and any files or subdirectories within it, but rejects
+     * the raw user root paths (e.g., /data/user/0/).
+     */
+    private static final Pattern DATA_DIR_PATTERN =
+            Pattern.compile("^/data/user(?:_de)?/\\d+/[^/]+(/.*)?$");
+
+    private final String mPath;
+
+    /**
+     * Creates a new source for the specified file.
+     *
+     * @param file The file to be used as a source. Must be within the application's data directory.
+     */
+    @SuppressLint("StreamFiles")
+    public AppDataFileSource(@NonNull File file) {
+        mPath = file.getAbsolutePath();
+    }
+
+    /** Returns the file associated with this source. */
+    @NonNull
+    public File getFile() {
+        return new File(mPath);
+    }
+
+    /** @hide */
+    @Override
+    public boolean isValid() {
+        // Use Path API for robust syntactic validation (no disk I/O)
+        final Path path = Paths.get(mPath);
+
+        // 1. Enforce absolute path
+        if (!path.isAbsolute()) {
+            return false;
+        }
+
+        // 2. Detect Path Traversal (e.g. "/data/app/../other")
+        // normalize() resolves ".." and ".". If the path changes, it contained
+        // traversal/redundancy.
+        // This is safer than mPath.contains("..") which incorrectly flags "file..name.txt".
+        if (!path.normalize().equals(path)) {
+            return false;
+        }
+
+        // 3. Check for invisible/control characters
+        if (UNSAFE_PATH_PATTERN.matcher(mPath).find()) {
+            return false;
+        }
+
+        // 4. Enforce that the path is within an application's internal data directory.
+        if (!DATA_DIR_PATTERN.matcher(mPath).matches()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(@NonNull Parcel dest, int flags) {
+        dest.writeString8(mPath);
+    }
+
+    @NonNull
+    public static final Parcelable.Creator<AppDataFileSource> CREATOR =
+            new Parcelable.Creator<AppDataFileSource>() {
+                public AppDataFileSource createFromParcel(Parcel in) {
+                    return new AppDataFileSource(new File(in.readString8()));
+                }
+
+                public AppDataFileSource[] newArray(int size) {
+                    return new AppDataFileSource[size];
+                }
+            };
+
+    @Override
+    @NonNull
+    public String toString() {
+        return "AppDataFileSource: " + mPath;
+    }
+}

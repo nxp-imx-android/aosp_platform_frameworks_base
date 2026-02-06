@@ -160,8 +160,6 @@ class AppHandleController(
             DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_APP_TO_WEB_EDUCATION_INTEGRATION
                 .isTrue ||
             DesktopExperienceFlags.ENABLE_APP_HANDLE_POSITION_REPORTING.isTrue
-    private val display
-        get() = displayController.getDisplay(taskInfo.displayId)
 
     override fun relayout(
         params: RelayoutParams,
@@ -393,10 +391,7 @@ class AppHandleController(
         minimumInstancesFound: Boolean,
     ) {
         val supportsMultiInstance =
-            multiInstanceHelper.supportsMultiInstanceSplit(
-                taskInfo.baseActivity,
-                taskInfo.userId
-            )
+            multiInstanceHelper.supportsMultiInstanceSplit(taskInfo.baseActivity, taskInfo.userId)
         val shouldShowManageWindowsButton = supportsMultiInstance && minimumInstancesFound
         val shouldShowChangeAspectRatioButton = shouldShowChangeAspectRatioButton(taskInfo)
         val shouldShowGameControlsButton = shouldShowGameControlsButton(userContext, taskInfo)

@@ -10754,4 +10754,35 @@
         <!-- An individual capability declared by the provider. -->
         <attr name="capability" format="string" />
     </declare-styleable>
-    </resources>
+
+    <!-- =================================== -->
+    <!-- Personal Context attributes         -->
+    <!-- =================================== -->
+    <eat-comment />
+
+    <!-- Top-level theme for personal context related styles. -->
+    <declare-styleable name="PersonalContextTheme">
+        <!-- Reference to a theme for a view to be embedded in a client app. -->
+        <attr name="embeddedViewTheme" format="reference" />
+    </declare-styleable>
+
+    <!-- Styleable resource for an embedded view in PersonalContextTheme. -->
+    <declare-styleable name="PersonalContextEmbedded">
+        <!-- Reference to a theme for an inline suggestion. -->
+        <attr name="inlineSuggestion" format="reference" />
+    </declare-styleable>
+
+    <!-- Styleable resource for an inline suggestion embedded view. -->
+    <declare-styleable name="InlineSuggestion">
+        <!-- Color used for strokes and outlines. -->
+        <attr name="strokeColor" />
+        <!-- Color used for text. -->
+        <attr name="textColor" />
+        <!-- Color used for icons. -->
+        <attr name="iconColor" format="reference|color" />
+        <!-- Suggestion background color. -->
+        <attr name="suggestionBackgroundColor" format="reference|color" />
+        <!-- Suggestion corner radius. -->
+        <attr name="suggestionCornerRadius" format="integer" />
+    </declare-styleable>
+</resources>

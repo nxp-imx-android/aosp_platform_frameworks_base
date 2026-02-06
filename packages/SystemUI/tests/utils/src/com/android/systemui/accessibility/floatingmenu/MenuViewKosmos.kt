@@ -17,9 +17,11 @@
 package com.android.systemui.accessibility.floatingmenu
 
 import android.content.testableContext
+import com.android.systemui.accessibility.Magnification
 import com.android.systemui.accessibility.TestUtils
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
+import org.mockito.kotlin.mock
 
 var Kosmos.menuView by Fixture {
     MenuView(
@@ -27,5 +29,6 @@ var Kosmos.menuView by Fixture {
         menuViewModel,
         menuViewAppearance,
         TestUtils.mockSecureSettings(testableContext),
+        mock<Magnification>(),
     )
 }

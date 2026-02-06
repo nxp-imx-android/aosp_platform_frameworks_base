@@ -86,6 +86,7 @@ import com.android.settingslib.bluetooth.HearingAidDeviceManager;
 import com.android.systemui.Flags;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.SysuiTestableContext;
+import com.android.systemui.accessibility.Magnification;
 import com.android.systemui.accessibility.floatingmenu.MenuViewLayer.LayerIndex;
 import com.android.systemui.accessibility.utils.TestUtils;
 import com.android.systemui.inputdevice.data.repository.FakePointerDeviceRepository;
@@ -186,7 +187,8 @@ public class MenuViewLayerTest extends SysuiTestCase {
                                 mSpyContext,
                                 mMenuViewModel,
                                 menuViewAppearance,
-                                mSecureSettings));
+                                mSecureSettings,
+                                mock(Magnification.class)));
         // Ensure tests don't actually update metrics.
         doNothing().when(mMenuView).incrementTexMetric(any());
 

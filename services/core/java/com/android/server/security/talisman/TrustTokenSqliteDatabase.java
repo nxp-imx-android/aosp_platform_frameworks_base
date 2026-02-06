@@ -24,7 +24,7 @@ import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.security.talisman.TrustConfiguration;
+import android.security.trusttoken.TrustConfiguration;
 import android.util.Pair;
 import android.util.Slog;
 
@@ -85,6 +85,13 @@ class TrustTokenSqliteDatabase extends TrustTokenDatabase implements AutoCloseab
                         db.insertTrustToken(token);
                     }
                 });
+    }
+
+
+    @Override
+    int countTrustTokenSets(@TrustTokenSet.Type int type) {
+        DatabaseHelper db = getWritableDatabase();
+        return db.countTokens(type);
     }
 
     @Override

@@ -65,7 +65,7 @@ public class RootLayoutComponent extends Component {
     }
 
     public RootLayoutComponent(int componentId) {
-        super(null, componentId, 0, -1, 0, 0, 0);
+        super(null, componentId, -1, 0, 0, 0, 0);
     }
 
     @NonNull

@@ -75,6 +75,7 @@ test_module_config {
         "com.android.wm.shell.functional.appcompat.RestartSizeCompatAppInDesktopMode",
         "com.android.wm.shell.functional.appcompat.ShowAppDialogInDesktopModeTest",
         "com.android.wm.shell.functional.appcompat.ShowQuickShareDialogFromQuickSettingsTest",
+        "com.android.wm.shell.functional.apptoweb.AppToWebFirstRunDialogTest",
         "com.android.wm.shell.functional.clientfullscreenrequest.FullscreenModeRequestFromDesktopAndBackTest",
         "com.android.wm.shell.functional.drag.DragAppWindowMultiWindowAndPipTest",
         "com.android.wm.shell.functional.drag.DragAppWindowMultiWindowTest",
@@ -209,6 +210,13 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.appcompat.ShowQuickShareDialogFromQuickSettingsTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-apptoweb-AppToWebFirstRunDialogTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.apptoweb.AppToWebFirstRunDialogTest"],
 }
 
 test_module_config {

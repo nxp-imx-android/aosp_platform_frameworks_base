@@ -4473,8 +4473,8 @@ public class KeyguardViewMediator implements CoreStartable,
             }
 
             mDelegate = mActivityTransitionAnimator.get().createOriginTransition(
-                    mController, mApplicationScope, mController.isDialogLaunch(),
-                    new KeyguardTransitionHelper());
+                    mController, mApplicationScope, false /* isLongLived */,
+                    mController.isDialogLaunch(), new KeyguardTransitionHelper());
             mDelegate.startAnimation(token, info, t, finishCallback);
 
             mInteractionJankMonitor.begin(

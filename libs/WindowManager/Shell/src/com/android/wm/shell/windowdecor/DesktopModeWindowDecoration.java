@@ -28,7 +28,6 @@ import static android.view.MotionEvent.ACTION_CANCEL;
 import static android.view.MotionEvent.ACTION_DOWN;
 import static android.view.MotionEvent.ACTION_UP;
 import static android.view.WindowManager.TRANSIT_CHANGE;
-import static android.window.DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION;
 import static android.window.DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION_ALWAYS;
 
 import static com.android.internal.policy.SystemBarUtils.getDesktopViewAppHeaderHeightId;
@@ -653,9 +652,6 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     }
 
     private boolean showInputLayer() {
-        if (!DesktopModeFlags.ENABLE_INPUT_LAYER_TRANSITION_FIX.isTrue()) {
-            return isCaptionVisible();
-        }
         // Don't show the input layer during the recents transition, otherwise it could become
         // touchable while in overview, during quick-switch or even for a short moment after going
         // Home.
@@ -1159,14 +1155,12 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 // even when the caption touchable region is not being limited.
                 relayoutParams.mInputFeatures |= WindowManager.LayoutParams.INPUT_FEATURE_SPY;
             } else {
-                if (ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION.isTrue()) {
-                    if (shouldExcludeCaptionFromAppBounds) {
-                        relayoutParams.mShouldSetAppBounds = true;
-                    } else {
-                        // Force-consume the caption bar insets when the app tries to hide the
-                        // caption. This improves app compatibility of immersive apps.
-                        relayoutParams.mInsetSourceFlags |= FLAG_FORCE_CONSUMING;
-                    }
+                if (shouldExcludeCaptionFromAppBounds) {
+                    relayoutParams.mShouldSetAppBounds = true;
+                } else {
+                    // Force-consume the caption bar insets when the app tries to hide the
+                    // caption. This improves app compatibility of immersive apps.
+                    relayoutParams.mInsetSourceFlags |= FLAG_FORCE_CONSUMING;
                 }
             }
             if (ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION_ALWAYS.isTrue()) {
@@ -2071,8 +2065,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     void setIsRecentsTransitionRunning(boolean isRecentsTransitionRunning) {
         mIsRecentsTransitionRunning = isRecentsTransitionRunning;
         // TODO (b/415631133): Update this to call on #relayout once b/415631133 is fixed
-        if (isAppHandle(mWindowDecorViewHolder)
-                && DesktopModeFlags.ENABLE_INPUT_LAYER_TRANSITION_FIX.isTrue()) {
+        if (isAppHandle(mWindowDecorViewHolder)) {
             updateAppHandleViewHolder();
         }
     }

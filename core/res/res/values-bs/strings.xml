@@ -1124,6 +1124,7 @@
     <string name="lockscreen_access_pattern_cell_added_verbose" msgid="2931364927622563465">"Ćelija <xliff:g id="CELL_INDEX">%1$s</xliff:g> je dodana"</string>
     <string name="lockscreen_access_pattern_detected" msgid="3931150554035194012">"Uzorak unesen"</string>
     <string name="lockscreen_access_pattern_area" msgid="1288780416685002841">"Oblast za unošenje obrasca."</string>
+    <string name="lockscreen_access_pattern_cell_verbose" msgid="6670905066468035137">"<xliff:g id="CELL_INDEX">%1$s</xliff:g>. ćelija"</string>
     <string name="keyguard_accessibility_widget_changed" msgid="7298011259508200234">"%1$s. Widget %2$d od %3$d."</string>
     <string name="keyguard_accessibility_add_widget" msgid="8245795023551343672">"Dodaj widget."</string>
     <string name="keyguard_accessibility_widget_empty_slot" msgid="544239307077644480">"Prazno"</string>
@@ -1749,7 +1750,7 @@
     <string name="bluetooth_a2dp_audio_route_name" msgid="4214648773120426288">"Bluetooth zvuk"</string>
     <string name="wireless_display_route_description" msgid="8297563323032966831">"Bežični prikaz"</string>
     <string name="media_route_button_content_description" msgid="2299223698196869956">"Emitiranje"</string>
-    <string name="media_route_chooser_title" msgid="6646594924991269208">"Poveži na uređaj"</string>
+    <string name="media_route_chooser_title" msgid="6646594924991269208">"Povežite se s uređajem"</string>
     <string name="media_route_chooser_title_for_remote_display" msgid="3105906508794326446">"Emitiranje ekrana na uređaj"</string>
     <string name="media_route_chooser_searching" msgid="6119673534251329535">"Traženje uređaja…"</string>
     <string name="media_route_chooser_extended_settings" msgid="2506352159381327741">"Postavke"</string>
@@ -2007,6 +2008,7 @@
     <string name="managed_profile_label_badge_3" msgid="6882151970556391957">"3. poslovni <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="clone_profile_label_badge" msgid="1871997694718793964">"Kloniranje aplikacije <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="private_profile_label_badge" msgid="1712086003787839183">"<xliff:g id="LABEL">%1$s</xliff:g> – privatno"</string>
+    <string name="hsu_label_badge" msgid="1357272000281944932">"<xliff:g id="LABEL">%1$s</xliff:g> sistema"</string>
     <string name="lock_to_app_unlock_pin" msgid="3890940811866290782">"Traži PIN prije nego se otkači"</string>
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Traži uzorak za otključavanje prije poništavanja kačenja"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Traži lozinku prije nego se otkači"</string>
@@ -2618,6 +2620,8 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"Da razmjenjujete poruke putem satelita, postavite Google Messages kao zadanu aplikaciju za razmjenu poruka"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"Satelitska razmjena poruka nije dostupna"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"Da provjerite je li satelitska razmjena poruka dostupna u vašoj zemlji ili regiji, uključite postavke lokacije"</string>
+    <!-- no translation found for satellite_indicator (6846063647532086110) -->
+    <skip />
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"Ponovo postavite otključavanje otiskom prsta"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"<xliff:g id="FINGERPRINT">%s</xliff:g> se više ne može prepoznati."</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> i <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> se više ne mogu prepoznati."</string>

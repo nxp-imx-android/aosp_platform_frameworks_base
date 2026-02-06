@@ -24,10 +24,27 @@ flag {
 }
 
 flag {
+    name: "floating_menu_magnification_status"
+    namespace: "accessibility"
+    description: "Exposes magnification activated status to floating menu magnification targets"
+    bug: "449812613"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "floating_menu_more_options"
     namespace: "accessibility"
     description: "Adds a 'More Options' button to the accessibility floating menu, which reveals additional actions like Edit, Move, and Remove all."
     bug: "440413395"
+}
+
+flag {
+    name: "floating_menu_on_headless_user"
+    namespace: "accessibility"
+    description: "adds condition that allows the FAB to display on bouncer for headless system user."
+    bug: "452113149"
 }
 
 flag {

@@ -1641,6 +1641,19 @@ internal class PromptViewModelTest(private val testCase: TestCase) : SysuiTestCa
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_LARGE_SCREEN_BP)
+    fun position_center_extraLargeScreen() = runGenericTest {
+        kosmos.displayStateRepository.setCurrentRotation(DisplayRotation.ROTATION_0)
+        kosmos.displayStateRepository.setIsExtraLargeScreen(true)
+        val position by collectLastValue(kosmos.promptViewModel.position)
+        if (testCase.modalities.hasUdfps) {
+            assertThat(position).isEqualTo(PromptPosition.Bottom)
+        } else {
+            assertThat(position).isEqualTo(PromptPosition.Center)
+        }
+    }
+
+    @Test
     fun position_right_rotation90() = runGenericTest {
         kosmos.displayStateRepository.setCurrentRotation(DisplayRotation.ROTATION_90)
         val position by collectLastValue(kosmos.promptViewModel.position)

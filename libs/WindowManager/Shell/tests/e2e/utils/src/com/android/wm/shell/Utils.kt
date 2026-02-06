@@ -157,6 +157,39 @@ object Utils {
         }
     }
 
+    /** Clears remembered first-run prompt acked packages for the given user and package. */
+    fun clearAppToWebFirstRunPromptAcked(packageName: String) {
+        try {
+            device.executeShellCommand(
+                "wm shell apptoweb clearAppToWebFirstRunPromptAcked $packageName"
+            )
+        } catch (e: IOException) {
+            Log.e("TestUtils", "Failed to clear first-run prompt acked packages", e)
+        }
+    }
+
+    /** Sets the app links user selection for the given user and package. */
+    fun setAppLinksUserSelection(packageName: String) {
+        try {
+            device.executeShellCommand(
+                "pm set-app-links-user-selection --user cur --package $packageName true all"
+            )
+        } catch (e: IOException) {
+            Log.e("TestUtils", "Failed to set app links user selection", e)
+        }
+    }
+
+    /** Sets the app links user selection for the given user and package. */
+    fun setAppLinksAllowed(packageName: String) {
+        try {
+            device.executeShellCommand(
+                "pm set-app-links-allowed --user cur --package $packageName true"
+            )
+        } catch (e: IOException) {
+            Log.e("TestUtils", "Failed to set app links user selection", e)
+        }
+    }
+
     /**
      * Returns the boolean value of the given settings resource.
      *

@@ -283,10 +283,6 @@ void RenderNodeDrawable::drawContent(SkCanvas* canvas) const {
                 offset = snapshotResult->outOffset;
             }
 
-#ifdef __ANDROID__
-            oopr::registerSnapshot(renderNode->getOoprResources().get(), snapshotImage);
-#endif
-
             const auto dstBounds = SkIRect::MakeXYWH(offset.x(),
                                                      offset.y(),
                                                      srcBounds.width(),

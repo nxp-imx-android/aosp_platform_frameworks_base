@@ -25,27 +25,30 @@ import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.shared.model.TransitionKeys.ToSplitShade
 import com.android.systemui.scene.ui.viewmodel.SceneContainerArea
 
+private val singleShadeUserActionResult = UserActionResult(Scenes.Shade)
+private val quickSettingsSceneUserActionResult = UserActionResult(Scenes.QuickSettings)
+private val splitShadeUserActionResult = UserActionResult(Scenes.Shade, ToSplitShade)
+
 /** Returns collection of [UserAction] to [UserActionResult] pairs for opening the single shade. */
 fun singleShadeActions(
     isDownFromTopEdgeEnabled: Boolean = true,
     requireTwoPointersForTopEdgeForQs: Boolean = false,
 ): Array<Pair<UserAction, UserActionResult>> {
-    val shadeUserActionResult = UserActionResult(Scenes.Shade)
-    val qsSceneUserActionResult = UserActionResult(Scenes.QuickSettings)
+
     return buildList {
             // Swiping down, not from the edge, always goes to shade.
-            add(Swipe.Down to shadeUserActionResult)
-            add(Swipe.Down(pointerCount = 2) to shadeUserActionResult)
+            add(Swipe.Down to singleShadeUserActionResult)
+            add(Swipe.Down(pointerCount = 2) to singleShadeUserActionResult)
             if (isDownFromTopEdgeEnabled) {
                 add(
-                    swipeDownFromTop(pointerCount = 1) to
+                    swipeDownFromTopEdge() to
                         if (requireTwoPointersForTopEdgeForQs) {
-                            shadeUserActionResult
+                            singleShadeUserActionResult
                         } else {
-                            qsSceneUserActionResult
+                            quickSettingsSceneUserActionResult
                         }
                 )
-                add(swipeDownFromTop(pointerCount = 2) to qsSceneUserActionResult)
+                add(swipeDownFromTopEdge(pointerCount = 2) to quickSettingsSceneUserActionResult)
             }
         }
         .toTypedArray()
@@ -53,14 +56,13 @@ fun singleShadeActions(
 
 /** Returns collection of [UserAction] to [UserActionResult] pairs for opening the split shade. */
 fun splitShadeActions(): Array<Pair<UserAction, UserActionResult>> {
-    val shadeUserActionResult = UserActionResult(Scenes.Shade, ToSplitShade)
     return arrayOf(
         // Swiping down, not from the edge, always goes to shade.
-        Swipe.Down to shadeUserActionResult,
-        Swipe.Down(pointerCount = 2) to shadeUserActionResult,
+        Swipe.Down to splitShadeUserActionResult,
+        Swipe.Down(pointerCount = 2) to splitShadeUserActionResult,
         // Swiping down from the top edge goes to QS.
-        swipeDownFromTop(pointerCount = 1) to shadeUserActionResult,
-        swipeDownFromTop(pointerCount = 2) to shadeUserActionResult,
+        swipeDownFromTopEdge() to splitShadeUserActionResult,
+        swipeDownFromTopEdge(pointerCount = 2) to splitShadeUserActionResult,
     )
 }
 
@@ -73,6 +75,6 @@ fun dualShadeActions(): Array<Pair<UserAction, UserActionResult>> {
     )
 }
 
-private fun swipeDownFromTop(pointerCount: Int): Swipe {
+private fun swipeDownFromTopEdge(pointerCount: Int = 1): Swipe {
     return Swipe.Down(fromSource = Edge.Top, pointerCount = pointerCount)
 }

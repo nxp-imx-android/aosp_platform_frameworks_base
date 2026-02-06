@@ -1123,6 +1123,7 @@
     <string name="lockscreen_access_pattern_cell_added_verbose" msgid="2931364927622563465">"കളം <xliff:g id="CELL_INDEX">%1$s</xliff:g> ചേർത്തു"</string>
     <string name="lockscreen_access_pattern_detected" msgid="3931150554035194012">"പാറ്റേൺ പൂർത്തിയാക്കി"</string>
     <string name="lockscreen_access_pattern_area" msgid="1288780416685002841">"പാറ്റേൺ ഏരിയ."</string>
+    <string name="lockscreen_access_pattern_cell_verbose" msgid="6670905066468035137">"കളം <xliff:g id="CELL_INDEX">%1$s</xliff:g>"</string>
     <string name="keyguard_accessibility_widget_changed" msgid="7298011259508200234">"%1$s. വിജറ്റ് %2$d / %3$d."</string>
     <string name="keyguard_accessibility_add_widget" msgid="8245795023551343672">"വിജറ്റ് ചേർക്കുക."</string>
     <string name="keyguard_accessibility_widget_empty_slot" msgid="544239307077644480">"ശൂന്യം"</string>
@@ -2006,6 +2007,7 @@
     <string name="managed_profile_label_badge_3" msgid="6882151970556391957">"മൂന്നാമത്തെ ഔദ്യോഗിക <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="clone_profile_label_badge" msgid="1871997694718793964">"ക്ലോൺ <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="private_profile_label_badge" msgid="1712086003787839183">"സ്വകാര്യം <xliff:g id="LABEL">%1$s</xliff:g>"</string>
+    <string name="hsu_label_badge" msgid="1357272000281944932">"സിസ്‌റ്റം <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="lock_to_app_unlock_pin" msgid="3890940811866290782">"ചെയ്യുംമുമ്പ് പിൻ ചോദിക്കൂ"</string>
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"അൺപിന്നിനുമുമ്പ് അൺലോക്ക് പാറ്റേൺ ആവശ്യപ്പെടൂ"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"അൺപിന്നിനുമുമ്പ് പാസ്‌വേഡ് ആവശ്യപ്പെടൂ"</string>
@@ -2110,7 +2112,7 @@
     <string name="app_suspended_title" msgid="888873445010322650">"ആപ്പ് ലഭ്യമല്ല"</string>
     <string name="app_suspended_default_message" msgid="6451215678552004172">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> ഇപ്പോൾ ലഭ്യമല്ല. <xliff:g id="APP_NAME_1">%2$s</xliff:g> ആണ് ഇത് മാനേജ് ചെയ്യുന്നത്."</string>
     <string name="app_suspended_more_details" msgid="211260942831587014">"കൂടുതലറിയുക"</string>
-    <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"ആപ്പ് പുനഃരാംഭിക്കുക"</string>
+    <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"ആപ്പ് പുനഃരാരംഭിക്കുക"</string>
     <string name="app_lock_add_screen_lock_button_text" msgid="9209013414563206600">"സ്‌ക്രീൻ ലോക്ക് ചേർക്കുക"</string>
     <string name="app_lock_add_screen_lock_message" msgid="6107009360675769892">"നിങ്ങളുടെ സ്ക്രീൻ ലോക്ക് ഒരു പിൻ, പാറ്റേൺ അല്ലെങ്കിൽ പാസ്‌വേഡ് ആകാം. ഉപകരണം അൺലോക്ക് ചെയ്യാനും ലോക്ക് ചെയ്ത ആപ്പുകൾ ആക്‌സസ് ചെയ്യാനും നിങ്ങൾ ഇത് ഉപയോഗിക്കും."</string>
     <string name="app_lock_add_screen_lock_title" msgid="6905612843620128689">"ആദ്യം ഒരു സ്ക്രീൻ ലോക്ക് ചേർക്കുക"</string>
@@ -2617,6 +2619,8 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"സാറ്റലൈറ്റ് വഴി സന്ദേശമയയ്ക്കാൻ, നിങ്ങളുടെ ഡിഫോൾട്ട് സന്ദേശമയയ്ക്കൽ ആപ്പായി Google Messages സജ്ജീകരിക്കുക"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"സാറ്റലൈറ്റ് സഹായത്തോടെ സന്ദേശമയയ്ക്കൽ ലഭ്യമല്ല"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"ഈ രാജ്യത്ത് അല്ലെങ്കിൽ പ്രദേശത്ത് സാറ്റലൈറ്റ് സഹായത്തോടെ സന്ദേശമയയ്ക്കൽ ലഭ്യമാണോയെന്ന് പരിശോധിക്കാൻ, ലൊക്കേഷൻ ക്രമീകരണം ഓണാക്കുക"</string>
+    <!-- no translation found for satellite_indicator (6846063647532086110) -->
+    <skip />
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"ഫിംഗർപ്രിന്റ് അൺലോക്ക് വീണ്ടും സജ്ജീകരിക്കുക"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"<xliff:g id="FINGERPRINT">%s</xliff:g> ഇനി തിരിച്ചറിയാനാകില്ല."</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g>, <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> എന്നിവ ഇനി തിരിച്ചറിയാനാകില്ല."</string>

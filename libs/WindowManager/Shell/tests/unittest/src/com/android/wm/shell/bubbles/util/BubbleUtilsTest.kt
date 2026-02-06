@@ -16,20 +16,26 @@
 
 package com.android.wm.shell.bubbles.util
 
+import android.app.ActivityManager
 import android.graphics.Rect
 import android.os.Binder
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.window.WindowContainerToken
 import androidx.test.filters.SmallTest
+import com.android.testing.wm.util.MockToken
 import com.android.window.flags.Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.ShellTestCase
+import com.android.wm.shell.bubbles.Bubble
 import com.android.wm.shell.bubbles.BubbleHelper
 import com.android.wm.shell.bubbles.util.BubbleTestUtils.verifyEnterBubbleTransaction
 import com.android.wm.shell.bubbles.util.BubbleTestUtils.verifyExitBubbleTransaction
 import com.android.wm.shell.bubbles.util.BubbleUtils.getEnterBubbleTransaction
 import com.android.wm.shell.bubbles.util.BubbleUtils.getExitBubbleTransaction
+import com.android.wm.shell.bubbles.util.BubbleUtils.getTaskTokenForBoundsUpdate
+import com.android.wm.shell.taskview.TaskView
+import com.google.common.truth.Truth.assertThat
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
 import org.junit.Test
@@ -108,5 +114,51 @@ class BubbleUtilsTest : ShellTestCase() {
         val wct = getExitBubbleTransaction(bubbleHelper, token, captionInsetsOwner)
 
         verifyExitBubbleTransaction(wct, token.asBinder(), captionInsetsOwner)
+    }
+
+    @Test
+    fun getTaskTokenForBoundsUpdate_nullTaskView_shouldReturnNull() {
+        val bubble = mock<Bubble> { on { taskView } doReturn null }
+        assertThat(bubble.getTaskTokenForBoundsUpdate(bubbleHelper)).isNull()
+    }
+
+    @Test
+    fun getTaskTokenForBoundsUpdate_nullTaskInfo_shouldReturnNull() {
+        val tv = mock<TaskView> { on { taskInfo } doReturn null }
+        val bubble = mock<Bubble> { on { taskView } doReturn tv }
+        assertThat(bubble.getTaskTokenForBoundsUpdate(bubbleHelper)).isNull()
+    }
+
+    @Test
+    fun getTaskTokenForBoundsUpdate_appBubble_shouldReturnRootTaskToken() {
+        val info = ActivityManager.RunningTaskInfo()
+        val tv = mock<TaskView> { on { taskInfo } doReturn info }
+        val bubble = mock<Bubble> { on { taskView } doReturn tv }
+        bubbleHelper.stub { on { isAppBubbleTask(info) } doReturn true }
+
+        assertThat(bubble.getTaskTokenForBoundsUpdate(bubbleHelper)).isEqualTo(rootTaskToken)
+    }
+
+    @Test
+    fun getTaskTokenForBoundsUpdate_appBubble_rootTaskNull_shouldReturnTaskToken() {
+        val info = ActivityManager.RunningTaskInfo().apply { token = MockToken().token() }
+        val tv = mock<TaskView> { on { taskInfo } doReturn info }
+        val bubble = mock<Bubble> { on { taskView } doReturn tv }
+        bubbleHelper.stub {
+            on { isAppBubbleTask(info) } doReturn true
+            on { getAppBubbleRootTaskToken() } doReturn null
+        }
+
+        assertThat(bubble.getTaskTokenForBoundsUpdate(bubbleHelper)).isEqualTo(info.token)
+    }
+
+    @Test
+    fun getTaskTokenForBoundsUpdate_chatBubble_shouldReturnTaskToken() {
+        val info = ActivityManager.RunningTaskInfo().apply { token = MockToken().token() }
+        val tv = mock<TaskView> { on { taskInfo } doReturn info }
+        val bubble = mock<Bubble> { on { taskView } doReturn tv }
+        bubbleHelper.stub { on { isAppBubbleTask(info) } doReturn false }
+
+        assertThat(bubble.getTaskTokenForBoundsUpdate(bubbleHelper)).isEqualTo(info.token)
     }
 }

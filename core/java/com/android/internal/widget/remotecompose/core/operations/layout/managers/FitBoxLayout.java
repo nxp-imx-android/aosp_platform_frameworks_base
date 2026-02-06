@@ -86,7 +86,7 @@ public class FitBoxLayout extends LayoutManager {
     @NonNull
     @Override
     public String toString() {
-        return "BOX ["
+        return "FITBOX ["
                 + mComponentId
                 + ":"
                 + mAnimationId
@@ -249,7 +249,7 @@ public class FitBoxLayout extends LayoutManager {
      */
     @NonNull
     public static String name() {
-        return "BoxLayout";
+        return "FitBoxLayout";
     }
 
     /**
@@ -309,15 +309,12 @@ public class FitBoxLayout extends LayoutManager {
      * @param doc to append the description to.
      */
     public static void documentation(@NonNull DocumentationBuilder doc) {
-        doc.operation("Layout Operations", id(), name())
+        doc.operation("Layout Managers", id(), name())
+                .additionalDocumentation("fitbox")
                 .description(
                         "FitBox layout implementation.\n\n"
                             + "Only displays the first child component that fits in the available"
                             + " space.")
-                .examplesDimension(150, 100)
-                .exampleImage("Top", "layout-BoxLayout-start-top.png")
-                .exampleImage("Center", "layout-BoxLayout-center-center.png")
-                .exampleImage("Bottom", "layout-BoxLayout-end-bottom.png")
                 .field(INT, "componentId", "Unique ID for this component")
                 .field(
                         INT,

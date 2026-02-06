@@ -925,7 +925,8 @@ public final class AssociationRequest implements Parcelable {
         }
 
         /**
-         * Indicates whether the device is capable of interacting with a remote AI agent.
+         * Indicates whether the device is capable of interacting with a remote AI agent on another
+         * device.
          *
          * <p>Default value is {@code false}. When set to {@code true}, this allows the device
          * (e.g., a microphone or a smart wearable) to act as an input/output source for a remote

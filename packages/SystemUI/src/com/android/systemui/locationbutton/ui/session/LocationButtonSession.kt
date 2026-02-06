@@ -214,6 +214,16 @@ class LocationButtonSession(
         }
     }
 
+    override fun setPressedCornerRadius(cornerRadius: Float) {
+        executor.execute {
+            if (DEBUG) {
+                Slog.d(LOG_TAG, "setPressedCornerRadius() for session $sessionId: $cornerRadius")
+            }
+            ensureActiveSession()
+            interactor.setPressedCornerRadius(sessionId, cornerRadius)
+        }
+    }
+
     override fun setBackgroundColor(color: Int) {
         if (DEBUG) {
             Slog.d(
@@ -280,6 +290,16 @@ class LocationButtonSession(
                 )
             }
             surfaceControlViewHost.relayout(model.width, model.height)
+        }
+    }
+
+    override fun setPadding(left: Int, top: Int, right: Int, bottom: Int) {
+        executor.execute {
+            if (DEBUG) {
+                Slog.d(LOG_TAG, "setPadding() for session $sessionId: $left, $top, $right, $bottom")
+            }
+            ensureActiveSession()
+            interactor.setPadding(sessionId, left, top, right, bottom)
         }
     }
 

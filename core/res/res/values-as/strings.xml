@@ -1123,6 +1123,7 @@
     <string name="lockscreen_access_pattern_cell_added_verbose" msgid="2931364927622563465">"চেল <xliff:g id="CELL_INDEX">%1$s</xliff:g> যোগ কৰা হ’ল"</string>
     <string name="lockscreen_access_pattern_detected" msgid="3931150554035194012">"আর্হি অঁকা সর্ম্পূণ হ’ল"</string>
     <string name="lockscreen_access_pattern_area" msgid="1288780416685002841">"আর্হিৰ ক্ষেত্ৰ।"</string>
+    <string name="lockscreen_access_pattern_cell_verbose" msgid="6670905066468035137">"কক্ষ <xliff:g id="CELL_INDEX">%1$s</xliff:g>"</string>
     <string name="keyguard_accessibility_widget_changed" msgid="7298011259508200234">"%1$s. ৱিজেট %3$d-ৰ %2$d।"</string>
     <string name="keyguard_accessibility_add_widget" msgid="8245795023551343672">"ৱিজেট যোগ কৰক।"</string>
     <string name="keyguard_accessibility_widget_empty_slot" msgid="544239307077644480">"খালী"</string>
@@ -2006,6 +2007,7 @@
     <string name="managed_profile_label_badge_3" msgid="6882151970556391957">"৩য় কার্য <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="clone_profile_label_badge" msgid="1871997694718793964">"ক্ল’ন <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="private_profile_label_badge" msgid="1712086003787839183">"ব্যক্তিগত <xliff:g id="LABEL">%1$s</xliff:g>"</string>
+    <string name="hsu_label_badge" msgid="1357272000281944932">"ছিষ্টেম <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="lock_to_app_unlock_pin" msgid="3890940811866290782">"আনপিন কৰাৰ পূৰ্বে পিন দিবলৈ কওক"</string>
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"আনপিন কৰাৰ পূৰ্বে আনলক আৰ্হি দিবলৈ কওক"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"আনপিন কৰাৰ পূৰ্বে পাছৱৰ্ড দিবলৈ কওক"</string>
@@ -2617,6 +2619,8 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"উপগ্ৰহৰ জৰিয়তে বাৰ্তা পঠিয়াবলৈ, Google Messagesক আপোনাৰ ডিফ’ল্ট বাৰ্তা আদান-প্ৰদান কৰা এপ্‌ হিচাপে ছেট কৰক"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"উপগ্ৰহৰ দ্বাৰা বাৰ্তা বিনিময়ৰ সুবিধা উপলব্ধ নহয়"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"এই দেশ বা অঞ্চলত উপগ্ৰহৰ দ্বাৰা বাৰ্তা বিনিময়ৰ সুবিধা উপলব্ধ হয় নে নহয় পৰীক্ষা কৰিবলৈ, অৱস্থানৰ ছেটিং অন কৰক"</string>
+    <!-- no translation found for satellite_indicator (6846063647532086110) -->
+    <skip />
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"ফিংগাৰপ্ৰিণ্ট আনলক পুনৰ ছেট আপ কৰক"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"<xliff:g id="FINGERPRINT">%s</xliff:g> আৰু চিনাক্ত কৰিব নোৱাৰি।"</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> আৰু <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> আৰু চিনাক্ত কৰিব নোৱাৰি।"</string>

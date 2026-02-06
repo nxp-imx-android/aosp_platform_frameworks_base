@@ -44,6 +44,7 @@ import com.android.wm.shell.R
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayController.OnDisplaysChangedListener
 import com.android.wm.shell.shared.annotations.ShellMainThread
+import com.android.wm.shell.shared.annotations.ShellMainThreadImmediate
 import com.android.wm.shell.windowdecor.WindowDecoration.SurfaceControlViewHostFactory
 import com.android.wm.shell.windowdecor.common.DecorThemeUtil
 import com.android.wm.shell.windowdecor.common.Theme
@@ -63,7 +64,7 @@ constructor(
     private val displayController: DisplayController,
     private val taskResourceLoader: WindowDecorTaskResourceLoader,
     @ShellMainThread private val mainDispatcher: CoroutineDispatcher,
-    @ShellMainThread private val mainScope: CoroutineScope,
+    @ShellMainThreadImmediate private val mainImmediateScope: CoroutineScope,
     private var parentSurface: SurfaceControl,
     private val surfaceControlTransactionSupplier: Supplier<SurfaceControl.Transaction>,
     private val surfaceControlBuilderFactory: SurfaceControlBuilderFactory =
@@ -171,7 +172,7 @@ constructor(
         viewHost = surfaceControlViewHostFactory.create(context, display, wwm, "ResizeVeil")
         viewHost?.setView(rootView, lp)
         loadAppInfoJob =
-            mainScope.launch {
+            mainImmediateScope.launch {
                 if (!isActive) return@launch
                 val icon = taskResourceLoader.getVeilIcon(taskInfo)
                 iconView.setImageBitmap(icon)

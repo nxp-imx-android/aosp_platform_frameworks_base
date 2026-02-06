@@ -17,6 +17,7 @@
 package com.android.wm.shell.common.pip;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
@@ -489,6 +490,56 @@ public class PipBoundsAlgorithmTest extends ShellTestCase {
         assertEquals(minMenuSize.getWidth(), bounds.width());
         assertEquals(minMenuSize.getWidth() / mPipBoundsState.getAspectRatio(),
                 bounds.height(), 0.3f);
+    }
+
+    @Test
+    public void transformBoundsToAspectRatio_freeFloatingPipEnabled_boundsNotSnapped() {
+        // When free-floating PiP is enabled, the bounds should not be snapped to an edge.
+        when(mPipDesktopState.isFreeFloatingPipEnabled()).thenReturn(true);
+        final Rect bounds = new Rect(100, 100, 200, 200); // A rect not at the edge
+        final Rect expectedBounds = new Rect(bounds);
+        final float aspectRatio = 1.0f;
+
+        mPipBoundsAlgorithm.transformBoundsToAspectRatio(bounds, aspectRatio,
+                true /* useCurrentMinEdgeSize */, true /* useCurrentSize */);
+
+        // With free floating enabled, bounds should remain centered on their original position
+        // and not be snapped.
+        assertEquals(expectedBounds, bounds);
+    }
+
+    @Test
+    public void transformBoundsToAspectRatio_freeFloatingPipDisabled_boundsAreSnapped() {
+        // When free-floating PiP is disabled, the bounds should be snapped to an edge.
+        when(mPipDesktopState.isFreeFloatingPipEnabled()).thenReturn(false);
+        final Rect bounds = new Rect(100, 100, 200, 200); // A rect not at the edge
+        final Rect originalBounds = new Rect(bounds);
+        final float aspectRatio = 1.0f;
+
+        mPipBoundsAlgorithm.transformBoundsToAspectRatio(bounds, aspectRatio,
+                true /* useCurrentMinEdgeSize */, true /* useCurrentSize */);
+
+        // With free floating disabled, bounds should be snapped to an edge, so they should move.
+        assertNotEquals(originalBounds, bounds);
+    }
+
+    @Test
+    public void transformBoundsToAspectRatio_nullDesktopState_boundsAreSnapped() {
+        // This test ensures that a null PipDesktopState does not cause a crash and that
+        // the bounds are snapped as if free-floating were disabled.
+        final PipBoundsAlgorithm pipBoundsAlgorithmWithNullDesktopState = new PipBoundsAlgorithm(
+                mContext, mPipBoundsState, new PipSnapAlgorithm(),
+                new PipKeepClearAlgorithmInterface() {}, mPipDisplayLayoutState,
+                null /* pipDesktopState */, mSizeSpecSource);
+        final Rect bounds = new Rect(100, 100, 200, 200); // A rect not at the edge
+        final Rect originalBounds = new Rect(bounds);
+        final float aspectRatio = 1.0f;
+
+        pipBoundsAlgorithmWithNullDesktopState.transformBoundsToAspectRatio(bounds, aspectRatio,
+                true /* useCurrentMinEdgeSize */, true /* useCurrentSize */);
+
+        // With a null PipDesktopState, bounds should be snapped to an edge, so they should move.
+        assertNotEquals(originalBounds, bounds);
     }
 
     @Test

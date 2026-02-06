@@ -115,7 +115,6 @@ filegroup {
         "tests/src/**/systemui/graphics/ImageLoaderContentProviderTest.kt",
         "tests/src/**/systemui/flags/FakeFeatureFlagsTest.kt",
         "tests/src/**/systemui/communal/data/backup/CommunalBackupUtilsTest.kt",
-        "tests/src/**/AAAPlusPlusVerifySysuiRequiredTestPropertiesTest.java",
         "tests/src/**/systemui/accessibility/AccessibilityGestureTargetsObserverTest.java",
         "tests/src/**/systemui/accessibility/floatingmenu/AccessibilityFloatingMenuControllerTest.java",
         "tests/src/**/systemui/screenshot/appclips/AppClipsActivityTest.java",
@@ -462,6 +461,20 @@ java_defaults {
     },
 }
 
+java_defaults {
+    name: "SystemUI_compile_dagger",
+
+    plugins: ["dagger2-compiler"],
+
+    annotation_processor_flags: [
+        "dagger.fastInit=ENABLED",
+        "dagger.explicitBindingConflictsWithInject=ERROR",
+        "dagger.useBindingGraphFix=ENABLED",
+    ],
+
+    defaults_visibility: ["//visibility:public"],
+}
+
 // The set of sources that instantiate the AOSP System UI Application (including Dagger graph)
 filegroup {
     name: "SystemUI-application-srcs",
@@ -620,12 +633,6 @@ android_library {
         "dagger.useBindingGraphFix=ENABLED",
     ],
     manifest: "AndroidManifest.xml",
-}
-
-filegroup {
-    name: "AAA-src",
-    srcs: ["tests/src/com/android/AAAPlusPlusVerifySysuiRequiredTestPropertiesTest.java"],
-    path: "tests/src",
 }
 
 java_library {

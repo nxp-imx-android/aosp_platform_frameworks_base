@@ -22,6 +22,7 @@ import com.android.systemui.screencapture.common.domain.interactor.screenCapture
 import com.android.systemui.screencapture.common.ui.viewmodel.drawableLoaderViewModel
 import com.android.systemui.screencapture.domain.interactor.screenCaptureUiInteractor
 import com.android.systemui.screencapture.record.camera.domain.interactor.screenCaptureCameraTransformationInteractor
+import com.android.systemui.screencapture.record.camera.domain.interactor.screenRecordCameraInteractor
 import com.android.systemui.screencapture.record.domain.interactor.screenCaptureRecordFeaturesInteractor
 import com.android.systemui.screencapture.record.smallscreen.domain.interactor.recordDetailsStateInteractor
 import com.android.systemui.screencapture.record.smallscreen.domain.interactor.recordDetailsTargetInteractor
@@ -47,12 +48,12 @@ fun Kosmos.smallScreenCaptureRecordViewModelFactory(
                 recordDetailsTargetViewModelFactory = recordDetailsTargetViewModelFactory,
                 drawableLoaderViewModel = drawableLoaderViewModel,
                 screenCaptureRecordFeaturesInteractor = screenCaptureRecordFeaturesInteractor,
-                recordDetailsMarkupColorPickerViewModelFactory =
-                    recordDetailsMarkupColorPickerViewModelFactory,
+                recordDetailsColorPickerViewModelFactory = recordDetailsColorPickerViewModelFactory,
                 recordDetailsTargetInteractor = recordDetailsTargetInteractor,
                 recordDetailsStateInteractor = recordDetailsStateInteractor,
                 screenCaptureCameraTransformationInteractor =
                     screenCaptureCameraTransformationInteractor,
+                screenRecordCameraInteractor = screenRecordCameraInteractor,
                 defaultDetailsPopupType = defaultDetailsPopupType,
             )
     }

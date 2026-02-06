@@ -19,17 +19,19 @@ package com.android.systemui.screencapture.record.smallscreen.ui.viewmodel
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.screencapture.common.domain.interactor.screenCaptureMarkupInteractor
 import com.android.systemui.screencapture.common.ui.viewmodel.drawableLoaderViewModel
+import com.android.systemui.screencapture.record.camera.domain.interactor.screenRecordCameraInteractor
 
 val Kosmos.recordDetailsMarkupColorPickerViewModel by
-    Kosmos.Fixture { recordDetailsMarkupColorPickerViewModelFactory.create() }
+    Kosmos.Fixture { recordDetailsColorPickerViewModelFactory.create() }
 
-val Kosmos.recordDetailsMarkupColorPickerViewModelFactory by
+val Kosmos.recordDetailsColorPickerViewModelFactory by
     Kosmos.Fixture {
-        object : RecordDetailsMarkupColorPickerViewModel.Factory {
-            override fun create(): RecordDetailsMarkupColorPickerViewModel {
-                return RecordDetailsMarkupColorPickerViewModel(
+        object : RecordDetailsColorPickerViewModel.Factory {
+            override fun create(): RecordDetailsColorPickerViewModel {
+                return RecordDetailsColorPickerViewModel(
                     drawableLoaderViewModel = drawableLoaderViewModel,
-                    interactor = screenCaptureMarkupInteractor,
+                    markupInteractor = screenCaptureMarkupInteractor,
+                    cameraInteractor = screenRecordCameraInteractor,
                 )
             }
         }

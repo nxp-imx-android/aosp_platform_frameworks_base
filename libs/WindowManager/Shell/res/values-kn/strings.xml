@@ -138,28 +138,28 @@
     <string name="close_text" msgid="4986518933445178928">"ಮುಚ್ಚಿ"</string>
     <string name="collapse_menu_text" msgid="7515008122450342029">"ಮೆನು ಮುಚ್ಚಿ"</string>
     <string name="desktop_mode_app_header_chip_text" msgid="7617377295944971651">"<xliff:g id="APP_NAME">%1$s</xliff:g> (ಡೆಸ್ಕ್‌ಟಾಪ್ ವಿಂಡೋಯಿಂಗ್)"</string>
-    <string name="desktop_mode_maximize_menu_maximize_text" msgid="3275717276171114411">"ಸ್ಕ್ರೀನ್ ಅನ್ನು ಮ್ಯಾಕ್ಸಿಮೈಸ್ ಮಾಡಿ"</string>
-    <string name="desktop_mode_maximize_menu_snap_text" msgid="5673738963174074006">"ಮರುಗಾತ್ರಗೊಳಿಸಿ"</string>
+    <string name="desktop_mode_layout_menu_maximize_text" msgid="7086608727256054454">"ಸ್ಕ್ರೀನ್‌ ಅನ್ನು ಮ್ಯಾಕ್ಸಿಮೈಸ್‌ ಮಾಡಿ"</string>
+    <string name="desktop_mode_layout_menu_snap_text" msgid="7558194147987254333">"ಮರುಗಾತ್ರಗೊಳಿಸಿ"</string>
     <string name="desktop_mode_non_resizable_snap_text" msgid="3771776422751387878">"ಆ್ಯಪ್ ಅನ್ನು ಇಲ್ಲಿಗೆ ಸರಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ"</string>
     <string name="desktop_mode_talkback_state_opening" msgid="8505494249513712682">"ಹೊಸ ಆ್ಯಪ್ ವಿಂಡೋವನ್ನು ತೆರೆಯಲಾಗುತ್ತಿದೆ"</string>
     <string name="desktop_mode_talkback_state_closing" msgid="6791583518636526904">"ಆ್ಯಪ್ ವಿಂಡೋವನ್ನು ಮುಚ್ಚಲಾಗುತ್ತಿದೆ"</string>
     <string name="desktop_mode_talkback_state_minimizing" msgid="7406911785134757827">"ಆ್ಯಪ್ ವಿಂಡೋವನ್ನು ಮಿನಿಮೈಸ್ ಮಾಡಲಾಗುತ್ತಿದೆ"</string>
     <string name="desktop_mode_talkback_state_focused" msgid="6287982923335568236">"<xliff:g id="APP_NAME">%1$s</xliff:g> (ಫೋಕಸ್ ಮಾಡಲಾಗಿದೆ)"</string>
     <string name="desktop_mode_talkback_state_not_focused" msgid="4640618691603218929">"<xliff:g id="APP_NAME">%1$s</xliff:g> (ಫೋಕಸ್ ಮಾಡಲಾಗಿಲ್ಲ)"</string>
-    <string name="desktop_mode_maximize_menu_immersive_button_text" msgid="559492223133829481">"ಇಮ್ಮರ್ಸಿವ್"</string>
-    <string name="desktop_mode_maximize_menu_immersive_restore_button_text" msgid="4900114367354709257">"ಮರುಸ್ಥಾಪಿಸಿ"</string>
-    <string name="desktop_mode_maximize_menu_maximize_button_text" msgid="3090199175564175845">"ಮ್ಯಾಕ್ಸಿಮೈಸ್ ಮಾಡಿ"</string>
-    <string name="desktop_mode_maximize_menu_restore_button_text" msgid="4234449220944704387">"ಮರುಸ್ಥಾಪಿಸಿ"</string>
-    <string name="desktop_mode_maximize_menu_snap_left_button_text" msgid="8077452201179893424">"ಎಡಕ್ಕೆ ಸ್ನ್ಯಾಪ್ ಮಾಡಿ"</string>
-    <string name="desktop_mode_maximize_menu_snap_right_button_text" msgid="7117751068945657304">"ಬಲಕ್ಕೆ ಸ್ನ್ಯಾಪ್ ಮಾಡಿ"</string>
+    <string name="desktop_mode_layout_menu_immersive_button_text" msgid="9009888844507160172">"ಇಮ್ಮರ್ಸಿವ್‌"</string>
+    <string name="desktop_mode_layout_menu_immersive_restore_button_text" msgid="3110073879417912032">"ಮರುಸ್ಥಾಪಿಸಿ"</string>
+    <string name="desktop_mode_layout_menu_maximize_button_text" msgid="5586863071181530250">"ಮ್ಯಾಕ್ಸಿಮೈಸ್‌ ಮಾಡಿ"</string>
+    <string name="desktop_mode_layout_menu_restore_button_text" msgid="5422006898402949300">"ಮರುಸ್ಥಾಪಿಸಿ"</string>
+    <string name="desktop_mode_layout_menu_snap_left_button_text" msgid="6464364897343872665">"ಎಡಕ್ಕೆ ಸ್ನ್ಯಾಪ್‌ ಮಾಡಿ"</string>
+    <string name="desktop_mode_layout_menu_snap_right_button_text" msgid="565024687319285843">"ಬಲಕ್ಕೆ ಸ್ನ್ಯಾಪ್‌ ಮಾಡಿ"</string>
     <string name="desktop_mode_a11y_action_snap_left" msgid="2932955411661734668">"ಮರುಗಾತ್ರಗೊಳಿಸಿ ಆ್ಯಪ್ ವಿಂಡೋ ಎಡ"</string>
     <string name="desktop_mode_a11y_action_snap_right" msgid="4577032451624261787">"ಮರುಗಾತ್ರಗೊಳಿಸಿ ಆ್ಯಪ್ ವಿಂಡೋ ಬಲ"</string>
     <string name="desktop_mode_a11y_action_maximize_restore" msgid="8026037983417986686">"ವಿಂಡೋ ಗಾತ್ರವನ್ನು ಗರಿಷ್ಠಗೊಳಿಸಿ ಅಥವಾ ಮರುಸ್ಥಾಪಿಸಿ"</string>
     <string name="app_handle_chip_accessibility_announce" msgid="499881698947450536">"ಮೆನು ತೆರೆಯಿರಿ"</string>
     <string name="app_handle_menu_accessibility_announce" msgid="7928858564852785398">"<xliff:g id="WINDOWING_MODE">%1$s</xliff:g> ಅನ್ನು ನಮೂದಿಸಿ"</string>
-    <string name="maximize_menu_talkback_action_snap_left_text" msgid="500309467459084564">"ಮರುಗಾತ್ರಗೊಳಿಸಿ ವಿಂಡೋವನ್ನು ಎಡಕ್ಕೆ ಸರಿಸಿ"</string>
-    <string name="maximize_menu_talkback_action_snap_right_text" msgid="7010831426654467163">"ಮರುಗಾತ್ರಗೊಳಿಸಿ ವಿಂಡೋವನ್ನು ಬಲಕ್ಕೆ ಸರಿಸಿ"</string>
-    <string name="maximize_menu_talkback_action_maximize_restore_text" msgid="4942610897847934859">"ವಿಂಡೋ ಗಾತ್ರವನ್ನು ಗರಿಷ್ಠಗೊಳಿಸಿ ಅಥವಾ ಮರುಸ್ಥಾಪಿಸಿ"</string>
+    <string name="layout_menu_talkback_action_snap_left_text" msgid="8141501620544883986">"ವಿಂಡೋವನ್ನು ಎಡಕ್ಕೆ ಮರುಗಾತ್ರಗೊಳಿಸಿ"</string>
+    <string name="layout_menu_talkback_action_snap_right_text" msgid="7819760135716721943">"ವಿಂಡೋವನ್ನು ಬಲಕ್ಕೆ ಮರುಗಾತ್ರಗೊಳಿಸಿ"</string>
+    <string name="layout_menu_talkback_action_maximize_restore_text" msgid="4164150689697006287">"ವಿಂಡೋ ಗಾತ್ರವನ್ನು ಗರಿಷ್ಠಗೊಳಿಸಿ ಅಥವಾ ಮರುಸ್ಥಾಪಿಸಿ"</string>
     <string name="app_header_talkback_action_maximize_button_text" msgid="8776156791095878638">"ಆ್ಯಪ್ ವಿಂಡೋದ ಗಾತ್ರವನ್ನು ಮ್ಯಾಕ್ಸಿಮೈಸ್ ಮಾಡಿ"</string>
     <string name="app_header_talkback_action_restore_button_text" msgid="2153022340772980863">"ವಿಂಡೋ ಗಾತ್ರವನ್ನು ಮರುಸ್ಥಾಪಿಸಿ"</string>
     <string name="app_header_talkback_action_minimize_button_text" msgid="7491054416186901764">"ಆ್ಯಪ್ ವಿಂಡೋವನ್ನು ಮಿನಿಮೈಸ್ ಮಾಡಿ"</string>

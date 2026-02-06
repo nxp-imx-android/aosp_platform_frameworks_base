@@ -170,7 +170,6 @@ import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializerImpl;
 import com.android.wm.shell.desktopmode.data.persistence.DesktopPersistentRepository;
 import com.android.wm.shell.desktopmode.desktopfirst.DesktopDisplayModeController;
 import com.android.wm.shell.desktopmode.desktopfirst.DesktopFirstListenerManager;
-import com.android.wm.shell.desktopmode.desktoptaskshandlers.DesktopTasksTransitionHandler;
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider;
 import com.android.wm.shell.desktopmode.education.AppHandleEducationController;
 import com.android.wm.shell.desktopmode.education.AppHandleEducationFilter;
@@ -215,6 +214,7 @@ import com.android.wm.shell.shared.annotations.ShellBackgroundThread;
 import com.android.wm.shell.shared.annotations.ShellDesktopThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.annotations.ShellMainThreadImmediate;
+import com.android.wm.shell.shared.bubbles.BubbleFeatureConfig;
 import com.android.wm.shell.shared.desktopmode.DesktopConfig;
 import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.shared.pip.PipFlags;
@@ -296,6 +296,12 @@ public abstract class WMShellModule {
     //
     // Bubbles
     //
+
+    @WMSingleton
+    @Provides
+    static BubbleFeatureConfig providesBubbleFeatureConfig(Context context) {
+        return new BubbleFeatureConfig(context);
+    }
 
     @WMSingleton
     @Provides
@@ -555,10 +561,12 @@ public abstract class WMShellModule {
             @ShellBackgroundThread CoroutineScope bgScope,
             ShellTaskOrganizer shellTaskOrganizer,
             LauncherApps launcherApps,
-            ShellInit shellInit) {
+            ShellInit shellInit,
+            ShellController shellController,
+            ShellCommandHandler shellCommandHandler) {
         return new AppToWebRepositoryImpl(context, assistContentRequester,
                 appToWebGenericLinksParser, appToWebDatastoreRepository, mainScope, bgScope,
-                shellTaskOrganizer, launcherApps, shellInit);
+                shellTaskOrganizer, launcherApps, shellInit, shellController, shellCommandHandler);
     }
 
     @WMSingleton
@@ -843,7 +851,6 @@ public abstract class WMShellModule {
             Optional<RecentsTransitionHandler> recentsTransitionHandler,
             KeyguardTransitionHandler keyguardTransitionHandler,
             Optional<DesktopTasksController> desktopTasksController,
-            DesktopTasksTransitionHandler desktopTasksTransitionHandler,
             Optional<UnfoldTransitionHandler> unfoldHandler,
             Optional<ActivityEmbeddingController> activityEmbeddingController,
             BubbleTransitions bubbleTransitions,
@@ -860,7 +867,6 @@ public abstract class WMShellModule {
                 recentsTransitionHandler,
                 keyguardTransitionHandler,
                 desktopTasksController,
-                desktopTasksTransitionHandler,
                 unfoldHandler,
                 activityEmbeddingController,
                 bubbleTransitions,
@@ -1158,7 +1164,7 @@ public abstract class WMShellModule {
     @Provides
     static DesktopTilingDecorViewModel provideDesktopTilingViewModel(Context context,
             @ShellMainThread MainCoroutineDispatcher mainDispatcher,
-            @ShellMainThread CoroutineScope mainScope,
+            @ShellMainThreadImmediate CoroutineScope mainImmediateScope,
             @ShellBackgroundThread CoroutineScope bgScope,
             DisplayController displayController,
             RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
@@ -1180,7 +1186,7 @@ public abstract class WMShellModule {
         return new DesktopTilingDecorViewModel(
                 context,
                 mainDispatcher,
-                mainScope,
+                mainImmediateScope,
                 bgScope,
                 displayController,
                 rootTaskDisplayAreaOrganizer,
@@ -1498,6 +1504,7 @@ public abstract class WMShellModule {
             @ShellMainThread Choreographer mainChoreographer,
             @ShellMainThread MainCoroutineDispatcher mainDispatcher,
             @ShellMainThread CoroutineScope mainScope,
+            @ShellMainThreadImmediate CoroutineScope mainImmediateScope,
             @ShellBackgroundThread CoroutineScope bgScope,
             @ShellBackgroundThread ShellExecutor bgExecutor,
             ShellInit shellInit,
@@ -1548,8 +1555,8 @@ public abstract class WMShellModule {
             return Optional.empty();
         }
         return Optional.of(new DesktopModeWindowDecorViewModel(context, shellExecutor, mainHandler,
-                mainChoreographer, mainDispatcher, mainScope, bgScope, bgExecutor,
-                shellInit, shellCommandHandler, windowManager,
+                mainChoreographer, mainDispatcher, mainScope, mainImmediateScope, bgScope,
+                bgExecutor, shellInit, shellCommandHandler, windowManager,
                 taskOrganizer, desktopUserRepositories, displayController, shellController,
                 displayInsetsController, syncQueue, transitions, desktopTasksController,
                 desktopImmersiveController.get(),
@@ -1655,8 +1662,8 @@ public abstract class WMShellModule {
             @NonNull ShellCommandHandler shellCommandHandler,
             @NonNull UserProfileContexts userProfileContexts) {
         return new WindowDecorTaskResourceLoaderImpl(context, shellInit, shellController,
-                mainHandler, mainScope, mainDispatcher, bgDispatcher, shellCommandHandler,
-                userProfileContexts);
+                mainHandler, mainScope, mainDispatcher.getImmediate(), bgDispatcher,
+                shellCommandHandler, userProfileContexts);
     }
 
     @WMSingleton
@@ -2404,8 +2411,7 @@ public abstract class WMShellModule {
             QuitFocusedAppKeyGestureHandler quitFocusedAppKeyGestureHandler,
             Optional<DesktopAiInitializer> desktopAiInitializer,
             BubbleRootTask bubbleRootTask,
-            IDesktopModeProvider desktopModeProvider,
-            DesktopTasksTransitionHandler desktopTasksTransitionHandler) {
+            IDesktopModeProvider desktopModeProvider) {
         return new Object();
     }
 
@@ -2469,4 +2475,5 @@ public abstract class WMShellModule {
     static HomeIntentProvider provideHomeIntentProvider(Context context) {
         return new HomeIntentProvider(context);
     }
+
 }

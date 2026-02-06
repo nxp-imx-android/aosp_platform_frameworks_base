@@ -222,11 +222,21 @@ constructor(
                 forceLargeSize,
                 promptKind,
                 displayStateInteractor.isLargeScreen,
+                displayStateInteractor.isExtraLargeScreen,
                 displayStateInteractor.currentRotation,
                 fallbackShowing,
                 modalities,
-            ) { forceLarge, promptKind, isLargeScreen, rotation, fallbackShowing, modalities ->
+            ) {
+                forceLarge,
+                promptKind,
+                isLargeScreen,
+                isExtraLargeScreen,
+                rotation,
+                fallbackShowing,
+                modalities ->
                 when {
+                    isExtraLargeScreen && !modalities.hasUdfps && Flags.largeScreenBp() ->
+                        PromptPosition.Center
                     forceLarge ||
                         isLargeScreen ||
                         fallbackShowing ||
@@ -533,7 +543,8 @@ constructor(
                         left = getHorizontalPadding(size, modalities, hasOnlyOneLineTitle)
                     PromptPosition.Left ->
                         right = getHorizontalPadding(size, modalities, hasOnlyOneLineTitle)
-                    PromptPosition.Top -> {}
+                    PromptPosition.Top,
+                    PromptPosition.Center -> {}
                 }
                 Rect(left, top, right, 0)
             }

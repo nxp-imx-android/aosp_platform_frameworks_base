@@ -70,6 +70,7 @@ import com.android.wm.shell.desktopmode.WindowDecorCaptionRepository
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
+import com.android.wm.shell.shared.annotations.ShellMainThreadImmediate
 import com.android.wm.shell.shared.desktopmode.DesktopConfig
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT
@@ -122,6 +123,7 @@ constructor(
     @ShellMainThread private val mainExecutor: ShellExecutor,
     @ShellMainThread private val mainDispatcher: MainCoroutineDispatcher,
     @ShellMainThread private val mainScope: CoroutineScope,
+    @ShellMainThreadImmediate private val mainImmediateScope: CoroutineScope,
     @ShellBackgroundThread private val bgExecutor: ShellExecutor,
     @ShellBackgroundThread private val bgScope: CoroutineScope,
     private val transitions: Transitions,
@@ -505,7 +507,7 @@ constructor(
                 // through and dismiss the modal, even when the caption touchable region is not
                 // being limited.
                 inputFeatures = inputFeatures or WindowManager.LayoutParams.INPUT_FEATURE_SPY
-            } else if (DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION.isTrue) {
+            } else {
                 if (shouldExcludeCaptionFromAppBounds) {
                     shouldSetAppBounds = true
                 } else {
@@ -882,7 +884,7 @@ constructor(
                     displayController = displayController,
                     taskResourceLoader = taskResourceLoader,
                     mainDispatcher = mainDispatcher,
-                    mainScope = mainScope,
+                    mainImmediateScope = mainImmediateScope,
                     parentSurface = taskSurface,
                     surfaceControlTransactionSupplier = surfaceControlTransactionSupplier,
                     taskInfo = taskInfo,

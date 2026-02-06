@@ -25,6 +25,7 @@ import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import androidx.fragment.app.Fragment
 import androidx.preference.Preference
@@ -64,6 +65,7 @@ import com.android.settingslib.metadata.SensitivityLevel.Companion.UNKNOWN_SENSI
 import com.android.settingslib.metadata.preferencesapi.PreferencesApiScreen
 import com.android.settingslib.metadata.getPreferenceIcon
 import com.android.settingslib.metadata.isPreferenceIndexable
+import com.android.settingslib.metadata.isUiOnlyPreference
 import com.android.settingslib.preference.PreferenceScreenCreator
 import com.android.settingslib.preference.PreferenceScreenFactory
 import com.android.settingslib.preference.PreferenceScreenProvider
@@ -95,6 +97,7 @@ private constructor(
     private val includeParameters = (request.flags and PreferenceGetterFlags.PARAMETERS) != 0
     private val includeHierarchy = (request.flags and PreferenceGetterFlags.EXCLUDE_HIERARCHY) == 0
     private val shrinkHierarchy = (request.flags and PreferenceGetterFlags.SHRINK_HIERARCHY) != 0
+    private val excludeUiOnlyPreferences = true
 
     private suspend fun init() {
         val factories = PreferenceScreenRegistry.preferenceScreenMetadataFactories
@@ -425,14 +428,18 @@ private constructor(
         screenMetadata: PreferenceScreenMetadata,
         isRoot: Boolean,
     ): PreferenceGroupProto = preferenceGroupProto {
-        preference = toProto(screenMetadata, this@toProto.metadata, isRoot)
+        if (!excludeUiOnlyPreferences || !this@toProto.metadata.isUiOnlyPreference(context)) {
+            preference = toProto(screenMetadata, this@toProto.metadata, isRoot)
+        }
         forEachAsync {
             addPreferences(
                 preferenceOrGroupProto {
                     if (it is PreferenceHierarchy) {
                         group = it.toProto(screenMetadata, false)
                     } else {
-                        preference = toProto(screenMetadata, it.metadata, false)
+                        if (!excludeUiOnlyPreferences || !it.metadata.isUiOnlyPreference(context)) {
+                            preference = toProto(screenMetadata, it.metadata, false)
+                        }
                     }
                 }
             )
@@ -661,12 +668,21 @@ fun <T> PersistentPreference<T>.evalWritePermit(
 ): Int? {
     val isDebuggable = AppUtils.isDebuggable()
 
+    // Use the global setting as a gate for debug environments
+    val hasUnknownSensitivitySettings = Settings.Global.getInt(
+        context.contentResolver,
+        "com.android.settings.UNKNOWN_SENSITIVITY_IS_AVAILABLE",
+        0
+    ) == 1
+
     return when {
         // High sensitivity is strictly disallowed.
         sensitivityLevel == HIGH_SENSITIVITY -> ReadWritePermit.DISALLOW
 
-        // Unknown sensitivity is disallowed, unless we are on a debuggable build.
-        sensitivityLevel == UNKNOWN_SENSITIVITY && !isDebuggable -> ReadWritePermit.DISALLOW
+        // Unknown sensitivity is disallowed, unless we are on a debuggable build
+        // and the caller holds the WRITE_SECURE_SETTINGS permission.
+        sensitivityLevel == UNKNOWN_SENSITIVITY &&
+                !(isDebuggable && hasUnknownSensitivitySettings) -> ReadWritePermit.DISALLOW
 
         // If the app lacks the required permissions, require them.
         getWritePermissions(context)?.check(context, callingPid, callingUid) == false ->

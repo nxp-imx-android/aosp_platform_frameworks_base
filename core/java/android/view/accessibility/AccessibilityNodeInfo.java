@@ -1364,12 +1364,11 @@ public class AccessibilityNodeInfo implements Parcelable {
      *
      * @return The window id.
      */
+    // Note: If this node's window is embedded in another window then this method returns that host
+    // window ID, so internal implementation logic should instead use #getRealWindowId() to get the
+    // ID of the actual window that owns this node.
     public int getWindowId() {
         if (Flags.embeddedUiUsesHostWindowId()) {
-            if (Build.isDebuggable() && Process.myUid() == Process.SYSTEM_UID) {
-                throw new IllegalStateException(
-                        "Internal implementation logic should use #getRealWindowId()");
-            }
             if (mEmbeddingHostWindowId != AccessibilityWindowInfo.UNDEFINED_WINDOW_ID) {
                 return mEmbeddingHostWindowId;
             }
@@ -2304,14 +2303,13 @@ public class AccessibilityNodeInfo implements Parcelable {
      *
      * @see android.accessibilityservice.AccessibilityService#getWindows()
      */
+    // Note: If this node's window is embedded in another window then this method returns that host
+    // window, so internal implementation logic should instead use #getRealWindowId() and
+    // AccessibilityWindowManager to get the actual window of this node.
     public AccessibilityWindowInfo getWindow() {
         enforceSealed();
         final int windowId;
         if (Flags.embeddedUiUsesHostWindowId()) {
-            if (Build.isDebuggable() && Process.myUid() == Process.SYSTEM_UID) {
-                throw new IllegalStateException("Internal implementation logic should use "
-                        + "#getRealWindowId() and AccessibilityWindowManager");
-            }
             if (mEmbeddingHostWindowId != AccessibilityWindowInfo.UNDEFINED_WINDOW_ID) {
                 windowId = mEmbeddingHostWindowId;
             } else {
@@ -4407,7 +4405,11 @@ public class AccessibilityNodeInfo implements Parcelable {
     public void setTextSelection(int start, int end) {
         enforceNotSealed();
         if (Flags.a11ySelectionApi()) {
-            Selection selection =
+            // If invalid text selection flag is enabled and text selection is invalid, then set the
+            // selection to null.
+            Selection selection = (Flags.a11ySelectionApiInvalidTextSelection()
+                    && (start == UNDEFINED_SELECTION_INDEX || end == UNDEFINED_SELECTION_INDEX))
+                            ? null :
                     new Selection(
                             new SelectionPosition(this, start), new SelectionPosition(this, end));
             setSelection(selection);

@@ -751,6 +751,7 @@ public class NotificationStackScrollLayout
         return 0f;
     }
 
+    @VisibleForTesting
     protected void setLogger(NotificationStackScrollLogger logger) {
         mLogger = logger;
     }
@@ -3859,18 +3860,40 @@ public class NotificationStackScrollLayout
      */
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
+        boolean shouldRefuse = false;
         if (SceneContainerFlag.isEnabled()) {
             // TODO(b/433984972): this is especially useful because there are scenarios that the
             //  NSSL children overlaps with other visible, interactive items.
-            if (shouldRefuseTouchEvent(ev)) {
+            shouldRefuse = shouldRefuseTouchEvent(ev);
+            if (shouldRefuse) {
+                if (ev.getActionMasked() != MotionEvent.ACTION_MOVE) {
+                    mLogger.logNsslOnInterceptTouchEvent(
+                            ev.getActionMasked(),
+                            /* result= */ true,
+                            /* shouldRefuse= */ true,
+                            /* touchHandlerIntercepted= */ false
+                    );
+                }
                 return true;
             }
         }
 
-        if (mTouchHandler != null && mTouchHandler.onInterceptTouchEvent(ev)) {
-            return true;
+        boolean touchHandlerIntercepted = false;
+        if (mTouchHandler != null) {
+            touchHandlerIntercepted = mTouchHandler.onInterceptTouchEvent(ev);
         }
-        return super.onInterceptTouchEvent(ev);
+
+        boolean result = touchHandlerIntercepted || super.onInterceptTouchEvent(ev);
+
+        if (ev.getActionMasked() != MotionEvent.ACTION_MOVE) {
+            mLogger.logNsslOnInterceptTouchEvent(
+                    ev.getActionMasked(),
+                    result,
+                    shouldRefuse,
+                    touchHandlerIntercepted
+            );
+        }
+        return result;
     }
 
     /**
@@ -3929,7 +3952,14 @@ public class NotificationStackScrollLayout
         if (!SceneContainerFlag.isEnabled()) {
             return false;
         }
-        return !mScrollViewFields.interactive || isOutBoundsDownEvent(ev);
+        boolean interactive = mScrollViewFields.interactive;
+        boolean isOutBounds = isOutBoundsDownEvent(ev);
+        boolean result = !interactive || isOutBounds;
+        if (ev.getActionMasked() != MotionEvent.ACTION_MOVE) {
+            mLogger.logNsslShouldRefuseTouchEvent(ev.getActionMasked(), result, interactive,
+                    isOutBounds);
+        }
+        return result;
     }
 
     /**

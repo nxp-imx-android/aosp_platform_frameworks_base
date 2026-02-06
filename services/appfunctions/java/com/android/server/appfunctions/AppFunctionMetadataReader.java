@@ -29,6 +29,8 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.PermissionManuallyEnforced;
 import android.annotation.WorkerThread;
+import android.app.appfunctions.AppFunctionActivityId;
+import android.app.appfunctions.AppFunctionActivityState;
 import android.app.appfunctions.AppFunctionManagerHelper;
 import android.app.appfunctions.AppFunctionMetadata;
 import android.app.appfunctions.AppFunctionName;
@@ -295,6 +297,15 @@ final class AppFunctionMetadataReader {
                         });
     }
 
+    @WorkerThread
+    @NonNull
+    AndroidFuture<List<AppFunctionActivityState>> getAppFunctionActivityStates(
+            @NonNull List<AppFunctionActivityId> activityIds, int userId) {
+        return AndroidFuture.completedFuture(
+                mMultiUserDynamicAppFunctionRegistry.getAppFunctionActivityStates(
+                        activityIds, UserHandle.of(userId)));
+    }
+
     @NonNull
     private AndroidFuture<List<AppFunctionState>> parseAppFunctionStates(
             @NonNull FutureSearchResults searchResults,
@@ -342,12 +353,21 @@ final class AppFunctionMetadataReader {
             return new AppFunctionState(
                     appFunctionName,
                     calculateEffectiveEnabledState(staticDocument, runtimeDocument, userId),
-                    // TODO: b/479450424 - Populate activity IDs.
-                    new ArraySet<>());
+                    getActivityIdInfo(appFunctionName, UserHandle.of(userId)));
         } catch (RuntimeException e) {
             Slog.e(TAG, "Failed to convert SearchResult to AppFunctionState.", e);
             return null;
         }
+    }
+
+    @Nullable
+    private ArraySet<AppFunctionActivityId> getActivityIdInfo(
+            @NonNull AppFunctionName functionName, @NonNull UserHandle user) {
+        if (!mCache.isActivityScopedDynamicFunction(
+                functionName.getPackageName(), functionName.getFunctionId(), user)) {
+            return null;
+        }
+        return mMultiUserDynamicAppFunctionRegistry.getRegisteredActivityIds(functionName, user);
     }
 
     /**

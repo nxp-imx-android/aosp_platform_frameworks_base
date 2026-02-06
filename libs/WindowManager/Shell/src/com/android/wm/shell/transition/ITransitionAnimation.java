@@ -38,6 +38,8 @@ public interface ITransitionAnimation {
      *
      * This animator MUST stop touching {@param containers} once it has completed the detach
      * result.
+     *
+     * @return the state of all containers in {@param containers} in the same order.
      */
     @NonNull
     DetachResult detach(@NonNull List<WindowContainerToken> containers,

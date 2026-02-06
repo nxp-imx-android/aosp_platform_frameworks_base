@@ -42,16 +42,6 @@ flag {
 }
 
 flag {
-    name: "enable_usage_events_reporting_thresholds"
-    namespace: "backstage_power"
-    description: "Enables simple threshold limiting reporting of usage events."
-    bug: "444030238"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "add_query_event_metrics"
     namespace: "backstage_power"
     description: "Feature flag for newly added metrics for queryEvent API"

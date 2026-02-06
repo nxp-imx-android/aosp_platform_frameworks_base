@@ -22,6 +22,8 @@ import com.android.systemui.communal.data.repository.ContextualSetupRepository
 import com.android.systemui.communal.data.repository.UprightChargingTriggerRepository
 import com.android.systemui.communal.data.repository.fake.FakeContextualSetupRepository
 import com.android.systemui.communal.data.repository.fake.FakeUprightChargingTriggerRepository
+import com.android.systemui.communal.domain.definition.ContextualSetupDefinition
+import com.android.systemui.communal.domain.definition.fake.FakeContextualSetupDefinition
 import com.android.systemui.kosmos.Kosmos
 
 val Kosmos.commonSetupPreconditions: CommonSetupPreconditions by
@@ -38,3 +40,8 @@ val Kosmos.contextualSetupRepository: ContextualSetupRepository by
     Kosmos.Fixture { FakeContextualSetupRepository() }
 val ContextualSetupRepository.fake: FakeContextualSetupRepository
     get() = this as FakeContextualSetupRepository
+
+val Kosmos.contextualSetupDefinitionFactory: (String) -> ContextualSetupDefinition by
+    Kosmos.Fixture { { id -> FakeContextualSetupDefinition(id) } }
+val ContextualSetupDefinition.fake: FakeContextualSetupDefinition
+    get() = this as FakeContextualSetupDefinition

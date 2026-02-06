@@ -259,6 +259,7 @@ import com.android.server.LocalServices;
 import com.android.server.SystemService;
 import com.android.server.am.ActivityManagerService.ItemMatcher;
 import com.android.server.am.LowMemDetector.MemFactor;
+import com.android.server.am.ServiceRecord.NeededReason;
 import com.android.server.am.ServiceRecord.ShortFgsInfo;
 import com.android.server.am.ServiceRecord.TimeLimitedFgsInfo;
 import com.android.server.am.psc.SyncBatchSession;
@@ -4272,7 +4273,8 @@ public final class ActiveServices {
                     "BIND_ALLOW_FOREGROUND_SERVICE_STARTS_FROM_BACKGROUND");
         }
 
-        if ((flags & Context.BIND_ALLOW_FREEZE) != 0 && !isCallerSystem) {
+        if ((flags & Context.BIND_ALLOW_FREEZE) != 0 && !isCallerSystem
+                && !callerApp.hasActiveInstrumentation()) {
             throw new SecurityException("Non-system caller (pid=" + callingPid
                     + ") set BIND_ALLOW_FREEZE when binding service " + service);
         }
@@ -5975,13 +5977,22 @@ public final class ActiveServices {
         if (!mRestartingServices.contains(r)) {
             return;
         }
-        if (!isServiceNeededLocked(r, false, false)) {
+        final @NeededReason int needed = r.getNeededReasonsLocked(false, false);
+        if (needed == ServiceRecord.NEEDED_NONE) {
             // Paranoia: is this service actually needed?  In theory a service that is not
             // needed should never remain on the restart list.  In practice...  well, there
             // have been bugs where this happens, and bad things happen because the process
             // ends up just being cached, so quickly killed, then restarted again and again.
             // Let's not let that happen.
             Slog.wtf(TAG, "Restarting service that is not needed: " + r);
+            return;
+        }
+        // Don't restart yet if all auto-create clients are frozen and no
+        // explicit start request exists.
+        if (Flags.deferServiceRestartWhenFrozen()
+                && needed == ServiceRecord.NEEDED_BY_AUTO_CREATE
+                && !r.hasNonFrozenAutoCreateConnections()) {
+            Slog.d(TAG_SERVICE, "Delaying restart of " + r + " because all clients are frozen");
             return;
         }
         try (var unused = mAm.mProcessStateController.startServiceBatchSession(
@@ -5997,6 +6008,25 @@ public final class ActiveServices {
             } else {
                 /* Will be a no-op if nothing pending */
                 mAm.updateOomAdjPendingTargetsLocked(OOM_ADJ_REASON_START_SERVICE);
+            }
+        }
+    }
+
+    /**
+     * Called when a process is unfrozen. Triggers restarts of any services it binds to
+     * that were deferred due to the client being frozen.
+     */
+    void onProcessUnfrozenLocked(@NonNull ProcessServiceRecord psr) {
+        if (!Flags.deferServiceRestartWhenFrozen()) {
+            return;
+        }
+        for (int i = 0; i < psr.numberOfConnections(); i++) {
+            final ConnectionRecord cr = psr.getConnectionAt(i);
+            if (cr.hasFlag(Context.BIND_AUTO_CREATE)) {
+                final ServiceRecord sr = cr.getService();
+                if (mRestartingServices.contains(sr)) {
+                    performServiceRestartLocked(sr);
+                }
             }
         }
     }
@@ -6669,24 +6699,6 @@ public final class ActiveServices {
         }
     }
 
-    final boolean isServiceNeededLocked(ServiceRecord r, boolean knowConn,
-            boolean hasConn) {
-        // Are we still explicitly being asked to run?
-        if (r.isStartRequested()) {
-            return true;
-        }
-
-        // Is someone still bound to us keeping us running?
-        if (!knowConn) {
-            hasConn = r.hasAutoCreateConnections();
-        }
-        if (hasConn) {
-            return true;
-        }
-
-        return false;
-    }
-
     private void bringDownServiceIfNeededLocked(ServiceRecord r, boolean knowConn,
             boolean hasConn, boolean enqueueOomAdj,
             @ServiceBindingOomAdjPolicy int serviceBindingOomAdjPolicy, String debugReason) {
@@ -6694,7 +6706,7 @@ public final class ActiveServices {
             Slog.i(TAG, "Bring down service for " + debugReason + " :" + r.toString());
         }
 
-        if (isServiceNeededLocked(r, knowConn, hasConn)) {
+        if (r.isNeededLocked(knowConn, hasConn)) {
             return;
         }
 
@@ -7427,7 +7439,7 @@ public final class ActiveServices {
                         Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
                     }
                     didSomething = true;
-                    if (!isServiceNeededLocked(sr, false, false)) {
+                    if (!sr.isNeededLocked(false, false)) {
                         // We were waiting for this service to start, but it is actually no
                         // longer needed.  This could happen because bringDownServiceIfNeeded
                         // won't bring down a service that is pending...  so now the pending

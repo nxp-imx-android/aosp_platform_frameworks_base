@@ -1123,6 +1123,7 @@
     <string name="lockscreen_access_pattern_cell_added_verbose" msgid="2931364927622563465">"Xana <xliff:g id="CELL_INDEX">%1$s</xliff:g> əlavə edildi"</string>
     <string name="lockscreen_access_pattern_detected" msgid="3931150554035194012">"Model tamamlandı"</string>
     <string name="lockscreen_access_pattern_area" msgid="1288780416685002841">"Model sahəsi."</string>
+    <string name="lockscreen_access_pattern_cell_verbose" msgid="6670905066468035137">"Xana <xliff:g id="CELL_INDEX">%1$s</xliff:g>"</string>
     <string name="keyguard_accessibility_widget_changed" msgid="7298011259508200234">"%1$s. Widget %2$d of %3$d."</string>
     <string name="keyguard_accessibility_add_widget" msgid="8245795023551343672">"Widget əlavə edin."</string>
     <string name="keyguard_accessibility_widget_empty_slot" msgid="544239307077644480">"Boş"</string>
@@ -2006,6 +2007,7 @@
     <string name="managed_profile_label_badge_3" msgid="6882151970556391957">"3-cü İş <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="clone_profile_label_badge" msgid="1871997694718793964">"Kopyalayın: <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="private_profile_label_badge" msgid="1712086003787839183">"Şəxsi <xliff:g id="LABEL">%1$s</xliff:g>"</string>
+    <string name="hsu_label_badge" msgid="1357272000281944932">"Sistem <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="lock_to_app_unlock_pin" msgid="3890940811866290782">"Ayırmadan öncə PIN istənilsin"</string>
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Qrafik açar istənilsin"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Ayırmadan öncə parol istənilsin"</string>
@@ -2617,6 +2619,8 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"Peyk vasitəsilə mesaj göndərmək üçün Google Mesajları defolt mesajlaşma tətbiqi olaraq təyin edin"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"Peyk mesajlaşması əlçatan deyil"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"Bu ölkədə və ya regionda peyk mesajlaşmasının əlçatan olub-olmadığını yoxlamaq üçün məkan ayarlarını aktiv edin"</string>
+    <!-- no translation found for satellite_indicator (6846063647532086110) -->
+    <skip />
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"Barmaqla Kilidaçmanı yenidən ayarlayın"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"<xliff:g id="FINGERPRINT">%s</xliff:g> artıq tanınmır."</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> və <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> artıq tanınmır."</string>

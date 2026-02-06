@@ -27,7 +27,6 @@ import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.app.WindowConfiguration;
 import android.app.compat.CompatChanges;
-import android.companion.virtualdevice.flags.Flags;
 import android.compat.annotation.ChangeId;
 import android.compat.annotation.EnabledSince;
 import android.content.AttributionSource;
@@ -153,8 +152,6 @@ final class GenericWindowPolicyController extends DisplayWindowPolicyController 
     // Used for detecting changes in the window flags.
     @GuardedBy("mGenericWindowPolicyControllerLock")
     private final WindowFlagsTracker mWindowFlagsTracker = new WindowFlagsTracker();
-    // TODO(b/449765707): Remove this once we clean up gwpc_secure_window_state_tracking flag.
-    private int mCurrentWindowFlags = FLAG_NONE;
 
     @NonNull
     @GuardedBy("mGenericWindowPolicyControllerLock")
@@ -391,20 +388,14 @@ final class GenericWindowPolicyController extends DisplayWindowPolicyController 
         final int displayId = waitAndGetDisplayId();
         if (displayId != INVALID_DISPLAY) {
             final ComponentName componentName = activityInfo.getComponentName();
-            if (Flags.gwpcSecureWindowStateTracking()) {
-                final ComponentName topComponentName = mWindowFlagsTracker.getTopComponentName();
-                if (Objects.equals(componentName, topComponentName)) {
-                    final int currentWindowFlags = mWindowFlagsTracker.getCurrentWindowFlags();
-                    detectSecureWindowStatusChange(windowFlags, currentWindowFlags, componentName,
-                            activityInfo.applicationInfo.uid, displayId);
-                    mWindowFlagsTracker.setWindowFlagsForComponentName(componentName, windowFlags);
-                }
-            } else {
-                detectSecureWindowStatusChange(windowFlags, mCurrentWindowFlags, componentName,
+            final ComponentName topComponentName = mWindowFlagsTracker.getTopComponentName();
+            if (Objects.equals(componentName, topComponentName)) {
+                final int currentWindowFlags = mWindowFlagsTracker.getCurrentWindowFlags();
+                detectSecureWindowStatusChange(windowFlags, currentWindowFlags, componentName,
                         activityInfo.applicationInfo.uid, displayId);
+                mWindowFlagsTracker.setWindowFlagsForComponentName(componentName, windowFlags);
             }
         }
-        mCurrentWindowFlags = windowFlags;
 
         if (!CompatChanges.isChangeEnabled(ALLOW_SECURE_ACTIVITY_DISPLAY_ON_REMOTE_DEVICE,
                 activityInfo.packageName,
@@ -434,10 +425,6 @@ final class GenericWindowPolicyController extends DisplayWindowPolicyController 
         mHandler.post(() ->
                 mActivityListener.onTopActivityChanged(displayId, topActivity, userId));
 
-        if (!Flags.gwpcSecureWindowStateTracking()) {
-            return;
-        }
-
         final int windowFlagsForComponentName =
                 mWindowFlagsTracker.getWindowFlagsForComponentName(topActivity);
         final int currentWindowFlags = mWindowFlagsTracker.getCurrentWindowFlags();
@@ -458,9 +445,7 @@ final class GenericWindowPolicyController extends DisplayWindowPolicyController 
             mHandler.post(() ->
                     mActivityListener.onRunningAppsChanged(displayId, uidPackagePairs));
             if (mRunningUidPackagePairs.isEmpty()) {
-                if (Flags.gwpcSecureWindowStateTracking()) {
-                    mWindowFlagsTracker.clear();
-                }
+                mWindowFlagsTracker.clear();
                 mHandler.post(() -> mActivityListener.onDisplayEmpty(displayId));
             }
         }

@@ -17,6 +17,7 @@
 package com.android.systemui.accessibility.floatingmenu;
 
 import static com.android.internal.accessibility.AccessibilityShortcutController.ACCESSIBILITY_HEARING_AIDS_COMPONENT_NAME;
+import static com.android.internal.accessibility.AccessibilityShortcutController.MAGNIFICATION_CONTROLLER_NAME;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -36,6 +37,8 @@ import com.android.internal.accessibility.common.ShortcutConstants.Accessibility
 import com.android.internal.accessibility.dialog.AccessibilityTarget;
 import com.android.settingslib.bluetooth.HearingAidDeviceManager;
 import com.android.settingslib.bluetooth.HearingAidDeviceManager.ConnectionStatus;
+import com.android.systemui.Flags;
+import com.android.systemui.accessibility.Magnification;
 import com.android.systemui.accessibility.floatingmenu.AccessibilityTargetAdapter.ViewHolder;
 import com.android.systemui.accessibility.hearingaid.HearingDeviceStatusDrawableInfo;
 import com.android.systemui.res.R;
@@ -69,6 +72,16 @@ public class AccessibilityTargetAdapter extends Adapter<ViewHolder> {
         void onMoreOptionsClicked(View view);
     }
 
+    private Context mContext;
+    private Magnification mMagnification;
+
+    private Magnification.MagnificationActivationChangedListener mMagnificationEnabledListener =
+            (displayId) -> {
+                if (displayId == mContext.getDisplayId()) {
+                    notifyDataSetChanged();
+                }
+            };
+
     @IntDef({
             ItemType.FIRST_ITEM,
             ItemType.REGULAR_ITEM,
@@ -81,8 +94,26 @@ public class AccessibilityTargetAdapter extends Adapter<ViewHolder> {
         int LAST_ITEM = 2;
     }
 
-    public AccessibilityTargetAdapter(@NonNull List<AccessibilityTarget> targets) {
+    public AccessibilityTargetAdapter(@NonNull List<AccessibilityTarget> targets,
+            Context context,
+            Magnification magnification) {
         mTargets = targets;
+        mContext = context;
+        mMagnification = magnification;
+    }
+
+    @Override
+    public void onAttachedToRecyclerView(
+            @NonNull RecyclerView recyclerView) {
+        if (Flags.floatingMenuMagnificationStatus()) {
+            mMagnification.registerActivationChangedListener(mMagnificationEnabledListener);
+        }
+    }
+
+    @Override
+    public void onDetachedFromRecyclerView(
+            @NonNull RecyclerView recyclerView) {
+        mMagnification.unregisterActivationChangedListener(mMagnificationEnabledListener);
     }
 
     @NonNull
@@ -126,8 +157,21 @@ public class AccessibilityTargetAdapter extends Adapter<ViewHolder> {
                 target.onSelected();
             }
         });
-        holder.itemView.setStateDescription(target.getStateDescription());
         holder.itemView.setContentDescription(target.getLabel());
+
+        if (Flags.floatingMenuMagnificationStatus()
+                && MAGNIFICATION_CONTROLLER_NAME.equals(target.getId())) {
+            final int statusResId =
+                    mMagnification.isAnyMagnificationActivated(mContext.getDisplayId())
+                            ? com.android.internal.R.string
+                            .accessibility_shortcut_menu_item_status_on
+                            : com.android.internal.R.string
+                                    .accessibility_shortcut_menu_item_status_off;
+
+            holder.itemView.setStateDescription(mContext.getString(statusResId));
+        } else {
+            holder.itemView.setStateDescription(target.getStateDescription());
+        }
 
         final String clickHint = target.getFragmentType() == AccessibilityFragmentType.TOGGLE
                 ? holder.itemView.getResources().getString(

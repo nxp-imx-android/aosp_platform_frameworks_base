@@ -164,6 +164,17 @@ public class InsightSurfaceClientTest {
     }
 
     @Test
+    public void testInsightSurfaceClientCreation_withThemeResourceName() {
+        final String themeResourceName = "theme";
+        final InsightSurfaceClient client =
+                new InsightSurfaceClient.Builder(mContext, mClientCallbacks)
+                        .setThemeResourceName(themeResourceName)
+                        .build();
+
+        assertThat(client.getThemeResourceName()).isEqualTo(themeResourceName);
+    }
+
+    @Test
     public void testInsightSurfaceClientCreation_withHint() {
         final BundleHint hint = new BundleHint.Builder().build();
 

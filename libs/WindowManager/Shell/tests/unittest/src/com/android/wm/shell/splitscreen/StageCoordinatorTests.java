@@ -38,6 +38,7 @@ import static com.android.wm.shell.splitscreen.SplitScreen.STAGE_TYPE_SIDE;
 import static com.android.wm.shell.splitscreen.SplitScreen.STAGE_TYPE_UNDEFINED;
 import static com.android.wm.shell.splitscreen.SplitScreenController.EXIT_REASON_DESKTOP_MODE;
 import static com.android.wm.shell.splitscreen.SplitScreenController.EXIT_REASON_DRAG_DIVIDER;
+import static com.android.wm.shell.splitscreen.SplitScreenController.EXIT_REASON_UNKNOWN;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_SPLIT_DISMISS;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -665,6 +666,19 @@ public class StageCoordinatorTests extends ShellTestCase {
         WindowContainerTransaction.Change c =
                 wct.getChanges().get(mMainChildTaskInfo.token.asBinder());
         assertFalse(c != null && c.getWindowingMode() == WINDOWING_MODE_FULLSCREEN);
+    }
+
+    @Test
+    public void prepareExitSplitScreen_doesNotUpdateSplitLayout() {
+        // Setup: Stage coordinator is in an active split state.
+        when(mStageCoordinator.isSplitActive()).thenReturn(true);
+        WindowContainerTransaction wct = new WindowContainerTransaction();
+
+        // Action: Prepare to exit split screen.
+        mStageCoordinator.prepareExitSplitScreen(STAGE_TYPE_MAIN, wct, EXIT_REASON_UNKNOWN);
+
+        // Verification: The split layout configuration should not be updated upon exiting.
+        verify(mSplitLayout, never()).updateConfiguration(any(), anyInt());
     }
 
     @Test

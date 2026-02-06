@@ -1002,6 +1002,7 @@ package android {
     field public static final int htmlDescription = 16844299; // 0x101060b
     field public static final int hyphenationFrequency = 16843998; // 0x10104de
     field public static final int icon = 16842754; // 0x1010002
+    field @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final int iconColor;
     field @Deprecated public static final int iconPreview = 16843337; // 0x1010249
     field public static final int iconSpaceReserved = 16844129; // 0x1010561
     field public static final int iconTint = 16844126; // 0x101055e
@@ -1660,6 +1661,8 @@ package android {
     field public static final int subtypeLocale = 16843673; // 0x1010399
     field public static final int suggestActionMsg = 16843228; // 0x10101dc
     field public static final int suggestActionMsgColumn = 16843229; // 0x10101dd
+    field @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final int suggestionBackgroundColor;
+    field @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final int suggestionCornerRadius;
     field public static final int suggestionRowLayout = 16843910; // 0x1010486
     field public static final int summary = 16843241; // 0x10101e9
     field public static final int summaryColumn = 16843426; // 0x10102a2
@@ -5238,6 +5241,7 @@ package android.app {
     ctor public AppComponentFactory();
     method @NonNull public android.app.Activity instantiateActivity(@NonNull ClassLoader, @NonNull String, @Nullable android.content.Intent) throws java.lang.ClassNotFoundException, java.lang.IllegalAccessException, java.lang.InstantiationException;
     method @NonNull public android.app.Application instantiateApplication(@NonNull ClassLoader, @NonNull String) throws java.lang.ClassNotFoundException, java.lang.IllegalAccessException, java.lang.InstantiationException;
+    method @FlaggedApi("android.app.custom_backupagent_instantiation") @NonNull public android.app.backup.BackupAgent instantiateBackupAgent(@NonNull ClassLoader, @NonNull String) throws java.lang.ClassNotFoundException, java.lang.IllegalAccessException, java.lang.InstantiationException;
     method @NonNull public ClassLoader instantiateClassLoader(@NonNull ClassLoader, @NonNull android.content.pm.ApplicationInfo);
     method @NonNull public android.content.ContentProvider instantiateProvider(@NonNull ClassLoader, @NonNull String) throws java.lang.ClassNotFoundException, java.lang.IllegalAccessException, java.lang.InstantiationException;
     method @NonNull public android.content.BroadcastReceiver instantiateReceiver(@NonNull ClassLoader, @NonNull String, @Nullable android.content.Intent) throws java.lang.ClassNotFoundException, java.lang.IllegalAccessException, java.lang.InstantiationException;
@@ -9273,6 +9277,14 @@ package android.app.appfunctions {
     field @NonNull public static final android.os.Parcelable.Creator<android.app.appfunctions.AppFunctionActivityId> CREATOR;
   }
 
+  @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") public final class AppFunctionActivityState implements android.os.Parcelable {
+    method public int describeContents();
+    method @NonNull public android.app.appfunctions.AppFunctionActivityId getActivityId();
+    method @NonNull public android.util.ArraySet<android.app.appfunctions.AppFunctionName> getFunctionNames();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.app.appfunctions.AppFunctionActivityState> CREATOR;
+  }
+
   @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public final class AppFunctionException extends java.lang.Exception implements android.os.Parcelable {
     ctor public AppFunctionException(int, @Nullable String);
     ctor public AppFunctionException(int, @Nullable String, @NonNull android.os.Bundle);
@@ -9301,10 +9313,11 @@ package android.app.appfunctions {
     method @FlaggedApi("android.permission.flags.app_function_access_ui_enabled") @NonNull public android.content.Intent createRequestAccessIntent(@NonNull String);
     method @FlaggedApi("android.app.appfunctions.flags.enable_app_function_permission_v2") @RequiresPermission(anyOf={android.Manifest.permission.EXECUTE_APP_FUNCTIONS, "android.permission.EXECUTE_APP_FUNCTIONS_SYSTEM"}, conditional=true) public void executeAppFunction(@NonNull android.app.appfunctions.ExecuteAppFunctionRequest, @NonNull java.util.concurrent.Executor, @NonNull android.os.CancellationSignal, @NonNull android.os.OutcomeReceiver<android.app.appfunctions.ExecuteAppFunctionResponse,android.app.appfunctions.AppFunctionException>);
     method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public int getAccessRequestState(@NonNull String);
+    method @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") @RequiresPermission(anyOf={android.Manifest.permission.EXECUTE_APP_FUNCTIONS, "android.permission.DISCOVER_APP_FUNCTIONS", "android.permission.EXECUTE_APP_FUNCTIONS_SYSTEM"}, conditional=true) public void getAppFunctionActivityStates(@NonNull java.util.Set<android.app.appfunctions.AppFunctionActivityId>, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.util.List<android.app.appfunctions.AppFunctionActivityState>,java.lang.Exception>);
     method @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") @RequiresPermission(anyOf={android.Manifest.permission.EXECUTE_APP_FUNCTIONS, "android.permission.DISCOVER_APP_FUNCTIONS", "android.permission.EXECUTE_APP_FUNCTIONS_SYSTEM"}, conditional=true) public void getAppFunctionStates(@NonNull java.util.List<android.app.appfunctions.AppFunctionName>, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.util.List<android.app.appfunctions.AppFunctionState>,java.lang.Exception>);
     method @FlaggedApi("android.app.appfunctions.flags.enable_app_function_permission_v2") @RequiresPermission(anyOf={android.Manifest.permission.EXECUTE_APP_FUNCTIONS, "android.permission.DISCOVER_APP_FUNCTIONS", "android.permission.EXECUTE_APP_FUNCTIONS_SYSTEM"}, conditional=true) public void isAppFunctionEnabled(@NonNull String, @NonNull String, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Boolean,java.lang.Exception>);
     method public void isAppFunctionEnabled(@NonNull String, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Boolean,java.lang.Exception>);
-    method @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") @NonNull @RequiresPermission(anyOf={android.Manifest.permission.EXECUTE_APP_FUNCTIONS, "android.permission.DISCOVER_APP_FUNCTIONS", "android.permission.EXECUTE_APP_FUNCTIONS_SYSTEM"}, conditional=true) public android.app.appfunctions.AppFunctionObservation observeAppFunctions(@NonNull android.app.appfunctions.AppFunctionSearchSpec, @NonNull java.util.concurrent.Executor, @NonNull android.app.appfunctions.AppFunctionObserver);
+    method @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") @NonNull @RequiresPermission(anyOf={android.Manifest.permission.EXECUTE_APP_FUNCTIONS, "android.permission.DISCOVER_APP_FUNCTIONS", "android.permission.EXECUTE_APP_FUNCTIONS_SYSTEM"}, conditional=true) public android.app.appfunctions.AppFunctionObservation observeAppFunctions(@NonNull java.util.concurrent.Executor, @NonNull android.app.appfunctions.AppFunctionObserver);
     method @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") @NonNull public android.app.appfunctions.AppFunctionRegistration registerAppFunction(@NonNull String, @NonNull java.util.concurrent.Executor, @NonNull android.app.appfunctions.AppFunction);
     method @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") @NonNull public android.app.appfunctions.AppFunctionRegistration registerAppFunctions(@NonNull java.util.List<android.app.appfunctions.RegisterAppFunctionRequest>);
     method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public void revokeSelfAccess(@NonNull String);
@@ -9356,9 +9369,8 @@ package android.app.appfunctions {
   }
 
   @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") public interface AppFunctionObserver {
-    method public void onAppFunctionStatesChanged(@NonNull java.util.List<android.app.appfunctions.AppFunctionName>);
-    method public void onAppFunctionsChanged(@NonNull java.util.List<android.app.appfunctions.AppFunctionName>);
-    method public void onPackagesChanged(@NonNull java.util.List<java.lang.String>);
+    method public void onAppFunctionMetadataChanged(@NonNull java.util.Set<java.lang.String>);
+    method public void onAppFunctionStatesChanged(@NonNull java.util.Set<android.app.appfunctions.AppFunctionName>);
   }
 
   @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") public final class AppFunctionPackageMetadata implements android.os.Parcelable {
@@ -9434,6 +9446,7 @@ package android.app.appfunctions {
 
   @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public final class ExecuteAppFunctionRequest implements android.os.Parcelable {
     method public int describeContents();
+    method @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") @Nullable public android.app.appfunctions.AppFunctionActivityId getActivityId();
     method @FlaggedApi("android.app.appfunctions.flags.enable_app_interaction_api") @Nullable public android.app.AppInteractionAttribution getAttribution();
     method @NonNull public android.os.Bundle getExtras();
     method @NonNull public String getFunctionIdentifier();
@@ -9445,7 +9458,9 @@ package android.app.appfunctions {
 
   public static final class ExecuteAppFunctionRequest.Builder {
     ctor public ExecuteAppFunctionRequest.Builder(@NonNull String, @NonNull String);
+    ctor @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") public ExecuteAppFunctionRequest.Builder(@NonNull android.app.appfunctions.AppFunctionName);
     method @NonNull public android.app.appfunctions.ExecuteAppFunctionRequest build();
+    method @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") @NonNull public android.app.appfunctions.ExecuteAppFunctionRequest.Builder setActivityId(@Nullable android.app.appfunctions.AppFunctionActivityId);
     method @FlaggedApi("android.app.appfunctions.flags.enable_app_interaction_api") @NonNull public android.app.appfunctions.ExecuteAppFunctionRequest.Builder setAttribution(@NonNull android.app.AppInteractionAttribution);
     method @NonNull public android.app.appfunctions.ExecuteAppFunctionRequest.Builder setExtras(@NonNull android.os.Bundle);
     method @NonNull public android.app.appfunctions.ExecuteAppFunctionRequest.Builder setParameters(@NonNull android.app.appsearch.GenericDocument);
@@ -9834,7 +9849,7 @@ package android.app.job {
     method public int getBackoffPolicy();
     method @Nullable public android.content.ClipData getClipData();
     method public int getClipGrantFlags();
-    method @FlaggedApi("android.app.job.job_debug_info_apis") @NonNull public java.util.Set<java.lang.String> getDebugTags();
+    method @NonNull public java.util.Set<java.lang.String> getDebugTags();
     method public long getEstimatedNetworkDownloadBytes();
     method public long getEstimatedNetworkUploadBytes();
     method @NonNull public android.os.PersistableBundle getExtras();
@@ -9851,7 +9866,7 @@ package android.app.job {
     method public int getPriority();
     method @Nullable public android.net.NetworkRequest getRequiredNetwork();
     method @NonNull public android.content.ComponentName getService();
-    method @FlaggedApi("android.app.job.job_debug_info_apis") @Nullable public String getTraceTag();
+    method @Nullable public String getTraceTag();
     method @NonNull public android.os.Bundle getTransientExtras();
     method public long getTriggerContentMaxDelay();
     method public long getTriggerContentUpdateDelay();
@@ -9888,10 +9903,10 @@ package android.app.job {
 
   public static final class JobInfo.Builder {
     ctor public JobInfo.Builder(int, @NonNull android.content.ComponentName);
-    method @FlaggedApi("android.app.job.job_debug_info_apis") @NonNull public android.app.job.JobInfo.Builder addDebugTag(@NonNull String);
+    method @NonNull public android.app.job.JobInfo.Builder addDebugTag(@NonNull String);
     method public android.app.job.JobInfo.Builder addTriggerContentUri(@NonNull android.app.job.JobInfo.TriggerContentUri);
     method public android.app.job.JobInfo build();
-    method @FlaggedApi("android.app.job.job_debug_info_apis") @NonNull public android.app.job.JobInfo.Builder removeDebugTag(@NonNull String);
+    method @NonNull public android.app.job.JobInfo.Builder removeDebugTag(@NonNull String);
     method public android.app.job.JobInfo.Builder setBackoffCriteria(long, int);
     method public android.app.job.JobInfo.Builder setClipData(@Nullable android.content.ClipData, int);
     method public android.app.job.JobInfo.Builder setEstimatedNetworkBytes(long, long);
@@ -9912,7 +9927,7 @@ package android.app.job {
     method public android.app.job.JobInfo.Builder setRequiresCharging(boolean);
     method public android.app.job.JobInfo.Builder setRequiresDeviceIdle(boolean);
     method public android.app.job.JobInfo.Builder setRequiresStorageNotLow(boolean);
-    method @FlaggedApi("android.app.job.job_debug_info_apis") @NonNull public android.app.job.JobInfo.Builder setTraceTag(@Nullable String);
+    method @NonNull public android.app.job.JobInfo.Builder setTraceTag(@Nullable String);
     method public android.app.job.JobInfo.Builder setTransientExtras(@NonNull android.os.Bundle);
     method public android.app.job.JobInfo.Builder setTriggerContentMaxDelay(long);
     method public android.app.job.JobInfo.Builder setTriggerContentUpdateDelay(long);
@@ -9982,8 +9997,8 @@ package android.app.job {
     method @Nullable public abstract android.app.job.JobInfo getPendingJob(int);
     method public int getPendingJobReason(int);
     method @FlaggedApi("android.app.job.get_pending_job_reason_stats_api") @NonNull public java.util.Map<java.lang.Integer,java.time.Duration> getPendingJobReasonStats(int);
-    method @FlaggedApi("android.app.job.get_pending_job_reasons_api") @NonNull public int[] getPendingJobReasons(int);
-    method @FlaggedApi("android.app.job.get_pending_job_reasons_history_api") @NonNull public java.util.List<android.app.job.PendingJobReasonsInfo> getPendingJobReasonsHistory(int);
+    method @NonNull public int[] getPendingJobReasons(int);
+    method @NonNull public java.util.List<android.app.job.PendingJobReasonsInfo> getPendingJobReasonsHistory(int);
     method @NonNull public java.util.Map<java.lang.String,java.util.List<android.app.job.JobInfo>> getPendingJobsInAllNamespaces();
     method public abstract int schedule(@NonNull android.app.job.JobInfo);
     field public static final int PENDING_JOB_REASON_APP = 1; // 0x1
@@ -9993,7 +10008,7 @@ package android.app.job {
     field public static final int PENDING_JOB_REASON_CONSTRAINT_CHARGING = 5; // 0x5
     field public static final int PENDING_JOB_REASON_CONSTRAINT_CONNECTIVITY = 6; // 0x6
     field public static final int PENDING_JOB_REASON_CONSTRAINT_CONTENT_TRIGGER = 7; // 0x7
-    field @FlaggedApi("android.app.job.get_pending_job_reasons_api") public static final int PENDING_JOB_REASON_CONSTRAINT_DEADLINE = 16; // 0x10
+    field public static final int PENDING_JOB_REASON_CONSTRAINT_DEADLINE = 16; // 0x10
     field public static final int PENDING_JOB_REASON_CONSTRAINT_DEVICE_IDLE = 8; // 0x8
     field public static final int PENDING_JOB_REASON_CONSTRAINT_MINIMUM_LATENCY = 9; // 0x9
     field public static final int PENDING_JOB_REASON_CONSTRAINT_PREFETCH = 10; // 0xa
@@ -10064,7 +10079,7 @@ package android.app.job {
     method @NonNull public android.app.job.JobWorkItem.Builder setMinimumNetworkChunkBytes(long);
   }
 
-  @FlaggedApi("android.app.job.get_pending_job_reasons_history_api") public final class PendingJobReasonsInfo implements android.os.Parcelable {
+  public final class PendingJobReasonsInfo implements android.os.Parcelable {
     ctor public PendingJobReasonsInfo(long, @NonNull int[]);
     method public int describeContents();
     method @NonNull public int[] getPendingJobReasons();
@@ -10184,6 +10199,8 @@ package android.app.permissionui {
     method public void setBackgroundColor(@ColorInt int);
     method public void setCornerRadius(float);
     method public void setIconTint(@ColorInt int);
+    method public void setPadding(int, int, int, int);
+    method public void setPressedCornerRadius(float);
     method public void setStrokeColor(@ColorInt int);
     method public void setStrokeWidth(int);
     method public void setTextColor(@ColorInt int);
@@ -10208,6 +10225,13 @@ package android.app.privatecompute {
     field public static final String SERVICE_INTERFACE = "android.app.privatecompute.DataMigrationToPccService";
   }
 
+  @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public final class MigrationException extends java.lang.Exception {
+    ctor public MigrationException(int, @Nullable String);
+    method public int getErrorCode();
+    field public static final int ERROR_INVOCATION_FAILED = 1; // 0x1
+    field public static final int ERROR_TIMEOUT = 2; // 0x2
+  }
+
   @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public final class MigrationRequestResult implements android.os.Parcelable {
     ctor public MigrationRequestResult(int, @Nullable android.os.PersistableBundle);
     method public int describeContents();
@@ -10217,13 +10241,6 @@ package android.app.privatecompute {
     field @NonNull public static final android.os.Parcelable.Creator<android.app.privatecompute.MigrationRequestResult> CREATOR;
     field public static final int MIGRATION_REQUEST_ACCEPTED = 1; // 0x1
     field public static final int MIGRATION_REQUEST_REJECTED = 2; // 0x2
-  }
-
-  @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public interface MigrationRequestResultReceiver {
-    method public void onError(int, @Nullable String);
-    method public void onResult(@NonNull android.app.privatecompute.MigrationRequestResult);
-    field public static final int ERROR_INVOCATION_FAILED = 1; // 0x1
-    field public static final int ERROR_TIMEOUT = 2; // 0x2
   }
 
   @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public final class MigrationRequestResultSender {
@@ -10236,8 +10253,9 @@ package android.app.privatecompute {
   }
 
   @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public final class PccSandboxManager {
+    method @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public boolean isPccTrustedSystemComponent(int, @Nullable String);
     method public boolean isPrivateComputeServicesUid(int);
-    method @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public void startNonPccProcessForDataMigration(@NonNull java.util.concurrent.Executor, @NonNull android.app.privatecompute.MigrationRequestResultReceiver);
+    method @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public void startNonPccProcessForDataMigration(@NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<android.app.privatecompute.MigrationRequestResult,android.app.privatecompute.MigrationException>);
     method public void writeToAuditLog(@NonNull android.os.PersistableBundle);
   }
 
@@ -11889,6 +11907,7 @@ package android.content {
     field public static final String DOWNLOAD_SERVICE = "download";
     field public static final String DROPBOX_SERVICE = "dropbox";
     field public static final String EUICC_SERVICE = "euicc";
+    field @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public static final String FILES_SERVICE = "files";
     field public static final String FILE_INTEGRITY_SERVICE = "file_integrity";
     field public static final String GAME_SERVICE = "game";
     field public static final String GRAMMATICAL_INFLECTION_SERVICE = "grammatical_inflection";
@@ -28500,7 +28519,6 @@ package android.media.quality {
   }
 
   @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public final class EqualizerCapabilities implements android.os.Parcelable {
-    ctor public EqualizerCapabilities(int, int, @NonNull java.util.List<java.lang.Integer>, boolean);
     method public int describeContents();
     method public int getMaxLevelDb();
     method public int getMinLevelDb();
@@ -28519,9 +28537,8 @@ package android.media.quality {
 
   public static final class EqualizerSettings.Builder {
     ctor public EqualizerSettings.Builder();
-    method @NonNull public android.media.quality.EqualizerSettings.Builder addBand(@NonNull android.media.quality.EqualizerBand);
+    method @NonNull public android.media.quality.EqualizerSettings.Builder addBands(@NonNull java.util.List<android.media.quality.EqualizerBand>);
     method @NonNull public android.media.quality.EqualizerSettings build();
-    method @NonNull public android.media.quality.EqualizerSettings.Builder setBands(@NonNull java.util.List<android.media.quality.EqualizerBand>);
   }
 
   @FlaggedApi("android.media.tv.flags.media_quality_fw") public class MediaQualityContract {
@@ -28747,7 +28764,6 @@ package android.media.quality {
     method @NonNull public java.util.List<android.media.quality.PictureProfile> getAvailablePictureProfiles(@Nullable android.media.quality.MediaQualityManager.ProfileQueryParams);
     method @NonNull public java.util.List<android.media.quality.SoundProfile> getAvailableSoundProfiles(@Nullable android.media.quality.MediaQualityManager.ProfileQueryParams);
     method @FlaggedApi("android.media.tv.flags.media_quality_fw_c") @Nullable public android.media.quality.EqualizerCapabilities getEqualizerCapabilities();
-    method @FlaggedApi("android.media.tv.flags.media_quality_fw_c") @Nullable public android.media.quality.EqualizerSettings getEqualizerSettings();
     method @NonNull public java.util.List<android.media.quality.ParameterCapability> getParameterCapabilities(@NonNull java.util.List<java.lang.String>);
     method @Nullable public android.media.quality.PictureProfile getPictureProfile(int, @NonNull String, @Nullable android.media.quality.MediaQualityManager.ProfileQueryParams);
     method @Nullable public android.media.quality.SoundProfile getSoundProfile(int, @NonNull String, @Nullable android.media.quality.MediaQualityManager.ProfileQueryParams);
@@ -28764,7 +28780,6 @@ package android.media.quality {
     method public void setAmbientBacklightEnabled(boolean);
     method public void setAmbientBacklightSettings(@NonNull android.media.quality.AmbientBacklightSettings);
     method @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public void setColorMuteEnabled(boolean);
-    method @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public void setEqualizerSettings(@Nullable android.media.quality.EqualizerSettings);
     method @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public void setMutedColor(@ColorInt int);
     method public void unregisterAmbientBacklightCallback(@NonNull android.media.quality.MediaQualityManager.AmbientBacklightCallback);
     method public void unregisterPictureProfileCallback(@NonNull android.media.quality.MediaQualityManager.PictureProfileCallback);
@@ -36829,6 +36844,16 @@ package android.os.multisensory {
 
 package android.os.storage {
 
+  @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public final class FilesManager {
+    method @NonNull public android.os.storage.operations.FileOperationEnqueueResult enqueueOperation(@NonNull android.os.storage.operations.FileOperationRequest);
+    method @Nullable public android.os.storage.operations.FileOperationResult fetchResult(@NonNull String);
+    method public void registerCompletionListener(@NonNull String);
+    method public void unregisterCompletionListener(@NonNull String);
+    field public static final String ACTION_FILE_OPERATION_COMPLETED = "android.os.storage.action.FILE_OPERATION_COMPLETED";
+    field public static final String EXTRA_REQUEST_ID = "android.os.storage.extra.REQUEST_ID";
+    field public static final String EXTRA_RESULT = "android.os.storage.extra.RESULT";
+  }
+
   public abstract class OnObbStateChangeListener {
     ctor public OnObbStateChangeListener();
     method public void onObbStateChange(String, int);
@@ -36899,6 +36924,98 @@ package android.os.storage {
     method public void writeToParcel(android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.os.storage.StorageVolume> CREATOR;
     field public static final String EXTRA_STORAGE_VOLUME = "android.os.storage.extra.STORAGE_VOLUME";
+  }
+
+}
+
+package android.os.storage.operations {
+
+  @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public final class FileOperationEnqueueResult implements android.os.Parcelable {
+    ctor public FileOperationEnqueueResult(int);
+    method public int describeContents();
+    method public int getErrorCode();
+    method @Nullable public String getRequestId();
+    method public boolean isSuccessful();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.os.storage.operations.FileOperationEnqueueResult> CREATOR;
+  }
+
+  @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public final class FileOperationRequest implements android.os.Parcelable {
+    method public int describeContents();
+    method public int getMode();
+    method @NonNull public android.os.storage.operations.sources.OperationSource getSource();
+    method @Nullable public android.os.storage.operations.targets.OperationTarget getTarget();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.os.storage.operations.FileOperationRequest> CREATOR;
+    field public static final int OPERATION_COPY = 2; // 0x2
+    field public static final int OPERATION_MOVE = 1; // 0x1
+  }
+
+  public static final class FileOperationRequest.Builder {
+    ctor public FileOperationRequest.Builder(int);
+    method @NonNull public android.os.storage.operations.FileOperationRequest build();
+    method @NonNull public android.os.storage.operations.FileOperationRequest.Builder setSource(@NonNull android.os.storage.operations.sources.OperationSource);
+    method @NonNull public android.os.storage.operations.FileOperationRequest.Builder setTarget(@Nullable android.os.storage.operations.targets.OperationTarget);
+  }
+
+  @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public final class FileOperationResult implements android.os.Parcelable {
+    method public int describeContents();
+    method public int getErrorCode();
+    method @Nullable public String getErrorMessage();
+    method @NonNull public java.util.List<java.lang.String> getFailedPaths();
+    method public static int getMaxReportedFailures();
+    method @NonNull public String getRequestId();
+    method @NonNull public android.os.storage.operations.sources.OperationSource getSource();
+    method public int getStatus();
+    method @Nullable public android.os.storage.operations.targets.OperationTarget getTarget();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.os.storage.operations.FileOperationResult> CREATOR;
+    field public static final int ERROR_BUSY = 1; // 0x1
+    field public static final int ERROR_DISK_FULL = 6; // 0x6
+    field public static final int ERROR_INVALID_REQUEST = 2; // 0x2
+    field public static final int ERROR_PERMISSION_DENIED = 5; // 0x5
+    field public static final int ERROR_UNKNOWN = 0; // 0x0
+    field public static final int ERROR_UNSUPPORTED_SOURCE = 3; // 0x3
+    field public static final int ERROR_UNSUPPORTED_TARGET = 4; // 0x4
+    field public static final int STATUS_FAILED = 4; // 0x4
+    field public static final int STATUS_FINISHED = 3; // 0x3
+    field public static final int STATUS_IN_PROGRESS = 2; // 0x2
+    field public static final int STATUS_QUEUED = 1; // 0x1
+    field public static final int STATUS_UNKNOWN = 0; // 0x0
+  }
+
+}
+
+package android.os.storage.operations.sources {
+
+  @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public final class AppDataFileSource extends android.os.storage.operations.sources.OperationSource {
+    ctor public AppDataFileSource(@NonNull java.io.File);
+    method public int describeContents();
+    method @NonNull public java.io.File getFile();
+    method @NonNull public String toString();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.os.storage.operations.sources.AppDataFileSource> CREATOR;
+  }
+
+  @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public abstract class OperationSource implements android.os.Parcelable {
+    method @NonNull public abstract String toString();
+  }
+
+}
+
+package android.os.storage.operations.targets {
+
+  @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public abstract class OperationTarget implements android.os.Parcelable {
+    method @NonNull public abstract String toString();
+  }
+
+  @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public final class PccTarget extends android.os.storage.operations.targets.OperationTarget {
+    ctor public PccTarget();
+    ctor public PccTarget(@NonNull String);
+    method public int describeContents();
+    method @NonNull public String toString();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.os.storage.operations.targets.PccTarget> CREATOR;
   }
 
 }
@@ -42068,176 +42185,74 @@ package android.security.advancedprotection {
 
 package android.security.identity {
 
-  public class AccessControlProfile {
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public class AccessControlProfile {
   }
 
-  public static final class AccessControlProfile.Builder {
-    ctor public AccessControlProfile.Builder(@NonNull android.security.identity.AccessControlProfileId);
-    method @NonNull public android.security.identity.AccessControlProfile build();
-    method @NonNull public android.security.identity.AccessControlProfile.Builder setReaderCertificate(@NonNull java.security.cert.X509Certificate);
-    method @NonNull public android.security.identity.AccessControlProfile.Builder setUserAuthenticationRequired(boolean);
-    method @NonNull public android.security.identity.AccessControlProfile.Builder setUserAuthenticationTimeout(long);
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public static final class AccessControlProfile.Builder {
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public AccessControlProfile.Builder(@NonNull android.security.identity.AccessControlProfileId);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public android.security.identity.AccessControlProfile build();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public android.security.identity.AccessControlProfile.Builder setReaderCertificate(@NonNull java.security.cert.X509Certificate);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public android.security.identity.AccessControlProfile.Builder setUserAuthenticationRequired(boolean);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public android.security.identity.AccessControlProfile.Builder setUserAuthenticationTimeout(long);
   }
 
-  public class AccessControlProfileId {
-    ctor public AccessControlProfileId(int);
-    method public int getId();
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public class AccessControlProfileId {
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public AccessControlProfileId(int);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public int getId();
   }
 
-  public class AlreadyPersonalizedException extends android.security.identity.IdentityCredentialException {
-    ctor public AlreadyPersonalizedException(@NonNull String);
-    ctor public AlreadyPersonalizedException(@NonNull String, @NonNull Throwable);
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public class AlreadyPersonalizedException extends android.security.identity.IdentityCredentialException {
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public AlreadyPersonalizedException(@NonNull String);
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public AlreadyPersonalizedException(@NonNull String, @NonNull Throwable);
   }
 
-  public final class AuthenticationKeyMetadata {
-    method @NonNull public java.time.Instant getExpirationDate();
-    method @IntRange(from=0) public int getUsageCount();
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public final class AuthenticationKeyMetadata {
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public java.time.Instant getExpirationDate();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @IntRange(from=0) public int getUsageCount();
   }
 
-  public class CipherSuiteNotSupportedException extends android.security.identity.IdentityCredentialException {
-    ctor public CipherSuiteNotSupportedException(@NonNull String);
-    ctor public CipherSuiteNotSupportedException(@NonNull String, @NonNull Throwable);
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public class CipherSuiteNotSupportedException extends android.security.identity.IdentityCredentialException {
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public CipherSuiteNotSupportedException(@NonNull String);
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public CipherSuiteNotSupportedException(@NonNull String, @NonNull Throwable);
   }
 
-  public class CredentialDataRequest {
-    method @NonNull public java.util.Map<java.lang.String,java.util.Collection<java.lang.String>> getDeviceSignedEntriesToRequest();
-    method @NonNull public java.util.Map<java.lang.String,java.util.Collection<java.lang.String>> getIssuerSignedEntriesToRequest();
-    method @Nullable public byte[] getReaderSignature();
-    method @Nullable public byte[] getRequestMessage();
-    method public boolean isAllowUsingExhaustedKeys();
-    method public boolean isAllowUsingExpiredKeys();
-    method public boolean isIncrementUseCount();
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public class CredentialDataRequest {
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public java.util.Map<java.lang.String,java.util.Collection<java.lang.String>> getDeviceSignedEntriesToRequest();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public java.util.Map<java.lang.String,java.util.Collection<java.lang.String>> getIssuerSignedEntriesToRequest();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @Nullable public byte[] getReaderSignature();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @Nullable public byte[] getRequestMessage();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public boolean isAllowUsingExhaustedKeys();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public boolean isAllowUsingExpiredKeys();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public boolean isIncrementUseCount();
   }
 
-  public static final class CredentialDataRequest.Builder {
-    ctor public CredentialDataRequest.Builder();
-    method @NonNull public android.security.identity.CredentialDataRequest build();
-    method @NonNull public android.security.identity.CredentialDataRequest.Builder setAllowUsingExhaustedKeys(boolean);
-    method @NonNull public android.security.identity.CredentialDataRequest.Builder setAllowUsingExpiredKeys(boolean);
-    method @NonNull public android.security.identity.CredentialDataRequest.Builder setDeviceSignedEntriesToRequest(@NonNull java.util.Map<java.lang.String,java.util.Collection<java.lang.String>>);
-    method @NonNull public android.security.identity.CredentialDataRequest.Builder setIncrementUseCount(boolean);
-    method @NonNull public android.security.identity.CredentialDataRequest.Builder setIssuerSignedEntriesToRequest(@NonNull java.util.Map<java.lang.String,java.util.Collection<java.lang.String>>);
-    method @NonNull public android.security.identity.CredentialDataRequest.Builder setReaderSignature(@NonNull byte[]);
-    method @NonNull public android.security.identity.CredentialDataRequest.Builder setRequestMessage(@NonNull byte[]);
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public static final class CredentialDataRequest.Builder {
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public CredentialDataRequest.Builder();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public android.security.identity.CredentialDataRequest build();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public android.security.identity.CredentialDataRequest.Builder setAllowUsingExhaustedKeys(boolean);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public android.security.identity.CredentialDataRequest.Builder setAllowUsingExpiredKeys(boolean);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public android.security.identity.CredentialDataRequest.Builder setDeviceSignedEntriesToRequest(@NonNull java.util.Map<java.lang.String,java.util.Collection<java.lang.String>>);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public android.security.identity.CredentialDataRequest.Builder setIncrementUseCount(boolean);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public android.security.identity.CredentialDataRequest.Builder setIssuerSignedEntriesToRequest(@NonNull java.util.Map<java.lang.String,java.util.Collection<java.lang.String>>);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public android.security.identity.CredentialDataRequest.Builder setReaderSignature(@NonNull byte[]);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public android.security.identity.CredentialDataRequest.Builder setRequestMessage(@NonNull byte[]);
   }
 
-  public abstract class CredentialDataResult {
-    method @Nullable public abstract byte[] getDeviceMac();
-    method @NonNull public abstract byte[] getDeviceNameSpaces();
-    method @Nullable public byte[] getDeviceSignature();
-    method @NonNull public abstract android.security.identity.CredentialDataResult.Entries getDeviceSignedEntries();
-    method @NonNull public abstract android.security.identity.CredentialDataResult.Entries getIssuerSignedEntries();
-    method @NonNull public abstract byte[] getStaticAuthenticationData();
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public abstract class CredentialDataResult {
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @Nullable public abstract byte[] getDeviceMac();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public abstract byte[] getDeviceNameSpaces();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @Nullable public byte[] getDeviceSignature();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public abstract android.security.identity.CredentialDataResult.Entries getDeviceSignedEntries();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public abstract android.security.identity.CredentialDataResult.Entries getIssuerSignedEntries();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public abstract byte[] getStaticAuthenticationData();
   }
 
-  public static interface CredentialDataResult.Entries {
-    method @Nullable public byte[] getEntry(@NonNull String, @NonNull String);
-    method @NonNull public java.util.Collection<java.lang.String> getEntryNames(@NonNull String);
-    method @NonNull public java.util.Collection<java.lang.String> getNamespaces();
-    method @NonNull public java.util.Collection<java.lang.String> getRetrievedEntryNames(@NonNull String);
-    method public int getStatus(@NonNull String, @NonNull String);
-    field public static final int STATUS_NOT_IN_REQUEST_MESSAGE = 3; // 0x3
-    field public static final int STATUS_NOT_REQUESTED = 2; // 0x2
-    field public static final int STATUS_NO_ACCESS_CONTROL_PROFILES = 6; // 0x6
-    field public static final int STATUS_NO_SUCH_ENTRY = 1; // 0x1
-    field public static final int STATUS_OK = 0; // 0x0
-    field public static final int STATUS_READER_AUTHENTICATION_FAILED = 5; // 0x5
-    field public static final int STATUS_USER_AUTHENTICATION_FAILED = 4; // 0x4
-  }
-
-  public class DocTypeNotSupportedException extends android.security.identity.IdentityCredentialException {
-    ctor public DocTypeNotSupportedException(@NonNull String);
-    ctor public DocTypeNotSupportedException(@NonNull String, @NonNull Throwable);
-  }
-
-  public class EphemeralPublicKeyNotFoundException extends android.security.identity.IdentityCredentialException {
-    ctor public EphemeralPublicKeyNotFoundException(@NonNull String);
-    ctor public EphemeralPublicKeyNotFoundException(@NonNull String, @NonNull Throwable);
-  }
-
-  public abstract class IdentityCredential {
-    method @Deprecated @NonNull public abstract java.security.KeyPair createEphemeralKeyPair();
-    method @Deprecated @NonNull public abstract byte[] decryptMessageFromReader(@NonNull byte[]) throws android.security.identity.MessageDecryptionException;
-    method @NonNull public byte[] delete(@NonNull byte[]);
-    method @Deprecated @NonNull public abstract byte[] encryptMessageToReader(@NonNull byte[]);
-    method @NonNull public abstract java.util.Collection<java.security.cert.X509Certificate> getAuthKeysNeedingCertification();
-    method @Deprecated @NonNull public abstract int[] getAuthenticationDataUsageCount();
-    method @NonNull public java.util.List<android.security.identity.AuthenticationKeyMetadata> getAuthenticationKeyMetadata();
-    method @NonNull public abstract java.util.Collection<java.security.cert.X509Certificate> getCredentialKeyCertificateChain();
-    method @Deprecated @NonNull public abstract android.security.identity.ResultData getEntries(@Nullable byte[], @NonNull java.util.Map<java.lang.String,java.util.Collection<java.lang.String>>, @Nullable byte[], @Nullable byte[]) throws android.security.identity.EphemeralPublicKeyNotFoundException, android.security.identity.InvalidReaderSignatureException, android.security.identity.InvalidRequestMessageException, android.security.identity.NoAuthenticationKeyAvailableException, android.security.identity.SessionTranscriptMismatchException;
-    method @NonNull public byte[] proveOwnership(@NonNull byte[]);
-    method @Deprecated public abstract void setAllowUsingExhaustedKeys(boolean);
-    method @Deprecated public void setAllowUsingExpiredKeys(boolean);
-    method @Deprecated public abstract void setAvailableAuthenticationKeys(int, int);
-    method public void setAvailableAuthenticationKeys(@IntRange(from=0) int, @IntRange(from=1) int, @IntRange(from=0) long);
-    method @Deprecated public abstract void setReaderEphemeralPublicKey(@NonNull java.security.PublicKey) throws java.security.InvalidKeyException;
-    method @Deprecated public abstract void storeStaticAuthenticationData(@NonNull java.security.cert.X509Certificate, @NonNull byte[]) throws android.security.identity.UnknownAuthenticationKeyException;
-    method public void storeStaticAuthenticationData(@NonNull java.security.cert.X509Certificate, @NonNull java.time.Instant, @NonNull byte[]) throws android.security.identity.UnknownAuthenticationKeyException;
-    method @NonNull public byte[] update(@NonNull android.security.identity.PersonalizationData);
-  }
-
-  public class IdentityCredentialException extends java.lang.Exception {
-    ctor public IdentityCredentialException(@NonNull String);
-    ctor public IdentityCredentialException(@NonNull String, @NonNull Throwable);
-  }
-
-  public abstract class IdentityCredentialStore {
-    method @NonNull public abstract android.security.identity.WritableIdentityCredential createCredential(@NonNull String, @NonNull String) throws android.security.identity.AlreadyPersonalizedException, android.security.identity.DocTypeNotSupportedException;
-    method @NonNull public android.security.identity.PresentationSession createPresentationSession(int) throws android.security.identity.CipherSuiteNotSupportedException;
-    method @Deprecated @Nullable public abstract byte[] deleteCredentialByName(@NonNull String);
-    method @Nullable public abstract android.security.identity.IdentityCredential getCredentialByName(@NonNull String, int) throws android.security.identity.CipherSuiteNotSupportedException;
-    method @Nullable public static android.security.identity.IdentityCredentialStore getDirectAccessInstance(@NonNull android.content.Context);
-    method @Nullable public static android.security.identity.IdentityCredentialStore getInstance(@NonNull android.content.Context);
-    method @NonNull public abstract String[] getSupportedDocTypes();
-    field public static final int CIPHERSUITE_ECDHE_HKDF_ECDSA_WITH_AES_256_GCM_SHA256 = 1; // 0x1
-  }
-
-  public class InvalidReaderSignatureException extends android.security.identity.IdentityCredentialException {
-    ctor public InvalidReaderSignatureException(@NonNull String);
-    ctor public InvalidReaderSignatureException(@NonNull String, @NonNull Throwable);
-  }
-
-  public class InvalidRequestMessageException extends android.security.identity.IdentityCredentialException {
-    ctor public InvalidRequestMessageException(@NonNull String);
-    ctor public InvalidRequestMessageException(@NonNull String, @NonNull Throwable);
-  }
-
-  public class MessageDecryptionException extends android.security.identity.IdentityCredentialException {
-    ctor public MessageDecryptionException(@NonNull String);
-    ctor public MessageDecryptionException(@NonNull String, @NonNull Throwable);
-  }
-
-  public class NoAuthenticationKeyAvailableException extends android.security.identity.IdentityCredentialException {
-    ctor public NoAuthenticationKeyAvailableException(@NonNull String);
-    ctor public NoAuthenticationKeyAvailableException(@NonNull String, @NonNull Throwable);
-  }
-
-  public class PersonalizationData {
-  }
-
-  public static final class PersonalizationData.Builder {
-    ctor public PersonalizationData.Builder();
-    method @NonNull public android.security.identity.PersonalizationData.Builder addAccessControlProfile(@NonNull android.security.identity.AccessControlProfile);
-    method @NonNull public android.security.identity.PersonalizationData build();
-    method @NonNull public android.security.identity.PersonalizationData.Builder putEntry(@NonNull String, @NonNull String, @NonNull java.util.Collection<android.security.identity.AccessControlProfileId>, @NonNull byte[]);
-  }
-
-  public abstract class PresentationSession {
-    method @Nullable public abstract android.security.identity.CredentialDataResult getCredentialData(@NonNull String, @NonNull android.security.identity.CredentialDataRequest) throws android.security.identity.EphemeralPublicKeyNotFoundException, android.security.identity.InvalidReaderSignatureException, android.security.identity.InvalidRequestMessageException, android.security.identity.NoAuthenticationKeyAvailableException;
-    method @NonNull public abstract java.security.KeyPair getEphemeralKeyPair();
-    method public abstract void setReaderEphemeralPublicKey(@NonNull java.security.PublicKey) throws java.security.InvalidKeyException;
-    method public abstract void setSessionTranscript(@NonNull byte[]);
-  }
-
-  @Deprecated public abstract class ResultData {
-    method @Deprecated @NonNull public abstract byte[] getAuthenticatedData();
-    method @Deprecated @Nullable public abstract byte[] getEntry(@NonNull String, @NonNull String);
-    method @Deprecated @Nullable public abstract java.util.Collection<java.lang.String> getEntryNames(@NonNull String);
-    method @Deprecated @Nullable public abstract byte[] getMessageAuthenticationCode();
-    method @Deprecated @NonNull public abstract java.util.Collection<java.lang.String> getNamespaces();
-    method @Deprecated @Nullable public abstract java.util.Collection<java.lang.String> getRetrievedEntryNames(@NonNull String);
-    method @Deprecated @NonNull public abstract byte[] getStaticAuthenticationData();
-    method @Deprecated public abstract int getStatus(@NonNull String, @NonNull String);
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public static interface CredentialDataResult.Entries {
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @Nullable public byte[] getEntry(@NonNull String, @NonNull String);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public java.util.Collection<java.lang.String> getEntryNames(@NonNull String);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public java.util.Collection<java.lang.String> getNamespaces();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public java.util.Collection<java.lang.String> getRetrievedEntryNames(@NonNull String);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public int getStatus(@NonNull String, @NonNull String);
     field @Deprecated public static final int STATUS_NOT_IN_REQUEST_MESSAGE = 3; // 0x3
     field @Deprecated public static final int STATUS_NOT_REQUESTED = 2; // 0x2
     field @Deprecated public static final int STATUS_NO_ACCESS_CONTROL_PROFILES = 6; // 0x6
@@ -42247,19 +42262,121 @@ package android.security.identity {
     field @Deprecated public static final int STATUS_USER_AUTHENTICATION_FAILED = 4; // 0x4
   }
 
-  public class SessionTranscriptMismatchException extends android.security.identity.IdentityCredentialException {
-    ctor public SessionTranscriptMismatchException(@NonNull String);
-    ctor public SessionTranscriptMismatchException(@NonNull String, @NonNull Throwable);
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public class DocTypeNotSupportedException extends android.security.identity.IdentityCredentialException {
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public DocTypeNotSupportedException(@NonNull String);
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public DocTypeNotSupportedException(@NonNull String, @NonNull Throwable);
   }
 
-  public class UnknownAuthenticationKeyException extends android.security.identity.IdentityCredentialException {
-    ctor public UnknownAuthenticationKeyException(@NonNull String);
-    ctor public UnknownAuthenticationKeyException(@NonNull String, @NonNull Throwable);
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public class EphemeralPublicKeyNotFoundException extends android.security.identity.IdentityCredentialException {
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public EphemeralPublicKeyNotFoundException(@NonNull String);
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public EphemeralPublicKeyNotFoundException(@NonNull String, @NonNull Throwable);
   }
 
-  public abstract class WritableIdentityCredential {
-    method @NonNull public abstract java.util.Collection<java.security.cert.X509Certificate> getCredentialKeyCertificateChain(@NonNull byte[]);
-    method @NonNull public abstract byte[] personalize(@NonNull android.security.identity.PersonalizationData);
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public abstract class IdentityCredential {
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public abstract java.security.KeyPair createEphemeralKeyPair();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public abstract byte[] decryptMessageFromReader(@NonNull byte[]) throws android.security.identity.MessageDecryptionException;
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public byte[] delete(@NonNull byte[]);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public abstract byte[] encryptMessageToReader(@NonNull byte[]);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public abstract java.util.Collection<java.security.cert.X509Certificate> getAuthKeysNeedingCertification();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public abstract int[] getAuthenticationDataUsageCount();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public java.util.List<android.security.identity.AuthenticationKeyMetadata> getAuthenticationKeyMetadata();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public abstract java.util.Collection<java.security.cert.X509Certificate> getCredentialKeyCertificateChain();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public abstract android.security.identity.ResultData getEntries(@Nullable byte[], @NonNull java.util.Map<java.lang.String,java.util.Collection<java.lang.String>>, @Nullable byte[], @Nullable byte[]) throws android.security.identity.EphemeralPublicKeyNotFoundException, android.security.identity.InvalidReaderSignatureException, android.security.identity.InvalidRequestMessageException, android.security.identity.NoAuthenticationKeyAvailableException, android.security.identity.SessionTranscriptMismatchException;
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public byte[] proveOwnership(@NonNull byte[]);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public abstract void setAllowUsingExhaustedKeys(boolean);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public void setAllowUsingExpiredKeys(boolean);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public abstract void setAvailableAuthenticationKeys(int, int);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public void setAvailableAuthenticationKeys(@IntRange(from=0) int, @IntRange(from=1) int, @IntRange(from=0) long);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public abstract void setReaderEphemeralPublicKey(@NonNull java.security.PublicKey) throws java.security.InvalidKeyException;
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public abstract void storeStaticAuthenticationData(@NonNull java.security.cert.X509Certificate, @NonNull byte[]) throws android.security.identity.UnknownAuthenticationKeyException;
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public void storeStaticAuthenticationData(@NonNull java.security.cert.X509Certificate, @NonNull java.time.Instant, @NonNull byte[]) throws android.security.identity.UnknownAuthenticationKeyException;
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public byte[] update(@NonNull android.security.identity.PersonalizationData);
+  }
+
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public class IdentityCredentialException extends java.lang.Exception {
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public IdentityCredentialException(@NonNull String);
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public IdentityCredentialException(@NonNull String, @NonNull Throwable);
+  }
+
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public abstract class IdentityCredentialStore {
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public abstract android.security.identity.WritableIdentityCredential createCredential(@NonNull String, @NonNull String) throws android.security.identity.AlreadyPersonalizedException, android.security.identity.DocTypeNotSupportedException;
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public android.security.identity.PresentationSession createPresentationSession(int) throws android.security.identity.CipherSuiteNotSupportedException;
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @Nullable public abstract byte[] deleteCredentialByName(@NonNull String);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @Nullable public abstract android.security.identity.IdentityCredential getCredentialByName(@NonNull String, int) throws android.security.identity.CipherSuiteNotSupportedException;
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @Nullable public static android.security.identity.IdentityCredentialStore getDirectAccessInstance(@NonNull android.content.Context);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @Nullable public static android.security.identity.IdentityCredentialStore getInstance(@NonNull android.content.Context);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public abstract String[] getSupportedDocTypes();
+    field @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public static final int CIPHERSUITE_ECDHE_HKDF_ECDSA_WITH_AES_256_GCM_SHA256 = 1; // 0x1
+  }
+
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public class InvalidReaderSignatureException extends android.security.identity.IdentityCredentialException {
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public InvalidReaderSignatureException(@NonNull String);
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public InvalidReaderSignatureException(@NonNull String, @NonNull Throwable);
+  }
+
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public class InvalidRequestMessageException extends android.security.identity.IdentityCredentialException {
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public InvalidRequestMessageException(@NonNull String);
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public InvalidRequestMessageException(@NonNull String, @NonNull Throwable);
+  }
+
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public class MessageDecryptionException extends android.security.identity.IdentityCredentialException {
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public MessageDecryptionException(@NonNull String);
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public MessageDecryptionException(@NonNull String, @NonNull Throwable);
+  }
+
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public class NoAuthenticationKeyAvailableException extends android.security.identity.IdentityCredentialException {
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public NoAuthenticationKeyAvailableException(@NonNull String);
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public NoAuthenticationKeyAvailableException(@NonNull String, @NonNull Throwable);
+  }
+
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public class PersonalizationData {
+  }
+
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public static final class PersonalizationData.Builder {
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public PersonalizationData.Builder();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public android.security.identity.PersonalizationData.Builder addAccessControlProfile(@NonNull android.security.identity.AccessControlProfile);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public android.security.identity.PersonalizationData build();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public android.security.identity.PersonalizationData.Builder putEntry(@NonNull String, @NonNull String, @NonNull java.util.Collection<android.security.identity.AccessControlProfileId>, @NonNull byte[]);
+  }
+
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public abstract class PresentationSession {
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @Nullable public abstract android.security.identity.CredentialDataResult getCredentialData(@NonNull String, @NonNull android.security.identity.CredentialDataRequest) throws android.security.identity.EphemeralPublicKeyNotFoundException, android.security.identity.InvalidReaderSignatureException, android.security.identity.InvalidRequestMessageException, android.security.identity.NoAuthenticationKeyAvailableException;
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public abstract java.security.KeyPair getEphemeralKeyPair();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public abstract void setReaderEphemeralPublicKey(@NonNull java.security.PublicKey) throws java.security.InvalidKeyException;
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public abstract void setSessionTranscript(@NonNull byte[]);
+  }
+
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public abstract class ResultData {
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public abstract byte[] getAuthenticatedData();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @Nullable public abstract byte[] getEntry(@NonNull String, @NonNull String);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @Nullable public abstract java.util.Collection<java.lang.String> getEntryNames(@NonNull String);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @Nullable public abstract byte[] getMessageAuthenticationCode();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public abstract java.util.Collection<java.lang.String> getNamespaces();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @Nullable public abstract java.util.Collection<java.lang.String> getRetrievedEntryNames(@NonNull String);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public abstract byte[] getStaticAuthenticationData();
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public abstract int getStatus(@NonNull String, @NonNull String);
+    field @Deprecated public static final int STATUS_NOT_IN_REQUEST_MESSAGE = 3; // 0x3
+    field @Deprecated public static final int STATUS_NOT_REQUESTED = 2; // 0x2
+    field @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public static final int STATUS_NO_ACCESS_CONTROL_PROFILES = 6; // 0x6
+    field @Deprecated public static final int STATUS_NO_SUCH_ENTRY = 1; // 0x1
+    field @Deprecated public static final int STATUS_OK = 0; // 0x0
+    field @Deprecated public static final int STATUS_READER_AUTHENTICATION_FAILED = 5; // 0x5
+    field @Deprecated public static final int STATUS_USER_AUTHENTICATION_FAILED = 4; // 0x4
+  }
+
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public class SessionTranscriptMismatchException extends android.security.identity.IdentityCredentialException {
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public SessionTranscriptMismatchException(@NonNull String);
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public SessionTranscriptMismatchException(@NonNull String, @NonNull Throwable);
+  }
+
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public class UnknownAuthenticationKeyException extends android.security.identity.IdentityCredentialException {
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public UnknownAuthenticationKeyException(@NonNull String);
+    ctor @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public UnknownAuthenticationKeyException(@NonNull String, @NonNull Throwable);
+  }
+
+  @Deprecated @FlaggedApi("android.security.identity.api_deprecation") public abstract class WritableIdentityCredential {
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public abstract java.util.Collection<java.security.cert.X509Certificate> getCredentialKeyCertificateChain(@NonNull byte[]);
+    method @Deprecated @FlaggedApi("android.security.identity.api_deprecation") @NonNull public abstract byte[] personalize(@NonNull android.security.identity.PersonalizationData);
   }
 
 }

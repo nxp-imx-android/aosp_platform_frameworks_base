@@ -43,8 +43,6 @@ import static android.os.UserHandle.USER_NULL;
 import static android.view.SurfaceControl.Transaction;
 import static android.view.WindowInsets.Type.InsetsType;
 import static android.view.WindowManager.LayoutParams.INVALID_WINDOW_TYPE;
-import static android.window.DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION;
-
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ANIM;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ORIENTATION;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_SYNC_ENGINE;
@@ -402,9 +400,7 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         } else {
             source.setBoundingRects(provider.getBoundingRects());
         }
-        if (ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION.isTrue()) {
-            source.setFlags(provider.getFlags());
-        }
+        source.setFlags(provider.getFlags());
         if (mInsetsOwnerDeathRecipientMap == null) {
             mInsetsOwnerDeathRecipientMap = new ArrayMap<>();
         }

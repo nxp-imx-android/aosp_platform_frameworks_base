@@ -45,6 +45,7 @@ import android.util.TimeUtils;
 import com.android.internal.annotations.CompositeRWLock;
 import com.android.internal.annotations.GuardedBy;
 import com.android.server.am.Flags;
+import com.android.server.am.psc.Constants.SchedGroup;
 import com.android.server.am.psc.PlatformCompatCache.CachedCompatChangeId;
 
 import java.io.PrintWriter;
@@ -76,7 +77,7 @@ public abstract class ProcessRecordInternal {
          *
          * @param curSchedGroup The new mCurSchedGroup value.
          */
-        void onCurrentSchedulingGroupChanged(int curSchedGroup);
+        void onCurrentSchedulingGroupChanged(@SchedGroup int curSchedGroup);
 
         /**
          * Called when mCurProcState changes.
@@ -486,13 +487,13 @@ public abstract class ProcessRecordInternal {
      * Currently desired scheduling class.
      */
     @CompositeRWLock({"mServiceLock", "mProcLock"})
-    private int mCurSchedGroup = SCHED_GROUP_BACKGROUND;
+    private @SchedGroup int mCurSchedGroup = SCHED_GROUP_BACKGROUND;
 
     /**
      * Last set to background scheduling class.
      */
     @CompositeRWLock({"mServiceLock", "mProcLock"})
-    private int mSetSchedGroup = SCHED_GROUP_BACKGROUND;
+    private @SchedGroup int mSetSchedGroup = SCHED_GROUP_BACKGROUND;
 
     /**
      * Currently computed process state.
@@ -781,7 +782,7 @@ public abstract class ProcessRecordInternal {
     @GuardedBy("mServiceLock")
     private int mCachedProcState = ActivityManager.PROCESS_STATE_CACHED_EMPTY;
     @GuardedBy("mServiceLock")
-    private int mCachedSchedGroup = SCHED_GROUP_BACKGROUND;
+    private @SchedGroup int mCachedSchedGroup = SCHED_GROUP_BACKGROUND;
 
     @GuardedBy("mServiceLock")
     private boolean mScheduleLikeTopApp = false;
@@ -1041,23 +1042,23 @@ public abstract class ProcessRecordInternal {
 
     /** Sets the current scheduling group for this process, and notifies the observer. */
     @GuardedBy({"mServiceLock", "mProcLock"})
-    public void setCurrentSchedulingGroup(int curSchedGroup) {
+    public void setCurrentSchedulingGroup(@SchedGroup int curSchedGroup) {
         mCurSchedGroup = curSchedGroup;
         mObserver.onCurrentSchedulingGroupChanged(mCurSchedGroup);
     }
 
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    public int getCurrentSchedulingGroup() {
+    public @SchedGroup int getCurrentSchedulingGroup() {
         return mCurSchedGroup;
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    public void setSetSchedGroup(int setSchedGroup) {
+    public void setSetSchedGroup(@SchedGroup int setSchedGroup) {
         mSetSchedGroup = setSchedGroup;
     }
 
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    public int getSetSchedGroup() {
+    public @SchedGroup int getSetSchedGroup() {
         return mSetSchedGroup;
     }
 
@@ -1486,12 +1487,12 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy("mServiceLock")
-    public int getCachedSchedGroup() {
+    public @SchedGroup int getCachedSchedGroup() {
         return mCachedSchedGroup;
     }
 
     @GuardedBy("mServiceLock")
-    public void setCachedSchedGroup(int cachedSchedGroup) {
+    public void setCachedSchedGroup(@SchedGroup int cachedSchedGroup) {
         mCachedSchedGroup = cachedSchedGroup;
     }
 

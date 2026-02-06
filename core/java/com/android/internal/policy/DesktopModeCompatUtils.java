@@ -37,8 +37,7 @@ public final class DesktopModeCompatUtils {
      * Whether the caption insets should be excluded from configuration for system to handle.
      * The caller should ensure the activity is in or entering desktop view.
      *
-     * <p> The treatment is enabled when any flags to forcibly consume caption insets are enabled
-     * and one of the following is true:
+     * <p> The treatment is enabled when one of the following is true:
      * <li> The per-app override
      * {@link ActivityInfo#OVERRIDE_EXCLUDE_CAPTION_INSETS_FROM_APP_BOUNDS} is enabled and
      * app has not opted out.
@@ -47,10 +46,6 @@ public final class DesktopModeCompatUtils {
     public static boolean shouldExcludeCaptionFromAppBounds(@NonNull ActivityInfo info,
             boolean isResizeable, boolean optOutEdgeToEdge,
             boolean isExcludeCaptionInsetsOverrideEnabled) {
-        if (!isAnyForceConsumptionFlagsEnabled()) {
-            return false;
-        }
-
         if (isExcludeCaptionInsetsOverrideEnabled) {
             return true;
         }
@@ -99,10 +94,5 @@ public final class DesktopModeCompatUtils {
     private static boolean isConfigurationDecoupled(@NonNull ActivityInfo info,
             boolean optOutEdgeToEdge) {
         return info.isChangeEnabled(INSETS_DECOUPLED_CONFIGURATION_ENFORCED) && !optOutEdgeToEdge;
-    }
-
-    private static boolean isAnyForceConsumptionFlagsEnabled() {
-        return DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION_ALWAYS.isTrue()
-                || DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION.isTrue();
     }
 }

@@ -18,6 +18,7 @@ package com.android.server.am;
 
 import static com.android.server.am.ActivityManagerDebugConfig.TAG_AM;
 
+import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.IServiceConnection;
 import android.app.PendingIntent;
@@ -33,7 +34,6 @@ import android.util.proto.ProtoUtils;
 import com.android.internal.app.procstats.AssociationState;
 import com.android.internal.app.procstats.ProcessStats;
 import com.android.server.am.psc.ConnectionRecordInternal;
-import com.android.server.am.psc.ServiceRecordInternal;
 import com.android.server.wm.ActivityServiceConnectionsHolder;
 
 import java.io.PrintWriter;
@@ -43,7 +43,7 @@ import java.io.PrintWriter;
  */
 @RavenwoodKeepWholeClass
 final class ConnectionRecord extends ConnectionRecordInternal {
-    final AppBindRecord binding;    // The application/service binding.
+    final @NonNull AppBindRecord binding;    // The application/service binding.
     final ActivityServiceConnectionsHolder<ConnectionRecord> activity;  // If non-null, the owning activity.
     final IServiceConnection conn;  // The client connection.
     final int clientLabel;          // String resource labeling this client.
@@ -120,7 +120,7 @@ final class ConnectionRecord extends ConnectionRecordInternal {
         }
     }
 
-    ConnectionRecord(AppBindRecord _binding,
+    ConnectionRecord(@NonNull AppBindRecord _binding,
             ActivityServiceConnectionsHolder<ConnectionRecord> _activity,
             IServiceConnection _conn, long _flags,
             int _clientLabel, PendingIntent _clientIntent,
@@ -145,12 +145,12 @@ final class ConnectionRecord extends ConnectionRecordInternal {
     }
 
     @Override
-    public ServiceRecordInternal getService() {
+    public ServiceRecord getService() {
         return binding.service;
     }
 
     @Override
-    public ProcessRecord getClient() {
+    public @NonNull ProcessRecord getClient() {
         return binding.client;
     }
 

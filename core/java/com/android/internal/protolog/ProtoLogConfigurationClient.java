@@ -105,13 +105,12 @@ public class ProtoLogConfigurationClient extends IProtoLogClient.Stub {
                     args.viewerConfigFile = mViewerConfigFile;
                     synchronized (mGroups) {
                         args.groups = mGroups.keySet().toArray(new String[0]);
-                        args.groupsDefaultLogcatStatus = mGroups.values().stream()
-                                .map(IProtoLogGroup::isLogToLogcat)
-                                .map(b -> b ? Boolean.TRUE : Boolean.FALSE)
-                                .collect(() -> new boolean[mGroups.size()],
-                                        (a, b) -> a[a.length - 1] = b,
-                                        (a, b) -> {
-                                        });
+                        args.groupsDefaultLogcatStatus = new boolean[mGroups.size()];
+                        int i = 0;
+                        for (IProtoLogGroup group : mGroups.values()) {
+                            args.groupsDefaultLogcatStatus[i] = group.isLogToLogcat();
+                            i++;
+                        }
                     }
 
                     mConfigService.registerClient(this, args);

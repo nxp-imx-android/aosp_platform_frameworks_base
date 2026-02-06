@@ -44,7 +44,7 @@ public class ClientTestReceiver extends BroadcastReceiver {
      * Fetch the delay from the intent.  A negative delay signifies an error.
      */
     static int getSize(Intent intent) {
-        if (!intent.getAction().contains("MEMORY")) {
+        if (!intent.getAction().contains(".MEMORY")) {
             Log.w(TAG, "unexpected intent: " + intent.toString());
             return -1;
         }

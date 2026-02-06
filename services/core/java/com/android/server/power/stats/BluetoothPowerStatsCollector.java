@@ -219,7 +219,7 @@ public class BluetoothPowerStatsCollector extends PowerStatsCollector {
         List<UidTraffic> uidTraffic = activityInfo.getUidTraffic();
         for (int i = uidTraffic.size() - 1; i >= 0; i--) {
             UidTraffic ut = uidTraffic.get(i);
-            int uid = mUidResolver.mapUid(ut.getUid());
+            int uid = mUidResolver.getOwnerUid(ut.getUid());
             UidStats counts = mUidStats.get(uid);
             if (counts == null) {
                 counts = new UidStats();
@@ -257,7 +257,7 @@ public class BluetoothPowerStatsCollector extends PowerStatsCollector {
 
     private void collectBluetoothScanStats() {
         mBluetoothStatsRetriever.retrieveBluetoothScanTimes((uid, scanTimeMs) -> {
-            uid = mUidResolver.mapUid(uid);
+            uid = mUidResolver.getOwnerUid(uid);
             UidStats uidStats = mUidStats.get(uid);
             if (uidStats == null) {
                 uidStats = new UidStats();

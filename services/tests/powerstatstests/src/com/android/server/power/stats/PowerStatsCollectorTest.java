@@ -16,6 +16,8 @@
 
 package com.android.server.power.stats;
 
+import static android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -25,6 +27,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import android.hardware.power.stats.EnergyConsumer;
+import android.hardware.power.stats.EnergyConsumerAttribution;
 import android.hardware.power.stats.EnergyConsumerResult;
 import android.hardware.power.stats.EnergyConsumerType;
 import android.os.ConditionVariable;
@@ -32,12 +35,14 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.PersistableBundle;
 import android.platform.test.annotations.DisabledOnRavenwood;
+import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.power.PowerStatsInternal;
 
 import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
 
 import com.android.internal.os.PowerStats;
+import com.android.server.power.stats.format.PowerStatsLayout;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -54,12 +59,14 @@ public class PowerStatsCollectorTest {
     private Handler mHandler;
     private PowerStatsCollector mCollector;
     private PowerStats mCollectedStats;
+    private PowerStatsUidResolver mUidResolver;
 
     @Before
     public void setup() {
         mHandlerThread.start();
         mHandler = mHandlerThread.getThreadHandler();
-        mCollector = new PowerStatsCollector(mHandler, 60000, mock(PowerStatsUidResolver.class),
+        mUidResolver = mock(PowerStatsUidResolver.class);
+        mCollector = new PowerStatsCollector(mHandler, 60000, mUidResolver,
                 mMockClock) {
             @Override
             protected PowerStats collectStats(long elapsedRealtimeMs, long uptimeMs) {
@@ -107,7 +114,8 @@ public class PowerStatsCollectorTest {
         mockEnergyConsumers(powerStatsInternal);
 
         PowerStatsCollector.ConsumedEnergyRetrieverImpl retriever =
-                new PowerStatsCollector.ConsumedEnergyRetrieverImpl(powerStatsInternal, ()-> 3500);
+                new PowerStatsCollector.ConsumedEnergyRetrieverImpl(powerStatsInternal,
+                        () -> 3500);
         int[] energyConsumerIds = retriever.getEnergyConsumerIds(EnergyConsumerType.CPU_CLUSTER);
         assertThat(energyConsumerIds).isEqualTo(new int[]{1, 2});
         EnergyConsumerResult[] energy = retriever.getConsumedEnergy(energyConsumerIds);
@@ -116,6 +124,83 @@ public class PowerStatsCollectorTest {
         energy = retriever.getConsumedEnergy(energyConsumerIds);
         assertThat(energy[0].energyUWs).isEqualTo(1500);
         assertThat(energy[1].energyUWs).isEqualTo(2700);
+    }
+
+    @Test
+    @RequiresFlagsEnabled(FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void consumedEnergyRetriever_pcc() throws Exception {
+        int voltageMv = 3500;
+        int energyConsumerId = 1;
+        int pccEnergyUWs = 1000;
+        int appUid = 10000;
+        int pccUid = 30000;
+
+        // Establish the mapping from PCC UID to App UID
+        when(mUidResolver.getOwnerUid(pccUid)).thenReturn(appUid);
+
+        // Mock Energy Consumers
+        PowerStatsInternal powerStatsInternal = mock(PowerStatsInternal.class);
+        when(powerStatsInternal.getEnergyConsumerInfo())
+                .thenReturn(new EnergyConsumer[]{
+                        new EnergyConsumer() {{
+                            id = energyConsumerId;
+                            type = EnergyConsumerType.CPU_CLUSTER;
+                            ordinal = 0;
+                            name = "CPU0";
+                        }}
+                });
+
+        // Mock Energy Consumption with Attribution
+        CompletableFuture<EnergyConsumerResult[]> future = mock(CompletableFuture.class);
+        when(future.get(anyLong(), any(TimeUnit.class)))
+                .thenReturn(new EnergyConsumerResult[]{
+                        new EnergyConsumerResult() {{
+                            id = energyConsumerId;
+                            this.energyUWs = 0;
+                            attribution = new EnergyConsumerAttribution[]{
+                                    new EnergyConsumerAttribution() {{
+                                        uid = pccUid;
+                                        this.energyUWs = 0;
+                                    }}
+                            };
+                        }}
+                })
+                .thenReturn(new EnergyConsumerResult[]{
+                        new EnergyConsumerResult() {{
+                            id = energyConsumerId;
+                            this.energyUWs = pccEnergyUWs;
+                            attribution = new EnergyConsumerAttribution[]{
+                                    new EnergyConsumerAttribution() {{
+                                        uid = pccUid;
+                                        this.energyUWs = pccEnergyUWs;
+                                    }}
+                            };
+                        }}
+                });
+        when(powerStatsInternal.getEnergyConsumedAsync(eq(new int[]{energyConsumerId})))
+                .thenReturn(future);
+
+        PowerStatsCollector.ConsumedEnergyRetrieverImpl retriever =
+                new PowerStatsCollector.ConsumedEnergyRetrieverImpl(powerStatsInternal,
+                        () -> voltageMv);
+
+        TestPowerStatsLayout layout = new TestPowerStatsLayout();
+        PowerStats.Descriptor descriptor = new PowerStats.Descriptor(
+                0, 1, null, 0, 1, new PersistableBundle());
+        layout.toExtras(descriptor.extras);
+        PowerStats powerStats = new PowerStats(descriptor);
+
+        PowerStatsCollector.ConsumedEnergyHelper helper = mCollector.new ConsumedEnergyHelper(
+                retriever, energyConsumerId, true);
+        helper.collectConsumedEnergy(powerStats, layout);
+        helper.collectConsumedEnergy(powerStats, layout);
+
+        // Verify that the energy was attributed to the App UID, not the PCC UID
+        long[] uidStats = powerStats.uidStats.get(appUid);
+        assertThat(uidStats).isNotNull();
+        assertThat(layout.getUidConsumedEnergy(uidStats, 0))
+                .isEqualTo(PowerStatsCollector.uJtoUc(pccEnergyUWs, voltageMv));
+        assertThat(powerStats.uidStats.get(pccUid)).isNull();
     }
 
     @SuppressWarnings("unchecked")
@@ -178,4 +263,10 @@ public class PowerStatsCollectorTest {
         return ecr;
     }
 
+    private static class TestPowerStatsLayout extends PowerStatsLayout {
+        TestPowerStatsLayout() {
+            addDeviceSectionEnergyConsumers(1);
+            addUidSectionEnergyConsumers(1);
+        }
+    }
 }

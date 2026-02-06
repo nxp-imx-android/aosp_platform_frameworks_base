@@ -1436,7 +1436,6 @@ public class JobStatusTest {
     }
 
     @Test
-    @EnableFlags(android.app.job.Flags.FLAG_JOB_DEBUG_INFO_APIS)
     public void testJobName_WithTraceTagWithoutNamespaceWithoutTag() {
         JobInfo jobInfo = new JobInfo.Builder(101, new ComponentName("foo", "bar"))
                         .setTraceTag("TestTraceTag")
@@ -1446,7 +1445,6 @@ public class JobStatusTest {
     }
 
     @Test
-    @EnableFlags(android.app.job.Flags.FLAG_JOB_DEBUG_INFO_APIS)
     public void testJobName_WithTraceTagWithNamespaceWithoutTag() {
         JobInfo jobInfo = new JobInfo.Builder(101, new ComponentName("foo", "bar"))
                         .setTraceTag("TestTraceTag")
@@ -1456,7 +1454,6 @@ public class JobStatusTest {
     }
 
     @Test
-    @EnableFlags(android.app.job.Flags.FLAG_JOB_DEBUG_INFO_APIS)
     public void testJobName_WithTraceTagWithoutNamespaceWithTag() {
         JobInfo jobInfo = new JobInfo.Builder(101, new ComponentName("foo", "bar"))
                         .setTraceTag("TestTraceTag")
@@ -1466,7 +1463,6 @@ public class JobStatusTest {
     }
 
     @Test
-    @EnableFlags(android.app.job.Flags.FLAG_JOB_DEBUG_INFO_APIS)
     public void testJobName_WithTraceTagWithNamespaceWithTag() {
         JobInfo jobInfo =
                 new JobInfo.Builder(101, new ComponentName("foo", "bar"))
@@ -1478,7 +1474,6 @@ public class JobStatusTest {
     }
 
     @Test
-    @EnableFlags(android.app.job.Flags.FLAG_JOB_DEBUG_INFO_APIS)
     public void testJobName_FilteredTraceTagEmail() {
         JobInfo jobInfo = new JobInfo.Builder(101, new ComponentName("foo", "bar"))
                         .setTraceTag("test@email.com")
@@ -1486,8 +1481,8 @@ public class JobStatusTest {
         JobStatus jobStatus = createJobStatus(jobInfo, SOURCE_PACKAGE, 0, null, "TestTag");
         assertEquals("#[EMAIL]#TestTag:foo", jobStatus.getBatteryName());
     }
+
     @Test
-    @EnableFlags(android.app.job.Flags.FLAG_JOB_DEBUG_INFO_APIS)
     public void testJobName_FilteredTraceTagPhone() {
         JobInfo jobInfo = new JobInfo.Builder(101, new ComponentName("foo", "bar"))
                         .setTraceTag("123-456-7890")

@@ -32,12 +32,17 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.res.R
+import com.android.systemui.scene.SceneHelper.setDeviceEntered
+import com.android.systemui.statusbar.policy.data.repository.fakeDeviceProvisioningRepository
+import com.android.systemui.statusbar.policy.data.repository.fakeUserSetupRepository
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.ChipContent
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
 import com.android.systemui.testKosmosNew
+import com.android.systemui.user.data.repository.fakeUserRepository
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runCurrent
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -48,12 +53,23 @@ class ImeIndicatorChipViewModelTest : SysuiTestCase() {
 
     private val kosmos = testKosmosNew()
     private val fakeInputMethodRepository = kosmos.fakeInputMethodRepository
+    private val fakeUserSetupRepository = kosmos.fakeUserSetupRepository
+    private val fakeDeviceProvisioningRepository = kosmos.fakeDeviceProvisioningRepository
+    private val fakeUserRepository = kosmos.fakeUserRepository
     private val Kosmos.underTest by
         Kosmos.Fixture {
             imeIndicatorChipViewModelFactory.create(Display.DEFAULT_DISPLAY).apply {
                 activateIn(testScope)
             }
         }
+
+    @Before
+    fun setUp() {
+        fakeUserSetupRepository.setUserSetUp(true)
+        fakeDeviceProvisioningRepository.setDeviceProvisioned(true)
+        fakeUserRepository.setUserManagerLogoutEnabled(true)
+        kosmos.setDeviceEntered()
+    }
 
     @Test
     @DisableFlags(Flags.FLAG_STATUS_BAR_IME_CHIP)

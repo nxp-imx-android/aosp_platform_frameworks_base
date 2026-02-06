@@ -78,6 +78,11 @@ public class NotificationActionRenderer implements Renderer {
         mNotificationActionFactory = notificationActionFactory;
     }
 
+    @Override
+    public int getProperties() {
+        return Renderer.PROPERTY_CAN_RECEIVE_NOTIFICATION_INSIGHTS;
+    }
+
     @Nullable
     private static StatusBarNotification getSbnFromInsight(ContextInsight insight) {
         for (ContextHint hint : ContextHintWithSignature.unwrapList(insight.getOriginHints())) {

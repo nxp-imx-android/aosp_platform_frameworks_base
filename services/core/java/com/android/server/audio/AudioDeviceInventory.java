@@ -29,6 +29,7 @@ import static android.media.AudioSystem.isBluetoothLeOutDevice;
 import static android.media.AudioSystem.isBluetoothLeOutUnicastDevice;
 import static android.media.AudioSystem.isBluetoothOutDevice;
 import static android.media.AudioSystem.isBluetoothScoOutDevice;
+import static android.media.audio.Flags.blePeripheralDevices;
 
 import static com.android.internal.annotations.VisibleForTesting.Visibility.PACKAGE;
 import static com.android.media.audio.Flags.stereoSpatializationBinauralTransaural;
@@ -1070,6 +1071,18 @@ public class AudioDeviceInventory {
                         }
                     }
                     break;
+                case BluetoothProfile.LE_AUDIO_PERIPHERAL:
+                    if (blePeripheralDevices()) {
+                        if (switchToUnavailable) {
+                            makeLeAudioCentralDeviceUnavailable(address,
+                                    btInfo.mAudioSystemDevice, di.mDeviceCodecFormat,
+                                    btInfo.mIsDeviceSwitch);
+                        } else if (switchToAvailable) {
+                            makeLeAudioCentralDeviceAvailable(btInfo, codec);
+                        }
+                        break;
+                    }
+                   // intended fallthrough
                 default: throw new IllegalArgumentException("Invalid profile "
                                  + BluetoothProfile.getProfileName(btInfo.mProfile));
             }
@@ -2170,6 +2183,12 @@ public class AudioDeviceInventory {
             case BluetoothProfile.LE_AUDIO_BROADCAST:
                 disconnectLeAudioBroadcast();
                 break;
+            case BluetoothProfile.LE_AUDIO_PERIPHERAL:
+                if (blePeripheralDevices()) {
+                    disconnectLeAudioCentral();
+                    break;
+                }
+                // intended fallthrough
             default:
                 // Not a valid profile to disconnect
                 Log.e(TAG, "onBtProfileDisconnected: Not a valid profile to disconnect "
@@ -2211,6 +2230,7 @@ public class AudioDeviceInventory {
 
     /*package*/ void disconnectLeAudioUnicast() {
         disconnectLeAudio(AudioSystem.DEVICE_OUT_BLE_HEADSET);
+        disconnectLeAudio(AudioSystem.DEVICE_IN_BLE_HEADSET);
     }
 
     /*package*/ void disconnectLeAudioBroadcast() {
@@ -2232,6 +2252,25 @@ public class AudioDeviceInventory {
         }
         if (disconnect) {
             mDeviceBroker.onSetBtScoActiveDevice(null, false /*deviceSwitch*/);
+        }
+    }
+
+    /*package*/ void disconnectLeAudioCentral() {
+        synchronized (mDevicesLock) {
+            final List<DeviceInfo> toRemove = new ArrayList<>();
+            mConnectedDevices.values().forEach(deviceInfo -> {
+                if (AudioSystem.isBluetoothLeCentralDevice(deviceInfo.mDeviceType)) {
+                    toRemove.add(deviceInfo);
+                }
+            });
+            new MediaMetrics.Item(mMetricsId + "disconnectLeAudioCentral")
+                    .set(MediaMetrics.Property.EVENT, "disconnectLeAudioCentral")
+                    .record();
+            if (toRemove.size() > 0) {
+                toRemove.stream().forEach(deviceInfo ->
+                        makeLeAudioCentralDeviceUnavailable(deviceInfo.mDeviceAddress,
+                                deviceInfo.mDeviceType, deviceInfo.mDeviceCodecFormat, false));
+            }
         }
     }
 
@@ -2888,6 +2927,65 @@ public class AudioDeviceInventory {
                 /*disconnectedFromApm*/ false);
         // send the delayed message to make the device unavailable later
         mDeviceBroker.setLeAudioTimeout(address, device, codec, delayMs);
+    }
+
+
+    @GuardedBy("mDevicesLock")
+    private void makeLeAudioCentralDeviceAvailable(
+            AudioDeviceBroker.BtDeviceInfo btInfo,
+            @AudioSystem.AudioFormatNativeEnumForBtCodec int codec) {
+        if (btInfo.mAudioSystemDevice == AudioSystem.DEVICE_NONE) {
+            return;
+        }
+
+        final int device = btInfo.mAudioSystemDevice;
+        final String address = btInfo.mDevice.getAddress();
+        String name = BtHelper.getName(btInfo.mDevice);
+
+        AudioDeviceAttributes ada = new AudioDeviceAttributes(device, address, name);
+        final int res = setApmDeviceConnectionAvailable(ada, codec, false /*deviceSwitch*/);
+        if (res == AudioSystem.AUDIO_STATUS_ERROR) {
+            AudioService.sDeviceLogger.enqueueAndSlog(
+                    "APM failed to make available LE Audio central device addr=" + address
+                            + " error=" + res, EventLogger.Event.ALOGE, TAG);
+            return;
+        } else {
+            final DeviceInfo di = new DeviceInfo(device, name, address);
+            final String mssgPrefix =
+                    "LE Audio Central" + (AudioSystem.isInputDevice(device) ? "source" : "sink")
+                            + " device addr=" + Utils.anonymizeBluetoothAddress(address);
+            trackDeviceApmAvailable(res, di, mssgPrefix);
+        }
+    }
+
+    @GuardedBy("mDevicesLock")
+    private void makeLeAudioCentralDeviceUnavailable(String address, int device,
+            @AudioSystem.AudioFormatNativeEnumForBtCodec int codec,  boolean deviceSwitch) {
+        if (device == AudioSystem.DEVICE_NONE) {
+            return;
+        }
+        AudioDeviceAttributes ada = new AudioDeviceAttributes(device, address);
+        final int res = mAudioSystem.setDeviceConnectionState(ada,
+                AudioSystem.DEVICE_STATE_UNAVAILABLE,
+                codec, deviceSwitch);
+        // always remove even if disconnection failed
+        removeTrackedConnectedDevice(DeviceInfo.makeDeviceListKey(device, address),
+                /*disconnectedFromApm*/ true);
+
+        if (res != AudioSystem.AUDIO_STATUS_OK) {
+            AudioService.sDeviceLogger.enqueue(new EventLogger.StringEvent(
+                    "APM failed to make unavailable LE Audio central "
+                            + (AudioSystem.isInputDevice(device) ? "source" : "sink")
+                            + " device addr=" + address
+                            + " error=" + res).printSlog(EventLogger.Event.ALOGE, TAG));
+            // not taking further action: proceeding as if disconnection from APM worked
+        } else {
+            AudioService.sDeviceLogger.enqueue(new EventLogger.StringEvent(
+                    "LE Audio central " + (AudioSystem.isInputDevice(device) ? "source" : "sink")
+                            + "device addr=" + Utils.anonymizeBluetoothAddress(address)
+                            + " made unavailable, deviceSwitch: " + deviceSwitch)
+                    .printSlog(EventLogger.Event.ALOGI, TAG));
+        }
     }
 
     @GuardedBy("mDevicesLock")

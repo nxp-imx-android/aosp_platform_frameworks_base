@@ -23,6 +23,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.widget.EdgeEffect;
 
+import com.android.internal.widget.remotecompose.core.RemoteClock;
 import com.android.internal.widget.remotecompose.core.RemoteContext;
 import com.android.internal.widget.remotecompose.core.ScrollingEdgeEffect;
 import com.android.internal.widget.remotecompose.core.SystemClock;
@@ -54,17 +55,17 @@ public class AndroidRemoteContext extends RemoteContext {
 
     @NonNull private BitmapLoader mBitmapLoader = BitmapLoader.UNSUPPORTED;
 
-    /** Default constructor, uses a {@link SystemClock} as the clock. */
+    /** Default constructor, uses a {@link RemoteClock#SYSTEM} as the clock. */
     public AndroidRemoteContext() {
-        this(new SystemClock());
+        this(RemoteClock.SYSTEM);
     }
 
-    /**
-     * Context for the Android Implementation.
-     *
-     * @param clock The clock used for tracking time.
-     */
     public AndroidRemoteContext(@NonNull Clock clock) {
+        super(new SystemClock(clock));
+        setBitmapLoader(new AndroidBitmapLoader());
+    }
+
+    public AndroidRemoteContext(@NonNull RemoteClock clock) {
         super(clock);
         setBitmapLoader(new AndroidBitmapLoader());
     }

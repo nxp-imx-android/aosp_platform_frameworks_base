@@ -1123,6 +1123,7 @@
     <string name="lockscreen_access_pattern_cell_added_verbose" msgid="2931364927622563465">"已加入 <xliff:g id="CELL_INDEX">%1$s</xliff:g> 點"</string>
     <string name="lockscreen_access_pattern_detected" msgid="3931150554035194012">"已畫出解鎖圖案"</string>
     <string name="lockscreen_access_pattern_area" msgid="1288780416685002841">"圖案區域。"</string>
+    <string name="lockscreen_access_pattern_cell_verbose" msgid="6670905066468035137">"圓點 <xliff:g id="CELL_INDEX">%1$s</xliff:g>"</string>
     <string name="keyguard_accessibility_widget_changed" msgid="7298011259508200234">"%1$s。第 %2$d 個小工具，共 %3$d 個。"</string>
     <string name="keyguard_accessibility_add_widget" msgid="8245795023551343672">"新增小工具。"</string>
     <string name="keyguard_accessibility_widget_empty_slot" msgid="544239307077644480">"空白"</string>
@@ -2006,6 +2007,7 @@
     <string name="managed_profile_label_badge_3" msgid="6882151970556391957">"第三個工作<xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="clone_profile_label_badge" msgid="1871997694718793964">"複製 <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="private_profile_label_badge" msgid="1712086003787839183">"私人<xliff:g id="LABEL">%1$s</xliff:g>"</string>
+    <string name="hsu_label_badge" msgid="1357272000281944932">"系統<xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="lock_to_app_unlock_pin" msgid="3890940811866290782">"取消固定時必須輸入 PIN"</string>
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"取消固定時必須提供解鎖圖案"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"取消固定時必須輸入密碼"</string>
@@ -2617,6 +2619,8 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"你必須將「Google 訊息」設定為預設訊息應用程式，才能透過衛星收發訊息"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"無法使用衛星訊息功能"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"如要查看此國家或地區是否支援衛星訊息功能，請開啟位置設定"</string>
+    <!-- no translation found for satellite_indicator (6846063647532086110) -->
+    <skip />
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"重新設定「指紋解鎖」功能"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"無法再辨識<xliff:g id="FINGERPRINT">%s</xliff:g>。"</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"無法再辨識<xliff:g id="FINGERPRINT_0">%1$s</xliff:g>和<xliff:g id="FINGERPRINT_1">%2$s</xliff:g>。"</string>

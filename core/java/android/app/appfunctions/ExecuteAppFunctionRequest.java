@@ -39,6 +39,10 @@ import java.util.Objects;
  *
  * <p>The {@link ExecuteAppFunctionRequest#getExtras()} provides any extra metadata for the request.
  * Structured APIs can be exposed in the SDK by packing and unpacking this Bundle.
+ *
+ * <p>If {@link AppFunctionMetadata#getScope()} is {@link AppFunctionMetadata#SCOPE_ACTIVITY}, the
+ * target activity must be specified using {@link ExecuteAppFunctionRequest.Builder#setActivityId}.
+ * If omitted, the request fails with {@link AppFunctionException#ERROR_FUNCTION_NOT_FOUND}.
  */
 @FlaggedApi(FLAG_ENABLE_APP_FUNCTION_MANAGER)
 public final class ExecuteAppFunctionRequest implements Parcelable {
@@ -55,19 +59,21 @@ public final class ExecuteAppFunctionRequest implements Parcelable {
                     Bundle extras =
                             Objects.requireNonNull(
                                     parcel.readBundle(Bundle.class.getClassLoader()));
+                    AppInteractionAttribution attribution = null;
                     if (Flags.enableAppInteractionApi()) {
-                        final AppInteractionAttribution attribution =
-                                parcel.readTypedObject(AppInteractionAttribution.CREATOR);
-                        return new ExecuteAppFunctionRequest(
-                                targetPackageName,
-                                functionIdentifier,
-                                extras,
-                                parameters,
-                                attribution);
-                    } else {
-                        return new ExecuteAppFunctionRequest(
-                                targetPackageName, functionIdentifier, extras, parameters, null);
+                        attribution = parcel.readTypedObject(AppInteractionAttribution.CREATOR);
                     }
+                    AppFunctionActivityId activityId = null;
+                    if (Flags.enableDynamicAppFunctions()) {
+                        activityId = parcel.readTypedObject(AppFunctionActivityId.CREATOR);
+                    }
+                    return new ExecuteAppFunctionRequest(
+                            targetPackageName,
+                            functionIdentifier,
+                            extras,
+                            parameters,
+                            attribution,
+                            activityId);
                 }
 
                 @Override
@@ -100,17 +106,21 @@ public final class ExecuteAppFunctionRequest implements Parcelable {
 
     @Nullable private final AppInteractionAttribution mAttribution;
 
+    @Nullable private final AppFunctionActivityId mActivityId;
+
     private ExecuteAppFunctionRequest(
             @NonNull String targetPackageName,
             @NonNull String functionIdentifier,
             @NonNull Bundle extras,
             @NonNull GenericDocumentWrapper parameters,
-            @Nullable AppInteractionAttribution attribution) {
+            @Nullable AppInteractionAttribution attribution,
+            @Nullable AppFunctionActivityId activityId) {
         mTargetPackageName = Objects.requireNonNull(targetPackageName);
         mFunctionIdentifier = Objects.requireNonNull(functionIdentifier);
         mExtras = Objects.requireNonNull(extras);
         mParameters = Objects.requireNonNull(parameters);
         mAttribution = attribution;
+        mActivityId = activityId;
     }
 
     /** Returns the package name of the app that hosts the function. */
@@ -168,6 +178,25 @@ public final class ExecuteAppFunctionRequest implements Parcelable {
     }
 
     /**
+     * Returns the {@link AppFunctionActivityId} for this request.
+     *
+     * <p>This identifier is used to disambiguate between instances of the same app function running
+     * in different activities when the function's {@link AppFunctionMetadata#getScope} is {@link
+     * AppFunctionMetadata#SCOPE_ACTIVITY}.
+     *
+     * <p>If this returns {@code null}, the request targets an app function that is not {@link
+     * AppFunctionMetadata#SCOPE_ACTIVITY}.
+     *
+     * @return The activity identifier, or {@code null} if the request targets an app function that
+     *     is not {@link AppFunctionMetadata#SCOPE_ACTIVITY}.
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
+    @Nullable
+    public AppFunctionActivityId getActivityId() {
+        return mActivityId;
+    }
+
+    /**
      * Returns the size of the request in bytes.
      *
      * @hide
@@ -188,6 +217,9 @@ public final class ExecuteAppFunctionRequest implements Parcelable {
         if (Flags.enableAppInteractionApi()) {
             dest.writeTypedObject(mAttribution, flags);
         }
+        if (Flags.enableDynamicAppFunctions()) {
+            dest.writeTypedObject(mActivityId, flags);
+        }
     }
 
     @Override
@@ -206,6 +238,8 @@ public final class ExecuteAppFunctionRequest implements Parcelable {
 
         @Nullable private AppInteractionAttribution mAttribution = null;
 
+        @Nullable private AppFunctionActivityId mActivityId = null;
+
         /**
          * Creates a new instance of this builder class.
          *
@@ -217,6 +251,18 @@ public final class ExecuteAppFunctionRequest implements Parcelable {
         public Builder(@NonNull String targetPackageName, @NonNull String functionIdentifier) {
             mTargetPackageName = Objects.requireNonNull(targetPackageName);
             mFunctionIdentifier = Objects.requireNonNull(functionIdentifier);
+        }
+
+        /**
+         * Creates a new instance of this builder class.
+         *
+         * @param appFunctionName The {@link AppFunctionName} of the target app function.
+         */
+        @FlaggedApi(Flags.FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
+        public Builder(@NonNull AppFunctionName appFunctionName) {
+            Objects.requireNonNull(appFunctionName);
+            mTargetPackageName = appFunctionName.getPackageName();
+            mFunctionIdentifier = appFunctionName.getFunctionId();
         }
 
         /** Sets the additional metadata for this function execution request. */
@@ -257,6 +303,34 @@ public final class ExecuteAppFunctionRequest implements Parcelable {
             return this;
         }
 
+        /**
+         * Sets the {@link AppFunctionActivityId}.
+         *
+         * <p>If the target app function's {@link AppFunctionMetadata#getScope()} is {@link
+         * AppFunctionMetadata#SCOPE_ACTIVITY}, this field must be set to disambiguate between
+         * instances of the same app function running in different activities.
+         *
+         * <p>The field must not be set if the target app function is not {@link
+         * AppFunctionMetadata#SCOPE_ACTIVITY}.
+         *
+         * <p>The list of valid activity identifiers for a given function name can be obtained by
+         * calling {@link AppFunctionManager#getAppFunctionStates}. The returned {@link
+         * AppFunctionState} objects will contain the associated activity IDs via {@link
+         * AppFunctionState#getActivityIds()}.
+         *
+         * @param activityId The activity identifier to associate with this request.
+         * @return This builder.
+         * @see AppFunctionState#getActivityIds
+         * @see AppFunctionManager#getAppFunctionStates
+         * @see AppFunctionMetadata#getScope
+         */
+        @FlaggedApi(Flags.FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
+        @NonNull
+        public Builder setActivityId(@Nullable AppFunctionActivityId activityId) {
+            mActivityId = activityId;
+            return this;
+        }
+
         /** Builds the {@link ExecuteAppFunctionRequest}. */
         @NonNull
         public ExecuteAppFunctionRequest build() {
@@ -265,7 +339,8 @@ public final class ExecuteAppFunctionRequest implements Parcelable {
                     mFunctionIdentifier,
                     mExtras,
                     new GenericDocumentWrapper(mParameters),
-                    mAttribution);
+                    mAttribution,
+                    mActivityId);
         }
     }
 }

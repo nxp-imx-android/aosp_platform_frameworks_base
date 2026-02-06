@@ -96,6 +96,16 @@ flag {
 }
 
 flag {
+    name: "fix_window_magnification_inactive_double_tap"
+    namespace: "accessibility"
+    description: "Fixes a bug where Window Magnification interferes with double-tap gestures in apps when inactive by correcting timestamp corruption and adding a bypass optimization."
+    bug: "479568199"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "fullscreen_fling_gesture"
     namespace: "accessibility"
     description: "When true, adds a fling gesture animation for fullscreen magnification"
@@ -137,6 +147,16 @@ flag {
     namespace: "accessibility"
     description: "Fixes screen freeze by passing through motion events that AccessibilityInputFilter declines to process (e.g. during mid-gesture feature enables)."
     bug: "397138372"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "reduce_interactive_delay_with_magnification"
+    namespace: "accessibility"
+    description: "Reduces the delay for single-tap interactions when full-screen magnification is active but the triple-tap shortcut is disabled."
+    bug: "479569749"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

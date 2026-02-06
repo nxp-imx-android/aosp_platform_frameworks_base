@@ -343,7 +343,6 @@ public class PipTransitionState {
                 || mState == PipTransitionState.SCHEDULED_ENTER_PIP;
     }
 
-
     void setSwipePipToHomeState(@Nullable SurfaceControl overlayLeash,
             @NonNull Rect appBounds) {
         mInSwipePipToHomeTransition = true;

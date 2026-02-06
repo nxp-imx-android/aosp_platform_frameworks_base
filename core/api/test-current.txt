@@ -1152,6 +1152,7 @@ package android.content {
     method public void setContentCaptureOptions(@Nullable android.content.ContentCaptureOptions);
     method public void updateDeviceId(int);
     method public abstract void updateDisplay(int);
+    field public static final long BIND_ALLOW_FREEZE = 17179869184L; // 0x400000000L
     field public static final String CONTENT_CAPTURE_MANAGER_SERVICE = "content_capture";
     field public static final String DEVICE_IDLE_CONTROLLER = "deviceidle";
     field public static final String DREAM_SERVICE = "dream";
@@ -2203,6 +2204,7 @@ package android.media {
   public final class AudioDeviceInfo {
     method public static void enforceValidAudioDeviceTypeIn(int);
     method public static void enforceValidAudioDeviceTypeOut(int);
+    method @FlaggedApi("android.media.audio.ambisonics_support_api") @NonNull public int[] getChannelAcnMasks();
   }
 
   public class AudioDeviceVolumeManager {
@@ -2377,6 +2379,10 @@ package android.media {
 
   public final class MediaRoute2Info implements android.os.Parcelable {
     method @NonNull public String getOriginalId();
+  }
+
+  public static final class MediaRoute2Info.Builder {
+    method @NonNull public android.media.MediaRoute2Info.Builder setSystemRoute(boolean);
   }
 
   public class MediaRouter2.RoutingController {

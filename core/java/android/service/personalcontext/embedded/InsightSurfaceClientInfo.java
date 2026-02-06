@@ -33,6 +33,7 @@ import android.view.SurfaceControlViewHost;
 
 import androidx.annotation.IntRange;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import java.util.UUID;
@@ -56,6 +57,8 @@ public final class InsightSurfaceClientInfo implements Parcelable {
     private final int mNestedScrollAxes;
     private final boolean mNestedScrollAxisLocked;
     private final boolean mShouldBlur;
+    private final String mThemeResourceName;
+    private final String mPackageName;
     private final Configuration mConfiguration;
     private final IInsightSurfaceClient mClient;
 
@@ -65,6 +68,12 @@ public final class InsightSurfaceClientInfo implements Parcelable {
      * @param displayId the client app's {@link android.view.Display#getDisplayId}
      * @param measureSpecWidth the width MeasureSpec of the client surface
      * @param measureSpecHeight the height MeasureSpec of the client surface
+     * @param backgroundColor the background color of the client surface
+     * @param nestedScrollAxes the nested scroll axes supported by the client surface
+     * @param nestedScrollAxisLocked whether scrolling is locked to the nested scroll axes
+     * @param shouldBlur whether the client surface should be blurred
+     * @param themeResourceName the name of a theme resource specifying client styling
+     * @param packageName the package name of the client application
      * @param configuration resource configuration from the client's local context
      * @param client interface used to pass sessions and insights back to the client
      *
@@ -79,6 +88,8 @@ public final class InsightSurfaceClientInfo implements Parcelable {
             int nestedScrollAxes,
             boolean nestedScrollAxisLocked,
             boolean shouldBlur,
+            @Nullable String themeResourceName,
+            @NonNull String packageName,
             @NonNull Configuration configuration,
             @NonNull IInsightSurfaceClient client) {
         mId = UUID.randomUUID();
@@ -89,12 +100,14 @@ public final class InsightSurfaceClientInfo implements Parcelable {
         mNestedScrollAxes = nestedScrollAxes;
         mNestedScrollAxisLocked = nestedScrollAxisLocked;
         mShouldBlur = shouldBlur;
+        mPackageName = packageName;
+        mThemeResourceName = themeResourceName;
         mConfiguration = configuration;
         mClient = client;
     }
 
     private InsightSurfaceClientInfo(Parcel in) {
-        mId = UUID.fromString(in.readString());
+        mId = UUID.fromString(in.readString8());
         mDisplayId = in.readInt();
         mMeasureSpecWidth = in.readInt();
         mMeasureSpecHeight = in.readInt();
@@ -102,6 +115,8 @@ public final class InsightSurfaceClientInfo implements Parcelable {
         mNestedScrollAxes = in.readInt();
         mNestedScrollAxisLocked = in.readBoolean();
         mShouldBlur = in.readBoolean();
+        mThemeResourceName = in.readString8();
+        mPackageName = in.readString8();
         mConfiguration =
                 in.readParcelable(Configuration.class.getClassLoader(), Configuration.class);
         mClient = IInsightSurfaceClient.Stub.asInterface(in.readStrongBinder());
@@ -184,6 +199,51 @@ public final class InsightSurfaceClientInfo implements Parcelable {
      */
     public boolean shouldBlur() {
         return mShouldBlur;
+    }
+
+    /**
+     * Get the name of a theme resource to be passed to the connected visualizer. A visualizer
+     * can use this name to look up the theme, which can then be used when creating an embedded
+     * surface for the client. If this method returns a {@code null} name, or the resource can't
+     * be found, then the caller should fall back to default attribute values. Note that the
+     * caller needs to be able to query the package related to this theme resource in order
+     * to retrieve any values.
+     * <p/>
+     * Visualizers can obtain the style attributes with this name as follows:
+     * <pre>
+     * String themeResourceName = clientInfo.getThemeResourceName();
+     * if (themeResourceName != null) {
+     *     TypedArray styleAttrs;
+     *     try {
+     *         String packageName = clientInfo.getPackageName();
+     *         Context context = getPackageManager().getResourcesForApplication(packageName);
+     *         Resources res = context.getResources();
+     *         int styleResId =
+     *             res.getIdentifier(clientInfo.getThemeResourceName(), "style", packageName);
+     *         styleAttrs = res.obtainStyledAttributes(styleResId, attrs);
+     *     } catch (PackageManager.NameNotFoundException e) {
+     *         // Custom client theme not found, apply default attributes...
+     *     } finally {
+     *         // Recycle the TypedArray when finished with it.
+     *         styleAttrs.recycle();
+     *     }
+     *     // Apply custom attributes from client's resources...
+     * } else {
+     *     // Apply default attributes...
+     * }
+     * </pre>
+     */
+    @Nullable
+    public String getThemeResourceName() {
+        return mThemeResourceName;
+    }
+
+    /**
+     * Return the package name of the client application.
+     */
+    @NonNull
+    public String getPackageName() {
+        return mPackageName;
     }
 
     /**
@@ -283,7 +343,7 @@ public final class InsightSurfaceClientInfo implements Parcelable {
 
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
-        dest.writeString(mId.toString());
+        dest.writeString8(mId.toString());
         dest.writeInt(mDisplayId);
         dest.writeInt(mMeasureSpecWidth);
         dest.writeInt(mMeasureSpecHeight);
@@ -291,6 +351,8 @@ public final class InsightSurfaceClientInfo implements Parcelable {
         dest.writeInt(mNestedScrollAxes);
         dest.writeBoolean(mNestedScrollAxisLocked);
         dest.writeBoolean(mShouldBlur);
+        dest.writeString8(mThemeResourceName);
+        dest.writeString8(mPackageName);
         dest.writeParcelable(mConfiguration, flags);
         dest.writeStrongInterface(mClient);
     }
@@ -314,6 +376,9 @@ public final class InsightSurfaceClientInfo implements Parcelable {
                         ? update.isNestedScrollAxisLocked() : mNestedScrollAxisLocked,
                 update.hasUpdate(InsightSurfaceClientUpdate.KEY_SHOULD_BLUR)
                         ? update.isNestedScrollAxisLocked() : mShouldBlur,
+                update.hasUpdate(InsightSurfaceClientUpdate.KEY_THEME_RESOURCE_NAME)
+                        ? update.getThemeResourceName() : mThemeResourceName,
+                mPackageName,
                 update.hasUpdate(InsightSurfaceClientUpdate.KEY_CONFIGURATION)
                         ? update.getConfiguration() : mConfiguration,
                 mClient);

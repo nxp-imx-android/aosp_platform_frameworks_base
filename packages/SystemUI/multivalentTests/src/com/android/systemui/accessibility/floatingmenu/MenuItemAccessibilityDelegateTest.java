@@ -26,6 +26,7 @@ import static kotlinx.coroutines.flow.FlowKt.flowOf;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
@@ -43,6 +44,7 @@ import androidx.test.filters.SmallTest;
 
 import com.android.settingslib.bluetooth.HearingAidDeviceManager;
 import com.android.systemui.SysuiTestCase;
+import com.android.systemui.accessibility.Magnification;
 import com.android.systemui.accessibility.utils.TestUtils;
 import com.android.systemui.inputdevice.data.repository.PointerDeviceRepository;
 import com.android.systemui.keyboard.data.repository.KeyboardRepository;
@@ -99,13 +101,8 @@ public class MenuItemAccessibilityDelegateTest extends SysuiTestCase {
 
         final int halfScreenHeight =
                 stubWindowManager.getCurrentWindowMetrics().getBounds().height() / 2;
-        mMenuView =
-                spy(
-                        new MenuView(
-                                mContext,
-                                stubMenuViewModel,
-                                stubMenuViewAppearance,
-                                mSecureSettings));
+        mMenuView = spy(new MenuView(mContext, stubMenuViewModel, stubMenuViewAppearance,
+                mSecureSettings, mock(Magnification.class)));
         mMenuView.setTranslationY(halfScreenHeight);
 
         doNothing().when(mMenuViewLayer).gotoEditScreen();

@@ -17,7 +17,7 @@
 package com.android.server.security.talisman;
 
 import android.annotation.NonNull;
-import android.security.talisman.TrustConfiguration;
+import android.security.trusttoken.TrustConfiguration;
 
 import java.util.List;
 import java.util.function.Predicate;
@@ -43,6 +43,14 @@ abstract class TrustTokenDatabase {
      */
     abstract void addTrustTokenSets(@NonNull List<TrustTokenSetWithKey> tokens)
             throws IllegalArgumentException;
+
+    /**
+     * Counts the number of trust token sets of a specific type in the database.
+     *
+     * @param type the type of the trust token sets to count.
+     * @return the number of trust token sets of the specified type.
+     */
+    abstract int countTrustTokenSets(@TrustTokenSet.Type int type);
 
     /**
      * Cleans up the stored tokens. It removes expired, invalid and excess tokens from the database.

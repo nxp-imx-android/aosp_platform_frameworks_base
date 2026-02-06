@@ -1758,10 +1758,9 @@ public final class JobStatus {
     public String getWakelockTag() {
         if (mWakelockTag == null) {
             mWakelockTag = "*job*";
-            if (android.app.job.Flags.addTypeInfoToWakelockTag()) {
-                mWakelockTag += (isRequestedExpeditedJob()
-                    ? "e" : (getJob().isUserInitiated() ? "u" : "r"));
-            }
+            // Add job type info to wakelock tag.
+            mWakelockTag += isRequestedExpeditedJob() ? "e"
+                                                      : (getJob().isUserInitiated() ? "u" : "r");
             mWakelockTag += "/" + this.batteryName;
         }
         return mWakelockTag;
@@ -2503,10 +2502,8 @@ public final class JobStatus {
         if (hasConstraintFlag(constraint, CONSTRAINT_WITHIN_QUOTA)) {
             return JobScheduler.PENDING_JOB_REASON_QUOTA;
         }
-        if (android.app.job.Flags.getPendingJobReasonsApi()) {
-            if (hasConstraintFlag(constraint, CONSTRAINT_DEADLINE)) {
-                return JobScheduler.PENDING_JOB_REASON_CONSTRAINT_DEADLINE;
-            }
+        if (hasConstraintFlag(constraint, CONSTRAINT_DEADLINE)) {
+            return JobScheduler.PENDING_JOB_REASON_CONSTRAINT_DEADLINE;
         }
 
         Slog.wtf(TAG, "Unhandled constraint (" + constraint + ") in constraintToPendingJobReason");

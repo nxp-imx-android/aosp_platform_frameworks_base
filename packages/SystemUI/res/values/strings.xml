@@ -162,6 +162,33 @@
     <!-- Message of notification shown when trying to enable USB debugging but a secondary user is the current foreground user. -->
     <string name="usb_debugging_secondary_user_message">The user currently signed in to this device can\'t turn on USB debugging. To use this feature, switch to an admin user.</string>
 
+    <!-- Title of notification shown when a new USB device needs user authorization. -->
+    <string name="usb_authorization_title">Allow USB device to connect?</string>
+
+    <!-- Title of notification shown when a new USB device needs user authorization. -->
+    <string name="usb_authorization_title_multi">Allow USB devices to connect?</string>
+
+    <!-- Message of notification shown when a new USB device needs user authorization. -->
+    <string name="usb_authorization_message">The following device was connected to your <xliff:g id="name" example="My Pixel 8 Pro">%1$s</xliff:g>:</string>
+
+    <!-- Message of notification shown when a new USB device needs user authorization. -->
+    <string name="usb_authorization_message_multi">The following devices were connected to your <xliff:g id="name" example="My Pixel 8 Pro">%1$s</xliff:g>:</string>
+
+    <!-- Message of notification shown when a new USB device needs user authorization before first unlock. -->
+    <string name="usb_authorization_message_untrusted">The following device was connected to your <xliff:g id="name" example="My Pixel 8 Pro">%1$s</xliff:g>. This device will only be trusted after you sign in.</string>
+
+    <!-- Message of notification shown when a new USB device needs user authorization before first unlock. -->
+    <string name="usb_authorization_message_multi_untrusted">The following devices were connected to your <xliff:g id="name" example="My Pixel 8 Pro">%1$s</xliff:g>. These devices will only be trusted after you sign in.</string>
+
+    <!-- String used for an USB device with an empty product name -->
+    <string name="usb_authorization_unknown_device">Unknown product (<xliff:g id="vendor_id">%1$04X</xliff:g>:<xliff:g id="product_id">%2$04X</xliff:g>)</string>
+
+    <!-- Button label for allowing new USB device. [CHAR LIMIT=20] -->
+    <string name="usb_authorization_allow">Allow</string>
+
+    <!-- Button label for denying new USB device. [CHAR LIMIT=20] -->
+    <string name="usb_authorization_deny">Don\'t allow</string>
+
     <!-- Title of confirmation dialog for wireless debugging [CHAR LIMIT=80] -->
     <string name="hdmi_cec_set_menu_language_title">Do you want to change the system language to <xliff:g id="language" example="German">%1$s</xliff:g>?</string>
 
@@ -274,6 +301,10 @@
     <string name="screenshot_dismiss_description">Dismiss screenshot</string>
     <!-- Content description indicating that tapping a button will dismiss the work profile first run dialog [CHAR LIMIT=NONE] -->
     <string name="screenshot_dismiss_work_profile">Dismiss work profile message</string>
+    <!-- Label for UI element which allows opening the screenshot in the Files app [CHAR LIMIT=30] -->
+    <string name="screenshot_open_in_folder_label">Folder</string>
+    <!-- Content description indicating that tapping the element will allow opening the screenshot in the Files app [CHAR LIMIT=NONE] -->
+    <string name="screenshot_open_in_folder_description">Open screenshot in Files</string>
     <!-- Content description indicating that the view is a preview of the screenshot that was just taken [CHAR LIMIT=NONE] -->
     <string name="screenshot_preview_description">Screenshot preview</string>
     <!-- Content description for the top boundary of the screenshot being cropped, with the current position as a percentage. [CHAR LIMIT=NONE] -->

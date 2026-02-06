@@ -17,6 +17,9 @@
 package com.android.server.contextualsearch;
 
 import static android.Manifest.permission.ACCESS_CONTEXTUAL_SEARCH;
+import static android.Manifest.permission.CREATE_USERS;
+import static android.Manifest.permission.MANAGE_USERS;
+import static android.Manifest.permission.QUERY_USERS;
 import static android.Manifest.permission.START_TASKS_FROM_RECENTS;
 import static android.app.AppOpsManager.OP_ASSIST_SCREENSHOT;
 import static android.app.AppOpsManager.OP_ASSIST_STRUCTURE;
@@ -326,9 +329,9 @@ public class ContextualSearchManagerService extends SystemService {
     }
 
     @RequiresPermission(anyOf = {
-            android.Manifest.permission.MANAGE_USERS,
-            android.Manifest.permission.CREATE_USERS,
-            android.Manifest.permission.QUERY_USERS
+            MANAGE_USERS,
+            CREATE_USERS,
+            QUERY_USERS
     })
     private Intent getContextualSearchIntent(final int entrypoint,
             @Nullable final ContextualSearchConfig config, final int userId,
@@ -340,20 +343,20 @@ public class ContextualSearchManagerService extends SystemService {
         }
 
         if (DEBUG) Log.d(TAG, "Launch component: " + launchIntent.getComponent());
-        launchIntent.addFlags(FLAG_ACTIVITY_NEW_TASK | FLAG_ACTIVITY_NO_ANIMATION
-                | FLAG_ACTIVITY_NO_USER_ACTION | FLAG_ACTIVITY_CLEAR_TASK);
-        if (config != null) {
-            // Add these first to avoid overwriting any extras set below.
-            launchIntent.putExtras(config.getIntentExtras());
-        }
+        final ContextualSearchConfig effectiveConfig =
+                config != null ? config : ContextualSearchConfig.DEFAULT_CONFIG;
+
+        launchIntent.setFlags(effectiveConfig.getLaunchFlags());
+
+        // Add these first to avoid overwriting any extras set below.
+        launchIntent.putExtras(effectiveConfig.getIntentExtras());
+
         launchIntent.putExtra(
                 ContextualSearchManager.EXTRA_INVOCATION_TIME_MS,
                 SystemClock.uptimeMillis());
         launchIntent.putExtra(ContextualSearchManager.EXTRA_ENTRYPOINT, entrypoint);
         launchIntent.putExtra(ContextualSearchManager.EXTRA_TOKEN, token);
-        if (config != null) {
-            launchIntent.setSourceBounds(config.getSourceBounds());
-        }
+        launchIntent.setSourceBounds(effectiveConfig.getSourceBounds());
         if (Flags.includeAudioPlayingStatus()) {
             launchIntent.putExtra(ContextualSearchManager.EXTRA_IS_AUDIO_PLAYING,
                     mAudioManager.isMusicActive());
@@ -507,10 +510,9 @@ public class ContextualSearchManagerService extends SystemService {
     }
 
     private static int getDisplayIdFromConfig(@Nullable final ContextualSearchConfig config) {
-        if (config == null || config.getDisplayId() == Display.INVALID_DISPLAY) {
-            return Display.DEFAULT_DISPLAY;
-        }
-        return config.getDisplayId();
+        int displayId = (config != null ? config : ContextualSearchConfig.DEFAULT_CONFIG)
+                .getDisplayId();
+        return displayId == Display.INVALID_DISPLAY ? Display.DEFAULT_DISPLAY : displayId;
     }
 
     private class ContextualSearchManagerStub extends IContextualSearchManager.Stub {
@@ -563,29 +565,14 @@ public class ContextualSearchManagerService extends SystemService {
 
         @Override
         @RequiresPermission(START_TASKS_FROM_RECENTS)
-        public void startContextualSearchForActivity(@NonNull final IBinder activityToken,
-                @Nullable ContextualSearchConfig config) {
+        public void startContextualSearchForApp(@NonNull ContextualSearchConfig config) {
             synchronized (this) {
                 if (DEBUG) {
                     Log.d(TAG, "Starting contextual search from: "
                             + mPackageManager.getNameForUid(Binder.getCallingUid())
                             + ", config: " + config);
                 }
-                enforceForegroundApp("startContextualSearchForActivity");
-                // If a display ID is not specified, use the display of the activity.
-                if (Flags.configParameters()
-                        && (config == null || config.getDisplayId() == Display.INVALID_DISPLAY)) {
-                    final ContextualSearchConfig.Builder builder =
-                            config != null ? new ContextualSearchConfig.Builder(config)
-                                    : new ContextualSearchConfig.Builder();
-                    int displayId = mAtmInternal.getDisplayId(activityToken);
-                    if (displayId == Display.INVALID_DISPLAY) {
-                        Log.e(TAG, "Invalid display id for activity token: " + activityToken);
-                        displayId = Display.DEFAULT_DISPLAY;
-                    }
-                    builder.setDisplayId(displayId);
-                    config = builder.build();
-                }
+                enforceForegroundApp("startContextualSearchForApp");
                 startContextualSearchInternal(INTERNAL_ENTRYPOINT_APP, config);
             }
         }
@@ -600,31 +587,32 @@ public class ContextualSearchManagerService extends SystemService {
                             + ", config: " + config);
                 }
                 enforcePermission("startContextualSearch");
-                if (Flags.configParameters() && config == null) {
-                    config = new ContextualSearchConfig.Builder().build();
-                }
                 startContextualSearchInternal(entrypoint, config);
             }
         }
 
         // TODO(b/371552433): Make config @NonNull when the config_parameters flag is cleaned up.
-        @RequiresPermission(START_TASKS_FROM_RECENTS)
+        @RequiresPermission(allOf = {START_TASKS_FROM_RECENTS}, anyOf = {
+                MANAGE_USERS, CREATE_USERS, QUERY_USERS})
         private void startContextualSearchInternal(final int entrypoint,
                                                    @Nullable final ContextualSearchConfig config) {
+            final ContextualSearchConfig effectiveConfig =
+                    config != null ? config : ContextualSearchConfig.DEFAULT_CONFIG;
             final String callingPackage = mPackageManager.getNameForUid(Binder.getCallingUid());
             final int callingUserId = Binder.getCallingUserHandle().getIdentifier();
             mAssistDataRequester.cancel();
             // Creates a new CallbackToken at mToken and an expiration handler.
-            issueToken(config);
+            issueToken(effectiveConfig);
             // We get the launch intent with the system server's identity because the system
             // server has READ_FRAME_BUFFER permission to get the screenshot and because only
             // the system server can invoke non-exported activities.
             Binder.withCleanCallingIdentity(() -> {
-                final Intent launchIntent = getContextualSearchIntent(entrypoint, config,
+                final Intent launchIntent = getContextualSearchIntent(entrypoint, effectiveConfig,
                         callingUserId, callingPackage, mToken);
                 if (launchIntent != null) {
                     final int result =
-                            invokeContextualSearchIntent(launchIntent, callingUserId, config);
+                            invokeContextualSearchIntent(launchIntent, callingUserId,
+                                    effectiveConfig);
                     if (DEBUG) {
                         Log.d(TAG, "Launch intent: " + launchIntent);
                         Log.d(TAG, "Launch result: " + result);

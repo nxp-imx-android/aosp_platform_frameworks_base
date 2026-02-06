@@ -1614,6 +1614,8 @@ public final class MediaRoute2Info implements Parcelable {
          * Sets whether the route is a system route or not.
          * @hide
          */
+        @TestApi
+        @SuppressWarnings("UnflaggedApi") // @TestApi without associated feature.
         @NonNull
         public Builder setSystemRoute(boolean isSystem) {
             mIsSystem = isSystem;

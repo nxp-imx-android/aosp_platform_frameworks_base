@@ -132,7 +132,6 @@ import static android.view.flags.Flags.toolkitInitialTouchBoost;
 import static android.view.flags.Flags.toolkitMetricsForFrameRateDecision;
 import static android.view.flags.Flags.toolkitSetFrameRateReadOnly;
 import static android.window.DesktopExperienceFlags.DEFER_RESUME_FOCUS_IN_NON_FOCUSED_WINDOW;
-import static android.window.DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION;
 
 import static com.android.graphics.surfaceflinger.flags.Flags.setClientDrawnCornerRadii;
 import static com.android.internal.annotations.VisibleForTesting.Visibility.PACKAGE;
@@ -3264,8 +3263,8 @@ public final class ViewRootImpl implements ViewParent,
             // the scheduled traversals have occurred unless the message is
             // specifically "asynchronous" - see Message#setAsynchronous
             postTraversalBarrier();
-            mChoreographer.postCallback(
-                    Choreographer.CALLBACK_TRAVERSAL, mTraversalRunnable, null);
+            mChoreographer.postVsyncCallback(
+                    Choreographer.CALLBACK_TRAVERSAL, mTraversalCallback);
             notifyRendererOfFramePending();
             pokeDrawLockIfNeeded();
         }
@@ -3276,16 +3275,16 @@ public final class ViewRootImpl implements ViewParent,
         if (mTraversalScheduled) {
             mTraversalScheduled = false;
             removeTraversalBarrier();
-            mChoreographer.removeCallbacks(
-                    Choreographer.CALLBACK_TRAVERSAL, mTraversalRunnable, null);
+            mChoreographer.removeVsyncCallback(
+                    Choreographer.CALLBACK_TRAVERSAL, mTraversalCallback);
         }
     }
 
-    void doTraversal() {
+    void doTraversal(long frameTimeNanos) {
         if (mTraversalScheduled) {
             mTraversalScheduled = false;
             removeTraversalBarrier();
-            performTraversals();
+            performTraversals(frameTimeNanos);
         }
     }
 
@@ -3544,11 +3543,9 @@ public final class ViewRootImpl implements ViewParent,
         } else if (!navIsHiddenByFlags && navWasHiddenByFlags) {
             typesToShow |= Type.navigationBars();
         }
-        if (captionIsHiddenByFlags && !captionWasHiddenByFlags
-                && ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION.isTrue()) {
+        if (captionIsHiddenByFlags && !captionWasHiddenByFlags) {
             typesToHide |= Type.captionBar();
-        } else if (!captionIsHiddenByFlags && captionWasHiddenByFlags
-                && ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION.isTrue()) {
+        } else if (!captionIsHiddenByFlags && captionWasHiddenByFlags) {
             typesToShow |= Type.captionBar();
         }
         if (typesToHide != 0) {
@@ -3759,7 +3756,7 @@ public final class ViewRootImpl implements ViewParent,
         return (int) (displayMetrics.density * dip + 0.5f);
     }
 
-    private void performTraversals() {
+    private void performTraversals(long frameTimeNanos) {
         mLastPerformTraversalsSkipDrawReason = null;
 
         // cache mView since it is used so much below...
@@ -4737,6 +4734,7 @@ public final class ViewRootImpl implements ViewParent,
                 }
                 mPendingTransitions.clear();
             }
+            mAttachInfo.mDrawingTime = frameTimeNanos / TimeUtils.NANOS_PER_MS;
             if (!performDraw(mActiveSurfaceSyncGroup)) {
                 handleSyncRequestWhenNoAsyncDraw(mActiveSurfaceSyncGroup, mHasPendingTransactions,
                         mPendingTransaction, mLastPerformDrawSkippedReason);
@@ -5052,7 +5050,10 @@ public final class ViewRootImpl implements ViewParent,
                 || !mSurfaceControl.isValid()) {
             return;
         }
-        applyOpacity(false);
+        Trace.instant(TRACE_TAG_VIEW, "setClientDrawnCornerRadii: radii" + mCornerRadii);
+        if (!mCornerRadii.isEmpty()) {
+            applyOpacity(false);
+        }
         RectF bounds = threadedRenderer.setCornerRadius(mCornerRadii);
         applyTransactionOnDraw(mTransaction
                 .setClientDrawnCornerRadius(mSurfaceControl, mCornerRadii.topLeft,
@@ -6079,9 +6080,6 @@ public final class ViewRootImpl implements ViewParent,
                 requestLayout();
             }
         }
-
-        mAttachInfo.mDrawingTime =
-                mChoreographer.getFrameTimeNanos() / TimeUtils.NANOS_PER_MS;
 
         boolean useAsyncReport = false;
         if (!dirty.isEmpty() || mIsAnimating || accessibilityFocusDirty) {
@@ -10228,11 +10226,10 @@ public final class ViewRootImpl implements ViewParent,
     private void applyOpacity(boolean opaque) {
         final ThreadedRenderer renderer = mAttachInfo.mThreadedRenderer;
         if (renderer != null && renderer.rendererOwnsSurfaceControlOpacity()) {
-            opaque = renderer.setSurfaceControlOpaque(opaque);
-        } else {
-            applyTransactionOnDraw(mTransaction.setOpaque(mSurfaceControl, opaque));
+            opaque = renderer.getSurfaceControlOpacity(opaque);
         }
-
+        mTransaction.setOpaque(mSurfaceControl, opaque);
+        applyTransactionOnDraw(mTransaction);
         mIsSurfaceOpaque = opaque;
     }
 
@@ -11213,13 +11210,13 @@ public final class ViewRootImpl implements ViewParent,
         return consumedBatches;
     }
 
-    final class TraversalRunnable implements Runnable {
+    final class TraversalCallback implements Choreographer.VsyncCallback {
         @Override
-        public void run() {
-            doTraversal();
+        public void onVsync(Choreographer.FrameData frameData) {
+            doTraversal(frameData.getFrameTimeNanos());
         }
     }
-    final TraversalRunnable mTraversalRunnable = new TraversalRunnable();
+    final TraversalCallback mTraversalCallback = new TraversalCallback();
 
     final class WindowInputEventReceiver extends InputEventReceiver {
         private final HardwareRenderer mRenderer;
