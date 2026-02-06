@@ -18,6 +18,7 @@ package com.android.server.wm;
 
 import static android.app.ActivityManager.START_CANCELED;
 import static android.app.ActivityManager.START_SUCCESS;
+import static android.app.ActivityManager.isStartResultSuccessful;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_HOME;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_RECENTS;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
@@ -183,18 +184,8 @@ public class ActivityStartController {
         options.setLaunchTaskDisplayArea(taskDisplayArea.mRemoteToken
                 .toWindowContainerToken());
 
-        // The home activity will be started later, defer resuming to avoid unnecessary operations
-        // (e.g. start home recursively) when creating root home task.
-        mSupervisor.beginDeferResume();
-        final Task rootHomeTask;
-        try {
-            // Make sure root home task exists on display area.
-            rootHomeTask = taskDisplayArea.getOrCreateRootHomeTask(onTop);
-            if (!onTop) {
-                options.setAvoidMoveToFront();
-            }
-        } finally {
-            mSupervisor.endDeferResume();
+        if (!onTop) {
+            options.setAvoidMoveToFront();
         }
 
         try {
@@ -210,7 +201,8 @@ public class ActivityStartController {
             mHomeLaunchingTaskDisplayAreas.remove(taskDisplayArea);
         }
         mLastHomeActivityStartRecord = tmpOutRecord[0];
-        if (rootHomeTask.mInResumeTopActivity) {
+        if (isStartResultSuccessful(mLastHomeActivityStartResult)
+                && taskDisplayArea.getRootHomeTask().mInResumeTopActivity) {
             // If we are in resume section already, home activity will be initialized, but not
             // resumed (to avoid recursive resume) and will stay that way until something pokes it
             // again. We need to schedule another resume.

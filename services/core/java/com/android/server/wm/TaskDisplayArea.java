@@ -1560,7 +1560,7 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
         // Take into account if this TaskDisplayArea can have a home task before trying to
         // create the root task
         if (homeTask == null && canHostHomeTask()) {
-            homeTask = createRootTask(WINDOWING_MODE_UNDEFINED, ACTIVITY_TYPE_HOME, onTop);
+            homeTask = createRootTask(WINDOWING_MODE_FULLSCREEN, ACTIVITY_TYPE_HOME, onTop);
         }
         return homeTask;
     }
