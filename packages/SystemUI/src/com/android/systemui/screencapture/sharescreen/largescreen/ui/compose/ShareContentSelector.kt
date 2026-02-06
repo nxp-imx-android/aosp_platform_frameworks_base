@@ -94,6 +94,19 @@ fun ShareContentSelector(shareScreenViewModel: ScreenCaptureShareScreenViewModel
                     preview = selectedItem?.thumbnail?.getOrNull()?.asImageBitmap(),
                     modifier = Modifier.weight(1f).height(140.dp).width(230.dp),
                     itemSelected = selectedItem != null,
+                    text =
+                        stringResource(
+                            when (targetsViewModel) {
+                                is AppContentsViewModel ->
+                                    R.string.screen_share_no_select_tab_thumbnail
+                                is RecentTasksViewModel ->
+                                    R.string.screen_share_no_select_app_thumbnail
+                                is DisplaysViewModel ->
+                                    R.string.screen_share_no_select_display_thumbnail
+                                else ->
+                                    throw IllegalArgumentException("Unknown TargetsViewModel type")
+                            }
+                        ),
                 )
             }
             DisclaimerText(targetsViewModel, shareScreenViewModel.requestingAppName)
@@ -109,6 +122,7 @@ private fun ItemPreview(
     preview: ImageBitmap?,
     modifier: Modifier = Modifier,
     itemSelected: Boolean,
+    text: String,
 ) {
     Box(
         modifier =
@@ -128,7 +142,7 @@ private fun ItemPreview(
             }
         } else {
             Text(
-                text = stringResource(R.string.screen_share_no_select_app_thumbnail),
+                text = text,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                 style = MaterialTheme.typography.labelMedium,
             )

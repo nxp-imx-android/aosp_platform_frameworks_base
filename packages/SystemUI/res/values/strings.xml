@@ -481,7 +481,11 @@
     <!-- Button text for screen sharing [CHAR LIMIT=35] -->
     <string name="screen_share_toolbar_share_button">Share</string>
     <!-- Text for app screen sharing thumbnail when no app is selected. [CHAR LIMIT=35] -->
-    <string name="screen_share_no_select_app_thumbnail">Select an app to share</string>
+    <string name="screen_share_no_select_app_thumbnail">Select app window to share</string>
+    <!-- Text for app screen sharing thumbnail when no tab is selected. [CHAR LIMIT=35] -->
+    <string name="screen_share_no_select_tab_thumbnail">Select tab to share</string>
+    <!-- Text for app screen sharing thumbnail when no display is selected. [CHAR LIMIT=35] -->
+    <string name="screen_share_no_select_display_thumbnail">Select display to share</string>
     <!-- Text for share audio. [CHAR LIMIT=35] -->
     <string name="screen_share_audio_sharing_text">Share audio</string>
     <!-- Text for app sharing title [CHAR LIMIT=35] -->
