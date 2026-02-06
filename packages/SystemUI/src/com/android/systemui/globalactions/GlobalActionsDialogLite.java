@@ -413,6 +413,8 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
             @NonNull Lazy<DisplayWindowPropertiesRepository> displayWindowPropertiesRepository,
             @NonNull PowerManager powerManager,
             @NonNull BroadcastSender broadcastSender,
+            @ShadeDisplayAware @NonNull EmergencyAffordanceManager emergencyAffordanceManager,
+            @ShadeDisplayAware @NonNull ScreenshotHelper screenshotHelper,
             @NonNull ActionsDialogLiteDelegate.Factory delegateFactory) {
         mContext = context;
         mWindowManagerFuncs = windowManagerFuncs;
@@ -514,8 +516,8 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
             );
         }
 
-        mEmergencyAffordanceManager = new EmergencyAffordanceManager(context);
-        mScreenshotHelper = new ScreenshotHelper(context);
+        mEmergencyAffordanceManager = emergencyAffordanceManager;
+        mScreenshotHelper = screenshotHelper;
 
         mConfigurationController.addCallback(this);
     }

@@ -65,6 +65,8 @@ import com.android.internal.R;
 import com.android.internal.colorextraction.ColorExtractor;
 import com.android.internal.logging.MetricsLogger;
 import com.android.internal.logging.testing.UiEventLoggerFake;
+import com.android.internal.util.EmergencyAffordanceManager;
+import com.android.internal.util.ScreenshotHelper;
 import com.android.internal.widget.LockPatternUtils;
 import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.systemui.Flags;
@@ -140,6 +142,8 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
     @Mock private VibratorHelper mVibratorHelper;
     @Mock private UserLogoutInteractor mLogoutInteractor;
     @Mock private PowerManager mPowerManager;
+    @Mock private EmergencyAffordanceManager mEmergencyAffordanceManager;
+    @Mock private ScreenshotHelper mScreenshotHelper;
 
     private TestableLooper mTestableLooper;
     private SecureSettings mSecureSettings;
@@ -1679,6 +1683,8 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
                 () -> new FakeDisplayWindowPropertiesRepository(mContext),
                 mPowerManager,
                 mBroadcastSender,
+                mEmergencyAffordanceManager,
+                mScreenshotHelper,
                 mDelegateFactory);
         globalActionsDialogLite.setZeroDialogPressDelayForTesting();
         return globalActionsDialogLite;
