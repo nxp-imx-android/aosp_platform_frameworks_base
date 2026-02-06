@@ -121,6 +121,7 @@ import static android.os.UserHandle.USER_SYSTEM;
 import static android.os.UserHandle.getUserHandleForUid;
 import static android.security.Flags.secureLockDevice;
 import static android.security.Flags.secureLockdown;
+import static android.service.notification.Adjustment.KEY_GROUP_KEY;
 import static android.service.notification.Adjustment.KEY_SUMMARIZATION;
 import static android.service.notification.Adjustment.KEY_TYPE;
 import static android.service.notification.Adjustment.KEY_UNCLASSIFY;
@@ -10801,7 +10802,8 @@ public class NotificationManagerService extends SystemService {
                                     n.getNotification().getGroup())
                                 || oldSbn.getNotification().flags
                                 != n.getNotification().flags
-                                || !old.getChannel().getId().equals(r.getChannel().getId())) {
+                                || !old.getChannel().getId().equals(r.getChannel().getId())
+                                || old.hasAdjustment(KEY_GROUP_KEY)) {
                             synchronized (mNotificationLock) {
                                 final String autogroupName
                                         = GroupHelper.getFullAggregateGroupKey(r);

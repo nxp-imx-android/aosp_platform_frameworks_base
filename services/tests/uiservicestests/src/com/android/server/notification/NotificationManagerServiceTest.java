@@ -89,6 +89,7 @@ import static android.os.UserManager.USER_TYPE_PROFILE_CLONE;
 import static android.os.UserManager.USER_TYPE_PROFILE_MANAGED;
 import static android.security.Flags.FLAG_SECURE_LOCK_DEVICE;
 import static android.service.notification.Adjustment.KEY_CONTEXTUAL_ACTIONS;
+import static android.service.notification.Adjustment.KEY_GROUP_KEY;
 import static android.service.notification.Adjustment.KEY_IMPORTANCE;
 import static android.service.notification.Adjustment.KEY_SUMMARIZATION;
 import static android.service.notification.Adjustment.KEY_TEXT_REPLIES;
@@ -3055,6 +3056,58 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
         // Check that summary has FLAG_ONGOING_EVENT
         assertThat(aggregateSummary.getSbn().isOngoing()).isTrue();
+    }
+
+    @Test
+    public void testAutogrouping_updateBeforeAdjustment_triggersGroupHelper() throws Exception {
+        // Add 2 ungrouped notifications
+        NotificationRecord nr0 = generateNotificationRecord(mTestNotificationChannel, 0, mUserId);
+        mService.addEnqueuedNotification(nr0);
+        NotificationManagerService.PostNotificationRunnable runnable =
+                mService.new PostNotificationRunnable(nr0.getKey(), nr0.getSbn().getPackageName(),
+                        nr0.getUid(), mPostNotificationTrackerFactory.newTracker(null));
+        runnable.run();
+        waitForIdle();
+        moveTimeForwardAndWaitForIdle(DELAY_FORCE_REGROUP_TIME);
+
+        NotificationRecord nr1 = generateNotificationRecord(mTestNotificationChannel, 1, mUserId);
+        mService.addEnqueuedNotification(nr1);
+        runnable = mService.new PostNotificationRunnable(nr1.getKey(),
+                nr1.getSbn().getPackageName(), nr1.getUid(),
+                mPostNotificationTrackerFactory.newTracker(null));
+        runnable.run();
+        waitForIdle();
+        moveTimeForwardAndWaitForIdle(DELAY_FORCE_REGROUP_TIME);
+
+        // Only apply adjustments for nr1
+        nr1.applyAdjustments();
+
+        // Check that nr0 has pending group key adjustments
+        assertThat(nr0.hasAdjustment(KEY_GROUP_KEY)).isTrue();
+
+        // Check that the aggregate group summary was created
+        final String fullAggregateGroupKey = nr1.getGroupKey();
+        NotificationRecord aggregateSummary = mService.mSummaryByGroupKey.get(
+                fullAggregateGroupKey);
+        assertThat(aggregateSummary).isNotNull();
+        assertThat(aggregateSummary.getNotification().getGroup()).isEqualTo(fullAggregateGroupKey);
+        assertThat(aggregateSummary.getNotification().getChannelId()).isEqualTo(
+                nr1.getChannel().getId());
+
+        // Update nr0 without any changes
+        final NotificationRecord updatedNotification = generateNotificationRecord(
+                mTestNotificationChannel, 0, mUserId);
+        mService.addEnqueuedNotification(updatedNotification);
+        runnable = mService.new PostNotificationRunnable(updatedNotification.getKey(),
+                updatedNotification.getSbn().getPackageName(), updatedNotification.getUid(),
+                mPostNotificationTrackerFactory.newTracker(null));
+        runnable.run();
+        waitForIdle();
+        moveTimeForwardAndWaitForIdle(DELAY_FORCE_REGROUP_TIME);
+
+        // Check that GroupHelper was invoked again and that the record has group key adjustments
+        verify(mGroupHelper, times(1)).onNotificationPosted(eq(updatedNotification), eq(true));
+        assertThat(updatedNotification.getGroupKey()).isEqualTo(fullAggregateGroupKey);
     }
 
     @Test
