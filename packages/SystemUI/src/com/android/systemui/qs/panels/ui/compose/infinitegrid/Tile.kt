@@ -85,7 +85,6 @@ import com.android.compose.theme.LocalAndroidColorScheme
 import com.android.mechanics.compose.modifier.verticalFadeContentReveal
 import com.android.mechanics.compose.modifier.verticalTactileSurfaceReveal
 import com.android.mechanics.effects.VerticalTactileSurfaceRevealEffect
-import com.android.systemui.Flags
 import com.android.systemui.animation.Expandable
 import com.android.systemui.animation.TransitionAnimator.Companion.dynamicTargetResolutionEnabled
 import com.android.systemui.common.shared.model.Icon
@@ -514,7 +513,7 @@ fun Modifier.tileCombinedClickable(
             onLongClick = onLongClick,
             onClickLabel = accessibilityUiState.clickLabel,
             onLongClickLabel = longPressLabel,
-            hapticFeedbackEnabled = !Flags.msdlFeedback(),
+            hapticFeedbackEnabled = false, // Haptics handled separately
             interactionSource = interactionSource,
         )
         .semantics {
