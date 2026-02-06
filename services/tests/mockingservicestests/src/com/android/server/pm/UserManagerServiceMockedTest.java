@@ -253,6 +253,8 @@ public final class UserManagerServiceMockedTest {
         doReturn(mKeyguardManager).when(mSpiedContext).getSystemService(KeyguardManager.class);
         when(mSpiedContext.getSystemService(PowerManager.class)).thenReturn(mPowerManager);
         when(mSpiedContext.getSystemService(TelecomManager.class)).thenReturn(mTelecomManager);
+        when(mPackageManagerInternal.isSameApp(eq(mRealContext.getPackageName()), anyInt(),
+                anyInt())).thenReturn(true);
         mockGetLocalService(LockSettingsInternal.class, mLockSettingsInternal);
         mockGetLocalService(PackageManagerInternal.class, mPackageManagerInternal);
         doNothing().when(mSpiedContext).sendBroadcastAsUser(any(), any(), any());
