@@ -44,6 +44,8 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Process;
+import android.os.UserHandle;
 import android.telephony.CarrierConfigManager;
 import android.telephony.Rlog;
 import android.telephony.ServiceState;
@@ -51,6 +53,7 @@ import android.telephony.SmsMessage;
 import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
 import android.telephony.UiccAccessRule;
+import android.telephony.MessageUpgradeController;
 import android.text.TextUtils;
 import android.util.Patterns;
 
@@ -201,58 +204,63 @@ public final class Telephony {
         }
 
         /**
-         * Verifies that the client has permission to write restricted messages and computes the
-         * read_restriction column value for the message to be inserted. Removes the
-         * ReadRestriction.RESTRICTED key from the values.
-         *
-         * If the flag {@link Flags#FLAG_SECURE_ACCESS_TO_RESTRICTED_RCS_MESSAGES} is disabled, this
-         * method will return 0, representing an unrestricted message.
+         * Verifies that the client has permission to write restricted messages and appends the
+         * {@code ReadRestriction#READ_RESTRICTION_COLUMN_NAME} value into the {@code values}, so
+         * that it can be persisted in either sms or pdu table.
          *
          * @hide
          */
-        public static int computeReadRestrictionValueOnInsert(ContentValues values,
+        public static void setReadRestrictionValueOnInsert(@NonNull ContentValues values,
+                @NonNull MessageUpgradeController upgradeController,
+                @NonNull String callerPackageName,
                 boolean canWriteRestrictedMessages) {
             if (!Flags.secureAccessToRestrictedRcsMessages()) {
-                return 0;
+                return;
             }
             if (values.containsKey(ReadRestriction.READ_RESTRICTION_COLUMN_NAME)) {
                 throw new UnsupportedOperationException(
                         "Read restriction column cannot be set by the client.");
             }
-            if (!canWriteRestrictedMessages && values.containsKey(ReadRestriction.RESTRICTED)) {
+            final boolean hasRestrictedKey = values.containsKey(ReadRestriction.RESTRICTED);
+            final boolean clientRequestedRestriction = hasRestrictedKey
+                    && values.getAsBoolean(ReadRestriction.RESTRICTED);
+            values.remove(ReadRestriction.RESTRICTED);
+            if (hasRestrictedKey && !canWriteRestrictedMessages) {
                 throw new UnsupportedOperationException(
                         "Client does not have permission to write restricted messages.");
             }
-            int readRestrictionValue = (values.containsKey(ReadRestriction.RESTRICTED)
-                    && values.getAsBoolean(ReadRestriction.RESTRICTED) == true)
-                    ? ReadRestriction.ReadRestrictionValues.READ_RESTRICTION_RESTRICTED : 0;
-            values.remove(ReadRestriction.RESTRICTED);
-            return readRestrictionValue;
+            // If the message promotion is supported and the caller is not DMA, the system marks the
+            // message as restricted. The message will be eventually marked as unrestricted if the
+            // message promotion is not attempted or it fails.
+            final boolean systemForcesRestriction
+                 = Flags.messagePromotion()
+                    && upgradeController.isMessageUpgradeSupportedAndNotDma(callerPackageName);
+            final boolean finalRestrictedState = systemForcesRestriction
+                || clientRequestedRestriction;
+            values.put(ReadRestriction.READ_RESTRICTION_COLUMN_NAME, finalRestrictedState
+                    ? ReadRestriction.ReadRestrictionValues.READ_RESTRICTION_RESTRICTED : 0);
         }
 
         /**
          * Verifies that the client has permission to update the read restriction value for the
-         * message to be updated. The message can be only be updated to unrestricted state.
-         * Removes the ReadRestriction.RESTRICTED key from the values.
+         * message to be updated and appends the
+         * {@code ReadRestriction#READ_RESTRICTION_COLUMN_NAME} value into the {@code values}, so
+         * that it can be persisted in either sms or pdu table. A message can be only be updated to
+         * an unrestricted state.
          *
-         * If the flag {@link Flags#FLAG_SECURE_ACCESS_TO_RESTRICTED_RCS_MESSAGES} is disabled, this
-         * method will return empty value - null.
-         *
-         * @return null if the read restriction value is not updated or 0 if it should be updated
-         * to unrestricted state.
          * @hide
          */
-        public static Integer computeReadRestrictionValueOnUpdate(ContentValues values,
+        public static void setReadRestrictionValueOnUpdate(ContentValues values,
                 boolean canWriteRestrictedMessages) {
             if (!Flags.secureAccessToRestrictedRcsMessages()) {
-                return null;
+                return;
             }
             if (values.containsKey(ReadRestriction.READ_RESTRICTION_COLUMN_NAME)) {
                 throw new UnsupportedOperationException(
                         "Read restriction column cannot be updated by the client.");
             }
             if (!values.containsKey(ReadRestriction.RESTRICTED)) {
-                return null;
+                return;
             }
             if (!canWriteRestrictedMessages) {
                 throw new UnsupportedOperationException(
@@ -262,8 +270,8 @@ public final class Telephony {
                 throw new UnsupportedOperationException(
                         "Message cannot be updated to restricted after it is inserted.");
             }
+            values.put(ReadRestriction.READ_RESTRICTION_COLUMN_NAME, 0);
             values.remove(ReadRestriction.RESTRICTED);
-            return 0;
         }
 
         /**
@@ -350,6 +358,32 @@ public final class Telephony {
                 final int readRestrictionMask = ReadRestrictionValues.READ_RESTRICTION_RESTRICTED;
                 qb.appendWhereStandalone(readRestrictionColumnName + " & " + readRestrictionMask
                         + " = 0");
+            }
+        }
+
+        /**
+         * Unrestricts a message by setting the {@link #RESTRICTED} column to false.
+         *
+         * If the flag {@link Flags#FLAG_SECURE_ACCESS_TO_RESTRICTED_RCS_MESSAGES} is disabled, this
+         * method will result in a no-op.
+         *
+         * @param contentResolver The content resolver to use for the update operation.
+         * @param messageUri The URI of the message to unrestrict.
+         * @hide
+         */
+        public static void unrestrictMessage(ContentResolver contentResolver, Uri messageUri) {
+            if (Flags.secureAccessToRestrictedRcsMessages()) {
+                if (messageUri == null) {
+                    Rlog.v(TAG, "Message URI is null, cannot unrestrict message.");
+                    return;
+                }
+                ContentValues values = new ContentValues();
+                values.put(ReadRestriction.RESTRICTED, false);
+                if (contentResolver.update(messageUri, values, null) == 1) {
+                    Rlog.v(TAG, "Successfully updated message to unrestricted: " + messageUri);
+                } else {
+                    Rlog.v(TAG, "Failed to update message to unrestricted: " + messageUri);
+                }
             }
         }
 

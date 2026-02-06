@@ -113,13 +113,9 @@ public final class MessageUpgradeController {
         if (TextUtils.isEmpty(callingPkg)) {
             throw new IllegalArgumentException("callingPkg cannot be null or empty");
         }
-
         String defaultSmsAppPackage = getDefaultSmsAppPackage();
-        if (TextUtils.isEmpty(defaultSmsAppPackage)) {
-            throw new NullPointerException("Default SMS app package is null");
-        }
-
-        return !callingPkg.equals(defaultSmsAppPackage) && isMessageUpgradeSupported();
+        return !TextUtils.isEmpty(defaultSmsAppPackage)
+                && !callingPkg.equals(defaultSmsAppPackage) && isMessageUpgradeSupported();
     }
 
     /**
