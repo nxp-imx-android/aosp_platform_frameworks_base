@@ -27,6 +27,7 @@ import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
 import static com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND;
+import static com.android.wm.shell.Flags.FLAG_ADD_ONE_OFF_HANDLER_LEASHES;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_PIP2;
 import static com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_ANIMATING;
 import static com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_NOT_RUNNING;
@@ -39,7 +40,6 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -110,6 +110,7 @@ import org.mockito.MockitoAnnotations;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Tests for {@link RecentTasksController}
@@ -388,19 +389,45 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
                 transition, createTransitionInfo(), new StubTransaction(), new StubTransaction(),
                 mock(Transitions.TransitionFinishCallback.class));
 
-        assertTrue(
-                "Merge request was not consumed",
-                mRecentsTransitionHandler.findController(transition).merge(
-                    mergeTransitionInfo,
-                    new StubTransaction(),
-                    new StubTransaction(),
-                    mock(Transitions.TransitionFinishCallback.class)));
+        mRecentsTransitionHandler.findController(transition).merge(
+                mergeTransitionInfo,
+                new StubTransaction(),
+                new StubTransaction(),
+                mock(Transitions.TransitionFinishCallback.class));
         mMainExecutor.flushAll();
 
         verify(animationRunner).onTasksAppeared(
                 /* appearedTargets= */ any(), eq(mergeTransitionInfo));
     }
 
+    @EnableFlags(FLAG_ADD_ONE_OFF_HANDLER_LEASHES)
+    @Test
+    public void testMerge_openingTasks_createsOneOffLeashes() throws Exception {
+        final IRecentsAnimationRunner animationRunner = mock(IRecentsAnimationRunner.class);
+        TransitionInfo mergeTransitionInfo = new TransitionInfoBuilder(TRANSIT_OPEN)
+                .addChange(TRANSIT_OPEN, new TestRunningTaskInfoBuilder().build())
+                .build();
+        final IBinder transition = startRecentsTransition(/* synthetic= */ false, animationRunner);
+        mRecentsTransitionHandler.startAnimation(
+                transition, createTransitionInfo(), new StubTransaction(), new StubTransaction(),
+                mock(Transitions.TransitionFinishCallback.class));
+
+        final SurfaceControl.Transaction startT = new StubTransaction();
+        mRecentsTransitionHandler.findController(transition).merge(
+                mergeTransitionInfo,
+                startT,
+                new StubTransaction(),
+                mock(Transitions.TransitionFinishCallback.class));
+        mMainExecutor.flushAll();
+
+        final ArgumentCaptor<Set<TransitionInfo.Change>> excludedCaptor =
+                ArgumentCaptor.forClass(Set.class);
+        verify(mTransitionLeashManager).setUpLeashes(
+                eq(transition), eq(mergeTransitionInfo), eq(startT), excludedCaptor.capture());
+        assertThat(excludedCaptor.getValue()).isEmpty();
+    }
+
+    @EnableFlags(FLAG_ADD_ONE_OFF_HANDLER_LEASHES)
     @Test
     public void testMerge_consumeBookendTransition() throws Exception {
         // Start and finish the transition
@@ -418,23 +445,22 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
                 new TransitionInfoBuilder(TRANSIT_END_RECENTS_TRANSITION)
                         .addChange(TRANSIT_OPEN, new TestRunningTaskInfoBuilder().build())
                         .build();
+        SurfaceControl.Transaction startT = new StubTransaction();
         SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
         Transitions.TransitionFinishCallback finishCallback
                 = mock(Transitions.TransitionFinishCallback.class);
 
-        assertTrue(
-                "Merge request was not consumed",
-                mRecentsTransitionHandler.findController(transition).merge(
-                        mergeTransitionInfo,
-                        new StubTransaction(),
-                        finishT,
-                        finishCallback));
+        mRecentsTransitionHandler.findController(transition).merge(
+                mergeTransitionInfo, startT, finishT, finishCallback);
         mMainExecutor.flushAll();
 
+        verify(mTransitionLeashManager, never()).setUpLeashes(any(), any(), any(), any());
+        verify(mTransitionLeashManager, never()).detachLeashes(any(), any(), any());
         // Verify that we've merged
         verify(finishCallback).onTransitionFinished(any());
     }
 
+    @EnableFlags(FLAG_ADD_ONE_OFF_HANDLER_LEASHES)
     @Test
     public void testMerge_pendingBookendTransition_mergesTransition() throws Exception {
         // Start and finish the transition
@@ -451,18 +477,16 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
         TransitionInfo mergeTransitionInfo = new TransitionInfoBuilder(TRANSIT_OPEN)
                 .addChange(TRANSIT_OPEN, new TestRunningTaskInfoBuilder().build())
                 .build();
+        SurfaceControl.Transaction startT = new StubTransaction();
         SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
         Transitions.TransitionFinishCallback finishCallback
                 = mock(Transitions.TransitionFinishCallback.class);
-        assertFalse(
-                "Merge request was consumed",
-                mRecentsTransitionHandler.findController(transition).merge(
-                        mergeTransitionInfo,
-                        new StubTransaction(),
-                        finishT,
-                        finishCallback));
+        mRecentsTransitionHandler.findController(transition).merge(
+                mergeTransitionInfo, startT, finishT, finishCallback);
         mMainExecutor.flushAll();
 
+        verify(mTransitionLeashManager, never()).setUpLeashes(any(), any(), any(), any());
+        verify(mTransitionLeashManager, never()).detachLeashes(any(), any(), any());
         // Verify that we've cleaned up the original transition
         assertNull(mRecentsTransitionHandler.findController(transition));
     }
@@ -482,13 +506,11 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
                 transition, createTransitionInfo(), new StubTransaction(), new StubTransaction(),
                 mock(Transitions.TransitionFinishCallback.class));
 
-        assertTrue(
-                "Merge request was consumed",
-                mRecentsTransitionHandler.findController(transition).merge(
-                        mergeTransitionInfo,
-                        new StubTransaction(),
-                        finishT,
-                        mock(Transitions.TransitionFinishCallback.class)));
+        mRecentsTransitionHandler.findController(transition).merge(
+                mergeTransitionInfo,
+                new StubTransaction(),
+                finishT,
+                mock(Transitions.TransitionFinishCallback.class));
         mRecentsTransitionHandler.findController(transition).finish(/* toHome= */ false,
                 false /* sendUserLeaveHint */, mock(IResultReceiver.class));
         mMainExecutor.flushAll();
@@ -545,6 +567,7 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
         verify(finishT).setCornerRadius(leash, FREEFORM_TASK_CORNER_RADIUS_ON_CD);
     }
 
+    @EnableFlags(FLAG_ADD_ONE_OFF_HANDLER_LEASHES)
     @Test
     public void testMerge_cancelToHome_onDisplayChange() throws Exception {
         final IRecentsAnimationRunner animationRunner = mock(IRecentsAnimationRunner.class);
@@ -571,34 +594,36 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
         newAppChange.setTaskInfo(appTask);
         final TransitionInfo mergeTransitionInfo = new TransitionInfoBuilder(TRANSIT_CHANGE)
                 .addChange(displayChange).addChange(newAppChange).build();
-        assertFalse(
-                "Merge request was consumed",
-                mRecentsTransitionHandler.findController(transition).merge(mergeTransitionInfo,
-                        new StubTransaction(), new StubTransaction(),
-                        mock(Transitions.TransitionFinishCallback.class)));
+        SurfaceControl.Transaction startT = new StubTransaction();
+        mRecentsTransitionHandler.findController(transition).merge(mergeTransitionInfo,
+                startT, new StubTransaction(),
+                mock(Transitions.TransitionFinishCallback.class));
         mMainExecutor.flushAll();
 
+        verify(mTransitionLeashManager).detachLeashes(transition, mergeTransitionInfo, startT);
         verify(animationRunner).onAnimationCanceled(any(), any());
         // The CHANGE should be updated to TO_BACK because pausing tasks will be occluded by home.
         assertThat(newAppChange.getMode()).isEqualTo(TRANSIT_TO_BACK);
         assertThat(mRecentsTransitionHandler.findController(transition)).isNull();
     }
 
+    @EnableFlags(FLAG_ADD_ONE_OFF_HANDLER_LEASHES)
     @Test
     public void testMerge_cancelToHome_onTransitSleep() throws Exception {
         TransitionInfo mergeTransitionInfo = new TransitionInfoBuilder(TRANSIT_SLEEP)
                 .build();
-        startTransitionAndMergeThenVerifyCanceled(mergeTransitionInfo);
+        startTransitionAndMergeThenVerifyCanceled(mergeTransitionInfo, false /* useLeashes */);
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_PIP2)
+    @EnableFlags({FLAG_ADD_ONE_OFF_HANDLER_LEASHES, FLAG_ENABLE_PIP2})
     public void testMerge_cancelToHome_onTransitRemovePip() throws Exception {
         TransitionInfo mergeTransitionInfo = new TransitionInfoBuilder(TRANSIT_REMOVE_PIP)
                 .build();
-        startTransitionAndMergeThenVerifyCanceled(mergeTransitionInfo);
+        startTransitionAndMergeThenVerifyCanceled(mergeTransitionInfo, false /* useLeashes */);
     }
 
+    @EnableFlags(FLAG_ADD_ONE_OFF_HANDLER_LEASHES)
     @Test
     public void testMerge_cancelBubbleToBack() throws Exception {
         ActivityManager.RunningTaskInfo taskInfo = new TestRunningTaskInfoBuilder().setTaskId(
@@ -607,9 +632,10 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
                 .addChange(TRANSIT_TO_BACK, taskInfo)
                 .build();
         when(mBubbleHelper.isAppBubbleTask(taskInfo)).thenReturn(true);
-        startTransitionAndMergeThenVerifyCanceled(mergeTransitionInfo);
+        startTransitionAndMergeThenVerifyCanceled(mergeTransitionInfo, true /* useLeashes */);
     }
 
+    @EnableFlags(FLAG_ADD_ONE_OFF_HANDLER_LEASHES)
     @Test
     public void testMerge_cancelOnRecentsVisible() throws Exception {
         final IRecentsAnimationRunner animationRunner = mock(IRecentsAnimationRunner.class);
@@ -630,15 +656,15 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
                 .addChange(TRANSIT_OPEN, homeTask)
                 .build();
 
-        assertFalse(
-                "Merge request was consumed",
-                mRecentsTransitionHandler.findController(transition).merge(
-                        mergeTransitionInfo,
-                        new StubTransaction(),
-                        new StubTransaction(),
-                        mock(Transitions.TransitionFinishCallback.class)));
+        SurfaceControl.Transaction startT = new StubTransaction();
+        mRecentsTransitionHandler.findController(transition).merge(
+                mergeTransitionInfo,
+                startT,
+                new StubTransaction(),
+                mock(Transitions.TransitionFinishCallback.class));
         mMainExecutor.flushAll();
 
+        verify(mTransitionLeashManager).detachLeashes(transition, mergeTransitionInfo, startT);
         // Verify that the runner was notified and that the cancel immediately took effect (and the
         // transition is finished)
         verify(animationRunner).onAnimationCanceled(any(), any());
@@ -670,13 +696,11 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
                 transition, createTransitionInfo(), new StubTransaction(), new StubTransaction(),
                 mock(Transitions.TransitionFinishCallback.class));
 
-        assertTrue(
-                "Merge request was consumed",
-                mRecentsTransitionHandler.findController(transition).merge(
-                        mergeTransitionInfo,
-                        startT,
-                        finishT,
-                        mock(Transitions.TransitionFinishCallback.class)));
+        mRecentsTransitionHandler.findController(transition).merge(
+                mergeTransitionInfo,
+                startT,
+                finishT,
+                mock(Transitions.TransitionFinishCallback.class));
         mRecentsTransitionHandler.findController(transition).finish(/* toHome= */ false,
                 false /* sendUserLeaveHint */, mock(IResultReceiver.class));
         mMainExecutor.flushAll();
@@ -717,13 +741,11 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
                 transition, startTransitionInfo, new StubTransaction(), new StubTransaction(),
                 mock(Transitions.TransitionFinishCallback.class));
 
-        assertTrue(
-                "Merge request was consumed",
-                mRecentsTransitionHandler.findController(transition).merge(
-                        mergeTransitionInfo,
-                        new StubTransaction(),
-                        finishT,
-                        mock(Transitions.TransitionFinishCallback.class)));
+        mRecentsTransitionHandler.findController(transition).merge(
+                mergeTransitionInfo,
+                new StubTransaction(),
+                finishT,
+                mock(Transitions.TransitionFinishCallback.class));
         mRecentsTransitionHandler.findController(transition).finish(/* toHome= */ false,
                 false /* sendUserLeaveHint */, mock(IResultReceiver.class));
         mMainExecutor.flushAll();
@@ -791,7 +813,8 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
         verify(mTransitions).startTransition(eq(TRANSIT_END_RECENTS_TRANSITION), any(), any());
     }
 
-    private void startTransitionAndMergeThenVerifyCanceled(TransitionInfo mergeTransition)
+    private void startTransitionAndMergeThenVerifyCanceled(
+            TransitionInfo mergeTransition, boolean useLeashes)
             throws Exception {
         final IRecentsAnimationRunner animationRunner = mock(IRecentsAnimationRunner.class);
         final IBinder transition = startRecentsTransition(/* synthetic= */ false, animationRunner);
@@ -799,15 +822,25 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
                 transition, createTransitionInfo(), new StubTransaction(), new StubTransaction(),
                 mock(Transitions.TransitionFinishCallback.class));
 
-        assertFalse(
-                "Merge request was consumed",
-                mRecentsTransitionHandler.findController(transition).merge(
-                        mergeTransition,
-                        new StubTransaction(),
-                        new StubTransaction(),
-                        mock(Transitions.TransitionFinishCallback.class)));
+        SurfaceControl.Transaction startT = new StubTransaction();
+        mRecentsTransitionHandler.findController(transition).merge(
+                mergeTransition,
+                startT,
+                new StubTransaction(),
+                mock(Transitions.TransitionFinishCallback.class));
         mMainExecutor.flushAll();
 
+        if (useLeashes) {
+            final ArgumentCaptor<Set<TransitionInfo.Change>> excludedCaptor =
+                    ArgumentCaptor.forClass(Set.class);
+            verify(mTransitionLeashManager).setUpLeashes(
+                    eq(transition), eq(mergeTransition), eq(startT), excludedCaptor.capture());
+            assertThat(excludedCaptor.getValue()).isEmpty();
+            verify(mTransitionLeashManager).detachLeashes(transition, mergeTransition, startT);
+        } else {
+            verify(mTransitionLeashManager, never()).setUpLeashes(any(), any(), any(), any());
+            verify(mTransitionLeashManager, never()).detachLeashes(any(), any(), any());
+        }
         // Verify that the runner was notified and that the cancel immediately took effect (and the
         // transition is finished)
         verify(animationRunner).onAnimationCanceled(any(), any());

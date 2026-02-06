@@ -377,12 +377,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
             return;
         }
 
-        boolean wasConsumed = controller.merge(info, startT, finishT, finishCallback);
-        if (!wasConsumed && addOneOffHandlerLeashes()) {
-            // In cases where the merge request is not consumed, the info will be used by another
-            // handler. The callback is not called, so the one-off leashes need to be detached.
-            mTransitions.getLeashManager().detachLeashes(mergeTarget, info, startT);
-        }
+        controller.merge(info, startT, finishT, finishCallback);
     }
 
     @Override
@@ -1082,10 +1077,12 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
          * Note: because we use a book-end transition to finish the recents transition, we must
          * either always merge the incoming transition, or always cancel the recents transition
          * if we don't handle the incoming transition to ensure that the end transition is queued
-         * before any unhandled transitions.
+         * before any unhandled transitions. These must be done by calling either
+         * {@link RecentsController#consumeMerge} or {@link RecentsController#refuseMerge},
+         * respectively.
          */
         @SuppressLint("NewApi")
-        boolean merge(TransitionInfo info, SurfaceControl.Transaction startT,
+        void merge(TransitionInfo info, SurfaceControl.Transaction startT,
                 SurfaceControl.Transaction finishT,
                 Transitions.TransitionFinishCallback finishCallback) {
             if (mFinishCB == null) {
@@ -1093,7 +1090,8 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                         "[%d] RecentsController.merge: skip, no finish callback",
                         mInstanceId);
                 // This was no-op'd (likely a repeated start) and we've already completed finish.
-                return false;
+                refuseMerge(startT, null /* action */);
+                return;
             }
 
             if (info.getType() == TRANSIT_END_RECENTS_TRANSITION) {
@@ -1103,7 +1101,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                         "[%d] RecentsController.merge: TRANSIT_END_RECENTS_TRANSITION",
                         mInstanceId);
                 consumeMerge(info, startT, finishT, finishCallback);
-                return true;
+                return;
             } else if (mPendingFinishTransition != null) {
                 // This transition is interrupting a pending finish that was already sent, so
                 // pre-empt the pending finish transition since the state has already changed
@@ -1111,16 +1109,16 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                 ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                         "[%d] RecentsController.merge: Awaiting TRANSIT_END_RECENTS_TRANSITION",
                         mInstanceId);
-                onFinishInner(null /* wct */);
-                return false;
+                refuseMerge(startT, () -> onFinishInner(null /* wct */) /* action */);
+                return;
             }
 
             if (info.getType() == TRANSIT_SLEEP) {
                 ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                         "[%d] RecentsController.merge: transit_sleep", mInstanceId);
                 // A sleep event means we need to stop animations immediately, so cancel here.
-                cancel("transit_sleep");
-                return false;
+                refuseMerge(startT, () -> cancel("transit_sleep") /* action */);
+                return;
             }
 
             if (info.getType() == TRANSIT_REMOVE_PIP
@@ -1128,17 +1126,18 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                 ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                         "[%d] RecentsController.merge: transit_remove_pip", mInstanceId);
                 // Cancel the merge if transition is resizing/removing PiP; PiP is always on top.
-                cancel(true /* toHome */, mWillFinishToHome /* withScreenshots */,
-                        "transit_remove_pip");
-                return false;
+                refuseMerge(startT, () -> cancel(
+                        true /* toHome */, mWillFinishToHome /* withScreenshots */,
+                                "transit_remove_pip") /* action */);
+                return;
             }
 
             if (mKeyguardLocked || (info.getFlags() & KEYGUARD_VISIBILITY_TRANSIT_FLAGS) != 0) {
                 ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                         "[%d] RecentsController.merge: keyguard is locked", mInstanceId);
                 // We will not accept new changes if we are swiping over the keyguard.
-                cancel("keyguard_locked");
-                return false;
+                refuseMerge(startT, () -> cancel("keyguard_locked") /* action */);
+                return;
             }
 
             Transitions.TransitionFinishCallback wrappedCallback = finishCallback;
@@ -1197,8 +1196,9 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                     // Explicitly check for bubble tasks as bubbles may have always_on_top reset
                     // when they are collapsing. Bubbles handle their own transition and can't be
                     // merged.
-                    cancel("task #" + taskInfo.taskId + " is bubble");
-                    return false;
+                    refuseMerge(startT,
+                            () -> cancel("task #" + taskInfo.taskId + " is bubble") /* action */);
+                    return;
                 }
                 if (taskInfo != null
                         && taskInfo.configuration.windowConfiguration.isAlwaysOnTop()) {
@@ -1206,8 +1206,10 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                             "[%d]   Canceling due to always on top task", mInstanceId);
                     // Tasks that are always on top (e.g. bubbles), will handle their own transition
                     // as they are on top of everything else. So cancel the merge here.
-                    cancel("task #" + taskInfo.taskId + " is always_on_top");
-                    return false;
+                    refuseMerge(startT,
+                            () -> cancel(
+                                    "task #" + taskInfo.taskId + " is always_on_top") /* action */);
+                    return;
                 }
                 if (TransitionUtil.isClosingType(change.getMode())
                         && taskInfo != null && taskInfo.lastParentTaskIdBeforePip > 0) {
@@ -1215,8 +1217,10 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                             "[%d]   Canceling due to restoring PIP activity", mInstanceId);
                     // Pinned task is closing as a side effect of the removal of its original Task,
                     // such transition should be handled by PiP. So cancel the merge here.
-                    cancel("task #" + taskInfo.taskId + " is removed with its original parent");
-                    return false;
+                    refuseMerge(startT, () -> cancel(
+                            "task #" + taskInfo.taskId + " is removed with its original "
+                                    + "parent") /* action */);
+                    return;
                 }
                 final boolean isRootTask = taskInfo != null
                         && TransitionInfo.isIndependent(change, info);
@@ -1276,8 +1280,10 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                                 "[%d]   Canceling due to display change", mInstanceId);
                         // This call to cancel will use the screenshots taken preemptively in
                         // handleMidTransitionRequest() prior to the display changing
-                        cancel(true /* toHome */, true /* withScreenshots */, "display change");
-                        return false;
+                        refuseMerge(startT, () -> cancel(
+                                true /* toHome */, true /* withScreenshots */,
+                                "display change") /* action */);
+                        return;
                     }
                     // Don't consider order-only & non-leaf changes as changing apps.
                     if (!TransitionUtil.isOrderOnly(change) && isLeafTask) {
@@ -1318,11 +1324,13 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                 // This happens when a visible app is expanding (usually PiP). In this case,
                 // that transition probably has a special-purpose animation, so finish recents
                 // now and let it do its animation (since recents is going to be occluded).
-                sendCancelWithSnapshots();
-                mExecutor.executeDelayed(
-                        () -> finishInner(true /* toHome */, false /* userLeaveHint */,
-                                null /* finishCb */, "merge"), 0);
-                return false;
+                refuseMerge(startT, () -> {
+                    sendCancelWithSnapshots();
+                    mExecutor.executeDelayed(
+                            () -> finishInner(true /* toHome */, false /* userLeaveHint */,
+                                    null /* finishCb */, "merge"), 0);
+                } /* action */);
+                return;
             }
             if (recentsOpening != null) {
                 // the recents task re-appeared. This happens if the user gestures before the
@@ -1500,11 +1508,13 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                 final boolean recentsChanging = (recentsOpening != null) || foundRecentsClosing;
                 Slog.w(TAG, "Don't know how to merge this transition, recentsChanging="
                         + recentsChanging + " recentsTaskId=" + mRecentsTaskId);
-                if (recentsChanging || mRecentsTaskId < 0) {
-                    mWillFinishToHome = false;
-                    cancel("didn't merge");
-                }
-                return false;
+                refuseMerge(startT, () -> {
+                    if (recentsChanging || mRecentsTaskId < 0) {
+                        mWillFinishToHome = false;
+                        cancel("didn't merge");
+                    }
+                });
+                return;
             }
 
             // Notify Launcher of the new opening tasks if necessary
@@ -1526,7 +1536,6 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
             // finishes the recents transition (so we can't rely on referencing any recents
             // controller state after merging).
             consumeMerge(info, startT, finishT, wrappedCallback);
-            return true;
         }
 
         /**
@@ -1544,6 +1553,30 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
             // that transaction will be applied on top of those of the merged transitions
             mFinishTransaction = finishT;
             finishCallback.onTransitionFinished(null /* wct */);
+        }
+
+        /**
+         * Refuses a merge request, cleaning up any local changes made to the merge request data
+         * before performing notifying the transitions framework.
+         *
+         * @param t The transaction to be used to clean up local changes.
+         * @param action The specific work necessary to cancel or finish the transition that is
+         *               refusing the merge request.
+         */
+        private void refuseMerge(SurfaceControl.Transaction t, @Nullable Runnable action) {
+            // If the action calls the original finish callback, the transitions framework is
+            // immediately notified that the transition is done, and it starts processing its queue.
+            // The local changes to the info must be undone before that, or they could leak into
+            // other transitions.
+            if (addOneOffHandlerLeashes()) {
+                if (mTransition != null && mMergingInfo != null) {
+                    mTransitions.getLeashManager().detachLeashes(mTransition, mMergingInfo, t);
+                }
+            }
+
+            if (action != null) {
+                action.run();
+            }
         }
 
         /** For now, just set-up a jump-cut to the new activity. */
