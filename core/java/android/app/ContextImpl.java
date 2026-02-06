@@ -3346,8 +3346,12 @@ class ContextImpl extends Context {
     }
 
     @Override
-    @RavenwoodIgnore
+    @RavenwoodRedirect(comment = "Returns null on Ravenwood, but enabled as experimental")
     public Display getDisplayNoVerify() {
+        return getDisplayNoVerifyInner();
+    }
+
+    Display getDisplayNoVerifyInner() {
         if (mDisplay == null) {
             return mResourcesManager.getAdjustedDisplay(Display.DEFAULT_DISPLAY,
                     mResources);
