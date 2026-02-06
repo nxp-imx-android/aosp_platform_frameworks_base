@@ -58,6 +58,8 @@ import com.android.systemui.util.settings.SecureSettings;
 import com.android.systemui.utils.windowmanager.WindowManagerProvider;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
@@ -89,6 +91,9 @@ public class MagnificationImpl implements Magnification, CommandQueue.Callbacks 
 
     @VisibleForTesting
     SparseArray<SparseArray<Float>> mUsersScales = new SparseArray();
+
+    private final List<MagnificationActivationChangedListener> mEnabledListeners =
+            new ArrayList<>();
 
     private static class WindowMagnificationControllerSupplier extends
             DisplayIdIndexSupplier<WindowMagnificationController> {
@@ -319,6 +324,61 @@ public class MagnificationImpl implements Magnification, CommandQueue.Callbacks 
         }
     }
 
+    /**
+     * Registers a listener to receive changes to magnification on/off status.
+     */
+    @Override
+    @MainThread
+    public void registerActivationChangedListener(
+            MagnificationActivationChangedListener listener) {
+        if (com.android.systemui.Flags.floatingMenuMagnificationStatus()) {
+            mEnabledListeners.add(listener);
+        }
+    }
+
+    /**
+     * Unregisters a listener to stop receiving changes to magnification on/off status.
+     */
+    @Override
+    @MainThread
+    public void unregisterActivationChangedListener(
+            MagnificationActivationChangedListener listener) {
+        mEnabledListeners.remove(listener);
+    }
+
+    private void notifyEnabledListeners(int displayId) {
+        if (!com.android.systemui.Flags.floatingMenuMagnificationStatus()) {
+            return;
+        }
+        for (MagnificationActivationChangedListener listener : mEnabledListeners) {
+            listener.onActivationChanged(displayId);
+        }
+    }
+
+    /**
+     * Returns {@code true} if any magnification controller is currently activated.
+     * Otherwise, it returns {@code false}.
+     *
+     * @param displayId the displayId to check.
+     */
+    @Override
+    @MainThread
+    public boolean isAnyMagnificationActivated(int displayId) {
+        final WindowMagnificationController windowMagnificationController =
+                mWindowMagnificationControllerSupplier.get(displayId);
+        if (windowMagnificationController != null
+                && windowMagnificationController.isActivated()) {
+            return true;
+        }
+        final FullscreenMagnificationController fullscreenMagnificationController =
+                mFullscreenMagnificationControllerSupplier.get(displayId);
+        if (fullscreenMagnificationController != null
+                && fullscreenMagnificationController.isActivated()) {
+            return true;
+        }
+        return false;
+    }
+
     @Override
     @MainThread
     public void enableWindowMagnification(int displayId, float scale, float centerX, float centerY,
@@ -329,6 +389,7 @@ public class MagnificationImpl implements Magnification, CommandQueue.Callbacks 
         if (windowMagnificationController != null) {
             windowMagnificationController.enableWindowMagnification(scale, centerX, centerY,
                     magnificationFrameOffsetRatioX, magnificationFrameOffsetRatioY, callback);
+            notifyEnabledListeners(displayId);
         }
     }
 
@@ -372,6 +433,7 @@ public class MagnificationImpl implements Magnification, CommandQueue.Callbacks 
                 mWindowMagnificationControllerSupplier.get(displayId);
         if (windowMagnificationController != null) {
             windowMagnificationController.deleteWindowMagnification(callback);
+            notifyEnabledListeners(displayId);
         }
     }
 
@@ -382,6 +444,7 @@ public class MagnificationImpl implements Magnification, CommandQueue.Callbacks 
                 mFullscreenMagnificationControllerSupplier.get(displayId);
         if (fullscreenMagnificationController != null) {
             fullscreenMagnificationController.onFullscreenMagnificationActivationChanged(activated);
+            notifyEnabledListeners(displayId);
         }
     }
 

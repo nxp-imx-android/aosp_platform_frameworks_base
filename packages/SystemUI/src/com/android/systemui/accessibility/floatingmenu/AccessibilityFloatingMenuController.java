@@ -45,6 +45,7 @@ import com.android.systemui.Flags;
 import com.android.systemui.accessibility.AccessibilityButtonModeObserver;
 import com.android.systemui.accessibility.AccessibilityButtonModeObserver.AccessibilityButtonMode;
 import com.android.systemui.accessibility.AccessibilityButtonTargetsObserver;
+import com.android.systemui.accessibility.Magnification;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Application;
 import com.android.systemui.dagger.qualifiers.Main;
@@ -93,6 +94,7 @@ public class AccessibilityFloatingMenuController implements
 
     private final SecureSettings mSecureSettings;
     private final DisplayTracker mDisplayTracker;
+    private final Magnification mMagnification;
     private final NavigationModeController mNavigationModeController;
     private final KeyboardRepository mKeyboardRepository;
     private final PointerDeviceRepository mPointerDeviceRepository;
@@ -177,7 +179,8 @@ public class AccessibilityFloatingMenuController implements
             UserTracker userTracker,
             KeyboardRepository keyboardRepository,
             PointerDeviceRepository pointerDeviceRepository,
-            HeadlessSystemUserMode headlessSystemUserMode) {
+            HeadlessSystemUserMode headlessSystemUserMode,
+            Magnification magnification) {
         mContext = context;
         mWindowManager = windowManager;
         mDisplayManager = displayManager;
@@ -197,6 +200,7 @@ public class AccessibilityFloatingMenuController implements
         mKeyboardRepository = keyboardRepository;
         mPointerDeviceRepository = pointerDeviceRepository;
         mHeadlessSystemUserMode = headlessSystemUserMode;
+        mMagnification = magnification;
 
         mIsKeyguardVisible = false;
     }
@@ -316,7 +320,8 @@ public class AccessibilityFloatingMenuController implements
                             mNavigationModeController,
                             mHearingAidDeviceManager,
                             mKeyboardRepository,
-                            mPointerDeviceRepository);
+                            mPointerDeviceRepository,
+                            mMagnification);
         }
 
         mFloatingMenu.show();

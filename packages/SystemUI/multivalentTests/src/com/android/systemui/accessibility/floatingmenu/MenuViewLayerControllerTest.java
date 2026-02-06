@@ -44,6 +44,7 @@ import androidx.test.filters.SmallTest;
 
 import com.android.settingslib.bluetooth.HearingAidDeviceManager;
 import com.android.systemui.SysuiTestCase;
+import com.android.systemui.accessibility.Magnification;
 import com.android.systemui.inputdevice.data.repository.PointerDeviceRepository;
 import com.android.systemui.keyboard.data.repository.KeyboardRepository;
 import com.android.systemui.navigationbar.NavigationModeController;
@@ -101,7 +102,8 @@ public class MenuViewLayerControllerTest extends SysuiTestCase {
                         mock(NavigationModeController.class),
                         mHearingAidDeviceManager,
                         mKeyboardRepository,
-                        mPointerDeviceRepository);
+                        mPointerDeviceRepository,
+                        mock(Magnification.class));
     }
 
     @Test

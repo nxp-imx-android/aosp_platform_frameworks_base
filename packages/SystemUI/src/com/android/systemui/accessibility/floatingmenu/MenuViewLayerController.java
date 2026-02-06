@@ -26,6 +26,7 @@ import android.view.WindowManager;
 import android.view.accessibility.AccessibilityManager;
 
 import com.android.settingslib.bluetooth.HearingAidDeviceManager;
+import com.android.systemui.accessibility.Magnification;
 import com.android.systemui.inputdevice.data.repository.PointerDeviceRepository;
 import com.android.systemui.keyboard.data.repository.KeyboardRepository;
 import com.android.systemui.navigationbar.NavigationModeController;
@@ -50,7 +51,7 @@ class MenuViewLayerController implements IAccessibilityFloatingMenu {
             NavigationModeController navigationModeController,
             HearingAidDeviceManager hearingAidDeviceManager,
             KeyboardRepository keyboardRepository,
-            PointerDeviceRepository pointerDeviceRepository) {
+            PointerDeviceRepository pointerDeviceRepository, Magnification magnification) {
         mWindowManager = windowManager;
         mKeyboardRepository = keyboardRepository;
         mPointerDeviceRepository = pointerDeviceRepository;
@@ -72,7 +73,8 @@ class MenuViewLayerController implements IAccessibilityFloatingMenu {
                         accessibilityManager,
                         menuViewModel,
                         menuViewAppearance,
-                        new MenuView(context, menuViewModel, menuViewAppearance, secureSettings),
+                        new MenuView(context, menuViewModel,
+                                menuViewAppearance, secureSettings, magnification),
                         this,
                         secureSettings,
                         navigationModeController);
