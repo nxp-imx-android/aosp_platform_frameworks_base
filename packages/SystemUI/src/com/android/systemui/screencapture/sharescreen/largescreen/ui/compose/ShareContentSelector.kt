@@ -129,7 +129,7 @@ private fun ItemPreview(
         } else {
             Text(
                 text = stringResource(R.string.screen_share_no_select_app_thumbnail),
-                color = MaterialTheme.colorScheme.primaryContainer,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
                 style = MaterialTheme.typography.labelMedium,
             )
         }
