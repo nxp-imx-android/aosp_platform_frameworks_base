@@ -4687,6 +4687,43 @@ final class ActivityManagerShellCommand extends ShellCommand {
                     }
                 }
 
+                case "manual" -> {
+                    String pidStr = getNextArgRequired();
+                    String limitStr = getNextArgRequired();
+                    int pid;
+                    try {
+                        pid = Integer.parseInt(pidStr);
+                    } catch (NumberFormatException e) {
+                        getErrPrintWriter().println("Invalid PID: \"" + pidStr + "\"");
+                        return -1;
+                    }
+                    int limitPercent;
+                    if ("none".equals(limitStr)) {
+                        limitPercent = -1;
+                    } else {
+                        try {
+                            limitPercent = Integer.parseInt(limitStr);
+                        } catch (NumberFormatException e) {
+                            getErrPrintWriter().println("Invalid limit: \"" + limitStr + "\"");
+                            return -1;
+                        }
+                    }
+
+                    int uid = -1;
+                    synchronized (mInternal.mPidsSelfLocked) {
+                        ProcessRecord app = mInternal.mPidsSelfLocked.get(pid);
+                        if (app != null) {
+                            uid = app.uid;
+                        }
+                    }
+                    if (uid != -1) {
+                        limiter.setManualLimit(pid, uid, limitPercent);
+                    } else {
+                        getErrPrintWriter().println("Process not found for pid " + pid);
+                        return -1;
+                    }
+                }
+
                 case "status" -> {
                     limiter.dump(pw);
                 }
@@ -4708,6 +4745,7 @@ final class ActivityManagerShellCommand extends ShellCommand {
         pw.println("         ignore <UID> do not configure limits for the UID.");
         pw.println("         ignore none  resume normal operation for all UIDs.");
         pw.println("         ignore all   ignore all processes, for testing.");
+        pw.println("         manual <PID> <PERCENT|none> set a manual limit for the given PID.");
         pw.println("         status       report the status of the limiter.");
     }
 
