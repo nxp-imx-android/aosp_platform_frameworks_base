@@ -127,6 +127,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import com.android.systemui.activity.data.repository.ActivityIntentRepository;
+import com.android.systemui.activity.data.repository.WouldPendingIntentShowOverLockscreenCallback;
 
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4.class)
@@ -612,6 +614,50 @@ public class StatusBarNotificationActivityStarterTest extends SysuiTestCase {
         verify(() -> FrameworkStatsLog.write(FrameworkStatsLog.FULL_SCREEN_INTENT_LAUNCHED,
                 kTestUid, kTestActivityName));
         mockingSession.finishMocking();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SCENE_CONTAINER)
+    @DisableFlags(Flags.FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION)
+    public void testOnNotificationClicked_showOverLockscreen_launchesImmediately()
+            throws Exception {
+        // GIVEN a notification that should show over lockscreen
+        Notification notification = mNotificationEntry.getSbn().getNotification();
+        notification.contentIntent = mContentIntent;
+        notification.flags |= Notification.FLAG_AUTO_CANCEL;
+
+        when(mKeyguardStateController.isShowing()).thenReturn(true);
+        when(mKeyguardStateController.isOccluded()).thenReturn(false); // Not yet occluded
+
+        // Mock ActivityIntentRepository to simulate wouldPendingIntentShowOverLockscreen = true
+        ActivityIntentRepository mockRepository = mock(ActivityIntentRepository.class);
+        doAnswer(invocation -> {
+            Object callbackArg = invocation.getArgument(4);
+            WouldPendingIntentShowOverLockscreenCallback<Object> callback =
+                    (WouldPendingIntentShowOverLockscreenCallback<Object>) callbackArg;
+            Object params = invocation.getArgument(3);
+            callback.onWouldPendingShowOverLockscreenFetched(true, params);
+            return null;
+        }).when(mockRepository)
+                .wouldPendingIntentShowOverLockscreen(any(), anyInt(), any(), any(), any());
+
+        mUnderTest.setActivityIntentRepository(mockRepository);
+
+        // WHEN notification is clicked
+        mUnderTest.onNotificationClicked(mNotificationEntry, mNotificationRow);
+        mMainExecutor.runAllReady(); // Execute async callbacks
+
+        // THEN:
+        // Verify launch happened
+        verify(mActivityTransitionAnimator).startPendingIntentWithAnimation(
+                any(), eq(false), any(),
+                any(ActivityTransitionAnimator.LegacyPendingIntentStarter.class));
+
+        // Verify ShadeController was NOT asked to collapse
+        verify(mShadeController, never()).collapseShade();
+        verify(mShadeController, never()).collapseShade(anyBoolean());
+        verify(mShadeController, never()).animateCollapseShade();
+        verify(mShadeController, never()).addPostCollapseAction(any());
     }
 
     @Test
