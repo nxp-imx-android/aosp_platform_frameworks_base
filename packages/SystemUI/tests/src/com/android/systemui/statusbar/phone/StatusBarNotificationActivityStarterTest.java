@@ -132,7 +132,7 @@ import java.util.Optional;
 public class StatusBarNotificationActivityStarterTest extends SysuiTestCase {
     @Parameters(name = "{0}")
     public static List<FlagsParameterization> getParams() {
-        return SceneContainerFlagParameterizationKt.andSceneContainer(new ArrayList<>());
+        return SceneContainerFlagParameterizationKt.parameterizeSceneContainerFlag();
     }
 
     public StatusBarNotificationActivityStarterTest(FlagsParameterization flags) {
