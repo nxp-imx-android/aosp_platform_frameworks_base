@@ -1392,6 +1392,100 @@ public class ComputerControlSessionImplTest {
         verify(mWindowManagerInternal, never()).requestHardwareRendererOutputDisabled(anyInt());
     }
 
+    @Test
+    public void updatePowerState_blockedState_sleepsDevice() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        verify(mVirtualDevice).addActivityListener(any(),
+                mActivityListenerArgumentCaptor.capture());
+        final var activityListener = mActivityListenerArgumentCaptor.getValue();
+        clearInvocations(mVirtualDevice);
+
+        activityListener.onSecureWindowShown(VIRTUAL_DISPLAY_ID, TEST_COMPONENT, mUserHandle);
+
+        verify(mVirtualDevice).goToSleep();
+    }
+
+    @Test
+    public void updatePowerState_activeState_wakesDevice() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        verify(mVirtualDevice).addActivityListener(any(),
+                mActivityListenerArgumentCaptor.capture());
+        final var activityListener = mActivityListenerArgumentCaptor.getValue();
+        // Transition to blocked first to ensure we can wake up.
+        activityListener.onSecureWindowShown(VIRTUAL_DISPLAY_ID, TEST_COMPONENT, mUserHandle);
+        verify(mVirtualDevice).goToSleep();
+        clearInvocations(mVirtualDevice);
+
+        activityListener.onSecureWindowHidden(VIRTUAL_DISPLAY_ID);
+        mSession.requestUnblock();
+
+        verify(mVirtualDevice).wakeUp();
+    }
+
+    @Test
+    public void updatePowerState_blockedState_withMirror_doesNotSleep() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        setupMockMirror();
+        mSession.createInteractiveMirror(new SurfaceControl());
+        verify(mVirtualDevice).addActivityListener(any(),
+                mActivityListenerArgumentCaptor.capture());
+        final var activityListener = mActivityListenerArgumentCaptor.getValue();
+        clearInvocations(mVirtualDevice);
+
+        activityListener.onSecureWindowShown(VIRTUAL_DISPLAY_ID, TEST_COMPONENT, mUserHandle);
+
+        verify(mVirtualDevice, never()).goToSleep();
+    }
+
+    @Test
+    public void updatePowerState_addMirrorWhileBlocked_wakesDevice() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        verify(mVirtualDevice).addActivityListener(any(),
+                mActivityListenerArgumentCaptor.capture());
+        final var activityListener = mActivityListenerArgumentCaptor.getValue();
+        activityListener.onSecureWindowShown(VIRTUAL_DISPLAY_ID, TEST_COMPONENT, mUserHandle);
+        verify(mVirtualDevice).goToSleep();
+        clearInvocations(mVirtualDevice);
+
+        setupMockMirror();
+        mSession.createInteractiveMirror(new SurfaceControl());
+
+        verify(mVirtualDevice).wakeUp();
+    }
+
+    @Test
+    public void updatePowerState_removeMirrorWhileBlocked_sleepsDevice() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        setupMockMirror();
+        IInteractiveMirror mirror = mSession.createInteractiveMirror(new SurfaceControl());
+        verify(mVirtualDevice).addActivityListener(any(),
+                mActivityListenerArgumentCaptor.capture());
+        final var activityListener = mActivityListenerArgumentCaptor.getValue();
+        activityListener.onSecureWindowShown(VIRTUAL_DISPLAY_ID, TEST_COMPONENT, mUserHandle);
+        clearInvocations(mVirtualDevice);
+
+        mirror.close();
+
+        verify(mVirtualDevice).goToSleep();
+    }
+
+    @Test
+    public void updatePowerState_closeSession_doesNotChangePowerState() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        verify(mVirtualDevice).addActivityListener(any(),
+                mActivityListenerArgumentCaptor.capture());
+        final var activityListener = mActivityListenerArgumentCaptor.getValue();
+        // Block to sleep
+        activityListener.onSecureWindowShown(VIRTUAL_DISPLAY_ID, TEST_COMPONENT, mUserHandle);
+        verify(mVirtualDevice).goToSleep();
+        clearInvocations(mVirtualDevice);
+
+        mSession.close();
+
+        verify(mVirtualDevice, never()).wakeUp();
+        verify(mVirtualDevice, never()).goToSleep();
+    }
+
     private void setupMockMirror() {
         WindowManagerInternal.DisplayMirror displayMirror = mockDisplayMirror();
         when(mWindowManagerInternal.createMirrorForDisplayContent(VIRTUAL_DISPLAY_ID))
