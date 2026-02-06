@@ -4796,11 +4796,13 @@ public class NotificationManagerService extends SystemService {
                             NotificationManagerService.this::reclassifyNotificationLocked);
                 }
             }
-            getContext().sendBroadcastAsUser(
+            Binder.withCleanCallingIdentity(() -> {
+                getContext().sendBroadcastAsUser(
                     new Intent(ALLOWED_NAS_ADJUSTMENT_KEYS_CHANGED)
                             .putExtra(Intent.EXTRA_USER_ID, userId)
                             .addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY_BEFORE_BOOT),
                     UserHandle.SYSTEM, STATUS_BAR_SERVICE);
+            });
             handleSavePolicyFile();
         }
 
@@ -4823,11 +4825,13 @@ public class NotificationManagerService extends SystemService {
                 applyNotificationUpdateForUserProfiles(userId,
                         NotificationManagerService.this::unsummarizeNotificationLocked);
             }
-            getContext().sendBroadcastAsUser(
+            Binder.withCleanCallingIdentity(() -> {
+                getContext().sendBroadcastAsUser(
                     new Intent(ALLOWED_NAS_ADJUSTMENT_KEYS_CHANGED)
                             .putExtra(Intent.EXTRA_USER_ID, userId)
                             .addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY_BEFORE_BOOT),
                     UserHandle.SYSTEM, STATUS_BAR_SERVICE);
+            });
             handleSavePolicyFile();
         }
 
