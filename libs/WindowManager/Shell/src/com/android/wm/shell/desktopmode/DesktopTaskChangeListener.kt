@@ -124,7 +124,7 @@ class DesktopTaskChangeListener(
             return
         }
         logD(
-            "onTaskChanging for taskId=%d, displayId=%d userId=%s currentUserId=%d " +
+            "onTaskChanging for taskId=%d, displayId=%d userId=%d currentUserId=%d " +
                 "parentTaskId=%d isFreeform=%b isActive=%b isPinned=%b isDesktopTask=%b",
             taskInfo.taskId,
             taskInfo.displayId,
@@ -271,7 +271,7 @@ class DesktopTaskChangeListener(
         val isFreeformTask = taskInfo.isFreeform
         val isActiveTask = desktopRepository.isActiveTask(taskInfo.taskId)
         logD(
-            "onTaskMovingToBack for taskId=%d, displayId=%d userId=%s currentUserId=%d " +
+            "onTaskMovingToBack for taskId=%d, displayId=%d userId=%d currentUserId=%d " +
                 "parentTaskId=%d isFreeform=%b isActive=%b",
             taskInfo.taskId,
             taskInfo.displayId,
@@ -308,7 +308,7 @@ class DesktopTaskChangeListener(
         val isFreeformTask = taskInfo.isFreeform
         val isActiveTask = desktopRepository.isActiveTask(taskInfo.taskId)
         logD(
-            "onTaskClosing for taskId=%d, displayId=%d userId=%s currentUserId=%d " +
+            "onTaskClosing for taskId=%d, displayId=%d userId=%d currentUserId=%d " +
                 "parentTaskId=%d isFreeform=%b isActive=%b",
             taskInfo.taskId,
             taskInfo.displayId,

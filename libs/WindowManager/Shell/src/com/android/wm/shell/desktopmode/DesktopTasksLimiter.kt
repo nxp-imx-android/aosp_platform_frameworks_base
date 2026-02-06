@@ -220,7 +220,7 @@ class DesktopTasksLimiter(
                     return task
                 } else {
                     logW(
-                        "Tried to minimize non-running task#%s, Try next task instead.",
+                        "Tried to minimize non-running task#%d, Try next task instead.",
                         taskIdToMinimize,
                     )
                 }
@@ -466,7 +466,7 @@ class DesktopTasksLimiter(
         if (visibleOrderedTasks.size + newTasksOpening <= taskLimit) {
             logV(
                 "No need to minimize; tasks below limit, " +
-                    " visible tasks: %s, new task: %s, task limit: %s",
+                    " visible tasks: %s, new task: %b, task limit: %d",
                 visibleOrderedTasks,
                 launchingNewIntent,
                 taskLimit,
