@@ -6877,7 +6877,8 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                     .setCallingPid(callingPid)
                     .setCallingPackage(callingPackage)
                     .setResultTo(resultTo)
-                    .setActivityOptions(createSafeActivityOptionsWithBalAllowed(options))
+                    .setActivityOptions(SafeActivityOptions.fromBundle(options,
+                            Binder.getCallingPid(), Binder.getCallingUid()))
                     .setRealCallingUid(Binder.getCallingUid())
                     .setUserId(userId)
                     .setAllowBalExemptionForSystemProcess(true)
