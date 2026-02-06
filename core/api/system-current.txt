@@ -650,7 +650,7 @@ package android.aiseal {
   @FlaggedApi("android.aiseal.aiseal_host_apis") public class AiSealException extends java.lang.Exception {
   }
 
-  @FlaggedApi("android.aiseal.aiseal_host_apis") public class AiSealManager {
+  @FlaggedApi("android.aiseal.aiseal_host_apis") public final class AiSealManager {
     method @FlaggedApi("android.aiseal.aiseal_host_apis") @NonNull @RequiresPermission("android.permission.MANAGE_AISEAL_VIRTUAL_MACHINE") @WorkerThread public android.os.IBinder connectService(@NonNull String) throws android.aiseal.AiSealException;
   }
 
