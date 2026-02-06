@@ -349,7 +349,7 @@ public class NotificationStackScrollLayout
             return true;
         }
     };
-    private NotificationStackScrollLogger mLogger;
+    @Nullable private NotificationStackScrollLogger mLogger;
     private Runnable mResetUserExpandedStatesRunnable;
     private final int[] mTempInt2 = new int[2];
     private final float[] mTempFloat2 = new float[2];
@@ -3866,7 +3866,7 @@ public class NotificationStackScrollLayout
             //  NSSL children overlaps with other visible, interactive items.
             shouldRefuse = shouldRefuseTouchEvent(ev);
             if (shouldRefuse) {
-                if (ev.getActionMasked() != MotionEvent.ACTION_MOVE) {
+                if (ev.getActionMasked() != MotionEvent.ACTION_MOVE && mLogger != null) {
                     mLogger.logNsslOnInterceptTouchEvent(
                             ev.getActionMasked(),
                             /* result= */ true,
@@ -3885,7 +3885,7 @@ public class NotificationStackScrollLayout
 
         boolean result = touchHandlerIntercepted || super.onInterceptTouchEvent(ev);
 
-        if (ev.getActionMasked() != MotionEvent.ACTION_MOVE) {
+        if (ev.getActionMasked() != MotionEvent.ACTION_MOVE && mLogger != null) {
             mLogger.logNsslOnInterceptTouchEvent(
                     ev.getActionMasked(),
                     result,
@@ -3955,7 +3955,7 @@ public class NotificationStackScrollLayout
         boolean interactive = mScrollViewFields.interactive;
         boolean isOutBounds = isOutBoundsDownEvent(ev);
         boolean result = !interactive || isOutBounds;
-        if (ev.getActionMasked() != MotionEvent.ACTION_MOVE) {
+        if (ev.getActionMasked() != MotionEvent.ACTION_MOVE && mLogger != null) {
             mLogger.logNsslShouldRefuseTouchEvent(ev.getActionMasked(), result, interactive,
                     isOutBounds);
         }

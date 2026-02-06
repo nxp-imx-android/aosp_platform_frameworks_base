@@ -19,7 +19,6 @@ package com.android.systemui.statusbar.notification.stack;
 import static android.view.WindowInsets.Type.ime;
 
 import static com.android.systemui.flags.SceneContainerFlagParameterizationKt.parameterizeSceneContainerFlag;
-import static com.android.systemui.log.LogBufferHelperKt.logcatLogBuffer;
 import static com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout.ROWS_ALL;
 import static com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout.ROWS_GENTLE;
 import static com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout.RUBBER_BAND_FACTOR_NORMAL;
@@ -137,9 +136,6 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
     }
 
     private final FakeFeatureFlags mFeatureFlags = new FakeFeatureFlags();
-    private final NotificationStackScrollLogger mNotificationStackScrollLogger =
-            new NotificationStackScrollLogger(logcatLogBuffer(), logcatLogBuffer(),
-                    logcatLogBuffer(), logcatLogBuffer());
     private NotificationStackScrollLayout mStackScroller;  // Normally test this
     private NotificationStackScrollLayout mStackScrollerInternal;  // See explanation below
     private AmbientState mAmbientState;
@@ -221,7 +217,6 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         mStackScroller.setController(mStackScrollLayoutController);
         mStackScroller.setShelf(mNotificationShelf);
         when(mStackScroller.getExpandHelper()).thenReturn(mExpandHelper);
-        mStackScroller.setLogger(mNotificationStackScrollLogger);
 
         doNothing().when(mGroupExpansionManager).collapseGroups();
         doNothing().when(mExpandHelper).cancelImmediately();
