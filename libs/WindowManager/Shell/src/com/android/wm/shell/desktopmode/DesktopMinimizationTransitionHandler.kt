@@ -114,6 +114,7 @@ class DesktopMinimizationTransitionHandler(
                     createMinimizeAnimation(it, finishTransaction, onAnimFinish, startAnimDelay)
                 }
         if (animations.isEmpty()) return false
+        startTransaction.apply()
         animExecutor.execute { animations.forEach(Animator::start) }
         return true
     }
