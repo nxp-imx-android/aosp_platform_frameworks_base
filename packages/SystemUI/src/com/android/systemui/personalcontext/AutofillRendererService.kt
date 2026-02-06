@@ -25,6 +25,7 @@ import android.service.autofill.Field
 import android.service.autofill.InlinePresentation
 import android.service.personalcontext.RenderToken
 import android.service.personalcontext.hint.AutofillInlineRequestHint
+import android.service.personalcontext.hint.BundleHint
 import android.service.personalcontext.insight.ActionableInsight
 import android.service.personalcontext.insight.ContextInsight
 import android.service.personalcontext.insight.DisplayInsight
@@ -82,6 +83,7 @@ constructor(private val context: Context, private val autofillManager: AutofillM
                                 insight.displayDetails,
                                 insight.actionDetails,
                                 autofillHint,
+                                findInlineSuggestionsHints(insight),
                             )
                         )
                     }
@@ -95,6 +97,7 @@ constructor(private val context: Context, private val autofillManager: AutofillM
                                 insight.details,
                                 null,
                                 autofillHint,
+                                findInlineSuggestionsHints(insight),
                             )
                         )
                     }
@@ -129,13 +132,30 @@ constructor(private val context: Context, private val autofillManager: AutofillM
         return null
     }
 
+    /**
+     * Looks for an optional [BundleHint] containing a list of hint strings to be passed into the
+     * inline suggestions UI. Note that these are not the same hints as the personal context system.
+     *
+     * @return a list of hint strings, or an empty list if none are found
+     */
+    private fun findInlineSuggestionsHints(insight: ContextInsight): List<String> {
+        for (hint in insight.originHints) {
+            val contextHint = hint.contextHint
+            if (contextHint is BundleHint) {
+                return contextHint.dataBundle.getStringArray(KEY_INLINE_SUGGESTIONS_HINTS)?.toList()
+                    ?: emptyList()
+            }
+        }
+        return emptyList()
+    }
+
     fun createInlineSuggestions(
         inlineSuggestionDetails: List<InlineSuggestionDetails>
     ): List<Dataset> {
         val datasets = mutableListOf<Dataset>()
         // We already verified the session IDs match, just use the first request.
         val inlineSuggestionsRequest: InlineSuggestionsRequest =
-            inlineSuggestionDetails.first().autofillHint.inlineSuggestionsRequest ?: return datasets
+            inlineSuggestionDetails.first().autofillHint.inlineSuggestionsRequest
         if (inlineSuggestionsRequest.inlinePresentationSpecs.isEmpty()) {
             return datasets
         }
@@ -168,6 +188,7 @@ constructor(private val context: Context, private val autofillManager: AutofillM
             PendingIntent.getActivity(context, 0, Intent(), PendingIntent.FLAG_IMMUTABLE)
         val inlineSuggestionUiBuilder =
             InlineSuggestionUi.newContentBuilder(attributionAction)
+                .setHints(suggestionDetails.inlineSuggestionHints)
                 .setTitle(displayDetails.title ?: return null)
 
         displayDetails.contentDescription?.let {
@@ -202,9 +223,16 @@ constructor(private val context: Context, private val autofillManager: AutofillM
         val displayDetails: InsightDisplayDetails,
         val actionDetails: InsightActionDetails?,
         val autofillHint: AutofillInlineRequestHint,
+        val inlineSuggestionHints: List<String>,
     )
 
     companion object {
         private const val TAG = "AutofillRenderService"
+
+        /**
+         * String key on a {@link BundleHint} for an array of string hints to provide to
+         * [InlineSuggestionUi].
+         */
+        const val KEY_INLINE_SUGGESTIONS_HINTS = "inlineSuggestionHints"
     }
 }

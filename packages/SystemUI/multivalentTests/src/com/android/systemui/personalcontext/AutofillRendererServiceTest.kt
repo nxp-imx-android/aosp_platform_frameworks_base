@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,12 @@ package com.android.systemui.personalcontext
 
 import android.content.ComponentName
 import android.content.applicationContext
+import android.os.Binder
 import android.os.Bundle
 import android.service.autofill.Dataset
 import android.service.personalcontext.RenderToken
 import android.service.personalcontext.hint.AutofillInlineRequestHint
+import android.service.personalcontext.hint.BundleHint
 import android.service.personalcontext.hint.ContextHintWithSignature
 import android.service.personalcontext.insight.DisplayInsight
 import android.service.personalcontext.insight.InsightDisplayDetails
@@ -84,6 +86,7 @@ class AutofillRendererServiceTest : SysuiTestCase() {
                     .setFocusedId(AutofillId(0))
                     .setAutofillValue(AutofillValue.forText("test"))
                     .setInlineSuggestionsRequest(inlineSuggestionsRequest)
+                    .setAugmentedAutofillManagerClient(Binder())
                     .build()
             underTest.onRender(
                 DisplayInsight.Builder(InsightDisplayDetails.Builder("title").build())
@@ -99,6 +102,60 @@ class AutofillRendererServiceTest : SysuiTestCase() {
             verify(autofillManager)
                 .notifySystemInlineSuggestions(eq(sessionId), datasetCaptor.capture())
             assertThat(datasetCaptor.firstValue).hasSize(1)
+        }
+
+    @Test
+    fun testOnRender_displayInsight_withInlineSuggestionHints() =
+        kosmos.runTest {
+            val sessionId = 42
+            val inlineSuggestionsRequest =
+                InlineSuggestionsRequest.Builder(
+                        listOf<InlinePresentationSpec?>(AUTOFILL_INLINE_PRESENTATION_SPEC)
+                    )
+                    .build()
+            val originHint =
+                AutofillInlineRequestHint.Builder()
+                    .setSessionId(sessionId)
+                    .setTaskId(0)
+                    .setRequestTimestamp(Instant.now())
+                    .setActivityComponent(ComponentName("test_package", "test_component"))
+                    .setFocusedId(AutofillId(0))
+                    .setAutofillValue(AutofillValue.forText("test"))
+                    .setInlineSuggestionsRequest(inlineSuggestionsRequest)
+                    .setAugmentedAutofillManagerClient(Binder())
+                    .build()
+            val inlineSuggestionHints = arrayOf("inline_hint1", "inline_hint2")
+            val bundleHint =
+                BundleHint.Builder()
+                    .setDataBundle(
+                        Bundle().also {
+                            it.putStringArray(
+                                AutofillRendererService.KEY_INLINE_SUGGESTIONS_HINTS,
+                                arrayOf("inline_hint1", "inline_hint2"),
+                            )
+                        }
+                    )
+                    .build()
+            underTest.onRender(
+                DisplayInsight.Builder(InsightDisplayDetails.Builder("title").build())
+                    .addOriginHint(
+                        ContextHintWithSignature.Builder(originHint, generateSignedHintKey())
+                            .build()
+                    )
+                    .addOriginHint(
+                        ContextHintWithSignature.Builder(bundleHint, generateSignedHintKey())
+                            .build()
+                    )
+                    .build(),
+                RenderToken(UUID.randomUUID()),
+            )
+
+            val datasetCaptor = argumentCaptor<MutableList<Dataset>>()
+            verify(autofillManager)
+                .notifySystemInlineSuggestions(eq(sessionId), datasetCaptor.capture())
+            assertThat(datasetCaptor.firstValue).hasSize(1)
+            assertThat(datasetCaptor.firstValue.first().getFieldInlinePresentation(0)!!.slice.hints)
+                .containsExactly(*inlineSuggestionHints)
         }
 
     private companion object {
