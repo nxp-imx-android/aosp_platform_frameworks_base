@@ -15,6 +15,7 @@ android_library {
     resource_dirs: ["./res"],
     static_libs: [
         "SettingsLibDataStore",
+        "SettingsLibUtils",
         "androidx.annotation_annotation",
         "androidx.fragment_fragment",
         "settingslib_catalyst_flags_lib",

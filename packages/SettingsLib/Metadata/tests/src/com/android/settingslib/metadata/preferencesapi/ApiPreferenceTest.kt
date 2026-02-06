@@ -17,6 +17,8 @@
 package com.android.settingslib.metadata.preferencesapi
 
 import android.content.Context
+import android.os.Build
+import android.provider.Settings
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.settingslib.metadata.ReadWritePermit
@@ -30,6 +32,8 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertThrows
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.shadows.ShadowBuild
+import org.robolectric.util.ReflectionHelpers
 
 @RunWith(AndroidJUnit4::class)
 class ApiPreferenceTest {
@@ -306,6 +310,70 @@ class ApiPreferenceTest {
         assertThat(executedValue).isTrue()
         assertThat(testCounter).isEqualTo(1)
     }
+
+    @Test
+    fun isFlagEnabled_returnsTrue_whenDebuggableAndSettingEnabled_andFlagCheckFails() {
+        ShadowBuild.setType("userdebug")
+        Settings.Global.putInt(
+            context.contentResolver,
+            "com.android.settings.SKIP_CATALYST_FLAG_CHECKS",
+            1
+        )
+        val getScreenParameters: () -> ValidatedKeyParameters? = { null }
+
+        val preference = ApiPreferenceConfigBuilder(
+            KEY,
+            R.string.preference_purpose1,
+            AnyBoolean,
+            Boolean::class.java,
+            null,
+            null,
+            getScreenParameters
+        ).apply {
+            flag { false }
+            get { execute { true } }
+        }.build()
+
+        assertThat(preference.isFlagEnabled(context)).isTrue()
+    }
+
+    @Test
+    fun shouldSkipFlagCheck_returnsTrue_whenDebuggableAndSettingEnabled() {
+        ShadowBuild.setType("userdebug")
+        Settings.Global.putInt(
+            context.contentResolver,
+            "com.android.settings.SKIP_CATALYST_FLAG_CHECKS",
+            1
+        )
+
+        assertThat(shouldSkipFlagCheck(context)).isTrue()
+    }
+
+    @Test
+    fun shouldSkipFlagCheck_returnsFalse_whenNotDebuggableAndSettingEnabled() {
+        ShadowBuild.setType("user")
+        Settings.Global.putInt(
+            context.contentResolver,
+            "com.android.settings.SKIP_CATALYST_FLAG_CHECKS",
+            1
+        )
+
+        assertThat(shouldSkipFlagCheck(context)).isFalse()
+    }
+
+    @Test
+    fun shouldSkipFlagCheck_returnsFalse_whenDebuggableAndSettingDisabled() {
+        ShadowBuild.setType("userdebug")
+        Settings.Global.putInt(
+            context.contentResolver,
+            "com.android.settings.SKIP_CATALYST_FLAG_CHECKS",
+            0
+        )
+
+        assertThat(shouldSkipFlagCheck(context)).isFalse()
+    }
+
+
 
     companion object {
         const val KEY = "ApiPreferenceKey"

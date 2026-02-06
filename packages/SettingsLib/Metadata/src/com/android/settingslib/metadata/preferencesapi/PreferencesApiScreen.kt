@@ -159,7 +159,7 @@ abstract class PreferencesApiScreen private constructor(
     override fun fragmentClass(): Class<out Fragment>? = fragment?.java
 
     override fun isFlagEnabled(context: Context): Boolean =
-        flag?.check() ?: super.isFlagEnabled(context)
+        flag?.check(FlagContext(context)) ?: super.isFlagEnabled(context)
 
     override fun getPreferenceHierarchy(
         context: Context,
@@ -167,7 +167,7 @@ abstract class PreferencesApiScreen private constructor(
     ): PreferenceHierarchy =
         preferenceHierarchy(context) {
             for (preference in preferences) {
-                if (preference.isFlagEnabled) {
+                if (preference.isFlagEnabled(context)) {
                     +preference
                 }
             }
@@ -333,7 +333,12 @@ abstract class PreferencesApiScreen private constructor(
             error(getExceptionMessageWrongOrder("flag"))
         }
 
-        flag = FlagConfig(lambda)
+        flag = FlagConfig {
+            if (shouldSkipFlagCheck(context)) {
+                return@FlagConfig true
+            }
+            lambda()
+        }
     }
 
     /**
