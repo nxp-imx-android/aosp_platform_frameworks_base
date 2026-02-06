@@ -31,6 +31,7 @@ import android.database.ContentObserver;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.ParcelUuid;
+import android.os.PermissionEnforcer;
 import android.os.Process;
 import android.os.UserHandle;
 import android.provider.Settings;
@@ -488,6 +489,7 @@ public class PersonalContextManagerService extends SystemService {
         @VisibleForTesting
         BinderService(
                 PersonalContextManagerService service, PackageManagerInternal packageManager) {
+            super(PermissionEnforcer.fromContext(service.getContext()));
             mService = new WeakReference<>(service);
             mPackageManager = packageManager;
         }
