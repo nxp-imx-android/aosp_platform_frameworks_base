@@ -245,6 +245,7 @@ import static android.provider.Telephony.Carriers.ENFORCE_KEY;
 import static android.provider.Telephony.Carriers.ENFORCE_MANAGED_URI;
 import static android.provider.Telephony.Carriers.INVALID_APN_ID;
 import static android.security.keystore.AttestationUtils.USE_INDIVIDUAL_ATTESTATION;
+
 import static com.android.internal.logging.nano.MetricsProto.MetricsEvent.PROVISIONING_ENTRY_POINT_ADB;
 import static com.android.internal.util.ConcurrentUtils.DIRECT_EXECUTOR;
 import static com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_NONE;
@@ -485,6 +486,7 @@ import android.util.StatsEvent;
 import android.util.Xml;
 import android.view.accessibility.IAccessibilityManager;
 import android.view.inputmethod.InputMethodInfo;
+
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
@@ -528,6 +530,9 @@ import com.android.server.storage.DeviceStorageMonitorInternal;
 import com.android.server.uri.NeededUriGrants;
 import com.android.server.uri.UriGrantsManagerInternal;
 import com.android.server.utils.Slogf;
+
+import org.xmlpull.v1.XmlPullParserException;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileDescriptor;
@@ -568,7 +573,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.xmlpull.v1.XmlPullParserException;
 
 /**
  * Implementation of the device policy APIs.
@@ -15254,11 +15258,12 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         @Override
         public List<Bundle> getApplicationRestrictionsPerAdminForUser(
                 String packageName, @UserIdInt int userId) {
+            final int callingUid = Binder.getCallingUid();
             if (UserHandle.getCallingUserId() != userId
-                    || !UserHandle.isSameApp(
-                    Binder.getCallingUid(), getUidForPackage(packageName, userId))) {
-                final int uid = Binder.getCallingUid();
-                if (!UserHandle.isSameApp(uid, Process.SYSTEM_UID) && uid != Process.ROOT_UID) {
+                    || !mInjector.getPackageManagerInternal().isSameApp(packageName, callingUid,
+                            UserHandle.getUserId(callingUid))) {
+                if (!UserHandle.isSameApp(callingUid, Process.SYSTEM_UID)
+                        && callingUid != Process.ROOT_UID) {
                     throw new SecurityException("Only system may: get application restrictions for "
                             + "other user/app " + packageName);
                 }
