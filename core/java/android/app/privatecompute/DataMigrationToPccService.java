@@ -22,6 +22,9 @@ import android.annotation.Nullable;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
+import android.os.RemoteException;
+
+import java.util.function.Consumer;
 
 /**
  * Base class for a service that handles data migration to the Private Compute Core (PCC)
@@ -49,8 +52,13 @@ public abstract class DataMigrationToPccService extends Service {
     private final IDataMigrationToPccService mInterface = new IDataMigrationToPccService.Stub() {
         @Override
         public void onMigrationRequested(IMigrationRequestResultSender callback) {
-            DataMigrationToPccService.this.onMigrationRequested(
-                    new MigrationRequestResultSender(callback));
+            DataMigrationToPccService.this.onMigrationRequested(result -> {
+                try {
+                    callback.sendResult(result);
+                } catch (RemoteException e) {
+                    throw e.rethrowFromSystemServer();
+                }
+            });
         }
     };
 
@@ -69,5 +77,5 @@ public abstract class DataMigrationToPccService extends Service {
      * @param callback Use this to send a result back to the requesting PCC process
      * and signal to the system whether migration has been accepted.
      */
-    public abstract void onMigrationRequested(@NonNull MigrationRequestResultSender callback);
+    public abstract void onMigrationRequested(@NonNull Consumer<MigrationRequestResult> callback);
 }
