@@ -92,6 +92,7 @@ android_test {
         "services.usage",
         "servicestests-assert-utils",
         "servicestests-utils",
+        "telephony_flags_core_java_lib",
         "testables",
         // TODO: remove once Android migrates to JUnit 4.12,
         // which provides assertThrows
