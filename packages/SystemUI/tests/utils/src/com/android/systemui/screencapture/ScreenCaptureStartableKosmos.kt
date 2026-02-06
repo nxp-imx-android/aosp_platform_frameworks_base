@@ -22,6 +22,7 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.plugins.activityStarter
 import com.android.systemui.screencapture.domain.interactor.screenCaptureComponentInteractor
+import com.android.systemui.screencapture.domain.interactor.screenCaptureTracingInteractor
 import com.android.systemui.screencapture.domain.interactor.screenCaptureUiInteractor
 import com.android.systemui.screencapture.record.domain.interactor.screenCaptureRecordFeaturesInteractor
 import com.android.systemui.screencapture.ui.postRecordingShelfFactory
@@ -41,5 +42,6 @@ val Kosmos.screenCaptureCoreStartable: ScreenCaptureCoreStartable by
             postRecordingShelfFactory,
             activityStarter,
             screenCaptureRecordFeaturesInteractor,
+            screenCaptureTracingInteractor,
         )
     }

@@ -97,7 +97,7 @@ constructor(
             if (it is ScreenCaptureUiState.Invisible) {
                 return@updateStateForType it
             } else {
-                return@updateStateForType ScreenCaptureUiState.Invisible
+                return@updateStateForType ScreenCaptureUiState.Invisible()
             }
         }
     }

@@ -26,6 +26,7 @@ import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
@@ -128,6 +129,12 @@ constructor(
         // Wait until parameters are passed down to Compose
         val parameters = parametersState ?: return
 
+        DisposableEffect(visibleState.isIdle) {
+            if (visibleState.isIdle) {
+                viewModel.onFinishedChangingVisibility()
+            }
+            onDispose {}
+        }
         if (!visibleState.targetState && visibleState.isIdle) {
             SideEffect {
                 setDismissOverride(null)
