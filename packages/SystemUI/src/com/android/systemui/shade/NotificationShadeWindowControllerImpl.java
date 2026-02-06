@@ -542,7 +542,9 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
 
     private void applyVisibility(NotificationShadeWindowState state) {
         boolean visible = isExpanded(state);
-        mLogger.logApplyVisibility(visible);
+        if (!SceneContainerFlag.isEnabled()) {
+            mLogger.logApplyVisibility(visible);
+        }
         if (state.forcePluginOpen) {
             if (mListener != null) {
                 mListener.setWouldOtherwiseCollapse(visible);
@@ -577,12 +579,15 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
             isExpanded = false;
         }
 
-        mLogger.logIsExpanded(isExpanded, state.forceWindowCollapsed,
-                state.isKeyguardShowingAndNotOccluded(), state.panelVisible,
-                state.keyguardFadingAway, state.bouncerShowing, state.headsUpNotificationShowing,
-                state.scrimsVisibility != ScrimController.TRANSPARENT,
-                state.launchingActivityFromNotification, state.forceHideAfterActivityLaunch,
-                state.isAnimatingGoneToAod);
+        if (!SceneContainerFlag.isEnabled()) {
+            mLogger.logIsExpanded(isExpanded, state.forceWindowCollapsed,
+                    state.isKeyguardShowingAndNotOccluded(), state.panelVisible,
+                    state.keyguardFadingAway, state.bouncerShowing,
+                    state.headsUpNotificationShowing,
+                    state.scrimsVisibility != ScrimController.TRANSPARENT,
+                    state.launchingActivityFromNotification, state.forceHideAfterActivityLaunch,
+                    state.isAnimatingGoneToAod);
+        }
         return isExpanded;
     }
 
@@ -796,7 +801,9 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
                 && mCurrentState.notificationShadeFocusable == visible) {
             return;
         }
-        mLogger.logShadeVisibleAndFocusable(visible);
+        if (!SceneContainerFlag.isEnabled()) {
+            mLogger.logShadeVisibleAndFocusable(visible);
+        }
         mCurrentState.panelVisible = visible;
         mCurrentState.notificationShadeFocusable = visible;
         apply(mCurrentState);
