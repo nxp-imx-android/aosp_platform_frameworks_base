@@ -267,16 +267,30 @@ public final class PccSandboxManagerInternal implements OnRoleHoldersChangedList
     }
 
     /**
-     * Returns true if the app is considered a "Trusted App" by the PCC Sandbox
-     * (e.g. System, Bluetooth, Phone, PCS, or explicitly allowlisted packages).
+     * Returns true if the app is considered a "Trusted System Component" by the framework.
+     * This includes:
+     * <ul>
+     *     <li>Trusted System UIDs (System, Bluetooth, Phone)</li>
+     *     <li>Private Compute Services (PCS) packages (which extend the framework trust boundary)
+     *     </li>
+     *     <li>Explicitly allowlisted system packages</li>
+     * </ul>
      *
      * @param appUid The UID of the application.
      * @param appPackage The package name of the application.
      */
-    public boolean isPccTrustedApp(int appUid, String appPackage) {
+    public boolean isPccTrustedSystemComponent(int appUid, String appPackage) {
         for (int uid : TRUSTED_UIDS) {
             if (appUid == uid) {
                 return true;
+            }
+        }
+
+        if (appPackage != null) {
+            // Verify that the provided package name belongs to the provided UID.
+            if (!mPackageManagerInternal.isSameApp(appPackage, appUid,
+                    UserHandle.getUserId(appUid))) {
+                return false;
             }
         }
 
@@ -285,9 +299,11 @@ public final class PccSandboxManagerInternal implements OnRoleHoldersChangedList
             return true;
         }
 
-        synchronized (mLock) {
-            if (mPccTrustedPackages.contains(appPackage)) {
-                return true;
+        if (appPackage != null) {
+            synchronized (mLock) {
+                if (mPccTrustedPackages.contains(appPackage)) {
+                    return true;
+                }
             }
         }
         return false;
@@ -468,9 +484,9 @@ public final class PccSandboxManagerInternal implements OnRoleHoldersChangedList
         }
         AndroidPackage androidPackage = mPackageManagerInternal.getPackage(clientUid);
         if (androidPackage != null) {
-            return isPccTrustedApp(clientUid, androidPackage.getPackageName());
+            return isPccTrustedSystemComponent(clientUid, androidPackage.getPackageName());
         }
-        return isPccTrustedApp(clientUid, null);
+        return isPccTrustedSystemComponent(clientUid, null);
     }
 
     /**
@@ -506,12 +522,12 @@ public final class PccSandboxManagerInternal implements OnRoleHoldersChangedList
                     case ActivityManagerService.ASSOCIATION_TYPE_PROVIDER -> {
                         // ContentProvider association from regular to pcc components is disallowed
                         // because it can be used to egress sensitive data.
-                        return isPccTrustedApp(callerUid, callerPackage);
+                        return isPccTrustedSystemComponent(callerUid, callerPackage);
                     }
                     case ActivityManagerService.ASSOCIATION_TYPE_RECEIVER,
                          ActivityManagerService.ASSOCIATION_TYPE_SERVICE -> {
                         try {
-                            if (!isPccTrustedApp(callerUid, callerPackage)) {
+                            if (!isPccTrustedSystemComponent(callerUid, callerPackage)) {
                                 PccBundleSanitizationUtil.sanitizeBundle(extras);
                             }
                             return true;
@@ -530,7 +546,7 @@ public final class PccSandboxManagerInternal implements OnRoleHoldersChangedList
             // Since this method is only called if either caller or target is PCC,
             // if we're here, the caller is a PCC UID and the target is not.
             // Allow PCC to trusted component association.
-            if (isPccTrustedApp(targetUid, targetPackage)) {
+            if (isPccTrustedSystemComponent(targetUid, targetPackage)) {
                 return true;
             }
 

@@ -140,6 +140,15 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
 
     @Override
     @RequiresNoPermission
+    public boolean isPccTrustedSystemComponent(int uid, String packageName) {
+        if (mInternal == null) {
+            return false;
+        }
+        return mInternal.isPccTrustedSystemComponent(uid, packageName);
+    }
+
+    @Override
+    @RequiresNoPermission
     public void writeToAuditLog(@NonNull PersistableBundle bundle, @NonNull String packageName) {
         try {
             writeToAuditLogInternal(bundle, packageName);

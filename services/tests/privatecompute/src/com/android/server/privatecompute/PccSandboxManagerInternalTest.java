@@ -24,9 +24,11 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -152,6 +154,7 @@ public class PccSandboxManagerInternalTest {
         };
         mServiceName = new ComponentName("com.example.test", "com.example.test.MyPccService");
         mIntent = new Intent().setComponent(mServiceName);
+        mPccSandboxManagerInternal.awaitPccInitialization();
     }
 
     @After
@@ -173,6 +176,8 @@ public class PccSandboxManagerInternalTest {
         AndroidPackage mockAndroidPackage = mock(AndroidPackage.class);
         doReturn(TRUSTED_PACKAGE).when(mockAndroidPackage).getPackageName();
         doReturn(mockAndroidPackage).when(mPackageManagerInternal).getPackage(TRUSTED_PACKAGE_UID);
+        // Mock isSameApp for trusted packages used in tests
+        when(mPackageManagerInternal.isSameApp(any(), anyInt(), anyInt())).thenReturn(true);
 
         IBinder returnedBinder = mPccSandboxManagerInternal.createPccProxyIfNeeded(mServiceName, 0,
                 mIntent, mRealBinder, TRUSTED_PACKAGE_UID);
@@ -437,6 +442,8 @@ public class PccSandboxManagerInternalTest {
     public void testValidateAssociationAllowed_pccAndPcs_isAllowed()
             throws android.os.RemoteException {
         when(mMockPccSandboxManagerService.isPrivateComputeServicesUid(PCS_UID)).thenReturn(true);
+        // Mock isSameApp for trusted packages used in tests
+        when(mPackageManagerInternal.isSameApp(any(), anyInt(), anyInt())).thenReturn(true);
 
         boolean allowed = mPccSandboxManagerInternal.validateAssociationAllowed(
                 PCC_UID_1, PCC_PACKAGE_1, PCS_UID, PCS_PACKAGE,
@@ -493,6 +500,8 @@ public class PccSandboxManagerInternalTest {
     @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
     public void testValidateAssociationAllowed_pccToTrustedPackage_isAllowed() {
         mPccSandboxManagerInternal.populatePccTrustedPackages();
+        // Mock isSameApp for trusted packages used in tests
+        when(mPackageManagerInternal.isSameApp(any(), anyInt(), anyInt())).thenReturn(true);
         for (String trustedPackage : mPccSandboxManagerInternal.mPccTrustedPackages) {
             boolean allowed = mPccSandboxManagerInternal.validateAssociationAllowed(
                     PCC_UID_1, PCC_PACKAGE_1, REGULAR_UID, trustedPackage,
@@ -508,6 +517,8 @@ public class PccSandboxManagerInternalTest {
             throws android.os.RemoteException {
         when(mMockPccSandboxManagerService.isPrivateComputeServicesUid(REGULAR_UID))
                 .thenReturn(false);
+        // Mock isSameApp for trusted packages used in tests
+        when(mPackageManagerInternal.isSameApp(any(), anyInt(), anyInt())).thenReturn(true);
 
         boolean allowed = mPccSandboxManagerInternal.validateAssociationAllowed(
                 REGULAR_UID, REGULAR_PACKAGE, PCC_UID_1, PCC_PACKAGE_1,
@@ -521,6 +532,8 @@ public class PccSandboxManagerInternalTest {
     @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
     public void testValidateAssociationAllowed_trustedToPcc_Provider_isAllowed() {
         mPccSandboxManagerInternal.populatePccTrustedPackages();
+        // Mock isSameApp for trusted packages used in tests
+        when(mPackageManagerInternal.isSameApp(any(), anyInt(), anyInt())).thenReturn(true);
         for (String trustedPackage : mPccSandboxManagerInternal.mPccTrustedPackages) {
             boolean allowed = mPccSandboxManagerInternal.validateAssociationAllowed(
                     TRUSTED_PACKAGE_UID, trustedPackage, PCC_UID_1, PCC_PACKAGE_1,
@@ -534,6 +547,8 @@ public class PccSandboxManagerInternalTest {
     @Test
     @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
     public void testValidateAssociationAllowed_receiver_bundleWithBinder_isDenied() {
+        // Mock isSameApp for trusted packages used in tests
+        when(mPackageManagerInternal.isSameApp(any(), anyInt(), anyInt())).thenReturn(true);
         Bundle extras = new Bundle();
         extras.putBinder("binder", new Binder());
 
@@ -548,6 +563,8 @@ public class PccSandboxManagerInternalTest {
     @Test
     @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
     public void testValidateAssociationAllowed_service_bundleWithBinder_isDenied() {
+        // Mock isSameApp for trusted packages used in tests
+        when(mPackageManagerInternal.isSameApp(any(), anyInt(), anyInt())).thenReturn(true);
         Bundle extras = new Bundle();
         extras.putBinder("binder", new Binder());
 
@@ -563,6 +580,11 @@ public class PccSandboxManagerInternalTest {
     @Test
     @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
     public void testValidateAssociationAllowed_service_pccToTrustedPkg_binderBundle_isAllowed() {
+        // Reset the mock to clear any previous stubs
+        reset(mPackageManagerInternal);
+        // Mock isSameApp for trusted packages used in tests
+        doReturn(true).when(mPackageManagerInternal).isSameApp(any(), anyInt(), anyInt());
+
         mPccSandboxManagerInternal.populatePccTrustedPackages();
         Bundle bundle = new Bundle();
         bundle.putBinder("binder", new Binder());
@@ -610,6 +632,8 @@ public class PccSandboxManagerInternalTest {
 
         // Change role holder
         String newRolePackage = "com.example.newrole";
+        // Resetting mock to ensure no interference
+        reset(mMockRoleManager);
         when(mMockRoleManager.getRoleHoldersAsUser(eq(testRole), eq(UserHandle.of(USER_ID_1))))
                 .thenReturn(Collections.singletonList(newRolePackage));
 

@@ -19,6 +19,7 @@ package android.app.privatecompute;
 import android.annotation.CallbackExecutor;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.annotation.RequiresNoPermission;
 import android.annotation.SuppressLint;
 import android.annotation.SystemService;
@@ -63,6 +64,29 @@ public final class PccSandboxManager {
     public boolean isPrivateComputeServicesUid(int uid) {
         try {
             return mService.isPrivateComputeServicesUid(uid);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Returns whether the given package is considered a "Trusted System Component" by the
+     * framework. This also includes Private Compute Services apps, which are an extension to the
+     * framework's trust boundary.
+     * Trusted System components are allowed two-way communication with the PCC components.
+     *
+     * @param uid The UID of the application.
+     * @param packageName The package name of the application. This can be null when a single
+     * packagename isn't available, e.g. for SYSTEM_UID. If non-null, this API checks whether
+     * {@code uid} corresponds to {@code packageName}, and returns {@code false} if it doesn't.
+     * @return {@code true} if the app is a trusted system component, {@code false} otherwise.
+     *
+     */
+    @RequiresNoPermission
+    @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public boolean isPccTrustedSystemComponent(int uid, @Nullable String packageName) {
+        try {
+            return mService.isPccTrustedSystemComponent(uid, packageName);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
