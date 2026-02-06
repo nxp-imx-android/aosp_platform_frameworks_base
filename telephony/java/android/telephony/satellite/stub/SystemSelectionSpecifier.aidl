@@ -71,7 +71,12 @@ parcelable SystemSelectionSpecifier {
     String mIccId;
 
     /**
-     * Satellite PLMNs supported by a carrier associated with the satellite subscription.
+     * The list of satellite PLMNs supported by the carrier associated with the satellite
+     * subscription.
+     * <p>
+     * These PLMNs support manual-connect {@code NTRadioTechnology} types, such as
+     * {@code NTRadioTechnology#NB_IOT_NTN}.
+     * <p>
      * This field is optional. The default value is an empty array.
      */
     String[] mMccMncs;
