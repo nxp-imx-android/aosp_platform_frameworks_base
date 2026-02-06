@@ -47,7 +47,6 @@ import android.view.KeyEvent.META_CTRL_ON
 import android.view.KeyEvent.META_META_ON
 import android.view.WindowInsets
 import android.view.WindowManager
-import android.window.DesktopModeFlags
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.BySelector
@@ -211,13 +210,13 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
     fun maximiseDesktopApp(
         wmHelper: WindowManagerStateHelper,
         device: UiDevice,
-        trigger: MaximizeDesktopAppTrigger = MaximizeDesktopAppTrigger.MAXIMIZE_MENU,
+        trigger: MaximizeDesktopAppTrigger = MaximizeDesktopAppTrigger.LAYOUT_MENU,
     ) {
         val caption = getCaptionForTheApp(wmHelper, device)!!
         val maximizeButton = getMaximizeButtonForTheApp(caption)
 
         when (trigger) {
-            MaximizeDesktopAppTrigger.MAXIMIZE_MENU -> maximizeButton.click()
+            MaximizeDesktopAppTrigger.LAYOUT_MENU -> maximizeButton.click()
             MaximizeDesktopAppTrigger.DOUBLE_TAP_APP_HEADER -> {
                 caption.click()
                 Thread.sleep(50)
@@ -233,10 +232,10 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
                 maximizeButton.longClick()
                 wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
                 val buttonResId = MAXIMIZE_BUTTON_IN_MENU
-                val maximizeMenu = getDesktopAppViewByRes(MAXIMIZE_MENU)
+                val layoutMenu = getDesktopAppViewByRes(LAYOUT_MENU)
                 val maximizeButtonInMenu =
-                    maximizeMenu
-                        ?.wait(
+                    layoutMenu
+                        .wait(
                             Until.findObject(By.res(SYSTEMUI_PACKAGE, buttonResId)),
                             TIMEOUT.toMillis()
                         )
@@ -319,11 +318,11 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
         wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
 
         val buttonResId = if (toLeft) SNAP_LEFT_BUTTON else SNAP_RIGHT_BUTTON
-        val maximizeMenu = getDesktopAppViewByRes(MAXIMIZE_MENU)
+        val layoutMenu = getDesktopAppViewByRes(LAYOUT_MENU)
 
         val snapResizeButton =
-            maximizeMenu
-                ?.wait(Until.findObject(By.res(SYSTEMUI_PACKAGE, buttonResId)), TIMEOUT.toMillis())
+            layoutMenu
+                .wait(Until.findObject(By.res(SYSTEMUI_PACKAGE, buttonResId)), TIMEOUT.toMillis())
                 ?: error("Unable to find object with resource id $buttonResId")
         snapResizeButton.click()
 
@@ -675,11 +674,11 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
         wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
 
         val buttonResId = IMMERSIVE_BUTTON_IN_MENU
-        val maximizeMenu = getDesktopAppViewByRes(MAXIMIZE_MENU)
+        val layoutMenu = getDesktopAppViewByRes(LAYOUT_MENU)
 
         val immersiveButton =
-            maximizeMenu
-                ?.wait(Until.findObject(By.res(SYSTEMUI_PACKAGE, buttonResId)), TIMEOUT.toMillis())
+            layoutMenu
+                .wait(Until.findObject(By.res(SYSTEMUI_PACKAGE, buttonResId)), TIMEOUT.toMillis())
                 ?: error("Unable to find object with resource id $buttonResId")
 
         immersiveButton.click()
@@ -922,7 +921,7 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
     }
 
     enum class MaximizeDesktopAppTrigger {
-        MAXIMIZE_MENU,
+        LAYOUT_MENU,
         DOUBLE_TAP_APP_HEADER,
         KEYBOARD_SHORTCUT,
         MAXIMIZE_BUTTON_IN_MENU
@@ -942,13 +941,13 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
         const val SNAP_RESIZE_DRAG_INSET: Int = 5 // inset to avoid dragging to display edge
         const val CAPTION: String = "desktop_mode_caption"
         const val MAXIMIZE_BUTTON_VIEW: String = "maximize_button_view"
-        const val MAXIMIZE_MENU: String = "maximize_menu"
+        const val LAYOUT_MENU: String = "layout_menu"
         const val CLOSE_BUTTON: String = "close_window"
         const val PILL_CONTAINER: String = "windowing_pill"
         const val DESKTOP_MODE_BUTTON: String = "desktop_button"
-        const val SNAP_LEFT_BUTTON: String = "maximize_menu_snap_left_button"
-        const val SNAP_RIGHT_BUTTON: String = "maximize_menu_snap_right_button"
-        const val MAXIMIZE_BUTTON_IN_MENU: String = "maximize_menu_size_toggle_button"
+        const val SNAP_LEFT_BUTTON: String = "layout_menu_snap_left_button"
+        const val SNAP_RIGHT_BUTTON: String = "layout_menu_snap_right_button"
+        const val MAXIMIZE_BUTTON_IN_MENU: String = "layout_menu_size_toggle_button"
         const val MINIMIZE_BUTTON_VIEW: String = "minimize_window"
         const val HEADER_EMPTY_VIEW: String = "caption_handle"
         const val OPEN_MENU_BUTTON: String = "open_menu_button"
@@ -956,7 +955,7 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
         const val RESTART_DIALOG_RESTART_BUTTON: String = "letterbox_restart_dialog_restart_button"
         const val FULL_SCREEN_BUTTON: String = "fullscreen_button"
         const val SPLIT_SCREEN_BUTTON: String = "split_screen_button"
-        const val IMMERSIVE_BUTTON_IN_MENU: String = "maximize_menu_immersive_toggle_button"
+        const val IMMERSIVE_BUTTON_IN_MENU: String = "layout_menu_immersive_toggle_button"
         const val OPEN_IN_APP_OR_BROWSER_BUTTON: String = "open_in_app_or_browser_button"
         val caption: BySelector
             get() = By.res(SYSTEMUI_PACKAGE, CAPTION)
