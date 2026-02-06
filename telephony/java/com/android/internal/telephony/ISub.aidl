@@ -305,6 +305,17 @@ interface ISub {
             String callingPackage, String callingFeatureId);
 
     /**
+     * Check whether the named package can "manage" the named subscription as the specified user.
+     *
+     * @param subInfo the SubscriptionInfo to check
+     * @param packageName either self package name if calling from the public API or
+     *         the target package if calling from a privileged process
+     * @param user the UserHandle from which to check the package
+     */
+    boolean canManageSubscriptionAsUser(
+            in SubscriptionInfo info, String packageName, in UserHandle user);
+
+    /**
      * Set the Usage Setting for this subscription.
      *
      * @param usageSetting the usage setting for this subscription
