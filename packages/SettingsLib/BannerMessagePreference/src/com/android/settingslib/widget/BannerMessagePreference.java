@@ -324,6 +324,7 @@ public class BannerMessagePreference
         bannerView.setVisibility(View.VISIBLE);
         contentView.setAlpha(1f);
         contentView.setTranslationY(0f);
+        bannerView.setScaleX(1f);
 
         ViewGroup.LayoutParams params = bannerView.getLayoutParams();
         params.height = ViewGroup.LayoutParams.WRAP_CONTENT;

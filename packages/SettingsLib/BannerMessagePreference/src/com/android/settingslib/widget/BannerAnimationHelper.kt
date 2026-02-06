@@ -95,10 +95,17 @@ class BannerAnimationHelper(
             return
         }
 
-        targetWidth = parent.width
-        if (targetWidth == 0) {
-            targetWidth = context.resources.displayMetrics.widthPixels
+        val grandParent = parent.parent as? View
+
+        targetWidth = if (grandParent != null && grandParent.width > 0) {
+            grandParent.width
+        } else if (parent.width > 0) {
+            parent.width
+        } else {
+            context.resources.displayMetrics.widthPixels
         }
+
+        targetWidth -= (parent.paddingStart + parent.paddingEnd)
 
         // Calculate actual measurement width excluding margins
         val lp = bannerView.layoutParams as? ViewGroup.MarginLayoutParams

@@ -79,6 +79,10 @@ abstract class SettingsBasePreferenceFragment : PreferenceFragmentCompat() {
         for (i in 0 until count) {
             val preference = group.getPreference(i)
 
+            if (preference is CustomAnimated) {
+                listView?.itemAnimator = null
+            }
+
             // 1. Initialize our custom preference
             if (preference is FragmentAttachablePreference) {
                 preference.onFragmentViewCreated(viewLifecycleOwner)

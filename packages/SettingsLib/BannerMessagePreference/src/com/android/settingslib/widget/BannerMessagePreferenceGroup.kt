@@ -42,7 +42,7 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,
     defStyleRes: Int = 0
-) : PreferenceGroup(context, attrs, defStyleAttr, defStyleRes), GroupSectionDividerMixin {
+) : PreferenceGroup(context, attrs, defStyleAttr, defStyleRes), GroupSectionDividerMixin, CustomAnimated {
 
     private class GroupSection(
         val list: MutableList<BannerMessagePreference> = mutableListOf(),
@@ -53,6 +53,8 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
 
     private val activeSection = GroupSection()
     private val dismissedSection = GroupSection()
+
+    private var parentRecyclerView: RecyclerView? = null
 
     private val handler = Handler(Looper.getMainLooper())
     private var expandKey: String? = null
@@ -101,10 +103,12 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
         if (preference !is BannerMessagePreference) {
             return false
         }
-        var result: Boolean
+        var result: Boolean = true
         if (showDismissedPreferences && isDismissed) {
             addDismissedPreference(preference)
-            result = super.addPreference(preference)
+            runWithoutItemAnimator {
+                result = super.addPreference(preference)
+            }
         } else {
             result = addPreference(preference)
         }
@@ -133,7 +137,12 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
             preference.signalExpand()
         }
 
-        val wasAdded = super.addPreference(preference)
+        var wasAdded = false
+
+        runWithoutItemAnimator {
+            wasAdded = super.addPreference(preference)
+        }
+
         if (wasAdded) {
             activeSection.list.add(preference)
             maybeCreateExpandCollapsePreference()
@@ -153,7 +162,10 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
 
         // Scenario 1: Removing an ACTIVE preference
         if (activeSection.list.contains(preference)) {
-            val wasRemoved = super.removePreference(preference)
+            var wasRemoved = false
+            runWithoutItemAnimator {
+                wasRemoved = super.removePreference(preference)
+            }
             if (wasRemoved) {
                 activeSection.list.remove(preference)
                 updateCollapsedItemCount()
@@ -161,7 +173,9 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
 
                 if (showDismissedPreferences && moveToDismissed) {
                     addDismissedPreference(preference)
-                    super.addPreference(preference)
+                    runWithoutItemAnimator {
+                        super.addPreference(preference)
+                    }
                 }
             }
             return wasRemoved
@@ -169,7 +183,10 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
 
         // Scenario 2: Removing a DISMISSED preference
         if (dismissedSection.list.contains(preference)) {
-            val wasRemoved = super.removePreference(preference)
+            var wasRemoved = false
+            runWithoutItemAnimator {
+                wasRemoved = super.removePreference(preference)
+            }
             if (wasRemoved) {
                 dismissedSection.list.remove(preference)
                 dismissedSection.expandPref?.let { it.count = dismissedSection.list.size }
@@ -182,14 +199,20 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
     }
 
     override fun removeAll() {
-        activeSection.list.forEach { super.removePreference(it) }
+        activeSection.list.forEach {
+            runWithoutItemAnimator {
+                super.removePreference(it)
+            }
+        }
         activeSection.list.clear()
         updateCollapsedItemCount()
         updateVisibilities()
         if (showDismissedPreferences) {
             for (i in 0..<dismissedSection.list.size) {
                 val child = dismissedSection.list[i]
-                super.removePreference(child)
+                runWithoutItemAnimator {
+                    super.removePreference(child)
+                }
             }
             dismissedSection.list.clear()
             dismissedSection.expandPref?.let { it.count = dismissedSection.list.size }
@@ -221,15 +244,21 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
 
     private fun toggleExpansion(anchorView: View?) {
         handler.removeCallbacksAndMessages(null)
+        val areAnimsEnabled = areAnimationsEnabled()
 
         if (!activeSection.isExpanded) {
             activeSection.isExpanded = true
             activeSection.expandPref?.isVisible = false
             activeSection.collapsePref?.isVisible = true
 
+            runWithoutItemAnimator {
+                activeSection.list.forEach { child ->
+                    child.isVisible = true
+                }
+            }
+
             activeSection.list.forEach { child ->
-                child.isVisible = true
-                child.signalExpand()
+                if (areAnimsEnabled) child.signalExpand()
             }
         } else {
             val recyclerView = getParentRecyclerView(anchorView)
@@ -273,11 +302,13 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
 
             val totalVictims = activeSection.list.size - keepCount
             val lastAnimatedIndex = keepCount + totalVictims - 1
-            val startDelay = if (isFenceVisible) 0L else 20L
+
+            val startDelay =
+                if (!isFenceVisible && areAnimsEnabled) 20L else 0L
 
             handler.postDelayed({
                 activeSection.list.forEachIndexed { index, child ->
-                    val bannerDelay = index * 75L
+                    val bannerDelay = if (areAnimationsEnabled()) index * 75L else 0L
 
                     if (index >= keepCount) {
                         handler.postDelayed({
@@ -333,6 +364,10 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
     override fun onBindViewHolder(holder: PreferenceViewHolder) {
         super.onBindViewHolder(holder)
 
+        if (parentRecyclerView == null) {
+            parentRecyclerView = getParentRecyclerView(holder.itemView)
+        }
+
         maybeCreateExpandCollapsePreference()
         updateVisibilities()
 
@@ -354,10 +389,14 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
 
             if (dismissedSection.isExpanded) {
                 oldestPreference.signalCollapse(false) {
-                    handler.post { super.removePreference(oldestPreference) }
+                    handler.post { runWithoutItemAnimator {
+                        super.removePreference(oldestPreference)
+                    } }
                 }
             } else {
-                super.removePreference(oldestPreference)
+                runWithoutItemAnimator {
+                    super.removePreference(oldestPreference)
+                }
             }
         }
 
@@ -504,11 +543,12 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
 
         val totalVictims = dismissedSection.list.size
         val lastAnimatedIndex = totalVictims - 1
-        val startDelay = if (isFenceVisible) 0L else 200L
+        val areAnimsEnabled = areAnimationsEnabled()
+        val startDelay = if (!isFenceVisible && areAnimsEnabled) 200L else 0L
 
         handler.postDelayed({
             dismissedSection.list.forEachIndexed { index, child ->
-                val bannerDelay = index * 75L
+                val bannerDelay = if (areAnimationsEnabled()) index * 75L else 0L
 
                 handler.postDelayed({
                     if (index == lastAnimatedIndex) {
@@ -550,6 +590,34 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
             collapseDismissedIcon =
                 getDrawable(R.styleable.BannerMessagePreferenceGroup_collapseDismissedIcon)
             recycle()
+        }
+    }
+
+    private fun areAnimationsEnabled(): Boolean {
+        val durationScale = android.provider.Settings.Global.getFloat(
+            context.contentResolver,
+            android.provider.Settings.Global.ANIMATOR_DURATION_SCALE,
+            1f
+        )
+        return durationScale > 0f
+    }
+
+    /**
+     * Executes a block of code while temporarily disabling the RecyclerView's default ItemAnimator.
+     * This prevents the "Double Animation" / "Glitter" glitch where the system fade-in fights our custom expand.
+     */
+    private fun runWithoutItemAnimator(block: () -> Unit) {
+        val recycler = parentRecyclerView
+        if (recycler != null) {
+            val savedAnimator = recycler.itemAnimator
+            recycler.itemAnimator = null
+
+            block()
+
+            recycler.itemAnimator = savedAnimator
+        } else {
+            // Fallback if we haven't bound yet
+            block()
         }
     }
 
