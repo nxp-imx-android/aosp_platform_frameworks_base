@@ -14,9 +14,50 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<keyboard-glyph-maps xmlns:android="http://schemas.android.com/apk/res/android">
-<!--    <key-glyph-map-->
-<!--        android:glyphMap="@xml/xyz_glyph_map"-->
-<!--        android:vendorId="0x1234"-->
-<!--        android:productId="0x3456" />-->
+<keyboard-glyph-maps xmlns:androidprv="http://schemas.android.com/apk/prv/res/android">
+    <!-- Nintendo Switch Joy-Con L controller -->
+    <keyboard-glyph-map
+        androidprv:glyphMap="@xml/default_game_controller_glyph_map"
+        androidprv:vendorId="0x057e"
+        androidprv:productId="0x2006" />
+    <!-- Nintendo Switch Joy-Con R controller -->
+    <keyboard-glyph-map
+        androidprv:glyphMap="@xml/default_game_controller_glyph_map"
+        androidprv:vendorId="0x057e"
+        androidprv:productId="0x2007" />
+    <!-- Nintendo Switch pro controller -->
+    <keyboard-glyph-map
+        androidprv:glyphMap="@xml/default_game_controller_glyph_map"
+        androidprv:vendorId="0x057e"
+        androidprv:productId="0x2009" />
+    <!-- Nintendo Switch Charging grip controller -->
+    <keyboard-glyph-map
+        androidprv:glyphMap="@xml/default_game_controller_glyph_map"
+        androidprv:vendorId="0x057e"
+        androidprv:productId="0x200e" />
+    <!-- Playstation DualShock 4 controller -->
+    <keyboard-glyph-map
+        androidprv:glyphMap="@xml/default_game_controller_glyph_map"
+        androidprv:vendorId="0x054c"
+        androidprv:productId="0x05c4" />
+    <!-- Playstation DualShock 4 (Slim) controller -->
+    <keyboard-glyph-map
+        androidprv:glyphMap="@xml/default_game_controller_glyph_map"
+        androidprv:vendorId="0x054c"
+        androidprv:productId="0x09cc" />
+    <!-- Playstation DualShock 4 controller (USB receiver) -->
+    <keyboard-glyph-map
+        androidprv:glyphMap="@xml/default_game_controller_glyph_map"
+        androidprv:vendorId="0x054c"
+        androidprv:productId="0x0ba0" />
+    <!-- Playstation DualSense controller -->
+    <keyboard-glyph-map
+        androidprv:glyphMap="@xml/default_game_controller_glyph_map"
+        androidprv:vendorId="0x054c"
+        androidprv:productId="0x0ce6" />
+    <!-- Playstation DualSense Edge controller -->
+    <keyboard-glyph-map
+        androidprv:glyphMap="@xml/default_game_controller_glyph_map"
+        androidprv:vendorId="0x054c"
+        androidprv:productId="0x0df2" />
 </keyboard-glyph-maps>
