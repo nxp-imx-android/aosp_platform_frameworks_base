@@ -71,6 +71,7 @@ import static android.provider.Settings.Global.DEVELOPMENT_FORCE_RTL;
 import static android.provider.Settings.Global.HIDE_ERROR_DIALOGS;
 import static android.provider.Settings.System.DEFAULT_DEVICE_FONT_SCALE;
 import static android.provider.Settings.System.FONT_SCALE;
+import static android.service.dreams.Flags.dreamsQueryApplicationInfo;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.Display.INVALID_DISPLAY;
 import static android.view.WindowManager.TRANSIT_CHANGE;
@@ -1544,8 +1545,45 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         return false;
     }
 
-    private IAppTask startDreamActivityInternal(@NonNull Intent intent, int callingUid,
-            int callingPid) {
+    /**
+     * Retrieves the process that is starting a dream. This method must be called with the global
+     * lock held.
+     *
+     * @param callingPid The PID of the process starting the dream.
+     * @return The {@link WindowProcessController} of the process starting the dream, or {@code
+     *     null} if the process is not found.
+     */
+    @GuardedBy("mGlobalLock")
+    @Nullable
+    private WindowProcessController getDreamProcessControllerLocked(int callingPid) {
+        final WindowProcessController process = mProcessMap.getProcess(callingPid);
+        if (process == null) {
+            Slog.w(TAG, "Failed to find process for pid: " + callingPid);
+            return null;
+        }
+        return process;
+    }
+
+    /**
+     * Starts the dream activity after all necessary information has been gathered and validated.
+     * This method must be called with the global lock held.
+     *
+     * @param intent The dream intent.
+     * @param callingUid The UID of the caller.
+     * @param callingPid The PID of the caller.
+     * @param process The process controller for the dream.
+     * @param appInfo The {@link ApplicationInfo} to use for the dream application.
+     * @return An {@link IAppTask} representing the started dream task, or {@code null} on failure.
+     */
+    @GuardedBy("mGlobalLock")
+    @Nullable
+    private IAppTask startDreamActivityLocked(
+            @NonNull Intent intent,
+            int callingUid,
+            int callingPid,
+            @NonNull WindowProcessController process,
+            @NonNull ApplicationInfo appInfo) {
+
         final ActivityInfo a = new ActivityInfo();
         a.theme = com.android.internal.R.style.Theme_Dream;
         a.exported = true;
@@ -1571,37 +1609,86 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         options.setLaunchDisplayId(DEFAULT_DISPLAY);
         options.setLaunchActivityType(ACTIVITY_TYPE_DREAM);
 
+        a.packageName = appInfo.packageName;
+        a.applicationInfo = appInfo;
+        a.processName = process.mName;
+        a.uiOptions = appInfo.uiOptions;
+        a.taskAffinity = "android:" + a.packageName + "/dream";
+
+        final ActivityRecord[] outActivity = new ActivityRecord[1];
+        final int res =
+                getActivityStartController()
+                        .obtainStarter(intent, "dream")
+                        .setCallingUid(callingUid)
+                        .setCallingPid(callingPid)
+                        .setCallingPackage(intent.getPackage())
+                        .setActivityInfo(a)
+                        .setActivityOptions(createSafeActivityOptionsWithBalAllowed(options))
+                        .setOutActivity(outActivity)
+                        // To start the dream from background, we need to start it from a persistent
+                        // system process. Here we set the real calling uid to the system server
+                        // uid.
+                        .setRealCallingUid(Binder.getCallingUid())
+                        .setAllowBalExemptionForSystemProcess(true)
+                        .execute();
+
+        final ActivityRecord started = outActivity[0];
+        if (started == null || !ActivityManager.isStartResultSuccessful(res)) {
+            // start the dream activity failed.
+            return null;
+        }
+        return new AppTaskImpl(this, started.getTask().mTaskId, callingUid);
+    }
+
+    private IAppTask startDreamActivityInternal(
+            @NonNull Intent intent, int callingUid, int callingPid) {
+        // Legacy path: Relies on cached ApplicationInfo (which may be out of date)
+        if (!dreamsQueryApplicationInfo()) {
+            synchronized (mGlobalLock) {
+                final WindowProcessController process = getDreamProcessControllerLocked(callingPid);
+                if (process == null) {
+                    return null;
+                }
+                return startDreamActivityLocked(
+                        intent, callingUid, callingPid, process, process.mInfo);
+            }
+        }
+
+        final WindowProcessController process;
         synchronized (mGlobalLock) {
-            final WindowProcessController process = mProcessMap.getProcess(callingPid);
+            process = getDreamProcessControllerLocked(callingPid);
+        }
+        if (process == null) {
+            return null;
+        }
 
-            a.packageName = process.mInfo.packageName;
-            a.applicationInfo = process.mInfo;
-            a.processName = process.mName;
-            a.uiOptions = process.mInfo.uiOptions;
-            a.taskAffinity = "android:" + a.packageName + "/dream";
+        final int userId = UserHandle.getUserId(callingUid);
+        final ApplicationInfo appInfo =
+                getPackageManagerInternalLocked()
+                        .getApplicationInfo(
+                                process.mInfo.packageName, 0 /* flags */, callingUid, userId);
 
+        if (appInfo == null) {
+            Slog.w(
+                    TAG,
+                    "Failed to get ApplicationInfo for "
+                            + process.mInfo.packageName
+                            + " for user "
+                            + userId);
+            return null;
+        }
 
-            final ActivityRecord[] outActivity = new ActivityRecord[1];
-            final int res = getActivityStartController()
-                    .obtainStarter(intent, "dream")
-                    .setCallingUid(callingUid)
-                    .setCallingPid(callingPid)
-                    .setCallingPackage(intent.getPackage())
-                    .setActivityInfo(a)
-                    .setActivityOptions(createSafeActivityOptionsWithBalAllowed(options))
-                    .setOutActivity(outActivity)
-                    // To start the dream from background, we need to start it from a persistent
-                    // system process. Here we set the real calling uid to the system server uid
-                    .setRealCallingUid(Binder.getCallingUid())
-                    .setAllowBalExemptionForSystemProcess(true)
-                    .execute();
-
-            final ActivityRecord started = outActivity[0];
-            if (started == null || !ActivityManager.isStartResultSuccessful(res)) {
-                // start the dream activity failed.
+        synchronized (mGlobalLock) {
+            // Re-verify that the process is still alive since the lock was dropped.
+            if (mProcessMap.getProcess(callingPid) != process) {
+                Slog.w(
+                        TAG,
+                        "Process "
+                                + process.mName
+                                + " died before dream activity could be started");
                 return null;
             }
-            return new AppTaskImpl(this, started.getTask().mTaskId, callingUid);
+            return startDreamActivityLocked(intent, callingUid, callingPid, process, appInfo);
         }
     }
 
