@@ -1899,6 +1899,17 @@ flag {
 }
 
 flag {
+    name: "touchpad_gesture_tutorial_bug_fixes"
+    namespace: "systemui"
+    description: "Fixes the touchpad gesture tutorial to ensure the latest gesture and "
+            "animation changes are aligned with the touchpad tutorial"
+    bug: "456784841"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "touchpad_gesture_tutorial_updates"
     namespace: "systemui"
     description: "Updates the touchpad gesture tutorial to reflect the latest gesture and "
