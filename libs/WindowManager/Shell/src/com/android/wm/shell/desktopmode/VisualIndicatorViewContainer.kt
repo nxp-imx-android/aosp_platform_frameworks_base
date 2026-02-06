@@ -45,7 +45,7 @@ import com.android.wm.shell.common.SyncTransactionQueue
 import com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.IndicatorType
 import com.android.wm.shell.shared.annotations.ShellDesktopThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
-import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper
 import com.android.wm.shell.shared.bubbles.BubbleDropTargetBoundsProvider
 import com.android.wm.shell.windowdecor.WindowDecoration.SurfaceControlViewHostFactory
 import com.android.wm.shell.windowdecor.tiling.SnapEventHandler
@@ -100,7 +100,7 @@ constructor(
                 screenHeight = metrics.heightPixels
             }
             indicatorView =
-                if (BubbleAnythingFlagHelper.enableBubbleToFullscreen()) {
+                if (BubbleFlagHelper.enableBubbleToFullscreen()) {
                     FrameLayout(context)
                 } else {
                     View(context)
@@ -205,7 +205,7 @@ constructor(
                         taskInfo.displayId,
                         snapEventHandler,
                     )
-                if (BubbleAnythingFlagHelper.enableBubbleToFullscreen()) {
+                if (BubbleFlagHelper.enableBubbleToFullscreen()) {
                     if (currentType.isBubbleType() || newType.isBubbleType()) {
                         animator = addBarIndicatorAnimation(animator, currentType, newType)
                     }
@@ -272,7 +272,7 @@ constructor(
                     displayId,
                     snapEventHandler,
                 )
-            if (BubbleAnythingFlagHelper.enableBubbleToFullscreen()) {
+            if (BubbleFlagHelper.enableBubbleToFullscreen()) {
                 animator = addBarIndicatorAnimation(animator, IndicatorType.NO_INDICATOR, type)
             }
             animator.start()
@@ -309,7 +309,7 @@ constructor(
                         displayId,
                         snapEventHandler,
                     )
-                if (BubbleAnythingFlagHelper.enableBubbleToFullscreen()) {
+                if (BubbleFlagHelper.enableBubbleToFullscreen()) {
                     animator =
                         addBarIndicatorAnimation(animator, currentType, IndicatorType.NO_INDICATOR)
                 }

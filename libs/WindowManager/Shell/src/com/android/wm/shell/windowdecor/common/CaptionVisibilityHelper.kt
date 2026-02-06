@@ -28,7 +28,7 @@ import com.android.wm.shell.bubbles.BubbleController
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.LockTaskChangeListener
 import com.android.wm.shell.desktopmode.DesktopWallpaperActivity.Companion.isWallpaperTask
-import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.splitscreen.SplitScreenController
 import java.util.Optional
@@ -114,7 +114,7 @@ class CaptionVisibilityHelper(
             return false
         }
         if (
-            BubbleAnythingFlagHelper.enableBubbleToFullscreen() &&
+            BubbleFlagHelper.enableBubbleToFullscreen() &&
                 !desktopState.isDesktopModeSupportedOnDisplay(display)
         ) {
             // TODO(b/388853233): enable handles for split tasks once drag to bubble is enabled
@@ -128,11 +128,11 @@ class CaptionVisibilityHelper(
         // to the bottom to hide its task view. So, we need to explicitly check here to prevent
         // showing app handles for bubbles.
         fun ActivityManager.RunningTaskInfo.isBubble(): Boolean =
-            if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
+            if (BubbleFlagHelper.enableCreateAnyBubble()) {
                 bubbleController
                     .map { controller ->
                         controller.hasStableBubbleForTask(taskId) ||
-                            (BubbleAnythingFlagHelper.enableRootTaskForBubble() &&
+                            (BubbleFlagHelper.enableRootTaskForBubble() &&
                                 controller.bubbleHelper.isAppBubbleTask(this))
                     }
                     .orElse(false)

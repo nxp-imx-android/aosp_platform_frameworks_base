@@ -136,7 +136,7 @@ import com.android.wm.shell.shared.FocusTransitionListener;
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.annotations.ShellMainThreadImmediate;
-import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper;
 import com.android.wm.shell.shared.desktopmode.DesktopConfig;
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource;
 import com.android.wm.shell.shared.desktopmode.DesktopState;
@@ -1569,7 +1569,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 boolean dragFromStatusBarAllowed = false;
                 final int windowingMode = relevantDecor.getTaskInfo().getWindowingMode();
                 if (mShellDesktopState.canEnterDesktopMode()
-                        || BubbleAnythingFlagHelper.enableBubbleToFullscreen()) {
+                        || BubbleFlagHelper.enableBubbleToFullscreen()) {
                     // In proto2 any full screen or multi-window task can be dragged to
                     // freeform.
                     dragFromStatusBarAllowed = windowingMode == WINDOWING_MODE_FULLSCREEN
@@ -1641,7 +1641,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                                     ev.getDisplayId(), ev.getRawX(), ev.getRawY(),
                                     dragStartState);
                     if (indicatorType != TO_FULLSCREEN_INDICATOR
-                            || BubbleAnythingFlagHelper.enableBubbleToFullscreen()) {
+                            || BubbleFlagHelper.enableBubbleToFullscreen()) {
                         if (mMoveToDesktopAnimator == null) {
                             Context displayContext = mDisplayController.getDisplayContext(
                                     ev.getDisplayId());

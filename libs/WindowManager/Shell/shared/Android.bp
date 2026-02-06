@@ -87,7 +87,7 @@ java_library {
     sdk_version: "current",
 
     srcs: [
-        "src/com/android/wm/shell/shared/bubbles/BubbleAnythingFlagHelper.java",
+        "src/com/android/wm/shell/shared/bubbles/BubbleFlagHelper.java",
         "src/com/android/wm/shell/shared/bubbles/logging/EntryPoint.kt",
     ],
     static_libs: [

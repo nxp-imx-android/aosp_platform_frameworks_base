@@ -31,7 +31,7 @@ import android.view.Display
 import com.android.internal.protolog.ProtoLog
 import com.android.window.flags.Flags
 import com.android.wm.shell.protolog.ShellProtoLogGroup
-import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper
 import com.android.wm.shell.shared.desktopmode.DesktopState
 
 private const val TAG = "AppToWebUtils"
@@ -44,7 +44,7 @@ private val GenericBrowserIntent =
 
 /** Check if app links can be shown */
 fun canShowAppLinks(display: Display, desktopState: DesktopState): Boolean {
-    if (BubbleAnythingFlagHelper.enableBubbleToFullscreen()) {
+    if (BubbleFlagHelper.enableBubbleToFullscreen()) {
         return desktopState.isDesktopModeSupportedOnDisplay(display)
     }
     return true

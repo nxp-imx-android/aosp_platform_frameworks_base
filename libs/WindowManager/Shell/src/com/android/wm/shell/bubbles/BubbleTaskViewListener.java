@@ -40,7 +40,7 @@ import android.window.WindowContainerTransaction;
 
 import androidx.annotation.Nullable;
 
-import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper;
 import com.android.wm.shell.shared.bubbles.logging.BubbleLog;
 import com.android.wm.shell.taskview.TaskView;
 import com.android.wm.shell.taskview.TaskViewTaskController;
@@ -132,7 +132,7 @@ public class BubbleTaskViewListener implements TaskView.Listener {
                         MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS);
                 final boolean isShortcutBubble = (mBubble.hasMetadataShortcutId()
                         || (mBubble.isShortcut()
-                        && BubbleAnythingFlagHelper.enableCreateAnyBubble()));
+                        && BubbleFlagHelper.enableCreateAnyBubble()));
                 if (mBubble.getCurrentTransition() != null) {
                     mBubble.getCurrentTransition().surfaceCreated();
                 } else if (mBubble.isApp() || mBubble.isNote()) {
@@ -270,7 +270,7 @@ public class BubbleTaskViewListener implements TaskView.Listener {
 
     @Override
     public void onTaskInfoChanged(ActivityManager.RunningTaskInfo taskInfo) {
-        if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
+        if (BubbleFlagHelper.enableCreateAnyBubble()) {
             mCallback.onTaskInfoChanged(taskInfo);
         }
     }

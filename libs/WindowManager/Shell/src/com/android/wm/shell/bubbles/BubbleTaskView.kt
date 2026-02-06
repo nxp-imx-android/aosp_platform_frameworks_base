@@ -24,7 +24,7 @@ import androidx.annotation.VisibleForTesting
 import com.android.wm.shell.Flags
 import com.android.wm.shell.bubbles.util.BubbleUtils.isBubbleMovedToAnotherRootTask
 import com.android.wm.shell.bubbles.util.BubbleUtils.isBubbleToFullscreen
-import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper
 import com.android.wm.shell.taskview.TaskView
 import java.util.concurrent.Executor
 
@@ -126,7 +126,7 @@ class BubbleTaskView(
             markTaskAsTrimmable(task)
         }
 
-        if (BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
+        if (BubbleFlagHelper.enableRootTaskForBubble()) {
             task?.let { t ->
                 val bubble = bubbleController.getBubble(t)
                 if (

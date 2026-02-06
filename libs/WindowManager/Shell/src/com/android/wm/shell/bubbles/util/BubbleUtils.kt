@@ -26,7 +26,7 @@ import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
 import com.android.wm.shell.bubbles.Bubble
 import com.android.wm.shell.bubbles.BubbleHelper
-import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper
 
 object BubbleUtils {
 
@@ -44,7 +44,7 @@ object BubbleUtils {
         captionInsetsOwner: Binder?,
     ): WindowContainerTransaction {
         val wct = WindowContainerTransaction()
-        if (BubbleAnythingFlagHelper.enableRootTaskForBubble() && isAppBubble) {
+        if (BubbleFlagHelper.enableRootTaskForBubble() && isAppBubble) {
             val rootToken = bubbleHelper.getAppBubbleRootTaskToken()
             if (toBubble && rootToken != null) {
                 wct.reparent(token, rootToken, true /* onTop */)
@@ -70,7 +70,7 @@ object BubbleUtils {
             wct.setInterceptBackPressedOnTaskRoot(token, toBubble)
             wct.setTaskForceExcludedFromRecents(token, toBubble /* forceExcluded */)
             wct.setDisablePip(token, toBubble /* disablePip */)
-            if (!isAppBubble || !BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
+            if (!isAppBubble || !BubbleFlagHelper.enableRootTaskForBubble()) {
                 wct.setAlwaysOnTop(token, toBubble /* alwaysOnTop */)
             }
             if (!toBubble || isAppBubble) {
@@ -79,17 +79,17 @@ object BubbleUtils {
                 // Always reset everything when exit bubble.
                 wct.setLaunchNextToBubble(token, toBubble /* launchNextToBubble */)
             }
-            if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
+            if (BubbleFlagHelper.enableCreateAnyBubble()) {
                 wct.setDisableLaunchAdjacent(token, toBubble /* disableLaunchAdjacent */)
             }
         }
-        if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
+        if (BubbleFlagHelper.enableCreateAnyBubble()) {
             if (!toBubble && bounds != null) {
                 // Clear bounds if moving out of Bubble.
                 wct.setBounds(token, bounds)
             }
         }
-        if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
+        if (BubbleFlagHelper.enableCreateAnyBubble()) {
             if (!toBubble && captionInsetsOwner != null) {
                 wct.removeInsetsSource(
                     token,
@@ -141,7 +141,7 @@ object BubbleUtils {
         token: WindowContainerToken,
         captionInsetsOwner: Binder?,
         resetBounds: Boolean = true,
-        reparentToTda: Boolean = BubbleAnythingFlagHelper.enableRootTaskForBubble(),
+        reparentToTda: Boolean = BubbleFlagHelper.enableRootTaskForBubble(),
     ): WindowContainerTransaction {
         return getBubbleTransaction(
             bubbleHelper,
@@ -158,7 +158,7 @@ object BubbleUtils {
     /** Determines if a bubble task is moving to fullscreen based on its windowing mode. */
     @JvmStatic
     fun ActivityManager.RunningTaskInfo?.isBubbleToFullscreen(): Boolean {
-        return BubbleAnythingFlagHelper.enableCreateAnyBubble() &&
+        return BubbleFlagHelper.enableCreateAnyBubble() &&
             this?.windowingMode == WINDOWING_MODE_FULLSCREEN
     }
 

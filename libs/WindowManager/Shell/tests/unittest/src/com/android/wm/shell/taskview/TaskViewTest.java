@@ -68,7 +68,7 @@ import com.android.wm.shell.bubbles.BubbleHelper;
 import com.android.wm.shell.common.HandlerExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.common.SyncTransactionQueue.TransactionRunnable;
-import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper;
 import com.android.wm.shell.transition.Transitions;
 
 import org.junit.After;
@@ -335,7 +335,7 @@ public class TaskViewTest extends ShellTestCase {
         mTaskViewTaskController.onTaskVanished(newTaskInfo);
 
         verify(mViewListener).onTaskRemovalStarted(taskId);
-        if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
+        if (BubbleFlagHelper.enableCreateAnyBubble()) {
             // Verify TaskViewBase and listener updates with new task info.
             verify(mTaskViewBase).onTaskVanished(same(newTaskInfo));
             assertThat(capturedTaskInfo[0]).isSameInstanceAs(newTaskInfo);

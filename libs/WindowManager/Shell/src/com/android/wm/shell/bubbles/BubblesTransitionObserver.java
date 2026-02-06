@@ -35,7 +35,7 @@ import androidx.annotation.NonNull;
 import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.shared.TransitionUtil;
-import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper;
 import com.android.wm.shell.taskview.TaskViewTaskController;
 import com.android.wm.shell.taskview.TaskViewTransitions;
 import com.android.wm.shell.transition.Transitions;
@@ -66,7 +66,7 @@ public class BubblesTransitionObserver implements Transitions.TransitionObserver
             @NonNull SurfaceControl.Transaction startTransaction,
             @NonNull SurfaceControl.Transaction finishTransaction) {
         collapseBubbleIfNeeded(info);
-        if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
+        if (BubbleFlagHelper.enableCreateAnyBubble()) {
             if (TransitionUtil.isOpeningType(info.getType()) && mBubbleData.hasBubbles()) {
                 removeBubbleIfLaunchingToAnotherRootTask(info);
             }
@@ -110,7 +110,7 @@ public class BubblesTransitionObserver implements Transitions.TransitionObserver
 
                 // If the opening task was launched by another bubble, skip collapsing the
                 // existing one since BubbleTransitions will start a new bubble for it.
-                if (BubbleAnythingFlagHelper.enableCreateAnyBubble()
+                if (BubbleFlagHelper.enableCreateAnyBubble()
                         && mBubbleController.getBubbleHelper().isAppBubbleTask(taskInfo)) {
                     ProtoLog.d(WM_SHELL_BUBBLES_NOISY,
                             "BubblesTransitionObserver.onTransitionReady(): "

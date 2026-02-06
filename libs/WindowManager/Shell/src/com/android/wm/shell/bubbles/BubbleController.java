@@ -127,7 +127,7 @@ import com.android.wm.shell.onehanded.OneHandedController;
 import com.android.wm.shell.onehanded.OneHandedTransitionCallback;
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
-import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper;
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation.UpdateLocationRequest;
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation.UpdateSource;
@@ -1701,7 +1701,7 @@ public class BubbleController implements ConfigurationChangeListener,
      */
     public void expandStackAndSelectBubble(ShortcutInfo info,
             @Nullable EntryPoint entryPoint, @Nullable BubbleBarLocation bubbleBarLocation) {
-        if (!BubbleAnythingFlagHelper.enableCreateAnyBubble()) return;
+        if (!BubbleFlagHelper.enableCreateAnyBubble()) return;
         Bubble b = mBubbleData.getOrCreateBubble(info); // Removes from overflow
         BubbleLog.v("BubbleController.expandStackAndSelectBubble() shortcutInfo=%s", info);
         UpdateLocationRequest updateLocationRequest =
@@ -1722,7 +1722,7 @@ public class BubbleController implements ConfigurationChangeListener,
      */
     public void expandStackAndSelectBubble(Intent intent, UserHandle user,
             @Nullable EntryPoint entryPoint, @Nullable BubbleBarLocation bubbleBarLocation) {
-        if (!BubbleAnythingFlagHelper.enableCreateAnyBubble()) return;
+        if (!BubbleFlagHelper.enableCreateAnyBubble()) return;
         Bubble b = mBubbleData.getOrCreateBubble(intent, user); // Removes from overflow
         BubbleLog.v("BubbleController.expandStackAndSelectBubble() intent=%s", intent);
         UpdateLocationRequest updateLocationRequest =
@@ -1740,7 +1740,7 @@ public class BubbleController implements ConfigurationChangeListener,
      */
     public void expandStackAndSelectBubble(PendingIntent pendingIntent, UserHandle user,
             @Nullable EntryPoint entryPoint, @Nullable BubbleBarLocation bubbleBarLocation) {
-        if (!BubbleAnythingFlagHelper.enableCreateAnyBubble()) return;
+        if (!BubbleFlagHelper.enableCreateAnyBubble()) return;
         Bubble b = mBubbleData.getOrCreateBubble(pendingIntent, user); // Removes from overflow
         BubbleLog.v("BubbleController.expandStackAndSelectBubble() pendingIntent=%s",
                 pendingIntent);
@@ -1758,7 +1758,7 @@ public class BubbleController implements ConfigurationChangeListener,
     private void expandStackAndSelectAppBubble(Bubble b,
             @Nullable EntryPoint entryPoint,
             @Nullable UpdateLocationRequest updateLocationRequest) {
-        if (!BubbleAnythingFlagHelper.enableCreateAnyBubble()) return;
+        if (!BubbleFlagHelper.enableCreateAnyBubble()) return;
         if (entryPoint != null) {
             mLogger.logEntryPoint(isShowingAsBubbleBar(), entryPoint, b.getPackageName());
         }
@@ -1793,7 +1793,7 @@ public class BubbleController implements ConfigurationChangeListener,
      */
     public void expandStackAndSelectBubble(ActivityManager.RunningTaskInfo taskInfo,
             @Nullable BubbleTransitions.DragData dragData) {
-        if (!BubbleAnythingFlagHelper.enableCreateAnyBubble()) return;
+        if (!BubbleFlagHelper.enableCreateAnyBubble()) return;
         Bubble b = mBubbleData.getOrCreateBubble(taskInfo); // Removes from overflow
         BubbleLog.v("BubbleController.expandStackAndSelectBubble() taskId=%s", taskInfo.taskId);
         BubbleBarLocation location = null;
@@ -3104,7 +3104,7 @@ public class BubbleController implements ConfigurationChangeListener,
      * @param entry   the entry to bubble.
      */
     boolean canLaunchInTaskView(Context context, BubbleEntry entry) {
-        if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) return true;
+        if (BubbleFlagHelper.enableCreateAnyBubble()) return true;
         PendingIntent intent = entry.getBubbleMetadata() != null
                 ? entry.getBubbleMetadata().getIntent()
                 : null;
@@ -3844,7 +3844,7 @@ public class BubbleController implements ConfigurationChangeListener,
                     return;
                 }
             }
-            if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
+            if (BubbleFlagHelper.enableCreateAnyBubble()) {
                 // When removing the last bubble, BubbleData has already removed the bubble from
                 // the stack before this call occurs. Without this check, the TO_BACK transition
                 // would trigger DesktopModeWindowDecorViewModel#onTaskChanging, which
@@ -3877,7 +3877,7 @@ public class BubbleController implements ConfigurationChangeListener,
         @Nullable
         private WindowContainerTransaction getTransactionToUpdateVisibility(
                 TaskViewTaskController taskView, boolean visible) {
-            if (!BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
+            if (!BubbleFlagHelper.enableRootTaskForBubble()) {
                 return null;
             } else if (!mBubbleHelper.isAppBubbleTask(taskView.getTaskInfo())) {
                 return null;

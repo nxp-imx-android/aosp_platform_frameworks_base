@@ -103,7 +103,7 @@ import com.android.wm.shell.bubbles.user.model.BubbleUserInfo;
 import com.android.wm.shell.common.HomeIntentProvider;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
-import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper;
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
 import com.android.wm.shell.taskview.TaskView;
 import com.android.wm.shell.taskview.TaskViewRepository;
@@ -247,7 +247,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
         final ActivityManager.RunningTaskInfo taskInfo = setupBubble(
                 bubble, taskView, taskViewTaskController);
         doReturn(true).when(mBubbleHelper).isAppBubbleTask(taskInfo);
-        if (BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
+        if (BubbleFlagHelper.enableRootTaskForBubble()) {
             doReturn(mRootTaskBinder).when(mRootTaskToken).asBinder();
             doReturn(mRootTaskToken).when(mBubbleHelper).getAppBubbleRootTaskToken();
         }
@@ -385,7 +385,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
         final WindowContainerTransaction wct = wctCaptor.getValue();
         verifyEnterBubbleTransaction(wct, taskInfo.token.asBinder(), true /* isAppBubble */,
                 false /* reparentToTda */,
-                BubbleAnythingFlagHelper.enableRootTaskForBubble() ? mRootTaskBinder : null);
+                BubbleFlagHelper.enableRootTaskForBubble() ? mRootTaskBinder : null);
     }
 
     @Test
@@ -406,7 +406,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
         final WindowContainerTransaction wct = wctCaptor.getValue();
         verifyEnterBubbleTransaction(wct, taskInfo.token.asBinder(), true /* isAppBubble */,
                 false /* reparentToTda */,
-                BubbleAnythingFlagHelper.enableRootTaskForBubble() ? mRootTaskBinder : null);
+                BubbleFlagHelper.enableRootTaskForBubble() ? mRootTaskBinder : null);
     }
 
     @Test

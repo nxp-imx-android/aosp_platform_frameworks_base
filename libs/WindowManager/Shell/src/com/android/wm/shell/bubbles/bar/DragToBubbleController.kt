@@ -26,7 +26,7 @@ import android.widget.FrameLayout
 import androidx.annotation.VisibleForTesting
 import com.android.wm.shell.bubbles.BubbleController
 import com.android.wm.shell.draganddrop.DragAndDropController.DragAndDropListener
-import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation
 import com.android.wm.shell.shared.bubbles.ContextUtils.isRtl
 import com.android.wm.shell.shared.bubbles.DeviceConfig
@@ -73,7 +73,7 @@ class DragToBubbleController(val context: Context, val bubbleController: BubbleC
 
     /** Called when the drag is tarted. */
     override fun onDragStarted() {
-        if (!BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
+        if (!BubbleFlagHelper.enableCreateAnyBubble()) {
             return
         }
         isDropHandled = false

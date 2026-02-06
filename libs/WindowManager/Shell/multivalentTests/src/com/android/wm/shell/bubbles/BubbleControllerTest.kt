@@ -87,7 +87,7 @@ import com.android.wm.shell.common.TestShellExecutor
 import com.android.wm.shell.common.TestSyncExecutor
 import com.android.wm.shell.draganddrop.DragAndDropController
 import com.android.wm.shell.shared.TransactionPool
-import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper
 import com.android.wm.shell.shared.bubbles.DeviceConfig
 import com.android.wm.shell.shared.bubbles.logging.EntryPoint
 import com.android.wm.shell.splitscreen.SplitScreenController
@@ -444,7 +444,7 @@ class BubbleControllerTest {
 
         bubbleTaskViewController.setTaskViewVisible(taskView, true /* visible */)
 
-        if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
+        if (BubbleFlagHelper.enableCreateAnyBubble()) {
             verify(baseTransitions)
                 .setTaskViewVisible(
                     taskView,
@@ -461,7 +461,7 @@ class BubbleControllerTest {
 
     @Test
     fun setTaskViewVisible_lastBubbleRemoval_skipsTaskViewHiding() {
-        assumeTrue(BubbleAnythingFlagHelper.enableCreateAnyBubble())
+        assumeTrue(BubbleFlagHelper.enableCreateAnyBubble())
 
         val baseTransitions = mock<TaskViewTransitions>()
         val taskView = mock<TaskViewTaskController>()
@@ -527,7 +527,7 @@ class BubbleControllerTest {
     @EnableFlags(FLAG_ENABLE_BUBBLE_BAR)
     @Test
     fun expandStackAndSelectBubbleForExistingTransition_reusesExistingBubble() {
-        assumeTrue(BubbleAnythingFlagHelper.enableCreateAnyBubble())
+        assumeTrue(BubbleFlagHelper.enableCreateAnyBubble())
 
         val bubbleStateListener = FakeBubblesStateListener()
 
@@ -568,7 +568,7 @@ class BubbleControllerTest {
     @EnableFlags(FLAG_ENABLE_BUBBLE_BAR)
     @Test
     fun expandStackAndSelectBubbleForExistingTransition_newBubble() {
-        assumeTrue(BubbleAnythingFlagHelper.enableCreateAnyBubble())
+        assumeTrue(BubbleFlagHelper.enableCreateAnyBubble())
 
         // switch to bubble bar mode because the transition currently requires bubble layer view
         bubblePositioner.update(deviceConfigUnfolded)
@@ -1105,7 +1105,7 @@ class BubbleControllerTest {
     @EnableFlags(FLAG_ENABLE_BUBBLE_BAR, FLAG_SEND_BUBBLE_ROOT_TASK_ID_TO_LAUNCHER)
     @Test
     fun sendInitialBubbleBarState_containsBubbleRootTaskId() {
-        assumeTrue(BubbleAnythingFlagHelper.enableCreateAnyBubble())
+        assumeTrue(BubbleFlagHelper.enableCreateAnyBubble())
 
         bubbleHelper.stub { on { getAppBubbleRootTaskId() } doReturn 123 }
 
