@@ -325,16 +325,6 @@ flag {
 }
 
 flag {
-    name: "force_color_fade"
-    namespace: "wear_systems"
-    description: "Force Color Fade."
-    bug: "420507333"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_display_event_merging"
     namespace: "display_manager"
     description: "Enable merging of display events"
