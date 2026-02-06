@@ -1998,8 +1998,9 @@ public class AudioTrack extends PlayerBase
                 channelConfig = AudioFormat.CHANNEL_OUT_STEREO;
                 break;
         default:
-            if (channelConfig == AudioFormat.CHANNEL_INVALID && channelIndexMask != 0) {
-                break; // channel index configuration only
+            if (channelConfig == AudioFormat.CHANNEL_INVALID
+                    && (channelIndexMask != 0 || channelAcnMask != 0)) {
+                break; // channel index or ACN configuration
             }
             if (!isMultichannelConfigSupported(channelConfig, audioFormat)) {
                 throw new IllegalArgumentException(
