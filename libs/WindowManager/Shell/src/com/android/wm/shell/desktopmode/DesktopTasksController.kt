@@ -283,7 +283,7 @@ class DesktopTasksController(
     private val desksController: DesksController,
     private val desktopTasksTransitionObserver: DesktopTasksTransitionObserver,
     private val snapController: SnapController,
-    private val desktopModeEnterExitTransitionListener: DesktopModeEnterExitTransitionListener,
+    private val desktopRemoteListener: DesktopRemoteListener,
 ) :
     RemoteCallable<DesktopTasksController>,
     TransitionHandler,
@@ -356,8 +356,6 @@ class DesktopTasksController(
                 }
             }
         }
-
-    @VisibleForTesting var taskbarDesktopTaskListener: TaskbarDesktopTaskListener? = null
 
     /** Task id of the task currently being dragged from fullscreen/split. */
     val draggingTaskId
@@ -1595,7 +1593,7 @@ class DesktopTasksController(
         }
         // Replaced by |IDesktopTaskListener#onActiveDeskChanged|.
         if (!desktopState.enableMultipleDesktops) {
-            desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
+            desktopRemoteListener.onEnterDesktopModeTransitionStarted(
                 desktopAnimationConfiguration.toDesktopAnimationDurationMs
             )
         }
@@ -1651,7 +1649,7 @@ class DesktopTasksController(
         }
         // Replaced by |IDesktopTaskListener#onActiveDeskChanged|.
         if (!desktopState.enableMultipleDesktops) {
-            desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
+            desktopRemoteListener.onEnterDesktopModeTransitionStarted(
                 desktopAnimationConfiguration.toDesktopAnimationDurationMs
             )
         }
@@ -1751,7 +1749,7 @@ class DesktopTasksController(
         val transition = dragToDesktopTransitionHandler.finishDragToDesktopTransition(wct)
         // Replaced by |IDesktopTaskListener#onActiveDeskChanged|.
         if (!desktopState.enableMultipleDesktops) {
-            desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
+            desktopRemoteListener.onEnterDesktopModeTransitionStarted(
                 DRAG_TO_DESKTOP_FINISH_ANIM_DURATION_MS.toInt()
             )
         }
@@ -2332,7 +2330,7 @@ class DesktopTasksController(
                 &&
                 !desktopState.enableMultipleDesktops
         ) {
-            desktopModeEnterExitTransitionListener?.onExitDesktopModeTransitionStarted(
+            desktopRemoteListener.onExitDesktopModeTransitionStarted(
                 FULLSCREEN_ANIMATION_DURATION,
                 shouldEndUpAtHome = false,
             )
@@ -2539,7 +2537,7 @@ class DesktopTasksController(
             launchTransaction = activateDeskWct
             // Replaced by |IDesktopTaskListener#onActiveDeskChanged|.
             if (!desktopState.enableMultipleDesktops) {
-                desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
+                desktopRemoteListener.onEnterDesktopModeTransitionStarted(
                     desktopAnimationConfiguration.toDesktopAnimationDurationMs
                 )
             }
@@ -3695,7 +3693,7 @@ class DesktopTasksController(
                 // Replaced by |IDesktopTaskListener#onActiveDeskChanged|.
                 !desktopState.enableMultipleDesktops
         ) {
-            desktopModeEnterExitTransitionListener?.onExitDesktopModeTransitionStarted(
+            desktopRemoteListener.onExitDesktopModeTransitionStarted(
                 FULLSCREEN_ANIMATION_DURATION,
                 shouldEndUpAtHome,
             )
@@ -5720,7 +5718,7 @@ class DesktopTasksController(
             runOnTransitStart?.invoke(transition)
             // Replaced by |IDesktopTaskListener#onActiveDeskChanged|.
             if (!desktopState.enableMultipleDesktops) {
-                desktopModeEnterExitTransitionListener.onEnterDesktopModeTransitionStarted(
+                desktopRemoteListener.onEnterDesktopModeTransitionStarted(
                     desktopAnimationConfiguration.toDesktopAnimationDurationMs
                 )
             }
@@ -6123,12 +6121,7 @@ class DesktopTasksController(
     // TODO: b/457313894 - remove this method once IDesktopModeImpl is moved to a separate class.
     /** Creates a new instance of the external interface to pass to another process. */
     public fun createExternalInterface(): ExternalInterfaceBinder =
-        IDesktopModeImpl(
-            shellController,
-            transitionStateHolder,
-            this,
-            desktopModeEnterExitTransitionListener,
-        )
+        IDesktopModeImpl(shellController, transitionStateHolder, this, desktopRemoteListener)
 
     /**
      * Perform checks required on drag move. Create/release fullscreen indicator as needed.
@@ -6814,7 +6807,7 @@ class DesktopTasksController(
     }
 
     private fun updateTaskBarAndWallpaperDim(displayId: Int, shouldApplyEffect: Boolean) {
-        taskbarDesktopTaskListener?.onTaskbarCornerRoundingUpdate(shouldApplyEffect, displayId)
+        desktopRemoteListener.onTaskbarCornerRoundingUpdate(shouldApplyEffect, displayId)
         wallpaperService.setWallpaperDimAmount(
             if (shouldApplyEffect) wallpaperDimAmount else 0f,
             displayId,
@@ -6828,7 +6821,7 @@ class DesktopTasksController(
         private var shellController: ShellController?,
         private var transitionStateHolder: TransitionStateHolder?,
         private var controller: DesktopTasksController?,
-        private val desktopModeEnterExitTransitionListener: DesktopModeEnterExitTransitionListener,
+        private val desktopRemoteListener: DesktopRemoteListener,
     ) : IDesktopMode.Stub(), ExternalInterfaceBinder {
 
         private lateinit var remoteListener:
@@ -6909,26 +6902,6 @@ class DesktopTasksController(
                     )
                     remoteListener.call { l ->
                         l.onTasksVisibilityChanged(displayId, visibleTasksCount)
-                    }
-                }
-            }
-
-        private val taskbarDesktopTaskListener: TaskbarDesktopTaskListener =
-            object : TaskbarDesktopTaskListener {
-                override fun onTaskbarCornerRoundingUpdate(
-                    hasTasksRequiringTaskbarRounding: Boolean,
-                    displayId: Int,
-                ) {
-                    ProtoLog.v(
-                        WM_SHELL_DESKTOP_MODE,
-                        "IDesktopModeImpl: onTaskbarCornerRoundingUpdate " +
-                            "doesAnyTaskRequireTaskbarRounding=%b, displayId=%d",
-                        hasTasksRequiringTaskbarRounding,
-                        displayId,
-                    )
-
-                    remoteListener.call { l ->
-                        l.onTaskbarCornerRoundingUpdate(hasTasksRequiringTaskbarRounding, displayId)
                     }
                 }
             }
@@ -7125,8 +7098,7 @@ class DesktopTasksController(
                 c.userRepositories.current.addDeskChangeListener(deskChangeListener, c.mainExecutor)
             }
             c.userRepositories.current.addVisibleTasksListener(visibleTasksListener, c.mainExecutor)
-            c.taskbarDesktopTaskListener = taskbarDesktopTaskListener
-            desktopModeEnterExitTransitionListener.register(remoteListener)
+            desktopRemoteListener.register(remoteListener)
         }
 
         private fun unregisterListeners(c: DesktopTasksController) {
@@ -7134,8 +7106,7 @@ class DesktopTasksController(
                 c.userRepositories.current.removeDeskChangeListener(deskChangeListener)
             }
             c.userRepositories.current.removeVisibleTasksListener(visibleTasksListener)
-            c.taskbarDesktopTaskListener = null
-            desktopModeEnterExitTransitionListener.unregister()
+            desktopRemoteListener.unregister()
         }
     }
 
@@ -7201,16 +7172,6 @@ class DesktopTasksController(
                 /* shouldOverrideByDevOption= */ true,
                 com.android.launcher3.Flags.FLAG_ENABLE_ALT_TAB_KQS_FLATENNING,
             )
-    }
-
-    /** Defines interface for classes that can listen to changes for task resize. */
-    // TODO(b/343931111): Migrate to using TransitionObservers when ready
-    interface TaskbarDesktopTaskListener {
-        /**
-         * [hasTasksRequiringTaskbarRounding] is true when a task is either maximized or snapped
-         * left/right and rounded corners are enabled.
-         */
-        fun onTaskbarCornerRoundingUpdate(hasTasksRequiringTaskbarRounding: Boolean, displayId: Int)
     }
 
     /**
