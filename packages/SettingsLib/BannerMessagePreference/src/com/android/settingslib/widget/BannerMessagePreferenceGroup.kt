@@ -144,6 +144,10 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
     }
 
     override fun removePreference(preference: Preference): Boolean {
+        return removePreference(preference, moveToDismissed = true)
+    }
+
+    fun removePreference(preference: Preference, moveToDismissed: Boolean): Boolean {
         if (preference !is BannerMessagePreference) {
             return false
         }
@@ -156,7 +160,7 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
                 updateCollapsedItemCount()
                 updateVisibilities()
 
-                if (showDismissedPreferences) {
+                if (showDismissedPreferences && moveToDismissed) {
                     addDismissedPreference(preference)
                     super.addPreference(preference)
                 }
@@ -359,34 +363,14 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
         }
     }
 
+    fun removePreferenceRecursively(key: CharSequence, moveToDismissed: Boolean): Boolean {
+        val preference = findPreference<Preference>(key) ?: return false
+        return removePreference(preference, moveToDismissed)
+    }
+
     override fun removePreferenceRecursively(key: CharSequence): Boolean {
         val preference = findPreference<Preference>(key) ?: return false
-
-        if (preference !is BannerMessagePreference) {
-            return false
-        }
-
-        val isFromActive = activeSection.list.contains(preference)
-        val isFromDismissed = dismissedSection.list.contains(preference)
-
-        val wasRemoved = super.removePreferenceRecursively(key)
-        if (wasRemoved) {
-            if (isFromActive) {
-                activeSection.list.remove(preference)
-                updateCollapsedItemCount()
-                updateVisibilities()
-
-                if (showDismissedPreferences) {
-                    addDismissedPreference(preference)
-                    super.addPreference(preference)
-                }
-            } else if (isFromDismissed) {
-                dismissedSection.list.remove(preference)
-                dismissedSection.expandPref?.let { it.count = dismissedSection.list.size }
-                updateDismissedChildrenVisibility()
-            }
-        }
-        return wasRemoved
+        return removePreference(preference, true)
     }
 
     override fun onBindViewHolder(holder: PreferenceViewHolder) {
