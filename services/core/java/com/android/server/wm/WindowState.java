@@ -1478,7 +1478,8 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
 
             // Reset the drawn state if the window need to redraw for the change, so the transition
             // can wait until it has finished drawing to start.
-            if ((configChanged || dragResizingChanged) && isVisibleRequested()) {
+            if ((configChanged || dragResizingChanged) && isVisibleRequested()
+                    && (!mDragResizing || !mWmService.mAlwaysSeqId)) {
                 winAnimator.mDrawState = DRAW_PENDING;
                 if (mActivityRecord != null) {
                     mActivityRecord.clearAllDrawn();
