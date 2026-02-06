@@ -156,7 +156,8 @@ public class CameraServiceProxyTest {
                 3, packageName, 2, false, 917,
                 0, 0, 0, 6379409415148806677L,
                 2,
-                FrameworkStatsLog.CAMERA_ACTION_EVENT__ERROR_STATE__CAMERA_HAL_REQUEST_ERROR);
+                FrameworkStatsLog.CAMERA_ACTION_EVENT__ERROR_STATE__CAMERA_HAL_REQUEST_ERROR,
+                /*sharedMode*/ false);
 
         int usageEventSize = cameraServiceProxy.getUsageEventCount();
         if (usageEventSize > 0) {

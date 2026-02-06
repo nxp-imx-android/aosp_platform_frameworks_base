@@ -72,6 +72,7 @@ public class CameraSessionStats implements Parcelable {
     private int mSessionIndex;
     private int mErrorState;
     private CameraExtensionSessionStats mCameraExtensionSessionStats;
+    private boolean mSharedMode;
 
     public CameraSessionStats() {
         mFacing = -1;
@@ -94,12 +95,13 @@ public class CameraSessionStats implements Parcelable {
         mSessionIndex = 0;
         mErrorState = 0;
         mCameraExtensionSessionStats = new CameraExtensionSessionStats();
+        mSharedMode = false;
     }
 
     public CameraSessionStats(String cameraId, int facing, int newCameraState,
             String clientName, int apiLevel, boolean isNdk, int creationDuration,
             float maxPreviewFps, int sessionType, int internalReconfigure, long logId,
-            int sessionIdx, int errorState) {
+            int sessionIdx, int errorState, boolean sharedMode) {
         mCameraId = cameraId;
         mFacing = facing;
         mNewCameraState = newCameraState;
@@ -119,6 +121,7 @@ public class CameraSessionStats implements Parcelable {
         mSessionIndex = sessionIdx;
         mErrorState = errorState;
         mCameraExtensionSessionStats = new CameraExtensionSessionStats();
+        mSharedMode = sharedMode;
     }
 
     public static final @android.annotation.NonNull Parcelable.Creator<CameraSessionStats> CREATOR =
@@ -169,6 +172,7 @@ public class CameraSessionStats implements Parcelable {
         mCameraExtensionSessionStats.writeToParcel(dest, 0);
         dest.writeInt(mMostRequestedFpsRange.getLower());
         dest.writeInt(mMostRequestedFpsRange.getUpper());
+        dest.writeBoolean(mSharedMode);
     }
 
     public void readFromParcel(Parcel in) {
@@ -203,6 +207,11 @@ public class CameraSessionStats implements Parcelable {
         int minFps = in.readInt();
         int maxFps = in.readInt();
         mMostRequestedFpsRange = new Range<Integer>(minFps, maxFps);
+        mSharedMode = in.readBoolean();
+    }
+
+    public boolean getSharedMode() {
+        return mSharedMode;
     }
 
     public String getCameraId() {
