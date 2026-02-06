@@ -860,8 +860,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      */
     private boolean mIsHardwareRendererOutputDisabled = false;
 
-    /** Whether SystemPerformanceHinter is disabled for the display. */
-    private boolean mIsSystemPerformanceHinterDisabled = false;
+    /** Whether this display should be optimizing for power. */
+    private boolean mIsOptimizedForPower = false;
 
     /** Whether client rendering limitations are enabled for this display. **/
     private boolean mAreClientRenderingLimitationsEnabled = false;
@@ -1517,12 +1517,15 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         return mIsHardwareRendererOutputDisabled;
     }
 
-    void disableSystemPerformanceHinter() {
-        mIsSystemPerformanceHinterDisabled = true;
+    void enablePowerOptimizations(boolean enable) {
+        if (mIsOptimizedForPower != enable) {
+            mIsOptimizedForPower = enable;
+            mWmService.mDisplayManagerInternal.setPowerOptimization(mDisplayId, enable);
+        }
     }
 
-    boolean isSystemPerformanceHinterDisabled() {
-        return mIsSystemPerformanceHinterDisabled;
+    boolean isOptimizedForPower() {
+        return mIsOptimizedForPower;
     }
 
     void setAnimationsDisabledLocked(boolean disabled) {

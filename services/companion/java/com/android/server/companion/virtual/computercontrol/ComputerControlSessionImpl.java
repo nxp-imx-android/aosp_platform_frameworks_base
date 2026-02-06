@@ -385,7 +385,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             mWindowManagerInternal.setAnimationsDisabledForDisplay(
                     mVirtualDisplay.getDisplay().getDisplayId(), true);
             mVirtualDisplayId = mVirtualDisplay.getDisplay().getDisplayId();
-            mWindowManagerInternal.disableSystemPerformanceHinter(mVirtualDisplayId);
+            mWindowManagerInternal.enablePowerOptimizations(mVirtualDisplayId, /* enable = */ true);
             mWindowManagerInternal.enableClientRenderingLimitationsOnDisplay(
                     mVirtualDisplayId, /* enable = */true);
 

@@ -163,6 +163,14 @@ final class LogicalDisplay {
      */
     private boolean mDisplayScalingDisabled;
 
+    /**
+     * {@code true} provides a hint to the compositor that the display should be optimized for
+     * power.
+     * @see #isPowerOptimizationEnabledLocked()
+     * @see #setPowerOptimizationLocked(boolean)
+     */
+    private boolean mPowerOptimizationEnabled;
+
     // Temporary rectangle used when needed.
     private final Rect mTempLayerStackRect = new Rect();
     private final Rect mTempDisplayRect = new Rect();
@@ -765,10 +773,14 @@ final class LogicalDisplay {
         // Also inform whether the device is the same one sent to inputflinger for its layerstack.
         // Prevent displays that are disabled from receiving input.
         // TODO(b/188914255): Remove once input can dispatch against device vs layerstack.
-        device.setDisplayFlagsLocked(t,
-                (isEnabledLocked() && device.getDisplayDeviceInfoLocked().touch != TOUCH_NONE)
-                        ? SurfaceControl.DISPLAY_RECEIVES_INPUT
-                        : 0);
+        int displayFlags = 0;
+        if (isEnabledLocked() && device.getDisplayDeviceInfoLocked().touch != TOUCH_NONE) {
+            displayFlags |= SurfaceControl.DISPLAY_RECEIVES_INPUT;
+        }
+        if (mPowerOptimizationEnabled) {
+            displayFlags |= SurfaceControl.DISPLAY_OPTIMIZATION_POWER;
+        }
+        device.setDisplayFlagsLocked(t, displayFlags);
 
         // Set the color mode and allowed display mode.
         if (device == mPrimaryDisplayDevice) {
@@ -1006,6 +1018,22 @@ final class LogicalDisplay {
      */
     public void setDisplayScalingDisabledLocked(boolean disableScaling) {
         mDisplayScalingDisabled = disableScaling;
+    }
+
+    /**
+     * @return {@code true} if power optimization is enabled.
+     */
+    public boolean isPowerOptimizationEnabledLocked() {
+        return mPowerOptimizationEnabled;
+    }
+
+    /**
+     * Sets whether power optimization is enabled.
+     *
+     * @param enabled {@code true} to enable power optimization.
+     */
+    public void setPowerOptimizationLocked(boolean enabled) {
+        mPowerOptimizationEnabled = enabled;
     }
 
     public void setUserDisabledHdrTypes(@NonNull int[] userDisabledHdrTypes) {
@@ -1284,6 +1312,7 @@ final class LogicalDisplay {
         pw.println("mRequestedColorMode=" + mRequestedColorMode);
         pw.println("mDisplayOffset=(" + mDisplayOffsetX + ", " + mDisplayOffsetY + ")");
         pw.println("mDisplayScalingDisabled=" + mDisplayScalingDisabled);
+        pw.println("mPowerOptimizationEnabled=" + mPowerOptimizationEnabled);
         pw.println("mBaseDisplayInfo=" + mBaseDisplayInfo);
         pw.println("mOverrideDisplayInfo=" + mOverrideDisplayInfo);
         pw.println("mRequestedMinimalPostProcessing=" + mRequestedMinimalPostProcessing);

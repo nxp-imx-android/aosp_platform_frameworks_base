@@ -290,6 +290,14 @@ public abstract class DisplayManagerInternal {
     public abstract void setDisplayScalingDisabled(int displayId, boolean disableScaling);
 
     /**
+     * Sets whether the display should be optimized for power.
+     *
+     * @param displayId The logical display id.
+     * @param enabled {@code true} to enable power optimization, {@code false} otherwise.
+     */
+    public abstract void setPowerOptimization(int displayId, boolean enabled);
+
+    /**
      * Provide a list of UIDs that are present on the display and are allowed to access it.
      *
      * @param displayAccessUIDs Mapping displayId -> int array of UIDs.

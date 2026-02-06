@@ -1040,6 +1040,14 @@ public final class SurfaceControl implements Parcelable {
      */
     public static final int DISPLAY_RECEIVES_INPUT = 0x01;
 
+    /**
+     * DisplayDevice flag: Request compositor to optimize for power instead of performance when
+     * compositing this display.
+     *
+     * @hide
+     */
+    public static final int DISPLAY_OPTIMIZATION_POWER = 0x02;
+
     // Display power modes.
     /**
      * Display power mode off: used while blanking the screen.
