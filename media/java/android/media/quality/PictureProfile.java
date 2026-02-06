@@ -679,7 +679,8 @@ public final class PictureProfile implements Parcelable {
          *
          * @param status The stream status string
          *               (e.g., {@link MediaQualityContract#STREAM_STATUS_HDR10}).
-         * @param params The parameters to apply for this status.
+         * @param params The parameters to apply for this status. The keys of commonly used
+         *               parameters can be found in {@link MediaQualityContract.PictureQuality}.
          */
         @NonNull
         @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)

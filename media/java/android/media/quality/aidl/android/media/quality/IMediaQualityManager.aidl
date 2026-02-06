@@ -53,7 +53,7 @@ interface IMediaQualityManager {
     List<String> getPictureProfileAllowList(int userId);
     void setPictureProfileAllowList(in List<String> packages, int userId);
     List<PictureProfileHandle> getPictureProfileHandle(in String[] id, int userId);
-    List<PictureProfileHandle> getPictureProfileHandleList(in String[] ids, int userId);
+    List<PictureProfileHandle> getPictureProfileHandles(in String[] ids, int userId);
 
     void changeStreamStatus(in String profileId, in String newStatus, int userId);
 
@@ -79,7 +79,7 @@ interface IMediaQualityManager {
     List<String> getSoundProfileAllowList(int userId);
     void setSoundProfileAllowList(in List<String> packages, int userId);
     List<SoundProfileHandle> getSoundProfileHandle(in String[] id, int userId);
-    List<SoundProfileHandle> getSoundProfileHandleList(in String[] ids, int userId);
+    List<SoundProfileHandle> getSoundProfileHandles(in String[] ids, int userId);
 
     void registerPictureProfileCallback(in IPictureProfileCallback cb);
     void registerSoundProfileCallback(in ISoundProfileCallback cb);

@@ -562,8 +562,9 @@ public final class MediaQualityManager {
      * will be omitted from the result.
      *
      * @param ids An array of unique string identifiers for the desired picture profiles.
-     * @return A {@link List} of PictureProfileHandle objects. Returns an empty list
-     * if no matching profiles are found or if {@code ids} is empty.
+     * @return A {@link List} of PictureProfileHandle objects. Returns an empty list if the input
+     *         IDs is empty. If no matching profile for an ID, the corresponding element in the
+     *         returned list is {@code null}.
      *
      * @hide
      */
@@ -571,9 +572,9 @@ public final class MediaQualityManager {
     @NonNull
     @RequiresPermission(android.Manifest.permission.MANAGE_GLOBAL_PICTURE_QUALITY_SERVICE)
     @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
-    public List<PictureProfileHandle> getPictureProfileHandleList(@NonNull String[] ids) {
+    public List<PictureProfileHandle> getPictureProfileHandles(@NonNull String[] ids) {
         try {
-            return mService.getPictureProfileHandleList(ids, mUserHandle.getIdentifier());
+            return mService.getPictureProfileHandles(ids, mUserHandle.getIdentifier());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -691,8 +692,9 @@ public final class MediaQualityManager {
      * will be omitted from the result.
      *
      * @param ids An array of unique string identifiers for the desired sound profiles.
-     * @return A {@link List} of SoundProfileHandle objects. Returns an empty list
-     * if no matching profiles are found or if {@code ids} is empty.
+     * @return A {@link List} of SoundProfileHandle objects. Returns an empty list if the input
+     *         IDs is empty. If no matching profile for an ID, the corresponding element in the
+     *         returned list is {@code null}.
      *
      * @hide
      */
@@ -700,9 +702,9 @@ public final class MediaQualityManager {
     @NonNull
     @RequiresPermission(android.Manifest.permission.MANAGE_GLOBAL_SOUND_QUALITY_SERVICE)
     @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
-    public List<SoundProfileHandle> getSoundProfileHandleList(@NonNull String[] ids) {
+    public List<SoundProfileHandle> getSoundProfileHandles(@NonNull String[] ids) {
         try {
-            return mService.getSoundProfileHandleList(ids, mUserHandle.getIdentifier());
+            return mService.getSoundProfileHandles(ids, mUserHandle.getIdentifier());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
