@@ -233,6 +233,7 @@ val Kosmos.mockDisplayManager by Fixture { mock<DisplayManager>() }
 val Kosmos.displayRepositoryFromDisplayLib by Fixture {
     com.android.app.displaylib.DisplayRepositoryImpl(
         mockDisplayManager,
+        testableContext.contentResolver,
         fakeHandler,
         testScope.backgroundScope,
         UnconfinedTestDispatcher(),

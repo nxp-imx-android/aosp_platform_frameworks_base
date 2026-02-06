@@ -133,6 +133,7 @@ object DisplayLibModule {
     @Provides
     @SysUISingleton
     fun displayLibComponent(
+        context: android.content.Context,
         displayManager: DisplayManager,
         windowManager: IWindowManager,
         @Background backgroundHandler: Handler,
@@ -140,6 +141,7 @@ object DisplayLibModule {
         @Background backgroundCoroutineDispatcher: CoroutineDispatcher,
     ): DisplayLibComponent {
         return createDisplayLibComponent(
+            context,
             displayManager,
             windowManager,
             backgroundHandler,

@@ -21,6 +21,7 @@ import android.view.Display
 import com.android.keyguard.KeyguardDisplayManager
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
+import com.android.systemui.display.data.repository.DisplayRepository
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.log.DebugLogger.debugLog
 import com.android.systemui.shade.domain.interactor.ShadeDisplaysInteractor
@@ -53,6 +54,7 @@ constructor(
     private val deviceProvisioningRepository: Lazy<DeviceProvisioningRepository>,
     private val keyguardDisplayManager: Lazy<KeyguardDisplayManager>,
     private val shadeDisplaysInteractor: Lazy<ShadeDisplaysInteractor>,
+    private val displayRepository: Lazy<DisplayRepository>,
 ) : DisplayWallpaperPresentationInteractor {
 
     override val presentationFactoryFlow: StateFlow<WallpaperPresentationType> by lazy {
@@ -63,16 +65,35 @@ constructor(
         // while the shade is in transit, avoiding visual artifacts on the lock screen.
         // If the move fails, the pending display id will be reset anyway.
         val shadeDisplayIdFlow = shadeDisplaysInteractor.get().pendingDisplayId
-        combine(keyguardShowingFlow, deviceProvisionedFlow, shadeDisplayIdFlow) {
+        val isDreamingWithOverlayFlow = keyguardInteractor.get().isDreamingWithOverlay
+        val isMirroringEnabledFlow = displayRepository.get().isMirroringEnabled
+        combine(
+                keyguardShowingFlow,
+                deviceProvisionedFlow,
+                shadeDisplayIdFlow,
+                isDreamingWithOverlayFlow,
+                isMirroringEnabledFlow,
+            ) {
                 isKeyguardShowing,
                 isDeviceProvisioned,
-                shadeDisplayId ->
-                determinePresentationType(isKeyguardShowing, isDeviceProvisioned, shadeDisplayId)
+                shadeDisplayId,
+                isDreamingWithOverlay,
+                isMirroringEnabled ->
+                determinePresentationType(
+                        isKeyguardShowing,
+                        isDeviceProvisioned,
+                        shadeDisplayId,
+                        isDreamingWithOverlay,
+                        isMirroringEnabled,
+                    )
                     .also { type ->
                         debugLog(enabled = DEBUG, tag = TAG) {
                             "Display ${display.displayId} - isKeyguardShowing: $isKeyguardShowing, " +
                                 "isDeviceProvisioned: $isDeviceProvisioned, " +
-                                "shadeDisplayId: $shadeDisplayId -> presentationType: $type"
+                                "shadeDisplayId: $shadeDisplayId, " +
+                                "isDreamingWithOverlay: $isDreamingWithOverlay, " +
+                                "isMirroringEnabled: $isMirroringEnabled " +
+                                "-> presentationType: $type"
                         }
                     }
             }
@@ -84,8 +105,11 @@ constructor(
         isKeyguardShowing: Boolean,
         isDeviceProvisioned: Boolean,
         shadeDisplayId: Int,
+        isDreamingWithOverlay: Boolean,
+        isMirroringEnabled: Boolean,
     ): WallpaperPresentationType {
         return when {
+            isDreamingWithOverlay && isMirroringEnabled -> NONE
             !isDeviceProvisioned ->
                 if (ProvisioningPresentationCompatibility.isCompatibleForDisplay(display)) {
                     PROVISIONING
