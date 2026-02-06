@@ -916,7 +916,7 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
-    public void onSecureWindowHidden_doesNotExitBlockedState()
+    public void onSecureWindowHidden_exitsBlockedState_afterRequestUnblock()
             throws RemoteException {
         createComputerControlSession(mDefaultParams);
         verify(mVirtualDevice).addActivityListener(any(),
@@ -929,6 +929,10 @@ public class ComputerControlSessionImplTest {
         activityListener.onSecureWindowHidden(VIRTUAL_DISPLAY_ID);
 
         verify(mLifecycleCallback, never()).onActive();
+
+        mSession.requestUnblock();
+
+        verify(mLifecycleCallback).onActive();
     }
 
     @Test
@@ -998,7 +1002,7 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
-    public void onTopActivityChanged_toAllowedPackage_doesNotExitBlockedState()
+    public void onTopActivityChanged_toAllowedPackage_exitsBlockedState_afterRequestUnblock()
             throws RemoteException {
         createComputerControlSession(mDefaultParams);
         verify(mVirtualDevice).addActivityListener(any(),
@@ -1012,10 +1016,14 @@ public class ComputerControlSessionImplTest {
         activityListener.onTopActivityChanged(VIRTUAL_DISPLAY_ID, TEST_COMPONENT, USER_ID);
 
         verify(mLifecycleCallback, never()).onActive();
+
+        mSession.requestUnblock();
+
+        verify(mLifecycleCallback).onActive();
     }
 
     @Test
-    public void onTopActivityChanged_toDisallowedPackage_doesNotExitBlockedState()
+    public void onTopActivityChanged_toDisallowedPackage_remainsBlocked_afterRequestUnblock()
             throws RemoteException {
         createComputerControlSession(mDefaultParams);
         verify(mVirtualDevice).addActivityListener(any(),
@@ -1029,6 +1037,10 @@ public class ComputerControlSessionImplTest {
         activityListener.onTopActivityChanged(VIRTUAL_DISPLAY_ID, BLOCKED_COMPONENT, USER_ID);
 
         verifyNoInteractions(mLifecycleCallback);
+
+        mSession.requestUnblock();
+
+        verify(mLifecycleCallback, never()).onActive();
     }
 
     @Test
@@ -1044,17 +1056,24 @@ public class ComputerControlSessionImplTest {
         clearInvocations(mLifecycleCallback);
 
         activityListener.onActivityLaunchRequested(VIRTUAL_DISPLAY_ID, BLOCKED_COMPONENT, USER_ID);
-        // onBlocked should not be called again, because blocked state cannot be updated.
-        verify(mLifecycleCallback, never()).onBlocked(anyInt(), any());
+        verifyNoInteractions(mLifecycleCallback);
+        mSession.requestUnblock();
+        verify(mLifecycleCallback).onBlocked(BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH,
+                UNDECLARED_TARGET_PACKAGE);
         clearInvocations(mLifecycleCallback);
 
         // Unblock secure window, should remain blocked.
         activityListener.onSecureWindowHidden(VIRTUAL_DISPLAY_ID);
+        mSession.requestUnblock();
         verifyNoInteractions(mLifecycleCallback);
 
-        // Unblock activity, should remain blocked.
+        // Unblock activity, session becomes active on next unblock request.
         activityListener.onTopActivityChanged(VIRTUAL_DISPLAY_ID, TEST_COMPONENT, USER_ID);
         verify(mLifecycleCallback, never()).onActive();
+
+        mSession.requestUnblock();
+
+        verify(mLifecycleCallback).onActive();
     }
 
     @Test
@@ -1072,18 +1091,45 @@ public class ComputerControlSessionImplTest {
 
         activityListener.onSecureWindowShown(VIRTUAL_DISPLAY_ID, TEST_COMPONENT, mUserHandle);
         // onBlocked should not be called again.
-        verify(mLifecycleCallback, never()).onBlocked(anyInt(), any());
-        clearInvocations(mLifecycleCallback);
+        mSession.requestUnblock();
+        verifyNoInteractions(mLifecycleCallback);
 
-        // Unblock activity, should remain blocked.
+        // Unblock activity, block reason changes after unblock request.
         activityListener.onTopActivityChanged(VIRTUAL_DISPLAY_ID, TEST_COMPONENT, USER_ID);
-        verify(mLifecycleCallback, never()).onActive();
-        verify(mLifecycleCallback, never()).onBlocked(anyInt(), any());
+        verifyNoInteractions(mLifecycleCallback);
+        mSession.requestUnblock();
+        verify(mLifecycleCallback).onBlocked(BLOCK_REASON_SECURE_CONTENT, TARGET_PACKAGE_1);
         clearInvocations(mLifecycleCallback);
 
         // Unblock secure window, should remain blocked.
         activityListener.onSecureWindowHidden(VIRTUAL_DISPLAY_ID);
         verify(mLifecycleCallback, never()).onActive();
+
+        mSession.requestUnblock();
+
+        verify(mLifecycleCallback).onActive();
+    }
+
+    @Test
+    public void requestUnblock_whenNotBlocked_doesNothing() throws RemoteException {
+        createComputerControlSession(mDefaultParams);
+        clearInvocations(mLifecycleCallback);
+
+        mSession.requestUnblock();
+
+        verify(mLifecycleCallback, never()).onActive();
+    }
+
+    @Test
+    public void requestUnblock_exitsCallerInitiatedBlock() throws RemoteException {
+        createComputerControlSession(mDefaultParams);
+        mSession.notifyBlocked();
+        verify(mLifecycleCallback).onBlocked(BLOCK_REASON_CALLER_INITIATED, null);
+        clearInvocations(mLifecycleCallback);
+
+        mSession.requestUnblock();
+
+        verify(mLifecycleCallback).onActive();
     }
 
     @Test

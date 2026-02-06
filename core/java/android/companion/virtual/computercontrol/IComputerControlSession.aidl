@@ -95,6 +95,12 @@ interface IComputerControlSession {
      */
     void notifyBlocked();
 
+    /**
+     * Attempts to exit the blocked state when the session is blocked for any reason. This should
+     * be called when the user explicitly chooses to end their control of the session.
+     */
+    void requestUnblock();
+
     /** Closes this session. */
     void close();
 }

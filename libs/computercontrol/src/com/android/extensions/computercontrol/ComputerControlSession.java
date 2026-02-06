@@ -598,6 +598,18 @@ public final class ComputerControlSession implements AutoCloseable {
     }
 
     /**
+     * Attempts to exit the blocked state when the session is blocked for any reason. This should
+     * be called when the user explicitly chooses to end their control of the session.
+     * @hide
+     */
+    // TODO: b/479510954 - Determine if we want to commit this as an API to allow the client to
+    //  exit the Blocked state, or if we want to expose this functionality through platform-driven
+    //  UI in the MirrorView.
+    public void requestUnblock() {
+        mSession.requestUnblock();
+    }
+
+    /**
      * Closes the ComputerControl session and release resources. The session can no longer be used
      * after calling this method.
      */

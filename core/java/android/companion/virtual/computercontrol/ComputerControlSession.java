@@ -818,6 +818,19 @@ public final class ComputerControlSession implements AutoCloseable {
         }
     }
 
+    /**
+     * Attempts to exit the blocked state when the session is blocked for any reason. This should
+     * be called when the user explicitly chooses to end their control of the session.
+     */
+    public void requestUnblock() {
+        try {
+            mSession.requestUnblock();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+
     @Override
     public void close() {
         try {

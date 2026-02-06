@@ -860,6 +860,11 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     }
 
     @Override
+    public void requestUnblock() {
+        mLifecycle.exitBlockedState();
+    }
+
+    @Override
     public void close() throws RemoteException {
         close(CLOSE_REASON_CALLER_INITIATED);
     }
