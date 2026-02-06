@@ -282,7 +282,6 @@ private:
     void traceThreads(const std::vector<int32_t>& tids) REQUIRES(sHintMutex);
     void tracePowerEfficient(bool powerEfficient);
     void traceGraphicsPipeline(bool graphicsPipeline);
-    void traceAudioPerformance(bool audioPerformance);
     void traceModes(const std::vector<hal::SessionMode>& modesToEnable);
     void traceActualDuration(int64_t actualDuration);
     void traceBatchSize(size_t batchSize);
@@ -421,7 +420,6 @@ int APerformanceHintManager::createSessionUsingConfig(ASessionCreationConfig* se
 
     bool autoCpu = sessionCreationConfig->hasMode(hal::SessionMode::AUTO_CPU);
     bool autoGpu = sessionCreationConfig->hasMode(hal::SessionMode::AUTO_GPU);
-    bool audioPerformance = sessionCreationConfig->hasMode(hal::SessionMode::AUDIO_PERFORMANCE);
 
     if (autoCpu || autoGpu) {
         LOG_ALWAYS_FATAL_IF(!sessionCreationConfig->hasMode(hal::SessionMode::GRAPHICS_PIPELINE),
@@ -435,17 +433,6 @@ int APerformanceHintManager::createSessionUsingConfig(ASessionCreationConfig* se
 
     if (autoGpu && !mSupportInfoWrapper.isSessionModeSupported(hal::SessionMode::AUTO_GPU)) {
         ALOGE("Automatic GPU timing enabled but not supported");
-        return ENOTSUP;
-    }
-
-    if (audioPerformance &&
-        !mSupportInfoWrapper.isSessionModeSupported(hal::SessionMode::AUDIO_PERFORMANCE)) {
-        ALOGE("Audio performance enabled but not supported");
-        return ENOTSUP;
-    }
-
-    if (audioPerformance && sessionCreationConfig->hasMode(hal::SessionMode::GRAPHICS_PIPELINE)) {
-        ALOGE("Audio performance and graphics pipeline cannot be both set");
         return ENOTSUP;
     }
 
@@ -549,9 +536,6 @@ bool APerformanceHintManager::isFeatureSupported(APerformanceHintFeature feature
             return mSupportInfoWrapper.isSessionModeSupported(hal::SessionMode::AUTO_CPU);
         case (APERF_HINT_AUTO_GPU):
             return mSupportInfoWrapper.isSessionModeSupported(hal::SessionMode::AUTO_GPU);
-        case (APERF_HINT_AUDIO_PERFORMANCE):
-            return android::os::adpf_audio_performance() &&
-                    mSupportInfoWrapper.isSessionModeSupported(hal::SessionMode::AUDIO_PERFORMANCE);
         default:
             return false;
     }
@@ -1110,10 +1094,6 @@ void APerformanceHintSession::traceGraphicsPipeline(bool graphicsPipeline) {
     ATrace_setCounter((mSessionName + " graphics pipeline mode").c_str(), graphicsPipeline);
 }
 
-void APerformanceHintSession::traceAudioPerformance(bool audioPerformance) {
-    ATrace_setCounter((mSessionName + " audio performance").c_str(), audioPerformance);
-}
-
 void APerformanceHintSession::traceModes(const std::vector<hal::SessionMode>& modesToEnable) {
     // Iterate through all modes to trace, set to enable for all modes in modesToEnable,
     // and set to disable for those are not.
@@ -1127,9 +1107,6 @@ void APerformanceHintSession::traceModes(const std::vector<hal::SessionMode>& mo
                 break;
             case hal::SessionMode::GRAPHICS_PIPELINE:
                 traceGraphicsPipeline(isEnabled);
-                break;
-            case hal::SessionMode::AUDIO_PERFORMANCE:
-                traceAudioPerformance(isEnabled);
                 break;
             default:
                 break;
@@ -1433,15 +1410,6 @@ void ASessionCreationConfig_setPreferPowerEfficiency(ASessionCreationConfig* con
 void ASessionCreationConfig_setGraphicsPipeline(ASessionCreationConfig* config, bool enabled) {
     VALIDATE_PTR(config)
     config->setMode(hal::SessionMode::GRAPHICS_PIPELINE, enabled);
-}
-
-void ASessionCreationConfig_setAudioPerformance(ASessionCreationConfig* config, bool enabled) {
-    if (!android::os::adpf_audio_performance()) {
-        ALOGE("%s: adpf_audio_performance flag not enabled.", __FUNCTION__);
-        return;
-    }
-    VALIDATE_PTR(config)
-    config->setMode(hal::SessionMode::AUDIO_PERFORMANCE, enabled);
 }
 
 void APerformanceHint_getRateLimiterPropertiesForTesting(int32_t* maxLoadHintsPerInterval,

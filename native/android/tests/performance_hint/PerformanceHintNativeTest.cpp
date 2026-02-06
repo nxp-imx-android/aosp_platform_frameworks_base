@@ -72,7 +72,6 @@ struct ConfigCreator {
     std::vector<ASurfaceControl*> surfaceControls{};
     bool autoCpu = false;
     bool autoGpu = false;
-    bool audioPerformance = false;
 };
 
 struct SupportHelper {
@@ -82,7 +81,6 @@ struct SupportHelper {
     bool graphicsPipeline : 1;
     bool autoCpu : 1;
     bool autoGpu : 1;
-    bool audioPerformance : 1;
 };
 
 SupportHelper getSupportHelper() {
@@ -93,7 +91,6 @@ SupportHelper getSupportHelper() {
             .graphicsPipeline = APerformanceHint_isFeatureSupported(APERF_HINT_GRAPHICS_PIPELINE),
             .autoCpu = APerformanceHint_isFeatureSupported(APERF_HINT_AUTO_CPU),
             .autoGpu = APerformanceHint_isFeatureSupported(APERF_HINT_AUTO_GPU),
-            .audioPerformance = APerformanceHint_isFeatureSupported(APERF_HINT_AUDIO_PERFORMANCE),
     };
 }
 
@@ -104,7 +101,6 @@ SupportHelper getFullySupportedSupportHelper() {
             .graphicsPipeline = true,
             .autoCpu = true,
             .autoGpu = true,
-            .audioPerformance = true,
     };
 }
 
@@ -125,7 +121,6 @@ std::shared_ptr<ASessionCreationConfig> configFromCreator(ConfigCreator&& creato
                                                      : nullptr,
                                              creator.surfaceControls.size());
     ASessionCreationConfig_setUseAutoTiming(config.get(), creator.autoCpu, creator.autoGpu);
-    ASessionCreationConfig_setAudioPerformance(config.get(), creator.audioPerformance);
     return config;
 }
 
@@ -435,14 +430,6 @@ TEST_F(PerformanceHintTest, TestHwuiSessionCreation) {
             .Times(1);
     APerformanceHintManager* manager = createManager();
     auto&& session = createSession(manager, 56789L, true);
-    ASSERT_TRUE(session);
-}
-
-TEST_F(PerformanceHintTest, TestAudioPerformanceSessionCreation) {
-    EXPECT_CALL(*mMockIHintManager, createHintSessionWithConfig(_, _, _, _, _)).Times(1);
-    auto&& config = configFromCreator({.audioPerformance = true});
-    APerformanceHintManager* manager = createManager();
-    auto&& session = createSessionUsingConfig(manager, config);
     ASSERT_TRUE(session);
 }
 
