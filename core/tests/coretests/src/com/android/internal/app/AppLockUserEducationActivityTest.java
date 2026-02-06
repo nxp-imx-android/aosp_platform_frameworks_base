@@ -153,6 +153,19 @@ public class AppLockUserEducationActivityTest {
     }
 
     @Test
+    public void aiDisclaimer_displaysCorrectText() {
+        try (ActivityScenario<TestAppLockUserEducationActivity> scenario =
+                ActivityScenario.launch(mDefaultIntent)) {
+            final String expectedDisclaimer = mContext.getString(
+                    R.string.app_lock_edu_dialog_info_ai_disclaimer, TEST_APP_LABEL);
+
+            onView(withId(R.id.app_lock_edu_dialog_info_ai_text))
+                    .check(matches(isDisplayed()))
+                    .check(matches(withText(expectedDisclaimer)));
+        }
+    }
+
+    @Test
     public void launchActivity_withPinCredentialOnly_displaysPinDescription() {
         when(mMockLockPatternUtils.getCredentialTypeForUser(anyInt())).thenReturn(
                 LockPatternUtils.CREDENTIAL_TYPE_PIN);
