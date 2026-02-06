@@ -51,3 +51,13 @@ flag {
     description: "Use Offloaded Motion Context for device idle when available"
     bug: "450597782"
 }
+
+flag {
+    name: "remove_notification_seen_elevation"
+    namespace: "backstage_power"
+    description: "Stop promoting apps to a higher standby bucket when a notification is seen."
+    bug: "411478606"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
