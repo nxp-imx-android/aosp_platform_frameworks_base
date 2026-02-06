@@ -98,6 +98,28 @@ public class ChronometerAdaptiveFormatTest {
     }
 
     @Test
+    public void formatAlternatives_withAlternatives() {
+        Duration daysAndHours = Duration.ofDays(2).plusHours(3).plusMinutes(4).plusSeconds(30);
+        assertThat(ChronometerAdaptiveFormat.formatAlternatives(daysAndHours))
+                .containsExactly("2d 3h", "2d").inOrder();
+
+        Duration hoursAndMinutes = Duration.ofHours(3).plusMinutes(4).plusSeconds(30);
+        assertThat(ChronometerAdaptiveFormat.formatAlternatives(hoursAndMinutes))
+                .containsExactly("3h 4m", "3h").inOrder();
+    }
+
+    @Test
+    public void formatAlternatives_withoutAlternatives() {
+        Duration daysAndHours = Duration.ofDays(2);
+        assertThat(ChronometerAdaptiveFormat.formatAlternatives(daysAndHours))
+                .containsExactly("2d").inOrder();
+
+        Duration hoursAndMinutes = Duration.ofHours(3);
+        assertThat(ChronometerAdaptiveFormat.formatAlternatives(hoursAndMinutes))
+                .containsExactly("3h").inOrder();
+    }
+
+    @Test
     public void format_negative_throws() {
         // Negative time
         Duration duration = Duration.ofSeconds(-5);

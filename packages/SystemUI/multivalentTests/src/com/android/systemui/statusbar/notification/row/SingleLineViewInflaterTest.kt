@@ -422,7 +422,7 @@ class SingleLineViewInflaterTest : SysuiTestCase() {
         assertThat(metric).isNotNull()
         assertThat(metric?.label).isEqualTo("Steps")
         assertThat(metric).isInstanceOf(Metric.Text::class.java)
-        assertThat((metric as Metric.Text).metricValue).isEqualTo("1245")
+        assertThat((metric as Metric.Text).metricValue).isEqualTo("1,245")
     }
 
     sealed class NotificationType(val largeIcon: Icon? = null)

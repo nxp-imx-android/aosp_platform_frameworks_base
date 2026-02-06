@@ -24,6 +24,7 @@ import androidx.annotation.NonNull;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -56,6 +57,35 @@ public class ChronometerAdaptiveFormat {
      */
     @NonNull
     public static String format(@NonNull Duration duration) {
+        List<Measure> partsList = toDurationParts(duration);
+        MeasureFormat formatter = MeasureFormat.getInstance(Locale.getDefault(),
+                MeasureFormat.FormatWidth.NARROW);
+        return formatter.formatMeasures(partsList.toArray(new Measure[0]));
+    }
+
+    /**
+     * Variant of {@link #format(Duration)} that will produce several alternatives for the text
+     * representation of the duration in different levels of precision. Follows all the rules of
+     * {@link #format(Duration)} as they relate to truncation, etc.
+     *
+     * <p>For example, a duration of 100 seconds will produce "1m 40s" and "1m".
+     */
+    @NonNull
+    public static List<String> formatAlternatives(@NonNull Duration duration) {
+        ArrayList<String> alternatives = new ArrayList<>();
+        List<Measure> partsList = toDurationParts(duration);
+        MeasureFormat formatter = MeasureFormat.getInstance(Locale.getDefault(),
+                MeasureFormat.FormatWidth.NARROW);
+
+        for (int lastPartIndex = partsList.size(); lastPartIndex > 0; lastPartIndex--) {
+            alternatives.add(formatter.formatMeasures(
+                    partsList.subList(0, lastPartIndex).toArray(new Measure[0])));
+        }
+
+        return alternatives;
+    }
+
+    private static List<Measure> toDurationParts(@NonNull Duration duration) {
         if (duration.isNegative()) {
             throw new IllegalArgumentException("Duration must be positive; got: " + duration);
         }
@@ -64,8 +94,6 @@ public class ChronometerAdaptiveFormat {
         final Measure hours = new Measure(duration.toHoursPart(), MeasureUnit.HOUR);
         final Measure minutes = new Measure(duration.toMinutesPart(), MeasureUnit.MINUTE);
         final Measure seconds = new Measure(duration.toSecondsPart(), MeasureUnit.SECOND);
-        final MeasureFormat formatter = MeasureFormat.getInstance(Locale.getDefault(),
-                MeasureFormat.FormatWidth.NARROW);
 
         final ArrayList<Measure> partsList = new ArrayList<>();
         if (days.getNumber().intValue() != 0) {
@@ -89,7 +117,7 @@ public class ChronometerAdaptiveFormat {
             partsList.add(seconds);
         }
 
-        return formatter.formatMeasures(partsList.toArray(new Measure[0]));
+        return partsList;
     }
 
     /**
