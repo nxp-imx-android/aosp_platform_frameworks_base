@@ -6168,9 +6168,6 @@ public class JobSchedulerService extends com.android.server.SystemService
             pw.print(Flags.FLAG_DO_NOT_FORCE_RUSH_EXECUTION_AT_BOOT,
                     Flags.doNotForceRushExecutionAtBoot());
             pw.println();
-            pw.print(android.app.job.Flags.FLAG_ADD_TYPE_INFO_TO_WAKELOCK_TAG,
-                    android.app.job.Flags.addTypeInfoToWakelockTag());
-            pw.println();
             pw.print(android.app.job.Flags.FLAG_GET_PENDING_JOB_REASON_STATS_API,
                     android.app.job.Flags.getPendingJobReasonStatsApi());
             pw.println();
