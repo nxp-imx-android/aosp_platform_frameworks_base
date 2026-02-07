@@ -49,7 +49,7 @@ import com.android.wm.shell.bubbles.Bubbles.BubbleMetadataFlagListener
 import com.android.wm.shell.bubbles.transitions.BubbleTransitions
 import com.android.wm.shell.bubbles.util.BubbleTestUtils.verifyEnterBubbleTransaction
 import com.android.wm.shell.common.TestShellExecutor
-import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper
 import com.android.wm.shell.taskview.TaskView
 import com.android.wm.shell.taskview.TaskViewController
 import com.android.wm.shell.taskview.TaskViewTaskController
@@ -209,7 +209,7 @@ class BubbleTaskViewListenerTest {
         assertThat((intentFlags and Intent.FLAG_ACTIVITY_NEW_DOCUMENT) != 0).isTrue()
         assertThat((intentFlags and Intent.FLAG_ACTIVITY_MULTIPLE_TASK) != 0).isTrue()
         assertThat(optionsCaptor.lastValue.launchedFromBubble).isTrue()
-        if (!BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
+        if (!BubbleFlagHelper.enableRootTaskForBubble()) {
             assertThat(optionsCaptor.lastValue.taskAlwaysOnTop).isTrue()
         }
     }
@@ -235,7 +235,7 @@ class BubbleTaskViewListenerTest {
             .startShortcutActivity(any(), eq(shortcutInfo), optionsCaptor.capture(), any())
         assertThat(optionsCaptor.lastValue.launchedFromBubble).isTrue()
         assertThat(optionsCaptor.lastValue.isApplyActivityFlagsForBubbles).isTrue()
-        if (!BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
+        if (!BubbleFlagHelper.enableRootTaskForBubble()) {
             assertThat(optionsCaptor.lastValue.taskAlwaysOnTop).isTrue()
         }
     }
@@ -263,7 +263,7 @@ class BubbleTaskViewListenerTest {
         assertThat(optionsCaptor.lastValue.launchedFromBubble).isFalse() // chat only
         assertThat(optionsCaptor.lastValue.isApplyActivityFlagsForBubbles).isFalse() // chat only
         assertThat(optionsCaptor.lastValue.isApplyMultipleTaskFlagForShortcut).isTrue()
-        if (!BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
+        if (!BubbleFlagHelper.enableRootTaskForBubble()) {
             assertThat(optionsCaptor.lastValue.taskAlwaysOnTop).isTrue()
         }
     }
@@ -287,7 +287,7 @@ class BubbleTaskViewListenerTest {
 
         assertThat(optionsCaptor.lastValue.launchedFromBubble).isFalse() // chat only
         assertThat(optionsCaptor.lastValue.isApplyActivityFlagsForBubbles).isFalse() // chat only
-        if (!BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
+        if (!BubbleFlagHelper.enableRootTaskForBubble()) {
             assertThat(optionsCaptor.lastValue.taskAlwaysOnTop).isTrue()
         }
     }
@@ -311,7 +311,7 @@ class BubbleTaskViewListenerTest {
 
         assertThat(optionsCaptor.lastValue.launchedFromBubble).isFalse() // chat only
         assertThat(optionsCaptor.lastValue.isApplyActivityFlagsForBubbles).isFalse() // chat only
-        if (!BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
+        if (!BubbleFlagHelper.enableRootTaskForBubble()) {
             assertThat(optionsCaptor.lastValue.taskAlwaysOnTop).isTrue()
         }
     }
@@ -335,7 +335,7 @@ class BubbleTaskViewListenerTest {
 
         assertThat(optionsCaptor.lastValue.launchedFromBubble).isFalse() // chat only
         assertThat(optionsCaptor.lastValue.isApplyActivityFlagsForBubbles).isFalse() // chat only
-        if (!BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
+        if (!BubbleFlagHelper.enableRootTaskForBubble()) {
             assertThat(optionsCaptor.lastValue.taskAlwaysOnTop).isTrue()
         }
     }
@@ -598,7 +598,7 @@ class BubbleTaskViewListenerTest {
         }
         bubbleHelper.stub {
             on { getAppBubbleRootTaskToken() } doReturn
-                rootTaskToken.takeIf { BubbleAnythingFlagHelper.enableRootTaskForBubble() }
+                rootTaskToken.takeIf { BubbleFlagHelper.enableRootTaskForBubble() }
         }
         return Bubble.createAppBubble(target, mock<UserHandle>(), mock<Icon>())
     }

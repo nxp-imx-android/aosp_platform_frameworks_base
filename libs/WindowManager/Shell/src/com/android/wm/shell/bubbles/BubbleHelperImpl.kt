@@ -24,7 +24,7 @@ import android.window.TransitionInfo
 import android.window.WindowContainerToken
 import com.android.wm.shell.shared.TransitionUtil.isClosingMode
 import com.android.wm.shell.shared.TransitionUtil.isOpeningMode
-import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper
 import javax.inject.Inject
 
 /** Helper class to query Bubble info from other components. */
@@ -45,7 +45,7 @@ class BubbleHelperImpl @Inject constructor(private val bubbleRootTask: BubbleRoo
         isAppBubbleRootTask(taskInfo.taskId)
 
     override fun isAppBubbleTask(taskInfo: ActivityManager.RunningTaskInfo): Boolean {
-        if (BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
+        if (BubbleFlagHelper.enableRootTaskForBubble()) {
             return isAppBubbleRootTask(taskInfo.parentTaskId)
         }
 

@@ -41,7 +41,7 @@ import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SingleInstanceRemoteListener;
 import com.android.wm.shell.shared.IHomeTransitionListener;
 import com.android.wm.shell.shared.TransitionUtil;
-import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper;
 import com.android.wm.shell.sysui.ShellInit;
 
 import java.util.HashMap;
@@ -103,7 +103,7 @@ public class HomeTransitionObserver implements TransitionObserver,
             return;
         }
 
-        if (BubbleAnythingFlagHelper.enableBubbleToFullscreen()
+        if (BubbleFlagHelper.enableBubbleToFullscreen()
                 && info.getType() == TRANSIT_CONVERT_TO_BUBBLE
                 && homeStateUpdate == null
                 && mPendingStartDragTransition != null) {

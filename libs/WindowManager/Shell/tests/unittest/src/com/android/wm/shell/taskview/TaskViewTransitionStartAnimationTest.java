@@ -65,7 +65,7 @@ import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.bubbles.BubbleHelper;
 import com.android.wm.shell.common.ShellExecutor;
-import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper;
 import com.android.wm.shell.transition.TransitionDispatchState;
 import com.android.wm.shell.transition.Transitions;
 
@@ -331,7 +331,7 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
         final WindowContainerTransaction wct = wctCaptor.getValue();
         assertOpenAnimationPreparation(mTokenBinder, pending, wct, true /* newTask */,
                 false /* shouldInterceptBack */,
-                !BubbleAnythingFlagHelper.enableRootTaskForBubble() /* shouldCorpWindow */);
+                !BubbleFlagHelper.enableRootTaskForBubble() /* shouldCorpWindow */);
     }
 
     @Test
@@ -388,7 +388,7 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
 
     @Test
     public void taskToTaskViewHandled() {
-        assumeTrue(BubbleAnythingFlagHelper.enableCreateAnyBubble());
+        assumeTrue(BubbleFlagHelper.enableCreateAnyBubble());
 
         final TaskViewTransitions.PendingTransition pending =
                 setPendingTransaction(true /* visible*/, false /* opening */);
@@ -410,7 +410,7 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
 
     @Test
     public void taskToTaskView_withParentTask_doesNotInterceptBack() {
-        assumeTrue(BubbleAnythingFlagHelper.enableCreateAnyBubble());
+        assumeTrue(BubbleFlagHelper.enableCreateAnyBubble());
 
         mTaskInfo.parentTaskId = 3;  // Simulate bubble root task
         final TaskViewTransitions.PendingTransition pending =
@@ -427,7 +427,7 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
         final WindowContainerTransaction wct = wctCaptor.getValue();
         assertOpenAnimationPreparation(mUnregisteredTokenBinder, pending, wct, true /* newTask */,
                 false /* shouldInterceptBack */,
-                !BubbleAnythingFlagHelper.enableRootTaskForBubble() /* shouldCorpWindow */);
+                !BubbleFlagHelper.enableRootTaskForBubble() /* shouldCorpWindow */);
     }
 
     @Test

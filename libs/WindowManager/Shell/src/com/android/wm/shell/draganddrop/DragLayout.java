@@ -75,7 +75,7 @@ import com.android.wm.shell.bubbles.bar.DragToBubbleController;
 import com.android.wm.shell.common.split.SplitScreenUtils;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.shared.animation.Interpolators;
-import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper;
 import com.android.wm.shell.shared.draganddrop.DragAndDropConstants;
 import com.android.wm.shell.splitscreen.SplitScreenController;
 
@@ -677,7 +677,7 @@ public class DragLayout extends LinearLayout
         } else if (mAllowBubbleTarget
                 && appData != null
                 && mIsOverBubblesDropZone
-                && BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
+                && BubbleFlagHelper.enableCreateAnyBubble()) {
             handleDropOnBubbleBar(appData, Objects.requireNonNull(mDragToBubbleController));
         }
         mIsOverBubblesDropZone = false;

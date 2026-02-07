@@ -32,7 +32,7 @@ import com.android.app.animation.Interpolators;
 import com.android.launcher3.icons.BitmapInfo;
 import com.android.wm.shell.R;
 import com.android.wm.shell.bubbles.Bubble;
-import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper;
 
 import java.util.ArrayList;
 
@@ -278,7 +278,7 @@ class BubbleBarMenuViewController {
                 }
         ));
 
-        if (BubbleAnythingFlagHelper.enableBubbleToFullscreen()) {
+        if (BubbleFlagHelper.enableBubbleToFullscreen()) {
             menuActions.add(new BubbleBarMenuView.MenuAction(
                     DrawableProvider.forResource(R.drawable.desktop_mode_ic_handle_menu_fullscreen),
                     resources.getString(R.string.bubble_fullscreen_text),

@@ -18,7 +18,7 @@ package com.android.wm.shell.shared.desktopmode;
 
 import static android.hardware.display.DisplayManager.DISPLAY_CATEGORY_ALL_INCLUDING_DISABLED;
 
-import static com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper.enableBubbleToFullscreen;
+import static com.android.wm.shell.shared.bubbles.BubbleFlagHelper.enableBubbleToFullscreen;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;

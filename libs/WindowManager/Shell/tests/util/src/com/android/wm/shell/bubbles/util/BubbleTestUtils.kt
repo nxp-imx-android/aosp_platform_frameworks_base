@@ -21,7 +21,7 @@ import android.graphics.Rect
 import android.os.IBinder
 import android.window.WindowContainerTransaction
 import android.window.WindowContainerTransaction.Change.CHANGE_LAUNCH_NEXT_TO_BUBBLE
-import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper
 import com.google.common.truth.Truth.assertThat
 
 object BubbleTestUtils {
@@ -88,7 +88,7 @@ object BubbleTestUtils {
         resetBounds: Boolean = true,
     ) {
         // Verify hierarchy ops
-        if (!BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
+        if (!BubbleFlagHelper.enableRootTaskForBubble()) {
             assertThat(
                     wct.hierarchyOps.any { op -> op.container == taskToken && !op.isAlwaysOnTop }
                 )

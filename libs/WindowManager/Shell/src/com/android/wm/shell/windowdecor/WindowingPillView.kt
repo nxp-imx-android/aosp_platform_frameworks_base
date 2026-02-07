@@ -38,7 +38,7 @@ import com.android.window.flags.Flags
 import com.android.wm.shell.R
 import com.android.wm.shell.common.split.SplitScreenUtils
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger
-import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource
 import com.android.wm.shell.windowdecor.common.DecorThemeUtil
 import com.android.wm.shell.windowdecor.common.DrawableInsets
@@ -260,7 +260,7 @@ class WindowingPillView(private val context: Context, attrs: AttributeSet) :
 
         background.setTint(style.backgroundColor)
 
-        if (!BubbleAnythingFlagHelper.enableBubbleToFullscreen() || taskInfo.isFreeform) {
+        if (!BubbleFlagHelper.enableBubbleToFullscreen() || taskInfo.isFreeform) {
             floatingBtn.visibility = View.GONE
         }
 

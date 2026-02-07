@@ -102,7 +102,7 @@ import com.android.wm.shell.shared.TypefaceUtils;
 import com.android.wm.shell.shared.TypefaceUtils.FontFamily;
 import com.android.wm.shell.shared.animation.Interpolators;
 import com.android.wm.shell.shared.animation.PhysicsAnimator;
-import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper;
 import com.android.wm.shell.shared.bubbles.DeviceConfig;
 import com.android.wm.shell.shared.bubbles.DismissView;
 import com.android.wm.shell.shared.bubbles.RelativeTouchListener;
@@ -1659,7 +1659,7 @@ public class BubbleStackView extends FrameLayout
 
         View fullscreenView = mManageMenu.findViewById(
                 R.id.bubble_manage_menu_fullscreen_container);
-        if (BubbleAnythingFlagHelper.enableBubbleToFullscreen()) {
+        if (BubbleFlagHelper.enableBubbleToFullscreen()) {
             fullscreenView.setVisibility(VISIBLE);
             fullscreenView.setOnClickListener(
                     view -> {
@@ -2560,7 +2560,7 @@ public class BubbleStackView extends FrameLayout
     }
 
     private void showNewlySelectedBubble(BubbleViewProvider bubbleToSelect) {
-        if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
+        if (BubbleFlagHelper.enableCreateAnyBubble()) {
             // if the bubble is already selected, then we're converting this bubble and we can
             // return, otherwise we'll be removing the bubble we're trying to convert from the view
             // hierarchy

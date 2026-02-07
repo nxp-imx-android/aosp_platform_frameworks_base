@@ -84,7 +84,7 @@ import com.android.wm.shell.bubbles.Bubbles;
 import com.android.wm.shell.bubbles.bar.BubbleBarExpandedView;
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
 import com.android.wm.shell.common.HomeIntentProvider;
-import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper;
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
 import com.android.wm.shell.shared.bubbles.logging.BubbleLog;
 import com.android.wm.shell.taskview.TaskView;
@@ -227,7 +227,7 @@ public class BubbleTransitions {
      */
     public void handleRequest(@NonNull WindowContainerTransaction wct, @NonNull IBinder transition,
             @NonNull TransitionRequestInfo request) {
-        if (BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
+        if (BubbleFlagHelper.enableRootTaskForBubble()) {
             final TransitionHandler transitionHandler = mEnterTransitions.get(transition);
             if (transitionHandler != null) {
                 wct.merge(transitionHandler.handleRequest(transition, request),
@@ -622,7 +622,7 @@ public class BubbleTransitions {
             // inflation (the task view will be in the right bounds)
             mTaskViewTransitions.removePendingTransitions(tv.getController());
             mTaskViewTransitions.enqueueRunningExternal(tv.getController(), mTransition);
-            if (BubbleAnythingFlagHelper.enableRootTaskForBubble()
+            if (BubbleFlagHelper.enableRootTaskForBubble()
                     && mBubble.getTaskView().isSurfaceCreated()) {
                 // In case the Bubble surface has already been created, trigger the surfaceCreated
                 // immediately
@@ -695,7 +695,7 @@ public class BubbleTransitions {
                     //  is no snapshot, so fallback to the open transition for now
                     mPlayConvertTaskAnimation = false;
                     found = true;
-                } else if (BubbleAnythingFlagHelper.enableRootTaskForBubble() && taskInfo != null
+                } else if (BubbleFlagHelper.enableRootTaskForBubble() && taskInfo != null
                         && mBubbleHelper.isAppBubbleTask(taskInfo)) {
                     // Starting a new bubble from an existing expanded bubble may immediately hide
                     // the currently expanded bubble in the same transition. Ensure the surfaces
@@ -1257,7 +1257,7 @@ public class BubbleTransitions {
         @Override
         public WindowContainerTransaction handleRequest(@NonNull IBinder transition,
                 @Nullable TransitionRequestInfo request) {
-            if (!BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
+            if (!BubbleFlagHelper.enableRootTaskForBubble()) {
                 return null;
             }
 
@@ -1351,7 +1351,7 @@ public class BubbleTransitions {
                     mSnapshot = chg.getSnapshot();
                     mPlayConvertTaskAnimation = !isOpeningMode(chg.getMode()) && mSnapshot != null;
                     found = true;
-                    if (BubbleAnythingFlagHelper.enableRootTaskForBubble()
+                    if (BubbleFlagHelper.enableRootTaskForBubble()
                             && chg.getMode() != TRANSIT_CHANGE) {
                         // Prepare to animate in. This is normally pre-set in
                         // Transitions#setupStartState, but after root Task for Bubble, the opening

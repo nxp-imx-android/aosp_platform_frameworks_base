@@ -31,7 +31,7 @@ import com.android.window.flags.Flags as WindowFlags
 import com.android.wm.shell.Flags
 import com.android.wm.shell.Flags.FLAG_BUG_DONT_REMOVE_TASK_BUBBLE
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
-import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper
 import com.android.wm.shell.taskview.TaskView
 import com.android.wm.shell.taskview.TaskViewTaskController
 import com.google.common.truth.Truth.assertThat
@@ -171,7 +171,7 @@ class BubbleTaskViewTest(flags: FlagsParameterization) {
 
         bubbleTaskView.cleanup()
 
-        if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
+        if (BubbleFlagHelper.enableCreateAnyBubble()) {
             verify(taskView).unregisterTask()
             verify(taskView, never()).removeTask()
         } else {
