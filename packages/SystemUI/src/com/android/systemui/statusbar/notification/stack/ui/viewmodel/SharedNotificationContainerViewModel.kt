@@ -26,7 +26,9 @@ import androidx.compose.ui.Alignment
 import com.android.app.tracing.coroutines.flow.flowName
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.Scale
+import com.android.systemui.Flags.bouncerUiRevamp
 import com.android.systemui.Flags.glanceableHubV2
+import com.android.systemui.Flags.notificationShadeBlur
 import com.android.systemui.biometrics.Utils.getInsetsOf
 import com.android.systemui.bouncer.domain.interactor.BouncerInteractor
 import com.android.systemui.common.shared.model.NotificationContainerBounds
@@ -50,6 +52,7 @@ import com.android.systemui.keyguard.shared.model.KeyguardState.OCCLUDED
 import com.android.systemui.keyguard.shared.model.KeyguardState.PRIMARY_BOUNCER
 import com.android.systemui.keyguard.shared.model.StatusBarState.SHADE
 import com.android.systemui.keyguard.shared.model.StatusBarState.SHADE_LOCKED
+import com.android.systemui.keyguard.ui.transitions.BlurConfig
 import com.android.systemui.keyguard.ui.transitions.PrimaryBouncerTransition
 import com.android.systemui.keyguard.ui.viewmodel.AlternateBouncerToGoneTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.AlternateBouncerToPrimaryBouncerTransitionViewModel
@@ -122,6 +125,7 @@ import com.android.systemui.util.state.SynchronouslyObservableState
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import com.android.systemui.utils.coroutines.flow.transformLatestConflated
+import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
 import dagger.Lazy
 import javax.inject.Inject
 import kotlin.math.round
@@ -221,6 +225,8 @@ constructor(
     private val mediaDataManager: MediaDataManager,
     notificationPlaceholderStateStorage: NotificationPlaceholderStateStorage,
     @NotificationAlphaTableLog private val alphaTableLogger: TableLogBuffer,
+    windowRootViewBlurInteractor: WindowRootViewBlurInteractor,
+    private val blurConfig: BlurConfig,
 ) : FlowDumperImpl(dumpManager) {
 
     /**
@@ -671,6 +677,7 @@ constructor(
         if (SceneContainerFlag.isEnabled) {
             combineTransform(
                     bouncerInteractor.bouncerExpansion,
+                    shadeInteractor.isNotificationsExpanded,
                     keyguardTransitionInteractor
                         .transitionValue(LOCKSCREEN)
                         .map { it > 0f }
@@ -678,8 +685,14 @@ constructor(
                     sceneInteractor.transitionStateFlow
                         .map { it is ObservableTransitionState.Idle }
                         .distinctUntilChanged(),
-                ) { bouncerExpansion, inLockscreenTransition, isIdle ->
-                    if (bouncerExpansion > 0f) {
+                ) { bouncerExpansion, isNotificationsExpanded, inLockscreenTransition, isIdle ->
+                    if (isNotificationsExpanded) {
+                        // While the notifications Shade is expanded, whether we transition to the
+                        // bouncer or are on the bouncer, always keep the shade opaque, as it gets
+                        // blurred. If it needs to be hidden otherwise, let any other relevant
+                        // transition values declare the alpha if necessary.
+                        emit(1f)
+                    } else if (bouncerExpansion > 0f) {
                         // If bouncerExpansion is nonzero, we are currently transitioning to or from
                         // bouncer. In this case, only emit when going to/from lockscreen
                         // (specifically the keyguard state, to distinguish from AOD or other
@@ -817,11 +830,23 @@ constructor(
     }
 
     val blurRadius =
-        primaryBouncerTransitions
-            .map { transition -> transition.notificationBlurRadius }
-            .merge()
-            .dumpWhileCollecting("blurRadius")
-
+        if (SceneContainerFlag.isEnabled && bouncerUiRevamp() && notificationShadeBlur()) {
+            windowRootViewBlurInteractor.isBlurCurrentlySupported
+                .flatMapLatest { isBlurSupported ->
+                    if (isBlurSupported) {
+                        bouncerInteractor.bouncerExpansion.map { it * blurConfig.maxBlurRadiusPx }
+                    } else {
+                        flowOf(0f)
+                    }
+                }
+                .distinctUntilChanged()
+                .dumpWhileCollecting("blurRadius")
+        } else {
+            primaryBouncerTransitions
+                .map { transition -> transition.notificationBlurRadius }
+                .merge()
+                .dumpWhileCollecting("blurRadius")
+        }
     /**
      * Flow of view scale values for the zoom animation between the lockscreen and glanceable hub.
      * 1.0f means no visual change to the view.

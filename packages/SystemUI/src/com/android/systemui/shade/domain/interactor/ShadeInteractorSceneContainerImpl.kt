@@ -353,24 +353,21 @@ constructor(
                     .flatMapLatestConflated { state ->
                         when (state) {
                             is ObservableTransitionState.Idle ->
-                                if (state.currentScene == resolvedSceneKey) {
-                                    flowOf(1f)
-                                } else {
-                                    flowOf(0f)
-                                }
-                            is ObservableTransitionState.Transition ->
-                                if (state.toContent == resolvedSceneKey) {
-                                    state.progress
-                                } else if (state.fromContent == resolvedSceneKey) {
-                                    if (state.key == ToAlwaysOnDisplay) {
-                                        // Keep the scene expanded during a transition to AOD,
-                                        // because it should fade out in place.
-                                        flowOf(1f)
-                                    } else {
-                                        state.progress.map { progress -> 1 - progress }
-                                    }
-                                } else {
-                                    flowOf(0f)
+                                flowOf(if (state.currentScene == resolvedSceneKey) 1f else 0f)
+                            is ObservableTransitionState.Transition.OverlayTransition ->
+                                flowOf(if (state.currentScene == resolvedSceneKey) 1f else 0f)
+                            is ObservableTransitionState.Transition.ChangeScene ->
+                                when (resolvedSceneKey) {
+                                    state.toContent -> state.progress
+                                    state.fromContent ->
+                                        if (state.key == ToAlwaysOnDisplay) {
+                                            // Keep the scene expanded during a transition to AOD,
+                                            // because it should fade out in place.
+                                            flowOf(1f)
+                                        } else {
+                                            state.progress.map { progress -> 1 - progress }
+                                        }
+                                    else -> flowOf(0f)
                                 }
                         }
                     }

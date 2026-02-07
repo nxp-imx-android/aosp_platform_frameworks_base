@@ -57,6 +57,7 @@ import com.android.systemui.keyguard.shared.model.KeyguardState.UNDEFINED
 import com.android.systemui.keyguard.shared.model.StatusBarState
 import com.android.systemui.keyguard.shared.model.TransitionState
 import com.android.systemui.keyguard.shared.model.TransitionStep
+import com.android.systemui.keyguard.ui.transitions.blurConfig
 import com.android.systemui.keyguard.ui.viewmodel.AodBurnInViewModel
 import com.android.systemui.keyguard.ui.viewmodel.ViewStateAccessor
 import com.android.systemui.keyguard.ui.viewmodel.aodBurnInViewModel
@@ -90,6 +91,7 @@ import com.android.systemui.statusbar.notification.stack.domain.interactor.share
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.SharedNotificationContainerViewModel.Companion.PUSHBACK_SCALE
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.SharedNotificationContainerViewModel.HorizontalPosition
 import com.android.systemui.testKosmos
+import com.android.systemui.window.data.repository.fakeWindowRootViewBlurRepository
 import com.android.systemui.window.ui.viewmodel.fakeBouncerTransitions
 import com.google.common.collect.Range
 import com.google.common.truth.Truth.assertThat
@@ -1843,6 +1845,7 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
         }
 
     @Test
+    @DisableSceneContainer
     fun blurRadius_emitsValues_fromPrimaryBouncerTransitions() =
         kosmos.runTest {
             val blurRadius by collectLastValue(underTest.blurRadius)
@@ -1853,6 +1856,90 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
 
             fakeBouncerTransitions.last().notificationBlurRadius.value = 40.0f
             assertThat(blurRadius).isEqualTo(40.0f)
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun blurRadius_transitionToBouncer_blurSupported_emitsInterpolatedRadius() =
+        kosmos.runTest {
+            fakeWindowRootViewBlurRepository.isBlurSupported.value = true
+
+            enableSingleShade()
+            // GIVEN an expansion flow based on overlay transitions while on shade
+            val key = Scenes.Shade
+            val blurRadius by collectLastValue(underTest.blurRadius)
+
+            // WHEN transition state is starting show overlay
+            val progress = MutableStateFlow(0f)
+            sceneInteractor.setTransitionState(
+                flowOf(
+                    ObservableTransitionState.Transition.showOverlay(
+                        fromScene = key,
+                        overlay = Overlays.Bouncer,
+                        progress = progress,
+                        isInitiatedByUserInput = false,
+                        isUserInputOngoing = flowOf(false),
+                        currentOverlays = flowOf(emptySet()),
+                    )
+                )
+            )
+
+            // THEN blur radius is 0 initially
+            assertThat(blurRadius).isEqualTo(0f)
+
+            // WHEN transition state is partially to the scene
+            progress.value = .4f
+
+            // THEN blur radius lerps between 0..maxBlurRadius
+            assertThat(blurRadius).isEqualTo(kosmos.blurConfig.maxBlurRadiusPx * .4f)
+
+            // WHEN transition completes
+            progress.value = 1f
+
+            // THEN blur radius is maxBlurRadius
+            assertThat(blurRadius).isEqualTo(kosmos.blurConfig.maxBlurRadiusPx)
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun blurRadius_transitionToBouncer_blurNotSupported_remainsZero() =
+        kosmos.runTest {
+            fakeWindowRootViewBlurRepository.isBlurSupported.value = false
+
+            enableSingleShade()
+            // GIVEN an expansion flow based on overlay transitions while on shade
+            val key = Scenes.Shade
+            val blurRadius by collectLastValue(underTest.blurRadius)
+
+            // WHEN transition state is starting show overlay
+            val progress = MutableStateFlow(0f)
+            sceneInteractor.setTransitionState(
+                flowOf(
+                    ObservableTransitionState.Transition.showOverlay(
+                        fromScene = key,
+                        overlay = Overlays.Bouncer,
+                        progress = progress,
+                        isInitiatedByUserInput = false,
+                        isUserInputOngoing = flowOf(false),
+                        currentOverlays = flowOf(emptySet()),
+                    )
+                )
+            )
+
+            // THEN blur radius is 0 initially
+            assertThat(blurRadius).isEqualTo(0f)
+
+            // WHEN transition state is partially to the scene
+            progress.value = .4f
+
+            // THEN blur radius remains at 0
+            assertThat(blurRadius).isEqualTo(0f)
+
+            // WHEN transition completes
+            progress.value = 1f
+
+            // THEN blur radius remains at 0
+            assertThat(blurRadius).isEqualTo(0f)
         }
 
     @Test

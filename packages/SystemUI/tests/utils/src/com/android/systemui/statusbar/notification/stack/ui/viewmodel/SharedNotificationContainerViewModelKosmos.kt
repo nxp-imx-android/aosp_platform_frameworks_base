@@ -24,6 +24,7 @@ import com.android.systemui.communal.domain.interactor.communalSceneInteractor
 import com.android.systemui.dump.dumpManager
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
+import com.android.systemui.keyguard.ui.transitions.blurConfig
 import com.android.systemui.keyguard.ui.viewmodel.alternateBouncerToGoneTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.alternateBouncerToPrimaryBouncerTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.aodBurnInViewModel
@@ -73,6 +74,7 @@ import com.android.systemui.statusbar.notification.stack.domain.interactor.heads
 import com.android.systemui.statusbar.notification.stack.domain.interactor.notificationStackAppearanceInteractor
 import com.android.systemui.statusbar.notification.stack.domain.interactor.sharedNotificationContainerInteractor
 import com.android.systemui.unfold.domain.interactor.unfoldTransitionInteractor
+import com.android.systemui.window.domain.interactor.windowRootViewBlurInteractor
 import com.android.systemui.window.ui.viewmodel.fakeBouncerTransitions
 
 val Kosmos.sharedNotificationContainerViewModel by Fixture {
@@ -136,5 +138,7 @@ val Kosmos.sharedNotificationContainerViewModel by Fixture {
         mediaDataManager = legacyMediaDataManagerImpl,
         notificationPlaceholderStateStorage = notificationPlaceholderStateStorage,
         alphaTableLogger = logcatTableLogBuffer(this, "NotificationAlphaTableLog"),
+        windowRootViewBlurInteractor = windowRootViewBlurInteractor,
+        blurConfig = blurConfig,
     )
 }
