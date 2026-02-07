@@ -59,7 +59,6 @@ public class PackageManagerServiceInternalTest {
 
     private PackageManagerInternalBase mPackageManagerInternal;
     private AutoCloseable mCloseable;
-    private PackageManagerService mPackageManagerService;
 
     @Before
     public void setUp() throws Exception {
@@ -83,10 +82,11 @@ public class PackageManagerServiceInternalTest {
         PackageManagerServiceTestParams mTestParams = new PackageManagerServiceTestParams();
         mTestParams.packages = new ArrayMap<>();
         mTestParams.instantAppRegistry = mInstantAppRegistry;
-        mPackageManagerService = spy(new PackageManagerService(injector, mTestParams));
-        doReturn(mSnapshotComputer).when(mPackageManagerService).snapshotComputer();
+        PackageManagerService packageManagerService =
+                spy(new PackageManagerService(injector, mTestParams));
+        doReturn(mSnapshotComputer).when(packageManagerService).snapshotComputer();
 
-        mPackageManagerInternal = mPackageManagerService.new PackageManagerInternalImpl();
+        mPackageManagerInternal = packageManagerService.new PackageManagerInternalImpl();
     }
 
     @After
@@ -118,14 +118,30 @@ public class PackageManagerServiceInternalTest {
     @Test
     public void testSetPersonalContextMode_succeeds() {
         int expectedValue = PackageManager.PERSONAL_CONTEXT_MODE_USER_OFF;
-        mPackageManagerInternal.setPersonalContextMode(
-                TEST_PACKAGE_NAME, TEST_PROCESS_ID, TEST_USER_ID, expectedValue);
+        boolean setResult =
+                mPackageManagerInternal.setPersonalContextMode(
+                        TEST_PACKAGE_NAME, TEST_PROCESS_ID, TEST_USER_ID, expectedValue);
 
         // Newly set value is returned in the get call.
         assertThat(
                         mPackageManagerInternal.getPersonalContextMode(
                                 TEST_PACKAGE_NAME, TEST_PROCESS_ID, TEST_USER_ID))
                 .isEqualTo(expectedValue);
+        assertThat(setResult).isTrue();
+    }
+
+    @Test
+    public void testSetPersonalContextMode_valueUnchanged_succeeds() {
+        int expectedValue = PackageManager.PERSONAL_CONTEXT_MODE_USER_OFF;
+        mPackageManagerInternal.setPersonalContextMode(
+                TEST_PACKAGE_NAME, TEST_PROCESS_ID, TEST_USER_ID, expectedValue);
+
+        // Second set does not throw, but returns false to indicate the value did not actually
+        // change.
+        boolean secondSetResult =
+                mPackageManagerInternal.setPersonalContextMode(
+                        TEST_PACKAGE_NAME, TEST_PROCESS_ID, TEST_USER_ID, expectedValue);
+        assertThat(secondSetResult).isFalse();
     }
 
     @Test

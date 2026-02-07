@@ -7645,26 +7645,36 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         }
 
         @Override
-        public void setPersonalContextMode(@NonNull String packageName, int callingUid, int userId,
+        public boolean setPersonalContextMode(
+                @NonNull String packageName,
+                int callingUid,
+                int userId,
                 @PackageManager.PersonalContextMode int mode) {
             final Computer snapshot = snapshotComputer();
-            snapshot.enforceCrossUserPermission(callingUid, userId,
-                    false /* requireFullPermission */, false /* checkShell */,
+            snapshot.enforceCrossUserPermission(
+                    callingUid,
+                    userId,
+                    false /* requireFullPermission */,
+                    false /* checkShell */,
                     "setPersonalContextMode");
 
-            final PackageStateInternal packageState = snapshot
-                    .getPackageStateForInstalledAndFiltered(packageName, callingUid, userId);
+            final PackageStateInternal packageState =
+                    snapshot.getPackageStateForInstalledAndFiltered(
+                            packageName, callingUid, userId);
             if (packageState == null) {
                 throw new ParcelableException(
                         new PackageManager.NameNotFoundException(packageName));
             }
 
             if (packageState.getUserStateOrDefault(userId).getPersonalContextMode() == mode) {
-                return;
+                return false;
             }
 
-            commitPackageStateMutation(null, packageName, state ->
-                    state.userState(userId).setPersonalContextMode(mode));
+            commitPackageStateMutation(
+                    null,
+                    packageName,
+                    state -> state.userState(userId).setPersonalContextMode(mode));
+            return true;
         }
 
         @Override
