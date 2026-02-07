@@ -528,6 +528,31 @@ public class MemoryLimiterTest {
         }
     }
 
+    /**
+     * Verifies that setting a manual limit is a no-op when the controller is disabled.
+     */
+    @RequiresFlagsEnabled(Flags.FLAG_MEMORY_LIMITER_ENABLE)
+    @Test
+    public void setManualLimit_isNoOpWhenControllerIsDisabled() throws Exception {
+        try (MemoryLimiter.ControllerDisabled controllerDisabled =
+                new MemoryLimiter.ControllerDisabled()) {
+            try (MemoryLimiter controller = new MemoryLimiter(controllerDisabled)) {
+                int pid = prepareHelper(mUid);
+
+                // The limit should be "max" initially because the test setup blocks the system
+                // limiter from acting on the test UID.
+                assertThat(currentLimit(pid, mUid)).isEqualTo(sProcessMemoryMax);
+
+                // Attempt to set a manual limit. Since the controller is disabled, this should be
+                // a no-op.
+                controller.setManualLimit(pid, mUid, 20);
+
+                // The call is a synchronous no-op, so the limit should be unchanged immediately.
+                assertThat(currentLimit(pid, mUid)).isEqualTo(sProcessMemoryMax);
+            }
+        }
+    }
+
     static {
         System.loadLibrary("servicestestjni");
     }
