@@ -16,9 +16,11 @@
 
 package com.android.systemui.statusbar.phone;
 
+import static android.view.WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS;
 import static android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS;
 import static android.view.WindowManagerPolicyConstants.NAV_BAR_MODE_3BUTTON;
 
+import static com.android.systemui.shared.statusbar.phone.BarTransitions.MODE_SEMI_TRANSPARENT;
 import static com.android.systemui.shared.statusbar.phone.BarTransitions.MODE_TRANSPARENT;
 
 import static junit.framework.Assert.assertTrue;
@@ -440,6 +442,21 @@ public class LightBarControllerTest extends SysuiTestCase {
 
         mLightBarController.onNavigationModeChanged(NAV_BAR_MODE_3BUTTON);
         verifyNavBarIconsWereChanged();
+    }
+
+    @Test
+    public void testOnNavigationBarModeChanged_updatesIcons() {
+        mLightBarController.onNavigationBarAppearanceChanged(
+                APPEARANCE_LIGHT_NAVIGATION_BARS, /* nbModeChanged = */ true,
+                MODE_TRANSPARENT, /* navbarColorManagedByIme = */ false);
+        mLightBarController.setNavigationBar(mNavBarController);
+        verifyNavBarIconsDark(true, /* didFireEvent= */ true);
+
+        // WHEN the bar mode changes to semi-transparent (e.g. transient bar showing)
+        mLightBarController.onNavigationBarModeChanged(MODE_SEMI_TRANSPARENT);
+
+        // THEN icons should become light (not dark) because it's no longer a transparent bar
+        verifyNavBarIconsDark(false, /* didFireEvent= */ true);
     }
 
     private void verifyNavBarIconsWereChanged() {

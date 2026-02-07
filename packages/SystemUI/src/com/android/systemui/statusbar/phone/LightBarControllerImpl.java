@@ -264,7 +264,8 @@ public class LightBarControllerImpl implements
 
     @Override
     public void onNavigationBarModeChanged(int newBarMode) {
-        mHasLightNavigationBar = isLight(mAppearance, newBarMode, APPEARANCE_LIGHT_NAVIGATION_BARS);
+        onNavigationBarAppearanceChanged(mAppearance, true /* nbModeChanged */,
+                newBarMode, mNavbarColorManagedByIme);
     }
 
     private void reevaluate() {
