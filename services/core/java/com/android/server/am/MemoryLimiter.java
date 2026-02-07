@@ -184,6 +184,16 @@ class MemoryLimiter implements AutoCloseable {
         // Block or unblock the limiter from monitoring/configuring the UID.
         void ignoreUid(int uid, boolean ignore);
 
+        /**
+         * Manually set a limit for a process. This is used for testing.
+         *
+         * @param pid The pid of the process to set the limit for.
+         * @param uid The uid of the process to set the limit for.
+         * @param limitPercent The limit percentage (1-100) to set for the process. A negative value
+         *     sets the limit to the maximum value (i.e. unlimited).
+         */
+        void setManualLimit(int pid, int uid, int limitPercent);
+
         // The controller status, for debug and reports.
         void dump(PrintWriter pw);
     }
@@ -216,6 +226,10 @@ class MemoryLimiter implements AutoCloseable {
 
         @Override
         public void ignoreUid(int uid, boolean ignore) {
+        }
+
+        @Override
+        public void setManualLimit(int pid, int uid, int limitPercent) {
         }
 
         @Override
@@ -264,6 +278,9 @@ class MemoryLimiter implements AutoCloseable {
         private static final Long MAX_MEMORY = -1L;     // Maximum memory
         private final Long mMemoryVisible;
         private final Long mMemoryNotVisible;
+
+        private final long mVmem;
+        private final long mPageSize;
 
         // The ignore list.  The code supports exactly one ignored uid.  The invalid uid never
         // matches a uid, so that value turns off ignoring.
@@ -337,13 +354,13 @@ class MemoryLimiter implements AutoCloseable {
 
             MemInfoReader memInfo = new MemInfoReader();
             memInfo.readMemInfo();
-            long vmem = memInfo.getTotalSize();
-            long pageSize = Os.sysconf(OsConstants._SC_PAGE_SIZE);
+            mVmem = memInfo.getTotalSize();
+            mPageSize = Os.sysconf(OsConstants._SC_PAGE_SIZE);
 
             // Note that getConfiguration() accepts a null input.
             Configuration cfg = getConfiguration(configFile);
-            mMemoryVisible = memLimit(vmem, pageSize, cfg.visible);
-            mMemoryNotVisible = memLimit(vmem, pageSize, cfg.notVisible);
+            mMemoryVisible = memLimit(mVmem, mPageSize, cfg.visible);
+            mMemoryNotVisible = memLimit(mVmem, mPageSize, cfg.notVisible);
         }
 
         /**
@@ -499,6 +516,17 @@ class MemoryLimiter implements AutoCloseable {
         @Override
         public void ignoreUid(int uid, boolean ignore) {
             sendCommand(MESSAGE_IGNORE, INVALID_PID, uid, Boolean.valueOf(ignore));
+        }
+
+        @Override
+        public void setManualLimit(int pid, int uid, int limitPercent) {
+            long limitBytes;
+            if (limitPercent < 0) {
+                limitBytes = MAX_MEMORY;
+            } else {
+                limitBytes = memLimit(mVmem, mPageSize, limitPercent);
+            }
+            setLimit(pid, uid, limitBytes);
         }
 
         @Override
@@ -731,6 +759,13 @@ class MemoryLimiter implements AutoCloseable {
      */
     void dump(PrintWriter pw) {
         mController.dump(pw);
+    }
+
+    /**
+     * Manually set a limit for a process (for testing).
+     */
+    void setManualLimit(int pid, int uid, int limitPercent) {
+        mController.setManualLimit(pid, uid, limitPercent);
     }
 
     /**
