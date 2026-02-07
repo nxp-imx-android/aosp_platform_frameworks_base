@@ -13,2098 +13,289 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.systemui.media.dialog
 
-package com.android.systemui.media.dialog;
-
-import static android.media.RoutingChangeInfo.ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER;
-import static android.permission.flags.Flags.FLAG_ACCESS_LOCAL_NETWORK_PERMISSION_ENABLED;
-
-import static com.google.common.truth.Truth.assertThat;
-
-import static kotlinx.coroutines.flow.StateFlowKt.MutableStateFlow;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.same;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
-
-import android.app.KeyguardManager;
-import android.app.Notification;
-import android.bluetooth.BluetoothDevice;
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.content.res.Resources;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.Icon;
-import android.media.AudioDeviceAttributes;
-import android.media.AudioDeviceInfo;
-import android.media.AudioManager;
-import android.media.MediaDescription;
-import android.media.MediaMetadata;
-import android.media.MediaRoute2Info;
-import android.media.NearbyDevice;
-import android.media.RouteListingPreference;
-import android.media.RoutingChangeInfo;
-import android.media.RoutingSessionInfo;
-import android.media.session.ISessionController;
-import android.media.session.MediaController;
-import android.media.session.MediaSession;
-import android.media.session.MediaSessionManager;
-import android.media.session.PlaybackState;
-import android.os.Bundle;
-import android.os.PowerExemptionManager;
-import android.os.RemoteException;
-import android.os.UserHandle;
-import android.platform.test.annotations.DisableFlags;
-import android.platform.test.annotations.EnableFlags;
-import android.platform.test.annotations.RequiresFlagsDisabled;
-import android.platform.test.annotations.RequiresFlagsEnabled;
-import android.platform.test.annotations.UsesFlags;
-import android.platform.test.flag.junit.FlagsParameterization;
-import android.service.notification.StatusBarNotification;
-import android.testing.TestableLooper;
-import android.view.View;
-
-import androidx.core.graphics.drawable.IconCompat;
-import androidx.test.filters.SmallTest;
-
-import com.android.media.flags.Flags;
-import com.android.settingslib.bluetooth.CachedBluetoothDeviceManager;
-import com.android.settingslib.bluetooth.LocalBluetoothLeBroadcastAssistant;
-import com.android.settingslib.bluetooth.LocalBluetoothManager;
-import com.android.settingslib.bluetooth.LocalBluetoothProfileManager;
-import com.android.settingslib.media.InfoMediaManager;
-import com.android.settingslib.media.InputMediaDevice;
-import com.android.settingslib.media.InputRouteManager;
-import com.android.settingslib.media.LocalMediaManager;
-import com.android.settingslib.media.MediaDevice;
-import com.android.settingslib.media.MissingPermissionsInfo;
-import com.android.settingslib.volume.data.repository.AudioSharingRepository;
-import com.android.systemui.SysuiTestCase;
-import com.android.systemui.SysuiTestCaseExtKt;
-import com.android.systemui.animation.ActivityTransitionAnimator;
-import com.android.systemui.animation.DialogTransitionAnimator;
-import com.android.systemui.kosmos.Kosmos;
-import com.android.systemui.media.dialog.MediaItem.DeviceGroupMediaItem;
-import com.android.systemui.media.dialog.MediaItem.DeviceMediaItem;
-import com.android.systemui.media.dialog.MediaItem.GroupDividerMediaItem;
-import com.android.systemui.media.nearby.NearbyMediaDevicesManager;
-import com.android.systemui.plugins.ActivityStarter;
-import com.android.systemui.res.R;
-import com.android.systemui.settings.UserTracker;
-import com.android.systemui.statusbar.notification.collection.NotificationEntry;
-import com.android.systemui.statusbar.notification.collection.notifcollection.CommonNotifCollection;
-import com.android.systemui.util.concurrency.FakeExecutor;
-import com.android.systemui.util.kotlin.JavaAdapter;
-import com.android.systemui.util.time.FakeSystemClock;
-import com.android.systemui.volume.dialog.domain.interactor.ExpandedAudioTileDetailsFeatureInteractor;
-import com.android.systemui.volume.panel.domain.interactor.VolumePanelGlobalStateInteractor;
-import com.android.systemui.volume.panel.domain.interactor.VolumePanelGlobalStateInteractorKosmosKt;
-
-import com.google.common.collect.ImmutableList;
-
-import kotlinx.coroutines.flow.MutableStateFlow;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
-import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
-import platform.test.runner.parameterized.Parameters;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
+import android.app.KeyguardManager
+import android.app.Notification
+import android.bluetooth.BluetoothDevice
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.graphics.drawable.Drawable
+import android.graphics.drawable.Icon
+import android.media.AudioDeviceAttributes
+import android.media.AudioDeviceInfo
+import android.media.AudioManager
+import android.media.MediaDescription
+import android.media.MediaMetadata
+import android.media.MediaRoute2Info
+import android.media.NearbyDevice
+import android.media.RouteListingPreference
+import android.media.RoutingChangeInfo
+import android.media.RoutingChangeInfo.ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER
+import android.media.RoutingSessionInfo
+import android.media.session.ISessionController
+import android.media.session.MediaController
+import android.media.session.MediaSession
+import android.media.session.MediaSessionManager
+import android.media.session.PlaybackState
+import android.os.Bundle
+import android.os.PowerExemptionManager
+import android.os.UserHandle
+import android.permission.flags.Flags.FLAG_ACCESS_LOCAL_NETWORK_PERMISSION_ENABLED
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
+import android.platform.test.annotations.RequiresFlagsDisabled
+import android.platform.test.annotations.RequiresFlagsEnabled
+import android.platform.test.annotations.UsesFlags
+import android.platform.test.flag.junit.FlagsParameterization
+import android.service.notification.StatusBarNotification
+import android.testing.TestableLooper
+import android.view.View
+import androidx.core.graphics.drawable.IconCompat
+import androidx.test.filters.SmallTest
+import com.android.media.flags.Flags
+import com.android.settingslib.bluetooth.CachedBluetoothDeviceManager
+import com.android.settingslib.bluetooth.LocalBluetoothLeBroadcastAssistant
+import com.android.settingslib.bluetooth.LocalBluetoothManager
+import com.android.settingslib.bluetooth.LocalBluetoothProfileManager
+import com.android.settingslib.media.InfoMediaManager
+import com.android.settingslib.media.InputMediaDevice
+import com.android.settingslib.media.InputRouteManager
+import com.android.settingslib.media.LocalMediaManager
+import com.android.settingslib.media.MediaDevice
+import com.android.settingslib.media.MissingPermissionsInfo
+import com.android.settingslib.volume.data.repository.AudioSharingRepository
+import com.android.systemui.SysuiTestCase
+import com.android.systemui.animation.ActivityTransitionAnimator
+import com.android.systemui.animation.DialogTransitionAnimator
+import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.media.dialog.MediaItem.DeviceGroupMediaItem
+import com.android.systemui.media.dialog.MediaItem.DeviceMediaItem
+import com.android.systemui.media.dialog.MediaItem.GroupDividerMediaItem
+import com.android.systemui.media.nearby.NearbyMediaDevicesManager
+import com.android.systemui.plugins.ActivityStarter
+import com.android.systemui.res.R
+import com.android.systemui.settings.UserTracker
+import com.android.systemui.statusbar.notification.collection.NotificationEntry
+import com.android.systemui.statusbar.notification.collection.notifcollection.CommonNotifCollection
+import com.android.systemui.testKosmos
+import com.android.systemui.util.concurrency.FakeExecutor
+import com.android.systemui.util.kotlin.JavaAdapter
+import com.android.systemui.util.time.FakeSystemClock
+import com.android.systemui.volume.dialog.domain.interactor.ExpandedAudioTileDetailsFeatureInteractor
+import com.android.systemui.volume.panel.domain.interactor.VolumePanelGlobalStateInteractor
+import com.android.systemui.volume.panel.domain.interactor.volumePanelGlobalStateInteractor
+import com.google.common.truth.Truth.assertThat
+import java.util.function.Consumer
+import kotlin.jvm.java
+import kotlinx.coroutines.flow.MutableStateFlow
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.atLeastOnce
+import org.mockito.kotlin.doAnswer
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
+import org.mockito.kotlin.reset
+import org.mockito.kotlin.same
+import org.mockito.kotlin.spy
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoMoreInteractions
+import org.mockito.kotlin.whenever
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4
+import platform.test.runner.parameterized.Parameters
 
 @SmallTest
-@RunWith(ParameterizedAndroidJunit4.class)
+@RunWith(ParameterizedAndroidJunit4::class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
-@UsesFlags(com.android.media.flags.Flags.class)
-public class MediaSwitchingControllerTest extends SysuiTestCase {
-    private static final String TEST_DEVICE_1_ID = "test_device_1_id";
-    private static final String TEST_DEVICE_2_ID = "test_device_2_id";
-    private static final String TEST_DEVICE_3_ID = "test_device_3_id";
-    private static final String TEST_DEVICE_4_ID = "test_device_4_id";
-    private static final String TEST_DEVICE_5_ID = "test_device_5_id";
-    private static final String TEST_ARTIST = "test_artist";
-    private static final String TEST_SONG = "test_song";
-    private static final String TEST_SESSION_ID = "test_session_id";
-    private static final String TEST_SESSION_NAME = "test_session_name";
-    private static final int MAX_VOLUME = 1;
-    private static final int CURRENT_VOLUME = 0;
-    private static final boolean VOLUME_FIXED_TRUE = true;
-    private static final String PRODUCT_NAME_BUILTIN_MIC = "Built-in Mic";
+@UsesFlags(Flags::class)
+class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase() {
+    private val mDialogTransitionAnimator = mock<DialogTransitionAnimator>()
+    private val mActivityTransitionAnimatorController =
+        mock<ActivityTransitionAnimator.Controller>()
+    private val mNearbyMediaDevicesManager = mock<NearbyMediaDevicesManager>()
+    private val mSessionMediaController = mock<MediaController>()
+    private val mMediaSessionManager = mock<MediaSessionManager>()
+    private val mCachedBluetoothDeviceManager = mock<CachedBluetoothDeviceManager>()
+    private val mLocalBluetoothManager = mock<LocalBluetoothManager>()
+    private val mCb = mock<MediaSwitchingController.Callback>()
+    private val mMediaDevice1 = mock<MediaDevice>()
+    private val mMediaDevice2 = mock<MediaDevice>()
+    private val mMediaDevice3 = mock<MediaDevice>()
+    private val mMediaDevice4 = mock<MediaDevice>()
+    private val mMediaDevice5 = mock<MediaDevice>()
+    private val mMediaDevice6 = mock<MediaDevice>()
+    private val mMediaDevice7 = mock<MediaDevice>()
+    private val mNearbyDevice1 = mock<NearbyDevice>()
+    private val mNearbyDevice2 = mock<NearbyDevice>()
+    private val mMediaMetadata = mock<MediaMetadata>()
+    private val mRemoteSessionInfo = mock<RoutingSessionInfo>()
+    private val mStarter = mock<ActivityStarter>()
+    private val mAudioManager = mock<AudioManager>()
+    private val mKeyguardManager = mock<KeyguardManager>()
+    private val mController = mock<ActivityTransitionAnimator.Controller>()
+    private val mPowerExemptionManager = mock<PowerExemptionManager>()
+    private val mNotifCollection = mock<CommonNotifCollection>()
+    private val mPackageManager = mock<PackageManager>()
+    private val mDrawable = mock<Drawable>()
+    private val mPlaybackState = mock<PlaybackState>()
+    private val mInfoMediaManager = mock<InfoMediaManager>()
 
-    @Mock
-    private DialogTransitionAnimator mDialogTransitionAnimator;
-    @Mock
-    private ActivityTransitionAnimator.Controller mActivityTransitionAnimatorController;
-    @Mock
-    private NearbyMediaDevicesManager mNearbyMediaDevicesManager;
-    // Mock
-    @Mock
-    private MediaController mSessionMediaController;
-    @Mock
-    private MediaSessionManager mMediaSessionManager;
-    @Mock
-    private CachedBluetoothDeviceManager mCachedBluetoothDeviceManager;
-    @Mock
-    private LocalBluetoothManager mLocalBluetoothManager;
-    @Mock private MediaSwitchingController.Callback mCb;
-    @Mock
-    private MediaDevice mMediaDevice1;
-    @Mock
-    private MediaDevice mMediaDevice2;
-    @Mock private MediaDevice mMediaDevice3;
-    @Mock private MediaDevice mMediaDevice4;
-    @Mock private MediaDevice mMediaDevice5;
-    @Mock private MediaDevice mMediaDevice6;
-    @Mock private MediaDevice mMediaDevice7;
-    @Mock private NearbyDevice mNearbyDevice1;
-    @Mock
-    private NearbyDevice mNearbyDevice2;
-    @Mock
-    private MediaMetadata mMediaMetadata;
-    @Mock
-    private RoutingSessionInfo mRemoteSessionInfo;
-    @Mock
-    private ActivityStarter mStarter;
-    @Mock
-    private AudioManager mAudioManager;
-    @Mock
-    private KeyguardManager mKeyguardManager;
-    @Mock
-    private ActivityTransitionAnimator.Controller mController;
-    @Mock
-    private PowerExemptionManager mPowerExemptionManager;
-    @Mock
-    private CommonNotifCollection mNotifCollection;
-    @Mock
-    private PackageManager mPackageManager;
-    @Mock
-    private Drawable mDrawable;
-    @Mock
-    private PlaybackState mPlaybackState;
-    @Mock private InfoMediaManager mInfoMediaManager;
+    private val mUserTracker = mock<UserTracker>()
+    private val mAudioSharingRepository = mock<AudioSharingRepository>()
+    private val mExpandedAudioTileDetailsFeatureInteractor =
+        mock<ExpandedAudioTileDetailsFeatureInteractor>()
 
-    @Mock
-    private UserTracker mUserTracker;
-    @Mock private AudioSharingRepository mAudioSharingRepository;
-    @Mock private ExpandedAudioTileDetailsFeatureInteractor
-            mExpandedAudioTileDetailsFeatureInteractor;
+    private val mKosmos: Kosmos = this.testKosmos()
+    private val mJavaAdapter = mock<JavaAdapter>()
+    private val mInAudioSharingCaptor = argumentCaptor<Consumer<Boolean>>()
 
-    private final Kosmos mKosmos = SysuiTestCaseExtKt.testKosmos(this);
-    @Mock private JavaAdapter mJavaAdapter;
-    @Captor private ArgumentCaptor<Consumer<Boolean>> mInAudioSharingCaptor;
+    private val mClock = FakeSystemClock()
+    private val mFakeBackgroundExecutor = FakeExecutor(mClock)
 
-    private final FakeSystemClock mClock = new FakeSystemClock();
-    private final FakeExecutor mFakeBackgroundExecutor = new FakeExecutor(mClock);
+    private val mDialogLaunchView: View = mock<View>()
+    private val mCallback: MediaSwitchingController.Callback =
+        mock<MediaSwitchingController.Callback>()
 
-    private View mDialogLaunchView = mock(View.class);
-    private MediaSwitchingController.Callback mCallback =
-            mock(MediaSwitchingController.Callback.class);
+    val mNotification: Notification = mock<Notification>()
+    private val mVolumePanelGlobalStateInteractor: VolumePanelGlobalStateInteractor =
+        mKosmos.volumePanelGlobalStateInteractor
 
-    final Notification mNotification = mock(Notification.class);
-    private final VolumePanelGlobalStateInteractor mVolumePanelGlobalStateInteractor =
-            VolumePanelGlobalStateInteractorKosmosKt.getVolumePanelGlobalStateInteractor(
-                    mKosmos);
+    private lateinit var mSpyContext: Context
+    private lateinit var mPackageName: String
+    private lateinit var mMediaSwitchingController: MediaSwitchingController
+    private lateinit var mLocalMediaManager: LocalMediaManager
+    private lateinit var mInputRouteManager: InputRouteManager
+    private val mMediaControllers = mutableListOf<MediaController>()
+    private val mMediaDevices = mutableListOf<MediaDevice>()
+    private val mNearbyDevices = mutableListOf<NearbyDevice>()
+    private lateinit var mMediaDescription: MediaDescription
+    private val mRoutingSessionInfos: MutableList<RoutingSessionInfo> = ArrayList()
 
-    private Context mSpyContext;
-    private String mPackageName = null;
-    private MediaSwitchingController mMediaSwitchingController;
-    private LocalMediaManager mLocalMediaManager;
-    private InputRouteManager mInputRouteManager;
-    private List<MediaController> mMediaControllers = new ArrayList<>();
-    private List<MediaDevice> mMediaDevices = new ArrayList<>();
-    private List<NearbyDevice> mNearbyDevices = new ArrayList<>();
-    private MediaDescription mMediaDescription;
-    private List<RoutingSessionInfo> mRoutingSessionInfos = new ArrayList<>();
-
-    @Parameters(name = "{0}")
-    public static List<FlagsParameterization> getParams() {
-        return FlagsParameterization.allCombinationsOf(
-                Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL);
-    }
-
-    public MediaSwitchingControllerTest(FlagsParameterization flags) {
-        mSetFlagsRule.setFlagsParameterization(flags);
+    init {
+        mSetFlagsRule.setFlagsParameterization(flags)
     }
 
     @Before
-    public void setUp() {
-        mPackageName = mContext.getPackageName();
+    fun setUp() {
+        mPackageName = mContext.packageName
 
-        MockitoAnnotations.initMocks(this);
-        mContext.setMockPackageManager(mPackageManager);
-        mSpyContext = spy(mContext);
-        final UserHandle userHandle = mock(UserHandle.class);
-        when(mUserTracker.getUserHandle()).thenReturn(userHandle);
-        when(mSessionMediaController.getPackageName()).thenReturn(mPackageName);
-        when(mSessionMediaController.getPlaybackState()).thenReturn(mPlaybackState);
-        mMediaControllers.add(mSessionMediaController);
-        when(mMediaSessionManager.getActiveSessionsForUser(any(), eq(userHandle)))
-                .thenReturn(mMediaControllers);
-        doReturn(mMediaSessionManager).when(mSpyContext).getSystemService(
-                MediaSessionManager.class);
-        when(mLocalBluetoothManager.getCachedDeviceManager()).thenReturn(
-                mCachedBluetoothDeviceManager);
+        mContext.setMockPackageManager(mPackageManager)
+        mSpyContext = spy(mContext)
+        val userHandle = mock<UserHandle>()
+        whenever(mUserTracker.userHandle).thenReturn(userHandle)
+        whenever(mSessionMediaController.getPackageName()).thenReturn(mPackageName)
+        whenever(mSessionMediaController.getPlaybackState()).thenReturn(mPlaybackState)
+        mMediaControllers.add(mSessionMediaController)
+        whenever(mMediaSessionManager.getActiveSessionsForUser(eq(null), eq(userHandle)))
+            .thenReturn(mMediaControllers)
+        doReturn(mMediaSessionManager)
+            .whenever(mSpyContext)
+            .getSystemService(MediaSessionManager::class.java)
+        whenever(mLocalBluetoothManager.cachedDeviceManager)
+            .thenReturn(mCachedBluetoothDeviceManager)
 
-        mMediaSwitchingController = createDefaultMediaSwitchingController();
-        mLocalMediaManager = spy(mMediaSwitchingController.mLocalMediaManager);
-        when(mLocalMediaManager.isPreferenceRouteListingExist()).thenReturn(false);
-        mMediaSwitchingController.mLocalMediaManager = mLocalMediaManager;
+        mMediaSwitchingController = createDefaultMediaSwitchingController()
+        mLocalMediaManager = spy(mMediaSwitchingController.mLocalMediaManager)
+        whenever(mLocalMediaManager.isPreferenceRouteListingExist()).thenReturn(false)
+        mMediaSwitchingController.mLocalMediaManager = mLocalMediaManager
 
         mMediaSwitchingController.mInputRouteManager =
-                new InputRouteManager(mContext, mAudioManager, mInfoMediaManager);
-        mInputRouteManager = spy(mMediaSwitchingController.mInputRouteManager);
-        mMediaSwitchingController.mInputRouteManager = mInputRouteManager;
-        when(mAudioManager.getDevices(AudioManager.GET_DEVICES_INPUTS))
-                .thenReturn(new AudioDeviceInfo[0]);
+            InputRouteManager(mContext, mAudioManager, mInfoMediaManager)
+        mInputRouteManager = spy(mMediaSwitchingController.mInputRouteManager!!)
+        mMediaSwitchingController.mInputRouteManager = mInputRouteManager
+        whenever(mAudioManager.getDevices(AudioManager.GET_DEVICES_INPUTS))
+            .thenReturn(emptyArray<AudioDeviceInfo>())
 
-        MediaDescription.Builder builder = new MediaDescription.Builder();
-        builder.setTitle(TEST_SONG);
-        builder.setSubtitle(TEST_ARTIST);
-        mMediaDescription = builder.build();
-        when(mMediaMetadata.getDescription()).thenReturn(mMediaDescription);
-        when(mMediaDevice1.getId()).thenReturn(TEST_DEVICE_1_ID);
-        when(mMediaDevice2.getId()).thenReturn(TEST_DEVICE_2_ID);
-        mMediaDevices.add(mMediaDevice1);
-        mMediaDevices.add(mMediaDevice2);
+        val builder = MediaDescription.Builder()
+        builder.setTitle(TEST_SONG)
+        builder.setSubtitle(TEST_ARTIST)
+        mMediaDescription = builder.build()
+        whenever(mMediaMetadata.getDescription()).thenReturn(mMediaDescription)
+        whenever(mMediaDevice1.getId()).thenReturn(TEST_DEVICE_1_ID)
+        whenever(mMediaDevice2.getId()).thenReturn(TEST_DEVICE_2_ID)
+        mMediaDevices.add(mMediaDevice1)
+        mMediaDevices.add(mMediaDevice2)
 
-        when(mNearbyDevice1.getMediaRoute2Id()).thenReturn(TEST_DEVICE_1_ID);
-        when(mNearbyDevice1.getRangeZone()).thenReturn(NearbyDevice.RANGE_FAR);
-        when(mNearbyDevice2.getMediaRoute2Id()).thenReturn(TEST_DEVICE_2_ID);
-        when(mNearbyDevice2.getRangeZone()).thenReturn(NearbyDevice.RANGE_CLOSE);
-        mNearbyDevices.add(mNearbyDevice1);
-        mNearbyDevices.add(mNearbyDevice2);
+        whenever(mNearbyDevice1.getMediaRoute2Id()).thenReturn(TEST_DEVICE_1_ID)
+        whenever(mNearbyDevice1.getRangeZone()).thenReturn(NearbyDevice.RANGE_FAR)
+        whenever(mNearbyDevice2.getMediaRoute2Id()).thenReturn(TEST_DEVICE_2_ID)
+        whenever(mNearbyDevice2.getRangeZone()).thenReturn(NearbyDevice.RANGE_CLOSE)
+        mNearbyDevices.add(mNearbyDevice1)
+        mNearbyDevices.add(mNearbyDevice2)
 
-        final List<NotificationEntry> entryList = new ArrayList<>();
-        final NotificationEntry entry = mock(NotificationEntry.class);
-        final StatusBarNotification sbn = mock(StatusBarNotification.class);
-        final Bundle bundle = mock(Bundle.class);
-        final MediaSession.Token token = mock(MediaSession.Token.class);
-        final ISessionController binder = mock(ISessionController.class);
-        entryList.add(entry);
+        val entryList: MutableList<NotificationEntry> = ArrayList()
+        val entry = mock<NotificationEntry>()
+        val sbn = mock<StatusBarNotification>()
+        val bundle = mock<Bundle>()
+        val token = mock<MediaSession.Token>()
+        val binder = mock<ISessionController>()
+        entryList.add(entry)
 
-        when(mNotification.isMediaNotification()).thenReturn(false);
-        when(mNotifCollection.getAllNotifs()).thenReturn(entryList);
-        when(entry.getSbn()).thenReturn(sbn);
-        when(sbn.getNotification()).thenReturn(mNotification);
-        when(sbn.getPackageName()).thenReturn(mPackageName);
-        mNotification.extras = bundle;
-        when(bundle.getParcelable(Notification.EXTRA_MEDIA_SESSION)).thenReturn(token);
-        when(token.getBinder()).thenReturn(binder);
+        whenever(mNotification.isMediaNotification).thenReturn(false)
+        whenever(mNotifCollection.allNotifs).thenReturn(entryList)
+        whenever(entry.sbn).thenReturn(sbn)
+        whenever(sbn.notification).thenReturn(mNotification)
+        whenever(sbn.packageName).thenReturn(mPackageName)
+        mNotification.extras = bundle
+        whenever(bundle.getParcelable<MediaSession.Token>(Notification.EXTRA_MEDIA_SESSION))
+            .thenReturn(token)
+        whenever(token.binder).thenReturn(binder)
 
-        when(mExpandedAudioTileDetailsFeatureInteractor.isEnabled()).thenReturn(false);
+        whenever(mExpandedAudioTileDetailsFeatureInteractor.isEnabled()).thenReturn(false)
     }
 
     @Test
-    public void start_verifyLocalMediaManagerInit() {
-        mMediaSwitchingController.start(mCb);
+    fun start_verifyLocalMediaManagerInit() {
+        mMediaSwitchingController.start(mCb)
 
-        verify(mLocalMediaManager).registerCallback(mMediaSwitchingController);
-        verify(mLocalMediaManager).startScan();
+        verify(mLocalMediaManager).registerCallback(mMediaSwitchingController)
+        verify(mLocalMediaManager).startScan()
     }
 
     @Test
-    public void stop_verifyLocalMediaManagerDeinit() {
-        mMediaSwitchingController.start(mCb);
-        reset(mLocalMediaManager);
+    fun stop_verifyLocalMediaManagerDeinit() {
+        mMediaSwitchingController.start(mCb)
+        reset(mLocalMediaManager)
 
-        mMediaSwitchingController.stop();
+        mMediaSwitchingController.stop()
 
-        verify(mLocalMediaManager).unregisterCallback(mMediaSwitchingController);
-        verify(mLocalMediaManager).stopScan();
+        verify(mLocalMediaManager).unregisterCallback(mMediaSwitchingController)
+        verify(mLocalMediaManager).stopScan()
     }
 
     @Test
-    public void start_notificationNotFound_mediaControllerInitFromSession() {
-        mMediaSwitchingController.start(mCb);
+    fun start_notificationNotFound_mediaControllerInitFromSession() {
+        mMediaSwitchingController.start(mCb)
 
-        verify(mSessionMediaController).registerCallback(any());
+        verify(mSessionMediaController).registerCallback(any())
     }
 
     @Test
-    public void start_MediaNotificationFound_mediaControllerNotInitFromSession() {
-        when(mNotification.isMediaNotification()).thenReturn(true);
-        mMediaSwitchingController.start(mCb);
+    fun start_MediaNotificationFound_mediaControllerNotInitFromSession() {
+        whenever(mNotification.isMediaNotification).thenReturn(true)
+        mMediaSwitchingController.start(mCb)
 
-        verify(mSessionMediaController, never()).registerCallback(any());
-        verifyNoMoreInteractions(mMediaSessionManager);
+        verify(mSessionMediaController, never()).registerCallback(any())
+        verifyNoMoreInteractions(mMediaSessionManager)
     }
 
     @Test
-    public void start_withoutPackageName_verifyMediaControllerInit() {
+    fun start_withoutPackageName_verifyMediaControllerInit() {
         mMediaSwitchingController =
-                new MediaSwitchingController(
-                        mSpyContext,
-                        null,
-                        mContext.getUser(),
-                        /* token= */ null,
-                        /* mediaSwitchingType= */ null,
-                        mMediaSessionManager,
-                        mLocalBluetoothManager,
-                        mStarter,
-                        mNotifCollection,
-                        mDialogTransitionAnimator,
-                        mNearbyMediaDevicesManager,
-                        mAudioManager,
-                        mPowerExemptionManager,
-                        mKeyguardManager,
-                        mClock,
-                        mFakeBackgroundExecutor,
-                        mVolumePanelGlobalStateInteractor,
-                        mUserTracker,
-                        mJavaAdapter,
-                        mAudioSharingRepository,
-                        mExpandedAudioTileDetailsFeatureInteractor);
-
-        mMediaSwitchingController.start(mCb);
-
-        verify(mSessionMediaController, never()).registerCallback(any());
-    }
-
-    @Test
-    public void start_nearbyMediaDevicesManagerNotNull_registersNearbyDevicesCallback() {
-        mMediaSwitchingController.start(mCb);
-
-        verify(mNearbyMediaDevicesManager).registerNearbyDevicesCallback(any());
-    }
-
-    @Test
-    public void stop_withPackageName_verifyMediaControllerDeinit() {
-        mMediaSwitchingController.start(mCb);
-        reset(mSessionMediaController);
-
-        mMediaSwitchingController.stop();
-
-        verify(mSessionMediaController).unregisterCallback(any());
-    }
-
-    @Test
-    public void stop_withoutPackageName_verifyMediaControllerDeinit() {
-        mMediaSwitchingController =
-                new MediaSwitchingController(
-                        mSpyContext,
-                        null,
-                        mSpyContext.getUser(),
-                        /* token= */ null,
-                        /* mediaSwitchingType= */ null,
-                        mMediaSessionManager,
-                        mLocalBluetoothManager,
-                        mStarter,
-                        mNotifCollection,
-                        mDialogTransitionAnimator,
-                        mNearbyMediaDevicesManager,
-                        mAudioManager,
-                        mPowerExemptionManager,
-                        mKeyguardManager,
-                        mClock,
-                        mFakeBackgroundExecutor,
-                        mVolumePanelGlobalStateInteractor,
-                        mUserTracker,
-                        mJavaAdapter,
-                        mAudioSharingRepository,
-                        mExpandedAudioTileDetailsFeatureInteractor);
-
-        mMediaSwitchingController.start(mCb);
-
-        mMediaSwitchingController.stop();
-
-        verify(mSessionMediaController, never()).unregisterCallback(any());
-    }
-
-    @Test
-    public void stop_nearbyMediaDevicesManagerNotNull_unregistersNearbyDevicesCallback() {
-        mMediaSwitchingController.start(mCb);
-        reset(mSessionMediaController);
-
-        mMediaSwitchingController.stop();
-
-        verify(mNearbyMediaDevicesManager).unregisterNearbyDevicesCallback(any());
-    }
-
-    @Test
-    public void tryToLaunchMediaApplication_nullIntent_skip() {
-        mMediaSwitchingController.tryToLaunchMediaApplication(mDialogLaunchView);
-
-        verify(mCb, never()).dismissDialog();
-    }
-
-    @Test
-    public void tryToLaunchMediaApplication_intentNotNull_startActivity() {
-        when(mDialogTransitionAnimator.createActivityTransitionController(any(View.class), any()))
-                .thenReturn(mController);
-        Intent intent = new Intent(mPackageName);
-        doReturn(intent).when(mPackageManager).getLaunchIntentForPackage(mPackageName);
-        mMediaSwitchingController.start(mCallback);
-
-        mMediaSwitchingController.tryToLaunchMediaApplication(mDialogLaunchView);
-
-        verify(mStarter).startActivity(any(Intent.class), anyBoolean(), eq(mController));
-    }
-
-    @Test
-    public void tryToLaunchInAppRoutingIntent_componentNameNotNull_startActivity() {
-        when(mDialogTransitionAnimator.createActivityTransitionController(any(View.class), any()))
-                .thenReturn(mController);
-        mMediaSwitchingController.start(mCallback);
-        when(mLocalMediaManager.getLinkedItemComponentName()).thenReturn(
-                new ComponentName(mPackageName, ""));
-
-        mMediaSwitchingController.tryToLaunchInAppRoutingIntent(
-                TEST_DEVICE_1_ID, mDialogLaunchView);
-
-        verify(mStarter).startActivity(any(Intent.class), anyBoolean(), eq(mController));
-    }
-
-    @Test
-    public void onDevicesUpdated_unregistersNearbyDevicesCallback() throws RemoteException {
-        mMediaSwitchingController.start(mCb);
-
-        mMediaSwitchingController.onDevicesUpdated(ImmutableList.of());
-
-        verify(mNearbyMediaDevicesManager).unregisterNearbyDevicesCallback(any());
-    }
-
-    @Test
-    public void onDeviceListUpdate_withNearbyDevices_updatesRangeInformation()
-            throws RemoteException {
-        mMediaSwitchingController.start(mCb);
-        reset(mCb);
-
-        mMediaSwitchingController.onDevicesUpdated(mNearbyDevices);
-        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-
-        verify(mMediaDevice1).setRangeZone(NearbyDevice.RANGE_FAR);
-        verify(mMediaDevice2).setRangeZone(NearbyDevice.RANGE_CLOSE);
-    }
-
-    @Test
-    public void onDeviceListUpdate_withNearbyDevices_rankByRangeInformation()
-            throws RemoteException {
-        mMediaSwitchingController.start(mCb);
-        reset(mCb);
-
-        mMediaSwitchingController.onDevicesUpdated(mNearbyDevices);
-        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-
-        assertThat(mMediaDevices.get(0).getId()).isEqualTo(TEST_DEVICE_1_ID);
-    }
-
-    @Test
-    public void routeProcessSupport_onDeviceListUpdate_preferenceExist_NotUpdatesRangeInformation()
-            throws RemoteException {
-        when(mLocalMediaManager.isPreferenceRouteListingExist()).thenReturn(true);
-        mMediaSwitchingController.start(mCb);
-        reset(mCb);
-
-        mMediaSwitchingController.onDevicesUpdated(mNearbyDevices);
-        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-
-        verify(mMediaDevice1, never()).setRangeZone(anyInt());
-        verify(mMediaDevice2, never()).setRangeZone(anyInt());
-    }
-
-    @Test
-    public void onDeviceListUpdate_repeatedWithinThresholdPeriod_rearrangesList() {
-        mMediaSwitchingController.start(mCb);
-        reset(mCb);
-
-        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-
-        List<MediaItem> items = mMediaSwitchingController.getMediaItemList();
-        assertThat(((GroupDividerMediaItem) items.get(0)).getTitle()).isEqualTo(
-                mContext.getString(R.string.media_output_group_title_speakers_and_displays));
-        assertThat(((DeviceMediaItem) items.get(1)).getMediaDevice()).isEqualTo(mMediaDevice1);
-        assertThat(((DeviceMediaItem) items.get(2)).getMediaDevice()).isEqualTo(mMediaDevice2);
-
-        mClock.advanceTime(1500); // < 2 seconds.
-
-        // Make the second device suggested
-        when(mMediaDevice2.isSuggestedDevice()).thenReturn(true);
-
-        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-
-        // The list is rearranged - The "Suggested" section added and the order got updated.
-        items = mMediaSwitchingController.getMediaItemList();
-        assertThat(((GroupDividerMediaItem) items.get(0)).getTitle()).isEqualTo(
-                mContext.getString(R.string.media_output_group_title_suggested));
-        assertThat(((DeviceMediaItem) items.get(1)).getMediaDevice()).isEqualTo(mMediaDevice2);
-        assertThat(((GroupDividerMediaItem) items.get(2)).getTitle()).isEqualTo(
-                mContext.getString(R.string.media_output_group_title_speakers_and_displays));
-        assertThat(((DeviceMediaItem) items.get(3)).getMediaDevice()).isEqualTo(mMediaDevice1);
-    }
-
-    @Test
-    public void onDeviceListUpdate_repeatedAfterThresholdPeriod_appendsItemsToTheList() {
-        mMediaSwitchingController.start(mCb);
-        reset(mCb);
-
-        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-
-        List<MediaItem> items = mMediaSwitchingController.getMediaItemList();
-        assertThat(((GroupDividerMediaItem) items.get(0)).getTitle()).isEqualTo(
-                mContext.getString(R.string.media_output_group_title_speakers_and_displays));
-        assertThat(((DeviceMediaItem) items.get(1)).getMediaDevice()).isEqualTo(mMediaDevice1);
-        assertThat(((DeviceMediaItem) items.get(2)).getMediaDevice()).isEqualTo(mMediaDevice2);
-
-        mClock.advanceTime(2100); // > 2 seconds.
-
-        // Make the second device suggested
-        when(mMediaDevice2.isSuggestedDevice()).thenReturn(true);
-
-        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-
-        // The list remains unchanged.
-        items = mMediaSwitchingController.getMediaItemList();
-        assertThat(((GroupDividerMediaItem) items.get(0)).getTitle()).isEqualTo(
-                mContext.getString(R.string.media_output_group_title_speakers_and_displays));
-        assertThat(((DeviceMediaItem) items.get(1)).getMediaDevice()).isEqualTo(mMediaDevice1);
-        assertThat(((DeviceMediaItem) items.get(2)).getMediaDevice()).isEqualTo(mMediaDevice2);
-    }
-
-    @Test
-    public void onDeviceListUpdate_verifyDeviceListCallback() {
-        mMediaSwitchingController.start(mCb);
-        reset(mCb);
-
-        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-        final List<MediaDevice> devices = getMediaDevices(
-                mMediaSwitchingController.getMediaItemList());
-
-        assertThat(devices.containsAll(mMediaDevices)).isTrue();
-        assertThat(devices.size()).isEqualTo(mMediaDevices.size());
-        // There should be 1 non-MediaDevice item - the "Speakers & Display" title.
-        assertThat(mMediaSwitchingController.getMediaItemList().size())
-                .isEqualTo(mMediaDevices.size() + 1);
-        verify(mCb).onDeviceListChanged();
-    }
-
-    @EnableFlags(Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL)
-    @Test
-    public void onDeviceListUpdate_verifyDeviceListCallback_inputRouting() {
-        enableInputRoutingConfig();
-        mMediaSwitchingController = createDefaultMediaSwitchingController();
-        mMediaSwitchingController.start(mCb);
-        reset(mCb);
-
-        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-        final List<MediaDevice> devices = getMediaDevices(
-                mMediaSwitchingController.getMediaItemList());
-
-        assertThat(devices.containsAll(mMediaDevices)).isTrue();
-        assertThat(devices.size()).isEqualTo(mMediaDevices.size());
-        // When input routing is enabled, there should be 3 non-MediaDevice items: one for
-        // the "Output" title, one for the "Speakers & Displays" title, and one for the "Input"
-        // title.
-        assertThat(mMediaSwitchingController.getMediaItemList().size())
-                .isEqualTo(mMediaDevices.size() + 3);
-        verify(mCb).onDeviceListChanged();
-    }
-
-    @Test
-    public void advanced_onDeviceListUpdateWithConnectedDeviceRemote_verifyItemSize() {
-        when(mMediaDevice1.getFeatures()).thenReturn(
-                ImmutableList.of(MediaRoute2Info.FEATURE_REMOTE_PLAYBACK));
-        when(mLocalMediaManager.getCurrentConnectedDevice()).thenReturn(mMediaDevice1);
-        mMediaSwitchingController.start(mCb);
-        reset(mCb);
-
-        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-        final List<MediaDevice> devices = getMediaDevices(
-                mMediaSwitchingController.getMediaItemList());
-
-        assertThat(devices.containsAll(mMediaDevices)).isTrue();
-        assertThat(devices.size()).isEqualTo(mMediaDevices.size());
-        // There should be 1 non-MediaDevice item: the "Speakers & Display" title.
-        assertThat(mMediaSwitchingController.getMediaItemList().size())
-                .isEqualTo(mMediaDevices.size() + 1);
-        verify(mCb).onDeviceListChanged();
-    }
-
-    @EnableFlags(Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL)
-    @Test
-    public void advanced_onDeviceListUpdateWithConnectedDeviceRemote_verifyItemSize_inputRouting() {
-        enableInputRoutingConfig();
-        when(mMediaDevice1.getFeatures())
-                .thenReturn(ImmutableList.of(MediaRoute2Info.FEATURE_REMOTE_PLAYBACK));
-        when(mLocalMediaManager.getCurrentConnectedDevice()).thenReturn(mMediaDevice1);
-        mMediaSwitchingController = createDefaultMediaSwitchingController();
-        mMediaSwitchingController.start(mCb);
-        reset(mCb);
-
-        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-        final List<MediaDevice> devices = getMediaDevices(
-                mMediaSwitchingController.getMediaItemList());
-
-        assertThat(devices.containsAll(mMediaDevices)).isTrue();
-        assertThat(devices.size()).isEqualTo(mMediaDevices.size());
-        // When input routing is enabled, there should be 3 non-MediaDevice items: one for
-        // the "Output" title, one for the "Speakers & Displays" title, and one for the "Input"
-        // title.
-        assertThat(mMediaSwitchingController.getMediaItemList().size())
-                .isEqualTo(mMediaDevices.size() + 3);
-        verify(mCb).onDeviceListChanged();
-    }
-
-    @EnableFlags(Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL)
-    @Test
-    public void onInputDeviceListUpdateWithInputType_verifyDeviceListCallback_inputRouting() {
-        enableInputRoutingConfig();
-        mMediaSwitchingController =
-                new MediaSwitchingController(
-                        mSpyContext,
-                        mPackageName,
-                        mContext.getUser(),
-                        /* token= */ null,
-                        MediaSwitchingType.INPUT,
-                        mMediaSessionManager,
-                        mLocalBluetoothManager,
-                        mStarter,
-                        mNotifCollection,
-                        mDialogTransitionAnimator,
-                        mNearbyMediaDevicesManager,
-                        mAudioManager,
-                        mPowerExemptionManager,
-                        mKeyguardManager,
-                        mClock,
-                        mFakeBackgroundExecutor,
-                        mVolumePanelGlobalStateInteractor,
-                        mUserTracker,
-                        mJavaAdapter,
-                        mAudioSharingRepository,
-                        mExpandedAudioTileDetailsFeatureInteractor);
-        AudioDeviceInfo[] audioDeviceInfos = {};
-        when(mAudioManager.getDevices(AudioManager.GET_DEVICES_INPUTS))
-                .thenReturn(audioDeviceInfos);
-        mMediaSwitchingController.start(mCb);
-
-        // Output devices have changed.
-        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-
-        final List<MediaDevice> inputDevices = ImmutableList.of(mMediaDevice6, mMediaDevice7);
-
-        // Input devices have changed.
-        mMediaSwitchingController.mInputDeviceCallback.onInputDeviceListUpdated(inputDevices);
-
-        final List<MediaItem> resultList = mMediaSwitchingController.getMediaItemList();
-        final List<MediaDevice> devices = getMediaDevices(resultList);
-
-        assertThat(resultList.get(0)).isInstanceOf(DeviceMediaItem.class);
-        assertThat(((DeviceMediaItem) resultList.get(0)).getMediaDevice()).isEqualTo(mMediaDevice6);
-
-        assertThat(resultList.get(1)).isInstanceOf(DeviceMediaItem.class);
-        assertThat(((DeviceMediaItem) resultList.get(1)).getMediaDevice()).isEqualTo(mMediaDevice7);
-
-        assertThat(resultList.size()).isEqualTo(2);
-
-        // Only contains input devices.
-        assertThat(devices).containsNoneIn(mMediaDevices);
-        assertThat(devices).hasSize(inputDevices.size());
-        verify(mCb, atLeastOnce()).onDeviceListChanged();
-        verify(mNearbyMediaDevicesManager, never()).registerNearbyDevicesCallback(any());
-        verify(mLocalMediaManager, never()).registerCallback(any());
-        verify(mLocalMediaManager, never()).startScan();
-    }
-
-    @EnableFlags(Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL)
-    @Test
-    public void onInputDeviceListUpdateWithOutputType_verifyDeviceListCallback_inputRouting() {
-        enableInputRoutingConfig();
-        mMediaSwitchingController =
-                new MediaSwitchingController(
-                        mSpyContext,
-                        mPackageName,
-                        mContext.getUser(),
-                        /* token= */ null,
-                        MediaSwitchingType.OUTPUT,
-                        mMediaSessionManager,
-                        mLocalBluetoothManager,
-                        mStarter,
-                        mNotifCollection,
-                        mDialogTransitionAnimator,
-                        mNearbyMediaDevicesManager,
-                        mAudioManager,
-                        mPowerExemptionManager,
-                        mKeyguardManager,
-                        mClock,
-                        mFakeBackgroundExecutor,
-                        mVolumePanelGlobalStateInteractor,
-                        mUserTracker,
-                        mJavaAdapter,
-                        mAudioSharingRepository,
-                        mExpandedAudioTileDetailsFeatureInteractor);
-        AudioDeviceInfo[] audioDeviceInfos = {};
-        when(mAudioManager.getDevices(AudioManager.GET_DEVICES_INPUTS))
-                .thenReturn(audioDeviceInfos);
-        mMediaSwitchingController.start(mCb);
-
-        // Output devices have changed.
-        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-
-        final List<MediaDevice> inputDevices = ImmutableList.of(mMediaDevice6, mMediaDevice7);
-
-        // Input devices have changed.
-        mMediaSwitchingController.mInputDeviceCallback.onInputDeviceListUpdated(inputDevices);
-
-        final List<MediaItem> resultList = mMediaSwitchingController.getMediaItemList();
-        final List<MediaDevice> devices = getMediaDevices(resultList);
-
-        assertThat(resultList.get(0)).isInstanceOf(GroupDividerMediaItem.class);
-        assertThat(((GroupDividerMediaItem) resultList.get(0)).getHasTopSeparator()).isTrue();
-        assertThat(((GroupDividerMediaItem) resultList.get(0)).getTitle()).isEqualTo(
-                mContext.getString(R.string.media_output_group_title_speakers_and_displays));
-
-        assertThat(resultList.get(1)).isInstanceOf(DeviceMediaItem.class);
-        assertThat(((DeviceMediaItem) resultList.get(1)).getMediaDevice()).isEqualTo(mMediaDevice1);
-
-        assertThat(resultList.get(2)).isInstanceOf(DeviceMediaItem.class);
-        assertThat(((DeviceMediaItem) resultList.get(2)).getMediaDevice()).isEqualTo(mMediaDevice2);
-
-        assertThat(resultList.size()).isEqualTo(3);
-
-        assertThat(mMediaSwitchingController.hasConnectDeviceButton()).isTrue();
-
-        // Only contains output devices.
-        assertThat(devices).containsExactlyElementsIn(mMediaDevices);
-        verify(mCb, atLeastOnce()).onDeviceListChanged();
-        verify(mInputRouteManager, never()).registerCallback(any());
-    }
-
-    @EnableFlags(Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL)
-    @Test
-    public void onInputDeviceListUpdate_verifyDeviceListCallback() {
-        enableInputRoutingConfig();
-        AudioDeviceInfo[] audioDeviceInfos = {};
-        when(mAudioManager.getDevices(AudioManager.GET_DEVICES_INPUTS))
-                .thenReturn(audioDeviceInfos);
-        mMediaSwitchingController = createDefaultMediaSwitchingController();
-        mMediaSwitchingController.start(mCb);
-
-        // Output devices have changed.
-        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-
-        final List<MediaDevice> inputDevices = ImmutableList.of(mMediaDevice6, mMediaDevice7);
-
-        // Input devices have changed.
-        mMediaSwitchingController.mInputDeviceCallback.onInputDeviceListUpdated(inputDevices);
-
-        final List<MediaDevice> devices = getMediaDevices(
-                mMediaSwitchingController.getMediaItemList());
-
-        assertThat(devices).containsAtLeastElementsIn(mMediaDevices);
-        assertThat(devices).hasSize(mMediaDevices.size() + inputDevices.size());
-        verify(mCb, atLeastOnce()).onDeviceListChanged();
-    }
-
-    @Test
-    public void advanced_categorizeMediaItems_withSuggestedDevice_verifyDeviceListSize() {
-        when(mMediaDevice1.isSuggestedDevice()).thenReturn(true);
-        when(mMediaDevice2.isSuggestedDevice()).thenReturn(false);
-
-        mMediaSwitchingController.start(mCb);
-        reset(mCb);
-        mMediaSwitchingController.clearMediaItemList();
-        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-        final List<MediaDevice> devices = new ArrayList<>();
-        int dividerSize = 0;
-        for (MediaItem item : mMediaSwitchingController.getMediaItemList()) {
-            if (item instanceof DeviceMediaItem deviceMediaItem) {
-                devices.add(deviceMediaItem.getMediaDevice());
-            }
-            if (item instanceof GroupDividerMediaItem) {
-                dividerSize++;
-            }
-        }
-
-        assertThat(devices.containsAll(mMediaDevices)).isTrue();
-        assertThat(devices.size()).isEqualTo(mMediaDevices.size());
-        assertThat(dividerSize).isEqualTo(2);
-        verify(mCb).onDeviceListChanged();
-    }
-
-    @Test
-    public void onDeviceListUpdate_withMutingExpectedDevice_putItOnTop() {
-        when(mMediaDevice1.isSuggestedDevice()).thenReturn(false);
-        when(mMediaDevice2.isMutingExpectedDevice()).thenReturn(true);
-
-        mMediaSwitchingController.start(mCb);
-        reset(mCb);
-        mMediaSwitchingController.clearMediaItemList();
-        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-        final List<MediaDevice> devices = getMediaDevices(
-                mMediaSwitchingController.getMediaItemList());
-
-        assertThat(devices.getFirst().isMutingExpectedDevice()).isTrue();
-        assertThat(mMediaSwitchingController.hasMutingExpectedDevice()).isTrue();
-    }
-
-    @Test
-    public void onDeviceListUpdate_noMutingExpectedDevice_processListNormally() {
-        when(mMediaDevice1.isSuggestedDevice()).thenReturn(false);
-        when(mMediaDevice2.isMutingExpectedDevice()).thenReturn(false);
-
-        mMediaSwitchingController.start(mCb);
-        reset(mCb);
-        mMediaSwitchingController.clearMediaItemList();
-        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-        final List<MediaDevice> devices = getMediaDevices(
-                mMediaSwitchingController.getMediaItemList());
-
-        assertThat(devices.getFirst().isMutingExpectedDevice()).isFalse();
-        assertThat(mMediaSwitchingController.hasMutingExpectedDevice()).isFalse();
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
-    public void onDeviceListUpdate_groupPlaybackAndExpanded_allSelectedDevicesOnTop() {
-        when(mMediaDevice1.isSelected()).thenReturn(true);
-        when(mMediaDevice2.isSelected()).thenReturn(true);
-        mMediaSwitchingController.setGroupListCollapsed(false);
-
-        doAnswer(invocation -> {
-            LocalMediaManager.DeviceCallback callback = invocation.getArgument(0);
-            callback.onDeviceListUpdate(mMediaDevices);
-            return null;
-        }).when(mLocalMediaManager).registerCallback(any());
-        doReturn(true).when(mLocalMediaManager).isMediaSessionAvailableForVolumeControl();
-
-        mMediaSwitchingController.start(mCb);
-
-        List<MediaItem> resultList = mMediaSwitchingController.getMediaItemList();
-
-        assertThat(resultList.get(0)).isInstanceOf(GroupDividerMediaItem.class);
-        assertThat(((GroupDividerMediaItem) resultList.get(0)).getTitle()).isEqualTo(
-                mContext.getString(R.string.media_output_group_title_connected_speakers));
-        assertThat(((GroupDividerMediaItem) resultList.get(0)).isExpandable()).isTrue();
-
-        assertThat(resultList.get(1)).isInstanceOf(DeviceMediaItem.class);
-        assertThat(((DeviceMediaItem) resultList.get(1)).getMediaDevice()).isEqualTo(mMediaDevice1);
-
-        assertThat(resultList.get(2)).isInstanceOf(DeviceMediaItem.class);
-        assertThat(((DeviceMediaItem) resultList.get(2)).getMediaDevice()).isEqualTo(mMediaDevice2);
-
-        assertThat(resultList.size()).isEqualTo(3);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
-    public void onDeviceListUpdate_groupPlaybackAndCollapsed_groupControlAtTheTop() {
-        when(mMediaDevice1.isSelected()).thenReturn(true);
-        when(mMediaDevice2.isSelected()).thenReturn(true);
-        mMediaSwitchingController.setGroupListCollapsed(true);
-
-        doAnswer(invocation -> {
-            LocalMediaManager.DeviceCallback callback = invocation.getArgument(0);
-            callback.onDeviceListUpdate(mMediaDevices);
-            return null;
-        }).when(mLocalMediaManager).registerCallback(any());
-        doReturn(true).when(mLocalMediaManager).isMediaSessionAvailableForVolumeControl();
-
-        mMediaSwitchingController.start(mCb);
-        List<MediaItem> resultList = mMediaSwitchingController.getMediaItemList();
-
-        assertThat(resultList.get(0)).isInstanceOf(GroupDividerMediaItem.class);
-        assertThat(((GroupDividerMediaItem) resultList.get(0)).getTitle()).isEqualTo(
-                mContext.getString(R.string.media_output_group_title_connected_speakers));
-        assertThat(((GroupDividerMediaItem) resultList.get(0)).isExpandable()).isTrue();
-
-        assertThat(resultList.get(1)).isInstanceOf(DeviceGroupMediaItem.class);
-
-        assertThat(resultList.size()).isEqualTo(2);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
-    public void onDeviceListUpdate_sessionVolumeUnavailable_noGroupControl() {
-        when(mMediaDevice1.isSelected()).thenReturn(true);
-        when(mMediaDevice2.isSelected()).thenReturn(true);
-        mMediaSwitchingController.setGroupListCollapsed(true);
-
-        doAnswer(invocation -> {
-            LocalMediaManager.DeviceCallback callback = invocation.getArgument(0);
-            callback.onDeviceListUpdate(mMediaDevices);
-            return null;
-        }).when(mLocalMediaManager).registerCallback(any());
-        doReturn(false).when(mLocalMediaManager).isMediaSessionAvailableForVolumeControl();
-
-        mMediaSwitchingController.start(mCb);
-
-        mMediaSwitchingController.setGroupListCollapsed(true);
-        mMediaSwitchingController.clearMediaItemList();
-        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-
-        List<MediaItem> resultList = mMediaSwitchingController.getMediaItemList();
-
-        assertThat(resultList.get(0)).isInstanceOf(DeviceMediaItem.class);
-        assertThat(((DeviceMediaItem) resultList.get(0)).getMediaDevice()).isEqualTo(mMediaDevice1);
-
-        assertThat(resultList.get(1)).isInstanceOf(DeviceMediaItem.class);
-        assertThat(((DeviceMediaItem) resultList.get(1)).getMediaDevice()).isEqualTo(mMediaDevice2);
-
-        assertThat(resultList.size()).isEqualTo(2);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
-    public void onDeviceListUpdate_groupPlaybackCreatedLater_noGroupControl() {
-        when(mMediaDevice1.isSelected()).thenReturn(true);
-        when(mMediaDevice2.isSelected()).thenReturn(false);
-
-        mMediaSwitchingController.setGroupListCollapsed(true);
-        doReturn(false).when(mLocalMediaManager).isMediaSessionAvailableForVolumeControl();
-
-        doAnswer(invocation -> {
-            LocalMediaManager.DeviceCallback callback = invocation.getArgument(0);
-            callback.onDeviceListUpdate(mMediaDevices);
-            return null;
-        }).when(mLocalMediaManager).registerCallback(any());
-
-        mMediaSwitchingController.start(mCb);
-
-        // Add second selected device after the initial update.
-        when(mMediaDevice2.isSelected()).thenReturn(true);
-        // Skip 2+ seconds to prevent the list cleanup on refresh.
-        mClock.advanceTime(2500);
-        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-
-        List<MediaItem> resultList = mMediaSwitchingController.getMediaItemList();
-
-        assertThat(resultList.get(0)).isInstanceOf(DeviceMediaItem.class);
-        assertThat(((DeviceMediaItem) resultList.get(0)).getMediaDevice()).isEqualTo(mMediaDevice1);
-
-        assertThat(resultList.get(1)).isInstanceOf(GroupDividerMediaItem.class);
-        assertThat(((GroupDividerMediaItem) resultList.get(1)).getHasTopSeparator()).isTrue();
-        assertThat(((GroupDividerMediaItem) resultList.get(1)).getTitle()).isEqualTo(
-                mContext.getString(R.string.media_output_group_title_speakers_and_displays));
-
-        assertThat(resultList.get(2)).isInstanceOf(DeviceMediaItem.class);
-        assertThat(((DeviceMediaItem) resultList.get(2)).getMediaDevice()).isEqualTo(mMediaDevice2);
-
-        assertThat(resultList.size()).isEqualTo(3);
-    }
-
-    @Test
-    public void onDeviceListUpdate_isRefreshing_updatesNeedRefreshToTrue() {
-        mMediaSwitchingController.start(mCb);
-        reset(mCb);
-        mMediaSwitchingController.setRefreshing(true);
-
-        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-
-        assertThat(mMediaSwitchingController.mNeedRefresh).isTrue();
-    }
-
-    @Test
-    public void advanced_onDeviceListUpdate_isRefreshing_updatesNeedRefreshToTrue() {
-        mMediaSwitchingController.start(mCb);
-        reset(mCb);
-        mMediaSwitchingController.setRefreshing(true);
-
-        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-
-        assertThat(mMediaSwitchingController.mNeedRefresh).isTrue();
-    }
-
-    @Test
-    public void cancelMuteAwaitConnection_cancelsWithMediaManager() {
-        when(mAudioManager.getMutingExpectedDevice()).thenReturn(mock(AudioDeviceAttributes.class));
-        mMediaSwitchingController.start(mCb);
-        reset(mCb);
-
-        mMediaSwitchingController.cancelMuteAwaitConnection();
-
-        verify(mAudioManager).cancelMuteAwaitConnection(any());
-    }
-
-    @Test
-    public void cancelMuteAwaitConnection_audioManagerIsNull_noAction() {
-        when(mAudioManager.getMutingExpectedDevice()).thenReturn(null);
-        mMediaSwitchingController.start(mCb);
-        reset(mCb);
-        mMediaSwitchingController.cancelMuteAwaitConnection();
-
-        verify(mAudioManager, never()).cancelMuteAwaitConnection(any());
-    }
-
-    @Test
-    public void getAppSourceName_packageNameIsNull_returnsNull() {
-        MediaSwitchingController testMediaSwitchingController =
-                new MediaSwitchingController(
-                        mSpyContext,
-                        "",
-                        mSpyContext.getUser(),
-                        /* token= */ null,
-                        /* mediaSwitchingType= */ null,
-                        mMediaSessionManager,
-                        mLocalBluetoothManager,
-                        mStarter,
-                        mNotifCollection,
-                        mDialogTransitionAnimator,
-                        mNearbyMediaDevicesManager,
-                        mAudioManager,
-                        mPowerExemptionManager,
-                        mKeyguardManager,
-                        mClock,
-                        mFakeBackgroundExecutor,
-                        mVolumePanelGlobalStateInteractor,
-                        mUserTracker,
-                        mJavaAdapter,
-                        mAudioSharingRepository,
-                        mExpandedAudioTileDetailsFeatureInteractor);
-        testMediaSwitchingController.start(mCb);
-        reset(mCb);
-
-        testMediaSwitchingController.getAppSourceName();
-
-        assertThat(testMediaSwitchingController.getAppSourceName()).isNull();
-    }
-
-    @Test
-    public void getAppIcon_packageNameIsNull_returnsNull() {
-        MediaSwitchingController testMediaSwitchingController =
-                new MediaSwitchingController(
-                        mSpyContext,
-                        "",
-                        mSpyContext.getUser(),
-                        /* token= */ null,
-                        /* mediaSwitchingType= */ null,
-                        mMediaSessionManager,
-                        mLocalBluetoothManager,
-                        mStarter,
-                        mNotifCollection,
-                        mDialogTransitionAnimator,
-                        mNearbyMediaDevicesManager,
-                        mAudioManager,
-                        mPowerExemptionManager,
-                        mKeyguardManager,
-                        mClock,
-                        mFakeBackgroundExecutor,
-                        mVolumePanelGlobalStateInteractor,
-                        mUserTracker,
-                        mJavaAdapter,
-                        mAudioSharingRepository,
-                        mExpandedAudioTileDetailsFeatureInteractor);
-        testMediaSwitchingController.start(mCb);
-        reset(mCb);
-
-        testMediaSwitchingController.getAppSourceName();
-
-        assertThat(testMediaSwitchingController.getAppIcon()).isNull();
-    }
-
-    @Test
-    public void refreshDataSetIfNeeded_needRefreshIsTrue_setsToFalse() {
-        mMediaSwitchingController.start(mCb);
-        reset(mCb);
-        mMediaSwitchingController.mNeedRefresh = true;
-
-        mMediaSwitchingController.refreshDataSetIfNeeded();
-
-        assertThat(mMediaSwitchingController.mNeedRefresh).isFalse();
-    }
-
-    @Test
-    public void isCurrentConnectedDeviceRemote_containsFeatures_returnsTrue() {
-        when(mMediaDevice1.getFeatures()).thenReturn(
-                ImmutableList.of(MediaRoute2Info.FEATURE_REMOTE_PLAYBACK));
-        when(mLocalMediaManager.getCurrentConnectedDevice()).thenReturn(mMediaDevice1);
-
-        assertThat(mMediaSwitchingController.isCurrentConnectedDeviceRemote()).isTrue();
-    }
-
-    @Test
-    public void isSingleConnected_Device_sameDevice_returnsTrue() {
-        when(mLocalMediaManager.getCurrentConnectedDevice()).thenReturn(mMediaDevice1);
-
-        assertThat(mMediaSwitchingController.isSingleConnectedDevice(mMediaDevice1)).isTrue();
-    }
-
-    @Test
-    public void isCurrentlyConnected_singleSelected_returnsTrue() {
-        when(mMediaDevice2.isSelected()).thenReturn(true);
-
-        mMediaSwitchingController.start(mCb);
-        reset(mCb);
-        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-
-        assertThat(mMediaSwitchingController.isSingleConnectedDevice(mMediaDevice2)).isTrue();
-    }
-
-    @Test
-    public void isSingleConnected_Device_groupPlayback_returnsFalse() {
-        when(mMediaDevice1.isSelected()).thenReturn(true);
-        when(mMediaDevice2.isSelected()).thenReturn(true);
-
-        mMediaSwitchingController.start(mCb);
-        reset(mCb);
-        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-
-        assertThat(mMediaSwitchingController.isSingleConnectedDevice(mMediaDevice1)).isFalse();
-        assertThat(mMediaSwitchingController.isSingleConnectedDevice(mMediaDevice2)).isFalse();
-    }
-
-    @Test
-    public void isSingleConnected_Device_differentDevice_returnsFalse() {
-        when(mLocalMediaManager.getCurrentConnectedDevice()).thenReturn(mMediaDevice1);
-
-        assertThat(mMediaSwitchingController.isSingleConnectedDevice(mMediaDevice2)).isFalse();
-    }
-
-    @Test
-    public void addDeviceToPlayMedia_callsLocalMediaManager() {
-        MediaSwitchingController testMediaSwitchingController =
-                new MediaSwitchingController(
-                        mSpyContext,
-                        null,
-                        mSpyContext.getUser(),
-                        /* token= */ null,
-                        /* mediaSwitchingType= */ null,
-                        mMediaSessionManager,
-                        mLocalBluetoothManager,
-                        mStarter,
-                        mNotifCollection,
-                        mDialogTransitionAnimator,
-                        mNearbyMediaDevicesManager,
-                        mAudioManager,
-                        mPowerExemptionManager,
-                        mKeyguardManager,
-                        mClock,
-                        mFakeBackgroundExecutor,
-                        mVolumePanelGlobalStateInteractor,
-                        mUserTracker,
-                        mJavaAdapter,
-                        mAudioSharingRepository,
-                        mExpandedAudioTileDetailsFeatureInteractor);
-
-        LocalMediaManager mockLocalMediaManager = mock(LocalMediaManager.class);
-        testMediaSwitchingController.mLocalMediaManager = mockLocalMediaManager;
-
-        testMediaSwitchingController.addDeviceToPlayMedia(mMediaDevice2);
-        ArgumentCaptor<RoutingChangeInfo> captor = ArgumentCaptor.forClass(RoutingChangeInfo.class);
-        verify(mockLocalMediaManager).addDeviceToPlayMedia(eq(mMediaDevice2), captor.capture());
-        RoutingChangeInfo capturedInfo = captor.getValue();
-        assertThat(capturedInfo.getEntryPoint()).isEqualTo(ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER);
-        assertThat(capturedInfo.isSuggested()).isEqualTo(false);
-    }
-
-    @Test
-    public void removeDeviceFromPlayMedia_callsLocalMediaManager() {
-        MediaSwitchingController testMediaSwitchingController =
-                new MediaSwitchingController(
-                        mSpyContext,
-                        null,
-                        mSpyContext.getUser(),
-                        /* token= */ null,
-                        /* mediaSwitchingType= */ null,
-                        mMediaSessionManager,
-                        mLocalBluetoothManager,
-                        mStarter,
-                        mNotifCollection,
-                        mDialogTransitionAnimator,
-                        mNearbyMediaDevicesManager,
-                        mAudioManager,
-                        mPowerExemptionManager,
-                        mKeyguardManager,
-                        mClock,
-                        mFakeBackgroundExecutor,
-                        mVolumePanelGlobalStateInteractor,
-                        mUserTracker,
-                        mJavaAdapter,
-                        mAudioSharingRepository,
-                        mExpandedAudioTileDetailsFeatureInteractor);
-
-        LocalMediaManager mockLocalMediaManager = mock(LocalMediaManager.class);
-        testMediaSwitchingController.mLocalMediaManager = mockLocalMediaManager;
-
-        testMediaSwitchingController.removeDeviceFromPlayMedia(mMediaDevice2);
-        ArgumentCaptor<RoutingChangeInfo> argumentCaptor =
-                ArgumentCaptor.forClass(RoutingChangeInfo.class);
-        verify(mockLocalMediaManager)
-                .removeDeviceFromPlayMedia(eq(mMediaDevice2), argumentCaptor.capture());
-        RoutingChangeInfo capturedInfo = argumentCaptor.getValue();
-        assertThat(capturedInfo.getEntryPoint()).isEqualTo(ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER);
-        assertThat(capturedInfo.isSuggested()).isFalse();
-    }
-
-    @Test
-    public void adjustSessionVolume_adjustWithoutId_triggersFromLocalMediaManager() {
-        int testVolume = 10;
-        mMediaSwitchingController.adjustSessionVolume(testVolume);
-
-        verify(mLocalMediaManager).adjustSessionVolume(testVolume);
-    }
-
-    @Test
-    public void adjustDeviceVolume_callsLocalMediaManager() {
-        final MediaDevice mediaDevice = mock(MediaDevice.class);
-        mMediaSwitchingController.adjustVolume(mediaDevice, 15);
-        mFakeBackgroundExecutor.runAllReady();
-
-        verify(mLocalMediaManager).adjustDeviceVolume(mediaDevice, 15);
-    }
-
-    @Test
-    public void logInteractionAdjustVolume_triggersFromMetricLogger() {
-        MediaOutputMetricLogger spyMediaOutputMetricLogger =
-                spy(mMediaSwitchingController.mMetricLogger);
-        mMediaSwitchingController.mMetricLogger = spyMediaOutputMetricLogger;
-
-        mMediaSwitchingController.logInteractionAdjustVolume(mMediaDevice1);
-
-        verify(spyMediaOutputMetricLogger).logInteractionAdjustVolume(mMediaDevice1);
-    }
-
-    @Test
-    public void getSessionVolumeMax_triggersFromLocalMediaManager() {
-        mMediaSwitchingController.getSessionVolumeMax();
-
-        verify(mLocalMediaManager).getSessionVolumeMax();
-    }
-
-    @Test
-    public void getSessionVolume_triggersFromLocalMediaManager() {
-        mMediaSwitchingController.getSessionVolume();
-
-        verify(mLocalMediaManager).getSessionVolume();
-    }
-
-    @Test
-    public void getSessionName_triggersFromLocalMediaManager() {
-        mMediaSwitchingController.getSessionName();
-
-        verify(mLocalMediaManager).getSessionName();
-    }
-
-    @Test
-    public void releaseSession_triggersFromLocalMediaManager() {
-        mMediaSwitchingController.releaseSession();
-
-        verify(mLocalMediaManager).releaseSession();
-    }
-
-    @Test
-    public void isAnyDeviceTransferring_noDevicesStateIsConnecting_returnsFalse() {
-        mMediaSwitchingController.start(mCb);
-        reset(mCb);
-
-        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-
-        assertThat(mMediaSwitchingController.isAnyDeviceTransferring()).isFalse();
-    }
-
-    @Test
-    public void isAnyDeviceTransferring_deviceStateIsConnecting_returnsTrue() {
-        when(mMediaDevice1.getState()).thenReturn(
-                LocalMediaManager.MediaDeviceState.STATE_CONNECTING);
-        mMediaSwitchingController.start(mCb);
-        reset(mCb);
-
-        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-
-        assertThat(mMediaSwitchingController.isAnyDeviceTransferring()).isTrue();
-    }
-
-    @Test
-    public void isAnyDeviceTransferring_advancedLayoutSupport() {
-        when(mMediaDevice1.getState()).thenReturn(
-                LocalMediaManager.MediaDeviceState.STATE_CONNECTING);
-        mMediaSwitchingController.start(mCb);
-        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-
-        assertThat(mMediaSwitchingController.isAnyDeviceTransferring()).isTrue();
-    }
-
-    @Test
-    public void isPlaying_stateIsNull() {
-        when(mSessionMediaController.getPlaybackState()).thenReturn(null);
-
-        assertThat(mMediaSwitchingController.isPlaying()).isFalse();
-    }
-
-    @Test
-    public void onSelectedDeviceStateChanged_verifyCallback() {
-        when(mLocalMediaManager.getCurrentConnectedDevice()).thenReturn(mMediaDevice2);
-        mMediaSwitchingController.start(mCb);
-        reset(mCb);
-        mMediaSwitchingController.connectDevice(mMediaDevice1);
-
-        mMediaSwitchingController.onSelectedDeviceStateChanged(
-                mMediaDevice1, LocalMediaManager.MediaDeviceState.STATE_CONNECTED);
-
-        verify(mCb).onRouteChanged();
-    }
-
-    @Test
-    public void onDeviceAttributesChanged_verifyCallback() {
-        mMediaSwitchingController.start(mCb);
-        reset(mCb);
-
-        mMediaSwitchingController.onDeviceAttributesChanged();
-
-        verify(mCb).onRouteChanged();
-    }
-
-    @Test
-    public void onRequestFailed_verifyCallback() {
-        when(mLocalMediaManager.getCurrentConnectedDevice()).thenReturn(mMediaDevice1);
-        mMediaSwitchingController.start(mCb);
-        reset(mCb);
-        mMediaSwitchingController.connectDevice(mMediaDevice2);
-
-        mMediaSwitchingController.onRequestFailed(0 /* reason */);
-
-        verify(mCb, atLeastOnce()).onRouteChanged();
-    }
-
-    @Test
-    public void getHeaderTitle_withoutMetadata_returnDefaultString() {
-        when(mSessionMediaController.getMetadata()).thenReturn(null);
-
-        mMediaSwitchingController.start(mCb);
-
-        assertThat(
-                        mMediaSwitchingController
-                                .getHeaderTitle()
-                                .equals(mContext.getText(R.string.controls_media_title)))
-                .isTrue();
-    }
-
-    @Test
-    public void getHeaderTitle_withMetadata_returnSongName() {
-        when(mSessionMediaController.getMetadata()).thenReturn(mMediaMetadata);
-
-        mMediaSwitchingController.start(mCb);
-
-        assertThat(mMediaSwitchingController.getHeaderTitle().equals(TEST_SONG)).isTrue();
-    }
-
-    @Test
-    public void getHeaderSubTitle_withoutMetadata_returnNull() {
-        when(mSessionMediaController.getMetadata()).thenReturn(null);
-
-        mMediaSwitchingController.start(mCb);
-
-        assertThat(mMediaSwitchingController.getHeaderSubTitle()).isNull();
-    }
-
-    @Test
-    public void getHeaderSubTitle_withMetadata_returnArtistName() {
-        when(mSessionMediaController.getMetadata()).thenReturn(mMediaMetadata);
-
-        mMediaSwitchingController.start(mCb);
-
-        assertThat(mMediaSwitchingController.getHeaderSubTitle().equals(TEST_ARTIST)).isTrue();
-    }
-
-    @Test
-    public void getActiveRemoteMediaDevices() {
-        when(mRemoteSessionInfo.getId()).thenReturn(TEST_SESSION_ID);
-        when(mRemoteSessionInfo.getName()).thenReturn(TEST_SESSION_NAME);
-        when(mRemoteSessionInfo.getVolumeMax()).thenReturn(100);
-        when(mRemoteSessionInfo.getVolume()).thenReturn(10);
-        when(mRemoteSessionInfo.isSystemSession()).thenReturn(false);
-        mRoutingSessionInfos.add(mRemoteSessionInfo);
-        when(mLocalMediaManager.getRemoteRoutingSessions()).thenReturn(mRoutingSessionInfos);
-
-        assertThat(mMediaSwitchingController.getActiveRemoteMediaDevices())
-                .containsExactly(mRemoteSessionInfo);
-    }
-
-    @Test
-    public void getNotificationLargeIcon_withoutPackageName_returnsNull() {
-        mMediaSwitchingController =
-                new MediaSwitchingController(
-                        mSpyContext,
-                        null,
-                        mSpyContext.getUser(),
-                        /* token= */ null,
-                        /* mediaSwitchingType= */ null,
-                        mMediaSessionManager,
-                        mLocalBluetoothManager,
-                        mStarter,
-                        mNotifCollection,
-                        mDialogTransitionAnimator,
-                        mNearbyMediaDevicesManager,
-                        mAudioManager,
-                        mPowerExemptionManager,
-                        mKeyguardManager,
-                        mClock,
-                        mFakeBackgroundExecutor,
-                        mVolumePanelGlobalStateInteractor,
-                        mUserTracker,
-                        mJavaAdapter,
-                        mAudioSharingRepository,
-                        mExpandedAudioTileDetailsFeatureInteractor);
-
-        assertThat(mMediaSwitchingController.getNotificationIcon()).isNull();
-    }
-
-    @Test
-    public void getNotificationLargeIcon_withoutLargeIcon_returnsNull() {
-        Notification notification = setupNotificationMock();
-        when(notification.isMediaNotification()).thenReturn(true);
-        when(notification.getLargeIcon()).thenReturn(null);
-
-        assertThat(mMediaSwitchingController.getNotificationIcon()).isNull();
-    }
-
-    @Test
-    public void getNotificationLargeIcon_withPackageNameAndMediaSession_returnsIconCompat() {
-        final Icon icon = mock(Icon.class);
-        Notification notification = setupNotificationMock();
-        when(notification.isMediaNotification()).thenReturn(true);
-        when(notification.getLargeIcon()).thenReturn(icon);
-
-        assertThat(mMediaSwitchingController.getNotificationIcon()).isInstanceOf(IconCompat.class);
-    }
-
-    @Test
-    public void getNotificationLargeIcon_withPackageNameAndNoMediaSession_returnsNull() {
-        final Icon icon = mock(Icon.class);
-        Notification notification = setupNotificationMock();
-        when(notification.isMediaNotification()).thenReturn(false);
-        when(notification.getLargeIcon()).thenReturn(icon);
-
-        assertThat(mMediaSwitchingController.getNotificationIcon()).isNull();
-    }
-
-    @Test
-    public void getAppIcon_noNotificationIconAndNoPackageIcon_returnsNull() throws Exception  {
-        final Notification notification = setupNotificationMock();
-        when(notification.isMediaNotification()).thenReturn(true);
-        when(notification.getSmallIcon()).thenReturn(null);
-
-        when(mPackageManager.getApplicationIcon(mPackageName))
-                .thenThrow(new PackageManager.NameNotFoundException());
-
-        assertThat(mMediaSwitchingController.getAppIcon()).isNull();
-    }
-
-    @Test
-    public void getAppIcon_noNotificationIcon_returnsPackageIcon() throws Exception  {
-        // no notification icon
-        Notification notification = setupNotificationMock();
-        when(notification.isMediaNotification()).thenReturn(true);
-        when(notification.getSmallIcon()).thenReturn(null);
-        // Fallback to package icon
-        Drawable packageIcon = mock(Drawable.class);
-        when(mPackageManager.getApplicationIcon(mPackageName)).thenReturn(packageIcon);
-
-        assertThat(mMediaSwitchingController.getAppIcon()).isEqualTo(packageIcon);
-    }
-
-    @Test
-    public void getAppIcon_withPackageNameAndMediaSession_returnsNotificationSmallIcon() {
-        final Icon icon = mock(Icon.class);
-        final Drawable drawable = mock(Drawable.class);
-        Notification notification = setupNotificationMock();
-        when(notification.isMediaNotification()).thenReturn(true);
-        when(notification.getSmallIcon()).thenReturn(icon);
-        when(icon.loadDrawable(any())).thenReturn(drawable);
-
-        assertThat(mMediaSwitchingController.getAppIcon()).isEqualTo(drawable);
-    }
-
-    @Test
-    public void getDeviceIconCompat_deviceIconIsNotNull_returnsIcon() {
-        when(mLocalMediaManager.getCurrentConnectedDevice()).thenReturn(mMediaDevice2);
-        when(mMediaDevice1.getIcon()).thenReturn(mDrawable);
-
-        assertThat(mMediaSwitchingController.getDeviceIconCompat(mMediaDevice1))
-                .isInstanceOf(IconCompat.class);
-    }
-
-    @Test
-    public void getDeviceIconCompat_deviceIconIsNull_returnsIcon() {
-        when(mLocalMediaManager.getCurrentConnectedDevice()).thenReturn(mMediaDevice2);
-        when(mMediaDevice1.getIcon()).thenReturn(null);
-
-        assertThat(mMediaSwitchingController.getDeviceIconCompat(mMediaDevice1))
-                .isInstanceOf(IconCompat.class);
-    }
-
-    @Test
-    public void isVolumeControlEnabled_isCastWithVolumeFixed_returnsFalse() {
-        when(mMediaDevice1.getDeviceType()).thenReturn(
-                MediaDevice.MediaDeviceType.TYPE_CAST_DEVICE);
-
-        when(mMediaDevice1.isVolumeFixed()).thenReturn(true);
-
-        assertThat(mMediaSwitchingController.isVolumeControlEnabled(mMediaDevice1)).isFalse();
-    }
-
-    @Test
-    public void isVolumeControlEnabled_isCastWithVolumeNotFixed_returnsTrue() {
-        when(mMediaDevice1.getDeviceType()).thenReturn(
-                MediaDevice.MediaDeviceType.TYPE_CAST_DEVICE);
-
-        when(mMediaDevice1.isVolumeFixed()).thenReturn(false);
-
-        assertThat(mMediaSwitchingController.isVolumeControlEnabled(mMediaDevice1)).isTrue();
-    }
-
-    @Test
-    public void setTemporaryAllowListExceptionIfNeeded_fromRemoteToBluetooth_addsAllowList() {
-        when(mLocalMediaManager.getCurrentConnectedDevice()).thenReturn(mMediaDevice1);
-        when(mMediaDevice1.getDeviceType()).thenReturn(
-                MediaDevice.MediaDeviceType.TYPE_CAST_DEVICE);
-        when(mMediaDevice1.getFeatures()).thenReturn(
-                ImmutableList.of(MediaRoute2Info.FEATURE_REMOTE_AUDIO_PLAYBACK));
-        when(mMediaDevice2.getDeviceType()).thenReturn(
-                MediaDevice.MediaDeviceType.TYPE_BLUETOOTH_DEVICE);
-
-        mMediaSwitchingController.setTemporaryAllowListExceptionIfNeeded();
-
-        verify(mPowerExemptionManager).addToTemporaryAllowList(anyString(), anyInt(), anyString(),
-                anyLong());
-    }
-
-    @Test
-    public void setTemporaryAllowListExceptionIfNeeded_packageNameIsNull_NoAction() {
-        MediaSwitchingController testMediaSwitchingController =
-                new MediaSwitchingController(
-                        mSpyContext,
-                        null,
-                        mSpyContext.getUser(),
-                        /* token= */ null,
-                        /* mediaSwitchingType= */ null,
-                        mMediaSessionManager,
-                        mLocalBluetoothManager,
-                        mStarter,
-                        mNotifCollection,
-                        mDialogTransitionAnimator,
-                        mNearbyMediaDevicesManager,
-                        mAudioManager,
-                        mPowerExemptionManager,
-                        mKeyguardManager,
-                        mClock,
-                        mFakeBackgroundExecutor,
-                        mVolumePanelGlobalStateInteractor,
-                        mUserTracker,
-                        mJavaAdapter,
-                        mAudioSharingRepository,
-                        mExpandedAudioTileDetailsFeatureInteractor);
-
-        testMediaSwitchingController.setTemporaryAllowListExceptionIfNeeded();
-
-        verify(mPowerExemptionManager, never()).addToTemporaryAllowList(anyString(), anyInt(),
-                anyString(),
-                anyLong());
-    }
-
-    @Test
-    public void onMetadataChanged_triggersOnMetadataChanged() {
-        mMediaSwitchingController.mCallback = this.mCallback;
-
-        mMediaSwitchingController.mCb.onMetadataChanged(mMediaMetadata);
-
-        verify(mMediaSwitchingController.mCallback).onMediaChanged();
-    }
-
-    @Test
-    public void onPlaybackStateChanged_updateWithNullState_onMediaStoppedOrPaused() {
-        when(mPlaybackState.getState()).thenReturn(PlaybackState.STATE_PLAYING);
-        mMediaSwitchingController.mCallback = this.mCallback;
-        mMediaSwitchingController.start(mCb);
-
-        mMediaSwitchingController.mCb.onPlaybackStateChanged(null);
-
-        verify(mMediaSwitchingController.mCallback).onMediaStoppedOrPaused();
-    }
-
-    @Test
-    public void launchBluetoothPairing_isKeyguardLocked_dismissDialog() {
-        when(mDialogTransitionAnimator.createActivityTransitionController(mDialogLaunchView))
-                .thenReturn(mActivityTransitionAnimatorController);
-        when(mKeyguardManager.isKeyguardLocked()).thenReturn(true);
-        mMediaSwitchingController.mCallback = this.mCallback;
-
-        mMediaSwitchingController.launchBluetoothPairing(mDialogLaunchView);
-
-        verify(mCallback).dismissDialog();
-    }
-
-    @Test
-    public void hasGroupPlayback_singleOutputDevice_returnsFalse() {
-        when(mMediaDevice1.isSelected()).thenReturn(true);
-
-        mMediaSwitchingController.start(mCb);
-        reset(mCb);
-        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-
-        assertThat(mMediaSwitchingController.hasGroupPlayback()).isFalse();
-    }
-
-    @Test
-    public void hasGroupPlayback_multipleOutputDevices_returnsTrue() {
-        when(mMediaDevice1.isSelected()).thenReturn(true);
-        when(mMediaDevice2.isSelected()).thenReturn(true);
-
-        mMediaSwitchingController.start(mCb);
-        reset(mCb);
-        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-
-        assertThat(mMediaSwitchingController.hasGroupPlayback()).isTrue();
-    }
-
-    @EnableFlags(Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL)
-    @Test
-    public void selectInputDevice() {
-        enableInputRoutingConfig();
-        final MediaDevice inputMediaDevice =
-                InputMediaDevice.create(
-                        mContext,
-                        TEST_DEVICE_1_ID,
-                        "",
-                        AudioDeviceInfo.TYPE_BUILTIN_MIC,
-                        MAX_VOLUME,
-                        CURRENT_VOLUME,
-                        VOLUME_FIXED_TRUE,
-                        /* isSelected= */ false,
-                        PRODUCT_NAME_BUILTIN_MIC);
-        mMediaSwitchingController.connectDevice(inputMediaDevice);
-        mFakeBackgroundExecutor.runAllReady();
-
-        verify(mLocalMediaManager, never()).connectDevice(inputMediaDevice);
-        verify(mInputRouteManager).selectDevice(inputMediaDevice);
-    }
-
-    @Test
-    public void selectOutputDevice() {
-        enableInputRoutingConfig();
-        final MediaDevice outputMediaDevice = mock(MediaDevice.class);
-        mMediaSwitchingController.connectDevice(outputMediaDevice);
-        mFakeBackgroundExecutor.runAllReady();
-
-        verify(mInputRouteManager, never()).selectDevice(outputMediaDevice);
-        ArgumentCaptor<RoutingChangeInfo> captor = ArgumentCaptor.forClass(RoutingChangeInfo.class);
-        verify(mLocalMediaManager).connectDevice(eq(outputMediaDevice), captor.capture());
-        RoutingChangeInfo capturedInfo = captor.getValue();
-        assertThat(capturedInfo.getEntryPoint()).isEqualTo(ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER);
-        assertThat(capturedInfo.isSuggested()).isEqualTo(false);
-    }
-
-    @Test
-    public void selectSuggestedOutputDevice() {
-        final MediaDevice outputMediaDevice = mock(MediaDevice.class);
-        when(outputMediaDevice.isSuggestedDevice()).thenReturn(true);
-        mMediaSwitchingController.connectDevice(outputMediaDevice);
-        mFakeBackgroundExecutor.runAllReady();
-
-        verify(mInputRouteManager, never()).selectDevice(outputMediaDevice);
-        ArgumentCaptor<RoutingChangeInfo> captor = ArgumentCaptor.forClass(RoutingChangeInfo.class);
-        verify(mLocalMediaManager).connectDevice(eq(outputMediaDevice), captor.capture());
-        RoutingChangeInfo capturedInfo = captor.getValue();
-        assertThat(capturedInfo.getEntryPoint()).isEqualTo(ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER);
-        assertThat(capturedInfo.isSuggested()).isEqualTo(true);
-    }
-
-    @Test
-    public void connectDeviceButton_remoteDevice_noButton() {
-        when(mMediaDevice1.getFeatures()).thenReturn(
-                ImmutableList.of(MediaRoute2Info.FEATURE_REMOTE_PLAYBACK));
-        when(mLocalMediaManager.getCurrentConnectedDevice()).thenReturn(mMediaDevice1);
-        mMediaSwitchingController.start(mCb);
-        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-
-        assertThat(mMediaSwitchingController.hasConnectDeviceButton()).isFalse();
-    }
-
-    @Test
-    public void connectDeviceButton_localDevice_hasButton() {
-        when(mLocalMediaManager.getCurrentConnectedDevice()).thenReturn(mMediaDevice1);
-        mMediaSwitchingController.start(mCb);
-        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-
-        assertThat(mMediaSwitchingController.hasConnectDeviceButton()).isTrue();
-    }
-
-    @Test
-    public void connectDeviceButton_presentAtAllTimesForNonGroupOutputs() {
-        mMediaSwitchingController.start(mCb);
-        reset(mCb);
-
-        // Mock the selected output device.
-        when(mMediaDevice1.isSelected()).thenReturn(true);
-        when(mMediaDevice2.isSelected()).thenReturn(false);
-        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-
-        // Verify that there is initially the "Connect Device" button present.
-        assertThat(mMediaSwitchingController.hasConnectDeviceButton()).isTrue();
-
-        // Change the selected device, and verify that the "Connect Device" button is still present.
-        when(mMediaDevice1.isSelected()).thenReturn(false);
-        when(mMediaDevice2.isSelected()).thenReturn(true);
-        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-
-        assertThat(mMediaSwitchingController.hasConnectDeviceButton()).isTrue();
-    }
-
-    @Test
-    public void selectedDevicesAddedInSameOrder() {
-        when(mLocalMediaManager.isPreferenceRouteListingExist()).thenReturn(true);
-        when(mMediaDevice1.isSelected()).thenReturn(true);
-        when(mMediaDevice2.isSelected()).thenReturn(true);
-        mMediaSwitchingController.start(mCb);
-        reset(mCb);
-        mMediaSwitchingController.clearMediaItemList();
-
-        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-
-        List<MediaItem> items = mMediaSwitchingController.getMediaItemList();
-        assertThat(((DeviceMediaItem) items.get(0)).getMediaDevice()).isEqualTo(mMediaDevice1);
-        assertThat(((DeviceMediaItem) items.get(1)).getMediaDevice()).isEqualTo(mMediaDevice2);
-    }
-
-    @Test
-    public void selectedDevicesAddedInSameOrderWhenRlpDoesNotExist() {
-        setUpSelectedDevicesAndOrdering();
-
-        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-
-
-        List<MediaDevice> devices = getMediaDevices(mMediaSwitchingController.getMediaItemList());
-        assertThat(devices)
-                .containsExactly(
-                        mMediaDevice4,
-                        mMediaDevice3,
-                        mMediaDevice5,
-                        mMediaDevice1,
-                        mMediaDevice2)
-                .inOrder();
-    }
-
-    private void setUpSelectedDevicesAndOrdering() {
-        when(mMediaDevice1.getId()).thenReturn(TEST_DEVICE_1_ID);
-        when(mMediaDevice2.getId()).thenReturn(TEST_DEVICE_2_ID);
-        when(mMediaDevice3.getId()).thenReturn(TEST_DEVICE_3_ID);
-        when(mMediaDevice4.getId()).thenReturn(TEST_DEVICE_4_ID);
-        when(mMediaDevice5.getId()).thenReturn(TEST_DEVICE_5_ID);
-        mMediaDevices.clear();
-        Collections.addAll(
-                mMediaDevices,
-                mMediaDevice2,
-                mMediaDevice1,
-                mMediaDevice4,
-                mMediaDevice3,
-                mMediaDevice5);
-        when(mMediaDevice3.isSelected()).thenReturn(true);
-        when(mMediaDevice4.isSelected()).thenReturn(true);
-        when(mMediaDevice5.isSelected()).thenReturn(true);
-        // Sort the media devices in the order they appear in the deviceOrder list
-        List<MediaDevice> deviceOrder = new ArrayList<>();
-        Collections.addAll(
-                deviceOrder,
-                mMediaDevice1,
-                mMediaDevice2,
-                mMediaDevice3,
-                mMediaDevice4,
-                mMediaDevice5);
-        for (int i = 0; i < deviceOrder.size(); i++) {
-            for (int j = i + 1; j < deviceOrder.size(); j++) {
-                when(deviceOrder.get(i).compareTo(deviceOrder.get(j))).thenReturn(-1);
-                when(deviceOrder.get(j).compareTo(deviceOrder.get(i))).thenReturn(1);
-            }
-        }
-        when(mLocalMediaManager.isPreferenceRouteListingExist()).thenReturn(false);
-        mMediaSwitchingController.start(mCb);
-        reset(mCb);
-        mMediaSwitchingController.clearMediaItemList();
-    }
-
-    @Test
-    public void getAudioSharingButtonState_noConnectedBroadcastAssistantDevice_returnsNull() {
-        LocalBluetoothProfileManager profileManager = mock(LocalBluetoothProfileManager.class);
-        LocalBluetoothLeBroadcastAssistant assistantProfile =
-                mock(LocalBluetoothLeBroadcastAssistant.class);
-        when(mLocalBluetoothManager.getProfileManager()).thenReturn(profileManager);
-        when(profileManager.getLeAudioBroadcastAssistantProfile()).thenReturn(assistantProfile);
-        when(assistantProfile.getConnectedDevices()).thenReturn(List.of());
-        mMediaSwitchingController.start(mCb);
-
-        AudioSharingButtonState buttonState =
-                mMediaSwitchingController.getAudioSharingButtonState();
-
-        assertThat(buttonState).isNull();
-    }
-
-    @Test
-    public void getAudioSharingButtonState_inAudioSharing_returnsVisible() {
-        MutableStateFlow<Boolean> inAudioSharingFlow = MutableStateFlow(false);
-        when(mAudioSharingRepository.getInAudioSharing()).thenReturn(inAudioSharingFlow);
-        mMediaSwitchingController.start(mCb);
-        verify(mJavaAdapter)
-                .alwaysCollectFlow(same(inAudioSharingFlow), mInAudioSharingCaptor.capture());
-        Consumer<Boolean> capturedConsumer = mInAudioSharingCaptor.getValue();
-        capturedConsumer.accept(true);
-
-        AudioSharingButtonState buttonState =
-                mMediaSwitchingController.getAudioSharingButtonState();
-
-        assertThat(buttonState).isNotNull();
-        assertThat(buttonState.isActive()).isTrue();
-        assertThat(buttonState.getResId())
-                .isEqualTo(R.string.media_output_dialog_button_sharing_audio);
-    }
-
-    @Test
-    public void getAudioSharingButtonState_hasConnectedBroadcastAssistantDevice_returnsVisible() {
-        LocalBluetoothProfileManager profileManager = mock(LocalBluetoothProfileManager.class);
-        LocalBluetoothLeBroadcastAssistant assistantProfile =
-                mock(LocalBluetoothLeBroadcastAssistant.class);
-        BluetoothDevice bluetoothDevice = mock(BluetoothDevice.class);
-        MutableStateFlow<Boolean> inAudioSharingFlow = MutableStateFlow(false);
-        when(mLocalBluetoothManager.getProfileManager()).thenReturn(profileManager);
-        when(profileManager.getLeAudioBroadcastAssistantProfile()).thenReturn(assistantProfile);
-        when(assistantProfile.getAllConnectedDevices()).thenReturn(List.of(bluetoothDevice));
-        when(mAudioSharingRepository.getInAudioSharing()).thenReturn(inAudioSharingFlow);
-        mMediaSwitchingController.start(mCb);
-
-        AudioSharingButtonState buttonState =
-                mMediaSwitchingController.getAudioSharingButtonState();
-
-        assertThat(buttonState).isNotNull();
-        assertThat(buttonState.isActive()).isFalse();
-        assertThat(buttonState.getResId())
-                .isEqualTo(R.string.media_output_dialog_button_share_audio);
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ENABLE_USE_OF_SESSION_RELEASE_TYPE_FOR_STOP_BUTTON)
-    public void getStopButtonText_remotePlaybackDevice_returnDefaultText() {
-        doReturn(mMediaDevice1).when(mLocalMediaManager).getCurrentConnectedDevice();
-        when(mMediaDevice1.getFeatures()).thenReturn(
-                ImmutableList.of(MediaRoute2Info.FEATURE_REMOTE_PLAYBACK));
-
-        assertThat(mMediaSwitchingController.getStopButtonStringRes()).isEqualTo(
-                R.string.media_output_dialog_button_stop_casting);
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ENABLE_USE_OF_SESSION_RELEASE_TYPE_FOR_STOP_BUTTON)
-    public void getStopButtonText_remoteAudioPlaybackDevice_returnDefaultText() {
-        doReturn(mMediaDevice1).when(mLocalMediaManager).getCurrentConnectedDevice();
-        when(mMediaDevice1.getFeatures()).thenReturn(
-                ImmutableList.of(MediaRoute2Info.FEATURE_REMOTE_AUDIO_PLAYBACK));
-
-        assertThat(mMediaSwitchingController.getStopButtonStringRes()).isEqualTo(
-                R.string.media_output_dialog_button_stop_casting);
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ENABLE_USE_OF_SESSION_RELEASE_TYPE_FOR_STOP_BUTTON)
-    public void getStopButtonText_remoteVideoPlaybackDevice_returnDefaultText() {
-        doReturn(mMediaDevice1).when(mLocalMediaManager).getCurrentConnectedDevice();
-        when(mMediaDevice1.getFeatures()).thenReturn(
-                ImmutableList.of(MediaRoute2Info.FEATURE_REMOTE_VIDEO_PLAYBACK));
-
-        assertThat(mMediaSwitchingController.getStopButtonStringRes()).isEqualTo(
-                R.string.media_output_dialog_button_stop_casting);
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ENABLE_USE_OF_SESSION_RELEASE_TYPE_FOR_STOP_BUTTON)
-    public void getStopButtonText_remoteGroupPlaybackDevice_returnDefaultText() {
-        doReturn(mMediaDevice1).when(mLocalMediaManager).getCurrentConnectedDevice();
-        when(mMediaDevice1.getFeatures()).thenReturn(
-                ImmutableList.of(MediaRoute2Info.FEATURE_REMOTE_GROUP_PLAYBACK));
-
-        assertThat(mMediaSwitchingController.getStopButtonStringRes()).isEqualTo(
-                R.string.media_output_dialog_button_stop_casting);
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ENABLE_USE_OF_SESSION_RELEASE_TYPE_FOR_STOP_BUTTON)
-    public void getStopButtonText_localDevice_returnNull() {
-        when(mMediaDevice1.getFeatures())
-                .thenReturn(ImmutableList.of(MediaRoute2Info.FEATURE_LOCAL_PLAYBACK));
-
-        assertThat(mMediaSwitchingController.getStopButtonStringRes()).isNull();
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ENABLE_USE_OF_SESSION_RELEASE_TYPE_FOR_STOP_BUTTON)
-    public void getStopButtonText_mediaSwitchingTypeIsInput_returnNull() {
-        mMediaSwitchingController = createDefaultMediaSwitchingController(MediaSwitchingType.INPUT);
-
-        doReturn(mMediaDevice1).when(mLocalMediaManager).getCurrentConnectedDevice();
-        when(mMediaDevice1.getFeatures())
-                .thenReturn(ImmutableList.of(MediaRoute2Info.FEATURE_REMOTE_PLAYBACK));
-
-        assertThat(mMediaSwitchingController.getStopButtonStringRes()).isNull();
-    }
-
-    @Test
-    @EnableFlags({
-            Flags.FLAG_ENABLE_USE_OF_SESSION_RELEASE_TYPE_FOR_STOP_BUTTON,
-            Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING
-    })
-    public void getStopButtonText_sessionReleaseSharing_returnsSharingText() {
-        doReturn(RoutingSessionInfo.RELEASE_TYPE_SHARING).when(
-                mLocalMediaManager).getSessionReleaseType();
-
-        assertThat(mMediaSwitchingController.getStopButtonStringRes()).isEqualTo(
-                R.string.media_output_dialog_button_stop_sharing);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_USE_OF_SESSION_RELEASE_TYPE_FOR_STOP_BUTTON)
-    @DisableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
-    public void getStopButtonText_sessionReleaseSharingDisabled_returnsNull() {
-        doReturn(RoutingSessionInfo.RELEASE_TYPE_SHARING).when(
-                mLocalMediaManager).getSessionReleaseType();
-
-        assertThat(mMediaSwitchingController.getStopButtonStringRes()).isNull();
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_USE_OF_SESSION_RELEASE_TYPE_FOR_STOP_BUTTON)
-    public void getStopButtonText_sessionReleaseCasting_returnsCastingText() {
-        doReturn(RoutingSessionInfo.RELEASE_TYPE_CASTING).when(
-                mLocalMediaManager).getSessionReleaseType();
-
-        assertThat(mMediaSwitchingController.getStopButtonStringRes()).isEqualTo(
-                R.string.media_output_dialog_button_stop_casting);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_USE_OF_SESSION_RELEASE_TYPE_FOR_STOP_BUTTON)
-    public void getStopButtonText_sessionReleaseUnsupported_returnsNull() {
-        doReturn(RoutingSessionInfo.RELEASE_UNSUPPORTED).when(
-                mLocalMediaManager).getSessionReleaseType();
-
-        assertThat(mMediaSwitchingController.getStopButtonStringRes()).isNull();
-    }
-
-    @Test
-    public void getAudioSharingButtonState_mediaSwitchingTypeIsInput_returnsNull() {
-        mMediaSwitchingController = createDefaultMediaSwitchingController(MediaSwitchingType.INPUT);
-        LocalBluetoothProfileManager profileManager = mock(LocalBluetoothProfileManager.class);
-        LocalBluetoothLeBroadcastAssistant assistantProfile =
-                mock(LocalBluetoothLeBroadcastAssistant.class);
-        BluetoothDevice bluetoothDevice = mock(BluetoothDevice.class);
-        MutableStateFlow<Boolean> inAudioSharingFlow = MutableStateFlow(false);
-        when(mLocalBluetoothManager.getProfileManager()).thenReturn(profileManager);
-        when(profileManager.getLeAudioBroadcastAssistantProfile()).thenReturn(assistantProfile);
-        when(assistantProfile.getAllConnectedDevices()).thenReturn(List.of(bluetoothDevice));
-        when(mAudioSharingRepository.getInAudioSharing()).thenReturn(inAudioSharingFlow);
-        mMediaSwitchingController.start(mCb);
-
-        AudioSharingButtonState buttonState =
-                mMediaSwitchingController.getAudioSharingButtonState();
-
-        assertThat(buttonState).isNull();
-    }
-
-    @Test
-    public void onMissingPermissionsUpdated_verifyCallback() {
-        mMediaSwitchingController.start(mCb);
-        reset(mCb);
-
-        mMediaSwitchingController.onMissingPermissionsUpdated(null);
-
-        verify(mCb).onRouteChanged();
-    }
-
-    @Test
-    @RequiresFlagsEnabled(FLAG_ACCESS_LOCAL_NETWORK_PERMISSION_ENABLED)
-    public void getMissingPermissionsResolveIntent_noMissingPermissionsInfo_returnsNull() {
-        when(mLocalMediaManager.getMissingPermissionsInfo()).thenReturn(null);
-
-        assertThat(mMediaSwitchingController.getMissingPermissionsResolveIntent()).isNull();
-    }
-
-    @Test
-    @RequiresFlagsEnabled(FLAG_ACCESS_LOCAL_NETWORK_PERMISSION_ENABLED)
-    public void getMissingPermissionsResolveIntent_emptyPermissions_returnsNull() {
-        ComponentName componentName = new ComponentName(mPackageName, "class");
-        MissingPermissionsInfo info = new MissingPermissionsInfo(componentName, Set.of());
-        when(mLocalMediaManager.getMissingPermissionsInfo()).thenReturn(info);
-
-        assertThat(mMediaSwitchingController.getMissingPermissionsResolveIntent()).isNull();
-    }
-
-    @Test
-    @RequiresFlagsDisabled(FLAG_ACCESS_LOCAL_NETWORK_PERMISSION_ENABLED)
-    public void getMissingPermissionsResolveIntent_flagDisabled_returnsNull() {
-        ComponentName componentName = new ComponentName(mPackageName, "class");
-        Set<String> perms = Set.of("perm1", "perm2");
-        MissingPermissionsInfo info = new MissingPermissionsInfo(componentName, perms);
-        when(mLocalMediaManager.getMissingPermissionsInfo()).thenReturn(info);
-
-        assertThat(mMediaSwitchingController.getMissingPermissionsResolveIntent()).isNull();
-    }
-
-    @Test
-    @RequiresFlagsEnabled(FLAG_ACCESS_LOCAL_NETWORK_PERMISSION_ENABLED)
-    public void getMissingPermissionsResolveIntent_validInfo_returnsIntent() {
-        ComponentName componentName = new ComponentName(mPackageName, "class");
-        Set<String> perms = Set.of("perm1", "perm2");
-        MissingPermissionsInfo info = new MissingPermissionsInfo(componentName, perms);
-        when(mLocalMediaManager.getMissingPermissionsInfo()).thenReturn(info);
-
-        Intent intent = mMediaSwitchingController.getMissingPermissionsResolveIntent();
-
-        assertThat(intent).isNotNull();
-        assertThat(intent.getAction()).isEqualTo(
-                RouteListingPreference.ACTION_RESOLVE_MISSING_PERMISSIONS);
-        assertThat(intent.getComponent()).isEqualTo(componentName);
-        List<String> extraPermissions = intent.getStringArrayListExtra(
-                RouteListingPreference.EXTRA_MISSING_PERMISSIONS);
-        assertThat(extraPermissions).containsExactly("perm1", "perm2");
-        assertThat(intent.getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK).isNotEqualTo(0);
-    }
-
-    private List<MediaDevice> getMediaDevices(List<MediaItem> mediaItemList) {
-        return mediaItemList.stream()
-                .filter(item -> (item instanceof DeviceMediaItem))
-                .map(item -> ((DeviceMediaItem) item).getMediaDevice())
-                .collect(Collectors.toList());
-    }
-
-    private void enableInputRoutingConfig() {
-        Resources spyResources = spy(mContext.getResources());
-        when(mSpyContext.getResources()).thenReturn(spyResources);
-        when(spyResources.getBoolean(
-                R.bool.config_enableInputRouting)).thenReturn(true);
-    }
-
-    private MediaSwitchingController createDefaultMediaSwitchingController() {
-        return createDefaultMediaSwitchingController(/* mediaSwitchingType= */ null);
-    }
-
-    private MediaSwitchingController createDefaultMediaSwitchingController(
-            MediaSwitchingType mediaSwitchingType) {
-        return new MediaSwitchingController(
+            MediaSwitchingController(
                 mSpyContext,
-                mPackageName,
-                mContext.getUser(),
-                /* token= */ null,
-                mediaSwitchingType,
+                mPackageName = null,
+                mContext.user,
+                mToken = null,
+                mediaSwitchingType = null,
                 mMediaSessionManager,
                 mLocalBluetoothManager,
                 mStarter,
@@ -2120,20 +311,1765 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                 mUserTracker,
                 mJavaAdapter,
                 mAudioSharingRepository,
-                mExpandedAudioTileDetailsFeatureInteractor);
+                mExpandedAudioTileDetailsFeatureInteractor,
+            )
+
+        mMediaSwitchingController.start(mCb)
+
+        verify(mSessionMediaController, never()).registerCallback(any())
     }
 
-    private Notification setupNotificationMock() {
-        final List<NotificationEntry> entryList = new ArrayList<>();
-        final NotificationEntry entry = mock(NotificationEntry.class);
-        final StatusBarNotification sbn = mock(StatusBarNotification.class);
-        final Notification notification = mock(Notification.class);
-        entryList.add(entry);
+    @Test
+    fun start_nearbyMediaDevicesManagerNotNull_registersNearbyDevicesCallback() {
+        mMediaSwitchingController.start(mCb)
 
-        when(mNotifCollection.getAllNotifs()).thenReturn(entryList);
-        when(entry.getSbn()).thenReturn(sbn);
-        when(sbn.getNotification()).thenReturn(notification);
-        when(sbn.getPackageName()).thenReturn(mPackageName);
-        return notification;
+        verify(mNearbyMediaDevicesManager).registerNearbyDevicesCallback(any())
+    }
+
+    @Test
+    fun stop_withPackageName_verifyMediaControllerDeinit() {
+        mMediaSwitchingController.start(mCb)
+        reset(mSessionMediaController)
+
+        mMediaSwitchingController.stop()
+
+        verify(mSessionMediaController).unregisterCallback(any())
+    }
+
+    @Test
+    fun stop_withoutPackageName_verifyMediaControllerDeinit() {
+        mMediaSwitchingController =
+            MediaSwitchingController(
+                mSpyContext,
+                mPackageName = null,
+                mSpyContext.user,
+                mToken = null,
+                mediaSwitchingType = null,
+                mMediaSessionManager,
+                mLocalBluetoothManager,
+                mStarter,
+                mNotifCollection,
+                mDialogTransitionAnimator,
+                mNearbyMediaDevicesManager,
+                mAudioManager,
+                mPowerExemptionManager,
+                mKeyguardManager,
+                mClock,
+                mFakeBackgroundExecutor,
+                mVolumePanelGlobalStateInteractor,
+                mUserTracker,
+                mJavaAdapter,
+                mAudioSharingRepository,
+                mExpandedAudioTileDetailsFeatureInteractor,
+            )
+
+        mMediaSwitchingController.start(mCb)
+
+        mMediaSwitchingController.stop()
+
+        verify(mSessionMediaController, never()).unregisterCallback(any())
+    }
+
+    @Test
+    fun stop_nearbyMediaDevicesManagerNotNull_unregistersNearbyDevicesCallback() {
+        mMediaSwitchingController.start(mCb)
+        reset(mSessionMediaController)
+
+        mMediaSwitchingController.stop()
+
+        verify(mNearbyMediaDevicesManager).unregisterNearbyDevicesCallback(any())
+    }
+
+    @Test
+    fun tryToLaunchMediaApplication_nullIntent_skip() {
+        mMediaSwitchingController.tryToLaunchMediaApplication(mDialogLaunchView)
+
+        verify(mCb, never()).dismissDialog()
+    }
+
+    @Test
+    fun tryToLaunchMediaApplication_intentNotNull_startActivity() {
+        whenever(
+                mDialogTransitionAnimator.createActivityTransitionController(
+                    any<View>(),
+                    anyOrNull(),
+                )
+            )
+            .thenReturn(mController)
+        val intent = Intent(mPackageName)
+        doReturn(intent).whenever(mPackageManager).getLaunchIntentForPackage(mPackageName)
+        mMediaSwitchingController.start(mCallback)
+
+        mMediaSwitchingController.tryToLaunchMediaApplication(mDialogLaunchView)
+
+        verify(mStarter).startActivity(any<Intent>(), any(), eq(mController))
+    }
+
+    @Test
+    fun tryToLaunchInAppRoutingIntent_componentNameNotNull_startActivity() {
+        whenever(
+                mDialogTransitionAnimator.createActivityTransitionController(
+                    any<View>(),
+                    anyOrNull(),
+                )
+            )
+            .thenReturn(mController)
+        mMediaSwitchingController.start(mCallback)
+        whenever(mLocalMediaManager.linkedItemComponentName)
+            .thenReturn(ComponentName(mPackageName, ""))
+
+        mMediaSwitchingController.tryToLaunchInAppRoutingIntent(TEST_DEVICE_1_ID, mDialogLaunchView)
+
+        verify(mStarter).startActivity(any<Intent>(), any(), eq(mController))
+    }
+
+    @Test
+    fun onDevicesUpdated_unregistersNearbyDevicesCallback() {
+        mMediaSwitchingController.start(mCb)
+
+        mMediaSwitchingController.onDevicesUpdated(listOf())
+
+        verify(mNearbyMediaDevicesManager).unregisterNearbyDevicesCallback(any())
+    }
+
+    @Test
+    fun onDeviceListUpdate_withNearbyDevices_updatesRangeInformation() {
+        mMediaSwitchingController.start(mCb)
+        reset(mCb)
+
+        mMediaSwitchingController.onDevicesUpdated(mNearbyDevices)
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices)
+
+        verify(mMediaDevice1).setRangeZone(NearbyDevice.RANGE_FAR)
+        verify(mMediaDevice2).setRangeZone(NearbyDevice.RANGE_CLOSE)
+    }
+
+    @Test
+    fun onDeviceListUpdate_withNearbyDevices_rankByRangeInformation() {
+        mMediaSwitchingController.start(mCb)
+        reset(mCb)
+
+        mMediaSwitchingController.onDevicesUpdated(mNearbyDevices)
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices)
+
+        assertThat(mMediaDevices[0].id).isEqualTo(TEST_DEVICE_1_ID)
+    }
+
+    @Test
+    fun routeProcessSupport_onDeviceListUpdate_preferenceExist_NotUpdatesRangeInformation() {
+        whenever(mLocalMediaManager.isPreferenceRouteListingExist).thenReturn(true)
+        mMediaSwitchingController.start(mCb)
+        reset(mCb)
+
+        mMediaSwitchingController.onDevicesUpdated(mNearbyDevices)
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices)
+
+        verify(mMediaDevice1, never()).setRangeZone(any())
+        verify(mMediaDevice2, never()).setRangeZone(any())
+    }
+
+    @Test
+    fun onDeviceListUpdate_repeatedWithinThresholdPeriod_rearrangesList() {
+        mMediaSwitchingController.start(mCb)
+        reset(mCb)
+
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices)
+
+        var items = mMediaSwitchingController.getMediaItemList()
+        assertThat((items[0] as GroupDividerMediaItem).title)
+            .isEqualTo(mContext.getString(R.string.media_output_group_title_speakers_and_displays))
+        assertThat((items[1] as DeviceMediaItem).mediaDevice).isEqualTo(mMediaDevice1)
+        assertThat((items[2] as DeviceMediaItem).mediaDevice).isEqualTo(mMediaDevice2)
+
+        mClock.advanceTime(1500) // < 2 seconds.
+
+        // Make the second device suggested
+        whenever(mMediaDevice2.isSuggestedDevice).thenReturn(true)
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices)
+
+        // The list is rearranged - The "Suggested" section added and the order got updated.
+        items = mMediaSwitchingController.getMediaItemList()
+        assertThat((items[0] as GroupDividerMediaItem).title)
+            .isEqualTo(mContext.getString(R.string.media_output_group_title_suggested))
+        assertThat((items[1] as DeviceMediaItem).mediaDevice).isEqualTo(mMediaDevice2)
+        assertThat((items[2] as GroupDividerMediaItem).title)
+            .isEqualTo(mContext.getString(R.string.media_output_group_title_speakers_and_displays))
+        assertThat((items[3] as DeviceMediaItem).mediaDevice).isEqualTo(mMediaDevice1)
+    }
+
+    @Test
+    fun onDeviceListUpdate_repeatedAfterThresholdPeriod_appendsItemsToTheList() {
+        mMediaSwitchingController.start(mCb)
+        reset(mCb)
+
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices)
+
+        var items = mMediaSwitchingController.getMediaItemList()
+        assertThat((items[0] as GroupDividerMediaItem).title)
+            .isEqualTo(mContext.getString(R.string.media_output_group_title_speakers_and_displays))
+        assertThat((items[1] as DeviceMediaItem).mediaDevice).isEqualTo(mMediaDevice1)
+        assertThat((items[2] as DeviceMediaItem).mediaDevice).isEqualTo(mMediaDevice2)
+
+        mClock.advanceTime(2100) // > 2 seconds.
+
+        // Make the second device suggested
+        whenever(mMediaDevice2.isSuggestedDevice).thenReturn(true)
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices)
+
+        // The list remains unchanged.
+        items = mMediaSwitchingController.getMediaItemList()
+        assertThat((items[0] as GroupDividerMediaItem).title)
+            .isEqualTo(mContext.getString(R.string.media_output_group_title_speakers_and_displays))
+        assertThat((items[1] as DeviceMediaItem).mediaDevice).isEqualTo(mMediaDevice1)
+        assertThat((items[2] as DeviceMediaItem).mediaDevice).isEqualTo(mMediaDevice2)
+    }
+
+    @Test
+    fun onDeviceListUpdate_verifyDeviceListCallback() {
+        mMediaSwitchingController.start(mCb)
+        reset(mCb)
+
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices)
+        val devices = getMediaDevices(mMediaSwitchingController.getMediaItemList())
+
+        assertThat(devices.containsAll(mMediaDevices)).isTrue()
+        assertThat(devices.size).isEqualTo(mMediaDevices.size)
+        // There should be 1 non-MediaDevice item - the "Speakers & Display" title.
+        assertThat(mMediaSwitchingController.getMediaItemList().size)
+            .isEqualTo(mMediaDevices.size + 1)
+        verify(mCb).onDeviceListChanged()
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL)
+    @Test
+    fun onDeviceListUpdate_verifyDeviceListCallback_inputRouting() {
+        enableInputRoutingConfig()
+        mMediaSwitchingController = createDefaultMediaSwitchingController()
+        mMediaSwitchingController.start(mCb)
+        reset(mCb)
+
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices)
+        val devices = getMediaDevices(mMediaSwitchingController.getMediaItemList())
+
+        assertThat(devices.containsAll(mMediaDevices)).isTrue()
+        assertThat(devices.size).isEqualTo(mMediaDevices.size)
+        // When input routing is enabled, there should be 3 non-MediaDevice items: one for
+        // the "Output" title, one for the "Speakers & Displays" title, and one for the "Input"
+        // title.
+        assertThat(mMediaSwitchingController.getMediaItemList().size)
+            .isEqualTo(mMediaDevices.size + 3)
+        verify(mCb).onDeviceListChanged()
+    }
+
+    @Test
+    fun advanced_onDeviceListUpdateWithConnectedDeviceRemote_verifyItemSize() {
+        whenever(mMediaDevice1.features).thenReturn(listOf(MediaRoute2Info.FEATURE_REMOTE_PLAYBACK))
+        whenever(mLocalMediaManager.getCurrentConnectedDevice()).thenReturn(mMediaDevice1)
+        mMediaSwitchingController.start(mCb)
+        reset(mCb)
+
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices)
+        val devices = getMediaDevices(mMediaSwitchingController.getMediaItemList())
+
+        assertThat(devices.containsAll(mMediaDevices)).isTrue()
+        assertThat(devices.size).isEqualTo(mMediaDevices.size)
+        // There should be 1 non-MediaDevice item: the "Speakers & Display" title.
+        assertThat(mMediaSwitchingController.getMediaItemList().size)
+            .isEqualTo(mMediaDevices.size + 1)
+        verify(mCb).onDeviceListChanged()
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL)
+    @Test
+    fun advanced_onDeviceListUpdateWithConnectedDeviceRemote_verifyItemSize_inputRouting() {
+        enableInputRoutingConfig()
+        whenever(mMediaDevice1.features).thenReturn(listOf(MediaRoute2Info.FEATURE_REMOTE_PLAYBACK))
+        whenever(mLocalMediaManager.getCurrentConnectedDevice()).thenReturn(mMediaDevice1)
+        mMediaSwitchingController = createDefaultMediaSwitchingController()
+        mMediaSwitchingController.start(mCb)
+        reset(mCb)
+
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices)
+        val devices = getMediaDevices(mMediaSwitchingController.getMediaItemList())
+
+        assertThat(devices.containsAll(mMediaDevices)).isTrue()
+        assertThat(devices.size).isEqualTo(mMediaDevices.size)
+        // When input routing is enabled, there should be 3 non-MediaDevice items: one for
+        // the "Output" title, one for the "Speakers & Displays" title, and one for the "Input"
+        // title.
+        assertThat(mMediaSwitchingController.getMediaItemList().size)
+            .isEqualTo(mMediaDevices.size + 3)
+        verify(mCb).onDeviceListChanged()
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL)
+    @Test
+    fun onInputDeviceListUpdateWithInputType_verifyDeviceListCallback_inputRouting() {
+        enableInputRoutingConfig()
+        mMediaSwitchingController =
+            MediaSwitchingController(
+                mSpyContext,
+                mPackageName,
+                mContext.user,
+                mToken = null,
+                MediaSwitchingType.INPUT,
+                mMediaSessionManager,
+                mLocalBluetoothManager,
+                mStarter,
+                mNotifCollection,
+                mDialogTransitionAnimator,
+                mNearbyMediaDevicesManager,
+                mAudioManager,
+                mPowerExemptionManager,
+                mKeyguardManager,
+                mClock,
+                mFakeBackgroundExecutor,
+                mVolumePanelGlobalStateInteractor,
+                mUserTracker,
+                mJavaAdapter,
+                mAudioSharingRepository,
+                mExpandedAudioTileDetailsFeatureInteractor,
+            )
+        val audioDeviceInfos = arrayOf<AudioDeviceInfo>()
+        whenever(mAudioManager.getDevices(AudioManager.GET_DEVICES_INPUTS))
+            .thenReturn(audioDeviceInfos)
+        mMediaSwitchingController.start(mCb)
+
+        // Output devices have changed.
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices)
+        val inputDevices = listOf(mMediaDevice6, mMediaDevice7)
+
+        // Input devices have changed.
+        mMediaSwitchingController.mInputDeviceCallback.onInputDeviceListUpdated(inputDevices)
+
+        val resultList = mMediaSwitchingController.getMediaItemList()
+        val devices = getMediaDevices(resultList)
+
+        assertThat(resultList[0]).isInstanceOf(DeviceMediaItem::class.java)
+        assertThat((resultList[0] as DeviceMediaItem).mediaDevice).isEqualTo(mMediaDevice6)
+
+        assertThat(resultList[1]).isInstanceOf(DeviceMediaItem::class.java)
+        assertThat((resultList[1] as DeviceMediaItem).mediaDevice).isEqualTo(mMediaDevice7)
+
+        assertThat(resultList.size).isEqualTo(2)
+
+        // Only contains input devices.
+        assertThat(devices).containsNoneIn(mMediaDevices)
+        assertThat(devices).hasSize(inputDevices.size)
+        verify(mCb, atLeastOnce()).onDeviceListChanged()
+        verify(mNearbyMediaDevicesManager, never()).registerNearbyDevicesCallback(any())
+        verify(mLocalMediaManager, never()).registerCallback(any())
+        verify(mLocalMediaManager, never()).startScan()
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL)
+    @Test
+    fun onInputDeviceListUpdateWithOutputType_verifyDeviceListCallback_inputRouting() {
+        enableInputRoutingConfig()
+        mMediaSwitchingController =
+            MediaSwitchingController(
+                mSpyContext,
+                mPackageName,
+                mContext.user,
+                mToken = null,
+                MediaSwitchingType.OUTPUT,
+                mMediaSessionManager,
+                mLocalBluetoothManager,
+                mStarter,
+                mNotifCollection,
+                mDialogTransitionAnimator,
+                mNearbyMediaDevicesManager,
+                mAudioManager,
+                mPowerExemptionManager,
+                mKeyguardManager,
+                mClock,
+                mFakeBackgroundExecutor,
+                mVolumePanelGlobalStateInteractor,
+                mUserTracker,
+                mJavaAdapter,
+                mAudioSharingRepository,
+                mExpandedAudioTileDetailsFeatureInteractor,
+            )
+        val audioDeviceInfos = arrayOf<AudioDeviceInfo>()
+        whenever(mAudioManager.getDevices(AudioManager.GET_DEVICES_INPUTS))
+            .thenReturn(audioDeviceInfos)
+        mMediaSwitchingController.start(mCb)
+
+        // Output devices have changed.
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices)
+        val inputDevices = listOf(mMediaDevice6, mMediaDevice7)
+
+        // Input devices have changed.
+        mMediaSwitchingController.mInputDeviceCallback.onInputDeviceListUpdated(inputDevices)
+
+        val resultList = mMediaSwitchingController.getMediaItemList()
+        val devices = getMediaDevices(resultList)
+
+        assertThat(resultList[0]).isInstanceOf(GroupDividerMediaItem::class.java)
+        assertThat((resultList[0] as GroupDividerMediaItem).hasTopSeparator).isTrue()
+        assertThat((resultList[0] as GroupDividerMediaItem).title)
+            .isEqualTo(mContext.getString(R.string.media_output_group_title_speakers_and_displays))
+
+        assertThat(resultList[1]).isInstanceOf(DeviceMediaItem::class.java)
+        assertThat((resultList[1] as DeviceMediaItem).mediaDevice).isEqualTo(mMediaDevice1)
+
+        assertThat(resultList[2]).isInstanceOf(DeviceMediaItem::class.java)
+        assertThat((resultList[2] as DeviceMediaItem).mediaDevice).isEqualTo(mMediaDevice2)
+
+        assertThat(resultList.size).isEqualTo(3)
+
+        assertThat(mMediaSwitchingController.hasConnectDeviceButton()).isTrue()
+
+        // Only contains output devices.
+        assertThat(devices).containsExactlyElementsIn(mMediaDevices)
+        verify(mCb, atLeastOnce()).onDeviceListChanged()
+        verify(mInputRouteManager, never()).registerCallback(any())
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL)
+    @Test
+    fun onInputDeviceListUpdate_verifyDeviceListCallback() {
+        enableInputRoutingConfig()
+        val audioDeviceInfos = arrayOf<AudioDeviceInfo>()
+        whenever(mAudioManager.getDevices(AudioManager.GET_DEVICES_INPUTS))
+            .thenReturn(audioDeviceInfos)
+        mMediaSwitchingController = createDefaultMediaSwitchingController()
+        mMediaSwitchingController.start(mCb)
+
+        // Output devices have changed.
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices)
+
+        val inputDevices = listOf(mMediaDevice6, mMediaDevice7)
+
+        // Input devices have changed.
+        mMediaSwitchingController.mInputDeviceCallback.onInputDeviceListUpdated(inputDevices)
+
+        val devices = getMediaDevices(mMediaSwitchingController.getMediaItemList())
+
+        assertThat(devices).containsAtLeastElementsIn(mMediaDevices)
+        assertThat(devices).hasSize(mMediaDevices.size + inputDevices.size)
+        verify(mCb, atLeastOnce()).onDeviceListChanged()
+    }
+
+    @Test
+    fun advanced_categorizeMediaItems_withSuggestedDevice_verifyDeviceListSize() {
+        whenever(mMediaDevice1.isSuggestedDevice).thenReturn(true)
+        whenever(mMediaDevice2.isSuggestedDevice).thenReturn(false)
+
+        mMediaSwitchingController.start(mCb)
+        reset(mCb)
+        mMediaSwitchingController.clearMediaItemList()
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices)
+        val devices: MutableList<MediaDevice> = ArrayList()
+        var dividerSize = 0
+        for (item in mMediaSwitchingController.getMediaItemList()) {
+            if (item is DeviceMediaItem) {
+                devices.add(item.mediaDevice)
+            }
+            if (item is GroupDividerMediaItem) {
+                dividerSize++
+            }
+        }
+
+        assertThat(devices.containsAll(mMediaDevices)).isTrue()
+        assertThat(devices.size).isEqualTo(mMediaDevices.size)
+        assertThat(dividerSize).isEqualTo(2)
+        verify(mCb).onDeviceListChanged()
+    }
+
+    @Test
+    fun onDeviceListUpdate_withMutingExpectedDevice_putItOnTop() {
+        whenever(mMediaDevice1.isSuggestedDevice).thenReturn(false)
+        whenever(mMediaDevice2.isMutingExpectedDevice).thenReturn(true)
+
+        mMediaSwitchingController.start(mCb)
+        reset(mCb)
+        mMediaSwitchingController.clearMediaItemList()
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices)
+        val devices = getMediaDevices(mMediaSwitchingController.getMediaItemList())
+
+        assertThat(devices.first().isMutingExpectedDevice).isTrue()
+        assertThat(mMediaSwitchingController.hasMutingExpectedDevice()).isTrue()
+    }
+
+    @Test
+    fun onDeviceListUpdate_noMutingExpectedDevice_processListNormally() {
+        whenever(mMediaDevice1.isSuggestedDevice).thenReturn(false)
+        whenever(mMediaDevice2.isMutingExpectedDevice).thenReturn(false)
+
+        mMediaSwitchingController.start(mCb)
+        reset(mCb)
+        mMediaSwitchingController.clearMediaItemList()
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices)
+        val devices = getMediaDevices(mMediaSwitchingController.getMediaItemList())
+
+        assertThat(devices.first().isMutingExpectedDevice).isFalse()
+        assertThat(mMediaSwitchingController.hasMutingExpectedDevice()).isFalse()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
+    fun onDeviceListUpdate_groupPlaybackAndExpanded_allSelectedDevicesOnTop() {
+        whenever(mMediaDevice1.isSelected).thenReturn(true)
+        whenever(mMediaDevice2.isSelected).thenReturn(true)
+        mMediaSwitchingController.setGroupListCollapsed(false)
+
+        doAnswer { invocation ->
+                val callback = invocation.getArgument<LocalMediaManager.DeviceCallback>(0)
+                callback.onDeviceListUpdate(mMediaDevices)
+                null
+            }
+            .whenever(mLocalMediaManager)
+            .registerCallback(any())
+        doReturn(true).whenever(mLocalMediaManager).isMediaSessionAvailableForVolumeControl
+
+        mMediaSwitchingController.start(mCb)
+
+        val resultList = mMediaSwitchingController.getMediaItemList()
+
+        assertThat(resultList[0]).isInstanceOf(GroupDividerMediaItem::class.java)
+        assertThat((resultList[0] as GroupDividerMediaItem).title)
+            .isEqualTo(mContext.getString(R.string.media_output_group_title_connected_speakers))
+        assertThat((resultList[0] as GroupDividerMediaItem).isExpandable).isTrue()
+
+        assertThat(resultList[1]).isInstanceOf(DeviceMediaItem::class.java)
+        assertThat((resultList[1] as DeviceMediaItem).mediaDevice).isEqualTo(mMediaDevice1)
+
+        assertThat(resultList[2]).isInstanceOf(DeviceMediaItem::class.java)
+        assertThat((resultList[2] as DeviceMediaItem).mediaDevice).isEqualTo(mMediaDevice2)
+
+        assertThat(resultList.size).isEqualTo(3)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
+    fun onDeviceListUpdate_groupPlaybackAndCollapsed_groupControlAtTheTop() {
+        whenever(mMediaDevice1.isSelected).thenReturn(true)
+        whenever(mMediaDevice2.isSelected).thenReturn(true)
+        mMediaSwitchingController.setGroupListCollapsed(true)
+
+        doAnswer { invocation ->
+                val callback = invocation.getArgument<LocalMediaManager.DeviceCallback>(0)
+                callback.onDeviceListUpdate(mMediaDevices)
+                null
+            }
+            .whenever(mLocalMediaManager)
+            .registerCallback(any())
+        doReturn(true).whenever(mLocalMediaManager).isMediaSessionAvailableForVolumeControl
+
+        mMediaSwitchingController.start(mCb)
+        val resultList = mMediaSwitchingController.getMediaItemList()
+
+        assertThat(resultList[0]).isInstanceOf(GroupDividerMediaItem::class.java)
+        assertThat((resultList[0] as GroupDividerMediaItem).title)
+            .isEqualTo(mContext.getString(R.string.media_output_group_title_connected_speakers))
+        assertThat((resultList[0] as GroupDividerMediaItem).isExpandable).isTrue()
+
+        assertThat(resultList[1]).isInstanceOf(DeviceGroupMediaItem::class.java)
+
+        assertThat(resultList.size).isEqualTo(2)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
+    fun onDeviceListUpdate_sessionVolumeUnavailable_noGroupControl() {
+        whenever(mMediaDevice1.isSelected).thenReturn(true)
+        whenever(mMediaDevice2.isSelected).thenReturn(true)
+        mMediaSwitchingController.setGroupListCollapsed(true)
+
+        doAnswer { invocation ->
+                val callback = invocation.getArgument<LocalMediaManager.DeviceCallback>(0)
+                callback.onDeviceListUpdate(mMediaDevices)
+                null
+            }
+            .whenever(mLocalMediaManager)
+            .registerCallback(any())
+        doReturn(false).whenever(mLocalMediaManager).isMediaSessionAvailableForVolumeControl
+
+        mMediaSwitchingController.start(mCb)
+
+        mMediaSwitchingController.setGroupListCollapsed(true)
+        mMediaSwitchingController.clearMediaItemList()
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices)
+
+        val resultList = mMediaSwitchingController.getMediaItemList()
+
+        assertThat(resultList[0]).isInstanceOf(DeviceMediaItem::class.java)
+        assertThat((resultList[0] as DeviceMediaItem).mediaDevice).isEqualTo(mMediaDevice1)
+
+        assertThat(resultList[1]).isInstanceOf(DeviceMediaItem::class.java)
+        assertThat((resultList[1] as DeviceMediaItem).mediaDevice).isEqualTo(mMediaDevice2)
+
+        assertThat(resultList.size).isEqualTo(2)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
+    fun onDeviceListUpdate_groupPlaybackCreatedLater_noGroupControl() {
+        whenever(mMediaDevice1.isSelected).thenReturn(true)
+        whenever(mMediaDevice2.isSelected).thenReturn(false)
+
+        mMediaSwitchingController.setGroupListCollapsed(true)
+        doReturn(false).whenever(mLocalMediaManager).isMediaSessionAvailableForVolumeControl
+
+        doAnswer { invocation ->
+                val callback = invocation.getArgument<LocalMediaManager.DeviceCallback>(0)
+                callback.onDeviceListUpdate(mMediaDevices)
+                null
+            }
+            .whenever(mLocalMediaManager)
+            .registerCallback(any())
+
+        mMediaSwitchingController.start(mCb)
+
+        // Add second selected device after the initial update.
+        whenever(mMediaDevice2.isSelected).thenReturn(true)
+        // Skip 2+ seconds to prevent the list cleanup on refresh.
+        mClock.advanceTime(2500)
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices)
+
+        val resultList = mMediaSwitchingController.getMediaItemList()
+
+        assertThat(resultList[0]).isInstanceOf(DeviceMediaItem::class.java)
+        assertThat((resultList[0] as DeviceMediaItem).mediaDevice).isEqualTo(mMediaDevice1)
+
+        assertThat(resultList[1]).isInstanceOf(GroupDividerMediaItem::class.java)
+        assertThat((resultList[1] as GroupDividerMediaItem).hasTopSeparator).isTrue()
+        assertThat((resultList[1] as GroupDividerMediaItem).title)
+            .isEqualTo(mContext.getString(R.string.media_output_group_title_speakers_and_displays))
+
+        assertThat(resultList[2]).isInstanceOf(DeviceMediaItem::class.java)
+        assertThat((resultList[2] as DeviceMediaItem).mediaDevice).isEqualTo(mMediaDevice2)
+        assertThat(resultList.size).isEqualTo(3)
+    }
+
+    @Test
+    fun onDeviceListUpdate_isRefreshing_updatesNeedRefreshToTrue() {
+        mMediaSwitchingController.start(mCb)
+        reset(mCb)
+        mMediaSwitchingController.setRefreshing(true)
+
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices)
+
+        assertThat(mMediaSwitchingController.mNeedRefresh).isTrue()
+    }
+
+    @Test
+    fun advanced_onDeviceListUpdate_isRefreshing_updatesNeedRefreshToTrue() {
+        mMediaSwitchingController.start(mCb)
+        reset(mCb)
+        mMediaSwitchingController.setRefreshing(true)
+
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices)
+
+        assertThat(mMediaSwitchingController.mNeedRefresh).isTrue()
+    }
+
+    @Test
+    fun cancelMuteAwaitConnection_cancelsWithMediaManager() {
+        whenever(mAudioManager.mutingExpectedDevice).thenReturn(mock<AudioDeviceAttributes>())
+        mMediaSwitchingController.start(mCb)
+        reset(mCb)
+
+        mMediaSwitchingController.cancelMuteAwaitConnection()
+
+        verify(mAudioManager).cancelMuteAwaitConnection(any())
+    }
+
+    @Test
+    fun cancelMuteAwaitConnection_audioManagerIsNull_noAction() {
+        whenever(mAudioManager.mutingExpectedDevice).thenReturn(null)
+        mMediaSwitchingController.start(mCb)
+        reset(mCb)
+        mMediaSwitchingController.cancelMuteAwaitConnection()
+
+        verify(mAudioManager, never()).cancelMuteAwaitConnection(any())
+    }
+
+    @Test
+    fun getAppSourceName_packageNameIsNull_returnsNull() {
+        val testMediaSwitchingController =
+            MediaSwitchingController(
+                mSpyContext,
+                mPackageName = "",
+                mSpyContext.user,
+                mToken = null,
+                mediaSwitchingType = null,
+                mMediaSessionManager,
+                mLocalBluetoothManager,
+                mStarter,
+                mNotifCollection,
+                mDialogTransitionAnimator,
+                mNearbyMediaDevicesManager,
+                mAudioManager,
+                mPowerExemptionManager,
+                mKeyguardManager,
+                mClock,
+                mFakeBackgroundExecutor,
+                mVolumePanelGlobalStateInteractor,
+                mUserTracker,
+                mJavaAdapter,
+                mAudioSharingRepository,
+                mExpandedAudioTileDetailsFeatureInteractor,
+            )
+        testMediaSwitchingController.start(mCb)
+        reset(mCb)
+
+        testMediaSwitchingController.getAppSourceName()
+
+        assertThat(testMediaSwitchingController.getAppSourceName()).isNull()
+    }
+
+    @Test
+    fun getAppIcon_packageNameIsNull_returnsNull() {
+        val testMediaSwitchingController =
+            MediaSwitchingController(
+                mSpyContext,
+                mPackageName = "",
+                mSpyContext.user,
+                mToken = null,
+                mediaSwitchingType = null,
+                mMediaSessionManager,
+                mLocalBluetoothManager,
+                mStarter,
+                mNotifCollection,
+                mDialogTransitionAnimator,
+                mNearbyMediaDevicesManager,
+                mAudioManager,
+                mPowerExemptionManager,
+                mKeyguardManager,
+                mClock,
+                mFakeBackgroundExecutor,
+                mVolumePanelGlobalStateInteractor,
+                mUserTracker,
+                mJavaAdapter,
+                mAudioSharingRepository,
+                mExpandedAudioTileDetailsFeatureInteractor,
+            )
+        testMediaSwitchingController.start(mCb)
+        reset(mCb)
+
+        testMediaSwitchingController.getAppSourceName()
+
+        assertThat(testMediaSwitchingController.getAppIcon()).isNull()
+    }
+
+    @Test
+    fun refreshDataSetIfNeeded_needRefreshIsTrue_setsToFalse() {
+        mMediaSwitchingController.start(mCb)
+        reset(mCb)
+        mMediaSwitchingController.mNeedRefresh = true
+
+        mMediaSwitchingController.refreshDataSetIfNeeded()
+
+        assertThat(mMediaSwitchingController.mNeedRefresh).isFalse()
+    }
+
+    @Test
+    fun isCurrentConnectedDeviceRemote_containsFeatures_returnsTrue() {
+        whenever(mMediaDevice1.features).thenReturn(listOf(MediaRoute2Info.FEATURE_REMOTE_PLAYBACK))
+        whenever(mLocalMediaManager.currentConnectedDevice).thenReturn(mMediaDevice1)
+
+        assertThat(mMediaSwitchingController.isCurrentConnectedDeviceRemote()).isTrue()
+    }
+
+    @Test
+    fun isSingleConnected_Device_sameDevice_returnsTrue() {
+        whenever(mLocalMediaManager.getCurrentConnectedDevice()).thenReturn(mMediaDevice1)
+
+        assertThat(mMediaSwitchingController.isSingleConnectedDevice(mMediaDevice1)).isTrue()
+    }
+
+    @Test
+    fun isCurrentlyConnected_singleSelected_returnsTrue() {
+        whenever(mMediaDevice2.isSelected()).thenReturn(true)
+
+        mMediaSwitchingController.start(mCb)
+        reset(mCb)
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices)
+
+        assertThat(mMediaSwitchingController.isSingleConnectedDevice(mMediaDevice2)).isTrue()
+    }
+
+    @Test
+    fun isSingleConnected_Device_groupPlayback_returnsFalse() {
+        whenever(mMediaDevice1.isSelected()).thenReturn(true)
+        whenever(mMediaDevice2.isSelected()).thenReturn(true)
+
+        mMediaSwitchingController.start(mCb)
+        reset(mCb)
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices)
+
+        assertThat(mMediaSwitchingController.isSingleConnectedDevice(mMediaDevice1)).isFalse()
+        assertThat(mMediaSwitchingController.isSingleConnectedDevice(mMediaDevice2)).isFalse()
+    }
+
+    @Test
+    fun isSingleConnected_Device_differentDevice_returnsFalse() {
+        whenever(mLocalMediaManager.getCurrentConnectedDevice()).thenReturn(mMediaDevice1)
+
+        assertThat(mMediaSwitchingController.isSingleConnectedDevice(mMediaDevice2)).isFalse()
+    }
+
+    @Test
+    fun addDeviceToPlayMedia_callsLocalMediaManager() {
+        val testMediaSwitchingController =
+            MediaSwitchingController(
+                mSpyContext,
+                mPackageName = null,
+                mSpyContext.user,
+                mToken = null,
+                mediaSwitchingType = null,
+                mMediaSessionManager,
+                mLocalBluetoothManager,
+                mStarter,
+                mNotifCollection,
+                mDialogTransitionAnimator,
+                mNearbyMediaDevicesManager,
+                mAudioManager,
+                mPowerExemptionManager,
+                mKeyguardManager,
+                mClock,
+                mFakeBackgroundExecutor,
+                mVolumePanelGlobalStateInteractor,
+                mUserTracker,
+                mJavaAdapter,
+                mAudioSharingRepository,
+                mExpandedAudioTileDetailsFeatureInteractor,
+            )
+
+        val mockLocalMediaManager = mock<LocalMediaManager>()
+        testMediaSwitchingController.mLocalMediaManager = mockLocalMediaManager
+
+        testMediaSwitchingController.addDeviceToPlayMedia(mMediaDevice2)
+        val captor = argumentCaptor<RoutingChangeInfo>()
+        verify(mockLocalMediaManager).addDeviceToPlayMedia(eq(mMediaDevice2), captor.capture())
+        val capturedInfo = captor.firstValue
+        assertThat(capturedInfo.entryPoint).isEqualTo(ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER)
+        assertThat(capturedInfo.isSuggested).isEqualTo(false)
+    }
+
+    @Test
+    fun removeDeviceFromPlayMedia_callsLocalMediaManager() {
+        val testMediaSwitchingController =
+            MediaSwitchingController(
+                mSpyContext,
+                mPackageName = null,
+                mSpyContext.user,
+                mToken = null,
+                mediaSwitchingType = null,
+                mMediaSessionManager,
+                mLocalBluetoothManager,
+                mStarter,
+                mNotifCollection,
+                mDialogTransitionAnimator,
+                mNearbyMediaDevicesManager,
+                mAudioManager,
+                mPowerExemptionManager,
+                mKeyguardManager,
+                mClock,
+                mFakeBackgroundExecutor,
+                mVolumePanelGlobalStateInteractor,
+                mUserTracker,
+                mJavaAdapter,
+                mAudioSharingRepository,
+                mExpandedAudioTileDetailsFeatureInteractor,
+            )
+
+        val mockLocalMediaManager = mock<LocalMediaManager>()
+        testMediaSwitchingController.mLocalMediaManager = mockLocalMediaManager
+
+        testMediaSwitchingController.removeDeviceFromPlayMedia(mMediaDevice2)
+        val argumentCaptor = argumentCaptor<RoutingChangeInfo>()
+        verify(mockLocalMediaManager)
+            .removeDeviceFromPlayMedia(eq(mMediaDevice2), argumentCaptor.capture())
+        val capturedInfo = argumentCaptor.firstValue
+        assertThat(capturedInfo.entryPoint).isEqualTo(ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER)
+        assertThat(capturedInfo.isSuggested).isFalse()
+    }
+
+    @Test
+    fun adjustSessionVolume_adjustWithoutId_triggersFromLocalMediaManager() {
+        val testVolume = 10
+        mMediaSwitchingController.adjustSessionVolume(testVolume)
+
+        verify(mLocalMediaManager).adjustSessionVolume(testVolume)
+    }
+
+    @Test
+    fun adjustDeviceVolume_callsLocalMediaManager() {
+        val mediaDevice = mock<MediaDevice>()
+        mMediaSwitchingController.adjustVolume(mediaDevice, 15)
+        mFakeBackgroundExecutor.runAllReady()
+
+        verify(mLocalMediaManager).adjustDeviceVolume(mediaDevice, 15)
+    }
+
+    @Test
+    fun logInteractionAdjustVolume_triggersFromMetricLogger() {
+        val spyMediaOutputMetricLogger = spy(mMediaSwitchingController.mMetricLogger)
+        mMediaSwitchingController.mMetricLogger = spyMediaOutputMetricLogger
+
+        mMediaSwitchingController.logInteractionAdjustVolume(mMediaDevice1)
+
+        verify(spyMediaOutputMetricLogger).logInteractionAdjustVolume(mMediaDevice1)
+    }
+
+    @Test
+    fun getSessionVolumeMax_triggersFromLocalMediaManager() {
+        mMediaSwitchingController.getSessionVolumeMax()
+
+        verify(mLocalMediaManager).getSessionVolumeMax()
+    }
+
+    @Test
+    fun getSessionVolume_triggersFromLocalMediaManager() {
+        mMediaSwitchingController.getSessionVolume()
+
+        verify(mLocalMediaManager).getSessionVolume()
+    }
+
+    @Test
+    fun getSessionName_triggersFromLocalMediaManager() {
+        mMediaSwitchingController.getSessionName()
+
+        verify(mLocalMediaManager).getSessionName()
+    }
+
+    @Test
+    fun releaseSession_triggersFromLocalMediaManager() {
+        mMediaSwitchingController.releaseSession()
+
+        verify(mLocalMediaManager).releaseSession()
+    }
+
+    @Test
+    fun isAnyDeviceTransferring_noDevicesStateIsConnecting_returnsFalse() {
+        mMediaSwitchingController.start(mCb)
+        reset(mCb)
+
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices)
+
+        assertThat(mMediaSwitchingController.isAnyDeviceTransferring()).isFalse()
+    }
+
+    @Test
+    fun isAnyDeviceTransferring_deviceStateIsConnecting_returnsTrue() {
+        whenever(mMediaDevice1.state)
+            .thenReturn(LocalMediaManager.MediaDeviceState.STATE_CONNECTING)
+        mMediaSwitchingController.start(mCb)
+        reset(mCb)
+
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices)
+
+        assertThat(mMediaSwitchingController.isAnyDeviceTransferring()).isTrue()
+    }
+
+    @Test
+    fun isAnyDeviceTransferring_advancedLayoutSupport() {
+        whenever(mMediaDevice1.state)
+            .thenReturn(LocalMediaManager.MediaDeviceState.STATE_CONNECTING)
+        mMediaSwitchingController.start(mCb)
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices)
+
+        assertThat(mMediaSwitchingController.isAnyDeviceTransferring()).isTrue()
+    }
+
+    @Test
+    fun isPlaying_stateIsNull() {
+        whenever(mSessionMediaController.playbackState).thenReturn(null)
+
+        assertThat(mMediaSwitchingController.isPlaying()).isFalse()
+    }
+
+    @Test
+    fun onSelectedDeviceStateChanged_verifyCallback() {
+        whenever(mLocalMediaManager.currentConnectedDevice).thenReturn(mMediaDevice2)
+        mMediaSwitchingController.start(mCb)
+        reset(mCb)
+        mMediaSwitchingController.connectDevice(mMediaDevice1)
+
+        mMediaSwitchingController.onSelectedDeviceStateChanged(
+            mMediaDevice1,
+            LocalMediaManager.MediaDeviceState.STATE_CONNECTED,
+        )
+
+        verify(mCb).onRouteChanged()
+    }
+
+    @Test
+    fun onDeviceAttributesChanged_verifyCallback() {
+        mMediaSwitchingController.start(mCb)
+        reset(mCb)
+
+        mMediaSwitchingController.onDeviceAttributesChanged()
+
+        verify(mCb).onRouteChanged()
+    }
+
+    @Test
+    fun onRequestFailed_verifyCallback() {
+        whenever(mLocalMediaManager.getCurrentConnectedDevice()).thenReturn(mMediaDevice1)
+        mMediaSwitchingController.start(mCb)
+        reset(mCb)
+        mMediaSwitchingController.connectDevice(mMediaDevice2)
+
+        mMediaSwitchingController.onRequestFailed(0 /* reason */)
+
+        verify(mCb, atLeastOnce()).onRouteChanged()
+    }
+
+    @Test
+    fun getHeaderTitle_withoutMetadata_returnDefaultString() {
+        whenever(mSessionMediaController.getMetadata()).thenReturn(null)
+
+        mMediaSwitchingController.start(mCb)
+
+        assertThat(mMediaSwitchingController.getHeaderTitle())
+            .isEqualTo(mContext.getText(R.string.controls_media_title))
+    }
+
+    @Test
+    fun getHeaderTitle_withMetadata_returnSongName() {
+        whenever(mSessionMediaController.getMetadata()).thenReturn(mMediaMetadata)
+
+        mMediaSwitchingController.start(mCb)
+
+        assertThat(mMediaSwitchingController.getHeaderTitle()).isEqualTo(TEST_SONG)
+    }
+
+    @Test
+    fun getHeaderSubTitle_withoutMetadata_returnNull() {
+        whenever(mSessionMediaController.getMetadata()).thenReturn(null)
+
+        mMediaSwitchingController.start(mCb)
+
+        assertThat(mMediaSwitchingController.getHeaderSubTitle()).isNull()
+    }
+
+    @Test
+    fun getHeaderSubTitle_withMetadata_returnArtistName() {
+        whenever(mSessionMediaController.getMetadata()).thenReturn(mMediaMetadata)
+
+        mMediaSwitchingController.start(mCb)
+
+        assertThat(mMediaSwitchingController.getHeaderSubTitle()).isEqualTo(TEST_ARTIST)
+    }
+
+    @Test
+    fun getActiveRemoteMediaDevices() {
+        whenever(mRemoteSessionInfo.id).thenReturn(TEST_SESSION_ID)
+        whenever(mRemoteSessionInfo.name).thenReturn(TEST_SESSION_NAME)
+        whenever(mRemoteSessionInfo.volumeMax).thenReturn(100)
+        whenever(mRemoteSessionInfo.volume).thenReturn(10)
+        whenever(mRemoteSessionInfo.isSystemSession).thenReturn(false)
+        mRoutingSessionInfos.add(mRemoteSessionInfo)
+        whenever(mLocalMediaManager.remoteRoutingSessions).thenReturn(mRoutingSessionInfos)
+
+        assertThat(mMediaSwitchingController.getActiveRemoteMediaDevices())
+            .containsExactly(mRemoteSessionInfo)
+    }
+
+    @Test
+    fun getNotificationLargeIcon_withoutPackageName_returnsNull() {
+        mMediaSwitchingController =
+            MediaSwitchingController(
+                mSpyContext,
+                mPackageName = null,
+                mSpyContext.user,
+                mToken = null,
+                mediaSwitchingType = null,
+                mMediaSessionManager,
+                mLocalBluetoothManager,
+                mStarter,
+                mNotifCollection,
+                mDialogTransitionAnimator,
+                mNearbyMediaDevicesManager,
+                mAudioManager,
+                mPowerExemptionManager,
+                mKeyguardManager,
+                mClock,
+                mFakeBackgroundExecutor,
+                mVolumePanelGlobalStateInteractor,
+                mUserTracker,
+                mJavaAdapter,
+                mAudioSharingRepository,
+                mExpandedAudioTileDetailsFeatureInteractor,
+            )
+
+        assertThat(mMediaSwitchingController.getNotificationIcon()).isNull()
+    }
+
+    @Test
+    fun getNotificationLargeIcon_withoutLargeIcon_returnsNull() {
+        val notification = setupNotificationMock()
+        whenever(notification.isMediaNotification()).thenReturn(true)
+        whenever(notification.getLargeIcon()).thenReturn(null)
+
+        assertThat(mMediaSwitchingController.getNotificationIcon()).isNull()
+    }
+
+    @Test
+    fun getNotificationLargeIcon_withPackageNameAndMediaSession_returnsIconCompat() {
+        val icon = mock<Icon>()
+        val notification = setupNotificationMock()
+        whenever(notification.isMediaNotification()).thenReturn(true)
+        whenever(notification.getLargeIcon()).thenReturn(icon)
+
+        assertThat(mMediaSwitchingController.getNotificationIcon())
+            .isInstanceOf(IconCompat::class.java)
+    }
+
+    @Test
+    fun getNotificationLargeIcon_withPackageNameAndNoMediaSession_returnsNull() {
+        val icon = mock<Icon>()
+        val notification = setupNotificationMock()
+        whenever(notification.isMediaNotification()).thenReturn(false)
+        whenever(notification.getLargeIcon()).thenReturn(icon)
+
+        assertThat(mMediaSwitchingController.getNotificationIcon()).isNull()
+    }
+
+    @Test
+    @Throws(Exception::class)
+    fun getAppIcon_noNotificationIconAndNoPackageIcon_returnsNull() {
+        val notification = setupNotificationMock()
+        whenever(notification.isMediaNotification()).thenReturn(true)
+        whenever(notification.getSmallIcon()).thenReturn(null)
+
+        whenever(mPackageManager.getApplicationIcon(mPackageName))
+            .thenThrow(PackageManager.NameNotFoundException())
+
+        assertThat(mMediaSwitchingController.getAppIcon()).isNull()
+    }
+
+    @Test
+    @Throws(Exception::class)
+    fun getAppIcon_noNotificationIcon_returnsPackageIcon() {
+        // no notification icon
+        val notification = setupNotificationMock()
+        whenever(notification.isMediaNotification()).thenReturn(true)
+        whenever(notification.getSmallIcon()).thenReturn(null)
+        // Fallback to package icon
+        val packageIcon = mock<Drawable>()
+        whenever(mPackageManager.getApplicationIcon(mPackageName)).thenReturn(packageIcon)
+
+        assertThat(mMediaSwitchingController.getAppIcon()).isEqualTo(packageIcon)
+    }
+
+    @Test
+    fun getAppIcon_withPackageNameAndMediaSession_returnsNotificationSmallIcon() {
+        val icon = mock<Icon>()
+        val drawable = mock<Drawable>()
+        val notification = setupNotificationMock()
+        whenever(notification.isMediaNotification()).thenReturn(true)
+        whenever(notification.getSmallIcon()).thenReturn(icon)
+        whenever(icon.loadDrawable(any())).thenReturn(drawable)
+
+        assertThat(mMediaSwitchingController.getAppIcon()).isEqualTo(drawable)
+    }
+
+    @Test
+    fun getDeviceIconCompat_deviceIconIsNotNull_returnsIcon() {
+        whenever(mLocalMediaManager.getCurrentConnectedDevice()).thenReturn(mMediaDevice2)
+        whenever(mMediaDevice1.getIcon()).thenReturn(mDrawable)
+
+        assertThat(mMediaSwitchingController.getDeviceIconCompat(mMediaDevice1))
+            .isInstanceOf(IconCompat::class.java)
+    }
+
+    @Test
+    fun getDeviceIconCompat_deviceIconIsNull_returnsIcon() {
+        whenever(mLocalMediaManager.getCurrentConnectedDevice()).thenReturn(mMediaDevice2)
+        whenever(mMediaDevice1.getIcon()).thenReturn(null)
+
+        assertThat(mMediaSwitchingController.getDeviceIconCompat(mMediaDevice1))
+            .isInstanceOf(IconCompat::class.java)
+    }
+
+    @Test
+    fun isVolumeControlEnabled_isCastWithVolumeFixed_returnsFalse() {
+        whenever(mMediaDevice1.deviceType).thenReturn(MediaDevice.MediaDeviceType.TYPE_CAST_DEVICE)
+
+        whenever(mMediaDevice1.isVolumeFixed).thenReturn(true)
+
+        assertThat(mMediaSwitchingController.isVolumeControlEnabled(mMediaDevice1)).isFalse()
+    }
+
+    @Test
+    fun isVolumeControlEnabled_isCastWithVolumeNotFixed_returnsTrue() {
+        whenever(mMediaDevice1.deviceType).thenReturn(MediaDevice.MediaDeviceType.TYPE_CAST_DEVICE)
+
+        whenever(mMediaDevice1.isVolumeFixed).thenReturn(false)
+
+        assertThat(mMediaSwitchingController.isVolumeControlEnabled(mMediaDevice1)).isTrue()
+    }
+
+    @Test
+    fun setTemporaryAllowListExceptionIfNeeded_fromRemoteToBluetooth_addsAllowList() {
+        whenever(mLocalMediaManager.currentConnectedDevice).thenReturn(mMediaDevice1)
+        whenever(mMediaDevice1.deviceType).thenReturn(MediaDevice.MediaDeviceType.TYPE_CAST_DEVICE)
+        whenever(mMediaDevice1.features)
+            .thenReturn(listOf(MediaRoute2Info.FEATURE_REMOTE_AUDIO_PLAYBACK))
+        whenever(mMediaDevice2.deviceType)
+            .thenReturn(MediaDevice.MediaDeviceType.TYPE_BLUETOOTH_DEVICE)
+
+        mMediaSwitchingController.setTemporaryAllowListExceptionIfNeeded()
+
+        verify(mPowerExemptionManager).addToTemporaryAllowList(any(), any(), any(), any())
+    }
+
+    @Test
+    fun setTemporaryAllowListExceptionIfNeeded_packageNameIsNull_NoAction() {
+        val testMediaSwitchingController =
+            MediaSwitchingController(
+                mSpyContext,
+                mPackageName = null,
+                mSpyContext.user,
+                mToken = null,
+                mediaSwitchingType = null,
+                mMediaSessionManager,
+                mLocalBluetoothManager,
+                mStarter,
+                mNotifCollection,
+                mDialogTransitionAnimator,
+                mNearbyMediaDevicesManager,
+                mAudioManager,
+                mPowerExemptionManager,
+                mKeyguardManager,
+                mClock,
+                mFakeBackgroundExecutor,
+                mVolumePanelGlobalStateInteractor,
+                mUserTracker,
+                mJavaAdapter,
+                mAudioSharingRepository,
+                mExpandedAudioTileDetailsFeatureInteractor,
+            )
+
+        testMediaSwitchingController.setTemporaryAllowListExceptionIfNeeded()
+
+        verify(mPowerExemptionManager, never()).addToTemporaryAllowList(any(), any(), any(), any())
+    }
+
+    @Test
+    fun onMetadataChanged_triggersOnMetadataChanged() {
+        mMediaSwitchingController.mCallback = this.mCallback
+
+        mMediaSwitchingController.mCb.onMetadataChanged(mMediaMetadata)
+
+        verify(mMediaSwitchingController.mCallback).onMediaChanged()
+    }
+
+    @Test
+    fun onPlaybackStateChanged_updateWithNullState_onMediaStoppedOrPaused() {
+        whenever(mPlaybackState.state).thenReturn(PlaybackState.STATE_PLAYING)
+        mMediaSwitchingController.mCallback = this.mCallback
+        mMediaSwitchingController.start(mCb)
+
+        mMediaSwitchingController.mCb.onPlaybackStateChanged(null)
+
+        verify(mMediaSwitchingController.mCallback).onMediaStoppedOrPaused()
+    }
+
+    @Test
+    fun launchBluetoothPairing_isKeyguardLocked_dismissDialog() {
+        whenever(mDialogTransitionAnimator.createActivityTransitionController(mDialogLaunchView))
+            .thenReturn(mActivityTransitionAnimatorController)
+        whenever(mKeyguardManager.isKeyguardLocked).thenReturn(true)
+        mMediaSwitchingController.mCallback = this.mCallback
+
+        mMediaSwitchingController.launchBluetoothPairing(mDialogLaunchView)
+
+        verify(mCallback).dismissDialog()
+    }
+
+    @Test
+    fun hasGroupPlayback_singleOutputDevice_returnsFalse() {
+        whenever(mMediaDevice1.isSelected).thenReturn(true)
+
+        mMediaSwitchingController.start(mCb)
+        reset(mCb)
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices)
+
+        assertThat(mMediaSwitchingController.hasGroupPlayback()).isFalse()
+    }
+
+    @Test
+    fun hasGroupPlayback_multipleOutputDevices_returnsTrue() {
+        whenever(mMediaDevice1.isSelected).thenReturn(true)
+        whenever(mMediaDevice2.isSelected).thenReturn(true)
+
+        mMediaSwitchingController.start(mCb)
+        reset(mCb)
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices)
+
+        assertThat(mMediaSwitchingController.hasGroupPlayback()).isTrue()
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL)
+    @Test
+    fun selectInputDevice() {
+        enableInputRoutingConfig()
+        val inputMediaDevice =
+            InputMediaDevice.create(
+                mContext,
+                TEST_DEVICE_1_ID,
+                /* address = */ "",
+                AudioDeviceInfo.TYPE_BUILTIN_MIC,
+                MAX_VOLUME,
+                CURRENT_VOLUME,
+                VOLUME_FIXED_TRUE,
+                /* isSelected= */ false,
+                PRODUCT_NAME_BUILTIN_MIC,
+            )
+        mMediaSwitchingController.connectDevice(inputMediaDevice!!)
+        mFakeBackgroundExecutor.runAllReady()
+
+        verify(mLocalMediaManager, never()).connectDevice(inputMediaDevice)
+        verify(mInputRouteManager).selectDevice(inputMediaDevice)
+    }
+
+    @Test
+    fun selectOutputDevice() {
+        enableInputRoutingConfig()
+        val outputMediaDevice = mock<MediaDevice>()
+        mMediaSwitchingController.connectDevice(outputMediaDevice)
+        mFakeBackgroundExecutor.runAllReady()
+
+        verify(mInputRouteManager, never()).selectDevice(outputMediaDevice)
+        val captor = argumentCaptor<RoutingChangeInfo>()
+        verify(mLocalMediaManager).connectDevice(eq(outputMediaDevice), captor.capture())
+        val capturedInfo = captor.firstValue
+        assertThat(capturedInfo.entryPoint).isEqualTo(ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER)
+        assertThat(capturedInfo.isSuggested).isEqualTo(false)
+    }
+
+    @Test
+    fun selectSuggestedOutputDevice() {
+        val outputMediaDevice = mock<MediaDevice>()
+        whenever(outputMediaDevice.isSuggestedDevice).thenReturn(true)
+        mMediaSwitchingController.connectDevice(outputMediaDevice)
+        mFakeBackgroundExecutor.runAllReady()
+
+        verify(mInputRouteManager, never()).selectDevice(outputMediaDevice)
+        val captor = argumentCaptor<RoutingChangeInfo>()
+        verify(mLocalMediaManager).connectDevice(eq(outputMediaDevice), captor.capture())
+        val capturedInfo = captor.firstValue
+        assertThat(capturedInfo.entryPoint).isEqualTo(ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER)
+        assertThat(capturedInfo.isSuggested).isEqualTo(true)
+    }
+
+    @Test
+    fun connectDeviceButton_remoteDevice_noButton() {
+        whenever(mMediaDevice1.features).thenReturn(listOf(MediaRoute2Info.FEATURE_REMOTE_PLAYBACK))
+        whenever(mLocalMediaManager.currentConnectedDevice).thenReturn(mMediaDevice1)
+        mMediaSwitchingController.start(mCb)
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices)
+
+        assertThat(mMediaSwitchingController.hasConnectDeviceButton()).isFalse()
+    }
+
+    @Test
+    fun connectDeviceButton_localDevice_hasButton() {
+        whenever(mLocalMediaManager.currentConnectedDevice).thenReturn(mMediaDevice1)
+        mMediaSwitchingController.start(mCb)
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices)
+
+        assertThat(mMediaSwitchingController.hasConnectDeviceButton()).isTrue()
+    }
+
+    @Test
+    fun connectDeviceButton_presentAtAllTimesForNonGroupOutputs() {
+        mMediaSwitchingController.start(mCb)
+        reset(mCb)
+
+        // Mock the selected output device.
+        whenever(mMediaDevice1.isSelected).thenReturn(true)
+        whenever(mMediaDevice2.isSelected).thenReturn(false)
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices)
+
+        // Verify that there is initially the "Connect Device" button present.
+        assertThat(mMediaSwitchingController.hasConnectDeviceButton()).isTrue()
+
+        // Change the selected device, and verify that the "Connect Device" button is still present.
+        whenever(mMediaDevice1.isSelected).thenReturn(false)
+        whenever(mMediaDevice2.isSelected).thenReturn(true)
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices)
+
+        assertThat(mMediaSwitchingController.hasConnectDeviceButton()).isTrue()
+    }
+
+    @Test
+    fun selectedDevicesAddedInSameOrder() {
+        whenever(mLocalMediaManager.isPreferenceRouteListingExist).thenReturn(true)
+        whenever(mMediaDevice1.isSelected).thenReturn(true)
+        whenever(mMediaDevice2.isSelected).thenReturn(true)
+        mMediaSwitchingController.start(mCb)
+        reset(mCb)
+        mMediaSwitchingController.clearMediaItemList()
+
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices)
+
+        val items = mMediaSwitchingController.getMediaItemList()
+        assertThat((items[0] as DeviceMediaItem).mediaDevice).isEqualTo(mMediaDevice1)
+        assertThat((items[1] as DeviceMediaItem).mediaDevice).isEqualTo(mMediaDevice2)
+    }
+
+    @Test
+    fun selectedDevicesAddedInSameOrderWhenRlpDoesNotExist() {
+        setUpSelectedDevicesAndOrdering()
+
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices)
+
+        val devices = getMediaDevices(mMediaSwitchingController.getMediaItemList())
+        assertThat(devices)
+            .containsExactly(
+                mMediaDevice4,
+                mMediaDevice3,
+                mMediaDevice5,
+                mMediaDevice1,
+                mMediaDevice2,
+            )
+            .inOrder()
+    }
+
+    private fun setUpSelectedDevicesAndOrdering() {
+        whenever(mMediaDevice1.id).thenReturn(TEST_DEVICE_1_ID)
+        whenever(mMediaDevice2.id).thenReturn(TEST_DEVICE_2_ID)
+        whenever(mMediaDevice3.id).thenReturn(TEST_DEVICE_3_ID)
+        whenever(mMediaDevice4.id).thenReturn(TEST_DEVICE_4_ID)
+        whenever(mMediaDevice5.id).thenReturn(TEST_DEVICE_5_ID)
+        mMediaDevices.clear()
+        mMediaDevices.addAll(
+            listOf(mMediaDevice2, mMediaDevice1, mMediaDevice4, mMediaDevice3, mMediaDevice5)
+        )
+        whenever(mMediaDevice3.isSelected).thenReturn(true)
+        whenever(mMediaDevice4.isSelected).thenReturn(true)
+        whenever(mMediaDevice5.isSelected).thenReturn(true)
+        // Sort the media devices in the order they appear in the deviceOrder list
+        val deviceOrder: MutableList<MediaDevice> = ArrayList()
+        deviceOrder.addAll(
+            listOf(mMediaDevice1, mMediaDevice2, mMediaDevice3, mMediaDevice4, mMediaDevice5)
+        )
+        for (i in deviceOrder.indices) {
+            for (j in i + 1 until deviceOrder.size) {
+                whenever(deviceOrder[i].compareTo(deviceOrder[j])).thenReturn(-1)
+                whenever(deviceOrder[j].compareTo(deviceOrder[i])).thenReturn(1)
+            }
+        }
+        whenever(mLocalMediaManager.isPreferenceRouteListingExist).thenReturn(false)
+        mMediaSwitchingController.start(mCb)
+        reset(mCb)
+        mMediaSwitchingController.clearMediaItemList()
+    }
+
+    @Test
+    fun getAudioSharingButtonState_noConnectedBroadcastAssistantDevice_returnsNull() {
+        val profileManager = mock<LocalBluetoothProfileManager>()
+        val assistantProfile = mock<LocalBluetoothLeBroadcastAssistant>()
+        whenever(mLocalBluetoothManager.profileManager).thenReturn(profileManager)
+        whenever(profileManager.leAudioBroadcastAssistantProfile).thenReturn(assistantProfile)
+        whenever(assistantProfile.connectedDevices).thenReturn(listOf())
+        mMediaSwitchingController.start(mCb)
+
+        val buttonState = mMediaSwitchingController.getAudioSharingButtonState()
+
+        assertThat(buttonState).isNull()
+    }
+
+    @Test
+    fun getAudioSharingButtonState_inAudioSharing_returnsVisible() {
+        val inAudioSharingFlow = MutableStateFlow(false)
+        whenever(mAudioSharingRepository.inAudioSharing).thenReturn(inAudioSharingFlow)
+        mMediaSwitchingController.start(mCb)
+        verify(mJavaAdapter)
+            .alwaysCollectFlow(same(inAudioSharingFlow), mInAudioSharingCaptor.capture())
+        val capturedConsumer = mInAudioSharingCaptor.firstValue
+        capturedConsumer.accept(true)
+
+        val buttonState = mMediaSwitchingController.getAudioSharingButtonState()
+
+        assertThat(buttonState).isNotNull()
+        assertThat(buttonState!!.isActive).isTrue()
+        assertThat(buttonState.resId).isEqualTo(R.string.media_output_dialog_button_sharing_audio)
+    }
+
+    @Test
+    fun getAudioSharingButtonState_hasConnectedBroadcastAssistantDevice_returnsVisible() {
+        val profileManager = mock<LocalBluetoothProfileManager>()
+        val assistantProfile = mock<LocalBluetoothLeBroadcastAssistant>()
+        val bluetoothDevice = mock<BluetoothDevice>()
+        val inAudioSharingFlow = MutableStateFlow(false)
+        whenever(mLocalBluetoothManager.profileManager).thenReturn(profileManager)
+        whenever(profileManager.leAudioBroadcastAssistantProfile).thenReturn(assistantProfile)
+        whenever(assistantProfile.allConnectedDevices).thenReturn(listOf(bluetoothDevice))
+        whenever(mAudioSharingRepository.inAudioSharing).thenReturn(inAudioSharingFlow)
+        mMediaSwitchingController.start(mCb)
+
+        val buttonState = mMediaSwitchingController.getAudioSharingButtonState()
+
+        assertThat(buttonState).isNotNull()
+        assertThat(buttonState?.isActive).isFalse()
+        assertThat(buttonState?.resId).isEqualTo(R.string.media_output_dialog_button_share_audio)
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ENABLE_USE_OF_SESSION_RELEASE_TYPE_FOR_STOP_BUTTON)
+    fun getStopButtonText_remotePlaybackDevice_returnDefaultText() {
+        doReturn(mMediaDevice1).whenever(mLocalMediaManager).currentConnectedDevice
+        whenever(mMediaDevice1.features).thenReturn(listOf(MediaRoute2Info.FEATURE_REMOTE_PLAYBACK))
+
+        assertThat(mMediaSwitchingController.getStopButtonStringRes())
+            .isEqualTo(R.string.media_output_dialog_button_stop_casting)
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ENABLE_USE_OF_SESSION_RELEASE_TYPE_FOR_STOP_BUTTON)
+    fun getStopButtonText_remoteAudioPlaybackDevice_returnDefaultText() {
+        doReturn(mMediaDevice1).whenever(mLocalMediaManager).currentConnectedDevice
+        whenever(mMediaDevice1.features)
+            .thenReturn(listOf(MediaRoute2Info.FEATURE_REMOTE_AUDIO_PLAYBACK))
+
+        assertThat(mMediaSwitchingController.getStopButtonStringRes())
+            .isEqualTo(R.string.media_output_dialog_button_stop_casting)
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ENABLE_USE_OF_SESSION_RELEASE_TYPE_FOR_STOP_BUTTON)
+    fun getStopButtonText_remoteVideoPlaybackDevice_returnDefaultText() {
+        doReturn(mMediaDevice1).whenever(mLocalMediaManager).currentConnectedDevice
+        whenever(mMediaDevice1.features)
+            .thenReturn(listOf(MediaRoute2Info.FEATURE_REMOTE_VIDEO_PLAYBACK))
+
+        assertThat(mMediaSwitchingController.getStopButtonStringRes())
+            .isEqualTo(R.string.media_output_dialog_button_stop_casting)
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ENABLE_USE_OF_SESSION_RELEASE_TYPE_FOR_STOP_BUTTON)
+    fun getStopButtonText_remoteGroupPlaybackDevice_returnDefaultText() {
+        doReturn(mMediaDevice1).whenever(mLocalMediaManager).currentConnectedDevice
+        whenever(mMediaDevice1.features)
+            .thenReturn(listOf(MediaRoute2Info.FEATURE_REMOTE_GROUP_PLAYBACK))
+
+        assertThat(mMediaSwitchingController.getStopButtonStringRes())
+            .isEqualTo(R.string.media_output_dialog_button_stop_casting)
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ENABLE_USE_OF_SESSION_RELEASE_TYPE_FOR_STOP_BUTTON)
+    fun getStopButtonText_localDevice_returnNull() {
+        whenever(mMediaDevice1.features).thenReturn(listOf(MediaRoute2Info.FEATURE_LOCAL_PLAYBACK))
+
+        assertThat(mMediaSwitchingController.getStopButtonStringRes()).isNull()
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ENABLE_USE_OF_SESSION_RELEASE_TYPE_FOR_STOP_BUTTON)
+    fun getStopButtonText_mediaSwitchingTypeIsInput_returnNull() {
+        mMediaSwitchingController = createDefaultMediaSwitchingController(MediaSwitchingType.INPUT)
+
+        doReturn(mMediaDevice1).whenever(mLocalMediaManager).currentConnectedDevice
+        whenever(mMediaDevice1.features).thenReturn(listOf(MediaRoute2Info.FEATURE_REMOTE_PLAYBACK))
+
+        assertThat(mMediaSwitchingController.getStopButtonStringRes()).isNull()
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_USE_OF_SESSION_RELEASE_TYPE_FOR_STOP_BUTTON,
+        Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING,
+    )
+    fun getStopButtonText_sessionReleaseSharing_returnsSharingText() {
+        doReturn(RoutingSessionInfo.RELEASE_TYPE_SHARING)
+            .whenever(mLocalMediaManager)
+            .sessionReleaseType
+
+        assertThat(mMediaSwitchingController.getStopButtonStringRes())
+            .isEqualTo(R.string.media_output_dialog_button_stop_sharing)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_USE_OF_SESSION_RELEASE_TYPE_FOR_STOP_BUTTON)
+    @DisableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
+    fun getStopButtonText_sessionReleaseSharingDisabled_returnsNull() {
+        doReturn(RoutingSessionInfo.RELEASE_TYPE_SHARING)
+            .whenever(mLocalMediaManager)
+            .sessionReleaseType
+
+        assertThat(mMediaSwitchingController.getStopButtonStringRes()).isNull()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_USE_OF_SESSION_RELEASE_TYPE_FOR_STOP_BUTTON)
+    fun getStopButtonText_sessionReleaseCasting_returnsCastingText() {
+        doReturn(RoutingSessionInfo.RELEASE_TYPE_CASTING)
+            .whenever(mLocalMediaManager)
+            .sessionReleaseType
+
+        assertThat(mMediaSwitchingController.getStopButtonStringRes())
+            .isEqualTo(R.string.media_output_dialog_button_stop_casting)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_USE_OF_SESSION_RELEASE_TYPE_FOR_STOP_BUTTON)
+    fun getStopButtonText_sessionReleaseUnsupported_returnsNull() {
+        doReturn(RoutingSessionInfo.RELEASE_UNSUPPORTED)
+            .whenever(mLocalMediaManager)
+            .sessionReleaseType
+
+        assertThat(mMediaSwitchingController.getStopButtonStringRes()).isNull()
+    }
+
+    @Test
+    fun getAudioSharingButtonState_mediaSwitchingTypeIsInput_returnsNull() {
+        mMediaSwitchingController = createDefaultMediaSwitchingController(MediaSwitchingType.INPUT)
+        val profileManager = mock<LocalBluetoothProfileManager>()
+        val assistantProfile = mock<LocalBluetoothLeBroadcastAssistant>()
+        val bluetoothDevice = mock<BluetoothDevice>()
+        val inAudioSharingFlow = MutableStateFlow(false)
+        whenever(mLocalBluetoothManager.getProfileManager()).thenReturn(profileManager)
+        whenever(profileManager.getLeAudioBroadcastAssistantProfile()).thenReturn(assistantProfile)
+        whenever(assistantProfile.getAllConnectedDevices()).thenReturn(listOf(bluetoothDevice))
+        whenever(mAudioSharingRepository.inAudioSharing).thenReturn(inAudioSharingFlow)
+        mMediaSwitchingController.start(mCb)
+
+        val buttonState = mMediaSwitchingController.getAudioSharingButtonState()
+
+        assertThat(buttonState).isNull()
+    }
+
+    @Test
+    fun onMissingPermissionsUpdated_verifyCallback() {
+        mMediaSwitchingController.start(mCb)
+        reset(mCb)
+
+        mMediaSwitchingController.onMissingPermissionsUpdated(null)
+
+        verify(mCb).onRouteChanged()
+    }
+
+    @Test
+    @RequiresFlagsEnabled(FLAG_ACCESS_LOCAL_NETWORK_PERMISSION_ENABLED)
+    fun getMissingPermissionsResolveIntent_noMissingPermissionsInfo_returnsNull() {
+        whenever(mLocalMediaManager.missingPermissionsInfo).thenReturn(null)
+
+        assertThat(mMediaSwitchingController.getMissingPermissionsResolveIntent()).isNull()
+    }
+
+    @Test
+    @RequiresFlagsEnabled(FLAG_ACCESS_LOCAL_NETWORK_PERMISSION_ENABLED)
+    fun getMissingPermissionsResolveIntent_emptyPermissions_returnsNull() {
+        val componentName = ComponentName(mPackageName, "class")
+        val info = MissingPermissionsInfo(componentName, setOf())
+        whenever(mLocalMediaManager.missingPermissionsInfo).thenReturn(info)
+
+        assertThat(mMediaSwitchingController.getMissingPermissionsResolveIntent()).isNull()
+    }
+
+    @Test
+    @RequiresFlagsDisabled(FLAG_ACCESS_LOCAL_NETWORK_PERMISSION_ENABLED)
+    fun getMissingPermissionsResolveIntent_flagDisabled_returnsNull() {
+        val componentName = ComponentName(mPackageName, "class")
+        val perms = setOf("perm1", "perm2")
+        val info = MissingPermissionsInfo(componentName, perms)
+        whenever(mLocalMediaManager.missingPermissionsInfo).thenReturn(info)
+        assertThat(mMediaSwitchingController.getMissingPermissionsResolveIntent()).isNull()
+    }
+
+    @Test
+    @RequiresFlagsEnabled(FLAG_ACCESS_LOCAL_NETWORK_PERMISSION_ENABLED)
+    fun getMissingPermissionsResolveIntent_validInfo_returnsIntent() {
+        val componentName = ComponentName(mPackageName, "class")
+        val perms = setOf("perm1", "perm2")
+        val info = MissingPermissionsInfo(componentName, perms)
+        whenever(mLocalMediaManager.missingPermissionsInfo).thenReturn(info)
+
+        val intent = mMediaSwitchingController.getMissingPermissionsResolveIntent()
+
+        assertThat(intent).isNotNull()
+        assertThat(intent!!.getAction())
+            .isEqualTo(RouteListingPreference.ACTION_RESOLVE_MISSING_PERMISSIONS)
+        assertThat(intent.getComponent()).isEqualTo(componentName)
+        val extraPermissions =
+            intent.getStringArrayListExtra(RouteListingPreference.EXTRA_MISSING_PERMISSIONS)
+        assertThat(extraPermissions).containsExactly("perm1", "perm2")
+        assertThat(intent.flags and Intent.FLAG_ACTIVITY_NEW_TASK).isNotEqualTo(0)
+    }
+
+    private fun getMediaDevices(mediaItemList: List<MediaItem>): List<MediaDevice> {
+        return mediaItemList.filterIsInstance<DeviceMediaItem>().map { it.mediaDevice }
+    }
+
+    private fun enableInputRoutingConfig() {
+        val spyResources = spy(mContext.resources)
+        whenever(mSpyContext.resources).thenReturn(spyResources)
+        whenever(spyResources.getBoolean(R.bool.config_enableInputRouting)).thenReturn(true)
+    }
+
+    private fun createDefaultMediaSwitchingController(
+        mediaSwitchingType: MediaSwitchingType? = null
+    ): MediaSwitchingController {
+        return MediaSwitchingController(
+            mSpyContext,
+            mPackageName,
+            mContext.user,
+            mToken = null,
+            mediaSwitchingType,
+            mMediaSessionManager,
+            mLocalBluetoothManager,
+            mStarter,
+            mNotifCollection,
+            mDialogTransitionAnimator,
+            mNearbyMediaDevicesManager,
+            mAudioManager,
+            mPowerExemptionManager,
+            mKeyguardManager,
+            mClock,
+            mFakeBackgroundExecutor,
+            mVolumePanelGlobalStateInteractor,
+            mUserTracker,
+            mJavaAdapter,
+            mAudioSharingRepository,
+            mExpandedAudioTileDetailsFeatureInteractor,
+        )
+    }
+
+    private fun setupNotificationMock(): Notification {
+        val entryList: MutableList<NotificationEntry> = ArrayList()
+        val entry = mock<NotificationEntry>()
+        val sbn = mock<StatusBarNotification>()
+        val notification = mock<Notification>()
+        entryList.add(entry)
+
+        whenever(mNotifCollection.allNotifs).thenReturn(entryList)
+        whenever(entry.sbn).thenReturn(sbn)
+        whenever(sbn.notification).thenReturn(notification)
+        whenever(sbn.packageName).thenReturn(mPackageName)
+        return notification
+    }
+
+    companion object {
+        private const val TEST_DEVICE_1_ID = "test_device_1_id"
+        private const val TEST_DEVICE_2_ID = "test_device_2_id"
+        private const val TEST_DEVICE_3_ID = "test_device_3_id"
+        private const val TEST_DEVICE_4_ID = "test_device_4_id"
+        private const val TEST_DEVICE_5_ID = "test_device_5_id"
+        private const val TEST_ARTIST = "test_artist"
+        private const val TEST_SONG = "test_song"
+        private const val TEST_SESSION_ID = "test_session_id"
+        private const val TEST_SESSION_NAME = "test_session_name"
+        private const val MAX_VOLUME = 1
+        private const val CURRENT_VOLUME = 0
+        private const val VOLUME_FIXED_TRUE = true
+        private const val PRODUCT_NAME_BUILTIN_MIC = "Built-in Mic"
+
+        @JvmStatic
+        @Parameters(name = "{0}")
+        fun getParams(): List<FlagsParameterization> {
+            return FlagsParameterization.allCombinationsOf(
+                Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL
+            )
+        }
     }
 }
