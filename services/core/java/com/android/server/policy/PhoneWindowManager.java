@@ -3728,16 +3728,48 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 minLinearBrightness, maxLinearBrightness);
         mDisplayManager.setBrightness(screenDisplayId, adjustedLinearBrightness);
 
-        Intent intent = new Intent(Intent.ACTION_SHOW_BRIGHTNESS_DIALOG);
-        if (brightnessDialogOnSystemUser()) {
-            intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-        }
-        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION | Intent.FLAG_ACTIVITY_NO_USER_ACTION);
-        intent.putExtra(EXTRA_FROM_BRIGHTNESS_KEY, true);
         // When brightnessDialogOnSystemUser() is true, the dialog should launch in system user.
+        if (brightnessDialogOnSystemUser()) {
+            launchBrightnessDialogOnUser0();
+        } else {
+            launchBrightnessDialog();
+        }
+    }
+
+    private void launchBrightnessDialog() {
+        Intent intent = new Intent(Intent.ACTION_SHOW_BRIGHTNESS_DIALOG);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION
+                | Intent.FLAG_ACTIVITY_NO_USER_ACTION);
+
+        intent.putExtra(EXTRA_FROM_BRIGHTNESS_KEY, true);
+
         startActivityAsUser(
                 intent,
-                brightnessDialogOnSystemUser() ? UserHandle.SYSTEM : UserHandle.CURRENT_OR_SELF
+                UserHandle.CURRENT_OR_SELF
+        );
+    }
+
+    /**
+     * Updated way of launching the brightness dialog.
+     * Ensures we launch on user 0 so the dialog can receive updates from system ui
+     */
+    private void launchBrightnessDialogOnUser0() {
+        ActivityOptions options =
+                ActivityOptions.makeCustomAnimation(
+                        mContext,
+                        android.R.anim.fade_in,
+                        android.R.anim.fade_out);
+        options.setOverrideTaskTransition(true);
+
+        Intent intent = new Intent(Intent.ACTION_SHOW_BRIGHTNESS_DIALOG);
+        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+                | Intent.FLAG_ACTIVITY_NO_USER_ACTION);
+        intent.putExtra(EXTRA_FROM_BRIGHTNESS_KEY, true);
+
+        mContext.startActivityAsUser(
+                intent,
+                options.toBundle(),
+                UserHandle.SYSTEM
         );
     }
 
