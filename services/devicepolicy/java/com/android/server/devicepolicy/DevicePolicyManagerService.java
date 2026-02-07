@@ -938,6 +938,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
     final RoleManager mRoleManager;
     final SupervisionManagerInternal mSupervisionManagerInternal;
     final PolicyDefinitionMap mPolicyDefinitionMap;
+    final RcsArchivalAppTracker mRcsArchivalAppTracker;
 
     private final LockPatternUtils mLockPatternUtils;
     private final LockSettingsInternal mLockSettingsInternal;
@@ -1214,6 +1215,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
                     }
                 }
                 mDevicePolicyEngine.handleUserRemoved(userHandle);
+                mRcsArchivalAppTracker.onUserRemoved(userHandle);
             } else if (Intent.ACTION_USER_STARTED.equals(action)) {
                 sendDeviceOwnerUserCommand(DeviceAdminReceiver.ACTION_USER_STARTED, userHandle);
                 synchronized (getLockObject()) {
@@ -1785,6 +1787,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
                 mPathProvider,
                 mPolicyDefinitionMap
         );
+        mRcsArchivalAppTracker = new RcsArchivalAppTracker(injector, mDevicePolicyEngine, mHandler);
 
         if (isDeviceAdminFeatureDisabled()) {
             // Skip the rest of the initialization
@@ -1839,6 +1842,9 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
 
         mDeviceManagementResourcesProvider.load();
         mDevicePolicyEngine.load();
+        if (com.android.internal.telephony.flags.Flags.secureAccessToRestrictedRcsMessages()) {
+            mRcsArchivalAppTracker.start();
+        }
 
         mContactSystemRoleHolders = fetchOemSystemHolders(/* roleResIds...= */
                 R.string.config_defaultSms,
@@ -10874,11 +10880,17 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         if (!isCallerDevicePolicyManagementRoleHolder(caller)) {
             mPermissions.enforce(MANAGE_DEVICE_POLICY_APP_RESTRICTIONS, caller);
         }
-        EnforcingAdmin enforcingAdmin =  getEnforcingAdmin(caller);
+        EnforcingAdmin enforcingAdmin = getEnforcingAdmin(caller);
 
         mDevicePolicyEngine.setOrRemoveLocalPolicy(
                 PolicyDefinition.APPLICATION_RESTRICTIONS(packageName), enforcingAdmin,
-                affectedUserId, BundlePolicyValue.createIfNotNullOrEmpty(restrictions));
+                affectedUserId, BundlePolicyValue.createIfNotNullOrEmpty(restrictions))
+                .thenAccept((result) -> {
+                    if (com.android.internal.telephony.flags.Flags.secureAccessToRestrictedRcsMessages()
+                            && (result == RESULT_POLICY_SET || result == RESULT_POLICY_CLEARED)) {
+                        mRcsArchivalAppTracker.onRestrictionsChanged(packageName, affectedUserId);
+                    }
+                });
 
         DevicePolicyEventLogger
                 .createEvent(DevicePolicyEnums.SET_APPLICATION_RESTRICTIONS)
@@ -10961,15 +10973,6 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
                 .setBoolean(/* isDelegate */ isCallerDelegate(caller))
                 .setStrings(packageName)
                 .write();
-    }
-
-    private Bundle getAppRestrictionsSetByAnyAdmin(String packageName, UserHandle userHandle) {
-        LinkedHashMap<EnforcingAdmin, PolicyValue<Bundle>> policies =
-                mDevicePolicyEngine.getLocalPoliciesSetByAdmins(
-                        PolicyDefinition.APPLICATION_RESTRICTIONS(packageName),
-                        userHandle.getIdentifier());
-        return policies.isEmpty()
-                ? null : policies.entrySet().stream().findAny().get().getValue().getValue();
     }
 
     private int getUidForPackage(String packageName, int userId) {
