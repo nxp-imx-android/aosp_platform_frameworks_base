@@ -429,6 +429,7 @@ android_library {
         "androidx.slice_slice-core",
         "androidx.slice_slice-view",
         "dynamiccolors",
+        "AccessibilityFloatingMenu-res",
     ],
     manifest: "AndroidManifest-res.xml",
     flags_packages: [
