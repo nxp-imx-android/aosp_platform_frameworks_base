@@ -56,7 +56,6 @@ import android.view.View
 import androidx.core.graphics.drawable.IconCompat
 import androidx.test.filters.SmallTest
 import com.android.media.flags.Flags
-import com.android.settingslib.bluetooth.CachedBluetoothDeviceManager
 import com.android.settingslib.bluetooth.LocalBluetoothLeBroadcastAssistant
 import com.android.settingslib.bluetooth.LocalBluetoothManager
 import com.android.settingslib.bluetooth.LocalBluetoothProfileManager
@@ -106,6 +105,7 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.same
 import org.mockito.kotlin.spy
+import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
@@ -121,37 +121,71 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
     private val mActivityTransitionAnimatorController =
         mock<ActivityTransitionAnimator.Controller>()
     private val mNearbyMediaDevicesManager = mock<NearbyMediaDevicesManager>()
-    private val mSessionMediaController = mock<MediaController>()
-    private val mMediaSessionManager = mock<MediaSessionManager>()
-    private val mCachedBluetoothDeviceManager = mock<CachedBluetoothDeviceManager>()
-    private val mLocalBluetoothManager = mock<LocalBluetoothManager>()
+    private val mPackageName = mContext.packageName
+    private val mPlaybackState = mock<PlaybackState>()
+    private val mUserHandle = UserHandle.of(0)
+
+    private val mSessionMediaController =
+        mock<MediaController> {
+            on { packageName } doReturn mPackageName
+            on { playbackState } doReturn mPlaybackState
+        }
+    private val mMediaSessionManager =
+        mock<MediaSessionManager> {
+            on { getActiveSessionsForUser(eq(null), eq(mUserHandle)) }
+                .doReturn(listOf(mSessionMediaController))
+        }
+
+    private val mAssistantProfile = mock<LocalBluetoothLeBroadcastAssistant>()
+    private val mProfileManager =
+        mock<LocalBluetoothProfileManager> {
+            on { leAudioBroadcastAssistantProfile } doReturn mAssistantProfile
+        }
+    private val mLocalBluetoothManager =
+        mock<LocalBluetoothManager> { on { this.profileManager } doReturn mProfileManager }
+
     private val mCb = mock<MediaSwitchingController.Callback>()
-    private val mMediaDevice1 = mock<MediaDevice>()
-    private val mMediaDevice2 = mock<MediaDevice>()
+    private val mMediaDevice1 = mock<MediaDevice> { on { id } doReturn TEST_DEVICE_1_ID }
+    private val mMediaDevice2 = mock<MediaDevice> { on { id } doReturn TEST_DEVICE_2_ID }
     private val mMediaDevice3 = mock<MediaDevice>()
     private val mMediaDevice4 = mock<MediaDevice>()
     private val mMediaDevice5 = mock<MediaDevice>()
     private val mMediaDevice6 = mock<MediaDevice>()
     private val mMediaDevice7 = mock<MediaDevice>()
-    private val mNearbyDevice1 = mock<NearbyDevice>()
-    private val mNearbyDevice2 = mock<NearbyDevice>()
-    private val mMediaMetadata = mock<MediaMetadata>()
+    private val mMediaDevices = mutableListOf(mMediaDevice1, mMediaDevice2)
+    private val mNearbyDevice1 =
+        mock<NearbyDevice> {
+            on { mediaRoute2Id } doReturn TEST_DEVICE_1_ID
+            on { rangeZone } doReturn NearbyDevice.RANGE_FAR
+        }
+    private val mNearbyDevice2 =
+        mock<NearbyDevice> {
+            on { mediaRoute2Id } doReturn TEST_DEVICE_2_ID
+            on { rangeZone } doReturn NearbyDevice.RANGE_CLOSE
+        }
+    private val mNearbyDevices = listOf(mNearbyDevice1, mNearbyDevice2)
+    private val mediaDescription =
+        MediaDescription.Builder().setTitle(TEST_SONG).setSubtitle(TEST_ARTIST).build()
+    private val mMediaMetadata =
+        mock<MediaMetadata> { on { description } doReturn mediaDescription }
     private val mRemoteSessionInfo = mock<RoutingSessionInfo>()
     private val mStarter = mock<ActivityStarter>()
-    private val mAudioManager = mock<AudioManager>()
+    private val mAudioManager =
+        mock<AudioManager> {
+            on { getDevices(AudioManager.GET_DEVICES_INPUTS) } doReturn emptyArray()
+        }
     private val mKeyguardManager = mock<KeyguardManager>()
     private val mController = mock<ActivityTransitionAnimator.Controller>()
     private val mPowerExemptionManager = mock<PowerExemptionManager>()
     private val mNotifCollection = mock<CommonNotifCollection>()
     private val mPackageManager = mock<PackageManager>()
     private val mDrawable = mock<Drawable>()
-    private val mPlaybackState = mock<PlaybackState>()
     private val mInfoMediaManager = mock<InfoMediaManager>()
 
-    private val mUserTracker = mock<UserTracker>()
+    private val mUserTracker = mock<UserTracker> { on { this.userHandle } doReturn mUserHandle }
     private val mAudioSharingRepository = mock<AudioSharingRepository>()
     private val mExpandedAudioTileDetailsFeatureInteractor =
-        mock<ExpandedAudioTileDetailsFeatureInteractor>()
+        mock<ExpandedAudioTileDetailsFeatureInteractor> { on { isEnabled() } doReturn false }
 
     private val mKosmos: Kosmos = this.testKosmos()
     private val mJavaAdapter = mock<JavaAdapter>()
@@ -169,14 +203,9 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
         mKosmos.volumePanelGlobalStateInteractor
 
     private lateinit var mSpyContext: Context
-    private lateinit var mPackageName: String
     private lateinit var mMediaSwitchingController: MediaSwitchingController
     private lateinit var mLocalMediaManager: LocalMediaManager
     private lateinit var mInputRouteManager: InputRouteManager
-    private val mMediaControllers = mutableListOf<MediaController>()
-    private val mMediaDevices = mutableListOf<MediaDevice>()
-    private val mNearbyDevices = mutableListOf<NearbyDevice>()
-    private lateinit var mMediaDescription: MediaDescription
     private val mRoutingSessionInfos: MutableList<RoutingSessionInfo> = ArrayList()
 
     init {
@@ -185,71 +214,25 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
 
     @Before
     fun setUp() {
-        mPackageName = mContext.packageName
-
         mContext.setMockPackageManager(mPackageManager)
-        mSpyContext = spy(mContext)
-        val userHandle = mock<UserHandle>()
-        whenever(mUserTracker.userHandle).thenReturn(userHandle)
-        whenever(mSessionMediaController.getPackageName()).thenReturn(mPackageName)
-        whenever(mSessionMediaController.getPlaybackState()).thenReturn(mPlaybackState)
-        mMediaControllers.add(mSessionMediaController)
-        whenever(mMediaSessionManager.getActiveSessionsForUser(eq(null), eq(userHandle)))
-            .thenReturn(mMediaControllers)
-        doReturn(mMediaSessionManager)
-            .whenever(mSpyContext)
-            .getSystemService(MediaSessionManager::class.java)
-        whenever(mLocalBluetoothManager.cachedDeviceManager)
-            .thenReturn(mCachedBluetoothDeviceManager)
+        mSpyContext =
+            spy(mContext).stub {
+                on { getSystemService(MediaSessionManager::class.java) }
+                    .doReturn(mMediaSessionManager)
+            }
 
         mMediaSwitchingController = createDefaultMediaSwitchingController()
-        mLocalMediaManager = spy(mMediaSwitchingController.mLocalMediaManager)
-        whenever(mLocalMediaManager.isPreferenceRouteListingExist()).thenReturn(false)
+
+        mLocalMediaManager =
+            spy(mMediaSwitchingController.mLocalMediaManager) {
+                on { isPreferenceRouteListingExist } doReturn false
+            }
         mMediaSwitchingController.mLocalMediaManager = mLocalMediaManager
 
-        mMediaSwitchingController.mInputRouteManager =
-            InputRouteManager(mContext, mAudioManager, mInfoMediaManager)
-        mInputRouteManager = spy(mMediaSwitchingController.mInputRouteManager!!)
+        mInputRouteManager = spy(InputRouteManager(mContext, mAudioManager, mInfoMediaManager))
         mMediaSwitchingController.mInputRouteManager = mInputRouteManager
-        whenever(mAudioManager.getDevices(AudioManager.GET_DEVICES_INPUTS))
-            .thenReturn(emptyArray<AudioDeviceInfo>())
 
-        val builder = MediaDescription.Builder()
-        builder.setTitle(TEST_SONG)
-        builder.setSubtitle(TEST_ARTIST)
-        mMediaDescription = builder.build()
-        whenever(mMediaMetadata.getDescription()).thenReturn(mMediaDescription)
-        whenever(mMediaDevice1.getId()).thenReturn(TEST_DEVICE_1_ID)
-        whenever(mMediaDevice2.getId()).thenReturn(TEST_DEVICE_2_ID)
-        mMediaDevices.add(mMediaDevice1)
-        mMediaDevices.add(mMediaDevice2)
-
-        whenever(mNearbyDevice1.getMediaRoute2Id()).thenReturn(TEST_DEVICE_1_ID)
-        whenever(mNearbyDevice1.getRangeZone()).thenReturn(NearbyDevice.RANGE_FAR)
-        whenever(mNearbyDevice2.getMediaRoute2Id()).thenReturn(TEST_DEVICE_2_ID)
-        whenever(mNearbyDevice2.getRangeZone()).thenReturn(NearbyDevice.RANGE_CLOSE)
-        mNearbyDevices.add(mNearbyDevice1)
-        mNearbyDevices.add(mNearbyDevice2)
-
-        val entryList: MutableList<NotificationEntry> = ArrayList()
-        val entry = mock<NotificationEntry>()
-        val sbn = mock<StatusBarNotification>()
-        val bundle = mock<Bundle>()
-        val token = mock<MediaSession.Token>()
-        val binder = mock<ISessionController>()
-        entryList.add(entry)
-
-        whenever(mNotification.isMediaNotification).thenReturn(false)
-        whenever(mNotifCollection.allNotifs).thenReturn(entryList)
-        whenever(entry.sbn).thenReturn(sbn)
-        whenever(sbn.notification).thenReturn(mNotification)
-        whenever(sbn.packageName).thenReturn(mPackageName)
-        mNotification.extras = bundle
-        whenever(bundle.getParcelable<MediaSession.Token>(Notification.EXTRA_MEDIA_SESSION))
-            .thenReturn(token)
-        whenever(token.binder).thenReturn(binder)
-
-        whenever(mExpandedAudioTileDetailsFeatureInteractor.isEnabled()).thenReturn(false)
+        setupNotificationMock()
     }
 
     @Test
@@ -1358,11 +1341,13 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
 
     @Test
     fun getActiveRemoteMediaDevices() {
-        whenever(mRemoteSessionInfo.id).thenReturn(TEST_SESSION_ID)
-        whenever(mRemoteSessionInfo.name).thenReturn(TEST_SESSION_NAME)
-        whenever(mRemoteSessionInfo.volumeMax).thenReturn(100)
-        whenever(mRemoteSessionInfo.volume).thenReturn(10)
-        whenever(mRemoteSessionInfo.isSystemSession).thenReturn(false)
+        mRemoteSessionInfo.stub {
+            on { id } doReturn TEST_SESSION_ID
+            on { name } doReturn TEST_SESSION_NAME
+            on { volumeMax } doReturn 100
+            on { volume } doReturn 10
+            on { isSystemSession } doReturn false
+        }
         mRoutingSessionInfos.add(mRemoteSessionInfo)
         whenever(mLocalMediaManager.remoteRoutingSessions).thenReturn(mRoutingSessionInfos)
 
@@ -1402,19 +1387,20 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
 
     @Test
     fun getNotificationLargeIcon_withoutLargeIcon_returnsNull() {
-        val notification = setupNotificationMock()
-        whenever(notification.isMediaNotification()).thenReturn(true)
-        whenever(notification.getLargeIcon()).thenReturn(null)
+        mNotification.stub {
+            on { isMediaNotification } doReturn true
+            on { getLargeIcon() } doReturn null
+        }
 
         assertThat(mMediaSwitchingController.getNotificationIcon()).isNull()
     }
 
     @Test
     fun getNotificationLargeIcon_withPackageNameAndMediaSession_returnsIconCompat() {
-        val icon = mock<Icon>()
-        val notification = setupNotificationMock()
-        whenever(notification.isMediaNotification()).thenReturn(true)
-        whenever(notification.getLargeIcon()).thenReturn(icon)
+        mNotification.stub {
+            on { isMediaNotification } doReturn true
+            on { getLargeIcon() } doReturn mock<Icon>()
+        }
 
         assertThat(mMediaSwitchingController.getNotificationIcon())
             .isInstanceOf(IconCompat::class.java)
@@ -1422,10 +1408,10 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
 
     @Test
     fun getNotificationLargeIcon_withPackageNameAndNoMediaSession_returnsNull() {
-        val icon = mock<Icon>()
-        val notification = setupNotificationMock()
-        whenever(notification.isMediaNotification()).thenReturn(false)
-        whenever(notification.getLargeIcon()).thenReturn(icon)
+        mNotification.stub {
+            on { isMediaNotification } doReturn false
+            on { getLargeIcon() } doReturn mock<Icon>()
+        }
 
         assertThat(mMediaSwitchingController.getNotificationIcon()).isNull()
     }
@@ -1433,9 +1419,10 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
     @Test
     @Throws(Exception::class)
     fun getAppIcon_noNotificationIconAndNoPackageIcon_returnsNull() {
-        val notification = setupNotificationMock()
-        whenever(notification.isMediaNotification()).thenReturn(true)
-        whenever(notification.getSmallIcon()).thenReturn(null)
+        mNotification.stub {
+            on { isMediaNotification } doReturn true
+            on { getSmallIcon() } doReturn null
+        }
 
         whenever(mPackageManager.getApplicationIcon(mPackageName))
             .thenThrow(PackageManager.NameNotFoundException())
@@ -1447,9 +1434,10 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
     @Throws(Exception::class)
     fun getAppIcon_noNotificationIcon_returnsPackageIcon() {
         // no notification icon
-        val notification = setupNotificationMock()
-        whenever(notification.isMediaNotification()).thenReturn(true)
-        whenever(notification.getSmallIcon()).thenReturn(null)
+        mNotification.stub {
+            on { isMediaNotification } doReturn true
+            on { getSmallIcon() } doReturn null
+        }
         // Fallback to package icon
         val packageIcon = mock<Drawable>()
         whenever(mPackageManager.getApplicationIcon(mPackageName)).thenReturn(packageIcon)
@@ -1459,12 +1447,12 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
 
     @Test
     fun getAppIcon_withPackageNameAndMediaSession_returnsNotificationSmallIcon() {
-        val icon = mock<Icon>()
         val drawable = mock<Drawable>()
-        val notification = setupNotificationMock()
-        whenever(notification.isMediaNotification()).thenReturn(true)
-        whenever(notification.getSmallIcon()).thenReturn(icon)
-        whenever(icon.loadDrawable(any())).thenReturn(drawable)
+        val icon = mock<Icon> { on { loadDrawable(any()) } doReturn drawable }
+        mNotification.stub {
+            on { isMediaNotification } doReturn true
+            on { getSmallIcon() } doReturn icon
+        }
 
         assertThat(mMediaSwitchingController.getAppIcon()).isEqualTo(drawable)
     }
@@ -1765,11 +1753,7 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
 
     @Test
     fun getAudioSharingButtonState_noConnectedBroadcastAssistantDevice_returnsNull() {
-        val profileManager = mock<LocalBluetoothProfileManager>()
-        val assistantProfile = mock<LocalBluetoothLeBroadcastAssistant>()
-        whenever(mLocalBluetoothManager.profileManager).thenReturn(profileManager)
-        whenever(profileManager.leAudioBroadcastAssistantProfile).thenReturn(assistantProfile)
-        whenever(assistantProfile.connectedDevices).thenReturn(listOf())
+        mAssistantProfile.stub { on { allConnectedDevices } doReturn emptyList() }
         mMediaSwitchingController.start(mCb)
 
         val buttonState = mMediaSwitchingController.getAudioSharingButtonState()
@@ -1796,13 +1780,10 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
 
     @Test
     fun getAudioSharingButtonState_hasConnectedBroadcastAssistantDevice_returnsVisible() {
-        val profileManager = mock<LocalBluetoothProfileManager>()
-        val assistantProfile = mock<LocalBluetoothLeBroadcastAssistant>()
-        val bluetoothDevice = mock<BluetoothDevice>()
+        mAssistantProfile.stub {
+            on { allConnectedDevices } doReturn listOf(mock<BluetoothDevice>())
+        }
         val inAudioSharingFlow = MutableStateFlow(false)
-        whenever(mLocalBluetoothManager.profileManager).thenReturn(profileManager)
-        whenever(profileManager.leAudioBroadcastAssistantProfile).thenReturn(assistantProfile)
-        whenever(assistantProfile.allConnectedDevices).thenReturn(listOf(bluetoothDevice))
         whenever(mAudioSharingRepository.inAudioSharing).thenReturn(inAudioSharingFlow)
         mMediaSwitchingController.start(mCb)
 
@@ -1924,13 +1905,10 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
     @Test
     fun getAudioSharingButtonState_mediaSwitchingTypeIsInput_returnsNull() {
         mMediaSwitchingController = createDefaultMediaSwitchingController(MediaSwitchingType.INPUT)
-        val profileManager = mock<LocalBluetoothProfileManager>()
-        val assistantProfile = mock<LocalBluetoothLeBroadcastAssistant>()
-        val bluetoothDevice = mock<BluetoothDevice>()
+        mAssistantProfile.stub {
+            on { allConnectedDevices } doReturn listOf(mock<BluetoothDevice>())
+        }
         val inAudioSharingFlow = MutableStateFlow(false)
-        whenever(mLocalBluetoothManager.getProfileManager()).thenReturn(profileManager)
-        whenever(profileManager.getLeAudioBroadcastAssistantProfile()).thenReturn(assistantProfile)
-        whenever(assistantProfile.getAllConnectedDevices()).thenReturn(listOf(bluetoothDevice))
         whenever(mAudioSharingRepository.inAudioSharing).thenReturn(inAudioSharingFlow)
         mMediaSwitchingController.start(mCb)
 
@@ -2035,18 +2013,24 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
         )
     }
 
-    private fun setupNotificationMock(): Notification {
-        val entryList: MutableList<NotificationEntry> = ArrayList()
-        val entry = mock<NotificationEntry>()
-        val sbn = mock<StatusBarNotification>()
-        val notification = mock<Notification>()
-        entryList.add(entry)
-
-        whenever(mNotifCollection.allNotifs).thenReturn(entryList)
-        whenever(entry.sbn).thenReturn(sbn)
-        whenever(sbn.notification).thenReturn(notification)
-        whenever(sbn.packageName).thenReturn(mPackageName)
-        return notification
+    private fun setupNotificationMock() {
+        val mediaSessionToken =
+            mock<MediaSession.Token> { on { binder } doReturn mock<ISessionController>() }
+        val mediaSessionBundle =
+            mock<Bundle> {
+                on { getParcelable<MediaSession.Token>(Notification.EXTRA_MEDIA_SESSION) }
+                    .doReturn(mediaSessionToken)
+            }
+        mNotification.stub { on { isMediaNotification } doReturn false }
+        mNotification.extras = mediaSessionBundle
+        val statusBarNotification =
+            mock<StatusBarNotification> {
+                on { notification } doReturn mNotification
+                on { packageName } doReturn mPackageName
+            }
+        val notificationEntry =
+            mock<NotificationEntry> { on { this.sbn } doReturn statusBarNotification }
+        mNotifCollection.stub { on { allNotifs } doReturn listOf(notificationEntry) }
     }
 
     companion object {
