@@ -28,6 +28,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import android.annotation.SuppressLint;
@@ -316,7 +317,7 @@ public class RemoteAugmentedAutofillServiceTest {
 
     @EnableFlags(FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
     @Test
-    public void onRequestAutofillLocked_fillWindowShowing_doesNotReturnResult() throws Exception {
+    public void onRequestAutofillLocked_fillWindowShowing_noResult() throws Exception {
         final int sessionId = 1234;
         AutofillId focusedId = new AutofillId(3);
         final InlineSuggestionsRequest inlineSuggestionsRequest =
@@ -346,8 +347,10 @@ public class RemoteAugmentedAutofillServiceTest {
         sendAutofillResponse(focusedId, fillCallback, /* showingFillWindow= */ true);
         sendPersonalContextResponse(sessionId, focusedId);
 
-        // Verify no result is provided even though all of the responses are returned.
-        assertFuturesDone();
+        // Not all futures will have finished. When the fill window is showing, one of the futures
+        // remain running so that cancellation can still occur.
+        assertThat(mAutofillResponseFutures.stream().allMatch(CompletableFuture::isDone)).isFalse();
+        // No result is provided.
         assertThat(mInlineFillUiResult).isNull();
     }
 
@@ -387,6 +390,82 @@ public class RemoteAugmentedAutofillServiceTest {
 
         // Verify inline suggestions are applied.
         assertInlinePresentationResult(PERSONAL_CONTEXT_INLINE_PRESENTATION_SPEC);
+    }
+
+    @EnableFlags(FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+    @Test
+    public void onRequestAutofillLocked_cancelledAutofillResponse_noResult()
+            throws Exception {
+        final int sessionId = 1234;
+        AutofillId focusedId = new AutofillId(3);
+        final InlineSuggestionsRequest inlineSuggestionsRequest =
+                new InlineSuggestionsRequest.Builder(List.of(AUTOFILL_INLINE_PRESENTATION_SPEC))
+                        .build();
+        // Request augmented autofill.
+        mService.onRequestAutofillLocked(
+                sessionId,
+                mClient,
+                4567, // taskId
+                ACTIVITY_COMPONENT_NAME,
+                mActivityToken,
+                focusedId,
+                AUTOFILL_VALUE, // focusedValue
+                inlineSuggestionsRequest,
+                mInlineSuggestionsCallback,
+                () -> {}, // onErrorCallback
+                mRemoteInlineSuggestionRenderService, // render service?
+                USER_ID);
+
+        // Augmented autofill service receives fill request.
+        IFillCallback fillCallback =
+                triggerAugmentedAutofillRequest(sessionId, ACTIVITY_COMPONENT_NAME, focusedId);
+
+        // Augmented autofill cancels the request.
+        fillCallback.cancel();
+
+        // Personal context provides a valid response.
+        sendPersonalContextResponse(sessionId, focusedId);
+
+        // No result is provided since the augmented autofill request was cancelled.
+        assertThat(mInlineFillUiResult).isNull();
+    }
+
+    @EnableFlags(FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+    @Test
+    public void onRequestAutofillLocked_noInlineSuggestionsRequest_noResult()
+            throws Exception {
+        final int sessionId = 1234;
+        AutofillId focusedId = new AutofillId(3);
+        final InlineSuggestionsRequest inlineSuggestionsRequest =
+                new InlineSuggestionsRequest.Builder(List.of(AUTOFILL_INLINE_PRESENTATION_SPEC))
+                        .build();
+        // Request augmented autofill without an InlineSuggestionsRequest specified.
+        mService.onRequestAutofillLocked(
+                sessionId,
+                mClient,
+                4567, // taskId
+                ACTIVITY_COMPONENT_NAME,
+                mActivityToken,
+                focusedId,
+                AUTOFILL_VALUE, // focusedValue
+                null, // inlineSuggestionsRequest
+                mInlineSuggestionsCallback,
+                () -> {}, // onErrorCallback
+                mRemoteInlineSuggestionRenderService, // render service?
+                USER_ID);
+
+        // Augmented autofill service receives fill request.
+        IFillCallback fillCallback =
+                triggerAugmentedAutofillRequest(sessionId, ACTIVITY_COMPONENT_NAME, focusedId);
+
+        // Augmented autofill provides a valid response.
+        sendAutofillResponse(focusedId, fillCallback, /* showingFillWindow= */ false);
+
+        // Personal context request is not sent at all.
+        verifyNoInteractions(mContextManagerInternal);
+
+        // Since there is no inlineSuggestionsRequest, no response is sent.
+        assertThat(mInlineFillUiResult).isNull();
     }
 
     @EnableFlags(FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
