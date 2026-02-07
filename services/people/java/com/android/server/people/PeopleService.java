@@ -167,8 +167,7 @@ public class PeopleService extends SystemService {
         final int callingUid = Binder.getCallingUid();
         final int callingUserId = UserHandle.getUserId(callingUid);
 
-        if (mPackageManagerInternal.getPackageUid(pkg, /*flags=*/ 0,
-                callingUserId) != callingUid) {
+        if (!mPackageManagerInternal.isSameApp(pkg, callingUid, callingUserId)) {
             throw new SecurityException("Calling uid " + callingUid + " cannot query events"
                     + "for package " + pkg);
         }

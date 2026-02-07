@@ -650,7 +650,7 @@ package android.aiseal {
   @FlaggedApi("android.aiseal.aiseal_host_apis") public class AiSealException extends java.lang.Exception {
   }
 
-  @FlaggedApi("android.aiseal.aiseal_host_apis") public class AiSealManager {
+  @FlaggedApi("android.aiseal.aiseal_host_apis") public final class AiSealManager {
     method @FlaggedApi("android.aiseal.aiseal_host_apis") @NonNull @RequiresPermission("android.permission.MANAGE_AISEAL_VIRTUAL_MACHINE") @WorkerThread public android.os.IBinder connectService(@NonNull String) throws android.aiseal.AiSealException;
   }
 
@@ -9148,11 +9148,11 @@ package android.media.quality {
     method @FlaggedApi("android.media.tv.flags.media_quality_fw_c") @Nullable public android.media.quality.SoundProfile getDefaultSoundProfile();
     method @FlaggedApi("android.media.tv.flags.media_quality_fw_c") @Nullable public android.media.quality.EqualizerSettings getEqualizerSettings();
     method @NonNull public java.util.List<java.lang.String> getPictureProfileAllowList();
-    method @FlaggedApi("android.media.tv.flags.media_quality_fw_c") @NonNull public java.util.List<android.media.quality.PictureProfileHandle> getPictureProfileHandleList(@NonNull String[]);
+    method @FlaggedApi("android.media.tv.flags.media_quality_fw_c") @NonNull public java.util.List<android.media.quality.PictureProfileHandle> getPictureProfileHandles(@NonNull String[]);
     method @NonNull public java.util.List<java.lang.String> getPictureProfilePackageNames();
     method @NonNull public java.util.List<android.media.quality.PictureProfile> getPictureProfilesByPackage(@NonNull String, @Nullable android.media.quality.MediaQualityManager.ProfileQueryParams);
     method @NonNull public java.util.List<java.lang.String> getSoundProfileAllowList();
-    method @FlaggedApi("android.media.tv.flags.media_quality_fw_c") @NonNull public java.util.List<android.media.quality.SoundProfileHandle> getSoundProfileHandleList(@NonNull String[]);
+    method @FlaggedApi("android.media.tv.flags.media_quality_fw_c") @NonNull public java.util.List<android.media.quality.SoundProfileHandle> getSoundProfileHandles(@NonNull String[]);
     method @NonNull public java.util.List<java.lang.String> getSoundProfilePackageNames();
     method @NonNull public java.util.List<android.media.quality.SoundProfile> getSoundProfilesByPackage(@NonNull String, @Nullable android.media.quality.MediaQualityManager.ProfileQueryParams);
     method public void setAutoPictureQualityEnabled(boolean);
@@ -19862,11 +19862,14 @@ package android.telephony.satellite {
     method @NonNull public android.telephony.satellite.EnableRequestAttributes.Builder setSatelliteEnablementRequestReason(int);
   }
 
-  @FlaggedApi("com.android.internal.telephony.flags.satellite_upsell") public class EnableResponse {
-    method @NonNull public java.util.List<java.lang.Integer> getSatelliteEnablementRequestReasons();
+  @FlaggedApi("com.android.internal.telephony.flags.satellite_upsell") public final class EnableResponse implements android.os.Parcelable {
+    method public int describeContents();
+    method @NonNull public int[] getSatelliteEnablementRequestReasons();
     method public boolean isDemoMode();
     method public boolean isEmergencyMode();
     method public boolean isEnabled();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.telephony.satellite.EnableResponse> CREATOR;
   }
 
   public interface NtnSignalStrengthCallback {

@@ -262,6 +262,8 @@ public class NotificationManagerServiceZenTest extends UiServiceTestCase {
     @Mock private PreferencesHelper mPreferencesHelper;
     AtomicFile mPolicyFile;
     File mFile;
+    AtomicFile mRulesFile;
+    File mFile2;
     @Mock
     private NotificationUsageStats mUsageStats;
     @Mock
@@ -491,6 +493,9 @@ public class NotificationManagerServiceZenTest extends UiServiceTestCase {
         FileOutputStream fos = mPolicyFile.startWrite();
         fos.write(preupgradeXml.getBytes());
         mPolicyFile.finishWrite(fos);
+        mFile2 = new File(mContext.getCacheDir(), "test2.xml");
+        mFile2.createNewFile();
+        mRulesFile = new AtomicFile(mFile2);
 
         // Setup managed services
         when(mListeners.setPackageOrComponentEnabled(any(), anyInt(), anyBoolean(), anyBoolean()))
@@ -575,11 +580,11 @@ public class NotificationManagerServiceZenTest extends UiServiceTestCase {
 
         mService.init(mWorkerHandler, mRankingHandler, mBroadcastsHandler, mPackageManager,
                 mPackageManagerClient, mLightsManager, mListeners, mAssistants, mConditionProviders,
-                mCompanionMgr, mSnoozeHelper, mUsageStats, mPolicyFile, mActivityManager,
-                mGroupHelper, mAm, mAtm, mAppUsageStats, mDevicePolicyManager, mUgm, mUgmInternal,
-                mAppOpsManager, mUm, mHistoryManager, mStatsManager, mAmi, mToastRateLimiter,
-                mPermissionHelper, mock(UsageStatsManagerInternal.class), mTelecomManager, mLogger,
-                mTestFlagResolver, mPermissionManager, mPowerManager,
+                mCompanionMgr, mSnoozeHelper, mUsageStats, mPolicyFile, mRulesFile,
+                mActivityManager, mGroupHelper, mAm, mAtm, mAppUsageStats, mDevicePolicyManager,
+                mUgm, mUgmInternal, mAppOpsManager, mUm, mHistoryManager, mStatsManager, mAmi,
+                mToastRateLimiter, mPermissionHelper, mock(UsageStatsManagerInternal.class),
+                mTelecomManager, mLogger, mTestFlagResolver, mPermissionManager, mPowerManager,
                 mock(PostNotificationTrackerFactory.class), mUiEventLogger, mBitmapOffloader,
                 new NotificationListenerStats(MAX_CHANNELS_CREATED_BY_NLS_FOR_TESTING));
 

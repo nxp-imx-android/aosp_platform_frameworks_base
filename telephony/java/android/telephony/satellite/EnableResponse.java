@@ -20,10 +20,12 @@ import android.annotation.NonNull;
 import android.annotation.SystemApi;
 import android.annotation.FlaggedApi;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.android.internal.telephony.flags.Flags;
 
-import java.util.List;
-import java.util.Map;
+import java.util.Arrays;
 
 /**
  * EnableResponse is used to store the result of the satellite enablement request
@@ -32,7 +34,7 @@ import java.util.Map;
  */
 @SystemApi
 @FlaggedApi(Flags.FLAG_SATELLITE_UPSELL)
-public class EnableResponse {
+public final class EnableResponse implements Parcelable {
     /**
      * Whether satellite is enabled.
      */
@@ -59,7 +61,7 @@ public class EnableResponse {
      */
     @NonNull
     @SatelliteManager.SatelliteEnablementRequestReason
-    private List<Integer> mSatelliteEnablementRequestReasons;
+    private int[] mSatelliteEnablementRequestReasons;
 
     /**
      * Constructor for {@link EnableResponse}.
@@ -73,7 +75,7 @@ public class EnableResponse {
      */
     public EnableResponse(boolean isEnabled, boolean isEmergencyMode,
             boolean isDemoMode, @NonNull @SatelliteManager.SatelliteEnablementRequestReason
-            List<Integer> requestReasons) {
+            int[] requestReasons) {
         mIsEnabled = isEnabled;
         mIsEmergencyMode = isEmergencyMode;
         mIsDemoMode = isDemoMode;
@@ -114,7 +116,7 @@ public class EnableResponse {
      */
     @NonNull
     @SatelliteManager.SatelliteEnablementRequestReason
-    public List<Integer> getSatelliteEnablementRequestReasons() {
+    public int[] getSatelliteEnablementRequestReasons() {
         return mSatelliteEnablementRequestReasons;
     }
 
@@ -125,7 +127,41 @@ public class EnableResponse {
                 + ", mIsEmergencyMode=" + mIsEmergencyMode
                 + ", mIsDemoMode=" + mIsDemoMode
                 + ", mSatelliteEnablementRequestReasons="
-                + mSatelliteEnablementRequestReasons
+                + Arrays.toString(mSatelliteEnablementRequestReasons)
                 + '}';
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(@NonNull Parcel dest, int flags) {
+        dest.writeBoolean(mIsEnabled);
+        dest.writeBoolean(mIsEmergencyMode);
+        dest.writeBoolean(mIsDemoMode);
+        dest.writeIntArray(mSatelliteEnablementRequestReasons);
+    }
+
+    private EnableResponse(Parcel in) {
+        mIsEnabled = in.readBoolean();
+        mIsEmergencyMode = in.readBoolean();
+        mIsDemoMode = in.readBoolean();
+        mSatelliteEnablementRequestReasons = in.createIntArray();
+    }
+
+    @NonNull
+    public static final Creator<EnableResponse> CREATOR =
+            new Creator<EnableResponse>() {
+                @Override
+                public EnableResponse createFromParcel(Parcel in) {
+                    return new EnableResponse(in);
+                }
+
+                @Override
+                public EnableResponse[] newArray(int size) {
+                    return new EnableResponse[size];
+                }
+            };
 }

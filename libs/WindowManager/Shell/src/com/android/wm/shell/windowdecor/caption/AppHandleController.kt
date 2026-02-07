@@ -52,7 +52,7 @@ import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.WindowDecorCaptionRepository
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
-import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT
 import com.android.wm.shell.splitscreen.SplitScreenController
@@ -257,7 +257,7 @@ class AppHandleController(
     /** Returns the windowing mode of the App Handle. */
     private fun getAppHandleIdentifierWindowingMode(): AppHandleWindowingMode =
         if (
-            BubbleAnythingFlagHelper.enableBubbleToFullscreen() &&
+            BubbleFlagHelper.enableBubbleToFullscreen() &&
                 !desktopState.isDesktopModeSupportedOnDisplay(display)
         ) {
             AppHandleWindowingMode.APP_HANDLE_WINDOWING_MODE_BUBBLE

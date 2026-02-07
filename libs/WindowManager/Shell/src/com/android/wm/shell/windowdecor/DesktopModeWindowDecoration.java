@@ -107,7 +107,7 @@ import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.desktopmode.WindowDecorCaptionRepository;
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
-import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper;
 import com.android.wm.shell.shared.desktopmode.DesktopConfig;
 import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.shared.multiinstance.ManageWindowsViewContainer;
@@ -923,7 +923,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
      * task does not have an app handle
      */
     private AppHandleWindowingMode getAppHandleIdentifierWindowingMode() {
-        if (BubbleAnythingFlagHelper.enableBubbleToFullscreen()
+        if (BubbleFlagHelper.enableBubbleToFullscreen()
                 && !mDesktopState.isDesktopModeSupportedOnDisplay(mDisplay)) {
             return AppHandleWindowingMode.APP_HANDLE_WINDOWING_MODE_BUBBLE;
         }

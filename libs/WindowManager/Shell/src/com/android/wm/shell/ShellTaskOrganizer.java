@@ -72,7 +72,7 @@ import com.android.wm.shell.compatui.impl.CompatUIEvents.SizeCompatRestartButton
 import com.android.wm.shell.compatui.impl.CompatUIEvents.SizeCompatRestartButtonClicked;
 import com.android.wm.shell.recents.RecentTasksController;
 import com.android.wm.shell.shared.IOverviewOverlayLeashInvalidationCallback;
-import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper;
 import com.android.wm.shell.startingsurface.StartingWindowController;
 import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellInit;
@@ -1106,7 +1106,7 @@ public class ShellTaskOrganizer extends TaskOrganizer {
         if (oldListener == newListener) return false;
 
         // Notify the old listener (if any) that a new listener is found.
-        if (BubbleAnythingFlagHelper.enableRootTaskForBubble() && oldListener != null) {
+        if (BubbleFlagHelper.enableRootTaskForBubble() && oldListener != null) {
             final boolean shouldUpdate = oldListener.onNewTaskListenerDetected(taskInfo,
                     newListener);
             if (!shouldUpdate) {

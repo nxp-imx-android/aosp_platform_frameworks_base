@@ -310,7 +310,7 @@ private fun CardCarouselContent(
         remember(behavior.isCarouselScrollFalseTouch) { mutableStateOf(false) }
     val isSwipingEnabled = behavior.isCarouselScrollingEnabled && !isFalseTouchDetected
 
-    val roundedCornerShape = RoundedCornerShape(32.dp)
+    val roundedCornerShape = remember { RoundedCornerShape(32.dp) }
 
     Box(
         modifier =
@@ -944,7 +944,8 @@ private fun CardBackground(
     modifier: Modifier = Modifier,
 ) {
     Crossfade(targetState = image, modifier = modifier) { imageOrNull ->
-        val backgroundImage = imageOrNull?.let { (it as Icon.Loaded).asImageBitmap() }
+        val backgroundImage =
+            remember(imageOrNull) { imageOrNull?.let { (it as Icon.Loaded).asImageBitmap() } }
         if (backgroundImage != null) {
             // Loaded art.
             val gradientBaseColor = colorScheme.background
@@ -1259,6 +1260,8 @@ private fun SeekBarTrack(
         }
     }
 
+    val path = remember { Path() }
+
     // Render the track.
     Canvas(modifier = modifier) {
         val thumbPositionPx = size.width * sliderState.value
@@ -1272,39 +1275,39 @@ private fun SeekBarTrack(
         val halfWaveCount = (totalWidth / halfWaveLengthPx).toInt()
 
         var currentX = 0f
-        val path =
-            Path().apply {
-                repeat(halfWaveCount + 3) { index ->
-                    // the position of either the peak or the trough.
-                    val centerX = currentX + (halfWaveLengthPx / 2)
+        path.reset()
+        path.apply {
+            repeat(halfWaveCount + 3) { index ->
+                // the position of either the peak or the trough.
+                val centerX = currentX + (halfWaveLengthPx / 2)
 
-                    // We subtract offsetPx because we are shifting the whole path to the left by
-                    // offsetPx, in order to calculate the new point.
-                    val posDiff = centerX - (offsetPx + thumbPositionPx)
-                    val transitionRatio =
-                        when {
-                            posDiff <= 0 -> 1f // Active part
-                            posDiff < waveLengthPx ->
-                                1f - (posDiff / waveLengthPx) // Active -> Inactive
-                            else -> 0f // Inactive part (flat)
-                        }
-                    val calculatedAmplitude = animatedAmplitudePx * transitionRatio
+                // We subtract offsetPx because we are shifting the whole path to the left by
+                // offsetPx, in order to calculate the new point.
+                val posDiff = centerX - (offsetPx + thumbPositionPx)
+                val transitionRatio =
+                    when {
+                        posDiff <= 0 -> 1f // Active part
+                        posDiff < waveLengthPx ->
+                            1f - (posDiff / waveLengthPx) // Active -> Inactive
+                        else -> 0f // Inactive part (flat)
+                    }
+                val calculatedAmplitude = animatedAmplitudePx * transitionRatio
 
-                    // Draw a half wave (either a hill or a valley shape starting and ending on
-                    // the horizontal center).
-                    relativeQuadraticTo(
-                        // The control point for the bezier curve is on top of the peak of the
-                        // hill or the very center bottom of the valley shape.
-                        dx1 = halfWaveLengthPx / 2,
-                        dy1 = if (index % 2 == 0) -calculatedAmplitude else calculatedAmplitude,
-                        // Advance horizontally, half a wave length at a time.
-                        dx2 = halfWaveLengthPx,
-                        dy2 = 0f,
-                    )
+                // Draw a half wave (either a hill or a valley shape starting and ending on
+                // the horizontal center).
+                relativeQuadraticTo(
+                    // The control point for the bezier curve is on top of the peak of the
+                    // hill or the very center bottom of the valley shape.
+                    dx1 = halfWaveLengthPx / 2,
+                    dy1 = if (index % 2 == 0) -calculatedAmplitude else calculatedAmplitude,
+                    // Advance horizontally, half a wave length at a time.
+                    dx2 = halfWaveLengthPx,
+                    dy2 = 0f,
+                )
 
-                    currentX += halfWaveLengthPx
-                }
+                currentX += halfWaveLengthPx
             }
+        }
 
         // To handle the change in colors, we use the same path twice.
         // Paths are shifted by offsetPx due to the translation to the left.
@@ -1610,8 +1613,6 @@ private fun ContentScope.PlayPauseAction(
                 is MediaSessionState.Paused -> {
                     val painterOrNull =
                         when (viewModel.icon) {
-                            // TODO(b/399860531): load this expensive-to-load animated vector
-                            //  drawable off the main thread.
                             is Icon.Resource ->
                                 rememberAnimatedVectorPainter(
                                     animatedImageVector =

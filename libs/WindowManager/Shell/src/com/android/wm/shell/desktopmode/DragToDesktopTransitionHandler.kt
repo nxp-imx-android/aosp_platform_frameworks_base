@@ -14,7 +14,6 @@ import android.app.PendingIntent.FLAG_ALLOW_UNSAFE_IMPLICIT_INTENT
 import android.app.PendingIntent.FLAG_MUTABLE
 import android.app.WindowConfiguration.ACTIVITY_TYPE_HOME
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
-import android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.FILL_IN_COMPONENT
@@ -31,7 +30,6 @@ import android.view.SurfaceControl.Transaction
 import android.view.WindowManager.TRANSIT_CHANGE
 import android.view.WindowManager.TRANSIT_CLOSE
 import android.window.DesktopExperienceFlags
-import android.window.DesktopModeFlags
 import android.window.TransitionInfo
 import android.window.TransitionInfo.Change
 import android.window.TransitionRequestInfo
@@ -57,7 +55,7 @@ import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.TransitionUtil
 import com.android.wm.shell.shared.animation.Interpolators
 import com.android.wm.shell.shared.animation.PhysicsAnimator
-import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper
 import com.android.wm.shell.shared.desktopmode.DesktopConfig
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT
@@ -302,7 +300,7 @@ sealed class DragToDesktopTransitionHandler(
                 }
             logV(
                 "cancelDragToDesktop finishing start-transition and starting split-select " +
-                    "request to position=%s with state=%s",
+                    "request to position=%d with state=%s",
                 splitPosition,
                 state,
             )
@@ -677,7 +675,7 @@ sealed class DragToDesktopTransitionHandler(
      * index.
      */
     protected fun calculateStartDragLayers(info: TransitionInfo): DragToDesktopLayers {
-        if (BubbleAnythingFlagHelper.enableBubbleToFullscreen()) {
+        if (BubbleFlagHelper.enableBubbleToFullscreen()) {
             val hasDesktop = desktopState.isDesktopModeSupportedOnDisplay(info.getRoot(0).displayId)
             if (!hasDesktop) {
                 return calculateStartDragLayersWithoutDesktop(info)

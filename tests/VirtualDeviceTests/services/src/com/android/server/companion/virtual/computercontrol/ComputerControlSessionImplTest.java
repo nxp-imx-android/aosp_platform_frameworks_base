@@ -368,6 +368,7 @@ public class ComputerControlSessionImplTest {
         assertThat(virtualDisplayConfig.getHeight()).isEqualTo(DISPLAY_HEIGHT);
         assertThat(virtualDisplayConfig.getWidth()).isEqualTo(DISPLAY_WIDTH);
         assertThat(virtualDisplayConfig.getSurface()).isNull();
+        assertThat(virtualDisplayConfig.isIgnoreActivitySizeRestrictions()).isTrue();
 
         final int expectedDisplayFlags = DisplayManager.VIRTUAL_DISPLAY_FLAG_TRUSTED
                 | DisplayManager.VIRTUAL_DISPLAY_FLAG_STEAL_TOP_FOCUS_DISABLED

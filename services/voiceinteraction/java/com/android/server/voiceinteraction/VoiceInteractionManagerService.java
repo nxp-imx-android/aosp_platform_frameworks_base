@@ -3472,6 +3472,8 @@ public class VoiceInteractionManagerService extends SystemService {
                     /* enterResId= */ 0, /* exitResId= */ 0, null, null, null);
             opts.setDisableStartingWindow(true);
             opts.setLaunchWindowingMode(WINDOWING_MODE_FULLSCREEN);
+            opts.setPendingIntentBackgroundActivityStartMode(
+                    ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS);
             int resultCode = mAtmInternal.startActivityWithScreenshot(launchIntent,
                     mContext.getPackageName(), Binder.getCallingUid(), Binder.getCallingPid(), null,
                     opts.toBundle(), userId);

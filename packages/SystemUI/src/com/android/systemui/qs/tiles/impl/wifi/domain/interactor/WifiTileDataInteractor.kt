@@ -76,19 +76,19 @@ constructor(
         ) { toggleState, isEnabled, wifiNetwork, notConnectedDescription ->
             if (toggleState == WifiToggleState.Pausing) {
                 return@combine WifiTileModel.Inactive(
-                    icon = WifiTileIconModel(WifiIcons.WIFI_NO_SIGNAL),
+                    icon = WifiTileIconModel(R.drawable.vd_wifi),
                     secondaryLabel = notConnectedDescription,
                 )
             } else if (toggleState == WifiToggleState.Scanning) {
                 return@combine WifiTileModel.Active(
-                    icon = WifiTileIconModel(WifiIcons.WIFI_NO_SIGNAL),
+                    icon = WifiTileIconModel(R.drawable.ic_wifi_connecting),
                     secondaryLabel = context.getString(R.string.quick_settings_scanning_for_wifi),
                 )
             }
 
             if (!isEnabled) {
                 return@combine WifiTileModel.Inactive(
-                    icon = WifiTileIconModel(R.drawable.ic_signal_wifi_off),
+                    icon = WifiTileIconModel(R.drawable.ic_wifi_off),
                     secondaryLabel = null,
                 )
             }
@@ -102,7 +102,7 @@ constructor(
                 )
             } else {
                 WifiTileModel.Inactive(
-                    icon = WifiTileIconModel(WifiIcons.WIFI_NO_SIGNAL),
+                    icon = WifiTileIconModel(R.drawable.vd_wifi),
                     secondaryLabel = notConnectedDescription,
                 )
             }

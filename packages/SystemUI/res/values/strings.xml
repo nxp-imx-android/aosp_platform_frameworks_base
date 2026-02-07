@@ -302,9 +302,9 @@
     <!-- Content description indicating that tapping a button will dismiss the work profile first run dialog [CHAR LIMIT=NONE] -->
     <string name="screenshot_dismiss_work_profile">Dismiss work profile message</string>
     <!-- Label for UI element which allows opening the screenshot in the Files app [CHAR LIMIT=30] -->
-    <string name="screenshot_open_in_folder_label">Folder</string>
+    <string name="screenshot_open_in_folder_label">View</string>
     <!-- Content description indicating that tapping the element will allow opening the screenshot in the Files app [CHAR LIMIT=NONE] -->
-    <string name="screenshot_open_in_folder_description">Open screenshot in Files</string>
+    <string name="screenshot_open_in_folder_description">View screenshot in Files button</string>
     <!-- Content description indicating that the view is a preview of the screenshot that was just taken [CHAR LIMIT=NONE] -->
     <string name="screenshot_preview_description">Screenshot preview</string>
     <!-- Content description for the top boundary of the screenshot being cropped, with the current position as a percentage. [CHAR LIMIT=NONE] -->
@@ -559,7 +559,7 @@
     <!-- Content description for the delete button in the post recording shelf. [CHAR LIMIT=NONE] -->
     <string name="screen_capture_post_recording_shelf_delete_button_a11y">Delete screen recording</string>
     <!-- Content description for the thumbnail in the post recording shelf. [CHAR LIMIT=NONE] -->
-    <string name="screen_capture_post_recording_shelf_thumbnail_a11y">Open screen recording in video viewer</string>
+    <string name="screen_capture_post_recording_shelf_thumbnail_a11y">Open screen recording in viewing app</string>
 
     <!-- Screen capture setting to show clicks and keys when recording [CHAR LIMIT=35] -->
     <string name="screen_capture_show_clicks_and_keys">Show clicks and keys</string>

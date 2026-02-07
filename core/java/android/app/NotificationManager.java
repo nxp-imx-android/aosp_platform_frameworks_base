@@ -3797,4 +3797,35 @@ public class NotificationManager {
             throw e.rethrowFromSystemServer();
         }
     }
+
+    /**
+     * Returns the list of {@link NotificationRule notification rules}.
+     *
+     * @hide
+     */
+    public List<NotificationRule> getNotificationRules() {
+        INotificationManager service = service();
+        try {
+            return service.getNotificationRules(null, mContext.getUserId()).getList();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Returns the created {@link NotificationRule notification rule} or null if the rule could not
+     * be created.
+     * @hide
+     */
+    @FlaggedApi(android.app.Flags.FLAG_NM_CONTEXTUAL_DISPLAY_LAUNCH)
+    public @Nullable NotificationRule addNotificationRule(@NonNull NotificationRule rule,
+            int position) {
+        Objects.requireNonNull(rule);
+        final INotificationManager service = service();
+        try {
+            return service.addNotificationRule(mContext.getUserId(), rule, position);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
 }

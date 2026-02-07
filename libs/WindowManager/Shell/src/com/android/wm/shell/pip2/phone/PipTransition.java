@@ -74,7 +74,7 @@ import com.android.wm.shell.common.pip.PipDesktopState;
 import com.android.wm.shell.common.pip.PipDisplayLayoutState;
 import com.android.wm.shell.common.pip.PipMenuController;
 import com.android.wm.shell.common.pip.PipUtils;
-import com.android.wm.shell.desktopmode.DesktopPipTransitionController;
+import com.android.wm.shell.desktopmode.desktoptaskshandlers.DesktopTasksTransitionHandler;
 import com.android.wm.shell.pip.PipTransitionController;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.animation.PipAlphaAnimator;
@@ -125,7 +125,6 @@ public class PipTransition extends PipTransitionController implements
     private final Optional<SplitScreenController> mSplitScreenControllerOptional;
     private final PipSurfaceTransactionHelper mPipSurfaceTransactionHelper;
     private final PipDesktopState mPipDesktopState;
-    private final Optional<DesktopPipTransitionController> mDesktopPipTransitionController;
     private final PipInteractionHandler mPipInteractionHandler;
     private final PipDisplayTransferHandler mPipDisplayTransferHandler;
 
@@ -175,7 +174,9 @@ public class PipTransition extends PipTransitionController implements
             DisplayController displayController,
             Optional<SplitScreenController> splitScreenControllerOptional,
             PipDesktopState pipDesktopState,
-            Optional<DesktopPipTransitionController> desktopPipTransitionController,
+            // Depend on DesktopTasksTransitionHandler to ensure that transition handler is placed
+            // behind PipTransition in the TransitionHandler order, see b/481436023.
+            DesktopTasksTransitionHandler desktopTasksTransitionHandler,
             PipInteractionHandler pipInteractionHandler,
             PipDisplayTransferHandler pipDisplayTransferHandler) {
         super(shellInit, shellTaskOrganizer, transitions, pipBoundsState, pipMenuController,
@@ -193,7 +194,6 @@ public class PipTransition extends PipTransitionController implements
         mSplitScreenControllerOptional = splitScreenControllerOptional;
         mPipSurfaceTransactionHelper = pipSurfaceTransactionHelper;
         mPipDesktopState = pipDesktopState;
-        mDesktopPipTransitionController = desktopPipTransitionController;
         mPipInteractionHandler = pipInteractionHandler;
         mPipDisplayTransferHandler = pipDisplayTransferHandler;
 

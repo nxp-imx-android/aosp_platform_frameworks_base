@@ -22,16 +22,23 @@ import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.dagger.DynamicOverride;
 import com.android.wm.shell.dagger.WMSingleton;
+import com.android.wm.shell.desktopmode.DesktopTasksController;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
+import com.android.wm.shell.desktopmode.ShellDesktopState;
 import com.android.wm.shell.desktopmode.SnapController;
+import com.android.wm.shell.desktopmode.desktoptaskshandlers.DesktopTasksTransitionHandler;
 import com.android.wm.shell.desktopmode.multidesks.DesksController;
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer;
 import com.android.wm.shell.shared.desktopmode.DesktopConfig;
 import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.sysui.ShellController;
+import com.android.wm.shell.sysui.ShellInit;
+import com.android.wm.shell.transition.Transitions;
 
 import dagger.Module;
 import dagger.Provides;
+
+import java.util.Optional;
 
 /**
  * Provides Desktop Shell implementation components to Dagger dependency Graph.
@@ -58,5 +65,16 @@ public class DesktopModule {
     @Provides
     static SnapController provideSnapController() {
         return new SnapController();
+    }
+
+    @WMSingleton
+    @Provides
+    static DesktopTasksTransitionHandler provideDesktopTasksTransitionHandler(
+            Transitions transitions,
+            ShellInit shellInit,
+            ShellDesktopState desktopState,
+            Optional<DesktopTasksController> desktopTasksController) {
+        return new DesktopTasksTransitionHandler(transitions, shellInit, desktopState,
+                desktopTasksController);
     }
 }

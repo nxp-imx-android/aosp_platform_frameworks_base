@@ -28,7 +28,7 @@ import android.window.DesktopModeFlags
 import com.android.internal.R
 import com.android.internal.annotations.VisibleForTesting
 import com.android.window.flags.Flags
-import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper
 
 @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
 class DesktopStateImpl(context: Context) : DesktopState {
@@ -125,7 +125,7 @@ class DesktopStateImpl(context: Context) : DesktopState {
 
     override val overridesShowAppHandle: Boolean =
         (Flags.showAppHandleLargeScreens() ||
-            BubbleAnythingFlagHelper.enableBubbleToFullscreen()) && deviceHasLargeScreen
+            BubbleFlagHelper.enableBubbleToFullscreen()) && deviceHasLargeScreen
 
     private val hasFreeformFeature =
         context.getPackageManager().hasSystemFeature(FEATURE_FREEFORM_WINDOW_MANAGEMENT)

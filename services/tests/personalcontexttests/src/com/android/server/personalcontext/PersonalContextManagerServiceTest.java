@@ -22,6 +22,7 @@ import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentat
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
@@ -29,6 +30,7 @@ import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import android.Manifest;
@@ -41,6 +43,7 @@ import android.database.ContentObserver;
 import android.os.Process;
 import android.os.RemoteException;
 import android.os.UserHandle;
+import android.os.test.FakePermissionEnforcer;
 import android.provider.Settings;
 import android.service.personalcontext.hint.BundleHint;
 import android.service.personalcontext.hint.ContextHint;
@@ -87,6 +90,7 @@ public class PersonalContextManagerServiceTest {
     @Mock private PackageManager mPackageManager;
     @Mock private ContentResolver mContentResolver;
     @Mock private PackageManagerInternal mPackageManagerInternal;
+    private FakePermissionEnforcer mFakePermissionEnforcer;
 
     private PersonalContextManagerService mService;
     private PersonalContextManagerInternal mLocalService;
@@ -109,6 +113,9 @@ public class PersonalContextManagerServiceTest {
 
         mContext.getTestablePermissions()
                 .setPermission(Manifest.permission.INTERACT_ACROSS_USERS, PERMISSION_GRANTED);
+        mFakePermissionEnforcer = new FakePermissionEnforcer();
+        mFakePermissionEnforcer.grant(Manifest.permission.CHANGE_PERSONAL_CONTEXT_MODE);
+        mContext.addMockSystemService(Context.PERMISSION_ENFORCER_SERVICE, mFakePermissionEnforcer);
 
         mService = spy(new PersonalContextManagerService(mContext));
         mLocalService = mService.new LocalService();
@@ -287,6 +294,23 @@ public class PersonalContextManagerServiceTest {
                         Process.myUid(),
                         USER_ID_1,
                         PackageManager.PERSONAL_CONTEXT_MODE_USER_OFF);
+    }
+
+    @Test
+    public void testSetPersonalContextModeEnabled_permissionsDenied_throwsSecurityException()
+            throws RemoteException {
+        PersonalContextManagerService.BinderService binderService =
+                new PersonalContextManagerService.BinderService(mService, mPackageManagerInternal);
+
+        mFakePermissionEnforcer.revoke(Manifest.permission.CHANGE_PERSONAL_CONTEXT_MODE);
+
+        assertThrows(
+                SecurityException.class,
+                () ->
+                        binderService.setPersonalContextModeEnabled(
+                                TEST_PACKAGE_NAME, USER_ID_1, /* enabled= */ false));
+
+        verifyNoInteractions(mPackageManagerInternal);
     }
 
     @Test

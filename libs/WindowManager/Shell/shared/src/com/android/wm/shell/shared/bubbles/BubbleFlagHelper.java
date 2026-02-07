@@ -19,12 +19,11 @@ package com.android.wm.shell.shared.bubbles;
 import com.android.wm.shell.Flags;
 
 /**
- * Bubble anything has some dependent flags, this class simplifies the checks.
- * (TODO: b/389737359 - remove this when the feature is launched).
+ * Some bubble features has some dependent flags, this class simplifies the checks.
  */
-public class BubbleAnythingFlagHelper {
+public class BubbleFlagHelper {
 
-    private BubbleAnythingFlagHelper() {}
+    private BubbleFlagHelper() {}
 
     /** Whether creating any bubble or the overall bubble anything feature is enabled. */
     public static boolean enableCreateAnyBubble() {
@@ -47,6 +46,13 @@ public class BubbleAnythingFlagHelper {
             return false;
         }
         return com.android.window.flags.Flags.enableBubbleRootTask();
+    }
+
+    /** Whether bubble transitions planner feature is enabled. */
+    public static boolean isBubbleTransitionPlannerEnabled() {
+        return BubbleFlagHelper.enableCreateAnyBubble() &&
+                Flags.enableBubbleTransitionPlanner() &&
+                com.android.window.flags.Flags.transitMixpatcherBase();
     }
 
     /** Whether the overall bubble anything feature is enabled. */

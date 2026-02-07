@@ -75,7 +75,7 @@ import com.android.wm.shell.desktopmode.DesktopTasksController
 import com.android.wm.shell.desktopmode.DesktopTasksController.SnapPosition
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction
 import com.android.wm.shell.recents.RecentsTransitionStateListener
-import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource
 import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModel.DefaultWindowDecorationActions
@@ -1310,8 +1310,8 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     @EnableFlags(Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK)
     @DisableFlags(Flags.FLAG_ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS)
     fun testOnTaskOpening_startingAppBubbleTask_skipsWindowDecorationCreation() {
-        assumeTrue(BubbleAnythingFlagHelper.enableCreateAnyBubble())
-        assumeTrue(BubbleAnythingFlagHelper.enableRootTaskForBubble())
+        assumeTrue(BubbleFlagHelper.enableCreateAnyBubble())
+        assumeTrue(BubbleFlagHelper.enableRootTaskForBubble())
 
         val taskInfo = createTask(windowingMode = WINDOWING_MODE_MULTI_WINDOW)
         bubbleHelper.stub { on { isAppBubbleTask(taskInfo) } doReturn true }
@@ -1352,7 +1352,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     @Test
     @DisableFlags(Flags.FLAG_ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS)
     fun testOnTaskChanging_collapsedBubbleTask_skipsWindowDecorationCreation() {
-        assumeTrue(BubbleAnythingFlagHelper.enableCreateAnyBubble())
+        assumeTrue(BubbleFlagHelper.enableCreateAnyBubble())
 
         val taskInfo = createTask(windowingMode = WINDOWING_MODE_MULTI_WINDOW)
         bubbleController.stub { on { hasStableBubbleForTask(taskInfo.taskId) } doReturn true }
@@ -1370,7 +1370,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     @Test
     @DisableFlags(Flags.FLAG_ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS)
     fun testOnTaskChanging_convertTaskToBubble_destroysWindowDecoration() {
-        assumeTrue(BubbleAnythingFlagHelper.enableCreateAnyBubble())
+        assumeTrue(BubbleFlagHelper.enableCreateAnyBubble())
 
         val taskInfo = createTask(windowingMode = WINDOWING_MODE_MULTI_WINDOW)
         bubbleController.stub { on { hasStableBubbleForTask(taskInfo.taskId) } doReturn true }

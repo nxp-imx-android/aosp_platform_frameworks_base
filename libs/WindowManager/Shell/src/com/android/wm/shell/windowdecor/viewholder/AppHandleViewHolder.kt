@@ -49,7 +49,7 @@ import com.android.wm.shell.R
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_APP_HANDLE_MENU_OPENED
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_WINDOW_DECORATION
-import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper
 import com.android.wm.shell.windowdecor.WindowDecorLinearLayout
 import com.android.wm.shell.windowdecor.WindowManagerWrapper
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalSystemViewContainer
@@ -213,7 +213,7 @@ class AppHandleViewHolder(
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 ignoreCutouts =
                     Flags.showAppHandleLargeScreens() ||
-                        BubbleAnythingFlagHelper.enableBubbleToFullscreen(),
+                        BubbleFlagHelper.enableBubbleToFullscreen(),
             )
         val view = statusBarInputLayer?.view ?: error("Unable to find statusBarInputLayer View")
         val lp =
@@ -345,14 +345,14 @@ class AppHandleViewHolder(
             when (decorThemeUtil.getAppTheme(description)) {
                 Theme.LIGHT -> {
                     logD(
-                        "color calculation: using light color, reason: light app theme (bgColor=%s)",
+                        "color calculation: using light color, reason: light app theme (bgColor=%d)",
                         bgColor,
                     )
                     return false
                 }
                 Theme.DARK -> {
                     logD(
-                        "color calculation: using dark color, reason: dark app theme (bgColor=%s)",
+                        "color calculation: using dark color, reason: dark app theme (bgColor=%d)",
                         bgColor,
                     )
                     return true

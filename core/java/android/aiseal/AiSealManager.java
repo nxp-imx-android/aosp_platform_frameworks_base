@@ -74,7 +74,7 @@ import android.util.Log;
 @SystemApi
 @RequiresFeature(PackageManager.FEATURE_AISEAL)
 @SystemService(Context.AISEAL_HOST_SERVICE)
-public class AiSealManager {
+public final class AiSealManager {
     private static final String AISEAL_HOST_SERVICE_NAME = Context.AISEAL_HOST_SERVICE;
     private static final String SYSTEM_PROPERTY_AISEAL_ENABLED = "service.aiseal.enable";
 

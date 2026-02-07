@@ -260,6 +260,7 @@ public class EnableRequestAttributes implements Parcelable {
          * Build the {@link EnableRequestAttributes}
          *
          * @return The {@link EnableRequestAttributes} instance.
+         * @throws IllegalStateException if the configuration is invalid.
          */
         @NonNull
         public EnableRequestAttributes build() {

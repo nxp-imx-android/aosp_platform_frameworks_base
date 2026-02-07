@@ -88,6 +88,7 @@ import static android.os.PowerExemptionManager.REASON_SYSTEM_EXEMPT_APP_OP;
 import static android.os.PowerExemptionManager.REASON_SYSTEM_MODULE;
 import static android.os.PowerExemptionManager.REASON_SYSTEM_UID;
 import static android.os.PowerExemptionManager.REASON_TEMP_ALLOWED_WHILE_IN_USE;
+import static android.os.PowerExemptionManager.REASON_TILE_ONCLICK;
 import static android.os.PowerExemptionManager.REASON_UID_VISIBLE;
 import static android.os.PowerExemptionManager.TEMPORARY_ALLOW_LIST_TYPE_FOREGROUND_SERVICE_ALLOWED;
 import static android.os.PowerExemptionManager.getReasonCodeFromProcState;
@@ -9125,6 +9126,15 @@ public final class ActiveServices {
             int callingPid, int callingUid, @Nullable ProcessRecord targetProcess,
             BackgroundStartPrivileges backgroundStartPrivileges) {
         int ret = REASON_DENIED;
+
+        // Allow FGS while-in-use if the FGS start is allowed by the tile onclick logic.
+        if (com.android.server.am.Flags.fgsWiuQsTileClicked()) {
+            final ActivityManagerService.FgsTempAllowListItem item =
+                    mAm.isAllowlistedForFgsStartLOSP(callingUid);
+            if (item != null && item.mReasonCode == REASON_TILE_ONCLICK) {
+                return REASON_TILE_ONCLICK;
+            }
+        }
 
         final int uidState = mAm.getUidStateLocked(callingUid);
         if (ret == REASON_DENIED) {

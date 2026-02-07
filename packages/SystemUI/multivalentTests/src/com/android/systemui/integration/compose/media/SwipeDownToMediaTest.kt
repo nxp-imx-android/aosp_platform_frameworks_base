@@ -21,30 +21,23 @@ import android.testing.TestableLooper
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onRoot
-import androidx.compose.ui.test.performTouchInput
-import androidx.compose.ui.test.swipe
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.TestContentScope
 import com.android.compose.theme.PlatformTheme
-import com.android.systemui.compose.modifiers.resIdToTestTag
-import com.android.systemui.shade.domain.interactor.enableSplitShade
 import com.android.systemui.Flags
 import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.compose.modifiers.resIdToTestTag
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.integration.SystemUiIntegrationTest
 import com.android.systemui.jank.interactionJankMonitor
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
-import com.android.systemui.media.swipeDownToOpenShade
-import com.android.systemui.media.remedia.data.repository.fakeMediaData
+import com.android.systemui.media.remedia.data.repository.fakeActiveMedia
 import com.android.systemui.media.remedia.data.repository.setFakeCurrentMedia
 import com.android.systemui.media.remedia.data.repository.setHasMedia
 import com.android.systemui.qs.composefragment.dagger.usingMediaInComposeFragment
@@ -53,6 +46,7 @@ import com.android.systemui.scene.session.ui.composable.SaveableSession
 import com.android.systemui.scene.session.ui.composable.Session
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.enableSingleShade
+import com.android.systemui.shade.domain.interactor.enableSplitShade
 import com.android.systemui.shade.ui.composable.ShadeScene
 import com.android.systemui.shade.ui.composable.WithStatusIconContext
 import com.android.systemui.shade.ui.viewmodel.shadeSceneContentViewModelFactory
@@ -100,7 +94,7 @@ class SwipeDownToMediaTest : SysuiTestCase() {
 
     @Before
     fun setup() {
-        kosmos.setFakeCurrentMedia(kosmos.fakeMediaData)
+        kosmos.setFakeCurrentMedia(listOf(kosmos.fakeActiveMedia))
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)

@@ -30,6 +30,7 @@ import com.android.systemui.screencapture.common.ScreenCaptureComponent
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiState
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureComponentInteractor
+import com.android.systemui.screencapture.domain.interactor.ScreenCaptureTracingInteractor
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
 import com.android.systemui.screencapture.record.smallscreen.ui.SmallScreenPostRecordingActivity
@@ -64,6 +65,7 @@ constructor(
     private val postRecordingShelfFactory: PostRecordingShelf.Factory,
     private val activityStarter: ActivityStarter,
     private val screenCaptureRecordFeaturesInteractor: ScreenCaptureRecordFeaturesInteractor,
+    private val screenCaptureTracingInteractor: ScreenCaptureTracingInteractor,
 ) : CoreStartable {
 
     override fun start() {
@@ -75,7 +77,9 @@ constructor(
 
     private fun observeUiState(type: ScreenCaptureType) {
         combine(
-                screenCaptureUiInteractor.uiState(type),
+                screenCaptureUiInteractor.uiState(type).onEach {
+                    screenCaptureTracingInteractor.beginVisibilityChangeSection(it)
+                },
                 screenCaptureComponentInteractor
                     .screenCaptureComponent(type)
                     .filterNotNull()

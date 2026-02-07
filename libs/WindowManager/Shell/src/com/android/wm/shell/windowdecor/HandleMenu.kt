@@ -57,7 +57,7 @@ import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventE
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.DESKTOP_WINDOWING_APP_TO_WEB_OPEN_IN_BROWSER
 import com.android.wm.shell.gamecontrols.GameControlsHelper
 import com.android.wm.shell.shared.annotations.ShellMainThread
-import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper
 import com.android.wm.shell.shared.bubbles.ContextUtils.isRtl
 import com.android.wm.shell.shared.split.SplitScreenConstants
 import com.android.wm.shell.splitscreen.SplitScreenController
@@ -268,7 +268,7 @@ private constructor(
                         },
                     ignoreCutouts =
                         Flags.showAppHandleLargeScreens() ||
-                            BubbleAnythingFlagHelper.enableBubbleToFullscreen(),
+                            BubbleFlagHelper.enableBubbleToFullscreen(),
                 )
             } else if (DesktopExperienceFlags.ENABLE_WINDOW_DECORATION_REFACTOR.isTrue) {
                 createAdditionalViewHostViewContainer(

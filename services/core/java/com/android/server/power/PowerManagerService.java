@@ -5880,7 +5880,7 @@ public final class PowerManagerService extends SystemService
         public int mFlags;
         public String mTag;
         public final String mPackageName;
-        public WorkSource mWorkSource;
+        @Nullable public WorkSource mWorkSource;
         public String mHistoryTag;
         public final int mOwnerUid;
         public final int mOwnerPid;

@@ -524,18 +524,16 @@ public class GraphicsEnvironment {
                 }
             }
 
-            if (android.provider.flags.Flags.angleDynamicDenylist()) {
-                final List<String> dynamicDenylist = getGlobalSettingsString(
-                        contentResolver, bundle, Settings.Global.ANGLE_DYNAMIC_DENYLIST);
-                if (DEBUG) {
-                    Log.v(TAG, "ANGLE dynamic denylist: " + dynamicDenylist);
-                }
-                for (final String deniedPackage : dynamicDenylist) {
-                    if (deniedPackage.equals(packageName)) {
-                        Log.v(TAG, packageName
-                                + " is listed in dynamic ANGLE denylist, disabling ANGLE");
-                        return ANGLE_GL_DRIVER_CHOICE_NATIVE;
-                    }
+            final List<String> dynamicDenylist = getGlobalSettingsString(
+                    contentResolver, bundle, Settings.Global.ANGLE_DYNAMIC_DENYLIST);
+            if (DEBUG) {
+                Log.v(TAG, "ANGLE dynamic denylist: " + dynamicDenylist);
+            }
+            for (final String deniedPackage : dynamicDenylist) {
+                if (deniedPackage.equals(packageName)) {
+                    Log.v(TAG, packageName
+                            + " is listed in dynamic ANGLE denylist, disabling ANGLE");
+                    return ANGLE_GL_DRIVER_CHOICE_NATIVE;
                 }
             }
             if (applicationInfoWithMetaData.category == ApplicationInfo.CATEGORY_GAME) {

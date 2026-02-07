@@ -177,7 +177,7 @@ public class RavenwoodTestStats {
             if (failure == null || failure.getException() == null) {
                 return new SourceLocation(testDescription, "", 0);
             }
-            var testClass = testDescription.getTestClass();
+            var testClass = RavenwoodImplUtils.getDescriptionTestClass(testDescription);
             var testClassName = testClass.getName();
 
             // Iterate over stack frames of the exception and its causes, and find the
@@ -365,7 +365,7 @@ public class RavenwoodTestStats {
                 failed += outcome.failedCount();
                 totalDuration = totalDuration.plus(outcome.duration);
 
-                testClass = outcome.testDescription.getTestClass();
+                testClass = RavenwoodImplUtils.getDescriptionTestClass(outcome.testDescription);
             }
             mOutputWriter.printf(FORMAT,
                     "c", // Type: class
@@ -391,7 +391,7 @@ public class RavenwoodTestStats {
 
     private void dumpSingleTest(String className, String method, Outcome outcome) {
         var rawMethodName = extractMethodName(method);
-        var testClass = outcome.testDescription.getTestClass();
+        var testClass = RavenwoodImplUtils.getDescriptionTestClass(outcome.testDescription);
         var loc = outcome.failureSourceLocation();
 
         mOutputWriter.printf(FORMAT,
@@ -439,7 +439,8 @@ public class RavenwoodTestStats {
         } else if (outcome.skippedCount() > 0) {
             // Special case @DisabledOnRavenwood.
             var isDisabledOnRavenwood =
-                    mDisabledClasses.contains(outcome.testDescription.getTestClass())
+                    mDisabledClasses.contains(
+                            RavenwoodImplUtils.getDescriptionTestClass(outcome.testDescription))
                     || outcome.failure != null && outcome.failure.getException()
                         instanceof DisabledOnRavenwoodAssumptionException;
             if (isDisabledOnRavenwood) {

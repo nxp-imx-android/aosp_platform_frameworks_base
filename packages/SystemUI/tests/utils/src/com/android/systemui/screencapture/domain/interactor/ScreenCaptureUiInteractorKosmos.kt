@@ -24,7 +24,6 @@ import com.android.systemui.mediaprojection.devicepolicy.mockDevicePolicyResolve
 import com.android.systemui.screencapture.data.repository.screenCaptureDeviceStateRepository
 import com.android.systemui.screencapture.data.repository.screenCaptureUiRepository
 import com.android.systemui.user.data.repository.userRepository
-import dagger.Lazy
 
 val Kosmos.screenCaptureUiInteractor: ScreenCaptureUiInteractor by
     Kosmos.Fixture {
@@ -34,7 +33,7 @@ val Kosmos.screenCaptureUiInteractor: ScreenCaptureUiInteractor by
             deviceStateRepository = screenCaptureDeviceStateRepository,
             repository = screenCaptureUiRepository,
             userRepository = userRepository,
-            devicePolicyResolver = Lazy { mockDevicePolicyResolver },
+            devicePolicyResolver = { mockDevicePolicyResolver },
             uiEventLogger = uiEventLogger,
         )
     }

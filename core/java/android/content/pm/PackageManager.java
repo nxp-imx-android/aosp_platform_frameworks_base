@@ -10731,14 +10731,16 @@ public abstract class PackageManager {
      * cannot be set, either because App Lock is not supported for that package, or because it is
      * already set to that value.
      *
+     * App Lock is a feature that allows users to add authentication as a requirement to open
+     * individual apps, even if the device is unlocked.
+     *
      * <p> Before calling this API to avoid getting a null {@link PendingIntent} callers should
      * first verify that App Lock is supported for the specified package by first checking
      * {@link ApplicationInfo#isAppLockSupported}, or if it's already at the target state for that
      * package by checking {@link ApplicationInfo#isAppLockEnabled}. The {@link PendingIntent}
-     * resolves to
-     * an activity, which allows the user to enroll a device credential if one isn't enrolled, and
-     * then requires authentication before setting the App Lock enablement state as enabled or
-     * disabled.
+     * resolves to an activity, which allows the user to enroll a device credential if one isn't
+     * enrolled, and then requires authentication before setting the App Lock enablement state as
+     * enabled or disabled.
      *
      * @param packageName the package to enable or disable App Lock.
      * @param enabled true when the user would like to enable App Lock for the given package, false

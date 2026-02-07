@@ -23,6 +23,8 @@ import android.view.DisplayInfo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.display.data.repository.displayRepository
+import com.android.systemui.display.data.repository.fake
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.keyguard.keyguardDisplayManager
@@ -52,6 +54,7 @@ class DisplayWallpaperPresentationInteractorTest : SysuiTestCase() {
     private val fakeKeyguardRepository = kosmos.fakeKeyguardRepository
     private val deviceProvisioningRepository = kosmos.fakeDeviceProvisioningRepository
     private val keyguardDisplayManager = kosmos.keyguardDisplayManager
+    private val fakeDisplayRepository = kosmos.displayRepository.fake
     private val testDisplayInfo = DisplayInfo()
     private val testDisplay: Display =
         Display(
@@ -68,6 +71,7 @@ class DisplayWallpaperPresentationInteractorTest : SysuiTestCase() {
             deviceProvisioningRepository = { deviceProvisioningRepository },
             keyguardDisplayManager = { keyguardDisplayManager },
             shadeDisplaysInteractor = { kosmos.shadeDisplaysInteractor },
+            displayRepository = { kosmos.displayRepository },
         )
 
     @Before
@@ -149,6 +153,30 @@ class DisplayWallpaperPresentationInteractorTest : SysuiTestCase() {
             fakeShadeDisplaysRepository.setPendingDisplayId(THIS_DISPLAY_ID)
 
             assertThat(actual).isEqualTo(NONE)
+        }
+
+    @Test
+    fun presentationFactoryFlow_dreamingWithOverlay_mirroring_none() =
+        kosmos.runTest {
+            fakeKeyguardRepository.setKeyguardShowing(isShowing = true)
+            fakeKeyguardRepository.setDreamingWithOverlay(true)
+            fakeDisplayRepository.isMirroringEnabled.value = true
+            deviceProvisioningRepository.setDeviceProvisioned(true)
+
+            val actual by collectLastValue(wallpaperPresentationInteractor.presentationFactoryFlow)
+            assertThat(actual).isEqualTo(NONE)
+        }
+
+    @Test
+    fun presentationFactoryFlow_dreamingWithOverlay_notMirroring_keyguard() =
+        kosmos.runTest {
+            fakeKeyguardRepository.setKeyguardShowing(isShowing = true)
+            fakeKeyguardRepository.setDreamingWithOverlay(true)
+            fakeDisplayRepository.isMirroringEnabled.value = false
+            deviceProvisioningRepository.setDeviceProvisioned(true)
+
+            val actual by collectLastValue(wallpaperPresentationInteractor.presentationFactoryFlow)
+            assertThat(actual).isEqualTo(KEYGUARD)
         }
 
     private companion object {

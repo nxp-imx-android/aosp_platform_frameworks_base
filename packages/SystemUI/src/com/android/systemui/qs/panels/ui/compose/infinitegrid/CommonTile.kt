@@ -91,7 +91,6 @@ import androidx.compose.ui.unit.dp
 import com.android.compose.modifiers.size
 import com.android.compose.modifiers.thenIf
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
-import com.android.systemui.Flags
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.common.ui.compose.load
@@ -155,7 +154,7 @@ fun LargeTileContent(
                             onClick = toggleClick!!,
                             onLongClick = onLongClick,
                             onLongClickLabel = longPressLabel,
-                            hapticFeedbackEnabled = !Flags.msdlFeedback(),
+                            hapticFeedbackEnabled = false, // Haptics handled separately
                         )
                         .thenIf(accessibilityUiState != null) {
                             Modifier.semantics {

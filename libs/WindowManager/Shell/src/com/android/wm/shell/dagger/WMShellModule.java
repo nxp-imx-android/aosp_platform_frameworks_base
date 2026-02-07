@@ -133,12 +133,12 @@ import com.android.wm.shell.desktopmode.DesktopMinimizationTransitionHandler;
 import com.android.wm.shell.desktopmode.DesktopMixedTransitionHandler;
 import com.android.wm.shell.desktopmode.DesktopModeDragAndDropAnimatorHelper;
 import com.android.wm.shell.desktopmode.DesktopModeDragAndDropTransitionHandler;
-import com.android.wm.shell.desktopmode.DesktopModeEnterExitTransitionListener;
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger;
 import com.android.wm.shell.desktopmode.DesktopModeKeyGestureHandler;
 import com.android.wm.shell.desktopmode.DesktopModeLoggerTransitionObserver;
 import com.android.wm.shell.desktopmode.DesktopModeMoveToDisplayTransitionHandler;
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger;
+import com.android.wm.shell.desktopmode.DesktopRemoteListener;
 import com.android.wm.shell.desktopmode.DesktopTaskChangeListener;
 import com.android.wm.shell.desktopmode.DesktopTasksController;
 import com.android.wm.shell.desktopmode.DesktopTasksLimiter;
@@ -170,6 +170,7 @@ import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializerImpl;
 import com.android.wm.shell.desktopmode.data.persistence.DesktopPersistentRepository;
 import com.android.wm.shell.desktopmode.desktopfirst.DesktopDisplayModeController;
 import com.android.wm.shell.desktopmode.desktopfirst.DesktopFirstListenerManager;
+import com.android.wm.shell.desktopmode.desktoptaskshandlers.DesktopTasksTransitionHandler;
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider;
 import com.android.wm.shell.desktopmode.education.AppHandleEducationController;
 import com.android.wm.shell.desktopmode.education.AppHandleEducationFilter;
@@ -851,6 +852,7 @@ public abstract class WMShellModule {
             Optional<RecentsTransitionHandler> recentsTransitionHandler,
             KeyguardTransitionHandler keyguardTransitionHandler,
             Optional<DesktopTasksController> desktopTasksController,
+            DesktopTasksTransitionHandler desktopTasksTransitionHandler,
             Optional<UnfoldTransitionHandler> unfoldHandler,
             Optional<ActivityEmbeddingController> activityEmbeddingController,
             BubbleTransitions bubbleTransitions,
@@ -867,6 +869,7 @@ public abstract class WMShellModule {
                 recentsTransitionHandler,
                 keyguardTransitionHandler,
                 desktopTasksController,
+                desktopTasksTransitionHandler,
                 unfoldHandler,
                 activityEmbeddingController,
                 bubbleTransitions,
@@ -1095,7 +1098,7 @@ public abstract class WMShellModule {
             DesksController desksController,
             Optional<DesktopTasksTransitionObserver> desktopTasksTransitionObserver,
             SnapController snapController,
-            DesktopModeEnterExitTransitionListener desktopModeEnterExitTransitionListener) {
+            DesktopRemoteListener desktopRemoteListener) {
         return new DesktopTasksController(
                 context,
                 desktopAnimationConfiguration,
@@ -1157,7 +1160,7 @@ public abstract class WMShellModule {
                 desksController,
                 desktopTasksTransitionObserver.get(),
                 snapController,
-                desktopModeEnterExitTransitionListener);
+                desktopRemoteListener);
     }
 
     @WMSingleton
@@ -2411,7 +2414,8 @@ public abstract class WMShellModule {
             QuitFocusedAppKeyGestureHandler quitFocusedAppKeyGestureHandler,
             Optional<DesktopAiInitializer> desktopAiInitializer,
             BubbleRootTask bubbleRootTask,
-            IDesktopModeProvider desktopModeProvider) {
+            IDesktopModeProvider desktopModeProvider,
+            DesktopTasksTransitionHandler desktopTasksTransitionHandler) {
         return new Object();
     }
 
@@ -2475,5 +2479,4 @@ public abstract class WMShellModule {
     static HomeIntentProvider provideHomeIntentProvider(Context context) {
         return new HomeIntentProvider(context);
     }
-
 }

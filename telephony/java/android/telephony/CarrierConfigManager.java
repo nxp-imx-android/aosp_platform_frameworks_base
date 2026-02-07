@@ -359,7 +359,11 @@ public class CarrierConfigManager {
 
     /**
      * Flag indicating whether or not sending emergency SMS messages over IMS
-     * is supported when in LTE/limited LTE (Emergency only) service mode..
+     * is supported when in LTE/limited LTE (Emergency only) service mode.
+     *
+     * <p>Use {@code ImsSms#KEY_EMERGENCY_SMS_OVER_EMERGENCY_PDN_INT_ARRAY} instead to specify
+     * the network registration status (Home or Roaming) where the device should use Emergency PDN
+     * for Emergency SMS.
      */
     public static final String KEY_SUPPORT_EMERGENCY_SMS_OVER_IMS_BOOL =
             "support_emergency_sms_over_ims_bool";
@@ -7634,6 +7638,21 @@ public class CarrierConfigManager {
         public static final String KEY_SMS_RP_CAUSE_VALUES_TO_FALLBACK_INT_ARRAY =
                 KEY_PREFIX + "sms_rp_cause_values_to_fallback_int_array";
 
+        /**
+         * Specify the network registration status (Home or Roaming) where
+         * the device should use Emergency PDN for Emergency SMS transmission.
+         *
+         * <p>Possible values are,
+         * {@link Ims#NETWORK_TYPE_HOME},
+         * {@link Ims#NETWORK_TYPE_ROAMING},
+         * An empty array indicates Emergency PDN should never be used.
+         * In this case, the device will always use the existing IMS PDN for E-SMS,
+         * regardless of the network registration status (Home or Roaming).
+         * @hide
+         */
+        public static final String KEY_EMERGENCY_SMS_OVER_EMERGENCY_PDN_INT_ARRAY =
+                KEY_PREFIX + "emergency_sms_over_emergency_pdn_int_array";
+
         private static PersistableBundle getDefaults() {
             PersistableBundle defaults = new PersistableBundle();
             defaults.putBoolean(KEY_SMS_OVER_IMS_SUPPORTED_BOOL, true);
@@ -7686,6 +7705,9 @@ public class CarrierConfigManager {
                         AccessNetworkType.EUTRAN,
                         AccessNetworkType.IWLAN
                     });
+
+            defaults.putIntArray(
+                    KEY_EMERGENCY_SMS_OVER_EMERGENCY_PDN_INT_ARRAY, new int[] {});
 
             return defaults;
         }

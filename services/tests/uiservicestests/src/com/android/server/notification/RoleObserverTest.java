@@ -164,7 +164,7 @@ public class RoleObserverTest extends UiServiceTestCase {
                     mock(NotificationListeners.class), mock(NotificationAssistants.class),
                     mock(ConditionProviders.class), mock(ICompanionDeviceManager.class),
                     mock(SnoozeHelper.class), mock(NotificationUsageStats.class),
-                    mock(AtomicFile.class), mock(ActivityManager.class),
+                    mock(AtomicFile.class), mock(AtomicFile.class), mock(ActivityManager.class),
                     mock(GroupHelper.class), mock(IActivityManager.class),
                     mock(ActivityTaskManagerInternal.class),
                     mock(UsageStatsManagerInternal.class),

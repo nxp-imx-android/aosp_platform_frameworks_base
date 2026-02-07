@@ -113,7 +113,7 @@ public class GpuService extends SystemService {
     public void onBootPhase(int phase) {
         if (phase == PHASE_BOOT_COMPLETED) {
             mContentResolver = mContext.getContentResolver();
-            if (android.provider.flags.Flags.angleDynamicDenylist()) {
+            if (android.os.Flags.enableAngleDenyList()) {
                 mGameDriverListener = new GameDriverDeviceConfigListener();
             }
             if (!mHasProdDriver && !mHasDevDriver) {
@@ -173,7 +173,7 @@ public class GpuService extends SystemService {
                                     Settings.Global.UPDATABLE_DRIVER_PRODUCTION_DENYLISTS, ""));
                     setDenylist();
                 }
-                if (android.provider.flags.Flags.angleDynamicDenylist()) {
+                if (android.os.Flags.enableAngleDenyList()) {
                     if (keySet.contains(Settings.Global.ANGLE_DYNAMIC_DENYLIST)) {
                         final String denylistStr = properties.getString(
                                 Settings.Global.ANGLE_DYNAMIC_DENYLIST, "");

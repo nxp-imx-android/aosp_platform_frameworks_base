@@ -3479,6 +3479,23 @@ public final class DisplayManagerService extends SystemService {
         }
     }
 
+    private void setPowerOptimizationInternal(int displayId, boolean enabled) {
+        synchronized (mSyncRoot) {
+            final LogicalDisplay display = mLogicalDisplayMapper.getDisplayLocked(displayId);
+            if (display == null) {
+                return;
+            }
+            if (display.isPowerOptimizationEnabledLocked() != enabled) {
+                if (DEBUG) {
+                    Slog.d(TAG, "Display " + displayId
+                            +  " power optimization enabled = " + enabled);
+                }
+                display.setPowerOptimizationLocked(enabled);
+                scheduleTraversalLocked(false);
+            }
+        }
+    }
+
     // Updates the lists of UIDs that are present on displays.
     private void setDisplayAccessUIDsInternal(SparseArray<IntArray> newDisplayAccessUIDs) {
         var displayAccessUIDsCopy = new SparseArray<IntArray>(newDisplayAccessUIDs.size());
@@ -6583,6 +6600,11 @@ public final class DisplayManagerService extends SystemService {
         @Override
         public void setDisplayScalingDisabled(int displayId, boolean disableScaling) {
             setDisplayScalingDisabledInternal(displayId, disableScaling);
+        }
+
+        @Override
+        public void setPowerOptimization(int displayId, boolean enabled) {
+            setPowerOptimizationInternal(displayId, enabled);
         }
 
         @Override

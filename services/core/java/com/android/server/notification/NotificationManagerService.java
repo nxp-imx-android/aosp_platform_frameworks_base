@@ -28,6 +28,7 @@ import static android.app.AppOpsManager.MODE_ALLOWED;
 import static android.app.AppOpsManager.MODE_DEFAULT;
 import static android.app.AppOpsManager.OP_POST_PROMOTED_NOTIFICATIONS;
 import static android.app.AppOpsManager.OP_RECEIVE_SENSITIVE_NOTIFICATIONS;
+import static android.app.Flags.nmContextualDisplayLaunch;
 import static android.app.Flags.nmRemoveMustHaveFlags;
 import static android.app.Notification.BubbleMetadata.FLAG_SUPPRESS_NOTIFICATION;
 import static android.app.Notification.EXTRA_APP_SUMMARIZATION;
@@ -65,6 +66,7 @@ import static android.app.NotificationManager.ACTION_NOTIFICATION_CHANNEL_GROUP_
 import static android.app.NotificationManager.ACTION_NOTIFICATION_LISTENER_ENABLED_CHANGED;
 import static android.app.NotificationManager.ACTION_NOTIFICATION_POLICY_ACCESS_GRANTED_CHANGED;
 import static android.app.NotificationManager.ACTION_NOTIFICATION_POLICY_CHANGED;
+import static android.app.NotificationManager.ALLOWED_NAS_ADJUSTMENT_KEYS_CHANGED;
 import static android.app.NotificationManager.BUBBLE_PREFERENCE_ALL;
 import static android.app.NotificationManager.DYNAMIC_BUNDLE_MODIFICATION_TYPE_ADDED;
 import static android.app.NotificationManager.DYNAMIC_BUNDLE_MODIFICATION_TYPE_REMOVED;
@@ -89,7 +91,6 @@ import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_PEEK;
 import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_SCREEN_OFF;
 import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_SCREEN_ON;
 import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_STATUS_BAR;
-import static android.app.NotificationManager.ALLOWED_NAS_ADJUSTMENT_KEYS_CHANGED;
 import static android.app.NotificationManager.SUPPORTED_NAS_ADJUSTMENT_KEYS_CHANGED;
 import static android.app.NotificationManager.zenModeFromInterruptionFilter;
 import static android.app.StatusBarManager.ACTION_KEYGUARD_PRIVATE_NOTIFICATIONS_CHANGED;
@@ -120,6 +121,7 @@ import static android.os.UserHandle.USER_SYSTEM;
 import static android.os.UserHandle.getUserHandleForUid;
 import static android.security.Flags.secureLockDevice;
 import static android.security.Flags.secureLockdown;
+import static android.service.notification.Adjustment.KEY_GROUP_KEY;
 import static android.service.notification.Adjustment.KEY_SUMMARIZATION;
 import static android.service.notification.Adjustment.KEY_TYPE;
 import static android.service.notification.Adjustment.KEY_UNCLASSIFY;
@@ -238,6 +240,7 @@ import android.app.NotificationHistory;
 import android.app.NotificationHistory.HistoricalNotification;
 import android.app.NotificationManager;
 import android.app.NotificationManager.Policy;
+import android.app.NotificationRule;
 import android.app.PendingIntent;
 import android.app.Person;
 import android.app.RemoteServiceException.BadForegroundServiceNotificationException;
@@ -442,7 +445,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
@@ -718,6 +720,7 @@ public class NotificationManagerService extends SystemService {
     private TelecomManager mTelecomManager;
     private PowerManager mPowerManager;
     private PostNotificationTrackerFactory mPostNotificationTrackerFactory;
+    private NotificationRuleManager mNotificationRuleManager;
 
     private LockPatternUtils mLockUtils;
     // TODO(b/464052878): Make mAppLockInternal @NonNull when App Lock flags are removed.
@@ -812,13 +815,15 @@ public class NotificationManagerService extends SystemService {
 
     // Persistent storage for notification policy
     private AtomicFile mPolicyFile;
+    // Persistent storage for notification rules
+    private AtomicFile mRulesFile;
 
     private static final int DB_VERSION = 1;
-
 
     private static final String ADSERVICES_MODULE_PKG_NAME =
             "com.android.adservices";
 
+    static final String TAG_NOTIFICATION_RULES = "notification-rules";
     private static final String TAG_NOTIFICATION_POLICY = "notification-policy";
     private static final String ATTR_VERSION = "version";
 
@@ -871,7 +876,7 @@ public class NotificationManagerService extends SystemService {
     private NotificationChannelLogger mNotificationChannelLogger;
     private TriPredicate<String, Integer, String> mAllowedManagedServicePackages;
 
-    private final SavePolicyFileRunnable mSavePolicyFile = new SavePolicyFileRunnable();
+    private SaveFileRunnable mSavePolicyFile;
     private NotificationRecordLogger mNotificationRecordLogger;
     private InstanceIdSequence mNotificationInstanceIdSequence;
     private Set<String> mMsgPkgsAllowedAsConvos = new HashSet();
@@ -1209,16 +1214,19 @@ public class NotificationManagerService extends SystemService {
         return false;
     }
 
-    void readPolicyXml(InputStream stream, boolean forRestore, int userId,
+    void readRulesXml(TypedXmlPullParser parser, boolean forRestore, int userId,
             @Nullable BackupRestoreEventLogger logger)
             throws XmlPullParserException, NumberFormatException, IOException {
-        final TypedXmlPullParser parser;
-        if (forRestore) {
-            parser = Xml.newFastPullParser();
-            parser.setInput(stream, StandardCharsets.UTF_8.name());
-        } else {
-            parser = Xml.resolvePullParser(stream);
+        if (!nmContextualDisplayLaunch()) {
+            return;
         }
+        XmlUtils.beginDocument(parser, TAG_NOTIFICATION_RULES);
+        mNotificationRuleManager.readXml(parser, forRestore, userId, logger);
+    }
+
+    void readPolicyXml(TypedXmlPullParser parser, boolean forRestore, int userId,
+            @Nullable BackupRestoreEventLogger logger)
+            throws XmlPullParserException, NumberFormatException, IOException {
         XmlUtils.beginDocument(parser, TAG_NOTIFICATION_POLICY);
         boolean migratedManagedServices = false;
         UserInfo userInfo = mUmInternal.getUserInfo(userId);
@@ -1285,7 +1293,6 @@ public class NotificationManagerService extends SystemService {
                 mNotificationListenerStats.readXml(parser);
             }
         }
-
         if (!migratedManagedServices) {
             mListeners.migrateToXml();
             mAssistants.migrateToXml();
@@ -1316,13 +1323,37 @@ public class NotificationManagerService extends SystemService {
     }
 
     @VisibleForTesting
+    protected void loadRulesFile() {
+        if (DBG) Slog.d(TAG, "loadRulesFile");
+        synchronized (mRulesFile) {
+            InputStream infile = null;
+            try {
+                infile = mRulesFile.openRead();
+                final TypedXmlPullParser parser = Xml.resolvePullParser(infile);
+                readRulesXml(parser, false /*forRestore*/, USER_ALL, null);
+            } catch (FileNotFoundException e) {
+                // No data yet
+                // Load default rules for all current users
+                for (UserInfo userInfo : mUm.getUsers()) {
+                    mNotificationRuleManager.onUserAdded(userInfo.id);
+                }
+            } catch (IOException | NumberFormatException | XmlPullParserException e) {
+                Log.wtf(TAG, "Unable to read notification rules", e);
+            } finally {
+                IoUtils.closeQuietly(infile);
+            }
+        }
+    }
+
+    @VisibleForTesting
     protected void loadPolicyFile() {
         if (DBG) Slog.d(TAG, "loadPolicyFile");
         synchronized (mPolicyFile) {
             InputStream infile = null;
             try {
                 infile = mPolicyFile.openRead();
-                readPolicyXml(infile, false /*forRestore*/, USER_ALL, null);
+                final TypedXmlPullParser parser = Xml.resolvePullParser(infile);
+                readPolicyXml(parser, false /*forRestore*/, USER_ALL, null);
 
                 // We re-load the default dnd packages to allow the newly added and denined.
                 final boolean isWatch = mPackageManagerClient.hasSystemFeature(
@@ -1335,12 +1366,8 @@ public class NotificationManagerService extends SystemService {
                 // Load default managed services approvals
                 loadDefaultApprovedServices(USER_SYSTEM);
                 allowDefaultApprovedServices(USER_SYSTEM);
-            } catch (IOException e) {
+            } catch (IOException | NumberFormatException | XmlPullParserException e) {
                 Log.wtf(TAG, "Unable to read notification policy", e);
-            } catch (NumberFormatException e) {
-                Log.wtf(TAG, "Unable to parse notification policy", e);
-            } catch (XmlPullParserException e) {
-                Log.wtf(TAG, "Unable to parse notification policy", e);
             } finally {
                 IoUtils.closeQuietly(infile);
             }
@@ -1354,41 +1381,62 @@ public class NotificationManagerService extends SystemService {
         }
     }
 
-    private final class SavePolicyFileRunnable implements Runnable {
+    @VisibleForTesting
+    protected void handleSaveRulesFile() {
+        if (nmContextualDisplayLaunch()) {
+            IoThread.getHandler().post(
+                    new SaveFileRunnable(SaveFileRunnable.RULES_FILE, mRulesFile));
+        }
+    }
+
+    final class SaveFileRunnable implements Runnable {
+        static final int POLICY_FILE = 1;
+        static final int RULES_FILE = 2;
+        private final int mFileType;
+        private final AtomicFile mAtomicFile;
+
+        SaveFileRunnable() {
+            mFileType = POLICY_FILE;
+            mAtomicFile = mPolicyFile;
+        }
+
+        SaveFileRunnable(int fileType, AtomicFile atomicFile) {
+            mFileType = fileType;
+            mAtomicFile = atomicFile;
+        }
+
         @Override
         public void run() {
-            if (DBG) Slog.d(TAG, "handleSavePolicyFile");
-            synchronized (mPolicyFile) {
+            synchronized (mAtomicFile) {
                 final FileOutputStream stream;
                 try {
-                    stream = mPolicyFile.startWrite();
+                    stream = mAtomicFile.startWrite();
                 } catch (IOException e) {
-                    Slog.w(TAG, "Failed to save policy file", e);
+                    Slog.w(TAG, "Failed to save file", e);
                     return;
                 }
 
                 try {
-                    writePolicyXml(stream, false /*forBackup*/, USER_ALL, null);
-                    mPolicyFile.finishWrite(stream);
+                    TypedXmlSerializer out = Xml.resolveSerializer(stream);
+                    out.startDocument(null, true);
+                    if (mFileType == POLICY_FILE) {
+                        writePolicyXml(out, false /*forBackup*/, USER_ALL, null);
+                    } else if (mFileType == RULES_FILE) {
+                        writeRulesXml(out, false /*forBackup*/, USER_ALL, null);
+                    }
+                    out.endDocument();
+                    mAtomicFile.finishWrite(stream);
                 } catch (IOException e) {
-                    Slog.w(TAG, "Failed to save policy file, restoring backup", e);
-                    mPolicyFile.failWrite(stream);
+                    Slog.w(TAG, "Failed to save file, restoring backup", e);
+                    mAtomicFile.failWrite(stream);
                 }
             }
             BackupManager.dataChanged(getContext().getPackageName());
         }
     }
 
-    void writePolicyXml(OutputStream stream, boolean forBackup, int userId,
+    void writePolicyXml(TypedXmlSerializer out, boolean forBackup, int userId,
             BackupRestoreEventLogger logger)  throws IOException {
-        final TypedXmlSerializer out;
-        if (forBackup) {
-            out = Xml.newFastSerializer();
-            out.setOutput(stream, StandardCharsets.UTF_8.name());
-        } else {
-            out = Xml.resolveSerializer(stream);
-        }
-        out.startDocument(null, true);
         out.startTag(null, TAG_NOTIFICATION_POLICY);
         out.attributeInt(null, ATTR_VERSION, DB_VERSION);
         mZenModeHelper.writeXml(out, forBackup, null, userId, logger);
@@ -1404,7 +1452,11 @@ public class NotificationManagerService extends SystemService {
             mNotificationListenerStats.writeXml(out);
         }
         out.endTag(null, TAG_NOTIFICATION_POLICY);
-        out.endDocument();
+    }
+
+    void writeRulesXml(TypedXmlSerializer out, boolean forBackup, int userId,
+            BackupRestoreEventLogger logger)  throws IOException {
+        mNotificationRuleManager.writeXml(out, forBackup, userId, logger, false);
     }
 
     @VisibleForTesting
@@ -2852,6 +2904,11 @@ public class NotificationManagerService extends SystemService {
         mTelecomManager = tm;
     }
 
+    @VisibleForTesting
+    void setNotificationRuleManager(NotificationRuleManager ruleManager) {
+        mNotificationRuleManager = ruleManager;
+    }
+
     enum NotificationPostEvent implements UiEventLogger.UiEventEnum {
         @UiEvent(doc = "An app posted a notification while cached")
         NOTIFICATION_POSTED_CACHED(2237);
@@ -2875,7 +2932,7 @@ public class NotificationManagerService extends SystemService {
             LightsManager lightsManager, NotificationListeners notificationListeners,
             NotificationAssistants notificationAssistants, ConditionProviders conditionProviders,
             ICompanionDeviceManager companionManager, SnoozeHelper snoozeHelper,
-            NotificationUsageStats usageStats, AtomicFile policyFile,
+            NotificationUsageStats usageStats, AtomicFile policyFile, AtomicFile rulesFile,
             ActivityManager activityManager, GroupHelper groupHelper, IActivityManager am,
             ActivityTaskManagerInternal atm, UsageStatsManagerInternal appUsageStats,
             DevicePolicyManagerInternal dpm, IUriGrantsManager ugm,
@@ -3027,6 +3084,10 @@ public class NotificationManagerService extends SystemService {
         mGroupHelper = groupHelper;
         mHistoryManager = historyManager;
         mTtlHelper = new TimeToLiveHelper(mNotificationManagerPrivate, getContext());
+        if (nmContextualDisplayLaunch()) {
+            mNotificationRuleManager = new NotificationRuleManager(
+                    getContext(), mNotificationManagerPrivate);
+        }
 
         // This is a ManagedServices object that keeps track of the listeners.
         mListeners = notificationListeners;
@@ -3037,7 +3098,12 @@ public class NotificationManagerService extends SystemService {
         // Needs to be set before loadPolicyFile
         mAllowedManagedServicePackages = this::canUseManagedServices;
 
+        if (nmContextualDisplayLaunch()) {
+            mRulesFile = rulesFile;
+            loadRulesFile();
+        }
         mPolicyFile = policyFile;
+        mSavePolicyFile = new SaveFileRunnable();
         loadPolicyFile();
         mStatusBar = getLocalService(StatusBarManagerInternal.class);
         if (mStatusBar != null) {
@@ -3247,6 +3313,8 @@ public class NotificationManagerService extends SystemService {
                 new NotificationUsageStats(getContext()),
                 new AtomicFile(new File(
                         systemDir, "notification_policy.xml"), "notification-policy"),
+                new AtomicFile(new File(
+                        systemDir, "notification_rules.xml"), "notification-rules"),
                 (ActivityManager) getContext().getSystemService(Context.ACTIVITY_SERVICE),
                 getGroupHelper(), ActivityManager.getService(),
                 LocalServices.getService(ActivityTaskManagerInternal.class),
@@ -4194,7 +4262,9 @@ public class NotificationManagerService extends SystemService {
     }
 
     @VisibleForTesting
-    final IBinder mService = new INotificationManager.Stub() {
+    final IBinder mService = new Stub();
+
+    private final class Stub extends INotificationManager.Stub {
         // Toasts
         // ============================================================================
 
@@ -4612,7 +4682,7 @@ public class NotificationManagerService extends SystemService {
 
         @Override
         public void setBubblesAllowed(String pkg, int uid, int bubblePreference) {
-            checkCallerIsSystemOrSystemUiOrShell("Caller not system or sysui or shell");
+            assertCallerIsSystemOrSystemUiOrShell("Caller not system or sysui or shell");
             mPreferencesHelper.setBubblesAllowed(pkg, uid, bubblePreference);
             handleSavePolicyFile();
         }
@@ -4711,7 +4781,7 @@ public class NotificationManagerService extends SystemService {
 
         @Override
         public void allowAssistantAdjustment(@UserIdInt int userId, String adjustmentType) {
-            checkCallerIsSystemOrSystemUiOrShell();
+            assertCallerIsSystemOrSystemUiOrShell();
             mAssistants.allowAdjustmentType(userId, adjustmentType);
             if (KEY_TYPE.equals(adjustmentType)) {
                 // restore any existing channels if they previously existed, for user & any
@@ -4727,17 +4797,19 @@ public class NotificationManagerService extends SystemService {
                             NotificationManagerService.this::reclassifyNotificationLocked);
                 }
             }
-            getContext().sendBroadcastAsUser(
+            Binder.withCleanCallingIdentity(() -> {
+                getContext().sendBroadcastAsUser(
                     new Intent(ALLOWED_NAS_ADJUSTMENT_KEYS_CHANGED)
                             .putExtra(Intent.EXTRA_USER_ID, userId)
                             .addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY_BEFORE_BOOT),
                     UserHandle.SYSTEM, STATUS_BAR_SERVICE);
+            });
             handleSavePolicyFile();
         }
 
         @Override
         public void disallowAssistantAdjustment(@UserIdInt int userId, String adjustmentType) {
-            checkCallerIsSystemOrSystemUiOrShell();
+            assertCallerIsSystemOrSystemUiOrShell();
             mAssistants.disallowAdjustmentType(userId, adjustmentType);
             if (KEY_TYPE.equals(adjustmentType)) {
                 // mark any existing channels for all currently allowed types as deleted,
@@ -4754,17 +4826,19 @@ public class NotificationManagerService extends SystemService {
                 applyNotificationUpdateForUserProfiles(userId,
                         NotificationManagerService.this::unsummarizeNotificationLocked);
             }
-            getContext().sendBroadcastAsUser(
+            Binder.withCleanCallingIdentity(() -> {
+                getContext().sendBroadcastAsUser(
                     new Intent(ALLOWED_NAS_ADJUSTMENT_KEYS_CHANGED)
                             .putExtra(Intent.EXTRA_USER_ID, userId)
                             .addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY_BEFORE_BOOT),
                     UserHandle.SYSTEM, STATUS_BAR_SERVICE);
+            });
             handleSavePolicyFile();
         }
 
         @Override
         public void requestSystemAdjustments(List<Adjustment> adjustments) {
-            checkCallerIsSystemOrSystemUiOrShell();
+            assertCallerIsSystemOrSystemUiOrShell();
             if (enablePersonalContextService()) {
                 synchronized (mNotificationLock) {
                     requestSystemAdjustmentsLocked(adjustments);
@@ -4791,7 +4865,7 @@ public class NotificationManagerService extends SystemService {
 
         @Override
         public @NonNull List<String> getUnsupportedAdjustmentTypes() {
-            checkCallerIsSystemOrSystemUiOrShell();
+            assertCallerIsSystemOrSystemUiOrShell();
             synchronized (mNotificationLock) {
                 return new ArrayList<>(mAssistants.getUnsupportedAdjustments(
                         UserHandle.getUserId(Binder.getCallingUid())));
@@ -4800,13 +4874,13 @@ public class NotificationManagerService extends SystemService {
 
         @Override
         public @NonNull int[] getAllowedClassificationTypes() {
-            checkCallerIsSystemOrSystemUiOrShell();
+            assertCallerIsSystemOrSystemUiOrShell();
             return mAssistants.getAllowedClassificationTypes(UserHandle.getCallingUserId());
         }
 
         @Override
         public void setAssistantClassificationTypeState(int type, boolean enabled) {
-            checkCallerIsSystemOrSystemUiOrShell();
+            assertCallerIsSystemOrSystemUiOrShell();
             @UserIdInt int userId = UserHandle.getCallingUserId();
             mAssistants.setAssistantClassificationTypeState(userId, type, enabled);
             // This should only be called for full users; adjustments to the full user's
@@ -4828,21 +4902,21 @@ public class NotificationManagerService extends SystemService {
 
         @Override
         public String[] getAdjustmentDeniedPackages(@UserIdInt int userId, String key) {
-            checkCallerIsSystemOrSystemUiOrShell();
+            assertCallerIsSystemOrSystemUiOrShell();
             return mAssistants.getAdjustmentDeniedPackages(userId, key);
         }
 
         @Override
         public boolean isAdjustmentSupportedForPackage(@UserIdInt int userId, String key,
                 String pkg) {
-            checkCallerIsSystemOrSystemUiOrShell();
+            assertCallerIsSystemOrSystemUiOrShell();
             return mAssistants.isAdjustmentAllowedForPackage(userId, key, pkg);
         }
 
         @Override
         public void setAdjustmentSupportedForPackage(@UserIdInt int userId,
                 @Adjustment.Keys String key, String pkg, boolean enabled) {
-            checkCallerIsSystemOrSystemUiOrShell();
+            assertCallerIsSystemOrSystemUiOrShell();
             mAssistants.setAdjustmentSupportedForPackage(userId, key, pkg, enabled);
             if (notificationRegroupOnClassification() && key.equals(KEY_TYPE)) {
                 if (enabled) {
@@ -4862,7 +4936,7 @@ public class NotificationManagerService extends SystemService {
 
         @Override
         public boolean appCanBePromoted(String pkg, int uid) {
-            checkCallerIsSystemOrSystemUiOrShell();
+            assertCallerIsSystemOrSystemUiOrShell();
             return checkPostPromotedNotificationPermission(
                     pkg, uid);
         }
@@ -4886,7 +4960,7 @@ public class NotificationManagerService extends SystemService {
         public void setCanBePromoted(
                 String pkg, int uid, boolean promote, boolean fromUser) {
             // Only the OS is allowed to change this permission
-            checkCallerIsSystemOrSystemUiOrShell();
+            assertCallerIsSystemOrSystemUiOrShell();
 
             final boolean changed;
 
@@ -5352,14 +5426,14 @@ public class NotificationManagerService extends SystemService {
         @Override
         public void updateNotificationChannelForPackage(String pkg, int uid,
                 NotificationChannel channel) {
-            checkCallerIsSystemOrSystemUiOrShell("Caller not system or sysui or shell");
+            assertCallerIsSystemOrSystemUiOrShell("Caller not system or sysui or shell");
             Objects.requireNonNull(channel);
             updateNotificationChannelInt(pkg, uid, channel, false);
         }
 
         @Override
         public void unlockNotificationChannel(String pkg, int uid, String channelId) {
-            checkCallerIsSystemOrSystemUiOrShell("Caller not system or sysui or shell");
+            assertCallerIsSystemOrSystemUiOrShell("Caller not system or sysui or shell");
             mPreferencesHelper.unlockNotificationChannelImportance(pkg, uid, channelId);
             handleSavePolicyFile();
         }
@@ -6950,8 +7024,17 @@ public class NotificationManagerService extends SystemService {
             checkCallerIsSystem();
             if (DBG) Slog.d(TAG, "getBackupPayload u=" + user);
             final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            final TypedXmlSerializer out = Xml.newFastSerializer();
             try {
-                writePolicyXml(baos, true /*forBackup*/, user, null);
+                out.setOutput(baos, StandardCharsets.UTF_8.name());
+                out.startDocument(null, true);
+                // for backwards compatibility with pre nmContextualDisplayLaunch() releases,
+                // the notification policy block must be written first
+                writePolicyXml(out, true /*forBackup*/, user, null);
+                if (nmContextualDisplayLaunch()) {
+                    writeRulesXml(out, true /*forBackup*/, user, null);
+                }
+                out.endDocument();
                 return baos.toByteArray();
             } catch (IOException e) {
                 Slog.w(TAG, "getBackupPayload: error writing payload for user " + user, e);
@@ -6970,7 +7053,17 @@ public class NotificationManagerService extends SystemService {
             }
             final ByteArrayInputStream bais = new ByteArrayInputStream(payload);
             try {
-                readPolicyXml(bais, true /*forRestore*/, user, null);
+                // for backwards compatibility with pre nmContextualDisplayLaunch() releases,
+                // the notification policy block must be read first
+                final TypedXmlPullParser parser = Xml.newFastPullParser();
+                parser.setInput(bais, StandardCharsets.UTF_8.name());
+
+                readPolicyXml(parser, true /*forRestore*/, user, null);
+                handleSavePolicyFile();
+                if (nmContextualDisplayLaunch()) {
+                    readRulesXml(parser, true /*forRestore*/, user, null);
+                    handleSaveRulesFile();
+                }
                 handleSavePolicyFile();
             } catch (NumberFormatException | XmlPullParserException | IOException e) {
                 Slog.w(TAG, "applyRestore: error reading payload", e);
@@ -7219,7 +7312,7 @@ public class NotificationManagerService extends SystemService {
 
         @Override
         public ComponentName getAllowedNotificationAssistantForUser(int userId) {
-            checkCallerIsSystemOrSystemUiOrShell();
+            assertCallerIsSystemOrSystemUiOrShell();
             List<ComponentName> allowedComponents = mAssistants.getAllowedComponents(userId);
             if (allowedComponents.size() > 1) {
                 throw new IllegalStateException(
@@ -7358,7 +7451,7 @@ public class NotificationManagerService extends SystemService {
         @Override
         public void setNotificationAssistantAccessGrantedForUser(ComponentName assistant,
                 int userId, boolean granted) {
-            checkCallerIsSystemOrSystemUiOrShell();
+            assertCallerIsSystemOrSystemUiOrShell();
             for (UserInfo ui : mUm.getEnabledProfiles(userId)) {
                 mAssistants.setUserSet(ui.id, true);
             }
@@ -7374,7 +7467,7 @@ public class NotificationManagerService extends SystemService {
         @Override
         public List<DynamicBundle> getDynamicBundles(INotificationListener token, UserHandle user) {
             if (token == null) {
-                checkCallerIsSystemOrSystemUiOrShell();
+                assertCallerIsSystemOrSystemUiOrShell();
             } else {
                 user = Binder.getCallingUserHandle();
                 final long identity = Binder.clearCallingIdentity();
@@ -7690,7 +7783,7 @@ public class NotificationManagerService extends SystemService {
 
         @Override
         public boolean isInCall(String pkg, int uid) {
-            checkCallerIsSystemOrSystemUiOrShell();
+            assertCallerIsSystemOrSystemUiOrShell();
             return isCallNotification(pkg, uid);
         }
 
@@ -7828,7 +7921,40 @@ public class NotificationManagerService extends SystemService {
             Slog.e(TAG, "exiting pullStats: bad request");
             return 0;
         }
-    };
+
+        @Override
+        public NotificationRule addNotificationRule(@UserIdInt int userId, NotificationRule rule,
+                int pos) {
+            assertCallerIsSystemOrSystemUiOrShell();
+            Objects.requireNonNull(rule);
+
+            if (!nmContextualDisplayLaunch()) {
+                return null;
+            }
+
+            if (mNotificationRuleManager.addNotificationRule(userId, pos, rule)) {
+                handleSaveRulesFile();
+                return mNotificationRuleManager.getNotificationRule(userId, rule.getId());
+            } else {
+                return null;
+            }
+        }
+
+        @Override
+        public ParceledListSlice<NotificationRule> getNotificationRules(
+                INotificationListener token, @UserIdInt int userId) {
+            if (token == null) {
+                assertCallerIsSystemOrSystemUiOrShell();
+            } else {
+                mAssistants.checkServiceTokenLocked(token);
+            }
+            if (!nmContextualDisplayLaunch()) {
+                return new ParceledListSlice<>(new ArrayList<>());
+            }
+
+            return new ParceledListSlice<>(mNotificationRuleManager.getNotificationRules(userId));
+        }
+    }
 
     private void handleNotificationPermissionChange(String pkg, @UserIdInt int userId) {
         if (!mUmInternal.isUserInitialized(userId)) {
@@ -8447,6 +8573,11 @@ public class NotificationManagerService extends SystemService {
                 pw.println("\n  Ranking Config:");
                 mRankingHelper.dump(pw, "    ", filter);
 
+                if (nmContextualDisplayLaunch()) {
+                    pw.println("\n Notification Rules:");
+                    mNotificationRuleManager.dump(pw);
+                }
+
                 pw.println("\n Notification Preferences:");
                 mPreferencesHelper.dump(pw, "    ", filter, pkgPermissions);
 
@@ -8525,8 +8656,17 @@ public class NotificationManagerService extends SystemService {
             checkCallerIsSystem();
             if (DBG) Slog.d(TAG, "getBackupPayload u=" + user);
             final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            final TypedXmlSerializer out = Xml.newFastSerializer();
             try {
-                writePolicyXml(baos, true /*forBackup*/, user, logger);
+                out.setOutput(baos, StandardCharsets.UTF_8.name());
+                out.startDocument(null, true);
+                // for backwards compatibility with pre nmContextualDisplayLaunch() releases,
+                // the notification policy block must be written first
+                writePolicyXml(out, true /*forBackup*/, user, logger);
+                if (nmContextualDisplayLaunch()) {
+                    writeRulesXml(out, true /*forBackup*/, user, logger);
+                }
+                out.endDocument();
                 return baos.toByteArray();
             } catch (IOException e) {
                 Slog.w(TAG, "getBackupPayload: error writing payload for user " + user, e);
@@ -8545,8 +8685,17 @@ public class NotificationManagerService extends SystemService {
             }
             final ByteArrayInputStream bais = new ByteArrayInputStream(payload);
             try {
-                readPolicyXml(bais, true /*forRestore*/, user, logger);
+                // for backwards compatibility with pre nmContextualDisplayLaunch() releases,
+                // the notification policy block must be written first
+                final TypedXmlPullParser parser = Xml.newFastPullParser();
+                parser.setInput(bais, StandardCharsets.UTF_8.name());
+
+                readPolicyXml(parser, true /*forRestore*/, user, logger);
                 handleSavePolicyFile();
+                if (nmContextualDisplayLaunch()) {
+                    readRulesXml(parser, true /*forRestore*/, user, logger);
+                    handleSaveRulesFile();
+                }
             } catch (NumberFormatException | XmlPullParserException | IOException e) {
                 Slog.w(TAG, "applyRestore: error reading payload", e);
             }
@@ -10653,7 +10802,8 @@ public class NotificationManagerService extends SystemService {
                                     n.getNotification().getGroup())
                                 || oldSbn.getNotification().flags
                                 != n.getNotification().flags
-                                || !old.getChannel().getId().equals(r.getChannel().getId())) {
+                                || !old.getChannel().getId().equals(r.getChannel().getId())
+                                || old.hasAdjustment(KEY_GROUP_KEY)) {
                             synchronized (mNotificationLock) {
                                 final String autogroupName
                                         = GroupHelper.getFullAggregateGroupKey(r);
@@ -12561,11 +12711,11 @@ public class NotificationManagerService extends SystemService {
         throw new SecurityException("Disallowed call for uid " + Binder.getCallingUid());
     }
 
-    private void checkCallerIsSystemOrSystemUiOrShell() {
-        checkCallerIsSystemOrSystemUiOrShell(null);
+    private void assertCallerIsSystemOrSystemUiOrShell() {
+        assertCallerIsSystemOrSystemUiOrShell(null);
     }
 
-    private void checkCallerIsSystemOrSystemUiOrShell(String message) {
+    private void assertCallerIsSystemOrSystemUiOrShell(String message) {
         int callingUid = Binder.getCallingUid();
         if (callingUid == Process.SHELL_UID || callingUid == Process.ROOT_UID) {
             return;

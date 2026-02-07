@@ -454,6 +454,8 @@ public class ContextualSearchManagerService extends SystemService {
         final int displayId = getDisplayIdFromConfig(config);
         opts.setLaunchDisplayId(displayId);
         opts.setLaunchWindowingMode(WINDOWING_MODE_FULLSCREEN);
+        opts.setPendingIntentBackgroundActivityStartMode(
+                ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS);
         return mAtmInternal.startActivityWithScreenshot(launchIntent,
                 mContext.getPackageName(), Binder.getCallingUid(), Binder.getCallingPid(), null,
                 opts.toBundle(), userId);

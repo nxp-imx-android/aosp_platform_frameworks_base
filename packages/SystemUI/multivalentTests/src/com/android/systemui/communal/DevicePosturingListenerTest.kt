@@ -113,14 +113,19 @@ class DevicePosturingListenerTest : SysuiTestCase() {
         }
 
     @Test
-    fun testDeviceNotPostured_setsDreamManagerAndDoesNotLog() =
+    fun testDeviceNotPostured_setsDreamManagerAndLogs() =
         kosmos.runTest {
             underTest.start()
+
+            assertThat(uiEventLogger.fake.numLogs()).isEqualTo(0)
 
             // Start as postured.
             posturingRepository.fake.emitPositionState(POSTURED)
             advanceTimeBySlidingWindowAndRun()
+            verify(dreamManager).setDevicePostured(true)
             assertThat(uiEventLogger.fake.numLogs()).isEqualTo(1)
+            assertThat(uiEventLogger.fake.eventId(0))
+                .isEqualTo(CommunalUiEvent.COMMUNAL_DEVICE_POSTURED.id)
             clearInvocations(dreamManager)
 
             // Become not postured.
@@ -128,8 +133,10 @@ class DevicePosturingListenerTest : SysuiTestCase() {
             advanceTimeByBatchingDuration()
 
             verify(dreamManager).setDevicePostured(false)
-            // No new logs.
-            assertThat(uiEventLogger.fake.numLogs()).isEqualTo(1)
+            // Log for unpostured.
+            assertThat(uiEventLogger.fake.numLogs()).isEqualTo(2)
+            assertThat(uiEventLogger.fake.eventId(1))
+                .isEqualTo(CommunalUiEvent.COMMUNAL_DEVICE_UNPOSTURED.id)
         }
 
     @Test

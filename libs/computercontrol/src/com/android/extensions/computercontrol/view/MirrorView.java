@@ -111,10 +111,21 @@ public class MirrorView extends FrameLayout {
         }
         mComputerControlSession = computerControlSession;
 
-        mMirrorSurface.setVisibility(computerControlSession == null ? View.GONE : View.VISIBLE);
+        updateMirrorSurfaceVisibility();
         if (mIsMirrorSurfaceCreated) {
             updateInteractiveMirrorOnAuxThread(computerControlSession, mIsInteractive);
         }
+    }
+
+    @Override
+    public void onVisibilityAggregated(boolean isVisible) {
+        super.onVisibilityAggregated(isVisible);
+        updateMirrorSurfaceVisibility();
+    }
+
+    private void updateMirrorSurfaceVisibility() {
+        mMirrorSurface.setVisibility(
+                mComputerControlSession != null && isAggregatedVisible() ? VISIBLE : GONE);
     }
 
     /**
@@ -213,7 +224,7 @@ public class MirrorView extends FrameLayout {
         addView(new View(mContext), new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
 
-        mMirrorSurface.setVisibility(View.GONE);
+        updateMirrorSurfaceVisibility();
         mMirrorSurface.getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceCreated(@NonNull SurfaceHolder holder) {
@@ -279,6 +290,7 @@ public class MirrorView extends FrameLayout {
         MirrorSurface(Context context) {
             super(context);
             setCompositionOrder(0);
+            setSurfaceLifecycle(SURFACE_LIFECYCLE_FOLLOWS_VISIBILITY);
         }
 
         @Override

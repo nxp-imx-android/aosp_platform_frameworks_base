@@ -566,7 +566,6 @@ public final class AppFunctionManager {
      * @param activityIds The set of activity IDs to retrieve function states for.
      * @param executor The executor to run the callback.
      * @param callback The callback to receive the list of activity states.
-     *
      * @see android.service.voice.VoiceInteractionSession#getAppFunctionActivityId
      */
     @FlaggedApi(FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
@@ -690,41 +689,40 @@ public final class AppFunctionManager {
     }
 
     /**
-     * Registers an observer to monitor changes to {@link AppFunctionMetadata} for all packages that
-     * expose app functions and the caller can query.
-     *
-     * <p>When a change occurs, the registered {@link AppFunctionObserver} will be notified with
-     * information about the changed app functions.
-     *
-     * <p>The callback is only triggered by changes after its registration. Existing app functions
-     * are not reported.
+     * Registers an observer to monitor changes to app functions within packages that the caller can
+     * query.
      *
      * <p>The caller should retain a reference to the returned {@link AppFunctionObservation}, and
      * call {@link AppFunctionObservation#cancel()} when observation is no longer required.
      *
-     * <p>Typically, this method is used alongside {@link #searchAppFunctions} to maintain a
-     * complete, up-to-date snapshot of {@link AppFunctionMetadata}.
+     * <p>The callback is only triggered by changes after its registration. Any changes that occur
+     * before the registration are not reported.
      *
      * <p>An example usage flow is:
      *
      * <ol>
-     *   <li>Call this method, {@link #observeAppFunctions}, to start monitoring changes for the
-     *       packages of interest, using the {@link AppFunctionObserver}.
-     *   <li>Call {@link #searchAppFunctions} to get an initial snapshot of {@link
-     *       AppFunctionMetadata}.
-     *   <li>When the observer is triggered, use the change information within it to construct a new
-     *       {@link AppFunctionSearchSpec} targeting the specific changed functions or packages.
-     *   <li>Call {@link #searchAppFunctions} again with the new spec to retrieve the full, updated
-     *       {@link AppFunctionMetadata} for the changed items and update your snapshot.
+     *   <li>Call this method, {@link #observeAppFunctions}, to start monitoring app function
+     *       changes, using the {@link AppFunctionObserver}.
+     *   <li>Call {@link #searchAppFunctions} and {@link #getAppFunctionStates} to get the initial
+     *       list of app functions.
+     *   <li>In {@link AppFunctionObserver#onAppFunctionMetadataChanged} call {@link
+     *       #searchAppFunctions} with a {@link AppFunctionSearchSpec} that matches the changed
+     *       packages to get the updated metadata.
+     *   <li>In {@link AppFunctionObserver#onAppFunctionStatesChanged} call {@link
+     *       #getAppFunctionStates} with the list of {@link AppFunctionName}s that matches the
+     *       changed functions to get the updated states.
      * </ol>
      *
-     * <strong>Note:</strong> If app functions are reported to have changed but are not returned
-     * from {@link #searchAppFunctions}, it means that they have been removed.
+     * <strong>Note:</strong> If app functions or packages are reported to have changed but are not
+     * returned from {@link #searchAppFunctions} or {@link #getAppFunctionStates}, it means that
+     * they have been removed.
      *
      * @param executor the executor to run the {@link AppFunctionObserver} callbacks.
      * @param appFunctionObserver the observer to receive updates to registered app functions.
      * @return An {@link AppFunctionObservation} used to cancel this observation.
      * @throws IllegalStateException if {@code appFunctionObserver} is already registered.
+     * @see android.app.appfunctions.AppFunctionObserver for more details on what kinds of changes
+     *     can be observed.
      */
     @FlaggedApi(FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
     @RequiresPermission(

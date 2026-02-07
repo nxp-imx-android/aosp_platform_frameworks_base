@@ -54,7 +54,7 @@ import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.common.split.SplitScreenUtils;
 import com.android.wm.shell.shared.annotations.ShellDesktopThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
-import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper;
 import com.android.wm.shell.shared.bubbles.BubbleDropTargetBoundsProvider;
 import com.android.wm.shell.windowdecor.tiling.SnapEventHandler;
 
@@ -204,7 +204,7 @@ public class DesktopModeVisualIndicator {
 
     private static boolean useSmallTabletRegions(DisplayController displayController,
             ActivityManager.RunningTaskInfo taskInfo) {
-        if (!BubbleAnythingFlagHelper.enableBubbleToFullscreen()) {
+        if (!BubbleFlagHelper.enableBubbleToFullscreen()) {
             // Small tablet regions get enabled with bubbles feature
             return false;
         }
@@ -343,7 +343,7 @@ public class DesktopModeVisualIndicator {
             }
         }
 
-        if (BubbleAnythingFlagHelper.enableBubbleToFullscreen()
+        if (BubbleFlagHelper.enableBubbleToFullscreen()
                 && mDragStartState == DragStartState.FROM_FULLSCREEN) {
             if (calculateBubbleLeftRegion(layout).contains(x, y)) {
                 result = IndicatorType.TO_BUBBLE_LEFT_INDICATOR;
@@ -457,7 +457,7 @@ public class DesktopModeVisualIndicator {
             DisplayLayout layout, boolean isLeftRightSplit) {
 
         List<Pair<Rect, IndicatorType>> result = new ArrayList<>();
-        if (BubbleAnythingFlagHelper.enableBubbleToFullscreen()) {
+        if (BubbleFlagHelper.enableBubbleToFullscreen()) {
             result.add(new Pair<>(calculateBubbleLeftRegion(layout), TO_BUBBLE_LEFT_INDICATOR));
             result.add(new Pair<>(calculateBubbleRightRegion(layout), TO_BUBBLE_RIGHT_INDICATOR));
         }
@@ -485,7 +485,7 @@ public class DesktopModeVisualIndicator {
         }
 
         List<Pair<Rect, IndicatorType>> result = new ArrayList<>();
-        if (BubbleAnythingFlagHelper.enableBubbleAnything()) {
+        if (BubbleFlagHelper.enableBubbleAnything()) {
             result.add(new Pair<>(calculateBubbleLeftRegion(layout), TO_BUBBLE_LEFT_INDICATOR));
             result.add(new Pair<>(calculateBubbleRightRegion(layout), TO_BUBBLE_RIGHT_INDICATOR));
         }

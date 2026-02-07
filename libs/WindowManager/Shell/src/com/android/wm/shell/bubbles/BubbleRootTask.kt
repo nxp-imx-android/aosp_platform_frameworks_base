@@ -28,7 +28,7 @@ import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.dagger.WMSingleton
-import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper
 import com.android.wm.shell.shared.bubbles.logging.BubbleLog
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.taskview.TaskViewRootTask
@@ -49,7 +49,7 @@ constructor(
 ) : ShellTaskOrganizer.TaskListener, TaskViewRootTask {
 
     init {
-        if (BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
+        if (BubbleFlagHelper.enableRootTaskForBubble()) {
             shellInit.addInitCallback({ onInit() }, this)
         }
     }

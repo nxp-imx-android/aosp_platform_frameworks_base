@@ -57,6 +57,7 @@ import static android.net.ConnectivityManager.PROFILE_NETWORK_PREFERENCE_ENTERPR
 import static android.net.InetAddresses.parseNumericAddress;
 import static android.net.NetworkCapabilities.NET_ENTERPRISE_ID_1;
 
+import static com.android.internal.telephony.flags.Flags.FLAG_SECURE_ACCESS_TO_RESTRICTED_RCS_MESSAGES;
 import static com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_NONE;
 import static com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_PASSWORD;
 import static com.android.server.SystemTimeZone.TIME_ZONE_CONFIDENCE_HIGH;
@@ -77,6 +78,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.ArgumentMatchers.intThat;
 import static org.mockito.ArgumentMatchers.longThat;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doAnswer;
@@ -1726,6 +1728,81 @@ public class DevicePolicyManagerTest extends DpmTestBase {
         assertThat(dpm.getApplicationRestrictions(admin1, "pkg2").size()).isEqualTo(0);
     }
 
+    @Test
+    @RequiresFlagsEnabled(FLAG_SECURE_ACCESS_TO_RESTRICTED_RCS_MESSAGES)
+    public void testMessagesArchivalApp_grantAndRevokeReadRestrictedMessagesAppOp()
+        throws Exception {
+        String messagesArchivalKey = "messages_archival";
+        final int userId = CALLER_USER_HANDLE;
+        String defaultSmsPackage = "com.test.default.sms.app";
+        String firstRcsArchivalAppPackage = "com.rcs.archival.one";
+        String secondRcsArchivalAppPackage = "com.rcs.archival.two";
+        int defaultSmsAppId = 10111;
+        int firstRcsArchivalAppId = 10112;
+        int secondRcsArchivalAppId = 10113;
+        setupPackageInPackageManager(defaultSmsPackage, CALLER_USER_HANDLE, defaultSmsAppId, 0);
+        setupPackageInPackageManager(firstRcsArchivalAppPackage,CALLER_USER_HANDLE,
+                firstRcsArchivalAppId, 0);
+        setupPackageInPackageManager(secondRcsArchivalAppPackage, CALLER_USER_HANDLE,
+                secondRcsArchivalAppId, 0);
+        setAsProfileOwner(admin1);
+        mContext.packageName = admin1.getPackageName();
+        when(getServices().roleManagerForMock.getRoleHoldersAsUser(
+                RoleManager.ROLE_SMS, UserHandle.of(CALLER_USER_HANDLE)))
+                .thenReturn(List.of(defaultSmsPackage));
+
+        // Grant read restricted messages app op to the first RCS archival app.
+        {
+            Bundle restrictions = new Bundle();
+            restrictions.putString(messagesArchivalKey, firstRcsArchivalAppPackage);
+            dpm.setApplicationRestrictions(admin1, defaultSmsPackage, restrictions);
+
+            verify(getServices().appOpsManager).setMode(
+                    AppOpsManager.OP_READ_RESTRICTED_MESSAGES,
+                    UserHandle.getUid(userId, firstRcsArchivalAppId),
+                    firstRcsArchivalAppPackage,
+                    AppOpsManager.MODE_ALLOWED);
+            Bundle returned = dpm.getApplicationRestrictions(admin1, defaultSmsPackage);
+            assertThat(returned.get(messagesArchivalKey)).isEqualTo(firstRcsArchivalAppPackage);
+        }
+
+        // Revoke read restricted messages app op from the first RCS archival app and grant it to
+        // the second RCS archival app.
+        {
+            Bundle restrictions = new Bundle();
+            restrictions.putString(messagesArchivalKey, secondRcsArchivalAppPackage);
+            dpm.setApplicationRestrictions(admin1, defaultSmsPackage, restrictions);
+
+            verify(getServices().appOpsManager).setMode(
+                    AppOpsManager.OP_READ_RESTRICTED_MESSAGES,
+                    UserHandle.getUid(userId, secondRcsArchivalAppId),
+                    secondRcsArchivalAppPackage,
+                    AppOpsManager.MODE_ALLOWED);
+            verify(getServices().appOpsManager).setMode(
+                    AppOpsManager.OP_READ_RESTRICTED_MESSAGES,
+                    UserHandle.getUid(userId, firstRcsArchivalAppId),
+                    firstRcsArchivalAppPackage,
+                    AppOpsManager.MODE_DEFAULT);
+            Bundle returned = dpm.getApplicationRestrictions(admin1, defaultSmsPackage);
+            assertThat(returned.get(messagesArchivalKey)).isEqualTo(secondRcsArchivalAppPackage);
+        }
+
+        // Revoke read restricted messages app op from the second RCS archival app.
+        {
+            Bundle restrictions = new Bundle();
+            restrictions.putString(messagesArchivalKey, "");
+            dpm.setApplicationRestrictions(admin1, defaultSmsPackage, restrictions);
+
+            verify(getServices().appOpsManager).setMode(
+                    AppOpsManager.OP_READ_RESTRICTED_MESSAGES,
+                    UserHandle.getUid(userId, secondRcsArchivalAppId),
+                    secondRcsArchivalAppPackage,
+                    AppOpsManager.MODE_DEFAULT);
+            Bundle returned = dpm.getApplicationRestrictions(admin1, defaultSmsPackage);
+            assertThat(returned.get(messagesArchivalKey)).isEqualTo("");
+        }
+    }
+
     /**
      * Setup a package in the package manager mock for {@link DpmMockContext#CALLER_USER_HANDLE}.
      * Useful for faking installed applications.
@@ -1756,6 +1833,7 @@ public class DevicePolicyManagerTest extends DpmTestBase {
         final PackageInfo pi = new PackageInfo();
         pi.applicationInfo = new ApplicationInfo();
         pi.applicationInfo.flags = flags;
+        pi.applicationInfo.uid = uid;
         doReturn(pi).when(getServices().ipackageManager).getPackageInfo(
                 eq(packageName),
                 longThat(flg -> (flg & PackageManager.MATCH_ANY_USER) == 0),
@@ -1771,6 +1849,14 @@ public class DevicePolicyManagerTest extends DpmTestBase {
         doReturn(pi.applicationInfo).when(getServices().ipackageManager).getApplicationInfo(
                 eq(packageName),
                 longThat(flg -> (flg & PackageManager.MATCH_ANY_USER) != 0),
+                anyInt());
+        doReturn(pi.applicationInfo).when(getServices().packageManager).getApplicationInfoAsUser(
+                eq(packageName),
+                intThat(flg -> (flg & PackageManager.MATCH_ANY_USER) == 0),
+                anyInt());
+        doReturn(pi.applicationInfo).when(getServices().packageManager).getApplicationInfoAsUser(
+                eq(packageName),
+                intThat(flg -> (flg & PackageManager.MATCH_ANY_USER) != 0),
                 anyInt());
         doReturn(true).when(getServices().ipackageManager).isPackageAvailable(packageName, userId);
         // Setup application UID with the PackageManager

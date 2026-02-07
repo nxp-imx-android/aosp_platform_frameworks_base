@@ -1661,6 +1661,16 @@ flag {
 }
 
 flag {
+    name: "standalone_fingerprint_lock_screen_ux_fix"
+    namespace: "systemui"
+    description: "Fix standalone fingerprint sensor lock screen UX"
+    bug: "481645959"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "status_bar_always_check_underlying_networks"
     namespace: "systemui"
     description: "For status bar connectivity UI, always check underlying networks for wifi and "
@@ -1834,6 +1844,16 @@ flag {
 }
 
 flag {
+    name: "strong_auth_required_after_sign_out_message_fix"
+    namespace: "systemui"
+    description: "Fix Bouncer message when strong auth is required after sign out"
+    bug: "478831458"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "synchronized_queue_cascade_notify"
     namespace: "systemui"
     description: "Cascade notify() in SynchornizedLinkedBlockingQueue to prevent waking up all threads unnecessarily"
@@ -1875,6 +1895,17 @@ flag {
     bug: "368579013"
     metadata {
         purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "touchpad_gesture_tutorial_bug_fixes"
+    namespace: "systemui"
+    description: "Fixes the touchpad gesture tutorial to ensure the latest gesture and "
+            "animation changes are aligned with the touchpad tutorial"
+    bug: "456784841"
+    metadata {
+      purpose: PURPOSE_BUGFIX
     }
 }
 

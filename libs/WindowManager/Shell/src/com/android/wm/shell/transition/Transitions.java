@@ -474,6 +474,19 @@ public class Transitions implements RemoteCallable<Transitions>,
                 handler.getClass().getSimpleName());
     }
 
+    /**
+     * Adds an {@link ITransitionPlanner} to the mixpatcher. Registered planners are traversed
+     * in reverse order, meaning the most recently registered planner is used first.
+     * @see ITransitionPlanner
+     */
+    public void addPlanner(@NonNull ITransitionPlanner planner) {
+        if (com.android.window.flags.Flags.transitMixpatcherBase()) {
+            mMixpatcher.mPlanners.add(planner);
+            ProtoLog.v(WM_SHELL_TRANSITIONS, "addPlaner: %s",
+                    planner.getClass().getSimpleName());
+        }
+    }
+
     public ShellExecutor getMainExecutor() {
         return mMainExecutor;
     }

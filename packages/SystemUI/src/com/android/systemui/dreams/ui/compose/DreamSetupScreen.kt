@@ -136,13 +136,12 @@ private fun DreamSetupContent(onEvent: (DreamSetupEvent) -> Unit) {
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End,
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
             TextButton(onClick = { onEvent(DreamSetupEvent.NotNow) }) {
                 Text(stringResource(R.string.dream_setup_button_not_now))
             }
-            Spacer(modifier = Modifier.width(DreamSetupDimensions.ButtonSpacing))
             Button(onClick = { onEvent(DreamSetupEvent.SetUp) }) {
                 Text(stringResource(R.string.dream_setup_button_setup))
             }

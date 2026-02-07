@@ -41,7 +41,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.SyncTransactionQueue;
-import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper;
 
 import java.io.PrintWriter;
 import java.util.concurrent.Executor;
@@ -285,7 +285,7 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
 
         if (!mTaskToken.equals(taskInfo.token)) return;
 
-        if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
+        if (BubbleFlagHelper.enableCreateAnyBubble()) {
             handleAndNotifyTaskRemoval(taskInfo);
         } else {
             handleAndNotifyTaskRemoval(mTaskInfo);
@@ -297,7 +297,7 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
     @Override
     public void onTaskInfoChanged(ActivityManager.RunningTaskInfo taskInfo) {
         mTaskViewBase.onTaskInfoChanged(taskInfo);
-        if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
+        if (BubbleFlagHelper.enableCreateAnyBubble()) {
             if (mListener != null) {
                 mListenerExecutor.execute(() -> {
                     mListener.onTaskInfoChanged(taskInfo);
@@ -327,7 +327,7 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
 
     @Override
     public void attachChildSurfaceToTask(int taskId, SurfaceControl.Builder b) {
-        if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
+        if (BubbleFlagHelper.enableCreateAnyBubble()) {
             // TODO(b/419342398): Add a notifier when the surface is ready for this to be called.
             if (mTaskLeash == null) return;
         }
@@ -337,7 +337,7 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
     @Override
     public void reparentChildSurfaceToTask(int taskId, SurfaceControl sc,
             SurfaceControl.Transaction t) {
-        if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
+        if (BubbleFlagHelper.enableCreateAnyBubble()) {
             // TODO(b/419342398): Add a notifier when the surface is ready for this to be called.
             if (mTaskLeash == null) return;
         }
@@ -419,7 +419,7 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
         WindowContainerTransaction wct = new WindowContainerTransaction();
         if (mCaptionInsets != null) {
             int flags = 0;
-            if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
+            if (BubbleFlagHelper.enableCreateAnyBubble()) {
                 // When the bubble bar app handle is visible, the caption insets will be set and
                 // should always be consumed, otherwise the handle may block app content.
                 flags = FLAG_FORCE_CONSUMING | FLAG_FORCE_CONSUMING_OPAQUE_CAPTION_BAR;
@@ -483,7 +483,7 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
         ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "TaskController.notifyTaskRemovalStarted(): taskView=%d "
                 + "task=%s", hashCode(), taskInfo);
 
-        if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
+        if (BubbleFlagHelper.enableCreateAnyBubble()) {
             // Update mTaskInfo to reflect the latest task state before notifying the listener, as
             // it may have been changed by ShellTaskOrganizer#onTaskInfoChanged(), which triggers
             // task listener updates via ShellTaskOrganizer#updateTaskListenerIfNeeded() when a

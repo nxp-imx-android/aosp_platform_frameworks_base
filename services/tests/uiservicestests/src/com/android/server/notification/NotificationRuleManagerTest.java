@@ -132,7 +132,7 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
         return new NotificationRule.Builder(id, name).setEnabled(isEnabled).build();
     }
 
-    private NotificationRule createFullRule(int id, String name, boolean isEnabled) {
+    static NotificationRule createFullRule(int id, String name, boolean isEnabled) {
         int primaryAction = NotificationRule.Action.PRIMARY_ACTION_BUNDLE;
         String editAction = "editAction";
         String bundleName = "bundleName";

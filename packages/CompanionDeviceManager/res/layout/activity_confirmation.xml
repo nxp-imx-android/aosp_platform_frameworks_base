@@ -46,9 +46,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="32dp"
                 android:gravity="center"
-                android:layout_marginTop="18dp" />
+                android:layout_marginTop="18dp"
+                android:importantForAccessibility="no" />
 
-            <LinearLayout style="@style/Description">
+            <LinearLayout style="@style/Description"
+                android:importantForAccessibility="no">
                 <TextView
                     android:id="@+id/title"
                     style="@style/DescriptionTitle" />
@@ -62,14 +64,16 @@
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="1">
+                android:layout_weight="1"
+                android:importantForAccessibility="no">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     xmlns:app="http://schemas.android.com/apk/res-auto"
                     android:id="@+id/constraint_list"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:visibility="gone">
+                    android:visibility="gone"
+                    android:importantForAccessibility="no">
 
                     <TextView
                         android:id="@+id/timeout_message"
@@ -126,7 +130,8 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:orientation="vertical"
-                android:layout_marginTop="16dp">
+                android:layout_marginTop="16dp"
+                android:importantForAccessibility="no">
 
                 <!-- Do NOT change the IDs of the buttons: they are referenced in CTS tests. -->
 

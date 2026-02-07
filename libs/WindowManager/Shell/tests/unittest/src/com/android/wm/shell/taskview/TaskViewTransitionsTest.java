@@ -60,7 +60,7 @@ import com.android.testing.wm.util.MockToken;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.bubbles.BubbleHelper;
-import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper;
 import com.android.wm.shell.transition.Transitions;
 
 import org.junit.Before;
@@ -138,7 +138,7 @@ public class TaskViewTransitionsTest extends ShellTestCase {
         verify(mTransitions).startTransition(anyInt(), wctCaptor.capture(), any());
         WindowContainerTransaction.Change chg =
                 wctCaptor.getValue().getChanges().get(mToken.asBinder());
-        if (!BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
+        if (!BubbleFlagHelper.enableRootTaskForBubble()) {
             assertThat(chg.getInterceptBackPressed()).isFalse();
         }
     }
@@ -263,7 +263,7 @@ public class TaskViewTransitionsTest extends ShellTestCase {
 
     @Test
     public void testSetTaskVisibility_reorderNoHiddenVisibilitySync_resetsAlwaysOnTopAndReorder() {
-        assumeTrue(BubbleAnythingFlagHelper.enableCreateAnyBubble());
+        assumeTrue(BubbleFlagHelper.enableCreateAnyBubble());
 
         final Rect bounds = new Rect(0, 0, 100, 100);
         mTaskViewRepository.byTaskView(mTaskViewTaskController).mBounds = bounds;

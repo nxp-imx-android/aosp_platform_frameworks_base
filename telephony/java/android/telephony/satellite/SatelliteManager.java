@@ -1150,8 +1150,8 @@ public final class SatelliteManager {
      * @throws SecurityException if the caller doesn't have required permission.
      *
      * @hide
-     * @deprecated Use {@link #requestEnabled(int, int, EnableRequestAttributes, Executor,
-     *              OutcomeReceiver)} instead.
+     * @deprecated Use {@link #requestEnabled(int, EnableRequestAttributes, Executor, Consumer)}
+     *             instead.
      */
     @SystemApi
     @RequiresPermission(Manifest.permission.SATELLITE_COMMUNICATION)

@@ -118,11 +118,16 @@ constructor(
 
         postured
             .distinctUntilChanged()
+            .onEach { postured -> dreamManager.setDevicePostured(postured) }
+            .dropWhile { !it }
             .onEach { postured ->
-                dreamManager.setDevicePostured(postured)
-                if (postured) {
-                    uiEventLogger.log(CommunalUiEvent.COMMUNAL_DEVICE_POSTURED)
-                }
+                val event =
+                    if (postured) {
+                        CommunalUiEvent.COMMUNAL_DEVICE_POSTURED
+                    } else {
+                        CommunalUiEvent.COMMUNAL_DEVICE_UNPOSTURED
+                    }
+                uiEventLogger.log(event)
             }
             .launchInTraced("$TAG#collectPostured", bgScope)
 

@@ -61,7 +61,7 @@ import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.bubbles.BubbleHelper;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.shared.TransitionUtil;
-import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper;
 import com.android.wm.shell.shared.bubbles.logging.BubbleLog;
 import com.android.wm.shell.transition.TransitionDispatchState;
 import com.android.wm.shell.transition.Transitions;
@@ -690,7 +690,7 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
             return pending != null && taskInfo.containsLaunchCookie(pending.mLaunchCookie);
         }
         if (isTaskViewTask(taskInfo)) {
-            if (!BubbleAnythingFlagHelper.enableRootTaskForBubble() || !taskInfo.hasParentTask()) {
+            if (!BubbleFlagHelper.enableRootTaskForBubble() || !taskInfo.hasParentTask()) {
                 return true;
             }
             if (mBubbleHelper.isPresent() && mBubbleHelper.get().isAppBubbleTask(taskInfo)) {
@@ -716,7 +716,7 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
      * into TaskView (e.g task being moved into a bubble)
      */
     private boolean isTaskToTaskView(TransitionInfo.Change change, PendingTransition pending) {
-        return BubbleAnythingFlagHelper.enableCreateAnyBubble()
+        return BubbleFlagHelper.enableCreateAnyBubble()
                 && change.getMode() == TRANSIT_TO_FRONT
                 && pending.mTaskView.getPendingInfo() != null
                 && pending.mTaskView.getPendingInfo().taskId == change.getTaskInfo().taskId;
@@ -1016,7 +1016,7 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
                 } else {
                     tv = findTaskView(taskInfo);
                     if (tv == null && pending != null) {
-                        if (BubbleAnythingFlagHelper.enableCreateAnyBubble()
+                        if (BubbleFlagHelper.enableCreateAnyBubble()
                                 && chg.getMode() == TRANSIT_TO_FRONT
                                 && pending.mTaskView.getPendingInfo() != null
                                 && pending.mTaskView.getPendingInfo().taskId == taskInfo.taskId) {
@@ -1214,7 +1214,7 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
         if (finishTransaction != null) {
             finishTransaction.reparent(leash, tvSurface)
                     .setPosition(leash, 0, 0);
-            if (!BubbleAnythingFlagHelper.enableRootTaskForBubble() || !taskInfo.hasParentTask()) {
+            if (!BubbleFlagHelper.enableRootTaskForBubble() || !taskInfo.hasParentTask()) {
                 finishTransaction.setWindowCrop(leash, boundsOnScreen.width(),
                         boundsOnScreen.height());
             }

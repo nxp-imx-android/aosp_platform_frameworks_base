@@ -165,6 +165,8 @@ run_all_commands() {
     # so that the subsequent tests won't show them.
     RRT_START_TIME=20300102-030405 ATEST="touch_bugreport" run_test "Generate bugreport" run-ravenwood-tests-wrapper-no-dry
 
+    run_test "No experimental API" run-ravenwood-tests-wrapper -E
+
     echo "== All commands finished =="
 }
 

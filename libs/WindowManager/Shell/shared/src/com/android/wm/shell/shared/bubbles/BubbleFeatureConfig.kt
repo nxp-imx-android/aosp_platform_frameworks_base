@@ -24,6 +24,6 @@ class BubbleFeatureConfig(private val context: Context) {
 
     fun areAppBubblesSupported(): Boolean {
         val am = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        return BubbleAnythingFlagHelper.enableCreateAnyBubble() && !am.isLowRamDevice
+        return BubbleFlagHelper.enableCreateAnyBubble() && !am.isLowRamDevice
     }
 }

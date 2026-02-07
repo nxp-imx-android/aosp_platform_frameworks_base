@@ -31,6 +31,7 @@ import com.android.internal.R
 import com.android.launcher3.icons.BaseIconFactory
 import com.android.launcher3.icons.BaseIconFactory.IconOptions
 import com.android.launcher3.icons.BitmapInfo
+import com.android.launcher3.icons.mono.ColorList
 import com.android.launcher3.icons.mono.MonoIconThemeController
 import com.android.launcher3.util.UserIconInfo
 import com.android.settingslib.Utils
@@ -117,19 +118,15 @@ constructor(
                             shouldForceThemeIcon = true,
                             colorProvider = { ctx ->
                                 val res = ctx.resources
-                                intArrayOf(
-                                    /* background */ res.getColor(
-                                        R.color.materialColorPrimary,
-                                        null,
-                                    ),
-                                    /* icon */ res.getColor(
-                                        R.color.materialColorSurfaceContainerHigh,
-                                        null,
-                                    ),
-                                    /* adaptive background */ res.getColor(
-                                        R.color.materialColorPrimary,
-                                        null,
-                                    ),
+                                val bgColor = res.getColor(R.color.materialColorPrimary, null)
+                                val foregroundColor =
+                                    res.getColor(R.color.materialColorSurfaceContainerHigh, null)
+                                ColorList(
+                                    iconBackgroundColor = bgColor,
+                                    iconForegroundColor = foregroundColor,
+                                    iconAdaptiveBackgroundColor = bgColor,
+                                    badgeBackgroundColor = bgColor,
+                                    badgeForegroundColor = foregroundColor,
                                 )
                             },
                         )
@@ -146,10 +143,12 @@ constructor(
                     MonoIconThemeController(
                         shouldForceThemeIcon = true,
                         colorProvider = { _ ->
-                            intArrayOf(
-                                /* background */ Color.BLACK,
-                                /* icon */ Color.WHITE,
-                                /* adaptive background */ Color.BLACK,
+                            ColorList(
+                                iconBackgroundColor = Color.BLACK,
+                                iconForegroundColor = Color.WHITE,
+                                iconAdaptiveBackgroundColor = Color.BLACK,
+                                badgeBackgroundColor = Color.BLACK,
+                                badgeForegroundColor = Color.WHITE,
                             )
                         },
                     ),
@@ -195,7 +194,7 @@ constructor(
                 skeletonIconFactory,
                 packageName,
                 userHandle,
-                allowProfileBadge = false,
+                allowProfileBadge = true,
             )
         }
 
