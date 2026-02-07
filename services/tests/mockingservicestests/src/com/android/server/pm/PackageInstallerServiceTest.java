@@ -26,6 +26,7 @@ import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.nullable;
@@ -128,6 +129,7 @@ public class PackageInstallerServiceTest {
         doReturn(mMockSnapshot).when(mPms).snapshotComputer();
         doReturn(myUid()).when(mMockSnapshot).getPackageUidInternal(
                 eq(mPackageName), anyLong(), anyInt(), anyInt());
+        doReturn(true).when(mMockSnapshot).isCallerSameApp(anyString(), anyInt());
         // Create a test file for read/write of mSessionsFile
         mTestDir = new File(InstrumentationRegistry.getInstrumentation().getTargetContext()
                 .getFilesDir(), "testDir");

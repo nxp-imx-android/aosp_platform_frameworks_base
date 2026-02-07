@@ -271,8 +271,7 @@ final class ResolveIntentHelper {
         final int callingPid = Binder.getCallingPid();
         computer.enforceCrossUserPermission(callingUid, userId, false /* requireFullPermission */,
                 false /* checkShell */, "get launch intent sender for package");
-        final int packageUid = computer.getPackageUid(callingPackage, 0 /* flags */, userId);
-        if (!UserHandle.isSameApp(callingUid, packageUid)) {
+        if (!computer.isCallerSameApp(callingPackage, callingUid)) {
             throw new SecurityException("getLaunchIntentSenderForPackage() from calling uid: "
                     + callingUid + " does not own package: " + callingPackage);
         }
