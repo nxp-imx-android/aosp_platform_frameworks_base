@@ -17,7 +17,9 @@
 package com.android.settingslib.metadata.preferencesapi
 
 import android.content.Context
+import android.provider.Settings
 import androidx.annotation.StringRes
+import com.android.settingslib.utils.applications.AppUtils
 import com.android.settingslib.datastore.KeyValueStore
 import com.android.settingslib.datastore.NoOpKeyedObservable
 import com.android.settingslib.datastore.Permissions
@@ -49,8 +51,15 @@ class ApiOperationContext(
     val parameters: ValidatedKeyParameters
 )
 
+/**
+ * The context for a flag check, providing access to the application [Context].
+ *
+ * @property context The application context, used for accessing system services and resources.
+ */
+class FlagContext(val context: Context)
+
 /** Configuration of the [ApiPreference] flag. */
-class FlagConfig(val check: () -> Boolean)
+class FlagConfig(val check: FlagContext.() -> Boolean)
 
 /** Configuration of the [ApiPreference] preconditions. */
 class PreconditionsConfig private constructor(
@@ -124,13 +133,19 @@ class SetConfig<V : Any>(
  * "Lightweight" way. It sets suitable defaults, and converts between the code we are asking
  * partner teams to write and the methods which Catalyst expects.
  */
-abstract class ApiPreference<V : Any>(val isFlagEnabled: Boolean) : PersistentPreference<V> {
+abstract class ApiPreference<V : Any>(val flagConfig: FlagConfig?) : PersistentPreference<V> {
     companion object {
         private const val VALUE_TYPE_MISMATCH_ERROR = "Value type mismatch. Expected %s, got %s"
 
         private fun buildValueTypeMismatchError(expected: Class<*>, actual: Class<*>) =
             String.format(VALUE_TYPE_MISMATCH_ERROR, expected.name, actual.name)
     }
+
+    /**
+     * Returns true if the flag is enabled so the preference should be shown in
+     * API outputs and UI.
+     */
+    fun isFlagEnabled(context: Context) = flagConfig?.check(FlagContext(context)) ?: true
 
     private val cachedKeyParameters: ValidatedKeyParameters by lazy {
         getScreenParameters.invoke() ?: ValidatedKeyParameters.EMPTY
@@ -532,6 +547,21 @@ class SetConfigBuilder<V : Any> {
     }
 }
 
+/**
+ * Returns true if all flag checks should be skipped for catalyst preferences.
+ *
+ * This allows the flag checks to be skipped for testing purposes.
+ *
+ * This should never be used in production.
+ */
+fun shouldSkipFlagCheck(context: Context): Boolean {
+    return AppUtils.isDebuggable() && Settings.Global.getInt(
+        context.contentResolver,
+        "com.android.settings.SKIP_CATALYST_FLAG_CHECKS",
+        0
+    ) == 1
+}
+
 /** Configuration builder for an [ApiPreference]. */
 @ApiPreferenceDsl
 class ApiPreferenceConfigBuilder<V : Any>(
@@ -561,7 +591,12 @@ class ApiPreferenceConfigBuilder<V : Any>(
             error(getExceptionMessageWrongOrder("flag"))
         }
 
-        flagConfig = FlagConfig(check = lambda)
+        flagConfig = FlagConfig {
+            if (shouldSkipFlagCheck(context)) {
+                return@FlagConfig true
+            }
+            lambda()
+        }
     }
 
     /**
@@ -657,7 +692,7 @@ class ApiPreferenceConfigBuilder<V : Any>(
     }
 
     /** Create an instance of [ApiPreference] from its configuration. */
-    fun build() = object : ApiPreference<V>(flagConfig?.check() ?: true) {
+    fun build() = object : ApiPreference<V>(flagConfig) {
         override val screenPermissions = this@ApiPreferenceConfigBuilder.screenPermissions
         override val screenPreconditions = this@ApiPreferenceConfigBuilder.screenPreconditions
         override val permissions: Permissions? = permissionsConfig
