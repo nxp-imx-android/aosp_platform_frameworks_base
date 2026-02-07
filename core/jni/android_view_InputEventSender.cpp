@@ -31,6 +31,7 @@
 #include <unordered_map>
 
 #include "android_os_MessageQueue.h"
+#include "android_util_Binder.h"
 #include "android_view_InputChannel.h"
 #include "android_view_KeyEvent.h"
 #include "android_view_MotionEvent.h"
@@ -61,6 +62,7 @@ public:
     void dispose();
     status_t sendKeyEvent(uint32_t seq, const KeyEvent* event);
     status_t sendMotionEvent(uint32_t seq, const MotionEvent* event);
+    sp<IBinder> getInputChannelToken() const;
 
 protected:
     virtual ~NativeInputEventSender();
@@ -178,6 +180,10 @@ status_t NativeInputEventSender::sendMotionEvent(uint32_t seq, const MotionEvent
         }
     }
     return OK;
+}
+
+sp<IBinder> NativeInputEventSender::getInputChannelToken() const {
+    return mInputPublisher.getChannel().getConnectionToken();
 }
 
 int NativeInputEventSender::handleEvent(int receiveFd, int events, void* data) {
@@ -374,18 +380,20 @@ static jboolean nativeSendMotionEvent(JNIEnv* env, jclass clazz, jlong senderPtr
     return !status;
 }
 
+static jobject nativeGetToken(JNIEnv* env, jclass clazz, jlong senderPtr) {
+    sp<NativeInputEventSender> sender = reinterpret_cast<NativeInputEventSender*>(senderPtr);
+    return javaObjectForIBinder(env, sender->getInputChannelToken());
+}
 
 static const JNINativeMethod gMethods[] = {
-    /* name, signature, funcPtr */
-    { "nativeInit",
-            "(Ljava/lang/ref/WeakReference;Landroid/view/InputChannel;Landroid/os/MessageQueue;)J",
-            (void*)nativeInit },
-    { "nativeDispose", "(J)V",
-            (void*)nativeDispose },
-    { "nativeSendKeyEvent", "(JILandroid/view/KeyEvent;)Z",
-            (void*)nativeSendKeyEvent },
-    { "nativeSendMotionEvent", "(JILandroid/view/MotionEvent;)Z",
-            (void*)nativeSendMotionEvent },
+        /* name, signature, funcPtr */
+        {"nativeInit",
+         "(Ljava/lang/ref/WeakReference;Landroid/view/InputChannel;Landroid/os/MessageQueue;)J",
+         (void*)nativeInit},
+        {"nativeDispose", "(J)V", (void*)nativeDispose},
+        {"nativeSendKeyEvent", "(JILandroid/view/KeyEvent;)Z", (void*)nativeSendKeyEvent},
+        {"nativeSendMotionEvent", "(JILandroid/view/MotionEvent;)Z", (void*)nativeSendMotionEvent},
+        {"nativeGetToken", "(J)Landroid/os/IBinder;", (void*)nativeGetToken},
 };
 
 int register_android_view_InputEventSender(JNIEnv* env) {
