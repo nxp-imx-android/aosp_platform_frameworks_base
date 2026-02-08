@@ -66,6 +66,7 @@ import com.android.internal.util.DumpUtils;
 import com.android.server.SystemService;
 import com.android.server.notification.NotificationManagerInternal;
 import com.android.server.personalcontext.component.Refiner;
+import com.android.server.personalcontext.component.Renderer;
 import com.android.server.personalcontext.embedded.EmbeddedInsightRenderer;
 import com.android.server.personalcontext.notifications.ContextActionResolver;
 import com.android.server.personalcontext.notifications.NotificationActionFactory;
@@ -827,11 +828,18 @@ public class PersonalContextManagerService extends SystemService {
                 return;
             }
 
+            final HashSet<RenderToken> rendererTokens = new HashSet<>();
+
+            for (Renderer renderer : userState.componentManager.getRenderersWithProperties(
+                    Renderer.PROPERTY_CAN_RECEIVE_NOTIFICATION_INSIGHTS)) {
+                rendererTokens.add(renderer.mintRenderToken());
+            }
+
             startRefinerWorkflow(
                     user.getIdentifier(),
                     Process.myPid(),
                     Set.of(new NotificationHint.Builder(event).build()),
-                    Set.of(userState.notificationActionRenderer().mintRenderToken()),
+                    rendererTokens,
                     Collections.emptySet());
         }
 
