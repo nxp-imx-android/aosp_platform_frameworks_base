@@ -70,10 +70,7 @@
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"A Készülékkereső segítségével akár a kikapcsolt táblagép helyét is meghatározhatja."</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"A Keresési központ segítségével akár a kikapcsolt telefon helyét is meghatározhatja."</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"A Keresési központ segítségével akár a kikapcsolt táblagép helyét is meghatározhatja."</string>
-    <!-- no translation found for dream_setup_description (5167691612621831552) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (6296793330727926553) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (3098487756905462324) -->
-    <skip />
+    <string name="dream_setup_description" product="default" msgid="5167691612621831552">"Óra, fotók vagy az időjárás megjelenítése, amikor a telefon töltődik"</string>
+    <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"Óra, fotók vagy az időjárás megjelenítése, amikor a táblagép töltődik"</string>
+    <string name="dream_setup_description" product="device" msgid="3098487756905462324">"Óra, fotók vagy az időjárás megjelenítése, amikor az eszköz töltődik"</string>
 </resources>

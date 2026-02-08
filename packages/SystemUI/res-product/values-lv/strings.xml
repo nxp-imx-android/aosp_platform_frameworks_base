@@ -70,10 +70,7 @@
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"Lietotni “Atrast ierīci” var izmantot šī planšetdatora atrašanās vietas noteikšanai arī tad, ja planšetdators ir izslēgts."</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"Lietotni Find Hub var izmantot šī tālruņa atrašanās vietas noteikšanai arī tad, ja tālrunis ir izslēgts."</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"Lietotni Find Hub var izmantot šī planšetdatora atrašanās vietas noteikšanai arī tad, ja planšetdators ir izslēgts."</string>
-    <!-- no translation found for dream_setup_description (5167691612621831552) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (6296793330727926553) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (3098487756905462324) -->
-    <skip />
+    <string name="dream_setup_description" product="default" msgid="5167691612621831552">"Skatiet pulksteni, fotoattēlus vai informāciju par laikapstākļiem, kamēr notiek tālruņa uzlāde."</string>
+    <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"Skatiet pulksteni, fotoattēlus vai informāciju par laikapstākļiem, kamēr notiek planšetdatora uzlāde."</string>
+    <string name="dream_setup_description" product="device" msgid="3098487756905462324">"Skatiet pulksteni, fotoattēlus vai informāciju par laikapstākļiem, kamēr notiek ierīces uzlāde."</string>
 </resources>

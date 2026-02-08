@@ -70,10 +70,7 @@
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"Du kan finne dette nettbrettet med Finn enheten min, selv når det er slått av"</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"Du kan finne denne telefonen med Finn-oversikt, selv når den er slått av"</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"Du kan finne dette nettbrettet med Finn-oversikt, selv når det er slått av"</string>
-    <!-- no translation found for dream_setup_description (5167691612621831552) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (6296793330727926553) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (3098487756905462324) -->
-    <skip />
+    <string name="dream_setup_description" product="default" msgid="5167691612621831552">"Vis en klokke, bilder eller været når telefonen lades"</string>
+    <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"Vis en klokke, bilder eller været når nettbrettet lades"</string>
+    <string name="dream_setup_description" product="device" msgid="3098487756905462324">"Vis en klokke, bilder eller været når enheten lades"</string>
 </resources>

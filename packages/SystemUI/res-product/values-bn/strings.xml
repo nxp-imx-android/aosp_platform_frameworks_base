@@ -70,10 +70,7 @@
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"Find My Device-এর মাধ্যমে, এই ট্যাবলেটটি বন্ধ করা থাকলেও তার লোকেশন শনাক্ত করতে পারবেন"</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"Find Hub-এর মাধ্যমে, এই ফোনটি বন্ধ করা থাকলেও তার লোকেশন শনাক্ত করতে পারবেন"</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"Find Hub-এর মাধ্যমে, এই ট্যাবলেটটি বন্ধ করা থাকলেও তার লোকেশন শনাক্ত করতে পারবেন"</string>
-    <!-- no translation found for dream_setup_description (5167691612621831552) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (6296793330727926553) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (3098487756905462324) -->
-    <skip />
+    <string name="dream_setup_description" product="default" msgid="5167691612621831552">"ফোন চার্জ করার সময়ে ঘড়ি, ফটো বা আবহাওয়ার তথ্য দেখুন"</string>
+    <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"ট্যাবলেট চার্জ করার সময়ে ঘড়ি, ফটো বা আবহাওয়ার তথ্য দেখুন"</string>
+    <string name="dream_setup_description" product="device" msgid="3098487756905462324">"ডিভাইস চার্জ করার সময়ে ঘড়ি, ফটো বা আবহাওয়ার তথ্য দেখুন"</string>
 </resources>

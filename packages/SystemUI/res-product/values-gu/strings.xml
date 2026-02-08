@@ -70,10 +70,7 @@
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"આ ટૅબ્લેટનો પાવર બંધ હોય ત્યારે પણ Find My Device વડે તમે તેનું લોકેશન જાણી શકો છો"</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"આ ફોનનો પાવર બંધ હોય તો પણ Find Hub વડે તમે તેનું લોકેશન જાણી શકો છો"</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"આ ટૅબ્લેટનો પાવર બંધ હોય તો પણ Find Hub વડે તમે તેનું લોકેશન જાણી શકો છો"</string>
-    <!-- no translation found for dream_setup_description (5167691612621831552) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (6296793330727926553) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (3098487756905462324) -->
-    <skip />
+    <string name="dream_setup_description" product="default" msgid="5167691612621831552">"તમારો ફોન ચાર્જ થઈ રહ્યો હોય ત્યારે ઘડિયાળ, ફોટા અથવા હવામાન બતાવો"</string>
+    <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"તમારું ટૅબ્લેટ ચાર્જ થઈ રહ્યું હોય ત્યારે ઘડિયાળ, ફોટા અથવા હવામાન બતાવો"</string>
+    <string name="dream_setup_description" product="device" msgid="3098487756905462324">"તમારું ડિવાઇસ ચાર્જ થઈ રહ્યું હોય ત્યારે ઘડિયાળ, ફોટા અથવા હવામાન બતાવો"</string>
 </resources>

@@ -70,10 +70,7 @@
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"आप Find My Device की मदद से, इस टैबलेट के बंद होने पर भी इसकी जगह की जानकारी का पता लगा सकते हैं"</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"Find Hub की मदद से, फ़ोन के बंद होने पर भी उसकी जगह की जानकारी का पता लगाया जा सकता है"</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"Find Hub की मदद से, टैबलेट के बंद होने पर भी उसकी जगह की जानकारी का पता लगाया जा सकता है"</string>
-    <!-- no translation found for dream_setup_description (5167691612621831552) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (6296793330727926553) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (3098487756905462324) -->
-    <skip />
+    <string name="dream_setup_description" product="default" msgid="5167691612621831552">"फ़ोन चार्ज होते समय स्क्रीन पर घड़ी, फ़ोटो या मौसम की जानकारी दिखती है"</string>
+    <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"टैबलेट चार्ज होते समय स्क्रीन पर घड़ी, फ़ोटो या मौसम की जानकारी दिखती है"</string>
+    <string name="dream_setup_description" product="device" msgid="3098487756905462324">"डिवाइस चार्ज होते समय स्क्रीन पर घड़ी, फ़ोटो या मौसम की जानकारी दिखती है"</string>
 </resources>

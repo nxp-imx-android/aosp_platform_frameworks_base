@@ -70,10 +70,7 @@
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"බලය ක්‍රියාවිරහිත වූ විට පවා ඔබට මගේ උපාංගය සෙවීම මගින් මෙම ටැබ්ලටය සොයාගත හැක"</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"බලය ක්‍රියාවිරහිතව තිබියදී පවා සෙවීම් මධ්‍යස්ථානය භාවිතයෙන් ඔබට මෙම දුරකථනය සොයා ගත හැක"</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"බලය ක්‍රියාවිරහිතව තිබියදී පවා සෙවීම් මධ්‍යස්ථානය භාවිතයෙන් ඔබට මෙම ටැබ්ලටය සොයා ගත හැක"</string>
-    <!-- no translation found for dream_setup_description (5167691612621831552) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (6296793330727926553) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (3098487756905462324) -->
-    <skip />
+    <string name="dream_setup_description" product="default" msgid="5167691612621831552">"ඔබේ දුරකථනය ආරෝපණය වන විට ඔරලෝසුවක්, ඡායාරූප, හෝ කාලගුණය පෙන්වන්න"</string>
+    <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"ඔබේ ටැබ්ලටය ආරෝපණය වන විට ඔරලෝසුවක්, ඡායාරූප, හෝ කාලගුණය පෙන්වන්න"</string>
+    <string name="dream_setup_description" product="device" msgid="3098487756905462324">"ඔබේ උපාංගය ආරෝපණය වන විට ඔරලෝසුවක්, ඡායාරූප, හෝ කාලගුණය පෙන්වන්න"</string>
 </resources>

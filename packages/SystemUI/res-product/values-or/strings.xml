@@ -70,10 +70,7 @@
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"ପାୱାର ବନ୍ଦ ଥିଲେ ମଧ୍ୟ ଆପଣ Find My Device ମାଧ୍ୟମରେ ଏହି ଟାବଲେଟକୁ ଖୋଜିପାରିବେ"</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"ପାୱାର ବନ୍ଦ ଥିଲେ ମଧ୍ୟ ଆପଣ Find Hub ମାଧ୍ୟମରେ ଏହି ଫୋନକୁ ଖୋଜିପାରିବେ"</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"ପାୱାର ବନ୍ଦ ଥିଲେ ମଧ୍ୟ ଆପଣ Find Hub ମାଧ୍ୟମରେ ଏହି ଟାବଲେଟକୁ ଖୋଜିପାରିବେ"</string>
-    <!-- no translation found for dream_setup_description (5167691612621831552) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (6296793330727926553) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (3098487756905462324) -->
-    <skip />
+    <string name="dream_setup_description" product="default" msgid="5167691612621831552">"ଆପଣଙ୍କ ଫୋନ ଚାର୍ଜ ହେଉଥିବା ବେଳେ ଏକ ଘଣ୍ଟା, ଫଟୋ କିମ୍ବା ପାଣିପାଗ ଦେଖାନ୍ତୁ"</string>
+    <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"ଆପଣଙ୍କ ଟାବଲେଟ ଚାର୍ଜ ହେଉଥିବା ବେଳେ ଏକ ଘଣ୍ଟା, ଫଟୋ କିମ୍ବା ପାଣିପାଗ ଦେଖାନ୍ତୁ"</string>
+    <string name="dream_setup_description" product="device" msgid="3098487756905462324">"ଆପଣଙ୍କ ଡିଭାଇସ ଚାର୍ଜ ହେଉଥିବା ବେଳେ ଏକ ଘଣ୍ଟା, ଫଟୋ କିମ୍ବା ପାଣିପାଗ ଦେଖାନ୍ତୁ"</string>
 </resources>

@@ -70,10 +70,7 @@
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"Voit löytää tämän tabletin Paikanna laite ‑sovelluksella, vaikka se olisi sammutettuna"</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"Voit löytää tämän puhelimen Find Hubilla, vaikka se olisi sammutettuna"</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"Voit löytää tämän tabletin Find Hub -sovelluksella, vaikka se olisi sammutettuna"</string>
-    <!-- no translation found for dream_setup_description (5167691612621831552) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (6296793330727926553) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (3098487756905462324) -->
-    <skip />
+    <string name="dream_setup_description" product="default" msgid="5167691612621831552">"Näytä kello, kuvat tai säätiedot, kun puhelin on latauksessa"</string>
+    <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"Näytä kello, kuvat tai säätiedot, kun tabletti on latauksessa"</string>
+    <string name="dream_setup_description" product="device" msgid="3098487756905462324">"Näytä kello, kuvat tai säätiedot, kun laite on latauksessa"</string>
 </resources>

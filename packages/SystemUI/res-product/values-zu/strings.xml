@@ -70,10 +70,7 @@
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"Ungathola le thebhulethi ngokuthi Thola Idivayisi Yami noma ivaliwe"</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"Ungakwazi ukuthola le foni ngokusebenzisa okuthi Thola Inkundla ngisho noma ivaliwe"</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"Ungakwazi ukuthola le thebhulethi usebenzisa okuthi Thola Inkundla ngisho noma ivaliwe"</string>
-    <!-- no translation found for dream_setup_description (5167691612621831552) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (6296793330727926553) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (3098487756905462324) -->
-    <skip />
+    <string name="dream_setup_description" product="default" msgid="5167691612621831552">"Bonisa iwashi, izithombe, noma isimo sezulu lapho ifoni yakho ishaja"</string>
+    <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"Bonisa iwashi, izithombe, noma isimo sezulu lapho ithebulethi yakho ishaja"</string>
+    <string name="dream_setup_description" product="device" msgid="3098487756905462324">"Bonisa iwashi, izithombe, noma isimo sezulu lapho idivayisi yakho ishaja"</string>
 </resources>
