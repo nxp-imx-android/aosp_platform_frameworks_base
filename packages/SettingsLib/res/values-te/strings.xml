@@ -268,7 +268,7 @@
     <string name="apn_settings_not_available" msgid="1147111671403342300">"యాక్సెస్ స్థానం పేరు సెట్టింగ్‌లు ఈ వినియోగదారుకి అందుబాటులో లేవు"</string>
     <string name="enable_adb" msgid="8072776357237289039">"USB డీబగ్గింగ్"</string>
     <string name="enable_adb_summary" msgid="3711526030096574316">"USB కనెక్ట్ చేయబడినప్పుడు డీబగ్ మోడ్"</string>
-    <string name="clear_adb_keys" msgid="2696065439790970581">"USB డీబగ్ ప్రామాణీకరణలు ఉపసంహరించండి"</string>
+    <string name="clear_adb_keys" msgid="2696065439790970581">"adb డీబగ్గింగ్ ప్రామాణీకరణలను ఉపసంహరించండి"</string>
     <string name="enable_adb_wireless" msgid="6973226350963971018">"వైర్‌లెస్ డీబగ్గింగ్"</string>
     <string name="enable_adb_wireless_summary" msgid="7344391423657093011">"Wi-Fi కనెక్ట్ అయి ఉన్నప్పుడు, డీబగ్ మోడ్‌లో ఉంచు"</string>
     <string name="adb_wireless_error" msgid="721958772149779856">"ఎర్రర్"</string>
@@ -293,10 +293,8 @@
     <string name="adb_wireless_verifying_qrcode_text" msgid="6123192424916029207">"పరికరం పెయిర్ చేయబడుతోంది…"</string>
     <string name="adb_qrcode_pairing_device_failed_msg" msgid="6936292092592914132">"పరికరాన్ని పెయిర్ చేయడం విఫలమైంది. QR కోడ్ తప్పుగా ఉండడం గాని, లేదా పరికరం అదే నెట్‌వర్క్‌కు కనెక్ట్ అయి లేకపోవడం గాని జరిగింది."</string>
     <string name="adb_wireless_ip_addr_preference_title" msgid="8335132107715311730">"IP అడ్రస్ &amp; పోర్ట్"</string>
-    <!-- no translation found for adb_wireless_unavailable_not_allowed (83310404140556806) -->
-    <skip />
-    <!-- no translation found for adb_wireless_unavailable_disconnected (8819105186435736128) -->
-    <skip />
+    <string name="adb_wireless_unavailable_not_allowed" msgid="83310404140556806">"అందుబాటులో లేదు (అనుమతించబడదు)"</string>
+    <string name="adb_wireless_unavailable_disconnected" msgid="8819105186435736128">"అందుబాటులో లేదు (Wi‑Fi డిస్‌కనెక్ట్ అయింది)"</string>
     <string name="adb_wireless_qrcode_pairing_title" msgid="1906409667944674707">"QR కోడ్‌ను స్కాన్ చేయండి"</string>
     <string name="adb_wireless_qrcode_pairing_description" msgid="6014121407143607851">"QR కోడ్‌ను స్కాన్ చేయడం ద్వారా Wi-Fiని ఉపయోగించి డివైజ్‌ను పెయిర్ చేయండి"</string>
     <string name="adb_wireless_no_network_msg" msgid="2365795244718494658">"దయచేసి Wi-Fi నెట్‌వర్క్‌కు కనెక్ట్ చేయండి"</string>
@@ -370,7 +368,7 @@
     <string name="adb_warning_message" msgid="8145270656419669221">"USB డీబగ్గింగ్ అనేది అభివృద్ధి ప్రయోజనాల కోసం మాత్రమే ఉద్దేశించబడింది. మీ కంప్యూటర్ మరియు మీ పరికరం మధ్య డేటాను కాపీ చేయడానికి, నోటిఫికేషన్ లేకుండా మీ పరికరంలో యాప్‌లను ఇన్‌స్టాల్ చేయడానికి మరియు లాగ్ డేటాను చదవడానికి దీన్ని ఉపయోగించండి."</string>
     <string name="adbwifi_warning_title" msgid="727104571653031865">"వైర్‌లెస్ డీబగ్గింగ్‌ను అనుమతించాలా?"</string>
     <string name="adbwifi_warning_message" msgid="8005936574322702388">"వైర్‌లెస్ డీబగ్గింగ్ అనేది అభివృద్ధి ప్రయోజనాల కోసం మాత్రమే ఉద్దేశించబడింది. మీ కంప్యూటర్, పరికరాల మధ్య డేటాను కాపీ చేయడానికి, నోటిఫికేషన్ లేకుండా మీ పరికరంలో యాప్‌లను ఇన్‌స్టాల్ చేయడానికి, లాగ్ డేటాను చదవడానికి దీన్ని ఉపయోగించండి."</string>
-    <string name="adb_keys_warning_message" msgid="7827514623080777814">"మీరు గతంలో ప్రామాణీకరించిన అన్ని కంప్యూటర్‌ల నుండి USB డీబగ్గింగ్‌కు యాక్సెస్‌ను ఉపసంహరించాలా?"</string>
+    <string name="adb_keys_warning_message" msgid="7827514623080777814">"మీరు గతంలో ప్రామాణీకరించిన అన్ని కంప్యూటర్‌లు, నెట్‌వర్క్‌ల నుండి adb డీబగ్గింగ్‌కు యాక్సెస్‌ను ఉపసంహరించాలా?"</string>
     <string name="dev_settings_warning_title" msgid="8251234890169074553">"అభివృద్ధి సెట్టింగ్‌లను అనుమతించాలా?"</string>
     <string name="dev_settings_warning_message" msgid="37741686486073668">"ఈ సెట్టింగ్‌లు అభివృద్ధి వినియోగం కోసం మాత్రమే ఉద్దేశించబడినవి. వీటి వలన మీ పరికరం మరియు దీనిలోని యాప్‌లు విచ్ఛిన్నం కావచ్చు లేదా తప్పుగా ప్రవర్తించవచ్చు."</string>
     <string name="verify_apps_over_usb_title" msgid="6031809675604442636">"USB ద్వారా యాప్స్ వెరిఫై చేయండి"</string>

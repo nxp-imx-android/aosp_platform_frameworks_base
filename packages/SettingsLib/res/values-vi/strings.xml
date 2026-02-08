@@ -268,7 +268,7 @@
     <string name="apn_settings_not_available" msgid="1147111671403342300">"Cài đặt tên điểm truy cập không khả dụng cho người dùng này"</string>
     <string name="enable_adb" msgid="8072776357237289039">"Gỡ lỗi qua USB"</string>
     <string name="enable_adb_summary" msgid="3711526030096574316">"Bật chế độ gỡ lỗi khi kết nối USB"</string>
-    <string name="clear_adb_keys" msgid="2696065439790970581">"Thu hồi các lượt ủy quyền gỡ lỗi qua USB"</string>
+    <string name="clear_adb_keys" msgid="2696065439790970581">"Thu hồi quyền truy cập vào công cụ gỡ lỗi adb"</string>
     <string name="enable_adb_wireless" msgid="6973226350963971018">"Gỡ lỗi qua Wi-Fi"</string>
     <string name="enable_adb_wireless_summary" msgid="7344391423657093011">"Bật chế độ gỡ lỗi khi có kết nối Wi-Fi"</string>
     <string name="adb_wireless_error" msgid="721958772149779856">"Lỗi"</string>
@@ -293,10 +293,8 @@
     <string name="adb_wireless_verifying_qrcode_text" msgid="6123192424916029207">"Đang ghép nối thiết bị…"</string>
     <string name="adb_qrcode_pairing_device_failed_msg" msgid="6936292092592914132">"Không ghép nối được thiết bị. Mã QR không chính xác hoặc bạn không kết nối thiết bị với cùng một mạng."</string>
     <string name="adb_wireless_ip_addr_preference_title" msgid="8335132107715311730">"Địa chỉ IP và cổng"</string>
-    <!-- no translation found for adb_wireless_unavailable_not_allowed (83310404140556806) -->
-    <skip />
-    <!-- no translation found for adb_wireless_unavailable_disconnected (8819105186435736128) -->
-    <skip />
+    <string name="adb_wireless_unavailable_not_allowed" msgid="83310404140556806">"Không dùng được (Không được phép)"</string>
+    <string name="adb_wireless_unavailable_disconnected" msgid="8819105186435736128">"Không dùng được (Đã ngắt kết nối Wi‑Fi)"</string>
     <string name="adb_wireless_qrcode_pairing_title" msgid="1906409667944674707">"Quét mã QR"</string>
     <string name="adb_wireless_qrcode_pairing_description" msgid="6014121407143607851">"Ghép nối thiết bị qua Wi-Fi bằng cách quét mã QR"</string>
     <string name="adb_wireless_no_network_msg" msgid="2365795244718494658">"Hãy kết nối mạng Wi-Fi"</string>
@@ -370,7 +368,7 @@
     <string name="adb_warning_message" msgid="8145270656419669221">"Gỡ lỗi USB chỉ dành cho mục đích phát triển. Hãy sử dụng tính năng này để sao chép dữ liệu giữa máy tính và thiết bị của bạn, cài đặt ứng dụng trên thiết bị của bạn mà không thông báo và đọc dữ liệu nhật ký."</string>
     <string name="adbwifi_warning_title" msgid="727104571653031865">"Bật tính năng gỡ lỗi qua Wi-Fi?"</string>
     <string name="adbwifi_warning_message" msgid="8005936574322702388">"Tính năng gỡ lỗi qua Wi-Fi chỉ dành cho mục đích phát triển. Hãy sử dụng tính năng này để sao chép dữ liệu giữa máy tính và thiết bị của bạn, cài đặt ứng dụng trên thiết bị mà không thông báo và đọc dữ liệu nhật ký."</string>
-    <string name="adb_keys_warning_message" msgid="7827514623080777814">"Thu hồi quyền truy cập gỡ lỗi USB từ tất cả máy tính mà bạn đã ủy quyền trước đó?"</string>
+    <string name="adb_keys_warning_message" msgid="7827514623080777814">"Thu hồi quyền truy cập vào công cụ gỡ lỗi adb từ tất cả máy tính và mạng mà bạn đã uỷ quyền trước đây?"</string>
     <string name="dev_settings_warning_title" msgid="8251234890169074553">"Cho phép cài đặt phát triển?"</string>
     <string name="dev_settings_warning_message" msgid="37741686486073668">"Những tùy chọn cài đặt này chỉ dành cho mục đích phát triển. Chúng có thể làm cho thiết bị và ứng dụng trên thiết bị của bạn bị lỗi và hoạt động không đúng cách."</string>
     <string name="verify_apps_over_usb_title" msgid="6031809675604442636">"Xác minh ứng dụng qua USB"</string>
