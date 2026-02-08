@@ -26,6 +26,7 @@ import static com.android.server.privatecompute.AuditModeTestUtils.readAuditLogF
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.util.concurrent.MoreExecutors.newDirectExecutorService;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
 import android.os.PersistableBundle;
 import android.platform.test.annotations.RequiresFlagsEnabled;
@@ -303,5 +304,38 @@ public class AuditModeContextTest {
         serializerExecutor.awaitTermination(1, TimeUnit.SECONDS);
         writerExecutor.shutdown();
         writerExecutor.awaitTermination(1, TimeUnit.SECONDS);
+    }
+
+    @Test
+    public void testSerializeAndWrite_invalidBundle_throwsSecurityExceptionAndDoesNotWrite()
+            throws Exception {
+        PersistableBundle invalidBundle = getDeepNestedBundle101();
+        AuditLogEntry entry = new AuditLogEntry(invalidBundle, 234L, TEST_PACKAGE_NAME, 123);
+
+        assertThrows(
+                SecurityException.class,
+                () -> mAuditModeContext.serializeAndWrite(entry));
+
+        mAuditModeContext.stopAuditing();
+
+        File file = mAuditModeContext.getCurrentAuditLogFile();
+        List<AuditLogEntry> entries = readAuditLogFileFromFile(file);
+        assertEquals(entries.size(), 0);
+    }
+
+    /** Create a nested bundle of depth 101. */
+    private static PersistableBundle getDeepNestedBundle101() {
+        PersistableBundle rootBundle = new PersistableBundle();
+
+        PersistableBundle currentBundle = rootBundle;
+        for (int i = 0; i < 100; i++) {
+            PersistableBundle newInnerBundle = new PersistableBundle();
+            currentBundle.putPersistableBundle("NESTED_BUNDLE_KEY", newInnerBundle);
+            currentBundle = newInnerBundle; // Move down one level
+        }
+
+        currentBundle.putPersistableBundle("NESTED_BUNDLE_KEY", new PersistableBundle());
+
+        return rootBundle;
     }
 }
