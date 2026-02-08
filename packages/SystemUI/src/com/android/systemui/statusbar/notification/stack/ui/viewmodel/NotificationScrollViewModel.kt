@@ -25,6 +25,7 @@ import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.ObservableTransitionState.Idle
 import com.android.compose.animation.scene.ObservableTransitionState.Transition
 import com.android.compose.animation.scene.ObservableTransitionState.Transition.ChangeScene
+import com.android.compose.animation.scene.ObservableTransitionState.Transition.OverlayTransition
 import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.bouncer.domain.interactor.BouncerInteractor
@@ -156,7 +157,7 @@ constructor(
         currentOverlays: Set<OverlayKey>,
     ): Flow<Float> =
         when {
-            currentScene == Scenes.Lockscreen -> flowOf(1f)
+            currentScene.showsNotifications() -> flowOf(1f)
             transitionState.isTransitioningFromOrTo(Overlays.NotificationsShade) ->
                 shadeInteractor.shadeExpansion
             Overlays.NotificationsShade in currentOverlays -> flowOf(1f)
@@ -225,11 +226,9 @@ constructor(
      * transitioning from Shade to QuickSettings scenes.
      */
     val expandFraction: Flow<Float> =
-        combine(
-                sceneInteractor.transitionStateFlow,
-                sceneInteractor.currentOverlays,
-                shadeModeInteractor.shadeMode,
-            ) { transitionState, currentOverlays, _ ->
+        combine(sceneInteractor.transitionStateFlow, sceneInteractor.currentOverlays) {
+                transitionState,
+                currentOverlays ->
                 Pair(transitionState, currentOverlays)
             }
             .flatMapLatestConflated { (transitionState, currentOverlays) ->
@@ -241,14 +240,7 @@ constructor(
 
                     is ChangeScene -> expandFractionDuringSceneChange(transitionState)
 
-                    is Transition.ShowOrHideOverlay ->
-                        expandFractionDuringOverlayTransition(
-                            transitionState = transitionState,
-                            currentScene = transitionState.currentScene,
-                            currentOverlays = currentOverlays,
-                        )
-
-                    is Transition.ReplaceOverlay ->
+                    is OverlayTransition ->
                         expandFractionDuringOverlayTransition(
                             transitionState = transitionState,
                             currentScene = transitionState.currentScene,
@@ -261,12 +253,6 @@ constructor(
 
     val animationsEnabled
         get() = shadeInteractor.isShadeTouchable.dumpWhileCollecting("animationsEnabled")
-
-    val isOccluded: Flow<Boolean> =
-        bouncerInteractor.bouncerExpansion
-            .map { it == 1f }
-            .distinctUntilChanged()
-            .dumpWhileCollecting("isOccluded")
 
     /** Blur radius to be applied to Notifications. */
     fun blurRadius(maxBlurRadius: Flow<Int>) =
@@ -286,12 +272,15 @@ constructor(
      */
     private val blurFraction: Flow<Float> =
         if (SceneContainerFlag.isEnabled) {
-            shadeModeInteractor.shadeMode.flatMapLatest { shadeMode ->
-                when (shadeMode) {
-                    ShadeMode.Dual -> shadeInteractor.qsExpansion
-                    else -> flowOf(0f)
+            shadeModeInteractor.shadeMode
+                .flatMapLatest { shadeMode ->
+                    when (shadeMode) {
+                        ShadeMode.Dual -> shadeInteractor.qsExpansion
+                        else -> flowOf(0f)
+                    }
                 }
-            }
+                .distinctUntilChanged()
+                .dumpWhileCollecting("blurFraction")
         } else {
             flowOf(0f)
         }

@@ -21,6 +21,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.ObservableTransitionState.Transition
+import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.TransitionKey
 import com.android.systemui.Flags.FLAG_DUAL_SHADE
@@ -58,6 +59,7 @@ import com.android.systemui.testKosmos
 import com.android.systemui.util.state.SynchronouslyObservableState
 import com.android.systemui.util.state.observableStateOf
 import com.google.common.truth.Truth.assertThat
+import com.google.common.truth.Truth.assertWithMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Before
@@ -825,6 +827,69 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
             )
         }
 
+    @Test
+    fun expandFraction_showBouncerOverlay_mustRemainExpanded() =
+        kosmos.runTest {
+            val expandFraction by collectLastValue(notificationScrollViewModel.expandFraction)
+
+            enableSingleShade()
+
+            // Same as NotificationScrollViewModel SceneKey.showsNotifications
+            listOf(Scenes.Shade, Scenes.Lockscreen, Scenes.QuickSettings).forEach {
+                sceneWithStackExpanded ->
+                driveShowOverlayTransition(
+                    currentScene = sceneWithStackExpanded,
+                    overlay = Overlays.Bouncer,
+                    verifyOverlayHidden = {
+                        assertWithMessage("on ${sceneWithStackExpanded.debugName}")
+                            .that(expandFraction)
+                            .isEqualTo(1f)
+                    },
+                    verifyTransitionStep = { _ ->
+                        assertWithMessage("on ${sceneWithStackExpanded.debugName}")
+                            .that(expandFraction)
+                            .isEqualTo(1f)
+                    },
+                    verifyOverlayShown = {
+                        assertWithMessage("on ${sceneWithStackExpanded.debugName}")
+                            .that(expandFraction)
+                            .isEqualTo(1f)
+                    },
+                )
+            }
+        }
+
+    @Test
+    fun expandFraction_showBouncerOverlay_mustRemainCollapsed() =
+        kosmos.runTest {
+            val expandFraction by collectLastValue(notificationScrollViewModel.expandFraction)
+
+            enableSingleShade()
+
+            listOf(Scenes.Communal, Scenes.Dream, Scenes.Occluded).forEach { sceneWithStackCollapsed
+                ->
+                driveShowOverlayTransition(
+                    currentScene = sceneWithStackCollapsed,
+                    overlay = Overlays.Bouncer,
+                    verifyOverlayHidden = {
+                        assertWithMessage("on ${sceneWithStackCollapsed.debugName}")
+                            .that(expandFraction)
+                            .isEqualTo(0f)
+                    },
+                    verifyTransitionStep = { _ ->
+                        assertWithMessage("on ${sceneWithStackCollapsed.debugName}")
+                            .that(expandFraction)
+                            .isEqualTo(0f)
+                    },
+                    verifyOverlayShown = {
+                        assertWithMessage("on ${sceneWithStackCollapsed.debugName}")
+                            .that(expandFraction)
+                            .isEqualTo(0f)
+                    },
+                )
+            }
+        }
+
     private fun Kosmos.unlockDevice() {
         deviceEntryRepository.deviceUnlockStatus.value =
             DeviceUnlockStatus(isUnlocked = true, deviceUnlockSource = null)
@@ -870,6 +935,52 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
         // Idle on the target Scene
         transitionState.value = ObservableTransitionState.Idle(currentScene = targetScene)
         verifyIdleOnTargetScene()
+    }
+
+    private fun Kosmos.driveShowOverlayTransition(
+        currentScene: SceneKey,
+        overlay: OverlayKey,
+        verifyOverlayHidden: () -> Unit,
+        verifyTransitionStep: (progress: Float) -> Unit,
+        verifyOverlayShown: () -> Unit,
+        transitionKey: TransitionKey? = null,
+    ) {
+        // Idle on current Scene (without overlay)
+        val transitionState =
+            MutableStateFlow<ObservableTransitionState>(
+                ObservableTransitionState.Idle(currentScene = currentScene)
+            )
+        sceneInteractor.snapToScene(currentScene, "Setup currentScene.")
+        sceneInteractor.setTransitionState(transitionState)
+        verifyOverlayHidden()
+
+        sceneInteractor.showOverlay(overlay, "show overlay.")
+        val transitionProgress = MutableStateFlow(0f)
+        transitionState.value =
+            Transition.showOverlay(
+                overlay = overlay,
+                fromScene = currentScene,
+                progress = transitionProgress,
+                isInitiatedByUserInput = true,
+                isUserInputOngoing = flowOf(false),
+                currentOverlays = flowOf(emptySet()),
+                key = transitionKey,
+            )
+        val steps = 10
+        repeat(steps) { repetition ->
+            // Transitioning to show verlay
+            val progress = (1f / steps) * (repetition + 1)
+            transitionProgress.value = progress
+            verifyTransitionStep(progress)
+        }
+
+        // Idle on currentScene (with overlay)
+        transitionState.value =
+            ObservableTransitionState.Idle(
+                currentScene = currentScene,
+                currentOverlays = setOf(overlay),
+            )
+        verifyOverlayShown()
     }
 
     private fun Kosmos.setBlur(isBlurred: Boolean) {
