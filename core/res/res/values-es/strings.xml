@@ -778,7 +778,7 @@
     <string name="face_acquired_too_right" msgid="6245286514593540859">"Mueve el teléfono hacia la izquierda"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"Mueve el teléfono hacia la derecha"</string>
     <string name="face_acquired_poor_gaze" msgid="6746437451436776485">"Mira más directamente a la cámara"</string>
-    <string name="face_acquired_not_detected" msgid="1057966913397548150">"No se detecta tu cara. Sujeta el teléfono a la altura de los ojos."</string>
+    <string name="face_acquired_not_detected" msgid="1057966913397548150">"No se ve tu cara. Sujeta el teléfono a la altura de los ojos."</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"El teléfono se mueve demasiado. Mantenlo quieto."</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"Vuelve a registrar tu cara."</string>
     <string name="face_acquired_too_different" msgid="4505278456634706967">"Cara no reconocida. Inténtalo de nuevo."</string>
@@ -1500,6 +1500,22 @@
     <string name="usb_contaminant_detected_message" msgid="7346100585390795743">"El puerto USB se ha inhabilitado automáticamente. Toca para obtener más información."</string>
     <string name="usb_contaminant_not_detected_title" msgid="2651167729563264053">"Se puede utilizar el puerto USB"</string>
     <string name="usb_contaminant_not_detected_message" msgid="892863190942660462">"El teléfono ya no detecta líquidos ni suciedad."</string>
+    <!-- no translation found for usb_authorization_notify_on_screenlock_title (4219670768084927681) -->
+    <skip />
+    <!-- no translation found for usb_authorization_notify_on_screenlock_message (3391658768099414499) -->
+    <skip />
+    <!-- no translation found for usb_authorization_notify_on_screenlock_message_multiple (1722575755931059980) -->
+    <skip />
+    <!-- no translation found for usb_authorization_notify_finish_logging_in_title (3417036506115006412) -->
+    <skip />
+    <!-- no translation found for usb_authorization_notify_finish_logging_in_message (7996802340128367690) -->
+    <skip />
+    <!-- no translation found for usb_authorization_notify_finish_logging_in_title_multiple (3184839817149193434) -->
+    <skip />
+    <!-- no translation found for usb_authorization_notify_finish_logging_in_message_multiple (6745916608298736853) -->
+    <skip />
+    <!-- no translation found for notification_channel_usb_authorization (7567851967410736399) -->
+    <skip />
     <string name="taking_remote_bugreport_notification_title" msgid="1582531382166919850">"Creando informe de errores…"</string>
     <string name="share_remote_bugreport_notification_title" msgid="6708897723753334999">"¿Compartir informe de errores?"</string>
     <string name="sharing_remote_bugreport_notification_title" msgid="3077385149217638550">"Compartiendo informe de errores…"</string>
@@ -2120,7 +2136,8 @@
     <string name="enable_app_lock_success_toast_message" msgid="3339622779190529987">"<xliff:g id="APP_NAME">%1$s</xliff:g> está bloqueada"</string>
     <string name="enable_app_lock_failure_toast_message" msgid="1055838896510445566">"No se puede bloquear <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="disable_app_lock_success_toast_message" msgid="70733620589071266">"El bloqueo de aplicaciones se ha quitado de <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
-    <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"<xliff:g id="APP_NAME">%1$s</xliff:g> está bloqueada"</string>
+    <!-- no translation found for locked_app_biometric_prompt_description (5892653396104581919) -->
+    <skip />
     <string name="locked_app_external_display_message" msgid="5483884799685545338">"Para acceder a la aplicación en esta pantalla, primero debes demostrar que eres tú en tu otro dispositivo"</string>
     <string name="app_lock_edu_dialog_enable_app_lock_title" msgid="283314042336592322">"¿Añadir bloqueo de aplicación a <xliff:g id="APP_NAME">%1$s</xliff:g>?"</string>
     <string name="app_lock_edu_dialog_description" msgid="8176807243219769518">"Por tu seguridad, solo tú puedes acceder a esta aplicación con Desbloqueo con huella digital y Desbloqueo facial, o con tu PIN"</string>
@@ -2129,6 +2146,8 @@
     <string name="app_lock_edu_dialog_info_header" msgid="5876120209204270990">"Con el bloqueo de aplicaciones"</string>
     <string name="app_lock_edu_dialog_info_notifications" msgid="1124438392204873305">"El contenido de las notificaciones se ocultará"</string>
     <string name="app_lock_edu_dialog_info_widgets" msgid="8809009414650740872">"Se quitarán los widgets y los accesos directos"</string>
+    <!-- no translation found for app_lock_edu_dialog_info_ai_disclaimer (5623615653703542050) -->
+    <skip />
     <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"Añadir bloqueo de app"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_face" msgid="1348151645996748654">"Desbloqueo facial"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"Desbloqueo con huella digital"</string>
@@ -2620,8 +2639,7 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"Para enviar mensajes por satélite, configura Mensajes de Google como tu aplicación de mensajería predeterminada"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"Mensajes por satélite no disponibles"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"Para comprobar si los mensajes por satélite están disponibles en este país o territorio, activa los ajustes de ubicación"</string>
-    <!-- no translation found for satellite_indicator (6846063647532086110) -->
-    <skip />
+    <string name="satellite_indicator" msgid="6846063647532086110">"SAT"</string>
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"Configura Desbloqueo con huella digital de nuevo"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"<xliff:g id="FINGERPRINT">%s</xliff:g> ya no puede reconocerse."</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> y <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> ya no pueden reconocerse."</string>

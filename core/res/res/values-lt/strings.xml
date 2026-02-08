@@ -1501,6 +1501,14 @@
     <string name="usb_contaminant_detected_message" msgid="7346100585390795743">"USB prievadas automatiškai išjungtas. Palieskite, kad sužinotumėte daugiau."</string>
     <string name="usb_contaminant_not_detected_title" msgid="2651167729563264053">"Saugu naudoti USB prievadą"</string>
     <string name="usb_contaminant_not_detected_message" msgid="892863190942660462">"Telefonas nebeaptinka skysčių ar smulkių dalelių."</string>
+    <string name="usb_authorization_notify_on_screenlock_title" msgid="4219670768084927681">"Prijungtas naujas USB įrenginys"</string>
+    <string name="usb_authorization_notify_on_screenlock_message" msgid="3391658768099414499">"Prisijunkite, kad nustatytumėte šį USB įrenginį kaip patikimą ir pradėtumėte jį naudoti."</string>
+    <string name="usb_authorization_notify_on_screenlock_message_multiple" msgid="1722575755931059980">"Prisijunkite, kad nustatytumėte šiuos USB įrenginius kaip patikimus ir pradėtumėte juos naudoti."</string>
+    <string name="usb_authorization_notify_finish_logging_in_title" msgid="3417036506115006412">"Prijungtas naujas USB įrenginys"</string>
+    <string name="usb_authorization_notify_finish_logging_in_message" msgid="7996802340128367690">"Prisijunkite per <xliff:g id="NUM_SECONDS">%1$d</xliff:g> sek., kad nustatytumėte šį USB įrenginį kaip visiškai patikimą. Jei to nepadarysite, turėsite jį atjungti ir vėl prijungti."</string>
+    <string name="usb_authorization_notify_finish_logging_in_title_multiple" msgid="3184839817149193434">"Prijungti nauji USB įrenginiai"</string>
+    <string name="usb_authorization_notify_finish_logging_in_message_multiple" msgid="6745916608298736853">"Prisijunkite per <xliff:g id="NUM_SECONDS">%1$d</xliff:g> sek., kad nustatytumėte šiuos USB įrenginius kaip visiškai patikimus. Jei to nepadarysite, turėsite juos atjungti ir vėl prijungti."</string>
+    <string name="notification_channel_usb_authorization" msgid="7567851967410736399">"USB įrenginio prieigos teisė"</string>
     <string name="taking_remote_bugreport_notification_title" msgid="1582531382166919850">"Pateikiamas pranešimas apie riktą…"</string>
     <string name="share_remote_bugreport_notification_title" msgid="6708897723753334999">"Bendrinti pranešimą apie riktą?"</string>
     <string name="sharing_remote_bugreport_notification_title" msgid="3077385149217638550">"Bendrinamas pranešimas apie riktą..."</string>
@@ -2121,7 +2129,8 @@
     <string name="enable_app_lock_success_toast_message" msgid="3339622779190529987">"„<xliff:g id="APP_NAME">%1$s</xliff:g>“ yra užrakinta"</string>
     <string name="enable_app_lock_failure_toast_message" msgid="1055838896510445566">"Nepavyko užrakinti „<xliff:g id="APP_NAME">%1$s</xliff:g>“"</string>
     <string name="disable_app_lock_success_toast_message" msgid="70733620589071266">"Programos užraktas pašalintas iš „<xliff:g id="APP_NAME">%1$s</xliff:g>“"</string>
-    <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"„<xliff:g id="APP_NAME">%1$s</xliff:g>“ yra užrakinta"</string>
+    <!-- no translation found for locked_app_biometric_prompt_description (5892653396104581919) -->
+    <skip />
     <string name="locked_app_external_display_message" msgid="5483884799685545338">"Jei norite pasiekti programą šiame ekrane, pirmiausia patvirtinkite savo tapatybę kitame įrenginyje"</string>
     <string name="app_lock_edu_dialog_enable_app_lock_title" msgid="283314042336592322">"Pridėti programos užraktą prie „<xliff:g id="APP_NAME">%1$s</xliff:g>“?"</string>
     <string name="app_lock_edu_dialog_description" msgid="8176807243219769518">"Saugumo sumetimais tik jūs galite pasiekti šią programą naudodami atrakinimą piršto atspaudu, PIN kodu ir pagal veidą."</string>
@@ -2130,6 +2139,8 @@
     <string name="app_lock_edu_dialog_info_header" msgid="5876120209204270990">"Su programos užraktu"</string>
     <string name="app_lock_edu_dialog_info_notifications" msgid="1124438392204873305">"Pranešimo turinys bus paslėptas"</string>
     <string name="app_lock_edu_dialog_info_widgets" msgid="8809009414650740872">"Valdikliai ir spartieji klavišai bus pašalinti"</string>
+    <!-- no translation found for app_lock_edu_dialog_info_ai_disclaimer (5623615653703542050) -->
+    <skip />
     <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"Pridėti programos užraktą"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_face" msgid="1348151645996748654">"Atrakinimas pagal veidą"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"Atrakinimas piršto atspaudu"</string>
@@ -2621,8 +2632,7 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"Jei norite siųsti pranešimus per palydovą, nustatykite „Google Messages“ kaip numatytąją pranešimų programą"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"Susirašinėjimo palydoviniais pranešimais paslauga nepasiekiama"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"Jei norite patikrinti, ar susirašinėjimo palydoviniais pranešimais paslauga pasiekiama šioje šalyje ar regione, įjunkite vietovės nustatymus"</string>
-    <!-- no translation found for satellite_indicator (6846063647532086110) -->
-    <skip />
+    <string name="satellite_indicator" msgid="6846063647532086110">"SAT"</string>
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"Atrakinimo piršto atspaudu nustatymas dar kartą"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"<xliff:g id="FINGERPRINT">%s</xliff:g> nebegalima atpažinti."</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> ir <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> nebegalima atpažinti."</string>

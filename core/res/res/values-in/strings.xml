@@ -1499,6 +1499,22 @@
     <string name="usb_contaminant_detected_message" msgid="7346100585390795743">"Port USB otomatis dinonaktifkan. Ketuk untuk mempelajari lebih lanjut."</string>
     <string name="usb_contaminant_not_detected_title" msgid="2651167729563264053">"Boleh menggunakan port USB"</string>
     <string name="usb_contaminant_not_detected_message" msgid="892863190942660462">"Ponsel tidak lagi mendeteksi adanya cairan atau kotoran."</string>
+    <!-- no translation found for usb_authorization_notify_on_screenlock_title (4219670768084927681) -->
+    <skip />
+    <!-- no translation found for usb_authorization_notify_on_screenlock_message (3391658768099414499) -->
+    <skip />
+    <!-- no translation found for usb_authorization_notify_on_screenlock_message_multiple (1722575755931059980) -->
+    <skip />
+    <!-- no translation found for usb_authorization_notify_finish_logging_in_title (3417036506115006412) -->
+    <skip />
+    <!-- no translation found for usb_authorization_notify_finish_logging_in_message (7996802340128367690) -->
+    <skip />
+    <!-- no translation found for usb_authorization_notify_finish_logging_in_title_multiple (3184839817149193434) -->
+    <skip />
+    <!-- no translation found for usb_authorization_notify_finish_logging_in_message_multiple (6745916608298736853) -->
+    <skip />
+    <!-- no translation found for notification_channel_usb_authorization (7567851967410736399) -->
+    <skip />
     <string name="taking_remote_bugreport_notification_title" msgid="1582531382166919850">"Mengambil laporan bug…"</string>
     <string name="share_remote_bugreport_notification_title" msgid="6708897723753334999">"Bagikan laporan bug?"</string>
     <string name="sharing_remote_bugreport_notification_title" msgid="3077385149217638550">"Membagikan laporan bug..."</string>
@@ -1750,7 +1766,7 @@
     <string name="wireless_display_route_description" msgid="8297563323032966831">"Layar nirkabel"</string>
     <string name="media_route_button_content_description" msgid="2299223698196869956">"Transmisi"</string>
     <string name="media_route_chooser_title" msgid="6646594924991269208">"Sambungkan ke perangkat"</string>
-    <string name="media_route_chooser_title_for_remote_display" msgid="3105906508794326446">"Transmisi layar ke perangkat"</string>
+    <string name="media_route_chooser_title_for_remote_display" msgid="3105906508794326446">"Transmisikan layar ke perangkat"</string>
     <string name="media_route_chooser_searching" msgid="6119673534251329535">"Menelusuri perangkat…"</string>
     <string name="media_route_chooser_extended_settings" msgid="2506352159381327741">"Setelan"</string>
     <string name="media_route_controller_disconnect" msgid="7362617572732576959">"Berhenti hubungkan"</string>
@@ -2119,7 +2135,8 @@
     <string name="enable_app_lock_success_toast_message" msgid="3339622779190529987">"<xliff:g id="APP_NAME">%1$s</xliff:g> dikunci"</string>
     <string name="enable_app_lock_failure_toast_message" msgid="1055838896510445566">"Tidak dapat mengunci <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="disable_app_lock_success_toast_message" msgid="70733620589071266">"Kunci Aplikasi dihapus dari <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
-    <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"<xliff:g id="APP_NAME">%1$s</xliff:g> dikunci"</string>
+    <!-- no translation found for locked_app_biometric_prompt_description (5892653396104581919) -->
+    <skip />
     <string name="locked_app_external_display_message" msgid="5483884799685545338">"Untuk mengakses aplikasi di layar ini, verifikasi terlebih dahulu diri Anda di perangkat lain"</string>
     <string name="app_lock_edu_dialog_enable_app_lock_title" msgid="283314042336592322">"Tambahkan kunci aplikasi ke <xliff:g id="APP_NAME">%1$s</xliff:g>?"</string>
     <string name="app_lock_edu_dialog_description" msgid="8176807243219769518">"Demi keamanan Anda, hanya Anda yang dapat mengakses aplikasi ini dengan fitur Buka dengan Sidik Jari dan Buka dengan Wajah atau PIN Anda"</string>
@@ -2128,6 +2145,8 @@
     <string name="app_lock_edu_dialog_info_header" msgid="5876120209204270990">"Dengan kunci aplikasi"</string>
     <string name="app_lock_edu_dialog_info_notifications" msgid="1124438392204873305">"Isi notifikasi akan disembunyikan"</string>
     <string name="app_lock_edu_dialog_info_widgets" msgid="8809009414650740872">"Widget dan pintasan akan dihapus"</string>
+    <!-- no translation found for app_lock_edu_dialog_info_ai_disclaimer (5623615653703542050) -->
+    <skip />
     <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"Tambahkan kunci apl"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_face" msgid="1348151645996748654">"Buka dengan Wajah"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"Buka dengan Sidik Jari"</string>
@@ -2619,8 +2638,7 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"Untuk mengirim pesan melalui satelit, setel Google Message sebagai aplikasi pesan default"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"Fitur pesan satelit tidak tersedia"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"Untuk memeriksa apakah fitur pesan satelit tersedia di negara atau wilayah ini, aktifkan setelan lokasi"</string>
-    <!-- no translation found for satellite_indicator (6846063647532086110) -->
-    <skip />
+    <string name="satellite_indicator" msgid="6846063647532086110">"SAT"</string>
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"Siapkan Buka dengan Sidik Jari lagi"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"<xliff:g id="FINGERPRINT">%s</xliff:g> tidak dapat dikenali lagi."</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> dan <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> tidak dapat dikenali lagi."</string>
