@@ -46,8 +46,7 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"បើក <xliff:g id="APPLICATION">%1$s</xliff:g> ដើម្បីគ្រប់គ្រង <xliff:g id="USB_ACCESSORY">%2$s</xliff:g> មែនទេ?"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"គ្មាន​កម្មវិធី​បាន​ដំឡើង​ដំណើរការ​ជា​មួយ​ឧបករណ៍​យូអេសប៊ី។ ស្វែងយល់​បន្ថែម​អំពី​ឧបករណ៍​នេះ​នៅ <xliff:g id="URL">%1$s</xliff:g>"</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"ឧបករណ៍​យូអេសប៊ី"</string>
-    <!-- no translation found for usb_device_dialog_always_allow_button (7426535342650638393) -->
-    <skip />
+    <string name="usb_device_dialog_always_allow_button" msgid="7426535342650638393">"អនុញ្ញាត​ជានិច្ច"</string>
     <string name="usb_device_dialog_allow_only_this_time_button" msgid="3653881633944232491">"តែពេលនេះ​ប៉ុណ្ណោះ"</string>
     <string name="usb_device_dialog_cancel_button" msgid="9050554648474787233">"បោះបង់"</string>
     <string name="label_view" msgid="6815442985276363364">"មើល"</string>
@@ -59,6 +58,24 @@
     <string name="usb_debugging_allow" msgid="1722643858015321328">"អនុញ្ញាត"</string>
     <string name="usb_debugging_secondary_user_title" msgid="7843050591380107998">"មិនអនុញ្ញាតការកែកំហុសតាម USB ទេ"</string>
     <string name="usb_debugging_secondary_user_message" msgid="1888835696965417845">"អ្នកប្រើ​ប្រាស់ដែលបច្ចុប្បន្ន​បានចូលគណនី​នៅលើឧបករណ៍នេះ​មិនអាចបើកការ​ជួសជុលតាម USB បានទេ។ ដើម្បីប្រើប្រាស់មុខងារនេះ សូមប្ដូរទៅអ្នកប្រើប្រាស់​ដែលជាអ្នកគ្រប់គ្រង។"</string>
+    <!-- no translation found for usb_authorization_title (3332796080113535331) -->
+    <skip />
+    <!-- no translation found for usb_authorization_title_multi (1966181648363433366) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message (1107567912094941105) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message_multi (4867596373922923637) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message_untrusted (4407977362840907960) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message_multi_untrusted (85055448435495205) -->
+    <skip />
+    <!-- no translation found for usb_authorization_unknown_device (1107933381080189970) -->
+    <skip />
+    <!-- no translation found for usb_authorization_allow (5517449937301874244) -->
+    <skip />
+    <!-- no translation found for usb_authorization_deny (8156333001876101456) -->
+    <skip />
     <string name="hdmi_cec_set_menu_language_title" msgid="1259765420091503742">"តើអ្នកចង់ប្ដូរ​ភាសាប្រព័ន្ធ​ទៅភាសា​<xliff:g id="LANGUAGE">%1$s</xliff:g>​ដែរទេ?"</string>
     <string name="hdmi_cec_set_menu_language_description" msgid="8176716678074126619">"ការប្ដូរភាសា​ប្រព័ន្ធដែលបានស្នើសុំ​ដោយ​ឧបករណ៍ផ្សេងទៀត"</string>
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"​ប្ដូរ​ភាសា"</string>
@@ -104,6 +121,10 @@
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"ថត​ច្រើនទៀត"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"ច្រានចោល​រូបថត​អេក្រង់"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"ច្រានចោល​សារ​កម្រងព័ត៌មានការងារ"</string>
+    <!-- no translation found for screenshot_open_in_folder_label (7030308792263959983) -->
+    <skip />
+    <!-- no translation found for screenshot_open_in_folder_description (2181459418652236210) -->
+    <skip />
     <string name="screenshot_preview_description" msgid="7606510140714080474">"ការមើល​រូបថត​អេក្រង់​សាកល្បង"</string>
     <string name="screenshot_top_boundary_pct" msgid="2520148599096479332">"បន្ទាត់បែងចែក​ខាងលើ <xliff:g id="PERCENT">%1$d</xliff:g> ភាគរយ"</string>
     <string name="screenshot_bottom_boundary_pct" msgid="3880821519814946478">"បន្ទាត់បែងចែក​ខាងក្រោម <xliff:g id="PERCENT">%1$d</xliff:g> ភាគរយ"</string>
@@ -203,32 +224,19 @@
     <string name="screen_share_a11y_stopped_sharing_app" msgid="6928492106881188404">"បានឈប់ចែករំលែកកម្មវិធី៖ <xliff:g id="APP_NAME">%1$s</xliff:g>។ មិនបានបង្ហាញអេក្រង់ទៅនរណាម្នាក់ទេ។"</string>
     <string name="screen_share_a11y_stopped_sharing_tab" msgid="5929089339684027985">"បានឈប់ចែករំលែកផ្ទាំង៖ <xliff:g id="TAB_TITLE">%1$s</xliff:g>។ មិនបានបង្ហាញអេក្រង់ទៅនរណាម្នាក់ទេ។"</string>
     <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"បានឈប់បង្ហាញអេក្រង់៖ <xliff:g id="DISPLAY_NAME">%1$s</xliff:g>។ មិនបានបង្ហាញអេក្រង់ទៅនរណាម្នាក់ទេ។"</string>
-    <!-- no translation found for screen_share_a11y_close_button (8017115316741874857) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_button_unselected (5363622532939787310) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_button_selected (4304681826101817704) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_app_button_unselected (4539549394242556282) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_app_button_selected (6049272377472922732) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_fullscreen_button_unselected (2492516552817892989) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_fullscreen_button_selected (6706822615908429473) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_share_button_off (2004866083045967602) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_share_button_on (1311279200212158833) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_item_unselected (7479321583507874795) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_item_selected (2538971376128528640) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_audio_on (7240792268381508075) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_audio_off (8545238601433952854) -->
-    <skip />
+    <string name="screen_share_a11y_close_button" msgid="8017115316741874857">"ប៊ូតុងបិទ។ ចុច enter ដើម្បីបិទប្រអប់មុនពេលបង្ហាញ។"</string>
+    <string name="screen_share_a11y_tab_button_unselected" msgid="5363622532939787310">"ប៊ូតុងបង្ហាញផ្ទាំង។ មិនបាន​ជ្រើសរើស។ ចុច enter ដើម្បីបង្ហាញផ្ទាំង។"</string>
+    <string name="screen_share_a11y_tab_button_selected" msgid="4304681826101817704">"កំពុងបង្ហាញផ្ទាំង។ ចូលទៅមើលផ្ទាំងដែលមាន។"</string>
+    <string name="screen_share_a11y_app_button_unselected" msgid="4539549394242556282">"ប៊ូតុងបង្ហាញកម្មវិធី។ មិនបាន​ជ្រើសរើស។ ចុច enter ដើម្បីបង្ហាញកម្មវិធី។"</string>
+    <string name="screen_share_a11y_app_button_selected" msgid="6049272377472922732">"កំពុងបង្ហាញកម្មវិធី។ ចូលទៅមើលកម្មវិធីដែលមាន។"</string>
+    <string name="screen_share_a11y_fullscreen_button_unselected" msgid="2492516552817892989">"ប៊ូតុង​អេក្រង់​ពេញ។ មិនបាន​ជ្រើសរើស។ ចុច enter ដើម្បីបង្ហាញ​អេក្រង់​ពេញ។"</string>
+    <string name="screen_share_a11y_fullscreen_button_selected" msgid="6706822615908429473">"កំពុងបង្ហាញ​អេក្រង់​ពេញ។ ចូលទៅមើលផ្ទាំងអេក្រង់ដែលមាន។"</string>
+    <string name="screen_share_a11y_share_button_off" msgid="2004866083045967602">"ប៊ូតុងបង្ហាញ។ បិទ។ ជ្រើសរើសកម្មវិធី ផ្ទាំង ឬផ្ទាំងអេក្រង់ដើម្បីបង្ហាញ។"</string>
+    <string name="screen_share_a11y_share_button_on" msgid="1311279200212158833">"ការបង្ហាញត្រូវបានបើក។ បាន​ជ្រើសរើស <xliff:g id="ITEM">%1$s</xliff:g>។ ចុច enter ដើម្បីចាប់ផ្ដើមបង្ហាញ។"</string>
+    <string name="screen_share_a11y_item_unselected" msgid="7479321583507874795">"<xliff:g id="ITEM_NAME">%1$s</xliff:g>។ មិនបាន​ជ្រើសរើស។ ចុច enter ដើម្បីជ្រើសរើស។"</string>
+    <string name="screen_share_a11y_item_selected" msgid="2538971376128528640">"បាន​ជ្រើសរើស <xliff:g id="ITEM_NAME">%1$s</xliff:g>។ ចូលទៅកាន់ប៊ូតុងបង្ហាញ ដើម្បីចាប់ផ្ដើមបង្ហាញ។"</string>
+    <string name="screen_share_a11y_tab_audio_on" msgid="7240792268381508075">"សំឡេងផ្ទាំងត្រូវបានបើក"</string>
+    <string name="screen_share_a11y_tab_audio_off" msgid="8545238601433952854">"សំឡេងផ្ទាំងត្រូវបានបិទ"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"ថតរូបអេក្រង់វិនដូ"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"ថត​វិនដូ"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"ថតរូបអេក្រង់នៃតំបន់ដែលបានជ្រើសរើស"</string>
@@ -239,7 +247,8 @@
     <string name="screen_capture_post_recording_shelf_share_button_a11y" msgid="2907313384921655711">"ចែករំលែកវីដេអូអេក្រង់"</string>
     <string name="screen_capture_post_recording_shelf_folder_button_a11y" msgid="4217075254383938093">"បើកវីដេអូអេក្រង់នៅក្នុងកម្មវិធីគ្រប់គ្រងឯកសារ"</string>
     <string name="screen_capture_post_recording_shelf_delete_button_a11y" msgid="8519897681775354217">"លុបវីដេអូអេក្រង់"</string>
-    <string name="screen_capture_post_recording_shelf_thumbnail_a11y" msgid="8342622016203434332">"បើកវីដេអូអេក្រង់នៅក្នុងឧបករណ៍មើលវីដេអូ"</string>
+    <!-- no translation found for screen_capture_post_recording_shelf_thumbnail_a11y (4764732838982357845) -->
+    <skip />
     <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"បង្ហាញការចុច និងគ្រាប់ចុច"</string>
     <string name="screen_capture_device_audio" msgid="1537290197773737349">"សំឡេង​ឧបករណ៍"</string>
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"មីក្រូហ្វូន"</string>
@@ -432,8 +441,7 @@
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"ការ​ជូនដំណឹង"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"ជំនួយការ"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"ក្ដារចុច"</string>
-    <!-- no translation found for input_method_switcher_title_large_screen (8490419050265486980) -->
-    <skip />
+    <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"ក្ដារចុច"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{មានការជូនដំណឹង # ទៀតនៅខាងក្នុង។}other{មាន​ការ​ជូនដំណឹង # ទៀត​នៅ​ខាង​ក្នុង។}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"អេក្រង់​ជាប់​សោ​ក្នុង​ទិស​ផ្ដេក។"</string>
@@ -1873,18 +1881,11 @@
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"ថ្មខាងឆ្វេង %1$s"</string>
     <string name="accessibility_hearing_device_right_battery_level" msgid="7598843215226414563">"ថ្មខាងស្ដាំ %1$s"</string>
     <string name="accessibility_hearing_device_notification_channel_name" msgid="7365020777623709400">"ស្ថានភាពឧបករណ៍ជំនួយការស្ដាប់"</string>
-    <!-- no translation found for more_options_edit (6337988646114341329) -->
-    <skip />
-    <!-- no translation found for more_options_move (2226159413422979066) -->
-    <skip />
-    <!-- no translation found for more_options_remove_all (194855000797536179) -->
-    <skip />
-    <!-- no translation found for floating_menu_more_options_label (7859269790323628599) -->
-    <skip />
-    <!-- no translation found for dream_setup_title (7996530071414508238) -->
-    <skip />
-    <!-- no translation found for dream_setup_button_not_now (8028385323668620805) -->
-    <skip />
-    <!-- no translation found for dream_setup_button_setup (4755361016017554826) -->
-    <skip />
+    <string name="more_options_edit" msgid="6337988646114341329">"កែ"</string>
+    <string name="more_options_move" msgid="2226159413422979066">"ផ្លាស់ទី"</string>
+    <string name="more_options_remove_all" msgid="194855000797536179">"ដកចេញទាំងអស់"</string>
+    <string name="floating_menu_more_options_label" msgid="7859269790323628599">"ជម្រើស​ច្រើនទៀត"</string>
+    <string name="dream_setup_title" msgid="7996530071414508238">"រៀបចំធាតុរក្សាអេក្រង់"</string>
+    <string name="dream_setup_button_not_now" msgid="8028385323668620805">"កុំទាន់"</string>
+    <string name="dream_setup_button_setup" msgid="4755361016017554826">"រៀបចំ"</string>
 </resources>

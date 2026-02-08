@@ -46,8 +46,7 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"<xliff:g id="APPLICATION">%1$s</xliff:g> 앱을 열어 <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>을(를) 처리하시겠습니까?"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"이 USB와 호환되는 설치 앱이 없습니다. <xliff:g id="URL">%1$s</xliff:g>에서 세부정보를 참조하세요."</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"USB 액세서리"</string>
-    <!-- no translation found for usb_device_dialog_always_allow_button (7426535342650638393) -->
-    <skip />
+    <string name="usb_device_dialog_always_allow_button" msgid="7426535342650638393">"항상 허용"</string>
     <string name="usb_device_dialog_allow_only_this_time_button" msgid="3653881633944232491">"이번만 허용"</string>
     <string name="usb_device_dialog_cancel_button" msgid="9050554648474787233">"취소"</string>
     <string name="label_view" msgid="6815442985276363364">"보기"</string>
@@ -59,6 +58,24 @@
     <string name="usb_debugging_allow" msgid="1722643858015321328">"허용"</string>
     <string name="usb_debugging_secondary_user_title" msgid="7843050591380107998">"USB 디버깅이 허용되지 않음"</string>
     <string name="usb_debugging_secondary_user_message" msgid="1888835696965417845">"현재 이 기기에 로그인한 사용자는 USB 디버깅을 사용 설정할 수 없습니다. 이 기능을 사용하려면 관리자로 전환하세요."</string>
+    <!-- no translation found for usb_authorization_title (3332796080113535331) -->
+    <skip />
+    <!-- no translation found for usb_authorization_title_multi (1966181648363433366) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message (1107567912094941105) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message_multi (4867596373922923637) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message_untrusted (4407977362840907960) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message_multi_untrusted (85055448435495205) -->
+    <skip />
+    <!-- no translation found for usb_authorization_unknown_device (1107933381080189970) -->
+    <skip />
+    <!-- no translation found for usb_authorization_allow (5517449937301874244) -->
+    <skip />
+    <!-- no translation found for usb_authorization_deny (8156333001876101456) -->
+    <skip />
     <string name="hdmi_cec_set_menu_language_title" msgid="1259765420091503742">"시스템 언어를 <xliff:g id="LANGUAGE">%1$s</xliff:g>로 변경하시겠습니까?"</string>
     <string name="hdmi_cec_set_menu_language_description" msgid="8176716678074126619">"다른 기기에서 시스템 언어 변경을 요청함"</string>
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"언어 변경"</string>
@@ -104,6 +121,10 @@
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"더 캡처하기"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"스크린샷 닫기"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"직장 프로필 메시지 닫기"</string>
+    <!-- no translation found for screenshot_open_in_folder_label (7030308792263959983) -->
+    <skip />
+    <!-- no translation found for screenshot_open_in_folder_description (2181459418652236210) -->
+    <skip />
     <string name="screenshot_preview_description" msgid="7606510140714080474">"스크린샷 미리보기"</string>
     <string name="screenshot_top_boundary_pct" msgid="2520148599096479332">"상단 가장자리 <xliff:g id="PERCENT">%1$d</xliff:g>%%"</string>
     <string name="screenshot_bottom_boundary_pct" msgid="3880821519814946478">"하단 가장자리 <xliff:g id="PERCENT">%1$d</xliff:g>%%"</string>
@@ -203,32 +224,19 @@
     <string name="screen_share_a11y_stopped_sharing_app" msgid="6928492106881188404">"<xliff:g id="APP_NAME">%1$s</xliff:g> 앱 공유가 중지되었습니다. 화면이 누구와도 공유되지 않습니다."</string>
     <string name="screen_share_a11y_stopped_sharing_tab" msgid="5929089339684027985">"<xliff:g id="TAB_TITLE">%1$s</xliff:g> 탭 공유가 중지되었습니다. 화면이 누구와도 공유되지 않습니다."</string>
     <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"<xliff:g id="DISPLAY_NAME">%1$s</xliff:g> 디스플레이 공유가 중지되었습니다. 화면이 누구와도 공유되지 않습니다."</string>
-    <!-- no translation found for screen_share_a11y_close_button (8017115316741874857) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_button_unselected (5363622532939787310) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_button_selected (4304681826101817704) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_app_button_unselected (4539549394242556282) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_app_button_selected (6049272377472922732) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_fullscreen_button_unselected (2492516552817892989) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_fullscreen_button_selected (6706822615908429473) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_share_button_off (2004866083045967602) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_share_button_on (1311279200212158833) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_item_unselected (7479321583507874795) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_item_selected (2538971376128528640) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_audio_on (7240792268381508075) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_audio_off (8545238601433952854) -->
-    <skip />
+    <string name="screen_share_a11y_close_button" msgid="8017115316741874857">"닫기 버튼입니다. 공유 전 대화상자를 닫으려면 Enter 키를 누르세요."</string>
+    <string name="screen_share_a11y_tab_button_unselected" msgid="5363622532939787310">"탭 공유 버튼입니다. 선택되지 않았습니다. 탭을 공유하려면 Enter 키를 누르세요."</string>
+    <string name="screen_share_a11y_tab_button_selected" msgid="4304681826101817704">"공유 탭입니다. 사용 가능한 탭을 확인하려면 이동하세요."</string>
+    <string name="screen_share_a11y_app_button_unselected" msgid="4539549394242556282">"앱 공유 버튼입니다. 선택되지 않았습니다. 앱을 공유하려면 Enter 키를 누르세요."</string>
+    <string name="screen_share_a11y_app_button_selected" msgid="6049272377472922732">"앱 공유 중입니다. 사용 가능한 앱을 확인하려면 이동하세요."</string>
+    <string name="screen_share_a11y_fullscreen_button_unselected" msgid="2492516552817892989">"전체 화면 버튼입니다. 선택되지 않았습니다. 전체 화면을 공유하려면 Enter 키를 누르세요."</string>
+    <string name="screen_share_a11y_fullscreen_button_selected" msgid="6706822615908429473">"전체 화면을 공유 중입니다. 사용 가능한 디스플레이를 확인하려면 이동하세요."</string>
+    <string name="screen_share_a11y_share_button_off" msgid="2004866083045967602">"공유 버튼입니다. 사용 중지되어 있습니다. 공유할 앱, 탭 또는 디스플레이를 선택하세요."</string>
+    <string name="screen_share_a11y_share_button_on" msgid="1311279200212158833">"공유가 사용 설정되어 있습니다. <xliff:g id="ITEM">%1$s</xliff:g> 항목이 선택되었습니다. 공유를 시작하려면 Enter 키를 누르세요."</string>
+    <string name="screen_share_a11y_item_unselected" msgid="7479321583507874795">"<xliff:g id="ITEM_NAME">%1$s</xliff:g> 항목입니다. 선택되지 않았습니다. 선택하려면 Enter 키를 누르세요."</string>
+    <string name="screen_share_a11y_item_selected" msgid="2538971376128528640">"<xliff:g id="ITEM_NAME">%1$s</xliff:g> 항목이 선택되었습니다. 공유를 시작하려면 공유 버튼으로 이동하세요."</string>
+    <string name="screen_share_a11y_tab_audio_on" msgid="7240792268381508075">"탭 오디오 사용 설정"</string>
+    <string name="screen_share_a11y_tab_audio_off" msgid="8545238601433952854">"탭 오디오 사용 중지"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"창 스크린샷 찍기"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"창 녹화"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"선택한 영역 스크린샷 찍기"</string>
@@ -239,7 +247,8 @@
     <string name="screen_capture_post_recording_shelf_share_button_a11y" msgid="2907313384921655711">"화면 녹화 공유하기"</string>
     <string name="screen_capture_post_recording_shelf_folder_button_a11y" msgid="4217075254383938093">"파일 관리자에서 화면 녹화 열기"</string>
     <string name="screen_capture_post_recording_shelf_delete_button_a11y" msgid="8519897681775354217">"화면 녹화 삭제하기"</string>
-    <string name="screen_capture_post_recording_shelf_thumbnail_a11y" msgid="8342622016203434332">"동영상 뷰어에서 화면 녹화 열기"</string>
+    <!-- no translation found for screen_capture_post_recording_shelf_thumbnail_a11y (4764732838982357845) -->
+    <skip />
     <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"클릭 및 키 표시"</string>
     <string name="screen_capture_device_audio" msgid="1537290197773737349">"기기 오디오"</string>
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"마이크"</string>
@@ -432,8 +441,7 @@
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"알림"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"어시스턴트"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"키보드"</string>
-    <!-- no translation found for input_method_switcher_title_large_screen (8490419050265486980) -->
-    <skip />
+    <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"키보드"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"<xliff:g id="NUMBER">%s</xliff:g>개 더보기"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{그룹에 알림이 #개 더 있습니다.}other{그룹에 알림이 #개 더 있습니다.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"화면이 가로 방향으로 잠겨 있습니다."</string>
@@ -1873,18 +1881,11 @@
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"왼쪽 배터리 %1$s"</string>
     <string name="accessibility_hearing_device_right_battery_level" msgid="7598843215226414563">"오른쪽 배터리 %1$s"</string>
     <string name="accessibility_hearing_device_notification_channel_name" msgid="7365020777623709400">"청각 보조 기기 상태"</string>
-    <!-- no translation found for more_options_edit (6337988646114341329) -->
-    <skip />
-    <!-- no translation found for more_options_move (2226159413422979066) -->
-    <skip />
-    <!-- no translation found for more_options_remove_all (194855000797536179) -->
-    <skip />
-    <!-- no translation found for floating_menu_more_options_label (7859269790323628599) -->
-    <skip />
-    <!-- no translation found for dream_setup_title (7996530071414508238) -->
-    <skip />
-    <!-- no translation found for dream_setup_button_not_now (8028385323668620805) -->
-    <skip />
-    <!-- no translation found for dream_setup_button_setup (4755361016017554826) -->
-    <skip />
+    <string name="more_options_edit" msgid="6337988646114341329">"수정"</string>
+    <string name="more_options_move" msgid="2226159413422979066">"이동"</string>
+    <string name="more_options_remove_all" msgid="194855000797536179">"전체 삭제"</string>
+    <string name="floating_menu_more_options_label" msgid="7859269790323628599">"옵션 더보기"</string>
+    <string name="dream_setup_title" msgid="7996530071414508238">"화면 보호기 설정"</string>
+    <string name="dream_setup_button_not_now" msgid="8028385323668620805">"나중에"</string>
+    <string name="dream_setup_button_setup" msgid="4755361016017554826">"설정"</string>
 </resources>

@@ -46,8 +46,7 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"Quer abrir a app <xliff:g id="APPLICATION">%1$s</xliff:g> para controlar o acessório <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>?"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"Nenhuma das aplicações instaladas funciona com o acessório USB. Saiba mais acerca do acessório em <xliff:g id="URL">%1$s</xliff:g>"</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"Acessório USB"</string>
-    <!-- no translation found for usb_device_dialog_always_allow_button (7426535342650638393) -->
-    <skip />
+    <string name="usb_device_dialog_always_allow_button" msgid="7426535342650638393">"Permitir sempre"</string>
     <string name="usb_device_dialog_allow_only_this_time_button" msgid="3653881633944232491">"Apenas desta vez"</string>
     <string name="usb_device_dialog_cancel_button" msgid="9050554648474787233">"Cancelar"</string>
     <string name="label_view" msgid="6815442985276363364">"Ver"</string>
@@ -59,6 +58,15 @@
     <string name="usb_debugging_allow" msgid="1722643858015321328">"Permitir"</string>
     <string name="usb_debugging_secondary_user_title" msgid="7843050591380107998">"Depuração USB não permitida"</string>
     <string name="usb_debugging_secondary_user_message" msgid="1888835696965417845">"O utilizador com sessão iniciada atualmente neste dispositivo não pode ativar a depuração USB. Para usar esta funcionalidade, mude para um utilizador administrador."</string>
+    <string name="usb_authorization_title" msgid="3332796080113535331">"Permitir a ligação do dispositivo USB?"</string>
+    <string name="usb_authorization_title_multi" msgid="1966181648363433366">"Permitir a ligação de dispositivos USB?"</string>
+    <string name="usb_authorization_message" msgid="1107567912094941105">"O seguinte dispositivo foi ligado ao seu <xliff:g id="NAME">%1$s</xliff:g>:"</string>
+    <string name="usb_authorization_message_multi" msgid="4867596373922923637">"Os seguintes dispositivos foram ligados ao seu <xliff:g id="NAME">%1$s</xliff:g>:"</string>
+    <string name="usb_authorization_message_untrusted" msgid="4407977362840907960">"O seguinte dispositivo foi ligado ao seu <xliff:g id="NAME">%1$s</xliff:g>. Este dispositivo só é fidedigno depois de iniciar sessão."</string>
+    <string name="usb_authorization_message_multi_untrusted" msgid="85055448435495205">"Os seguintes dispositivos foram ligados ao seu <xliff:g id="NAME">%1$s</xliff:g>. Estes dispositivos só são fidedignos depois de iniciar sessão."</string>
+    <string name="usb_authorization_unknown_device" msgid="1107933381080189970">"Produto desconhecido (<xliff:g id="VENDOR_ID">%1$04X</xliff:g>:<xliff:g id="PRODUCT_ID">%2$04X</xliff:g>)"</string>
+    <string name="usb_authorization_allow" msgid="5517449937301874244">"Permitir"</string>
+    <string name="usb_authorization_deny" msgid="8156333001876101456">"Não permitir"</string>
     <string name="hdmi_cec_set_menu_language_title" msgid="1259765420091503742">"Quer alterar o idioma do sistema para <xliff:g id="LANGUAGE">%1$s</xliff:g>?"</string>
     <string name="hdmi_cec_set_menu_language_description" msgid="8176716678074126619">"Alteração do idioma do sistema solicitada por outro dispositivo"</string>
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"Alterar idioma"</string>
@@ -104,6 +112,10 @@
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"Capturar mais"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"Ignorar captura de ecrã"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"Ignore a mensagem do perfil de trabalho"</string>
+    <!-- no translation found for screenshot_open_in_folder_label (7030308792263959983) -->
+    <skip />
+    <!-- no translation found for screenshot_open_in_folder_description (2181459418652236210) -->
+    <skip />
     <string name="screenshot_preview_description" msgid="7606510140714080474">"Pré-visualização da captura de ecrã"</string>
     <string name="screenshot_top_boundary_pct" msgid="2520148599096479332">"Limite superior de <xliff:g id="PERCENT">%1$d</xliff:g> por cento"</string>
     <string name="screenshot_bottom_boundary_pct" msgid="3880821519814946478">"Limite inferior de <xliff:g id="PERCENT">%1$d</xliff:g> por cento"</string>
@@ -203,32 +215,19 @@
     <string name="screen_share_a11y_stopped_sharing_app" msgid="6928492106881188404">"Parou de partilhar a app: <xliff:g id="APP_NAME">%1$s</xliff:g>. O ecrã não é partilhado com ninguém."</string>
     <string name="screen_share_a11y_stopped_sharing_tab" msgid="5929089339684027985">"Parou de partilhar o separador: <xliff:g id="TAB_TITLE">%1$s</xliff:g>. O ecrã não é partilhado com ninguém."</string>
     <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"Parou de partilhar o ecrã: <xliff:g id="DISPLAY_NAME">%1$s</xliff:g>. O ecrã não é partilhado com ninguém."</string>
-    <!-- no translation found for screen_share_a11y_close_button (8017115316741874857) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_button_unselected (5363622532939787310) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_button_selected (4304681826101817704) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_app_button_unselected (4539549394242556282) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_app_button_selected (6049272377472922732) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_fullscreen_button_unselected (2492516552817892989) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_fullscreen_button_selected (6706822615908429473) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_share_button_off (2004866083045967602) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_share_button_on (1311279200212158833) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_item_unselected (7479321583507874795) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_item_selected (2538971376128528640) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_audio_on (7240792268381508075) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_audio_off (8545238601433952854) -->
-    <skip />
+    <string name="screen_share_a11y_close_button" msgid="8017115316741874857">"Botão Fechar. Prima Enter para fechar a caixa de diálogo de pré-partilha."</string>
+    <string name="screen_share_a11y_tab_button_unselected" msgid="5363622532939787310">"Botão de partilha de separadores. Não selecionado. Prima Enter para partilhar o separador."</string>
+    <string name="screen_share_a11y_tab_button_selected" msgid="4304681826101817704">"A partilhar o separador. Navegue para ver os separadores disponíveis."</string>
+    <string name="screen_share_a11y_app_button_unselected" msgid="4539549394242556282">"Botão de partilha de apps. Não selecionado. Prima Enter para partilhar a app."</string>
+    <string name="screen_share_a11y_app_button_selected" msgid="6049272377472922732">"A partilhar a app. Navegue para ver as apps disponíveis."</string>
+    <string name="screen_share_a11y_fullscreen_button_unselected" msgid="2492516552817892989">"Botão de ecrã inteiro. Não selecionado. Prima Enter para partilhar o ecrã inteiro."</string>
+    <string name="screen_share_a11y_fullscreen_button_selected" msgid="6706822615908429473">"A partilhar o ecrã inteiro. Navegue para ver os ecrãs disponíveis."</string>
+    <string name="screen_share_a11y_share_button_off" msgid="2004866083045967602">"Botão Partilhar. Desativado. Selecione a app, o separador ou o ecrã a partilhar."</string>
+    <string name="screen_share_a11y_share_button_on" msgid="1311279200212158833">"Partilha ativada. Item <xliff:g id="ITEM">%1$s</xliff:g> selecionado. Prima Enter para começar a partilhar."</string>
+    <string name="screen_share_a11y_item_unselected" msgid="7479321583507874795">"Item <xliff:g id="ITEM_NAME">%1$s</xliff:g>. Não selecionado. Prima Enter para selecionar."</string>
+    <string name="screen_share_a11y_item_selected" msgid="2538971376128528640">"Item <xliff:g id="ITEM_NAME">%1$s</xliff:g> selecionado. Navegue para o botão de partilha para começar a partilhar."</string>
+    <string name="screen_share_a11y_tab_audio_on" msgid="7240792268381508075">"Áudio do separador ativado"</string>
+    <string name="screen_share_a11y_tab_audio_off" msgid="8545238601433952854">"Áudio do separador desativado"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Fazer captura de ecrã da janela"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Gravar janela"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Fazer captura de ecrã da área selecionada"</string>
@@ -239,7 +238,8 @@
     <string name="screen_capture_post_recording_shelf_share_button_a11y" msgid="2907313384921655711">"Partilhar gravação de ecrã"</string>
     <string name="screen_capture_post_recording_shelf_folder_button_a11y" msgid="4217075254383938093">"Abrir gravação de ecrã no gestor de ficheiros"</string>
     <string name="screen_capture_post_recording_shelf_delete_button_a11y" msgid="8519897681775354217">"Eliminar gravação de ecrã"</string>
-    <string name="screen_capture_post_recording_shelf_thumbnail_a11y" msgid="8342622016203434332">"Abra a gravação de ecrã no visualizador de vídeos"</string>
+    <!-- no translation found for screen_capture_post_recording_shelf_thumbnail_a11y (4764732838982357845) -->
+    <skip />
     <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"Mostrar cliques e teclas"</string>
     <string name="screen_capture_device_audio" msgid="1537290197773737349">"Áudio do dispositivo"</string>
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Microfone"</string>
@@ -432,8 +432,7 @@
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Notificações"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistente"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"Teclado"</string>
-    <!-- no translation found for input_method_switcher_title_large_screen (8490419050265486980) -->
-    <skip />
+    <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"Teclado"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{Mais # notificação no grupo.}many{Mais # notificações no grupo.}other{Mais # notificações no grupo.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"O ecrã está bloqueado na orientação horizontal."</string>
@@ -1873,18 +1872,11 @@
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"Bateria do E: %1$s"</string>
     <string name="accessibility_hearing_device_right_battery_level" msgid="7598843215226414563">"Bateria do D: %1$s"</string>
     <string name="accessibility_hearing_device_notification_channel_name" msgid="7365020777623709400">"Estado do dispositivo auditivo"</string>
-    <!-- no translation found for more_options_edit (6337988646114341329) -->
-    <skip />
-    <!-- no translation found for more_options_move (2226159413422979066) -->
-    <skip />
-    <!-- no translation found for more_options_remove_all (194855000797536179) -->
-    <skip />
-    <!-- no translation found for floating_menu_more_options_label (7859269790323628599) -->
-    <skip />
-    <!-- no translation found for dream_setup_title (7996530071414508238) -->
-    <skip />
-    <!-- no translation found for dream_setup_button_not_now (8028385323668620805) -->
-    <skip />
-    <!-- no translation found for dream_setup_button_setup (4755361016017554826) -->
-    <skip />
+    <string name="more_options_edit" msgid="6337988646114341329">"Editar"</string>
+    <string name="more_options_move" msgid="2226159413422979066">"Mover"</string>
+    <string name="more_options_remove_all" msgid="194855000797536179">"Remover tudo"</string>
+    <string name="floating_menu_more_options_label" msgid="7859269790323628599">"Mais opções"</string>
+    <string name="dream_setup_title" msgid="7996530071414508238">"Configure a proteção de ecrã"</string>
+    <string name="dream_setup_button_not_now" msgid="8028385323668620805">"Agora não"</string>
+    <string name="dream_setup_button_setup" msgid="4755361016017554826">"Configurar"</string>
 </resources>

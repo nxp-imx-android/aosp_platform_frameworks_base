@@ -46,8 +46,7 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"Buka <xliff:g id="APPLICATION">%1$s</xliff:g> untuk menangani <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>?"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"Tidak ada apl terpasang yang bekerja dengan aksesori USB ini. Pelajari lebih lanjut tentang aksesori ini di <xliff:g id="URL">%1$s</xliff:g>"</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"Aksesori USB"</string>
-    <!-- no translation found for usb_device_dialog_always_allow_button (7426535342650638393) -->
-    <skip />
+    <string name="usb_device_dialog_always_allow_button" msgid="7426535342650638393">"Selalu izinkan"</string>
     <string name="usb_device_dialog_allow_only_this_time_button" msgid="3653881633944232491">"Hanya kali ini"</string>
     <string name="usb_device_dialog_cancel_button" msgid="9050554648474787233">"Batal"</string>
     <string name="label_view" msgid="6815442985276363364">"Lihat"</string>
@@ -59,6 +58,24 @@
     <string name="usb_debugging_allow" msgid="1722643858015321328">"Izinkan"</string>
     <string name="usb_debugging_secondary_user_title" msgid="7843050591380107998">"Debug USB tidak diizinkan"</string>
     <string name="usb_debugging_secondary_user_message" msgid="1888835696965417845">"Pengguna yang sedang login ke perangkat ini tidak dapat mengaktifkan proses debug USB. Beralihlah ke pengguna admin untuk menggunakan fitur ini."</string>
+    <!-- no translation found for usb_authorization_title (3332796080113535331) -->
+    <skip />
+    <!-- no translation found for usb_authorization_title_multi (1966181648363433366) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message (1107567912094941105) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message_multi (4867596373922923637) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message_untrusted (4407977362840907960) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message_multi_untrusted (85055448435495205) -->
+    <skip />
+    <!-- no translation found for usb_authorization_unknown_device (1107933381080189970) -->
+    <skip />
+    <!-- no translation found for usb_authorization_allow (5517449937301874244) -->
+    <skip />
+    <!-- no translation found for usb_authorization_deny (8156333001876101456) -->
+    <skip />
     <string name="hdmi_cec_set_menu_language_title" msgid="1259765420091503742">"Ingin mengubah bahasa sistem menjadi <xliff:g id="LANGUAGE">%1$s</xliff:g>?"</string>
     <string name="hdmi_cec_set_menu_language_description" msgid="8176716678074126619">"Perubahan bahasa sistem diminta oleh perangkat lain"</string>
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"Ubah bahasa"</string>
@@ -104,6 +121,10 @@
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"Ambil screenshot lagi"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"Menutup screenshot"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"Tutup pesan profil kerja"</string>
+    <!-- no translation found for screenshot_open_in_folder_label (7030308792263959983) -->
+    <skip />
+    <!-- no translation found for screenshot_open_in_folder_description (2181459418652236210) -->
+    <skip />
     <string name="screenshot_preview_description" msgid="7606510140714080474">"Pratinjau screenshot"</string>
     <string name="screenshot_top_boundary_pct" msgid="2520148599096479332">"Batas atas <xliff:g id="PERCENT">%1$d</xliff:g>%%"</string>
     <string name="screenshot_bottom_boundary_pct" msgid="3880821519814946478">"Batas bawah <xliff:g id="PERCENT">%1$d</xliff:g>%%"</string>
@@ -203,32 +224,19 @@
     <string name="screen_share_a11y_stopped_sharing_app" msgid="6928492106881188404">"Berhenti berbagi aplikasi: <xliff:g id="APP_NAME">%1$s</xliff:g>. Layar tidak dibagikan kepada siapa pun."</string>
     <string name="screen_share_a11y_stopped_sharing_tab" msgid="5929089339684027985">"Berhenti berbagi tab: <xliff:g id="TAB_TITLE">%1$s</xliff:g>. Layar tidak dibagikan kepada siapa pun."</string>
     <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"Berhenti berbagi layar: <xliff:g id="DISPLAY_NAME">%1$s</xliff:g>. Layar tidak dibagikan kepada siapa pun."</string>
-    <!-- no translation found for screen_share_a11y_close_button (8017115316741874857) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_button_unselected (5363622532939787310) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_button_selected (4304681826101817704) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_app_button_unselected (4539549394242556282) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_app_button_selected (6049272377472922732) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_fullscreen_button_unselected (2492516552817892989) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_fullscreen_button_selected (6706822615908429473) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_share_button_off (2004866083045967602) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_share_button_on (1311279200212158833) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_item_unselected (7479321583507874795) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_item_selected (2538971376128528640) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_audio_on (7240792268381508075) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_audio_off (8545238601433952854) -->
-    <skip />
+    <string name="screen_share_a11y_close_button" msgid="8017115316741874857">"Tombol tutup. Tekan Enter untuk menutup dialog pra-berbagi."</string>
+    <string name="screen_share_a11y_tab_button_unselected" msgid="5363622532939787310">"Tombol berbagi tab. Tidak dipilih. Tekan Enter untuk membagikan tab."</string>
+    <string name="screen_share_a11y_tab_button_selected" msgid="4304681826101817704">"Berbagi tab. Buka untuk melihat tab yang tersedia."</string>
+    <string name="screen_share_a11y_app_button_unselected" msgid="4539549394242556282">"Tombol berbagi aplikasi. Tidak dipilih. Tekan Enter untuk membagikan aplikasi."</string>
+    <string name="screen_share_a11y_app_button_selected" msgid="6049272377472922732">"Membagikan aplikasi. Buka untuk melihat aplikasi yang tersedia."</string>
+    <string name="screen_share_a11y_fullscreen_button_unselected" msgid="2492516552817892989">"Tombol layar penuh Tidak dipilih. Tekan Enter untuk membagikan layar penuh."</string>
+    <string name="screen_share_a11y_fullscreen_button_selected" msgid="6706822615908429473">"Berbagi layar penuh. Buka untuk melihat layar yang tersedia."</string>
+    <string name="screen_share_a11y_share_button_off" msgid="2004866083045967602">"Tombol Bagikan Nonaktif. Pilih aplikasi, tab, atau layar untuk dibagikan."</string>
+    <string name="screen_share_a11y_share_button_on" msgid="1311279200212158833">"Berbagi aktif. <xliff:g id="ITEM">%1$s</xliff:g> dipilih. Tekan Enter untuk mulai berbagi."</string>
+    <string name="screen_share_a11y_item_unselected" msgid="7479321583507874795">"<xliff:g id="ITEM_NAME">%1$s</xliff:g>. Tidak dipilih Tekan Enter untuk memilih."</string>
+    <string name="screen_share_a11y_item_selected" msgid="2538971376128528640">"<xliff:g id="ITEM_NAME">%1$s</xliff:g> dipilih. Buka tombol bagikan untuk mulai berbagi."</string>
+    <string name="screen_share_a11y_tab_audio_on" msgid="7240792268381508075">"Audio tab aktif"</string>
+    <string name="screen_share_a11y_tab_audio_off" msgid="8545238601433952854">"Audio tab nonaktif"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Ambil screenshot jendela"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Rekam jendela"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Ambil screenshot area yang dipilih"</string>
@@ -239,7 +247,8 @@
     <string name="screen_capture_post_recording_shelf_share_button_a11y" msgid="2907313384921655711">"Bagikan rekaman layar"</string>
     <string name="screen_capture_post_recording_shelf_folder_button_a11y" msgid="4217075254383938093">"Buka rekaman layar di pengelola file"</string>
     <string name="screen_capture_post_recording_shelf_delete_button_a11y" msgid="8519897681775354217">"Hapus rekaman layar"</string>
-    <string name="screen_capture_post_recording_shelf_thumbnail_a11y" msgid="8342622016203434332">"Buka rekaman layar di penampil video"</string>
+    <!-- no translation found for screen_capture_post_recording_shelf_thumbnail_a11y (4764732838982357845) -->
+    <skip />
     <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"Tampilkan klik dan tombol"</string>
     <string name="screen_capture_device_audio" msgid="1537290197773737349">"Audio perangkat"</string>
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Mikrofon"</string>
@@ -432,8 +441,7 @@
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Notifikasi"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Asisten"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"Keyboard"</string>
-    <!-- no translation found for input_method_switcher_title_large_screen (8490419050265486980) -->
-    <skip />
+    <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"Keyboard"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{# notifikasi lainnya di dalam.}other{# notifikasi lainnya di dalam.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Layar dikunci dalam orientasi lanskap."</string>
@@ -491,7 +499,7 @@
     <string name="quick_settings_casting" msgid="1435880708719268055">"Melakukan transmisi"</string>
     <string name="quick_settings_cast_device_default_name" msgid="6988469571141331700">"Perangkat tanpa nama"</string>
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"Perangkat tak tersedia"</string>
-    <string name="quick_settings_cast_detail_title" msgid="8212426967651562547">"Transmisi layar ke perangkat"</string>
+    <string name="quick_settings_cast_detail_title" msgid="8212426967651562547">"Transmisikan layar ke perangkat"</string>
     <string name="quick_settings_cast_detail_subtitle" msgid="6406833630052788623">"Mencari perangkat..."</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Tidak ada koneksi Ethernet atau Wi-Fi"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"Berhenti hubungkan"</string>
@@ -1238,7 +1246,7 @@
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Aktifkan pintasan keyboard <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Jangan aktifkan"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Aktifkan pintasan"</string>
-    <string name="accessibility_key_gesture_color_inversion_dialog_content" msgid="8831745570619953566"><annotation id="action_key_icon">"Ikon"</annotation>" <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> adalah pintasan keyboard untuk menggunakan inversi warna. Inversi warna mengubah layar terang menjadi gelap. Fitur ini juga mengubah layar gelap menjadi terang."</string>
+    <string name="accessibility_key_gesture_color_inversion_dialog_content" msgid="8831745570619953566">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"Ikon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> adalah pintasan keyboard untuk menggunakan inversi warna. Inversi warna mengubah layar terang menjadi gelap. Fitur ini juga mengubah layar gelap menjadi terang."</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Pintasan keyboard <xliff:g id="ID_1">%1$s</xliff:g> diaktifkan"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645"><annotation id="action_key_icon">"Ikon"</annotation>" <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> adalah pintasan keyboard untuk menggunakan fitur aksesibilitas <xliff:g id="ID_4">^4</xliff:g>. Tindakan ini memungkinkan Anda memperbesar layar dengan cepat untuk membuat konten terlihat lebih besar. Setelah pembesaran aktif, tekan "<annotation id="action_key_icon">"ikon"</annotation>" <xliff:g id="ID_5">^1</xliff:g> + <xliff:g id="ID_6">^2</xliff:g> dan \"+\" atau \"-\" untuk menyesuaikan zoom."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Nonaktifkan pintasan"</string>
@@ -1873,18 +1881,11 @@
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"Baterai L %1$s"</string>
     <string name="accessibility_hearing_device_right_battery_level" msgid="7598843215226414563">"Baterai R %1$s"</string>
     <string name="accessibility_hearing_device_notification_channel_name" msgid="7365020777623709400">"Status Alat Bantu Dengar"</string>
-    <!-- no translation found for more_options_edit (6337988646114341329) -->
-    <skip />
-    <!-- no translation found for more_options_move (2226159413422979066) -->
-    <skip />
-    <!-- no translation found for more_options_remove_all (194855000797536179) -->
-    <skip />
-    <!-- no translation found for floating_menu_more_options_label (7859269790323628599) -->
-    <skip />
-    <!-- no translation found for dream_setup_title (7996530071414508238) -->
-    <skip />
-    <!-- no translation found for dream_setup_button_not_now (8028385323668620805) -->
-    <skip />
-    <!-- no translation found for dream_setup_button_setup (4755361016017554826) -->
-    <skip />
+    <string name="more_options_edit" msgid="6337988646114341329">"Edit"</string>
+    <string name="more_options_move" msgid="2226159413422979066">"Pindahkan"</string>
+    <string name="more_options_remove_all" msgid="194855000797536179">"Hapus semua"</string>
+    <string name="floating_menu_more_options_label" msgid="7859269790323628599">"Opsi lainnya"</string>
+    <string name="dream_setup_title" msgid="7996530071414508238">"Siapkan screensaver"</string>
+    <string name="dream_setup_button_not_now" msgid="8028385323668620805">"Lain kali"</string>
+    <string name="dream_setup_button_setup" msgid="4755361016017554826">"Siapkan"</string>
 </resources>

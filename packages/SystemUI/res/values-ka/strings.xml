@@ -46,8 +46,7 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"გსურთ, გახსნათ <xliff:g id="APPLICATION">%1$s</xliff:g>, <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>-ის გამოსაყენებლად?"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"არცერთი დაყენებული აპი არ მუშაობს ამ USB აქსესუართან. შეიტყვეთ მეტი ამ აქსესუარის შესახებ <xliff:g id="URL">%1$s</xliff:g>"</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"USB აქსესუარი"</string>
-    <!-- no translation found for usb_device_dialog_always_allow_button (7426535342650638393) -->
-    <skip />
+    <string name="usb_device_dialog_always_allow_button" msgid="7426535342650638393">"ყოველთვის დაშვება"</string>
     <string name="usb_device_dialog_allow_only_this_time_button" msgid="3653881633944232491">"მხოლოდ ამ ერთხელ"</string>
     <string name="usb_device_dialog_cancel_button" msgid="9050554648474787233">"გაუქმება"</string>
     <string name="label_view" msgid="6815442985276363364">"ნახვა"</string>
@@ -59,6 +58,24 @@
     <string name="usb_debugging_allow" msgid="1722643858015321328">"დაშვება"</string>
     <string name="usb_debugging_secondary_user_title" msgid="7843050591380107998">"USB ხარვეზების გამართვა ნებადართული არაა"</string>
     <string name="usb_debugging_secondary_user_message" msgid="1888835696965417845">"ამ მოწყობილობაზე ამჟამად შესულ მომხმარებელს არ შეუძლია USB ხარვეზების გამართვის ფუნქციის ჩართვა. ამ ფუნქციის გამოსაყენებლად, მიუერთდით ადმინისტრატორ მომხმარებელს."</string>
+    <!-- no translation found for usb_authorization_title (3332796080113535331) -->
+    <skip />
+    <!-- no translation found for usb_authorization_title_multi (1966181648363433366) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message (1107567912094941105) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message_multi (4867596373922923637) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message_untrusted (4407977362840907960) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message_multi_untrusted (85055448435495205) -->
+    <skip />
+    <!-- no translation found for usb_authorization_unknown_device (1107933381080189970) -->
+    <skip />
+    <!-- no translation found for usb_authorization_allow (5517449937301874244) -->
+    <skip />
+    <!-- no translation found for usb_authorization_deny (8156333001876101456) -->
+    <skip />
     <string name="hdmi_cec_set_menu_language_title" msgid="1259765420091503742">"გსურთ, სისტემის ენა შეიცვალოს და გახდეს <xliff:g id="LANGUAGE">%1$s</xliff:g>?"</string>
     <string name="hdmi_cec_set_menu_language_description" msgid="8176716678074126619">"სისტემის ენის შეცვლა მოითხოვა სხვა მოწყობილობამ"</string>
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"ენის შეცვლა"</string>
@@ -104,6 +121,10 @@
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"მეტის აღბეჭდვა"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"ეკრანის ანაბეჭდის დახურვა"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"თქვენი სამსახურის პროფილის შეტყობინების უარყოფა"</string>
+    <!-- no translation found for screenshot_open_in_folder_label (7030308792263959983) -->
+    <skip />
+    <!-- no translation found for screenshot_open_in_folder_description (2181459418652236210) -->
+    <skip />
     <string name="screenshot_preview_description" msgid="7606510140714080474">"ეკრანის ანაბეჭდის გადახედვა"</string>
     <string name="screenshot_top_boundary_pct" msgid="2520148599096479332">"ზედა ზღვარი: <xliff:g id="PERCENT">%1$d</xliff:g> პროცენტი"</string>
     <string name="screenshot_bottom_boundary_pct" msgid="3880821519814946478">"ქვედა ზღვარი: <xliff:g id="PERCENT">%1$d</xliff:g> პროცენტი"</string>
@@ -182,14 +203,10 @@
     <string name="screen_capture_record_region_selection_button" msgid="3699353194755563053">"არჩეული მონაკვეთის ჩაწერა"</string>
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"ეკრანის ანაბეჭდი"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"ჩაწერა"</string>
-    <!-- no translation found for screen_capture_region_box_top_left_handle_description (3619310281612042126) -->
-    <skip />
-    <!-- no translation found for screen_capture_region_box_top_right_handle_description (7732373569053287436) -->
-    <skip />
-    <!-- no translation found for screen_capture_region_box_bottom_right_handle_description (5444943380877006881) -->
-    <skip />
-    <!-- no translation found for screen_capture_region_box_bottom_left_handle_description (6095764656409143184) -->
-    <skip />
+    <string name="screen_capture_region_box_top_left_handle_description" msgid="3619310281612042126">"ზედა მარცხენა სახელური — ზომის შესაცვლელად გამოიყენეთ ისრიანი კლავიშები"</string>
+    <string name="screen_capture_region_box_top_right_handle_description" msgid="7732373569053287436">"ზედა მარჯვენა სახელური — ზომის შესაცვლელად გამოიყენეთ ისრიანი კლავიშები"</string>
+    <string name="screen_capture_region_box_bottom_right_handle_description" msgid="5444943380877006881">"ქვედა მარჯვენა სახელური — ზომის შესაცვლელად გამოიყენეთ ისრიანი კლავიშები"</string>
+    <string name="screen_capture_region_box_bottom_left_handle_description" msgid="6095764656409143184">"ქვედა მარცხენა სახელური — ზომის შესაცვლელად გამოიყენეთ ისრიანი კლავიშები"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"გაზიარება"</string>
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"გასაზიარებელი აპის არჩევა"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"აუდიოს გაზიარება"</string>
@@ -204,38 +221,22 @@
     <string name="screen_share_a11y_sharing_app" msgid="3445421300603336524">"ახლა ზიარდება აპი: <xliff:g id="APP_NAME">%1$s</xliff:g>. გაზიარების დასასრულებლად გამოიყენეთ კონფიდენციალურობის მაჩვენებელი."</string>
     <string name="screen_share_a11y_sharing_tab" msgid="2963542572740628746">"ახლა ზიარდება ჩანართი: <xliff:g id="TAB_TITLE">%1$s</xliff:g>. გაზიარების დასასრულებლად გამოიყენეთ კონფიდენციალურობის მაჩვენებელი."</string>
     <string name="screen_share_a11y_sharing_display" msgid="5919924998949424031">"ახლა ზიარდება ეკრანი: <xliff:g id="DISPLAY_NAME">%1$s</xliff:g>. გაზიარების დასასრულებლად გამოიყენეთ კონფიდენციალურობის მაჩვენებელი."</string>
-    <!-- no translation found for screen_share_a11y_stopped_sharing_app (6928492106881188404) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_stopped_sharing_tab (5929089339684027985) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_stopped_sharing_display (121502117308433983) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_close_button (8017115316741874857) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_button_unselected (5363622532939787310) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_button_selected (4304681826101817704) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_app_button_unselected (4539549394242556282) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_app_button_selected (6049272377472922732) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_fullscreen_button_unselected (2492516552817892989) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_fullscreen_button_selected (6706822615908429473) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_share_button_off (2004866083045967602) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_share_button_on (1311279200212158833) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_item_unselected (7479321583507874795) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_item_selected (2538971376128528640) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_audio_on (7240792268381508075) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_audio_off (8545238601433952854) -->
-    <skip />
+    <string name="screen_share_a11y_stopped_sharing_app" msgid="6928492106881188404">"აპის გაზიარება შეწყდა: <xliff:g id="APP_NAME">%1$s</xliff:g>. ეკრანი არავისთან არ არის გაზიარებული."</string>
+    <string name="screen_share_a11y_stopped_sharing_tab" msgid="5929089339684027985">"ჩანართის გაზიარება შეწყდა: <xliff:g id="TAB_TITLE">%1$s</xliff:g>. ეკრანი არავისთან არ არის გაზიარებული."</string>
+    <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"ეკრანის გაზიარება შეწყდა: <xliff:g id="DISPLAY_NAME">%1$s</xliff:g>. ეკრანი არავისთან არ არის გაზიარებული."</string>
+    <string name="screen_share_a11y_close_button" msgid="8017115316741874857">"დახურვის ღილაკი. გაზიარებამდე დიალოგის დასახურად დააჭირეთ შეყვანას."</string>
+    <string name="screen_share_a11y_tab_button_unselected" msgid="5363622532939787310">"ჩანართის გაზიარების ღილაკი. არ არის არჩეული. დააჭირეთ შეყვანას ჩანართის გასაზიარებლად."</string>
+    <string name="screen_share_a11y_tab_button_selected" msgid="4304681826101817704">"ზიარდება ჩანართი. ხელმისაწვდომი ჩანართების სანახავად მოახდინეთ ნავიგაცია."</string>
+    <string name="screen_share_a11y_app_button_unselected" msgid="4539549394242556282">"აპის გაზიარების ღილაკი. არ არის არჩეული. დააჭირეთ შეყვანას აპის გასაზიარებლად."</string>
+    <string name="screen_share_a11y_app_button_selected" msgid="6049272377472922732">"აპის გაზიარება. მოახდინეთ ნავიგაცია ხელმისაწვდომი აპების სანახავად."</string>
+    <string name="screen_share_a11y_fullscreen_button_unselected" msgid="2492516552817892989">"სრულეკრანიან რეჟიმში გაზიარების ღილაკი. არ არის არჩეული. სრულეკრანიან რეჟიმში გასაზიარებლად დააჭირეთ შეყვანას."</string>
+    <string name="screen_share_a11y_fullscreen_button_selected" msgid="6706822615908429473">"მიმდინარეობს სრულეკრანიან რეჟიმში გაზიარება. მოახდინეთ ნავიგაცია ხელმისაწვდომი ეკრანების სანახავად."</string>
+    <string name="screen_share_a11y_share_button_off" msgid="2004866083045967602">"გაზიარების ღილაკი. გამორთულია. აირჩიეთ აპი, ჩანართი ან ეკრანი გასაზიარებლად."</string>
+    <string name="screen_share_a11y_share_button_on" msgid="1311279200212158833">"გაზიარება ჩართულია. არჩეულია <xliff:g id="ITEM">%1$s</xliff:g>. გაზიარების დასაწყებად დააჭირეთ შეყვანას."</string>
+    <string name="screen_share_a11y_item_unselected" msgid="7479321583507874795">"<xliff:g id="ITEM_NAME">%1$s</xliff:g>. არ არის არჩეული. ასარჩევად დააჭირეთ შეყვანას."</string>
+    <string name="screen_share_a11y_item_selected" msgid="2538971376128528640">"არჩეულია <xliff:g id="ITEM_NAME">%1$s</xliff:g>. გაზიარების დასაწყებად მოახდინეთ ნავიგაცია გაზიარების ღილაკზე."</string>
+    <string name="screen_share_a11y_tab_audio_on" msgid="7240792268381508075">"ჩანართის აუდიო ჩართულია"</string>
+    <string name="screen_share_a11y_tab_audio_off" msgid="8545238601433952854">"ჩანართის აუდიო გამორთულია"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"ფანჯრის ეკრანის ანაბეჭდის გადაღება"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"ფანჯრის ჩაწერა"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"ეკრანის მონიშნული მონაკვეთის ანაბეჭდის გადაღება"</string>
@@ -246,15 +247,15 @@
     <string name="screen_capture_post_recording_shelf_share_button_a11y" msgid="2907313384921655711">"ეკრანის ჩამწერის გაზიარება"</string>
     <string name="screen_capture_post_recording_shelf_folder_button_a11y" msgid="4217075254383938093">"ეკრანის ჩამწერის გახსნა ფაილების მენეჯერში"</string>
     <string name="screen_capture_post_recording_shelf_delete_button_a11y" msgid="8519897681775354217">"ეკრანის ჩამწერის წაშლა"</string>
-    <string name="screen_capture_post_recording_shelf_thumbnail_a11y" msgid="8342622016203434332">"ვიდეოს დამთვალიერებელში ეკრანის ჩამწერის გახსნა"</string>
+    <!-- no translation found for screen_capture_post_recording_shelf_thumbnail_a11y (4764732838982357845) -->
+    <skip />
     <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"დაწკ. და კლავიშების ჩვენება"</string>
     <string name="screen_capture_device_audio" msgid="1537290197773737349">"მოწყობილობის აუდიო"</string>
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"მიკროფონი"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"წინა კამერა"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"გაზიარების შეწყვეტა"</string>
-    <!-- no translation found for share_screen_privacy_indicator_accessibility_label (8748931450480306816) -->
-    <skip />
+    <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"ეკრანის გაზიარება ჩართულია. გაზიარების დასასრულებლად გამოიყენეთ კონფიდენციალურობის ინდიკატორი."</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"მიმდინარეობს ეკრანის გაზიარება"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"კონტენტის გაზიარება"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"გსურთ ეკრანის გაზიარების შეწყვეტა?"</string>
@@ -440,8 +441,7 @@
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"შეტყობინებები"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"ასისტენტი"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"კლავიატურა"</string>
-    <!-- no translation found for input_method_switcher_title_large_screen (8490419050265486980) -->
-    <skip />
+    <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"კლავიატურა"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{კიდევ # შეტყობინება.}other{კიდევ # შეტყობინება.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"ეკრანი დაბლოკილია თარაზულ ორიენტაციაში"</string>
@@ -1881,18 +1881,11 @@
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"მარცხენა ბატარეა %1$s"</string>
     <string name="accessibility_hearing_device_right_battery_level" msgid="7598843215226414563">"მარჯვენა ბატარეა %1$s"</string>
     <string name="accessibility_hearing_device_notification_channel_name" msgid="7365020777623709400">"სმენის აპარატის სტატუსი"</string>
-    <!-- no translation found for more_options_edit (6337988646114341329) -->
-    <skip />
-    <!-- no translation found for more_options_move (2226159413422979066) -->
-    <skip />
-    <!-- no translation found for more_options_remove_all (194855000797536179) -->
-    <skip />
-    <!-- no translation found for floating_menu_more_options_label (7859269790323628599) -->
-    <skip />
-    <!-- no translation found for dream_setup_title (7996530071414508238) -->
-    <skip />
-    <!-- no translation found for dream_setup_button_not_now (8028385323668620805) -->
-    <skip />
-    <!-- no translation found for dream_setup_button_setup (4755361016017554826) -->
-    <skip />
+    <string name="more_options_edit" msgid="6337988646114341329">"რედაქტირება"</string>
+    <string name="more_options_move" msgid="2226159413422979066">"გადატანა"</string>
+    <string name="more_options_remove_all" msgid="194855000797536179">"ყველას ამოშლა"</string>
+    <string name="floating_menu_more_options_label" msgid="7859269790323628599">"სხვა ვარიანტები"</string>
+    <string name="dream_setup_title" msgid="7996530071414508238">"ეკრანმზოგის დაყენება"</string>
+    <string name="dream_setup_button_not_now" msgid="8028385323668620805">"ახლა არა"</string>
+    <string name="dream_setup_button_setup" msgid="4755361016017554826">"დაყენება"</string>
 </resources>
