@@ -17,7 +17,7 @@
 
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="dialog_title" msgid="7824964423871627297">"<xliff:g id="APPLICATION">%1$s</xliff:g> に<xliff:g id="SERIAL_PORT">%2$s</xliff:g>へのアクセスを許可しますか？"</string>
+    <string name="dialog_title" msgid="7824964423871627297">"<xliff:g id="APPLICATION">%1$s</xliff:g> に <xliff:g id="SERIAL_PORT">%2$s</xliff:g> へのアクセスを許可しますか？"</string>
     <string name="dialog_positive_button" msgid="6044267238322414857">"許可"</string>
     <string name="dialog_negative_button" msgid="5438188496471705710">"許可しない"</string>
 </resources>
