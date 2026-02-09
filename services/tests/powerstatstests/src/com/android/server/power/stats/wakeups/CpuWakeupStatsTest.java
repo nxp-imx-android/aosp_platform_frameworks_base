@@ -76,6 +76,8 @@ public class CpuWakeupStatsTest {
     private static final Context sContext = InstrumentationRegistry.getTargetContext();
     private final Handler mHandler = Mockito.mock(Handler.class);
     private final ThreadLocalRandom mRandom = ThreadLocalRandom.current();
+    private final IrqDeviceMap mDeviceMap = IrqDeviceMap.getInstance(sContext,
+            R.xml.irq_device_map_3);
 
     private void populateDefaultProcStates(CpuWakeupStats obj) {
         obj.mUidProcStates.put(TEST_UID_1, TEST_PROC_STATE_1);
@@ -578,5 +580,54 @@ public class CpuWakeupStatsTest {
 
         obj.onUidRemoved(213);
         assertThat(obj.mUidProcStates.size()).isEqualTo(0);
+    }
+
+    @Test
+    public void parseWakeup_invalidReasonFormat() {
+        assertThat(Wakeup.parseWakeup("123", 0, 0, mDeviceMap)).isNull();
+        assertThat(Wakeup.parseWakeup("123 ", 0, 0, mDeviceMap)).isNull();
+        assertThat(Wakeup.parseWakeup("unknown.system 123", 0, 0, mDeviceMap)).isNull();
+        assertThat(Wakeup.parseWakeup(KERNEL_REASON_UNKNOWN_FORMAT, 0, 0, mDeviceMap)).isNull();
+    }
+
+    @Test
+    public void parseWakeup_abort() {
+        assertThat(Wakeup.parseWakeup(KERNEL_REASON_ABORT, 0, 0, mDeviceMap)).isNull();
+    }
+
+    @Test
+    public void parseWakeup_singleValidReason() {
+        final Wakeup wakeup = Wakeup.parseWakeup(KERNEL_REASON_ALARM_IRQ, 342, 982, mDeviceMap);
+        assertThat(wakeup.mType).isEqualTo(Wakeup.TYPE_IRQ);
+        assertThat(wakeup.mElapsedMillis).isEqualTo(342);
+        assertThat(wakeup.mUptimeMillis).isEqualTo(982);
+        assertThat(wakeup.mIrqLines).asList().containsExactly(120);
+        assertThat(wakeup.mResponsibleSubsystems.size()).isEqualTo(1);
+        assertThat(wakeup.mResponsibleSubsystems.get(CPU_WAKEUP_SUBSYSTEM_ALARM)).isTrue();
+    }
+
+    @Test
+    public void parseWakeup_multipleValidReasons() {
+        final Wakeup wakeup = Wakeup.parseWakeup(
+                KERNEL_REASON_ALARM_IRQ + ":" + KERNEL_REASON_WIFI_IRQ, 342, 982, mDeviceMap);
+        assertThat(wakeup.mType).isEqualTo(Wakeup.TYPE_IRQ);
+        assertThat(wakeup.mElapsedMillis).isEqualTo(342);
+        assertThat(wakeup.mUptimeMillis).isEqualTo(982);
+        assertThat(wakeup.mIrqLines).asList().containsExactly(120, 130);
+        assertThat(wakeup.mResponsibleSubsystems.size()).isEqualTo(2);
+        assertThat(wakeup.mResponsibleSubsystems.get(CPU_WAKEUP_SUBSYSTEM_ALARM)).isTrue();
+        assertThat(wakeup.mResponsibleSubsystems.get(CPU_WAKEUP_SUBSYSTEM_WIFI)).isTrue();
+    }
+
+    @Test
+    public void parseWakeup_abnormal() {
+        final Wakeup wakeup = Wakeup.parseWakeup(KERNEL_REASON_ALARM_ABNORMAL, 342, 982,
+                mDeviceMap);
+        assertThat(wakeup.mType).isEqualTo(Wakeup.TYPE_ABNORMAL);
+        assertThat(wakeup.mElapsedMillis).isEqualTo(342);
+        assertThat(wakeup.mUptimeMillis).isEqualTo(982);
+        assertThat(wakeup.mIrqLines).asList().containsExactly(-1);
+        assertThat(wakeup.mResponsibleSubsystems.size()).isEqualTo(1);
+        assertThat(wakeup.mResponsibleSubsystems.get(CPU_WAKEUP_SUBSYSTEM_ALARM)).isTrue();
     }
 }

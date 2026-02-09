@@ -33,6 +33,7 @@ import android.os.Trace;
 import android.os.UserHandle;
 import android.provider.DeviceConfig;
 import android.util.IndentingPrintWriter;
+import android.util.IntArray;
 import android.util.LongSparseArray;
 import android.util.Slog;
 import android.util.SparseArray;
@@ -128,7 +129,7 @@ public class CpuWakeupStats {
     }
 
     private synchronized void logWakeupAttribution(Wakeup wakeupToLog) {
-        if (ArrayUtils.isEmpty(wakeupToLog.mDevices)) {
+        if (ArrayUtils.isEmpty(wakeupToLog.mIrqLines)) {
             FrameworkStatsLog.write(FrameworkStatsLog.KERNEL_WAKEUP_ATTRIBUTED,
                     FrameworkStatsLog.KERNEL_WAKEUP_ATTRIBUTED__TYPE__TYPE_UNKNOWN,
                     FrameworkStatsLog.KERNEL_WAKEUP_ATTRIBUTED__REASON__UNKNOWN,
@@ -558,16 +559,16 @@ public class CpuWakeupStats {
          */
         static final int TYPE_ABNORMAL = 2;
 
-        int mType;
-        long mElapsedMillis;
-        long mUptimeMillis;
-        IrqDevice[] mDevices;
-        SparseBooleanArray mResponsibleSubsystems;
+        final int mType;
+        final long mElapsedMillis;
+        final long mUptimeMillis;
+        final int[] mIrqLines;
+        final SparseBooleanArray mResponsibleSubsystems;
 
-        private Wakeup(int type, IrqDevice[] devices, long elapsedMillis, long uptimeMillis,
+        private Wakeup(int type, int[] irqLines, long elapsedMillis, long uptimeMillis,
                 SparseBooleanArray responsibleSubsystems) {
             mType = type;
-            mDevices = devices;
+            mIrqLines = irqLines;
             mElapsedMillis = elapsedMillis;
             mUptimeMillis = uptimeMillis;
             mResponsibleSubsystems = responsibleSubsystems;
@@ -582,8 +583,7 @@ public class CpuWakeupStats {
             }
 
             int type = TYPE_IRQ;
-            int parsedDeviceCount = 0;
-            final IrqDevice[] parsedDevices = new IrqDevice[components.length];
+            final IntArray parsedIrqLines = new IntArray(components.length);
             final SparseBooleanArray responsibleSubsystems = new SparseBooleanArray();
 
             for (String component : components) {
@@ -603,7 +603,7 @@ public class CpuWakeupStats {
                                 "Exception while parsing device names from part: " + component, e);
                         continue;
                     }
-                    parsedDevices[parsedDeviceCount++] = new IrqDevice(line, device);
+                    parsedIrqLines.add(line);
 
                     final List<String> rawSubsystems = deviceMap.getSubsystemsForDevice(device);
                     boolean anyKnownSubsystem = false;
@@ -623,7 +623,7 @@ public class CpuWakeupStats {
                     }
                 }
             }
-            if (parsedDeviceCount == 0) {
+            if (parsedIrqLines.size() == 0) {
                 return null;
             }
             if (responsibleSubsystems.size() == 1 && responsibleSubsystems.get(
@@ -631,8 +631,8 @@ public class CpuWakeupStats {
                 // There is no attributable subsystem here, so we do not support it.
                 return null;
             }
-            return new Wakeup(type, Arrays.copyOf(parsedDevices, parsedDeviceCount), elapsedMillis,
-                    uptimeMillis, responsibleSubsystems);
+            return new Wakeup(type, parsedIrqLines.toArray(), elapsedMillis, uptimeMillis,
+                    responsibleSubsystems);
         }
 
         @Override
@@ -641,24 +641,9 @@ public class CpuWakeupStats {
                     + "mType=" + mType
                     + ", mElapsedMillis=" + mElapsedMillis
                     + ", mUptimeMillis=" + mUptimeMillis
-                    + ", mDevices=" + Arrays.toString(mDevices)
+                    + ", mIrqLines=" + Arrays.toString(mIrqLines)
                     + ", mResponsibleSubsystems=" + mResponsibleSubsystems
                     + '}';
-        }
-
-        static final class IrqDevice {
-            int mLine;
-            String mDevice;
-
-            IrqDevice(int line, String device) {
-                mLine = line;
-                mDevice = device;
-            }
-
-            @Override
-            public String toString() {
-                return "IrqDevice{" + "mLine=" + mLine + ", mDevice=\'" + mDevice + '\'' + '}';
-            }
         }
     }
 
