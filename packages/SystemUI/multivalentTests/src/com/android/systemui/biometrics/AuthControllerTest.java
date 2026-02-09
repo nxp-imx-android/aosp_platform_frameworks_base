@@ -56,6 +56,7 @@ import android.hardware.biometrics.BiometricConstants;
 import android.hardware.biometrics.BiometricPrompt;
 import android.hardware.biometrics.BiometricStateListener;
 import android.hardware.biometrics.ComponentInfoInternal;
+import android.hardware.biometrics.Flags;
 import android.hardware.biometrics.IBiometricContextListener;
 import android.hardware.biometrics.IBiometricSysuiReceiver;
 import android.hardware.biometrics.PromptInfo;
@@ -73,6 +74,7 @@ import android.os.Handler;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.UserManager;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.testing.TestableContext;
@@ -95,7 +97,7 @@ import com.android.systemui.biometrics.domain.interactor.PromptSelectorInteracto
 import com.android.systemui.biometrics.ui.viewmodel.CredentialViewModel;
 import com.android.systemui.biometrics.ui.viewmodel.PromptFallbackViewModel;
 import com.android.systemui.biometrics.ui.viewmodel.PromptViewModel;
-import com.android.systemui.display.data.repository.FocusedDisplayRepository;
+import com.android.systemui.display.data.repository.FakeFocusedDisplayRepository;
 import com.android.systemui.keyguard.WakefulnessLifecycle;
 import com.android.systemui.kosmos.KosmosJavaAdapter;
 import com.android.systemui.statusbar.CommandQueue;
@@ -139,7 +141,7 @@ public class AuthControllerTest extends SysuiTestCase {
 
     private final KosmosJavaAdapter mKosmos = new KosmosJavaAdapter(this);
 
-    private final FocusedDisplayRepository mFocusedDisplayRepository =
+    private final FakeFocusedDisplayRepository mFocusedDisplayRepository =
             mKosmos.getFakeFocusedDisplayRepository();
 
     @Mock private PackageManager mPackageManager;
@@ -1154,6 +1156,41 @@ public class AuthControllerTest extends SysuiTestCase {
                 .onDialogDismissed(
                         eq(BiometricPrompt.DISMISSED_REASON_ERROR_NO_WM),
                         eq(null) /* credentialAttestation */);
+    }
+
+    @Test
+    @EnableFlags({com.android.systemui.Flags.FLAG_LARGE_SCREEN_BP, Flags.FLAG_EXTERNAL_BP})
+    public void testShowDialog_usesFocusedDisplay_whenFeaturePC() {
+        when(mPackageManager.hasSystemFeature(PackageManager.FEATURE_PC)).thenReturn(true);
+
+        int secondaryDisplayId = 2;
+        Display mockDisplay = mock(Display.class);
+        when(mDisplayManager.getDisplay(secondaryDisplayId)).thenReturn(mockDisplay);
+        mFocusedDisplayRepository.setDirectDisplayId(secondaryDisplayId);
+
+        Context mockDisplayContext = mock(Context.class);
+        doReturn(mockDisplayContext).when(mContextSpy).createDisplayContext(mockDisplay);
+        WindowManager mockSecondaryWM = mock(WindowManager.class);
+        when(mWindowManagerProvider.getWindowManager(mockDisplayContext)).thenReturn(
+                mockSecondaryWM);
+
+        showDialog(new int[]{1} /* sensorIds */, false /* credentialAllowed */);
+
+        verify(mDialog1).show(mockSecondaryWM);
+        verify(mDialog1, never()).show(mWindowManager);
+    }
+
+    @Test
+    @EnableFlags({com.android.systemui.Flags.FLAG_LARGE_SCREEN_BP, Flags.FLAG_EXTERNAL_BP})
+    public void testShowDialog_usesDefaultDisplay_whenNotPC_evenIfFocusedDisplayChanges() {
+        when(mPackageManager.hasSystemFeature(PackageManager.FEATURE_PC)).thenReturn(false);
+
+        int secondaryDisplayId = 2;
+        mFocusedDisplayRepository.setDirectDisplayId(secondaryDisplayId);
+
+        showDialog(new int[]{1}, false);
+
+        verify(mDialog1).show(mWindowManager);
     }
 
     private void showDialog(int[] sensorIds, boolean credentialAllowed) {

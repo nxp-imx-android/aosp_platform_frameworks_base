@@ -31,6 +31,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Point;
@@ -72,6 +73,7 @@ import com.android.internal.jank.InteractionJankMonitor;
 import com.android.internal.os.SomeArgs;
 import com.android.internal.widget.LockPatternUtils;
 import com.android.systemui.CoreStartable;
+import com.android.systemui.Flags;
 import com.android.systemui.biometrics.domain.interactor.LogContextInteractor;
 import com.android.systemui.biometrics.domain.interactor.PromptSelectorInteractor;
 import com.android.systemui.biometrics.plugins.AuthContextPlugins;
@@ -1327,6 +1329,11 @@ public class AuthController implements
     }
 
     private void maybeShowSecondaryDisplayToast() {
+        // Don't show toast for external monitors
+        if (shouldUseExternalDisplay()) {
+            return;
+        }
+
         int focusedDisplayId = mFocusedDisplayRepository.getFocusedDisplayId().getValue();
         if (focusedDisplayId != Display.DEFAULT_DISPLAY) {
             Display focusedDisplay = mDisplayManager.getDisplay(focusedDisplayId);
@@ -1351,6 +1358,16 @@ public class AuthController implements
 
     @Nullable
     private WindowManager getWindowManagerForUser(int userId) {
+        // When using a laptop, grab the current focused display
+        if (shouldUseExternalDisplay()) {
+            int focusedDisplayId = mFocusedDisplayRepository.getFocusedDisplayId().getValue();
+            Display display = mDisplayManager.getDisplay(focusedDisplayId);
+            if (display == null) {
+                return mWindowManager;
+            }
+            return mWindowManagerProvider.getWindowManager(mContext.createDisplayContext(display));
+        }
+
         if (!mUserManager.isVisibleBackgroundUsersSupported()) {
             return mWindowManager;
         }
@@ -1375,6 +1392,12 @@ public class AuthController implements
             return null;
         }
         return mWindowManagerProvider.getWindowManager(mContext.createDisplayContext(display));
+    }
+
+    private boolean shouldUseExternalDisplay() {
+        return Flags.largeScreenBp() && android.hardware.biometrics.Flags.externalBp()
+                && mContext.getPackageManager().hasSystemFeature(
+                PackageManager.FEATURE_PC);
     }
 
     private int getCredentialType() {
