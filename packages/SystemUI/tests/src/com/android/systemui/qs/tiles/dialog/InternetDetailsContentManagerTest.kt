@@ -924,6 +924,86 @@ class InternetDetailsContentManagerTest(private val isInDialog: Boolean) : Sysui
         }
     }
 
+    @Test
+    fun updateContent_satelliteStarted_showSatelliteUI() {
+        whenever(internetDetailsContentController.getCurrentSatelliteState())
+            .thenReturn(InternetDetailsContentController.SATELLITE_STARTED)
+        whenever(internetDetailsContentController.hasActiveSubIdOnDds()).thenReturn(true)
+        mobileDataLayout!!.visibility = View.GONE
+
+        internetDetailsContentManager.updateContent(true)
+        bgExecutor.runAllReady()
+
+        internetDetailsContentManager.internetContentData.observe(
+            internetDetailsContentManager.lifecycleOwner!!
+        ) {
+            assertThat(mobileDataLayout!!.visibility).isEqualTo(View.VISIBLE)
+            val mobileTitle = contentView.requireViewById<TextView>(R.id.mobile_title)
+            assertThat(mobileTitle.text)
+                .isEqualTo(mContext.getText(R.string.satellite_network_title_text))
+        }
+    }
+
+    @Test
+    fun updateContent_satelliteConnected_showSatelliteUIAndConnected() {
+        whenever(internetDetailsContentController.getCurrentSatelliteState())
+            .thenReturn(InternetDetailsContentController.SATELLITE_CONNECTED)
+        whenever(internetDetailsContentController.hasActiveSubIdOnDds()).thenReturn(true)
+        mobileDataLayout!!.visibility = View.GONE
+
+        internetDetailsContentManager.updateContent(true)
+        bgExecutor.runAllReady()
+
+        internetDetailsContentManager.internetContentData.observe(
+            internetDetailsContentManager.lifecycleOwner!!
+        ) {
+            assertThat(mobileDataLayout!!.visibility).isEqualTo(View.VISIBLE)
+            val mobileTitle = contentView.requireViewById<TextView>(R.id.mobile_title)
+            assertThat(mobileTitle.text)
+                .isEqualTo(mContext.getText(R.string.satellite_network_title_text))
+            val mobileSummary = contentView.requireViewById<TextView>(R.id.mobile_summary)
+            assertThat(mobileSummary.visibility).isEqualTo(View.VISIBLE)
+            assertThat(mobileSummary.text)
+                .isEqualTo(mContext.getText(R.string.mobile_data_connection_active))
+        }
+    }
+
+    @Test
+    fun updateContent_satelliteStarted_mobileSwitchDisabled() {
+        whenever(internetDetailsContentController.hasActiveSubIdOnDds()).thenReturn(true)
+        whenever(internetDetailsContentController.isCarrierNetworkActive).thenReturn(true)
+        whenever(internetDetailsContentController.isMobileDataEnabled).thenReturn(false)
+        whenever(internetDetailsContentController.getCurrentSatelliteState())
+            .thenReturn(InternetDetailsContentController.SATELLITE_STARTED)
+        mobileToggleSwitch!!.isChecked = false
+        internetDetailsContentManager.updateContent(true)
+        bgExecutor.runAllReady()
+
+        internetDetailsContentManager.internetContentData.observe(
+            internetDetailsContentManager.lifecycleOwner!!
+        ) {
+            assertThat(mobileToggleSwitch!!.visibility).isEqualTo(View.INVISIBLE)
+        }
+    }
+
+    @Test
+    fun updateContent_satelliteConnected_mobileSwitchDisabled() {
+        whenever(internetDetailsContentController.hasActiveSubIdOnDds()).thenReturn(true)
+        whenever(internetDetailsContentController.isCarrierNetworkActive).thenReturn(true)
+        whenever(internetDetailsContentController.isMobileDataEnabled).thenReturn(false)
+        whenever(internetDetailsContentController.getCurrentSatelliteState())
+            .thenReturn(InternetDetailsContentController.SATELLITE_CONNECTED)
+        mobileToggleSwitch!!.isChecked = false
+        internetDetailsContentManager.updateContent(true)
+        bgExecutor.runAllReady()
+
+        internetDetailsContentManager.internetContentData.observe(
+            internetDetailsContentManager.lifecycleOwner!!
+        ) {
+            assertThat(mobileToggleSwitch!!.visibility).isEqualTo(View.INVISIBLE)
+        }
+    }
+
     companion object {
         private const val TITLE = "Internet"
         private const val MOBILE_NETWORK_TITLE = "Mobile Title"
