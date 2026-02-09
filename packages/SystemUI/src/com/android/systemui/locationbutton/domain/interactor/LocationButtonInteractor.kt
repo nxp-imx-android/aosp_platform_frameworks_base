@@ -15,6 +15,9 @@
  */
 package com.android.systemui.locationbutton.domain.interactor
 
+import android.app.permissionui.LocationButtonRequest
+import android.app.permissionui.LocationButtonSession.TextType
+import android.content.Context
 import android.content.res.Configuration
 import android.util.Slog
 import androidx.annotation.ColorInt
@@ -23,37 +26,129 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import com.android.internal.graphics.ColorUtils
 import com.android.internal.util.ContrastColorUtil
+import com.android.settingslib.Utils
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.locationbutton.data.repository.LocationButtonRepository
 import com.android.systemui.locationbutton.shared.model.ButtonModel
+import com.android.systemui.res.R
+import com.android.systemui.shade.ShadeDisplayAware
 import javax.inject.Inject
 import kotlin.math.roundToInt
 
 @SysUISingleton
 class LocationButtonInteractor
 @Inject
-constructor(private val repository: LocationButtonRepository) {
+constructor(
+    @ShadeDisplayAware private val ctx: Context,
+    private val repository: LocationButtonRepository,
+) {
     fun getButtonState(sessionId: Int): ButtonModel? = repository.getButtonState(sessionId)
 
-    fun setButtonState(sessionId: Int, requestModel: ButtonModel) {
-        val density = requestModel.density
-        val backgroundColor = validateBackgroundColor(requestModel.backgroundColor.toArgb())
+    fun setButtonState(sessionId: Int, request: LocationButtonRequest, density: Float) {
+        val rawBackgroundColor =
+            if (request.hasBackgroundColor()) {
+                request.backgroundColor
+            } else {
+                Utils.getColorAttrDefaultColor(ctx, com.android.internal.R.attr.colorAccentPrimary)
+            }
+        val backgroundColor = validateBackgroundColor(rawBackgroundColor)
+
+        val rawTextColor =
+            if (request.hasTextColor()) {
+                request.textColor
+            } else {
+                Utils.getColorAttrDefaultColor(ctx, com.android.internal.R.attr.textColorOnAccent)
+            }
+        val textColor = validateForegroundColor("Text color", Color(rawTextColor), backgroundColor)
+
+        val rawIconTint =
+            if (request.hasIconTint()) {
+                request.iconTint
+            } else {
+                Utils.getColorAttrDefaultColor(ctx, com.android.internal.R.attr.textColorOnAccent)
+            }
+        val iconTint = validateForegroundColor("Icon tint", Color(rawIconTint), backgroundColor)
+
+        val strokeColor =
+            if (request.hasStrokeColor()) {
+                Color(request.strokeColor)
+            } else {
+                backgroundColor
+            }
+
+        val width = validateWidth(request.width, density)
+        val height = validateHeight(request.height, density)
+
+        val paddingLeft =
+            if (request.hasPaddingLeft()) {
+                validatePadding(request.paddingLeft, density)
+            } else {
+                0
+            }
+        val paddingTop =
+            if (request.hasPaddingTop()) {
+                validatePadding(request.paddingTop, density)
+            } else {
+                0
+            }
+        val paddingRight =
+            if (request.hasPaddingRight()) {
+                validatePadding(request.paddingRight, density)
+            } else {
+                0
+            }
+        val paddingBottom =
+            if (request.hasPaddingBottom()) {
+                validatePadding(request.paddingBottom, density)
+            } else {
+                0
+            }
+
+        val strokeWidth =
+            if (request.hasStrokeWidth()) {
+                validateStrokeWidth(request.strokeWidth, density)
+            } else {
+                0
+            }
+
+        val cornerRadius =
+            if (request.hasCornerRadius()) {
+                validateCornerRadius(request.cornerRadius)
+            } else {
+                null
+            }
+        val pressedCornerRadius =
+            if (request.hasPressedCornerRadius()) {
+                validateCornerRadius(request.pressedCornerRadius)
+            } else {
+                null
+            }
+
+        val textType =
+            if (request.hasTextType()) {
+                request.textType
+            } else {
+                android.app.permissionui.LocationButtonSession.TEXT_TYPE_NONE
+            }
+
         val validatedModel =
-            requestModel.copy(
-                width = validateWidth(requestModel.width, density),
-                height = validateHeight(requestModel.height, density),
-                paddingLeft = validatePadding(requestModel.paddingLeft, density),
-                paddingTop = validatePadding(requestModel.paddingTop, density),
-                paddingRight = validatePadding(requestModel.paddingRight, density),
-                paddingBottom = validatePadding(requestModel.paddingBottom, density),
-                strokeWidth = validateStrokeWidth(requestModel.strokeWidth, density),
-                cornerRadius = validateCornerRadius(requestModel.cornerRadius),
-                pressedCornerRadius = validateCornerRadius(requestModel.pressedCornerRadius),
+            ButtonModel(
+                width = width,
+                height = height,
+                paddingLeft = paddingLeft,
+                paddingTop = paddingTop,
+                paddingRight = paddingRight,
+                paddingBottom = paddingBottom,
                 backgroundColor = backgroundColor,
-                iconTint =
-                    validateForegroundColor("Icon tint", requestModel.iconTint, backgroundColor),
-                textColor =
-                    validateForegroundColor("Text color", requestModel.textColor, backgroundColor),
+                strokeColor = strokeColor,
+                strokeWidth = strokeWidth,
+                cornerRadius = cornerRadius,
+                pressedCornerRadius = pressedCornerRadius,
+                iconTint = iconTint,
+                textResId = getTextResourceId(textType),
+                textColor = textColor,
+                configuration = request.configuration,
+                density = density,
             )
         repository.setButtonState(sessionId, validatedModel)
     }
@@ -102,8 +197,8 @@ constructor(private val repository: LocationButtonRepository) {
         }
     }
 
-    fun setTextId(sessionId: Int, @StringRes textId: Int?) {
-        repository.updateButtonState(sessionId) { it.copy(textResId = textId) }
+    fun setTextType(sessionId: Int, textType: Int) {
+        repository.updateButtonState(sessionId) { it.copy(textResId = getTextResourceId(textType)) }
     }
 
     fun setStrokeColor(sessionId: Int, color: Int) {
@@ -268,6 +363,26 @@ constructor(private val repository: LocationButtonRepository) {
         }
         return padding
     }
+
+    @StringRes
+    private fun getTextResourceId(@TextType textType: Int): Int? =
+        when (textType) {
+            android.app.permissionui.LocationButtonSession.TEXT_TYPE_PRECISE_LOCATION ->
+                R.string.location_button_text_precise_location
+            android.app.permissionui.LocationButtonSession.TEXT_TYPE_USE_PRECISE_LOCATION ->
+                R.string.location_button_text_use_precise_location
+            android.app.permissionui.LocationButtonSession.TEXT_TYPE_SHARE_PRECISE_LOCATION ->
+                R.string.location_button_text_share_precise_location
+            android.app.permissionui.LocationButtonSession.TEXT_TYPE_NEAR_MY_PRECISE_LOCATION ->
+                R.string.location_button_text_near_my_precise_location
+            android.app.permissionui.LocationButtonSession.TEXT_TYPE_NEAR_YOUR_PRECISE_LOCATION ->
+                R.string.location_button_text_near_your_precise_location
+            android.app.permissionui.LocationButtonSession.TEXT_TYPE_NONE -> null
+            else -> {
+                Slog.w(LOG_TAG, "Text type $textType is not supported. Using no text.")
+                null
+            }
+        }
 
     private companion object {
         const val MIN_CONTRAST_RATIO = 4.5

@@ -38,11 +38,9 @@ constructor(
     }
 
     private fun ButtonModel.toViewModel(): ButtonViewModel {
-        val contentWidthPx = width - paddingLeft - paddingRight
-        val contentHeightPx = height - paddingTop - paddingBottom
         return ButtonViewModel(
-            width = (contentWidthPx / density).dp,
-            height = (contentHeightPx / density).dp,
+            width = (width / density).dp,
+            height = (height / density).dp,
             paddingLeft = (paddingLeft / density).dp,
             paddingTop = (paddingTop / density).dp,
             paddingRight = (paddingRight / density).dp,
@@ -50,8 +48,8 @@ constructor(
             backgroundColor = backgroundColor,
             strokeColor = strokeColor,
             strokeWidth = (strokeWidth / density).dp,
-            cornerRadius = (cornerRadius / density).dp,
-            pressedCornerRadius = (pressedCornerRadius / density).dp,
+            cornerRadius = cornerRadius?.let { (it / density).dp },
+            pressedCornerRadius = pressedCornerRadius?.let { (it / density).dp },
             iconTint = iconTint,
             textResId = textResId,
             textColor = textColor,

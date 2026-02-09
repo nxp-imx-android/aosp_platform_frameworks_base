@@ -21,7 +21,6 @@ import android.app.permissionui.ILocationButtonClient
 import android.app.permissionui.ILocationButtonSession
 import android.app.permissionui.LocationButtonClient
 import android.app.permissionui.LocationButtonRequest
-import android.app.permissionui.LocationButtonSession.TextType
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -38,15 +37,12 @@ import android.util.Slog
 import android.view.SurfaceControlViewHost
 import android.view.WindowManager
 import android.window.TrustedPresentationThresholds
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import com.android.internal.graphics.ColorUtils
 import com.android.systemui.locationbutton.domain.interactor.LocationButtonInteractor
-import com.android.systemui.locationbutton.shared.model.ButtonModel
 import com.android.systemui.locationbutton.ui.compose.LocationButton
 import com.android.systemui.locationbutton.ui.view.LocationButtonRootView
 import com.android.systemui.locationbutton.ui.viewmodel.LocationButtonViewModel
-import com.android.systemui.res.R
 import java.util.concurrent.Executor
 
 /**
@@ -105,13 +101,13 @@ class LocationButtonSession(
         if (DEBUG) {
             Slog.d(LOG_TAG, "Creating new location button session $sessionId for request: $request")
         }
-        // TODO handle default values for optional properties in the request
         val display = displayManager.getDisplay(displayId)
         requireNotNull(display) { "Invalid display Id, display must not be null." }
         val displayContext = context.createDisplayContext(display)
         interactor.setButtonState(
             sessionId,
-            request.toButtonModel(displayContext.resources.displayMetrics.density),
+            request,
+            displayContext.resources.displayMetrics.density,
         )
         surfaceControlViewHost = SurfaceControlViewHost(context, display, hostToken)
         setupComposeView()
@@ -150,6 +146,9 @@ class LocationButtonSession(
         if (!isButtonUiInTrustedState) {
             Slog.w(LOG_TAG, "Location button clicked, but ui state not trusted.")
             return
+        }
+        if (DEBUG) {
+            Slog.d(LOG_TAG, "Location button clicked...")
         }
         if (
             context.checkPermission(
@@ -271,7 +270,7 @@ class LocationButtonSession(
                 Slog.d(LOG_TAG, "setTextType() for session $sessionId: $textType")
             }
             ensureActiveSession()
-            interactor.setTextId(sessionId, getTextResourceId(textType))
+            interactor.setTextType(sessionId, textType)
         }
     }
 
@@ -380,31 +379,6 @@ class LocationButtonSession(
         }
     }
 
-    private fun getTextResourceId(@TextType textType: Int): Int? {
-        return when (textType) {
-            android.app.permissionui.LocationButtonSession.TEXT_TYPE_PRECISE_LOCATION ->
-                R.string.location_button_text_precise_location
-
-            android.app.permissionui.LocationButtonSession.TEXT_TYPE_USE_PRECISE_LOCATION ->
-                R.string.location_button_text_use_precise_location
-
-            android.app.permissionui.LocationButtonSession.TEXT_TYPE_SHARE_PRECISE_LOCATION ->
-                R.string.location_button_text_share_precise_location
-
-            android.app.permissionui.LocationButtonSession.TEXT_TYPE_NEAR_MY_PRECISE_LOCATION ->
-                R.string.location_button_text_near_my_precise_location
-
-            android.app.permissionui.LocationButtonSession.TEXT_TYPE_NEAR_YOUR_PRECISE_LOCATION ->
-                R.string.location_button_text_near_your_precise_location
-
-            android.app.permissionui.LocationButtonSession.TEXT_TYPE_NONE -> null
-            else -> {
-                Slog.w("LocationButton", "Text type $textType is not supported. Using no text.")
-                null
-            }
-        }
-    }
-
     override fun binderDied() {
         close()
     }
@@ -415,27 +389,6 @@ class LocationButtonSession(
 
     fun interface OnLocationButtonSessionCloseListener {
         fun onSessionClose(locationButtonSession: LocationButtonSession)
-    }
-
-    fun LocationButtonRequest.toButtonModel(density: Float): ButtonModel {
-        return ButtonModel(
-            width = width,
-            height = height,
-            paddingLeft = paddingLeft,
-            paddingTop = paddingTop,
-            paddingRight = paddingRight,
-            paddingBottom = paddingBottom,
-            backgroundColor = Color(backgroundColor),
-            strokeColor = Color(strokeColor),
-            strokeWidth = strokeWidth,
-            cornerRadius = cornerRadius,
-            pressedCornerRadius = pressedCornerRadius,
-            iconTint = Color(iconTint),
-            textResId = getTextResourceId(textType),
-            textColor = Color(textColor),
-            configuration = configuration,
-            density = density,
-        )
     }
 
     companion object {

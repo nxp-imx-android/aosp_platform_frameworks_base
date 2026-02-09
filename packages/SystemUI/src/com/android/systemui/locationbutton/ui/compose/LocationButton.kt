@@ -77,11 +77,30 @@ fun LocationButton(
         LocalContext provides context,
         LocalLayoutDirection provides layoutDirection,
     ) {
+        val contentWidth = viewModel.width - viewModel.paddingLeft - viewModel.paddingRight
+        val contentHeight = viewModel.height - viewModel.paddingTop - viewModel.paddingBottom
+
         val contentPadding =
-            if (viewModel.textResId != null) {
-                ButtonDefaults.contentPaddingFor(viewModel.height)
+            remember(viewModel.textResId, contentHeight) {
+                if (viewModel.textResId != null) {
+                    ButtonDefaults.contentPaddingFor(contentHeight)
+                } else {
+                    PaddingValues()
+                }
+            }
+
+        val defaultShapes = ButtonDefaults.shapesFor(contentHeight)
+        val shape =
+            if (viewModel.cornerRadius != null) {
+                RoundedCornerShape(viewModel.cornerRadius)
             } else {
-                PaddingValues()
+                defaultShapes.shape
+            }
+        val pressedShape =
+            if (viewModel.pressedCornerRadius != null) {
+                RoundedCornerShape(viewModel.pressedCornerRadius)
+            } else {
+                defaultShapes.pressedShape
             }
 
         Button(
@@ -94,12 +113,8 @@ fun LocationButton(
                         viewModel.paddingRight,
                         viewModel.paddingBottom,
                     )
-                    .size(viewModel.width, viewModel.height),
-            shapes =
-                ButtonShapes(
-                    RoundedCornerShape(viewModel.cornerRadius),
-                    RoundedCornerShape(viewModel.pressedCornerRadius),
-                ),
+                    .size(contentWidth, contentHeight),
+            shapes = ButtonShapes(shape = shape, pressedShape = pressedShape),
             colors =
                 ButtonDefaults.buttonColors(
                     containerColor = viewModel.backgroundColor,
@@ -112,15 +127,15 @@ fun LocationButton(
                 painter = painterResource(id = R.drawable.ic_my_location),
                 contentDescription = null,
                 // requiredSize is needed to prevent squashing of Icon.
-                modifier = Modifier.requiredSize(ButtonDefaults.iconSizeFor(viewModel.height)),
+                modifier = Modifier.requiredSize(ButtonDefaults.iconSizeFor(contentHeight)),
                 tint = viewModel.iconTint,
             )
             viewModel.textResId?.let { textResId ->
                 Text(
                     text = stringResource(textResId),
                     modifier =
-                        Modifier.padding(start = ButtonDefaults.iconSpacingFor(viewModel.height)),
-                    style = ButtonDefaults.textStyleFor(viewModel.height),
+                        Modifier.padding(start = ButtonDefaults.iconSpacingFor(contentHeight)),
+                    style = ButtonDefaults.textStyleFor(contentHeight),
                     maxLines = 1,
                     softWrap = false,
                 )
