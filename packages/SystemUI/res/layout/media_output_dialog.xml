@@ -160,8 +160,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="8dp"
-            android:paddingTop="4dp"
-            android:text="@string/media_output_dialog_missing_permissions_warning"
+            android:paddingTop="8dp"
             android:textColor="@color/materialColorError" />
         <com.google.android.material.button.MaterialButton
             android:id="@+id/warning_fix_button"
@@ -170,7 +169,6 @@
             android:layout_marginHorizontal="8dp"
             android:gravity="start|center_vertical"
             android:paddingStart="0dp"
-            android:text="@string/media_output_dialog_warning_button_fix"
             style="@style/MediaOutput.Dialog.FixPermissionsButton" />
     </LinearLayout>
 

@@ -3888,11 +3888,11 @@
     <!-- Warning text shown below the list of devices in a dialog letting users choose devices to
          use as media outputs, when some devices cannot be shown because permissions are missing.
          [CHAR LIMIT=NONE] -->
-    <string name="media_output_dialog_missing_permissions_warning">Some devices are not visible. Update your app permissions</string>
+    <string name="media_output_dialog_missing_permissions_warning">To see more devices, you may need to allow permissions for <xliff:g id="media_app_name" example="Foo Music App">%1$s</xliff:g></string>
     <!-- Text of a button displayed below a warning text indicating that some media output devices
-         are not shown because permissions are missing. Tapping the button triggers a flow for the
-         user to grant the missing permissions to the app. [CHAR LIMIT=NONE] -->
-    <string name="media_output_dialog_warning_button_fix">Fix</string>
+         are not shown because permissions are missing. Tapping the button opens the app so the user
+         can grant missing permissions to that app. [CHAR LIMIT=NONE] -->
+    <string name="media_output_dialog_warning_button_fix">Open <xliff:g id="media_app_name" example="Foo Music App">%1$s</xliff:g></string>
     <!-- Title for Connected speakers expandable group. [CHAR LIMIT=NONE] -->
     <string name="media_output_group_title_connected_speakers">Connected speakers</string>
     <!-- Title for Speakers and Displays group. [CHAR LIMIT=NONE] -->
