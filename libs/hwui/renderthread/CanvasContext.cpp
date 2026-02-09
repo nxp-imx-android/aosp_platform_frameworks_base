@@ -252,6 +252,8 @@ sp<SurfaceControl> CanvasContext::getSurfaceControl() const {
 
 void CanvasContext::setSurfaceControl(sp<SurfaceControl> surfaceControl) {
 #ifdef __ANDROID__
+    startHintSession();
+
     if (surfaceControl == mSurfaceControl) return;
 
     if (surfaceControl == nullptr) {
