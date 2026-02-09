@@ -31,6 +31,7 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.pm.ApplicationInfo;
 import android.os.Binder;
+import android.os.FileUtils;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -1324,6 +1325,11 @@ public abstract class BackupAgent extends ContextWrapper {
     private class BackupServiceBinder extends IBackupAgent.Stub {
         private static final String TAG = "BackupServiceBinder";
 
+        /* This is the name of the file used to cache backup data for delayed restore. This is used
+         * only for key-value backup.
+         */
+        private static final String BACKUP_DATA_CACHE_FILENAME = "backup_data.cache";
+
         @Override
         public void doBackup(
                 ParcelFileDescriptor oldState,
@@ -1740,11 +1746,18 @@ public abstract class BackupAgent extends ContextWrapper {
                 IBackupManager callbackBinder,
                 long appVersionCode,
                 int token) {
-            ParcelFileDescriptor dataPfd = null;
+            FileDescriptor dataFd = null;
+            FileInputStream dataIn = null;
             final long ident = Binder.clearCallingIdentity();
             try {
-                dataPfd = fetchCachedDataForDelayedRestore();
-                BackupDataInput data = new BackupDataInput(dataPfd.getFileDescriptor());
+                dataIn = fetchCachedDataForDelayedRestore();
+                dataFd = dataIn.getFD();
+                if (dataFd == null) {
+                    Log.e(TAG, "No cached data found for delayed restore");
+                    throw new IllegalStateException("No cached data found for delayed restore");
+                }
+
+                BackupDataInput data = new BackupDataInput(dataFd);
                 BackupAgent.this.onDelayedRestore(request, data, appVersionCode, newState);
             } catch (Exception e) {
                 Log.d(
@@ -1762,38 +1775,89 @@ public abstract class BackupAgent extends ContextWrapper {
                 }
 
                 if (Binder.getCallingPid() != Process.myPid()) {
-                    IoUtils.closeQuietly(dataPfd);
+                    IoUtils.closeQuietly(dataIn);
                     IoUtils.closeQuietly(newState);
                 }
             }
         }
 
-        private ParcelFileDescriptor fetchCachedDataForDelayedRestore() {
-            // TODO: Add implementation in followup
-            return null;
+        private FileInputStream fetchCachedDataForDelayedRestore() {
+            File cacheFile = new File(getFilesDir(), BACKUP_DATA_CACHE_FILENAME);
+            if (!cacheFile.exists()) {
+                Log.e(
+                        TAG,
+                        "Delayed restore cache file not found at path: "
+                                + cacheFile.getAbsolutePath());
+                return null;
+            }
+            try {
+                return new FileInputStream(cacheFile);
+            } catch (IOException e) {
+                Log.w(TAG, "Failed to fetch cached data for delayed restore", e);
+                throw new RuntimeException(e);
+            }
         }
 
         private void cacheDataForDelayedRestoreIfSupported(@NonNull FileDescriptor data) {
             if (isDelayedRestoreSupported()) {
-                try {
-                    // TODO: Add implementation in followup
+                Log.v(TAG, "Caching data as package supports delayed restore.");
+                File cacheFile = new File(getFilesDir(), BACKUP_DATA_CACHE_FILENAME);
+                try (FileInputStream in = new FileInputStream(data);
+                        FileOutputStream out = new FileOutputStream(cacheFile)) {
+                    FileUtils.copy(in, out);
+
+                    // Ensure that the data is written to the cache file before seeking to the
+                    // beginning.
+                    out.getFD().sync();
+
+                    // Seek FileDescriptor to the beginning so that the backup agent can read
+                    // it from the beginning during actual restore.
                     Os.lseek(data, 0, OsConstants.SEEK_SET);
+
+                    // Set the cache file permissions to read-only for the owner.
+                    Os.chmod(cacheFile.getAbsolutePath(), OsConstants.S_IRUSR);
+                } catch (IOException e) {
+                    Log.w(TAG, "Failed to cache data for delayed restore", e);
+                    throw new RuntimeException(e);
                 } catch (ErrnoException e) {
-                    Log.w(TAG, "Failed to set file pointer position for delayed restore", e);
+                    Log.w(TAG, "Failed to seek or chmod for delayed restore cache", e);
                     throw new RuntimeException(e);
                 }
             }
         }
 
         private boolean isDelayedRestoreSupported() {
-            return getPackageManager().checkPermission(
-                    android.Manifest.permission.SCHEDULE_DELAYED_RESTORE, getPackageName())
-                    == getPackageManager().PERMISSION_GRANTED;
+            return this.getClass().getName()
+                            != "com.android.server.backup.PackageManagerBackupAgent"
+                    && getPackageManager()
+                                    .checkPermission(
+                                            android.Manifest.permission.SCHEDULE_DELAYED_RESTORE,
+                                            getPackageName())
+                            == getPackageManager().PERMISSION_GRANTED;
         }
 
         @Override
         public void doDelayedRestoreCachedDataExpired(int token, IBackupManager callbackBinder) {
-            // TODO: Add implementation in followup
+            try {
+                File cacheFile = new File(getFilesDir(), BACKUP_DATA_CACHE_FILENAME);
+                if (cacheFile.exists()) {
+                    cacheFile.delete();
+                }
+            } catch (Exception e) {
+                Log.d(
+                        TAG,
+                        "onDelayedRestoreCachedDataExpired ("
+                                + BackupAgent.this.getClass().getName()
+                                + ") threw",
+                        e);
+                throw new RuntimeException(e);
+            } finally {
+                try {
+                    callbackBinder.opCompleteForUser(getBackupUserId(), token, 0);
+                } catch (RemoteException e) {
+                    // we'll time out anyway, so we're safe
+                }
+            }
         }
 
         @Override
