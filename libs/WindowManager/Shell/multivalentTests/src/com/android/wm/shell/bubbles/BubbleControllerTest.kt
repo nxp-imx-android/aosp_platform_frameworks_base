@@ -36,9 +36,12 @@ import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.SetFlagsRule
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
+import android.util.Size
 import android.view.IWindowManager
 import android.view.InsetsSource
 import android.view.InsetsState
+import android.view.Surface.ROTATION_0
+import android.view.Surface.ROTATION_90
 import android.view.SurfaceControl
 import android.view.View
 import android.view.WindowInsets
@@ -46,6 +49,7 @@ import android.view.WindowManager
 import android.view.WindowManager.TRANSIT_CHANGE
 import android.window.TransitionInfo
 import android.window.WindowContainerToken
+import android.window.WindowContainerTransaction
 import androidx.core.content.getSystemService
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -59,6 +63,7 @@ import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_BAR
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.Flags.FLAG_FIX_BUBBLE_SWIPE_UP_GESTURE
 import com.android.wm.shell.Flags.FLAG_SEND_BUBBLE_ROOT_TASK_ID_TO_LAUNCHER
+import com.android.wm.shell.Flags.FLAG_UPDATE_BUBBLE_BOUNDS_DURING_ROTATION
 import com.android.wm.shell.R
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTaskOrganizer
@@ -74,6 +79,7 @@ import com.android.wm.shell.bubbles.logging.BubbleSessionTrackerImpl
 import com.android.wm.shell.bubbles.storage.BubblePersistentRepository
 import com.android.wm.shell.bubbles.transitions.BubbleTransitions
 import com.android.wm.shell.bubbles.user.data.FakeBubbleUserResolver
+import com.android.wm.shell.common.DisplayChangeController.OnDisplayChangingListener
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayImeController
 import com.android.wm.shell.common.DisplayInsetsController
@@ -161,6 +167,7 @@ class BubbleControllerTest {
     private lateinit var bubbleTransitions: BubbleTransitions
     private lateinit var sessionTracker: BubbleSessionTracker
     private lateinit var bubbleViewInfoTaskFactory: FakeBubbleViewInfoTaskFactory
+    private lateinit var displayLayout: DisplayLayout
 
     private var isStayAwakeOnFold = false
 
@@ -201,11 +208,9 @@ class BubbleControllerTest {
             on { currentWindowMetrics } doReturn realWindowManager.currentWindowMetrics
             on { defaultDisplay } doReturn realDefaultDisplay
         }
+        displayLayout = DisplayLayout(context, realDefaultDisplay)
         displayController =
-            mock<DisplayController> {
-                on { getDisplayLayout(anyInt()) } doReturn
-                    DisplayLayout(context, realDefaultDisplay)
-            }
+            mock<DisplayController> { on { getDisplayLayout(anyInt()) } doReturn displayLayout }
 
         bubblePositioner = BubblePositioner(context, deviceConfigFolded)
 
@@ -1119,6 +1124,76 @@ class BubbleControllerTest {
         }
 
         assertThat(bubbleStateListener.lastUpdate!!.bubbleRootTaskId).isEqualTo(123)
+    }
+
+    @EnableFlags(FLAG_UPDATE_BUBBLE_BOUNDS_DURING_ROTATION)
+    @Test
+    fun onDisplayChanging_rotating_stackExpanded_updatesTaskBounds() {
+        val displayChangingListenerCaptor = argumentCaptor<OnDisplayChangingListener>()
+        verify(displayController)
+            .addDisplayChangingController(displayChangingListenerCaptor.capture())
+        val displayChangingListener = displayChangingListenerCaptor.lastValue
+
+        displayLayout.rotateTo(context.resources, ROTATION_90)
+        displayController.stub { on { getDisplayContext(0) } doReturn context }
+
+        val bubble = createBubble("key")
+        // this is kinda hacky but ensures that the task view is created using the fake factory
+        // which ensures we have a token
+        bubble.getOrCreateBubbleTaskView(FakeBubbleTaskViewFactory(context, mainExecutor))
+        bubble.setShouldAutoExpand(true)
+        bubble.setIsTaskValidToBubbleOnSmallScreen(true)
+        getInstrumentation().runOnMainSync {
+            bubbleController.inflateAndAdd(
+                bubble,
+                /* suppressFlyout= */ true,
+                /* showInShade= */ true,
+            )
+        }
+        assertThat(bubbleData.hasBubbles()).isTrue()
+        assertThat(bubbleData.isExpanded).isTrue()
+        assertThat(bubbleData.selectedBubble).isEqualTo(bubble)
+        assertThat(bubble.taskView.taskInfo!!.token).isNotNull()
+
+        val wct = mock<WindowContainerTransaction>()
+        displayChangingListener.onDisplayChange(0, ROTATION_0, ROTATION_90, null, wct)
+
+        verify(wct).setBounds(eq(bubble.taskView.taskInfo!!.token), any())
+    }
+
+    @EnableFlags(FLAG_UPDATE_BUBBLE_BOUNDS_DURING_ROTATION)
+    @Test
+    fun onDisplayChanging_resizing_stackExpanded_doesNotUpdateTaskBounds() {
+        val displayChangingListenerCaptor = argumentCaptor<OnDisplayChangingListener>()
+        verify(displayController)
+            .addDisplayChangingController(displayChangingListenerCaptor.capture())
+        val displayChangingListener = displayChangingListenerCaptor.lastValue
+
+        displayLayout.resizeTo(context.resources, Size(500, 1000))
+        displayController.stub { on { getDisplayContext(0) } doReturn context }
+
+        val bubble = createBubble("key")
+        // this is kinda hacky but ensures that the task view is created using the fake factory
+        // which ensures we have a token
+        bubble.getOrCreateBubbleTaskView(FakeBubbleTaskViewFactory(context, mainExecutor))
+        bubble.setShouldAutoExpand(true)
+        bubble.setIsTaskValidToBubbleOnSmallScreen(true)
+        getInstrumentation().runOnMainSync {
+            bubbleController.inflateAndAdd(
+                bubble,
+                /* suppressFlyout= */ true,
+                /* showInShade= */ true,
+            )
+        }
+        assertThat(bubbleData.hasBubbles()).isTrue()
+        assertThat(bubbleData.isExpanded).isTrue()
+        assertThat(bubbleData.selectedBubble).isEqualTo(bubble)
+        assertThat(bubble.taskView.taskInfo!!.token).isNotNull()
+
+        val wct = mock<WindowContainerTransaction>()
+        displayChangingListener.onDisplayChange(0, ROTATION_0, ROTATION_0, null, wct)
+
+        verify(wct, never()).setBounds(any(), any())
     }
 
     private fun createBubbleEntry(bubbleKey: String = "key", pkgName: String): BubbleEntry {

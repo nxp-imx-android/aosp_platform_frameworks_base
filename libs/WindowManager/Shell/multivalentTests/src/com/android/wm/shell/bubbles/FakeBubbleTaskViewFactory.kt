@@ -19,6 +19,8 @@ package com.android.wm.shell.bubbles
 import android.app.ActivityManager
 import android.content.Context
 import android.view.SurfaceControl
+import com.android.testing.wm.util.MockToken
+import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.taskview.TaskView
 import com.android.wm.shell.taskview.TaskViewController
@@ -40,11 +42,12 @@ class FakeBubbleTaskViewFactory(
             spy(TaskView(context, mock<TaskViewController>(), taskViewTaskController)) {
                 on { surfaceControl } doReturn taskLeash
             }
-        val taskInfo = mock<ActivityManager.RunningTaskInfo>()
+        val taskInfo = mock<ActivityManager.RunningTaskInfo>().apply { token = MockToken().token() }
         val bubbleHelper = mock<BubbleHelper>()
         val bubbleController =
-            mock<BubbleController>() { on { getBubbleHelper() } doReturn bubbleHelper }
+            mock<BubbleController> { on { getBubbleHelper() } doReturn bubbleHelper }
         whenever(taskViewTaskController.taskInfo).thenReturn(taskInfo)
+        whenever(taskViewTaskController.taskOrganizer).thenReturn(mock<ShellTaskOrganizer>())
         return BubbleTaskView(taskView, mainExecutor, bubbleController)
     }
 }
