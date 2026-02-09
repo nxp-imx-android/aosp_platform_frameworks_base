@@ -1,10 +1,12 @@
 package com.android.systemui.statusbar.notification.stack
 
+import android.view.MotionEvent
 import android.view.ViewGroup
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.LogLevel.DEBUG
 import com.android.systemui.log.core.LogLevel.ERROR
 import com.android.systemui.log.core.LogLevel.INFO
+import com.android.systemui.log.core.LogLevel.WARNING
 import com.android.systemui.log.dagger.NotificationHeadsUpLog
 import com.android.systemui.log.dagger.NotificationRenderLog
 import com.android.systemui.log.dagger.ShadeLog
@@ -391,7 +393,7 @@ constructor(
                 bool5 = expandWantsIt
             },
             {
-                "NSSLC.interceptTouchEvent.log1: action= $int1, result=$bool1, skipForDragging=$bool2, isTouchInGuts=$bool3, longPressWantsIt=$bool4, expandWantsIt=$bool5"
+                "NSSLC.interceptTouchEvent.log1: ${MotionEvent.actionToString(int1)}, result=$bool1, skipForDragging=$bool2, isTouchInGuts=$bool3, longPressWantsIt=$bool4, expandWantsIt=$bool5"
             },
         )
         shadeTouchLogBuffer.log(
@@ -436,7 +438,7 @@ constructor(
     ) {
         shadeTouchLogBuffer.log(
             TAG,
-            DEBUG,
+            if (result) WARNING else DEBUG,
             {
                 int1 = action
                 bool1 = result
@@ -444,7 +446,7 @@ constructor(
                 bool3 = isOutBoundsDown
             },
             {
-                "NSSL.shouldRefuseTouchEvent: action= $int1, result=$bool1, interactive=$bool2, isOutBoundsDown=$bool3"
+                "NSSL.shouldRefuseTouchEvent: ${MotionEvent.actionToString(int1)}, result=$bool1, interactive=$bool2, isOutBoundsDown=$bool3"
             },
         )
     }
@@ -476,7 +478,7 @@ constructor(
                 bool5 = lockscreenExpandWantsIt
             },
             {
-                "NSSLC.touchEvent.log1: action= $int1, result=$bool1, sceneContainerEnabled=$bool2, longPressWantsIt=$bool3, expandWantsIt=$bool4, lockscreenExpandWantsIt=$bool5"
+                "NSSLC.touchEvent.log1: ${MotionEvent.actionToString(int1)}, result=$bool1, sceneContainerEnabled=$bool2, longPressWantsIt=$bool3, expandWantsIt=$bool4, lockscreenExpandWantsIt=$bool5"
             },
         )
         shadeTouchLogBuffer.log(
@@ -513,7 +515,7 @@ constructor(
                 bool3 = touchHandlerIntercepted
             },
             {
-                "NSSL.onInterceptTouchEvent: action= $int1, result=$bool1, shouldRefuse=$bool2, touchHandlerIntercepted=$bool3"
+                "NSSL.onInterceptTouchEvent: ${MotionEvent.actionToString(int1)}, result=$bool1, shouldRefuse=$bool2, touchHandlerIntercepted=$bool3"
             },
         )
     }
