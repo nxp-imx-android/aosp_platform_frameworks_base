@@ -366,12 +366,17 @@ constructor(
         // The timeout duration from settings (Security > Device Unlock > Gear icon > "Lock after
         // screen timeout".
         val durationSetting: Long =
-            secureSettings
-                .getIntForUser(
-                    Secure.LOCK_SCREEN_LOCK_AFTER_TIMEOUT,
-                    KEYGUARD_CAN_IGNORE_AUTH_DURATION,
-                    userId,
-                )
+            if (!lockPatternUtils.isSecure(userId)) {
+                    // Swipe setting provides no ability to change the lock timeout. Ignore prior
+                    // value
+                    KEYGUARD_CAN_IGNORE_AUTH_DURATION
+                } else {
+                    secureSettings.getIntForUser(
+                        Secure.LOCK_SCREEN_LOCK_AFTER_TIMEOUT,
+                        KEYGUARD_CAN_IGNORE_AUTH_DURATION,
+                        userId,
+                    )
+                }
                 .toLong()
 
         // Device policy maximum timeout.
@@ -408,7 +413,7 @@ constructor(
         private const val SYSTEMUI_PERMISSION = "com.android.systemui.permission.SELF"
         private const val SEQ_EXTRA_KEY = "count"
 
-        private const val KEYGUARD_CAN_IGNORE_AUTH_DURATION = 5000
+        const val KEYGUARD_CAN_IGNORE_AUTH_DURATION = 5000
         private const val KEYGUARD_DISPLAY_TIMEOUT_DELAY_DEFAULT = 30000
     }
 }

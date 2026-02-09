@@ -50,6 +50,7 @@ import com.android.systemui.scene.shared.model.Scenes.Gone
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.FakeUserRepository
 import com.android.systemui.util.settings.fakeSettings
+import com.android.systemui.util.time.fakeSystemClock
 import junit.framework.Assert.assertEquals
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runCurrent
@@ -85,6 +86,7 @@ class KeyguardWakeDirectlyToGoneInteractorTest : SysuiTestCase() {
                 }
                 .whenever(mockedContext)
                 .registerReceiver(any(), any(), any(), any(), any())
+            whenever(lockPatternUtils.isSecure(anyInt())).thenReturn(true)
         }
 
     private val testScope = kosmos.testScope
@@ -284,6 +286,7 @@ class KeyguardWakeDirectlyToGoneInteractorTest : SysuiTestCase() {
     @Test
     fun testSetsCanIgnoreAuth_andSetsAlarm_whenTimingOut() =
         testScope.runTest {
+            val userSettingDelay = 12345
             val canWake by collectValues(underTest.canWakeDirectlyToGone)
             kosmos.setSceneTransition(ObservableTransitionState.Idle(Scenes.Lockscreen))
 
@@ -298,7 +301,7 @@ class KeyguardWakeDirectlyToGoneInteractorTest : SysuiTestCase() {
                 .thenReturn(-1)
             kosmos.fakeSettings.putIntForUser(
                 Settings.Secure.LOCK_SCREEN_LOCK_AFTER_TIMEOUT,
-                500,
+                userSettingDelay,
                 FakeUserRepository.DEFAULT_SELECTED_USER,
             )
 
@@ -321,7 +324,62 @@ class KeyguardWakeDirectlyToGoneInteractorTest : SysuiTestCase() {
             verify(kosmos.alarmManager)
                 .setExactAndAllowWhileIdle(
                     eq(AlarmManager.ELAPSED_REALTIME_WAKEUP),
-                    anyLong(),
+                    eq(kosmos.fakeSystemClock.elapsedRealtime() + userSettingDelay),
+                    any(),
+                )
+        }
+
+    @Test
+    fun testSetsCanIgnoreAuth_andSetsAlarm_ignoredUserTimeout_whenTimingOutWithSwipeSecurity() =
+        testScope.runTest {
+            val userSettingDelay = 12345
+            // Swipe user is not secure
+            whenever(lockPatternUtils.isSecure(anyInt())).thenReturn(false)
+
+            val canWake by collectValues(underTest.canWakeDirectlyToGone)
+            kosmos.setSceneTransition(ObservableTransitionState.Idle(Scenes.Lockscreen))
+
+            assertEquals(
+                listOf(
+                    false // Defaults to false.
+                ),
+                canWake,
+            )
+
+            whenever(kosmos.devicePolicyManager.getMaximumTimeToLock(eq(null), anyInt()))
+                .thenReturn(-1)
+
+            // But the user had previously set a timeout value
+            kosmos.fakeSettings.putIntForUser(
+                Settings.Secure.LOCK_SCREEN_LOCK_AFTER_TIMEOUT,
+                userSettingDelay,
+                FakeUserRepository.DEFAULT_SELECTED_USER,
+            )
+
+            kosmos.sceneInteractor.changeScene(Gone, loggingReason = "for test")
+            runCurrent()
+            transitionRepository.sendTransitionSteps(
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.GONE,
+                testScope,
+            )
+            runCurrent()
+
+            kosmos.powerInteractor.setAsleepForTest(
+                sleepReason = PowerManager.GO_TO_SLEEP_REASON_TIMEOUT
+            )
+            runCurrent()
+
+            assertEquals(listOf(false, true), canWake)
+
+            // uses the default delay when there is no security
+            verify(kosmos.alarmManager)
+                .setExactAndAllowWhileIdle(
+                    eq(AlarmManager.ELAPSED_REALTIME_WAKEUP),
+                    eq(
+                        kosmos.fakeSystemClock.elapsedRealtime() +
+                            KeyguardWakeDirectlyToGoneInteractor.KEYGUARD_CAN_IGNORE_AUTH_DURATION
+                    ),
                     any(),
                 )
         }
