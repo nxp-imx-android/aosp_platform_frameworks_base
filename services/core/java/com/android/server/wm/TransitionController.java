@@ -2172,12 +2172,21 @@ class TransitionController {
             });
         }
 
+        /**
+         * Pretend the token is a remote binder so that the log mirrors what we'd see
+         * out-of-process and so we avoid accessing mutable internals via virtual dispatch.
+         */
+        private static String tokenToString(IBinder transitionToken) {
+            return transitionToken.getClass().getName() + "@"
+                    + Integer.toHexString(transitionToken.hashCode());
+        }
+
         @Override
         public void requestStartTransition(IBinder transitionToken, TransitionRequestInfo request)
                 throws RemoteException {
             ProtoLog.v(WM_DEBUG_WINDOW_TRANSITIONS_MIN,
                     "Transition requested [FALLBACK] (#%d): %s %s", request.getDebugId(),
-                    transitionToken, request);
+                    tokenToString(transitionToken), request);
             // This is often wasted work; however, Fallback is only active during exceptional
             // situations so debugging is more valuable than micro-optimization at this point.
             final Throwable requestTrace = new Throwable();
@@ -2191,7 +2200,7 @@ class TransitionController {
                     }
                     ProtoLog.v(WM_DEBUG_WINDOW_TRANSITIONS_MIN,
                             "Starting transition [FALLBACK] (#%d): %s %s", request.getDebugId(),
-                            transitionToken, request);
+                            tokenToString(transitionToken), request);
                     mAtm.getWindowOrganizerController().startTransition(transitionToken,
                             null /* wct */);
                 } catch (Exception e) {
