@@ -71,8 +71,6 @@ import static android.provider.Settings.Global.DEVELOPMENT_FORCE_RTL;
 import static android.provider.Settings.Global.HIDE_ERROR_DIALOGS;
 import static android.provider.Settings.System.DEFAULT_DEVICE_FONT_SCALE;
 import static android.provider.Settings.System.FONT_SCALE;
-import static android.service.controls.flags.Flags.homePanelDream;
-import static android.service.dreams.Flags.dreamsV2;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.Display.INVALID_DISPLAY;
 import static android.view.WindowManager.TRANSIT_CHANGE;
@@ -1554,8 +1552,8 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         a.name = DreamActivity.class.getName();
         a.enabled = true;
         a.persistableMode = ActivityInfo.PERSIST_NEVER;
-        if (dreamsV2() && mContext.getResources().getBoolean(
-                com.android.internal.R.bool.config_alwaysAllowDreamRotation)) {
+        if (mContext.getResources()
+                .getBoolean(com.android.internal.R.bool.config_alwaysAllowDreamRotation)) {
             // Allow dream to start in the device's current orientation, regardless of the
             // auto-rotation setting.
             a.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR;
@@ -1565,14 +1563,8 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         a.colorMode = ActivityInfo.COLOR_MODE_DEFAULT;
         a.flags |= ActivityInfo.FLAG_EXCLUDE_FROM_RECENTS | ActivityInfo.FLAG_SHOW_WHEN_LOCKED;
         a.configChanges = 0xffffffff;
-
-        if (homePanelDream()) {
-            a.launchMode = ActivityInfo.LAUNCH_MULTIPLE;
-            a.documentLaunchMode = ActivityInfo.DOCUMENT_LAUNCH_ALWAYS;
-        } else {
-            a.resizeMode = RESIZE_MODE_UNRESIZEABLE;
-            a.launchMode = ActivityInfo.LAUNCH_SINGLE_INSTANCE;
-        }
+        a.launchMode = ActivityInfo.LAUNCH_MULTIPLE;
+        a.documentLaunchMode = ActivityInfo.DOCUMENT_LAUNCH_ALWAYS;
 
         final ActivityOptions options = ActivityOptions.makeBasic();
         // DreamService does not support multi-display yet, always launch on default display.
