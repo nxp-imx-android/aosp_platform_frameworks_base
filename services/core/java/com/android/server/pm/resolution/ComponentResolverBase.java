@@ -24,7 +24,6 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.ProviderInfo;
 import android.content.pm.ResolveInfo;
-import android.os.UserHandle;
 import android.util.ArrayMap;
 import android.util.Pair;
 
@@ -207,9 +206,11 @@ public abstract class ComponentResolverBase extends WatchableImpl implements Com
                 continue;
             }
 
-            if (processName != null && (!p.getProcessName().equals(processName)
-                    || !UserHandle.isSameApp(pkg.getUid(), uid))) {
-                continue;
+            if (processName != null) {
+                if (!p.getProcessName().equals(processName)
+                        || !computer.isCallerSameApp(pkg.getPackageName(), uid)) {
+                    continue;
+                }
             }
             // See PM.queryContentProviders()'s javadoc for why we have the metaData parameter.
             if (metaDataKey != null && !p.getMetaData().containsKey(metaDataKey)) {
