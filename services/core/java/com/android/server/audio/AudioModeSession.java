@@ -166,6 +166,9 @@ public final class AudioModeSession extends IAudioModeSession.Stub {
             mSetCommDevice = mAudioManager.getCommunicationDevice();
         }
 
+        mAudioService.setMode(
+                mMode, mCallback.asBinder(), mAttributionSource.getPackageName());
+
         // on main thread, temporary
         mAudioManager.registerAudioDeviceCallback(mAudioDevicesListener, null);
         mAudioManager.addOnCommunicationDeviceChangedListener(
