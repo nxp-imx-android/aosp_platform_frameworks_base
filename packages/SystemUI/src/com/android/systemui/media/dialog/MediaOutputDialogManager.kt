@@ -27,7 +27,7 @@ import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.broadcast.BroadcastSender
 import javax.inject.Inject
 
-/** Manager to create and show a [MediaOutputDialog]. */
+/** Manager to create and show a [MediaOutputDialogDelegate]. */
 open class MediaOutputDialogManager
 @Inject
 constructor(
@@ -39,10 +39,10 @@ constructor(
 ) {
     companion object {
         const val INTERACTION_JANK_TAG = "media_output"
-        var mediaOutputDialog: MediaOutputDialog? = null
+        var mediaOutputDialogDelegate: MediaOutputDialogDelegate? = null
     }
 
-    /** Creates a [MediaOutputDialog] for the given package. */
+    /** Creates a [MediaOutputDialogDelegate] for the given package. */
     // TODO: b/321969740 - Make the userHandle non-optional, and place the parameter next to the
     // package name. The user handle is necessary to disambiguate the same package running on
     // different users.
@@ -73,7 +73,7 @@ constructor(
         )
     }
 
-    /** Creates a [MediaOutputDialog] for the given package. */
+    /** Creates a [MediaOutputDialogDelegate] for the given package. */
     // TODO: b/321969740 - Make the userHandle non-optional, and place the parameter next to the
     // package name. The user handle is necessary to disambiguate the same package running on
     // different users.
@@ -83,7 +83,7 @@ constructor(
         controller: DialogTransitionAnimator.Controller?,
         userHandle: UserHandle? = null,
         token: MediaSession.Token? = null,
-        onDialogEventListener: MediaOutputDialog.OnDialogEventListener? = null,
+        onDialogEventListener: MediaOutputDialogDelegate.OnDialogEventListener? = null,
         mediaSwitchingType: MediaSwitchingType? = null,
         useSystemColors: Boolean = false,
     ) {
@@ -102,7 +102,7 @@ constructor(
 
     open fun createAndShowForSystemRouting(
         controller: DialogTransitionAnimator.Controller? = null,
-        onDialogEventListener: MediaOutputDialog.OnDialogEventListener? = null,
+        onDialogEventListener: MediaOutputDialogDelegate.OnDialogEventListener? = null,
         mediaSwitchingType: MediaSwitchingType? = null,
     ) {
         createAndShow(
@@ -127,12 +127,12 @@ constructor(
         includePlaybackAndAppMetadata: Boolean = true,
         userHandle: UserHandle? = null,
         token: MediaSession.Token? = null,
-        onDialogEventListener: MediaOutputDialog.OnDialogEventListener? = null,
+        onDialogEventListener: MediaOutputDialogDelegate.OnDialogEventListener? = null,
         mediaSwitchingType: MediaSwitchingType? = null,
         useSystemColors: Boolean = false,
     ) {
         // Dismiss the previous dialog, if any.
-        mediaOutputDialog?.dismiss()
+        mediaOutputDialogDelegate?.dismiss()
 
         val controller =
             mediaSwitchingControllerFactory.create(
@@ -142,8 +142,8 @@ constructor(
                 mediaSwitchingType,
             )
 
-        val mediaOutputDialog =
-            MediaOutputDialog(
+        val mediaOutputDialogDelegate =
+            MediaOutputDialogDelegate(
                 context,
                 aboveStatusBar,
                 broadcastSender,
@@ -157,15 +157,16 @@ constructor(
 
         // Show the dialog.
         if (dialogTransitionAnimatorController != null) {
-            dialogTransitionAnimator.show(mediaOutputDialog, dialogTransitionAnimatorController)
+            dialogTransitionAnimator.show(mediaOutputDialogDelegate,
+                dialogTransitionAnimatorController)
         } else {
-            mediaOutputDialog.show()
+            mediaOutputDialogDelegate.show()
         }
     }
 
-    /** dismiss [MediaOutputDialog] if exist. */
+    /** dismiss [MediaOutputDialogDelegate] if exist. */
     open fun dismiss() {
-        mediaOutputDialog?.dismiss()
-        mediaOutputDialog = null
+        mediaOutputDialogDelegate?.dismiss()
+        mediaOutputDialogDelegate = null
     }
 }

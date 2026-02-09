@@ -50,7 +50,7 @@ import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.google.android.material.button.MaterialButton
 
 /** The Output Switcher dialog */
-class MediaOutputDialog(
+class MediaOutputDialogDelegate(
     context: Context,
     aboveStatusBar: Boolean,
     private val mBroadcastSender: BroadcastSender,
