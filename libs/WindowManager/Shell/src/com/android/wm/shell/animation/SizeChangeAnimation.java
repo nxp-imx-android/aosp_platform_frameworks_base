@@ -66,6 +66,13 @@ public class SizeChangeAnimation {
     private final ValueAnimator mAnimator = ValueAnimator.ofFloat(0f, 1f);
 
     /**
+     * Indicates if the animation end bounds collapse to a 0-width or 0-height rectangle.
+     *
+     * @see #isCollapsing(Rect)
+     */
+    private final boolean mIsCollapsing;
+
+    /**
      * The default proportion of the animation in which stretching is applied to a surface during
      * interpolation (since the animation is a combination of stretching/cropping/fading).
      */
@@ -104,7 +111,8 @@ public class SizeChangeAnimation {
      */
     public SizeChangeAnimation(Rect startBounds, Rect endBounds, float initialScale,
             float scaleFactor) {
-        if (isCollapsing(endBounds)) {
+        mIsCollapsing = isCollapsing(endBounds);
+        if (mIsCollapsing) {
             mAnimation = buildCollapsingAnimation(startBounds, endBounds);
             mSnapshotAnim = null;
             return;
@@ -121,7 +129,11 @@ public class SizeChangeAnimation {
         if (snapshot != null) {
             startT.reparent(snapshot, leash);
             startT.setPosition(snapshot, 0, 0);
-            startT.show(snapshot);
+            if (mIsCollapsing) {
+                startT.hide(snapshot);
+            } else {
+                startT.show(snapshot);
+            }
         }
         startT.show(leash);
         apply(startT, leash, snapshot, 0.f);
