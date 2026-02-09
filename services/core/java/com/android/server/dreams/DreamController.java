@@ -236,7 +236,8 @@ final class DreamController {
         if (mCurrentDream == null || mCurrentDream.mToken != dreamToken
                 || mCurrentDream.mAppTask != null) {
             Slog.e(TAG, "Illegal dream activity start. mCurrentDream.mToken = "
-                    + mCurrentDream.mToken + ", illegal dreamToken = " + dreamToken
+                    + (mCurrentDream == null ? "null" : mCurrentDream.mToken)
+                    + ", illegal dreamToken = " + dreamToken
                     + ". Ending this dream activity.");
             try {
                 appTask.finishAndRemoveTask();

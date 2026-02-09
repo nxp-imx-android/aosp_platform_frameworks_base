@@ -33,6 +33,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.app.ActivityTaskManager;
+import android.app.IAppTask;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.ServiceConnection;
@@ -351,6 +352,21 @@ public class DreamControllerTest {
         verify(mIDreamService).detach();
         verify(mListener).onDreamStopped(any());
         verify(mListener, never()).onDreamStarted(any());
+    }
+
+    @Test
+    public void setDreamAppTask_noCurrentDream_doesNotCrash() throws RemoteException {
+        // Ensure no current dream
+        mDreamController.stopDream(true /*immediate*/, "test" /*reason*/);
+
+        final IAppTask appTask = mock(IAppTask.class);
+        final Binder token = new Binder();
+
+        // This should not crash
+        mDreamController.setDreamAppTask(token, appTask);
+
+        // Verify task is finished
+        verify(appTask).finishAndRemoveTask();
     }
 
     private ServiceConnection captureServiceConnection() {
