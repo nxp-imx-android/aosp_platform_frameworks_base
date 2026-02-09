@@ -43,6 +43,7 @@ import com.android.systemui.qs.panels.domain.interactor.textFeedbackInteractor
 import com.android.systemui.security.data.repository.securityRepository
 import com.android.systemui.settings.userTracker
 import com.android.systemui.shade.data.repository.shadeDialogContextInteractor
+import com.android.systemui.statusbar.phone.systemUIDialogDotFactory
 import com.android.systemui.statusbar.policy.deviceProvisionedController
 import com.android.systemui.statusbar.policy.securityController
 import com.android.systemui.supervision.data.repository.supervisionRepository
@@ -75,6 +76,7 @@ val Kosmos.qsSecurityFooterUtils by Fixture {
         looper,
         dialogTransitionAnimator,
         shadeDialogContextInteractor,
+        systemUIDialogDotFactory,
     )
 }
 

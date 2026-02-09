@@ -56,6 +56,7 @@ import com.android.systemui.animation.DialogTransitionAnimator;
 import com.android.systemui.animation.Expandable;
 import com.android.systemui.broadcast.BroadcastDispatcher;
 import com.android.systemui.common.shared.model.Icon;
+import com.android.systemui.kosmos.KosmosJavaAdapter;
 import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.qs.footer.domain.model.SecurityButtonConfig;
 import com.android.systemui.res.R;
@@ -121,10 +122,12 @@ public class QSSecurityFooterTest extends SysuiTestCase {
         mShadeDialogContextInteractor = new FakeShadeDialogContextInteractor(mContext);
         Handler mainHandler = new Handler(looper);
         when(mUserTracker.getUserInfo()).thenReturn(mock(UserInfo.class));
+        KosmosJavaAdapter kosmos = new KosmosJavaAdapter(this);
         mFooterUtils = new QSSecurityFooterUtils(getContext(),
                 getContext().getSystemService(DevicePolicyManager.class), mUserTracker,
                 mainHandler, mActivityStarter, mSecurityController, looper,
-                mDialogTransitionAnimator, mShadeDialogContextInteractor);
+                mDialogTransitionAnimator, mShadeDialogContextInteractor,
+                kosmos.getSystemUIDialogDotFactory());
 
         when(mSecurityController.getDeviceOwnerComponentOnAnyUser())
                 .thenReturn(DEVICE_OWNER_COMPONENT);
