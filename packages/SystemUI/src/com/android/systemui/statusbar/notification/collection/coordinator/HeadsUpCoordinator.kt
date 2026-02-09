@@ -58,6 +58,7 @@ import com.android.systemui.statusbar.notification.shared.LaunchNewFsiOnUpdate
 import com.android.systemui.statusbar.notification.stack.BUCKET_HEADS_UP
 import com.android.systemui.util.concurrency.DelayableExecutor
 import com.android.systemui.util.time.SystemClock
+import com.android.systemui.Flags.extendHunsPinnedByUser
 import java.util.function.Consumer
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -141,6 +142,7 @@ constructor(
         // not just any notification.
 
         val isCurrentlyHeadsUp = mHeadsUpManager.isHeadsUpEntry(entry.key)
+        val isPinnedByUser = mHeadsUpManager.isPinnedByUser(entry.key)
 
         if (isCurrentlyHeadsUp) {
             // If the chip's notif is currently showing as heads up, then we'll stop showing it.
@@ -160,6 +162,7 @@ constructor(
                 shouldHeadsUpAgain = !isCurrentlyHeadsUp,
                 isFromUserAction = true,
                 isHeadsUpEntry = isCurrentlyHeadsUp,
+                isPinnedByUser = isPinnedByUser,
                 isBinding = isEntryBinding(entry),
             )
         if (isCurrentlyHeadsUp) {
@@ -328,6 +331,7 @@ constructor(
                                 shouldHeadsUpEver = false,
                                 shouldHeadsUpAgain = false,
                                 isHeadsUpEntry = mHeadsUpManager.isHeadsUpEntry(logicalSummary.key),
+                                isPinnedByUser = mHeadsUpManager.isPinnedByUser(logicalSummary.key),
                                 isBinding = isEntryBinding(logicalSummary),
                             )
                     // If we transfer the heads up notification and the summary isn't even attached,
@@ -386,6 +390,8 @@ constructor(
                             shouldHeadsUpAgain = true,
                             isHeadsUpEntry =
                                 mHeadsUpManager.isHeadsUpEntry(childToReceiveParentHeadsUp.key),
+                            isPinnedByUser =
+                                mHeadsUpManager.isPinnedByUser(childToReceiveParentHeadsUp.key),
                             isBinding = isEntryBinding(childToReceiveParentHeadsUp),
                         )
                     handlePostedEntry(
@@ -486,7 +492,13 @@ constructor(
                 // NOTE: This might be because we're showing heads up (i.e. tracked by
                 // HeadsUpManager) OR it could be because we're binding, and that will affect the
                 // next step.
-                if (posted.shouldHeadsUpEver) {
+                if (extendHunsPinnedByUser() && posted.isPinnedByUser && !posted.isFromUserAction) {
+                    // If the notification is already pinned by the user, and we're not handling an
+                    // update from a user action (user tapping the status bar chip to unpin), then
+                    // we can just post an update to ensure the notification stays updated and
+                    // pinned by the user.
+                    hunMutator.updateNotification(posted.key, PinnedStatus.PinnedByUser)
+                } else if (posted.shouldHeadsUpEver) {
                     // If showing heads up, we need to post an update. Otherwise we're still
                     // binding, and we can just let that finish.
                     if (posted.isHeadsUpEntry) {
@@ -595,6 +607,7 @@ constructor(
                         shouldHeadsUpEver = shouldHeadsUpEver,
                         shouldHeadsUpAgain = true,
                         isHeadsUpEntry = false,
+                        isPinnedByUser = false,
                         isBinding = false,
                     )
 
@@ -628,6 +641,7 @@ constructor(
 
                 // First check basic heads up state.
                 val isHeadsUpEntry = mHeadsUpManager.isHeadsUpEntry(entry.key)
+                val isPinnedByUser = mHeadsUpManager.isPinnedByUser(entry.key)
                 val isBinding = isEntryBinding(entry)
                 val isHeadsUpAlready = isHeadsUpEntry || isBinding
                 val isSilentSystemServerUpdateDuringHeadsUp =
@@ -658,6 +672,7 @@ constructor(
                             update.shouldHeadsUpAgain =
                                 update.shouldHeadsUpAgain || shouldHeadsUpAgain
                             update.isHeadsUpEntry = isHeadsUpEntry
+                            update.isPinnedByUser = isPinnedByUser
                             update.isBinding = isBinding
                         }
                             ?: PostedEntry(
@@ -667,6 +682,7 @@ constructor(
                                 shouldHeadsUpEver = shouldHeadsUpEver,
                                 shouldHeadsUpAgain = shouldHeadsUpAgain,
                                 isHeadsUpEntry = isHeadsUpEntry,
+                                isPinnedByUser = isPinnedByUser,
                                 isBinding = isBinding,
                             )
                     }
@@ -1037,6 +1053,7 @@ constructor(
         var shouldHeadsUpAgain: Boolean,
         var isFromUserAction: Boolean = false,
         var isHeadsUpEntry: Boolean,
+        var isPinnedByUser: Boolean,
         var isBinding: Boolean,
     ) {
         val key = entry.key
