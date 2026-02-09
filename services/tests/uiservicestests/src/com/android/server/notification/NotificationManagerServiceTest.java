@@ -819,8 +819,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
     @SuppressLint("MissingPermission")
     private void initNMS(int upToBootPhase) throws Exception {
-        mService = new TestableNotificationManagerService(mContext, mNotificationRecordLogger,
-                mNotificationInstanceIdSequence);
+        mService = new TestableNotificationManagerService(mContext, mTestableLooper);
 
         // apps allowed as convos
         mService.setStringArrayResourceValue(PKG_O);
@@ -846,11 +845,12 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
                 mPackageManagerClient, mLightsManager, mListeners, mAssistants, mConditionProviders,
                 mCompanionMgr, mSnoozeHelper, mUsageStats, mPolicyFile, mRulesFile,
                 mActivityManager, mGroupHelper, mAm, mAtm, mAppUsageStats, mDevicePolicyManager,
-                mUgm, mUgmInternal, mAppOpsManager, mUm, mHistoryManager, mStatsManager, mAmi,
+                mUgm, mUgmInternal, mAppOpsManager, mHistoryManager, mStatsManager, mAmi,
                 mToastRateLimiter, mPermissionHelper, mock(UsageStatsManagerInternal.class),
                 mTelecomManager, mLogger, mTestFlagResolver, mPermissionManager, mPowerManager,
                 mPostNotificationTrackerFactory, mUiEventLogger, mBitmapOffloader,
-                new NotificationListenerStats(MAX_CHANNELS_CREATED_BY_NLS_FOR_TESTING));
+                new NotificationListenerStats(MAX_CHANNELS_CREATED_BY_NLS_FOR_TESTING),
+                mNotificationRecordLogger, mNotificationInstanceIdSequence);
 
         mService.setAttentionHelper(mAttentionHelper);
         mService.setLockPatternUtils(mock(LockPatternUtils.class));
@@ -2234,9 +2234,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         assertThat(mService.mNotificationList).hasSize(3); // 2 + autogroup
 
         // They get both classified as "News".
-        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
-        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
-                anyString())).thenReturn(true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_NEWS, true);
         when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
         doAnswer(invocationOnMock -> {
             RankingReconsideration recon =
@@ -3423,9 +3421,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     public void testCancelGroupChildrenAfterBundling_summaryCanceled() throws Exception {
         when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
         when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
-        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
-        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
-                anyString())).thenReturn(true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_NEWS, true);
 
         // Post grouped notifications
         final String originalGroupName = "originalGroup";
@@ -3509,9 +3505,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     public void testUpdateGroupNameAfterBundling_summaryCanceled() throws Exception {
         when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
         when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
-        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
-        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
-                anyString())).thenReturn(true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_NEWS, true);
 
         // Add some ungrouped notifications to trigger autogrouping
         final int numNotif = 3;
@@ -6516,8 +6510,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     @Test
     public void testHasCompanionDevice_noService() {
         NotificationManagerService noManService =
-                new TestableNotificationManagerService(mContext, mNotificationRecordLogger,
-                mNotificationInstanceIdSequence);
+                new TestableNotificationManagerService(mContext, mTestableLooper);
 
         assertFalse(noManService.hasCompanionDevice(mListener));
     }
@@ -8836,9 +8829,8 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         mService.setHandler(handler);
         when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
         when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
-        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
-        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
-                anyString())).thenReturn(true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_NEWS, true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_PROMOTION, true);
 
         // Set up notifications that will be adjusted
         final NotificationRecord r1 = spy(generateNotificationRecord(
@@ -18148,9 +18140,10 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         NotificationManagerService.WorkerHandler handler = mock(
                 NotificationManagerService.WorkerHandler.class);
         mService.setHandler(handler);
-        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
-        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
-                anyString())).thenReturn(true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_NEWS, true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_PROMOTION, true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_CONTENT_RECOMMENDATION, true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_SOCIAL_MEDIA, true);
 
         Bundle signals = new Bundle();
         signals.putInt(KEY_TYPE, TYPE_NEWS);
@@ -18186,9 +18179,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
     @Test
     public void applyAdjustment_classify_withUpdatesEnqueued_appliesChannel() throws Exception {
-        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
-        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
-                anyString())).thenReturn(true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_NEWS, true);
         when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
         NotificationRecord sample = generateNotificationRecord(mTestNotificationChannel);
 
@@ -18223,15 +18214,15 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
+    @EnableFlags({FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION})
     public void testApplyAdjustment_keyTypeForDisallowedPackage_DoesNotApply() throws Exception {
         final NotificationRecord r = generateNotificationRecord(mTestNotificationChannel);
         mService.addNotification(r);
         NotificationManagerService.WorkerHandler handler = mock(
                 NotificationManagerService.WorkerHandler.class);
         mService.setHandler(handler);
-        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
-        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
-                anyString())).thenReturn(true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_NEWS, true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_PROMOTION, true);
 
         Bundle signals = new Bundle();
         signals.putInt(KEY_TYPE, TYPE_NEWS);
@@ -18247,15 +18238,14 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         assertThat(r.getChannel().getId()).isEqualTo(NEWS_ID);
 
         // When we block adjustments for this package
-        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
-                anyString())).thenReturn(false);
+        mBinderService.setAdjustmentSupportedForPackage(mUserId, KEY_TYPE, mPkg, false);
 
         signals.putInt(KEY_TYPE, TYPE_PROMOTION);
         mBinderService.applyAdjustmentFromAssistant(null, adjustment);
         waitForIdle();
         r.applyAdjustments();
-        // Then the adjustment is not applied.
-        assertThat(r.getChannel().getId()).isEqualTo(NEWS_ID);
+        // Then the adjustment is not applied, and we're back to the original channel
+        assertThat(r.getChannel().getId()).isEqualTo(mTestNotificationChannel.getId());
     }
 
     @Test
@@ -18265,9 +18255,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
                 NotificationManagerService.WorkerHandler.class);
         mService.setHandler(handler);
         when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
-        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
-        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
-                anyString())).thenReturn(true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_NEWS, true);
 
         NotificationChannel secret = new NotificationChannel("secretChannelId", "secret channel",
                 NotificationManager.IMPORTANCE_DEFAULT);
@@ -18347,9 +18335,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         NotificationManagerService.WorkerHandler handler = mock(
                 NotificationManagerService.WorkerHandler.class);
         mService.setHandler(handler);
-        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
-        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
-                anyString())).thenReturn(true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_NEWS, true);
 
         Bundle signals = new Bundle();
         signals.putInt(KEY_TYPE, TYPE_NEWS);
@@ -18685,9 +18671,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         mService.setHandler(handler);
         when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
         when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
-        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
-        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
-                anyString())).thenReturn(true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_NEWS, true);
 
         // Post a single notification
         final boolean hasOriginalSummary = false;
@@ -18735,9 +18719,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         mService.setHandler(handler);
         when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
         when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
-        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
-        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
-                anyString())).thenReturn(true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_NEWS, true);
 
         // Post grouped notifications
         final String originalGroupName = "originalGroup";
@@ -18793,9 +18775,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         mService.setHandler(handler);
         when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
         when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
-        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
-        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
-                anyString())).thenReturn(true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_NEWS, true);
 
         // Post grouped notifications
         final String originalGroupName = "originalGroup";
@@ -18854,9 +18834,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         mService.setHandler(handler);
         when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
         when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
-        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
-        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
-                anyString())).thenReturn(true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_NEWS, true);
 
         // Post a single notification
         final NotificationRecord r = generateNotificationRecord(mSilentChannel);
@@ -18912,9 +18890,10 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         mService.setHandler(handler);
         when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
         when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
-        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
-        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
-                anyString())).thenReturn(true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_NEWS, true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_PROMOTION, true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_SOCIAL_MEDIA, true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_CONTENT_RECOMMENDATION, true);
 
         // Post some notifications and classify in different bundles
         final int numNotifications = NotificationChannel.SYSTEM_RESERVED_IDS.size();
@@ -18976,13 +18955,14 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         mService.setHandler(handler);
         when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
         when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
-        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
-        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
-                anyString())).thenReturn(true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_NEWS, true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_PROMOTION, true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_SOCIAL_MEDIA, true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_CONTENT_RECOMMENDATION, true);
 
         // Post some notifications and classify in different bundles
         final int numNotifications = NotificationChannel.SYSTEM_RESERVED_IDS.size();
-        List<String> postedNotificationKeys = new ArrayList();
+        List<String> postedNotificationKeys = new ArrayList<>();
         for (int i = 0; i < numNotifications; i++) {
             NotificationRecord r = generateNotificationRecord(mSilentChannel, i, mUserId);
             mService.addNotification(r);
@@ -19046,9 +19026,10 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         mService.setHandler(handler);
         when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
         when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
-        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
-        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
-                anyString())).thenReturn(true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_NEWS, true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_PROMOTION, true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_SOCIAL_MEDIA, true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_CONTENT_RECOMMENDATION, true);
 
         // Post some notifications and classify in different bundles
         final int numNotifications = NotificationChannel.SYSTEM_RESERVED_IDS.size();
@@ -19109,9 +19090,10 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         mService.setHandler(handler);
         when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
         when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
-        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
-        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
-                anyString())).thenReturn(true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_NEWS, true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_PROMOTION, true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_SOCIAL_MEDIA, true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_CONTENT_RECOMMENDATION, true);
 
         NotificationRecord r = generateNotificationRecord(mTestNotificationChannel, 0, mUserId);
         mService.addNotification(r);
@@ -19141,9 +19123,10 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         mService.setHandler(handler);
         when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
         when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
-        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
-        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
-                anyString())).thenReturn(true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_NEWS, true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_PROMOTION, true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_SOCIAL_MEDIA, true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_CONTENT_RECOMMENDATION, true);
 
         // Enqueue some notifications and classify in different bundles
         final int numNotifications = NotificationChannel.SYSTEM_RESERVED_IDS.size();
@@ -19201,9 +19184,10 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         mService.setHandler(handler);
         when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
         when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
-        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
-        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
-                anyString())).thenReturn(true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_NEWS, true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_PROMOTION, true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_SOCIAL_MEDIA, true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_CONTENT_RECOMMENDATION, true);
 
         // Enqueue some notifications and classify in different bundles
         final int numNotifications = NotificationChannel.SYSTEM_RESERVED_IDS.size();
@@ -19272,9 +19256,10 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         mService.setHandler(handler);
         when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
         when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
-        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
-        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
-                anyString())).thenReturn(true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_NEWS, true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_PROMOTION, true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_SOCIAL_MEDIA, true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_CONTENT_RECOMMENDATION, true);
 
         // Enqueue some notifications and classify in different bundles
         final int numNotifications = NotificationChannel.SYSTEM_RESERVED_IDS.size();
@@ -19338,9 +19323,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         mService.setHandler(handler);
         when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
         when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
-        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
-        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
-                anyString())).thenReturn(true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_NEWS, true);
 
         // user setup: mUserId has profile mUserId + 2; mUserId + 1 is a separate user
         when(mUmInternal.getProfileParentId(mUserId + 2)).thenReturn(mUserId);
@@ -19441,9 +19424,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         mService.setHandler(handler);
         when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
         when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
-        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
-        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
-                anyString())).thenReturn(true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_NEWS, true);
 
         // three notifications: one for mUserId, one for different user, one for mUserId's profile
         when(mUmInternal.getProfileParentId(mUserId + 2)).thenReturn(mUserId);
@@ -19531,11 +19512,12 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         mService.setHandler(handler);
         when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
         when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
-        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
-        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
-                anyString())).thenReturn(true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_NEWS, true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_PROMOTION, true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_CONTENT_RECOMMENDATION, true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_SOCIAL_MEDIA, true);
 
-        // Setup: will make notifications for userids mUserId, mUserId + 1, and mUserId + 2;
+        // Setup: will make notifications for userids mUserId and mUserId + 2;
         // have + 2 be a profile.
         // One notification for each user for each classification type.
         when(mUmInternal.getProfileParentId(mUserId + 2)).thenReturn(mUserId);
@@ -19546,29 +19528,23 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
             NotificationRecord r = generateNotificationRecord(mSilentChannel, i + 1,
                     mUserId);
             NotificationRecord r2 = generateNotificationRecord(
-                    mSilentChannel, 20 * (i + 1), mUserId + 1);
-            NotificationRecord r3 = generateNotificationRecord(
                     mSilentChannel, 30 * (i + 1), mUserId + 2);
 
             mService.addNotification(r);
             mService.addNotification(r2);
-            mService.addNotification(r3);
 
             Bundle signals = new Bundle();
             final int adjustmentType = i + 1;
             signals.putInt(Adjustment.KEY_TYPE, adjustmentType);
             Bundle signals2 = new Bundle(signals);
-            Bundle signals3 = new Bundle(signals);
             Adjustment adjustment = new Adjustment(r.getSbn().getPackageName(), r.getKey(), signals,
                     "", r.getUser().getIdentifier());
             Adjustment a2 = new Adjustment(r2.getSbn().getPackageName(), r2.getKey(), signals2,
                     "", r2.getUser().getIdentifier());
-            Adjustment a3 = new Adjustment(r3.getSbn().getPackageName(), r3.getKey(), signals3,
-                    "", r3.getUser().getIdentifier());
-            mBinderService.applyAdjustmentsFromAssistant(null, List.of(adjustment, a2, a3));
+            mBinderService.applyAdjustmentsFromAssistant(null, List.of(adjustment, a2));
             waitForIdle();
 
-            for (NotificationRecord record : List.of(r, r2, r3)) {
+            for (NotificationRecord record : List.of(r, r2)) {
                 record.applyAdjustments();
                 record.setBundleType(adjustmentType);
 
@@ -19624,12 +19600,9 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         mService.setHandler(handler);
         when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
         when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
-        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
-        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
-                anyString())).thenReturn(true);
-
-        List<Integer> allowedTypes = List.of(Adjustment.TYPE_NEWS, Adjustment.TYPE_SOCIAL_MEDIA);
-        when(mAssistants.getAllowedClassificationTypeList(mUserId)).thenReturn(allowedTypes);
+        mBinderService.setAssistantClassificationTypeState(TYPE_PROMOTION, false);
+        mBinderService.setAssistantClassificationTypeState(TYPE_NEWS, true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_SOCIAL_MEDIA, true);
 
         // profiles setup: 2 profiles, one allowed, one disallowed (independent of full user
         // settings)
@@ -19647,14 +19620,14 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         waitForIdle();
         ArgumentCaptor<List> disabledUserIds = ArgumentCaptor.forClass(List.class);
         verify(mPreferencesHelper).updateReservedChannels(disabledUserIds.capture(),
-                eq(allowedTypes), eq(false));
+                eq(List.of(TYPE_SOCIAL_MEDIA, TYPE_NEWS)), eq(false));
         assertThat(disabledUserIds.getValue()).containsExactly(mUserId, 111, 222);
 
         mBinderService.allowAssistantAdjustment(mUserId, Adjustment.KEY_TYPE);
         waitForIdle();
         ArgumentCaptor<List> enabledUserIds = ArgumentCaptor.forClass(List.class);
         verify(mPreferencesHelper).updateReservedChannels(enabledUserIds.capture(),
-                eq(allowedTypes), eq(true));
+                eq(List.of(TYPE_SOCIAL_MEDIA, TYPE_NEWS)), eq(true));
         assertThat(enabledUserIds.getValue()).containsExactly(mUserId, 222);
     }
 
@@ -19665,9 +19638,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         mService.setHandler(handler);
         when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
         when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
-        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
-        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
-                anyString())).thenReturn(true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_NEWS, true);
 
         // User profiles: updating bundle types should extend to all profiles associated with user
         when(mUm.isProfile(mUserId)).thenReturn(false);
@@ -19704,9 +19675,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         mBinderService.createNotificationChannels(mPkg,
                 new ParceledListSlice(Arrays.asList(originalChannel)));
         when(mAssistants.getAllowedComponents(anyInt())).thenReturn(List.of(assistantCn));
-        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
-        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
-                anyString())).thenReturn(true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_NEWS, true);
         when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
         doAnswer(invocationOnMock -> {
             RankingReconsideration recon =
@@ -19757,10 +19726,9 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         mBinderService.createNotificationChannels(mPkg,
                 new ParceledListSlice(Arrays.asList(originalChannel)));
         when(mAssistants.getAllowedComponents(anyInt())).thenReturn(List.of(assistantCn));
-        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
-        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
-                anyString())).thenReturn(true);
         when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
+        when(mAssistants.isAdjustmentAllowedForPackage(
+                eq(mUserId), eq(KEY_SUMMARIZATION), anyString())).thenReturn(true);
         doAnswer(invocationOnMock -> {
             RankingReconsideration recon =
                     ((RankingReconsideration) invocationOnMock.getArguments()[0]);
@@ -19820,9 +19788,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
     @Test
     public void testSomeChildrenBundled_summaryNotSilent() throws Exception {
-        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
-        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
-                anyString())).thenReturn(true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_NEWS, true);
         when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
         when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
 
@@ -19863,9 +19829,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
     @Test
     public void testAllChildrenBundled_summaryIsSilent() throws Exception {
-        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
-        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
-                anyString())).thenReturn(true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_NEWS, true);
         when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
         when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
 
@@ -19912,9 +19876,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
     @Test
     public void testAllChildrenBundled_summaryCanceled() throws Exception {
-        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
-        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
-                anyString())).thenReturn(true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_NEWS, true);
         when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
         when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
 
@@ -19977,9 +19939,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
     @Test
     public void testSomeChildrenBundled_summaryNotCanceled() throws Exception {
-        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
-        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
-                anyString())).thenReturn(true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_NEWS, true);
         when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
         when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
 
@@ -20023,9 +19983,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
     @Test
     public void testUpdateBundledChild_doesNotUnAutogroup() throws Exception {
-        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
-        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
-                anyString())).thenReturn(true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_NEWS, true);
         when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
         when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
 
@@ -20089,9 +20047,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
     @Test
     public void testUpdateNotBundledChild_doesUnAutogroup() throws Exception {
-        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
-        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
-                anyString())).thenReturn(true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_NEWS, true);
         when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
         when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
 
@@ -20161,9 +20117,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         mService.setHandler(handler);
         when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
         when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
-        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
-        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
-                anyString())).thenReturn(true);
+        mBinderService.setAssistantClassificationTypeState(TYPE_NEWS, true);
 
         NotificationRecord r = generateNotificationRecord(mTestNotificationChannel, 0, mUserId);
         mService.addNotification(r);
@@ -20367,5 +20321,28 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         assertThat(mBinderService.addNotificationRule(mUserId, second, 0)).isEqualTo(second);
         assertThat(mBinderService.getNotificationRules(null, mUserId).getList())
                 .containsAtLeastElementsIn(List.of(first, second));
+    }
+
+    @Test
+    public void getAllowedClassificationTypes_defaults() throws RemoteException {
+        assertThat(mBinderService.getAllowedClassificationTypes()).asList()
+                .containsExactlyElementsIn(List.of(TYPE_PROMOTION, TYPE_NEWS));
+    }
+
+    @Test
+    public void getAdjustmentDeniedPackages_summaries() throws Exception {
+        mAssistants = spy(mService.new NotificationAssistants(mContext, mPackageManager));
+        mService.mAssistants = mAssistants;
+        mBinderService.setAdjustmentSupportedForPackage(mUserId, KEY_SUMMARIZATION, PKG_O, false);
+        assertThat(mBinderService.getAdjustmentDeniedPackages(mUserId, KEY_SUMMARIZATION)).asList()
+                .containsExactly(PKG_O);
+    }
+
+    @Test
+    public void getAdjustmentDeniedPackages_classification() throws Exception {
+        mBinderService.setAdjustmentSupportedForPackage(mUserId, KEY_TYPE, PKG_O, false);
+
+        assertThat(mBinderService.getAdjustmentDeniedPackages(mUserId, KEY_TYPE)).asList()
+                .containsExactly(PKG_O);
     }
 }
