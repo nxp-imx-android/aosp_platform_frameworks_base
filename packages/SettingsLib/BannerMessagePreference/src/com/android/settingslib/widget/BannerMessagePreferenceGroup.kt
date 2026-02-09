@@ -103,16 +103,23 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
         if (preference !is BannerMessagePreference) {
             return false
         }
-        var result: Boolean = true
-        if (showDismissedPreferences && isDismissed) {
+
+        // CASE 1: Standard Active Banner
+        if (!isDismissed) {
+            return addPreference(preference)
+        }
+
+        // CASE 2: Dismissed Banner
+        if (showDismissedPreferences) {
             addDismissedPreference(preference)
             runWithoutItemAnimator {
-                result = super.addPreference(preference)
+                super.addPreference(preference)
             }
-        } else {
-            result = addPreference(preference)
+            return true
         }
-        return result
+
+        // CASE 3: Dismissed, but dismissed section is disabled
+        return false
     }
 
     override fun addPreference(preference: Preference): Boolean {
@@ -378,7 +385,13 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
     }
 
     private fun addDismissedPreference(preference: BannerMessagePreference) {
-        if (!showDismissedPreferences || dismissedSection.list.contains(preference)) {
+        if (!showDismissedPreferences) {
+            return
+        }
+
+        if (dismissedSection.list.contains(preference)) {
+            val index = dismissedSection.list.indexOf(preference)
+            preference.order = EXPAND_DISMISSED_ORDER + index
             return
         }
 
