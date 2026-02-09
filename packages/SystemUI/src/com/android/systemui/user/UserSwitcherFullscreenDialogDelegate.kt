@@ -28,7 +28,7 @@ import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.user.ui.binder.UserSwitcherViewBinder
 import com.android.systemui.user.ui.viewmodel.UserSwitcherViewModel
 
-class UserSwitchFullscreenDialog(
+class UserSwitcherFullscreenDialogDelegate(
     context: Context,
     private val falsingCollector: FalsingCollector,
     private val userSwitcherViewModel: UserSwitcherViewModel,

@@ -32,7 +32,7 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.display.data.repository.DisplayWindowPropertiesRepository
 import com.android.systemui.shade.domain.interactor.ShadeDialogContextInteractor
-import com.android.systemui.user.UserSwitchFullscreenDialog
+import com.android.systemui.user.UserSwitcherFullscreenDialogDelegate
 import com.android.systemui.user.domain.interactor.UserSwitcherInteractor
 import com.android.systemui.user.domain.model.ShowDialogRequestModel
 import com.android.systemui.user.ui.viewmodel.UserSwitcherViewModel
@@ -120,7 +120,7 @@ constructor(
                             )
                         is ShowDialogRequestModel.ShowUserSwitcherFullscreenDialog ->
                             Pair(
-                                UserSwitchFullscreenDialog(
+                                UserSwitcherFullscreenDialogDelegate(
                                     context = context,
                                     falsingCollector = falsingCollector.get(),
                                     userSwitcherViewModel = userSwitcherViewModel.get(),
