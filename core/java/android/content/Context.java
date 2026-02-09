@@ -5028,13 +5028,13 @@ public abstract class Context {
 
     /**
      * Use with {@link #getSystemService(String)} to retrieve a
-     * {@link android.os.storage.FilesManager} for handling file operations.
+     * {@link android.os.storage.FileManager} for handling file operations.
      *
      * @see #getSystemService(String)
-     * @see android.os.storage.FilesManager
+     * @see android.os.storage.FileManager
      */
     @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
-    public static final String FILES_SERVICE = "files";
+    public static final String FILE_SERVICE = "file";
 
     /**
      * Use with {@link #getSystemService(String)} to retrieve a

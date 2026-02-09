@@ -26,8 +26,8 @@ import android.content.Intent;
 import android.content.pm.PackageManagerInternal;
 import android.os.Binder;
 import android.os.UserHandle;
-import android.os.storage.FilesManager;
-import android.os.storage.IFilesService;
+import android.os.storage.FileManager;
+import android.os.storage.IFileService;
 import android.os.storage.operations.FileOperationEnqueueResult;
 import android.os.storage.operations.FileOperationRequest;
 import android.os.storage.operations.FileOperationResult;
@@ -52,12 +52,12 @@ import java.util.concurrent.ConcurrentHashMap;
  * <p>See {@code services/files/README.md} for architectural details.
  */
 @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
-public class FilesService extends SystemService {
-    private static final String TAG = "FilesService";
+public class FileService extends SystemService {
+    private static final String TAG = "FileService";
     private static final int MAX_PENDING_REQUESTS = 50;
     private static final int MAX_HISTORY_SIZE = MAX_PENDING_REQUESTS + 10;
 
-    @VisibleForTesting final FilesServiceStub mBinderService;
+    @VisibleForTesting final FileServiceStub mBinderService;
 
     // Active requests, used for admission control to prevent system overload.
     @VisibleForTesting
@@ -101,22 +101,22 @@ public class FilesService extends SystemService {
         }
     }
 
-    public FilesService(Context context) {
+    public FileService(Context context) {
         this(context, new Injector());
     }
 
     @VisibleForTesting
-    public FilesService(Context context, Injector injector) {
+    public FileService(Context context, Injector injector) {
         super(context);
-        mBinderService = new FilesServiceStub(injector);
+        mBinderService = new FileServiceStub(injector);
         mDispatcher = injector.getFileOperationDispatcher();
         mDispatcher.registerProcessor(new InstalldProcessor());
     }
 
     @Override
     public void onStart() {
-        Slog.d(TAG, "onStart: Publishing binder service: " + Context.FILES_SERVICE);
-        publishBinderService(Context.FILES_SERVICE, mBinderService);
+        Slog.d(TAG, "onStart: Publishing binder service: " + Context.FILE_SERVICE);
+        publishBinderService(Context.FILE_SERVICE, mBinderService);
     }
 
     /**
@@ -143,10 +143,10 @@ public class FilesService extends SystemService {
      */
     private record Subscriber(int uid, String packageName) {}
 
-    private final class FilesServiceStub extends IFilesService.Stub {
+    private final class FileServiceStub extends IFileService.Stub {
         private final Injector mInjector;
 
-        FilesServiceStub(Injector injector) {
+        FileServiceStub(Injector injector) {
             mInjector = injector;
         }
 
@@ -253,7 +253,7 @@ public class FilesService extends SystemService {
                 Slog.wtf(
                         TAG,
                         "Failed to acquire PackageManagerInternal in"
-                                + " FilesService#registerCompletionListener");
+                                + " FileService#registerCompletionListener");
                 return;
             }
             if (!packageManagerInternal.isSameApp(
@@ -318,10 +318,10 @@ public class FilesService extends SystemService {
     @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS)
     private void notifySingleSubscriber(
             Subscriber sub, String requestId, FileOperationResult result) {
-        Intent intent = new Intent(FilesManager.ACTION_FILE_OPERATION_COMPLETED);
+        Intent intent = new Intent(FileManager.ACTION_FILE_OPERATION_COMPLETED);
         intent.setPackage(sub.packageName());
-        intent.putExtra(FilesManager.EXTRA_REQUEST_ID, requestId);
-        intent.putExtra(FilesManager.EXTRA_RESULT, result);
+        intent.putExtra(FileManager.EXTRA_REQUEST_ID, requestId);
+        intent.putExtra(FileManager.EXTRA_RESULT, result);
 
         getContext().sendBroadcastAsUser(intent, UserHandle.getUserHandleForUid(sub.uid()));
     }

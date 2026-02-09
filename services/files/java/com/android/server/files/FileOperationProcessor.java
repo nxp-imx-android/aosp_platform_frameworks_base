@@ -42,7 +42,7 @@ public interface FileOperationProcessor {
      * @param callback The callback to report progress and status.
      * @throws IOException If the operation fails.
      */
-    void process(FilesService.RequestContext ctx, StatusCallback callback)
+    void process(FileService.RequestContext ctx, StatusCallback callback)
             throws IOException;
 
     /**

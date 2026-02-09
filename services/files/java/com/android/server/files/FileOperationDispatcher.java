@@ -51,7 +51,7 @@ public class FileOperationDispatcher {
      * a background thread.
      */
     public void dispatch(
-            FilesService.RequestContext ctx, FileOperationProcessor.StatusCallback callback) {
+            FileService.RequestContext ctx, FileOperationProcessor.StatusCallback callback) {
         mQueueExecutor.execute(
                 () -> {
                     try {

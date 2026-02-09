@@ -32,9 +32,9 @@ import android.os.storage.operations.FileOperationResult;
 /**
  * System service manager for handling privileged, long-running file operations.
  *
- * <p>The {@code FilesManager} provides an API for applications to request asynchronous file
+ * <p>The {@code FileManager} provides an API for applications to request asynchronous file
  * operations such as moving or copying files. These operations are executed by the
- * system service (`FilesService`) on a background thread to ensure application responsiveness and
+ * system service (`FileService`) on a background thread to ensure application responsiveness and
  * system stability.
  *
  * <h3>Usage Overview</h3>
@@ -67,11 +67,11 @@ import android.os.storage.operations.FileOperationResult;
  * critical for your use case, avoid enqueueing operations that involve more than 200 files in a
  * single request.
  */
-@SystemService(Context.FILES_SERVICE)
+@SystemService(Context.FILE_SERVICE)
 @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
-public final class FilesManager {
+public final class FileManager {
     private final Context mContext;
-    private final IFilesService mService;
+    private final IFileService mService;
 
     /**
      * Broadcast Action: Sent when a file operation has completed.
@@ -110,7 +110,7 @@ public final class FilesManager {
     public static final String EXTRA_RESULT = "android.os.storage.extra.RESULT";
 
     /** @hide */
-    public FilesManager(Context context, IFilesService service) {
+    public FileManager(Context context, IFileService service) {
         mContext = context;
         mService = service;
     }
