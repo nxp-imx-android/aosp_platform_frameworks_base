@@ -66,6 +66,7 @@ public class ThemeEventObserver {
     private final ThemeSettingsManager mThemeSettingsManager;
     private final ThemeUserLifecycle mThemeUserLifecycle;
     private final ThemeManagerImpl mThemeManagerImpl;
+    private final ThemeEnvironment mEnvironment;
 
     private ThemeWallpaperManager mWallpaperManager;
     private UiModeManagerInternal mUiModeManagerInternal;
@@ -74,12 +75,13 @@ public class ThemeEventObserver {
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
     public ThemeEventObserver(Context context, ThemeStateManager stateManager,
             ThemeSettingsManager themeSettingsManager, ThemeUserLifecycle themeUserLifecycle,
-            ThemeManagerImpl themeManagerImpl) {
+            ThemeManagerImpl themeManagerImpl, ThemeEnvironment environment) {
         mContext = context;
         mStateManager = stateManager;
         mThemeSettingsManager = themeSettingsManager;
         mThemeUserLifecycle = themeUserLifecycle;
         mThemeManagerImpl = themeManagerImpl;
+        mEnvironment = environment;
     }
 
     /**
@@ -152,7 +154,7 @@ public class ThemeEventObserver {
         if ("android".equals(changedPackage)) {
             final int userId = intent.getIntExtra(Intent.EXTRA_USER_ID, UserHandle.USER_NULL);
 
-            if (userId == UserHandle.USER_NULL || mStateManager.parentOf(userId) != null) {
+            if (userId == UserHandle.USER_NULL || !mEnvironment.isManagedUser(userId)) {
                 return;
             }
 
@@ -247,9 +249,10 @@ public class ThemeEventObserver {
     // Helper Methods
 
     private boolean shouldIgnoreEventForUser(int userId, String methodName) {
-        // Bypass profiles explicitly. Unified theme drive events only come from Full Users.
-        if (mStateManager.parentOf(userId) != null) {
-            Slog.d(TAG, "Bypassing '" + methodName + "' for profile " + userId);
+        // Use unified environment policy
+        if (!mEnvironment.isManagedUser(userId)) {
+            Slog.d(TAG,
+                    "Bypassing '" + methodName + "' for user " + userId + " per system policy.");
             return true;
         }
 

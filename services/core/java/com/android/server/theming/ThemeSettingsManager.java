@@ -66,15 +66,10 @@ public class ThemeSettingsManager {
     public static final String OVERLAY_CATEGORY_SYSTEM_PALETTE = KEY_PREFIX + "system_palette";
     public static final String OVERLAY_CATEGORY_THEME_STYLE = KEY_PREFIX + "theme_style";
     public static final String OVERLAY_COLOR_SOURCE = KEY_PREFIX + "color_source";
+
     private final ThemeWallpaperManager mWallpaperManager;
     private final SystemPropertiesReader mSystemPropertiesReader;
-    private final String[] mDefaultThemeData;
-
-    private static final ThemeSettings HARDCODED_FALLBACK = new ThemeSettings.Builder()
-            .setThemeStyle(ThemeStyle.TONAL_SPOT)
-            .setColorSource(VALUE_PRESET)
-            .setSystemPalette(Color.valueOf(0xFF1b6ef3))
-            .build();
+    private final ThemeEnvironment mEnvironment;
 
     static final Map<String, ThemeSettingsField<?, ?>> ALL_FIELDS = Map.ofEntries(
             Map.entry(OVERLAY_CATEGORY_SYSTEM_PALETTE, new FieldColor()),
@@ -94,10 +89,10 @@ public class ThemeSettingsManager {
     private final Set<Integer> mMigratedUserIds = new HashSet<>();
 
     public ThemeSettingsManager(ThemeWallpaperManager wallpaperManager,
-            SystemPropertiesReader systemPropertiesReader, String[] defaultThemeData) {
+            SystemPropertiesReader systemPropertiesReader, ThemeEnvironment environment) {
         mWallpaperManager = wallpaperManager;
         mSystemPropertiesReader = systemPropertiesReader;
-        mDefaultThemeData = defaultThemeData;
+        mEnvironment = environment;
     }
 
     /**
@@ -237,7 +232,7 @@ public class ThemeSettingsManager {
         // The 'theming_defaults' resource is a string array where each entry is formatted as:
         // "hardware_color_name|STYLE_NAME|#hex_color_or_home_wallpaper"
         HashMap<String, Pair<Integer, String>> themeMap = new HashMap<>();
-        for (String themeEntry : mDefaultThemeData) {
+        for (String themeEntry : mEnvironment.defaultThemeData) {
             String[] themeComponents = themeEntry.split("\\|");
             if (themeComponents.length != 3) {
                 continue;
@@ -262,7 +257,8 @@ public class ThemeSettingsManager {
         if (styleAndSource == null) {
             Slog.d(TAG, "Sysprop `" + deviceColorProperty + "` of value '"
                     + deviceColorPropertyValue
-                    + "' not found in theming_defaults: " + Arrays.toString(mDefaultThemeData)
+                    + "' not found in theming_defaults: " + Arrays.toString(
+                    mEnvironment.defaultThemeData)
                     + ". Using wildcard fallback.");
             styleAndSource = fallbackTheme;
         }
@@ -276,7 +272,7 @@ public class ThemeSettingsManager {
             } catch (Exception e2) {
                 Slog.e(TAG, "Wildcard fallback theme is also invalid! Using hardcoded default.",
                         e2);
-                return HARDCODED_FALLBACK;
+                return mEnvironment.hardcodedFallback;
             }
         }
     }
@@ -293,7 +289,7 @@ public class ThemeSettingsManager {
             if (wallpaperSeed == null) {
                 Slog.i(TAG, "User's " + userId + " Wallpaper colors not yet available. "
                         + "Using fallback palette for HOME_WALLPAPER source.");
-                seedColor = HARDCODED_FALLBACK.systemPalette();
+                seedColor = mEnvironment.hardcodedFallback.systemPalette();
             } else {
                 seedColor = Color.valueOf(wallpaperSeed);
             }
@@ -360,7 +356,7 @@ public class ThemeSettingsManager {
             if (seed != null) {
                 systemPalette = Color.valueOf(seed);
             } else {
-                systemPalette = HARDCODED_FALLBACK.systemPalette();
+                systemPalette = mEnvironment.hardcodedFallback.systemPalette();
                 Slog.d(TAG, "Legacy settings for user " + userId + " missing palette. "
                         + "Wallpaper color missing, using fallback.");
             }

@@ -24,9 +24,6 @@ import android.util.Slog;
 import com.android.internal.annotations.GuardedBy;
 import com.android.systemui.monet.ColorScheme;
 
-import com.google.ux.material.libmonet.dynamiccolor.ColorSpec.SpecVersion;
-import com.google.ux.material.libmonet.dynamiccolor.DynamicScheme.Platform;
-
 import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.HashSet;
@@ -57,8 +54,7 @@ public class ThemeStatePair {
 
     public final int userId;
 
-    private final SpecVersion mSpecVersion;
-    private final Platform mPlatform;
+    private final ThemeEnvironment mEnvironment;
 
     private final Object mLock = new Object();
 
@@ -80,11 +76,12 @@ public class ThemeStatePair {
     /**
      * Constructs a new ThemeStatePair object.
      *
-     * @param userId    The ID of the user associated with this state pair.
-     * @param isSetup   Indicates whether the user has completed setup.
-     * @param seedColor The initial seed color for the user's theme.
-     * @param contrast  The initial contrast value for the user's theme.
-     * @param style     The initial style for the user's theme.
+     * @param userId      The ID of the user associated with this state pair.
+     * @param isSetup     Indicates whether the user has completed setup.
+     * @param seedColor   The initial seed color for the user's theme.
+     * @param contrast    The initial contrast value for the user's theme.
+     * @param style       The initial style for the user's theme.
+     * @param environment The system-wide theme environment.
      */
     @SuppressLint("WrongConstant")
     public ThemeStatePair(
@@ -93,18 +90,18 @@ public class ThemeStatePair {
             int seedColor,
             float contrast,
             @ThemeStyle.Type Integer style,
-            SpecVersion specVersion,
-            Platform platform) {
+            ThemeEnvironment environment) {
 
         this.userId = userId;
-        this.mSpecVersion = specVersion;
-        this.mPlatform = platform;
+        this.mEnvironment = environment;
 
         ThemeState initialState = new ThemeState(userId, isSetup, seedColor, contrast, style,
                 Collections.unmodifiableSet(new HashSet<>()), 0);
 
-        mDarkScheme = new ColorScheme(seedColor, true, style, contrast, mSpecVersion, mPlatform);
-        mLightScheme = new ColorScheme(seedColor, false, style, contrast, mSpecVersion, mPlatform);
+        mDarkScheme = new ColorScheme(seedColor, true, style, contrast, environment.specVersion,
+                environment.platform);
+        mLightScheme = new ColorScheme(seedColor, false, style, contrast, environment.specVersion,
+                environment.platform);
 
         mPending = initialState;
         mCurrent = initialState;
@@ -306,9 +303,11 @@ public class ThemeStatePair {
         }
 
         ColorScheme newDarkScheme = new ColorScheme(stateToCommit.seedColor(), true,
-                stateToCommit.style(), stateToCommit.contrast(), mSpecVersion, mPlatform);
+                stateToCommit.style(), stateToCommit.contrast(), mEnvironment.specVersion,
+                mEnvironment.platform);
         ColorScheme newLightScheme = new ColorScheme(stateToCommit.seedColor(), false,
-                stateToCommit.style(), stateToCommit.contrast(), mSpecVersion, mPlatform);
+                stateToCommit.style(), stateToCommit.contrast(), mEnvironment.specVersion,
+                mEnvironment.platform);
 
         synchronized (mLock) {
             // If the pending state has changed while we were calculating, our calculated schemes
