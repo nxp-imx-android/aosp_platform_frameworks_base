@@ -31,6 +31,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -209,12 +210,17 @@ public class UserAspectRatioSettingsWindowManagerTest extends ShellTestCase {
         mWindowManager.release();
 
         verify(mViewHost).release();
+        verify(mHandler, never()).post(any());
     }
 
     @Test
     @RequiresFlagsDisabled(FLAG_APP_COMPAT_UI_FRAMEWORK)
     public void testRelease_fromBackgroundThread() {
         doReturn(false).when(mLooper).isCurrentThread();
+        doAnswer(invocation -> {
+            ((Runnable) invocation.getArgument(0)).run();
+            return true;
+        }).when(mHandler).post(any());
         mWindowManager.mHasUserAspectRatioSettingsButton = true;
         mWindowManager.createLayout(/* canShow= */ true);
 
