@@ -54,6 +54,9 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
@@ -199,6 +202,7 @@ private fun IconButton(
                     minHeight = IconButtonDimensions.MinimumSize,
                     minWidth = IconButtonDimensions.MinimumSize,
                 )
+                .semantics { role = Role.Button }
                 .aspectRatio(1.0F)
                 .borderOnFocus(MaterialTheme.colorScheme.secondary, CornerSize(percent = 50))
                 .wrapContentSize(),
@@ -256,7 +260,7 @@ private fun PowerMenuToggleButton(
                 .borderOnFocus(MaterialTheme.colorScheme.secondary, CornerSize(percent = 50))
                 .clip(shape)
                 .focusable()
-                .clickable(onClick = viewModel.onClick)
+                .clickable(role = Role.Button, onClick = viewModel.onClick)
                 .background(bgColor)
                 .padding(
                     start = PowerMenuToggleButtonConstants.PaddingStart,
