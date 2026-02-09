@@ -56,6 +56,7 @@ import static android.media.AudioManager.STREAM_SYSTEM;
 import static android.media.audio.Flags.assistantVolumeControl;
 import static android.media.audio.Flags.audioFocusDesktop;
 import static android.media.audio.Flags.autoPublicVolumeApiHardening;
+import static android.media.audio.Flags.bleHearingAidDevice;
 import static android.media.audio.Flags.blePeripheralDevices;
 import static android.media.audio.Flags.concurrentAudioRecordBypassPermission;
 import static android.media.audio.Flags.dapInjectionStarveManagement;
@@ -929,9 +930,12 @@ public class AudioService extends IAudioService.Stub
     /*package*/ static final int BT_COMM_DEVICE_ACTIVE_BLE_SPEAKER = 1 << 2;
     /** The active bluetooth device type used for communication is hearing aid. */
     /*package*/ static final int BT_COMM_DEVICE_ACTIVE_HA = 1 << 3;
+    /** The active bluetooth device type used for communication is ble hearing aid. */
+    /*package*/ static final int BT_COMM_DEVICE_ACTIVE_BLE_HEARING_AID = 1 << 4;
     @IntDef({
             BT_COMM_DEVICE_ACTIVE_SCO, BT_COMM_DEVICE_ACTIVE_BLE_HEADSET,
-            BT_COMM_DEVICE_ACTIVE_BLE_SPEAKER, BT_COMM_DEVICE_ACTIVE_HA
+            BT_COMM_DEVICE_ACTIVE_BLE_SPEAKER, BT_COMM_DEVICE_ACTIVE_HA,
+            BT_COMM_DEVICE_ACTIVE_BLE_HEARING_AID
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface BtCommDeviceActiveType {
@@ -5792,7 +5796,10 @@ public class AudioService extends IAudioService.Stub
                 + multiZoneAudio());
         pw.println("\tcom.android.media.audio.Flags.stereoSpatializationBinauralTransaural:"
                 + stereoSpatializationBinauralTransaural());
-        pw.println();
+        pw.println("\tandroid.media.audio.Flags.bleHearingAidDevice:"
+                + bleHearingAidDevice());
+        pw.println("\tandroid.media.audio.Flags.blePeripheralDevices:"
+                + blePeripheralDevices());
     }
 
     private void dumpAudioMode(PrintWriter pw) {
@@ -7106,7 +7113,8 @@ public class AudioService extends IAudioService.Stub
                 && mBtCommDeviceActive.get() == BT_COMM_DEVICE_ACTIVE_SCO;
         final boolean shouldRingBle =  ringerMode == AudioManager.RINGER_MODE_VIBRATE
                 && (mBtCommDeviceActive.get() == BT_COMM_DEVICE_ACTIVE_BLE_HEADSET
-                || mBtCommDeviceActive.get() == BT_COMM_DEVICE_ACTIVE_BLE_SPEAKER);
+                || mBtCommDeviceActive.get() == BT_COMM_DEVICE_ACTIVE_BLE_SPEAKER
+                || mBtCommDeviceActive.get() == BT_COMM_DEVICE_ACTIVE_BLE_HEARING_AID);
         // Ask audio policy engine to force use Bluetooth SCO/BLE channel if needed
         final String eventSource =
                 "updateStreamMuteFromRingerMode() from u/pid:" + Binder.getCallingUid()
@@ -9548,6 +9556,8 @@ public class AudioService extends IAudioService.Stub
             BluetoothProfile.A2DP_SINK,
             BluetoothProfile.LE_AUDIO,
             BluetoothProfile.LE_AUDIO_BROADCAST,
+            BluetoothProfile.LE_AUDIO_PERIPHERAL,
+            BluetoothProfile.HAP_CLIENT,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface BtProfile {}
@@ -10698,7 +10708,9 @@ public class AudioService extends IAudioService.Stub
                                 equalScoLeaVcIndexRange() && (btCommActiveDevice
                                         == BT_COMM_DEVICE_ACTIVE_BLE_HEADSET
                                         || btCommActiveDevice
-                                        == BT_COMM_DEVICE_ACTIVE_BLE_SPEAKER))) {
+                                        == BT_COMM_DEVICE_ACTIVE_BLE_SPEAKER
+                                        || btCommActiveDevice
+                                        == BT_COMM_DEVICE_ACTIVE_BLE_HEARING_AID))) {
                             mIndexMin = MIN_STREAM_VOLUME[mStreamType] * 10;
                             indexMaxVolCurve = MAX_STREAM_VOLUME[AudioSystem.STREAM_BLUETOOTH_SCO];
                             mIndexStepFactor = 1.f;
