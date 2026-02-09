@@ -613,6 +613,47 @@ public class FullScreenMagnificationGestureHandlerTest {
     }
 
     @Test
+    public void testTripleTapAndHold_onTemporaryModeStart() {
+        goFromStateIdleTo(STATE_IDLE);
+        reset(mMockCallback);
+
+        tap();
+        tap();
+        swipeAndHold();
+
+        verify(mMockCallback).onTemporaryModeStart(mMgh.mDisplayId, mMgh.getMode());
+    }
+
+    @Test
+    public void testExitedTemporaryMode_onTemporaryModeEnd() {
+        goFromStateIdleTo(STATE_ZOOMED_FURTHER_TMP);
+        reset(mMockCallback);
+
+        send(upEvent());
+
+        verify(mMockCallback).onTemporaryModeEnd(mMgh.mDisplayId, mMgh.getMode());
+    }
+
+    @Test
+    public void testTriggeringShortcut_onShortcutTriggerArmed() {
+        goFromStateIdleTo(STATE_SHORTCUT_TRIGGERED);
+
+        verify(mMockCallback).onShortcutTriggerChanged(mMgh.mDisplayId, mMgh.getMode(),
+                /* isShortcutTrigger= */ true);
+    }
+
+    @Test
+    public void testSingleTapAfterTriggeringShortcut_onShortcutTriggerDisarmed() {
+        goFromStateIdleTo(STATE_SHORTCUT_TRIGGERED);
+        reset(mMockCallback);
+
+        tap();
+
+        verify(mMockCallback).onShortcutTriggerChanged(mMgh.mDisplayId, mMgh.getMode(),
+                /* isShortcutTrigger= */ false);
+    }
+
+    @Test
     public void testTripleTap_tapPerformedNotOverIme_activatesMagnification() {
         showIme(new Region(IME_BOUNDS));
         goFromStateIdleTo(STATE_IDLE);

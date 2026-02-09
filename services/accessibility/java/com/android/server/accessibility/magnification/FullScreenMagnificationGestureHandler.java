@@ -715,8 +715,7 @@ public class FullScreenMagnificationGestureHandler extends MagnificationGestureH
                     } else {
                         zoomOff();
                     }
-                    clear();
-                    transitionTo(mDetectingState);
+                    clearAndTransitToDetectingState();
                 }
                     break;
 
@@ -730,6 +729,12 @@ public class FullScreenMagnificationGestureHandler extends MagnificationGestureH
 
         private boolean isAlwaysOnMagnificationEnabled() {
             return mFullScreenMagnificationController.isAlwaysOnMagnificationEnabled();
+        }
+
+        private void clearAndTransitToDetectingState() {
+            clear();
+            mCallback.onTemporaryModeEnd(mDisplayId, getMode());
+            transitionTo(mDetectingState);
         }
 
         public void prepareForZoomInTemporary(boolean shortcutTriggered) {
@@ -749,6 +754,7 @@ public class FullScreenMagnificationGestureHandler extends MagnificationGestureH
                 shouldRecoverAfterDraggingEnd = false;
             }
 
+            mCallback.onTemporaryModeStart(mDisplayId, getMode());
             mScaleToRecoverAfterDraggingEnd = shouldRecoverAfterDraggingEnd
                     ? mFullScreenMagnificationController.getScale(mDisplayId) : Float.NaN;
         }
@@ -1267,6 +1273,7 @@ public class FullScreenMagnificationGestureHandler extends MagnificationGestureH
             }
             if (DEBUG_DETECTING) Slog.i(mLogTag, "setShortcutTriggered(" + state + ")");
 
+            mCallback.onShortcutTriggerChanged(mDisplayId, getMode(), state);
             mShortcutTriggered = state;
         }
 
