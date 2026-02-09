@@ -31,7 +31,7 @@ flag {
 
 flag {
     name: "enable_filesystem_configuration"
-    namespace: "storage"
+    namespace: "pixel_storage"
     description: "Enables configuration of filesystem parameters like max_lock_elapsed_time during boot of StorageManagerService."
     bug: "469596512"
 }
