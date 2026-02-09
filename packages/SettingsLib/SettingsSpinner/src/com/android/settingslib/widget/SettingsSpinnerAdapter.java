@@ -31,6 +31,9 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.view.AccessibilityDelegateCompat;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat;
 
 import com.android.settingslib.widget.SettingsSpinnerPreference.Style;
 import com.android.settingslib.widget.spinner.R;
@@ -96,10 +99,29 @@ public class SettingsSpinnerAdapter<T> extends ArrayAdapter<T> {
         }
         TextView textView = view.findViewById(android.R.id.text1);
         ImageView iconView = view.findViewById(android.R.id.icon);
+        boolean isSelected = position == mSelectedPosition;
         if (iconView != null) {
             iconView.setImageTintList(mDropdownSelectedColor);
-            iconView.setVisibility((position == mSelectedPosition) ? View.VISIBLE : View.GONE);
+            iconView.setVisibility(isSelected ? View.VISIBLE : View.GONE);
         }
+        ViewCompat.setAccessibilityDelegate(view, new AccessibilityDelegateCompat() {
+            @Override
+            public void onInitializeAccessibilityNodeInfo(
+                    @NonNull View host,
+                    @NonNull AccessibilityNodeInfoCompat info) {
+                super.onInitializeAccessibilityNodeInfo(host, info);
+                info.setCollectionItemInfo(
+                        AccessibilityNodeInfoCompat.CollectionItemInfoCompat.obtain(
+                            /* rowIndex= */ position,
+                            /* rowSpan= */ 0,
+                            /* columnIndex= */ 0,
+                            /* columnSpan= */ 1,
+                            /* heading= */ false,
+                            /* selected= */ false));
+                info.setSelected(isSelected);
+                info.setClickable(true);
+            }
+        });
         T item = getItem(position);
         textView.setText(item == null ? "" : item.toString());
         if (sIsExpressive) {
