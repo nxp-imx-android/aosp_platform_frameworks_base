@@ -205,7 +205,15 @@ class TaskSnapshotController extends AbsAppSnapshotController<Task, TaskSnapshot
                 if (converted == null) {
                     return;
                 }
+                // Since SnapshotController#getTaskSnapshotInner may have already cached and shared
+                // the converted low-resolution snapshot with the supplier, there is no need to
+                // upload the same snapshot to the cache again here.
                 synchronized (mService.mGlobalLock) {
+                    final TaskSnapshot hasLow = mCache.getSnapshot(task.mTaskId,
+                            TaskSnapshotManager.RESOLUTION_LOW, TaskSnapshot.REFERENCE_NONE);
+                    if (hasLow == converted) {
+                        return;
+                    }
                     if (!task.isAttached()
                             || !updateCacheWithLowResSnapshotIfNeeded(task, converted)) {
                         converted.closeBuffer();

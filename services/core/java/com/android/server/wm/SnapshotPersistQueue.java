@@ -360,8 +360,14 @@ class SnapshotPersistQueue {
         if (mProcessingRecord.matches(taskId, userId, false /* deleting*/)) {
             return true;
         }
-        // Only peek the up-coming one
+        if (mProcessingRecord.isWriting()) {
+            return false;
+        }
         synchronized (mLock) {
+            if (mPaused) {
+                return false;
+            }
+            // Only peek the up-coming one
             final StoreWriteQueueItem item = mStoreQueueItems.peek();
             return item != null && item.mId == taskId && item.mUserId == userId
                     && item.mLowResSnapshotConsumer != null;
@@ -375,7 +381,9 @@ class SnapshotPersistQueue {
         synchronized (mLock) {
             for (WriteQueueItem item : mWriteQueue) {
                 if (item instanceof DeleteWriteQueueItem dq) {
-                    return dq.mId == taskId && dq.mUserId == userId;
+                    if (dq.mId == taskId && dq.mUserId == userId) {
+                        return true;
+                    }
                 }
             }
         }
@@ -656,7 +664,7 @@ class SnapshotPersistQueue {
 
         @Override
         void write() {
-            Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "DeleteWriteQueueItem");
+            Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "DeleteWriteQueueItem#" + mId);
             deleteSnapshot(mId, mUserId, mPersistInfoProvider);
             Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
         }
@@ -716,7 +724,7 @@ class SnapshotPersistQueue {
         boolean mDeleting;
 
         void reset() {
-            processing(0, 0, false /* deleting */);
+            processing(ActivityTaskManager.INVALID_TASK_ID, 0, false /* deleting */);
         }
 
         synchronized void processing(int taskId, int userId, boolean deleting) {
@@ -727,6 +735,10 @@ class SnapshotPersistQueue {
 
         synchronized boolean matches(int taskId, int userId, boolean deleting) {
             return mTaskId == taskId && mUserId == userId && mDeleting == deleting;
+        }
+
+        synchronized boolean isWriting() {
+            return !mDeleting && mTaskId != ActivityTaskManager.INVALID_TASK_ID;
         }
     }
 }

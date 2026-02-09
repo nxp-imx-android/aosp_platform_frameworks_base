@@ -33,7 +33,7 @@ import java.util.function.Consumer;
  * @param <TYPE> The basic type, either Task or ActivityRecord
  */
 abstract class SnapshotCache<TYPE extends WindowContainer> {
-    private static final long WAIT_SNAPSHOT_ENTRY_PUT_OR_REMOVED_TIMEOUT_MS = 1000;
+    private static final long WAIT_SNAPSHOT_ENTRY_PUT_OR_REMOVED_TIMEOUT_MS = 300;
     protected final Object mLock = new Object();
 
     protected final String mName;
