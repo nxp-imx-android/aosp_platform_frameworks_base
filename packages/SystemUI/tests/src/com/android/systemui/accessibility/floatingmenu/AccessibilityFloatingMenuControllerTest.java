@@ -44,6 +44,7 @@ import android.view.accessibility.AccessibilityManager;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
+import com.android.compose.animation.scene.OverlayKey;
 import com.android.compose.animation.scene.SceneKey;
 import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.keyguard.KeyguardUpdateMonitorCallback;
@@ -117,6 +118,7 @@ public class AccessibilityFloatingMenuControllerTest extends SysuiTestCase {
     @Mock
     private SceneInteractor mSceneInteractor;
     private final MutableStateFlow<SceneKey> mSceneFlow = MutableStateFlow(Scenes.Gone);
+    private final MutableStateFlow<Set<OverlayKey>> mOverlayFlow = MutableStateFlow(Set.of());
     @Mock
     private SecureSettings mSecureSettings;
     @Mock
@@ -160,6 +162,8 @@ public class AccessibilityFloatingMenuControllerTest extends SysuiTestCase {
         when(mModeObserver.getCurrentAccessibilityButtonMode())
                 .thenReturn(Settings.Secure.getIntForUser(mContextWrapper.getContentResolver(),
                         Settings.Secure.ACCESSIBILITY_BUTTON_MODE, UserHandle.USER_CURRENT));
+
+        when(mHeadlessSystemUserMode.isHeadlessSystemUserMode()).thenReturn(false);
     }
 
     @After
@@ -593,6 +597,7 @@ public class AccessibilityFloatingMenuControllerTest extends SysuiTestCase {
         mKeyguardUpdateMonitor = Dependency.get(KeyguardUpdateMonitor.class);
         when(mKeyguardInteractor.getCurrentKeyguardState()).thenReturn(mKeyguardStateFlow);
         when(mSceneInteractor.getCurrentScene()).thenReturn(mSceneFlow);
+        when(mSceneInteractor.getCurrentOverlays()).thenReturn(mOverlayFlow);
         final AccessibilityFloatingMenuController controller =
                 new AccessibilityFloatingMenuController(mContextWrapper, windowManager,
                         displayManager, mAccessibilityManager, mTargetsObserver, mModeObserver,
@@ -605,6 +610,7 @@ public class AccessibilityFloatingMenuControllerTest extends SysuiTestCase {
                         mHeadlessSystemUserMode,
                         mock(Magnification.class));
         controller.init();
+        controller.mUserInitializationCompleteCallback.onUserInitializationComplete(0);
 
         return controller;
     }
