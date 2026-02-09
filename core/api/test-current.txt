@@ -3572,7 +3572,7 @@ package android.service.personalcontext.hint {
     method @NonNull public android.os.Bundle toBundle();
   }
 
-  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public class ContextHintWithSignature {
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ContextHintWithSignature {
     method public boolean isSignatureValid(@NonNull javax.crypto.spec.SecretKeySpec) throws java.security.GeneralSecurityException;
     field public static final String HMAC_ALGORITHM = "HmacSHA256";
   }

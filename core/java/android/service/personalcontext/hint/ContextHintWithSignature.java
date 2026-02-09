@@ -43,11 +43,9 @@ import javax.crypto.spec.SecretKeySpec;
  * will be provided to {@link android.service.personalcontext.refiner.HintRefinerService}, and
  * {@link android.service.personalcontext.understander.ContextUnderstanderService} service
  * implementations. Instances will also be available from {@link ContextInsight#getOriginHints()}.
- *
- * <p>This class should not be extended, and is only non-final to allow for mocking in tests.
  */
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
-public class ContextHintWithSignature {
+public final class ContextHintWithSignature {
     /** @hide */
     @TestApi
     public static final String HMAC_ALGORITHM = "HmacSHA256";
@@ -63,7 +61,7 @@ public class ContextHintWithSignature {
             @NonNull ContextHintWrapper contextHint,
             @NonNull List<ContextHintWithSignature> attributionHints,
             @Nullable String originatingPackageName,
-            @NonNull Set<RenderToken> renderTokens) {
+            @Nullable Set<RenderToken> renderTokens) {
         mHash = hash;
         mContextHintWrapper = contextHint;
         mAttributionHints = attributionHints;
@@ -75,28 +73,23 @@ public class ContextHintWithSignature {
      * Used by {@link ContextHintWithSignatureWrapper#CREATOR}.
      * @hide
      */
-    public static ContextHintWithSignature fromParcel(Parcel source) {
-        final byte[] hash = Objects.requireNonNull(source.createByteArray());
-        final ContextHintWrapper contextHint = Objects.requireNonNull(
+    public ContextHintWithSignature(Parcel source) {
+        mHash = Objects.requireNonNull(source.createByteArray());
+        mContextHintWrapper = Objects.requireNonNull(
                 source.readParcelable(/* loader= */ null, ContextHintWrapper.class));
 
-        final List<ContextHintWithSignature> attributionHints = Collections.unmodifiableList(
+        mAttributionHints = Collections.unmodifiableList(
                 ContextHintWithSignatureWrapper.unwrapList(source.readParcelableList(
                         new ArrayList<>(),
                         /* loader= */ null,
                         ContextHintWithSignatureWrapper.class)));
 
-        final String originatingPackageName = source.readString8();
+        mOriginatingPackageName = source.readString8();
 
-        final List<RenderToken> renderTokens =
-                source.readParcelableList(new ArrayList<>(), /* loader= */ null, RenderToken.class);
+        final ArrayList<RenderToken> renderTokens = new ArrayList<>();
+        source.readParcelableList(renderTokens, /* leader= */ null, RenderToken.class);
 
-        return new ContextHintWithSignature(
-                hash,
-                contextHint,
-                attributionHints,
-                originatingPackageName,
-                new HashSet<>(renderTokens));
+        mRenderTokens = new HashSet<>(renderTokens);
     }
 
     /** Returns the {@link ContextHint} contained in this wrapper. */
@@ -258,8 +251,8 @@ public class ContextHintWithSignature {
         private final @NonNull ContextHintWrapper mContextHintWrapper;
         private final @NonNull List<ContextHintWithSignature> mAttributionHints = new ArrayList<>();
         private final @NonNull SecretKeySpec mSecretKey;
-        private final @NonNull Set<RenderToken> mRenderTokens = new HashSet<>();
         private @Nullable String mOriginatingPackageName;
+        private final @Nullable Set<RenderToken> mRenderTokens = new HashSet<>();
 
         /** @hide */
         public Builder(

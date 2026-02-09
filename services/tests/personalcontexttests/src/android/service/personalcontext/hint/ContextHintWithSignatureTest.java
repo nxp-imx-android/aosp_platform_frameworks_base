@@ -18,8 +18,6 @@ package android.service.personalcontext.hint;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import static org.mockito.Mockito.mock;
-
 import android.content.ComponentName;
 import android.os.Parcel;
 import android.service.personalcontext.RenderToken;
@@ -238,17 +236,10 @@ public class ContextHintWithSignatureTest {
         parcel.setDataPosition(0);
 
         // Re-read the parcel with a bad signature.
-        final ContextHintWithSignature signedHint = ContextHintWithSignature.fromParcel(parcel);
+        final ContextHintWithSignature signedHint = new ContextHintWithSignature(parcel);
 
         parcel.recycle();
 
         assertThat(signedHint.isSignatureValid(key)).isFalse();
-    }
-
-    @Test
-    public void testIsMockable() {
-        // Just make sure we can mock it.
-        ContextHintWithSignature hint = mock(ContextHintWithSignature.class);
-        assertThat(hint).isNotNull();
     }
 }

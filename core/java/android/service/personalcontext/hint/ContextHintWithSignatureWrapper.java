@@ -43,7 +43,7 @@ public final class ContextHintWithSignatureWrapper implements Parcelable {
     }
 
     private ContextHintWithSignatureWrapper(Parcel source) {
-        mHint = ContextHintWithSignature.fromParcel(source);
+        mHint = new ContextHintWithSignature(source);
     }
 
     @Override
