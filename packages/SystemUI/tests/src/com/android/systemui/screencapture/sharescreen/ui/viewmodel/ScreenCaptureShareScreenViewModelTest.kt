@@ -264,6 +264,110 @@ class ScreenCaptureShareScreenViewModelTest : SysuiTestCase() {
             }
         }
 
+    @Test
+    fun onShareClicked_foregroundHostAppTarget_sharingApprovedWithoutLaunch() =
+        kosmos.runTest {
+            setupViewModel(
+                config =
+                    mock<MediaProjectionConfig> {
+                        on { initiallySelectedSource } doReturn PROJECTION_SOURCE_APP_CONTENT
+                        on { isSourceEnabled(any()) } doReturn true
+                    }
+            )
+            val sharingState by collectLastValue(kosmos.shareScreenUiInteractor.sharingState)
+            val target = ScreenCaptureTarget.App(displayId = 0, taskId = 42)
+
+            // Task matches host package and is foreground
+            val hostRecentTask =
+                RecentTask(
+                    taskId = 42,
+                    displayId = 0,
+                    userId = 100,
+                    topActivityComponent = ComponentName(context.packageName, "HostClass"),
+                    baseIntentComponent = ComponentName(context.packageName, "HostClass"),
+                    baseIntent = Intent(),
+                    colorBackground = 0,
+                    isForegroundTask = true,
+                    userType = UserType.MAIN,
+                    splitBounds = null,
+                )
+            val fakeRecentTaskViewModel =
+                kosmos.recentTaskViewModelFactory.create(ScreenCaptureRecentTask(hostRecentTask))
+
+            kosmos.fakeScreenCaptureRecentTaskRepository.setRecentTasks(hostRecentTask)
+            kosmos.fakeMediaProjectionServiceHelperWrapper // Ensure the fake is initialized.
+
+            kosmos.recentTasksViewModel.setSelectedTarget(fakeRecentTaskViewModel)
+            viewModel.setTargetViewModel(target)
+
+            viewModel.onShareClicked()
+
+            // Verify the sharing state is updated to [Approved].
+            assertThat(sharingState)
+                .isInstanceOf(ShareScreenUiInteractor.SharingState.Approved::class.java)
+
+            // Verify AsyncActivityLauncher was NEVER called
+            org.mockito.kotlin
+                .verify(kosmos.mockAsyncActivityLauncher, org.mockito.kotlin.never())
+                .startActivityAsUser(any(), any(), any(), any())
+        }
+
+    @Test
+    fun onShareClicked_foregroundOtherAppTarget_sharingApprovedWithLaunch() =
+        kosmos.runTest {
+            setupViewModel(
+                config =
+                    mock<MediaProjectionConfig> {
+                        on { initiallySelectedSource } doReturn PROJECTION_SOURCE_APP_CONTENT
+                        on { isSourceEnabled(any()) } doReturn true
+                    }
+            )
+            val sharingState by collectLastValue(kosmos.shareScreenUiInteractor.sharingState)
+            val target = ScreenCaptureTarget.App(displayId = 0, taskId = 42)
+
+            // Task does NOT match host package but is foreground
+            val otherRecentTask =
+                RecentTask(
+                    taskId = 42,
+                    displayId = 0,
+                    userId = 100,
+                    topActivityComponent = ComponentName("OtherPackage", "OtherClass"),
+                    baseIntentComponent = ComponentName("OtherPackage", "OtherClass"),
+                    baseIntent = Intent(),
+                    colorBackground = 0,
+                    isForegroundTask = true,
+                    userType = UserType.MAIN,
+                    splitBounds = null,
+                )
+            val fakeRecentTaskViewModel =
+                kosmos.recentTaskViewModelFactory.create(ScreenCaptureRecentTask(otherRecentTask))
+
+            kosmos.fakeScreenCaptureRecentTaskRepository.setRecentTasks(otherRecentTask)
+            whenever(
+                    kosmos.mockAsyncActivityLauncher.startActivityAsUser(any(), any(), any(), any())
+                )
+                .thenAnswer {
+                    // Immediately invoke the callback to simulate activity start.
+                    it.getArgument<(WaitResult) -> Unit>(3).invoke(WaitResult())
+                    true
+                }
+            kosmos.fakeMediaProjectionServiceHelperWrapper // Ensure the fake is initialized.
+
+            kosmos.recentTasksViewModel.setSelectedTarget(fakeRecentTaskViewModel)
+            viewModel.setTargetViewModel(target)
+
+            viewModel.onShareClicked()
+
+            // Verify the sharing state is updated to [Approved].
+            assertThat(sharingState)
+                .isInstanceOf(ShareScreenUiInteractor.SharingState.Approved::class.java)
+
+            // Verify AsyncActivityLauncher WAS called
+            org.mockito.kotlin
+                .verify(kosmos.mockAsyncActivityLauncher, org.mockito.kotlin.atLeastOnce())
+                .startActivityAsUser(any(), any(), any(), any())
+        }
+
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun onShareClicked_displayTarget_sharingApproved() =
