@@ -17,6 +17,7 @@
 package com.android.server.lights;
 
 import android.annotation.Nullable;
+import android.hardware.light.LightType;
 import android.hardware.light.V2_0.Type;
 
 public abstract class LightsManager {
@@ -29,6 +30,16 @@ public abstract class LightsManager {
     public static final int LIGHT_ID_BLUETOOTH = Type.BLUETOOTH;
     public static final int LIGHT_ID_WIFI = Type.WIFI;
     public static final int LIGHT_ID_COUNT = Type.COUNT;
+    /*
+     * The list of lights above is kept for backwards compatibility with HIDL
+     * based HALs. Specifically, COUNT should remain constant from now on since
+     * it only plays a role in HIDL.
+     * <p>
+     * New system lights can be added below without updating COUNT. On AIDL HALs
+     * the system accounts for gaps and interleaved system and non-system lights
+     * types.
+     */
+    public static final int LIGHT_ID_PRIORITY_NOTIFICATIONS = LightType.PRIORITY_NOTIFICATIONS;
 
     /**
      * Returns the logical light with the given type, if it exists, or null.
