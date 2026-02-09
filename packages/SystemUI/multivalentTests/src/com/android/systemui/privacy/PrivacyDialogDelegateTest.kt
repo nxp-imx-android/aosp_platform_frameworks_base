@@ -16,14 +16,19 @@
 
 package com.android.systemui.privacy
 
+import android.content.Intent
 import android.testing.TestableLooper
+import android.text.TextUtils
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.systemui.res.R
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.res.R
+import com.android.systemui.statusbar.phone.SystemUIDialog
+import com.android.systemui.statusbar.phone.systemUIDialogDotFactory
+import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import org.junit.After
 import org.junit.Before
@@ -34,8 +39,6 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.mockito.MockitoAnnotations
-import android.content.Intent
-import android.text.TextUtils
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -48,9 +51,12 @@ class PrivacyDialogDelegateTest : SysuiTestCase() {
         private const val TEST_PERM_GROUP = "test_perm_group"
     }
 
+    private val kosmos = testKosmos()
+
     @Mock
     private lateinit var starter: (String, Int, CharSequence?, Intent?) -> Unit
-    private lateinit var dialog: PrivacyDialogDelegate
+    private lateinit var delegate: PrivacyDialogDelegate
+    private lateinit var dialog: SystemUIDialog
 
     @Before
     fun setUp() {
@@ -83,7 +89,8 @@ class PrivacyDialogDelegateTest : SysuiTestCase() {
                         null
                 )
         )
-        dialog = PrivacyDialogDelegate(context, list, starter)
+        delegate = PrivacyDialogDelegate(context, list, starter, kosmos.systemUIDialogDotFactory)
+        dialog = delegate.createDialog()
         dialog.show()
         dialog.requireViewById<View>(R.id.privacy_item).callOnClick()
         verify(starter).invoke(TEST_PACKAGE_NAME, TEST_USER_ID, null, null)
@@ -91,9 +98,11 @@ class PrivacyDialogDelegateTest : SysuiTestCase() {
 
     @Test
     fun testDismissListenerCalledOnDismiss() {
-        dialog = PrivacyDialogDelegate(context, emptyList(), starter)
+        delegate =
+            PrivacyDialogDelegate(context, emptyList(), starter, kosmos.systemUIDialogDotFactory)
+        dialog = delegate.createDialog()
         val dismissListener = mock(PrivacyDialogDelegate.OnDialogDismissed::class.java)
-        dialog.addOnDismissListener(dismissListener)
+        delegate.addOnDismissListener(dismissListener)
         dialog.show()
 
         verify(dismissListener, never()).onDialogDismissed()
@@ -103,12 +112,14 @@ class PrivacyDialogDelegateTest : SysuiTestCase() {
 
     @Test
     fun testDismissListenerCalledImmediatelyIfDialogAlreadyDismissed() {
-        dialog = PrivacyDialogDelegate(context, emptyList(), starter)
+        delegate =
+            PrivacyDialogDelegate(context, emptyList(), starter, kosmos.systemUIDialogDotFactory)
+        dialog = delegate.createDialog()
         val dismissListener = mock(PrivacyDialogDelegate.OnDialogDismissed::class.java)
         dialog.show()
         dialog.dismiss()
 
-        dialog.addOnDismissListener(dismissListener)
+        delegate.addOnDismissListener(dismissListener)
         verify(dismissListener).onDialogDismissed()
     }
 
@@ -146,7 +157,8 @@ class PrivacyDialogDelegateTest : SysuiTestCase() {
                         null
                 )
         )
-        dialog = PrivacyDialogDelegate(context, list, starter)
+        delegate = PrivacyDialogDelegate(context, list, starter, kosmos.systemUIDialogDotFactory)
+        dialog = delegate.createDialog()
         dialog.show()
         assertThat(dialog.requireViewById<ViewGroup>(R.id.root).childCount).isEqualTo(2)
     }
@@ -170,7 +182,8 @@ class PrivacyDialogDelegateTest : SysuiTestCase() {
         )
 
         val list = listOf(element)
-        dialog = PrivacyDialogDelegate(context, list, starter)
+        delegate = PrivacyDialogDelegate(context, list, starter, kosmos.systemUIDialogDotFactory)
+        dialog = delegate.createDialog()
         dialog.show()
         assertThat(dialog.requireViewById<TextView>(R.id.text).text).isEqualTo(
                 context.getString(
@@ -200,7 +213,8 @@ class PrivacyDialogDelegateTest : SysuiTestCase() {
         )
 
         val list = listOf(element)
-        dialog = PrivacyDialogDelegate(context, list, starter)
+        delegate = PrivacyDialogDelegate(context, list, starter, kosmos.systemUIDialogDotFactory)
+        dialog = delegate.createDialog()
         dialog.show()
         assertThat(dialog.requireViewById<TextView>(R.id.text).text).isEqualTo(
                 context.getString(
@@ -230,7 +244,8 @@ class PrivacyDialogDelegateTest : SysuiTestCase() {
         )
 
         val list = listOf(element)
-        dialog = PrivacyDialogDelegate(context, list, starter)
+        delegate = PrivacyDialogDelegate(context, list, starter, kosmos.systemUIDialogDotFactory)
+        dialog = delegate.createDialog()
         dialog.show()
         assertThat(dialog.requireViewById<TextView>(R.id.text).text.toString()).contains(
                 context.getString(R.string.ongoing_privacy_dialog_enterprise)
@@ -256,7 +271,8 @@ class PrivacyDialogDelegateTest : SysuiTestCase() {
         )
 
         val list = listOf(element)
-        dialog = PrivacyDialogDelegate(context, list, starter)
+        delegate = PrivacyDialogDelegate(context, list, starter, kosmos.systemUIDialogDotFactory)
+        dialog = delegate.createDialog()
         dialog.show()
         assertThat(dialog.requireViewById<TextView>(R.id.text).text.toString()).contains(
                 context.getString(R.string.ongoing_privacy_dialog_phonecall)
@@ -282,7 +298,8 @@ class PrivacyDialogDelegateTest : SysuiTestCase() {
         )
 
         val list = listOf(element)
-        dialog = PrivacyDialogDelegate(context, list, starter)
+        delegate = PrivacyDialogDelegate(context, list, starter, kosmos.systemUIDialogDotFactory)
+        dialog = delegate.createDialog()
         dialog.show()
         assertThat(dialog.requireViewById<View>(R.id.privacy_item).isClickable).isFalse()
         assertThat(dialog.requireViewById<View>(R.id.chevron).visibility).isEqualTo(View.GONE)
@@ -307,7 +324,8 @@ class PrivacyDialogDelegateTest : SysuiTestCase() {
         )
 
         val list = listOf(element)
-        dialog = PrivacyDialogDelegate(context, list, starter)
+        delegate = PrivacyDialogDelegate(context, list, starter, kosmos.systemUIDialogDotFactory)
+        dialog = delegate.createDialog()
         dialog.show()
         assertThat(dialog.requireViewById<TextView>(R.id.text).text.toString()).contains(
                 context.getString(
@@ -336,7 +354,8 @@ class PrivacyDialogDelegateTest : SysuiTestCase() {
         )
 
         val list = listOf(element)
-        dialog = PrivacyDialogDelegate(context, list, starter)
+        delegate = PrivacyDialogDelegate(context, list, starter, kosmos.systemUIDialogDotFactory)
+        dialog = delegate.createDialog()
         dialog.show()
         assertThat(dialog.requireViewById<TextView>(R.id.text).text.toString()).contains(
                 context.getString(
@@ -365,7 +384,8 @@ class PrivacyDialogDelegateTest : SysuiTestCase() {
         )
 
         val list = listOf(element)
-        dialog = PrivacyDialogDelegate(context, list, starter)
+        delegate = PrivacyDialogDelegate(context, list, starter, kosmos.systemUIDialogDotFactory)
+        dialog = delegate.createDialog()
         dialog.show()
         assertThat(dialog.requireViewById<TextView>(R.id.text).text.toString()).contains(
                 context.getString(
@@ -396,7 +416,8 @@ class PrivacyDialogDelegateTest : SysuiTestCase() {
                 null
             )
         )
-        dialog = PrivacyDialogDelegate(context, list, starter)
+        delegate = PrivacyDialogDelegate(context, list, starter, kosmos.systemUIDialogDotFactory)
+        dialog = delegate.createDialog()
         dialog.show()
 
         assertThat(TextUtils.isEmpty(dialog.window?.attributes?.title)).isFalse()

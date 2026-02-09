@@ -31,6 +31,9 @@ import android.widget.TextView
 import com.android.settingslib.Utils
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.phone.SystemUIDialog
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import java.lang.ref.WeakReference
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -43,11 +46,14 @@ import java.util.concurrent.atomic.AtomicBoolean
  *             appear in the list
  * @param activityStarter a callback to start an activity for a given package name, user id, attributionTag and intent
  */
-class PrivacyDialogDelegate(
-    context: Context,
-    private val list: List<PrivacyElement>,
-    activityStarter: (String, Int, CharSequence?, Intent?) -> Unit
-) : SystemUIDialog(context, R.style.PrivacyDialog) {
+class PrivacyDialogDelegate
+@AssistedInject
+constructor(
+    @Assisted private val context: Context,
+    @Assisted private val list: List<PrivacyElement>,
+    @Assisted activityStarter: (String, Int, CharSequence?, Intent?) -> Unit,
+    private val systemUIDialogFactory: SystemUIDialog.Factory,
+) : SystemUIDialog.Delegate {
 
     private val dismissListeners = mutableListOf<WeakReference<OnDialogDismissed>>()
     private val dismissed = AtomicBoolean(false)
@@ -60,16 +66,19 @@ class PrivacyDialogDelegate(
 
     private lateinit var rootView: ViewGroup
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        window?.apply {
+    override fun createDialog(): SystemUIDialog {
+        return systemUIDialogFactory.create(this, context, R.style.PrivacyDialog)
+    }
+
+    override fun onCreate(dialog: SystemUIDialog, savedInstanceState: Bundle?) {
+        dialog.window?.apply {
             attributes.fitInsetsTypes = attributes.fitInsetsTypes or WindowInsets.Type.statusBars()
             attributes.receiveInsetsIgnoringZOrder = true
             setGravity(Gravity.TOP or Gravity.CENTER_HORIZONTAL)
         }
-        setTitle(R.string.ongoing_privacy_dialog_a11y_title)
-        setContentView(R.layout.privacy_dialog)
-        rootView = requireViewById<ViewGroup>(R.id.root)
+        dialog.setTitle(R.string.ongoing_privacy_dialog_a11y_title)
+        dialog.setContentView(R.layout.privacy_dialog)
+        rootView = dialog.requireViewById<ViewGroup>(R.id.root)
 
         list.forEach {
             rootView.addView(createView(it))
@@ -90,7 +99,7 @@ class PrivacyDialogDelegate(
         }
     }
 
-    override fun stop() {
+    override fun onStop(dialog: SystemUIDialog) {
         dismissed.set(true)
         val iterator = dismissListeners.iterator()
         while (iterator.hasNext()) {
@@ -230,5 +239,15 @@ class PrivacyDialogDelegate(
     /** */
     interface OnDialogDismissed {
         fun onDialogDismissed()
+    }
+
+    @AssistedFactory
+    interface Factory {
+
+        fun create(
+            context: Context,
+            list: List<PrivacyElement>,
+            activityStarter: (String, Int, CharSequence?, Intent?) -> Unit,
+        ): PrivacyDialogDelegate
     }
 }

@@ -43,6 +43,7 @@ import com.android.systemui.appops.AppOpsController
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.privacy.logging.PrivacyLogger
 import com.android.systemui.settings.UserTracker
+import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.statusbar.policy.KeyguardStateController
 import com.android.systemui.util.concurrency.FakeExecutor
 import com.android.systemui.util.mockito.any
@@ -88,7 +89,8 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
         private val TEST_INTENT = Intent("test_intent_action")
     }
 
-    @Mock private lateinit var dialog: PrivacyDialogDelegateV2
+    @Mock private lateinit var delegate: PrivacyDialogDelegateV2
+    @Mock private lateinit var dialog: SystemUIDialog
     @Mock private lateinit var permissionManager: PermissionManager
     @Mock private lateinit var packageManager: PackageManager
     @Mock private lateinit var locationManager: LocationManager
@@ -110,14 +112,14 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
     private lateinit var controller: PrivacyDialogControllerV2
     private var nextUid: Int = 0
 
-    private val dialogProvider =
-        object : PrivacyDialogControllerV2.DialogProvider {
+    private val dialogDelegateFactory =
+        object : PrivacyDialogDelegateV2.Factory {
             var list: List<PrivacyDialogDelegateV2.PrivacyElement>? = null
             var manageApp: ((String, Int, Intent) -> Unit)? = null
             var closeApp: ((String, Int) -> Unit)? = null
             var openPrivacyDashboard: (() -> Unit)? = null
 
-            override fun makeDialog(
+            override fun create(
                 context: Context,
                 list: List<PrivacyDialogDelegateV2.PrivacyElement>,
                 manageApp: (String, Int, Intent) -> Unit,
@@ -128,7 +130,7 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
                 this.manageApp = manageApp
                 this.closeApp = closeApp
                 this.openPrivacyDashboard = openPrivacyDashboard
-                return dialog
+                return delegate
             }
         }
 
@@ -153,17 +155,17 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
                 appOpsController,
                 uiEventLogger,
                 mDialogTransitionAnimator,
-                dialogProvider,
+                dialogDelegateFactory,
             )
     }
 
     @After
     fun tearDown() {
         FakeExecutor.exhaustExecutors(uiExecutor, backgroundExecutor)
-        dialogProvider.list = null
-        dialogProvider.manageApp = null
-        dialogProvider.closeApp = null
-        dialogProvider.openPrivacyDashboard = null
+        dialogDelegateFactory.list = null
+        dialogDelegateFactory.manageApp = null
+        dialogDelegateFactory.closeApp = null
+        dialogDelegateFactory.openPrivacyDashboard = null
     }
 
     @Test
@@ -287,7 +289,7 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
         controller.showDialog(context)
         exhaustExecutors()
 
-        verify(dialog).addOnDismissListener(capture(dialogDismissedCaptor))
+        verify(delegate).addOnDismissListener(capture(dialogDismissedCaptor))
 
         dialogDismissedCaptor.value.onDialogDismissed()
         controller.dismissDialog()
@@ -322,7 +324,7 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
         controller.showDialog(context)
         exhaustExecutors()
 
-        dialogProvider.list?.let { list ->
+        dialogDelegateFactory.list?.let { list ->
             assertThat(list.get(0).type).isEqualTo(PrivacyType.TYPE_CAMERA)
             assertThat(list.get(0).packageName).isEqualTo(TEST_PACKAGE_NAME)
             assertThat(list.get(0).userId).isEqualTo(USER_ID)
@@ -371,7 +373,7 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
         controller.showDialog(context)
         exhaustExecutors()
 
-        dialogProvider.list?.let { list ->
+        dialogDelegateFactory.list?.let { list ->
             assertThat(list).hasSize(2)
             assertThat(list.get(0).type.compareTo(list.get(1).type)).isLessThan(0)
         }
@@ -389,8 +391,8 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
         controller.showDialog(context)
         exhaustExecutors()
 
-        assertThat(dialogProvider.list).hasSize(1)
-        assertThat(dialogProvider.list?.get(0)?.isActive).isTrue()
+        assertThat(dialogDelegateFactory.list).hasSize(1)
+        assertThat(dialogDelegateFactory.list?.get(0)?.isActive).isTrue()
     }
 
     @Test
@@ -411,9 +413,9 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
             .thenReturn(listOf(usage_active, usage_active_moreRecent))
         controller.showDialog(context)
         exhaustExecutors()
-        assertThat(dialogProvider.list).hasSize(2)
-        assertThat(dialogProvider.list?.get(0)?.lastActiveTimestamp).isEqualTo(1L)
-        assertThat(dialogProvider.list?.get(1)?.lastActiveTimestamp).isEqualTo(0L)
+        assertThat(dialogDelegateFactory.list).hasSize(2)
+        assertThat(dialogDelegateFactory.list?.get(0)?.lastActiveTimestamp).isEqualTo(1L)
+        assertThat(dialogDelegateFactory.list?.get(1)?.lastActiveTimestamp).isEqualTo(0L)
     }
 
     @Test
@@ -442,8 +444,8 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
         controller.showDialog(context)
         exhaustExecutors()
 
-        assertThat(dialogProvider.list).hasSize(1)
-        assertThat(dialogProvider.list?.get(0)?.lastActiveTimestamp).isEqualTo(2L)
+        assertThat(dialogDelegateFactory.list).hasSize(1)
+        assertThat(dialogDelegateFactory.list?.get(0)?.lastActiveTimestamp).isEqualTo(2L)
     }
 
     @Test
@@ -459,8 +461,8 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
         controller.showDialog(context)
         exhaustExecutors()
 
-        assertThat(dialogProvider.list).hasSize(1)
-        assertThat(dialogProvider.list?.get(0)?.type).isEqualTo(PrivacyType.TYPE_LOCATION)
+        assertThat(dialogDelegateFactory.list).hasSize(1)
+        assertThat(dialogDelegateFactory.list?.get(0)?.type).isEqualTo(PrivacyType.TYPE_LOCATION)
     }
 
     @Test
@@ -476,8 +478,8 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
         controller.showDialog(context)
         exhaustExecutors()
 
-        assertThat(dialogProvider.list).hasSize(2)
-        dialogProvider.list?.forEach { assertThat(it.type).isNotEqualTo(PrivacyType.TYPE_LOCATION) }
+        assertThat(dialogDelegateFactory.list).hasSize(2)
+        dialogDelegateFactory.list?.forEach { assertThat(it.type).isNotEqualTo(PrivacyType.TYPE_LOCATION) }
     }
 
     @Test
@@ -494,7 +496,7 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
         controller.showDialog(context)
         exhaustExecutors()
 
-        assertThat(dialogProvider.list).hasSize(3)
+        assertThat(dialogDelegateFactory.list).hasSize(3)
     }
 
     @Test
@@ -533,7 +535,7 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
         controller.showDialog(context)
         exhaustExecutors()
 
-        dialogProvider.manageApp?.invoke(TEST_PACKAGE_NAME, USER_ID, TEST_INTENT)
+        dialogDelegateFactory.manageApp?.invoke(TEST_PACKAGE_NAME, USER_ID, TEST_INTENT)
         verify(activityStarter).startActivity(any(), eq(true), capture(activityStartedCaptor))
 
         activityStartedCaptor.value.onActivityStarted(ActivityManager.START_DELIVERED_TO_TOP)
@@ -548,7 +550,7 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
         controller.showDialog(context)
         exhaustExecutors()
 
-        dialogProvider.manageApp?.invoke(TEST_PACKAGE_NAME, USER_ID, TEST_INTENT)
+        dialogDelegateFactory.manageApp?.invoke(TEST_PACKAGE_NAME, USER_ID, TEST_INTENT)
         verify(activityStarter).startActivity(any(), eq(true), capture(activityStartedCaptor))
 
         activityStartedCaptor.value.onActivityStarted(ActivityManager.START_ABORTED)
@@ -576,7 +578,7 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
         controller.showDialog(context)
         exhaustExecutors()
 
-        dialogProvider.manageApp?.invoke(TEST_PACKAGE_NAME, USER_ID, TEST_INTENT)
+        dialogDelegateFactory.manageApp?.invoke(TEST_PACKAGE_NAME, USER_ID, TEST_INTENT)
         verify(uiEventLogger)
             .log(
                 PrivacyDialogEvent.PRIVACY_DIALOG_ITEM_CLICKED_TO_APP_SETTINGS,
@@ -592,7 +594,7 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
         controller.showDialog(context)
         exhaustExecutors()
 
-        dialogProvider.closeApp?.invoke(TEST_PACKAGE_NAME, USER_ID)
+        dialogDelegateFactory.closeApp?.invoke(TEST_PACKAGE_NAME, USER_ID)
         verify(uiEventLogger)
             .log(
                 PrivacyDialogEvent.PRIVACY_DIALOG_ITEM_CLICKED_TO_CLOSE_APP,
@@ -608,7 +610,7 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
         controller.showDialog(context)
         exhaustExecutors()
 
-        dialogProvider.openPrivacyDashboard?.invoke()
+        dialogDelegateFactory.openPrivacyDashboard?.invoke()
         verify(uiEventLogger).log(PrivacyDialogEvent.PRIVACY_DIALOG_CLICK_TO_PRIVACY_DASHBOARD)
     }
 
@@ -619,7 +621,7 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
         controller.showDialog(context)
         exhaustExecutors()
 
-        verify(dialog).addOnDismissListener(capture(dialogDismissedCaptor))
+        verify(delegate).addOnDismissListener(capture(dialogDismissedCaptor))
 
         dialogDismissedCaptor.value.onDialogDismissed()
 
@@ -636,7 +638,7 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
         controller.showDialog(context)
         exhaustExecutors()
 
-        dialogProvider.list?.let { list ->
+        dialogDelegateFactory.list?.let { list ->
             assertThat(
                     isIntentEqual(
                         list.get(0).navigationIntent!!,
@@ -656,7 +658,7 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
         controller.showDialog(context)
         exhaustExecutors()
 
-        dialogProvider.list?.let { list ->
+        dialogDelegateFactory.list?.let { list ->
             assertThat(
                     isIntentEqual(
                         list.get(0).navigationIntent!!,
@@ -683,7 +685,7 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
         controller.showDialog(context)
         exhaustExecutors()
 
-        dialogProvider.list?.let { list ->
+        dialogDelegateFactory.list?.let { list ->
             assertThat(
                     isIntentEqual(
                         list.get(0).navigationIntent!!,
@@ -714,7 +716,7 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
         controller.showDialog(context)
         exhaustExecutors()
 
-        dialogProvider.list?.let { list ->
+        dialogDelegateFactory.list?.let { list ->
             val navigationIntent = list.get(0).navigationIntent!!
             assertThat(navigationIntent.action).isEqualTo(Intent.ACTION_MANAGE_PERMISSION_USAGE)
             assertThat(navigationIntent.getStringExtra(Intent.EXTRA_PERMISSION_GROUP_NAME))
@@ -746,7 +748,7 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
         controller.showDialog(context)
         exhaustExecutors()
 
-        dialogProvider.list?.let { list ->
+        dialogDelegateFactory.list?.let { list ->
             val navigationIntent = list.get(0).navigationIntent!!
             assertThat(navigationIntent.action).isEqualTo(Intent.ACTION_MANAGE_APP_PERMISSIONS)
         }
@@ -765,7 +767,7 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
         controller.showDialog(context)
         exhaustExecutors()
 
-        dialogProvider.list?.let { list ->
+        dialogDelegateFactory.list?.let { list ->
             assertThat(
                     isIntentEqual(
                         list.get(0).navigationIntent!!,
@@ -790,7 +792,7 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
         controller.showDialog(context)
         exhaustExecutors()
 
-        dialogProvider.list?.let { list ->
+        dialogDelegateFactory.list?.let { list ->
             assertThat(
                     isIntentEqual(
                         list.get(0).navigationIntent!!,
@@ -807,6 +809,7 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
     }
 
     private fun setUpDefaultMockResponses() {
+        `when`(delegate.createDialog()).thenReturn(dialog)
         `when`(permissionManager.getIndicatorAppOpUsageData(anyBoolean())).thenReturn(emptyList())
         `when`(appOpsController.isMicMuted).thenReturn(false)
 

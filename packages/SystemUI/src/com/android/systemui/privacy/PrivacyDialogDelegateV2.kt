@@ -48,6 +48,9 @@ import com.android.systemui.animation.ViewHierarchyAnimator
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.util.maybeForceFullscreen
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import java.lang.ref.WeakReference
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -62,18 +65,20 @@ import java.util.concurrent.atomic.AtomicBoolean
  * @param openPrivacyDashboard a callback to open the privacy dashboard
  * @see PrivacyDialogControllerV2
  */
-class PrivacyDialogDelegateV2(
-    context: Context,
-    private val list: List<PrivacyElement>,
-    private val manageApp: (String, Int, Intent) -> Unit,
-    private val closeApp: (String, Int) -> Unit,
-    private val openPrivacyDashboard: () -> Unit,
-) : SystemUIDialog(context, R.style.Theme_PrivacyDialog) {
+class PrivacyDialogDelegateV2
+@AssistedInject
+constructor(
+    @Assisted private val context: Context,
+    @Assisted private val list: List<PrivacyElement>,
+    @Assisted private val manageApp: (String, Int, Intent) -> Unit,
+    @Assisted private val closeApp: (String, Int) -> Unit,
+    @Assisted private val openPrivacyDashboard: () -> Unit,
+    private val systemUIDialogFactory: SystemUIDialog.Factory,
+) : SystemUIDialog.Delegate {
 
     private val dismissListeners = mutableListOf<WeakReference<OnDialogDismissed>>()
     private val dismissed = AtomicBoolean(false)
-    // Note: this will call the dialog create method during init
-    private val decorViewLayoutListener = maybeForceFullscreen()?.component3()
+    private var decorViewLayoutListener: View.OnLayoutChangeListener? = null
 
     /**
      * Add a listener that will be called when the dialog is dismissed.
@@ -89,7 +94,13 @@ class PrivacyDialogDelegateV2(
         }
     }
 
-    override fun stop() {
+    override fun createDialog(): SystemUIDialog {
+        val dialog = systemUIDialogFactory.create(this, context, R.style.Theme_PrivacyDialog)
+        decorViewLayoutListener = dialog.maybeForceFullscreen()?.component3()
+        return dialog
+    }
+
+    override fun onStop(dialog: SystemUIDialog) {
         dismissed.set(true)
         val iterator = dismissListeners.iterator()
         while (iterator.hasNext()) {
@@ -99,27 +110,30 @@ class PrivacyDialogDelegateV2(
         }
         // Remove the layout change listener we may have added to the DecorView.
         if (decorViewLayoutListener != null) {
-            window!!.decorView.removeOnLayoutChangeListener(decorViewLayoutListener)
+            dialog.window!!.decorView.removeOnLayoutChangeListener(decorViewLayoutListener)
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        window!!.setGravity(Gravity.CENTER)
-        setTitle(R.string.privacy_dialog_title)
-        setContentView(R.layout.privacy_dialog_v2)
+    override fun onCreate(dialog: SystemUIDialog, savedInstanceState: Bundle?) {
+        dialog.window!!.setGravity(Gravity.CENTER)
+        dialog.setTitle(R.string.privacy_dialog_title)
+        dialog.setContentView(R.layout.privacy_dialog_v2)
 
-        val closeButton = requireViewById<Button>(R.id.privacy_dialog_close_button)
-        closeButton.setOnClickListener { dismiss() }
+        val closeButton = dialog.requireViewById<Button>(R.id.privacy_dialog_close_button)
+        closeButton.setOnClickListener { dialog.dismiss() }
 
-        val moreButton = requireViewById<Button>(R.id.privacy_dialog_more_button)
+        val moreButton = dialog.requireViewById<Button>(R.id.privacy_dialog_more_button)
         moreButton.setOnClickListener { openPrivacyDashboard() }
 
-        val itemsContainer = requireViewById<ViewGroup>(R.id.privacy_dialog_items_container)
-        list.forEach { itemsContainer.addView(createView(it, itemsContainer)) }
+        val itemsContainer = dialog.requireViewById<ViewGroup>(R.id.privacy_dialog_items_container)
+        list.forEach { itemsContainer.addView(createView(dialog, it, itemsContainer)) }
     }
 
-    private fun createView(element: PrivacyElement, itemsContainer: ViewGroup): View {
+    private fun createView(
+        dialog: SystemUIDialog,
+        element: PrivacyElement,
+        itemsContainer: ViewGroup,
+    ): View {
         val itemCard =
             LayoutInflater.from(context)
                 .inflate(R.layout.privacy_dialog_item_v2, itemsContainer, false) as ViewGroup
@@ -130,9 +144,9 @@ class PrivacyDialogDelegateV2(
             return itemCard
         }
 
-        setItemExpansionBehavior(itemCard)
+        setItemExpansionBehavior(dialog, itemCard)
 
-        configureIndicatorActionButtons(element, itemCard)
+        configureIndicatorActionButtons(dialog, element, itemCard)
 
         return itemCard
     }
@@ -157,13 +171,17 @@ class PrivacyDialogDelegateV2(
         summaryView.contentDescription = usageText
     }
 
-    private fun configureIndicatorActionButtons(element: PrivacyElement, itemCard: View) {
+    private fun configureIndicatorActionButtons(
+        dialog: SystemUIDialog,
+        element: PrivacyElement,
+        itemCard: View
+    ) {
         val expandedLayout =
             itemCard.findViewById<ViewGroup>(R.id.privacy_dialog_item_header_expanded_layout)!!
 
         val buttons: MutableList<View> = mutableListOf()
-        configureCloseAppButton(element, expandedLayout)?.also { buttons.add(it) }
-        buttons.add(configureManageButton(element, expandedLayout))
+        configureCloseAppButton(dialog, element, expandedLayout)?.also { buttons.add(it) }
+        buttons.add(configureManageButton(dialog, element, expandedLayout))
 
         val backgroundColor = getBackgroundColor(element.isActive)
         when (buttons.size) {
@@ -191,12 +209,16 @@ class PrivacyDialogDelegateV2(
         }
     }
 
-    private fun configureCloseAppButton(element: PrivacyElement, expandedLayout: ViewGroup): View? {
+    private fun configureCloseAppButton(
+        dialog: SystemUIDialog,
+        element: PrivacyElement,
+        expandedLayout: ViewGroup
+    ): View? {
         if (element.isService || !element.isActive) {
             return null
         }
         val closeAppButton =
-            checkNotNull(window)
+            checkNotNull(dialog.window)
                 .layoutInflater
                 .inflate(R.layout.privacy_dialog_card_button, expandedLayout, false) as Button
         expandedLayout.addView(closeAppButton)
@@ -208,14 +230,14 @@ class PrivacyDialogDelegateV2(
             v.tag?.let {
                 val element = it as PrivacyElement
                 closeApp(element.packageName, element.userId)
-                closeAppTransition(element.packageName, element.userId)
+                closeAppTransition(dialog, element.packageName, element.userId)
             }
         }
         return closeAppButton
     }
 
-    private fun closeAppTransition(packageName: String, userId: Int) {
-        val itemsContainer = requireViewById<ViewGroup>(R.id.privacy_dialog_items_container)
+    private fun closeAppTransition(dialog: SystemUIDialog, packageName: String, userId: Int) {
+        val itemsContainer = dialog.requireViewById<ViewGroup>(R.id.privacy_dialog_items_container)
         var shouldTransition = false
         for (i in 0 until itemsContainer.getChildCount()) {
             val itemCard = itemsContainer.getChildAt(i)
@@ -244,13 +266,17 @@ class PrivacyDialogDelegateV2(
             }
         }
         if (shouldTransition) {
-            ViewHierarchyAnimator.animateNextUpdate(window!!.decorView)
+            ViewHierarchyAnimator.animateNextUpdate(dialog.window!!.decorView)
         }
     }
 
-    private fun configureManageButton(element: PrivacyElement, expandedLayout: ViewGroup): View {
+    private fun configureManageButton(
+        dialog: SystemUIDialog,
+        element: PrivacyElement,
+        expandedLayout: ViewGroup
+    ): View {
         val manageButton =
-            checkNotNull(window)
+            checkNotNull(dialog.window)
                 .layoutInflater
                 .inflate(R.layout.privacy_dialog_card_button, expandedLayout, false) as Button
         expandedLayout.addView(manageButton)
@@ -282,7 +308,7 @@ class PrivacyDialogDelegateV2(
         summaryView.contentDescription = closedAppText
     }
 
-    private fun setItemExpansionBehavior(itemCard: ViewGroup) {
+    private fun setItemExpansionBehavior(dialog: SystemUIDialog, itemCard: ViewGroup) {
         val itemHeader = itemCard.findViewById<ViewGroup>(R.id.privacy_dialog_item_header)!!
 
         val expandToggle =
@@ -334,7 +360,7 @@ class PrivacyDialogDelegateV2(
                     )
                 }
                 ViewHierarchyAnimator.animateNextUpdate(
-                    rootView = window!!.decorView,
+                    rootView = dialog.window!!.decorView,
                     excludedViews = setOf(expandedLayout),
                 )
             }
@@ -575,5 +601,17 @@ class PrivacyDialogDelegateV2(
     /**  */
     interface OnDialogDismissed {
         fun onDialogDismissed()
+    }
+
+    @AssistedFactory
+    interface Factory {
+
+        fun create(
+            context: Context,
+            list: List<PrivacyElement>,
+            manageApp: (String, Int, Intent) -> Unit,
+            closeApp: (String, Int) -> Unit,
+            openPrivacyDashboard: () -> Unit,
+        ): PrivacyDialogDelegateV2
     }
 }

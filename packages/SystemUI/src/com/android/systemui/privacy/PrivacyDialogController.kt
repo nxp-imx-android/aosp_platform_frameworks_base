@@ -29,7 +29,6 @@ import android.permission.PermissionGroupUsage
 import android.permission.PermissionManager
 import android.util.Log
 import androidx.annotation.MainThread
-import androidx.annotation.VisibleForTesting
 import androidx.annotation.WorkerThread
 import com.android.internal.logging.UiEventLogger
 import com.android.systemui.appops.AppOpsController
@@ -43,16 +42,6 @@ import com.android.systemui.statusbar.policy.KeyguardStateController
 import java.util.concurrent.Executor
 import javax.inject.Inject
 
-private val defaultDialogProvider = object : PrivacyDialogController.DialogProvider {
-    override fun makeDialog(
-        context: Context,
-        list: List<PrivacyDialogDelegate.PrivacyElement>,
-        starter: (String, Int, CharSequence?, Intent?) -> Unit
-    ): PrivacyDialogDelegate {
-        return PrivacyDialogDelegate(context, list, starter)
-    }
-}
-
 /**
  * Controller for [PrivacyDialogDelegate].
  *
@@ -60,51 +49,23 @@ private val defaultDialogProvider = object : PrivacyDialogController.DialogProvi
  * it.
  */
 @SysUISingleton
-class PrivacyDialogController(
+class PrivacyDialogController
+@Inject
+constructor(
     private val permissionManager: PermissionManager,
     private val packageManager: PackageManager,
     private val locationManager: LocationManager,
     private val privacyItemController: PrivacyItemController,
     private val userTracker: UserTracker,
     private val activityStarter: ActivityStarter,
-    private val backgroundExecutor: Executor,
-    private val uiExecutor: Executor,
+    @Background private val backgroundExecutor: Executor,
+    @Main private val uiExecutor: Executor,
     private val privacyLogger: PrivacyLogger,
     private val keyguardStateController: KeyguardStateController,
     private val appOpsController: AppOpsController,
     private val uiEventLogger: UiEventLogger,
-    @VisibleForTesting private val dialogProvider: DialogProvider
+    private val privacyDialogDelegateFactory: PrivacyDialogDelegate.Factory,
 ) {
-
-    @Inject
-    constructor(
-        permissionManager: PermissionManager,
-        packageManager: PackageManager,
-        locationManager: LocationManager,
-        privacyItemController: PrivacyItemController,
-        userTracker: UserTracker,
-        activityStarter: ActivityStarter,
-        @Background backgroundExecutor: Executor,
-        @Main uiExecutor: Executor,
-        privacyLogger: PrivacyLogger,
-        keyguardStateController: KeyguardStateController,
-        appOpsController: AppOpsController,
-        uiEventLogger: UiEventLogger
-    ) : this(
-            permissionManager,
-            packageManager,
-            locationManager,
-            privacyItemController,
-            userTracker,
-            activityStarter,
-            backgroundExecutor,
-            uiExecutor,
-            privacyLogger,
-            keyguardStateController,
-            appOpsController,
-            uiEventLogger,
-            defaultDialogProvider
-    )
 
     companion object {
         private const val TAG = "PrivacyDialogController"
@@ -192,10 +153,10 @@ class PrivacyDialogController(
     }
 
     /**
-     * Show the [PrivacyDialogDelegate]
+     * Show the [PrivacyDialogDelegate] dialog
      *
      * This retrieves the permission usage from [PermissionManager] and creates a new
-     * [PrivacyDialogDelegate] with a list of [PrivacyDialogDelegate.PrivacyElement] to show.
+     * [PrivacyDialogDelegate] dialog with a list of [PrivacyDialogDelegate.PrivacyElement] to show.
      *
      * This list will be filtered by [filterAndSelect]. Only types available by
      * [PrivacyItemController] will be shown.
@@ -255,9 +216,10 @@ class PrivacyDialogController(
             uiExecutor.execute {
                 val elements = filterAndSelect(items)
                 if (elements.isNotEmpty()) {
-                    val d = dialogProvider.makeDialog(context, elements, this::startActivity)
+                    val delegate = privacyDialogDelegateFactory.create(context, elements, this::startActivity)
+                    val d = delegate.createDialog()
                     d.setShowForAllUsers(true)
-                    d.addOnDismissListener(onDialogDismissed)
+                    delegate.addOnDismissListener(onDialogDismissed)
                     d.show()
                     privacyLogger.logShowDialogContents(elements)
                     dialog = d
@@ -328,21 +290,5 @@ class PrivacyDialogController(
                 } ?: emptyList()
             }
         }
-    }
-
-    /**
-     * Interface to create a [PrivacyDialogDelegate].
-     *
-     * Can be used to inject a mock creator.
-     */
-    interface DialogProvider {
-        /**
-         * Create a [PrivacyDialogDelegate].
-         */
-        fun makeDialog(
-            context: Context,
-            list: List<PrivacyDialogDelegate.PrivacyElement>,
-            starter: (String, Int, CharSequence?, Intent?) -> Unit
-        ): PrivacyDialogDelegate
     }
 }

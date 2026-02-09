@@ -26,6 +26,9 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.res.R
+import com.android.systemui.statusbar.phone.SystemUIDialog
+import com.android.systemui.statusbar.phone.systemUIDialogDotFactory
+import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import org.junit.After
 import org.junit.Before
@@ -81,10 +84,13 @@ class PrivacyDialogDelegateV2Test : SysuiTestCase() {
             )
     }
 
+    private val kosmos = testKosmos()
+
     @Mock private lateinit var manageApp: (String, Int, Intent) -> Unit
     @Mock private lateinit var closeApp: (String, Int) -> Unit
     @Mock private lateinit var openPrivacyDashboard: () -> Unit
-    private lateinit var dialog: PrivacyDialogDelegateV2
+    private lateinit var dialog: SystemUIDialog
+    private lateinit var delegate: PrivacyDialogDelegateV2
 
     @Before
     fun setUp() {
@@ -101,7 +107,16 @@ class PrivacyDialogDelegateV2Test : SysuiTestCase() {
     @Test
     fun testManageAppCalledWithCorrectParams() {
         val list = listOf(createPrivacyElement())
-        dialog = PrivacyDialogDelegateV2(context, list, manageApp, closeApp, openPrivacyDashboard)
+        delegate =
+            PrivacyDialogDelegateV2(
+                context,
+                list,
+                manageApp,
+                closeApp,
+                openPrivacyDashboard,
+                kosmos.systemUIDialogDotFactory,
+            )
+        dialog = delegate.createDialog()
         dialog.show()
 
         dialog.requireViewById<View>(R.id.privacy_dialog_manage_app_button).callOnClick()
@@ -112,7 +127,16 @@ class PrivacyDialogDelegateV2Test : SysuiTestCase() {
     @Test
     fun testCloseAppCalledWithCorrectParams() {
         val list = listOf(createPrivacyElement(isActive = true))
-        dialog = PrivacyDialogDelegateV2(context, list, manageApp, closeApp, openPrivacyDashboard)
+        delegate =
+            PrivacyDialogDelegateV2(
+                context,
+                list,
+                manageApp,
+                closeApp,
+                openPrivacyDashboard,
+                kosmos.systemUIDialogDotFactory,
+            )
+        dialog = delegate.createDialog()
         dialog.show()
 
         dialog.requireViewById<View>(R.id.privacy_dialog_close_app_button).callOnClick()
@@ -123,7 +147,16 @@ class PrivacyDialogDelegateV2Test : SysuiTestCase() {
     @Test
     fun testCloseAppMissingForService() {
         val list = listOf(createPrivacyElement(isActive = true, isService = true))
-        dialog = PrivacyDialogDelegateV2(context, list, manageApp, closeApp, openPrivacyDashboard)
+        delegate =
+            PrivacyDialogDelegateV2(
+                context,
+                list,
+                manageApp,
+                closeApp,
+                openPrivacyDashboard,
+                kosmos.systemUIDialogDotFactory,
+            )
+        dialog = delegate.createDialog()
 
         dialog.show()
 
@@ -133,7 +166,16 @@ class PrivacyDialogDelegateV2Test : SysuiTestCase() {
 
     @Test
     fun testMoreButton() {
-        dialog = PrivacyDialogDelegateV2(context, emptyList(), manageApp, closeApp, openPrivacyDashboard)
+        delegate =
+            PrivacyDialogDelegateV2(
+                context,
+                emptyList(),
+                manageApp,
+                closeApp,
+                openPrivacyDashboard,
+                kosmos.systemUIDialogDotFactory,
+            )
+        dialog = delegate.createDialog()
         dialog.show()
 
         dialog.requireViewById<View>(R.id.privacy_dialog_more_button).callOnClick()
@@ -143,9 +185,18 @@ class PrivacyDialogDelegateV2Test : SysuiTestCase() {
 
     @Test
     fun testCloseButton() {
-        dialog = PrivacyDialogDelegateV2(context, emptyList(), manageApp, closeApp, openPrivacyDashboard)
+        delegate =
+            PrivacyDialogDelegateV2(
+                context,
+                emptyList(),
+                manageApp,
+                closeApp,
+                openPrivacyDashboard,
+                kosmos.systemUIDialogDotFactory,
+            )
+        dialog = delegate.createDialog()
         val dismissListener = mock(PrivacyDialogDelegateV2.OnDialogDismissed::class.java)
-        dialog.addOnDismissListener(dismissListener)
+        delegate.addOnDismissListener(dismissListener)
         dialog.show()
         verify(dismissListener, never()).onDialogDismissed()
 
@@ -156,9 +207,18 @@ class PrivacyDialogDelegateV2Test : SysuiTestCase() {
 
     @Test
     fun testDismissListenerCalledOnDismiss() {
-        dialog = PrivacyDialogDelegateV2(context, emptyList(), manageApp, closeApp, openPrivacyDashboard)
+        delegate =
+            PrivacyDialogDelegateV2(
+                context,
+                emptyList(),
+                manageApp,
+                closeApp,
+                openPrivacyDashboard,
+                kosmos.systemUIDialogDotFactory,
+            )
+        dialog = delegate.createDialog()
         val dismissListener = mock(PrivacyDialogDelegateV2.OnDialogDismissed::class.java)
-        dialog.addOnDismissListener(dismissListener)
+        delegate.addOnDismissListener(dismissListener)
         dialog.show()
         verify(dismissListener, never()).onDialogDismissed()
 
@@ -169,12 +229,21 @@ class PrivacyDialogDelegateV2Test : SysuiTestCase() {
 
     @Test
     fun testDismissListenerCalledImmediatelyIfDialogAlreadyDismissed() {
-        dialog = PrivacyDialogDelegateV2(context, emptyList(), manageApp, closeApp, openPrivacyDashboard)
+        delegate =
+            PrivacyDialogDelegateV2(
+                context,
+                emptyList(),
+                manageApp,
+                closeApp,
+                openPrivacyDashboard,
+                kosmos.systemUIDialogDotFactory,
+            )
+        dialog = delegate.createDialog()
         val dismissListener = mock(PrivacyDialogDelegateV2.OnDialogDismissed::class.java)
         dialog.show()
         dialog.dismiss()
 
-        dialog.addOnDismissListener(dismissListener)
+        delegate.addOnDismissListener(dismissListener)
 
         verify(dismissListener).onDialogDismissed()
     }
@@ -186,7 +255,16 @@ class PrivacyDialogDelegateV2Test : SysuiTestCase() {
                 createPrivacyElement(type = PrivacyType.TYPE_CAMERA, isActive = true),
                 createPrivacyElement(),
             )
-        dialog = PrivacyDialogDelegateV2(context, list, manageApp, closeApp, openPrivacyDashboard)
+        delegate =
+            PrivacyDialogDelegateV2(
+                context,
+                list,
+                manageApp,
+                closeApp,
+                openPrivacyDashboard,
+                kosmos.systemUIDialogDotFactory,
+            )
+        dialog = delegate.createDialog()
 
         dialog.show()
 
@@ -199,7 +277,16 @@ class PrivacyDialogDelegateV2Test : SysuiTestCase() {
     @Test
     fun testHeaderText() {
         val list = listOf(createPrivacyElement())
-        dialog = PrivacyDialogDelegateV2(context, list, manageApp, closeApp, openPrivacyDashboard)
+        delegate =
+            PrivacyDialogDelegateV2(
+                context,
+                list,
+                manageApp,
+                closeApp,
+                openPrivacyDashboard,
+                kosmos.systemUIDialogDotFactory,
+            )
+        dialog = delegate.createDialog()
 
         dialog.show()
 
@@ -210,7 +297,16 @@ class PrivacyDialogDelegateV2Test : SysuiTestCase() {
     @Test
     fun testUsingText() {
         val list = listOf(createPrivacyElement(type = PrivacyType.TYPE_CAMERA, isActive = true))
-        dialog = PrivacyDialogDelegateV2(context, list, manageApp, closeApp, openPrivacyDashboard)
+        delegate =
+            PrivacyDialogDelegateV2(
+                context,
+                list,
+                manageApp,
+                closeApp,
+                openPrivacyDashboard,
+                kosmos.systemUIDialogDotFactory,
+            )
+        dialog = delegate.createDialog()
 
         dialog.show()
 
@@ -221,7 +317,16 @@ class PrivacyDialogDelegateV2Test : SysuiTestCase() {
     @Test
     fun testRecentText() {
         val list = listOf(createPrivacyElement())
-        dialog = PrivacyDialogDelegateV2(context, list, manageApp, closeApp, openPrivacyDashboard)
+        delegate =
+            PrivacyDialogDelegateV2(
+                context,
+                list,
+                manageApp,
+                closeApp,
+                openPrivacyDashboard,
+                kosmos.systemUIDialogDotFactory,
+            )
+        dialog = delegate.createDialog()
 
         dialog.show()
 
@@ -232,7 +337,16 @@ class PrivacyDialogDelegateV2Test : SysuiTestCase() {
     @Test
     fun testPhoneCall() {
         val list = listOf(createPrivacyElement(isPhoneCall = true))
-        dialog = PrivacyDialogDelegateV2(context, list, manageApp, closeApp, openPrivacyDashboard)
+        delegate =
+            PrivacyDialogDelegateV2(
+                context,
+                list,
+                manageApp,
+                closeApp,
+                openPrivacyDashboard,
+                kosmos.systemUIDialogDotFactory,
+            )
+        dialog = delegate.createDialog()
 
         dialog.show()
 
@@ -243,7 +357,16 @@ class PrivacyDialogDelegateV2Test : SysuiTestCase() {
     @Test
     fun testPhoneCallNotClickable() {
         val list = listOf(createPrivacyElement(isPhoneCall = true))
-        dialog = PrivacyDialogDelegateV2(context, list, manageApp, closeApp, openPrivacyDashboard)
+        delegate =
+            PrivacyDialogDelegateV2(
+                context,
+                list,
+                manageApp,
+                closeApp,
+                openPrivacyDashboard,
+                kosmos.systemUIDialogDotFactory,
+            )
+        dialog = delegate.createDialog()
 
         dialog.show()
 
@@ -260,7 +383,16 @@ class PrivacyDialogDelegateV2Test : SysuiTestCase() {
     @Test
     fun testProxyLabel() {
         val list = listOf(createPrivacyElement(proxyLabel = "proxy label"))
-        dialog = PrivacyDialogDelegateV2(context, list, manageApp, closeApp, openPrivacyDashboard)
+        delegate =
+            PrivacyDialogDelegateV2(
+                context,
+                list,
+                manageApp,
+                closeApp,
+                openPrivacyDashboard,
+                kosmos.systemUIDialogDotFactory,
+            )
+        dialog = delegate.createDialog()
 
         dialog.show()
 
@@ -278,7 +410,16 @@ class PrivacyDialogDelegateV2Test : SysuiTestCase() {
                     isService = true,
                 )
             )
-        dialog = PrivacyDialogDelegateV2(context, list, manageApp, closeApp, openPrivacyDashboard)
+        delegate =
+            PrivacyDialogDelegateV2(
+                context,
+                list,
+                manageApp,
+                closeApp,
+                openPrivacyDashboard,
+                kosmos.systemUIDialogDotFactory,
+            )
+        dialog = delegate.createDialog()
 
         dialog.show()
 
@@ -296,7 +437,16 @@ class PrivacyDialogDelegateV2Test : SysuiTestCase() {
                     isActive = true,
                 )
             )
-        dialog = PrivacyDialogDelegateV2(context, list, manageApp, closeApp, openPrivacyDashboard)
+        delegate =
+            PrivacyDialogDelegateV2(
+                context,
+                list,
+                manageApp,
+                closeApp,
+                openPrivacyDashboard,
+                kosmos.systemUIDialogDotFactory,
+            )
+        dialog = delegate.createDialog()
         dialog.show()
         assertThat(dialog.requireViewById<TextView>(R.id.privacy_dialog_item_header_summary).text)
             .isEqualTo("In use by App (For subattribution \u2022 proxy label)")
@@ -305,7 +455,16 @@ class PrivacyDialogDelegateV2Test : SysuiTestCase() {
     @Test
     fun testDialogHasTitle() {
         val list = listOf(createPrivacyElement())
-        dialog = PrivacyDialogDelegateV2(context, list, manageApp, closeApp, openPrivacyDashboard)
+        delegate =
+            PrivacyDialogDelegateV2(
+                context,
+                list,
+                manageApp,
+                closeApp,
+                openPrivacyDashboard,
+                kosmos.systemUIDialogDotFactory,
+            )
+        dialog = delegate.createDialog()
         dialog.show()
 
         assertThat(dialog.window?.attributes?.title).isEqualTo("Microphone, Camera & Location")
@@ -313,7 +472,16 @@ class PrivacyDialogDelegateV2Test : SysuiTestCase() {
 
     @Test
     fun testDialogIsFullscreen() {
-        dialog = PrivacyDialogDelegateV2(context, emptyList(), manageApp, closeApp, openPrivacyDashboard)
+        delegate =
+            PrivacyDialogDelegateV2(
+                context,
+                emptyList(),
+                manageApp,
+                closeApp,
+                openPrivacyDashboard,
+                kosmos.systemUIDialogDotFactory,
+            )
+        dialog = delegate.createDialog()
         dialog.show()
 
         assertThat(dialog.window?.attributes?.width).isEqualTo(MATCH_PARENT)
