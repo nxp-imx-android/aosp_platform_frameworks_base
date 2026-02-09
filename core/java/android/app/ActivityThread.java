@@ -18,7 +18,7 @@ package android.app;
 
 import static android.app.ActivityManager.PROCESS_STATE_UNKNOWN;
 import static android.app.ConfigurationController.createNewConfigAndUpdateIfNotNull;
-import static android.app.Flags.customBackupagentInstantiation;
+import static android.app.Flags.customBackupagentCreation;
 import static android.app.Flags.skipBgMemTrimOnFgApp;
 import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
@@ -5469,7 +5469,7 @@ public final class ActivityThread extends ClientTransactionHandler
                     if (DEBUG_BACKUP) Slog.v(TAG, "Initializing agent class " + classname);
 
                     java.lang.ClassLoader cl = packageInfo.getClassLoader();
-                    if (customBackupagentInstantiation()) {
+                    if (customBackupagentCreation()) {
                         agent = packageInfo.getAppFactory().instantiateBackupAgent(cl, classname);
                     } else {
                         agent = (BackupAgent) cl.loadClass(classname).newInstance();
