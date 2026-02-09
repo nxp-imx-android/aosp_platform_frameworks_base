@@ -516,6 +516,7 @@ import com.android.server.SystemServiceManager;
 import com.android.server.accounts.AccountManagerService;
 import com.android.server.devicepolicy.ActiveAdmin.TrustAgentInfo;
 import com.android.server.devicepolicy.handlers.PolicyHandler;
+import com.android.server.devicepolicy.handlers.PolicyHandlerList;
 import com.android.server.inputmethod.InputMethodManagerInternal;
 import com.android.server.locksettings.LockSettingsInternal;
 import com.android.server.pdb.PersistentDataBlockManagerInternal;
@@ -874,12 +875,12 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
     ){
         List<PolicyHandler<?>> handlers = new ArrayList<PolicyHandler<?>>();
 
-        // NEW HANDLERS SHOULD GO IN {@link PolicyHandler.HANDLERS}, NOT HERE!
+        // NEW HANDLERS SHOULD GO IN {@link PolicyHandlerList.HANDLERS}, NOT HERE!
         //
         // Handlers should only be added here if you are migrating a pre-existing policy and your
         // handler invokes the pre-existing hand-written code for this policy.
         //
-        // NEW HANDLERS SHOULD GO IN {@link PolicyHandler.HANDLERS}, NOT HERE!
+        // NEW HANDLERS SHOULD GO IN {@link PolicyHandlerList.HANDLERS}, NOT HERE!
 
         return handlers;
     }
@@ -2000,7 +2001,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         var delegate = dpms.new PolicyHandlerDelegate();
         var allHandlers =
                 Stream.concat(
-                        PolicyHandler.HANDLERS.stream(),
+                        PolicyHandlerList.HANDLERS.stream(),
                         createPolicyHandlersDependingOnDpms(dpms).stream());
         return allHandlers
                 .peek(
