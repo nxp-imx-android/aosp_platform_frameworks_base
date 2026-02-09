@@ -117,16 +117,6 @@ flag {
 
 flag {
     namespace: "windowing_sdk"
-    name: "fix_tf_adjacent_visibility"
-    description: "Fix the incorrect visibility calculation on adjacent TaskFragments."
-    bug: "444352552"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    namespace: "windowing_sdk"
     name: "fix_tf_adjacent_focus"
     description: "Fix ANR issue caused by one TaskFragment being non-focusable in an adjacent pair."
     bug: "454729152"

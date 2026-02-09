@@ -696,7 +696,6 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FIX_TF_ADJACENT_VISIBILITY)
     public void testVisibility_sandwichInAdjacentTaskFragments() {
         // A fullscreen task with an opaque activity.
         final Task bottomTask = createTask(mDisplayContent.getDefaultTaskDisplayArea(),
@@ -759,7 +758,6 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FIX_TF_ADJACENT_VISIBILITY)
     public void testVisibility_twoAdjacentTaskFragments() {
         // A fullscreen task with an opaque activity.
         final Task bottomTask = createTask(mDisplayContent.getDefaultTaskDisplayArea(),
