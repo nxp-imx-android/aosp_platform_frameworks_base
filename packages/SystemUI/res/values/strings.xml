@@ -455,6 +455,8 @@
     <string name="screen_record_video_preview_elapsed_time_template" translatable="false">%s / %s</string>
     <!-- Video player time template for the voiceover. For example: 2 seconds of 4 seconds -->
     <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false"><xliff:g example="2 seconds" id="elapsed_time">%1$s</xliff:g> of <xliff:g example="4 seconds" id="duration">%2$s</xliff:g></string>
+    <!-- A toast explaining how to adjust selfie position [CHAR LIMIT=NONE] -->
+    <string name="screen_record_selfie_hint">Pinch, drag, and tap selfie to adjust</string>
 
     <!-- Notification text displayed when screen capture is blocked by an IT admin. [CHAR LIMIT=100] -->
     <string name="screen_capture_blocked_by_admin">Screen capture is blocked by your IT admin</string>

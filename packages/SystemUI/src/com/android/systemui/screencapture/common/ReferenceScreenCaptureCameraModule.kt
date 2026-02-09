@@ -18,6 +18,7 @@ package com.android.systemui.screencapture.common
 
 import com.android.systemui.screencapture.record.camera.data.repository.ScreenRecordCameraRepository
 import com.android.systemui.screencapture.record.camera.data.repository.ScreenRecordCameraRepositoryImpl
+import com.android.systemui.screencapture.record.camera.domain.interactor.ScreenCaptureCameraHintInteractor
 import com.android.systemui.screencapture.record.camera.domain.interactor.ScreenRecordCameraInteractor
 import com.android.systemui.screencapture.record.camera.domain.interactor.ScreenRecordCameraSurfaceInteractor
 import dagger.Binds
@@ -38,6 +39,12 @@ interface ReferenceScreenCaptureCameraModule {
     @IntoSet
     fun bindScreenRecordCameraInteractorStartable(
         interactor: ScreenRecordCameraInteractor
+    ): ScreenCaptureStartable
+
+    @Binds
+    @IntoSet
+    fun bindScreenCaptureCameraHintInteractor(
+        interactor: ScreenCaptureCameraHintInteractor
     ): ScreenCaptureStartable
 
     @Binds
