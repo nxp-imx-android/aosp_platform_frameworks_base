@@ -53,9 +53,16 @@ import java.util.Set;
 /**
  * Client facing access to the PersonalContext service.
  *
- * <p>The PersonalContext service accepts a flow of contextual details from activity on the device,
- * such as notifications and screen content. This data is used by a set of components to determine
- * relevant information and suggestions for the user. The incoming data takes the form of various
+ * <p>The PersonalContext service is a framework for securely gathering device context (such as
+ * screen context and device state changes) and delivering it to a set of system configured
+ * components to combine and infer personalized information and actions. The personalized contextual
+ * information used by the PersonalContext service is implementation specific to the participating
+ * component. The resulting output is shown in contextually relevant environment, such as
+ * notification replies or auto-fill suggestions.
+ *
+ * <p>The service accepts a flow of contextual details from activity on the device, such as
+ * notifications and screen content. This data is used by a set of components to determine relevant
+ * information and suggestions for the user. The incoming data takes the form of various
  * {@link ContextHint} subclasses, each tailored to a particular captured data type. Entities
  * both inside and outside the PersonalContext service through
  * {@link #publishTriggeringHint(List, List)} and its variants.
@@ -157,10 +164,14 @@ public final class PersonalContextManager {
     }
 
     /**
-     * Returns true if personal context data collection is enabled for the given application.
+     * Returns {@code true} if personal context data collection is enabled for the given package.
      *
-     * <p>When disabled, this setting stops all data collection sources for personal context for a
-     * particular application, such as from the Content Capture API and notifications content.
+     * <p>When disabled, this setting stops all data collection sources of personal context for a
+     * particular application, such as from the Content Capture API and notifications content. As
+     * a result, contextual information from this application will not participate in the data
+     * capture and processing within the PersonalContext service, excluding this information from
+     * being seen by participating components and thus restricting any PersonalContext experience
+     * from including this application.
      *
      * @param packageName package name of the application to read the setting for
      */
@@ -174,10 +185,12 @@ public final class PersonalContextManager {
     }
 
     /**
-     * Sets the personal context data collection state for the given application.
+     * Sets whether personal context data collection is enabled for the given application.
      *
      * @param packageName package name of the application to change the setting for
-     * @param enabled value for whether or not data collection is enabled
+     * @param enabled value for whether data collection is enabled
+     * @see #isPersonalContextModeEnabled(String)
+     *
      * @hide
      */
     @SystemApi
