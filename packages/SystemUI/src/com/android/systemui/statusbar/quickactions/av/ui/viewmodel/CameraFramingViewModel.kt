@@ -40,7 +40,7 @@ constructor(private val desktopEffectInteractor: DesktopEffectInteractor) :
             .hydratedStateOf(initialValue = ButtonUiState())
 
     override suspend fun onClick() {
-        desktopEffectInteractor.setCameraFraming(newValue = state.isEnabled)
+        desktopEffectInteractor.setCameraFraming(newValue = !state.isEnabled)
     }
 
     /** A factory to be used to create view model instances. */
