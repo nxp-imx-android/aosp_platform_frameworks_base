@@ -92,6 +92,7 @@ import com.android.server.appinteraction.AppInteractionService;
 import com.android.server.input.InputManagerInternal;
 import com.android.server.inputmethod.InputMethodManagerInternal;
 import com.android.server.pm.UserManagerInternal;
+import com.android.server.wm.ActivityAssistInfo;
 import com.android.server.wm.ActivityTaskManagerInternal;
 import com.android.server.wm.WindowManagerInternal;
 
@@ -232,6 +233,14 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     @GuardedBy("mAllowlistedPackages")
     private final Set<String> mAllowlistedPackages = new ArraySet<>();
+
+    /** Task IDs that are authorized for content visibility. */
+    @GuardedBy("mAllowedTaskIds")
+    private final Set<Integer> mAllowedTaskIds = new ArraySet<>();
+
+    /** Whether screenshot is allowed depending on if the top activity is allowlisted. */
+    @GuardedBy("mAllowedTaskIds")
+    private boolean mIsTopActivityScreenshotAllowed = false;
 
     // Handle state transitions for the session lifecycle.
     // NOTE: Do not make lifecycle transitions from these callbacks.
@@ -973,6 +982,16 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             Slog.e(TAG, "Cannot request screenshot: Session is closed");
             return false;
         }
+
+        // Limit screenshots to the task of allowlisted packages of the automated apps.
+        // In the Blocked state, this check ensures the agent only sees authorized content.
+        synchronized (mAllowedTaskIds) {
+            if (!mIsTopActivityScreenshotAllowed) {
+                Slog.w(TAG, "Screenshot blocked: Top task not part of the initial automated set.");
+                return false;
+            }
+        }
+
         synchronized (mWindowDrawLock) {
             if (mIsWaitingForWindowDraw) {
                 Slog.w(TAG, "Cannot request screenshot: Window draw is already in progress");
@@ -987,6 +1006,16 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             }
             return mIsWaitingForWindowDraw;
         }
+    }
+
+    /** Retrieves the Task ID for the top activity on a given display. */
+    private int getTopTaskId(int displayId) {
+        List<ActivityAssistInfo> topActivities =
+                mActivityTaskManagerInternal.getTopVisibleActivities(displayId);
+        if (topActivities != null && !topActivities.isEmpty()) {
+            return topActivities.get(0).getTaskId();
+        }
+        return -1;
     }
 
     private void onWindowsDrawnCallback(boolean success) {
@@ -1228,6 +1257,20 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             Slog.v(TAG, "Top activity changed to " + topActivity + " for user " + userId);
             cancelDisplayEmptyScheduledAction();
 
+            // If this new activity belongs to a package the session is authorized to control,
+            // we should trust it, even if it's a secondary task (like a new Chrome window).
+            synchronized (mAllowedTaskIds) {
+                boolean isPackageAllowed = mParams.getTargetPackageNames()
+                        .contains(topActivity.getPackageName());
+                int taskId = isPackageAllowed ? getTopTaskId(mVirtualDisplayId) : -1;
+                if (taskId != -1) {
+                    mAllowedTaskIds.add(taskId);
+                }
+
+                // Screenshots are only allowed if the package is valid AND we have a valid Task ID
+                mIsTopActivityScreenshotAllowed = (taskId != -1);
+            }
+
             // If we have a new top activity which is allowed, then attempt a transition to the
             // active state.
             if (isActivityLaunchAllowed(topActivity, userId)) {
@@ -1250,6 +1293,10 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                     () -> close(CLOSE_REASON_SESSION_EMPTY),
                     CLOSE_ON_DISPLAY_EMPTY_TIMEOUT_MS,
                     TimeUnit.MILLISECONDS);
+            synchronized (mAllowedTaskIds) {
+                mAllowedTaskIds.clear();
+                mIsTopActivityScreenshotAllowed = false;
+            }
         }
 
         @Override
