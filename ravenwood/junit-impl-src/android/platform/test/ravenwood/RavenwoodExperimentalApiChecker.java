@@ -15,6 +15,9 @@
  */
 package android.platform.test.ravenwood;
 
+import android.annotation.NonNull;
+import android.util.Log;
+
 import com.android.internal.annotations.GuardedBy;
 
 import java.io.IOException;
@@ -26,13 +29,13 @@ public class RavenwoodExperimentalApiChecker {
     private RavenwoodExperimentalApiChecker() {
     }
 
+    private static final String TAG_EXP_CALL = "RavenwoodExpCall";
+
     private static final Object sLock = new Object();
 
-    @GuardedBy("sLock")
-    private static boolean sInitialized;
+    private static volatile Boolean sExperimentalApiEnabled;
 
-    @GuardedBy("sLock")
-    private static boolean sExperimentalApiEnabled;
+    private static volatile Boolean sLogExperimentalApiCall;
 
     /**
      * A map with key = "method info", value = "number of times the method was called".
@@ -56,14 +59,24 @@ public class RavenwoodExperimentalApiChecker {
     }
 
     public static boolean isExperimentalApiEnabled() {
-        synchronized (sLock) {
-            if (!sInitialized) {
-                sExperimentalApiEnabled = RavenwoodEnvironment.getInstance()
-                        .getBoolEnvVar("RAVENWOOD_ENABLE_EXP_API");
-                sInitialized = true;
-            }
-            return sExperimentalApiEnabled;
+        var enable = sExperimentalApiEnabled;
+        if (enable == null) {
+            enable = RavenwoodEnvironment.getInstance().getBoolEnvVar("RAVENWOOD_ENABLE_EXP_API");
+            sExperimentalApiEnabled = enable;
         }
+        return enable;
+    }
+
+    private static void maybeLogExperimentalApiCall(@NonNull MethodInfo mi) {
+        var enable = sLogExperimentalApiCall;
+        if (enable == null) {
+            enable = RavenwoodEnvironment.getInstance().getBoolEnvVar("RAVENWOOD_LOG_EXP_API");
+            sLogExperimentalApiCall = enable;
+        }
+        if (!enable) {
+            return;
+        }
+        Log.i(TAG_EXP_CALL, mi.toString());
     }
 
     /**
@@ -71,9 +84,11 @@ public class RavenwoodExperimentalApiChecker {
      * {@link RavenwoodUnsupportedApiException}.
      */
     public static boolean onExperimentalApiCalled(Class<?> clazz, String method, String desc) {
+        var mi = new MethodInfo(clazz, method, desc);
         synchronized (sLock) {
-            sStats.computeIfAbsent(new MethodInfo(clazz, method, desc), k -> new IntRef()).i += 1;
+            sStats.computeIfAbsent(mi, k -> new IntRef()).i += 1;
         }
+        maybeLogExperimentalApiCall(mi);
         // Even when experimental APIs are disabled, we don't want to throw from <clinit>.
         // because that'd make the class unloadable. Instead, we return false to skip the rest of
         // the code.
@@ -94,9 +109,11 @@ public class RavenwoodExperimentalApiChecker {
     public static void onExperimentalApiCalled(int skipStackTraces) {
         var walker = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
         var frame = walker.walk(s -> s.skip(skipStackTraces).findFirst().get());
+        var mi = new MethodInfo(frame);
         synchronized (sLock) {
-            sStats.computeIfAbsent(new MethodInfo(frame), k -> new IntRef()).i += 1;
+            sStats.computeIfAbsent(mi, k -> new IntRef()).i += 1;
         }
+        maybeLogExperimentalApiCall(mi);
         onExperimentalApiCalledInner(skipStackTraces + 1);
     }
 
