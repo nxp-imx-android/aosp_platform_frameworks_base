@@ -53,7 +53,6 @@ import android.telephony.SmsMessage;
 import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
 import android.telephony.UiccAccessRule;
-import android.telephony.MessageUpgradeController;
 import android.text.TextUtils;
 import android.util.Patterns;
 
@@ -65,6 +64,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -210,8 +210,9 @@ public final class Telephony {
          *
          * @hide
          */
-        public static void setReadRestrictionValueOnInsert(@NonNull ContentValues values,
-                @NonNull MessageUpgradeController upgradeController,
+        public static void setReadRestrictionValueOnInsert(
+                @NonNull Context context,
+                @NonNull ContentValues values,
                 @NonNull String callerPackageName,
                 boolean canWriteRestrictedMessages) {
             if (!Flags.secureAccessToRestrictedRcsMessages()) {
@@ -229,12 +230,13 @@ public final class Telephony {
                 throw new UnsupportedOperationException(
                         "Client does not have permission to write restricted messages.");
             }
-            // If the message promotion is supported and the caller is not DMA, the system marks the
-            // message as restricted. The message will be eventually marked as unrestricted if the
-            // message promotion is not attempted or it fails.
+            // If the caller is not DMA, the system marks the message as restricted. The message
+            // will be eventually marked as unrestricted if the message promotion is not attempted
+            // or it fails.
+            // TODO(b/473718205): Replace getDefaultSmsPackage with a cached value.
             final boolean systemForcesRestriction
                  = Flags.messagePromotion()
-                    && upgradeController.isMessageUpgradeSupportedAndNotDma(callerPackageName);
+                    && !Objects.equals(callerPackageName, Sms.getDefaultSmsPackage(context));
             final boolean finalRestrictedState = systemForcesRestriction
                 || clientRequestedRestriction;
             values.put(ReadRestriction.READ_RESTRICTION_COLUMN_NAME, finalRestrictedState
