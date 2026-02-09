@@ -79,7 +79,6 @@ import static android.provider.Settings.Secure.VOLUME_HUSH_OFF;
 import static android.provider.Settings.Secure.VOLUME_HUSH_VIBRATE;
 
 import static com.android.internal.annotations.VisibleForTesting.Visibility.PACKAGE;
-import static com.android.media.audio.Flags.absVolumePrioritizesAbsDevice;
 import static com.android.media.audio.Flags.absVolumeStreamAlwaysMax;
 import static com.android.media.audio.Flags.alarmMinVolumeZero;
 import static com.android.media.audio.Flags.audioStreamBtScoCleanup;
@@ -5766,8 +5765,6 @@ public class AudioService extends IAudioService.Stub
                 + roForegroundAudioControl());
         pw.println("\tandroid.media.audio.scoManagedByAudio:"
                 + scoManagedByAudio());
-        pw.println("\tcom.android.media.audio.absVolumePrioritizesAbsDevice:"
-                + absVolumePrioritizesAbsDevice());
         pw.println("\tcom.android.media.audio.absVolumeStreamAlwaysMax:"
                 + absVolumeStreamAlwaysMax());
         pw.println("\tcom.android.media.audio.audioStreamBtScoCleanup:"
@@ -9033,7 +9030,7 @@ public class AudioService extends IAudioService.Stub
             // selection if not the speaker.
             //  - HDMI-CEC system audio mode only output: give priority to available item in order.
             Optional<AudioDeviceAttributes> ada;
-            if (absVolumePrioritizesAbsDevice() && selectAbsoluteDevices) {
+            if (selectAbsoluteDevices) {
                 ada = deviceSet.stream().filter(
                         device -> isA2dpAbsoluteVolumeDevice(device.getInternalType())
                                 || AudioSystem.isBluetoothLeOutDevice(
