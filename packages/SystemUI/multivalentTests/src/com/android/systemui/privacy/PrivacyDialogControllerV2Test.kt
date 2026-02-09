@@ -88,7 +88,7 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
         private val TEST_INTENT = Intent("test_intent_action")
     }
 
-    @Mock private lateinit var dialog: PrivacyDialogV2
+    @Mock private lateinit var dialog: PrivacyDialogDelegateV2
     @Mock private lateinit var permissionManager: PermissionManager
     @Mock private lateinit var packageManager: PackageManager
     @Mock private lateinit var locationManager: LocationManager
@@ -99,7 +99,7 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
     @Mock private lateinit var keyguardStateController: KeyguardStateController
     @Mock private lateinit var appOpsController: AppOpsController
     @Captor
-    private lateinit var dialogDismissedCaptor: ArgumentCaptor<PrivacyDialogV2.OnDialogDismissed>
+    private lateinit var dialogDismissedCaptor: ArgumentCaptor<PrivacyDialogDelegateV2.OnDialogDismissed>
     @Captor private lateinit var activityStartedCaptor: ArgumentCaptor<ActivityStarter.Callback>
     @Captor private lateinit var intentCaptor: ArgumentCaptor<Intent>
     @Mock private lateinit var uiEventLogger: UiEventLogger
@@ -112,18 +112,18 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
 
     private val dialogProvider =
         object : PrivacyDialogControllerV2.DialogProvider {
-            var list: List<PrivacyDialogV2.PrivacyElement>? = null
+            var list: List<PrivacyDialogDelegateV2.PrivacyElement>? = null
             var manageApp: ((String, Int, Intent) -> Unit)? = null
             var closeApp: ((String, Int) -> Unit)? = null
             var openPrivacyDashboard: (() -> Unit)? = null
 
             override fun makeDialog(
                 context: Context,
-                list: List<PrivacyDialogV2.PrivacyElement>,
+                list: List<PrivacyDialogDelegateV2.PrivacyElement>,
                 manageApp: (String, Int, Intent) -> Unit,
                 closeApp: (String, Int) -> Unit,
                 openPrivacyDashboard: () -> Unit,
-            ): PrivacyDialogV2 {
+            ): PrivacyDialogDelegateV2 {
                 this.list = list
                 this.manageApp = manageApp
                 this.closeApp = closeApp

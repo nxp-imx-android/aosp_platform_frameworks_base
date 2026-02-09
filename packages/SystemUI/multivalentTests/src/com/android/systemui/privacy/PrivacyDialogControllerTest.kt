@@ -81,7 +81,7 @@ class PrivacyDialogControllerTest : SysuiTestCase() {
     }
 
     @Mock
-    private lateinit var dialog: PrivacyDialog
+    private lateinit var dialog: PrivacyDialogDelegate
     @Mock
     private lateinit var permissionManager: PermissionManager
     @Mock
@@ -101,7 +101,7 @@ class PrivacyDialogControllerTest : SysuiTestCase() {
     @Mock
     private lateinit var appOpsController: AppOpsController
     @Captor
-    private lateinit var dialogDismissedCaptor: ArgumentCaptor<PrivacyDialog.OnDialogDismissed>
+    private lateinit var dialogDismissedCaptor: ArgumentCaptor<PrivacyDialogDelegate.OnDialogDismissed>
     @Captor
     private lateinit var activityStartedCaptor: ArgumentCaptor<ActivityStarter.Callback>
     @Captor
@@ -115,14 +115,14 @@ class PrivacyDialogControllerTest : SysuiTestCase() {
     private var nextUid: Int = 0
 
     private val dialogProvider = object : PrivacyDialogController.DialogProvider {
-        var list: List<PrivacyDialog.PrivacyElement>? = null
+        var list: List<PrivacyDialogDelegate.PrivacyElement>? = null
         var starter: ((String, Int, CharSequence?, Intent?) -> Unit)? = null
 
         override fun makeDialog(
             context: Context,
-            list: List<PrivacyDialog.PrivacyElement>,
+            list: List<PrivacyDialogDelegate.PrivacyElement>,
             starter: (String, Int, CharSequence?, Intent?) -> Unit
-        ): PrivacyDialog {
+        ): PrivacyDialogDelegate {
             this.list = list
             this.starter = starter
             return dialog

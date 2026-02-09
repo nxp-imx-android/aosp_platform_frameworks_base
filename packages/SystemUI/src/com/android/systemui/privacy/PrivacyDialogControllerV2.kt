@@ -49,17 +49,17 @@ private val defaultDialogProvider =
     object : PrivacyDialogControllerV2.DialogProvider {
         override fun makeDialog(
             context: Context,
-            list: List<PrivacyDialogV2.PrivacyElement>,
+            list: List<PrivacyDialogDelegateV2.PrivacyElement>,
             manageApp: (String, Int, Intent) -> Unit,
             closeApp: (String, Int) -> Unit,
             openPrivacyDashboard: () -> Unit,
-        ): PrivacyDialogV2 {
-            return PrivacyDialogV2(context, list, manageApp, closeApp, openPrivacyDashboard)
+        ): PrivacyDialogDelegateV2 {
+            return PrivacyDialogDelegateV2(context, list, manageApp, closeApp, openPrivacyDashboard)
         }
     }
 
 /**
- * Controller for [PrivacyDialogV2].
+ * Controller for [PrivacyDialogDelegateV2].
  *
  * This controller shows and dismissed the dialog, as well as determining the information to show in
  * it.
@@ -117,7 +117,7 @@ class PrivacyDialogControllerV2(
     private var dialog: Dialog? = null
 
     private val onDialogDismissed =
-        object : PrivacyDialogV2.OnDialogDismissed {
+        object : PrivacyDialogDelegateV2.OnDialogDismissed {
             override fun onDialogDismissed() {
                 privacyLogger.logPrivacyDialogDismissed()
                 uiEventLogger.log(PrivacyDialogEvent.PRIVACY_DIALOG_DISMISSED)
@@ -215,10 +215,10 @@ class PrivacyDialogControllerV2(
     }
 
     /**
-     * Show the [PrivacyDialogV2]
+     * Show the [PrivacyDialogDelegateV2]
      *
      * This retrieves the permission usage from [PermissionManager] and creates a new
-     * [PrivacyDialogV2] with a list of [PrivacyDialogV2.PrivacyElement] to show.
+     * [PrivacyDialogDelegateV2] with a list of [PrivacyDialogDelegateV2.PrivacyElement] to show.
      *
      * This list will be filtered by [filterAndSelect]. Only types available by
      * [PrivacyItemController] will be shown.
@@ -257,7 +257,7 @@ class PrivacyDialogControllerV2(
                                 // are supported and satisfied
                                 it.attributionLabel != null,
                             )
-                        PrivacyDialogV2.PrivacyElement(
+                        PrivacyDialogDelegateV2.PrivacyElement(
                             permGroupToPrivacyType(it.permissionGroupName)!!,
                             it.packageName,
                             userId,
@@ -373,8 +373,8 @@ class PrivacyDialogControllerV2(
      * it'll return the most recent access
      */
     private fun filterAndSelect(
-        list: List<PrivacyDialogV2.PrivacyElement>
-    ): List<PrivacyDialogV2.PrivacyElement> {
+        list: List<PrivacyDialogDelegateV2.PrivacyElement>
+    ): List<PrivacyDialogDelegateV2.PrivacyElement> {
         return list
             .groupBy { it.type }
             .toSortedMap()
@@ -390,18 +390,18 @@ class PrivacyDialogControllerV2(
     }
 
     /**
-     * Interface to create a [PrivacyDialogV2].
+     * Interface to create a [PrivacyDialogDelegateV2].
      *
      * Can be used to inject a mock creator.
      */
     interface DialogProvider {
-        /** Create a [PrivacyDialogV2]. */
+        /** Create a [PrivacyDialogDelegateV2]. */
         fun makeDialog(
             context: Context,
-            list: List<PrivacyDialogV2.PrivacyElement>,
+            list: List<PrivacyDialogDelegateV2.PrivacyElement>,
             manageApp: (String, Int, Intent) -> Unit,
             closeApp: (String, Int) -> Unit,
             openPrivacyDashboard: () -> Unit,
-        ): PrivacyDialogV2
+        ): PrivacyDialogDelegateV2
     }
 }

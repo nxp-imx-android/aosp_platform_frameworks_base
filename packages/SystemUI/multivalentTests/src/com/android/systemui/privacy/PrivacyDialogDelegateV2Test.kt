@@ -40,7 +40,7 @@ import org.mockito.MockitoAnnotations
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
-class PrivacyDialogV2Test : SysuiTestCase() {
+class PrivacyDialogDelegateV2Test : SysuiTestCase() {
 
     companion object {
         private const val TEST_PACKAGE_NAME = "test_pkg"
@@ -64,7 +64,7 @@ class PrivacyDialogV2Test : SysuiTestCase() {
             permGroupName: String = TEST_PERM_GROUP,
             navigationIntent: Intent = TEST_INTENT,
         ) =
-            PrivacyDialogV2.PrivacyElement(
+            PrivacyDialogDelegateV2.PrivacyElement(
                 type,
                 packageName,
                 userId,
@@ -84,7 +84,7 @@ class PrivacyDialogV2Test : SysuiTestCase() {
     @Mock private lateinit var manageApp: (String, Int, Intent) -> Unit
     @Mock private lateinit var closeApp: (String, Int) -> Unit
     @Mock private lateinit var openPrivacyDashboard: () -> Unit
-    private lateinit var dialog: PrivacyDialogV2
+    private lateinit var dialog: PrivacyDialogDelegateV2
 
     @Before
     fun setUp() {
@@ -101,7 +101,7 @@ class PrivacyDialogV2Test : SysuiTestCase() {
     @Test
     fun testManageAppCalledWithCorrectParams() {
         val list = listOf(createPrivacyElement())
-        dialog = PrivacyDialogV2(context, list, manageApp, closeApp, openPrivacyDashboard)
+        dialog = PrivacyDialogDelegateV2(context, list, manageApp, closeApp, openPrivacyDashboard)
         dialog.show()
 
         dialog.requireViewById<View>(R.id.privacy_dialog_manage_app_button).callOnClick()
@@ -112,7 +112,7 @@ class PrivacyDialogV2Test : SysuiTestCase() {
     @Test
     fun testCloseAppCalledWithCorrectParams() {
         val list = listOf(createPrivacyElement(isActive = true))
-        dialog = PrivacyDialogV2(context, list, manageApp, closeApp, openPrivacyDashboard)
+        dialog = PrivacyDialogDelegateV2(context, list, manageApp, closeApp, openPrivacyDashboard)
         dialog.show()
 
         dialog.requireViewById<View>(R.id.privacy_dialog_close_app_button).callOnClick()
@@ -123,7 +123,7 @@ class PrivacyDialogV2Test : SysuiTestCase() {
     @Test
     fun testCloseAppMissingForService() {
         val list = listOf(createPrivacyElement(isActive = true, isService = true))
-        dialog = PrivacyDialogV2(context, list, manageApp, closeApp, openPrivacyDashboard)
+        dialog = PrivacyDialogDelegateV2(context, list, manageApp, closeApp, openPrivacyDashboard)
 
         dialog.show()
 
@@ -133,7 +133,7 @@ class PrivacyDialogV2Test : SysuiTestCase() {
 
     @Test
     fun testMoreButton() {
-        dialog = PrivacyDialogV2(context, emptyList(), manageApp, closeApp, openPrivacyDashboard)
+        dialog = PrivacyDialogDelegateV2(context, emptyList(), manageApp, closeApp, openPrivacyDashboard)
         dialog.show()
 
         dialog.requireViewById<View>(R.id.privacy_dialog_more_button).callOnClick()
@@ -143,8 +143,8 @@ class PrivacyDialogV2Test : SysuiTestCase() {
 
     @Test
     fun testCloseButton() {
-        dialog = PrivacyDialogV2(context, emptyList(), manageApp, closeApp, openPrivacyDashboard)
-        val dismissListener = mock(PrivacyDialogV2.OnDialogDismissed::class.java)
+        dialog = PrivacyDialogDelegateV2(context, emptyList(), manageApp, closeApp, openPrivacyDashboard)
+        val dismissListener = mock(PrivacyDialogDelegateV2.OnDialogDismissed::class.java)
         dialog.addOnDismissListener(dismissListener)
         dialog.show()
         verify(dismissListener, never()).onDialogDismissed()
@@ -156,8 +156,8 @@ class PrivacyDialogV2Test : SysuiTestCase() {
 
     @Test
     fun testDismissListenerCalledOnDismiss() {
-        dialog = PrivacyDialogV2(context, emptyList(), manageApp, closeApp, openPrivacyDashboard)
-        val dismissListener = mock(PrivacyDialogV2.OnDialogDismissed::class.java)
+        dialog = PrivacyDialogDelegateV2(context, emptyList(), manageApp, closeApp, openPrivacyDashboard)
+        val dismissListener = mock(PrivacyDialogDelegateV2.OnDialogDismissed::class.java)
         dialog.addOnDismissListener(dismissListener)
         dialog.show()
         verify(dismissListener, never()).onDialogDismissed()
@@ -169,8 +169,8 @@ class PrivacyDialogV2Test : SysuiTestCase() {
 
     @Test
     fun testDismissListenerCalledImmediatelyIfDialogAlreadyDismissed() {
-        dialog = PrivacyDialogV2(context, emptyList(), manageApp, closeApp, openPrivacyDashboard)
-        val dismissListener = mock(PrivacyDialogV2.OnDialogDismissed::class.java)
+        dialog = PrivacyDialogDelegateV2(context, emptyList(), manageApp, closeApp, openPrivacyDashboard)
+        val dismissListener = mock(PrivacyDialogDelegateV2.OnDialogDismissed::class.java)
         dialog.show()
         dialog.dismiss()
 
@@ -186,7 +186,7 @@ class PrivacyDialogV2Test : SysuiTestCase() {
                 createPrivacyElement(type = PrivacyType.TYPE_CAMERA, isActive = true),
                 createPrivacyElement(),
             )
-        dialog = PrivacyDialogV2(context, list, manageApp, closeApp, openPrivacyDashboard)
+        dialog = PrivacyDialogDelegateV2(context, list, manageApp, closeApp, openPrivacyDashboard)
 
         dialog.show()
 
@@ -199,7 +199,7 @@ class PrivacyDialogV2Test : SysuiTestCase() {
     @Test
     fun testHeaderText() {
         val list = listOf(createPrivacyElement())
-        dialog = PrivacyDialogV2(context, list, manageApp, closeApp, openPrivacyDashboard)
+        dialog = PrivacyDialogDelegateV2(context, list, manageApp, closeApp, openPrivacyDashboard)
 
         dialog.show()
 
@@ -210,7 +210,7 @@ class PrivacyDialogV2Test : SysuiTestCase() {
     @Test
     fun testUsingText() {
         val list = listOf(createPrivacyElement(type = PrivacyType.TYPE_CAMERA, isActive = true))
-        dialog = PrivacyDialogV2(context, list, manageApp, closeApp, openPrivacyDashboard)
+        dialog = PrivacyDialogDelegateV2(context, list, manageApp, closeApp, openPrivacyDashboard)
 
         dialog.show()
 
@@ -221,7 +221,7 @@ class PrivacyDialogV2Test : SysuiTestCase() {
     @Test
     fun testRecentText() {
         val list = listOf(createPrivacyElement())
-        dialog = PrivacyDialogV2(context, list, manageApp, closeApp, openPrivacyDashboard)
+        dialog = PrivacyDialogDelegateV2(context, list, manageApp, closeApp, openPrivacyDashboard)
 
         dialog.show()
 
@@ -232,7 +232,7 @@ class PrivacyDialogV2Test : SysuiTestCase() {
     @Test
     fun testPhoneCall() {
         val list = listOf(createPrivacyElement(isPhoneCall = true))
-        dialog = PrivacyDialogV2(context, list, manageApp, closeApp, openPrivacyDashboard)
+        dialog = PrivacyDialogDelegateV2(context, list, manageApp, closeApp, openPrivacyDashboard)
 
         dialog.show()
 
@@ -243,7 +243,7 @@ class PrivacyDialogV2Test : SysuiTestCase() {
     @Test
     fun testPhoneCallNotClickable() {
         val list = listOf(createPrivacyElement(isPhoneCall = true))
-        dialog = PrivacyDialogV2(context, list, manageApp, closeApp, openPrivacyDashboard)
+        dialog = PrivacyDialogDelegateV2(context, list, manageApp, closeApp, openPrivacyDashboard)
 
         dialog.show()
 
@@ -260,7 +260,7 @@ class PrivacyDialogV2Test : SysuiTestCase() {
     @Test
     fun testProxyLabel() {
         val list = listOf(createPrivacyElement(proxyLabel = "proxy label"))
-        dialog = PrivacyDialogV2(context, list, manageApp, closeApp, openPrivacyDashboard)
+        dialog = PrivacyDialogDelegateV2(context, list, manageApp, closeApp, openPrivacyDashboard)
 
         dialog.show()
 
@@ -278,7 +278,7 @@ class PrivacyDialogV2Test : SysuiTestCase() {
                     isService = true,
                 )
             )
-        dialog = PrivacyDialogV2(context, list, manageApp, closeApp, openPrivacyDashboard)
+        dialog = PrivacyDialogDelegateV2(context, list, manageApp, closeApp, openPrivacyDashboard)
 
         dialog.show()
 
@@ -296,7 +296,7 @@ class PrivacyDialogV2Test : SysuiTestCase() {
                     isActive = true,
                 )
             )
-        dialog = PrivacyDialogV2(context, list, manageApp, closeApp, openPrivacyDashboard)
+        dialog = PrivacyDialogDelegateV2(context, list, manageApp, closeApp, openPrivacyDashboard)
         dialog.show()
         assertThat(dialog.requireViewById<TextView>(R.id.privacy_dialog_item_header_summary).text)
             .isEqualTo("In use by App (For subattribution \u2022 proxy label)")
@@ -305,7 +305,7 @@ class PrivacyDialogV2Test : SysuiTestCase() {
     @Test
     fun testDialogHasTitle() {
         val list = listOf(createPrivacyElement())
-        dialog = PrivacyDialogV2(context, list, manageApp, closeApp, openPrivacyDashboard)
+        dialog = PrivacyDialogDelegateV2(context, list, manageApp, closeApp, openPrivacyDashboard)
         dialog.show()
 
         assertThat(dialog.window?.attributes?.title).isEqualTo("Microphone, Camera & Location")
@@ -313,7 +313,7 @@ class PrivacyDialogV2Test : SysuiTestCase() {
 
     @Test
     fun testDialogIsFullscreen() {
-        dialog = PrivacyDialogV2(context, emptyList(), manageApp, closeApp, openPrivacyDashboard)
+        dialog = PrivacyDialogDelegateV2(context, emptyList(), manageApp, closeApp, openPrivacyDashboard)
         dialog.show()
 
         assertThat(dialog.window?.attributes?.width).isEqualTo(MATCH_PARENT)

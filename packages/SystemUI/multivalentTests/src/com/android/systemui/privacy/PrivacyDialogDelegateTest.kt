@@ -40,7 +40,7 @@ import android.text.TextUtils
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
-class PrivacyDialogTest : SysuiTestCase() {
+class PrivacyDialogDelegateTest : SysuiTestCase() {
 
     companion object {
         private const val TEST_PACKAGE_NAME = "test_pkg"
@@ -50,7 +50,7 @@ class PrivacyDialogTest : SysuiTestCase() {
 
     @Mock
     private lateinit var starter: (String, Int, CharSequence?, Intent?) -> Unit
-    private lateinit var dialog: PrivacyDialog
+    private lateinit var dialog: PrivacyDialogDelegate
 
     @Before
     fun setUp() {
@@ -67,7 +67,7 @@ class PrivacyDialogTest : SysuiTestCase() {
     @Test
     fun testStarterCalledWithCorrectParams() {
         val list = listOf(
-                PrivacyDialog.PrivacyElement(
+                PrivacyDialogDelegate.PrivacyElement(
                         PrivacyType.TYPE_MICROPHONE,
                         TEST_PACKAGE_NAME,
                         TEST_USER_ID,
@@ -83,7 +83,7 @@ class PrivacyDialogTest : SysuiTestCase() {
                         null
                 )
         )
-        dialog = PrivacyDialog(context, list, starter)
+        dialog = PrivacyDialogDelegate(context, list, starter)
         dialog.show()
         dialog.requireViewById<View>(R.id.privacy_item).callOnClick()
         verify(starter).invoke(TEST_PACKAGE_NAME, TEST_USER_ID, null, null)
@@ -91,8 +91,8 @@ class PrivacyDialogTest : SysuiTestCase() {
 
     @Test
     fun testDismissListenerCalledOnDismiss() {
-        dialog = PrivacyDialog(context, emptyList(), starter)
-        val dismissListener = mock(PrivacyDialog.OnDialogDismissed::class.java)
+        dialog = PrivacyDialogDelegate(context, emptyList(), starter)
+        val dismissListener = mock(PrivacyDialogDelegate.OnDialogDismissed::class.java)
         dialog.addOnDismissListener(dismissListener)
         dialog.show()
 
@@ -103,8 +103,8 @@ class PrivacyDialogTest : SysuiTestCase() {
 
     @Test
     fun testDismissListenerCalledImmediatelyIfDialogAlreadyDismissed() {
-        dialog = PrivacyDialog(context, emptyList(), starter)
-        val dismissListener = mock(PrivacyDialog.OnDialogDismissed::class.java)
+        dialog = PrivacyDialogDelegate(context, emptyList(), starter)
+        val dismissListener = mock(PrivacyDialogDelegate.OnDialogDismissed::class.java)
         dialog.show()
         dialog.dismiss()
 
@@ -115,7 +115,7 @@ class PrivacyDialogTest : SysuiTestCase() {
     @Test
     fun testCorrectNumElements() {
         val list = listOf(
-                PrivacyDialog.PrivacyElement(
+                PrivacyDialogDelegate.PrivacyElement(
                         PrivacyType.TYPE_CAMERA,
                         TEST_PACKAGE_NAME,
                         TEST_USER_ID,
@@ -130,7 +130,7 @@ class PrivacyDialogTest : SysuiTestCase() {
                         TEST_PERM_GROUP,
                         null
                 ),
-                PrivacyDialog.PrivacyElement(
+                PrivacyDialogDelegate.PrivacyElement(
                         PrivacyType.TYPE_MICROPHONE,
                         TEST_PACKAGE_NAME,
                         TEST_USER_ID,
@@ -146,14 +146,14 @@ class PrivacyDialogTest : SysuiTestCase() {
                         null
                 )
         )
-        dialog = PrivacyDialog(context, list, starter)
+        dialog = PrivacyDialogDelegate(context, list, starter)
         dialog.show()
         assertThat(dialog.requireViewById<ViewGroup>(R.id.root).childCount).isEqualTo(2)
     }
 
     @Test
     fun testUsingText() {
-        val element = PrivacyDialog.PrivacyElement(
+        val element = PrivacyDialogDelegate.PrivacyElement(
                 PrivacyType.TYPE_CAMERA,
                 TEST_PACKAGE_NAME,
                 TEST_USER_ID,
@@ -170,7 +170,7 @@ class PrivacyDialogTest : SysuiTestCase() {
         )
 
         val list = listOf(element)
-        dialog = PrivacyDialog(context, list, starter)
+        dialog = PrivacyDialogDelegate(context, list, starter)
         dialog.show()
         assertThat(dialog.requireViewById<TextView>(R.id.text).text).isEqualTo(
                 context.getString(
@@ -183,7 +183,7 @@ class PrivacyDialogTest : SysuiTestCase() {
 
     @Test
     fun testRecentText() {
-        val element = PrivacyDialog.PrivacyElement(
+        val element = PrivacyDialogDelegate.PrivacyElement(
                 PrivacyType.TYPE_MICROPHONE,
                 TEST_PACKAGE_NAME,
                 TEST_USER_ID,
@@ -200,7 +200,7 @@ class PrivacyDialogTest : SysuiTestCase() {
         )
 
         val list = listOf(element)
-        dialog = PrivacyDialog(context, list, starter)
+        dialog = PrivacyDialogDelegate(context, list, starter)
         dialog.show()
         assertThat(dialog.requireViewById<TextView>(R.id.text).text).isEqualTo(
                 context.getString(
@@ -213,7 +213,7 @@ class PrivacyDialogTest : SysuiTestCase() {
 
     @Test
     fun testEnterprise() {
-        val element = PrivacyDialog.PrivacyElement(
+        val element = PrivacyDialogDelegate.PrivacyElement(
                 PrivacyType.TYPE_MICROPHONE,
                 TEST_PACKAGE_NAME,
                 TEST_USER_ID,
@@ -230,7 +230,7 @@ class PrivacyDialogTest : SysuiTestCase() {
         )
 
         val list = listOf(element)
-        dialog = PrivacyDialog(context, list, starter)
+        dialog = PrivacyDialogDelegate(context, list, starter)
         dialog.show()
         assertThat(dialog.requireViewById<TextView>(R.id.text).text.toString()).contains(
                 context.getString(R.string.ongoing_privacy_dialog_enterprise)
@@ -239,7 +239,7 @@ class PrivacyDialogTest : SysuiTestCase() {
 
     @Test
     fun testPhoneCall() {
-        val element = PrivacyDialog.PrivacyElement(
+        val element = PrivacyDialogDelegate.PrivacyElement(
                 PrivacyType.TYPE_MICROPHONE,
                 TEST_PACKAGE_NAME,
                 TEST_USER_ID,
@@ -256,7 +256,7 @@ class PrivacyDialogTest : SysuiTestCase() {
         )
 
         val list = listOf(element)
-        dialog = PrivacyDialog(context, list, starter)
+        dialog = PrivacyDialogDelegate(context, list, starter)
         dialog.show()
         assertThat(dialog.requireViewById<TextView>(R.id.text).text.toString()).contains(
                 context.getString(R.string.ongoing_privacy_dialog_phonecall)
@@ -265,7 +265,7 @@ class PrivacyDialogTest : SysuiTestCase() {
 
     @Test
     fun testPhoneCallNotClickable() {
-        val element = PrivacyDialog.PrivacyElement(
+        val element = PrivacyDialogDelegate.PrivacyElement(
                 PrivacyType.TYPE_MICROPHONE,
                 TEST_PACKAGE_NAME,
                 TEST_USER_ID,
@@ -282,7 +282,7 @@ class PrivacyDialogTest : SysuiTestCase() {
         )
 
         val list = listOf(element)
-        dialog = PrivacyDialog(context, list, starter)
+        dialog = PrivacyDialogDelegate(context, list, starter)
         dialog.show()
         assertThat(dialog.requireViewById<View>(R.id.privacy_item).isClickable).isFalse()
         assertThat(dialog.requireViewById<View>(R.id.chevron).visibility).isEqualTo(View.GONE)
@@ -290,7 +290,7 @@ class PrivacyDialogTest : SysuiTestCase() {
 
     @Test
     fun testProxyLabel() {
-        val element = PrivacyDialog.PrivacyElement(
+        val element = PrivacyDialogDelegate.PrivacyElement(
                 PrivacyType.TYPE_MICROPHONE,
                 TEST_PACKAGE_NAME,
                 TEST_USER_ID,
@@ -307,7 +307,7 @@ class PrivacyDialogTest : SysuiTestCase() {
         )
 
         val list = listOf(element)
-        dialog = PrivacyDialog(context, list, starter)
+        dialog = PrivacyDialogDelegate(context, list, starter)
         dialog.show()
         assertThat(dialog.requireViewById<TextView>(R.id.text).text.toString()).contains(
                 context.getString(
@@ -319,7 +319,7 @@ class PrivacyDialogTest : SysuiTestCase() {
 
     @Test
     fun testSubattribution() {
-        val element = PrivacyDialog.PrivacyElement(
+        val element = PrivacyDialogDelegate.PrivacyElement(
                 PrivacyType.TYPE_MICROPHONE,
                 TEST_PACKAGE_NAME,
                 TEST_USER_ID,
@@ -336,7 +336,7 @@ class PrivacyDialogTest : SysuiTestCase() {
         )
 
         val list = listOf(element)
-        dialog = PrivacyDialog(context, list, starter)
+        dialog = PrivacyDialogDelegate(context, list, starter)
         dialog.show()
         assertThat(dialog.requireViewById<TextView>(R.id.text).text.toString()).contains(
                 context.getString(
@@ -348,7 +348,7 @@ class PrivacyDialogTest : SysuiTestCase() {
 
     @Test
     fun testSubattributionAndProxyLabel() {
-        val element = PrivacyDialog.PrivacyElement(
+        val element = PrivacyDialogDelegate.PrivacyElement(
                 PrivacyType.TYPE_MICROPHONE,
                 TEST_PACKAGE_NAME,
                 TEST_USER_ID,
@@ -365,7 +365,7 @@ class PrivacyDialogTest : SysuiTestCase() {
         )
 
         val list = listOf(element)
-        dialog = PrivacyDialog(context, list, starter)
+        dialog = PrivacyDialogDelegate(context, list, starter)
         dialog.show()
         assertThat(dialog.requireViewById<TextView>(R.id.text).text.toString()).contains(
                 context.getString(
@@ -380,7 +380,7 @@ class PrivacyDialogTest : SysuiTestCase() {
         // Dialog must have a non-empty title for a11y purposes.
 
         val list = listOf(
-            PrivacyDialog.PrivacyElement(
+            PrivacyDialogDelegate.PrivacyElement(
                 PrivacyType.TYPE_MICROPHONE,
                 TEST_PACKAGE_NAME,
                 TEST_USER_ID,
@@ -396,7 +396,7 @@ class PrivacyDialogTest : SysuiTestCase() {
                 null
             )
         )
-        dialog = PrivacyDialog(context, list, starter)
+        dialog = PrivacyDialogDelegate(context, list, starter)
         dialog.show()
 
         assertThat(TextUtils.isEmpty(dialog.window?.attributes?.title)).isFalse()

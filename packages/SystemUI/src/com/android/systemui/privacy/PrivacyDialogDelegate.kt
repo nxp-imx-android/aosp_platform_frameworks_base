@@ -43,7 +43,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  *             appear in the list
  * @param activityStarter a callback to start an activity for a given package name, user id, attributionTag and intent
  */
-class PrivacyDialog(
+class PrivacyDialogDelegate(
     context: Context,
     private val list: List<PrivacyElement>,
     activityStarter: (String, Int, CharSequence?, Intent?) -> Unit

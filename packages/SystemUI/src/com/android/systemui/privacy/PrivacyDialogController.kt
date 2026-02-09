@@ -46,15 +46,15 @@ import javax.inject.Inject
 private val defaultDialogProvider = object : PrivacyDialogController.DialogProvider {
     override fun makeDialog(
         context: Context,
-        list: List<PrivacyDialog.PrivacyElement>,
+        list: List<PrivacyDialogDelegate.PrivacyElement>,
         starter: (String, Int, CharSequence?, Intent?) -> Unit
-    ): PrivacyDialog {
-        return PrivacyDialog(context, list, starter)
+    ): PrivacyDialogDelegate {
+        return PrivacyDialogDelegate(context, list, starter)
     }
 }
 
 /**
- * Controller for [PrivacyDialog].
+ * Controller for [PrivacyDialogDelegate].
  *
  * This controller shows and dismissed the dialog, as well as determining the information to show in
  * it.
@@ -112,7 +112,7 @@ class PrivacyDialogController(
 
     private var dialog: Dialog? = null
 
-    private val onDialogDismissed = object : PrivacyDialog.OnDialogDismissed {
+    private val onDialogDismissed = object : PrivacyDialogDelegate.OnDialogDismissed {
         override fun onDialogDismissed() {
             privacyLogger.logPrivacyDialogDismissed()
             uiEventLogger.log(PrivacyDialogEvent.PRIVACY_DIALOG_DISMISSED)
@@ -192,10 +192,10 @@ class PrivacyDialogController(
     }
 
     /**
-     * Show the [PrivacyDialog]
+     * Show the [PrivacyDialogDelegate]
      *
      * This retrieves the permission usage from [PermissionManager] and creates a new
-     * [PrivacyDialog] with a list of [PrivacyDialog.PrivacyElement] to show.
+     * [PrivacyDialogDelegate] with a list of [PrivacyDialogDelegate.PrivacyElement] to show.
      *
      * This list will be filtered by [filterAndSelect]. Only types available by
      * [PrivacyItemController] will be shown.
@@ -221,7 +221,7 @@ class PrivacyDialogController(
                             getLabelForPackage(it.packageName, it.uid)
                         }
                         val userId = UserHandle.getUserId(it.uid)
-                        PrivacyDialog.PrivacyElement(
+                        PrivacyDialogDelegate.PrivacyElement(
                                 t,
                                 it.packageName,
                                 userId,
@@ -316,8 +316,8 @@ class PrivacyDialogController(
      * it'll return the most recent access
      */
     private fun filterAndSelect(
-        list: List<PrivacyDialog.PrivacyElement>
-    ): List<PrivacyDialog.PrivacyElement> {
+        list: List<PrivacyDialogDelegate.PrivacyElement>
+    ): List<PrivacyDialogDelegate.PrivacyElement> {
         return list.groupBy { it.type }.toSortedMap().flatMap { (_, elements) ->
             val actives = elements.filter { it.active }
             if (actives.isNotEmpty()) {
@@ -331,18 +331,18 @@ class PrivacyDialogController(
     }
 
     /**
-     * Interface to create a [PrivacyDialog].
+     * Interface to create a [PrivacyDialogDelegate].
      *
      * Can be used to inject a mock creator.
      */
     interface DialogProvider {
         /**
-         * Create a [PrivacyDialog].
+         * Create a [PrivacyDialogDelegate].
          */
         fun makeDialog(
             context: Context,
-            list: List<PrivacyDialog.PrivacyElement>,
+            list: List<PrivacyDialogDelegate.PrivacyElement>,
             starter: (String, Int, CharSequence?, Intent?) -> Unit
-        ): PrivacyDialog
+        ): PrivacyDialogDelegate
     }
 }

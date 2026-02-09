@@ -62,7 +62,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  * @param openPrivacyDashboard a callback to open the privacy dashboard
  * @see PrivacyDialogControllerV2
  */
-class PrivacyDialogV2(
+class PrivacyDialogDelegateV2(
     context: Context,
     private val list: List<PrivacyElement>,
     private val manageApp: (String, Int, Intent) -> Unit,
