@@ -208,25 +208,13 @@ class ScreenRotationAnimation {
                 }
                 hardwareBuffer.close();
             }
-            if (isRotationChange) {
-                final float[] color = new float[]{mStartLuma, mStartLuma, mStartLuma};
-                if ((flags & FLAG_HAS_WALLPAPER) != 0) {
-                    mBackEffectSurface = new SurfaceControl.Builder()
-                            .setCallsite("ShellRotationAnimation").setParent(rootLeash)
-                            .setEffectLayer().setOpaque(true).setName("BackEffect").build();
-                    t.reparent(mSurfaceControl, mBackEffectSurface);
-                    t.setColor(mBackEffectSurface, color);
-                    t.show(mBackEffectSurface);
-                }
-                if (com.android.window.flags.Flags.noAlphaRotationEnterAnimation()) {
-                    mColorOverlay = new SurfaceControl.Builder()
-                            .setCallsite("ShellRotationAnimation").setParent(rootLeash)
-                            .setColorLayer().setOpaque(true).setName("ColorOverlay").build();
-                    t.setColor(mColorOverlay, color);
-                    t.setLayer(mColorOverlay, SCREEN_FREEZE_LAYER_BASE - 1);
-                    t.setWindowCrop(mColorOverlay, mEndWidth, mEndHeight);
-                    t.show(mColorOverlay);
-                }
+            if (isRotationChange && (flags & FLAG_HAS_WALLPAPER) != 0) {
+                mBackEffectSurface = new SurfaceControl.Builder()
+                        .setCallsite("ShellRotationAnimation").setParent(rootLeash)
+                        .setEffectLayer().setOpaque(true).setName("BackEffect").build();
+                t.reparent(mSurfaceControl, mBackEffectSurface);
+                t.setColor(mBackEffectSurface, new float[]{mStartLuma, mStartLuma, mStartLuma});
+                t.show(mBackEffectSurface);
             }
 
             t.setLayer(mAnimLeash, SCREEN_FREEZE_LAYER_BASE);
@@ -235,6 +223,7 @@ class ScreenRotationAnimation {
             t.setCrop(getEnterSurface(), new Rect(0, 0, mEndWidth, mEndHeight));
 
             if (isRotationChange && !isCustomRotate()) {
+                final float[] color = new float[]{mStartLuma, mStartLuma, mStartLuma};
                 mBackColorSurface = new SurfaceControl.Builder()
                         .setParent(rootLeash)
                         .setColorLayer()
@@ -244,8 +233,18 @@ class ScreenRotationAnimation {
                         .build();
 
                 t.setLayer(mBackColorSurface, -1);
-                t.setColor(mBackColorSurface, new float[]{mStartLuma, mStartLuma, mStartLuma});
+                t.setColor(mBackColorSurface, color);
                 t.show(mBackColorSurface);
+
+                if (com.android.window.flags.Flags.noAlphaRotationEnterAnimation()) {
+                    mColorOverlay = new SurfaceControl.Builder()
+                            .setCallsite("ShellRotationAnimation").setParent(rootLeash)
+                            .setColorLayer().setOpaque(true).setName("ColorOverlay").build();
+                    t.setColor(mColorOverlay, color);
+                    t.setLayer(mColorOverlay, SCREEN_FREEZE_LAYER_BASE - 1);
+                    t.setWindowCrop(mColorOverlay, mEndWidth, mEndHeight);
+                    t.show(mColorOverlay);
+                }
             }
 
         } catch (Surface.OutOfResourcesException e) {
