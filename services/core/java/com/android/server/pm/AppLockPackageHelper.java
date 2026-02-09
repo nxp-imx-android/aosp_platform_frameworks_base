@@ -282,6 +282,24 @@ public final class AppLockPackageHelper {
     }
 
     /**
+     * Called when the lock credential has been changed or removed for a user. If the device is no
+     * longer secure for that user, then disable App Lock for all packages that have App Lock
+     * enabled for that user.
+     *
+     * @param snapshot Computer snapshot
+     * @param userId   User Id that had the credential changed or removed.
+     */
+    public void reportLockCredentialChanged(@NonNull Computer snapshot, int userId) {
+        if (mInjector.isDeviceSecure(mContext, userId)) {
+            // If the device is secure, no need to do anything
+            return;
+        }
+        // Otherwise, disable App Lock for all packages for the user
+        final List<String> packages = getAppLockEnabledPackages(snapshot, userId);
+        writeMultiplePackagesAppLockStateToDisk(packages, userId, /* enabled= */ false);
+    }
+
+    /**
      * Sets the App Lock enablement state for a given package and user.
      *
      * <p>If the caller is neither {@link Process#SYSTEM_UID} nor {@link Process#ROOT_UID}, and
@@ -354,6 +372,26 @@ public final class AppLockPackageHelper {
         });
         mPms.scheduleWritePackageRestrictions(userId);
         mBroadcastHelper.sendPackageAppLockStateChangedForUser(packageName, userId, enabled);
+    }
+
+    private void writeMultiplePackagesAppLockStateToDisk(@NonNull List<String> packages, int userId,
+            boolean enabled) {
+        if (packages.isEmpty()) {
+            return;
+        }
+        PackageStateMutator.InitialState state = mPms.recordInitialState();
+        mPms.commitPackageStateMutation(state, mutator -> {
+            for (int i = packages.size() - 1; i >= 0; i--) {
+                final PackageUserStateWrite userState = mutator.forPackage(
+                        packages.get(i)).userState(userId);
+                userState.setAppLockEnabled(enabled);
+            }
+        });
+        mPms.scheduleWritePackageRestrictions(userId);
+        for (int i = packages.size() - 1; i >= 0; i--) {
+            mBroadcastHelper.sendPackageAppLockStateChangedForUser(packages.get(i), userId,
+                    enabled);
+        }
     }
 
     @VisibleForTesting

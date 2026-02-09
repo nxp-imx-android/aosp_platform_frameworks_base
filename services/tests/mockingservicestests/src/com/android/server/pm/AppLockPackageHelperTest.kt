@@ -599,6 +599,31 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
         ).isFalse()
     }
 
+    @Test
+    fun reportLockCredentialChanged_deviceSecure_doesNothing() {
+        setupTestForSetPackageAppLockEnabled(
+            deviceSecure = true,
+            currentEnabledState = true,
+        )
+
+        appLockPackageHelper.reportLockCredentialChanged(mockSnapshot, TEST_USER_ID_1)
+
+        verifyNoWriteOrPackageUpdate()
+    }
+
+    @Test
+    fun reportLockCredentialChanged_deviceNotSecure_appLockDisabledForUser() {
+        setupTestForSetPackageAppLockEnabled(
+            deviceSecure = true,
+            currentEnabledState = true,
+        )
+        testInjector.setDeviceSecure(false)
+
+        appLockPackageHelper.reportLockCredentialChanged(mockSnapshot, TEST_USER_ID_1)
+
+        verifyDiskWriteAndPackageUpdate(stateToWrite = false)
+    }
+
     private fun addSystemConfigFeature(feature: String) {
         availableFeatures.put(feature, FeatureInfo())
     }
