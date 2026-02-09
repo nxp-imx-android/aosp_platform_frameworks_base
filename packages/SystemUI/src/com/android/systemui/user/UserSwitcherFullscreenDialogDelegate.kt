@@ -22,49 +22,70 @@ import android.view.LayoutInflater
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.WindowInsets
 import android.view.WindowInsetsController
-import com.android.systemui.res.R
 import com.android.systemui.classifier.FalsingCollector
+import com.android.systemui.res.R
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.user.ui.binder.UserSwitcherViewBinder
 import com.android.systemui.user.ui.viewmodel.UserSwitcherViewModel
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 
-class UserSwitcherFullscreenDialogDelegate(
-    context: Context,
+class UserSwitcherFullscreenDialogDelegate
+@AssistedInject
+constructor(
+    @Assisted private val context: Context,
     private val falsingCollector: FalsingCollector,
     private val userSwitcherViewModel: UserSwitcherViewModel,
-) : SystemUIDialog(context, R.style.Theme_UserSwitcherFullscreenDialog) {
+    private val systemUIDialogFactory: SystemUIDialog.Factory,
+) : SystemUIDialog.Delegate {
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setShowForAllUsers(true)
-        setCanceledOnTouchOutside(true)
-
-        window?.decorView?.windowInsetsController?.let { controller ->
-            controller.systemBarsBehavior =
-                WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-            controller.hide(WindowInsets.Type.systemBars())
-        }
-
-        val view =
-            LayoutInflater.from(this.context).inflate(R.layout.user_switcher_fullscreen, null)
-        setContentView(view)
-
-        UserSwitcherViewBinder.bind(
-            view = requireViewById(R.id.user_switcher_root),
-            viewModel = userSwitcherViewModel,
-            layoutInflater = layoutInflater,
-            falsingCollector = falsingCollector,
-            onFinish = this::dismiss,
+    override fun createDialog(): SystemUIDialog {
+        return systemUIDialogFactory.create(
+            this,
+            context,
+            R.style.Theme_UserSwitcherFullscreenDialog,
         )
     }
 
-    override fun getWidth(): Int {
-        val displayMetrics = context.resources.displayMetrics.apply {
-            checkNotNull(context.display).getRealMetrics(this)
+    override fun onCreate(dialog: SystemUIDialog, savedInstanceState: Bundle?) {
+        with(dialog) {
+            setShowForAllUsers(true)
+            setCanceledOnTouchOutside(true)
+
+            window?.decorView?.windowInsetsController?.let { controller ->
+                controller.systemBarsBehavior =
+                    WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                controller.hide(WindowInsets.Type.systemBars())
+            }
+
+            val view =
+                LayoutInflater.from(this.context).inflate(R.layout.user_switcher_fullscreen, null)
+            setContentView(view)
+
+            UserSwitcherViewBinder.bind(
+                view = requireViewById(R.id.user_switcher_root),
+                viewModel = userSwitcherViewModel,
+                layoutInflater = layoutInflater,
+                falsingCollector = falsingCollector,
+                onFinish = this::dismiss,
+            )
         }
+    }
+
+    override fun getWidth(dialog: SystemUIDialog): Int {
+        val displayMetrics =
+            context.resources.displayMetrics.apply {
+                checkNotNull(context.display).getRealMetrics(this)
+            }
         return displayMetrics.widthPixels
     }
 
-    override fun getHeight() = MATCH_PARENT
+    override fun getHeight(dialog: SystemUIDialog) = MATCH_PARENT
 
+    @AssistedFactory
+    interface Factory {
+
+        fun create(context: Context): UserSwitcherFullscreenDialogDelegate
+    }
 }

@@ -27,7 +27,6 @@ import com.android.systemui.CoreStartable
 import com.android.systemui.animation.DialogCuj
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.animation.TransitionAnimator
-import com.android.systemui.classifier.FalsingCollector
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.display.data.repository.DisplayWindowPropertiesRepository
@@ -35,7 +34,6 @@ import com.android.systemui.shade.domain.interactor.ShadeDialogContextInteractor
 import com.android.systemui.user.UserSwitcherFullscreenDialogDelegate
 import com.android.systemui.user.domain.interactor.UserSwitcherInteractor
 import com.android.systemui.user.domain.model.ShowDialogRequestModel
-import com.android.systemui.user.ui.viewmodel.UserSwitcherViewModel
 import dagger.Lazy
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -49,13 +47,13 @@ constructor(
     @Application private val applicationScope: Lazy<CoroutineScope>,
     private val dialogTransitionAnimator: Lazy<DialogTransitionAnimator>,
     private val interactor: Lazy<UserSwitcherInteractor>,
-    private val falsingCollector: Lazy<FalsingCollector>,
-    private val userSwitcherViewModel: Lazy<UserSwitcherViewModel>,
     private val shadeDialogContextInteractor: Lazy<ShadeDialogContextInteractor>,
     private val displayPropertiesRepository: Lazy<DisplayWindowPropertiesRepository>,
     private val addUserDialogDelegateFactory: AddUserDialogDelegate.Factory,
     private val exitGuestDialogDelegateFactory: ExitGuestDialogDelegate.Factory,
     private val userSwitchDialogDelegateFactory: UserSwitchDialogDelegate.Factory,
+    private val userSwitcherFullscreenDialogDelegateFactory:
+        UserSwitcherFullscreenDialogDelegate.Factory,
 ) : CoreStartable {
 
     private var currentDialog: Dialog? = null
@@ -120,11 +118,9 @@ constructor(
                             )
                         is ShowDialogRequestModel.ShowUserSwitcherFullscreenDialog ->
                             Pair(
-                                UserSwitcherFullscreenDialogDelegate(
-                                    context = context,
-                                    falsingCollector = falsingCollector.get(),
-                                    userSwitcherViewModel = userSwitcherViewModel.get(),
-                                ),
+                                userSwitcherFullscreenDialogDelegateFactory
+                                    .create(context)
+                                    .createDialog(),
                                 null, /* dialogCuj */
                             )
                     }
