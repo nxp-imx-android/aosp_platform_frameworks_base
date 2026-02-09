@@ -37,6 +37,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -85,6 +86,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -131,11 +133,16 @@ constructor(
         val viewTreeObserver = window?.decorView?.viewTreeObserver
         val toolbarBounds = remember { Region.obtain() }
         val settingsBounds = remember { Region.obtain() }
+        val dimBounds = remember { Region.obtain() }
         LaunchedEffect(viewTreeObserver) {
             viewTreeObserver?.listenToComputeInternalInsets {
-                setTouchableInsets(InternalInsetsInfo.TOUCHABLE_INSETS_REGION)
-                touchableRegion.op(toolbarBounds, Region.Op.UNION)
-                touchableRegion.op(settingsBounds, Region.Op.UNION)
+                if (viewModel.shouldShowDim) {
+                    touchableRegion.op(dimBounds, Region.Op.UNION)
+                } else {
+                    setTouchableInsets(InternalInsetsInfo.TOUCHABLE_INSETS_REGION)
+                    touchableRegion.op(toolbarBounds, Region.Op.UNION)
+                    touchableRegion.op(settingsBounds, Region.Op.UNION)
+                }
             }
         }
 
@@ -149,6 +156,12 @@ constructor(
             enter = scaleIn(transformOrigin = scaleTransformOrigin) + slideInVertically(),
             exit = scaleOut(transformOrigin = scaleTransformOrigin) + slideOutVertically(),
         ) {
+            BackgroundDim(
+                isVisible = viewModel.shouldShowDim,
+                region = dimBounds,
+                onClick = { viewModel.dismiss() },
+            )
+
             Column(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -346,21 +359,6 @@ constructor(
     }
 
     @Composable
-    private fun Modifier.fillBoundsInWindowIf(region: Region, condition: Boolean): Modifier =
-        thenIf(condition) {
-            Modifier.onGloballyPositioned { layoutCoordinates ->
-                with(layoutCoordinates.boundsInWindow()) {
-                    region.set(
-                        left.roundToInt(),
-                        top.roundToInt(),
-                        right.roundToInt(),
-                        bottom.roundToInt(),
-                    )
-                }
-            }
-        }
-
-    @Composable
     private fun SetupWindow(@StringRes contentDescriptionRes: Int?) {
         val title = stringResource(R.string.screenrecord_title)
         val windowTitle =
@@ -484,3 +482,43 @@ private fun TransientSurface(
         Box(content = content, modifier = Modifier.graphicsLayer { alpha = contentAlpha })
     }
 }
+
+@Composable
+private fun BackgroundDim(
+    isVisible: Boolean,
+    onClick: () -> Unit,
+    region: Region,
+    modifier: Modifier = Modifier,
+) {
+    val backgroundScrim = MaterialTheme.colorScheme.scrim.copy(alpha = 0.32f)
+    val backgroundOpacity by animateFloatAsState(if (isVisible) 1f else 0f)
+    Spacer(
+        modifier =
+            modifier
+                .fillMaxSize()
+                .animatedBackground(color = { backgroundScrim }, alpha = { backgroundOpacity })
+                .clearAndSetSemantics {}
+                .clickable(
+                    enabled = isVisible,
+                    interactionSource = null,
+                    indication = null,
+                    onClick = onClick,
+                )
+                .fillBoundsInWindowIf(region = region, condition = isVisible)
+    )
+}
+
+@Composable
+private fun Modifier.fillBoundsInWindowIf(region: Region, condition: Boolean): Modifier =
+    thenIf(condition) {
+        Modifier.onGloballyPositioned { layoutCoordinates ->
+            with(layoutCoordinates.boundsInWindow()) {
+                region.set(
+                    left.roundToInt(),
+                    top.roundToInt(),
+                    right.roundToInt(),
+                    bottom.roundToInt(),
+                )
+            }
+        }
+    }
