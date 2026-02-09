@@ -48,7 +48,7 @@ public class ThemeBinderService extends IThemeManager.Stub {
     private final Context mContext;
     private final ThemeManagerInternal mLocalService;
 
-    public ThemeBinderService(Context context, ThemeManagerInternal localService) {
+    ThemeBinderService(Context context, ThemeManagerInternal localService) {
         mContext = context;
         mLocalService = localService;
     }
@@ -74,13 +74,13 @@ public class ThemeBinderService extends IThemeManager.Stub {
     }
 
     @Override
-    public void registerThemeChangedCallback(@NonNull IThemeChangedCallback callback) {
-        mLocalService.registerThemeChangedCallback(getCallingUserId(), callback);
+    public boolean registerThemeChangedCallback(@NonNull IThemeChangedCallback callback) {
+        return mLocalService.registerThemeChangedCallback(getCallingUserId(), callback);
     }
 
     @Override
-    public void unregisterThemeChangedCallback(@NonNull IThemeChangedCallback callback) {
-        mLocalService.unregisterThemeChangedCallback(getCallingUserId(), callback);
+    public boolean unregisterThemeChangedCallback(@NonNull IThemeChangedCallback callback) {
+        return mLocalService.unregisterThemeChangedCallback(getCallingUserId(), callback);
     }
 
     @Override

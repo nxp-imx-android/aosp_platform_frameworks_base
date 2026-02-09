@@ -16,8 +16,6 @@
 
 package com.android.server.theming;
 
-import static android.content.theming.FieldColorSource.VALUE_PRESET;
-
 import android.Manifest;
 import android.annotation.NonNull;
 import android.annotation.RequiresPermission;
@@ -28,7 +26,6 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.theming.ThemeSettings;
 import android.database.ContentObserver;
 import android.net.Uri;
 import android.os.Handler;
@@ -38,8 +35,8 @@ import android.util.Slog;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.BackgroundThread;
+import com.android.server.LocalServices;
 import com.android.server.UiModeManagerInternal;
-import com.android.systemui.monet.ColorScheme;
 
 import java.util.Collection;
 import java.util.concurrent.Executor;
@@ -54,17 +51,15 @@ import java.util.concurrent.Executor;
  *     <li>User setup completion</li>
  *     <li>Device lock state changes</li>
  * </ul>
- * It forwards these events to the {@link ThemeStateManager}.
+ * It forwards these events to the {@link ThemeManagerImpl}.
  *
  * @hide
  */
+@VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
 public class ThemeEventObserver {
     private static final String TAG = "ThemeEventObserver";
 
     private final Context mContext;
-    private final ThemeStateManager mStateManager;
-    private final ThemeSettingsManager mThemeSettingsManager;
-    private final ThemeUserLifecycle mThemeUserLifecycle;
     private final ThemeManagerImpl mThemeManagerImpl;
     private final ThemeEnvironment mEnvironment;
 
@@ -73,13 +68,9 @@ public class ThemeEventObserver {
     private KeyguardManager mKeyguardManager;
 
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
-    public ThemeEventObserver(Context context, ThemeStateManager stateManager,
-            ThemeSettingsManager themeSettingsManager, ThemeUserLifecycle themeUserLifecycle,
-            ThemeManagerImpl themeManagerImpl, ThemeEnvironment environment) {
+    ThemeEventObserver(Context context, ThemeManagerImpl themeManagerImpl,
+            ThemeEnvironment environment) {
         mContext = context;
-        mStateManager = stateManager;
-        mThemeSettingsManager = themeSettingsManager;
-        mThemeUserLifecycle = themeUserLifecycle;
         mThemeManagerImpl = themeManagerImpl;
         mEnvironment = environment;
     }
@@ -89,11 +80,10 @@ public class ThemeEventObserver {
      */
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
     @RequiresPermission(Manifest.permission.SUBSCRIBE_TO_KEYGUARD_LOCKED_STATE)
-    public void onServicesReady(ThemeWallpaperManager wallpaperManager,
-            UiModeManagerInternal uiModeManager, KeyguardManager keyguardManager) {
+    public void onServicesReady(ThemeWallpaperManager wallpaperManager) {
         mWallpaperManager = wallpaperManager;
-        mUiModeManagerInternal = uiModeManager;
-        mKeyguardManager = keyguardManager;
+        mUiModeManagerInternal = LocalServices.getService(UiModeManagerInternal.class);
+        mKeyguardManager = mContext.getSystemService(KeyguardManager.class);
     }
 
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
@@ -162,19 +152,14 @@ public class ThemeEventObserver {
             mThemeManagerImpl.notifyThemeChanged(userId);
         }
     }
-
+    @RequiresPermission(Manifest.permission.SUBSCRIBE_TO_KEYGUARD_LOCKED_STATE)
     private void handleWallpaperColorsChanged(WallpaperColors wallpaperColors, int userId,
             boolean fromForegroundApp) {
-        if (shouldIgnoreEventForUser(userId, "onColorsChanged")) {
-            return;
-        }
-        ThemeSettings userSettings = mThemeSettingsManager.getSettingsOrDefault(userId,
-                mContext.getContentResolver());
-        if (userSettings.colorSource().equals(VALUE_PRESET)) {
-            Slog.d(TAG, "Wallpaper color change ignored due to preset color source");
-            return;
-        }
+        mThemeManagerImpl.initializeThemingSystem("WallpaperChange");
 
+        if (mEnvironment.shouldIgnoreEventForUser(userId, "onColorsChanged")) {
+            return;
+        }
         if (wallpaperColors == null) {
             Slog.d(TAG,
                     "Wallpaper color change ignored due to WallpaperManager providing null "
@@ -183,25 +168,23 @@ public class ThemeEventObserver {
         }
 
         Slog.d(TAG, "User: " + userId + " changed wallpaper");
-        mStateManager.onSeedColorChange(userId,
-                ColorScheme.getSeedColor(wallpaperColors), fromForegroundApp);
+        mThemeManagerImpl.onWallpaperColorsChanged(userId, wallpaperColors, fromForegroundApp);
     }
 
     private void handleContrastChanged(int userId, float contrast) {
-        if (shouldIgnoreEventForUser(userId, "onContrastChange")) {
+        if (mEnvironment.shouldIgnoreEventForUser(userId, "onContrastChange")) {
             return;
         }
-        mStateManager.onContrastChange(userId, contrast);
+        mThemeManagerImpl.onContrastChanged(userId, contrast);
     }
 
     private void handleKeyguardLockedStateChanged(boolean isKeyguardLocked) {
         if (isKeyguardLocked) {
             Slog.d(TAG, "Keyguard locked");
-            mStateManager.onLockStateChange(true);
+            mThemeManagerImpl.onDeviceLocked();
         }
     }
 
-    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
     final ContentObserver mUserSetupObserver = new ContentObserver(BackgroundThread.getHandler()) {
         @Override
         public void onChange(boolean selfChange, @NonNull Collection<Uri> uris, int flags,
@@ -210,16 +193,14 @@ public class ThemeEventObserver {
         }
     };
 
-    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
     void handleUserSetupChanged(int userId) {
-        if (shouldIgnoreEventForUser(userId, "onFinishSetup")) {
+        if (mEnvironment.shouldIgnoreEventForUser(userId, "onFinishSetup")) {
             return;
         }
         Slog.d(TAG, "User: " + userId + " setup complete");
-        mStateManager.onFinishSetup(userId);
+        mThemeManagerImpl.onUserStart(userId);
     }
 
-    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
     final ContentObserver mThemeSettingsObserver = new ContentObserver(
             BackgroundThread.getHandler()) {
         @Override
@@ -229,38 +210,12 @@ public class ThemeEventObserver {
         }
     };
 
-    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
     void handleThemeCustomizationChanged(int userId) {
-        if (shouldIgnoreEventForUser(userId, "onThemeSettingsChanged")) {
+        if (mEnvironment.shouldIgnoreEventForUser(userId, "onThemeSettingsChanged")) {
             return;
         }
 
         Slog.d(TAG, "User: " + userId + " updated Secure Setting directly");
-        mThemeSettingsManager.invalidateCache(userId);
-
-        ThemeSettings userSettings = mThemeSettingsManager.getSettingsOrDefault(userId,
-                mContext.getContentResolver());
-
-        int newSeed = userSettings.systemPalette().toArgb();
-        mStateManager.onSeedColorChange(userId, newSeed, true);
-        mStateManager.onStyleChange(userId, userSettings.themeStyle());
-    }
-
-    // Helper Methods
-
-    private boolean shouldIgnoreEventForUser(int userId, String methodName) {
-        // Use unified environment policy
-        if (!mEnvironment.isManagedUser(userId)) {
-            Slog.d(TAG,
-                    "Bypassing '" + methodName + "' for user " + userId + " per system policy.");
-            return true;
-        }
-
-        if (mThemeUserLifecycle.loadUserStateAndNotifyStateManager(userId)) {
-            return false;
-        }
-
-        Slog.d(TAG, "Ignoring '" + methodName + "' for user " + userId);
-        return true;
+        mThemeManagerImpl.onThemeSettingsChanged(userId);
     }
 }

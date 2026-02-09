@@ -23,9 +23,9 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import android.app.ActivityManagerInternal;
 import android.app.WallpaperColors;
 import android.content.ContentResolver;
 import android.content.theming.FieldColorSource;
@@ -39,6 +39,7 @@ import android.testing.TestableResources;
 import androidx.test.runner.AndroidJUnit4;
 
 import com.android.internal.R;
+import com.android.server.LocalServices;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.wallpaper.WallpaperManagerInternal;
 import com.android.systemui.monet.ColorScheme;
@@ -62,6 +63,10 @@ public class ThemeSettingsManagerTests {
 
     @Mock
     private WallpaperManagerInternal mMockWmi;
+    @Mock
+    private ActivityManagerInternal mMockAmi;
+    @Mock
+    private UserManagerInternal mMockUmi;
 
     @Rule
     public final TestableContext mContext = new TestableContext(
@@ -90,14 +95,15 @@ public class ThemeSettingsManagerTests {
         TestableResources userResources = mContext.getOrCreateTestableResources();
         userResources.addOverride(R.array.theming_defaults, mHardwareColorRule.options);
 
-        UserManagerInternal userManager = mock(UserManagerInternal.class);
-        when(userManager.isHeadlessSystemUserMode()).thenReturn(false);
+        when(mMockUmi.isHeadlessSystemUserMode()).thenReturn(false);
 
-        mEnvironment = new ThemeEnvironment(mContext, userManager,
-                mHardwareColorRule.sysPropReader);
+        mEnvironment = new ThemeEnvironment(mContext, mHardwareColorRule.sysPropReader);
 
-        mManager = new ThemeSettingsManager(new ThemeWallpaperManager(mMockWmi),
-                mHardwareColorRule.sysPropReader, mEnvironment);
+        // We need to register WallpaperManagerInternal for ThemeWallpaperManager
+        LocalServices.removeServiceForTest(WallpaperManagerInternal.class);
+        LocalServices.addService(WallpaperManagerInternal.class, mMockWmi);
+
+        mManager = new ThemeSettingsManager(new ThemeWallpaperManager(), mEnvironment);
 
         Settings.Secure.putStringForUser(mContentResolver,
                 Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, null, mUserId);
@@ -320,10 +326,8 @@ public class ThemeSettingsManagerTests {
     })
     public void createDefaultThemeSettings_noWildcard_throwsException() {
         // Redefine environment for this test to bypass setup
-        UserManagerInternal userManager = mock(UserManagerInternal.class);
-        ThemeEnvironment env = new ThemeEnvironment(mContext, userManager, (key, def) -> "");
-        ThemeSettingsManager manager = new ThemeSettingsManager(new ThemeWallpaperManager(mMockWmi),
-                (key, def) -> "", env);
+        ThemeEnvironment env = new ThemeEnvironment(mContext, (key, def) -> "");
+        ThemeSettingsManager manager = new ThemeSettingsManager(new ThemeWallpaperManager(), env);
 
         assertThrows(IllegalStateException.class,
                 () -> manager.createDefaultThemeSettings(mUserId));

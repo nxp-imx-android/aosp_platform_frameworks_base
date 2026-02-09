@@ -28,14 +28,7 @@ import android.util.Slog;
 
 import androidx.annotation.VisibleForTesting;
 
-import com.android.server.LocalServices;
 import com.android.server.SystemService;
-import com.android.server.UiModeManagerInternal;
-import com.android.server.om.OverlayManagerInternal;
-import com.android.server.pm.UserManagerInternal;
-import com.android.server.wallpaper.WallpaperManagerInternal;
-
-import java.util.Arrays;
 
 /**
  * ThemeManagerService is the main entry point for the theming system in Android.
@@ -52,6 +45,7 @@ import java.util.Arrays;
  *     <li>{@link ThemeEventObserver}: Listens for system events (wallpaper, settings, lock
  *     state).</li>
  *     <li>{@link ThemeManagerImpl}: Provides a local interface for other system services.</li>
+ *     <li>{@link ThemeEnvironment}: Provides access to system properties and state.</li>
  *     <li>{@link ThemeBinderService}: Provides the public Binder interface for apps.</li>
  * </ul>
  *
@@ -61,54 +55,45 @@ import java.util.Arrays;
 public class ThemeManagerService extends SystemService {
     private static final String TAG = "ThemeManagerService";
 
-    private final ThemeManagerInternal mImpl;
+    private final ThemeManagerImpl mImpl;
     private final ThemeBinderService mPublic;
-    private final Context mContext;
-    private final ThemeSettingsManager mThemeSettingsManager;
     private final ThemeStateManager mStateManager;
     private final ThemeUserLifecycle mUserLifecycle;
     private final ThemeEventObserver mEventObserver;
-    private final ThemeOverlayHelper mOverlayHelper;
     private final ThemeWallpaperManager mThemeWallpaperManager;
     private final ThemeEnvironment mEnvironment;
 
     public ThemeManagerService(@NonNull Context context) {
-        this(context, SystemProperties::get,
-                LocalServices.getService(WallpaperManagerInternal.class),
-                LocalServices.getService(OverlayManagerInternal.class),
-                LocalServices.getService(UserManagerInternal.class),
-                null, null, null);
+        this(context, SystemProperties::get, null, null, null);
     }
 
     @VisibleForTesting
     ThemeManagerService(@NonNull Context context,
             @NonNull SystemPropertiesReader systemPropertiesReader,
-            WallpaperManagerInternal wallpaperManagerInternal,
-            OverlayManagerInternal overlayManagerInternal,
-            UserManagerInternal userManagerInternal,
             @Nullable ThemeStateManager themeStateManager,
             @Nullable ThemeUserLifecycle userLifecycle,
             @Nullable ThemeEventObserver eventObserver) {
         super(context);
-        mContext = context;
-        mEnvironment = new ThemeEnvironment(context, userManagerInternal, systemPropertiesReader);
-        mStateManager = themeStateManager != null ? themeStateManager
-                : new ThemeStateManager(context, mEnvironment);
-        mThemeWallpaperManager = new ThemeWallpaperManager(wallpaperManagerInternal);
-        mThemeSettingsManager = new ThemeSettingsManager(mThemeWallpaperManager,
-                systemPropertiesReader, mEnvironment);
-        mOverlayHelper = new ThemeOverlayHelper(overlayManagerInternal);
 
-        mImpl = new ThemeManagerImpl(mContext, mThemeSettingsManager,
-                mStateManager, mOverlayHelper, mEnvironment);
-        mPublic = new ThemeBinderService(mContext, mImpl);
+        mEnvironment = new ThemeEnvironment(context, systemPropertiesReader);
 
-        mUserLifecycle = userLifecycle != null ? userLifecycle : new ThemeUserLifecycle(mContext,
-                mStateManager, mThemeSettingsManager, mEnvironment);
-
-        mEventObserver = eventObserver != null ? eventObserver : new ThemeEventObserver(mContext,
-                mStateManager, mThemeSettingsManager, mUserLifecycle, (ThemeManagerImpl) mImpl,
+        ThemeOverlayHelper overlayHelper = new ThemeOverlayHelper();
+        mStateManager = themeStateManager != null ? themeStateManager : new ThemeStateManager(
+                context, mEnvironment);
+        mThemeWallpaperManager = new ThemeWallpaperManager();
+        ThemeSettingsManager themeSettingsManager = new ThemeSettingsManager(mThemeWallpaperManager,
                 mEnvironment);
+
+        mImpl = new ThemeManagerImpl(context, themeSettingsManager, mStateManager, overlayHelper,
+                mEnvironment, mThemeWallpaperManager);
+        mPublic = new ThemeBinderService(context, mImpl);
+
+        mUserLifecycle = userLifecycle != null ? userLifecycle : new ThemeUserLifecycle(context,
+                mEnvironment, mImpl);
+        mEventObserver = eventObserver != null ? eventObserver : new ThemeEventObserver(context,
+                mImpl, mEnvironment);
+
+        mImpl.setup(mUserLifecycle);
     }
 
     @Override
@@ -120,35 +105,38 @@ public class ThemeManagerService extends SystemService {
     @Override
     @RequiresPermission(Manifest.permission.SUBSCRIBE_TO_KEYGUARD_LOCKED_STATE)
     public void onBootPhase(@BootPhase int phase) {
-        Slog.d(TAG, "onBootPhase: " + phase);
         if (phase == SystemService.PHASE_SYSTEM_SERVICES_READY) {
-            mStateManager.onServicesReady();
-            mOverlayHelper.cleanupLegacyOverlays(Arrays.asList(mEnvironment.legacyOverlays));
-            mUserLifecycle.onServicesReady(LocalServices.getService(UserManagerInternal.class),
-                    LocalServices.getService(UiModeManagerInternal.class), mThemeWallpaperManager);
-            mUserLifecycle.onBootCompleteLoadUsers();
-            mEventObserver.onServicesReady(mThemeWallpaperManager,
-                    LocalServices.getService(UiModeManagerInternal.class),
-                    mContext.getSystemService(KeyguardManager.class));
+            Slog.d(TAG, "Booth Phase SystemServices Ready: Wiring Components and Listeners.");
+            KeyguardManager keyGuardManager = getContext().getSystemService(KeyguardManager.class);
 
-            // Register component listeners
+            mEnvironment.onServicesReady(keyGuardManager);
+            mStateManager.onServicesReady();
+            mEventObserver.onServicesReady(mThemeWallpaperManager);
+
+            // ThemeUserLifecycle does not require any service
             mUserLifecycle.registerListeners();
             mEventObserver.registerListeners();
         }
-
-        if (phase == SystemService.PHASE_ACTIVITY_MANAGER_READY) {
-            mStateManager.onBootComplete(/*isPaletteOutdated*/ mEnvironment.isPaletteOutdated);
-        }
-
     }
 
     @Override
     public void onUserStarting(@NonNull TargetUser user) {
-        mUserLifecycle.onUserStarting(user);
+        // Only process users immediately if the initialization sequence has finished.
+        if (!mEnvironment.isBooting()) {
+            mUserLifecycle.onUserStarting(user);
+        }
     }
 
     @Override
     public void onUserSwitching(@Nullable TargetUser from, @NonNull TargetUser to) {
-        mUserLifecycle.onUserSwitching(from, to);
+        if (!mEnvironment.isBooting()) {
+            mUserLifecycle.onUserSwitching(from, to);
+        }
+    }
+
+    /** @hide */
+    @VisibleForTesting
+    ThemeManagerInternal getLocalService() {
+        return mImpl;
     }
 }

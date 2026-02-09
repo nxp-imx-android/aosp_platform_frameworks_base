@@ -29,6 +29,7 @@ import android.util.Slog;
 
 import com.android.internal.R;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.server.LocalServices;
 import com.android.server.om.OverlayManagerInternal;
 import com.android.systemui.monet.ColorScheme;
 import com.android.systemui.monet.DynamicColors;
@@ -47,6 +48,7 @@ import java.util.concurrent.CancellationException;
  *
  * @hide
  */
+@VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
 public class ThemeOverlayHelper {
     private static final String TAG = "ThemeOverlayHelper";
     private static final String ANDROID_PACKAGE = "android";
@@ -55,8 +57,8 @@ public class ThemeOverlayHelper {
 
     private final OverlayManagerInternal mOverlayManager;
 
-    public ThemeOverlayHelper(OverlayManagerInternal overlayManager) {
-        mOverlayManager = overlayManager;
+    ThemeOverlayHelper() {
+        mOverlayManager = LocalServices.getService(OverlayManagerInternal.class);
     }
 
     /**
@@ -66,6 +68,7 @@ public class ThemeOverlayHelper {
      * @param applyToSystem  Whether to apply overlays to the system user as well.
      * @param shouldRegister Whether to register the overlays (true) or just enable them (false).
      */
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
     public void applyCurrentStateOverlays(ThemeStatePair.OverlaySnapshot snapshot,
             boolean applyToSystem, boolean shouldRegister) throws CancellationException {
         if (shouldRegister || areOverlaysMissing(snapshot.userId())) {
@@ -102,6 +105,7 @@ public class ThemeOverlayHelper {
      * @param lightScheme The expected light color scheme.
      * @return {@code true} if the colors match the expected schemes.
      */
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
     public boolean isColorSchemeApplied(Context context, int userId, ColorScheme darkScheme,
             ColorScheme lightScheme) {
         Resources res = context.createContextAsUser(UserHandle.of(userId), 0).getResources();
@@ -144,6 +148,19 @@ public class ThemeOverlayHelper {
         } catch (Resources.NotFoundException e) {
             return false;
         }
+    }
+
+    /**
+     * Checks if the dynamic overlay for the given user is registered.
+     *
+     * @param userId The user ID to check.
+     * @return {@code true} if the overlay is registered, {@code false} otherwise.
+     */
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
+    public boolean isOverlayRegistered(int userId) {
+        OverlayIdentifier identifier = new OverlayIdentifier(ANDROID_PACKAGE,
+                OVERLAY_NAME_DYNAMIC + "_" + userId);
+        return mOverlayManager.getOverlayInfo(identifier, UserHandle.of(userId)) != null;
     }
 
     /**
@@ -226,6 +243,7 @@ public class ThemeOverlayHelper {
      * @param legacyOverlays A list of legacy overlay identifiers in the format
      *                       "packageName:overlayName".
      */
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
     public void cleanupLegacyOverlays(List<String> legacyOverlays) {
         if (legacyOverlays == null || legacyOverlays.isEmpty()) {
             return;

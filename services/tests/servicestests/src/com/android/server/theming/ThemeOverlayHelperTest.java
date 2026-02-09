@@ -26,6 +26,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.app.ActivityManagerInternal;
 import android.content.om.FabricatedOverlay;
 import android.content.om.OverlayIdentifier;
 import android.content.om.OverlayInfo;
@@ -71,6 +72,8 @@ public class ThemeOverlayHelperTest {
     @Mock
     private OverlayManagerInternal mOverlayManager;
     @Mock
+    private ActivityManagerInternal mActivityManagerInternal;
+    @Mock
     private UserManagerInternal mUserManagerInternal;
     @Captor
     private ArgumentCaptor<OverlayManagerTransaction> mTransactionCaptor;
@@ -86,10 +89,13 @@ public class ThemeOverlayHelperTest {
     public void setup() {
         // This initializes all fields annotated with @Mock and @Captor
         MockitoAnnotations.initMocks(this);
-        mThemeOverlayHelper = new ThemeOverlayHelper(mOverlayManager);
-
+        LocalServices.removeServiceForTest(OverlayManagerInternal.class);
         LocalServices.removeServiceForTest(UserManagerInternal.class);
+
+        LocalServices.addService(OverlayManagerInternal.class, mOverlayManager);
         LocalServices.addService(UserManagerInternal.class, mUserManagerInternal);
+
+        mThemeOverlayHelper = new ThemeOverlayHelper();
 
         TestableResources resources = mContext.getOrCreateTestableResources();
         resources.addOverride(R.array.theming_legacy_overlays, new String[]{
@@ -104,7 +110,7 @@ public class ThemeOverlayHelperTest {
         });
 
         when(mUserManagerInternal.isHeadlessSystemUserMode()).thenReturn(false);
-        mEnvironment = new ThemeEnvironment(mContext, mUserManagerInternal, (key, def) -> def);
+        mEnvironment = new ThemeEnvironment(mContext, (key, def) -> def);
     }
 
 
