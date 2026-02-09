@@ -356,6 +356,26 @@ public final class PersonalContextManager {
     }
 
     /**
+     * Update the client info of an embedded client.
+     *
+     * @param oldClientInfo the old {@link InsightSurfaceClientInfo} that needs to be updated
+     * @param newClientInfo the new {@link InsightSurfaceClientInfo} that has the updated info
+     *
+     * @hide
+     */
+    @UserHandleAware(
+            requiresPermissionIfNotCaller = android.Manifest.permission.INTERACT_ACROSS_USERS)
+    public void updateEmbeddedClientInfo(
+            @NonNull InsightSurfaceClientInfo oldClientInfo,
+            @NonNull InsightSurfaceClientInfo newClientInfo) {
+        try {
+            mService.updateEmbeddedClientInfo(oldClientInfo, newClientInfo, mContext.getUserId());
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Reports an InsightEvent back to the Understander that generated the Insight.
      *
      * @hide

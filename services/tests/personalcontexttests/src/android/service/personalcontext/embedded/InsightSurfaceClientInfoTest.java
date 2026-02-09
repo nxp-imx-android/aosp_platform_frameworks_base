@@ -37,6 +37,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.UUID;
+
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 public class InsightSurfaceClientInfoTest {
@@ -51,6 +53,7 @@ public class InsightSurfaceClientInfoTest {
 
     @Test
     public void testInsightSurfaceClientInfoCreation() {
+        final UUID clientId = UUID.randomUUID();
         final int widthMeasureSpec = 1;
         final int heightMeasureSpec = 2;
         final int displayId = 3;
@@ -64,6 +67,7 @@ public class InsightSurfaceClientInfoTest {
 
         final InsightSurfaceClientInfo clientInfo =
                 new InsightSurfaceClientInfo(
+                        clientId,
                         displayId,
                         widthMeasureSpec,
                         heightMeasureSpec,
@@ -76,6 +80,7 @@ public class InsightSurfaceClientInfoTest {
                         configuration,
                         mClient);
 
+        assertThat(clientInfo.getId()).isEqualTo(clientId);
         assertThat(clientInfo.getMeasureSpecWidth()).isEqualTo(widthMeasureSpec);
         assertThat(clientInfo.getMeasureSpecHeight()).isEqualTo(heightMeasureSpec);
         assertThat(clientInfo.getDisplayId()).isEqualTo(displayId);
@@ -92,6 +97,7 @@ public class InsightSurfaceClientInfoTest {
     public void testOnSurfaceCreated() throws RemoteException {
         final InsightSurfaceClientInfo clientInfo =
                 new InsightSurfaceClientInfo(
+                        UUID.randomUUID(),
                         0,
                         0,
                         0,
@@ -111,6 +117,7 @@ public class InsightSurfaceClientInfoTest {
     public void testOnReceiveInsight() throws RemoteException {
         final InsightSurfaceClientInfo clientInfo =
                 new InsightSurfaceClientInfo(
+                        UUID.randomUUID(),
                         0,
                         0,
                         0,

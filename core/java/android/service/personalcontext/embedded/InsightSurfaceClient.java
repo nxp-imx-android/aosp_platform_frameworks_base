@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.Executor;
 
 /**
@@ -166,7 +167,7 @@ public class InsightSurfaceClient implements AutoCloseable {
                             mCallbacks.onSessionDestroyed(mSession);
                         }
                         mSession = new InsightSurfaceSession(
-                                InsightSurfaceClient.this, surfacePackage, session);
+                                mContext, InsightSurfaceClient.this, surfacePackage, session);
                         mCallbacks.onSessionCreated(mSession);
                     });
                 }
@@ -241,6 +242,7 @@ public class InsightSurfaceClient implements AutoCloseable {
         mInsightReceivers = List.copyOf(receivers);
 
         mClientInfo = new InsightSurfaceClientInfo(
+                UUID.randomUUID(),
                 mContext.getDisplay().getDisplayId(),
                 widthMeasureSpec,
                 heightMeasureSpec,

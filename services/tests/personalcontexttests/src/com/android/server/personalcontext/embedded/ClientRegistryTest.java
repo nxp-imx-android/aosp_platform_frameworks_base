@@ -89,6 +89,7 @@ public class ClientRegistryTest {
 
     private InsightSurfaceClientInfo createClient() {
         return new InsightSurfaceClientInfo(
+                UUID.randomUUID(),
                 1,
                 2,
                 3,

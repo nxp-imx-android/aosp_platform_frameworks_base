@@ -39,6 +39,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
 @SmallTest
@@ -97,6 +98,7 @@ public class EmbeddedInsightRendererTest {
         final IInsightSurfaceClient client =
                 IInsightSurfaceClient.Stub.asInterface(new android.os.Binder());
         return new InsightSurfaceClientInfo(
+                UUID.randomUUID(),
                 1,
                 2,
                 3,

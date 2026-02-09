@@ -65,6 +65,7 @@ public final class InsightSurfaceClientInfo implements Parcelable {
     /**
      * Create a new insight surface client info object.
      *
+     * @param id the client's unique id
      * @param displayId the client app's {@link android.view.Display#getDisplayId}
      * @param measureSpecWidth the width MeasureSpec of the client surface
      * @param measureSpecHeight the height MeasureSpec of the client surface
@@ -81,6 +82,7 @@ public final class InsightSurfaceClientInfo implements Parcelable {
      */
     @VisibleForTesting
     public InsightSurfaceClientInfo(
+            UUID id,
             int displayId,
             int measureSpecWidth,
             int measureSpecHeight,
@@ -92,7 +94,7 @@ public final class InsightSurfaceClientInfo implements Parcelable {
             @NonNull String packageName,
             @NonNull Configuration configuration,
             @NonNull IInsightSurfaceClient client) {
-        mId = UUID.randomUUID();
+        mId = id;
         mDisplayId = displayId;
         mMeasureSpecWidth = measureSpecWidth;
         mMeasureSpecHeight = measureSpecHeight;
@@ -363,6 +365,7 @@ public final class InsightSurfaceClientInfo implements Parcelable {
      */
     InsightSurfaceClientInfo createInfoFromUpdate(InsightSurfaceClientUpdate update) {
         return new InsightSurfaceClientInfo(
+                mId,
                 mDisplayId,
                 update.hasUpdate(InsightSurfaceClientUpdate.KEY_MEASURE_SPEC_WIDTH)
                         ? update.getMeasureSpecWidth() : mMeasureSpecWidth,
