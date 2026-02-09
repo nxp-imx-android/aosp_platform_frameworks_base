@@ -150,7 +150,8 @@ public final class TransitionRequestInfo implements Parcelable {
     public RemoteTransition getRemoteTransition() {
         if (mRemoteTransitionInfo == null) return null;
         return new RemoteTransition(mRemoteTransitionInfo.getRemoteTransition(),
-                mRemoteTransitionInfo.getDebugName());
+                null /* appThread */, mRemoteTransitionInfo.getDebugName(),
+                mRemoteTransitionInfo.getFilter());
     }
 
     /** Set RemoteTransition info from a RemoteTransition object */
@@ -868,10 +869,13 @@ public final class TransitionRequestInfo implements Parcelable {
         private final IRemoteTransition mRemoteTransition;
         @Nullable
         private final String mDebugName;
+        @Nullable
+        private final TransitionFilter mFilter;
 
         public RemoteTransitionInfo(RemoteTransition remoteTransition) {
             mRemoteTransition = remoteTransition.getRemoteTransition();
             mDebugName = remoteTransition.getDebugName();
+            mFilter = remoteTransition.getFilter();
         }
 
 
@@ -899,6 +903,11 @@ public final class TransitionRequestInfo implements Parcelable {
             return mDebugName;
         }
 
+        @DataClass.Generated.Member
+        public @Nullable TransitionFilter getFilter() {
+            return mFilter;
+        }
+
         @Override
         @DataClass.Generated.Member
         public String toString() {
@@ -907,7 +916,8 @@ public final class TransitionRequestInfo implements Parcelable {
 
             return "RemoteTransitionInfo { " +
                     "remoteTransition = " + mRemoteTransition + ", " +
-                    "debugName = " + mDebugName +
+                    "debugName = " + mDebugName + ", " +
+                    "filter = " + mFilter +
             " }";
         }
 
@@ -919,9 +929,11 @@ public final class TransitionRequestInfo implements Parcelable {
 
             byte flg = 0;
             if (mDebugName != null) flg |= 0x2;
+            if (mFilter != null) flg |= 0x4;
             dest.writeByte(flg);
             dest.writeStrongInterface(mRemoteTransition);
             if (mDebugName != null) dest.writeString(mDebugName);
+            if (mFilter != null) dest.writeTypedObject(mFilter, flags);
         }
 
         @Override
@@ -938,11 +950,13 @@ public final class TransitionRequestInfo implements Parcelable {
             byte flg = in.readByte();
             IRemoteTransition remoteTransition = IRemoteTransition.Stub.asInterface(in.readStrongBinder());
             String debugName = (flg & 0x2) == 0 ? null : in.readString();
+            TransitionFilter filter = (flg & 0x4) == 0 ? null : (TransitionFilter) in.readTypedObject(TransitionFilter.CREATOR);
 
             this.mRemoteTransition = remoteTransition;
             com.android.internal.util.AnnotationValidations.validate(
                     android.annotation.NonNull.class, null, mRemoteTransition);
             this.mDebugName = debugName;
+            this.mFilter = filter;
 
             // onConstructed(); // You can define this method to get a callback
         }
@@ -962,10 +976,10 @@ public final class TransitionRequestInfo implements Parcelable {
         };
 
         @DataClass.Generated(
-                time = 1769081030256L,
+                time = 1770633455533L,
                 codegenVersion = "1.0.23",
                 sourceFile = "frameworks/base/core/java/android/window/TransitionRequestInfo.java",
-                inputSignatures = "private final @android.annotation.NonNull android.window.IRemoteTransition mRemoteTransition\nprivate final @android.annotation.Nullable java.lang.String mDebugName\nclass RemoteTransitionInfo extends java.lang.Object implements [android.os.Parcelable]\n@com.android.internal.util.DataClass(genToString=true, genConstructor=false)")
+                inputSignatures = "private final @android.annotation.NonNull android.window.IRemoteTransition mRemoteTransition\nprivate final @android.annotation.Nullable java.lang.String mDebugName\nprivate final @android.annotation.Nullable android.window.TransitionFilter mFilter\nclass RemoteTransitionInfo extends java.lang.Object implements [android.os.Parcelable]\n@com.android.internal.util.DataClass(genToString=true, genConstructor=false)")
         @Deprecated
         private void __metadata() {}
 
