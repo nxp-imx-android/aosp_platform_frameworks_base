@@ -948,7 +948,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
     /** Get the top non-alwaysOnTop leaf task on the display `dc`. */
     private static void addOnTopTasks(DisplayContent dc, ArrayList<Task> out) {
         final Task topNotAlwaysOnTop = dc.getRootTask(
-                t -> !t.getWindowConfiguration().isAlwaysOnTop());
+                t -> !t.getWindowConfiguration().isAlwaysOnTop() && t.isVisibleRequested());
         if (topNotAlwaysOnTop == null) return;
         out.add(topNotAlwaysOnTop);
         addOnTopTasks(topNotAlwaysOnTop, out);
