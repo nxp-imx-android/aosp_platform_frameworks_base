@@ -58,6 +58,12 @@ class ScrollViewFields {
     @JvmField var interactive = true
 
     /**
+     * Whether or not to use extra horizontal side-paddings to align to the QS tiles showing above
+     * the NSSL.
+     */
+    @JvmField var useLargeSidePaddings = false
+
+    /**
      * When internal NSSL expansion requires the stack to be scrolled (e.g. to keep an expanding
      * notification in view), that scroll amount can be sent here and it will be handled by the
      * placeholder.
@@ -110,12 +116,13 @@ class ScrollViewFields {
     }
 
     fun dump(pw: IndentingPrintWriter) {
-        pw.printSection("StackViewStates") {
+        pw.printSection("ScrollViewFields") {
             pw.println("scrimClippingShape", clippingShape)
             pw.println("negativeClippingShape", negativeClippingShape)
             pw.println("scrollState", scrollState)
             pw.println("intrinsicStackHeight", intrinsicStackHeight)
             pw.println("interactive", interactive)
+            pw.println("useLargeSidePaddings", useLargeSidePaddings)
         }
     }
 }

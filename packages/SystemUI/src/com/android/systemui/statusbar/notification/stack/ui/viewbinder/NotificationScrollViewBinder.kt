@@ -134,6 +134,9 @@ constructor(
             launch {
                 viewModel.suppressHeightUpdates.collectTraced { view.suppressHeightUpdates(it) }
             }
+            launch {
+                viewModel.useLargeSidePaddings.collectTraced { view.setUseLargeSidePaddings(it) }
+            }
 
             launchAndDispose {
                 buildDisposableHandle {

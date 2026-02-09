@@ -990,6 +990,9 @@ public class NotificationStackScrollLayout
 
     void updateSidePadding(int viewWidth) {
         final int orientation = getResources().getConfiguration().orientation;
+        final boolean useLargeSidePaddings = SceneContainerFlag.isEnabled()
+                ? mScrollViewFields.useLargeSidePaddings
+                : !mShouldUseSplitNotificationShade;
 
         mLastUpdateSidePaddingDumpString = "viewWidth=" + viewWidth
                 + " orientation=" + orientation
@@ -1001,7 +1004,7 @@ public class NotificationStackScrollLayout
             return;
         }
 
-        if (orientation == Configuration.ORIENTATION_PORTRAIT || mShouldUseSplitNotificationShade) {
+        if (orientation == Configuration.ORIENTATION_PORTRAIT || !useLargeSidePaddings) {
             return;
         }
 
@@ -3464,6 +3467,12 @@ public class NotificationStackScrollLayout
                     /* viewGroup = */ this,
                     /* reason = */ "setAnimationsEnabled");
         }
+    }
+
+    @Override
+    public void setUseLargeSidePaddings(boolean useLargeSidePaddings) {
+        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
+        mScrollViewFields.useLargeSidePaddings = useLargeSidePaddings;
     }
 
     private void updateNotificationAnimationStates() {

@@ -279,6 +279,15 @@ constructor(
         }
 
     /**
+     * Whether to align the horizontal side-padding of notifications to the QS tiles showing above.
+     */
+    val useLargeSidePaddings: Flow<Boolean> =
+        shadeModeInteractor.shadeMode
+            .map { shadeMode -> shadeMode is ShadeMode.Single }
+            .distinctUntilChanged()
+            .dumpWhileCollecting("useLargeSidePaddings")
+
+    /**
      * Scale of the blur effect that should be applied to Notifications.
      *
      * 0 -> don't blur (default, removes all blur render effects) 1 -> do the full blur (apply a
