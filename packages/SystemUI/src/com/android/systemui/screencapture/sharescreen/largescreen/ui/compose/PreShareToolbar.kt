@@ -174,7 +174,7 @@ fun PreShareToolbar(
                 onClick = { shareScreenViewModel.onShareClicked() },
                 enabled = shareButtonEnabled,
                 modifier = Modifier.testTag("ShareButton"),
-                stateDescription = shareButtonA11yDescription,
+                contentDescription = shareButtonA11yDescription,
             )
         }
     }
