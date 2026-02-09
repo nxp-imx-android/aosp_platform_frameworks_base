@@ -1,6 +1,8 @@
 {
   "postsubmit": [
     {
+      "name": "PolicyMetadataGeneratorHostTests"
+    }, {
       "name": "DevicePolicyAnnotationProcessorTests"
     }, {
       "name": "FrameworksServicesTests_devicepolicy"
@@ -8,6 +10,8 @@
   ],
   "presubmit": [
     {
+      "name": "PolicyMetadataGeneratorHostTests"
+    }, {
       "name": "DevicePolicyAnnotationProcessorTests"
     }, {
       "name": "FrameworksServicesTests_devicepolicy"

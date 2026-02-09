@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package android.processor.devicepolicy
+package android.tools.policymetadata
 
 import android.processor.devicepolicy.protos.PolicyMetadata
 import android.processor.devicepolicy.protos.PolicyMetadataList
@@ -52,7 +52,7 @@ private const val METADATA_PACKAGE = "android.app.admin.metadata"
  * }
  * </pre>
  */
-object PolicyMetadataCodeGenerator {
+object Generator {
     /**
      * Add the copyright header to keep the linter happy. We have a golden copy of the generated
      * file checked in.
