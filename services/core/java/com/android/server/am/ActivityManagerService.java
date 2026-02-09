@@ -5483,7 +5483,6 @@ public class ActivityManagerService extends IActivityManager.Stub
             }
 
             final HostingRecord hostingRecord = app.getHostingRecord();
-            final String shortAction = getShortAction(hostingRecord.getAction());
             FrameworkStatsLog.write(
                     FrameworkStatsLog.PROCESS_START_TIME,
                     app.info.uid,
@@ -5495,7 +5494,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                     (int) (SystemClock.uptimeMillis() - app.getStartUptime()),
                     hostingRecord.getType(),
                     hostingRecord.getName(),
-                    shortAction,
+                    hostingRecord.getAction(),
                     HostingRecord.getHostingTypeIdStatsd(hostingRecord.getType()),
                     HostingRecord.getTriggerTypeForStatsd(hostingRecord.getTriggerType()));
         }
