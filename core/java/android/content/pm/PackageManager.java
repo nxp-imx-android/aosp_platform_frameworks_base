@@ -1410,7 +1410,8 @@ public abstract class PackageManager {
     public static final int MATCH_APEX = 0x40000000;
 
     /**
-     * @deprecated Use {@link #GET_ATTRIBUTIONS_LONG} to avoid unintended sign extension.
+     * @deprecated Use {@link #GET_ATTRIBUTIONS_LONG} to avoid unintended sign extension. Operations
+     * with this flag may cause unintended results and potential {@link RuntimeException}.
      */
     @Deprecated
     public static final int GET_ATTRIBUTIONS = 0x80000000;
@@ -1456,9 +1457,12 @@ public abstract class PackageManager {
     /**
      * {@link ApplicationInfo}, {@link ComponentInfo}, and {@link ResolveInfo} flag: return the
      * {@link ApplicationInfo#isAppLockSupported} and {@link ApplicationInfo#isAppLockEnabled}
-     * associated with an application. The caller should have the
-     * {@link Manifest.permission#LOCK_APPS} permission, or a {@link SecurityException} will be
-     * thrown.
+     * associated with an application.
+     *
+     * <p>The caller should have the {@link Manifest.permission#LOCK_APPS} permission, or a
+     * {@link SecurityException} will be thrown. This flag cannot be used with
+     * {@link GET_ATTRIBUTIONS}, if the caller wishes to retrieve attributions, they must use
+     * {@link GET_ATTRIBUTIONS_LONG}.
      */
     @FlaggedApi(android.security.Flags.FLAG_APP_LOCK_APIS)
     public static final long GET_APP_LOCK_INFO = 1L << 35;

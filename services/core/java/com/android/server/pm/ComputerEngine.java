@@ -2784,9 +2784,30 @@ public class ComputerEngine implements Computer {
         }
         if (android.security.Flags.appLockApis()
                 && (flags & (PackageManager.GET_APP_LOCK_INFO)) != 0) {
-            if (!hasPermission(Manifest.permission.LOCK_APPS, Binder.getCallingUid())) {
-                throw new SecurityException(
-                        "Caller must hold the LOCK_APPS permission to use GET_APP_LOCK_INFO");
+            // If the caller specifies the GET_ATTRIBUTIONS int flag, when the flag gets converted
+            // to a long, it will result in unintended sign extension, causing the first 32 bits of
+            // the long to be set to 1. This means that the bit representing the GET_APP_LOCK_INFO
+            // flag will be set to 1, even if the caller did not specify the flag. If sign extension
+            // can be reasonably assumed to have happened, remove the GET_APP_LOCK_INFO flag since
+            // it was unintentionally added, and requires the LOCK_APPS permission to use. If a
+            // caller wants to both retrieve attributions and app lock info, they should use the
+            // long flag GET_ATTRIBUTIONS_LONG instead of GET_ATTRIBUTIONS, combined with whatever
+            // other flags the caller wants.
+            final boolean isGetAttributionsBitSet =
+                    (flags & PackageManager.GET_ATTRIBUTIONS_LONG) != 0;
+            // Check if the upper 32 bits are all 1s
+            final boolean upperBitsAllOnes = ((flags >>> 32) == 0xFFFFFFFFL);
+            // Heuristic to detect sign extension from the int version of GET_ATTRIBUTIONS
+            final boolean likelySignExtended = isGetAttributionsBitSet && upperBitsAllOnes;
+            if (likelySignExtended) {
+                flags &= ~PackageManager.GET_APP_LOCK_INFO;
+                Slog.w(TAG,
+                        "updateFlags: Removing GET_APP_LOCK_INFO due to likely sign extension of "
+                                + "the deprecated GET_ATTRIBUTIONS flag. Please use "
+                                + "GET_ATTRIBUTIONS_LONG");
+            } else if (!hasPermission(Manifest.permission.LOCK_APPS, Binder.getCallingUid())) {
+                throw new SecurityException("Caller must hold the LOCK_APPS permission to use "
+                        + "GET_APP_LOCK_INFO");
             }
         }
         return flags;
