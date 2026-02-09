@@ -33,7 +33,8 @@ import static org.mockito.Mockito.when;
 import android.app.IActivityManager;
 import android.app.UidObserver;
 import android.os.RemoteException;
-import android.os.binder.BinderSpamStats;
+import android.os.binder.BinderCallsStats;
+import android.os.binder.SingleSecondBinderStats;
 import android.os.profiling.anomaly.flags.Flags;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
@@ -64,6 +65,16 @@ import org.mockito.junit.MockitoRule;
 @RequiresFlagsEnabled(Flags.FLAG_ANOMALY_DETECTOR_CORE)
 public final class SignalCollectorServiceTest {
 
+    public static final String TEST_INTERFACE_1 = "com.example.IFoo";
+    public static final int TEST_UID_1 = 1000;
+    public static final String TEST_METHOD_1 = "bar";
+    public static final int TEST_CALL_COUNT_1 = 10;
+    public static final int TEST_DURATION_COUNT_1 = 1;
+    public static final int TEST_DURATION_SUM = 100;
+    public static final int TEST_UID_2 = 1001;
+    public static final String TEST_INTERFACE_2 = "com.example.IBar";
+    public static final String TEST_METHOD_2 = "foo";
+    public static final int TEST_CALL_COUNT_2 = 20;
     @Rule
     public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
     @Rule
@@ -123,18 +134,45 @@ public final class SignalCollectorServiceTest {
     }
 
     @Test
-    public void reportBinderStatsToCollector_shouldReportWithCorrectData() {
+    public void reportBinderStatsToCollector_callStats() {
         mSignalCollectorService.onStart();
 
-        BinderSpamStats[] statsArray = new BinderSpamStats[1];
-        statsArray[0] = new BinderSpamStats();
-        statsArray[0].interfaceDescriptor = "TestInterface";
-        statsArray[0].aidlMethod = "TestMethod";
-        statsArray[0].clientUid = 1000;
-        statsArray[0].secondsWithAtLeast125Calls = 3;
+        BinderCallsStats[] stats = new BinderCallsStats[2];
+        stats[0] = new BinderCallsStats();
+        stats[0].clientUid = TEST_UID_1;
+        stats[0].interfaceDescriptor = TEST_INTERFACE_1;
+        stats[0].aidlMethod = TEST_METHOD_1;
+        stats[0].callCount = TEST_CALL_COUNT_1;
 
-        mSignalCollectorService.reportBinderStatsToCollector(statsArray);
-        verify(mBinderSpamSignalCollector).onBinderSpamDataReported(statsArray);
+        stats[1] = new BinderCallsStats();
+        stats[1].clientUid = TEST_UID_2;
+        stats[1].interfaceDescriptor = TEST_INTERFACE_2;
+        stats[1].aidlMethod = TEST_METHOD_2;
+        stats[1].callCount = TEST_CALL_COUNT_2;
+
+        LocalServices.getService(SignalCollectorManagerInternal.class).reportBinderStats(stats);
+        verify(mBinderSpamSignalCollector).onBinderStatsReported(stats);
+    }
+
+    @Test
+    public void reportBinderStatsToCollector_singleSecondStats() {
+        mSignalCollectorService.onStart();
+
+        SingleSecondBinderStats[] stats = new SingleSecondBinderStats[2];
+        stats[0] = new SingleSecondBinderStats();
+        stats[0].clientUid = TEST_UID_1;
+        stats[0].interfaceDescriptor = TEST_INTERFACE_1;
+        stats[0].aidlMethod = TEST_METHOD_1;
+        stats[0].callCount = TEST_CALL_COUNT_1;
+
+        stats[1] = new SingleSecondBinderStats();
+        stats[1].clientUid = TEST_UID_2;
+        stats[1].interfaceDescriptor = TEST_INTERFACE_2;
+        stats[1].aidlMethod = TEST_METHOD_2;
+        stats[1].callCount = TEST_CALL_COUNT_2;
+
+        LocalServices.getService(SignalCollectorManagerInternal.class).reportBinderStats(stats);
+        verify(mBinderSpamSignalCollector).onBinderStatsReported(stats);
     }
 
     @Test
