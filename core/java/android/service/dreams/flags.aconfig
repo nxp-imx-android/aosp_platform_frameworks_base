@@ -93,6 +93,16 @@ flag {
 }
 
 flag {
+    name: "dreams_query_application_info"
+    namespace: "systemui"
+    description: "Query updated application info when starting a dream"
+    bug: "468501120"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "nap_when_dream_enabled"
     namespace: "systemui"
     description: "Allows napping only when dream settings is enabled"
