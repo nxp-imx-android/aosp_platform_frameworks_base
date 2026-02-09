@@ -35,6 +35,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.getAndUpdate
 
 /** Fake implementation of [KeyguardRepository] */
 @SysUISingleton
@@ -180,8 +181,8 @@ class FakeKeyguardRepository @Inject constructor() : KeyguardRepository {
         _dozeTimeTick.value = _dozeTimeTick.value + 1
     }
 
-    override fun setDismissAction(dismissAction: DismissAction) {
-        _dismissAction.value = dismissAction
+    override fun setDismissAction(dismissAction: DismissAction): DismissAction {
+        return _dismissAction.getAndUpdate { dismissAction }
     }
 
     override suspend fun setKeyguardDone(timing: KeyguardDone) {
