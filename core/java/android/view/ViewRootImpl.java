@@ -3015,7 +3015,7 @@ public final class ViewRootImpl implements ViewParent,
         if (mAttachInfo.mThreadedRenderer != null) {
             mAttachInfo.mThreadedRenderer.updateRenderTargetSize(mSurfaceSize.x, mSurfaceSize.y);
         }
-        // TODO(b/483110996): Avoid calling this when using IPC rendering.
+
         updateBlastSurfaceIfNeeded();
 
         mRenderTargetIsValid = true;

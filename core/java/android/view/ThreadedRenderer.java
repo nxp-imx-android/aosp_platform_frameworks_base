@@ -362,7 +362,7 @@ public final class ThreadedRenderer extends HardwareRenderer {
     @Override
     public void destroy() {
         mInitialized = false;
-        updateEnabledState(null);
+        setEnabled(false);
         super.destroy();
     }
 
@@ -402,14 +402,6 @@ public final class ThreadedRenderer extends HardwareRenderer {
         mRequested = requested;
     }
 
-    private void updateEnabledState(Surface surface) {
-        if (surface == null || !surface.isValid()) {
-            setEnabled(false);
-        } else {
-            setEnabled(mInitialized);
-        }
-    }
-
     /**
      * Initializes the threaded renderer for the specified surface.
      *
@@ -420,7 +412,7 @@ public final class ThreadedRenderer extends HardwareRenderer {
     boolean initialize(Surface surface) throws OutOfResourcesException {
         boolean status = !mInitialized;
         mInitialized = true;
-        updateEnabledState(surface);
+        setEnabled(true);
         setSurface(surface);
         return status;
     }
@@ -461,7 +453,7 @@ public final class ThreadedRenderer extends HardwareRenderer {
      * @param surface The surface to render
      */
     void updateSurface(Surface surface) throws OutOfResourcesException {
-        updateEnabledState(surface);
+        setEnabled(mInitialized);
         setSurface(surface);
     }
 
