@@ -893,6 +893,8 @@ public final class ViewRootImpl implements ViewParent,
     // Surface can never be reassigned or cleared (use Surface.clear()).
     @UnsupportedAppUsage
     public final Surface mSurface = new Surface();
+
+    private boolean mRenderTargetIsValid = false;
     /**
      * The SurfaceControl for this window.
      * <p>Note: This instance is final to ensure that internal accesses of
@@ -2917,7 +2919,7 @@ public final class ViewRootImpl implements ViewParent,
                     renderer.destroyHardwareResources(mView);
                 }
 
-                if (mSurface.isValid()) {
+                if (mRenderTargetIsValid) {
                     if (mSurfaceHolder != null) {
                         notifyHolderSurfaceDestroyed();
                     }
@@ -3005,7 +3007,7 @@ public final class ViewRootImpl implements ViewParent,
        return mBoundsLayer;
     }
 
-    void updateBlastSurfaceIfNeeded() {
+    void updateRenderTargetIfNeeded() {
         if (!mSurfaceControl.isValid()) {
             return;
         }
@@ -3013,7 +3015,13 @@ public final class ViewRootImpl implements ViewParent,
         if (mAttachInfo.mThreadedRenderer != null) {
             mAttachInfo.mThreadedRenderer.updateRenderTargetSize(mSurfaceSize.x, mSurfaceSize.y);
         }
+        // TODO(b/483110996): Avoid calling this when using IPC rendering.
+        updateBlastSurfaceIfNeeded();
 
+        mRenderTargetIsValid = true;
+    }
+
+    void updateBlastSurfaceIfNeeded() {
         if (mBlastBufferQueue != null && mBlastBufferQueue.isSameSurfaceControl(mSurfaceControl)) {
             mBlastBufferQueue.update(mSurfaceControl,
                 mSurfaceSize.x, mSurfaceSize.y,
@@ -3100,6 +3108,7 @@ public final class ViewRootImpl implements ViewParent,
             mBoundsLayer.release();
             mBoundsLayer = null;
         }
+        mRenderTargetIsValid = false;
         mSurface.release();
         mSurfaceControl.release();
 
@@ -4077,7 +4086,7 @@ public final class ViewRootImpl implements ViewParent,
 
             boolean hwInitialized = false;
             boolean dispatchApplyInsets = false;
-            boolean hadSurface = mSurface.isValid();
+            boolean hadSurface = mRenderTargetIsValid;
 
             try {
                 if (DEBUG_LAYOUT) {
@@ -4198,15 +4207,15 @@ public final class ViewRootImpl implements ViewParent,
                     mLastSurfaceSize.set(mSurfaceSize.x, mSurfaceSize.y);
                 }
                 updateColorModeIfNeeded(lp.getColorMode(), lp.getDesiredHdrHeadroom());
-                surfaceCreated = !hadSurface && mSurface.isValid();
-                surfaceDestroyed = hadSurface && !mSurface.isValid();
+                surfaceCreated = !hadSurface && mRenderTargetIsValid;
+                surfaceDestroyed = hadSurface && !mRenderTargetIsValid;
 
                 // When using Blast, the surface generation id may not change when there's a new
                 // SurfaceControl. In that case, we also check relayout flag
                 // RELAYOUT_RES_SURFACE_CHANGED since it should indicate that WMS created a new
                 // SurfaceControl.
                 surfaceReplaced = (surfaceGenerationId != mSurface.getGenerationId()
-                        || surfaceControlChanged) && mSurface.isValid();
+                        || surfaceControlChanged) && mRenderTargetIsValid;
                 if (surfaceReplaced) {
                     mSurfaceReplaced = true;
                     mSurfaceSequenceId++;
@@ -4267,7 +4276,7 @@ public final class ViewRootImpl implements ViewParent,
                 } else if ((surfaceReplaced || surfaceSizeChanged || updateSurfaceNeeded)
                         && mSurfaceHolder == null
                         && mAttachInfo.mThreadedRenderer != null
-                        && mSurface.isValid()) {
+                        && mRenderTargetIsValid) {
                     mFullRedrawNeeded = true;
                     try {
                         // Need to do updateSurface (which leads to CanvasContext::setSurface and
@@ -4325,7 +4334,7 @@ public final class ViewRootImpl implements ViewParent,
 
             if (mSurfaceHolder != null) {
                 // The app owns the surface; tell it about what is going on.
-                if (mSurface.isValid()) {
+                if (mRenderTargetIsValid) {
                     // XXX .copyFrom() doesn't work!
                     //mSurfaceHolder.mSurface.copyFrom(mSurface);
                     mSurfaceHolder.mSurface = mSurface;
@@ -4345,7 +4354,7 @@ public final class ViewRootImpl implements ViewParent,
                 }
 
                 if ((surfaceCreated || surfaceReplaced || surfaceSizeChanged
-                        || windowAttributesChanged) && mSurface.isValid()) {
+                        || windowAttributesChanged) && mRenderTargetIsValid) {
                     SurfaceHolder.Callback[] callbacks = mSurfaceHolder.getCallbacks();
                     if (callbacks != null) {
                         for (SurfaceHolder.Callback c : callbacks) {
@@ -5159,7 +5168,7 @@ public final class ViewRootImpl implements ViewParent,
 
     private void dispatchFocusEvent(boolean hasWindowFocus, boolean fakeFocus) {
         profileRendering(hasWindowFocus);
-        if (hasWindowFocus && mAttachInfo.mThreadedRenderer != null && mSurface.isValid()) {
+        if (hasWindowFocus && mAttachInfo.mThreadedRenderer != null && mRenderTargetIsValid) {
             mFullRedrawNeeded = true;
             try {
                 final Rect surfaceInsets = mWindowAttributes.surfaceInsets;
@@ -5855,7 +5864,7 @@ public final class ViewRootImpl implements ViewParent,
                 Log.v(mTag, "FINISHED DRAWING: " + mWindowAttributes.getTitle());
             }
 
-            if (mSurfaceHolder != null && mSurface.isValid()) {
+            if (mSurfaceHolder != null && mRenderTargetIsValid) {
                 usingAsyncReport = true;
                 SurfaceCallbackHelper sch = new SurfaceCallbackHelper(() -> {
                     handleSyncRequestWhenNoAsyncDraw(surfaceSyncGroup, pendingTransaction != null,
@@ -6176,7 +6185,7 @@ public final class ViewRootImpl implements ViewParent,
                 if (mAttachInfo.mThreadedRenderer != null &&
                         !mAttachInfo.mThreadedRenderer.isEnabled() &&
                         mAttachInfo.mThreadedRenderer.isRequested() &&
-                        mSurface.isValid()) {
+                        mRenderTargetIsValid) {
 
                     try {
                         mAttachInfo.mThreadedRenderer.initializeIfNeeded(
@@ -10191,7 +10200,7 @@ public final class ViewRootImpl implements ViewParent,
         }
 
         if (mSurfaceControl.isValid()) {
-            updateBlastSurfaceIfNeeded();
+            updateRenderTargetIfNeeded();
             if (mAttachInfo.mThreadedRenderer != null) {
                 mAttachInfo.mThreadedRenderer.setSurfaceControl(mSurfaceControl, mBlastBufferQueue);
             }
@@ -14107,14 +14116,14 @@ public final class ViewRootImpl implements ViewParent,
     private boolean shouldSetFrameRateCategory() {
         // We only want to call setFrameRateCategory when it supports ARR.
         if (sToolkitDisableCategoryOnMrrFlagValue) {
-            return shouldEnableDvrr() && mSurface.isValid() && mDisplay.hasArrSupport();
+            return shouldEnableDvrr() && mRenderTargetIsValid && mDisplay.hasArrSupport();
         }
-        return shouldEnableDvrr() && mSurface.isValid();
+        return shouldEnableDvrr() && mRenderTargetIsValid;
     }
 
     private boolean shouldSetFrameRate() {
         // use toolkitSetFrameRate flag to gate the change
-        return shouldEnableDvrr() && mSurface.isValid() && mPreferredFrameRate >= 0
+        return shouldEnableDvrr() && mRenderTargetIsValid && mPreferredFrameRate >= 0
                 && !mIsFrameRateConflicted;
     }
 
