@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Copyright (C) 2026 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:drawable="@drawable/vd_cell">
+    <!-- TODO(b/479241590): The size of vd_cell is based off an existing mobile data off icon
+         with slash, but results in the icon being too visually small when the slash is gone.
+         Workaround this for now by manually increasing the size of the on icon. -->
+    <target android:name="root_group">
+        <aapt:attr name="android:animation">
+            <set>
+                <objectAnimator
+                    android:duration="0"
+                    android:propertyName="translateX"
+                    android:valueFrom="-20"
+                    android:valueTo="-21.5" />
+                <objectAnimator
+                    android:duration="0"
+                    android:propertyName="scaleX"
+                    android:valueFrom="0.8169"
+                    android:valueTo="1.1" />
+                <objectAnimator
+                    android:duration="0"
+                    android:propertyName="scaleY"
+                    android:valueFrom="0.8169"
+                    android:valueTo="1.1" />
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="top_arrow_resize">
+        <aapt:attr name="android:animation">
+            <set>
+                <objectAnimator
+                    android:duration="60"
+                    android:interpolator="@anim/overshoot"
+                    android:propertyName="translateY"
+                    android:startOffset="0"
+                    android:valueFrom="16.3"
+                    android:valueTo="16.3" />
+                <objectAnimator
+                    android:duration="300"
+                    android:interpolator="@anim/overshoot"
+                    android:propertyName="translateY"
+                    android:startOffset="60"
+                    android:valueFrom="16.3"
+                    android:valueTo="17.3" />
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="bottom_arrow_resize">
+        <aapt:attr name="android:animation">
+            <set>
+                <objectAnimator
+                    android:duration="60"
+                    android:interpolator="@anim/overshoot"
+                    android:propertyName="translateY"
+                    android:startOffset="0"
+                    android:valueFrom="18.3"
+                    android:valueTo="18.3" />
+                <objectAnimator
+                    android:duration="300"
+                    android:interpolator="@anim/overshoot"
+                    android:propertyName="translateY"
+                    android:startOffset="60"
+                    android:valueFrom="18.3"
+                    android:valueTo="17.3" />
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="arrow2">
+        <aapt:attr name="android:animation">
+            <set>
+                <objectAnimator
+                    android:duration="60"
+                    android:interpolator="@anim/overshoot"
+                    android:propertyName="pathData"
+                    android:startOffset="0"
+                    android:valueFrom="M10.1651 8.51C10.4451 8.51 10.6851 8.61 10.8751 8.81C11.0651 9.01 11.1651 9.25 11.1651 9.54L11.1651 16.97L12.0651 16.07C12.2451 15.89 12.4851 15.79 12.7651 15.79C13.0451 15.79 13.2851 15.88 13.4651 16.07C13.6451 16.26 13.7451 16.49 13.7451 16.77C13.7451 17.05 13.6551 17.29 13.4651 17.47L10.8651 20.06C10.7651 20.16 10.6551 20.23 10.5351 20.27C10.4151 20.31 10.2951 20.33 10.1551 20.33C10.0151 20.33 9.89512 20.31 9.77512 20.27C9.65512 20.23 9.54512 20.16 9.44512 20.06L6.84512 17.46C6.66512 17.28 6.56512 17.04 6.56512 16.76C6.56512 16.48 6.65512 16.24 6.84512 16.06C7.03512 15.88 7.26512 15.78 7.54512 15.78C7.82512 15.78 8.06512 15.87 8.24512 16.06L9.14512 16.96L9.14512 9.51C9.14512 9.21 9.24512 8.97 9.44512 8.78C9.64512 8.59 9.87512 8.5 10.1451 8.5L10.1651 9.51Z"
+                    android:valueTo="M10.1651 8.51C10.4451 8.51 10.6851 8.61 10.8751 8.81C11.0651 9.01 11.1651 9.25 11.1651 9.54L11.1651 16.97L12.0651 16.07C12.2451 15.89 12.4851 15.79 12.7651 15.79C13.0451 15.79 13.2851 15.88 13.4651 16.07C13.6451 16.26 13.7451 16.49 13.7451 16.77C13.7451 17.05 13.6551 17.29 13.4651 17.47L10.8651 20.06C10.7651 20.16 10.6551 20.23 10.5351 20.27C10.4151 20.31 10.2951 20.33 10.1551 20.33C10.0151 20.33 9.89512 20.31 9.77512 20.27C9.65512 20.23 9.54512 20.16 9.44512 20.06L6.84512 17.46C6.66512 17.28 6.56512 17.04 6.56512 16.76C6.56512 16.48 6.65512 16.24 6.84512 16.06C7.03512 15.88 7.26512 15.78 7.54512 15.78C7.82512 15.78 8.06512 15.87 8.24512 16.06L9.14512 16.96L9.14512 9.51C9.14512 9.21 9.24512 8.97 9.44512 8.78C9.64512 8.59 9.87512 8.5 10.1451 8.5L10.1651 9.51Z"
+                    android:valueType="pathType" />
+                <objectAnimator
+                    android:duration="300"
+                    android:interpolator="@anim/overshoot"
+                    android:propertyName="pathData"
+                    android:startOffset="60"
+                    android:valueFrom="M10.1651 8.51C10.4451 8.51 10.6851 8.61 10.8751 8.81C11.0651 9.01 11.1651 9.25 11.1651 9.54L11.1651 16.97L12.0651 16.07C12.2451 15.89 12.4851 15.79 12.7651 15.79C13.0451 15.79 13.2851 15.88 13.4651 16.07C13.6451 16.26 13.7451 16.49 13.7451 16.77C13.7451 17.05 13.6551 17.29 13.4651 17.47L10.8651 20.06C10.7651 20.16 10.6551 20.23 10.5351 20.27C10.4151 20.31 10.2951 20.33 10.1551 20.33C10.0151 20.33 9.89512 20.31 9.77512 20.27C9.65512 20.23 9.54512 20.16 9.44512 20.06L6.84512 17.46C6.66512 17.28 6.56512 17.04 6.56512 16.76C6.56512 16.48 6.65512 16.24 6.84512 16.06C7.03512 15.88 7.26512 15.78 7.54512 15.78C7.82512 15.78 8.06512 15.87 8.24512 16.06L9.14512 16.96L9.14512 9.51C9.14512 9.21 9.24512 8.97 9.44512 8.78C9.64512 8.59 9.87512 8.5 10.1451 8.5L10.1651 9.51Z"
+                    android:valueTo="M10.1651 12.01C10.4451 12.01 10.6851 12.11 10.8751 12.31C11.0651 12.51 11.1651 12.75 11.1651 13.04L11.1651 16.97L12.0651 16.07C12.2451 15.89 12.4851 15.79 12.7651 15.79C13.0451 15.79 13.2851 15.88 13.4651 16.07C13.6451 16.26 13.7451 16.49 13.7451 16.77C13.7451 17.05 13.6551 17.29 13.4651 17.47L10.8651 20.06C10.7651 20.16 10.6551 20.23 10.5351 20.27C10.4151 20.31 10.2951 20.33 10.1551 20.33C10.0151 20.33 9.89512 20.31 9.77512 20.27C9.65512 20.23 9.54512 20.16 9.44512 20.06L6.84512 17.46C6.66512 17.28 6.56512 17.04 6.56512 16.76C6.56512 16.48 6.65512 16.24 6.84512 16.06C7.03512 15.88 7.26512 15.78 7.54512 15.78C7.82512 15.78 8.06512 15.87 8.24512 16.06L9.14512 16.96L9.14512 13.01C9.14512 12.71 9.24512 12.47 9.44512 12.28C9.64512 12.09 9.87512 12 10.1451 12L10.1651 12.01Z"
+                    android:valueType="pathType" />
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="mask">
+        <!-- custom slash -->
+        <aapt:attr name="android:animation">
+            <set>
+                <objectAnimator
+                    android:duration="200"
+                    android:interpolator="@anim/ease"
+                    android:propertyName="pathData"
+                    android:startOffset="0"
+                    android:valueFrom="@string/path_bluetooth_diagonal_mask_off"
+                    android:valueTo="@string/path_bluetooth_diagonal_mask_on"
+                    android:valueType="pathType" />
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="slash_path">
+        <!-- custom slash -->
+        <aapt:attr name="android:animation">
+            <set android:ordering="together">
+                <objectAnimator
+                    android:duration="190"
+                    android:propertyName="strokeWidth"
+                    android:startOffset="0"
+                    android:valueFrom="2.45"
+                    android:valueTo="2.45" />
+                <objectAnimator
+                    android:duration="10"
+                    android:propertyName="strokeWidth"
+                    android:startOffset="190"
+                    android:valueFrom="2.45"
+                    android:valueTo="0" />
+                <objectAnimator
+                    android:duration="200"
+                    android:interpolator="@anim/ease"
+                    android:propertyName="pathData"
+                    android:startOffset="0"
+                    android:valueFrom="@string/path_bluetooth_slash_on"
+                    android:valueTo="@string/path_bluetooth_slash_off"
+                    android:valueType="pathType" />
+            </set>
+        </aapt:attr>
+    </target>
+</animated-vector>

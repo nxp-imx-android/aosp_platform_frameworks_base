@@ -20,15 +20,11 @@ import android.annotation.StringRes
 import android.content.Context
 import android.os.UserHandle
 import android.text.Html
-import com.android.settingslib.graph.SignalDrawable
-import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.ContentDescription.Companion.loadContentDescription
-import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.qs.flags.QsSplitInternetTile
 import com.android.systemui.qs.tiles.base.domain.interactor.QSTileDataInteractor
 import com.android.systemui.qs.tiles.base.domain.model.DataUpdateTrigger
-import com.android.systemui.qs.tiles.impl.cell.domain.model.MobileDataTileIcon
 import com.android.systemui.qs.tiles.impl.cell.domain.model.MobileDataTileModel
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.connectivity.ui.MobileContextProvider
@@ -44,7 +40,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.onStart
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MobileDataTileDataInteractor
@@ -53,11 +48,9 @@ constructor(
     @Application private val context: Context,
     private val userRepository: UserRepository,
     private val mobileIconsInteractor: MobileIconsInteractor,
-    mobileContextProvider: MobileContextProvider,
+    private val mobileContextProvider: MobileContextProvider,
     private val connectivityConstants: ConnectivityConstants,
 ) : QSTileDataInteractor<MobileDataTileModel> {
-    private val mobileDataLabel: String =
-        context.getString(R.string.quick_settings_cellular_detail_title)
 
     override fun tileData(
         user: UserHandle,
@@ -196,75 +189,16 @@ constructor(
     fun tileData(): Flow<MobileDataTileModel> =
         mobileIconsInteractor.activeDataIconInteractor.flatMapLatest {
             if (it == null) {
-                    flowOf(
-                        MobileDataTileModel(
-                            isSimActive = false,
-                            isEnabled = false,
-                            icon =
-                                MobileDataTileIcon.ResourceIcon(
-                                    Icon.Resource(
-                                        com.android.settingslib.R.drawable.ic_mobile_4_4_bar,
-                                        ContentDescription.Loaded(mobileDataLabel),
-                                    )
-                                ),
-                        )
-                    )
-                } else {
-                    combine(it.isDataEnabled, it.signalLevelIcon, mobileDescriptionFlow) {
-                        isDataEnabled,
-                        signalLevelIcon,
-                        description ->
-                        val icon =
-                            if (isDataEnabled) {
-                                when (signalLevelIcon) {
-                                    is SignalIconModel.CellularTypeIconModel -> {
-                                        val signalState =
-                                            SignalDrawable.getState(
-                                                signalLevelIcon.level,
-                                                signalLevelIcon.numberOfLevels,
-                                                signalLevelIcon.showExclamationMark,
-                                            )
-                                        MobileDataTileIcon.SignalIcon(signalState)
-                                    }
-
-                                    is SignalIconModel.Satellite -> {
-                                        MobileDataTileIcon.ResourceIcon(
-                                            Icon.Resource(
-                                                signalLevelIcon.icon.resId,
-                                                signalLevelIcon.icon.contentDescription,
-                                            )
-                                        )
-                                    }
-                                }
-                            } else {
-                                MobileDataTileIcon.ResourceIcon(
-                                    Icon.Resource(
-                                        R.drawable.ic_signal_mobile_data_off,
-                                        ContentDescription.Loaded(mobileDataLabel),
-                                    )
-                                )
-                            }
-                        MobileDataTileModel(
-                            isSimActive = true,
-                            isEnabled = isDataEnabled,
-                            icon = icon,
-                            secondaryLabel = description,
-                        )
-                    }
-                }
-                .onStart {
+                flowOf(MobileDataTileModel(isSimActive = false, isEnabled = false))
+            } else {
+                combine(it.isDataEnabled, mobileDescriptionFlow) { isDataEnabled, description ->
                     MobileDataTileModel(
-                        isSimActive = false,
-                        isEnabled = false,
-                        icon =
-                            MobileDataTileIcon.ResourceIcon(
-                                Icon.Resource(
-                                    R.drawable.ic_signal_mobile_data_off,
-                                    ContentDescription.Loaded(mobileDataLabel),
-                                )
-                            ),
+                        isSimActive = true,
+                        isEnabled = isDataEnabled,
+                        secondaryLabel = description,
                     )
                 }
+            }
         }
 
     override fun availability(user: UserHandle): Flow<Boolean> {
