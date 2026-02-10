@@ -70,10 +70,7 @@
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"ഓഫായിരിക്കുമ്പോഴും Find My Device ഉപയോഗിച്ച് നിങ്ങൾക്ക് ഈ ടാബ്‌ലെറ്റ് കണ്ടെത്താനാകും"</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"ഓഫാക്കിയിരിക്കുമ്പോൾ പോലും Find Hub ഉപയോഗിച്ച് നിങ്ങൾക്ക് ഈ ഫോൺ കണ്ടെത്താനാകും"</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"ഓഫാക്കിയിരിക്കുമ്പോൾ പോലും Find Hub ഉപയോഗിച്ച് നിങ്ങൾക്ക് ഈ ടാബ്‌ലെറ്റ് കണ്ടെത്താനാകും"</string>
-    <!-- no translation found for dream_setup_description (5167691612621831552) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (6296793330727926553) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (3098487756905462324) -->
-    <skip />
+    <string name="dream_setup_description" product="default" msgid="5167691612621831552">"നിങ്ങളുടെ ഫോൺ ചാർജ് ചെയ്യുമ്പോൾ ക്ലോക്ക്, ഫോട്ടോകൾ അല്ലെങ്കിൽ കാലാവസ്ഥ കാണിക്കുക"</string>
+    <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"നിങ്ങളുടെ ടാബ്‌ലെറ്റ് ചാർജ് ചെയ്യുമ്പോൾ ക്ലോക്ക്, ഫോട്ടോകൾ അല്ലെങ്കിൽ കാലാവസ്ഥ കാണിക്കുക"</string>
+    <string name="dream_setup_description" product="device" msgid="3098487756905462324">"നിങ്ങളുടെ ഉപകരണം ചാർജ് ചെയ്യുമ്പോൾ ക്ലോക്ക്, ഫോട്ടോകൾ അല്ലെങ്കിൽ കാലാവസ്ഥ കാണിക്കുക"</string>
 </resources>

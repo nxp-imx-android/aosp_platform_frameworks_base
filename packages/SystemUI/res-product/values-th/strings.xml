@@ -70,10 +70,7 @@
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"คุณจะหาตำแหน่งของแท็บเล็ตนี้ได้ด้วยแอปหาอุปกรณ์ของฉันแม้จะปิดเครื่องอยู่ก็ตาม"</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"คุณสามารถค้นหาตำแหน่งของโทรศัพท์นี้ได้ด้วยศูนย์การค้นหาแม้จะปิดเครื่องอยู่ก็ตาม"</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"คุณสามารถค้นหาตำแหน่งของแท็บเล็ตนี้ได้ด้วยศูนย์การค้นหาแม้จะปิดเครื่องอยู่ก็ตาม"</string>
-    <!-- no translation found for dream_setup_description (5167691612621831552) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (6296793330727926553) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (3098487756905462324) -->
-    <skip />
+    <string name="dream_setup_description" product="default" msgid="5167691612621831552">"แสดงนาฬิกา รูปภาพ หรือสภาพอากาศขณะที่โทรศัพท์กำลังชาร์จ"</string>
+    <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"แสดงนาฬิกา รูปภาพ หรือสภาพอากาศขณะที่แท็บเล็ตกำลังชาร์จ"</string>
+    <string name="dream_setup_description" product="device" msgid="3098487756905462324">"แสดงนาฬิกา รูปภาพ หรือสภาพอากาศขณะที่อุปกรณ์กำลังชาร์จ"</string>
 </resources>

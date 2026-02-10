@@ -70,10 +70,7 @@
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"Можете да лоцирате овај таблет помоћу услуге Пронађи мој уређај чак и када је искључен"</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"Можете да лоцирате овај телефон помоћу Центра за проналажење чак и када је искључен"</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"Можете да лоцирате овај таблет помоћу Центра за проналажење чак и када је искључен"</string>
-    <!-- no translation found for dream_setup_description (5167691612621831552) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (6296793330727926553) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (3098487756905462324) -->
-    <skip />
+    <string name="dream_setup_description" product="default" msgid="5167691612621831552">"Приказује сат, слике или време док се телефон пуни"</string>
+    <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"Приказује сат, слике или време док се таблет пуни"</string>
+    <string name="dream_setup_description" product="device" msgid="3098487756905462324">"Приказује сат, слике или време док се уређај пуни"</string>
 </resources>

@@ -70,10 +70,7 @@
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"Bạn có thể định vị chiếc máy tính bảng này bằng ứng dụng Tìm thiết bị của tôi ngay cả khi máy tính bảng tắt nguồn"</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"Bạn có thể tìm chiếc điện thoại này qua Trung tâm tìm thiết bị ngay cả khi điện thoại tắt nguồn"</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"Bạn có thể tìm chiếc máy tính bảng này qua Trung tâm tìm thiết bị ngay cả khi máy tính bảng tắt nguồn"</string>
-    <!-- no translation found for dream_setup_description (5167691612621831552) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (6296793330727926553) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (3098487756905462324) -->
-    <skip />
+    <string name="dream_setup_description" product="default" msgid="5167691612621831552">"Hiện đồng hồ, ảnh hoặc thông tin thời tiết khi điện thoại đang sạc"</string>
+    <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"Hiện đồng hồ, ảnh hoặc thông tin thời tiết khi máy tính bảng đang sạc"</string>
+    <string name="dream_setup_description" product="device" msgid="3098487756905462324">"Hiện đồng hồ, ảnh hoặc thông tin thời tiết khi thiết bị đang sạc"</string>
 </resources>

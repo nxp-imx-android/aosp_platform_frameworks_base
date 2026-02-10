@@ -70,10 +70,7 @@
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"Unaweza kutambua mahali kilipo kishikwambi hiki ukitumia programu ya Tafuta Kifaa Changu hata kama kimezimwa"</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"Unaweza kutambua mahali ilipo simu hii ukitumia programu ya Kitafutaji hata kama simu imezimwa"</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"Unaweza kutambua mahali kilipo kishikwambi hiki ukitumia programu ya Kitafutaji hata kama kimezimwa"</string>
-    <!-- no translation found for dream_setup_description (5167691612621831552) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (6296793330727926553) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (3098487756905462324) -->
-    <skip />
+    <string name="dream_setup_description" product="default" msgid="5167691612621831552">"Onyesha saa, picha au hali ya hewa wakati unachaji simu yako"</string>
+    <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"Onyesha saa, picha au hali ya hewa wakati unachaji simu yako"</string>
+    <string name="dream_setup_description" product="device" msgid="3098487756905462324">"Onyesha saa, picha au hali ya hewa wakati simu yako inachaji"</string>
 </resources>

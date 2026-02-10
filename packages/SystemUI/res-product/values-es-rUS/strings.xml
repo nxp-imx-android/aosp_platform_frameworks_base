@@ -70,10 +70,7 @@
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"Puedes ubicar esta tablet con Encontrar mi dispositivo, incluso si está apagada"</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"Puedes ubicar este teléfono con la app de Localizador, incluso si está apagado"</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"Puedes ubicar esta tablet con la app de Localizador, incluso si está apagada"</string>
-    <!-- no translation found for dream_setup_description (5167691612621831552) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (6296793330727926553) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (3098487756905462324) -->
-    <skip />
+    <string name="dream_setup_description" product="default" msgid="5167691612621831552">"Muestra un reloj, fotos o el clima cuando el teléfono se está cargando"</string>
+    <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"Muestra un reloj, fotos o el clima cuando la tablet se está cargando"</string>
+    <string name="dream_setup_description" product="device" msgid="3098487756905462324">"Muestra un reloj, fotos o el clima cuando el dispositivo se está cargando"</string>
 </resources>

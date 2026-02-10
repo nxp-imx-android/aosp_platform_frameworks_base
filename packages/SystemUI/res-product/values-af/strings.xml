@@ -70,10 +70,7 @@
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"Jy kan hierdie tablet met Kry My Toestel opspoor selfs wanneer dit afgeskakel is"</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"Jy kan hierdie foon met Vindpunt opspoor selfs wanneer dit afgeskakel is"</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"Jy kan hierdie tablet met Vindpunt opspoor selfs wanneer dit afgeskakel is"</string>
-    <!-- no translation found for dream_setup_description (5167691612621831552) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (6296793330727926553) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (3098487756905462324) -->
-    <skip />
+    <string name="dream_setup_description" product="default" msgid="5167691612621831552">"Wys ’n horlosie, foto’s of weer wanneer jou foon laai"</string>
+    <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"Wys ’n horlosie, foto’s of weer wanneer jou tablet laai"</string>
+    <string name="dream_setup_description" product="device" msgid="3098487756905462324">"Wys ’n horlosie, foto’s of weer wanneer jou toestel laai"</string>
 </resources>

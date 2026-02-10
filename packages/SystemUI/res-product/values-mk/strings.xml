@@ -70,10 +70,7 @@
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"Може да го лоцирате таблетов со „Најди го мојот уред“ дури и кога е исклучен"</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"Може да го лоцирате телефонов со „Локатор“ дури и кога е исклучен"</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"Може да го лоцирате таблетов со „Локатор“ дури и кога е исклучен"</string>
-    <!-- no translation found for dream_setup_description (5167691612621831552) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (6296793330727926553) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (3098487756905462324) -->
-    <skip />
+    <string name="dream_setup_description" product="default" msgid="5167691612621831552">"Приказ на часовник, фотографии или временска прогноза кога се полни телефонот"</string>
+    <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"Приказ на часовник, фотографии или временска прогноза кога се полни таблетот"</string>
+    <string name="dream_setup_description" product="device" msgid="3098487756905462324">"Приказ на часовник, фотографии или временска прогноза кога се полни уредот"</string>
 </resources>

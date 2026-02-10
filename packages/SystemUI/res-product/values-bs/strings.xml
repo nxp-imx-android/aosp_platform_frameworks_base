@@ -70,10 +70,7 @@
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"Možete pronaći tablet putem usluge Pronađi moj uređaj čak i kada je isključen"</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"Možete pronaći telefon putem Centra za pronalaženje čak i kada je isključen"</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"Možete pronaći tablet putem Centra za pronalaženje čak i kada je isključen"</string>
-    <!-- no translation found for dream_setup_description (5167691612621831552) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (6296793330727926553) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (3098487756905462324) -->
-    <skip />
+    <string name="dream_setup_description" product="default" msgid="5167691612621831552">"Prikazujte sat, fotografije ili vrijeme prilikom punjenja telefona"</string>
+    <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"Prikazujte sat, fotografije ili vrijeme prilikom punjenja tableta"</string>
+    <string name="dream_setup_description" product="device" msgid="3098487756905462324">"Prikazujte sat, fotografije ili vrijeme prilikom punjenja uređaja"</string>
 </resources>

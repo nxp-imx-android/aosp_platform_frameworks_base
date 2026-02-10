@@ -70,10 +70,7 @@
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"Mund ta gjesh këtë tablet me \"Gjej pajisjen time\" edhe kur është i fikur"</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"Mund ta gjesh këtë telefon me \"Qendrën e gjetjes\" edhe kur është i fikur"</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"Mund ta gjesh këtë tablet me \"Qendrën e gjetjes\" edhe kur është i fikur"</string>
-    <!-- no translation found for dream_setup_description (5167691612621831552) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (6296793330727926553) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (3098487756905462324) -->
-    <skip />
+    <string name="dream_setup_description" product="default" msgid="5167691612621831552">"Shfaq një orë, fotografitë ose motin kur telefoni të jetë në karikim"</string>
+    <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"Shfaq një orë, fotografitë ose motin kur tableti të jetë në karikim"</string>
+    <string name="dream_setup_description" product="device" msgid="3098487756905462324">"Shfaq një orë, fotografitë ose motin kur pajisja të jetë në karikim"</string>
 </resources>

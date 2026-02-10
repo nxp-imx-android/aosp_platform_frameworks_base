@@ -70,10 +70,7 @@
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"Šį planšetinį kompiuterį galite rasti naudodami programą „Rasti įrenginį“, net jei jis išjungtas"</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"Šį telefoną galite rasti naudodami programą „Find Hub“, net jei jis išjungtas"</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"Šį planšetinį kompiuterį galite rasti naudodami programą „Find Hub“, net jei jis išjungtas"</string>
-    <!-- no translation found for dream_setup_description (5167691612621831552) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (6296793330727926553) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (3098487756905462324) -->
-    <skip />
+    <string name="dream_setup_description" product="default" msgid="5167691612621831552">"Rodyti laikrodį, nuotraukas ar orų prognozę, kai telefonas kraunamas"</string>
+    <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"Rodyti laikrodį, nuotraukas ar orų prognozę, kai planšetinis kompiuteris kraunamas"</string>
+    <string name="dream_setup_description" product="device" msgid="3098487756905462324">"Rodyti laikrodį, nuotraukas ar orų prognozę, kai įrenginys kraunamas"</string>
 </resources>

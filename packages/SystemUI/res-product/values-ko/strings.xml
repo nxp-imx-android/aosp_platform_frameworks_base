@@ -70,10 +70,7 @@
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"전원이 꺼져 있을 때도 내 기기 찾기로 이 태블릿을 찾을 수 있습니다."</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"이 휴대전화의 전원이 꺼져 있어도 내 기기 허브로 찾을 수 있습니다."</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"이 태블릿의 전원이 꺼져 있어도 내 기기 허브로 찾을 수 있습니다."</string>
-    <!-- no translation found for dream_setup_description (5167691612621831552) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (6296793330727926553) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (3098487756905462324) -->
-    <skip />
+    <string name="dream_setup_description" product="default" msgid="5167691612621831552">"휴대전화가 충전 중일 때 시계, 사진 또는 날씨를 표시합니다."</string>
+    <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"태블릿이 충전 중일 때 시계, 사진 또는 날씨를 표시합니다."</string>
+    <string name="dream_setup_description" product="device" msgid="3098487756905462324">"기기가 충전 중일 때 시계, 사진 또는 날씨를 표시합니다."</string>
 </resources>

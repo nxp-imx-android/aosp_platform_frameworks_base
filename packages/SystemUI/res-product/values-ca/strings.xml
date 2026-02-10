@@ -70,10 +70,7 @@
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"Pots localitzar aquesta tauleta amb Troba el meu dispositiu fins i tot quan estigui apagada"</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"Pots localitzar aquest telèfon amb Localitzador fins i tot quan estigui apagat"</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"Pots localitzar aquesta tauleta amb Localitzador fins i tot quan estigui apagada"</string>
-    <!-- no translation found for dream_setup_description (5167691612621831552) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (6296793330727926553) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (3098487756905462324) -->
-    <skip />
+    <string name="dream_setup_description" product="default" msgid="5167691612621831552">"Mostra un rellotge, fotos o la informació del temps quan el telèfon s\'estigui carregant"</string>
+    <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"Mostra un rellotge, fotos o la informació del temps quan la tauleta s\'estigui carregant"</string>
+    <string name="dream_setup_description" product="device" msgid="3098487756905462324">"Mostra un rellotge, fotos o la informació del temps quan el dispositiu s\'estigui carregant"</string>
 </resources>
