@@ -46,8 +46,7 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"Vil du åbne <xliff:g id="APPLICATION">%1$s</xliff:g> til håndtering af <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>?"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"Ingen installerede apps fungerer sammen med USB-enheden. Få oplysninger om enheden på <xliff:g id="URL">%1$s</xliff:g>"</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"USB-ekstraudstyr"</string>
-    <!-- no translation found for usb_device_dialog_always_allow_button (7426535342650638393) -->
-    <skip />
+    <string name="usb_device_dialog_always_allow_button" msgid="7426535342650638393">"Tillad altid"</string>
     <string name="usb_device_dialog_allow_only_this_time_button" msgid="3653881633944232491">"Kun denne gang"</string>
     <string name="usb_device_dialog_cancel_button" msgid="9050554648474787233">"Annuller"</string>
     <string name="label_view" msgid="6815442985276363364">"Vis"</string>
@@ -59,6 +58,24 @@
     <string name="usb_debugging_allow" msgid="1722643858015321328">"Tillad"</string>
     <string name="usb_debugging_secondary_user_title" msgid="7843050591380107998">"USB-fejlretning er ikke tilladt"</string>
     <string name="usb_debugging_secondary_user_message" msgid="1888835696965417845">"Den bruger, der i øjeblikket er logget ind på denne enhed, kan ikke aktivere USB-fejlretning. Skift til en administrator for at bruge denne funktion."</string>
+    <!-- no translation found for usb_authorization_title (3332796080113535331) -->
+    <skip />
+    <!-- no translation found for usb_authorization_title_multi (1966181648363433366) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message (1107567912094941105) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message_multi (4867596373922923637) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message_untrusted (4407977362840907960) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message_multi_untrusted (85055448435495205) -->
+    <skip />
+    <!-- no translation found for usb_authorization_unknown_device (1107933381080189970) -->
+    <skip />
+    <!-- no translation found for usb_authorization_allow (5517449937301874244) -->
+    <skip />
+    <!-- no translation found for usb_authorization_deny (8156333001876101456) -->
+    <skip />
     <string name="hdmi_cec_set_menu_language_title" msgid="1259765420091503742">"Vil du ændre systemsproget til <xliff:g id="LANGUAGE">%1$s</xliff:g>?"</string>
     <string name="hdmi_cec_set_menu_language_description" msgid="8176716678074126619">"En anden enhed har anmodet om en ændring af systemsproget"</string>
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"Skift sprog"</string>
@@ -104,6 +121,10 @@
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"Medtag mere"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"Luk screenshot"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"Luk arbejdsprofilmeddelelsen"</string>
+    <!-- no translation found for screenshot_open_in_folder_label (7030308792263959983) -->
+    <skip />
+    <!-- no translation found for screenshot_open_in_folder_description (2181459418652236210) -->
+    <skip />
     <string name="screenshot_preview_description" msgid="7606510140714080474">"Forhåndsvisning af screenshot"</string>
     <string name="screenshot_top_boundary_pct" msgid="2520148599096479332">"Øverste kant: <xliff:g id="PERCENT">%1$d</xliff:g> procent"</string>
     <string name="screenshot_bottom_boundary_pct" msgid="3880821519814946478">"Nederste kant: <xliff:g id="PERCENT">%1$d</xliff:g> procent"</string>
@@ -203,32 +224,19 @@
     <string name="screen_share_a11y_stopped_sharing_app" msgid="6928492106881188404">"Delingen af appen <xliff:g id="APP_NAME">%1$s</xliff:g> er stoppet. Skærmen deles ikke med nogen."</string>
     <string name="screen_share_a11y_stopped_sharing_tab" msgid="5929089339684027985">"Delingen af fanen <xliff:g id="TAB_TITLE">%1$s</xliff:g> er stoppet. Skærmen deles ikke med nogen."</string>
     <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"Delingen af skærmen <xliff:g id="DISPLAY_NAME">%1$s</xliff:g> er stoppet. Skærmen deles ikke med nogen."</string>
-    <!-- no translation found for screen_share_a11y_close_button (8017115316741874857) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_button_unselected (5363622532939787310) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_button_selected (4304681826101817704) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_app_button_unselected (4539549394242556282) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_app_button_selected (6049272377472922732) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_fullscreen_button_unselected (2492516552817892989) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_fullscreen_button_selected (6706822615908429473) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_share_button_off (2004866083045967602) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_share_button_on (1311279200212158833) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_item_unselected (7479321583507874795) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_item_selected (2538971376128528640) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_audio_on (7240792268381508075) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_audio_off (8545238601433952854) -->
-    <skip />
+    <string name="screen_share_a11y_close_button" msgid="8017115316741874857">"Knappen Luk. Tryk på Enter for at lukke dialogboksen før deling."</string>
+    <string name="screen_share_a11y_tab_button_unselected" msgid="5363622532939787310">"Knap til fanedeling. Ikke valgt. Tryk på Enter for at dele fanen."</string>
+    <string name="screen_share_a11y_tab_button_selected" msgid="4304681826101817704">"Deler fane. Naviger for at se tilgængelige faner."</string>
+    <string name="screen_share_a11y_app_button_unselected" msgid="4539549394242556282">"Knap til appdeling. Ikke valgt. Tryk på Enter for at dele appen."</string>
+    <string name="screen_share_a11y_app_button_selected" msgid="6049272377472922732">"Appen deles. Naviger for at se tilgængelige apps."</string>
+    <string name="screen_share_a11y_fullscreen_button_unselected" msgid="2492516552817892989">"Knap til fuld skærm. Ikke valgt. Tryk på Enter for at dele i fuld skærm."</string>
+    <string name="screen_share_a11y_fullscreen_button_selected" msgid="6706822615908429473">"Deler i fuld skærm. Naviger for at se tilgængelige skærme."</string>
+    <string name="screen_share_a11y_share_button_off" msgid="2004866083045967602">"Knappen Del. Fra. Vælg en app, en fane eller en skærm, du vil dele."</string>
+    <string name="screen_share_a11y_share_button_on" msgid="1311279200212158833">"Deling er aktiveret. <xliff:g id="ITEM">%1$s</xliff:g> er valgt. Tryk på Enter for at starte deling."</string>
+    <string name="screen_share_a11y_item_unselected" msgid="7479321583507874795">"<xliff:g id="ITEM_NAME">%1$s</xliff:g>. Ikke valgt. Tryk på Enter for at vælge."</string>
+    <string name="screen_share_a11y_item_selected" msgid="2538971376128528640">"<xliff:g id="ITEM_NAME">%1$s</xliff:g> er valgt. Gå til knappen Del for at begynde at dele."</string>
+    <string name="screen_share_a11y_tab_audio_on" msgid="7240792268381508075">"Fanelyd er slået til"</string>
+    <string name="screen_share_a11y_tab_audio_off" msgid="8545238601433952854">"Fanelyd er slået fra"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Tag et screenshot af vinduet"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Optag vinduet"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Tag et screenshot af det valgte område"</string>
@@ -239,7 +247,8 @@
     <string name="screen_capture_post_recording_shelf_share_button_a11y" msgid="2907313384921655711">"Del skærmoptagelse"</string>
     <string name="screen_capture_post_recording_shelf_folder_button_a11y" msgid="4217075254383938093">"Åbn skærmoptagelse i filhåndtering"</string>
     <string name="screen_capture_post_recording_shelf_delete_button_a11y" msgid="8519897681775354217">"Slet skærmoptagelse"</string>
-    <string name="screen_capture_post_recording_shelf_thumbnail_a11y" msgid="8342622016203434332">"Åbn skærmoptagelse i videoafspiller"</string>
+    <!-- no translation found for screen_capture_post_recording_shelf_thumbnail_a11y (4764732838982357845) -->
+    <skip />
     <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"Vis klik og taster"</string>
     <string name="screen_capture_device_audio" msgid="1537290197773737349">"Enhedslyd"</string>
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Mikrofon"</string>
@@ -432,8 +441,7 @@
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Notifikationer"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistent"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"Tastatur"</string>
-    <!-- no translation found for input_method_switcher_title_large_screen (8490419050265486980) -->
-    <skip />
+    <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"Tastatur"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"<xliff:g id="NUMBER">%s</xliff:g> mere"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{# notifikation mere i gruppen.}one{# notifikation mere i gruppen.}other{# notifikationer mere i gruppen.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Skærmen er nu låst i liggende retning."</string>
@@ -1873,18 +1881,11 @@
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"Venstre batteri %1$s"</string>
     <string name="accessibility_hearing_device_right_battery_level" msgid="7598843215226414563">"Højre batteri %1$s"</string>
     <string name="accessibility_hearing_device_notification_channel_name" msgid="7365020777623709400">"Status for høreapparat"</string>
-    <!-- no translation found for more_options_edit (6337988646114341329) -->
-    <skip />
-    <!-- no translation found for more_options_move (2226159413422979066) -->
-    <skip />
-    <!-- no translation found for more_options_remove_all (194855000797536179) -->
-    <skip />
-    <!-- no translation found for floating_menu_more_options_label (7859269790323628599) -->
-    <skip />
-    <!-- no translation found for dream_setup_title (7996530071414508238) -->
-    <skip />
-    <!-- no translation found for dream_setup_button_not_now (8028385323668620805) -->
-    <skip />
-    <!-- no translation found for dream_setup_button_setup (4755361016017554826) -->
-    <skip />
+    <string name="more_options_edit" msgid="6337988646114341329">"Rediger"</string>
+    <string name="more_options_move" msgid="2226159413422979066">"Flyt"</string>
+    <string name="more_options_remove_all" msgid="194855000797536179">"Fjern alle"</string>
+    <string name="floating_menu_more_options_label" msgid="7859269790323628599">"Flere valgmuligheder"</string>
+    <string name="dream_setup_title" msgid="7996530071414508238">"Konfigurer pauseskærm"</string>
+    <string name="dream_setup_button_not_now" msgid="8028385323668620805">"Ikke nu"</string>
+    <string name="dream_setup_button_setup" msgid="4755361016017554826">"Konfigurer"</string>
 </resources>

@@ -59,6 +59,24 @@
     <string name="usb_debugging_allow" msgid="1722643858015321328">"יש אישור"</string>
     <string name="usb_debugging_secondary_user_title" msgid="7843050591380107998">"‏לא ניתן לבצע ניפוי באגים ב-USB"</string>
     <string name="usb_debugging_secondary_user_message" msgid="1888835696965417845">"‏למשתמש המחובר לחשבון במכשיר הזה אין אפשרות להפעיל ניפוי באגים ב-USB. כדי להשתמש בתכונה הזו יש לעבור אל משתמש עם הרשאת אדמין."</string>
+    <!-- no translation found for usb_authorization_title (3332796080113535331) -->
+    <skip />
+    <!-- no translation found for usb_authorization_title_multi (1966181648363433366) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message (1107567912094941105) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message_multi (4867596373922923637) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message_untrusted (4407977362840907960) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message_multi_untrusted (85055448435495205) -->
+    <skip />
+    <!-- no translation found for usb_authorization_unknown_device (1107933381080189970) -->
+    <skip />
+    <!-- no translation found for usb_authorization_allow (5517449937301874244) -->
+    <skip />
+    <!-- no translation found for usb_authorization_deny (8156333001876101456) -->
+    <skip />
     <string name="hdmi_cec_set_menu_language_title" msgid="1259765420091503742">"רוצה לשנות את שפת המערכת ל<xliff:g id="LANGUAGE">%1$s</xliff:g>?"</string>
     <string name="hdmi_cec_set_menu_language_description" msgid="8176716678074126619">"התקבלה בקשה ממכשיר אחר לשינוי שפת המערכת"</string>
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"שינוי שפה"</string>
@@ -104,6 +122,10 @@
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"צילום תוכן נוסף"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"סגירת צילום מסך"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"סגירת ההודעה של פרופיל העבודה"</string>
+    <!-- no translation found for screenshot_open_in_folder_label (7030308792263959983) -->
+    <skip />
+    <!-- no translation found for screenshot_open_in_folder_description (2181459418652236210) -->
+    <skip />
     <string name="screenshot_preview_description" msgid="7606510140714080474">"תצוגה מקדימה של צילום מסך"</string>
     <string name="screenshot_top_boundary_pct" msgid="2520148599096479332">"<xliff:g id="PERCENT">%1$d</xliff:g> אחוז מהשוליים העליונים"</string>
     <string name="screenshot_bottom_boundary_pct" msgid="3880821519814946478">"<xliff:g id="PERCENT">%1$d</xliff:g> אחוז מהשוליים התחתונים"</string>
@@ -239,7 +261,8 @@
     <string name="screen_capture_post_recording_shelf_share_button_a11y" msgid="2907313384921655711">"שיתוף של הקלטת המסך"</string>
     <string name="screen_capture_post_recording_shelf_folder_button_a11y" msgid="4217075254383938093">"פתיחה של הקלטת המסך במנהל הקבצים"</string>
     <string name="screen_capture_post_recording_shelf_delete_button_a11y" msgid="8519897681775354217">"מחיקה של הקלטת המסך"</string>
-    <string name="screen_capture_post_recording_shelf_thumbnail_a11y" msgid="8342622016203434332">"פתיחה של הקלטת המסך בכלי לצפייה בסרטונים"</string>
+    <!-- no translation found for screen_capture_post_recording_shelf_thumbnail_a11y (4764732838982357845) -->
+    <skip />
     <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"הצגת קליקים וקיצורי מקשים"</string>
     <string name="screen_capture_device_audio" msgid="1537290197773737349">"אודיו מהמכשיר"</string>
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"מיקרופון"</string>
@@ -593,9 +616,9 @@
     <string name="sensor_privacy_start_use_mic_dialog_title" msgid="563796653825944944">"לבטל את חסימת המיקרופון של המכשיר?"</string>
     <string name="sensor_privacy_start_use_camera_dialog_title" msgid="8807639852654305227">"לבטל את חסימת המצלמה של המכשיר?"</string>
     <string name="sensor_privacy_start_use_mic_camera_dialog_title" msgid="4316471859905020023">"לבטל את חסימת המצלמה והמיקרופון של המכשיר?"</string>
-    <string name="sensor_privacy_start_use_mic_dialog_content" msgid="1624701280680913717">"הפעולה הזו מחזירה את הגישה למיקרופון לכל האפליקציות והשירותים שמורשים להשתמש במיקרופון."</string>
-    <string name="sensor_privacy_start_use_camera_dialog_content" msgid="4704948062372435963">"הפעולה הזו מחזירה את הגישה למצלמה לכל האפליקציות והשירותים שמורשים להשתמש במצלמה."</string>
-    <string name="sensor_privacy_start_use_mic_camera_dialog_content" msgid="3577642558418404919">"הפעולה הזו מבטלת את חסימת הגישה של כל האפליקציות והשירותים שמורשים להשתמש במצלמה או במיקרופון."</string>
+    <string name="sensor_privacy_start_use_mic_dialog_content" msgid="1624701280680913717">"כל האפליקציות והשירותים שמורשים להשתמש במיקרופון יוכלו שוב לגשת אליו."</string>
+    <string name="sensor_privacy_start_use_camera_dialog_content" msgid="4704948062372435963">"כל האפליקציות והשירותים שמורשים להשתמש במצלמה יוכלו שוב לגשת אליה."</string>
+    <string name="sensor_privacy_start_use_mic_camera_dialog_content" msgid="3577642558418404919">"כל האפליקציות והשירותים שמורשים להשתמש במצלמה או במיקרופון יוכלו שוב לגשת אליהם."</string>
     <string name="sensor_privacy_start_use_mic_blocked_dialog_title" msgid="2640140287496469689">"המיקרופון חסום"</string>
     <string name="sensor_privacy_start_use_camera_blocked_dialog_title" msgid="7398084286822440384">"המצלמה חסומה"</string>
     <string name="sensor_privacy_start_use_mic_camera_blocked_dialog_title" msgid="195236134743281973">"המיקרופון והמצלמה חסומים"</string>

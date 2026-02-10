@@ -46,8 +46,7 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"Vuoi aprire <xliff:g id="APPLICATION">%1$s</xliff:g> per gestire <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>?"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"Nessuna app installata funziona con questo accessorio USB. Altre info su <xliff:g id="URL">%1$s</xliff:g>."</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"Accessorio USB"</string>
-    <!-- no translation found for usb_device_dialog_always_allow_button (7426535342650638393) -->
-    <skip />
+    <string name="usb_device_dialog_always_allow_button" msgid="7426535342650638393">"Consenti sempre"</string>
     <string name="usb_device_dialog_allow_only_this_time_button" msgid="3653881633944232491">"Solo questa volta"</string>
     <string name="usb_device_dialog_cancel_button" msgid="9050554648474787233">"Annulla"</string>
     <string name="label_view" msgid="6815442985276363364">"Visualizza"</string>
@@ -59,6 +58,24 @@
     <string name="usb_debugging_allow" msgid="1722643858015321328">"Consenti"</string>
     <string name="usb_debugging_secondary_user_title" msgid="7843050591380107998">"Debug USB non consentito"</string>
     <string name="usb_debugging_secondary_user_message" msgid="1888835696965417845">"L\'utente che ha eseguito l\'accesso a questo dispositivo non può attivare il debug USB. Per usare questa funzionalità, passa a un utente amministratore."</string>
+    <!-- no translation found for usb_authorization_title (3332796080113535331) -->
+    <skip />
+    <!-- no translation found for usb_authorization_title_multi (1966181648363433366) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message (1107567912094941105) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message_multi (4867596373922923637) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message_untrusted (4407977362840907960) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message_multi_untrusted (85055448435495205) -->
+    <skip />
+    <!-- no translation found for usb_authorization_unknown_device (1107933381080189970) -->
+    <skip />
+    <!-- no translation found for usb_authorization_allow (5517449937301874244) -->
+    <skip />
+    <!-- no translation found for usb_authorization_deny (8156333001876101456) -->
+    <skip />
     <string name="hdmi_cec_set_menu_language_title" msgid="1259765420091503742">"Vuoi cambiare la lingua di sistema con la lingua <xliff:g id="LANGUAGE">%1$s</xliff:g>?"</string>
     <string name="hdmi_cec_set_menu_language_description" msgid="8176716678074126619">"Cambio della lingua di sistema richiesto da un altro dispositivo"</string>
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"Cambia lingua"</string>
@@ -104,6 +121,10 @@
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"Acquisisci di più"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"Ignora screenshot"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"Chiudi il messaggio relativo al profilo di lavoro"</string>
+    <!-- no translation found for screenshot_open_in_folder_label (7030308792263959983) -->
+    <skip />
+    <!-- no translation found for screenshot_open_in_folder_description (2181459418652236210) -->
+    <skip />
     <string name="screenshot_preview_description" msgid="7606510140714080474">"Anteprima screenshot"</string>
     <string name="screenshot_top_boundary_pct" msgid="2520148599096479332">"Limite superiore, <xliff:g id="PERCENT">%1$d</xliff:g> percento"</string>
     <string name="screenshot_bottom_boundary_pct" msgid="3880821519814946478">"Limite inferiore, <xliff:g id="PERCENT">%1$d</xliff:g> percento"</string>
@@ -203,32 +224,19 @@
     <string name="screen_share_a11y_stopped_sharing_app" msgid="6928492106881188404">"Condivisione dell\'app interrotta: <xliff:g id="APP_NAME">%1$s</xliff:g>. Schermo non condiviso con nessuno."</string>
     <string name="screen_share_a11y_stopped_sharing_tab" msgid="5929089339684027985">"Condivisione della scheda interrotta: <xliff:g id="TAB_TITLE">%1$s</xliff:g>. Schermo non condiviso con nessuno."</string>
     <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"Condivisione dello schermo interrotta: <xliff:g id="DISPLAY_NAME">%1$s</xliff:g>. Schermo non condiviso con nessuno."</string>
-    <!-- no translation found for screen_share_a11y_close_button (8017115316741874857) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_button_unselected (5363622532939787310) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_button_selected (4304681826101817704) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_app_button_unselected (4539549394242556282) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_app_button_selected (6049272377472922732) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_fullscreen_button_unselected (2492516552817892989) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_fullscreen_button_selected (6706822615908429473) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_share_button_off (2004866083045967602) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_share_button_on (1311279200212158833) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_item_unselected (7479321583507874795) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_item_selected (2538971376128528640) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_audio_on (7240792268381508075) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_audio_off (8545238601433952854) -->
-    <skip />
+    <string name="screen_share_a11y_close_button" msgid="8017115316741874857">"Pulsante Chiudi. Premi Invio per chiudere la finestra di dialogo di pre-condivisione."</string>
+    <string name="screen_share_a11y_tab_button_unselected" msgid="5363622532939787310">"Pulsante di condivisione della scheda. Non selezionato. Premi Invio per condividere la scheda."</string>
+    <string name="screen_share_a11y_tab_button_selected" msgid="4304681826101817704">"Condivisione scheda. Naviga per visualizzare le schede disponibili."</string>
+    <string name="screen_share_a11y_app_button_unselected" msgid="4539549394242556282">"Pulsante di condivisione dell\'app. Non selezionato. Premi Invio per condividere l\'app."</string>
+    <string name="screen_share_a11y_app_button_selected" msgid="6049272377472922732">"Condivisione app. Vai per vedere le app disponibili."</string>
+    <string name="screen_share_a11y_fullscreen_button_unselected" msgid="2492516552817892989">"Pulsante schermo intero. Non selezionato. Premi Invio per condividere a schermo intero."</string>
+    <string name="screen_share_a11y_fullscreen_button_selected" msgid="6706822615908429473">"Condivisione a schermo intero. Naviga per vedere i display disponibili."</string>
+    <string name="screen_share_a11y_share_button_off" msgid="2004866083045967602">"Pulsante Condividi. Off. Seleziona l\'app, la scheda o lo schermo da condividere."</string>
+    <string name="screen_share_a11y_share_button_on" msgid="1311279200212158833">"Condivisione attiva. Elemento <xliff:g id="ITEM">%1$s</xliff:g> selezionato. Premi Invio per avviare la condivisione."</string>
+    <string name="screen_share_a11y_item_unselected" msgid="7479321583507874795">"<xliff:g id="ITEM_NAME">%1$s</xliff:g>. Non selezionato. Premi Invio per selezionare."</string>
+    <string name="screen_share_a11y_item_selected" msgid="2538971376128528640">"Elemento <xliff:g id="ITEM_NAME">%1$s</xliff:g> selezionato. Vai al pulsante di condivisione per iniziare a condividere."</string>
+    <string name="screen_share_a11y_tab_audio_on" msgid="7240792268381508075">"Audio scheda on"</string>
+    <string name="screen_share_a11y_tab_audio_off" msgid="8545238601433952854">"Audio scheda off"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Acquisisci screenshot della finestra"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Registra la finestra"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Acquisisci screenshot dell\'area selezionata"</string>
@@ -239,7 +247,8 @@
     <string name="screen_capture_post_recording_shelf_share_button_a11y" msgid="2907313384921655711">"Condividi la registrazione dello schermo"</string>
     <string name="screen_capture_post_recording_shelf_folder_button_a11y" msgid="4217075254383938093">"Apri la registrazione dello schermo nel gestore di file"</string>
     <string name="screen_capture_post_recording_shelf_delete_button_a11y" msgid="8519897681775354217">"Elimina la registrazione dello schermo"</string>
-    <string name="screen_capture_post_recording_shelf_thumbnail_a11y" msgid="8342622016203434332">"Apri la registrazione dello schermo nel visualizzatore di video"</string>
+    <!-- no translation found for screen_capture_post_recording_shelf_thumbnail_a11y (4764732838982357845) -->
+    <skip />
     <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"Mostra clic e tasti"</string>
     <string name="screen_capture_device_audio" msgid="1537290197773737349">"Audio del dispositivo"</string>
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Microfono"</string>
@@ -432,8 +441,7 @@
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Notifiche"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistente"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"Tastiera"</string>
-    <!-- no translation found for input_method_switcher_title_large_screen (8490419050265486980) -->
-    <skip />
+    <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"Tastiera"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{# altra notifica nel gruppo.}many{Altre # di notifiche nel gruppo.}other{Altre # notifiche nel gruppo.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Lo schermo è bloccato in orientamento orizzontale."</string>
@@ -551,7 +559,7 @@
     <string name="qs_record_issue_start" msgid="2979831312582567056">"Avvia"</string>
     <string name="qs_record_issue_stop" msgid="3531747965741982657">"Interrompi"</string>
     <string name="qs_record_issue_bug_report" msgid="8229031766918650079">"Segnalazione di bug"</string>
-    <string name="qs_record_issue_dropdown_header" msgid="5995983175678658329">"Quali problemi ha l\'esperienza con il dispositivo?"</string>
+    <string name="qs_record_issue_dropdown_header" msgid="5995983175678658329">"Quale funzione del dispositivo presenta problemi?"</string>
     <string name="qs_record_issue_dropdown_prompt" msgid="2526949919167046219">"Seleziona il tipo di problema"</string>
     <string name="qs_record_issue_dropdown_screenrecord" msgid="6396141928484257626">"Registrazione schermo"</string>
     <string name="performance" msgid="6552785217174378320">"Prestazioni"</string>
@@ -590,9 +598,9 @@
     <string name="quick_settings_hearing_devices_live_caption_title" msgid="1054814050932225451">"Sottotitoli in tempo reale"</string>
     <string name="hearing_devices_settings_button" msgid="999474385481812222">"Impostazioni"</string>
     <string name="quick_settings_notes_label" msgid="1028004078001002623">"Nota"</string>
-    <string name="sensor_privacy_start_use_mic_dialog_title" msgid="563796653825944944">"Vuoi sbloccare il microfono del dispositivo?"</string>
-    <string name="sensor_privacy_start_use_camera_dialog_title" msgid="8807639852654305227">"Vuoi sbloccare la fotocamera del dispositivo?"</string>
-    <string name="sensor_privacy_start_use_mic_camera_dialog_title" msgid="4316471859905020023">"Vuoi sbloccare la fotocamera e il microfono del dispositivo?"</string>
+    <string name="sensor_privacy_start_use_mic_dialog_title" msgid="563796653825944944">"Sbloccare il microfono del dispositivo?"</string>
+    <string name="sensor_privacy_start_use_camera_dialog_title" msgid="8807639852654305227">"Sbloccare la fotocamera del dispositivo?"</string>
+    <string name="sensor_privacy_start_use_mic_camera_dialog_title" msgid="4316471859905020023">"Sbloccare la fotocamera e il microfono del dispositivo?"</string>
     <string name="sensor_privacy_start_use_mic_dialog_content" msgid="1624701280680913717">"Viene sbloccato l\'accesso per tutti i servizi e le app autorizzati a usare il microfono."</string>
     <string name="sensor_privacy_start_use_camera_dialog_content" msgid="4704948062372435963">"Viene sbloccato l\'accesso per tutti i servizi e le app autorizzati a usare la fotocamera."</string>
     <string name="sensor_privacy_start_use_mic_camera_dialog_content" msgid="3577642558418404919">"Viene sbloccato l\'accesso per tutti i servizi e le app autorizzati a usare la fotocamera o il microfono."</string>
@@ -1873,18 +1881,11 @@
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"Batteria S %1$s"</string>
     <string name="accessibility_hearing_device_right_battery_level" msgid="7598843215226414563">"Batteria D %1$s"</string>
     <string name="accessibility_hearing_device_notification_channel_name" msgid="7365020777623709400">"Stato protesi uditiva"</string>
-    <!-- no translation found for more_options_edit (6337988646114341329) -->
-    <skip />
-    <!-- no translation found for more_options_move (2226159413422979066) -->
-    <skip />
-    <!-- no translation found for more_options_remove_all (194855000797536179) -->
-    <skip />
-    <!-- no translation found for floating_menu_more_options_label (7859269790323628599) -->
-    <skip />
-    <!-- no translation found for dream_setup_title (7996530071414508238) -->
-    <skip />
-    <!-- no translation found for dream_setup_button_not_now (8028385323668620805) -->
-    <skip />
-    <!-- no translation found for dream_setup_button_setup (4755361016017554826) -->
-    <skip />
+    <string name="more_options_edit" msgid="6337988646114341329">"Modifica"</string>
+    <string name="more_options_move" msgid="2226159413422979066">"Sposta"</string>
+    <string name="more_options_remove_all" msgid="194855000797536179">"Rimuovi tutto"</string>
+    <string name="floating_menu_more_options_label" msgid="7859269790323628599">"Altre opzioni"</string>
+    <string name="dream_setup_title" msgid="7996530071414508238">"Configura il salvaschermo"</string>
+    <string name="dream_setup_button_not_now" msgid="8028385323668620805">"Non ora"</string>
+    <string name="dream_setup_button_setup" msgid="4755361016017554826">"Configura"</string>
 </resources>

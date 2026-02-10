@@ -46,8 +46,7 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"Vai atvērt lietotni <xliff:g id="APPLICATION">%1$s</xliff:g>, lai izmantotu šo piederumu: <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>?"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"Neviena no inst. liet. nedarb. ar šo USB pied. Uzz. vairāk par šo pied. vietnē <xliff:g id="URL">%1$s</xliff:g>."</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"USB piederums"</string>
-    <!-- no translation found for usb_device_dialog_always_allow_button (7426535342650638393) -->
-    <skip />
+    <string name="usb_device_dialog_always_allow_button" msgid="7426535342650638393">"Vienmēr atļaut"</string>
     <string name="usb_device_dialog_allow_only_this_time_button" msgid="3653881633944232491">"Tikai šoreiz"</string>
     <string name="usb_device_dialog_cancel_button" msgid="9050554648474787233">"Atcelt"</string>
     <string name="label_view" msgid="6815442985276363364">"Skatīt"</string>
@@ -59,6 +58,24 @@
     <string name="usb_debugging_allow" msgid="1722643858015321328">"Atļaut"</string>
     <string name="usb_debugging_secondary_user_title" msgid="7843050591380107998">"USB atkļūdošana nav atļauta"</string>
     <string name="usb_debugging_secondary_user_message" msgid="1888835696965417845">"Lietotājs, kurš pašlaik ir pierakstījies šajā ierīcē, nevar ieslēgt USB atkļūdošanu. Lai izmantotu šo funkciju, pierakstieties kā lietotājs ar administratora tiesībām."</string>
+    <!-- no translation found for usb_authorization_title (3332796080113535331) -->
+    <skip />
+    <!-- no translation found for usb_authorization_title_multi (1966181648363433366) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message (1107567912094941105) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message_multi (4867596373922923637) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message_untrusted (4407977362840907960) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message_multi_untrusted (85055448435495205) -->
+    <skip />
+    <!-- no translation found for usb_authorization_unknown_device (1107933381080189970) -->
+    <skip />
+    <!-- no translation found for usb_authorization_allow (5517449937301874244) -->
+    <skip />
+    <!-- no translation found for usb_authorization_deny (8156333001876101456) -->
+    <skip />
     <string name="hdmi_cec_set_menu_language_title" msgid="1259765420091503742">"Vai vēlaties mainīt sistēmas valodu uz šādu: <xliff:g id="LANGUAGE">%1$s</xliff:g>?"</string>
     <string name="hdmi_cec_set_menu_language_description" msgid="8176716678074126619">"Sistēmas valodas maiņu pieprasīja cita ierīce."</string>
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"Mainīt valodu"</string>
@@ -104,6 +121,10 @@
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"Tvert vairāk"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"Nerādīt ekrānuzņēmumu"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"Noraidīt darba profila ziņojumu"</string>
+    <!-- no translation found for screenshot_open_in_folder_label (7030308792263959983) -->
+    <skip />
+    <!-- no translation found for screenshot_open_in_folder_description (2181459418652236210) -->
+    <skip />
     <string name="screenshot_preview_description" msgid="7606510140714080474">"Ekrānuzņēmuma priekšskatījums"</string>
     <string name="screenshot_top_boundary_pct" msgid="2520148599096479332">"Augšmala: <xliff:g id="PERCENT">%1$d</xliff:g> %%"</string>
     <string name="screenshot_bottom_boundary_pct" msgid="3880821519814946478">"Apakšmala: <xliff:g id="PERCENT">%1$d</xliff:g> %%"</string>
@@ -203,32 +224,19 @@
     <string name="screen_share_a11y_stopped_sharing_app" msgid="6928492106881188404">"Lietotnes kopīgošana ir pārtraukta: <xliff:g id="APP_NAME">%1$s</xliff:g>. Ekrāns ne ar vienu netiek kopīgots."</string>
     <string name="screen_share_a11y_stopped_sharing_tab" msgid="5929089339684027985">"Cilnes kopīgošana ir pārtraukta: <xliff:g id="TAB_TITLE">%1$s</xliff:g>. Ekrāns ne ar vienu netiek kopīgots."</string>
     <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"Displeja kopīgošana ir pārtraukta: <xliff:g id="DISPLAY_NAME">%1$s</xliff:g>. Ekrāns ne ar vienu netiek kopīgots."</string>
-    <!-- no translation found for screen_share_a11y_close_button (8017115316741874857) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_button_unselected (5363622532939787310) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_button_selected (4304681826101817704) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_app_button_unselected (4539549394242556282) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_app_button_selected (6049272377472922732) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_fullscreen_button_unselected (2492516552817892989) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_fullscreen_button_selected (6706822615908429473) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_share_button_off (2004866083045967602) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_share_button_on (1311279200212158833) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_item_unselected (7479321583507874795) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_item_selected (2538971376128528640) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_audio_on (7240792268381508075) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_audio_off (8545238601433952854) -->
-    <skip />
+    <string name="screen_share_a11y_close_button" msgid="8017115316741874857">"Poga Aizvērt. Lai aizvērtu dialoglodziņu pirms kopīgošanas, nospiediet taustiņu Enter."</string>
+    <string name="screen_share_a11y_tab_button_unselected" msgid="5363622532939787310">"Cilnes kopīgošanas poga. Nav atlasīta. Lai kopīgotu cilni, nospiediet taustiņu Enter."</string>
+    <string name="screen_share_a11y_tab_button_selected" msgid="4304681826101817704">"Kopīgošanas cilne. Pārejiet, lai skatītu pieejamās cilnes."</string>
+    <string name="screen_share_a11y_app_button_unselected" msgid="4539549394242556282">"Lietotnes kopīgošanas poga. Nav atlasīta. Lai kopīgotu lietotni, nospiediet taustiņu Enter."</string>
+    <string name="screen_share_a11y_app_button_selected" msgid="6049272377472922732">"Kopīgošanas lietotne. Pārejiet, lai skatītu pieejamās lietotnes."</string>
+    <string name="screen_share_a11y_fullscreen_button_unselected" msgid="2492516552817892989">"Pilnekrāna režīma poga Nav atlasīta. Lai kopīgotu pilnekrāna režīmu, nospiediet taustiņu Enter."</string>
+    <string name="screen_share_a11y_fullscreen_button_selected" msgid="6706822615908429473">"Notiek pilnekrāna kopīgošana. Pārejiet, lai skatītu pieejamos displejus."</string>
+    <string name="screen_share_a11y_share_button_off" msgid="2004866083045967602">"Kopīgošanas poga. Izslēgta. Atlasiet kopīgojamo lietotni, cilni vai displeju."</string>
+    <string name="screen_share_a11y_share_button_on" msgid="1311279200212158833">"Kopīgošana ir ieslēgta. Atlasīts vienums <xliff:g id="ITEM">%1$s</xliff:g>. Lai sāktu kopīgošanu, nospiediet taustiņu Enter."</string>
+    <string name="screen_share_a11y_item_unselected" msgid="7479321583507874795">"<xliff:g id="ITEM_NAME">%1$s</xliff:g>. Nav atlasīts. Lai atlasītu, nospiediet taustiņu Enter."</string>
+    <string name="screen_share_a11y_item_selected" msgid="2538971376128528640">"Atlasīts vienums <xliff:g id="ITEM_NAME">%1$s</xliff:g>. Lai sāktu kopīgošanu, pārejiet uz kopīgošanas pogu."</string>
+    <string name="screen_share_a11y_tab_audio_on" msgid="7240792268381508075">"Cilnes audio ir ieslēgts"</string>
+    <string name="screen_share_a11y_tab_audio_off" msgid="8545238601433952854">"Cilnes audio ir izslēgts"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Izveidot loga ekrānuzņēmumu"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Ierakstīt logu"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Izveidot atlasītā apgabala ekrānuzņēmumu"</string>
@@ -239,7 +247,8 @@
     <string name="screen_capture_post_recording_shelf_share_button_a11y" msgid="2907313384921655711">"Kopīgot ekrāna ierakstu"</string>
     <string name="screen_capture_post_recording_shelf_folder_button_a11y" msgid="4217075254383938093">"Atvērt ekrāna ierakstu failu pārvaldniekā"</string>
     <string name="screen_capture_post_recording_shelf_delete_button_a11y" msgid="8519897681775354217">"Dzēst ekrāna ierakstu"</string>
-    <string name="screen_capture_post_recording_shelf_thumbnail_a11y" msgid="8342622016203434332">"Atvērt ekrāna ierakstu video skatītājā"</string>
+    <!-- no translation found for screen_capture_post_recording_shelf_thumbnail_a11y (4764732838982357845) -->
+    <skip />
     <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"Rādīt klikšķus un taustiņus"</string>
     <string name="screen_capture_device_audio" msgid="1537290197773737349">"Ierīces audio"</string>
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Mikrofons"</string>
@@ -432,8 +441,7 @@
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Paziņojumi"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Asistents"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"Tastatūra"</string>
-    <!-- no translation found for input_method_switcher_title_large_screen (8490419050265486980) -->
-    <skip />
+    <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"Tastatūra"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"vēl <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{Vēl # paziņojums grupā.}zero{Vēl # paziņojumi grupā.}one{Vēl # paziņojums grupā.}other{Vēl # paziņojumi grupā.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Ekrāns tagad ir bloķēts ainavas orientācijā."</string>
@@ -1873,18 +1881,11 @@
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"Kreisās puses akumulators %1$s"</string>
     <string name="accessibility_hearing_device_right_battery_level" msgid="7598843215226414563">"Labās puses akumulators %1$s"</string>
     <string name="accessibility_hearing_device_notification_channel_name" msgid="7365020777623709400">"Dzirdes aparāta statuss"</string>
-    <!-- no translation found for more_options_edit (6337988646114341329) -->
-    <skip />
-    <!-- no translation found for more_options_move (2226159413422979066) -->
-    <skip />
-    <!-- no translation found for more_options_remove_all (194855000797536179) -->
-    <skip />
-    <!-- no translation found for floating_menu_more_options_label (7859269790323628599) -->
-    <skip />
-    <!-- no translation found for dream_setup_title (7996530071414508238) -->
-    <skip />
-    <!-- no translation found for dream_setup_button_not_now (8028385323668620805) -->
-    <skip />
-    <!-- no translation found for dream_setup_button_setup (4755361016017554826) -->
-    <skip />
+    <string name="more_options_edit" msgid="6337988646114341329">"Rediģēt"</string>
+    <string name="more_options_move" msgid="2226159413422979066">"Pārvietot"</string>
+    <string name="more_options_remove_all" msgid="194855000797536179">"Noņemt visu"</string>
+    <string name="floating_menu_more_options_label" msgid="7859269790323628599">"Citas opcijas"</string>
+    <string name="dream_setup_title" msgid="7996530071414508238">"Ekrānsaudzētāja iestatīšana"</string>
+    <string name="dream_setup_button_not_now" msgid="8028385323668620805">"Vēlāk"</string>
+    <string name="dream_setup_button_setup" msgid="4755361016017554826">"Iestatīt"</string>
 </resources>

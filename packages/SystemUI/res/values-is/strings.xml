@@ -46,8 +46,7 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"Viltu opna <xliff:g id="APPLICATION">%1$s</xliff:g> til að sjá um <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>?"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"Engin uppsett forrit virka með þessum USB-aukabúnaði. Frekari upplýsingar eru á <xliff:g id="URL">%1$s</xliff:g>"</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"USB-aukabúnaður"</string>
-    <!-- no translation found for usb_device_dialog_always_allow_button (7426535342650638393) -->
-    <skip />
+    <string name="usb_device_dialog_always_allow_button" msgid="7426535342650638393">"Leyfa alltaf"</string>
     <string name="usb_device_dialog_allow_only_this_time_button" msgid="3653881633944232491">"Aðeins í þetta skipti"</string>
     <string name="usb_device_dialog_cancel_button" msgid="9050554648474787233">"Hætta við"</string>
     <string name="label_view" msgid="6815442985276363364">"Skoða"</string>
@@ -59,6 +58,24 @@
     <string name="usb_debugging_allow" msgid="1722643858015321328">"Leyfa"</string>
     <string name="usb_debugging_secondary_user_title" msgid="7843050591380107998">"USB-villuleit ekki leyfð"</string>
     <string name="usb_debugging_secondary_user_message" msgid="1888835696965417845">"Notandinn sem er skráður inn í þetta tæki núna getur ekki kveikt á USB-villuleit. Skiptu yfir í stjórnanda til að nota þennan eiginleika."</string>
+    <!-- no translation found for usb_authorization_title (3332796080113535331) -->
+    <skip />
+    <!-- no translation found for usb_authorization_title_multi (1966181648363433366) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message (1107567912094941105) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message_multi (4867596373922923637) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message_untrusted (4407977362840907960) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message_multi_untrusted (85055448435495205) -->
+    <skip />
+    <!-- no translation found for usb_authorization_unknown_device (1107933381080189970) -->
+    <skip />
+    <!-- no translation found for usb_authorization_allow (5517449937301874244) -->
+    <skip />
+    <!-- no translation found for usb_authorization_deny (8156333001876101456) -->
+    <skip />
     <string name="hdmi_cec_set_menu_language_title" msgid="1259765420091503742">"Viltu breyta tungumáli kerfis í <xliff:g id="LANGUAGE">%1$s</xliff:g>?"</string>
     <string name="hdmi_cec_set_menu_language_description" msgid="8176716678074126619">"Beiðni frá öðru tæki um að breyta tungumáli kerfis"</string>
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"Breyta tungumáli"</string>
@@ -104,6 +121,10 @@
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"Mynda meira"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"Loka skjámynd"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"Hunsa skilaboð vinnusniðs"</string>
+    <!-- no translation found for screenshot_open_in_folder_label (7030308792263959983) -->
+    <skip />
+    <!-- no translation found for screenshot_open_in_folder_description (2181459418652236210) -->
+    <skip />
     <string name="screenshot_preview_description" msgid="7606510140714080474">"Forskoðun skjámyndar"</string>
     <string name="screenshot_top_boundary_pct" msgid="2520148599096479332">"Efri mörk <xliff:g id="PERCENT">%1$d</xliff:g> prósent"</string>
     <string name="screenshot_bottom_boundary_pct" msgid="3880821519814946478">"Neðri mörk <xliff:g id="PERCENT">%1$d</xliff:g> prósent"</string>
@@ -203,32 +224,19 @@
     <string name="screen_share_a11y_stopped_sharing_app" msgid="6928492106881188404">"Hætti að deila forriti: <xliff:g id="APP_NAME">%1$s</xliff:g>. Skjánum er ekki deilt með neinum."</string>
     <string name="screen_share_a11y_stopped_sharing_tab" msgid="5929089339684027985">"Hætti að deila flipa: <xliff:g id="TAB_TITLE">%1$s</xliff:g>. Skjánum er ekki deilt með neinum."</string>
     <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"Hætti að deila skjá: <xliff:g id="DISPLAY_NAME">%1$s</xliff:g>. Skjánum er ekki deilt með neinum."</string>
-    <!-- no translation found for screen_share_a11y_close_button (8017115316741874857) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_button_unselected (5363622532939787310) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_button_selected (4304681826101817704) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_app_button_unselected (4539549394242556282) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_app_button_selected (6049272377472922732) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_fullscreen_button_unselected (2492516552817892989) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_fullscreen_button_selected (6706822615908429473) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_share_button_off (2004866083045967602) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_share_button_on (1311279200212158833) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_item_unselected (7479321583507874795) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_item_selected (2538971376128528640) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_audio_on (7240792268381508075) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_audio_off (8545238601433952854) -->
-    <skip />
+    <string name="screen_share_a11y_close_button" msgid="8017115316741874857">"Hnappur til að loka. Ýttu á færsluhnappinn til að loka fordeilingarglugga."</string>
+    <string name="screen_share_a11y_tab_button_unselected" msgid="5363622532939787310">"Hnappur til að deila flipa. Ekki valið. Ýttu á færsluhnappinn til að deila flipa."</string>
+    <string name="screen_share_a11y_tab_button_selected" msgid="4304681826101817704">"Deiling flipa. Opnaðu til að sjá tiltæka flipa."</string>
+    <string name="screen_share_a11y_app_button_unselected" msgid="4539549394242556282">"Hnappur til að deila forriti. Ekki valið. Ýttu á færsluhnappinn til að deila forriti."</string>
+    <string name="screen_share_a11y_app_button_selected" msgid="6049272377472922732">"Deiling forrits. Opnaðu til að skoða tiltæk forrit."</string>
+    <string name="screen_share_a11y_fullscreen_button_unselected" msgid="2492516552817892989">"Hnappur fyrir allan skjáinn. Ekki valið. Ýttu á færsluhnappinn til að deila öllum skjánum."</string>
+    <string name="screen_share_a11y_fullscreen_button_selected" msgid="6706822615908429473">"Deiling alls skjás. Opnaðu til að skoða tiltæka skjái."</string>
+    <string name="screen_share_a11y_share_button_off" msgid="2004866083045967602">"Hnappur til að deila. Slökkt. Veldu forrit, flipa eða skjá til að deila."</string>
+    <string name="screen_share_a11y_share_button_on" msgid="1311279200212158833">"Kveikt á deilingu. <xliff:g id="ITEM">%1$s</xliff:g> valið. Ýttu á færsluhnappinn til að byrja að deila."</string>
+    <string name="screen_share_a11y_item_unselected" msgid="7479321583507874795">"<xliff:g id="ITEM_NAME">%1$s</xliff:g>. Ekki valið. Ýttu á færsluhnappinn til að velja."</string>
+    <string name="screen_share_a11y_item_selected" msgid="2538971376128528640">"<xliff:g id="ITEM_NAME">%1$s</xliff:g> valið. Flettu á deilingarhnappinn til að byrja að deila."</string>
+    <string name="screen_share_a11y_tab_audio_on" msgid="7240792268381508075">"Kveikt á hljóði flipa"</string>
+    <string name="screen_share_a11y_tab_audio_off" msgid="8545238601433952854">"Slökkt á hljóði flipa"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Taka skjámynd af glugga"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Upptökugluggi"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Taka skjámynd af völdu svæði"</string>
@@ -239,7 +247,8 @@
     <string name="screen_capture_post_recording_shelf_share_button_a11y" msgid="2907313384921655711">"Deila skjáupptöku"</string>
     <string name="screen_capture_post_recording_shelf_folder_button_a11y" msgid="4217075254383938093">"Opna skjáupptöku í skráastjórnun"</string>
     <string name="screen_capture_post_recording_shelf_delete_button_a11y" msgid="8519897681775354217">"Eyða skjáupptöku"</string>
-    <string name="screen_capture_post_recording_shelf_thumbnail_a11y" msgid="8342622016203434332">"Opna skjáupptöku í vídeóskoðara"</string>
+    <!-- no translation found for screen_capture_post_recording_shelf_thumbnail_a11y (4764732838982357845) -->
+    <skip />
     <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"Sýna smelli og lykla"</string>
     <string name="screen_capture_device_audio" msgid="1537290197773737349">"Hljóð tækis"</string>
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Hljóðnemi"</string>
@@ -432,8 +441,7 @@
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Tilkynningar"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Hjálpari"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"Lyklaborð"</string>
-    <!-- no translation found for input_method_switcher_title_large_screen (8490419050265486980) -->
-    <skip />
+    <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"Lyklaborð"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{# tilkynning í viðbót.}one{# tilkynning í viðbót.}other{# tilkynningar í viðbót.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Skjárinn er læstur í langsniði."</string>
@@ -1236,7 +1244,7 @@
     <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"<xliff:g id="ID_1">^1</xliff:g>-"<annotation id="action_key_icon">"táknið"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> er flýtilykillinn fyrir <xliff:g id="ID_4">^4</xliff:g>. <xliff:g id="ID_5">^5</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="6466269887128043486">"Ýttu aftur á <xliff:g id="ID_1">%1$s</xliff:g> + <xliff:g id="ID_2">%2$s</xliff:g> + <xliff:g id="ID_3">%3$s</xliff:g> til að kveikja á <xliff:g id="ID_4">%4$s</xliff:g>"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Virkja flýtilykil „<xliff:g id="ID_1">%1$s</xliff:g>“?"</string>
-    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Ekki kveikja"</string>
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Ekki virkja"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Virkja flýtilykil"</string>
     <string name="accessibility_key_gesture_color_inversion_dialog_content" msgid="8831745570619953566">"<xliff:g id="ID_1">^1</xliff:g>-"<annotation id="action_key_icon">"táknið"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> er flýtilykillinn fyrir umsnúning lita. Umsnúningur lita gerir ljósa skjái dökka. Hann lýsir einnig upp dökka skjái."</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Kveikt á lyklaborðsflýtileiðinni <xliff:g id="ID_1">%1$s</xliff:g>"</string>
@@ -1873,18 +1881,11 @@
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"V rafhlaða: %1$s"</string>
     <string name="accessibility_hearing_device_right_battery_level" msgid="7598843215226414563">"R rafhlaða: %1$s"</string>
     <string name="accessibility_hearing_device_notification_channel_name" msgid="7365020777623709400">"Staða heyrnartækis"</string>
-    <!-- no translation found for more_options_edit (6337988646114341329) -->
-    <skip />
-    <!-- no translation found for more_options_move (2226159413422979066) -->
-    <skip />
-    <!-- no translation found for more_options_remove_all (194855000797536179) -->
-    <skip />
-    <!-- no translation found for floating_menu_more_options_label (7859269790323628599) -->
-    <skip />
-    <!-- no translation found for dream_setup_title (7996530071414508238) -->
-    <skip />
-    <!-- no translation found for dream_setup_button_not_now (8028385323668620805) -->
-    <skip />
-    <!-- no translation found for dream_setup_button_setup (4755361016017554826) -->
-    <skip />
+    <string name="more_options_edit" msgid="6337988646114341329">"Breyta"</string>
+    <string name="more_options_move" msgid="2226159413422979066">"Færa"</string>
+    <string name="more_options_remove_all" msgid="194855000797536179">"Fjarlægja allt"</string>
+    <string name="floating_menu_more_options_label" msgid="7859269790323628599">"Fleiri valkostir"</string>
+    <string name="dream_setup_title" msgid="7996530071414508238">"Setja upp skjávara"</string>
+    <string name="dream_setup_button_not_now" msgid="8028385323668620805">"Ekki núna"</string>
+    <string name="dream_setup_button_setup" msgid="4755361016017554826">"Setja upp"</string>
 </resources>
