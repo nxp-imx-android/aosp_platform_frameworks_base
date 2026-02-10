@@ -21,6 +21,8 @@ import android.content.Context;
 import android.content.IContentProvider;
 import android.os.FileUtils;
 import android.os.SystemProperties;
+import android.platform.test.ravenwood.RavenwoodExperimentalApiChecker;
+import android.view.Display;
 
 import java.io.File;
 
@@ -32,6 +34,19 @@ public class ContextImpl_ravenwood {
 
     static boolean isSystemOrSystemUI(Context context) {
         return SystemProperties.getBoolean(IS_SYSTEM_OR_SYSUI_PROP, false);
+    }
+
+    /**
+     * Implements {@link Context#getDisplayNoVerify()}.
+     *
+     * It's exposed as an exp-API, but unlike others, it returns null even if exp-APIs are
+     * disabled, just like @RavenwoodIgnore.
+     */
+    static Display getDisplayNoVerify(ContextImpl context) {
+        if (RavenwoodExperimentalApiChecker.isExperimentalApiEnabled()) {
+            return context.getDisplayNoVerifyInner();
+        }
+        return null;
     }
 
     static int checkPermission(ContextImpl ctx, String permission, int pid, int uid) {

@@ -3,6 +3,13 @@ container: "system"
 
 # go/keep-sorted start block=yes newline_separated=yes by_regex=name:\s*"([^"]+)"
 flag {
+    name: "extend_huns_pinned_by_user"
+    namespace: "notifications"
+    description: "When a promoted notification is opened from the chip, even silent updates from the app will extend the heads up timeout, instead of shortening it."
+    bug: "448865271"
+}
+
+flag {
     name: "launch_new_fsi_on_update"
     namespace: "notifications"
     description: "Launch a notification's fullScreenIntent when it is updated by the app from not having one to having one."

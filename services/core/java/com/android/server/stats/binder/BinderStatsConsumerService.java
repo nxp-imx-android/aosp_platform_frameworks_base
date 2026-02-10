@@ -20,30 +20,68 @@ import android.annotation.Nullable;
 import android.annotation.RequiresNoPermission;
 import android.content.Context;
 import android.os.Binder;
+import android.os.SystemClock;
 import android.os.binder.BinderCallsStats;
 import android.os.binder.BinderSpamStats;
 import android.os.binder.IBinderStatsConsumerService;
 import android.os.binder.SingleSecondBinderStats;
 import android.util.Slog;
 
+import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.FrameworkStatsLog;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
 import com.android.server.signalcollector.SignalCollectorManagerInternal;
 
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * Service that acts as a proxy to statsd for native binder stats.
  *
- * The binder stats are collected in libbinder and sent to this service.
- * This service then forwards the stats to statsd via socket using {@link FrameworkStatsLog} class.
+ * <p>The binder stats are collected in libbinder and sent to this service. This service then
+ * forwards the stats to statsd via socket using {@link FrameworkStatsLog} class.
  *
  * @hide
  */
 public class BinderStatsConsumerService extends IBinderStatsConsumerService.Stub {
     private static final String TAG = "BinderStatsConsumerService";
     private static final boolean DEBUG = false;
-    @Nullable
-    private volatile SignalCollectorManagerInternal mSignalCollectorManagerInternal;
+    private static final int MAX_STATS_BUFFER_SIZE = 6000;
+    private static final long AGGREGATION_WINDOW_MS = 60_000; // 1 minute
+    private static final int MAX_INCOMING_STATS_ARRAY_LENGTH = 256;
+    private static final int MAX_INCOMING_STRING_LENGTH = 256;
+    private static final long RATE_LIMIT_TIME_WINDOW_MS = 100;
+    private static final int MAX_REPORTED_STATS_IN_TIME_WINDOW = 10;
+    @GuardedBy("mFlushLock")
+    private long mStartOfCurrentTimeWindowMillis = 0;
+    @GuardedBy("mFlushLock")
+    private int mReportingCapacityInCurrentTimeWindow = MAX_REPORTED_STATS_IN_TIME_WINDOW;
+
+    // Map to buffer and aggregate stats
+    private final ConcurrentHashMap<BinderStatsKey, AidlTargetStats> mStatsBuffer =
+            new ConcurrentHashMap<>();
+    // Entries are added to this queue when a new AidlTargetStats is created, which occurs the first
+    // time stats for a particular (clientUid, callingUid, interface, method) tuple are received.
+    // Entries are removed and processed after they have been in the queue for at least
+    // AGGREGATION_WINDOW_MS.
+    // For every BinderStatsReport in this queue, the corresponding BinderStatsKey and
+    // AidlTargetStats must exist in mStatsBuffer.
+    private final ConcurrentLinkedQueue<BinderStatsReport> mStatsQueue =
+            new ConcurrentLinkedQueue<>();
+    // Lock to synchronize flushing of stats.
+    private final Object mFlushLock = new Object();
+    // Tracks the number of entries in mStatsBuffer.
+    // mStatsBufferCount is always equal to mStatsBuffer.size() and mStatsQueue.size().
+    private AtomicInteger mStatsBufferCount = new AtomicInteger(0);
+
+    @Nullable private volatile SignalCollectorManagerInternal mSignalCollectorManagerInternal;
+
+    BinderStatsConsumerService() {
+    }
 
     @Override
     @RequiresNoPermission
@@ -51,7 +89,7 @@ public class BinderStatsConsumerService extends IBinderStatsConsumerService.Stub
         if (DEBUG) {
             Slog.d(TAG, "reportCallStats");
         }
-        if (callStatsArray.length > 256) {
+        if (callStatsArray.length > MAX_INCOMING_STATS_ARRAY_LENGTH) {
             Slog.w(TAG,
                     "Too many call stats received, dropping stats. Count: "
                             + callStatsArray.length);
@@ -59,8 +97,8 @@ public class BinderStatsConsumerService extends IBinderStatsConsumerService.Stub
         }
         int callingUid = Binder.getCallingUid();
         for (BinderCallsStats callStats : callStatsArray) {
-            if (callStats.interfaceDescriptor.length() > 256
-                    || callStats.aidlMethod.length() > 256) {
+            if (callStats.interfaceDescriptor.length() > MAX_INCOMING_STRING_LENGTH
+                    || callStats.aidlMethod.length() > MAX_INCOMING_STRING_LENGTH) {
                 Slog.w(TAG, "Interface descriptor or AIDL method too long, dropping stats.");
                 continue;
             }
@@ -79,7 +117,7 @@ public class BinderStatsConsumerService extends IBinderStatsConsumerService.Stub
         if (DEBUG) {
             Slog.d(TAG, "reportSpamStats");
         }
-        if (spamStatsArray.length > 256) {
+        if (spamStatsArray.length > MAX_INCOMING_STATS_ARRAY_LENGTH) {
             Slog.w(TAG,
                     "Too many spam stats received, dropping stats. Count: "
                             + spamStatsArray.length);
@@ -87,8 +125,8 @@ public class BinderStatsConsumerService extends IBinderStatsConsumerService.Stub
         }
         int callingUid = Binder.getCallingUid();
         for (BinderSpamStats spamStats : spamStatsArray) {
-            if (spamStats.interfaceDescriptor.length() > 256
-                    || spamStats.aidlMethod.length() > 256) {
+            if (spamStats.interfaceDescriptor.length() > MAX_INCOMING_STRING_LENGTH
+                    || spamStats.aidlMethod.length() > MAX_INCOMING_STRING_LENGTH) {
                 Slog.w(TAG, "Interface descriptor or AIDL method too long, dropping spam stats.");
                 continue;
             }
@@ -104,45 +142,115 @@ public class BinderStatsConsumerService extends IBinderStatsConsumerService.Stub
     @Override
     @RequiresNoPermission
     public void reportSecondGranularityStats(SingleSecondBinderStats[] singleSecondStatsArray) {
+        reportSecondGranularityStats(singleSecondStatsArray, SystemClock.elapsedRealtime());
+    }
+
+    @VisibleForTesting
+    void reportSecondGranularityStats(
+            SingleSecondBinderStats[] singleSecondStatsArray, long nowMillis) {
         if (DEBUG) {
-            Slog.d(TAG, "reportSecondGranularityStats");
+            Slog.d(TAG,
+                    "reportSecondGranularityStats called with " + singleSecondStatsArray.length
+                            + " items");
         }
-        if (singleSecondStatsArray.length > 256) {
+        if (singleSecondStatsArray.length > MAX_INCOMING_STATS_ARRAY_LENGTH) {
             Slog.wtf(TAG,
                     "Too many stats received in reportSecondGranularityStats. Count: "
                             + singleSecondStatsArray.length);
             return;
         }
         int callingUid = Binder.getCallingUid();
+
         for (SingleSecondBinderStats stats : singleSecondStatsArray) {
-            if (stats.interfaceDescriptor.length() > 256 || stats.aidlMethod.length() > 256) {
+            if (stats.interfaceDescriptor == null || stats.aidlMethod == null) {
+                Slog.wtf(TAG, "Received stats with null interface or method.");
+                continue;
+            }
+            if (stats.interfaceDescriptor.length() > MAX_INCOMING_STRING_LENGTH
+                    || stats.aidlMethod.length() > MAX_INCOMING_STRING_LENGTH) {
                 Slog.wtf(TAG, "Interface descriptor or AIDL method too long.");
                 continue;
             }
-            if (stats.callCount > 125) {
-                FrameworkStatsLog.write(FrameworkStatsLog.BINDER_SPAM_REPORTED,
-                                        stats.clientUid,
-                                        callingUid,
-                                        stats.interfaceDescriptor,
-                                        stats.aidlMethod,
-                                        stats.callCount >= 125 ? 1 : 0,
-                                        stats.callCount >= 250 ? 1 : 0);
+
+            BinderStatsKey key = new BinderStatsKey(
+                    stats.clientUid, callingUid, stats.interfaceDescriptor, stats.aidlMethod);
+
+            // Drop stats if Buffer is full.
+            if (!mStatsBuffer.containsKey(key)
+                    && mStatsBufferCount.get() >= MAX_STATS_BUFFER_SIZE) {
+                continue;
             }
-            if (stats.durationCount > 0) {
-                FrameworkStatsLog.write(FrameworkStatsLog.BINDER_CALLS_REPORTED,
-                                        stats.clientUid,
-                                        callingUid,
-                                        stats.interfaceDescriptor,
-                                        stats.aidlMethod,
-                                        stats.callCount,
-                                        stats.durationMicrosSum,
-                                        stats.durationCount > 10 ? 1 : 0,
-                                        stats.durationCount > 50 ? 1 : 0,
-                                        stats.durationMicrosSquaredSum,
-                                        stats.cpuTimeCount,
-                                        stats.cpuTimeMicrosSum,
-                                        stats.cpuTimeMicrosSquaredSum);
+
+            mStatsBuffer.compute(key, (k, v) -> {
+                if (v == null) {
+                    v = new AidlTargetStats(nowMillis);
+                    mStatsQueue.add(new BinderStatsReport(k, v));
+                    mStatsBufferCount.incrementAndGet();
+                }
+                v.add(stats);
+                return v;
+            });
+        }
+        maybeFlushOldValues(nowMillis);
+    }
+
+    @VisibleForTesting
+    void maybeFlushOldValues(long nowMillis) {
+        // Keep calling flushStat as long as it returns true.
+        while (flushStat(nowMillis)) { /* Continue flushing */ }
+    }
+
+    private boolean flushStat(long nowMillis) {
+        BinderStatsReport report = mStatsQueue.peek();
+        if (report == null) {
+            return false;
+        }
+        if (nowMillis - report.mStats.mCreationTimestampMs < AGGREGATION_WINDOW_MS) {
+            return false;
+        }
+        synchronized (mFlushLock) {
+            if (mStartOfCurrentTimeWindowMillis + RATE_LIMIT_TIME_WINDOW_MS <= nowMillis) {
+                mStartOfCurrentTimeWindowMillis = nowMillis;
+                mReportingCapacityInCurrentTimeWindow = MAX_REPORTED_STATS_IN_TIME_WINDOW;
             }
+
+            if (mReportingCapacityInCurrentTimeWindow <= 0) {
+                return false;
+            }
+            if (report == mStatsQueue.peek()) {
+                mStatsQueue.poll();
+                mReportingCapacityInCurrentTimeWindow--;
+            } else {
+                return false;
+            }
+        }
+        if (mStatsBuffer.remove(report.mKey, report.mStats)) {
+            reportStats(report.mKey, report.mStats);
+            mStatsBufferCount.decrementAndGet();
+        } else {
+            Slog.wtf(TAG, "Failed to remove stats from buffer for key: " + report.mKey
+                    + " and stats: " + report.mStats);
+        }
+        return true;
+    }
+
+    private void reportStats(BinderStatsKey key, AidlTargetStats aggregatedStats) {
+        if (aggregatedStats.mSecondsWithAtLeast125Calls > 0
+                || aggregatedStats.mSecondsWithAtLeast250Calls > 0) {
+            FrameworkStatsLog.write(FrameworkStatsLog.BINDER_SPAM_REPORTED, key.clientUid(),
+                    key.callingUid(), key.interfaceDescriptor(), key.aidlMethod(),
+                    aggregatedStats.mSecondsWithAtLeast125Calls,
+                    aggregatedStats.mSecondsWithAtLeast250Calls);
+        }
+
+        if (aggregatedStats.mDurationCount > 0) {
+            FrameworkStatsLog.write(FrameworkStatsLog.BINDER_CALLS_REPORTED, key.clientUid(),
+                    key.callingUid(), key.interfaceDescriptor(), key.aidlMethod(),
+                    aggregatedStats.mCallCount, aggregatedStats.mDurationMicrosSum,
+                    aggregatedStats.mSecondsWithAtLeast10Calls,
+                    aggregatedStats.mSecondsWithAtLeast50Calls,
+                    aggregatedStats.mDurationMicrosSquaredSum, aggregatedStats.mCpuTimeCount,
+                    aggregatedStats.mCpuTimeMicrosSum, aggregatedStats.mCpuTimeMicrosSquaredSum);
         }
     }
 
@@ -157,9 +265,7 @@ public class BinderStatsConsumerService extends IBinderStatsConsumerService.Stub
         }
     }
 
-    /**
-     * Lifecycle and related code
-     */
+    /** Lifecycle and related code */
     public static final class Lifecycle extends SystemService {
         private BinderStatsConsumerService mService;
 
@@ -177,6 +283,70 @@ public class BinderStatsConsumerService extends IBinderStatsConsumerService.Stub
                 }
             } catch (Exception e) {
                 Slog.e(TAG, "Failed to publish binder_stats_consumer service", e);
+            }
+        }
+    }
+
+    private static class BinderStatsReport {
+        final BinderStatsKey mKey;
+        final AidlTargetStats mStats;
+
+        BinderStatsReport(BinderStatsKey key, AidlTargetStats stats) {
+            mKey = key;
+            mStats = stats;
+        }
+    }
+
+    // Key for the aggregation map
+    private record BinderStatsKey(
+            int clientUid, int callingUid, String interfaceDescriptor, String aidlMethod) {
+        BinderStatsKey {
+            Objects.requireNonNull(interfaceDescriptor);
+            Objects.requireNonNull(aidlMethod);
+        }
+    }
+
+    // Mutable container for aggregated stats
+    static class AidlTargetStats {
+        final long mCreationTimestampMs;
+        int mCallCount;
+        int mDurationCount;
+        long mDurationMicrosSum;
+        long mDurationMicrosSquaredSum;
+        int mCpuTimeCount;
+        long mCpuTimeMicrosSum;
+        long mCpuTimeMicrosSquaredSum;
+        // For spam stats
+        int mSecondsWithAtLeast125Calls;
+        int mSecondsWithAtLeast250Calls;
+        // For call stats
+        int mSecondsWithAtLeast10Calls;
+        int mSecondsWithAtLeast50Calls;
+
+        AidlTargetStats(long creationTimestampMs) {
+            mCreationTimestampMs = creationTimestampMs;
+        }
+
+        void add(SingleSecondBinderStats stats) {
+            mCallCount += stats.callCount;
+            mDurationCount += stats.durationCount;
+            mDurationMicrosSum += stats.durationMicrosSum;
+            mDurationMicrosSquaredSum += stats.durationMicrosSquaredSum;
+            mCpuTimeCount += stats.cpuTimeCount;
+            mCpuTimeMicrosSum += stats.cpuTimeMicrosSum;
+            mCpuTimeMicrosSquaredSum += stats.cpuTimeMicrosSquaredSum;
+
+            if (stats.callCount >= 125) {
+                mSecondsWithAtLeast125Calls++;
+            }
+            if (stats.callCount >= 250) {
+                mSecondsWithAtLeast250Calls++;
+            }
+            if (stats.durationCount >= 10) {
+                mSecondsWithAtLeast10Calls++;
+            }
+            if (stats.durationCount >= 50) {
+                mSecondsWithAtLeast50Calls++;
             }
         }
     }

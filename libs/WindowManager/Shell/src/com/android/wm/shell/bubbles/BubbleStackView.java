@@ -1153,8 +1153,12 @@ public class BubbleStackView extends FrameLayout
 
         mOrientationChangedListener =
                 (v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
-                    mPositioner.update(DeviceConfig.create(mContext, mContext.getSystemService(
-                            WindowManager.class)));
+                    if (!Flags.updateBubbleBoundsDuringRotation()) {
+                        // no need to update the positioner if the flag is enabled because it should
+                        // get updated earlier when the display is changing
+                        mPositioner.update(DeviceConfig.create(mContext, mContext.getSystemService(
+                                WindowManager.class)));
+                    }
                     onDisplaySizeChanged();
                     mExpandedAnimationController.updateResources();
                     mExpandedAnimationController.onOrientationChanged();
@@ -1983,7 +1987,7 @@ public class BubbleStackView extends FrameLayout
                 mPositioner.getTaskViewRestBounds(bounds);
                 b.getTaskView().onLocationChanged(bounds);
             }
-            updateExpandedView();
+            updateExpandedView(/* forceUpdateBounds= */ true);
         }
         setUpManageMenu();
         if (mShowingManage) {
@@ -3366,8 +3370,13 @@ public class BubbleStackView extends FrameLayout
      * if they might overlap with the IME (this only happens for large screens)
      * and clip the expanded view.
      */
-    public void setImeVisible(boolean visible) {
+    public void setImeVisible(boolean visible, boolean heightChanged) {
         if (mIsImeVisible == visible) {
+            // if visibility isn't changing but the height is changing, update the stack for the new
+            // height
+            if (mIsExpanded && heightChanged && Flags.updateBubbleBoundsDuringRotation()) {
+                updateExpandedStackForIme(visible);
+            }
             return;
         }
         mIsImeVisible = visible;
@@ -3402,31 +3411,34 @@ public class BubbleStackView extends FrameLayout
         }
 
         if (mIsExpanded) {
-            mExpandedViewAnimationController.animateForImeVisibilityChange(visible);
-            BubbleExpandedView expandedView = getExpandedView();
-            if (expandedView != null) {
-                expandedView.setImeVisible(visible);
+            updateExpandedStackForIme(visible);
+        }
+    }
+
+    private void updateExpandedStackForIme(boolean visible) {
+        mExpandedViewAnimationController.animateForImeVisibilityChange(visible);
+        BubbleExpandedView expandedView = getExpandedView();
+        if (expandedView != null) {
+            expandedView.setImeVisible(visible);
+        }
+        if (mPositioner.showBubblesVertically() && expandedView != null) {
+            float selectedY = mPositioner.getExpandedBubbleXY(getState().selectedIndex,
+                    getState()).y;
+            float newExpandedViewTop = mPositioner.getExpandedViewY(mExpandedBubble, selectedY);
+            if (!expandedView.isUsingMaxHeight()) {
+                mExpandedViewContainer.animate().translationY(newExpandedViewTop);
             }
-            if (mPositioner.showBubblesVertically() && expandedView != null) {
-                float selectedY = mPositioner.getExpandedBubbleXY(getState().selectedIndex,
-                        getState()).y;
-                float newExpandedViewTop = mPositioner.getExpandedViewY(mExpandedBubble, selectedY);
-                expandedView.setImeVisible(visible);
-                if (!expandedView.isUsingMaxHeight()) {
-                    mExpandedViewContainer.animate().translationY(newExpandedViewTop);
-                }
-                List<Animator> animList = new ArrayList<>();
-                for (int i = 0; i < mBubbleContainer.getChildCount(); i++) {
-                    View child = mBubbleContainer.getChildAt(i);
-                    float transY = mPositioner.getExpandedBubbleXY(i, getState()).y;
-                    ObjectAnimator anim = ObjectAnimator.ofFloat(child, TRANSLATION_Y, transY);
-                    animList.add(anim);
-                }
-                updatePointerPosition(true /* forIme */);
-                AnimatorSet set = new AnimatorSet();
-                set.playTogether(animList);
-                set.start();
+            List<Animator> animList = new ArrayList<>();
+            for (int i = 0; i < mBubbleContainer.getChildCount(); i++) {
+                View child = mBubbleContainer.getChildAt(i);
+                float transY = mPositioner.getExpandedBubbleXY(i, getState()).y;
+                ObjectAnimator anim = ObjectAnimator.ofFloat(child, TRANSLATION_Y, transY);
+                animList.add(anim);
             }
+            updatePointerPosition(true /* forIme */);
+            AnimatorSet set = new AnimatorSet();
+            set.playTogether(animList);
+            set.start();
         }
     }
 
@@ -4077,7 +4089,11 @@ public class BubbleStackView extends FrameLayout
         }
     }
 
-    void updateExpandedView() {
+    private void updateExpandedView() {
+        updateExpandedView(/* forceUpdateBounds= */ false);
+    }
+
+    void updateExpandedView(boolean forceUpdateBounds) {
         boolean isOverflowExpanded = mExpandedBubble != null
                 && BubbleOverflow.KEY.equals(mExpandedBubble.getKey());
         int[] paddings = mPositioner.getExpandedViewContainerPadding(
@@ -4093,7 +4109,7 @@ public class BubbleStackView extends FrameLayout
             mExpandedViewContainer.setTranslationX(0f);
             hasBoundsChanged |= expandedView.updateTaskViewContentWidth();
             hasBoundsChanged |= expandedView.updateView(
-                    mExpandedViewContainer.getLocationOnScreen());
+                    mExpandedViewContainer.getLocationOnScreen(), forceUpdateBounds);
             updatePointerPosition(false /* forIme */);
         }
 

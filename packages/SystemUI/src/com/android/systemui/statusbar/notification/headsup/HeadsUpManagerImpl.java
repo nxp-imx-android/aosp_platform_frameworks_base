@@ -488,6 +488,15 @@ public class HeadsUpManagerImpl
         return mHeadsUpEntryMap.containsKey(key) || mAvalancheController.isWaiting(key);
     }
 
+    @Override
+    public boolean isPinnedByUser(@NonNull String key) {
+        HeadsUpEntry headsUpEntry = mHeadsUpEntryMap.get(key);
+        if (headsUpEntry == null) {
+            return false;
+        }
+        return headsUpEntry.getPinnedStatus().getValue() == PinnedStatus.PinnedByUser;
+    }
+
     /**
      * @return When a HUN entry with the given key should be removed in milliseconds from now
      */
@@ -551,7 +560,7 @@ public class HeadsUpManagerImpl
                         NotificationPeekEvent.NOTIFICATION_PEEK, entry.getSbn().getUid(),
                         entry.getSbn().getPackageName(), entry.getSbn().getInstanceId());
             }
-        // TODO(b/325936094) use the isPinned Flow instead
+            // TODO(b/325936094) use the isPinned Flow instead
             for (OnHeadsUpChangedListener listener : mListeners) {
                 if (isPinned) {
                     listener.onHeadsUpPinned(entry);

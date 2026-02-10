@@ -34,7 +34,7 @@ import org.junit.Test
 abstract class MaximizeAppWindow(
     private val rotation: Rotation = Rotation.ROTATION_0,
     isResizable: Boolean = true,
-    private val trigger: MaximizeDesktopAppTrigger = MaximizeDesktopAppTrigger.MAXIMIZE_MENU,
+    private val trigger: MaximizeDesktopAppTrigger = MaximizeDesktopAppTrigger.LAYOUT_MENU,
 ) : TestScenarioBase(rotation) {
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)

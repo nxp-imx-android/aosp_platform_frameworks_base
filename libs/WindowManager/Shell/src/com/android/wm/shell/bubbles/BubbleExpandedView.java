@@ -526,7 +526,7 @@ public class BubbleExpandedView extends LinearLayout {
     void setImeVisible(boolean visible) {
         mImeVisible = visible;
         if (!mImeVisible && mNeedsNewHeight) {
-            updateHeight();
+            updateHeight(/* forceUpdate= */ false);
         }
     }
 
@@ -873,7 +873,7 @@ public class BubbleExpandedView extends LinearLayout {
      * Updates the height of the expanded view if needed.
      * @return whether the height is changed.
      */
-    boolean updateHeight() {
+    boolean updateHeight(boolean forceUpdate) {
         if (mExpandedViewContainerLocation == null) {
             return false;
         }
@@ -890,7 +890,7 @@ public class BubbleExpandedView extends LinearLayout {
                     : (FrameLayout.LayoutParams) mTaskView.getLayoutParams();
             final boolean isHeightChanged = lp.height != height;
             mNeedsNewHeight = isHeightChanged;
-            if (!mImeVisible) {
+            if (!mImeVisible || forceUpdate) {
                 // If the ime is visible... don't adjust the height because that will cause
                 // a configuration change and the ime will be lost.
                 lp.height = (int) height;
@@ -912,11 +912,18 @@ public class BubbleExpandedView extends LinearLayout {
      * @param containerLocationOnScreen The location on-screen of the container the expanded view is
      *                                  added to. This allows us to calculate max height without
      *                                  waiting for layout.
+     * @param forceUpdateBounds If the IME is visible when the view is updated we would normally not
+     *                          update the view bounds, since that would trigger a configuration
+     *                          change and the IME will hide. Instead we would defer the update
+     *                          until after the IME hides. However, if the display itself is
+     *                          changing, we have to update the bounds now, otherwise the bounds of
+     *                          the task view will be incorrect. If the IME is visible it will
+     *                          regain focus after the display change.
      * @return whether the bounds is changed.
      */
-    public boolean updateView(int[] containerLocationOnScreen) {
+    public boolean updateView(int[] containerLocationOnScreen, boolean forceUpdateBounds) {
         mExpandedViewContainerLocation = containerLocationOnScreen;
-        final boolean hasHeightChanged = updateHeight();
+        final boolean hasHeightChanged = updateHeight(forceUpdateBounds);
         if (mTaskView != null
                 && mTaskView.getVisibility() == VISIBLE
                 && mTaskView.isAttachedToWindow()) {

@@ -29,11 +29,14 @@ import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mock;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession;
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.doAnswer;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 import static com.android.server.display.feature.flags.Flags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT;
 import static com.android.server.wm.ActivityInterceptorCallback.MAINLINE_FIRST_ORDERED_ID;
 import static com.android.server.wm.ActivityInterceptorCallback.SYSTEM_FIRST_ORDERED_ID;
+import static android.service.dreams.Flags.FLAG_DREAMS_QUERY_APPLICATION_INFO;
+
 import static com.android.server.wm.ActivityInterceptorCallback.SYSTEM_LAST_ORDERED_ID;
 import static com.android.server.wm.ActivityRecord.State.PAUSED;
 import static com.android.server.wm.ActivityRecord.State.PAUSING;
@@ -53,6 +56,7 @@ import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
@@ -71,6 +75,7 @@ import android.app.HandoffActivityData;
 import android.app.HandoffActivityParams;
 import android.app.HandoffFailureCode;
 import android.app.IApplicationThread;
+import android.app.IAppTask;
 import android.app.IHandoffTaskDataReceiver;
 import android.app.PictureInPictureParams;
 import android.app.PictureInPictureUiState;
@@ -80,6 +85,7 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManagerInternal;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.net.Uri;
@@ -100,6 +106,7 @@ import android.view.WindowManager;
 
 import androidx.test.filters.MediumTest;
 
+import com.android.server.LocalServices;
 import com.android.server.wm.utils.StubOrganizer;
 
 import org.junit.Before;
@@ -2120,5 +2127,148 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         // Verify the controller is never called.
         verify(mAtm.mActivityClientController, never()).onPictureInPictureUiStateChanged(any(),
                 any());
+    }
+
+    private static final String DREAM_PACKAGE_NAME = "com.android.dream";
+    private static final int DREAM_UID = 1000;
+    private static final int DREAM_PID = 2000;
+
+    @Test
+    @EnableFlags(FLAG_DREAMS_QUERY_APPLICATION_INFO)
+    public void startDreamActivity_flagEnabled_usesFreshApplicationInfo() throws Exception {
+        // Depends on the mocked package manager set in SystemServicesTestRule#setUpLocalServices.
+        final PackageManagerInternal pmi = LocalServices.getService(PackageManagerInternal.class);
+        // Setup mocks for fresh app info
+        final ApplicationInfo freshAppInfo = new ApplicationInfo();
+        freshAppInfo.packageName = DREAM_PACKAGE_NAME;
+        freshAppInfo.uid = DREAM_UID;
+        freshAppInfo.flags = ApplicationInfo.FLAG_SYSTEM; // A different flag for verification.
+        final int userId = UserHandle.getUserId(DREAM_UID);
+        doReturn(freshAppInfo).when(pmi).getApplicationInfo(
+                eq(DREAM_PACKAGE_NAME), anyLong(), eq(DREAM_UID), eq(userId));
+
+        // Setup process with stale app info
+        final ApplicationInfo staleAppInfo = new ApplicationInfo();
+        staleAppInfo.packageName = DREAM_PACKAGE_NAME;
+        staleAppInfo.uid = DREAM_UID;
+        staleAppInfo.flags = ApplicationInfo.FLAG_PERSISTENT;
+        setupDreamProcess(DREAM_PACKAGE_NAME, DREAM_UID, DREAM_PID, staleAppInfo);
+
+        // Capture what is passed to ActivityStarter
+        final ActivityStarter starter = setupStarterMock();
+
+        // Call the method
+        final Intent intent = new Intent().setPackage(DREAM_PACKAGE_NAME);
+        final IAppTask task = mAtm.mInternal.startDreamActivity(intent, DREAM_UID, DREAM_PID);
+
+        // Verify
+        assertNotNull("startDreamActivity should return a non-null task", task);
+        final ArgumentCaptor<ActivityInfo> activityInfoCaptor =
+                ArgumentCaptor.forClass(ActivityInfo.class);
+        verify(starter).setActivityInfo(activityInfoCaptor.capture());
+        final ApplicationInfo usedAppInfo = activityInfoCaptor.getValue().applicationInfo;
+        assertEquals("Fresh ApplicationInfo should be used", freshAppInfo.flags, usedAppInfo.flags);
+    }
+
+    @Test
+    @DisableFlags(FLAG_DREAMS_QUERY_APPLICATION_INFO)
+    public void startDreamActivity_flagDisabled_usesProcessApplicationInfo() throws Exception {
+        // Depends on the mocked package manager set in SystemServicesTestRule#setUpLocalServices.
+        final PackageManagerInternal pmi = LocalServices.getService(PackageManagerInternal.class);
+
+        // Setup process with its app info
+        final ApplicationInfo processAppInfo = new ApplicationInfo();
+        processAppInfo.packageName = DREAM_PACKAGE_NAME;
+        processAppInfo.uid = DREAM_UID;
+        processAppInfo.flags = ApplicationInfo.FLAG_PERSISTENT;
+        setupDreamProcess(DREAM_PACKAGE_NAME, DREAM_UID, DREAM_PID, processAppInfo);
+
+        // Capture what is passed to ActivityStarter
+        final ActivityStarter starter = setupStarterMock();
+
+        // Call the method
+        final Intent intent = new Intent().setPackage(DREAM_PACKAGE_NAME);
+        final IAppTask task = mAtm.mInternal.startDreamActivity(intent, DREAM_UID, DREAM_PID);
+
+        // Verify
+        assertNotNull("startDreamActivity should return a non-null task", task);
+        verify(pmi, never()).getApplicationInfo(anyString(), anyInt(), anyInt(), anyInt());
+        final ArgumentCaptor<ActivityInfo> activityInfoCaptor =
+                ArgumentCaptor.forClass(ActivityInfo.class);
+        verify(starter).setActivityInfo(activityInfoCaptor.capture());
+        final ApplicationInfo usedAppInfo = activityInfoCaptor.getValue().applicationInfo;
+        assertEquals("Process's ApplicationInfo should be used",
+                processAppInfo.flags, usedAppInfo.flags);
+    }
+
+    @Test
+    @EnableFlags(FLAG_DREAMS_QUERY_APPLICATION_INFO)
+    public void startDreamActivity_flagEnabled_noProcess_returnsNull() {
+        // No process is set up, so getProcess will return null.
+
+        // Call and verify
+        final Intent intent = new Intent().setPackage(DREAM_PACKAGE_NAME);
+        assertNull(mAtm.mInternal.startDreamActivity(intent, DREAM_UID, DREAM_PID));
+    }
+
+    @Test
+    @EnableFlags(FLAG_DREAMS_QUERY_APPLICATION_INFO)
+    public void startDreamActivity_flagEnabled_noAppInfo_returnsNull() {
+        // Depends on the mocked package manager set in SystemServicesTestRule#setUpLocalServices.
+        final PackageManagerInternal pmi = LocalServices.getService(PackageManagerInternal.class);
+        final int userId = UserHandle.getUserId(DREAM_UID);
+        doReturn(null).when(pmi).getApplicationInfo(
+                eq(DREAM_PACKAGE_NAME), anyInt(), eq(DREAM_UID), eq(userId));
+
+        // Setup process
+        final ApplicationInfo appInfo = new ApplicationInfo();
+        appInfo.packageName = DREAM_PACKAGE_NAME;
+        appInfo.uid = DREAM_UID;
+        setupDreamProcess(DREAM_PACKAGE_NAME, DREAM_UID, DREAM_PID, appInfo);
+
+        // Call and verify
+        final Intent intent = new Intent().setPackage(DREAM_PACKAGE_NAME);
+        assertNull(mAtm.mInternal.startDreamActivity(intent, DREAM_UID, DREAM_PID));
+    }
+
+    private WindowProcessController setupDreamProcess(String packageName, int uid, int pid,
+            ApplicationInfo appInfo) {
+        final int userId = UserHandle.getUserId(uid);
+
+        final WindowProcessController wpc = new WindowProcessController(mAtm, appInfo,
+                packageName, uid, userId, null /* owner */, mock(WindowProcessListener.class));
+        wpc.setPid(pid);
+        wpc.setThread(mock(IApplicationThread.class));
+
+        mAtm.mProcessMap.put(pid, wpc);
+        mAtm.mProcessNames.put(packageName, uid, wpc);
+        return wpc;
+    }
+
+    private ActivityStarter setupStarterMock() {
+        final ActivityStartController startController = mock(ActivityStartController.class);
+        doReturn(startController).when(mAtm).getActivityStartController();
+        final ActivityStarter starter = mock(ActivityStarter.class, Mockito.RETURNS_DEEP_STUBS);
+        doReturn(starter).when(startController).obtainStarter(any(), anyString());
+
+        // Ensure builder methods return the starter mock
+        doReturn(starter).when(starter).setCallingUid(anyInt());
+        doReturn(starter).when(starter).setCallingPid(anyInt());
+        doReturn(starter).when(starter).setCallingPackage(any());
+        doReturn(starter).when(starter).setActivityInfo(any());
+        doReturn(starter).when(starter).setActivityOptions(any());
+        doReturn(starter).when(starter).setRealCallingUid(anyInt());
+        doReturn(starter).when(starter).setAllowBalExemptionForSystemProcess(anyBoolean());
+
+        // We need to return a real task for AppTaskImpl.
+        final ActivityRecord activityRecord = new ActivityBuilder(mAtm).setCreateTask(true).build();
+        doAnswer(invocation -> {
+            Object[] args = invocation.getArguments();
+            ((ActivityRecord[]) args[0])[0] = activityRecord;
+            return starter;
+        }).when(starter).setOutActivity(any());
+
+        doReturn(ActivityManager.START_SUCCESS).when(starter).execute();
+        return starter;
     }
 }

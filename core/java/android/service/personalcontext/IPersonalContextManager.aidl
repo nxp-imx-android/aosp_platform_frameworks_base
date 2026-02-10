@@ -68,4 +68,9 @@ interface IPersonalContextManager {
     // Avoiding oneway so that get and set have a consistent ordering.
     @EnforcePermission("CHANGE_PERSONAL_CONTEXT_MODE")
     void setPersonalContextModeEnabled(in String packageName, int userId, boolean enabled);
+
+    oneway void updateEmbeddedClientInfo(
+        in InsightSurfaceClientInfo oldClientInfo,
+        in InsightSurfaceClientInfo newClientInfo,
+        int userId);
 }

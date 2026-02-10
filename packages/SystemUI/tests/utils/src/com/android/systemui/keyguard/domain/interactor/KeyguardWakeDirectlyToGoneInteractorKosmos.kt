@@ -27,7 +27,7 @@ import com.android.systemui.power.domain.interactor.powerInteractor
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.user.domain.interactor.selectedUserInteractor
 import com.android.systemui.util.settings.fakeSettings
-import com.android.systemui.util.time.systemClock
+import com.android.systemui.util.time.fakeSystemClock
 
 val Kosmos.keyguardWakeDirectlyToGoneInteractor: KeyguardWakeDirectlyToGoneInteractor by
     Kosmos.Fixture {
@@ -35,7 +35,7 @@ val Kosmos.keyguardWakeDirectlyToGoneInteractor: KeyguardWakeDirectlyToGoneInter
             applicationCoroutineScope,
             testableContext,
             fakeKeyguardRepository,
-            systemClock,
+            fakeSystemClock,
             alarmManager,
             keyguardTransitionInteractor,
             powerInteractor,

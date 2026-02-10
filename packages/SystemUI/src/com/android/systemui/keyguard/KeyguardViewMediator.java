@@ -2038,9 +2038,14 @@ public class KeyguardViewMediator implements CoreStartable,
         // having to unlock the screen)
 
         // From SecuritySettings
-        final long lockAfterTimeout = mSecureSettings.getIntForUser(LOCK_SCREEN_LOCK_AFTER_TIMEOUT,
+        long lockAfterTimeout = mSecureSettings.getIntForUser(LOCK_SCREEN_LOCK_AFTER_TIMEOUT,
                 KEYGUARD_LOCK_AFTER_DELAY_DEFAULT,
                 userId);
+
+        // Swipe setting provides no ability to change the lock timeout. Ignore any prior value
+        if (!mLockPatternUtils.isSecure(userId)) {
+            lockAfterTimeout = KEYGUARD_LOCK_AFTER_DELAY_DEFAULT;
+        }
 
         // From DevicePolicyAdmin
         final long policyTimeout = mLockPatternUtils.getDevicePolicyManager()

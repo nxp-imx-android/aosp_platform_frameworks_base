@@ -327,13 +327,13 @@ class SnapshotController {
                 if (knownSnapshot != null) {
                     return knownSnapshot;
                 }
-            } else {
-                final TaskSnapshot convertLowResSnapshot =
-                    convertToLowResSnapshot(taskId, inCacheSnapshot);
-                if (convertLowResSnapshot != null) {
-                    convertLowResSnapshot.addReference(TaskSnapshot.REFERENCE_WRITE_TO_PARCEL);
-                    return convertLowResSnapshot;
-                }
+            }
+            // Conversion timed out before completion; creating low-res snapshot immediately.
+            final TaskSnapshot convertLowResSnapshot =
+                    convertToLowResSnapshot(task, true /* updateCache */, inCacheSnapshot);
+            if (convertLowResSnapshot != null) {
+                convertLowResSnapshot.addReference(TaskSnapshot.REFERENCE_WRITE_TO_PARCEL);
+                return convertLowResSnapshot;
             }
         }
         if (mSnapshotPersistQueue.isDeleting(taskId, task.mUserId)) {
@@ -354,13 +354,18 @@ class SnapshotController {
      *
      * @param snapshot The high resolution snapshot.
      */
-    TaskSnapshot convertToLowResSnapshot(int taskId, TaskSnapshot snapshot) {
+    TaskSnapshot convertToLowResSnapshot(Task task, boolean updateCache, TaskSnapshot snapshot) {
         try {
             Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "createLowResSnapshot");
             final TaskSnapshot lowResSnapshot = mTaskSnapshotController
                     .createLowResSnapshot(snapshot);
             if (lowResSnapshot != null) {
-                mSnapshotPersistQueue.updateKnownLowResSnapshotIfPossible(taskId, lowResSnapshot);
+                mSnapshotPersistQueue.updateKnownLowResSnapshotIfPossible(
+                        task.mTaskId, lowResSnapshot);
+                if (updateCache) {
+                    mTaskSnapshotController.updateCacheWithLowResSnapshotIfNeeded(
+                            task, lowResSnapshot);
+                }
             }
             return lowResSnapshot;
         } finally {
@@ -450,7 +455,7 @@ class SnapshotController {
                 }
                 if (convertToLow) {
                     final TaskSnapshot convert = SnapshotController.this
-                            .convertToLowResSnapshot(taskId, freshSnapshot);
+                            .convertToLowResSnapshot(task, updateCache, freshSnapshot);
                     if (convert != null) {
                         convert.addReference(TaskSnapshot.REFERENCE_WRITE_TO_PARCEL);
                         return convert;

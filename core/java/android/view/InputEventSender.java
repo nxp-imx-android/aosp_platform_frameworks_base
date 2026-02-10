@@ -19,12 +19,14 @@ package android.view;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.os.Build;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Looper;
 import android.os.MessageQueue;
 import android.util.Log;
 
 import dalvik.system.CloseGuard;
 
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -52,6 +54,7 @@ public abstract class InputEventSender {
     private static native void nativeDispose(long senderPtr);
     private static native boolean nativeSendKeyEvent(long senderPtr, int seq, KeyEvent event);
     private static native boolean nativeSendMotionEvent(long senderPtr, int seq, MotionEvent event);
+    private static native IBinder nativeGetToken(long receiverPtr);
 
     /**
      * Creates an input event sender bound to the specified input channel.
@@ -167,10 +170,28 @@ public abstract class InputEventSender {
     }
 
     private boolean sendInputEventInternal(int seq, InputEvent event) {
-        if (event instanceof KeyEvent) {
-            return nativeSendKeyEvent(mSenderPtr, seq, (KeyEvent)event);
-        } else {
-            return nativeSendMotionEvent(mSenderPtr, seq, (MotionEvent)event);
+        try {
+            if (event instanceof KeyEvent) {
+                return nativeSendKeyEvent(mSenderPtr, seq, (KeyEvent) event);
+            } else {
+                return nativeSendMotionEvent(mSenderPtr, seq, (MotionEvent) event);
+            }
+        } finally {
+            Reference.reachabilityFence(this);
+        }
+    }
+
+    /**
+     * @return Returns a token to identify the input channel.
+     */
+    public IBinder getToken() {
+        if (mSenderPtr == 0) {
+            return null;
+        }
+        try {
+            return nativeGetToken(mSenderPtr);
+        } finally {
+            Reference.reachabilityFence(this);
         }
     }
 

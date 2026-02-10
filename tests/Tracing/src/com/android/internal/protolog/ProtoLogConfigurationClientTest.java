@@ -67,14 +67,22 @@ public class ProtoLogConfigurationClientTest {
 
     @Test
     public void start_registersClient() throws RemoteException {
-        IProtoLogGroup[] groups = new IProtoLogGroup[] {
-                mockGroup("Group1", true),
-                mockGroup("Group2", false)
-        };
+        IProtoLogGroup[] groups =
+                new IProtoLogGroup[] {
+                    mockGroup("Group1", false),
+                    mockGroup("Group2", true),
+                    mockGroup("Group3", false),
+                };
 
         mProtoLogConfigurationClient.start(groups, true, mConfigurationService);
 
-        verify(mConfigurationService).registerClient(eq(mProtoLogConfigurationClient), any());
+        IProtoLogConfigurationService.RegisterClientArgs expectedArgs =
+                new IProtoLogConfigurationService.RegisterClientArgs();
+        expectedArgs.groups = new String[] {"Group1", "Group2", "Group3"};
+        expectedArgs.groupsDefaultLogcatStatus = new boolean[] {false, true, false};
+        expectedArgs.viewerConfigFile = "viewer_config.json";
+        verify(mConfigurationService)
+                .registerClient(eq(mProtoLogConfigurationClient), eq(expectedArgs));
     }
 
     @Test
@@ -91,12 +99,18 @@ public class ProtoLogConfigurationClientTest {
         IProtoLogGroup[] initialGroups = new IProtoLogGroup[] {};
         mProtoLogConfigurationClient.start(initialGroups, true, mConfigurationService);
 
-        IProtoLogGroup[] newGroups = new IProtoLogGroup[] {
-            mockGroup("Group3", true)
-        };
+        IProtoLogGroup[] newGroups =
+                new IProtoLogGroup[] {
+                    mockGroup("Group1", true), mockGroup("Group2", false), mockGroup("Group3", true)
+                };
         mProtoLogConfigurationClient.addGroups(newGroups);
 
-        verify(mConfigurationService).registerGroups(eq(mProtoLogConfigurationClient), any());
+        IProtoLogConfigurationService.RegisterGroupsArgs expectedArgs =
+                new IProtoLogConfigurationService.RegisterGroupsArgs();
+        expectedArgs.groups = new String[] {"Group1", "Group2", "Group3"};
+        expectedArgs.groupsDefaultLogcatStatus = new boolean[] {true, false, true};
+        verify(mConfigurationService)
+                .registerGroups(eq(mProtoLogConfigurationClient), eq(expectedArgs));
     }
 
     @Test

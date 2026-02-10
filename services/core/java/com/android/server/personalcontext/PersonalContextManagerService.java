@@ -462,6 +462,19 @@ public class PersonalContextManagerService extends SystemService {
         refiner.handleFeedback(insight, partialFeedback);
     }
 
+    private void updateEmbeddedClientInfo(
+            int userId,
+            InsightSurfaceClientInfo oldClientInfo,
+            InsightSurfaceClientInfo newClientInfo) {
+        final UserState userState = getUserStateSynchronized(userId);
+        if (userState == null) {
+            Slog.e(TAG, "No user state when updating embedded client info");
+            return;
+        }
+
+        userState.embeddedInsightRenderer().updateClientInfo(oldClientInfo, newClientInfo);
+    }
+
     private UserState getUserStateSynchronized(int userId) {
         synchronized (mUserStates) {
             return mUserStates.get(userId);
@@ -733,6 +746,18 @@ public class PersonalContextManagerService extends SystemService {
             }
 
             service.mLogger.dump(fout);
+        }
+
+        @PermissionManuallyEnforced
+        @Override
+        public void updateEmbeddedClientInfo(
+                InsightSurfaceClientInfo oldClientInfo,
+                InsightSurfaceClientInfo newClientInfo,
+                int userId) {
+            verifyUser(userId);
+            Binder.withCleanCallingIdentity(
+                    () -> getService().updateEmbeddedClientInfo(
+                            userId, oldClientInfo, newClientInfo));
         }
     }
 

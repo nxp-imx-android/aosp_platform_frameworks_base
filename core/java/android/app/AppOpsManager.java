@@ -3102,7 +3102,8 @@ public class AppOpsManager {
             .setPermission(android.Manifest.permission.READ_SMS)
             .setRestriction(UserManager.DISALLOW_SMS).setDefaultMode(AppOpsManager.MODE_ALLOWED)
             .setDisableReset(true).build(),
-        new AppOpInfo.Builder(OP_WRITE_SMS, OPSTR_WRITE_SMS, "WRITE_SMS")
+        new AppOpInfo.Builder(OP_WRITE_SMS, OPSTR_WRITE_SMS, "WRITE_SMS",
+                AppOpsManager.MODE_ERRORED)
             .setRestriction(UserManager.DISALLOW_SMS)
             .setDefaultMode(AppOpsManager.MODE_IGNORED).setDisableReset(true).build(),
         new AppOpInfo.Builder(OP_RECEIVE_SMS, OPSTR_RECEIVE_SMS, "RECEIVE_SMS")
@@ -3129,7 +3130,8 @@ public class AppOpsManager {
             .setSwitchCode(OP_READ_SMS).setPermission(android.Manifest.permission.READ_SMS)
             .setRestriction(UserManager.DISALLOW_SMS).setDefaultMode(AppOpsManager.MODE_ALLOWED)
             .build(),
-        new AppOpInfo.Builder(OP_WRITE_ICC_SMS, OPSTR_WRITE_ICC_SMS, "WRITE_ICC_SMS")
+        new AppOpInfo.Builder(OP_WRITE_ICC_SMS, OPSTR_WRITE_ICC_SMS, "WRITE_ICC_SMS",
+                AppOpsManager.MODE_ERRORED)
             .setSwitchCode(OP_WRITE_SMS).setRestriction(UserManager.DISALLOW_SMS)
             .setDefaultMode(AppOpsManager.MODE_ALLOWED).build(),
         new AppOpInfo.Builder(OP_WRITE_SETTINGS, OPSTR_WRITE_SETTINGS, "WRITE_SETTINGS",
@@ -3157,7 +3159,8 @@ public class AppOpsManager {
             .setDefaultMode(AppOpsManager.MODE_ALLOWED).build(),
         new AppOpInfo.Builder(OP_READ_CLIPBOARD, OPSTR_READ_CLIPBOARD, "READ_CLIPBOARD")
             .setDefaultMode(AppOpsManager.MODE_ALLOWED).build(),
-        new AppOpInfo.Builder(OP_WRITE_CLIPBOARD, OPSTR_WRITE_CLIPBOARD, "WRITE_CLIPBOARD")
+        new AppOpInfo.Builder(OP_WRITE_CLIPBOARD, OPSTR_WRITE_CLIPBOARD, "WRITE_CLIPBOARD",
+                AppOpsManager.MODE_ERRORED)
             .setDefaultMode(AppOpsManager.MODE_ALLOWED).build(),
         new AppOpInfo.Builder(OP_TAKE_MEDIA_BUTTONS, OPSTR_TAKE_MEDIA_BUTTONS, "TAKE_MEDIA_BUTTONS")
             .setDefaultMode(AppOpsManager.MODE_ALLOWED)
@@ -3207,11 +3210,14 @@ public class AppOpsManager {
             .setRestriction(UserManager.DISALLOW_CREATE_WINDOWS)
             .setAllowSystemRestrictionBypass(new RestrictionBypass(false, true, false))
             .setDefaultMode(AppOpsManager.MODE_ALLOWED).build(),
-        new AppOpInfo.Builder(OP_PROJECT_MEDIA, OPSTR_PROJECT_MEDIA, "PROJECT_MEDIA")
+        new AppOpInfo.Builder(OP_PROJECT_MEDIA, OPSTR_PROJECT_MEDIA, "PROJECT_MEDIA",
+                AppOpsManager.MODE_ERRORED)
             .setDefaultMode(AppOpsManager.MODE_IGNORED).build(),
-        new AppOpInfo.Builder(OP_ACTIVATE_VPN, OPSTR_ACTIVATE_VPN, "ACTIVATE_VPN")
+        new AppOpInfo.Builder(OP_ACTIVATE_VPN, OPSTR_ACTIVATE_VPN, "ACTIVATE_VPN",
+                AppOpsManager.MODE_ERRORED)
             .setDefaultMode(AppOpsManager.MODE_IGNORED).build(),
-        new AppOpInfo.Builder(OP_WRITE_WALLPAPER, OPSTR_WRITE_WALLPAPER, "WRITE_WALLPAPER")
+        new AppOpInfo.Builder(OP_WRITE_WALLPAPER, OPSTR_WRITE_WALLPAPER, "WRITE_WALLPAPER",
+                AppOpsManager.MODE_ERRORED)
             .setRestriction(UserManager.DISALLOW_WALLPAPER)
             .setDefaultMode(AppOpsManager.MODE_ALLOWED).build(),
         new AppOpInfo.Builder(OP_ASSIST_STRUCTURE, OPSTR_ASSIST_STRUCTURE, "ASSIST_STRUCTURE")
@@ -3330,19 +3336,23 @@ public class AppOpsManager {
         new AppOpInfo.Builder(OP_READ_MEDIA_AUDIO, OPSTR_READ_MEDIA_AUDIO, "READ_MEDIA_AUDIO")
             .setPermission(Manifest.permission.READ_MEDIA_AUDIO)
             .setDefaultMode(AppOpsManager.MODE_ALLOWED).build(),
-        new AppOpInfo.Builder(OP_WRITE_MEDIA_AUDIO, OPSTR_WRITE_MEDIA_AUDIO, "WRITE_MEDIA_AUDIO")
+        new AppOpInfo.Builder(OP_WRITE_MEDIA_AUDIO, OPSTR_WRITE_MEDIA_AUDIO, "WRITE_MEDIA_AUDIO",
+                AppOpsManager.MODE_ERRORED)
             .setDefaultMode(AppOpsManager.MODE_ERRORED).build(),
         new AppOpInfo.Builder(OP_READ_MEDIA_VIDEO, OPSTR_READ_MEDIA_VIDEO, "READ_MEDIA_VIDEO")
             .setPermission(Manifest.permission.READ_MEDIA_VIDEO)
             .setDefaultMode(AppOpsManager.MODE_ALLOWED).build(),
-        new AppOpInfo.Builder(OP_WRITE_MEDIA_VIDEO, OPSTR_WRITE_MEDIA_VIDEO, "WRITE_MEDIA_VIDEO")
+        new AppOpInfo.Builder(OP_WRITE_MEDIA_VIDEO, OPSTR_WRITE_MEDIA_VIDEO, "WRITE_MEDIA_VIDEO",
+                AppOpsManager.MODE_ERRORED)
             .setDefaultMode(AppOpsManager.MODE_ERRORED).setDisableReset(true).build(),
         new AppOpInfo.Builder(OP_READ_MEDIA_IMAGES, OPSTR_READ_MEDIA_IMAGES, "READ_MEDIA_IMAGES")
             .setPermission(Manifest.permission.READ_MEDIA_IMAGES)
             .setDefaultMode(AppOpsManager.MODE_ALLOWED).build(),
-        new AppOpInfo.Builder(OP_WRITE_MEDIA_IMAGES, OPSTR_WRITE_MEDIA_IMAGES, "WRITE_MEDIA_IMAGES")
+        new AppOpInfo.Builder(OP_WRITE_MEDIA_IMAGES, OPSTR_WRITE_MEDIA_IMAGES, "WRITE_MEDIA_IMAGES",
+                AppOpsManager.MODE_ERRORED)
             .setDefaultMode(AppOpsManager.MODE_ERRORED).setDisableReset(true).build(),
-        new AppOpInfo.Builder(OP_LEGACY_STORAGE, OPSTR_LEGACY_STORAGE, "LEGACY_STORAGE")
+        new AppOpInfo.Builder(OP_LEGACY_STORAGE, OPSTR_LEGACY_STORAGE, "LEGACY_STORAGE",
+                AppOpsManager.MODE_ERRORED)
             .setDisableReset(true).build(),
         new AppOpInfo.Builder(OP_ACCESS_ACCESSIBILITY, OPSTR_ACCESS_ACCESSIBILITY,
                 "ACCESS_ACCESSIBILITY").setDefaultMode(AppOpsManager.MODE_ALLOWED).build(),
@@ -3360,7 +3370,8 @@ public class AppOpsManager {
                 "INTERACT_ACROSS_PROFILES")
             .setPermission(android.Manifest.permission.INTERACT_ACROSS_PROFILES).build(),
         new AppOpInfo.Builder(OP_ACTIVATE_PLATFORM_VPN, OPSTR_ACTIVATE_PLATFORM_VPN,
-                "ACTIVATE_PLATFORM_VPN").setDefaultMode(AppOpsManager.MODE_IGNORED).build(),
+                "ACTIVATE_PLATFORM_VPN", AppOpsManager.MODE_ERRORED)
+            .setDefaultMode(AppOpsManager.MODE_IGNORED).build(),
         new AppOpInfo.Builder(OP_LOADER_USAGE_STATS, OPSTR_LOADER_USAGE_STATS, "LOADER_USAGE_STATS")
             .setPermission(android.Manifest.permission.LOADER_USAGE_STATS).build(),
         new AppOpInfo.Builder(OP_NONE, "", "").setDefaultMode(AppOpsManager.MODE_IGNORED).build(),
@@ -3371,7 +3382,8 @@ public class AppOpsManager {
                 OPSTR_AUTO_REVOKE_MANAGED_BY_INSTALLER, "AUTO_REVOKE_MANAGED_BY_INSTALLER")
             .setDefaultMode(AppOpsManager.MODE_ALLOWED).build(),
         new AppOpInfo.Builder(OP_NO_ISOLATED_STORAGE, OPSTR_NO_ISOLATED_STORAGE,
-                "NO_ISOLATED_STORAGE").setDefaultMode(AppOpsManager.MODE_ERRORED)
+                "NO_ISOLATED_STORAGE", AppOpsManager.MODE_ERRORED)
+            .setDefaultMode(AppOpsManager.MODE_ERRORED)
             .setDisableReset(true).build(),
         new AppOpInfo.Builder(OP_PHONE_CALL_MICROPHONE, OPSTR_PHONE_CALL_MICROPHONE,
                 "PHONE_CALL_MICROPHONE").setDefaultMode(AppOpsManager.MODE_ALLOWED).build(),
@@ -3383,7 +3395,8 @@ public class AppOpsManager {
                 "MANAGE_ONGOING_CALLS", AppOpsManager.MODE_ERRORED)
             .setPermission(Manifest.permission.MANAGE_ONGOING_CALLS)
             .setDisableReset(true).build(),
-        new AppOpInfo.Builder(OP_MANAGE_CREDENTIALS, OPSTR_MANAGE_CREDENTIALS, "MANAGE_CREDENTIALS")
+        new AppOpInfo.Builder(OP_MANAGE_CREDENTIALS, OPSTR_MANAGE_CREDENTIALS, "MANAGE_CREDENTIALS",
+                AppOpsManager.MODE_ERRORED)
             .build(),
         new AppOpInfo.Builder(OP_USE_ICC_AUTH_WITH_DEVICE_IDENTIFIER,
                 OPSTR_USE_ICC_AUTH_WITH_DEVICE_IDENTIFIER, "USE_ICC_AUTH_WITH_DEVICE_IDENTIFIER",
@@ -3428,9 +3441,11 @@ public class AppOpsManager {
             .setPermission(Manifest.permission.NEARBY_WIFI_DEVICES)
             .setDefaultMode(AppOpsManager.MODE_ALLOWED).build(),
         new AppOpInfo.Builder(OP_ESTABLISH_VPN_SERVICE, OPSTR_ESTABLISH_VPN_SERVICE,
-                "ESTABLISH_VPN_SERVICE").setDefaultMode(AppOpsManager.MODE_ALLOWED).build(),
+                "ESTABLISH_VPN_SERVICE", AppOpsManager.MODE_ERRORED)
+            .setDefaultMode(AppOpsManager.MODE_ALLOWED).build(),
         new AppOpInfo.Builder(OP_ESTABLISH_VPN_MANAGER, OPSTR_ESTABLISH_VPN_MANAGER,
-                "ESTABLISH_VPN_MANAGER").setDefaultMode(AppOpsManager.MODE_ALLOWED).build(),
+                "ESTABLISH_VPN_MANAGER", AppOpsManager.MODE_ERRORED)
+            .setDefaultMode(AppOpsManager.MODE_ALLOWED).build(),
         new AppOpInfo.Builder(OP_ACCESS_RESTRICTED_SETTINGS, OPSTR_ACCESS_RESTRICTED_SETTINGS,
                 "ACCESS_RESTRICTED_SETTINGS").setDefaultMode(AppOpsManager.MODE_DEFAULT)
             .setDisableReset(true).setRestrictRead(true).build(),
@@ -3457,7 +3472,8 @@ public class AppOpsManager {
                 "SYSTEM_EXEMPT_FROM_DISMISSIBLE_NOTIFICATIONS")
                 .setDisableReset(true).build(),
         new AppOpInfo.Builder(OP_READ_WRITE_HEALTH_DATA, OPSTR_READ_WRITE_HEALTH_DATA,
-                "READ_WRITE_HEALTH_DATA").setDefaultMode(AppOpsManager.MODE_ALLOWED).build(),
+                "READ_WRITE_HEALTH_DATA", AppOpsManager.MODE_ERRORED)
+            .setDefaultMode(AppOpsManager.MODE_ALLOWED).build(),
         new AppOpInfo.Builder(OP_FOREGROUND_SERVICE_SPECIAL_USE,
                 OPSTR_FOREGROUND_SERVICE_SPECIAL_USE, "FOREGROUND_SERVICE_SPECIAL_USE")
                 .setPermission(Manifest.permission.FOREGROUND_SERVICE_SPECIAL_USE).build(),
@@ -3610,7 +3626,8 @@ public class AppOpsManager {
         // slightly different semantics - the permission must be held in order to request a
         // computer control session at all, while the op mode determines whether explicit user
         // consent is required when requesting a computer control session.
-        new AppOpInfo.Builder(OP_COMPUTER_CONTROL, OPSTR_COMPUTER_CONTROL, "COMPUTER_CONTROL")
+        new AppOpInfo.Builder(OP_COMPUTER_CONTROL, OPSTR_COMPUTER_CONTROL, "COMPUTER_CONTROL",
+                AppOpsManager.MODE_ERRORED)
                 .setDefaultMode(AppOpsManager.MODE_DEFAULT)
                 .build(),
         new AppOpInfo.Builder(OP_READ_OTP_SMS, OPSTR_READ_OTP_SMS, "READ_OTP_SMS")
@@ -3641,7 +3658,7 @@ public class AppOpsManager {
                                 ? HealthPermissions.READ_VO2_MAX : null)
                 .setDefaultMode(AppOpsManager.MODE_ALLOWED).build(),
         new AppOpInfo.Builder(OP_CONTINUE_ACROSS_DEVICES, OPSTR_CONTINUE_ACROSS_DEVICES,
-                "CONTINUE_ACROSS_DEVICES")
+                "CONTINUE_ACROSS_DEVICES", AppOpsManager.MODE_ERRORED)
                 .setDefaultMode(AppOpsManager.MODE_ALLOWED).build(),
         new AppOpInfo.Builder(OP_READ_SCREEN_CONTEXT, OPSTR_READ_SCREEN_CONTEXT,
                 "READ_SCREEN_CONTEXT")
@@ -3650,7 +3667,7 @@ public class AppOpsManager {
                 "READ_RESTRICTED_MESSAGES")
                 .setDefaultMode(AppOpsManager.MODE_IGNORED).build(),
         new AppOpInfo.Builder(OP_WRITE_RESTRICTED_MESSAGES, OPSTR_WRITE_RESTRICTED_MESSAGES,
-                "WRITE_RESTRICTED_MESSAGES")
+                "WRITE_RESTRICTED_MESSAGES", AppOpsManager.MODE_ERRORED)
                 .setDefaultMode(AppOpsManager.MODE_IGNORED).build(),
     };
 

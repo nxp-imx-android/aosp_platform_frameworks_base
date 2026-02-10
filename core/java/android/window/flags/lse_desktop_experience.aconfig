@@ -76,6 +76,16 @@ flag {
 }
 
 flag {
+   name: "desktop_homescreen_icons_applaunch_transitions"
+    namespace: "lse_desktop_experience"
+    description: "Use Desktop applaunch transitions for desktop homescreen icons."
+    bug: "466370523"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
    name: "desktop_overview_rotation_task_resize_bugfix"
     namespace: "lse_desktop_experience"
     description: "Does not resize task due to rotation only display changes when in overview."
