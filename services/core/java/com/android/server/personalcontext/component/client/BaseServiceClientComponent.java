@@ -142,7 +142,7 @@ public abstract class BaseServiceClientComponent<C> implements Component {
             mContext.bindServiceAsUser(
                     mServiceIntent,
                     mServiceConnection,
-                    Context.BIND_AUTO_CREATE | Context.BIND_ALLOW_ACTIVITY_STARTS,
+                    Context.BIND_AUTO_CREATE | Context.BIND_ALLOW_BACKGROUND_ACTIVITY_STARTS,
                     mUserHandle);
         });
     }
