@@ -10932,14 +10932,19 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun startLaunchTransition_notifiesSnapEventHandler() {
+        val deskId = 7
+        taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = deskId)
+        taskRepository.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = deskId)
+
         controller.startLaunchTransition(
             transitionType = TRANSIT_OPEN,
             wct = WindowContainerTransaction(),
             launchingTaskId = null,
-            deskId = 0,
+            deskId = deskId,
             displayId = DEFAULT_DISPLAY,
-            userId = 0,
+            userId = taskRepository.userId,
         )
 
         verify(snapEventHandler).onTaskLaunchStarted()
@@ -11959,10 +11964,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(
-        FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK,
-    )
+    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND, Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK)
     fun addMoveToBubbleFromDesktopChange_multiTasks_notExitDesktop() {
         val task = setUpFreeformTask()
         setUpFreeformTask()
