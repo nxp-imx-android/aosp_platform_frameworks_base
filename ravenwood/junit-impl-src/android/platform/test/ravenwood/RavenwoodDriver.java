@@ -374,7 +374,9 @@ public class RavenwoodDriver {
                         Map.Entry::getKey,
 
                         // Hide the values as needed.
-                        entry -> sSecretEnvPattern.matcher(entry.getKey()).find()
+                        entry ->
+                                (!entry.getKey().startsWith("RAVENWOOD_")
+                                && sSecretEnvPattern.matcher(entry.getKey()).find())
                                 ? "[redacted]" : entry.getValue(),
                         (oldValue, newValue) -> newValue,
                         HashMap::new
