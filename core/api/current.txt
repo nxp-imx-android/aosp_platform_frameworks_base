@@ -9358,7 +9358,7 @@ package android.app.appfunctions {
   @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") public final class AppFunctionName implements android.os.Parcelable {
     ctor public AppFunctionName(@NonNull String, @NonNull String);
     method public int describeContents();
-    method @NonNull public String getFunctionId();
+    method @NonNull public String getFunctionIdentifier();
     method @NonNull public String getPackageName();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.app.appfunctions.AppFunctionName> CREATOR;
