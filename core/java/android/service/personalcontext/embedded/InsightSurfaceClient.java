@@ -96,8 +96,8 @@ public class InsightSurfaceClient implements AutoCloseable {
         /**
          * The size of the embedded surface has changed. Subclasses can override this method to be
          * informed of the size change.
-         * @param width the new width of the surface
-         * @param height the new height of the surface
+         * @param width the new width of the surface in pixels
+         * @param height the new height of the surface in pixels
          */
         default void onSizeChanged(int width, int height) {
         }
@@ -131,10 +131,11 @@ public class InsightSurfaceClient implements AutoCloseable {
         }
 
         /**
-         * An error has occurred. Subclasses can override this method to be informed of errors.
-         * @param exception an {@link Exception} representing the error
+         * An error has occurred with an {@link InsightSurfaceSession}. Subclasses can override this
+         * method to be informed of errors.
+         * @param exception the {@link InsightSurfaceSessionException} representing the error
          */
-        default void onError(@NonNull Exception exception) {
+        default void onError(@NonNull InsightSurfaceSessionException exception) {
         }
     }
 

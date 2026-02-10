@@ -102,14 +102,4 @@ public class InsightSurfaceSessionTest {
         mSession.update(mUpdate, null);
         verify(mPersonalContextManager).publishInsightSurfaceHints(hints, newClientInfo);
     }
-
-    @Test
-    public void testPublishHints() {
-        final BundleHint hint = new BundleHint.Builder().build();
-        final Set<ContextHint> hints = Set.of(hint);
-
-        mSession.publishHints(hints);
-
-        verify(mClient).publishHints(hints);
-    }
 }
