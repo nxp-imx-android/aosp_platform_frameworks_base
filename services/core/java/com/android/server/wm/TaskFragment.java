@@ -1736,6 +1736,11 @@ class TaskFragment extends WindowContainer<WindowContainer> {
         return startPausing(mTaskSupervisor.mUserLeaving, uiSleeping, resuming, reason);
     }
 
+    boolean startPausing(boolean userLeaving, boolean uiSleeping, ActivityRecord resuming,
+            String reason) {
+        return startPausing(userLeaving, uiSleeping, mResumedActivity, resuming, reason);
+    }
+
     /**
      * Start pausing the currently resumed activity.  It is an error to call this if there
      * is already an activity being paused or there is no resumed activity.
@@ -1743,6 +1748,7 @@ class TaskFragment extends WindowContainer<WindowContainer> {
      * @param userLeaving True if this should result in an onUserLeaving to the current activity.
      * @param uiSleeping True if this is happening with the user interface going to sleep (the
      * screen turning off).
+     * @param pausing The activity we are currently trying to pause
      * @param resuming The activity we are currently trying to resume or null if this is not being
      *                 called as part of resuming the top activity, so we shouldn't try to instigate
      *                 a resume here if not null.
@@ -1750,23 +1756,23 @@ class TaskFragment extends WindowContainer<WindowContainer> {
      * @return Returns true if an activity now is in the PAUSING state, and we are waiting for
      * it to tell us when it is done.
      */
-    boolean startPausing(boolean userLeaving, boolean uiSleeping, ActivityRecord resuming,
-            String reason) {
+    boolean startPausing(boolean userLeaving, boolean uiSleeping, ActivityRecord pausing,
+            ActivityRecord resuming, String reason) {
         if (!hasDirectChildActivities()) {
             return false;
         }
-        if (mResumedActivity != null && !mResumedActivity.finishing
-                && mTransitionController.isTransientLaunch(mResumedActivity)) {
+        if (pausing != null && !pausing.finishing
+                && mTransitionController.isTransientLaunch(pausing)) {
             // Even if the transient activity is occluded, defer pausing (addToStopping will still
             // be called) it until the transient transition is done. So the current resuming
             // activity won't need to wait for additional pause complete.
             ProtoLog.d(WM_DEBUG_STATES, "startPausing: Skipping pause for transient "
-                            + "resumed activity=%s", mResumedActivity);
+                            + "resumed activity=%s", pausing);
             return false;
         }
 
-        ProtoLog.d(WM_DEBUG_STATES, "startPausing: taskFrag=%s mResumedActivity=%s", this,
-                mResumedActivity);
+        ProtoLog.d(WM_DEBUG_STATES, "startPausing: taskFrag=%s pausing=%s", this,
+                pausing);
 
         if (mPausingActivity != null) {
             Slog.wtf(TAG, "Going to pause when pause is already pending for " + mPausingActivity
@@ -1778,9 +1784,8 @@ class TaskFragment extends WindowContainer<WindowContainer> {
                 completePause(false, resuming);
             }
         }
-        ActivityRecord prev = mResumedActivity;
 
-        if (prev == null) {
+        if (pausing == null) {
             if (resuming == null) {
                 Slog.wtf(TAG, "Trying to pause when nothing is resumed");
                 mRootWindowContainer.resumeFocusedTasksTopActivities();
@@ -1788,26 +1793,26 @@ class TaskFragment extends WindowContainer<WindowContainer> {
             return false;
         }
 
-        if (prev == resuming) {
+        if (pausing == resuming) {
             Slog.wtf(TAG, "Trying to pause activity that is in process of being resumed");
             return false;
         }
 
-        ProtoLog.v(WM_DEBUG_STATES, "Moving to PAUSING: %s", prev);
-        mPausingActivity = prev;
-        mLastPausedActivity = prev;
-        if (!prev.finishing && prev.isNoHistory()
-                && !mTaskSupervisor.mNoHistoryActivities.contains(prev)) {
-            mTaskSupervisor.mNoHistoryActivities.add(prev);
+        ProtoLog.v(WM_DEBUG_STATES, "Moving to PAUSING: %s", pausing);
+        mPausingActivity = pausing;
+        mLastPausedActivity = pausing;
+        if (!pausing.finishing && pausing.isNoHistory()
+                && !mTaskSupervisor.mNoHistoryActivities.contains(pausing)) {
+            mTaskSupervisor.mNoHistoryActivities.add(pausing);
         }
-        prev.setState(PAUSING, "startPausingLocked");
-        prev.getTask().touchActiveTime();
+        pausing.setState(PAUSING, "startPausingLocked");
+        pausing.getTask().touchActiveTime();
 
         mAtmService.updateCpuStats();
 
         boolean pauseImmediately = false;
-        final boolean shouldAutoPip = shouldAutoPip(resuming, prev, userLeaving);
-        final boolean lastResumedCanPip = prev.checkEnterPictureInPictureState(
+        final boolean shouldAutoPip = shouldAutoPip(resuming, pausing, userLeaving);
+        final boolean lastResumedCanPip = pausing.checkEnterPictureInPictureState(
                 "shouldAutoPipWhilePausing", userLeaving);
         if (!shouldAutoPip && !lastResumedCanPip && resuming != null) {
             // If the flag RESUME_WHILE_PAUSING is set, then continue to schedule the previous
@@ -1817,26 +1822,26 @@ class TaskFragment extends WindowContainer<WindowContainer> {
             // The previous activity may still enter PIP even though it did not allow auto-PIP.
         }
 
-        if (prev.attachedToProcess()) {
+        if (pausing.attachedToProcess()) {
             if (shouldAutoPip && ActivityTaskManagerService.isPip2ExperimentEnabled()) {
-                prev.mPauseSchedulePendingForPip = true;
-                boolean willAutoPip = mAtmService.setPipCandidateIfNeeded(prev);
-                ProtoLog.d(WM_DEBUG_STATES, "Auto-PIP allowed, requesting PIP mode "
-                        + "via requestStartTransition(): %s, willAutoPip: %b", prev, willAutoPip);
+                pausing.mPauseSchedulePendingForPip = true;
+                boolean willAutoPip = mAtmService.setPipCandidateIfNeeded(pausing);
+                ProtoLog.d(WM_DEBUG_STATES, "Auto-PIP allowed, requesting PIP mode via"
+                        + " requestStartTransition(): %s, willAutoPip: %b", pausing, willAutoPip);
             } else if (shouldAutoPip) {
-                prev.mPauseSchedulePendingForPip = true;
+                pausing.mPauseSchedulePendingForPip = true;
                 boolean didAutoPip = mAtmService.enterPictureInPictureMode(
-                        prev, prev.pictureInPictureArgs, false /* fromClient */);
+                        pausing, pausing.pictureInPictureArgs, false /* fromClient */);
                 ProtoLog.d(WM_DEBUG_STATES, "Auto-PIP allowed, entering PIP mode "
-                        + "directly: %s, didAutoPip: %b", prev, didAutoPip);
+                        + "directly: %s, didAutoPip: %b", pausing, didAutoPip);
             } else {
-                schedulePauseActivity(prev, userLeaving, pauseImmediately,
+                schedulePauseActivity(pausing, userLeaving, pauseImmediately,
                         false /* autoEnteringPip */, reason);
             }
         } else {
             mPausingActivity = null;
             mLastPausedActivity = null;
-            mTaskSupervisor.mNoHistoryActivities.remove(prev);
+            mTaskSupervisor.mNoHistoryActivities.remove(pausing);
         }
 
         // If we are not going to sleep, we want to ensure the device is
@@ -1852,7 +1857,7 @@ class TaskFragment extends WindowContainer<WindowContainer> {
             // the screen is being turned off and the UI is sleeping, don't interrupt
             // key dispatch; the same activity will pick it up again on wakeup.
             if (!uiSleeping) {
-                prev.pauseKeyDispatchingLocked();
+                pausing.pauseKeyDispatchingLocked();
             } else {
                 ProtoLog.v(WM_DEBUG_STATES, "Key dispatch not paused for screen off");
             }
@@ -1864,7 +1869,7 @@ class TaskFragment extends WindowContainer<WindowContainer> {
                 return false;
 
             } else {
-                prev.schedulePauseTimeout();
+                pausing.schedulePauseTimeout();
                 // All activities will be stopped when sleeping, don't need to wait for pause.
                 if (!uiSleeping) {
                     // Unset readiness since we now need to wait until this pause is complete.

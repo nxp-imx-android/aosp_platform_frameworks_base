@@ -6058,15 +6058,20 @@ final class ActivityRecord extends WindowToken {
             if (DEBUG_VISIBILITY) {
                 Slog.v(TAG_VISIBILITY, "Pause visible activity, " + this);
             }
-            // An activity must be in the {@link PAUSING} state for the system to validate
-            // the move to {@link PAUSED}.
-            setState(PAUSING, "makeActiveIfNeeded");
-            EventLogTags.writeWmPauseActivity(mUserId, System.identityHashCode(this),
-                    shortComponentName, "userLeaving=false", "make-active");
-            final PauseActivityItem item = new PauseActivityItem(token, finishing,
-                    false /* userLeaving */, false /* dontReport */, mAutoEnteringPip);
-            mAtmService.getLifecycleManager().scheduleTransactionItem(app.getThread(), item);
-            mAutoEnteringPip = false;
+            if (com.android.window.flags.Flags.pauseActivityByTf()) {
+                getTaskFragment().startPausing(false /* userLeaving */, false /* uiSleeping */,
+                        this /* pausing */, null /* resuming */, "make-active");
+            } else {
+                // An activity must be in the {@link PAUSING} state for the system to validate
+                // the move to {@link PAUSED}.
+                setState(PAUSING, "makeActiveIfNeeded");
+                EventLogTags.writeWmPauseActivity(mUserId, System.identityHashCode(this),
+                        shortComponentName, "userLeaving=false", "make-active");
+                final PauseActivityItem item = new PauseActivityItem(token, finishing,
+                        false /* userLeaving */, false /* dontReport */, mAutoEnteringPip);
+                mAtmService.getLifecycleManager().scheduleTransactionItem(app.getThread(), item);
+                mAutoEnteringPip = false;
+            }
         } else if (shouldStartActivity()) {
             if (DEBUG_VISIBILITY) {
                 Slog.v(TAG_VISIBILITY, "Start visible activity, " + this);

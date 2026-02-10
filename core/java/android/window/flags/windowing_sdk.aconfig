@@ -195,6 +195,16 @@ flag {
 
 flag {
     namespace: "windowing_sdk"
+    name: "pause_activity_by_tf"
+    description: "Pause the activity via TF#startPausing"
+    bug: "445844186"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    namespace: "windowing_sdk"
     name: "inherit_consecutive_launch_caller_uid"
     description: "Allows the original caller UID to be inherited from a previous launching state when a consecutive launch is detected."
     bug: "477475375"
