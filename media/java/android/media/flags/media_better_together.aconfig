@@ -106,6 +106,16 @@ flag {
 }
 
 flag {
+    name: "enable_mr2_service_cache_bluetooth_device_info"
+    namespace: "media_solutions"
+    description: "Prevents calls to the bluetooth framework while holding a lock to prevent deadlocks."
+    bug: "476306639"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_mr2_service_non_main_bg_thread"
     namespace: "media_solutions"
     description: "Enables the use of a background thread in the media routing framework, instead of using the main thread."
