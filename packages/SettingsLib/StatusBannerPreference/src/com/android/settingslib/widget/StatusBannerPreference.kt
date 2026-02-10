@@ -211,6 +211,9 @@ constructor(
         super.onBindViewHolder(holder)
         holder.isDividerAllowedBelow = false
         holder.isDividerAllowedAbove = false
+        if (onPreferenceClickListener == null) {
+            holder.itemView.isClickable = false
+        }
 
         // Use the view's tag to retrieve or create our enhanced ViewHolder.
         val views = (holder.itemView.tag as? ViewHolder) ?: ViewHolder(holder.itemView).also {
