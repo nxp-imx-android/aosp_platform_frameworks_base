@@ -52,6 +52,46 @@ import java.util.Set;
 
 /**
  * Client facing access to the PersonalContext service.
+ *
+ * <p>The PersonalContext service accepts a flow of contextual details from activity on the device,
+ * such as notifications and screen content. This data is used by a set of components to determine
+ * relevant information and suggestions for the user. The incoming data takes the form of various
+ * {@link ContextHint} subclasses, each tailored to a particular captured data type. Entities
+ * both inside and outside the PersonalContext service through
+ * {@link #publishTriggeringHint(List, List)} and its variants.
+ *
+ * <p>Often times, the publisher might know that the results should be delivered to a particular
+ * surface to render. For example, {@link android.service.personalcontext.hint.NotificationHint} can
+ * lead to actions or suggestions within the notification shade. In these cases, the surface can
+ * be targeted by the publisher to receiving the results by specifying the
+ * {@link RenderToken} associated with the surface's renderer.
+ *
+ * <p>Core PersonalContext entities and roles:
+ * <ul>
+ *     <li><strong>{@link ContextHint}</strong> implementations are the input into the
+ *     PersonalContext service. Each subclass captures domain specific information about a
+ *     particular device activity, such as {@link android.service.personalcontext.hint.CallHint}.
+ *     </li>
+ *     <li><strong>@link {@link ContextInsight}</strong> represents information and actions derived
+ *     from {@link ContextHint}s. This information is domain agnostic, allowing for display in
+ *     different environments.</li>
+ *     <li><strong>{@link android.service.personalcontext.refiner.HintRefinerService}</strong>
+ *     receive {@link ContextHint}s and have the opportunity to generate {@link ContextHint}s based
+ *     on the input data.</li>
+ *     <li><strong>{@link android.service.personalcontext.understander.ContextUnderstanderService}
+ *     </strong>
+ *     is downstream from {@link android.service.personalcontext.refiner.HintRefinerService}s
+ *     receiving all generated {@link ContextHint}s based on its specified
+ *     {@link android.service.personalcontext.hint.HintFilter}. </li>
+ *     <li><strong>{@link android.service.personalcontext.renderer.InsightRendererService}
+ *     </strong>
+ *     handle showing resulting {@link ContextInsight}s. Renderers integrate with their given
+ *     surfaces, such as notifications and auto-fill suggestions.</li>
+ *     <li><strong>{@link RenderToken}</strong> allow for {@link ContextHint} publishers to
+ *     specify the {@link android.service.personalcontext.renderer.InsightRendererService} that
+ *     should any {@link ContextInsight} generated from the hint.</li>
+ *  </ul>
+ *
  */
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 @SystemService(Context.PERSONAL_CONTEXT_SERVICE)
