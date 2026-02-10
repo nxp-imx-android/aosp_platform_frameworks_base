@@ -96,6 +96,8 @@ public final class EmbeddingModel implements OnDeviceModel, Parcelable {
      * @param modelSignature The signature of the model.
      * @param dimension The dimension of the embeddings.
      * @param supportedModalities The list of supported modalities.
+     * @param maxTokenLimit The maximum token limit supported by the model.
+     * @param supportedLocales The list of supported locales.
      */
     public EmbeddingModel(
             @NonNull Feature feature,
