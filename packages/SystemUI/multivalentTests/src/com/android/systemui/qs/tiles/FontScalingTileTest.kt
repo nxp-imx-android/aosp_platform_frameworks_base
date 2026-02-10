@@ -17,14 +17,11 @@ package com.android.systemui.qs.tiles
 
 import android.content.Intent
 import android.os.Handler
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.provider.Settings
 import android.testing.TestableLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.logging.MetricsLogger
-import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.accessibility.fontscaling.FontScalingDialogDelegate
 import com.android.systemui.animation.DialogTransitionAnimator
@@ -53,7 +50,6 @@ import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
-import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.whenever
 
@@ -128,27 +124,7 @@ class FontScalingTileTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ANIMATION_LIBRARY_DYNAMIC_TARGET_RESOLUTION)
-    fun clickTile_screenUnlocked_showDialogAnimationFromView_withDynamicTargetResolution() {
-        whenever(keyguardStateController.isShowing).thenReturn(false)
-        fontScalingTile.click(expandable)
-        testableLooper.processAllMessages()
-
-        verify(activityStarter)
-            .executeRunnableDismissingKeyguard(
-                argumentCaptor.capture(),
-                eq(null),
-                eq(true),
-                eq(true),
-                eq(false),
-            )
-        argumentCaptor.value.run()
-        verify(mDialogTransitionAnimator).show(any(), any(), anyOrNull(), anyBoolean())
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ANIMATION_LIBRARY_DYNAMIC_TARGET_RESOLUTION)
-    fun clickTile_screenUnlocked_showDialogAnimationFromView_withoutDynamicTargetResolution() {
+    fun clickTile_screenUnlocked_showDialogAnimationFromView() {
         whenever(keyguardStateController.isShowing).thenReturn(false)
         fontScalingTile.click(expandable)
         testableLooper.processAllMessages()
