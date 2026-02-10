@@ -1542,12 +1542,12 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             // is shared across users.
             if (mSecurityPolicy.isCallerInteractingAcrossUsers(userId)) {
                 global = true;
-                if (!isProxyedClient) {
+                if (!isProxyedClient || Flags.trackProxyedClientsInA11yUserState()) {
                     mGlobalClients.register(callback, client);
                 }
             } else {
                 global = false;
-                if (!isProxyedClient) {
+                if (!isProxyedClient || Flags.trackProxyedClientsInA11yUserState()) {
                     userState.mUserClients.register(callback, client);
                 }
             }
