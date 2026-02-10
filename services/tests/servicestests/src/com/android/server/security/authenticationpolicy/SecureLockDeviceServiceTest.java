@@ -681,6 +681,7 @@ public class SecureLockDeviceServiceTest {
                 true, /* primaryUserHasStrongBiometricEnrollment */
                 false /* otherUserHasStrongBiometricEnrollment */
         );
+        when(mUserManagerInternal.isUserUnlocked(TEST_USER_ID)).thenReturn(true);
         final Map<String, Integer> originalSystemSettings = new HashMap<>();
         SYSTEM_SETTINGS_SECURE_LOCK_DEVICE_VALUES.forEach((settingKey, secureLockDeviceValue) -> {
             try {

@@ -422,7 +422,6 @@ import com.android.server.pm.GenericAllowlist;
 import com.android.server.pm.PackageManagerService;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.policy.PermissionPolicyInternal;
-import com.android.server.security.authenticationpolicy.SecureLockDeviceServiceInternal;
 import com.android.server.statusbar.StatusBarManagerInternal;
 import com.android.server.uri.UriGrantsManagerInternal;
 import com.android.server.utils.Slogf;
@@ -697,7 +696,6 @@ public class NotificationManagerService extends SystemService {
     private PermissionManager mPermissionManager;
     private PermissionPolicyInternal mPermissionPolicyInternal;
 
-    @Nullable private SecureLockDeviceServiceInternal mSecureLockDeviceService;
     // Can be null for wear
     @Nullable StatusBarManagerInternal mStatusBar;
     private DisplayManager mDisplayManager;
@@ -2748,11 +2746,16 @@ public class NotificationManagerService extends SystemService {
         @Override
         public synchronized void onStrongAuthRequiredChanged(int userId) {
             boolean userInSecureLockDevice = false;
-            if (secureLockDevice() && mSecureLockDeviceService != null) {
-                userInSecureLockDevice = mSecureLockDeviceService.isSecureLockDeviceEnabled();
+            if (secureLockDevice()) {
+                userInSecureLockDevice = containsFlag(getStrongAuthForUser(userId),
+                        PRIMARY_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE)
+                        || containsFlag(getStrongAuthForUser(userId),
+                        STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE);
             }
+
             boolean userInLockDownModeNext = containsFlag(getStrongAuthForUser(userId),
                     STRONG_AUTH_REQUIRED_AFTER_USER_LOCKDOWN) || userInSecureLockDevice;
+
             // Nothing happens if the lockdown mode of userId keeps the same.
             if (userInLockDownModeNext == isInLockDownMode(userId)) {
                 return;
@@ -3607,12 +3610,7 @@ public class NotificationManagerService extends SystemService {
 
     @VisibleForTesting
     void onBootPhase(int phase, Looper mainLooper) {
-        if (phase == SystemService.PHASE_LOCK_SETTINGS_READY) {
-            if (secureLockdown()) {
-                mSecureLockDeviceService =
-                        LocalServices.getService(SecureLockDeviceServiceInternal.class);
-            }
-        } else if (phase == SystemService.PHASE_SYSTEM_SERVICES_READY) {
+        if (phase == SystemService.PHASE_SYSTEM_SERVICES_READY) {
             mDisplayManager = getContext().getSystemService(DisplayManager.class);
             mWindowManagerInternal = LocalServices.getService(WindowManagerInternal.class);
             mVirtualDeviceManagerInternal =

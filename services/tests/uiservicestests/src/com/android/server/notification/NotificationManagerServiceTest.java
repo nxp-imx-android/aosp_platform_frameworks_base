@@ -116,8 +116,10 @@ import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.Display.INVALID_DISPLAY;
 import static android.view.WindowManager.LayoutParams.TYPE_TOAST;
 
+import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.PRIMARY_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE;
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_NOT_REQUIRED;
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_USER_LOCKDOWN;
+import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE;
 import static com.android.server.am.PendingIntentRecord.FLAG_ACTIVITY_SENDER;
 import static com.android.server.am.PendingIntentRecord.FLAG_BROADCAST_SENDER;
 import static com.android.server.am.PendingIntentRecord.FLAG_SERVICE_SENDER;
@@ -331,7 +333,6 @@ import com.android.server.notification.NotificationManagerService.PostNotificati
 import com.android.server.personalcontext.PersonalContextManagerInternal;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.policy.PermissionPolicyInternal;
-import com.android.server.security.authenticationpolicy.SecureLockDeviceServiceInternal;
 import com.android.server.statusbar.StatusBarManagerInternal;
 import com.android.server.uri.UriGrantsManagerInternal;
 import com.android.server.utils.quota.MultiRateLimiter;
@@ -548,8 +549,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     StatsManager mStatsManager;
     @Mock
     AlarmManager mAlarmManager;
-    @Mock
-    SecureLockDeviceServiceInternal mSecureLockDeviceServiceInternal;
     @Mock JobScheduler mJobScheduler;
     @Mock
     MultiRateLimiter mToastRateLimiter;
@@ -658,9 +657,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         LocalServices.addService(PermissionPolicyInternal.class, mPermissionPolicyInternal);
         LocalServices.removeServiceForTest(ShortcutServiceInternal.class);
         LocalServices.addService(ShortcutServiceInternal.class, mShortcutServiceInternal);
-        LocalServices.removeServiceForTest(SecureLockDeviceServiceInternal.class);
-        LocalServices.addService(SecureLockDeviceServiceInternal.class,
-                mSecureLockDeviceServiceInternal);
         LocalServices.removeServiceForTest(PersonalContextManagerInternal.class);
         LocalServices.addService(PersonalContextManagerInternal.class,
                 mPersonalContextManagerInternal);
@@ -15069,12 +15065,13 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     @Test
     public void testStrongAuthTracker_isInSecureLockDeviceMode() throws Exception {
         mService.onBootPhase(SystemService.PHASE_LOCK_SETTINGS_READY, mMainLooper);
-        mStrongAuthTracker.setGetStrongAuthForUserReturnValue(STRONG_AUTH_NOT_REQUIRED);
-        when(mSecureLockDeviceServiceInternal.isSecureLockDeviceEnabled()).thenReturn(true);
+        mStrongAuthTracker.setGetStrongAuthForUserReturnValue(
+                PRIMARY_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE
+                        | STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE);
         mStrongAuthTracker.onStrongAuthRequiredChanged(mContext.getUserId());
         assertTrue(mStrongAuthTracker.isInLockDownMode(mContext.getUserId()));
 
-        when(mSecureLockDeviceServiceInternal.isSecureLockDeviceEnabled()).thenReturn(false);
+        mStrongAuthTracker.setGetStrongAuthForUserReturnValue(STRONG_AUTH_NOT_REQUIRED);
         mStrongAuthTracker.onStrongAuthRequiredChanged(mContext.getUserId());
         assertFalse(mStrongAuthTracker.isInLockDownMode(mContext.getUserId()));
     }
@@ -15123,8 +15120,9 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         mService.addNotification(pkgB);
 
         // when entering the lockdown mode, cancel the 2 notifications.
-        mStrongAuthTracker.setGetStrongAuthForUserReturnValue(STRONG_AUTH_NOT_REQUIRED);
-        when(mSecureLockDeviceServiceInternal.isSecureLockDeviceEnabled()).thenReturn(true);
+        mStrongAuthTracker.setGetStrongAuthForUserReturnValue(
+                PRIMARY_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE
+                        | STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE);
         mStrongAuthTracker.onStrongAuthRequiredChanged(0);
         assertTrue(mStrongAuthTracker.isInLockDownMode(0));
 
@@ -15134,7 +15132,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         assertEquals(REASON_LOCKDOWN, captor.getValue().intValue());
 
         // exit lockdown mode.
-        when(mSecureLockDeviceServiceInternal.isSecureLockDeviceEnabled()).thenReturn(false);
+        mStrongAuthTracker.setGetStrongAuthForUserReturnValue(STRONG_AUTH_NOT_REQUIRED);
         mStrongAuthTracker.setGetStrongAuthForUserReturnValue(0);
         mStrongAuthTracker.onStrongAuthRequiredChanged(0);
         assertFalse(mStrongAuthTracker.isInLockDownMode(0));
