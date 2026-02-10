@@ -828,7 +828,7 @@ class LayoutMenu(
         /** Request that the accessibility service focus on the menu. */
         fun requestAccessibilityFocus() {
             // Focus the first button in the menu by default.
-            if (immersiveToggleButton.isVisible) {
+            if (immersiveToggleContainer.isVisible) {
                 immersiveToggleButton.post {
                     immersiveToggleButton.sendAccessibilityEvent(
                         AccessibilityEvent.TYPE_VIEW_FOCUSED
