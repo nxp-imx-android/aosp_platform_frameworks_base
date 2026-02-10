@@ -227,13 +227,6 @@ flag {
 }
 
 flag {
-  name: "custom_fallback_for_customization"
-  namespace: "text"
-  description: "Add fallback attribute for custom fallback for customization"
-  bug: "430485331"
-}
-
-flag {
   name: "do_not_overwrite_static_final_field"
   namespace: "text"
   description: "Removing code that write static final field which will not be supported in the upcoming Java"
