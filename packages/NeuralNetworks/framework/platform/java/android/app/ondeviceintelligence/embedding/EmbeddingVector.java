@@ -28,8 +28,8 @@ import java.util.Objects;
 /**
  * Represents a raw vector embedding.
  *
- * <p>The size of the float array returned by {@link #getVector()} is equal to {@link #getRows()}
- * multiplied by {@link #getRowDimension()}.
+ * <p>The size of the float array returned by {@link #getVector()} is equal to the product of all
+ * dimensions in the array returned by {@link #getShape()}.
  *
  * <p>The generated embeddings from this response are compatible with and can be stored and queried
  * in AppSearch. For more details on how to use embeddings in AppSearch, see
@@ -44,10 +44,15 @@ public final class EmbeddingVector implements Parcelable {
     private final int[] mShape;
 
     /**
-     * Constructs a new {@link EmbeddingVector} from the given float array.
+     * Constructs a new {@link EmbeddingVector} from the given float array and shape.
      *
-     * @param vector  The vector representing the embedding.
-     * @param shape   The shape of the embedding vector.
+     * @param vector The vector representing the embedding. Its length must be exactly equal to the
+     *               product of all dimensions in the {@code shape} array.
+     * @param shape  The shape of the embedding vector. All dimensions must be positive, and their
+     *               product must not exceed {@link Integer#MAX_VALUE}.
+     * @throws IllegalArgumentException if the {@code vector} length does not match the product of
+     *                                  {@code shape} dimensions, or if any dimension is
+     *                                  non-positive, or if the product of dimensions overflows.
      */
     public EmbeddingVector(@NonNull float[] vector, @NonNull int[] shape) {
         mVector = Objects.requireNonNull(vector).clone();
