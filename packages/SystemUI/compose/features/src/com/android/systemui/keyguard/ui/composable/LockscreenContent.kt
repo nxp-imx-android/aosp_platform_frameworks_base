@@ -164,7 +164,7 @@ class LockscreenContent(
                             alpha exportAs LockscreenContentMotionTestKeys.Alpha
                         }
                     },
-                LockscreenElementContext(nonAuthUI = { nonAuthUI(viewModel) }),
+                LockscreenElementContext(nonAuthUI = Modifier.nonAuthUI(viewModel)),
             )
         }
         LockscreenFrontScrim(lockscreenFrontScrimViewModel)
