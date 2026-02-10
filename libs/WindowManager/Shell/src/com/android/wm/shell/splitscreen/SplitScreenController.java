@@ -645,14 +645,15 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
      * @param taskBounds current freeform bounds of the task entering split
      * @param startRecents whether this request should start a recents transition
      * @param withRecentsWct a wct so include in the recents transition
+     * @return true if request was handled
      */
-    public void requestEnterSplitSelect(ActivityManager.RunningTaskInfo taskInfo,
+    public boolean requestEnterSplitSelect(ActivityManager.RunningTaskInfo taskInfo,
             int splitPosition, Rect taskBounds, boolean startRecents,
             @Nullable WindowContainerTransaction withRecentsWct) {
         if (!startRecents && withRecentsWct != null) {
             throw new IllegalArgumentException("Must be starting recents to include a wct");
         }
-        mStageCoordinator.requestEnterSplitSelect(taskInfo, splitPosition, taskBounds,
+        return mStageCoordinator.requestEnterSplitSelect(taskInfo, splitPosition, taskBounds,
                 startRecents, withRecentsWct);
     }
 

@@ -748,13 +748,19 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         return mLogger;
     }
 
-    void requestEnterSplitSelect(RunningTaskInfo taskInfo,
+    /**
+     * Notifies the [SplitSelectListener]s that split select has been requested. Returns [true] if
+     * at least one of the listeners is handling the request.
+     */
+    boolean requestEnterSplitSelect(RunningTaskInfo taskInfo,
             int splitPosition, Rect taskBounds, boolean startRecents,
             @Nullable WindowContainerTransaction withRecentsWct) {
+        Boolean requestHandled = false;
         for (SplitScreen.SplitSelectListener listener : mSelectListeners) {
-            listener.onRequestEnterSplitSelect(taskInfo, splitPosition, taskBounds,
-                    startRecents, withRecentsWct);
+            requestHandled |= listener.onRequestEnterSplitSelect(taskInfo, splitPosition,
+                    taskBounds, startRecents, withRecentsWct);
         }
+        return requestHandled;
     }
 
     void startShortcut(String packageName, String shortcutId, @SplitPosition int position,

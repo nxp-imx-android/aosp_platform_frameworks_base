@@ -1779,6 +1779,15 @@ class DesktopTasksController(
     }
 
     /**
+     * Notify the [DragToDesktopTransitionHandler] that the split select animation for the given
+     * [taskId] has started for cases where the animation was triggered by canceling drag to desktop
+     * into split.
+     */
+    fun onSplitSelectAnimationStarted(taskId: Int) {
+        dragToDesktopTransitionHandler.onSplitSelectAnimationStarted(taskId)
+    }
+
+    /**
      * Perform clean up of the desktop wallpaper activity if the closed window task is the last
      * active task.
      *
@@ -7025,6 +7034,12 @@ class DesktopTasksController(
         override fun onDesktopSplitSelectChoice(taskInfo: RunningTaskInfo) {
             executeRemoteCallWithTaskPermission(controller, "onDesktopSplitSelectChoice") { c ->
                 c.onDesktopSplitSelectChoice(taskInfo)
+            }
+        }
+
+        override fun onSplitSelectAnimationStarted(taskId: Int) {
+            executeRemoteCallWithTaskPermission(controller, "onSplitSelectAnimationStarted") { c ->
+                c.onSplitSelectAnimationStarted(taskId)
             }
         }
 

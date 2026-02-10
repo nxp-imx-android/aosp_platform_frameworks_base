@@ -44,6 +44,7 @@ import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOT
 import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_TOP_OR_LEFT
 import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.transition.Transitions
+import com.android.wm.shell.transition.Transitions.TransitionFinishCallback
 import com.android.wm.shell.windowdecor.MoveToDesktopAnimator
 import com.android.wm.shell.windowdecor.OnTaskResizeAnimationListener
 import com.google.common.truth.Truth.assertThat
@@ -56,6 +57,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentMatchers.anyBoolean
 import org.mockito.ArgumentMatchers.anyFloat
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.ArgumentMatchers.anyLong
@@ -65,6 +67,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.clearInvocations
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
@@ -388,6 +391,83 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
         // Cancel animation should run since it had already started.
         verify(dragAnimator).cancelAnimator()
         assertFalse("Drag should not be in progress after cancelling", springHandler.inProgress)
+    }
+
+    @Test
+    fun cancelDragToDesktop_toSplit_transitionFinishesOnSplitSelectAnimationStart() {
+        val task = createTask()
+        // Mark select split request as handled
+        whenever(
+                splitScreenController.requestEnterSplitSelect(
+                    eq(task),
+                    anyInt(),
+                    any(),
+                    anyBoolean(),
+                    anyOrNull(),
+                )
+            )
+            .thenReturn(true)
+        // Simulate transition is started and is ready to animate
+        val transition = startDragToDesktopTransition(springHandler, task, dragAnimator)
+
+        // Animate drag to desktop start
+        val mockCallback = mock<TransitionFinishCallback>()
+        springHandler.startAnimation(
+            transition = transition,
+            info =
+                createTransitionInfo(
+                    type = TRANSIT_DESKTOP_MODE_START_DRAG_TO_DESKTOP,
+                    draggedTask = task,
+                ),
+            startTransaction = mock(),
+            finishTransaction = mock(),
+            finishCallback = mockCallback,
+        )
+
+        // Then user drags to split, cancelling the enter desktop transition
+        springHandler.cancelDragToDesktopTransition(CancelState.CANCEL_SPLIT_LEFT)
+        clearInvocations(mockCallback)
+
+        // Verify transition is finished when select animation is started
+        springHandler.onSplitSelectAnimationStarted(task.taskId)
+        verify(mockCallback).onTransitionFinished(anyOrNull())
+    }
+
+    @Test
+    fun cancelDragToDesktop_toSplit_OnSplitSelectRequestRejected_transitionFinishesInstantly() {
+        val task = createTask()
+        // Mark select split request as rejected
+        whenever(
+                splitScreenController.requestEnterSplitSelect(
+                    eq(task),
+                    anyInt(),
+                    any(),
+                    anyBoolean(),
+                    anyOrNull(),
+                )
+            )
+            .thenReturn(false)
+        // Simulate transition is started and is ready to animate
+        val transition = startDragToDesktopTransition(springHandler, task, dragAnimator)
+
+        // Animate drag to desktop start
+        val mockCallback = mock<TransitionFinishCallback>()
+        springHandler.startAnimation(
+            transition = transition,
+            info =
+                createTransitionInfo(
+                    type = TRANSIT_DESKTOP_MODE_START_DRAG_TO_DESKTOP,
+                    draggedTask = task,
+                ),
+            startTransaction = mock(),
+            finishTransaction = mock(),
+            finishCallback = mockCallback,
+        )
+
+        // Then user drags to split, cancelling the enter desktop transition
+        springHandler.cancelDragToDesktopTransition(CancelState.CANCEL_SPLIT_LEFT)
+        // Verify transition was finished since split select request is rejected
+        verify(mockCallback).onTransitionFinished(anyOrNull())
     }
 
     @Test
@@ -1182,6 +1262,7 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
                 )
             )
             .thenReturn(token)
+        whenever(dragAnimator.position).thenReturn(PointF())
         handler.startDragToDesktopTransition(
             task,
             dragAnimator,
