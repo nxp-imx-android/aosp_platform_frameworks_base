@@ -122,4 +122,16 @@ class ShadeWindowLogger @Inject constructor(@ShadeWindowLog private val buffer: 
             { "Config changed. SceneWindowRootView width updating from $int1 to $int2." },
         )
     }
+
+    fun logSetLaunchingActivity(isLaunching: Boolean, logMessage: String) {
+        buffer.log(
+            TAG,
+            DEBUG,
+            {
+                bool1 = isLaunching
+                str1 = logMessage
+            },
+            { "setIsLaunchingActivity($bool1): $str1" },
+        )
+    }
 }

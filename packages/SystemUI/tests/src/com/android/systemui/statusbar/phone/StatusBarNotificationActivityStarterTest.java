@@ -79,6 +79,7 @@ import com.android.systemui.power.domain.interactor.PowerInteractorFactory;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.shade.ShadeControllerImpl;
+import com.android.systemui.shade.ShadeWindowLogger;
 import com.android.systemui.shade.data.repository.FakeShadeRepository;
 import com.android.systemui.shade.data.repository.ShadeAnimationRepository;
 import com.android.systemui.shade.domain.interactor.FakeShadeDialogContextInteractor;
@@ -281,7 +282,8 @@ public class StatusBarNotificationActivityStarterTest extends SysuiTestCase {
                         mActivityTransitionAnimator,
                         new ShadeAnimationInteractorLegacyImpl(
                                 new ShadeAnimationRepository(),
-                                new FakeShadeRepository()
+                                new FakeShadeRepository(),
+                                mock(ShadeWindowLogger.class)
                         ),
                         notificationAnimationProvider,
                         mock(LaunchFullScreenIntentProvider.class),

@@ -242,6 +242,7 @@ class NotificationShadeWindowViewControllerTest(flags: FlagsParameterization) : 
                 ShadeAnimationInteractorLegacyImpl(
                     ShadeAnimationRepository(),
                     ShadeRepositoryImpl(testScope, dumpManager),
+                    mock(ShadeWindowLogger::class.java),
                 ),
                 panelExpansionInteractor,
                 ShadeExpansionStateManager(),
