@@ -38,6 +38,7 @@ import com.android.systemui.dock.DockManager
 import com.android.systemui.dock.retrieveIsDocked
 import com.android.systemui.flags.FeatureFlags
 import com.android.systemui.flags.Flags
+import com.android.systemui.inputdevice.domain.interactor.PointerDeviceInteractor
 import com.android.systemui.keyguard.data.quickaffordance.KeyguardQuickAffordanceConfig
 import com.android.systemui.keyguard.data.repository.BiometricSettingsRepository
 import com.android.systemui.keyguard.data.repository.KeyguardQuickAffordanceRepository
@@ -94,6 +95,7 @@ constructor(
     private val devicePolicyManager: DevicePolicyManager,
     private val secureLockDeviceInteractor: Lazy<SecureLockDeviceInteractor>,
     private val dockManager: DockManager,
+    private val pointerDeviceInteractor: PointerDeviceInteractor,
     private val biometricSettingsRepository: BiometricSettingsRepository,
     private val accessibilityInteractor: AccessibilityInteractor,
     @Background private val backgroundDispatcher: CoroutineDispatcher,
@@ -113,10 +115,12 @@ constructor(
      * If `false`, the UI goes back to using single taps.
      */
     fun useLongPress(): Flow<Boolean> =
-        combine(dockManager.retrieveIsDocked(), accessibilityInteractor.isEnabledFiltered) {
-            isDocked,
-            isAccessibilityEnabled ->
-            !isDocked && !isAccessibilityEnabled
+        combine(
+            dockManager.retrieveIsDocked(),
+            accessibilityInteractor.isEnabledFiltered,
+            pointerDeviceInteractor.isAnyPointerDeviceConnected,
+        ) { isDocked, isAccessibilityEnabled, isPointerDeviceConnected ->
+            !isDocked && !isAccessibilityEnabled && !isPointerDeviceConnected
         }
 
     /** Returns an observable for the quick affordance at the given position. */
