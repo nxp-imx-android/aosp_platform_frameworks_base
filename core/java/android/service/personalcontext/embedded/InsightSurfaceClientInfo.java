@@ -34,7 +34,8 @@ import android.view.SurfaceControlViewHost;
 import androidx.annotation.IntRange;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.VisibleForTesting;
+
+import com.android.internal.annotations.VisibleForTesting;
 
 import java.util.UUID;
 
@@ -362,8 +363,11 @@ public final class InsightSurfaceClientInfo implements Parcelable {
     /**
      * Returns a new {@link InsightSurfaceClientInfo} from this info and the updated values in the
      * given {@link InsightSurfaceClientUpdate}.
+     *
+     * @hide
      */
-    InsightSurfaceClientInfo createInfoFromUpdate(InsightSurfaceClientUpdate update) {
+    @VisibleForTesting
+    public InsightSurfaceClientInfo createInfoFromUpdate(InsightSurfaceClientUpdate update) {
         return new InsightSurfaceClientInfo(
                 mId,
                 mDisplayId,
@@ -378,7 +382,7 @@ public final class InsightSurfaceClientInfo implements Parcelable {
                 update.hasUpdate(InsightSurfaceClientUpdate.KEY_NESTED_SCROLL_AXIS_LOCKED)
                         ? update.isNestedScrollAxisLocked() : mNestedScrollAxisLocked,
                 update.hasUpdate(InsightSurfaceClientUpdate.KEY_SHOULD_BLUR)
-                        ? update.isNestedScrollAxisLocked() : mShouldBlur,
+                        ? update.shouldBlur() : mShouldBlur,
                 update.hasUpdate(InsightSurfaceClientUpdate.KEY_THEME_RESOURCE_NAME)
                         ? update.getThemeResourceName() : mThemeResourceName,
                 mPackageName,
