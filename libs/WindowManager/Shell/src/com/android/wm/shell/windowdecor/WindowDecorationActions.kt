@@ -37,6 +37,14 @@ interface WindowDecorationActions {
     fun onClose(taskInfo: RunningTaskInfo)
 
     /**
+     * Closes the task.
+     *
+     * @param taskInfo the task requesting to close.
+     * @param preventDesktopCleanup if true, the desktop cleanup will be skipped forcefully.
+     */
+    fun onClose(taskInfo: RunningTaskInfo, preventDesktopCleanup: Boolean)
+
+    /**
      * Moves task to immersive mode or exits immersive and restores task to previous size if task is
      * already in immersive.
      */

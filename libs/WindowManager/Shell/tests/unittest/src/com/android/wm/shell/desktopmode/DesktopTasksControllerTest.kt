@@ -4809,6 +4809,40 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun onDesktopWindowClose_lastWindow_desktopFirst_forceKeepDesktop() {
+        rootTaskDisplayAreaOrganizer.setDesktopFirst(DEFAULT_DISPLAY)
+        val task = setUpFreeformTask()
+        val wct = WindowContainerTransaction()
+
+        controller.onDesktopWindowClose(
+            wct,
+            displayId = DEFAULT_DISPLAY,
+            task,
+            forceKeepDesktop = true,
+        )
+
+        verify(desksOrganizer, never()).deactivateDesk(wct, deskId = 0)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun onDesktopWindowClose_lastWindow_touchFirst_forceKeepDesktop() {
+        rootTaskDisplayAreaOrganizer.setTouchFirst(DEFAULT_DISPLAY)
+        val task = setUpFreeformTask()
+        val wct = WindowContainerTransaction()
+
+        controller.onDesktopWindowClose(
+            wct,
+            displayId = DEFAULT_DISPLAY,
+            task,
+            forceKeepDesktop = true,
+        )
+
+        verify(desksOrganizer, never()).removeDesk(wct, deskId = 0, task.userId)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onDesktopWindowClose_lastWindow_desktopFirst_addsPendingDeactivateTransition() {
         rootTaskDisplayAreaOrganizer.setDesktopFirst(DEFAULT_DISPLAY)
         val task = setUpFreeformTask()
