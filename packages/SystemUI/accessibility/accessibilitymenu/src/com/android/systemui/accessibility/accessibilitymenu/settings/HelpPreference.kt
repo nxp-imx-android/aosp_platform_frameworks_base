@@ -23,6 +23,7 @@ import android.provider.Settings
 import androidx.core.net.toUri
 import com.android.settingslib.metadata.PreferenceAvailabilityProvider
 import com.android.settingslib.metadata.PreferenceMetadata
+import com.android.settingslib.metadata.UI_ONLY_PREFERENCE
 import com.android.systemui.accessibility.accessibilitymenu.R
 
 /** Preference for displaying help information. */
@@ -35,6 +36,8 @@ class HelpPreference : PreferenceMetadata, PreferenceAvailabilityProvider {
 
     override val purpose: Int
         get() = R.string.pref_help_purpose
+
+    override fun tags(context: Context) = arrayOf(UI_ONLY_PREFERENCE)
 
     override fun intent(context: Context): Intent? {
         // Configure preference to open the help page in the default web browser.
