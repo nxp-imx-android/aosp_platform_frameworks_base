@@ -44379,7 +44379,7 @@ package android.service.personalcontext.hint {
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ContextHintWithSignature {
-    method @NonNull public java.util.List<android.service.personalcontext.hint.ContextHintWithSignature> getAttributionHints();
+    method @NonNull public java.util.Set<android.service.personalcontext.hint.ContextHintWithSignature> getAttributionHints();
     method @NonNull public android.service.personalcontext.hint.ContextHint getContextHint();
     method @Nullable public String getOriginatingPackage();
     method @NonNull public java.util.Set<android.service.personalcontext.RenderToken> getRenderTokens();

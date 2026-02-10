@@ -100,8 +100,11 @@ public final class ContextHintWithSignature {
 
     /** Returns the {@link ContextHintWithSignature} hints that were used to create this hint. */
     @NonNull
-    public List<ContextHintWithSignature> getAttributionHints() {
-        return mAttributionHints;
+    public Set<ContextHintWithSignature> getAttributionHints() {
+        // Note that order matters for signing the data. We continue to internally store the
+        // attribution hints as a list to guarantee the signature stays intact and instead create
+        // a copy to expose it externally as a set.
+        return new HashSet<>(mAttributionHints);
     }
 
     /**
