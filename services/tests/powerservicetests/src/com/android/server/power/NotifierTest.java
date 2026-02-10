@@ -105,6 +105,7 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
@@ -579,6 +580,37 @@ public class NotifierTest {
 
         verify(listener).onWakeLockStateChanged(wakeLock);
         verify(wakeLock).setAttributedUidCached(true);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_REMOVE_CACHED_UIDS_FROM_WAKELOCK)
+    public void testOnUidGone_withNullWakeLock_doesNotCrash() throws RemoteException {
+        createNotifier();
+
+        Notifier.WakeLockChangedListener listener =
+                mock(Notifier.WakeLockChangedListener.class);
+        mNotifier.registerWakeLockChangedListener(listener);
+
+        ArgumentCaptor<IUidObserver> uidObserverCaptor =
+                ArgumentCaptor.forClass(IUidObserver.class);
+        verify(mActivityManager).registerUidObserver(uidObserverCaptor.capture(),
+                eq(ActivityManager.UID_OBSERVER_CACHED),
+                eq(ActivityManager.PROCESS_STATE_UNKNOWN),
+                eq(null));
+        IUidObserver uidObserver = uidObserverCaptor.getValue();
+        assertNotNull(uidObserver);
+
+        int uid = 2001;
+        Set<PowerManagerService.WakeLock> wakeLocks = new HashSet<>();
+        wakeLocks.add(null);
+        when(mWakelockMapper.getWakeLocksForUid(uid)).thenReturn(wakeLocks);
+
+        // Simulate UID gone
+        uidObserver.onUidGone(uid, true);
+        mTestLooper.dispatchAll();
+
+        // Verify no crash and no listener interaction for the null wakelock.
+        verifyNoInteractions(listener);
     }
 
     @Test
@@ -1355,6 +1387,43 @@ public class NotifierTest {
 
         verify(listener).onWakeLockStateChanged(wakeLock);
         verify(wakeLock).setAttributedUidCached(false);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_REMOVE_CACHED_UIDS_FROM_WAKELOCK)
+    public void testOnUidCachedChanged_withNullWakeLock_doesNotCrash() throws RemoteException {
+        createNotifier();
+
+        Notifier.WakeLockChangedListener listener = mock(Notifier.WakeLockChangedListener.class);
+        mNotifier.registerWakeLockChangedListener(listener);
+
+        ArgumentCaptor<IUidObserver> uidObserverCaptor =
+                ArgumentCaptor.forClass(IUidObserver.class);
+        verify(mActivityManager).registerUidObserver(uidObserverCaptor.capture(),
+                eq(ActivityManager.UID_OBSERVER_CACHED),
+                eq(ActivityManager.PROCESS_STATE_UNKNOWN),
+                eq(null));
+        IUidObserver uidObserver = uidObserverCaptor.getValue();
+        assertNotNull(uidObserver);
+
+        int uid = 2001;
+        Set<PowerManagerService.WakeLock> wakeLocks = new HashSet<>();
+        wakeLocks.add(null);
+        when(mWakelockMapper.getWakeLocksForUid(uid)).thenReturn(wakeLocks);
+
+        // Simulate cached state change to true
+        uidObserver.onUidCachedChanged(uid, true);
+        mTestLooper.dispatchAll();
+
+        // Verify no crash and no listener interaction for the null wakelock.
+        verifyNoInteractions(listener);
+
+        // Simulate cached state change to false
+        uidObserver.onUidCachedChanged(uid, false);
+        mTestLooper.dispatchAll();
+
+        // Verify no crash and no listener interaction for the null wakelock.
+        verifyNoInteractions(listener);
     }
 
     @Test
