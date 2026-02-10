@@ -44199,10 +44199,10 @@ package android.service.personalcontext {
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class RenderToken implements java.lang.Comparable<android.service.personalcontext.RenderToken> android.os.Parcelable {
-    ctor public RenderToken(@NonNull java.util.UUID);
     method public int compareTo(@NonNull android.service.personalcontext.RenderToken);
     method public int describeContents();
     method @NonNull public java.util.UUID getRendererComponentId();
+    method @Nullable public String getTag();
     method @NonNull public java.util.UUID getTokenId();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.RenderToken> CREATOR;
