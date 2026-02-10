@@ -61,8 +61,8 @@ public final class BundleInsight extends ContextInsight {
             @NonNull Bundle data,
             @NonNull String insightTypeName) {
         super(baseParams);
-        mDataBundle = data;
-        mInsightTypeName = insightTypeName;
+        mDataBundle = requireNonNull(data);
+        mInsightTypeName = requireNonNull(insightTypeName);
     }
 
     /** @hide */
@@ -144,7 +144,7 @@ public final class BundleInsight extends ContextInsight {
          */
         @NonNull
         public Builder addOriginHint(@NonNull ContextHintWithSignature hint) {
-            mBaseBuilder.addOriginHint(hint);
+            mBaseBuilder.addOriginHint(requireNonNull(hint));
             return this;
         }
 
@@ -155,7 +155,7 @@ public final class BundleInsight extends ContextInsight {
          */
         @NonNull
         public Builder addToken(@NonNull Token token) {
-            mBaseBuilder.addToken(token);
+            mBaseBuilder.addToken(requireNonNull(token));
             return this;
         }
 
@@ -209,6 +209,7 @@ public final class BundleInsight extends ContextInsight {
          */
         @NonNull
         public Builder setDataBundle(@NonNull Bundle dataBundle) {
+            requireNonNull(dataBundle);
             mDataBundle.clear();
             mDataBundle.putAll(dataBundle);
             return this;
