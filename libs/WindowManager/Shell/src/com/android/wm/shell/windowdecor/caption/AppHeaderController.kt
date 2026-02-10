@@ -18,7 +18,6 @@ package com.android.wm.shell.windowdecor.caption
 
 import android.app.ActivityManager.RunningTaskInfo
 import android.content.Context
-import android.content.Intent
 import android.content.pm.ActivityInfo.CONFIG_FONT_SCALE
 import android.content.pm.ActivityInfo.CONFIG_LOCALE
 import android.content.pm.ActivityInfo.CONFIG_UI_MODE
@@ -498,8 +497,7 @@ class AppHeaderController(
                         null
                     }
                 createHandleMenu(
-                    openInAppOrBrowserIntent = appToWebIntent,
-                    isBrowserApp = isBrowserApp,
+                    appToWebData = HandleMenu.AppToWebData(isBrowserApp, appToWebIntent),
                     minimumInstancesFound = minimumInstancesFound,
                 )
             }
@@ -507,8 +505,7 @@ class AppHeaderController(
 
     /** Creates and shows the handle menu. */
     private fun createHandleMenu(
-        openInAppOrBrowserIntent: Intent?,
-        isBrowserApp: Boolean,
+        appToWebData: HandleMenu.AppToWebData?,
         minimumInstancesFound: Boolean,
     ) {
         val supportsMultiInstance =
@@ -542,8 +539,7 @@ class AppHeaderController(
                     shouldShowDesktopModeButton =
                         desktopState.isDesktopModeSupportedOnDisplay(display),
                     shouldShowRestartButton = shouldShowRestartButton,
-                    isBrowserApp = isBrowserApp,
-                    openInAppOrBrowserIntent = openInAppOrBrowserIntent,
+                    appToWebData = appToWebData,
                     desktopModeUiEventLogger = desktopModeUiEventLogger,
                     captionView = viewHolder.rootView,
                     captionWidth = captionLayoutResult.captionWidth,
