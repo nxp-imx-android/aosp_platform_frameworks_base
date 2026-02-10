@@ -142,4 +142,6 @@ interface ITelephonyRegistry {
             int phoneId, int subId, int type, boolean isEntered);
     void notifyNetworkSecurityEvents(
             int phoneId, int subId, in List<NetworkSecurityEvent> events);
+    void notifySatellitePurchaseModeChanged(int subId, in boolean inProgress,
+            in int purchaseModeState);
 }
