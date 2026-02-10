@@ -16,10 +16,14 @@
 
 package com.android.systemui.screencapture.common.data.repository
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.content.mockedContext
+import android.content.pm.PackageManager
+import android.content.pm.ResolveInfo
+import android.content.pm.ServiceInfo
 import android.media.projection.AppContentProjectionService
 import android.media.projection.MediaProjectionAppContent
 import android.os.Bundle
@@ -38,18 +42,23 @@ import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.clearInvocations
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.same
 import org.mockito.kotlin.stub
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.verifyNoMoreInteractions
+import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -66,6 +75,7 @@ class ScreenCaptureAppContentRepositoryImplTest : SysuiTestCase() {
                         any<UserHandle>(),
                     )
                 } doReturn true
+                on { packageManager } doReturn mock<PackageManager>()
             }
         }
 
@@ -73,6 +83,33 @@ class ScreenCaptureAppContentRepositoryImplTest : SysuiTestCase() {
     private val serviceConnectionCaptor = argumentCaptor<ServiceConnection>()
 
     private var result: Result<RawAppContent>? = null
+
+    @Before
+    fun setUp() {
+        kosmos.stubPackageManager()
+    }
+
+    private fun Kosmos.stubPackageManager(resolveInfo: List<ResolveInfo>? = null) {
+        val defaultResolveInfo =
+            ResolveInfo().apply {
+                serviceInfo =
+                    ServiceInfo().apply {
+                        packageName = "FakePackage"
+                        name = "FakeService"
+                        exported = true
+                        permission = Manifest.permission.MANAGE_MEDIA_PROJECTION
+                    }
+            }
+        whenever(
+                mockedContext.packageManager.queryIntentServicesAsUser(
+                    any<Intent>(),
+                    any<Int>(),
+                    any<UserHandle>(),
+                )
+            )
+            .thenReturn(resolveInfo ?: listOf(defaultResolveInfo))
+        clearInvocations(mockedContext)
+    }
 
     @Test
     fun appContentFor_whenCollectionStarts_bindsToService() =
@@ -92,6 +129,7 @@ class ScreenCaptureAppContentRepositoryImplTest : SysuiTestCase() {
             val job = startCollection(repository)
 
             // Assert
+            val pm = mockedContext.packageManager
             verify(mockedContext)
                 .bindServiceAsUser(
                     intentCaptor.capture(),
@@ -99,13 +137,151 @@ class ScreenCaptureAppContentRepositoryImplTest : SysuiTestCase() {
                     eq(Context.BIND_AUTO_CREATE),
                     eq(fakeUserHandle),
                 )
+            verify(mockedContext, times(2)).packageManager
+            verify(pm).queryIntentServicesAsUser(any<Intent>(), any<Int>(), any<UserHandle>())
             verifyNoMoreInteractions(mockedContext)
             assertThat(intentCaptor.allValues).hasSize(1)
             with(intentCaptor.lastValue) {
                 assertThat(action).isEqualTo(AppContentProjectionService.SERVICE_INTERFACE)
                 assertThat(`package`).isEqualTo("FakePackage")
+                assertThat(component?.packageName).isEqualTo("FakePackage")
+                assertThat(component?.className).isEqualTo("FakeService")
             }
             assertThat(result).isNull()
+
+            // Cleanup
+            job.cancel()
+        }
+
+    @Test
+    fun appContentsFor_serviceNotFound_emitsFailure() =
+        kosmos.runTest {
+            // Arrange
+            val packageName = "FakePackage"
+            val repository =
+                ScreenCaptureAppContentRepositoryImpl(
+                    scope = backgroundScope,
+                    bgContext = testDispatcher,
+                    context = mockedContext,
+                )
+            stubPackageManager(emptyList())
+            val pm = mockedContext.packageManager
+
+            // Act
+            val job = startCollection(repository, packageName = packageName)
+
+            // Assert
+            assertThat(result?.isFailure).isTrue()
+            assertThat(result?.exceptionOrNull()).isInstanceOf(IllegalStateException::class.java)
+            assertThat(result?.exceptionOrNull()?.message)
+                .isEqualTo("Package: $packageName does not declare an AppContentProjectionService")
+            verify(pm).queryIntentServicesAsUser(any<Intent>(), any<Int>(), any<UserHandle>())
+            verify(mockedContext, times(2)).packageManager
+            verify(mockedContext, never())
+                .bindServiceAsUser(
+                    any<Intent>(),
+                    any<ServiceConnection>(),
+                    any<Int>(),
+                    any<UserHandle>(),
+                )
+            verifyNoMoreInteractions(mockedContext)
+
+            // Cleanup
+            job.cancel()
+        }
+
+    @Test
+    fun appContentsFor_serviceNotExported_emitsFailure() =
+        kosmos.runTest {
+            // Arrange
+            val packageName = "FakePackage"
+            val repository =
+                ScreenCaptureAppContentRepositoryImpl(
+                    scope = backgroundScope,
+                    bgContext = testDispatcher,
+                    context = mockedContext,
+                )
+            val notExportedService =
+                ResolveInfo().apply {
+                    serviceInfo =
+                        ServiceInfo().apply {
+                            this.packageName = packageName
+                            this.name = "FakeService"
+                            this.exported = false
+                        }
+                }
+            stubPackageManager(listOf(notExportedService))
+
+            // Act
+            val job = startCollection(repository, packageName = packageName)
+
+            // Assert
+            assertThat(result?.isFailure).isTrue()
+            assertThat(result?.exceptionOrNull()).isInstanceOf(IllegalStateException::class.java)
+            assertThat(result?.exceptionOrNull()?.message)
+                .isEqualTo("Service FakeService in $packageName is not exported")
+
+            val pm = mockedContext.packageManager
+            verify(mockedContext, times(2)).packageManager
+            verify(pm).queryIntentServicesAsUser(any<Intent>(), any<Int>(), any<UserHandle>())
+            verify(mockedContext, never())
+                .bindServiceAsUser(
+                    any<Intent>(),
+                    any<ServiceConnection>(),
+                    any<Int>(),
+                    any<UserHandle>(),
+                )
+            verifyNoMoreInteractions(mockedContext)
+
+            // Cleanup
+            job.cancel()
+        }
+
+    @Test
+    fun appContentsFor_serviceNotProtectedByPermission_emitsFailure() =
+        kosmos.runTest {
+            // Arrange
+            val packageName = "FakePackage"
+            val repository =
+                ScreenCaptureAppContentRepositoryImpl(
+                    scope = backgroundScope,
+                    bgContext = testDispatcher,
+                    context = mockedContext,
+                )
+            val notProtectedService =
+                ResolveInfo().apply {
+                    serviceInfo =
+                        ServiceInfo().apply {
+                            this.packageName = packageName
+                            this.name = "FakeService"
+                            this.exported = true
+                            this.permission = "wrong.permission"
+                        }
+                }
+            stubPackageManager(listOf(notProtectedService))
+
+            // Act
+            val job = startCollection(repository, packageName = packageName)
+
+            // Assert
+            assertThat(result?.isFailure).isTrue()
+            assertThat(result?.exceptionOrNull()).isInstanceOf(IllegalStateException::class.java)
+            assertThat(result?.exceptionOrNull()?.message)
+                .isEqualTo(
+                    "Service FakeService in $packageName is not protected by MANAGE_MEDIA_PROJECTION"
+                )
+
+            val pm = mockedContext.packageManager
+            verify(mockedContext, times(2)).packageManager
+            verify(pm).queryIntentServicesAsUser(any<Intent>(), any<Int>(), any<UserHandle>())
+            verify(mockedContext, never())
+                .bindServiceAsUser(
+                    any<Intent>(),
+                    any<ServiceConnection>(),
+                    any<Int>(),
+                    any<UserHandle>(),
+                )
+            verifyNoMoreInteractions(mockedContext)
 
             // Cleanup
             job.cancel()
@@ -121,6 +297,7 @@ class ScreenCaptureAppContentRepositoryImplTest : SysuiTestCase() {
                     bgContext = testDispatcher,
                     context = mockedContext,
                 )
+            val pm = mockedContext.packageManager
             val job = startCollection(repository)
             verify(mockedContext)
                 .bindServiceAsUser(
@@ -129,6 +306,8 @@ class ScreenCaptureAppContentRepositoryImplTest : SysuiTestCase() {
                     any<Int>(),
                     any<UserHandle>(),
                 )
+            verify(mockedContext, times(2)).packageManager
+            verify(pm).queryIntentServicesAsUser(any<Intent>(), any<Int>(), any<UserHandle>())
             verifyNoMoreInteractions(mockedContext)
             assertThat(result).isNull()
 
@@ -168,6 +347,7 @@ class ScreenCaptureAppContentRepositoryImplTest : SysuiTestCase() {
             val job = startCollection(repository)
 
             // Assert
+            val pm = mockedContext.packageManager
             verify(mockedContext)
                 .bindServiceAsUser(
                     any<Intent>(),
@@ -177,6 +357,8 @@ class ScreenCaptureAppContentRepositoryImplTest : SysuiTestCase() {
                 )
             assertThat(serviceConnectionCaptor.allValues).hasSize(1)
             verify(mockedContext).unbindService(same(serviceConnectionCaptor.lastValue))
+            verify(mockedContext, times(2)).packageManager
+            verify(pm).queryIntentServicesAsUser(any<Intent>(), any<Int>(), any<UserHandle>())
             verifyNoMoreInteractions(mockedContext)
             assertThat(result?.isFailure).isTrue()
 
@@ -204,6 +386,7 @@ class ScreenCaptureAppContentRepositoryImplTest : SysuiTestCase() {
                             } doReturn false
                         },
                 )
+            val pm = mockedContext.packageManager
             val job = startCollection(repository)
             verify(mockedContext)
                 .bindServiceAsUser(
@@ -213,6 +396,8 @@ class ScreenCaptureAppContentRepositoryImplTest : SysuiTestCase() {
                     any<UserHandle>(),
                 )
             verify(mockedContext).unbindService(any())
+            verify(mockedContext, times(2)).packageManager
+            verify(pm).queryIntentServicesAsUser(any<Intent>(), any<Int>(), any<UserHandle>())
             verifyNoMoreInteractions(mockedContext)
             assertThat(result?.isFailure).isTrue()
 
@@ -220,6 +405,8 @@ class ScreenCaptureAppContentRepositoryImplTest : SysuiTestCase() {
             job.cancel()
 
             // Assert
+            verify(mockedContext, times(2)).packageManager
+            verify(pm).queryIntentServicesAsUser(any<Intent>(), any<Int>(), any<UserHandle>())
             verifyNoMoreInteractions(mockedContext)
             assertThat(result?.isFailure).isTrue()
         }
@@ -234,6 +421,7 @@ class ScreenCaptureAppContentRepositoryImplTest : SysuiTestCase() {
                     bgContext = testDispatcher,
                     context = mockedContext,
                 )
+            val pm = mockedContext.packageManager
             val fakeAppContentProjectionCallback = FakeAppContentProjectionCallback(mockedContext)
             val job = startCollection(repository)
             verify(mockedContext)
@@ -243,6 +431,8 @@ class ScreenCaptureAppContentRepositoryImplTest : SysuiTestCase() {
                     any<Int>(),
                     any<UserHandle>(),
                 )
+            verify(mockedContext, times(2)).packageManager
+            verify(pm).queryIntentServicesAsUser(any<Intent>(), any<Int>(), any<UserHandle>())
             verifyNoMoreInteractions(mockedContext)
             assertThat(serviceConnectionCaptor.allValues).hasSize(1)
             assertThat(fakeAppContentProjectionCallback.onContentRequestCalls).isEmpty()
@@ -281,6 +471,7 @@ class ScreenCaptureAppContentRepositoryImplTest : SysuiTestCase() {
                     bgContext = testDispatcher,
                     context = mockedContext,
                 )
+            val pm = mockedContext.packageManager
             val fakeAppContentProjectionCallback = FakeAppContentProjectionCallback(mockedContext)
             val job = startCollection(repository)
             verify(mockedContext)
@@ -290,6 +481,8 @@ class ScreenCaptureAppContentRepositoryImplTest : SysuiTestCase() {
                     any<Int>(),
                     any<UserHandle>(),
                 )
+            verify(mockedContext, times(2)).packageManager
+            verify(pm).queryIntentServicesAsUser(any<Intent>(), any<Int>(), any<UserHandle>())
             verifyNoMoreInteractions(mockedContext)
             assertThat(serviceConnectionCaptor.allValues).hasSize(1)
             val serviceConnection = serviceConnectionCaptor.lastValue
@@ -302,6 +495,8 @@ class ScreenCaptureAppContentRepositoryImplTest : SysuiTestCase() {
 
             // Assert
             verify(mockedContext).unbindService(same(serviceConnection))
+            verify(mockedContext, times(2)).packageManager
+            verify(pm).queryIntentServicesAsUser(any<Intent>(), any<Int>(), any<UserHandle>())
             verifyNoMoreInteractions(mockedContext)
             assertThat(fakeAppContentProjectionCallback.onContentRequestCalls).isEmpty()
             assertThat(fakeAppContentProjectionCallback.onSessionStoppedCallCount).isEqualTo(0)
@@ -321,6 +516,7 @@ class ScreenCaptureAppContentRepositoryImplTest : SysuiTestCase() {
                     bgContext = testDispatcher,
                     context = mockedContext,
                 )
+            val pm = mockedContext.packageManager
             val fakeAppContentProjectionCallback = FakeAppContentProjectionCallback(mockedContext)
             val job = startCollection(repository)
             verify(mockedContext)
@@ -330,6 +526,9 @@ class ScreenCaptureAppContentRepositoryImplTest : SysuiTestCase() {
                     any<Int>(),
                     any<UserHandle>(),
                 )
+            verify(mockedContext, times(2)).packageManager
+            verify(pm).queryIntentServicesAsUser(any<Intent>(), any<Int>(), any<UserHandle>())
+            verifyNoMoreInteractions(mockedContext)
             assertThat(serviceConnectionCaptor.allValues).hasSize(1)
             val serviceConnection = serviceConnectionCaptor.lastValue
             serviceConnection.onServiceConnected(
@@ -362,6 +561,7 @@ class ScreenCaptureAppContentRepositoryImplTest : SysuiTestCase() {
                     bgContext = testDispatcher,
                     context = mockedContext,
                 )
+            val pm = mockedContext.packageManager
             val fakeAppContentProjectionCallback = FakeAppContentProjectionCallback(mockedContext)
             val fakeAppContent =
                 MediaProjectionAppContent.Builder(123)
@@ -383,6 +583,9 @@ class ScreenCaptureAppContentRepositoryImplTest : SysuiTestCase() {
                     any<Int>(),
                     any<UserHandle>(),
                 )
+            verify(mockedContext, times(2)).packageManager
+            verify(pm).queryIntentServicesAsUser(any<Intent>(), any<Int>(), any<UserHandle>())
+            verifyNoMoreInteractions(mockedContext)
             assertThat(serviceConnectionCaptor.allValues).hasSize(1)
             serviceConnectionCaptor.lastValue.onServiceConnected(
                 /* name= */ null,
@@ -416,6 +619,7 @@ class ScreenCaptureAppContentRepositoryImplTest : SysuiTestCase() {
                     bgContext = testDispatcher,
                     context = mockedContext,
                 )
+            val pm = mockedContext.packageManager
             val fakeAppContentProjectionCallback = FakeAppContentProjectionCallback(mockedContext)
             val fakeResultBundle = Bundle()
             val job = startCollection(repository)
@@ -426,6 +630,9 @@ class ScreenCaptureAppContentRepositoryImplTest : SysuiTestCase() {
                     any<Int>(),
                     any<UserHandle>(),
                 )
+            verify(mockedContext, times(2)).packageManager
+            verify(pm).queryIntentServicesAsUser(any<Intent>(), any<Int>(), any<UserHandle>())
+            verifyNoMoreInteractions(mockedContext)
             assertThat(serviceConnectionCaptor.allValues).hasSize(1)
             serviceConnectionCaptor.lastValue.onServiceConnected(
                 /* name= */ null,
@@ -455,6 +662,7 @@ class ScreenCaptureAppContentRepositoryImplTest : SysuiTestCase() {
                     bgContext = testDispatcher,
                     context = mockedContext,
                 )
+            val pm = mockedContext.packageManager
             val fakeAppContentProjectionCallback = FakeAppContentProjectionCallback(mockedContext)
             val job = startCollection(repository)
             verify(mockedContext)
@@ -464,6 +672,9 @@ class ScreenCaptureAppContentRepositoryImplTest : SysuiTestCase() {
                     any<Int>(),
                     any<UserHandle>(),
                 )
+            verify(mockedContext, times(2)).packageManager
+            verify(pm).queryIntentServicesAsUser(any<Intent>(), any<Int>(), any<UserHandle>())
+            verifyNoMoreInteractions(mockedContext)
             assertThat(serviceConnectionCaptor.allValues).hasSize(1)
             serviceConnectionCaptor.lastValue.onServiceConnected(
                 /* name= */ null,
