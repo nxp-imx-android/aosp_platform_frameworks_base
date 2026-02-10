@@ -85,6 +85,16 @@ public class DefaultSurfaceAnimator implements Runnable {
             // transition. Otherwise, the real end state of transition may be overwritten.
             if (animator.mLastAppliedVsyncId == animator.mChoreographer.getVsyncId()) {
                 animator.mTransaction.apply();
+            } else if (animator.mScheduled) {
+                // While Animator#isPostNotifyEndListenerEnabled is true, this usually happens when
+                // the first frame is the end (i.e. animation duration is 0). Apply the transaction
+                // before notifying the end callback to ensure the order with finish transaction.
+                animator.mTransaction.apply();
+                if (animator.mNumRunningAnimations == 0) {
+                    animator.mScheduled = false;
+                    animator.mChoreographer.removeCallbacks(Choreographer.CALLBACK_TRAVERSAL,
+                            animator, null /* token */);
+                }
             }
             return;
         }
