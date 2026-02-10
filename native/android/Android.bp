@@ -104,8 +104,6 @@ cc_library_shared {
         "libEGL",
         "libGLESv2",
         "libpowermanager",
-        "android.hardware.configstore@1.0",
-        "android.hardware.configstore-utils",
         "android.os.flags-aconfig-cc",
         "dynamic_instrumentation_manager_aidl-cpp",
         "libnativedisplay",
