@@ -46,6 +46,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
+import androidx.compose.ui.text.style.Hyphens
+import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.dp
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 import com.android.systemui.accessibility.shortcutchooser.shared.model.AccessibilityTargetModel
@@ -136,7 +138,16 @@ private fun ShortcutTargetRow(
         Text(
             target.featureName,
             modifier = Modifier.weight(1f),
-            style = MaterialTheme.typography.titleMedium,
+            style =
+                MaterialTheme.typography.titleMedium.copy(
+                    hyphens = Hyphens.Auto,
+                    lineBreak =
+                        LineBreak(
+                            strategy = LineBreak.Strategy.HighQuality,
+                            strictness = LineBreak.Strictness.Normal,
+                            wordBreak = LineBreak.WordBreak.Phrase,
+                        ),
+                ),
         )
 
         if (rowType == RowType.TOGGLE && target.isToggleable) {
