@@ -15,6 +15,7 @@
  */
 package com.android.systemui.statusbar.phone.dagger
 
+import android.content.Context
 import android.view.Display
 import com.android.app.displaylib.PerDisplayInstanceRepositoryImpl
 import com.android.app.displaylib.PerDisplayRepository
@@ -35,6 +36,7 @@ import com.android.systemui.statusbar.data.repository.PrivacyDotWindowController
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInteractor
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshPerDisplayInstanceProvider
 import com.android.systemui.statusbar.events.PrivacyDotViewControllerModule
+import com.android.systemui.statusbar.gesture.StatusBarLongPressGestureDetector
 import com.android.systemui.statusbar.phone.AutoHideControllerStore
 import com.android.systemui.statusbar.phone.CentralSurfacesCommandQueueCallbacks
 import com.android.systemui.statusbar.phone.MultiDisplayAutoHideControllerStore
@@ -134,6 +136,16 @@ interface StatusBarPhoneModule {
                 systemUIDisplaySubcomponent.statusBarRootFactory,
                 systemUIDisplaySubcomponent.homeStatusBarComponentFactory,
             )
+        }
+
+        @Provides
+        @Default
+        @SysUISingleton
+        fun defaultLongPressGestureDetector(
+            context: Context,
+            factory: StatusBarLongPressGestureDetector.Factory,
+        ): StatusBarLongPressGestureDetector {
+            return factory.create(context)
         }
 
         /**

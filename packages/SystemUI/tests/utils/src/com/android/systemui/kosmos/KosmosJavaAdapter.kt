@@ -47,6 +47,7 @@ import com.android.systemui.deviceentry.domain.interactor.deviceEntryFingerprint
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryUdfpsInteractor
 import com.android.systemui.deviceentry.domain.interactor.deviceUnlockedInteractor
+import com.android.systemui.display.data.repository.displayPhoneSubcomponentPerDisplayRepository
 import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.display.data.repository.displaySubcomponentPerDisplayRepository
 import com.android.systemui.globalactions.actionsDialogLiteDelegateFactory
@@ -192,6 +193,9 @@ class KosmosJavaAdapter() {
     val statusBarModePerDisplayRepository by lazy { kosmos.fakeStatusBarModePerDisplayRepository }
     val systemUiDisplaySubcomponentRepository by lazy {
         kosmos.displaySubcomponentPerDisplayRepository
+    }
+    val systemUiReferenceDisplaySubcomponentRepository by lazy {
+        kosmos.displayPhoneSubcomponentPerDisplayRepository
     }
     val shadeLayoutParams by lazy { kosmos.shadeLayoutParams }
     val autoHideControllerStore by lazy { kosmos.fakeAutoHideControllerStore }

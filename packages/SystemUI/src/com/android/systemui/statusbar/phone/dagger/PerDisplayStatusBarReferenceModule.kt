@@ -16,10 +16,15 @@
 
 package com.android.systemui.statusbar.phone.dagger
 
+import android.content.Context
 import com.android.systemui.Flags
+import com.android.systemui.dagger.qualifiers.Default
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAwareStatusBar
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
 import com.android.systemui.statusbar.events.SystemStatusAnimationScheduler
+import com.android.systemui.statusbar.gesture.StatusBarLongPressGestureDetector
 import com.android.systemui.statusbar.phone.fragment.dagger.HomeStatusBarComponent
 import com.android.systemui.statusbar.phone.ongoingcall.domain.interactor.OngoingCallStatusBarInteractor
 import com.android.systemui.statusbar.pipeline.shared.ui.binder.HomeStatusBarViewBinder
@@ -29,6 +34,7 @@ import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBar
 import com.android.systemui.statusbar.window.data.repository.StatusBarWindowStatePerDisplayRepository
 import com.android.systemui.statusbar.window.data.repository.StatusBarWindowStatePerDisplayRepositoryImpl
 import dagger.Binds
+import dagger.Lazy
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.ElementsIntoSet
@@ -77,6 +83,21 @@ interface PerDisplayStatusBarReferenceModule {
                 setOf(scheduler)
             } else {
                 emptySet()
+            }
+        }
+
+        @Provides
+        @DisplayAware
+        @PerDisplaySingleton
+        fun statusBarLongPressGestureDetector(
+            @DisplayAwareStatusBar context: Context,
+            detectorFactory: StatusBarLongPressGestureDetector.Factory,
+            @Default defaultDetectorLazy: Lazy<StatusBarLongPressGestureDetector>,
+        ): StatusBarLongPressGestureDetector {
+            return if (Flags.statusBarLongPressGestureDetectorPerDisplay()) {
+                detectorFactory.create(context)
+            } else {
+                defaultDetectorLazy.get()
             }
         }
     }

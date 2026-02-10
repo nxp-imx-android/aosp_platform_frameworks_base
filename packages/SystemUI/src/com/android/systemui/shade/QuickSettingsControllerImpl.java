@@ -54,6 +54,7 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 
 import com.android.app.animation.Interpolators;
+import com.android.app.displaylib.PerDisplayRepository;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.jank.Cuj;
 import com.android.internal.jank.InteractionJankMonitor;
@@ -67,7 +68,9 @@ import com.android.systemui.Flags;
 import com.android.systemui.classifier.Classifier;
 import com.android.systemui.communal.ui.viewmodel.CommunalTransitionViewModel;
 import com.android.systemui.dagger.SysUISingleton;
+import com.android.systemui.dagger.qualifiers.Default;
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryFaceAuthInteractor;
+import com.android.systemui.display.dagger.ReferenceSysUIDisplaySubcomponent;
 import com.android.systemui.dump.DumpManager;
 import com.android.systemui.fragments.FragmentHostManager;
 import com.android.systemui.media.controls.domain.pipeline.MediaDataManager;
@@ -78,6 +81,7 @@ import com.android.systemui.res.R;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.screenrecord.ScreenRecordUxController;
 import com.android.systemui.shade.data.repository.ShadeRepository;
+import com.android.systemui.shade.domain.interactor.ShadeDisplaysInteractor;
 import com.android.systemui.shade.domain.interactor.ShadeInteractor;
 import com.android.systemui.shared.system.QuickStepContract;
 import com.android.systemui.statusbar.LockscreenShadeTransitionController;
@@ -86,6 +90,7 @@ import com.android.systemui.statusbar.NotificationShadeDepthController;
 import com.android.systemui.statusbar.PulseExpansionHandler;
 import com.android.systemui.statusbar.QsFrameTranslateController;
 import com.android.systemui.statusbar.StatusBarState;
+import com.android.systemui.statusbar.gesture.StatusBarLongPressGestureDetector;
 import com.android.systemui.statusbar.notification.domain.interactor.ActiveNotificationsInteractor;
 import com.android.systemui.statusbar.notification.stack.AmbientState;
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout;
@@ -124,6 +129,9 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
     public static final int SHADE_BACK_ANIM_SCALE_MULTIPLIER = 100;
 
     private QS mQs;
+    private final PerDisplayRepository<ReferenceSysUIDisplaySubcomponent>
+            mDisplaySubcomponentRepository;
+    private final Lazy<ShadeDisplaysInteractor> mShadeDisplaysInteractorLazy;
     private final Lazy<NotificationPanelViewController> mPanelViewControllerLazy;
 
     private final NotificationPanelView mPanelView;
@@ -325,7 +333,9 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
             NotificationShadeDepthController notificationShadeDepthController,
             ShadeHeaderController shadeHeaderController,
             ShadeTouchableRegionManager shadeTouchableRegionManager,
-            Provider<StatusBarLongPressGestureDetector> statusBarLongPressGestureDetector,
+            @Default Provider<StatusBarLongPressGestureDetector> statusBarLongPressGestureDetector,
+            PerDisplayRepository<ReferenceSysUIDisplaySubcomponent> displaySubcomponentRepository,
+            Lazy<ShadeDisplaysInteractor> shadeDisplaysInteractorLazy,
             KeyguardStateController keyguardStateController,
             KeyguardBypassController keyguardBypassController,
             ScrimController scrimController,
@@ -351,6 +361,8 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
             Lazy<LargeScreenHeaderHelper> largeScreenHeaderHelperLazy,
             WindowManagerProvider windowManagerProvider
     ) {
+        mDisplaySubcomponentRepository = displaySubcomponentRepository;
+        mShadeDisplaysInteractorLazy = shadeDisplaysInteractorLazy;
         SceneContainerFlag.assertInLegacyMode();
         mPanelViewControllerLazy = panelViewControllerLazy;
         mPanelView = panelView;
@@ -1636,7 +1648,16 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
         }
         boolean isInStatusBar = event.getY(event.getActionIndex()) < mStatusBarMinHeight;
         if (isInStatusBar) {
-            mStatusBarLongPressGestureDetector.get().handleTouch(event);
+            if (Flags.statusBarLongPressGestureDetectorPerDisplay()) {
+                int shadeDisplayId = mShadeDisplaysInteractorLazy.get().getDisplayId().getValue();
+                ReferenceSysUIDisplaySubcomponent displaySubcomponent =
+                        mDisplaySubcomponentRepository.get(shadeDisplayId);
+                if (displaySubcomponent != null) {
+                    displaySubcomponent.getStatusBarLongPressGestureDetector().handleTouch(event);
+                }
+            } else {
+                mStatusBarLongPressGestureDetector.get().handleTouch(event);
+            }
         }
         final int action = event.getActionMasked();
         boolean collapsedQs = !getExpanded() && !mSplitShadeEnabled;
