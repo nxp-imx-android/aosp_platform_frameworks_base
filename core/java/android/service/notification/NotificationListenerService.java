@@ -1753,7 +1753,7 @@ public abstract class NotificationListenerService extends Service {
         }
 
         @Override
-        public void onSystemAdjustmentsRequest(List<Adjustment> adjustment) {
+        public void onSystemAdjustmentsReceived(List<Adjustment> adjustment) {
             // no-op in the listener
         }
     }
