@@ -156,11 +156,9 @@ public abstract class MagnificationGestureHandler extends BaseEventStreamTransfo
             } break;
             case SOURCE_MOUSE:
             case SOURCE_STYLUS: {
-                if (magnificationShortcutExists()) {
-                    if (event.getAction() == MotionEvent.ACTION_HOVER_MOVE) {
-                        mCallback.onMouseMove(mDisplayId, getMode());
-                    }
-                    handleMouseOrStylusEvent(event, rawEvent, policyFlags);
+                if (magnificationShortcutExists()
+                        && event.getAction() == MotionEvent.ACTION_HOVER_MOVE) {
+                    mCallback.onMouseMove(mDisplayId, getMode());
                 }
             }
                 break;
@@ -204,13 +202,6 @@ public abstract class MagnificationGestureHandler extends BaseEventStreamTransfo
      * Called when this MagnificationGestureHandler handles the motion event.
      */
     abstract void onMotionEventInternal(MotionEvent event, MotionEvent rawEvent, int policyFlags);
-
-    /**
-     * Called when this MagnificationGestureHandler should handle a mouse or stylus motion event,
-     * but not re-dispatch it when completed.
-     */
-    abstract void handleMouseOrStylusEvent(
-            MotionEvent event, MotionEvent rawEvent, int policyFlags);
 
     /**
      * Called when the shortcut target is magnification.
