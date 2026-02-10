@@ -76,14 +76,17 @@ import android.view.Display;
 
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.SystemServerLock;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.app.IBatteryStats;
 import com.android.internal.display.BrightnessSynchronizer;
 import com.android.internal.logging.MetricsLogger;
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
 import com.android.internal.util.FrameworkStatsLog;
+import com.android.internal.util.NamedLock;
 import com.android.internal.util.RingBuffer;
 import com.android.server.LocalServices;
+import com.android.server.LockGuard;
 import com.android.server.am.BatteryStatsService;
 import com.android.server.display.RampAnimator.DualRampAnimator;
 import com.android.server.display.brightness.BrightnessEvent;
@@ -266,7 +269,8 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
 
     private final String mTag;
 
-    private final Object mLock = new Object();
+    @SystemServerLock(LockGuard.INDEX_DISPLAY_POWER_CONTROLLER)
+    private final Object mLock = NamedLock.create("DisplayPowerController");
 
     private final Context mContext;
 

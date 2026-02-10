@@ -447,6 +447,7 @@ import android.view.autofill.AutofillManagerInternal;
 
 import com.android.internal.annotations.CompositeRWLock;
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.SystemServerLock;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.app.IAppOpsActiveCallback;
 import com.android.internal.app.IAppOpsCallback;
@@ -757,6 +758,7 @@ public class ActivityManagerService extends IActivityManager.Stub
     /**
      * The global lock for AMS, it's de-facto the ActivityManagerService object as of now.
      */
+    @SystemServerLock(LockGuard.INDEX_ACTIVITY)
     final ActivityManagerGlobalLock mGlobalLock = ActivityManagerService.this;
 
     /**

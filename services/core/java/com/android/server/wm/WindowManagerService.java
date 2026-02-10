@@ -128,7 +128,6 @@ import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_WINDOW_MOV
 import static com.android.internal.protolog.WmProtoLogGroups.WM_ERROR;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_SHOW_TRANSACTIONS;
 import static com.android.internal.util.FrameworkStatsLog.SENSITIVE_NOTIFICATION_APP_PROTECTION_APPLIED;
-import static com.android.server.LockGuard.INDEX_WINDOW;
 import static com.android.server.LockGuard.installLock;
 import static com.android.server.policy.PhoneWindowManager.TRACE_WAIT_FOR_ALL_WINDOWS_DRAWN_METHOD;
 import static com.android.server.policy.WindowManagerPolicy.FINISH_LAYOUT_REDO_WALLPAPER;
@@ -339,6 +338,7 @@ import android.window.WindowContextInfo;
 import com.android.internal.R;
 import com.android.internal.accessibility.util.AccessibilityUtils;
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.SystemServerLock;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.annotations.VisibleForTesting.Visibility;
 import com.android.internal.dev.perfetto.sdk.PerfettoTrace;
@@ -360,6 +360,7 @@ import com.android.server.AnimationThread;
 import com.android.server.DisplayThread;
 import com.android.server.FgThread;
 import com.android.server.LocalServices;
+import com.android.server.LockGuard;
 import com.android.server.UiThread;
 import com.android.server.Watchdog;
 import com.android.server.am.UserState;
@@ -639,6 +640,7 @@ public class WindowManagerService extends IWindowManager.Stub
     final HashMap<IBinder, WindowState> mInputToWindowMap = new HashMap<>();
 
     /** Global service lock used by the package that owns this service. */
+    @SystemServerLock(LockGuard.INDEX_WINDOW)
     final WindowManagerGlobalLock mGlobalLock;
 
     /**
@@ -1333,7 +1335,7 @@ public class WindowManagerService extends IWindowManager.Stub
             @NonNull Supplier<SurfaceControl.Transaction> transactionFactory,
             @NonNull Supplier<SurfaceControl.Builder> surfaceControlFactory,
             @NonNull AppCompatConfiguration appCompat) {
-        installLock(this, INDEX_WINDOW);
+        installLock(this, LockGuard.INDEX_WINDOW);
         mGlobalLock = atm.getGlobalLock();
         mAtmService = atm;
         mContext = context;

@@ -186,6 +186,7 @@ import android.view.Display;
 
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.SystemServerLock;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.app.ResolverActivity;
 import com.android.internal.content.F2fsUtils;
@@ -623,6 +624,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
     // Lock for state used when installing and doing other long running
     // operations.  Methods that must be called with this lock held have
     // the suffix "LI".
+    @SystemServerLock(LockGuard.INDEX_PACKAGE_INSTALL)
     final PackageManagerTracedLock mInstallLock;
 
     // ----------------------------------------------------------------
@@ -630,6 +632,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
     // Lock for global state used when modifying package state or settings.
     // Methods that must be called with this lock held have
     // the suffix "Locked". Some methods may use the legacy suffix "LP"
+    @SystemServerLock(LockGuard.INDEX_PACKAGES)
     final PackageManagerTracedLock mLock;
 
     // Ensures order of overlay updates until data storage can be moved to overlay code

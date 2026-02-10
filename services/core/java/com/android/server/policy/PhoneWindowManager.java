@@ -221,6 +221,7 @@ import android.view.autofill.AutofillManagerInternal;
 import android.widget.Toast;
 
 import com.android.internal.R;
+import com.android.internal.annotations.SystemServerLock;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.app.AssistUtils;
 import com.android.internal.display.BrightnessUtils;
@@ -236,6 +237,7 @@ import com.android.internal.policy.LogDecelerateInterpolator;
 import com.android.internal.policy.PhoneWindow;
 import com.android.internal.policy.TransitionAnimation;
 import com.android.internal.statusbar.IStatusBarService;
+import com.android.internal.util.NamedLock;
 import com.android.internal.widget.LockPatternUtils;
 import com.android.server.AccessibilityManagerInternal;
 import com.android.server.DockObserverInternal;
@@ -243,6 +245,7 @@ import com.android.server.ExtconStateObserver;
 import com.android.server.ExtconUEventObserver;
 import com.android.server.GestureLauncherService;
 import com.android.server.LocalServices;
+import com.android.server.LockGuard;
 import com.android.server.SystemServiceManager;
 import com.android.server.UiThread;
 import com.android.server.input.InputManagerInternal;
@@ -443,7 +446,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
      * manager with lock held.  (This lock will be acquired in places
      * where the window manager is calling in with its own lock held.)
      */
-    private final Object mLock = new Object();
+    @SystemServerLock(LockGuard.INDEX_PHONE_WINDOW_MANAGER)
+    private final Object mLock = NamedLock.create("PhoneWindowManager");
 
     /** List of {@link ScreenOnListener}s which do not belong to the default display. */
     private final SparseArray<ScreenOnListener> mScreenOnListeners = new SparseArray<>();

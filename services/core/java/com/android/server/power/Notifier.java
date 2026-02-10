@@ -666,6 +666,7 @@ public class Notifier {
      * which case it will assume that the state did not fully converge before the
      * next transition began and will recover accordingly.
      */
+    @SuppressWarnings("AndroidFrameworkSystemServerLock")
     public void onGlobalWakefulnessChangeStarted(final int wakefulness, int reason,
             long eventTime) {
         final boolean interactive = PowerManagerInternal.isInteractive(wakefulness);
@@ -873,6 +874,7 @@ public class Notifier {
      *
      * @param groupId The group id of the DisplayGroup to update display interactivities for.
      */
+    @SuppressWarnings("AndroidFrameworkSystemServerLock")
     private void updateDisplayInteractivities(int groupId, boolean interactive) {
         final int[] displayIds = mDisplayManagerInternal.getDisplayIdsForGroup(groupId);
         for (int displayId : displayIds) {
@@ -881,6 +883,7 @@ public class Notifier {
 
     }
 
+    @SuppressWarnings("AndroidFrameworkSystemServerLock")
     private void resetDisplayInteractivities() {
         final SparseArray<int[]> displaysByGroupId =
                 mDisplayManagerInternal.getDisplayIdsByGroupsIds();
@@ -907,6 +910,7 @@ public class Notifier {
     /**
      * Called when an individual PowerGroup changes wakefulness.
      */
+    @SuppressWarnings("AndroidFrameworkSystemServerLock")
     public void onGroupWakefulnessChangeStarted(int groupId, int wakefulness, int changeReason,
             long eventTime) {
         final boolean isInteractive = PowerManagerInternal.isInteractive(wakefulness);
@@ -1464,6 +1468,7 @@ public class Notifier {
      * @param displayGroupId the id of the display group to report
      * @param screenTimeoutPolicy screen timeout policy
      */
+    @SuppressWarnings("AndroidFrameworkSystemServerLock")
     void notifyScreenTimeoutPolicyChanges(int displayGroupId,
             @ScreenTimeoutPolicy int screenTimeoutPolicy) {
         synchronized (mLock) {

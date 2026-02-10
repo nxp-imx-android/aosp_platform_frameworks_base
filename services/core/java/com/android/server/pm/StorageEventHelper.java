@@ -100,6 +100,7 @@ public final class StorageEventHelper extends StorageEventListener {
         }
     }
 
+    @SuppressWarnings("AndroidFrameworkSystemServerLock")
     @Override
     public void onVolumeForgotten(String fsUuid) {
         if (TextUtils.isEmpty(fsUuid)) {

@@ -123,10 +123,13 @@ import android.window.DisplayWindowPolicyController;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.Initializer;
+import com.android.internal.annotations.SystemServerLock;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.app.BlockedAppStreamingActivity;
+import com.android.internal.util.NamedLock;
 import com.android.modules.expresslog.Counter;
 import com.android.server.LocalServices;
+import com.android.server.LockGuard;
 import com.android.server.UiModeManagerInternal;
 import com.android.server.companion.virtual.audio.VirtualAudioController;
 import com.android.server.companion.virtual.camera.VirtualCameraController;
@@ -190,7 +193,8 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
      * Making a call to another service while holding this lock creates lock order inversion and
      * will potentially cause a deadlock.
      */
-    private final Object mVirtualDeviceLock = new Object();
+    @SystemServerLock(LockGuard.INDEX_VIRTUAL_DEVICE_MANAGER_DEVICE)
+    private final Object mVirtualDeviceLock = NamedLock.create("VirtualDevice");
 
     private final int mBaseVirtualDisplayFlags;
 
