@@ -833,6 +833,9 @@ public class SurfaceView extends View implements ViewRootImpl.SurfaceChangedCall
      */
     public void setEnableSurfaceClipping(boolean enabled) {
         mClipSurfaceToBounds = enabled;
+        if (mRtDrivenClipping && isHardwareAccelerated()) {
+            replacePositionUpdateListener(mSurfaceWidth, mSurfaceHeight, mBlurRegions);
+        }
         invalidate();
     }
 
@@ -841,6 +844,7 @@ public class SurfaceView extends View implements ViewRootImpl.SurfaceChangedCall
         super.setClipBounds(clipBounds);
 
         if (mRtDrivenClipping && isHardwareAccelerated()) {
+            replacePositionUpdateListener(mSurfaceWidth, mSurfaceHeight, mBlurRegions);
             return;
         }
 
@@ -906,6 +910,9 @@ public class SurfaceView extends View implements ViewRootImpl.SurfaceChangedCall
             mRoundedViewportPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
             mRoundedViewportPaint.setBlendMode(BlendMode.CLEAR);
             mRoundedViewportPaint.setColor(0);
+        }
+        if (mRtDrivenClipping && isHardwareAccelerated()) {
+            replacePositionUpdateListener(mSurfaceWidth, mSurfaceHeight, mBlurRegions);
         }
         invalidate();
     }
@@ -1936,12 +1943,20 @@ public class SurfaceView extends View implements ViewRootImpl.SurfaceChangedCall
         private final SurfaceControl.Transaction mPositionChangedTransaction =
                 new SurfaceControl.Transaction();
         private final ArrayList<BlurRegion> mRtBlurRegions;
+        private final boolean mDisableAutoClip;
+        private final Rect mViewClipBounds = new Rect();
 
         SurfaceViewPositionUpdateListener(int surfaceWidth, int surfaceHeight,
                 ArrayList<BlurRegion> blurRegions) {
             mRtSurfaceWidth = surfaceWidth;
             mRtSurfaceHeight = surfaceHeight;
             mRtBlurRegions = blurRegions;
+            mDisableAutoClip = mCornerRadius > 0.0f;
+            if (mClipSurfaceToBounds && mClipBounds != null) {
+                mViewClipBounds.set(mClipBounds);
+            } else {
+                mViewClipBounds.set(0, 0, mRtSurfaceWidth, mRtSurfaceHeight);
+            }
         }
 
         @Override
@@ -2029,8 +2044,13 @@ public class SurfaceView extends View implements ViewRootImpl.SurfaceChangedCall
                                 mRTLastSetCrop.top, mRTLastSetCrop.right, mRTLastSetCrop.bottom,
                                 surfaceToNodeScaleX, surfaceToNodeScaleY));
                     }
-                    mPositionChangedTransaction.setCrop(mSurfaceControl, mRTLastSetCrop.left,
-                            mRTLastSetCrop.top, mRTLastSetCrop.right, mRTLastSetCrop.bottom);
+                    if (!mDisableAutoClip) {
+                        mPositionChangedTransaction.setCrop(mSurfaceControl, mRTLastSetCrop.left,
+                                mRTLastSetCrop.top, mRTLastSetCrop.right, mRTLastSetCrop.bottom);
+                    } else {
+                        mPositionChangedTransaction.setCrop(mSurfaceControl, mViewClipBounds.left,
+                                mViewClipBounds.top, mViewClipBounds.right, mViewClipBounds.bottom);
+                    }
                     if (mRTLastSetCrop.isEmpty()) {
                         mPositionChangedTransaction.hide(mSurfaceControl);
                     } else {
