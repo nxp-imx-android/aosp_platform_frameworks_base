@@ -791,6 +791,16 @@ public class VirtualDeviceManagerService extends SystemService {
         }
 
         @Override // Binder call
+        @Nullable
+        public IBinder getAudioFocusEnvironment(int deviceId) {
+            VirtualDeviceImpl virtualDevice = getVirtualDeviceForId(deviceId);
+            if (virtualDevice == null) {
+                return null;
+            }
+            return virtualDevice.getAudioFocusEnvironment();
+        }
+
+        @Override // Binder call
         public boolean isVirtualDeviceOwnedMirrorDisplay(int displayId) {
             if (getDeviceIdForDisplayId(displayId) == Context.DEVICE_ID_DEFAULT) {
                 return false;

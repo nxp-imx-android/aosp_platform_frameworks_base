@@ -78,6 +78,7 @@ import android.hardware.input.VirtualTouchscreenConfig;
 import android.media.AudioManager;
 import android.os.Binder;
 import android.os.Build;
+import android.os.IBinder;
 import android.os.Looper;
 import android.os.RemoteException;
 import android.os.UserHandle;
@@ -690,6 +691,26 @@ public final class VirtualDeviceManager {
         }
         try {
             mService.playSoundEffect(deviceId, effectType);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Returns the audio focus environment IBinder token for a virtual device or null if there is
+     * no separate audio focus environment for the device.
+     *
+     * @param deviceId - id of the virtual audio device
+     *
+     * @hide
+     */
+    @Nullable
+    public IBinder getAudioFocusEnvironment(int deviceId) {
+        if (mService == null) {
+            return null;
+        }
+        try {
+            return mService.getAudioFocusEnvironment(deviceId);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
