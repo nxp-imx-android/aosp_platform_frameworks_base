@@ -3983,7 +3983,9 @@ package android.text {
     method public void onTextChanged(CharSequence, int, int, int);
   }
 
-  @FlaggedApi("com.android.text.flags.split_show_passwords_to_touch_and_physical") public class ShowSecretsSetting {
+  @FlaggedApi("com.android.text.flags.split_show_passwords_to_touch_and_physical") public final class ShowSecretsSetting {
+    method @RequiresPermission(android.Manifest.permission.WRITE_SECURE_SETTINGS) public static void setShouldShowPhysicalInput(@NonNull android.content.Context, boolean);
+    method @RequiresPermission(android.Manifest.permission.WRITE_SECURE_SETTINGS) public static void setShouldShowTouchInput(@NonNull android.content.Context, boolean);
     field public static final long SPLIT_SHOW_PASSWORDS_TO_TOUCH_AND_PHYSICAL = 417951523L; // 0x18e96f23L
   }
 

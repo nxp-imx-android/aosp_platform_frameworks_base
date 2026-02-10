@@ -20288,11 +20288,6 @@ package android.text {
     field @NonNull public static final android.os.Parcelable.Creator<android.text.FontConfig.NamedFamilyList> CREATOR;
   }
 
-  @FlaggedApi("com.android.text.flags.split_show_passwords_to_touch_and_physical") public class ShowSecretsSetting {
-    method @RequiresPermission(android.Manifest.permission.WRITE_SECURE_SETTINGS) public static void setShouldShowPhysicalInputForUser(@NonNull android.content.ContentResolver, boolean, @NonNull android.os.UserHandle);
-    method @RequiresPermission(android.Manifest.permission.WRITE_SECURE_SETTINGS) public static void setShouldShowTouchInputForUser(@NonNull android.content.ContentResolver, boolean, @NonNull android.os.UserHandle);
-  }
-
 }
 
 package android.util {
