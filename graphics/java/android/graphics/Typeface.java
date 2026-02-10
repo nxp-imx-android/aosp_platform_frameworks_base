@@ -292,27 +292,19 @@ public class Typeface {
     public static final String DEFAULT_FAMILY = "sans-serif";
 
     static {
-        if (Flags.doNotOverwriteStaticFinalField()) {
-            DEFAULT_BOLD = new Typeface(Typeface.BOLD, 700, null);
-            SANS_SERIF = new Typeface(Typeface.NORMAL, 400, "sans-serif");
-            SERIF = new Typeface(Typeface.NORMAL, 400, "serif");
-            MONOSPACE = new Typeface(Typeface.NORMAL, 400, "monospace");
-            // To pass an existing Typeface reference check with Typeface.DEFAULT,
-            // e.g., Typeface.DEFAULT == Typeface.SANS_SERIF, use the same instance if the default
-            // family matches with the other key of the static field.
-            DEFAULT = switch (DEFAULT_FAMILY) {
-                case "sans-serif" -> SANS_SERIF;
-                case "serif" -> SERIF;
-                case "monospace" -> MONOSPACE;
-                default -> new Typeface(Typeface.NORMAL, 400, null);
-            };
-        } else {
-            DEFAULT = null;
-            DEFAULT_BOLD = null;
-            SANS_SERIF = null;
-            SERIF = null;
-            MONOSPACE = null;
-        }
+        DEFAULT_BOLD = new Typeface(Typeface.BOLD, 700, null);
+        SANS_SERIF = new Typeface(Typeface.NORMAL, 400, "sans-serif");
+        SERIF = new Typeface(Typeface.NORMAL, 400, "serif");
+        MONOSPACE = new Typeface(Typeface.NORMAL, 400, "monospace");
+        // To pass an existing Typeface reference check with Typeface.DEFAULT,
+        // e.g., Typeface.DEFAULT == Typeface.SANS_SERIF, use the same instance if the default
+        // family matches with the other key of the static field.
+        DEFAULT = switch (DEFAULT_FAMILY) {
+            case "sans-serif" -> SANS_SERIF;
+            case "serif" -> SERIF;
+            case "monospace" -> MONOSPACE;
+            default -> new Typeface(Typeface.NORMAL, 400, null);
+        };
     }
 
     // Style value for building typeface.
@@ -1593,37 +1585,21 @@ public class Typeface {
 
             // We can't assume DEFAULT_FAMILY available on Roboletric.
             if (sSystemFontMap.containsKey(DEFAULT_FAMILY)) {
-                if (Flags.doNotOverwriteStaticFinalField()) {
-                    initializePendingTypefaceLocked(SANS_SERIF, "sans-serif", sSystemFontMap);
-                    initializePendingTypefaceLocked(SERIF, "serif", sSystemFontMap);
-                    initializePendingTypefaceLocked(MONOSPACE, "monospace", sSystemFontMap);
+                initializePendingTypefaceLocked(SANS_SERIF, "sans-serif", sSystemFontMap);
+                initializePendingTypefaceLocked(SERIF, "serif", sSystemFontMap);
+                initializePendingTypefaceLocked(MONOSPACE, "monospace", sSystemFontMap);
 
-                    setDefault(sSystemFontMap.get(DEFAULT_FAMILY));
+                setDefault(sSystemFontMap.get(DEFAULT_FAMILY));
 
-                    // Skip initializing Typeface.DEFAULT if it is an alias for another static field
-                    // (e.g., SANS_SERIF), as that field has already been initialized.
-                    if (DEFAULT != SANS_SERIF && DEFAULT != SERIF && DEFAULT != MONOSPACE) {
-                        DEFAULT.completeTypefaceInitialization(
-                                create(DEFAULT_FAMILY, Typeface.NORMAL));
-                    }
-                    DEFAULT_BOLD.completeTypefaceInitialization(
-                            create(DEFAULT_FAMILY, Typeface.BOLD));
-                } else {
-                    setDefault(sSystemFontMap.get(DEFAULT_FAMILY));
-
-                    // Set up defaults and typefaces exposed in public API
-                    // Use sDefaultTypeface here, because create(String, int) uses DEFAULT as
-                    // fallback.
-                    nativeForceSetStaticFinalField("DEFAULT",
-                            create(sDefaultTypeface, Typeface.NORMAL));
-                    nativeForceSetStaticFinalField("DEFAULT_BOLD",
-                            create(sDefaultTypeface, Typeface.BOLD));
-                    nativeForceSetStaticFinalField("SANS_SERIF",
-                            create("sans-serif", Typeface.NORMAL));
-                    nativeForceSetStaticFinalField("SERIF", create("serif", Typeface.NORMAL));
-                    nativeForceSetStaticFinalField("MONOSPACE",
-                            create("monospace", Typeface.NORMAL));
+                // Skip initializing Typeface.DEFAULT if it is an alias for another static field
+                // (e.g., SANS_SERIF), as that field has already been initialized.
+                if (DEFAULT != SANS_SERIF && DEFAULT != SERIF && DEFAULT != MONOSPACE) {
+                    DEFAULT.completeTypefaceInitialization(
+                            create(DEFAULT_FAMILY, Typeface.NORMAL));
                 }
+                DEFAULT_BOLD.completeTypefaceInitialization(
+                        create(DEFAULT_FAMILY, Typeface.BOLD));
+
             } else {
                 // Robolectric disables Typeface static initializer and call
                 // loadPreinstalledSystemFontMap to load system font map manually when the class is
