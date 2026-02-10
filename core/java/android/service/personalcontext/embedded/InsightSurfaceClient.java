@@ -258,7 +258,8 @@ public class InsightSurfaceClient implements AutoCloseable {
 
     /**
      * Publish new hints to the context engine. This method can be called any time after the client
-     * has been created to send new hints to the context engine.
+     * has been created to send new hints to the context engine. Hints published through this method
+     * will cause any resulting {@link ContextInsight} to be delivered to this surface client.
      *
      * @param hints a list of {@link ContextHint}s
      *
