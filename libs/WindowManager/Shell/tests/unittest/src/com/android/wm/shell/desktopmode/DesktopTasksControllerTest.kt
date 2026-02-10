@@ -2635,6 +2635,20 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    fun moveTaskToDesk_lockTaskMode_doesNothing() {
+        whenever(lockTaskChangeListener.isTaskLocked).thenReturn(true)
+
+        val task = setUpFullscreenTask(displayId = DEFAULT_DISPLAY)
+
+        assertFalse(
+            controller.moveTaskToDefaultDeskAndActivate(
+                taskId = task.taskId,
+                transitionSource = UNKNOWN,
+            )
+        )
+    }
+
+    @Test
     @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY)
     fun moveTaskToDesktop_desktopWallpaperDisabled_nonRunningTask_launchesInFreeform() =
         testScope.runTest {

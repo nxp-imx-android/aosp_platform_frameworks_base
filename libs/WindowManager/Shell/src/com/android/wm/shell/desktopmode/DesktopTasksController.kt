@@ -1497,6 +1497,10 @@ class DesktopTasksController(
         callback: IMoveToDesktopCallback? = null,
         targetTransition: IBinder? = null,
     ): Boolean {
+        if (lockTaskChangeListener.isTaskLocked) {
+            logV("moveTaskToDesk device in lock task mode, not moving")
+            return false
+        }
         logV("moveTaskToDesk taskId=%d deskId=%d source=%s", taskId, deskId, transitionSource)
         val runningTask = shellTaskOrganizer.getRunningTaskInfo(taskId)
         if (runningTask != null) {
