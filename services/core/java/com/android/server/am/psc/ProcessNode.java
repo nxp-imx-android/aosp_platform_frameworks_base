@@ -15,15 +15,19 @@
  */
 package com.android.server.am.psc;
 
+import static android.app.ActivityManager.PROCESS_CAPABILITY_NONE;
+
 import static com.android.server.am.psc.PlatformCompatCache.CACHED_COMPAT_CHANGE_CAMERA_MICROPHONE_CAPABILITY;
 
 import android.annotation.NonNull;
 import android.app.ActivityManager;
+import android.app.ActivityManager.ProcessCapability;
 import android.app.ActivityManager.ProcessState;
 import android.content.pm.ServiceInfo.ForegroundServiceType;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 
 import java.util.Objects;
+import java.util.function.Consumer;
 
 /**
  * Represents a process within the process graph. Each node is embedded within a
@@ -35,7 +39,7 @@ import java.util.Objects;
  * bindings, to determine the importance of the edges' target processes during graph traversal.
  */
 @RavenwoodKeepWholeClass
-class ProcessNode {
+class ProcessNode implements GraphNode {
     /** A reference to the underlying ProcessRecordInternal. */
     private final @NonNull ProcessRecordInternal mProc;
 
@@ -51,6 +55,17 @@ class ProcessNode {
 
     ProcessNode(@NonNull ProcessRecordInternal proc) {
         mProc = Objects.requireNonNull(proc);
+    }
+
+    @Override
+    public void forEachOutgoingEdge(@NonNull Consumer<GraphEdge> consumer) {
+        // TODO: b/477161434 - Implement the method.
+    }
+
+    @Override
+    public final @ProcessCapability int getCapability() {
+        // TODO: b/477161434 - Implement the method.
+        return PROCESS_CAPABILITY_NONE;
     }
 
     // TODO: b/483182189 - Move state getters below to ProcessEdge.

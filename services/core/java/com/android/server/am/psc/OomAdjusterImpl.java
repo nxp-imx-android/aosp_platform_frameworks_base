@@ -611,6 +611,8 @@ public class OomAdjusterImpl extends OomAdjuster {
             HostingTypeProvider hostingTypeProvider) {
         super(serviceLock, procLock, processList, activeUids, adjusterThread, oomConstants,
                 globalState, injector, callback, stateGetter, updateHandler, hostingTypeProvider);
+
+        SystemNode.initInstance(processList);
     }
 
     private final ProcessRecordNodes mProcessRecordProcStateNodes = new ProcessRecordNodes(

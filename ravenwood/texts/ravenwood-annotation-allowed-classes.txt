@@ -754,6 +754,7 @@ com.android.server.am.psc.BinderSession
 com.android.server.am.psc.CapabilityController
 com.android.server.am.psc.ConnectionRecordInternal
 com.android.server.am.psc.GraphEdge
+com.android.server.am.psc.GraphNode
 com.android.server.am.psc.OomAdjuster
 com.android.server.am.psc.ProcessEdge
 com.android.server.am.psc.ProcessNode
@@ -761,6 +762,7 @@ com.android.server.am.psc.ProcessServiceRecordInternal
 com.android.server.am.psc.ProviderBindingEdge
 com.android.server.am.psc.ServiceBindingEdge
 com.android.server.am.psc.SyncBatchSession
+com.android.server.am.psc.SystemNode
 com.android.server.power.PowerManagerBatchProxy
 com.android.server.utils.TimingsTraceAndSlog
 com.google.android.collect.Lists
