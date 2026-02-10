@@ -296,6 +296,18 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                     )
                 }
             }
+            from(Scenes.Occluded, to = Scenes.Shade) {
+                goneToSingleShadeTransition(
+                    singleShadeMarginHorizontalPx = singleShadeMarginHorizontalPx
+                )
+            }
+            from(Scenes.Shade, to = Scenes.Occluded) {
+                reversed {
+                    goneToSingleShadeTransition(
+                        singleShadeMarginHorizontalPx = singleShadeMarginHorizontalPx
+                    )
+                }
+            }
             from(
                 Scenes.Shade,
                 to = Scenes.Gone,
