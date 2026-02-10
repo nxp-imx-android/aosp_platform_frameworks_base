@@ -38,6 +38,9 @@ java_defaults {
         "-c fa",
     ],
     resource_dirs: ["res"],
+    flags_packages: [
+        "android.content.res.flags-aconfig",
+    ],
 }
 
 android_test {
@@ -218,6 +221,9 @@ android_library {
         "android.test.runner.stubs.system",
         "framework",
         "framework-res",
+    ],
+    flags_packages: [
+        "android.content.res.flags-aconfig",
     ],
 }
 
