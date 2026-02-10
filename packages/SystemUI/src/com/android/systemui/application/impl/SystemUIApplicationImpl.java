@@ -24,6 +24,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
+import android.os.Handler;
 import android.os.Process;
 import android.os.Trace;
 import android.tracing.perfetto.InitArguments;
@@ -65,6 +66,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.TreeMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.inject.Provider;
 
@@ -79,8 +83,8 @@ public class SystemUIApplicationImpl extends SystemUIApplication implements
     /**
      * Hold a reference on the stuff we start.
      */
-    private CoreStartable[] mServices;
-    private boolean mServicesStarted;
+    private final AtomicReference<CoreStartable[]> mServices = new AtomicReference<>();
+    private final AtomicBoolean mServicesStarted = new AtomicBoolean(false);
     private ApplicationContextAvailableCallback mContextAvailableCallback;
     private SysUIComponent mSysUIComponent;
     private SystemUIInitializer mInitializer;
@@ -179,34 +183,75 @@ public class SystemUIApplicationImpl extends SystemUIApplication implements
                         ThreadedRenderer.EGL_CONTEXT_PRIORITY_HIGH_IMG);
             }
 
-            registerReceiver(new BroadcastReceiver() {
-                @Override
-                public void onReceive(Context context, Intent intent) {
-                    if (mBootCompleteCache.isBootComplete()) return;
+            if (Flags.handleBootCompletedOnSeparateThread()) {
+                final Handler bgHandler = mSysUIComponent.getBackgroundHandler();
+                final Executor mainExecutor = mSysUIComponent.getMainExecutor();
+                registerReceiver(new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+                        if (mBootCompleteCache.isBootComplete()) return;
 
-                    if (DEBUG) Log.v(TAG, "BOOT_COMPLETED received");
-                    unregisterReceiver(this);
-                    mBootCompleteCache.setBootComplete();
-                    if (mServicesStarted) {
-                        final int N = mServices.length;
-                        for (int i = 0; i < N; i++) {
-                            notifyBootCompleted(mServices[i]);
+                        if (DEBUG) Log.v(TAG, "BOOT_COMPLETED received");
+                        unregisterReceiver(this);
+                        mainExecutor.execute(() -> {
+                            Trace.traceBegin(Trace.TRACE_TAG_APP,
+                                    "signaling onBootCompleted");
+                            mBootCompleteCache.setBootComplete();
+                            if (mServicesStarted.get()) {
+                                final CoreStartable[] services = mServices.get();
+                                for (int i = 0; i < services.length; i++) {
+                                    notifyBootCompleted(services[i]);
+                                }
+                            }
+                            Trace.traceEnd(Trace.TRACE_TAG_APP);
+                        });
+                    }
+                }, bootCompletedFilter, null, bgHandler);
+            } else {
+                registerReceiver(new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+                        if (mBootCompleteCache.isBootComplete()) return;
+
+                        if (DEBUG) Log.v(TAG, "BOOT_COMPLETED received");
+                        unregisterReceiver(this);
+                        mBootCompleteCache.setBootComplete();
+                        if (mServicesStarted.get()) {
+                            final CoreStartable[] services = mServices.get();
+                            final int N = services.length;
+                            for (int i = 0; i < N; i++) {
+                                notifyBootCompleted(services[i]);
+                            }
                         }
                     }
-                }
-            }, bootCompletedFilter);
+                }, bootCompletedFilter);
+            }
 
             IntentFilter localeChangedFilter = new IntentFilter(Intent.ACTION_LOCALE_CHANGED);
-            registerReceiver(new BroadcastReceiver() {
-                @Override
-                public void onReceive(Context context, Intent intent) {
-                    if (Intent.ACTION_LOCALE_CHANGED.equals(intent.getAction())) {
-                        if (!mBootCompleteCache.isBootComplete()) return;
-                        // Update names of SystemUi notification channels
-                        NotificationChannels.createAll(context);
+            if (Flags.handleBootCompletedOnSeparateThread()) {
+                final Handler bgHandler = mSysUIComponent.getBackgroundHandler();
+                registerReceiver(new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+                        if (Intent.ACTION_LOCALE_CHANGED.equals(intent.getAction())) {
+                            if (!mBootCompleteCache.isBootComplete()) return;
+                            // Update names of SystemUi notification channels
+                            NotificationChannels.createAll(context);
+                        }
                     }
-                }
-            }, localeChangedFilter);
+                }, localeChangedFilter, null, bgHandler);
+            } else {
+                registerReceiver(new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+                        if (Intent.ACTION_LOCALE_CHANGED.equals(intent.getAction())) {
+                            if (!mBootCompleteCache.isBootComplete()) return;
+                            // Update names of SystemUi notification channels
+                            NotificationChannels.createAll(context);
+                        }
+                    }
+                }, localeChangedFilter);
+            }
         } else {
             // We don't need to startServices for sub-process that is doing some tasks.
             // (screenshots, sweetsweetdesserts or tuner ..)
@@ -270,10 +315,12 @@ public class SystemUIApplicationImpl extends SystemUIApplication implements
             Map<Class<?>, Provider<CoreStartable>> startables,
             String metricsPrefix,
             String vendorComponent) {
-        if (mServicesStarted) {
+        if (mServicesStarted.get()) {
             return;
         }
-        mServices = new CoreStartable[startables.size() + (vendorComponent == null ? 0 : 1)];
+        final CoreStartable[] services =
+                new CoreStartable[startables.size() + (vendorComponent == null ? 0 : 1)];
+        mServices.set(services);
 
         if (!mBootCompleteCache.isBootComplete()) {
             // check to see if maybe it was already completed long before we began
@@ -335,7 +382,7 @@ public class SystemUIApplicationImpl extends SystemUIApplication implements
                     int i = serviceIndex;  // Copied to make lambda happy.
                     timeInitialization(
                             clsName,
-                            () -> mServices[i] = startStartable(clsName, entry.getValue()),
+                            () -> services[i] = startStartable(clsName, entry.getValue()),
                             log,
                             metricsPrefix);
                     startedStartables.add(cls);
@@ -372,14 +419,16 @@ public class SystemUIApplicationImpl extends SystemUIApplication implements
         if (vendorComponent != null) {
             timeInitialization(
                     vendorComponent,
-                    () -> mServices[mServices.length - 1] =
-                            startAdditionalStartable(vendorComponent),
+                    () -> {
+                        services[services.length - 1] =
+                                startAdditionalStartable(vendorComponent);
+                    },
                     log,
                     metricsPrefix);
         }
 
-        for (serviceIndex = 0; serviceIndex < mServices.length; serviceIndex++) {
-            final CoreStartable service = mServices[serviceIndex];
+        for (serviceIndex = 0; serviceIndex < services.length; serviceIndex++) {
+            final CoreStartable service = services[serviceIndex];
             if (mBootCompleteCache.isBootComplete()) {
                 notifyBootCompleted(service);
             }
@@ -393,7 +442,7 @@ public class SystemUIApplicationImpl extends SystemUIApplication implements
         mSysUIComponent.getInitController().executePostInitTasks();
         log.traceEnd();
 
-        mServicesStarted = true;
+        mServicesStarted.set(true);
     }
 
     private static void notifyBootCompleted(CoreStartable coreStartable) {
@@ -469,7 +518,7 @@ public class SystemUIApplicationImpl extends SystemUIApplication implements
 
     @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
-        if (mServicesStarted) {
+        if (mServicesStarted.get()) {
             ConfigurationForwarder configForwarder = mSysUIComponent.getConfigurationForwarder();
             if (Trace.isEnabled()) {
                 Trace.traceBegin(
@@ -482,7 +531,7 @@ public class SystemUIApplicationImpl extends SystemUIApplication implements
     }
 
     public CoreStartable[] getServices() {
-        return mServices;
+        return mServices.get();
     }
 
     @Override
