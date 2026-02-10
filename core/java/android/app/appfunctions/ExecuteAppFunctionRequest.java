@@ -262,7 +262,7 @@ public final class ExecuteAppFunctionRequest implements Parcelable {
         public Builder(@NonNull AppFunctionName appFunctionName) {
             Objects.requireNonNull(appFunctionName);
             mTargetPackageName = appFunctionName.getPackageName();
-            mFunctionIdentifier = appFunctionName.getFunctionId();
+            mFunctionIdentifier = appFunctionName.getFunctionIdentifier();
         }
 
         /** Sets the additional metadata for this function execution request. */

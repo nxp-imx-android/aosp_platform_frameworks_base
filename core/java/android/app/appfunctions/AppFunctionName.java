@@ -54,12 +54,12 @@ public final class AppFunctionName implements Parcelable {
      * Constructs an {@link AppFunctionName} object which identifies a specific app function.
      *
      * @param packageName The package name of the Android app which contains the app function.
-     * @param functionId The ID used in an {@link ExecuteAppFunctionRequest} to refer to this app
-     *     function.
+     * @param functionIdentifier The ID used in an {@link ExecuteAppFunctionRequest} to refer to
+     *     this app function.
      */
-    public AppFunctionName(@NonNull String packageName, @NonNull String functionId) {
+    public AppFunctionName(@NonNull String packageName, @NonNull String functionIdentifier) {
         mPackageName = requireNonNull(packageName);
-        mFunctionId = requireNonNull(functionId);
+        mFunctionId = requireNonNull(functionIdentifier);
     }
 
     private AppFunctionName(Parcel in) {
@@ -103,7 +103,7 @@ public final class AppFunctionName implements Parcelable {
 
     /** The ID used in an {@link ExecuteAppFunctionRequest} to refer to this app function. */
     @NonNull
-    public String getFunctionId() {
+    public String getFunctionIdentifier() {
         return mFunctionId;
     }
 
@@ -125,7 +125,7 @@ public final class AppFunctionName implements Parcelable {
                 + "packageName="
                 + mPackageName
                 + ", "
-                + "functionId="
+                + "functionIdentifier="
                 + mFunctionId
                 + ")";
     }

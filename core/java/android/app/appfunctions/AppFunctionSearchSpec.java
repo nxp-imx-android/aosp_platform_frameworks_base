@@ -225,7 +225,7 @@ public final class AppFunctionSearchSpec implements Parcelable {
         for (var functionName : mFunctionNames) {
             String qualifiedId =
                     getDocumentIdForAppFunction(
-                            functionName.getPackageName(), functionName.getFunctionId());
+                            functionName.getPackageName(), functionName.getFunctionIdentifier());
             qualifiedIds.add(qualifiedId);
         }
 
