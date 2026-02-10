@@ -943,19 +943,10 @@ public final class AppExitInfoTracker {
             return;
         }
         info.setLoggedInStatsd(true);
-        final String pkgName = info.getPackageName();
-        String processName = info.getProcessName();
-        if (TextUtils.equals(pkgName, processName)) {
-            // Omit the process name here to save space
-            processName = null;
-        } else if (processName != null && pkgName != null && processName.startsWith(pkgName)) {
-            // Strip the prefix to save space
-            processName = processName.substring(pkgName.length());
-        }
         FrameworkStatsLog.write(FrameworkStatsLog.APP_PROCESS_DIED,
-                info.getPackageUid(), processName, info.getReason(), info.getSubReason(),
-                info.getImportance(), (int) info.getPss(), (int) info.getRss(),
-                info.hasForegroundServices());
+                info.getPackageUid(), info.getProcessName(), info.getReason(),
+                info.getSubReason(), info.getImportance(), (int) info.getPss(),
+                (int) info.getRss(), info.hasForegroundServices());
     }
 
     @GuardedBy("mLock")
