@@ -80,6 +80,23 @@ public abstract class AccessibilityManagerInternal {
     public abstract Set<String> getPermittedAccessibilityServicePackages(
             @Nullable List<String> adminPermittedServices, @UserIdInt int userId);
 
+    /**
+     * Returns the count of Accessibility Services and Shortcuts that would be restricted
+     * by Advanced Protection Mode.
+     */
+    public record AccessibilityFeatureRestrictedCounts(
+            int disabledServices, int removedShortcuts) {}
+
+    /**
+     * Returns the count of Accessibility Services and Shortcuts that would be restricted
+     * by Advanced Protection Mode.
+     *
+     * @param userId The user ID to check.
+     * @return The restricted counts.
+     */
+    public abstract AccessibilityFeatureRestrictedCounts getA11yFeatureRestrictedCounts(
+            @UserIdInt int userId);
+
     private static final AccessibilityManagerInternal NOP = new AccessibilityManagerInternal() {
         @Override
         public void setImeSessionEnabled(SparseArray<IAccessibilityInputMethodSession> sessions,
@@ -116,6 +133,11 @@ public abstract class AccessibilityManagerInternal {
         public Set<String> getPermittedAccessibilityServicePackages(
                 List<String> adminPermittedServices, int userId) {
             return Set.of();
+        }
+
+        @Override
+        public AccessibilityFeatureRestrictedCounts getA11yFeatureRestrictedCounts(int userId) {
+            return new AccessibilityFeatureRestrictedCounts(0, 0);
         }
     };
 

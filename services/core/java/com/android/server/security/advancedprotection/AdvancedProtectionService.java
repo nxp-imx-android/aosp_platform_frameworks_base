@@ -27,6 +27,7 @@ import android.Manifest;
 import android.annotation.EnforcePermission;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.ActivityManager;
 import android.app.StatsManager;
 import android.content.Context;
 import android.content.pm.UserInfo;
@@ -58,6 +59,7 @@ import android.util.StatsEvent;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.DumpUtils;
 import com.android.internal.util.FrameworkStatsLog;
+import com.android.server.AccessibilityManagerInternal;
 import com.android.server.FgThread;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
@@ -74,11 +76,9 @@ import com.android.server.security.advancedprotection.features.UsbDataAdvancedPr
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /** @hide */
 public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
@@ -289,8 +289,7 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
             synchronized (mCallbacks) {
                 if (enabled != isAdvancedProtectionEnabledInternal()) {
                     mStore.saveAdvancedProtectionModeEnabled(enabled);
-                    sendModeChanged(enabled);
-                    logAdvancedProtectionEnabled(enabled);
+                    sendModeChanged(enabled, /* isToggle= */ true);
                 }
             }
         } finally {
@@ -349,7 +348,7 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
             for (int featureId : featureIdsSet) {
                 updatedFeatures.add(createAdvancedProtectionFeature(featureId));
             }
-            sendModeChanged(isAdvancedProtectionEnabledInternal());
+            sendModeChanged(isAdvancedProtectionEnabledInternal(), /* isToggle= */ false);
             return updatedFeatures;
         } finally {
             Binder.restoreCallingIdentity(identity);
@@ -491,6 +490,13 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
         }
 
         Slog.i(TAG, "Advanced protection has been " + (enabled ? "enabled" : "disabled"));
+        AccessibilityManagerInternal.AccessibilityFeatureRestrictedCounts a11yFeatureCounts =
+                new AccessibilityManagerInternal.AccessibilityFeatureRestrictedCounts(0, 0);
+        if (enabled) {
+            a11yFeatureCounts = AccessibilityManagerInternal.get()
+                    .getA11yFeatureRestrictedCounts(ActivityManager.getCurrentUser());
+        }
+
         FrameworkStatsLog.write(
                 FrameworkStatsLog.ADVANCED_PROTECTION_STATE_CHANGED,
                 /*enabled*/ enabled,
@@ -498,7 +504,9 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
                 /*last_dialog_feature_id*/ featureIdToLogEnum(mStore.retrieveLastDialogFeatureId()),
                 /*_type*/ dialogueTypeToLogEnum(mStore.retrieveLastDialogType()),
                 /*_learn_more_clicked*/ mStore.retrieveLastDialogLearnMoreClicked(),
-                /*_hours_since_enabled*/ mStore.retrieveLastDialogHoursSinceEnabled());
+                /*_hours_since_enabled*/ mStore.retrieveLastDialogHoursSinceEnabled(),
+                /*a11y_num_of_disabled_service*/ a11yFeatureCounts.disabledServices(),
+                /*a11y_num_of_removed_shortcut_target*/ a11yFeatureCounts.removedShortcuts());
         mStore.saveEnabledChangeTime(System.currentTimeMillis());
     }
 
@@ -730,18 +738,22 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
         }
     }
 
-    void sendModeChanged(boolean enabled) {
+    void sendModeChanged(boolean enabled, boolean isToggle) {
         if (android.security.Flags.aapmApiV2()) {
             List<AdvancedProtectionFeature> features = getAdvancedProtectionFeatures(null);
             Message.obtain(
                             mHandler,
                             MODE_CHANGED,
                             /*enabled*/ enabled ? 1 : 0,
-                            /*unused */ -1,
+                            /*isToggle*/ isToggle ? 1 : 0,
                             /*features*/ features)
                     .sendToTarget();
         } else {
-            Message.obtain(mHandler, MODE_CHANGED, /*enabled*/ enabled ? 1 : 0, /*unused */ -1)
+            Message.obtain(
+                            mHandler,
+                            MODE_CHANGED,
+                            /*enabled*/ enabled ? 1 : 0,
+                            /*isToggle*/ isToggle ? 1 : 0)
                     .sendToTarget();
         }
     }
@@ -804,12 +816,17 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
         public void handleMessage(@NonNull Message msg) {
             switch (msg.what) {
                 // arg1 == enabled
+                // arg2 == isToggle
                 // obj == features
                 case MODE_CHANGED:
                     if (android.security.Flags.aapmApiV2()) {
-                        handleModeChanged(msg.arg1 == 1, (List<AdvancedProtectionFeature>) msg.obj);
+                        handleModeChanged(
+                                /* enabled = */ msg.arg1 == 1,
+                                /* features = */ (List<AdvancedProtectionFeature>) msg.obj,
+                                /* isToggle = */ msg.arg2 == 1);
                     } else {
-                        handleAllCallbacks(msg.arg1 == 1);
+                        handleAllCallbacks(/* enabled = */ msg.arg1 == 1, /* isToggle = */
+                                msg.arg2 == 1);
                     }
                     break;
                 // arg1 == enabled
@@ -829,7 +846,14 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
             }
         }
 
-        private void handleModeChanged(boolean enabled, List<AdvancedProtectionFeature> features) {
+        private void handleModeChanged(
+                boolean enabled, List<AdvancedProtectionFeature> features, boolean isToggle) {
+            // Logging includes counters of features that will be disabled by advanced protection.
+            // Log before toggling advanced protection to grab accurate counts before they change.
+            if (isToggle) {
+                logAdvancedProtectionEnabled(enabled);
+            }
+
             ArrayMap<Integer, AdvancedProtectionFeature> featureMap = new ArrayMap<>();
             for (AdvancedProtectionFeature feature : features) {
                 featureMap.put(feature.getId(), feature);
@@ -898,7 +922,11 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
             }
         }
 
-        private void handleAllCallbacks(boolean enabled) {
+        private void handleAllCallbacks(boolean enabled, boolean isToggle) {
+            if (isToggle) {
+                logAdvancedProtectionEnabled(enabled);
+            }
+
             ArrayList<IAdvancedProtectionCallback> deadObjects = new ArrayList<>();
 
             for (int i = 0; i < mHooks.size(); i++) {
