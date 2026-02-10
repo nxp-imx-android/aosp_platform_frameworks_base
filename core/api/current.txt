@@ -6945,6 +6945,7 @@ package android.app {
     field public static final int BRIDGED_METADATA_TYPE_TV = 5; // 0x5
     field public static final int BRIDGED_METADATA_TYPE_UNKNOWN = 0; // 0x0
     field public static final int BRIDGED_METADATA_TYPE_WATCH = 4; // 0x4
+    field public static final int BRIDGED_METADATA_TYPE_XR = 6; // 0x6
     field @NonNull public static final android.os.Parcelable.Creator<android.app.Notification.BridgedNotificationMetadata> CREATOR;
   }
 
