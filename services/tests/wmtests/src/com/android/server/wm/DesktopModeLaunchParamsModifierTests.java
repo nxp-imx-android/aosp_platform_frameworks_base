@@ -2313,6 +2313,78 @@ public class DesktopModeLaunchParamsModifierTests extends
         assertEquals(WINDOWING_MODE_UNDEFINED, mResult.mWindowingMode);
     }
 
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM,
+            Flags.FLAG_ENABLE_DESKTOP_FIRST_TOP_FULLSCREEN_BUGFIX,
+            Flags.FLAG_ENABLE_DESKTOP_FIRST_MULTIPLE_LAUNCH_ROOT_BUGFIX})
+    public void testCalculate_desktopFirstPolicy_taskNull_multipleLaunchRoots_bypassesPolicy() {
+        setupDesktopModeLaunchParamsModifier();
+        when(mTarget.isEnteringDesktopMode(any(), any(), any(), any())).thenCallRealMethod();
+        final DisplayContent dc = createDisplayContent(ORIENTATION_LANDSCAPE,
+                LANDSCAPE_DISPLAY_BOUNDS, WINDOWING_MODE_FREEFORM);
+        final Task deskRoot = new TaskBuilder(mSupervisor).setActivityType(ACTIVITY_TYPE_STANDARD)
+                .setWindowingMode(WINDOWING_MODE_FREEFORM).setDisplay(dc)
+                .setCreatedByOrganizer(true).build();
+        final Task homeTask = new TaskBuilder(mSupervisor).setActivityType(
+                ACTIVITY_TYPE_HOME).setWindowingMode(WINDOWING_MODE_FULLSCREEN).setDisplay(
+                dc).build();
+        homeTask.setVisibleRequested(true);
+        // Add a second launch root for WINDOWING_MODE_UNDEFINED.
+        // This should cause the policy to be bypassed and the task to launch in UNDEFINED.
+        final Task undefinedRoot = new TaskBuilder(mSupervisor).setActivityType(
+                ACTIVITY_TYPE_STANDARD).setWindowingMode(WINDOWING_MODE_UNDEFINED).setDisplay(dc)
+                .setCreatedByOrganizer(true).build();
+
+        dc.getDefaultTaskDisplayArea().setLaunchRootTask(deskRoot,
+                new int[]{WINDOWING_MODE_FREEFORM}, new int[]{ACTIVITY_TYPE_STANDARD});
+        dc.getDefaultTaskDisplayArea().setLaunchRootTask(undefinedRoot,
+                new int[]{WINDOWING_MODE_UNDEFINED}, new int[]{ACTIVITY_TYPE_STANDARD});
+
+        assertEquals(RESULT_SKIP,
+                new CalculateRequestBuilder().setTask(null).setOptions(
+                        ActivityOptions.makeBasic().setLaunchDisplayId(
+                                dc.getDisplayId())).calculate());
+        assertEquals(WINDOWING_MODE_UNDEFINED, mResult.mWindowingMode);
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM,
+            Flags.FLAG_ENABLE_DESKTOP_FIRST_TOP_FULLSCREEN_BUGFIX,
+            Flags.FLAG_ENABLE_DESKTOP_FIRST_MULTIPLE_LAUNCH_ROOT_BUGFIX})
+    public void testCalculate_desktopFirstPolicy_multipleLaunchRoots_bypassesPolicy() {
+        setupDesktopModeLaunchParamsModifier();
+        when(mTarget.isEnteringDesktopMode(any(), any(), any(), any())).thenCallRealMethod();
+
+        final DisplayContent dc = createDisplayContent(ORIENTATION_LANDSCAPE,
+                LANDSCAPE_DISPLAY_BOUNDS, WINDOWING_MODE_FREEFORM);
+        final TaskDisplayArea tda = dc.getDefaultTaskDisplayArea();
+
+        // Create a freeform launch root.
+        final Task freeformRoot = new TaskBuilder(mSupervisor)
+                .setActivityType(ACTIVITY_TYPE_STANDARD)
+                .setWindowingMode(WINDOWING_MODE_FREEFORM).setDisplay(dc)
+                .setCreatedByOrganizer(true).build();
+        tda.setLaunchRootTask(freeformRoot,
+                new int[]{WINDOWING_MODE_FREEFORM}, new int[]{ACTIVITY_TYPE_STANDARD});
+
+        // Create an undefined launch root.
+        final Task undefinedRoot = new TaskBuilder(mSupervisor)
+                .setActivityType(ACTIVITY_TYPE_STANDARD)
+                .setWindowingMode(WINDOWING_MODE_UNDEFINED).setDisplay(dc)
+                .setCreatedByOrganizer(true).build();
+        tda.setLaunchRootTask(undefinedRoot,
+                new int[]{WINDOWING_MODE_UNDEFINED}, new int[]{ACTIVITY_TYPE_STANDARD});
+
+        final Task launchingTask = new TaskBuilder(mSupervisor)
+                .setActivityType(ACTIVITY_TYPE_STANDARD)
+                .setDisplay(dc).build();
+
+        // If multiple launch roots are detected, it should return WINDOWING_MODE_UNDEFINED.
+        assertEquals(RESULT_CONTINUE,
+                new CalculateRequestBuilder().setTask(launchingTask).calculate());
+        assertEquals(WINDOWING_MODE_UNDEFINED, mResult.mWindowingMode);
+    }
+
     private Task createTask(DisplayContent display, boolean isResizeable) {
         final int resizeMode = isResizeable ? RESIZE_MODE_RESIZEABLE
                 : RESIZE_MODE_UNRESIZEABLE;

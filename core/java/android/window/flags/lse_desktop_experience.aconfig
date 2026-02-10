@@ -369,6 +369,16 @@ flag {
 }
 
 flag {
+    name: "enable_desktop_first_multiple_launch_root_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Fixes an issue where multiple launch roots are detected for desktop-first tasks."
+    bug: "481612837"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_desktop_first_persisted_launch_params_bugfix"
     namespace: "lse_desktop_experience"
     description: "Fixes an issue where freeform windowing mode is unexpectedly persisted across launches."
