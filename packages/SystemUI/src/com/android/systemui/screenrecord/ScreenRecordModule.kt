@@ -38,12 +38,12 @@ import com.android.systemui.qs.tiles.base.ui.viewmodel.QSTileViewModel
 import com.android.systemui.qs.tiles.base.ui.viewmodel.QSTileViewModelFactory
 import com.android.systemui.qs.tiles.impl.screenrecord.domain.interactor.ScreenRecordTileDataInteractor
 import com.android.systemui.qs.tiles.impl.screenrecord.domain.interactor.ScreenRecordTileUserActionInteractor
+import com.android.systemui.qs.tiles.impl.screenrecord.domain.model.ScreenRecordTileModel
 import com.android.systemui.qs.tiles.impl.screenrecord.domain.ui.mapper.ScreenRecordTileMapper
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.data.repository.ScreenCaptureDeviceStateRepository
 import com.android.systemui.screencapture.data.repository.ScreenCaptureDeviceStateRepositoryImpl
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
-import com.android.systemui.screenrecord.data.model.ScreenRecordModel
 import com.android.systemui.screenrecord.data.repository.LegacyScreenRecordingStartStopRepository
 import com.android.systemui.screenrecord.data.repository.ScreenRecordRepository
 import com.android.systemui.screenrecord.data.repository.ScreenRecordRepositoryImpl
@@ -156,7 +156,7 @@ interface ScreenRecordModule {
         @IntoMap
         @StringKey(SCREEN_RECORD_TILE_SPEC)
         fun provideScreenRecordTileViewModel(
-            factory: QSTileViewModelFactory.Static<ScreenRecordModel>,
+            factory: QSTileViewModelFactory.Static<ScreenRecordTileModel>,
             mapper: ScreenRecordTileMapper,
             stateInteractor: ScreenRecordTileDataInteractor,
             userActionInteractor: ScreenRecordTileUserActionInteractor,
