@@ -1973,8 +1973,8 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
     /**
      * Load information about device and profile owners of the device, populating mDeviceAdmins and
      * pushing owner info to other system services. This is called at a fairly early stage of
-     * system server initialiation (via DevicePolicyManagerService's ctor), so care should to
-     * be taken to not interact with system services that are initialiated after DPMS.
+     * system server initialization (via DevicePolicyManagerService's ctor), so care should
+     * be taken to not interact with system services that are initialized after DPMS.
      * onLockSettingsReady() is a safer place to do initialization work not critical during
      * the first boot stage.
      * Note this only loads the list of owners, and not their actual policy (DevicePolicyData).
