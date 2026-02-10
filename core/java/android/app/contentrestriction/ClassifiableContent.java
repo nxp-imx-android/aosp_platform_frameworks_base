@@ -31,7 +31,7 @@ import android.os.ParcelFileDescriptor;
  * A class representing content to be classified.
  */
 @FlaggedApi(Flags.FLAG_CONTENT_RESTRICTION_API)
-public final class Content implements Parcelable {
+public final class ClassifiableContent implements Parcelable {
     /**
      * The LocusId of the content.
      */
@@ -52,7 +52,7 @@ public final class Content implements Parcelable {
      */
     private final @Nullable ParcelFileDescriptor mData;
 
-    private Content(LocusId locusId, String mimeType, @Nullable Uri uri,
+    private ClassifiableContent(LocusId locusId, String mimeType, @Nullable Uri uri,
             @Nullable ParcelFileDescriptor data) {
         mLocusId = locusId;
         mMimeType = mimeType;
@@ -65,7 +65,7 @@ public final class Content implements Parcelable {
      *
      * @param in the Parcel to read from
      */
-    private Content(@NonNull Parcel in) {
+    private ClassifiableContent(@NonNull Parcel in) {
         mMimeType = in.readString8();
         mLocusId = in.readTypedObject(LocusId.CREATOR);
         mUri = in.readTypedObject(Uri.CREATOR);
@@ -114,15 +114,15 @@ public final class Content implements Parcelable {
     }
 
     @NonNull
-    public static final Creator<Content> CREATOR = new Creator<Content>() {
+    public static final Creator<ClassifiableContent> CREATOR = new Creator<ClassifiableContent>() {
         @Override
-        public Content createFromParcel(@NonNull Parcel in) {
-            return new Content(in);
+        public ClassifiableContent createFromParcel(@NonNull Parcel in) {
+            return new ClassifiableContent(in);
         }
 
         @Override
-        public Content[] newArray(int size) {
-            return new Content[size];
+        public ClassifiableContent[] newArray(int size) {
+            return new ClassifiableContent[size];
         }
     };
 
@@ -140,7 +140,7 @@ public final class Content implements Parcelable {
     }
 
     /**
-     * Builder for {@link Content}.
+     * Builder for {@link ClassifiableContent}.
      */
     public static final class Builder {
         private LocusId mLocusId;
@@ -184,13 +184,13 @@ public final class Content implements Parcelable {
         }
 
         /**
-         * Builds the {@link Content} object.
+         * Builds the {@link ClassifiableContent} object.
          *
-         * @return the built {@link Content}
+         * @return the built {@link ClassifiableContent}
          */
         @NonNull
-        public Content build() {
-            return new Content(mLocusId, mMimeType, mUri, mData);
+        public ClassifiableContent build() {
+            return new ClassifiableContent(mLocusId, mMimeType, mUri, mData);
         }
     }
 }

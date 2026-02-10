@@ -21,4 +21,4 @@ package android.app.contentrestriction;
  *
  * @hide
  */
-parcelable Content;
+parcelable ClassifiableContent;

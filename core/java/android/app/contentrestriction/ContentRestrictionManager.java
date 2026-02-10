@@ -68,7 +68,7 @@ public class ContentRestrictionManager {
      */
     @FlaggedApi(Flags.FLAG_CONTENT_RESTRICTION_API)
     public void isContentAllowed(
-            @NonNull Content content,
+            @NonNull ClassifiableContent content,
             @NonNull @CallbackExecutor Executor executor,
             @NonNull Consumer<Boolean> callback) {
 

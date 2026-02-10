@@ -63,7 +63,8 @@ public class ContentRestrictionAppService extends Service {
         }
 
         @Override
-        public void onClassifyContent(Content content, IContentRestrictionCallback callback) {
+        public void onClassifyContent(ClassifiableContent content,
+                IContentRestrictionCallback callback) {
             try {
                 ContentClassificationResult result =
                         ContentRestrictionAppService.this.onClassifyContent(content);
@@ -115,7 +116,7 @@ public class ContentRestrictionAppService extends Service {
      */
     @FlaggedApi(Flags.FLAG_CONTENT_RESTRICTION_API)
     @Nullable
-    public ContentClassificationResult onClassifyContent(@NonNull Content content) {
+    public ContentClassificationResult onClassifyContent(@NonNull ClassifiableContent content) {
         return null;
     }
 }
