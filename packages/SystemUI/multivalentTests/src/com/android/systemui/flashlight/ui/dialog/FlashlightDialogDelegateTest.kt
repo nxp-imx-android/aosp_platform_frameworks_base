@@ -16,10 +16,12 @@
 
 package com.android.systemui.flashlight.ui.dialog
 
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.Expandable
 import com.android.systemui.animation.mockDialogTransitionAnimator
@@ -30,6 +32,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyBoolean
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -62,7 +65,8 @@ class FlashlightDialogDelegateTest : SysuiTestCase() {
         }
 
     @Test
-    fun showDialog_withExpandable_animates() =
+    @DisableFlags(Flags.FLAG_ANIMATION_LIBRARY_DYNAMIC_TARGET_RESOLUTION)
+    fun showDialog_withExpandable_animates_withoutDynamicTargetResolution() =
         kosmos.runTest {
             val underTest = flashlightDialogDelegateWithMockAnimator
             val expandable = mock<Expandable> {}
@@ -71,6 +75,24 @@ class FlashlightDialogDelegateTest : SysuiTestCase() {
             val dialog = underTest.showDialog(expandable)
 
             verify(mockDialogTransitionAnimator).show(any(), any(), anyBoolean())
+
+            dialog?.let {
+                it.dismiss()
+                assertThat(it.isShowing).isFalse()
+            }
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ANIMATION_LIBRARY_DYNAMIC_TARGET_RESOLUTION)
+    fun showDialog_withExpandable_animates_withDynamicTargetResolution() =
+        kosmos.runTest {
+            val underTest = flashlightDialogDelegateWithMockAnimator
+            val expandable = mock<Expandable> {}
+            whenever(expandable.dialogTransitionController(any())).thenReturn(mock())
+
+            val dialog = underTest.showDialog(expandable)
+
+            verify(mockDialogTransitionAnimator).show(any(), anyOrNull(), anyOrNull(), anyBoolean())
 
             dialog?.let {
                 it.dismiss()

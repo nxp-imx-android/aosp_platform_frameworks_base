@@ -18,11 +18,14 @@ package com.android.systemui.statusbar.chips.casttootherdevice.ui.viewmodel
 
 import android.content.Context
 import android.content.DialogInterface
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper.RunWithLooper
 import android.view.View
 import android.view.ViewRootImpl
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.animation.Expandable
@@ -60,6 +63,7 @@ import org.junit.Before
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyBoolean
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -533,7 +537,25 @@ class CastToOtherDeviceChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun chip_projectionStateEntireScreen_clickBehaviorShowsScreenCastDialog() =
+    @EnableFlags(Flags.FLAG_ANIMATION_LIBRARY_DYNAMIC_TARGET_RESOLUTION)
+    fun chip_projectionStateEntireScreen_clickBehaviorShowsScreenCastDialog_withDynamicTargetResolution() =
+        testScope.runTest {
+            val latest by collectLastValue(underTest.chip)
+            mediaProjectionRepo.mediaProjectionState.value =
+                MediaProjectionState.Projecting.EntireScreen(CAST_TO_OTHER_DEVICES_PACKAGE)
+
+            val expandAction =
+                ((latest as OngoingActivityChipModel.Active).clickBehavior
+                    as OngoingActivityChipModel.ClickBehavior.ExpandAction)
+            expandAction.onClick(mockExpandable)
+
+            verify(kosmos.mockDialogTransitionAnimator)
+                .show(eq(mockScreenCastDialog), any(), anyOrNull(), anyBoolean())
+        }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ANIMATION_LIBRARY_DYNAMIC_TARGET_RESOLUTION)
+    fun chip_projectionStateEntireScreen_clickBehaviorShowsScreenCastDialog_withoutDynamicTargetResolution() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
             mediaProjectionRepo.mediaProjectionState.value =
@@ -549,7 +571,30 @@ class CastToOtherDeviceChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun chip_projectionStateSingleTask_clickBehaviorShowsScreenCastDialog() =
+    @EnableFlags(Flags.FLAG_ANIMATION_LIBRARY_DYNAMIC_TARGET_RESOLUTION)
+    fun chip_projectionStateSingleTask_clickBehaviorShowsScreenCastDialog_withDynamicTargetResolution() =
+        testScope.runTest {
+            val latest by collectLastValue(underTest.chip)
+
+            mediaProjectionRepo.mediaProjectionState.value =
+                MediaProjectionState.Projecting.SingleTask(
+                    CAST_TO_OTHER_DEVICES_PACKAGE,
+                    hostDeviceName = null,
+                    createTask(taskId = 1),
+                )
+
+            val expandAction =
+                ((latest as OngoingActivityChipModel.Active).clickBehavior
+                    as OngoingActivityChipModel.ClickBehavior.ExpandAction)
+            expandAction.onClick(mockExpandable)
+
+            verify(kosmos.mockDialogTransitionAnimator)
+                .show(eq(mockScreenCastDialog), anyOrNull(), anyOrNull(), anyBoolean())
+        }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ANIMATION_LIBRARY_DYNAMIC_TARGET_RESOLUTION)
+    fun chip_projectionStateSingleTask_clickBehaviorShowsScreenCastDialog_withoutDynamicTargetResolution() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
 
@@ -570,7 +615,34 @@ class CastToOtherDeviceChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun chip_routerStateCasting_clickBehaviorShowsGenericCastDialog() =
+    @EnableFlags(Flags.FLAG_ANIMATION_LIBRARY_DYNAMIC_TARGET_RESOLUTION)
+    fun chip_routerStateCasting_clickBehaviorShowsGenericCastDialog_withDynamicTargetResolution() =
+        testScope.runTest {
+            val latest by collectLastValue(underTest.chip)
+
+            mediaRouterRepo.castDevices.value =
+                listOf(
+                    CastDevice(
+                        state = CastDevice.CastState.Connected,
+                        id = "id",
+                        name = "name",
+                        description = "desc",
+                        origin = CastDevice.CastOrigin.MediaRouter,
+                    )
+                )
+
+            val expandAction =
+                ((latest as OngoingActivityChipModel.Active).clickBehavior
+                    as OngoingActivityChipModel.ClickBehavior.ExpandAction)
+            expandAction.onClick(mockExpandable)
+
+            verify(kosmos.mockDialogTransitionAnimator)
+                .show(eq(mockGenericCastDialog), anyOrNull(), anyOrNull(), anyBoolean())
+        }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ANIMATION_LIBRARY_DYNAMIC_TARGET_RESOLUTION)
+    fun chip_routerStateCasting_clickBehaviorShowsGenericCastDialog_withoutDynamicTargetResolution() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
 
