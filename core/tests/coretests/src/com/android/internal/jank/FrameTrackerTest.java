@@ -184,6 +184,7 @@ public class FrameTrackerTest {
                 eq(0L) /* missedAppFramesCount */,
                 eq(0L) /* maxSuccessiveMissedFramesCount */,
                 eq(16666666L) /* totalAnimationTime */,
+                eq(0.0f) /* weightedJank */,
                 eq(0.0f) /* sfWeightedJank */,
                 eq(0.0f) /* appWeightedJank */);
     }
@@ -220,6 +221,7 @@ public class FrameTrackerTest {
                 eq(0L) /* missedAppFramesCount */,
                 eq(1L) /* maxSuccessiveMissedFramesCount */,
                 eq(3 * FRAME_TIME_120Hz) /* totalAnimationTime */,
+                eq(1.0f) /* weightedJank */,
                 eq(1.0f) /* sfWeightedJank */,
                 eq(0.0f) /* appWeightedJank */);
     }
@@ -255,6 +257,7 @@ public class FrameTrackerTest {
                 eq(0L) /* missedAppFramesCount */,
                 eq(0L) /* maxSuccessiveMissedFramesCount */,
                 eq(2 * FRAME_TIME_120Hz) /* totalAnimationTime */,
+                eq(0.0f) /* weightedJank */,
                 eq(0.0f) /* sfWeightedJank */,
                 eq(0.0f) /* appWeightedJank */);
     }
@@ -291,6 +294,7 @@ public class FrameTrackerTest {
                 eq(1L) /* missedAppFramesCount */,
                 eq(1L) /* maxSuccessiveMissedFramesCount */,
                 eq(3 * FRAME_TIME_120Hz) /* totalAnimationTime */,
+                eq(1.0f) /* weightedJank */,
                 eq(0.0f) /* sfWeightedJank */,
                 eq(1.0f) /* appWeightedJank */);
     }
@@ -327,8 +331,9 @@ public class FrameTrackerTest {
                 eq(1L) /* missedAppFramesCount */,
                 eq(1L) /* maxSuccessiveMissedFramesCount */,
                 eq(5 * FRAME_TIME_120Hz) /* totalAnimationTime */,
-                eq(0.0f) /* sfWeightedJank */,
                 // severe jank should have a wheight of 2.
+                eq(2.0f) /* weightedJank */,
+                eq(0.0f) /* sfWeightedJank */,
                 eq(2.0f) /* appWeightedJank */);
     }
 
@@ -364,8 +369,9 @@ public class FrameTrackerTest {
                 eq(1L) /* missedAppFramesCount */,
                 eq(1L) /* maxSuccessiveMissedFramesCount */,
                 eq(3 * FRAME_TIME_60Hz) /* totalAnimationTime */,
-                eq(0.0f) /* sfWeightedJank */,
                 // 60Hz jank should have a wheight of sqrt(120/60).
+                eq((float) Math.sqrt(2.0), 0.001f) /* weightedJank */,
+                eq(0.0f) /* sfWeightedJank */,
                 eq((float) Math.sqrt(2.0), 0.001f) /* appWeightedJank */);
     }
 
@@ -405,6 +411,7 @@ public class FrameTrackerTest {
                 eq(1L) /* missedAppFramesCount */,
                 eq(1L) /* maxSuccessiveMissedFramesCount */,
                 eq(3 * FRAME_TIME_120Hz) /* totalAnimationTime */,
+                eq(1.0f) /* weightedJank */,
                 eq(0.0f) /* sfWeightedJank */,
                 eq(1.0f) /* appWeightedJank */);
     }
@@ -446,6 +453,7 @@ public class FrameTrackerTest {
                 eq(0L) /* missedAppFramesCount */,
                 eq(0L) /* maxSuccessiveMissedFramesCount */,
                 eq(2 * FRAME_TIME_120Hz) /* totalAnimationTime */,
+                eq(0.0f) /* weightedJank */,
                 eq(0.0f) /* sfWeightedJank */,
                 eq(0.0f) /* appWeightedJank */);
     }
@@ -561,6 +569,7 @@ public class FrameTrackerTest {
                 eq(1L) /* missedAppFramesCount */,
                 eq(1L) /* maxSuccessiveMissedFramesCount */,
                 eq(3 * FRAME_TIME_120Hz) /* totalAnimationTime */,
+                eq(1.0f) /* weightedJank */,
                 eq(0.0f) /* sfWeightedJank */,
                 eq(1.0f) /* appWeightedJank */);
     }
@@ -597,6 +606,7 @@ public class FrameTrackerTest {
                 eq(0L) /* missedAppFramesCount */,
                 eq(0L) /* maxSuccessiveMissedFramesCount */,
                 eq(2 * FRAME_TIME_120Hz) /* totalAnimationTime */,
+                eq(0.0f) /* weightedJank */,
                 eq(0.0f) /* sfWeightedJank */,
                 eq(0.0f) /* appWeightedJank */);
     }
@@ -633,6 +643,7 @@ public class FrameTrackerTest {
                 eq(0L) /* missedAppFramesCount */,
                 eq(0L) /* maxSuccessiveMissedFramesCount */,
                 eq(2 * FRAME_TIME_120Hz) /* totalAnimationTime */,
+                eq(0.0f) /* weightedJank */,
                 eq(0.0f) /* sfWeightedJank */,
                 eq(0.0f) /* appWeightedJank */);
     }
@@ -710,6 +721,7 @@ public class FrameTrackerTest {
                 eq(3L) /* missedAppFramesCount */,
                 eq(3L) /* maxSuccessiveMissedFramesCount */,
                 eq(11 * FRAME_TIME_120Hz) /* totalAnimationTime */,
+                eq(5.0f) /* weightedJank */,
                 eq(2.0f) /* sfWeightedJank */,
                 eq(3.0f) /* appWeightedJank */);
     }
@@ -748,6 +760,7 @@ public class FrameTrackerTest {
                 eq(1L) /* missedAppFramesCount */,
                 eq(1L) /* maxSuccessiveMissedFramesCount */,
                 eq(2 * FRAME_TIME_120Hz) /* totalAnimationTime */,
+                eq(1.0f) /* weightedJank */,
                 eq(0.0f) /* sfWeightedJank */,
                 eq(1.0f) /* appWeightedJank */);
     }
@@ -787,6 +800,7 @@ public class FrameTrackerTest {
                 eq(1L) /* missedAppFramesCount */,
                 eq(1L) /* maxSuccessiveMissedFramesCount */,
                 eq(FRAME_TIME_120Hz) /* totalAnimationTime */,
+                eq(1.0f) /* weightedJank */,
                 eq(0.0f) /* sfWeightedJank */,
                 eq(1.0f) /* appWeightedJank */);
     }
@@ -832,6 +846,7 @@ public class FrameTrackerTest {
                 eq(1L) /* missedAppFramesCount (using legacy) */,
                 eq(2L) /* maxSuccessiveMissedFramesCount (using legacy) */,
                 eq(5 * FRAME_TIME_120Hz) /* totalAnimationTime */,
+                eq(2.0f) /* weightedJank */,
                 eq(0.0f) /* sfWeightedJank (using exp) */,
                 eq(2.0f) /* appWeightedJank (using exp) */);
     }
