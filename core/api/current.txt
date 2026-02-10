@@ -36861,6 +36861,7 @@ package android.os.storage {
   @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public final class FileManager {
     method @NonNull public android.os.storage.operations.FileOperationEnqueueResult enqueueOperation(@NonNull android.os.storage.operations.FileOperationRequest);
     method @Nullable public android.os.storage.operations.FileOperationResult fetchResult(@NonNull String);
+    method public static int getMaxReportedFailures();
     method public void registerCompletionListener(@NonNull String);
     method public void unregisterCompletionListener(@NonNull String);
     field public static final String ACTION_FILE_OPERATION_COMPLETED = "android.os.storage.action.FILE_OPERATION_COMPLETED";
@@ -36977,7 +36978,6 @@ package android.os.storage.operations {
     method public int getErrorCode();
     method @Nullable public String getErrorMessage();
     method @NonNull public java.util.List<java.lang.String> getFailedPaths();
-    method public static int getMaxReportedFailures();
     method @NonNull public String getRequestId();
     method @NonNull public android.os.storage.operations.sources.OperationSource getSource();
     method public int getStatus();

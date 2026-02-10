@@ -22,6 +22,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.os.storage.FileManager;
 import android.os.storage.operations.sources.OperationSource;
 import android.os.storage.operations.targets.OperationTarget;
 
@@ -84,16 +85,6 @@ public final class FileOperationResult implements Parcelable {
 
     /** The operation failed because the disk is full. */
     public static final int ERROR_DISK_FULL = 6;
-
-    /**
-     * @return The maximum number of reported failures reported by this class.
-     */
-    public static int getMaxReportedFailures() {
-        return MAX_REPORTED_FAILURES;
-    }
-
-    /** The maximum number of failures reported by this operation */
-    private static final int MAX_REPORTED_FAILURES = 200;
 
     /** @hide */
     @IntDef(
@@ -191,8 +182,9 @@ public final class FileOperationResult implements Parcelable {
      * <p>This list is only populated when the operation reaches a terminal state ({@link
      * #STATUS_FINISHED} or {@link #STATUS_FAILED}).
      *
-     * <p>Note: Due to binder transaction limits, this list is capped at 200 entries. If more
-     * failures occurred, only the first {@link #getMaxReportedFailures} are reported.
+     * <p>Note: Due to binder transaction limits, this list can truncate the total number of
+     * reported failures. If failures occurred, only the first {@link
+     * android.os.storage.FileManager#getMaxReportedFailures} are reported.
      */
     @NonNull
     public List<String> getFailedPaths() {
@@ -275,10 +267,10 @@ public final class FileOperationResult implements Parcelable {
         /** @hide */
         @NonNull
         public Builder setFailedPaths(@NonNull List<String> paths) {
-            if (paths.size() > getMaxReportedFailures()) {
+            if (paths.size() > FileManager.getMaxReportedFailures()) {
                 throw new IllegalStateException(
                         "Due to binder transaction limits, setFailedPaths cannot provide more than "
-                                + getMaxReportedFailures()
+                                + FileManager.getMaxReportedFailures()
                                 + "failures to the client.");
             }
             mFailedPaths = paths;
