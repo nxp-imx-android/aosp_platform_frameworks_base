@@ -301,13 +301,6 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                     singleShadeMarginHorizontalPx = singleShadeMarginHorizontalPx
                 )
             }
-            from(Scenes.Shade, to = Scenes.Occluded) {
-                reversed {
-                    goneToSingleShadeTransition(
-                        singleShadeMarginHorizontalPx = singleShadeMarginHorizontalPx
-                    )
-                }
-            }
             from(
                 Scenes.Shade,
                 to = Scenes.Gone,
