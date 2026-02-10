@@ -215,14 +215,15 @@ public class BannerMessagePreference extends Preference implements GroupSectionD
     /**
      * Called by the Group to request collapse.
      */
-    public void signalCollapse() {
+    public void animateDismiss() {
         signalCollapse(true, null);
     }
 
     /**
-     * Helper to animate collapse and then run a callback.
+     * Public API to manually trigger the collapse animation.
+     * Replaces 'signalCollapse'.
      */
-    private void animateCollapseInternal(@Nullable Runnable onAnimationFinished) {
+    public void animateDismiss(@Nullable Runnable onAnimationFinished) {
         signalCollapse(true, onAnimationFinished);
     }
 
@@ -564,24 +565,44 @@ public class BannerMessagePreference extends Preference implements GroupSectionD
 
     /**
      * Registers a callback to be invoked when the dismiss button is clicked.
-     * Wraps the listener to perform a collapse animation before dismissal.
+     * <p>
+     * By default, the banner will automatically animate a collapse transition
+     * before invoking the listener.
      */
     @RequiresApi(Build.VERSION_CODES.S)
     @NonNull
     public BannerMessagePreference setDismissButtonOnClickListener(
             @Nullable View.OnClickListener listener) {
+        return setDismissButtonOnClickListener(listener, true);
+    }
+
+    /**
+     * Registers a callback to be invoked when the dismiss button is clicked.
+     *
+     * @param listener The callback that will run.
+     * @param autoCollapse If true, the banner animates away BEFORE calling the listener.
+     * If false, the banner stays visible, and the listener must
+     * manually call {@link #animateDismiss(Runnable)} to remove it.
+     */
+    @RequiresApi(Build.VERSION_CODES.S)
+    @NonNull
+    public BannerMessagePreference setDismissButtonOnClickListener(
+            @Nullable View.OnClickListener listener, boolean autoCollapse) {
         if (listener != mDismissButtonInfo.mUserCallback) {
             mDismissButtonInfo.mUserCallback = listener;
 
             if (listener != null) {
                 mDismissButtonInfo.mListener = v -> {
                     v.setEnabled(false);
-                    animateCollapseInternal(() -> listener.onClick(v));
+                    if (autoCollapse) {
+                        animateDismiss(() -> listener.onClick(v));
+                    } else {
+                        listener.onClick(v);
+                    }
                 };
             } else {
                 mDismissButtonInfo.mListener = null;
             }
-
             notifyChanged();
         }
         return this;

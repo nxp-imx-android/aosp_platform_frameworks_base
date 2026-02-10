@@ -217,7 +217,7 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
                 child.signalExpand()
                 visibleCount++
             } else {
-                child.signalCollapse()
+                child.animateDismiss()
             }
         }
 
