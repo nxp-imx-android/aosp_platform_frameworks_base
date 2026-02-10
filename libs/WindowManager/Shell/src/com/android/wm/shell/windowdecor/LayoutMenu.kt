@@ -62,6 +62,8 @@ import android.window.TaskConstants
 import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.animation.addListener
+import androidx.core.view.ViewCompat
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import com.android.wm.shell.R
@@ -558,6 +560,18 @@ class LayoutMenu(
             sizeToggleButton.contentDescription = sizeToggleBtnText
             sizeToggleButtonText.text = sizeToggleBtnText
 
+            val sizeToggleBtnA11yTextId =
+                if (sizeToggleDirection == SizeToggleDirection.RESTORE)
+                    R.string.app_header_talkback_action_restore_button_text
+                else R.string.app_header_talkback_action_maximize_button_text
+            val sizeToggleBtnA11yText = context.resources.getText(sizeToggleBtnA11yTextId)
+            ViewCompat.replaceAccessibilityAction(
+                sizeToggleButton,
+                AccessibilityActionCompat.ACTION_CLICK,
+                sizeToggleBtnA11yText,
+                null,
+            )
+
             // Immersive enter/exit button.
             if (immersiveConfig is ImmersiveConfig.Visible) {
                 val immersiveToggleBtnTextId =
@@ -573,6 +587,25 @@ class LayoutMenu(
                 val immersiveToggleBtnText = context.resources.getText(immersiveToggleBtnTextId)
                 immersiveToggleButton.contentDescription = immersiveToggleBtnText
                 immersiveToggleButtonText.text = immersiveToggleBtnText
+
+                val immersiveToggleBtnA11yTextId =
+                    when (immersiveConfig.direction) {
+                        ImmersiveToggleDirection.ENTER -> {
+                            R.string.layout_menu_talkback_action_immersive_enter_text
+                        }
+
+                        ImmersiveToggleDirection.EXIT -> {
+                            R.string.layout_menu_talkback_action_immersive_restore_text
+                        }
+                    }
+                val immersiveToggleBtnA11yText =
+                    context.resources.getText(immersiveToggleBtnA11yTextId)
+                ViewCompat.replaceAccessibilityAction(
+                    immersiveToggleButton,
+                    AccessibilityActionCompat.ACTION_CLICK,
+                    immersiveToggleBtnA11yText,
+                    null,
+                )
             }
 
             // To prevent aliasing.
