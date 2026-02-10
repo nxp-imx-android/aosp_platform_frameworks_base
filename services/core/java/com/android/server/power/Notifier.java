@@ -253,7 +253,7 @@ public class Notifier {
                     // We only care about changing the attribution if an associated UID is cached
                     // in the worksource. If the owner is cached, the complete wakelock needs to
                     // be disabled which is done via PowerManagerService
-                    if (uid == wakeLock.mOwnerUid) {
+                    if (wakeLock == null || uid == wakeLock.mOwnerUid) {
                         continue;
                     }
 
@@ -296,7 +296,7 @@ public class Notifier {
                     // We only care about changing the attribution if an associated UID is cached
                     // in the worksource. If the owner is cached, the complete wakelock needs to
                     // be disabled which is done via PowerManagerService
-                    if (uid == wakeLock.mOwnerUid) {
+                    if (wakeLock == null || uid == wakeLock.mOwnerUid) {
                         continue;
                     }
 
