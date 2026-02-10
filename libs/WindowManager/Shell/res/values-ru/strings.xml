@@ -60,7 +60,7 @@
     <string name="accessibility_split_top" msgid="2789329702027147146">"Приложение сверху"</string>
     <string name="accessibility_split_bottom" msgid="8694551025220868191">"Приложение снизу"</string>
     <string name="one_handed_tutorial_title" msgid="4583241688067426350">"Использование режима управления одной рукой"</string>
-    <string name="one_handed_tutorial_description" msgid="3486582858591353067">"Чтобы выйти, проведите по экрану снизу вверх или коснитесь области за пределами приложения."</string>
+    <string name="one_handed_tutorial_description" msgid="3486582858591353067">"Чтобы выйти, проведите по экрану снизу вверх или коснитесь области над приложением."</string>
     <string name="accessibility_action_start_one_handed" msgid="5070337354072861426">"Запустить режим управления одной рукой"</string>
     <string name="accessibility_action_stop_one_handed" msgid="1369940261782179442">"Выйти из режима управления одной рукой"</string>
     <string name="bubbles_settings_button_description" msgid="1301286017420516912">"Настройки всплывающих чатов от приложения \"<xliff:g id="APP_NAME">%1$s</xliff:g>\"."</string>
