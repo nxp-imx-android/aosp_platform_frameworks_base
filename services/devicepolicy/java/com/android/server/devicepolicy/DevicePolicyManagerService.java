@@ -16780,7 +16780,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
     private int checkMultiUserDeviceProvisioningPreCondition(@UserIdInt int callingUserId) {
         synchronized (getLockObject()) {
             // Device needs to support multi-user management.
-            if (!multiUserManagementSupported()) {
+            if (!isMultiuserManagementEnabledUnchecked()) {
                 return STATUS_MULTI_USER_MANAGEMENT_NOT_SUPPORTED;
             }
             if (!mInjector.userManagerIsHeadlessSystemUserMode()) {
@@ -16861,7 +16861,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
 
     private int checkMultiUserManagedUserProvisioningPreCondition(@UserIdInt int userId) {
         // Device needs to support multi-user management.
-        if (!multiUserManagementSupported()) {
+        if (!isMultiuserManagementEnabledUnchecked()) {
             return STATUS_MULTI_USER_MANAGEMENT_NOT_SUPPORTED;
         }
 
@@ -16923,9 +16923,9 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         }
     }
 
-    private boolean multiUserManagementSupported() {
+    private boolean isMultiuserManagementEnabledUnchecked() {
         final boolean multiUserManagementEnabled = mContext.getResources()
-                .getBoolean(com.android.internal.R.bool.config_enableMultiUserManagement);
+                .getBoolean(com.android.internal.R.bool.config_enableMultiuserManagement);
         return multiUserManagementEnabled;
     }
 

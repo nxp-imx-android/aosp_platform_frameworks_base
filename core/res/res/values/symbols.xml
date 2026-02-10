@@ -388,7 +388,7 @@
   <java-symbol type="bool" name="config_experimental_designateMainUser"/>
   <java-symbol type="bool" name="config_canSwitchToHeadlessSystemUser"/>
   <java-symbol type="bool" name="config_hideUserSwitchingUiDuringSetup"/>
-  <java-symbol type="bool" name="config_enableMultiUserManagement"/>
+  <java-symbol type="bool" name="config_enableMultiuserManagement"/>
   <java-symbol type="bool" name="config_enableMultiUserUI"/>
   <java-symbol type="bool" name="config_enableMultipleAdmins"/>
   <java-symbol type="bool" name="config_allowAlarmsOnStoppedUsers"/>
