@@ -28,6 +28,7 @@ import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.shared.model.KeyguardState
+import com.android.systemui.keyguard.shared.model.KeyguardTransitionKeys.WithAnimationOverLockscreen
 import com.android.systemui.keyguard.shared.model.TransitionState
 import com.android.systemui.keyguard.shared.model.TransitionStep
 import com.android.systemui.kosmos.collectLastValue
@@ -1075,6 +1076,32 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
                 ),
                 values,
             )
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun lockscreenVisibilityWithScenes_withAnimationFromLockscreen() =
+        kosmos.runTest {
+            enableSingleShade()
+            runCurrent()
+            val isDeviceUnlocked by
+                collectLastValue(deviceUnlockedInteractor.deviceUnlockStatus.map { it.isUnlocked })
+            val lockscreenVisibility by collectLastValue(lockscreenVisibilityBoolean)
+
+            // Unlock and go to lockscreen, to emulate a swipe or face auth scenario
+            kosmos.authenticationInteractor.authenticate(FakeAuthenticationRepository.DEFAULT_PIN)
+            assertThat(isDeviceUnlocked).isTrue()
+            setSceneTransition(Idle(Scenes.Lockscreen))
+
+            // Now set the transition key, and lockscreen should be visible during the animation
+            setSceneTransition(
+                Transition(from = Scenes.Shade, to = Scenes.Gone, key = WithAnimationOverLockscreen)
+            )
+            assertThat(lockscreenVisibility).isTrue()
+
+            // Without the transition key, visibility is false
+            setSceneTransition(Transition(from = Scenes.Shade, to = Scenes.Gone))
+            assertThat(lockscreenVisibility).isFalse()
         }
 
     @Test
