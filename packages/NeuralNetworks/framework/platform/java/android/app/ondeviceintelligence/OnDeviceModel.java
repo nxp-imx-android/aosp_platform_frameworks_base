@@ -17,15 +17,19 @@
 package android.app.ondeviceintelligence;
 
 import android.annotation.FlaggedApi;
+import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SystemApi;
 import android.app.ondeviceintelligence.Content;
-import android.app.ondeviceintelligence.FeatureDetails.Status;
 import android.app.ondeviceintelligence.flags.Flags;
 import android.os.CancellationSignal;
 import android.os.OutcomeReceiver;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.List;
 import java.util.concurrent.Executor;
 
@@ -37,6 +41,30 @@ import java.util.concurrent.Executor;
 @SystemApi
 @FlaggedApi(Flags.FLAG_ON_DEVICE_INTELLIGENCE_26Q2)
 public interface OnDeviceModel {
+    /** Model is unavailable. */
+    public static final int MODEL_STATUS_UNAVAILABLE = 0;
+
+    /** Model can be downloaded. */
+    public static final int MODEL_STATUS_DOWNLOADABLE = 1;
+
+    /** Model is being downloaded. */
+    public static final int MODEL_STATUS_DOWNLOADING = 2;
+
+    /** Model is available for use. */
+    public static final int MODEL_STATUS_AVAILABLE = 3;
+
+    /** @hide */
+    @IntDef(
+            value = {
+                MODEL_STATUS_UNAVAILABLE,
+                MODEL_STATUS_DOWNLOADABLE,
+                MODEL_STATUS_DOWNLOADING,
+                MODEL_STATUS_AVAILABLE
+            })
+    @Retention(RetentionPolicy.SOURCE)
+    @Target({ElementType.TYPE_USE, ElementType.METHOD, ElementType.PARAMETER, ElementType.FIELD})
+    @interface Status {}
+
     /**
      * Returns the unique signature of this model.
      *
@@ -55,8 +83,9 @@ public interface OnDeviceModel {
     String getName();
 
     /**
-     * Checks the current availability status of the model (e.g., DOWNLOADABLE, DOWNLOADING,
-     * AVAILABLE).
+     * Checks the current availability status of the model (e.g., {@link
+     * #MODEL_STATUS_DOWNLOADABLE}, {@link #MODEL_STATUS_DOWNLOADING}, {@link
+     * #MODEL_STATUS_AVAILABLE}).
      *
      * @param executor The executor to run the callback on.
      * @param callback The callback to populate the status of the model.
@@ -86,7 +115,8 @@ public interface OnDeviceModel {
     long getMaxTokenLimit();
 
     /**
-     * Counts the number of tokens in the given content using the model's tokenizer.
+     * Counts the number of tokens in the given content using the model's tokenizer. This is useful
+     * for ensuring that the input content fits within the model's maximum token limit.
      *
      * @param requestContent The content payload to tokenize.
      * @param executor The executor to run the callback on.
