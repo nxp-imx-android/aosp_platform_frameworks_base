@@ -92,6 +92,7 @@ java_library {
         "com.android.systemui.notifications.intelligence.rules.ui_api",
         "com.android.systemui.retail.data-api",
         "com.android.systemui.retail.domain-api",
+        "com.android.systemui.scene.ui_api",
         "com.android.systemui.statusbar.pipeline.airplane.data-api",
         "com.android.systemui.statusbar.pipeline.airplane.shared-api",
         "com.android.systemui.user.data-api",

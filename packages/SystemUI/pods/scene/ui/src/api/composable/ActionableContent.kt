@@ -21,7 +21,7 @@ import com.android.compose.animation.scene.UserActionResult
 import kotlinx.coroutines.flow.Flow
 
 /** Defines interface for content that can respond to user-actions. */
-interface ActionableContent {
+public interface ActionableContent {
     /**
      * The mapping between [UserAction] and destination [UserActionResult]s.
      *
@@ -42,5 +42,5 @@ interface ActionableContent {
      * not currently active in the top-most content (in z-index order) and should be ignored by the
      * framework until the top-most content changes.
      */
-    val userActions: Flow<Map<UserAction, UserActionResult>>
+    public val userActions: Flow<Map<UserAction, UserActionResult>>
 }
