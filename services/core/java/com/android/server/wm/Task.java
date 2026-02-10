@@ -6226,7 +6226,15 @@ class Task extends TaskFragment {
         if (rootActivity == null) {
             return;
         }
-        rootActivity.app.onTaskPackageUpdateHandled(this);
+
+        if (rootActivity.hasProcess()) {
+            rootActivity.app.onTaskPackageUpdateHandled(this);
+        } else {
+            ProtoLog.w(WM_DEBUG_PACKAGE_UPDATE,
+                    "Root Activity %s of task %d has no process.",
+                    rootActivity.mActivityComponent,
+                    mTaskId);
+        }
     }
 
     boolean dump(FileDescriptor fd, PrintWriter pw, boolean dumpAll, boolean dumpClient,
