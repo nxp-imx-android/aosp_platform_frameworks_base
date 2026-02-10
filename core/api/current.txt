@@ -17422,6 +17422,7 @@ package android.graphics {
     method @NonNull @WorkerThread public static android.graphics.Bitmap decodeBitmap(@NonNull android.graphics.ImageDecoder.Source) throws java.io.IOException;
     method @NonNull @WorkerThread public static android.graphics.drawable.Drawable decodeDrawable(@NonNull android.graphics.ImageDecoder.Source, @NonNull android.graphics.ImageDecoder.OnHeaderDecodedListener) throws java.io.IOException;
     method @NonNull @WorkerThread public static android.graphics.drawable.Drawable decodeDrawable(@NonNull android.graphics.ImageDecoder.Source) throws java.io.IOException;
+    method @FlaggedApi("com.android.graphics.hwui.flags.image_decoder_allocation_limit") public long getAllocationLimit();
     method public int getAllocator();
     method @Nullable public android.graphics.Rect getCrop();
     method @FlaggedApi("com.android.graphics.hwui.flags.image_decoder_default_listener") @Nullable public static android.graphics.ImageDecoder.OnHeaderDecodedListener getDefaultProcessListener();
@@ -17433,6 +17434,7 @@ package android.graphics {
     method public static boolean isMimeTypeSupported(@NonNull String);
     method public boolean isMutableRequired();
     method public boolean isUnpremultipliedRequired();
+    method @FlaggedApi("com.android.graphics.hwui.flags.image_decoder_allocation_limit") public void setAllocationLimit(long);
     method public void setAllocator(int);
     method public void setCrop(@Nullable android.graphics.Rect);
     method public void setDecodeAsAlphaMaskEnabled(boolean);

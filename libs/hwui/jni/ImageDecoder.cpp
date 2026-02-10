@@ -279,7 +279,7 @@ static jobject ImageDecoder_nDecodeBitmap(JNIEnv* env, jobject /*clazz*/, jlong 
                                           jboolean requireMutable, jint allocator,
                                           jboolean requireUnpremul, jboolean preferRamOverQuality,
                                           jboolean asAlphaMask, jlong colorSpaceHandle,
-                                          jboolean extended) {
+                                          jboolean extended, jlong allocationLimit) {
     ATRACE_CALL();
     auto* decoder = reinterpret_cast<ImageDecoder*>(nativePtr);
     if (!decoder->setTargetSize(targetWidth, targetHeight)) {
@@ -363,6 +363,29 @@ static jobject ImageDecoder_nDecodeBitmap(JNIEnv* env, jobject /*clazz*/, jlong 
     if (!bm.setInfo(bitmapInfo)) {
         doThrowIOE(env, "Failed to setInfo properly");
         return nullptr;
+    }
+
+    if (allocationLimit) {
+        size_t size;
+        if (!Bitmap::computeAllocationSize(bm.rowBytes(), bm.height(), &size)) {
+            SkString msg;
+            msg.printf("Error calculating bitmap allocation size with dimensions %i x %i",
+                       bitmapInfo.width(), bitmapInfo.height());
+            doThrowIOE(env, msg.c_str());
+            return nullptr;
+        }
+
+        if (size > allocationLimit) {
+            SkString msg;
+            msg.printf("Size (%zu) exceeds allocation limit (%lli)",
+                            size, static_cast<long long>(allocationLimit));
+            doThrowIOE(env, msg.c_str());
+            return nullptr;
+        }
+
+        // 0 indicates no limit so use lower bound of 1 for remaining allocation limit
+        allocationLimit = std::max<size_t>(1, static_cast<size_t>(allocationLimit) - size);
+        decoder->setAllocationLimit(allocationLimit);
     }
 
     sk_sp<Bitmap> nativeBitmap;
@@ -572,7 +595,7 @@ static const JNINativeMethod gImageDecoderMethods[] = {
     { "nCreate",        "([BIIZLandroid/graphics/ImageDecoder$Source;)Landroid/graphics/ImageDecoder;", (void*) ImageDecoder_nCreateByteArray },
     { "nCreate",        "(Ljava/io/InputStream;[BZLandroid/graphics/ImageDecoder$Source;)Landroid/graphics/ImageDecoder;", (void*) ImageDecoder_nCreateInputStream },
     { "nCreate",        "(Ljava/io/FileDescriptor;JZLandroid/graphics/ImageDecoder$Source;)Landroid/graphics/ImageDecoder;", (void*) ImageDecoder_nCreateFd },
-    { "nDecodeBitmap",  "(JLandroid/graphics/ImageDecoder;ZIILandroid/graphics/Rect;ZIZZZJZ)Landroid/graphics/Bitmap;",
+    { "nDecodeBitmap",  "(JLandroid/graphics/ImageDecoder;ZIILandroid/graphics/Rect;ZIZZZJZJ)Landroid/graphics/Bitmap;",
                                                                  (void*) ImageDecoder_nDecodeBitmap },
     { "nGetSampledSize","(JI)Landroid/util/Size;",               (void*) ImageDecoder_nGetSampledSize },
     { "nGetPadding",    "(JLandroid/graphics/Rect;)V",           (void*) ImageDecoder_nGetPadding },

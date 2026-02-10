@@ -220,6 +220,14 @@ flag {
 }
 
 flag {
+  name: "image_decoder_allocation_limit"
+  namespace: "core_graphics"
+  is_exported: true
+  description: "Set a memory allocation limit for ImageDecoder"
+  bug: "473563356"
+}
+
+flag {
   name: "edt_gradient_detection"
   namespace: "accessibility"
   description: "Add detection for the gradient lightness to improve the decision in expanded Dark theme"
