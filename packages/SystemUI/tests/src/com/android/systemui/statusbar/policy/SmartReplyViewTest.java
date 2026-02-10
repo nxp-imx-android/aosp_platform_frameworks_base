@@ -274,6 +274,31 @@ public class SmartReplyViewTest extends SysuiTestCase {
     }
 
     @Test
+    public void testSendSmartReply_executeWhenUnlockedAfterKeyguardGone() {
+        final AtomicReference<Boolean> afterKeyguardGoneRef = new AtomicReference<>();
+        mKeyguardDismissUtil = new KeyguardDismissUtil(
+                mKeyguardStateController, mStatusBarStateController, mActivityStarter) {
+            public void executeWhenUnlocked(ActivityStarter.OnDismissAction action,
+                    boolean requiresShadeOpen, boolean afterKeyguardGone) {
+                afterKeyguardGoneRef.set(afterKeyguardGone);
+                action.onDismiss();
+            }
+        };
+        mSmartReplyInflater = new SmartReplyInflaterImpl(
+                mConstants,
+                mKeyguardDismissUtil,
+                mNotificationRemoteInputManager,
+                mSmartReplyController,
+                mContext);
+
+        setSmartReplies(TEST_CHOICES);
+
+        mView.getChildAt(2).performClick();
+
+        assertTrue(afterKeyguardGoneRef.get());
+    }
+
+    @Test
     public void testSendSmartReply_controllerCalled() {
         setSmartReplies(TEST_CHOICES);
         mView.getChildAt(2).performClick();
