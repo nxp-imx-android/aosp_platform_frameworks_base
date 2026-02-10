@@ -19,10 +19,12 @@
 package com.android.systemui.screencapture
 
 import android.content.Context
+import android.os.UserHandle
 import android.util.Log
 import android.view.Display
 import com.android.app.tracing.coroutines.launchInTraced
 import com.android.systemui.CoreStartable
+import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.display.data.repository.DisplayRepository
@@ -70,6 +72,8 @@ constructor(
     private val activityStarter: ActivityStarter,
     private val screenCaptureRecordFeaturesInteractor: ScreenCaptureRecordFeaturesInteractor,
     private val screenCaptureTracingInteractor: ScreenCaptureTracingInteractor,
+    private val broadcastDispatcher: BroadcastDispatcher,
+    private val screenCaptureUiReceiver: ScreenCaptureUiReceiver,
 ) : CoreStartable {
 
     override fun start() {
@@ -77,6 +81,11 @@ constructor(
         ScreenCaptureType.entries.forEach { observeUiState(it) }
         setupSmallScreenPostRecordings()
         setupLargeScreenPostRecordings()
+        broadcastDispatcher.registerReceiver(
+            receiver = screenCaptureUiReceiver,
+            filter = ScreenCaptureUiReceiver.intentFilter(),
+            user = UserHandle.ALL,
+        )
     }
 
     private fun observeUiState(type: ScreenCaptureType) {

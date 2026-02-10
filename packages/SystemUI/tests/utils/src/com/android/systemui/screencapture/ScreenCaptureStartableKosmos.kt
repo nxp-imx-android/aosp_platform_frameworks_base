@@ -17,6 +17,7 @@
 package com.android.systemui.screencapture
 
 import android.content.applicationContext
+import com.android.systemui.broadcast.broadcastDispatcher
 import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
@@ -43,5 +44,7 @@ val Kosmos.screenCaptureCoreStartable: ScreenCaptureCoreStartable by
             activityStarter,
             screenCaptureRecordFeaturesInteractor,
             screenCaptureTracingInteractor,
+            broadcastDispatcher,
+            screenCaptureUiReceiver,
         )
     }

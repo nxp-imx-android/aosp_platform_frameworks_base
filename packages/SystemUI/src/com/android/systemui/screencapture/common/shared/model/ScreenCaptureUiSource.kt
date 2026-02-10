@@ -24,6 +24,7 @@ import com.android.systemui.screencapture.ScreenCaptureEvent
  */
 enum class ScreenCaptureUiSource(val event: ScreenCaptureEvent) {
     QUICK_SETTINGS_TILE(ScreenCaptureEvent.SCREEN_CAPTURE_UI_SOURCE_QUICK_SETTINGS),
+    NOTIFICATION(ScreenCaptureEvent.SCREEN_CAPTURE_UI_SOURCE_NOTIFICATION),
     PARTIAL_SCREENSHOT_KEYBOARD_SHORTCUT(
         ScreenCaptureEvent.SCREEN_CAPTURE_LARGE_SCREEN_PARTIAL_SCREENSHOT_KEYBOARD_SHORTCUT
     ),
