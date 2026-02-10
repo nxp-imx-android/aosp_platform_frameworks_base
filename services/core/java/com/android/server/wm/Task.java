@@ -77,6 +77,7 @@ import static android.window.DisplayAreaOrganizer.FEATURE_UNDEFINED;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ADD_REMOVE;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_LOCKTASK;
+import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_PACKAGE_UPDATE;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_STATES;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_TASKS;
 import static com.android.server.wm.ActivityRecord.State.PAUSED;
@@ -6201,7 +6202,20 @@ class Task extends TaskFragment {
 
     void continuePackageUpdate() {
         // If the task is not marked to be handled, do nothing.
-        if (Flags.enableAppRestartAfterUpdate() && !mHandlePackageUpdate) {
+        if (!Flags.enableAppRestartAfterUpdate()) {
+            return;
+        }
+
+        final Task rootTask = getRootTask();
+        if (rootTask == null) {
+            ProtoLog.w(WM_DEBUG_PACKAGE_UPDATE,
+                    "Continue package update called but task has no root %d", mTaskId);
+            return;
+        }
+
+        if (!getRootTask().mHandlePackageUpdate) {
+            ProtoLog.w(WM_DEBUG_PACKAGE_UPDATE,
+                    "Root task of %d not registered as handle package update.", mTaskId);
             return;
         }
 
