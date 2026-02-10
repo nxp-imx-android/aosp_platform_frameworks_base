@@ -1499,6 +1499,14 @@
     <string name="usb_contaminant_detected_message" msgid="7346100585390795743">"USB पोर्ट आपोआप बंद होईल. अधिक जाणून घेण्यासाठी टॅप करा."</string>
     <string name="usb_contaminant_not_detected_title" msgid="2651167729563264053">"USB पोर्ट वापरण्यासाठी ठीक आहे"</string>
     <string name="usb_contaminant_not_detected_message" msgid="892863190942660462">"फोनला धूळ किंवा ओलावा आढळला नाही."</string>
+    <string name="usb_authorization_notify_on_screenlock_title" msgid="4219670768084927681">"नवीन USB डिव्हाइस कनेक्ट केले आहे"</string>
+    <string name="usb_authorization_notify_on_screenlock_message" msgid="3391658768099414499">"या USB डिव्हाइसवर विश्वास ठेवण्यासाठी साइन इन करा आणि ते वापरण्यास सुरुवात करा."</string>
+    <string name="usb_authorization_notify_on_screenlock_message_multiple" msgid="1722575755931059980">"या USB डिव्हाइसवर विश्वास ठेवण्यासाठी साइन इन करा आणि ती वापरण्यास सुरुवात करा."</string>
+    <string name="usb_authorization_notify_finish_logging_in_title" msgid="3417036506115006412">"नवीन USB डिव्हाइस कनेक्ट केले आहे"</string>
+    <string name="usb_authorization_notify_finish_logging_in_message" msgid="7996802340128367690">"या USB डिव्हाइसवर पूर्ण विश्वास ठेवण्यासाठी <xliff:g id="NUM_SECONDS">%1$d</xliff:g> सेकंदांमध्ये साइन इन करा. तुम्ही तसे न केल्यास, तुम्हाला ते डिस्कनेक्ट करून पुन्हा कनेक्ट करावे लागेल."</string>
+    <string name="usb_authorization_notify_finish_logging_in_title_multiple" msgid="3184839817149193434">"नवीन USB डिव्हाइस कनेक्ट केली आहेत"</string>
+    <string name="usb_authorization_notify_finish_logging_in_message_multiple" msgid="6745916608298736853">"या USB डिव्हाइसवर पूर्ण विश्वास ठेवण्यासाठी <xliff:g id="NUM_SECONDS">%1$d</xliff:g> सेकंदांमध्ये साइन इन करा. तुम्ही तसे न केल्यास, तुम्हाला ती डिस्कनेक्ट करून पुन्हा कनेक्ट करावी लागतील."</string>
+    <string name="notification_channel_usb_authorization" msgid="7567851967410736399">"USB डिव्हाइस ऑथोरायझेशन"</string>
     <string name="taking_remote_bugreport_notification_title" msgid="1582531382166919850">"बग रिपोर्ट घेत आहे..."</string>
     <string name="share_remote_bugreport_notification_title" msgid="6708897723753334999">"बग रिपोर्ट शेअर करायचा का?"</string>
     <string name="sharing_remote_bugreport_notification_title" msgid="3077385149217638550">"बग रिपोर्ट शेअर करत आहे..."</string>
@@ -2119,7 +2127,8 @@
     <string name="enable_app_lock_success_toast_message" msgid="3339622779190529987">"<xliff:g id="APP_NAME">%1$s</xliff:g> लॉक केले आहे"</string>
     <string name="enable_app_lock_failure_toast_message" msgid="1055838896510445566">"<xliff:g id="APP_NAME">%1$s</xliff:g> लॉक करू शकत नाही"</string>
     <string name="disable_app_lock_success_toast_message" msgid="70733620589071266">"<xliff:g id="APP_NAME">%1$s</xliff:g> मधून ॲप लॉक काढून टाकले आहे"</string>
-    <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"<xliff:g id="APP_NAME">%1$s</xliff:g> लॉक केले आहे"</string>
+    <!-- no translation found for locked_app_biometric_prompt_description (5892653396104581919) -->
+    <skip />
     <string name="locked_app_external_display_message" msgid="5483884799685545338">"या डिस्प्लेवर अ‍ॅप अ‍ॅक्सेस करण्यासाठी, सर्वप्रथम तुमच्या दुसऱ्या डिव्हाइसवर हे तुम्हीच असल्याची पडताळणी करा"</string>
     <string name="app_lock_edu_dialog_enable_app_lock_title" msgid="283314042336592322">"<xliff:g id="APP_NAME">%1$s</xliff:g> मध्ये ॲप लॉक जोडायचे आहे का?"</string>
     <string name="app_lock_edu_dialog_description" msgid="8176807243219769518">"तुमच्या सुरक्षेसाठी, फक्त तुम्ही फिंगरप्रिंट आणि फेस अनलॉक किंवा तुमचा पिन वापरून हे ॲप ॲक्सेस करू शकता"</string>
@@ -2128,6 +2137,8 @@
     <string name="app_lock_edu_dialog_info_header" msgid="5876120209204270990">"ॲप लॉकसह"</string>
     <string name="app_lock_edu_dialog_info_notifications" msgid="1124438392204873305">"नोटिफिकेशनचा आशय लपवला जाईल"</string>
     <string name="app_lock_edu_dialog_info_widgets" msgid="8809009414650740872">"विजेट आणि शॉर्टकट काढून टाकले जातील"</string>
+    <!-- no translation found for app_lock_edu_dialog_info_ai_disclaimer (5623615653703542050) -->
+    <skip />
     <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"ॲप लॉक जोडा"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_face" msgid="1348151645996748654">"फेस अनलॉक"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"फिंगरप्रिंट अनलॉक"</string>
@@ -2619,8 +2630,7 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"सॅटेलाइटद्वारे मेसेज करण्यासाठी, Google Messages ला तुमचे डीफॉल्ट मेसेजिंग ॲप म्हणून सेट करा"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"सॅटेलाइट मेसेजिंग उपलब्ध नाही"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"या देशात किंवा प्रदेशात सॅटेलाइट मेसेजिंग उपलब्ध आहे का हे तपासण्यासाठी, स्थान सेटिंग्ज सुरू करा"</string>
-    <!-- no translation found for satellite_indicator (6846063647532086110) -->
-    <skip />
+    <string name="satellite_indicator" msgid="6846063647532086110">"सॅटेलाइट"</string>
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"फिंगरप्रिंट अनलॉक पुन्हा सेट करा"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"<xliff:g id="FINGERPRINT">%s</xliff:g> यापुढे ओळखता येणार नाही."</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> आणि <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> यापुढे ओळखता येणार नाहीत."</string>

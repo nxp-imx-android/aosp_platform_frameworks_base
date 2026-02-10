@@ -1499,6 +1499,22 @@
     <string name="usb_contaminant_detected_message" msgid="7346100585390795743">"ইউএসবি পোর্ট নিজে থেকে বন্ধ করা হবে। আরও জানতে ট্যাপ করুন।"</string>
     <string name="usb_contaminant_not_detected_title" msgid="2651167729563264053">"ইউএসবি পোর্ট ব্যবহার করা যেতে পারে"</string>
     <string name="usb_contaminant_not_detected_message" msgid="892863190942660462">"ফোন আর তরল পদার্থ এবং ধুলো কণা শনাক্ত করবে না।"</string>
+    <!-- no translation found for usb_authorization_notify_on_screenlock_title (4219670768084927681) -->
+    <skip />
+    <!-- no translation found for usb_authorization_notify_on_screenlock_message (3391658768099414499) -->
+    <skip />
+    <!-- no translation found for usb_authorization_notify_on_screenlock_message_multiple (1722575755931059980) -->
+    <skip />
+    <!-- no translation found for usb_authorization_notify_finish_logging_in_title (3417036506115006412) -->
+    <skip />
+    <!-- no translation found for usb_authorization_notify_finish_logging_in_message (7996802340128367690) -->
+    <skip />
+    <!-- no translation found for usb_authorization_notify_finish_logging_in_title_multiple (3184839817149193434) -->
+    <skip />
+    <!-- no translation found for usb_authorization_notify_finish_logging_in_message_multiple (6745916608298736853) -->
+    <skip />
+    <!-- no translation found for notification_channel_usb_authorization (7567851967410736399) -->
+    <skip />
     <string name="taking_remote_bugreport_notification_title" msgid="1582531382166919850">"ত্রুটির প্রতিবেদন নেওয়া হচ্ছে..."</string>
     <string name="share_remote_bugreport_notification_title" msgid="6708897723753334999">"ত্রুটির প্রতিবেদন শেয়ার করবেন?"</string>
     <string name="sharing_remote_bugreport_notification_title" msgid="3077385149217638550">"ত্রুটির প্রতিবেদন শেয়ার করা হচ্ছে..."</string>
@@ -2119,7 +2135,8 @@
     <string name="enable_app_lock_success_toast_message" msgid="3339622779190529987">"<xliff:g id="APP_NAME">%1$s</xliff:g> লক করা হয়েছে"</string>
     <string name="enable_app_lock_failure_toast_message" msgid="1055838896510445566">"<xliff:g id="APP_NAME">%1$s</xliff:g> লক করা যাচ্ছে না"</string>
     <string name="disable_app_lock_success_toast_message" msgid="70733620589071266">"<xliff:g id="APP_NAME">%1$s</xliff:g> থেকে অ্যাপ লক সরানো হয়েছে"</string>
-    <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"<xliff:g id="APP_NAME">%1$s</xliff:g> লক করা হয়েছে"</string>
+    <!-- no translation found for locked_app_biometric_prompt_description (5892653396104581919) -->
+    <skip />
     <string name="locked_app_external_display_message" msgid="5483884799685545338">"এই ডিসপ্লেতে অ্যাপ অ্যাক্সেস করতে, প্রথমে আপনার অন্য ডিভাইসে নিজের পরিচয় যাচাই করুন"</string>
     <string name="app_lock_edu_dialog_enable_app_lock_title" msgid="283314042336592322">"<xliff:g id="APP_NAME">%1$s</xliff:g>-এ অ্যাপ লক যোগ করবেন?"</string>
     <string name="app_lock_edu_dialog_description" msgid="8176807243219769518">"আপনার নিরাপত্তার জন্য, শুধুমাত্র আপনিই ফিঙ্গারপ্রিন্ট ও ফেস আনলক অথবা আপনার পিন ব্যবহার করে এই অ্যাপ অ্যাক্সেস করতে পারবেন"</string>
@@ -2128,6 +2145,8 @@
     <string name="app_lock_edu_dialog_info_header" msgid="5876120209204270990">"অ্যাপ লকের সাথে"</string>
     <string name="app_lock_edu_dialog_info_notifications" msgid="1124438392204873305">"বিজ্ঞপ্তির কন্টেন্ট লুকানো থাকবে"</string>
     <string name="app_lock_edu_dialog_info_widgets" msgid="8809009414650740872">"উইজেট ও শর্টকাট সরানো হবে"</string>
+    <!-- no translation found for app_lock_edu_dialog_info_ai_disclaimer (5623615653703542050) -->
+    <skip />
     <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"অ্যাপ লক যোগ করুন"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_face" msgid="1348151645996748654">"ফেস আনলক"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"ফিঙ্গারপ্রিন্ট আনলক"</string>
@@ -2619,8 +2638,7 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"স্যাটেলাইটের সাহায্যে মেসেজ পাঠাতে, আপনার ডিফল্ট মেসেজিং অ্যাপ হিসেবে Google Messages সেট করুন"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"\'স্যাটেলাইট মেসেজিং\' ফিচার উপলভ্য নেই"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"\'স্যাটেলাইট মেসেজিং\' ফিচার এই দেশে বা অঞ্চলে উপলভ্য আছে কিনা দেখতে, লোকেশন সেটিংস চালু করুন"</string>
-    <!-- no translation found for satellite_indicator (6846063647532086110) -->
-    <skip />
+    <string name="satellite_indicator" msgid="6846063647532086110">"SAT"</string>
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"\'ফিঙ্গারপ্রিন্ট আনলক\' আবার সেট-আপ করুন"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"<xliff:g id="FINGERPRINT">%s</xliff:g> আর শনাক্ত করা যাবে না।"</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> ও <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> আর শনাক্ত করা যাবে না।"</string>

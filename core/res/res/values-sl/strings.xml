@@ -1501,6 +1501,14 @@
     <string name="usb_contaminant_detected_message" msgid="7346100585390795743">"Vrata USB so samodejno onemogočena. Dotaknite se, če želite izvedeti več."</string>
     <string name="usb_contaminant_not_detected_title" msgid="2651167729563264053">"Vrata USB so varna za uporabo"</string>
     <string name="usb_contaminant_not_detected_message" msgid="892863190942660462">"Telefon ne zaznava več tekočine ali umazanije."</string>
+    <string name="usb_authorization_notify_on_screenlock_title" msgid="4219670768084927681">"Nova naprava USB je povezana"</string>
+    <string name="usb_authorization_notify_on_screenlock_message" msgid="3391658768099414499">"Prijavite se, če želite zaupati tej napravi USB in jo začeti uporabljati."</string>
+    <string name="usb_authorization_notify_on_screenlock_message_multiple" msgid="1722575755931059980">"Prijavite se, če želite zaupati tem napravam USB in jih začeti uporabljati."</string>
+    <string name="usb_authorization_notify_finish_logging_in_title" msgid="3417036506115006412">"Nova naprava USB je povezana"</string>
+    <string name="usb_authorization_notify_finish_logging_in_message" msgid="7996802340128367690">"Če želite tej napravi USB v celoti zaupati, se prijavite v <xliff:g id="NUM_SECONDS">%1$d</xliff:g> sekundah. Če tega ne storite, boste morali povezavo prekiniti in znova vzpostaviti."</string>
+    <string name="usb_authorization_notify_finish_logging_in_title_multiple" msgid="3184839817149193434">"Nove naprave USB so povezane"</string>
+    <string name="usb_authorization_notify_finish_logging_in_message_multiple" msgid="6745916608298736853">"Če želite tem napravam USB v celoti zaupati, se prijavite v <xliff:g id="NUM_SECONDS">%1$d</xliff:g> sekundah. Če tega ne storite, boste morali povezavo z njimi prekiniti in znova vzpostaviti."</string>
+    <string name="notification_channel_usb_authorization" msgid="7567851967410736399">"Pooblastitev naprav USB"</string>
     <string name="taking_remote_bugreport_notification_title" msgid="1582531382166919850">"Zajemanje poročila o napakah …"</string>
     <string name="share_remote_bugreport_notification_title" msgid="6708897723753334999">"Želite poslati poročilo o napakah?"</string>
     <string name="sharing_remote_bugreport_notification_title" msgid="3077385149217638550">"Pošiljanje poročila o napakah …"</string>
@@ -2009,7 +2017,7 @@
     <string name="managed_profile_label_badge_3" msgid="6882151970556391957">"3. službeni <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="clone_profile_label_badge" msgid="1871997694718793964">"Klon aplikacije <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="private_profile_label_badge" msgid="1712086003787839183">"Zasebni <xliff:g id="LABEL">%1$s</xliff:g>"</string>
-    <string name="hsu_label_badge" msgid="1357272000281944932">"Sistem <xliff:g id="LABEL">%1$s</xliff:g>"</string>
+    <string name="hsu_label_badge" msgid="1357272000281944932">"Sistem – <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="lock_to_app_unlock_pin" msgid="3890940811866290782">"Zahtevaj PIN pred odpenjanjem"</string>
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Pred odpenjanjem vprašaj za vzorec za odklepanje"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Pred odpenjanjem vprašaj za geslo"</string>
@@ -2121,7 +2129,8 @@
     <string name="enable_app_lock_success_toast_message" msgid="3339622779190529987">"Aplikacija <xliff:g id="APP_NAME">%1$s</xliff:g> je zaklenjena"</string>
     <string name="enable_app_lock_failure_toast_message" msgid="1055838896510445566">"Aplikacije <xliff:g id="APP_NAME">%1$s</xliff:g> ni mogoče zakleniti"</string>
     <string name="disable_app_lock_success_toast_message" msgid="70733620589071266">"Zaklepanje aplikacije <xliff:g id="APP_NAME">%1$s</xliff:g> je izklopljeno"</string>
-    <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"Aplikacija <xliff:g id="APP_NAME">%1$s</xliff:g> je zaklenjena"</string>
+    <!-- no translation found for locked_app_biometric_prompt_description (5892653396104581919) -->
+    <skip />
     <string name="locked_app_external_display_message" msgid="5483884799685545338">"Če želite dostopati do aplikacije na tem zaslonu, najprej v drugi napravi potrdite svojo identiteto"</string>
     <string name="app_lock_edu_dialog_enable_app_lock_title" msgid="283314042336592322">"Želite vklopiti zaklepanje aplikacije <xliff:g id="APP_NAME">%1$s</xliff:g>?"</string>
     <string name="app_lock_edu_dialog_description" msgid="8176807243219769518">"Zaradi varnosti lahko do te aplikacije dostopate samo vi s prstnim odtisom in odklepanjem z obrazom ali kodo PIN"</string>
@@ -2130,6 +2139,8 @@
     <string name="app_lock_edu_dialog_info_header" msgid="5876120209204270990">"Z zaklepanjem aplikacije"</string>
     <string name="app_lock_edu_dialog_info_notifications" msgid="1124438392204873305">"Vsebina obvestil bo skrita"</string>
     <string name="app_lock_edu_dialog_info_widgets" msgid="8809009414650740872">"Pripomočki in bližnjice bodo odstranjeni"</string>
+    <!-- no translation found for app_lock_edu_dialog_info_ai_disclaimer (5623615653703542050) -->
+    <skip />
     <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"Dodajanje zaklepanja aplikacije"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_face" msgid="1348151645996748654">"Odklepanje z obrazom"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"Odklepanje s prstnim odtisom"</string>
@@ -2621,8 +2632,7 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"Če želite pošiljati satelitska sporočila, nastavite Google Sporočila kot privzeto aplikacijo za sporočanje"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"Satelitska sporočila niso na voljo"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"Če želite preveriti, ali so satelitska sporočila na voljo v tej državi ali regiji, vklopite nastavitve lokacije"</string>
-    <!-- no translation found for satellite_indicator (6846063647532086110) -->
-    <skip />
+    <string name="satellite_indicator" msgid="6846063647532086110">"SAT"</string>
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"Vnovična nastavitev odklepanja s prstnim odtisom"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"Odtisa »<xliff:g id="FINGERPRINT">%s</xliff:g>« ni več mogoče prepoznati."</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"Odtisov »<xliff:g id="FINGERPRINT_0">%1$s</xliff:g>« in »<xliff:g id="FINGERPRINT_1">%2$s</xliff:g>« ni več mogoče prepoznati."</string>
