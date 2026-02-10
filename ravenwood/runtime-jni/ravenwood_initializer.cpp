@@ -223,7 +223,7 @@ static pid_t find_atest_pid() {
     while (ret != -1) {
         std::string proc;
         ret = getppid_of(ret, proc);
-        if (proc == "(atest-py3)") {
+        if (proc.find("(atest-py3)") == 0) {
             return ret;
         }
     }
