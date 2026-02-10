@@ -22,7 +22,6 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.Resources
-import android.database.ContentObserver
 import android.hardware.input.KeyGestureEvent
 import android.os.Handler
 import android.provider.Settings
@@ -49,15 +48,17 @@ import com.android.systemui.keyboard.shortcut.data.repository.ShortcutHelperKeys
 import com.android.systemui.res.R
 import com.android.systemui.settings.UserTracker
 import com.android.systemui.shared.settings.data.repository.SecureSettingsRepository
-import com.android.systemui.util.settings.SecureSettings
+import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.combineTransform
 import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.withContext
 
 /** Provides data for enabling and triggering accessibility feature shortcuts. */
@@ -185,8 +186,6 @@ constructor(
     private val accessibilityManager: AccessibilityManager,
     private val packageManager: PackageManager,
     private val userTracker: UserTracker,
-    // TODO: b/480991693 - Refactor to use SecureSettingsRepository.
-    private val secureSettings: SecureSettings,
     private val secureSettingsRepository: SecureSettingsRepository,
     @param:Main private val resources: Resources,
     @param:Background private val backgroundDispatcher: CoroutineDispatcher,
@@ -381,47 +380,43 @@ constructor(
     private fun getTargetsAsFlow(
         @UserShortcutType shortcutType: Int,
         getTargetsBlock: (Int) -> List<AccessibilityTargetModel>,
-    ): Flow<List<AccessibilityTargetModel>> =
-        callbackFlow {
-                val sendTargets = { trySend(getTargetsBlock(shortcutType)) }
+    ): Flow<List<AccessibilityTargetModel>> {
+        val servicesStateChanged = conflatedCallbackFlow {
+            val listener =
+                AccessibilityManager.AccessibilityServicesStateChangeListener { trySend(Unit) }
+            accessibilityManager.addAccessibilityServicesStateChangeListener(listener)
 
-                // Listen for state changes from AccessibilityServices.
-                val listener =
-                    AccessibilityManager.AccessibilityServicesStateChangeListener { sendTargets() }
-                accessibilityManager.addAccessibilityServicesStateChangeListener(listener)
+            trySend(Unit)
 
-                // Listen for enabled state changes from system accessibility features.
-                val observer =
-                    object : ContentObserver(handler) {
-                        override fun onChange(selfChange: Boolean) {
-                            sendTargets()
-                        }
-                    }
-                AccessibilityTargetHelper.getInstalledTargets(context, shortcutType)
-                    .filter { it.isToggleable && it.key != null }
-                    .map { it.key }
-                    .toMutableSet()
-                    // This observes targets being assigned/unassigned to the shortcut.
-                    .apply { add(ShortcutUtils.convertToKey(shortcutType)) }
-                    .map { key ->
-                        secureSettings.registerContentObserverForUserAsync(
-                            key,
-                            observer,
-                            userTracker.userId,
-                        )
-                    }
-                    .joinAll()
-
-                // Emits the initial state of the list of accessibility targets.
-                sendTargets()
-
-                awaitClose {
-                    accessibilityManager.removeAccessibilityServicesStateChangeListener(listener)
-                    secureSettings.unregisterContentObserverAsync(observer)
-                }
+            awaitClose {
+                accessibilityManager.removeAccessibilityServicesStateChangeListener(listener)
             }
-            .conflate()
+        }
+        val secureSettingsChanged =
+            AccessibilityTargetHelper.getInstalledTargets(context, shortcutType)
+                .filter { it.isToggleable && it.key != null }
+                .asFlow()
+                .flatMapMerge {
+                    secureSettingsRepository.boolSetting(
+                        it.key,
+                        defaultValue = secureSettingsRepository.getInt(it.key) != 0,
+                    )
+                }
+                .conflate()
+        val assignedTargetsChanged =
+            secureSettingsRepository
+                .stringSetting(ShortcutUtils.convertToKey(shortcutType))
+                .conflate()
+        return combineTransform(
+                servicesStateChanged,
+                secureSettingsChanged,
+                assignedTargetsChanged,
+            ) {
+                emit(getTargetsBlock(shortcutType))
+            }
+            .distinctUntilChanged()
             .flowOn(backgroundDispatcher)
+    }
 
     override fun isServiceWarningRequired(target: AccessibilityTargetModel) =
         getAccessibilityServiceInfo(target)?.let {
