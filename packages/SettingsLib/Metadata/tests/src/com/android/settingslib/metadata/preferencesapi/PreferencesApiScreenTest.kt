@@ -145,6 +145,81 @@ class PreferencesApiScreenTest {
     }
 
     @Test
+    fun getSpaRoute_noParams_returnsStaticPrefix() {
+        val spaRoutePrefix = "static/route"
+        val screen = object : PreferencesApiScreen(
+            key = SCREEN_KEY,
+            topLevelSettingsCategory = Category.SYSTEM,
+            spaRoutePrefix = spaRoutePrefix,
+            purpose = R.string.preference_screen_purpose,
+        ) {}
+
+        assertThat(screen.getSpaRoute()).isEqualTo(spaRoutePrefix)
+    }
+
+    @Test
+    fun getSpaRoute_withParams_noPrepareSpaRoute_returnsStaticPrefix() {
+        val spaRoutePrefix = "static/route"
+        val screen = object : PreferencesApiScreen(
+            key = SCREEN_KEY,
+            topLevelSettingsCategory = Category.SYSTEM,
+            spaRoutePrefix = spaRoutePrefix,
+            purpose = R.string.preference_screen_purpose,
+        ) {
+            init {
+                parameters {
+                    parameter(
+                        "package",
+                        R.string.parameter_purpose1,
+                        true,
+                        GeneratedParameterType(R.string.parameter_type_description) {
+                            listOf(GeneratedValue("value", "type_description"))
+                        },
+                    )
+                }
+            }
+        }
+        val keyParameters = screen.parametersSchema!!.prepare("package" to "com.example.app")
+        screen.initializeParameters(keyParameters)
+
+        assertThat(screen.getSpaRoute()).isEqualTo(spaRoutePrefix)
+    }
+
+    @Test
+    fun getSpaRoute_withParameters_returnsDynamicRoute() {
+        val spaRoutePrefix = "spa/prefix"
+        val packageName = "com.example.app"
+        val screen = object : PreferencesApiScreen(
+            key = SCREEN_KEY,
+            topLevelSettingsCategory = Category.SYSTEM,
+            purpose = R.string.preference_screen_purpose,
+        ) {
+            init {
+                parameters {
+                    parameter(
+                        "package",
+                        R.string.parameter_purpose1,
+                        true,
+                        GeneratedParameterType(R.string.parameter_type_description) {
+                            listOf(GeneratedValue("value", "type_description"))
+                        },
+                    )
+                    prepareSpaRoute { params ->
+                        "$spaRoutePrefix/${params["package"]}"
+                    }
+                }
+            }
+        }
+
+        val keyParameters = screen.parametersSchema!!.prepare("package" to packageName)
+        screen.initializeParameters(keyParameters)
+
+        val route = screen.getSpaRoute()
+
+        assertThat(route).isEqualTo("$spaRoutePrefix/$packageName")
+    }
+
+    @Test
     fun createPreferencesApiScreenWithGetters_succeeds() {
         val preferenceValue1 = false
         val preferenceKey1 = "ApiPreference1"
@@ -823,7 +898,8 @@ class PreferencesApiScreenTest {
                 }
             }
 
-        assertThat(exception.message).isEqualTo(getExceptionMessageMultipleParametersDefined(2))
+        assertThat(exception.message)
+            .isEqualTo(getExceptionMessageMultipleParametersDefined(2))
     }
 
     @Test
@@ -1658,6 +1734,46 @@ class PreferencesApiScreenTest {
             }
 
         assertThat(preferenceScreen.isFlagEnabled(context)).isFalse()
+    }
+
+    @Test
+    fun dynamicSpaScreen_missingPrepareSpaRoute_throwsException() {
+        assertThrows(IllegalStateException::class.java) {
+            object : PreferencesApiScreen(
+                key = SCREEN_KEY,
+                topLevelSettingsCategory = Category.SYSTEM,
+                purpose = R.string.preference_screen_purpose,
+            ) {
+                init {
+                    parameters {
+                        parameter(
+                            "package",
+                            R.string.parameter_purpose1,
+                            true,
+                            GeneratedParameterType(R.string.parameter_type_description) {
+                                listOf(GeneratedValue("value", "type_description"))
+                            },
+                        )
+                        // Missing prepareSpaRoute
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun dynamicSpaConstructor_withoutParameters_throwsException() {
+        assertThrows(IllegalStateException::class.java) {
+            val screen = object : PreferencesApiScreen(
+                key = SCREEN_KEY,
+                topLevelSettingsCategory = Category.SYSTEM,
+                purpose = R.string.preference_screen_purpose,
+            ) {
+                // Intentionally empty init block
+            }
+            // The check is performed when the destination is requested
+            screen.fragmentClass()
+        }
     }
 
     companion object {
