@@ -5525,7 +5525,9 @@ public class ActivityManagerService extends IActivityManager.Stub
                     HostingRecord.getHostingTypeIdStatsd(hostingRecord.getType()),
                     HostingRecord.getTriggerTypeForStatsd(hostingRecord.getTriggerType()),
                     hostingRecord.getCallerUid(),
-                    hostingRecord.getCallerProcessName());
+                    hostingRecord.getCallerProcessName(),
+                    hostingRecord.getHostingAuthority(),
+                    hostingRecord.isProviderStable());
         }
     }
 

@@ -558,12 +558,11 @@ public class ContentProviderHelper {
                             final boolean firstLaunch = cpr.mAppInfo.isNotLaunched();
                             checkTime(startTime, "getContentProviderImpl: before start process");
 
-                            final HostingRecord hostingRecord = new HostingRecord(
-                                    HostingRecord.HOSTING_TYPE_CONTENT_PROVIDER,
+                            final HostingRecord hostingRecord = HostingRecord.forContentProvider(
                                     new ComponentName(cpi.applicationInfo.packageName, cpi.name),
-                                    /* isTopApp */ false, cpi.shouldRunInPccSandbox(),
-                                    callingUid, r != null ? r.processName : null);
-
+                                    cpi.shouldRunInPccSandbox(),
+                                    callingUid, r != null ? r.processName : null,
+                                    name, stable);
                             proc = mService.startProcessLocked(
                                     cpi.processName, cpr.mAppInfo, false, 0,
                                     hostingRecord,

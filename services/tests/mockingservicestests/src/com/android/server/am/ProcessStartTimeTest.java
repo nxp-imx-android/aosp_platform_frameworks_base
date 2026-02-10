@@ -66,6 +66,7 @@ public class ProcessStartTimeTest {
     private static final int CALLER_UID = 10001;
     private static final String CALLER_PROCESS_NAME = "com.android.caller";
     private static final long START_SEQ = 100L;
+    private static final String PROVIDER_AUTHORITY = "com.test.authority";
 
     @Rule
     public final ApplicationExitInfoTest.ServiceThreadRule
@@ -159,7 +160,46 @@ public class ProcessStartTimeTest {
                 eq(HostingRecord.getHostingTypeIdStatsd(hostingRecord.getType())),
                 eq(HostingRecord.getTriggerTypeForStatsd(hostingRecord.getTriggerType())),
                 eq(CALLER_UID),
-                eq(CALLER_PROCESS_NAME)
+                eq(CALLER_PROCESS_NAME),
+                eq(hostingRecord.getHostingAuthority()),
+                eq(hostingRecord.isProviderStable())
+        ));
+    }
+
+    @Test
+    public void testProcessStartTimeLogged_forContentProvider() throws Exception {
+        final ProcessRecord app = makeProcessRecord(PACKAGE, APP_UID, APP_PID);
+        final boolean stable = true;
+        final HostingRecord hostingRecord = HostingRecord.forContentProvider(
+                new ComponentName(PACKAGE, "Provider"), false, CALLER_UID,
+                CALLER_PROCESS_NAME, PROVIDER_AUTHORITY, stable);
+        app.setHostingRecord(hostingRecord);
+        app.setStartSeq(START_SEQ);
+
+        synchronized (mAms.mPidsSelfLocked) {
+            mAms.mPidsSelfLocked.doAddInternal(APP_PID, app);
+        }
+
+        mAms.finishAttachApplication(START_SEQ, 0);
+
+        verify(() -> FrameworkStatsLog.write(
+                eq(FrameworkStatsLog.PROCESS_START_TIME),
+                eq(APP_UID),
+                eq(APP_PID),
+                eq(PACKAGE),
+                eq(FrameworkStatsLog.PROCESS_START_TIME__TYPE__COLD),
+                anyLong(), // startElapsedTime
+                anyInt(),  // bindApplicationDelay
+                anyInt(),  // processStartDelay
+                eq(hostingRecord.getType()),
+                eq(hostingRecord.getName()),
+                any(),     // shortAction
+                eq(HostingRecord.getHostingTypeIdStatsd(hostingRecord.getType())),
+                eq(HostingRecord.getTriggerTypeForStatsd(hostingRecord.getTriggerType())),
+                eq(CALLER_UID),
+                eq(CALLER_PROCESS_NAME),
+                eq(PROVIDER_AUTHORITY),
+                eq(stable)
         ));
     }
 
