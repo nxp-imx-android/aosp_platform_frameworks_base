@@ -1189,11 +1189,9 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 relayoutParams.mInputFeatures
                         |= WindowManager.LayoutParams.INPUT_FEATURE_NO_INPUT_CHANNEL;
             }
-            if (DesktopExperienceFlags.ENABLE_REMOVE_STATUS_BAR_INPUT_LAYER.isTrue()) {
-                // Add input feature spy flag if caption is an app handle so that input is not
-                // stolen when motion event exits caption view.
-                relayoutParams.mInputFeatures |= WindowManager.LayoutParams.INPUT_FEATURE_SPY;
-            }
+            // Add input feature spy flag if caption is an app handle so that input is not
+            // stolen when motion event exits caption view.
+            relayoutParams.mInputFeatures |= WindowManager.LayoutParams.INPUT_FEATURE_SPY;
         }
         if (isAppHeader
                 && desktopConfig.useWindowShadow(/* isFocusedWindow= */ hasGlobalFocus)) {
