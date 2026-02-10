@@ -225,6 +225,7 @@ fun ContentScope.ScrollingNotificationPanel(
     shouldFillMaxHeight: Boolean = false,
     shouldIncludeHeadsUpSpace: Boolean = true,
     shouldDrawScrimBackground: Boolean = true,
+    useVerticalOverscrollEffect: Boolean = true,
     isActivated: Boolean = true,
     contentScrollState: ScrollState =
         shadeSession.rememberSaveableSession(saver = ScrollState.Saver, key = "ScrollState") {
@@ -284,6 +285,7 @@ fun ContentScope.ScrollingNotificationPanel(
         shouldScrimBackgroundFillMaxHeight = false,
         shouldDrawScrimBackground = shouldDrawScrimBackground,
         shouldIncludeHeadsUpSpace = shouldIncludeHeadsUpSpace,
+        useVerticalOverscrollEffect = useVerticalOverscrollEffect,
         isActivated = isActivated,
         contentScrollState = contentScrollState,
         scrollingContentOverscrollEffect = scrollingContentOverscrollEffect,
@@ -313,6 +315,7 @@ fun ContentScope.NestedScrollingNotificationPanel(
     shouldScrimBackgroundFillMaxHeight: Boolean,
     shouldIncludeHeadsUpSpace: Boolean = true,
     shouldDrawScrimBackground: Boolean = true,
+    useVerticalOverscrollEffect: Boolean = true,
     isActivated: Boolean = true,
     onEmptySpaceClick: (() -> Unit)? = null,
     onStackHeightChanged: (Int) -> Unit = {},
@@ -482,7 +485,10 @@ fun ContentScope.NestedScrollingNotificationPanel(
                 // Only apply visual effects when the background is drawn.
                 .thenIf(shouldDrawScrimBackground) {
                     // Apply overscroll visuals (visuals only, no event handling):
-                    Modifier.overscroll(verticalOverscrollEffect) // SceneContainer transitions
+                    Modifier.thenIf(useVerticalOverscrollEffect) {
+                            // SceneContainer transitions
+                            Modifier.overscroll(verticalOverscrollEffect)
+                        }
                         .overscroll(scrollingContentOverscrollEffect) // Content scrolling
                         .overscroll(shortContentOverscrollEffect) // Short/Empty content swipes
                 }

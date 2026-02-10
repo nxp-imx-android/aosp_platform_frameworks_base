@@ -574,11 +574,12 @@ private fun ContentScope.SplitShade(
                         ),
             )
 
-            Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
+            Row(
+                modifier = Modifier.overscroll(verticalOverscrollEffect).fillMaxWidth().weight(1f)
+            ) {
                 Box(
                     modifier =
                         Modifier.element(SplitShadeQuickSettings)
-                            .overscroll(verticalOverscrollEffect)
                             .weight(1f)
                             // unfoldTranslationXForStartSide may be updated every frame, so only
                             // read value in the draw phase.
@@ -682,6 +683,7 @@ private fun ContentScope.SplitShade(
                     stackBottomPadding = { notificationStackPadding },
                     shouldFillMaxHeight = true,
                     shouldPunchHoleBehindScrim = false,
+                    useVerticalOverscrollEffect = false,
                     isTransparencyEnabled = viewModel.isTransparencyEnabled,
                     onEmptySpaceClick =
                         viewModel::onEmptySpaceClicked.takeIf { viewModel.isEmptySpaceClickable },
