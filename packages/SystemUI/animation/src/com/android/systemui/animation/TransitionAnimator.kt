@@ -287,9 +287,6 @@ class TransitionAnimator(
 
     /** Encapsulated the state of a multi-spring animation. */
     internal class SpringState(
-        // The attribute(s) around which to pivot the springs in this animation.
-        val pivot: AnimationPivot,
-
         // Animated values.
         var x: Float,
         var y: Float,
@@ -829,11 +826,22 @@ class TransitionAnimator(
                 return
             }
 
-            val useTopPivot = endState.top > startState.top && endState.bottom > startState.bottom
+            val useTopPivot =
+                endState.height < startState.height &&
+                    endState.top > startState.top &&
+                    endState.bottom > startState.bottom
             val useBottomPivot =
-                endState.top < startState.top && endState.bottom < startState.bottom
-            val useLeftPivot = endState.left > startState.left && endState.right > startState.right
-            val useRightPivot = endState.left < startState.left && endState.right < startState.right
+                endState.height < startState.height &&
+                    endState.top < startState.top &&
+                    endState.bottom < startState.bottom
+            val useLeftPivot =
+                endState.width < startState.width &&
+                    endState.left > startState.left &&
+                    endState.right > startState.right
+            val useRightPivot =
+                endState.width < startState.width &&
+                    endState.left < startState.left &&
+                    endState.right < startState.right
             pivot =
                 when {
                     useLeftPivot && useTopPivot -> AnimationPivot.TOP_LEFT
@@ -878,10 +886,12 @@ class TransitionAnimator(
             updateEndStateAndPivot()
 
             val (newTargetX, newTargetY) = extractPivotAttributes(endState, pivot)
-            if (newTargetX != targetX && newTargetY != targetY) {
+            if (newTargetX != targetX) {
                 targetX = newTargetX
-                targetY = newTargetY
                 springX?.animateToFinalPosition(targetX)
+            }
+            if (newTargetY != targetY) {
+                targetY = newTargetY
                 springY?.animateToFinalPosition(targetY)
             }
         }
@@ -918,7 +928,7 @@ class TransitionAnimator(
             val right: Float
             val bottom: Float
 
-            when (state.pivot) {
+            when (pivot) {
                 AnimationPivot.LEFT -> {
                     left = state.x
                     top = state.y - height / 2
@@ -1043,7 +1053,7 @@ class TransitionAnimator(
         }
 
         val (startX, startY) = extractPivotAttributes(startState, pivot)
-        val springState = SpringState(pivot, startX, startY)
+        val springState = SpringState(startX, startY)
         val isExpandingFullyAbove = isExpandingFullyAbove(transitionContainer, endState)
 
         /** End listener for each spring, which only does the end work if all springs are done. */
