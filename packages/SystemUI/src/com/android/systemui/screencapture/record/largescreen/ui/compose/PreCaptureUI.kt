@@ -27,26 +27,39 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import com.android.compose.modifiers.thenIf
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ui.compose.PrimaryButton
 import com.android.systemui.screencapture.common.ui.compose.ScreenCaptureColors
@@ -199,6 +212,15 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
             }
 
             ScreenCaptureRegion.APP_WINDOW -> {
+                val density = LocalDensity.current
+                val focusRequester = remember { FocusRequester() }
+
+                LaunchedEffect(viewModel.captureRegion) {
+                    if (viewModel.captureRegion == ScreenCaptureRegion.APP_WINDOW) {
+                        focusRequester.requestFocus()
+                    }
+                }
+
                 Box(
                     modifier =
                         Modifier.fillMaxSize()
@@ -224,6 +246,42 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
                             }
                 ) {
                     AppWindowBox(appWindowModel = viewModel.appWindowSelection)
+
+                    viewModel.runningTasks.forEachIndexed { index, task ->
+                        val bounds = task.configuration.windowConfiguration.bounds
+                        Box(
+                            modifier =
+                                Modifier.offset(
+                                        x = with(density) { bounds.left.toDp() },
+                                        y = with(density) { bounds.top.toDp() },
+                                    )
+                                    .size(
+                                        width = with(density) { bounds.width().toDp() },
+                                        height = with(density) { bounds.height().toDp() },
+                                    )
+                                    .thenIf(index == 0) { Modifier.focusRequester(focusRequester) }
+                                    .onFocusChanged { focusState ->
+                                        if (focusState.isFocused) {
+                                            viewModel.focusTask(task)
+                                        } else {
+                                            viewModel.unfocusTask(task)
+                                        }
+                                    }
+                                    .onKeyEvent { keyEvent ->
+                                        if (
+                                            (keyEvent.key == Key.Enter ||
+                                                keyEvent.key == Key.Spacebar) &&
+                                                keyEvent.type == KeyEventType.KeyDown
+                                        ) {
+                                            viewModel.beginCapture()
+                                            true
+                                        } else {
+                                            false
+                                        }
+                                    }
+                                    .focusable()
+                        )
+                    }
                 }
             }
         }

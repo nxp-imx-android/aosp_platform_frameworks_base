@@ -394,6 +394,21 @@ class PreCaptureViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    fun updateCaptureRegion_toAppWindow_updatesRunningTasks() =
+        kosmos.runTest {
+            val task1 = createRunningTaskInfo(taskId = 1, bounds = Rect(0, 0, 50, 50))
+            val runningTasks = listOf(task1)
+            whenever(appWindowInteractor.getAppWindowTasks(any<Int>())).thenReturn(runningTasks)
+            setupViewModel()
+
+            assertThat(viewModel.runningTasks).isEmpty()
+
+            viewModel.updateCaptureRegion(ScreenCaptureRegion.APP_WINDOW)
+
+            assertThat(viewModel.runningTasks).containsExactly(task1)
+        }
+
+    @Test
     fun updateRegionBoxBounds_updatesState() =
         kosmos.runTest {
             setupViewModel()
@@ -627,6 +642,39 @@ class PreCaptureViewModelTest : SysuiTestCase() {
             // Hover on the edge of task 2
             viewModel.updateTaskSelectionFromHover(Point(99, 99))
             assertThat(viewModel.topTask).isEqualTo(task2)
+        }
+
+    @Test
+    fun focusTask_selectsCorrectTask() =
+        kosmos.runTest {
+            val task1 = createRunningTaskInfo(taskId = 1, bounds = Rect(0, 0, 50, 50))
+            val runningTasks = listOf(task1)
+            whenever(appWindowInteractor.getAppWindowTasks(any<Int>())).thenReturn(runningTasks)
+            setupViewModel()
+            viewModel.updateCaptureRegion(ScreenCaptureRegion.APP_WINDOW)
+
+            viewModel.focusTask(task1)
+
+            assertThat(viewModel.topTask).isEqualTo(task1)
+            assertThat(viewModel.appWindowSelection?.taskBounds)
+                .isEqualTo(task1.configuration.windowConfiguration.bounds)
+        }
+
+    @Test
+    fun unfocusTask_clearsTask() =
+        kosmos.runTest {
+            val task1 = createRunningTaskInfo(taskId = 1, bounds = Rect(0, 0, 50, 50))
+            val runningTasks = listOf(task1)
+            whenever(appWindowInteractor.getAppWindowTasks(any<Int>())).thenReturn(runningTasks)
+            setupViewModel()
+            viewModel.updateCaptureRegion(ScreenCaptureRegion.APP_WINDOW)
+
+            viewModel.focusTask(task1)
+            assertThat(viewModel.topTask).isEqualTo(task1)
+
+            viewModel.unfocusTask(task1)
+            assertThat(viewModel.topTask).isNull()
+            assertThat(viewModel.appWindowSelection).isNull()
         }
 
     @Test
