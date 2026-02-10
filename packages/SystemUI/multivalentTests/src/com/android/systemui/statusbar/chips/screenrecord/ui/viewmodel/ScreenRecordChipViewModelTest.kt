@@ -374,7 +374,6 @@ class ScreenRecordChipViewModelTest : SysuiTestCase() {
         Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR,
         Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE,
         Flags.FLAG_LARGE_SCREEN_RECORDING,
-        Flags.FLAG_ANIMATION_LIBRARY_DYNAMIC_TARGET_RESOLUTION,
     )
     fun chip_notProjecting_expandActionBehaviorShowsDialog() =
         testScope.runTest {
@@ -396,29 +395,6 @@ class ScreenRecordChipViewModelTest : SysuiTestCase() {
         Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE,
         Flags.FLAG_LARGE_SCREEN_RECORDING,
     )
-    @EnableFlags(Flags.FLAG_ANIMATION_LIBRARY_DYNAMIC_TARGET_RESOLUTION)
-    fun chip_notProjecting_expandActionBehaviorShowsDialog_withDynamicTargetResolution() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.chip)
-            screenRecordRepo.screenRecordState.value = ScreenRecordModel.Recording
-            mediaProjectionRepo.mediaProjectionState.value = MediaProjectionState.NotProjecting
-
-            val expandAction =
-                ((latest as OngoingActivityChipModel.Active).clickBehavior
-                    as OngoingActivityChipModel.ClickBehavior.ExpandAction)
-
-            expandAction.onClick(mockExpandable)
-            verify(kosmos.mockDialogTransitionAnimator)
-                .show(any(), anyOrNull(), anyOrNull(), anyBoolean())
-        }
-
-    @Test
-    @DisableFlags(
-        Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR,
-        Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE,
-        Flags.FLAG_LARGE_SCREEN_RECORDING,
-        Flags.FLAG_ANIMATION_LIBRARY_DYNAMIC_TARGET_RESOLUTION,
-    )
     fun chip_projectingEntireScreen_expandActionBehaviorShowsDialog() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -438,28 +414,6 @@ class ScreenRecordChipViewModelTest : SysuiTestCase() {
         Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE,
         Flags.FLAG_LARGE_SCREEN_RECORDING,
     )
-    @EnableFlags(Flags.FLAG_ANIMATION_LIBRARY_DYNAMIC_TARGET_RESOLUTION)
-    fun chip_projectingEntireScreen_expandActionBehaviorShowsDialog_withDynamicTargetResolution() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.chip)
-            screenRecordRepo.screenRecordState.value = ScreenRecordModel.Recording
-
-            val expandAction =
-                ((latest as OngoingActivityChipModel.Active).clickBehavior
-                    as OngoingActivityChipModel.ClickBehavior.ExpandAction)
-
-            expandAction.onClick(mockExpandable)
-            verify(kosmos.mockDialogTransitionAnimator)
-                .show(any(), anyOrNull(), anyOrNull(), anyBoolean())
-        }
-
-    @Test
-    @DisableFlags(
-        Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR,
-        Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE,
-        Flags.FLAG_LARGE_SCREEN_RECORDING,
-        Flags.FLAG_ANIMATION_LIBRARY_DYNAMIC_TARGET_RESOLUTION,
-    )
     fun chip_projectingSingleTask_expandActionBehaviorShowsDialog() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -477,33 +431,6 @@ class ScreenRecordChipViewModelTest : SysuiTestCase() {
 
             expandAction.onClick(mockExpandable)
             verify(kosmos.mockDialogTransitionAnimator).show(any(), any(), anyBoolean())
-        }
-
-    @Test
-    @DisableFlags(
-        Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR,
-        Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE,
-        Flags.FLAG_LARGE_SCREEN_RECORDING,
-    )
-    @EnableFlags(Flags.FLAG_ANIMATION_LIBRARY_DYNAMIC_TARGET_RESOLUTION)
-    fun chip_projectingSingleTask_expandActionBehaviorShowsDialog_withDynamicTargetResolution() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.chip)
-            screenRecordRepo.screenRecordState.value = ScreenRecordModel.Recording
-            mediaProjectionRepo.mediaProjectionState.value =
-                MediaProjectionState.Projecting.SingleTask(
-                    "host.package",
-                    hostDeviceName = null,
-                    FakeActivityTaskManager.createTask(taskId = 1),
-                )
-
-            val expandAction =
-                ((latest as OngoingActivityChipModel.Active).clickBehavior
-                    as OngoingActivityChipModel.ClickBehavior.ExpandAction)
-
-            expandAction.onClick(mockExpandable)
-            verify(kosmos.mockDialogTransitionAnimator)
-                .show(any(), anyOrNull(), anyOrNull(), anyBoolean())
         }
 
     @Test

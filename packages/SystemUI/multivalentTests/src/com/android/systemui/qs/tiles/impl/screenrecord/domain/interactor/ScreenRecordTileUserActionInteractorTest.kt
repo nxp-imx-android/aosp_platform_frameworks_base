@@ -61,7 +61,6 @@ import org.junit.runner.RunWith
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
-import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
@@ -224,11 +223,7 @@ class ScreenRecordTileUserActionInteractorTest : SysuiTestCase() {
      * When the input view is not null and keyguard is not showing, dialog should animate and show
      */
     @Test
-    @DisableFlags(
-        Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE,
-        Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR,
-        Flags.FLAG_ANIMATION_LIBRARY_DYNAMIC_TARGET_RESOLUTION,
-    )
+    @DisableFlags(Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE, Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
     fun handleClickFromView_whenDoingNothing_whenKeyguardNotShowing_showDialogFromView() = runTest {
         val controller = mock<DialogTransitionAnimator.Controller>()
         val expandable =
@@ -249,32 +244,4 @@ class ScreenRecordTileUserActionInteractorTest : SysuiTestCase() {
         onDismissActionCaptor.lastValue.onDismiss()
         verify(dialogTransitionAnimator).show(eq(dialog), eq(controller), eq(true))
     }
-
-    /**
-     * When the input view is not null and keyguard is not showing, dialog should animate and show
-     */
-    @Test
-    @DisableFlags(Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE, Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
-    @EnableFlags(Flags.FLAG_ANIMATION_LIBRARY_DYNAMIC_TARGET_RESOLUTION)
-    fun handleClickFromView_whenDoingNothing_whenKeyguardNotShowing_showDialogFromView_withDynamicTargetResolution() =
-        runTest {
-            val controller = mock<DialogTransitionAnimator.Controller>()
-            val expandable =
-                mock<Expandable> { on { dialogTransitionController(any()) } doReturn controller }
-
-            kosmos.fakeKeyguardRepository.setKeyguardShowing(false)
-
-            val recordingModel = ScreenRecordModel.DoingNothing
-
-            underTest.handleInput(
-                QSTileInputTestKtx.click(recordingModel, UserHandle.CURRENT, expandable)
-            )
-            verify(screenRecordUxController).createScreenRecordDialog(any())
-
-            val onDismissActionCaptor = argumentCaptor<OnDismissAction>()
-            verify(keyguardDismissUtil)
-                .executeWhenUnlocked(onDismissActionCaptor.capture(), eq(false), eq(true))
-            onDismissActionCaptor.lastValue.onDismiss()
-            verify(dialogTransitionAnimator).show(eq(dialog), anyOrNull(), anyOrNull(), eq(true))
-        }
 }
