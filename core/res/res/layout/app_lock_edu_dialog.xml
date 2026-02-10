@@ -55,7 +55,6 @@
         android:id="@+id/app_lock_edu_dialog_desc"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/app_lock_edu_dialog_description"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:justificationMode="inter_word"
         android:textColor="@color/materialColorOnSurfaceVariant"
