@@ -5476,7 +5476,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                     FrameworkStatsLog.PROCESS_START_TIME,
                     app.info.uid,
                     pid,
-                    app.info.packageName,
+                    app.processName,
                     FrameworkStatsLog.PROCESS_START_TIME__TYPE__COLD,
                     app.getStartElapsedTime(),
                     (int) (app.getBindApplicationTime() - app.getStartUptime()),
