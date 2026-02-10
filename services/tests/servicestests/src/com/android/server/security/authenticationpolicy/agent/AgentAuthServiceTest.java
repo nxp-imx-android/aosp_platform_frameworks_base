@@ -34,9 +34,14 @@ import android.hardware.biometrics.BiometricManager;
 import android.os.Handler;
 import android.os.RemoteException;
 import android.platform.test.annotations.Presubmit;
+import android.provider.Settings;
+import android.test.mock.MockContentResolver;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableLooper;
 
+import com.android.internal.util.test.FakeSettingsProvider;
+
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -73,13 +78,18 @@ public class AgentAuthServiceTest {
     private Handler mHandler;
     private AgentAuthService mService;
     private FakeClock mClock;
+    private MockContentResolver mContentResolver;
 
     private IOnAssociationsChangedListener mAssocListener;
     private IOnDevicePresenceEventListener mPresenceListener;
 
     @Before
     public void setUp() throws Exception {
+        mContentResolver = new MockContentResolver();
+        mContentResolver.addProvider(Settings.AUTHORITY, new FakeSettingsProvider());
+
         when(mMockContext.getUserId()).thenReturn(USER_ID);
+        when(mMockContext.getContentResolver()).thenReturn(mContentResolver);
         when(mMockCDMService.getAllAssociationsForUser(anyInt())).thenReturn(
                 Collections.emptyList());
 
@@ -113,6 +123,11 @@ public class AgentAuthServiceTest {
 
         mService.initInBackgroundForUser(USER_ID);
         TestableLooper.get(this).processAllMessages();
+    }
+
+    @After
+    public void tearDown() {
+        FakeSettingsProvider.clearSettingsProvider();
     }
 
     @Test
