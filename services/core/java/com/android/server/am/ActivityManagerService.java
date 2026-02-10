@@ -77,16 +77,16 @@ import static android.content.pm.PackageManager.MATCH_UNINSTALLED_PACKAGES;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.content.pm.PackageManager.SIGNATURE_NO_MATCH;
 import static android.crashrecovery.flags.Flags.refactorCrashrecovery;
-import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidTrackEvent.BINDER_DIED_EVENT;
-import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidTrackEvent.PROCESS_START_EVENT;
-import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessStartEvent.PROCESS_NAME;
-import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessStartEvent.UID;
-import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessStartEvent.PID;
 import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessStartEvent.BIND_APPLICATION_DELAY_MS;
-import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessStartEvent.PROCESS_START_DELAY_MS;
 import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessStartEvent.HOSTING_NAME;
 import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessStartEvent.HOSTING_TYPE;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessStartEvent.PID;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessStartEvent.PROCESS_NAME;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessStartEvent.PROCESS_START_DELAY_MS;
 import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessStartEvent.TRIGGER_TYPE;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessStartEvent.UID;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidTrackEvent.BINDER_DIED_EVENT;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidTrackEvent.PROCESS_START_EVENT;
 import static android.net.ConnectivityManager.BLOCKED_REASON_NONE;
 import static android.os.FactoryTest.FACTORY_TEST_OFF;
 import static android.os.IServiceManager.DUMP_FLAG_PRIORITY_CRITICAL;
@@ -1491,10 +1491,8 @@ public class ActivityManagerService extends IActivityManager.Stub
     @GuardedBy("mProcLock")
     long mLastPowerCheckUptime;
 
-    /**
-     * For some direct access we need to power manager.
-     */
-    private PowerManagerBatchProxy mPowerManagerBatchProxy;
+    /** For some direct access we need to power manager. */
+    private PowerManagerInternal.UidChangesBatch mPowerManagerBatch;
 
     /**
      * State of external calls telling us if the device is awake or asleep.
@@ -2812,9 +2810,9 @@ public class ActivityManagerService extends IActivityManager.Stub
     public void initPowerManagement() {
         mActivityTaskManager.onInitPowerManagement();
         mBatteryStatsService.initPowerManagement();
-        mPowerManagerBatchProxy = new PowerManagerBatchProxy(
-                LocalServices.getService(PowerManagerInternal.class),
-                mHandlerThread.getLooper());
+        mPowerManagerBatch =
+                LocalServices.getService(PowerManagerInternal.class)
+                        .getBatchProxy(mHandlerThread.getLooper());
     }
 
     /**
@@ -16072,19 +16070,19 @@ public class ActivityManagerService extends IActivityManager.Stub
 
         // Directly update the power manager, since we sit on top of it and it is critical
         // it be kept in sync (so wake locks will be held as soon as appropriate).
-        if (mPowerManagerBatchProxy != null) {
+        if (mPowerManagerBatch != null) {
             // TODO: dispatch cached/uncached changes here, so we don't need to report
             // all proc state changes.
             if ((enqueuedChange & UidRecord.CHANGE_ACTIVE) != 0) {
-                mPowerManagerBatchProxy.uidActive(uid);
+                mPowerManagerBatch.uidActive(uid);
             }
             if ((enqueuedChange & UidRecord.CHANGE_IDLE) != 0) {
-                mPowerManagerBatchProxy.uidIdle(uid);
+                mPowerManagerBatch.uidIdle(uid);
             }
             if ((enqueuedChange & UidRecord.CHANGE_GONE) != 0) {
-                mPowerManagerBatchProxy.uidGone(uid);
+                mPowerManagerBatch.uidGone(uid);
             } else if ((enqueuedChange & UidRecord.CHANGE_PROCSTATE) != 0) {
-                mPowerManagerBatchProxy.updateUidProcState(uid, procState);
+                mPowerManagerBatch.updateUidProcState(uid, procState);
             }
         }
         if (mAppLockLocalService != null) {
@@ -16286,8 +16284,8 @@ public class ActivityManagerService extends IActivityManager.Stub
 
             synchronized (mGlobalLock) {
                 try {
-                    if (mPowerManagerBatchProxy != null) {
-                        mPowerManagerBatchProxy.startUidChanges();
+                    if (mPowerManagerBatch != null) {
+                        mPowerManagerBatch.startUidChanges();
                     }
                     final int appId = UserHandle.getAppId(pkgUid);
                     for (int i = mProcessList.mActiveUids.size() - 1; i >= 0; i--) {
@@ -16311,8 +16309,8 @@ public class ActivityManagerService extends IActivityManager.Stub
                         }
                     }
                 } finally {
-                    if (mPowerManagerBatchProxy != null) {
-                        mPowerManagerBatchProxy.finishUidChanges();
+                    if (mPowerManagerBatch != null) {
+                        mPowerManagerBatch.finishUidChanges();
                     }
                 }
             }
@@ -16351,8 +16349,8 @@ public class ActivityManagerService extends IActivityManager.Stub
         final long maxBgTime = nowElapsed - mConstants.BACKGROUND_SETTLE_TIME;
         long nextTime = 0;
         boolean shouldLogMisc = false;
-        if (mPowerManagerBatchProxy != null) {
-            mPowerManagerBatchProxy.startUidChanges();
+        if (mPowerManagerBatch != null) {
+            mPowerManagerBatch.startUidChanges();
         }
         for (int i = uidSize - 1; i >= 0; i--) {
             final UidRecord uidRec = mProcessList.mActiveUids.valueAt(i);
@@ -16377,8 +16375,8 @@ public class ActivityManagerService extends IActivityManager.Stub
                 }
             }
         }
-        if (mPowerManagerBatchProxy != null) {
-            mPowerManagerBatchProxy.finishUidChanges();
+        if (mPowerManagerBatch != null) {
+            mPowerManagerBatch.finishUidChanges();
         }
 
         // Also check if there are any apps in cached and background restricted mode,
@@ -20387,8 +20385,8 @@ public class ActivityManagerService extends IActivityManager.Stub
 
         @Override
         public void onUpdateUidsStarted() {
-            if (mPowerManagerBatchProxy != null) {
-                mPowerManagerBatchProxy.startUidChanges();
+            if (mPowerManagerBatch != null) {
+                mPowerManagerBatch.startUidChanges();
             }
         }
 
@@ -20399,8 +20397,8 @@ public class ActivityManagerService extends IActivityManager.Stub
                 mInternal.deletePendingTopUid(activeUids.valueAt(i).getUid(), nowElapsed);
             }
 
-            if (mPowerManagerBatchProxy != null) {
-                mPowerManagerBatchProxy.finishUidChanges();
+            if (mPowerManagerBatch != null) {
+                mPowerManagerBatch.finishUidChanges();
             }
 
             // If we have any new uids that became idle this time, we need to make sure

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.server.am;
+package com.android.server.power;
 
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
@@ -30,6 +30,8 @@ import android.platform.test.flag.junit.SetFlagsRule;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
+
+import com.android.server.am.Flags;
 
 import org.junit.Before;
 import org.junit.Rule;
