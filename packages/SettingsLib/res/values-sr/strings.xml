@@ -293,10 +293,8 @@
     <string name="adb_wireless_verifying_qrcode_text" msgid="6123192424916029207">"Упарује се уређај…"</string>
     <string name="adb_qrcode_pairing_device_failed_msg" msgid="6936292092592914132">"Упаривање уређаја није успело. QR кôд је погрешан или уређај није повезан са истом мрежом."</string>
     <string name="adb_wireless_ip_addr_preference_title" msgid="8335132107715311730">"IP адреса и порт"</string>
-    <!-- no translation found for adb_wireless_unavailable_not_allowed (83310404140556806) -->
-    <skip />
-    <!-- no translation found for adb_wireless_unavailable_disconnected (8819105186435736128) -->
-    <skip />
+    <string name="adb_wireless_unavailable_not_allowed" msgid="83310404140556806">"Недоступно (није дозвољена)"</string>
+    <string name="adb_wireless_unavailable_disconnected" msgid="8819105186435736128">"Недоступно (веза са WiFi мрежом је прекинута)"</string>
     <string name="adb_wireless_qrcode_pairing_title" msgid="1906409667944674707">"Скенирај QR кôд"</string>
     <string name="adb_wireless_qrcode_pairing_description" msgid="6014121407143607851">"Упарите уређај помоћу Wi‑Fi мреже тако што ћете скенирати QR кôд"</string>
     <string name="adb_wireless_no_network_msg" msgid="2365795244718494658">"Повежите се на WiFi мрежу"</string>

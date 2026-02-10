@@ -268,7 +268,7 @@
     <string name="apn_settings_not_available" msgid="1147111671403342300">"Энэ хэрэглэгчийн хувьд Хандалтын цэгийн нэрийн тохиргоог ашиглах боломжгүй"</string>
     <string name="enable_adb" msgid="8072776357237289039">"USB дебаг"</string>
     <string name="enable_adb_summary" msgid="3711526030096574316">"USB холбогдсон үеийн согог засах горим"</string>
-    <string name="clear_adb_keys" msgid="2696065439790970581">"USB дебагийн зөвшөөрлийг цуцлах"</string>
+    <string name="clear_adb_keys" msgid="2696065439790970581">"ADB-н дебагийн зөвшөөрлийг цуцлах"</string>
     <string name="enable_adb_wireless" msgid="6973226350963971018">"Wireless debugging"</string>
     <string name="enable_adb_wireless_summary" msgid="7344391423657093011">"Wi-Fi холбогдсон үед дебаг хийх горим"</string>
     <string name="adb_wireless_error" msgid="721958772149779856">"Алдаа"</string>
@@ -293,10 +293,8 @@
     <string name="adb_wireless_verifying_qrcode_text" msgid="6123192424916029207">"Төхөөрөмжийг хослуулж байна…"</string>
     <string name="adb_qrcode_pairing_device_failed_msg" msgid="6936292092592914132">"Төхөөрөмжийг хослуулж чадсангүй. QR код буруу эсвэл төхөөрөмжийг ижил сүлжээнд холбоогүй байна."</string>
     <string name="adb_wireless_ip_addr_preference_title" msgid="8335132107715311730">"IP хаяг ба порт"</string>
-    <!-- no translation found for adb_wireless_unavailable_not_allowed (83310404140556806) -->
-    <skip />
-    <!-- no translation found for adb_wireless_unavailable_disconnected (8819105186435736128) -->
-    <skip />
+    <string name="adb_wireless_unavailable_not_allowed" msgid="83310404140556806">"Боломжгүй (зөвшөөрөөгүй)"</string>
+    <string name="adb_wireless_unavailable_disconnected" msgid="8819105186435736128">"Боломжгүй (Wi‑Fi салгасан)"</string>
     <string name="adb_wireless_qrcode_pairing_title" msgid="1906409667944674707">"QR кодыг скан хийх"</string>
     <string name="adb_wireless_qrcode_pairing_description" msgid="6014121407143607851">"QR кодыг скан хийж Wi-Fi-р төхөөрөмжийг хослуулна уу"</string>
     <string name="adb_wireless_no_network_msg" msgid="2365795244718494658">"Wi-Fi сүлжээнд холбогдоно уу"</string>
@@ -370,7 +368,7 @@
     <string name="adb_warning_message" msgid="8145270656419669221">"USB дебаг нь зөвхөн хөгжүүлэлтийн зорилготой. Үүнийг өөрийн компьютер болон төхөөрөмжийн хооронд өгөгдөл хуулах, өөрийн төхөөрөмж дээр мэдэгдэлгүйгээр аппликейшн суулгах, лог датаг унших зэрэгт ашиглаж болно."</string>
     <string name="adbwifi_warning_title" msgid="727104571653031865">"Wireless debugging-г зөвшөөрөх үү?"</string>
     <string name="adbwifi_warning_message" msgid="8005936574322702388">"Wireless debugging нь зөвхөн хөгжүүлэлтийн зориулалттай. Үүнийг компьютер болон төхөөрөмж хооронд өгөгдөл хуулах, төхөөрөмждөө мэдэгдэлгүйгээр аппууд суулгах болон лог өгөгдлийг унших зэрэгт ашиглана уу."</string>
-    <string name="adb_keys_warning_message" msgid="7827514623080777814">"Таны өмнө нь зөвшөөрөл өгсөн бүх компьютерээс USB дебаг хандалтыг нь хураах уу?"</string>
+    <string name="adb_keys_warning_message" msgid="7827514623080777814">"Таны өмнө нь зөвшөөрөл өгсөн бүх компьютер, сүлжээнээс adb дебагт хандах эрхийг цуцлах уу?"</string>
     <string name="dev_settings_warning_title" msgid="8251234890169074553">"Хөгжлийн тохиргоог зөвшөөрөх үү?"</string>
     <string name="dev_settings_warning_message" msgid="37741686486073668">"Эдгээр тохиргоо нь зөвхөн хөгжүүлэлтэд ашиглах зорилготой. Эдгээр нь таны төхөөрөмж буюу түүн дээрх аппликейшнүүдийг эвдрэх, буруу ажиллах шалтгаан нь болж болно."</string>
     <string name="verify_apps_over_usb_title" msgid="6031809675604442636">"Аппыг USB-р баталгаажуулах"</string>

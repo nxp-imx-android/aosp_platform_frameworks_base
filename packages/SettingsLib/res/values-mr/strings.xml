@@ -268,7 +268,7 @@
     <string name="apn_settings_not_available" msgid="1147111671403342300">"या वापरकर्त्यासाठी अ‍ॅक्सेस बिंदू नाव सेटिंग्ज उपलब्ध नाहीत"</string>
     <string name="enable_adb" msgid="8072776357237289039">"USB डीबग करणे"</string>
     <string name="enable_adb_summary" msgid="3711526030096574316">"USB कनेक्ट केलेले असताना डीबग मोड"</string>
-    <string name="clear_adb_keys" msgid="2696065439790970581">"USB डीबग करणारी ऑथोरायझेशन मागे घ्या"</string>
+    <string name="clear_adb_keys" msgid="2696065439790970581">"adb डीबगिंगची ऑथोरायझेशन मागे घ्या"</string>
     <string name="enable_adb_wireless" msgid="6973226350963971018">"वायरलेस डीबगिंग"</string>
     <string name="enable_adb_wireless_summary" msgid="7344391423657093011">"वाय-फाय कनेक्ट केलेले असताना डीबग मोड"</string>
     <string name="adb_wireless_error" msgid="721958772149779856">"एरर"</string>
@@ -293,10 +293,8 @@
     <string name="adb_wireless_verifying_qrcode_text" msgid="6123192424916029207">"डिव्हाइस पेअर करत आहे…"</string>
     <string name="adb_qrcode_pairing_device_failed_msg" msgid="6936292092592914132">"डिव्हाइस पेअर करता आले नाही. QR कोड चुकीचा होता किंवा डिव्हाइस समान नेटवर्कशी कनेक्ट केलेले नाही."</string>
     <string name="adb_wireless_ip_addr_preference_title" msgid="8335132107715311730">"आयपी अ‍ॅड्रेस आणि पोर्ट"</string>
-    <!-- no translation found for adb_wireless_unavailable_not_allowed (83310404140556806) -->
-    <skip />
-    <!-- no translation found for adb_wireless_unavailable_disconnected (8819105186435736128) -->
-    <skip />
+    <string name="adb_wireless_unavailable_not_allowed" msgid="83310404140556806">"उपलब्ध नाही (अनुमती नाही)"</string>
+    <string name="adb_wireless_unavailable_disconnected" msgid="8819105186435736128">"उपलब्ध नाही (वाय-फाय डिस्कनेक्ट केले आहे)"</string>
     <string name="adb_wireless_qrcode_pairing_title" msgid="1906409667944674707">"QR कोड स्कॅन करा"</string>
     <string name="adb_wireless_qrcode_pairing_description" msgid="6014121407143607851">"QR कोड स्कॅन करून वाय-फाय वरून डिव्हाइस पेअर करा"</string>
     <string name="adb_wireless_no_network_msg" msgid="2365795244718494658">"कृपया एका वाय-फाय नेटवर्कशी कनेक्ट करा"</string>
@@ -370,7 +368,7 @@
     <string name="adb_warning_message" msgid="8145270656419669221">"USB डीबग करण्याचा हेतू फक्त विकास उद्देशांसाठी आहे. याचा वापर तुमचा कॉंप्युटर आणि तुमचे डिव्हाइस यांच्या दरम्यान डेटा कॉपी करण्यासाठी करा, सूचनेशिवाय तुमच्या डिव्हाइस वर अ‍ॅप्स इंस्टॉल करा आणि लॉग डेटा वाचा."</string>
     <string name="adbwifi_warning_title" msgid="727104571653031865">"वायरलेस डीबगिंग करण्याची अनुमती द्यायची आहे का?"</string>
     <string name="adbwifi_warning_message" msgid="8005936574322702388">"वायरलेस डीबगिंग करण्याचा हेतू फक्त विकास उद्देशांसाठी आहे. याचा वापर तुमचा कॉंप्युटर आणि तुमचे डिव्हाइस यांच्या दरम्यान डेटा कॉपी करण्यासाठी करा, सूचनेशिवाय तुमच्या डिव्हाइसवर अ‍ॅप्स इंस्टॉल करा आणि लॉग डेटा वाचा."</string>
-    <string name="adb_keys_warning_message" msgid="7827514623080777814">"तुम्ही पूर्वी ऑथोराइझ केलेल्या सर्व संगणकांवरुन USB डीबग करण्यासाठी अ‍ॅक्सेस रीव्होक करायचा?"</string>
+    <string name="adb_keys_warning_message" msgid="7827514623080777814">"तुम्ही यापूर्वी ऑथोराइझ केलेल्या सर्व काँप्युटर आणि नेटवर्क यांवरून adb डीबगिंगचा अ‍ॅक्सेस मागे घ्यायचा आहे का?"</string>
     <string name="dev_settings_warning_title" msgid="8251234890169074553">"विकास सेटिंग्जला अनुमती द्यायची?"</string>
     <string name="dev_settings_warning_message" msgid="37741686486073668">"या सेटिंग्जचा हेतू फक्त विकास वापरासाठी आहे. त्यामुळे तुमचे डिव्हाइस आणि त्यावरील ॲप्लिकेशन ब्रेक होऊ शकतात किंवा नेहमीपेक्षा वेगळे वर्तन करू शकतात."</string>
     <string name="verify_apps_over_usb_title" msgid="6031809675604442636">"USB वर अ‍ॅप्स पडताळून पहा"</string>
