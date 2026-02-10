@@ -276,6 +276,7 @@ filegroup {
         "tests/src/**/systemui/statusbar/KeyboardShortcutsReceiverTest.java",
         "tests/src/**/systemui/media/controls/domain/pipeline/MediaDataProcessorTest.kt",
         "tests/src/**/systemui/media/controls/domain/pipeline/LegacyMediaDataManagerImplTest.kt",
+        "tests/src/**/systemui/media/dialog/MediaOutputDialogDelegateTest.java",
         "tests/src/**/systemui/temporarydisplay/chipbar/SwipeChipbarAwayGestureHandlerTest.kt",
         "tests/src/**/systemui/qs/tiles/HotspotTileTest.java",
         "tests/src/**/systemui/qs/tiles/dialog/InternetDialogDelegateLegacyTest.java",

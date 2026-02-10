@@ -16,31 +16,27 @@
 
 package com.android.systemui.media.dialog
 
-import android.content.Context
 import android.media.session.MediaSession
 import android.os.UserHandle
 import android.view.View
 import com.android.internal.jank.InteractionJankMonitor
-import com.android.internal.logging.UiEventLogger
 import com.android.systemui.animation.DialogCuj
 import com.android.systemui.animation.DialogTransitionAnimator
-import com.android.systemui.broadcast.BroadcastSender
 import javax.inject.Inject
 
 /** Manager to create and show a [MediaOutputDialogDelegate]. */
 open class MediaOutputDialogManager
 @Inject
 constructor(
-    private val context: Context,
-    private val broadcastSender: BroadcastSender,
-    private val uiEventLogger: UiEventLogger,
     private val dialogTransitionAnimator: DialogTransitionAnimator,
     private val mediaSwitchingControllerFactory: MediaSwitchingController.Factory,
+    private val mediaOutputDialogDelegateFactory: MediaOutputDialogDelegate.Factory,
 ) {
     companion object {
         const val INTERACTION_JANK_TAG = "media_output"
-        var mediaOutputDialogDelegate: MediaOutputDialogDelegate? = null
     }
+
+    var mediaOutputDialogDelegate: MediaOutputDialogDelegate? = null
 
     /** Creates a [MediaOutputDialogDelegate] for the given package. */
     // TODO: b/321969740 - Make the userHandle non-optional, and place the parameter next to the
@@ -142,29 +138,26 @@ constructor(
                 mediaSwitchingType,
             )
 
-        val mediaOutputDialogDelegate =
-            MediaOutputDialogDelegate(
-                context,
+        val delegate =
+            mediaOutputDialogDelegateFactory.create(
                 aboveStatusBar,
-                broadcastSender,
                 controller,
-                dialogTransitionAnimator,
-                uiEventLogger,
                 includePlaybackAndAppMetadata,
                 onDialogEventListener,
                 useSystemColors,
             )
+        mediaOutputDialogDelegate = delegate
+        val dialog = delegate.createDialog()
 
         // Show the dialog.
         if (dialogTransitionAnimatorController != null) {
-            dialogTransitionAnimator.show(mediaOutputDialogDelegate,
-                dialogTransitionAnimatorController)
+            dialogTransitionAnimator.show(dialog, dialogTransitionAnimatorController)
         } else {
-            mediaOutputDialogDelegate.show()
+            dialog.show()
         }
     }
 
-    /** dismiss [MediaOutputDialogDelegate] if exist. */
+    /** dismiss [MediaOutputDialogDelegate] if it exists. */
     open fun dismiss() {
         mediaOutputDialogDelegate?.dismiss()
         mediaOutputDialogDelegate = null

@@ -17,7 +17,6 @@ package com.android.systemui.media.dialog
 
 import android.app.Dialog
 import android.app.WallpaperColors
-import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.res.ColorStateList
 import android.content.res.Configuration
@@ -25,12 +24,10 @@ import android.graphics.drawable.Icon
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.Window
 import android.view.WindowInsets
 import android.view.WindowManager
 import android.widget.Button
@@ -43,37 +40,38 @@ import androidx.recyclerview.widget.RecyclerView
 import com.android.internal.logging.UiEvent
 import com.android.internal.logging.UiEventLogger
 import com.android.media.flags.Flags.enableMediaOutputSwitcherEntryPointTheming
-import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.broadcast.BroadcastSender
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.google.android.material.button.MaterialButton
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 
 /** The Output Switcher dialog */
-class MediaOutputDialogDelegate(
-    context: Context,
-    aboveStatusBar: Boolean,
-    private val mBroadcastSender: BroadcastSender,
-    private val mMediaSwitchingController: MediaSwitchingController,
-    private val mDialogTransitionAnimator: DialogTransitionAnimator,
-    private val mUiEventLogger: UiEventLogger,
+class MediaOutputDialogDelegate
+@AssistedInject
+constructor(
+    @Assisted(ABOVE_STATUS_BAR) private val aboveStatusBar: Boolean,
+    @Assisted private val mMediaSwitchingController: MediaSwitchingController,
     /**
      * Signals whether the dialog should NOT show app-related metadata. A metadata-less dialog hides
      * the title, subtitle, and app icon in the header.
      */
+    @Assisted(INCLUDE_PLAYBACK_AND_APP_METADATA)
     private val mIncludePlaybackAndAppMetadata: Boolean,
-    private val mOnDialogEventListener: OnDialogEventListener?,
-    private val mUseSystemColors: Boolean = false,
-) :
-    SystemUIDialog(context, R.style.Theme_SystemUI_Dialog_Media),
-    MediaSwitchingController.Callback,
-    Window.Callback {
+    @Assisted private val mOnDialogEventListener: OnDialogEventListener?,
+    @Assisted(USE_SYSTEM_COLORS) private val mUseSystemColors: Boolean = false,
+    private val context: Context,
+    private val mBroadcastSender: BroadcastSender,
+    private val mUiEventLogger: UiEventLogger,
+    private val systemUIDialogFactory: SystemUIDialog.Factory,
+) : SystemUIDialog.Delegate, MediaSwitchingController.Callback {
 
-    // Save the context that is wrapped with our theme.
-    private val mContext: Context = getContext()
+    private lateinit var mContext: Context
 
     private val mMainThreadHandler: Handler = Handler(Looper.getMainLooper())
-    private val mLayoutManager: LinearLayoutManager = LayoutManagerWrapper(mContext)
+    private lateinit var mLayoutManager: LinearLayoutManager
 
     @VisibleForTesting lateinit var mDialogView: View
     private lateinit var mHeaderTitle: TextView
@@ -93,6 +91,7 @@ class MediaOutputDialogDelegate(
     private lateinit var mWarningSection: ViewGroup
     private lateinit var mWarningFixButton: Button
     private var mDismissing = false
+    private var currentDialog: SystemUIDialog? = null
 
     @JvmField
     @VisibleForTesting
@@ -106,27 +105,33 @@ class MediaOutputDialogDelegate(
         }
     }
 
-    init {
+    override fun createDialog(): SystemUIDialog {
+        val dialog =
+            systemUIDialogFactory.create(this, context, R.style.Theme_SystemUI_Dialog_Media)
         if (!aboveStatusBar) {
-            window?.setType(WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY)
+            dialog.window?.setType(WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY)
         }
+        currentDialog = dialog
+        return dialog
     }
 
-    public override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
+    override fun onCreate(dialog: SystemUIDialog, savedInstanceState: Bundle?) {
+        mContext = dialog.context
         mDialogView = LayoutInflater.from(mContext).inflate(R.layout.media_output_dialog, null)
-        val lp = window?.attributes
+        val lp = dialog.window?.attributes
         lp?.gravity = Gravity.CENTER
         // Config insets to make sure the layout is above the navigation bar
         lp?.setFitInsetsTypes(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
         lp?.setFitInsetsSides(WindowInsets.Side.all())
         lp?.setFitInsetsIgnoringVisibility(true)
-        window?.setAttributes(lp)
-        window?.setContentView(mDialogView)
-        window?.setTitle(mContext.getString(R.string.media_output_dialog_accessibility_title))
-        window?.setType(WindowManager.LayoutParams.TYPE_STATUS_BAR_SUB_PANEL)
+        dialog.window?.setAttributes(lp)
+        dialog.window?.setContentView(mDialogView)
+        dialog.window?.setTitle(
+            mContext.getString(R.string.media_output_dialog_accessibility_title)
+        )
+        dialog.window?.setType(WindowManager.LayoutParams.TYPE_STATUS_BAR_SUB_PANEL)
 
+        mLayoutManager = LayoutManagerWrapper(mContext)
         mHeaderTitle = mDialogView.requireViewById(R.id.header_title)
         mHeaderSubtitle = mDialogView.requireViewById(R.id.header_subtitle)
         mHeaderIcon = mDialogView.requireViewById(R.id.header_icon)
@@ -155,7 +160,7 @@ class MediaOutputDialogDelegate(
         mDevicesRecyclerView.setAdapter(mAdapter)
         mDevicesRecyclerView.setHasFixedSize(false)
         // Init bottom buttons
-        mDoneButton.setOnClickListener { dismiss() }
+        mDoneButton.setOnClickListener { dialog.dismiss() }
         mStopButton.setOnClickListener { onStopButtonClick() }
         if (mMediaSwitchingController.getAppLaunchIntent() != null) {
             // For a11y purposes only add listener if a section is clickable.
@@ -182,11 +187,10 @@ class MediaOutputDialogDelegate(
 
         mUiEventLogger.log(MediaOutputEvent.MEDIA_OUTPUT_DIALOG_SHOW)
 
-        mOnDialogEventListener?.onCreate(this)
+        mOnDialogEventListener?.onCreate(dialog)
     }
 
-    override fun onConfigurationChanged(configuration: Configuration) {
-        super.onConfigurationChanged(configuration)
+    override fun onConfigurationChanged(dialog: SystemUIDialog, configuration: Configuration) {
         mMainThreadHandler.post {
             updateAppResourceIcon()
             mMediaMetadataSectionLayout.visibility =
@@ -194,22 +198,26 @@ class MediaOutputDialogDelegate(
         }
     }
 
-    override fun dismiss() {
+    override fun beforeDismiss(dialog: SystemUIDialog) {
         // TODO(287191450): remove this once expensive binder calls are removed from refresh().
         // Due to these binder calls on the UI thread, calling refresh() during dismissal causes
         // significant frame drops for the dismissal animation. Since the dialog is going away
         // anyway, we use this state to turn refresh() into a no-op.
         mDismissing = true
-        super.dismiss()
     }
 
-    public override fun start() {
+    fun dismiss() {
+        currentDialog?.dismiss()
+    }
+
+    override fun onStart(dialog: SystemUIDialog) {
         mMediaSwitchingController.start(this)
     }
 
-    public override fun stop() {
+    override fun onStop(dialog: SystemUIDialog) {
         mMediaSwitchingController.stop()
-        mOnDialogEventListener?.onStop(this)
+        mOnDialogEventListener?.onStop(dialog)
+        currentDialog = null
     }
 
     @VisibleForTesting
@@ -416,7 +424,7 @@ class MediaOutputDialogDelegate(
 
     private fun refreshWarningSection() {
         if (mMediaSwitchingController.getMissingPermissionsResolveIntent() == null) {
-            mWarningSection.visibility = View.GONE;
+            mWarningSection.visibility = View.GONE
             return
         }
         mWarningSection.visibility = View.VISIBLE
@@ -428,8 +436,7 @@ class MediaOutputDialogDelegate(
     @VisibleForTesting
     fun onStopButtonClick() {
         mMediaSwitchingController.releaseSession()
-        mDialogTransitionAnimator.disableAllCurrentDialogsExitAnimations()
-        dismiss()
+        currentDialog?.dismissWithoutAnimation()
     }
 
     override fun onMediaChanged() {
@@ -437,8 +444,8 @@ class MediaOutputDialogDelegate(
     }
 
     override fun onMediaStoppedOrPaused() {
-        if (isShowing) {
-            dismiss()
+        if (currentDialog?.isShowing == true) {
+            currentDialog?.dismiss()
         }
     }
 
@@ -455,7 +462,7 @@ class MediaOutputDialogDelegate(
         // dismissal is unstable on desktop.
         // TODO(b/457526674): Remove the dismiss() call once the issue with closeSystemDialogs() is
         // fixed on desktop.
-        dismiss()
+        currentDialog?.dismiss()
         mBroadcastSender.closeSystemDialogs()
     }
 
@@ -480,8 +487,23 @@ class MediaOutputDialogDelegate(
         fun onStop(dialog: Dialog)
     }
 
+    @AssistedFactory
+    interface Factory {
+
+        fun create(
+            @Assisted(ABOVE_STATUS_BAR) aboveStatusBar: Boolean,
+            mMediaSwitchingController: MediaSwitchingController,
+            @Assisted(INCLUDE_PLAYBACK_AND_APP_METADATA) includePlaybackAndAppMetadata: Boolean,
+            onDialogEventListener: OnDialogEventListener?,
+            @Assisted(USE_SYSTEM_COLORS) useSystemColors: Boolean,
+        ): MediaOutputDialogDelegate
+    }
+
     companion object {
         private const val TAG = "MediaOutputDialog"
         private const val SMALL_SCREEN_HEIGHT_DP: Int = 400
+        private const val ABOVE_STATUS_BAR = "above_status_bar"
+        private const val INCLUDE_PLAYBACK_AND_APP_METADATA = "include_playback_and_app_metadata"
+        private const val USE_SYSTEM_COLORS = "use_system_colors"
     }
 }
