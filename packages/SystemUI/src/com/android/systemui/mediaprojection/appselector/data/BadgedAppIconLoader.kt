@@ -45,21 +45,12 @@ constructor(
                 val icon =
                     basicAppIconLoader.loadIcon(userId, componentName) ?: return@withContext null
                 val userHandler = UserHandle.of(userId)
-                val iconType = getIconType(userType)
                 val options =
                     BaseIconFactory.IconOptions().apply {
-                        setUser(UserIconInfo(userHandler, iconType))
+                        setUser(UserIconInfo(userHandler, userType))
                     }
                 val badgedIcon = iconFactory.createBadgedIconBitmap(icon, options)
                 badgedIcon.newIcon(context)
             }
-        }
-
-    private fun getIconType(userType: UserType): Int =
-        when (userType) {
-            UserType.CLONED -> UserIconInfo.TYPE_CLONED
-            UserType.WORK -> UserIconInfo.TYPE_WORK
-            UserType.PRIVATE -> UserIconInfo.TYPE_PRIVATE
-            UserType.MAIN -> UserIconInfo.TYPE_MAIN
         }
 }

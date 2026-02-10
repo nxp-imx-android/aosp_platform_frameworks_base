@@ -68,6 +68,7 @@ import com.android.launcher3.util.UserIconInfo;
 import com.android.settingslib.drawable.UserIconDrawable;
 import com.android.settingslib.fuelgauge.BatteryStatus;
 import com.android.settingslib.fuelgauge.BatteryUtils;
+import com.android.users.UserType;
 
 import java.util.List;
 
@@ -703,17 +704,17 @@ public class Utils {
     @NonNull
     public static UserIconInfo fetchUserIconInfo(@NonNull Context context,
             @NonNull UserHandle user) {
-        int userType = UserIconInfo.TYPE_MAIN;
+        UserType userType = UserType.MAIN;
         try {
             UserInfo ui =
                     context.getSystemService(UserManager.class).getUserInfo(user.getIdentifier());
             if (ui != null) {
                 if (ui.isCloneProfile()) {
-                    userType = UserIconInfo.TYPE_CLONED;
+                    userType = UserType.CLONED;
                 } else if (ui.isManagedProfile()) {
-                    userType = UserIconInfo.TYPE_WORK;
+                    userType = UserType.WORK;
                 } else if (ui.isPrivateProfile()) {
-                    userType = UserIconInfo.TYPE_PRIVATE;
+                    userType = UserType.PRIVATE;
                 }
             }
         } catch (Exception e) {

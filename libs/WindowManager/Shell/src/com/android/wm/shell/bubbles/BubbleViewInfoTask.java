@@ -377,7 +377,7 @@ public class BubbleViewInfoTask {
         BubbleUserInfo bubbleUserInfo = userResolver.resolve(b.getUser().getIdentifier());
         info.userType = bubbleUserInfo.getUserType();
         UserIconInfo userIconInfo =
-                new UserIconInfo(b.getUser(), bubbleUserInfo.getUserIconInfoType());
+                new UserIconInfo(b.getUser(), bubbleUserInfo.getUserType());
         info.bubbleIcon = getBubbleIcon(info, c, b, iconFactory, appIcon, userIconInfo);
 
         BitmapInfo badgeBitmapInfo = iconFactory.getBadgeBitmap(

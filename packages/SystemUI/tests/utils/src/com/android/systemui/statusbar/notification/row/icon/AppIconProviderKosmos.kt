@@ -29,6 +29,7 @@ import com.android.launcher3.util.UserIconInfo
 import com.android.systemui.dump.dumpManager
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.util.time.fakeSystemClock
+import com.android.users.UserType
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
@@ -75,7 +76,7 @@ fun Kosmos.setupFakeAppIcons(context: Context, fakePackages: List<FakeNotificati
                 userHandle: UserHandle,
                 allowProfileBadge: Boolean,
             ): UserIconInfo {
-                val userType = fakeUserType.takeIf { allowProfileBadge } ?: UserIconInfo.TYPE_MAIN
+                val userType = fakeUserType.takeIf { allowProfileBadge } ?: UserType.MAIN
                 return UserIconInfo(user = userHandle, type = userType)
             }
         }

@@ -44,6 +44,7 @@ import com.android.systemui.util.asIndenting
 import com.android.systemui.util.dpToPx
 import com.android.systemui.util.printSection
 import com.android.systemui.util.time.SystemClock
+import com.android.users.UserType
 import java.io.PrintWriter
 import javax.inject.Inject
 import kotlin.math.ceil
@@ -279,7 +280,7 @@ constructor(
             Utils.fetchUserIconInfo(sysuiContext, userHandle)
         } else {
             // For a main user the IconFactory does not add a badge
-            UserIconInfo(/* user= */ userHandle, /* type= */ UserIconInfo.TYPE_MAIN)
+            UserIconInfo(/* user= */ userHandle, /* type= */ UserType.MAIN)
         }
 
     override fun purgeCache(wantedPackages: Collection<String>) {
