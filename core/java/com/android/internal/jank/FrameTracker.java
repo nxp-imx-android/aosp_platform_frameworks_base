@@ -526,6 +526,7 @@ public class FrameTracker implements SurfaceControl.OnJankDataListener {
         int successiveMissedFramesCount = 0;
         @RefreshRate int refreshRate = UNKNOWN_REFRESH_RATE;
         long totalAnimationTime = 0;
+        float totalWeightedJank = 0;
         float appWeightedJank = 0;
         float sfWeightedJank = 0;
 
@@ -563,6 +564,7 @@ public class FrameTracker implements SurfaceControl.OnJankDataListener {
             if ((jankType & (JANK_APPLICATION | JANK_COMPOSER)) != 0) {
                 totalAnimationTime += info.frameInterval + Math.max(info.presentDelay, 0);
                 float weightedJank = computeWeightedJank(info);
+                totalWeightedJank += weightedJank;
                 if ((jankType & JANK_APPLICATION) != 0) {
                     appWeightedJank += weightedJank;
                 }
@@ -618,6 +620,7 @@ public class FrameTracker implements SurfaceControl.OnJankDataListener {
                     missedAppFramesCount,
                     maxSuccessiveMissedFramesCount,
                     totalAnimationTime,
+                    totalWeightedJank,
                     sfWeightedJank,
                     appWeightedJank);
         }
@@ -751,11 +754,12 @@ public class FrameTracker implements SurfaceControl.OnJankDataListener {
         public void write(int code, int displayId, @RefreshRate int refreshRate,
                 int cuj, long totalFrames, long missedFrames, long maxFrameTime,
                 long missedSfFrames, long missedAppFrames, long maxSuccessiveMissedFrames,
-                long totalAnimationTime, float sfWeightedJank, float appWeightedJank) {
+                long totalAnimationTime, float weightedJank, float sfWeightedJank,
+                float appWeightedJank) {
             FrameworkStatsLog.write(code, cuj, totalFrames, missedFrames, maxFrameTime,
                     missedSfFrames, missedAppFrames, maxSuccessiveMissedFrames,
                     mDisplayResolutionTracker.getResolution(displayId), refreshRate,
-                    totalAnimationTime, sfWeightedJank, appWeightedJank);
+                    totalAnimationTime, sfWeightedJank, appWeightedJank, weightedJank);
         }
     }
 
