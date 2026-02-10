@@ -19,9 +19,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:background="@drawable/bottomsheet_background"
+    android:background="@drawable/bottomsheet_expressive_background"
     android:layout_ignoreOffset="true"
-    android:fitsSystemWindows="true">
+    android:paddingTop="@dimen/dialog_padding_material">
 
     <ScrollView
         android:id="@+id/app_lock_edu_scrollview"
@@ -39,8 +39,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingStart="?android:attr/dialogPreferredPadding"
-            android:paddingEnd="?android:attr/dialogPreferredPadding"
-            android:paddingTop="0dp">
+            android:paddingEnd="?android:attr/dialogPreferredPadding">
 
             <ImageView
                 android:layout_width="@dimen/resolver_icon_size"
@@ -48,25 +47,25 @@
                 android:src="@drawable/ic_lock_bold"
                 android:layout_gravity="center_horizontal"
                 android:contentDescription="@null"
-                android:tint="@color/materialColorOnSurface"
-                android:layout_marginBottom="@dimen/action_bar_content_inset_material"/>
+                android:tint="@color/materialColorPrimary"
+                android:layout_marginBottom="@dimen/app_lock_margin"/>
 
             <TextView
                 android:id="@+id/app_lock_edu_dialog_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/app_lock_edu_dialog_enable_app_lock_title"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textStyle="bold"
+                android:textAppearance="@style/TextAppearance.DeviceDefault.AppLock.Title"
+                android:lineHeight="@dimen/app_lock_line_height_large"
                 android:gravity="center"
                 android:textColor="@color/materialColorOnSurface"
-                android:layout_marginBottom="@dimen/dialog_title_divider_material"/>
+                android:layout_marginBottom="@dimen/app_lock_margin"/>
 
             <TextView
                 android:id="@+id/app_lock_edu_dialog_desc"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textAppearance="@style/TextAppearance.DeviceDefault.AppLock.Body"
                 android:justificationMode="inter_word"
                 android:textColor="@color/materialColorOnSurfaceVariant"
                 android:layout_marginBottom="@dimen/dialog_padding_material"/>
@@ -75,22 +74,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/app_lock_edu_dialog_info_header"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textStyle="bold"
+                android:textAppearance="@style/TextAppearance.DeviceDefault.AppLock.InfoHeader"
                 android:textColor="@color/materialColorOnSurfaceVariant"
-                android:layout_marginBottom="@dimen/preference_breadcrumbs_padding_start_material"/>
+                android:layout_marginBottom="@dimen/app_lock_margin"/>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="@dimen/preference_breadcrumbs_padding_start_material">
+            <LinearLayout style="@style/AppLockInfoItemStyle">
 
                 <ImageView
                     android:layout_width="@dimen/app_lock_icon_size_small"
                     android:layout_height="@dimen/app_lock_icon_size_small"
-                    android:src="@drawable/ic_notification_block"
+                    android:src="@drawable/ic_notifications"
                     android:contentDescription="@null"
                     android:tint="@color/materialColorOnSurface"/>
 
@@ -98,22 +91,18 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/app_lock_edu_dialog_info_notifications"
-                    android:layout_marginStart="@dimen/preference_breadcrumbs_padding_start_material"
-                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:layout_marginStart="@dimen/app_lock_item_margin"
+                    android:textAppearance="@style/TextAppearance.DeviceDefault.AppLock.ItemText"
+                    android:lineHeight="@dimen/app_lock_line_height_small"
                     android:textColor="@color/materialColorOnSurface"/>
             </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="@dimen/preference_breadcrumbs_padding_start_material">
+            <LinearLayout style="@style/AppLockInfoItemStyle">
 
                 <ImageView
                     android:layout_height="@dimen/app_lock_icon_size_small"
                     android:layout_width="@dimen/app_lock_icon_size_small"
-                    android:src="@drawable/ic_apps"
+                    android:src="@drawable/ic_widgets"
                     android:contentDescription="@null"
                     android:tint="@color/materialColorOnSurface"/>
 
@@ -121,16 +110,13 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/app_lock_edu_dialog_info_widgets"
-                    android:layout_marginStart="@dimen/preference_breadcrumbs_padding_start_material"
-                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:layout_marginStart="@dimen/app_lock_item_margin"
+                    android:textAppearance="@style/TextAppearance.DeviceDefault.AppLock.ItemText"
+                    android:lineHeight="@dimen/app_lock_line_height_small"
                     android:textColor="@color/materialColorOnSurface"/>
             </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
+            <LinearLayout style="@style/AppLockInfoItemStyle"
                 android:layout_marginBottom="@dimen/dialog_padding_material">
 
                 <ImageView
@@ -143,8 +129,9 @@
                     android:id="@+id/app_lock_edu_dialog_info_ai_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/preference_breadcrumbs_padding_start_material"
-                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:layout_marginStart="@dimen/app_lock_item_margin"
+                    android:textAppearance="@style/TextAppearance.DeviceDefault.AppLock.ItemText"
+                    android:lineHeight="@dimen/app_lock_line_height_small"
                     android:textColor="@color/materialColorOnSurface"/>
             </LinearLayout>
         </LinearLayout>
@@ -154,8 +141,7 @@
         android:id="@+id/app_lock_edu_bottom_sheet_divider"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_marginTop="@dimen/app_lock_item_margin"
-        android:layout_marginBottom="@dimen/app_lock_item_margin"
+        android:layout_marginBottom="@dimen/app_lock_item_margin_small"
         android:background="?android:attr/listDivider" />
 
     <LinearLayout
@@ -163,7 +149,9 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:paddingStart="?android:attr/dialogPreferredPadding"
-        android:paddingEnd="?android:attr/dialogPreferredPadding">
+        android:paddingEnd="?android:attr/dialogPreferredPadding"
+        android:paddingTop="@dimen/app_lock_padding_extra_small"
+        android:paddingBottom="@dimen/navigation_bar_height">
 
         <Button
             android:id="@+id/app_lock_edu_dialog_btn_lock_app"
@@ -171,8 +159,12 @@
             android:background="@drawable/app_lock_btn_pill_background"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingTop="@dimen/app_lock_button_padding"
+            android:paddingBottom="@dimen/app_lock_button_padding"
             android:minHeight="@dimen/app_lock_edu_button_min_height"
-            android:layout_marginBottom="@dimen/button_padding_horizontal_material"
+            android:layout_marginBottom="@dimen/app_lock_margin"
+            android:elevation="0dp"
+            android:stateListAnimator="@null"
             android:text="@string/app_lock_edu_dialog_button_lock"
             android:textColor="@color/materialColorOnPrimary"
             android:textAllCaps="false"/>
@@ -182,9 +174,11 @@
             style="?android:attr/borderlessButtonStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingTop="@dimen/app_lock_button_padding"
+            android:paddingBottom="@dimen/app_lock_button_padding"
             android:minHeight="@dimen/app_lock_edu_button_min_height"
             android:text="@android:string/cancel"
-            android:textColor="@color/materialColorOnSurfaceVariant"
+            android:textColor="@color/materialColorPrimary"
             android:textAllCaps="false"/>
     </LinearLayout>
 </LinearLayout>
