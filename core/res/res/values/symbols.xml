@@ -6275,6 +6275,9 @@
   <!-- List of packages which should be exempt from desktop mode. -->
   <java-symbol type="array" name="config_desktopExemptPackages" />
 
+  <!-- List of packages which should be excluded from transparency based desktop exemptions. -->
+  <java-symbol type="array" name="config_desktopTransparentExemptionIgnoreList" />
+
   <!-- Frame rate compatibility value for Wallpaper -->
   <java-symbol type="integer" name="config_wallpaperFrameRateCompatibility" />
 
