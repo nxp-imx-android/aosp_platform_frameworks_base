@@ -247,5 +247,28 @@
     //   "name": "SystemUiRavenTests",
     //   "host": true
     // }
+  ],
+
+  // "ravenwood-presubmit-nonblocking" runs in presubmit, but is non-blocking.
+  //
+  // We hardcode "RavenwoodUiTest_exp" to always run it with exp-APIs enabled.
+  // We want to run it in presubmit as a quick check on startActivitySync(),
+  // but we still do not want to depend on exp-APIs in blocking presubmit, so
+  // so we use "-nonblocking" instead of "ravenwood-presubmit".
+  //
+  // We also run "RavenwoodUiTest_noexp" in the same suite too (even though
+  // we run it in "ravenwood-presubmit"), which allows us to quickly
+  // ensure when "RavenwoodUiTest_exp" is broken, it's because the exp-APIs
+  // are broken, or something else.
+  "ravenwood-presubmit-nonblocking": [
+// TODO(b/482443163) Enable this once the GCL is merged.
+//    {
+//      "name": "RavenwoodUiTest_exp",
+//      "host": true
+//    },
+    {
+      "name": "RavenwoodUiTest_noexp",
+      "host": true
+    }
   ]
 }
