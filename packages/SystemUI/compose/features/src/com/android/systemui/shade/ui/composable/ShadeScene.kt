@@ -89,6 +89,10 @@ import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.media.remedia.ui.compose.Media
 import com.android.systemui.media.remedia.ui.compose.MediaPresentationStyle
+import com.android.systemui.notifications.intelligence.rules.shared.NmContextualDisplayLaunch
+import com.android.systemui.notifications.intelligence.rules.ui.composable.NotificationRulesScreen
+import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRulesScreenViewModel
+import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRulesShadeStateViewModel
 import com.android.systemui.notifications.ui.composable.NestedScrollingNotificationPanel
 import com.android.systemui.notifications.ui.composable.ScrollingNotificationPanel
 import com.android.systemui.qs.composefragment.ui.GridAnchor
@@ -140,6 +144,10 @@ constructor(
     private val actionsViewModelFactory: ShadeUserActionsViewModel.Factory,
     private val contentViewModelFactory: ShadeSceneContentViewModel.Factory,
     private val notificationsPlaceholderViewModelFactory: NotificationsPlaceholderViewModel.Factory,
+    private val notificationRulesShadeStateViewModelFactory:
+        NotificationRulesShadeStateViewModel.Factory,
+    private val notificationRulesScreenViewModelFactory: NotificationRulesScreenViewModel.Factory,
+    private val notificationRulesScreen: NotificationRulesScreen,
     private val jankMonitor: InteractionJankMonitor,
 ) : ExclusiveActivatable(), Scene {
 
@@ -169,6 +177,15 @@ constructor(
             rememberViewModel("ShadeScene-notifPlaceholderViewModel") {
                 notificationsPlaceholderViewModelFactory.create(Scenes.Shade)
             }
+        val notificationRulesShadeStateViewModel =
+            if (NmContextualDisplayLaunch.isEnabled) {
+                rememberViewModel("ShadeScene-notifRulesShadeStateViewModel") {
+                    notificationRulesShadeStateViewModelFactory.create()
+                }
+            } else {
+                null
+            }
+
         val targetBlur by
             remember(layoutState) {
                 derivedStateOf { viewModel.calculateBlur(layoutState.transitionState) }
@@ -181,6 +198,9 @@ constructor(
             viewModel = viewModel,
             headerViewModel = headerViewModel,
             notificationsPlaceholderViewModel = notificationsPlaceholderViewModel,
+            notificationRulesShadeStateViewModel = notificationRulesShadeStateViewModel,
+            notificationRulesScreenViewModelFactory = notificationRulesScreenViewModelFactory,
+            notificationRulesScreen = notificationRulesScreen,
             jankMonitor = jankMonitor,
             modifier = modifier.blur(with(LocalDensity.current) { animatedBlurRadiusPx.toDp() }),
             shadeSession = shadeSession,
@@ -211,10 +231,29 @@ private fun ContentScope.ShadeScene(
     viewModel: ShadeSceneContentViewModel,
     headerViewModel: ShadeHeaderViewModel,
     notificationsPlaceholderViewModel: NotificationsPlaceholderViewModel,
+    notificationRulesShadeStateViewModel: NotificationRulesShadeStateViewModel?,
+    notificationRulesScreenViewModelFactory: NotificationRulesScreenViewModel.Factory,
+    notificationRulesScreen: NotificationRulesScreen,
     jankMonitor: InteractionJankMonitor,
     modifier: Modifier = Modifier,
     shadeSession: SaveableSession,
 ) {
+    if (notificationRulesShadeStateViewModel?.isShowing == true) {
+        Column {
+            CollapsedShadeHeader(
+                viewModel = headerViewModel,
+                isSplitShade = viewModel.shadeMode is ShadeMode.Split,
+            )
+            notificationRulesScreen.Content(
+                viewModelFactory = notificationRulesScreenViewModelFactory,
+                dismissRulesScreen = { notificationRulesShadeStateViewModel.setShowing(false) },
+                modifier = Modifier,
+            )
+        }
+
+        // TODO: b/478225883 - Reset `NotificationRulesViewModel.isShowing` when shade closes.
+        return
+    }
     if (viewModel.shadeMode is ShadeMode.Split) {
         SplitShade(
             tag = "ShadeScene",
@@ -222,6 +261,7 @@ private fun ContentScope.ShadeScene(
             viewModel = viewModel,
             headerViewModel = headerViewModel,
             notificationsPlaceholderViewModel = notificationsPlaceholderViewModel,
+            notificationRulesShadeStateViewModel = notificationRulesShadeStateViewModel,
             modifier = modifier,
             shadeSession = shadeSession,
             jankMonitor = jankMonitor,
@@ -235,6 +275,7 @@ private fun ContentScope.ShadeScene(
             viewModel = viewModel,
             headerViewModel = headerViewModel,
             notificationsPlaceholderViewModel = notificationsPlaceholderViewModel,
+            notificationRulesShadeStateViewModel = notificationRulesShadeStateViewModel,
             modifier = modifier,
             shadeSession = shadeSession,
             jankMonitor = jankMonitor,
@@ -249,6 +290,7 @@ private fun ContentScope.SingleShade(
     viewModel: ShadeSceneContentViewModel,
     headerViewModel: ShadeHeaderViewModel,
     notificationsPlaceholderViewModel: NotificationsPlaceholderViewModel,
+    notificationRulesShadeStateViewModel: NotificationRulesShadeStateViewModel?,
     jankMonitor: InteractionJankMonitor,
     modifier: Modifier = Modifier,
     shadeSession: SaveableSession,
@@ -404,6 +446,7 @@ private fun ContentScope.SingleShade(
                     shadeSession = shadeSession,
                     stackScrollView = notificationStackScrollView,
                     viewModel = notificationsPlaceholderViewModel,
+                    notificationRulesShadeStateViewModel = notificationRulesShadeStateViewModel,
                     shouldPunchHoleBehindScrim = true,
                     shouldContentFillMaxSize = true,
                     shouldScrimBackgroundFillMaxHeight = true,
@@ -471,6 +514,7 @@ private fun ContentScope.SplitShade(
     viewModel: ShadeSceneContentViewModel,
     headerViewModel: ShadeHeaderViewModel,
     notificationsPlaceholderViewModel: NotificationsPlaceholderViewModel,
+    notificationRulesShadeStateViewModel: NotificationRulesShadeStateViewModel?,
     modifier: Modifier = Modifier,
     shadeSession: SaveableSession,
     jankMonitor: InteractionJankMonitor,
@@ -632,6 +676,7 @@ private fun ContentScope.SplitShade(
                     shadeSession = shadeSession,
                     stackScrollView = notificationStackScrollView,
                     viewModel = notificationsPlaceholderViewModel,
+                    notificationRulesShadeStateViewModel = notificationRulesShadeStateViewModel,
                     jankMonitor = jankMonitor,
                     stackTopPadding = notificationStackPadding,
                     stackBottomPadding = { notificationStackPadding },

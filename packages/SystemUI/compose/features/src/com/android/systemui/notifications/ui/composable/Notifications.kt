@@ -35,11 +35,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imeAnimationTarget
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.overscroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.withoutVisualEffect
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -64,9 +69,10 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.Measurable
+import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.findRootCoordinates
-import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.layout.onSizeChanged
@@ -86,11 +92,9 @@ import androidx.compose.ui.util.lerp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentKey
 import com.android.compose.animation.scene.ContentScope
-import com.android.compose.animation.scene.ElementContentPicker
 import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.HeadsUpContentPicker
 import com.android.compose.animation.scene.SceneTransitionLayoutState
-import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.compose.gesture.effect.OffsetOverscrollEffect
 import com.android.compose.gesture.effect.rememberOffsetOverscrollEffect
 import com.android.compose.modifiers.onUnplaced
@@ -102,6 +106,8 @@ import com.android.compose.nestedscroll.ScrollController
 import com.android.internal.jank.Cuj.CUJ_NOTIFICATION_SHADE_SCROLL_FLING
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.systemui.common.ui.compose.windowinsets.LocalScreenCornerRadius
+import com.android.systemui.notifications.intelligence.rules.shared.NmContextualDisplayLaunch
+import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRulesShadeStateViewModel
 import com.android.systemui.notifications.ui.YSpace
 import com.android.systemui.res.R
 import com.android.systemui.scene.session.ui.composable.SaveableSession
@@ -209,6 +215,7 @@ fun ContentScope.ScrollingNotificationPanel(
     shadeSession: SaveableSession,
     stackScrollView: NotificationScrollView,
     viewModel: NotificationsPlaceholderViewModel,
+    notificationRulesShadeStateViewModel: NotificationRulesShadeStateViewModel?,
     jankMonitor: InteractionJankMonitor,
     shouldPunchHoleBehindScrim: Boolean,
     isTransparencyEnabled: Boolean,
@@ -267,6 +274,7 @@ fun ContentScope.ScrollingNotificationPanel(
         shadeSession = shadeSession,
         stackScrollView = stackScrollView,
         viewModel = viewModel,
+        notificationRulesShadeStateViewModel = notificationRulesShadeStateViewModel,
         modifier = modifier,
         shouldPunchHoleBehindScrim = shouldPunchHoleBehindScrim,
         isTransparencyEnabled = isTransparencyEnabled,
@@ -292,6 +300,7 @@ fun ContentScope.NestedScrollingNotificationPanel(
     shadeSession: SaveableSession,
     stackScrollView: NotificationScrollView,
     viewModel: NotificationsPlaceholderViewModel,
+    notificationRulesShadeStateViewModel: NotificationRulesShadeStateViewModel?,
     shouldPunchHoleBehindScrim: Boolean,
     isTransparencyEnabled: Boolean,
     stackTopPadding: Dp,
@@ -645,14 +654,34 @@ fun ContentScope.NestedScrollingNotificationPanel(
                         }
                     }
                 },
+                {
+                    // Entry point for the notifications rules page (UX not final)
+                    NotificationRulesEntryPoint(
+                        notificationRulesShadeStateViewModel = notificationRulesShadeStateViewModel,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                },
             ),
         measurePolicy = { measurables, constraints ->
-            check(measurables.size == 2)
+            check(measurables.size == 3)
             check(measurables[0].size == 1) { "background should have one composable" }
             check(measurables[1].size == 1) { "content should have one composable" }
+            if (NmContextualDisplayLaunch.isEnabled) {
+                check(measurables[2].size == 1) { "rules entry point should have one composable" }
+            } else {
+                check(measurables[2].isEmpty()) {
+                    "rules entry point should have NO composable because flag is disabled"
+                }
+            }
 
             val backgroundMeasurable = measurables[0][0]
             val contentMeasurable = measurables[1][0]
+            val rulesEntryPointMeasurable: Measurable? =
+                if (NmContextualDisplayLaunch.isEnabled) {
+                    measurables[2][0]
+                } else {
+                    null
+                }
 
             if (shouldScrimBackgroundFillMaxHeight) {
                 // Fill the entire available space with the content, and force the background to
@@ -664,6 +693,18 @@ fun ContentScope.NestedScrollingNotificationPanel(
                             height = constraints.maxHeight,
                         )
                     )
+                val rulesEntryPoint: Placeable? =
+                    if (NmContextualDisplayLaunch.isEnabled && rulesEntryPointMeasurable != null) {
+                        rulesEntryPointMeasurable.measure(
+                            Constraints.fixed(
+                                width = constraints.maxWidth,
+                                height = constraints.maxHeight,
+                            )
+                        )
+                    } else {
+                        null
+                    }
+
                 val background =
                     backgroundMeasurable.measure(
                         Constraints.fixed(
@@ -675,6 +716,7 @@ fun ContentScope.NestedScrollingNotificationPanel(
                 layout(width = content.width, height = content.height) {
                     content.place(IntOffset.Zero)
                     background.place(IntOffset.Zero)
+                    rulesEntryPoint?.place(IntOffset.Zero)
                 }
             } else {
                 // Make the background size match the content size.
@@ -684,15 +726,43 @@ fun ContentScope.NestedScrollingNotificationPanel(
 
                 val content = contentMeasurable.measure(constraints)
                 val backgroundConstraints = Constraints.fixed(content.width, content.height)
+                val rulesEntryPoint: Placeable? =
+                    if (NmContextualDisplayLaunch.isEnabled && rulesEntryPointMeasurable != null) {
+                        rulesEntryPointMeasurable.measure(backgroundConstraints)
+                    } else {
+                        null
+                    }
                 val background = backgroundMeasurable.measure(backgroundConstraints)
 
                 layout(width = content.width, height = content.height) {
                     background.place(IntOffset.Zero)
                     content.place(IntOffset.Zero)
+                    rulesEntryPoint?.place(IntOffset.Zero)
                 }
             }
         },
     )
+}
+
+/** Composable showing an entry point into the notification rules page. */
+@Composable
+private fun NotificationRulesEntryPoint(
+    notificationRulesShadeStateViewModel: NotificationRulesShadeStateViewModel?,
+    modifier: Modifier = Modifier,
+) {
+    if (!NmContextualDisplayLaunch.isEnabled || notificationRulesShadeStateViewModel == null) {
+        return
+    }
+    Box(modifier = modifier, contentAlignment = Alignment.BottomStart) {
+        Button(onClick = { notificationRulesShadeStateViewModel.setShowing(true) }) {
+            Icon(
+                imageVector = Icons.Filled.FilterList,
+                // TODO: b/478225883 - Translate the content description.
+                contentDescription = "Notification rules",
+                modifier = Modifier.size(18.dp),
+            )
+        }
+    }
 }
 
 private suspend fun scrollStackWithNestedScroll(

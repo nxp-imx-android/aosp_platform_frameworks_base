@@ -40,11 +40,11 @@ import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-class ContactsRepositoryTest : SysuiTestCase() {
+class ContactsRepositoryImplTest : SysuiTestCase() {
     private val kosmos = testKosmosNew()
 
     // TODO: b/478225883 - Put ContactsRepository in a test fixture.
-    private val Kosmos.underTest by Kosmos.Fixture { ContactsRepository(kosmos.testDispatcher) }
+    private val Kosmos.underTest by Kosmos.Fixture { ContactsRepositoryImpl(kosmos.testDispatcher) }
 
     @Test
     fun fetchContacts_nullCursor_returnsEmptyList() =

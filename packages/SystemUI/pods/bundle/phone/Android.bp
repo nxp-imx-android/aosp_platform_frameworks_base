@@ -20,8 +20,8 @@ java_library {
 
     static_libs: [
         "com.android.systemui.brightness_dagger",
-        // TODO: b/478225883 - Create a dagger module for notification rules.
-        "com.android.systemui.notifications.intelligence.rules.ui_main",
+        "com.android.systemui.notifications.intelligence.rules_dagger",
+        "com.android.systemui.notifications.intelligence.rules.ui_dagger",
     ],
 
     visibility: [

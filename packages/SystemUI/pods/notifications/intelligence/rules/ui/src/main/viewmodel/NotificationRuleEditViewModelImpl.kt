@@ -25,19 +25,14 @@ import com.android.systemui.notifications.intelligence.rules.shared.model.Contac
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 
-/** A view model for editing a specific notification rule. Work-in-progress. */
-class NotificationRuleEditViewModel
+class NotificationRuleEditViewModelImpl
 @AssistedInject
 constructor(
     private val contactsInteractor: ContactsInteractor,
     private val installedAppsInteractor: InstalledAppsInteractor,
-) {
-    /**
-     * Fetches all contacts whose name matches [searchQuery].
-     *
-     * @param contentResolver the content resolver for the current user.
-     */
-    suspend fun fetchContacts(
+) : NotificationRuleEditViewModel {
+
+    override suspend fun fetchContacts(
         searchQuery: String,
         contentResolver: ContentResolver,
     ): List<ContactModel> {
@@ -47,13 +42,12 @@ constructor(
         return contactsInteractor.fetchContacts(searchQuery, contentResolver)
     }
 
-    /** Fetches all apps installed on the device. */
-    suspend fun fetchInstalledApps(): List<AppModel> {
+    override suspend fun fetchInstalledApps(): List<AppModel> {
         return installedAppsInteractor.fetchInstalledApps()
     }
 
     @AssistedFactory
-    interface Factory {
-        fun create(): NotificationRuleEditViewModel
+    interface Factory : NotificationRuleEditViewModel.Factory {
+        override fun create(): NotificationRuleEditViewModelImpl
     }
 }

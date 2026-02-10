@@ -25,23 +25,16 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 
-/** A repository to fetch installed app information for notification rules. */
 @SysUISingleton
-class InstalledAppsRepository
+class InstalledAppsRepositoryImpl
 @Inject
 constructor(
     @Background private val backgroundDispatcher: CoroutineDispatcher,
     private val packageManager: PackageManager,
-) {
-    /**
-     * Fetches all apps installed on the device.
-     *
-     * TODO: b/478225883 - Ensure provided package manager is for the current user by having
-     *   [InstalledAppsInteractor] passing in the user-specific package manager from
-     *   [SelectedUserInteractor].
-     */
+) : InstalledAppsRepository {
+
     @SuppressLint("QueryPermissionsNeeded")
-    suspend fun fetchInstalledApps(): List<AppModel> {
+    override suspend fun fetchInstalledApps(): List<AppModel> {
         return withContext(backgroundDispatcher) {
             packageManager.getInstalledApplications(0).map {
                 AppModel(

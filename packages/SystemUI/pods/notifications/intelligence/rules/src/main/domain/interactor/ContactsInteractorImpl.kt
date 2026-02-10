@@ -21,15 +21,10 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.notifications.intelligence.rules.data.repository.ContactsRepository
 import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
 
-/** Interactor for everything related to contacts. */
 @SysUISingleton
-public class ContactsInteractor(private val contactsRepository: ContactsRepository) {
-    /**
-     * Fetches all contacts whose name matches [searchQuery].
-     *
-     * @param contentResolver the content resolver for the current user.
-     */
-    suspend fun fetchContacts(
+public class ContactsInteractorImpl(private val contactsRepository: ContactsRepository) :
+    ContactsInteractor {
+    override suspend fun fetchContacts(
         searchQuery: String,
         contentResolver: ContentResolver,
     ): List<ContactModel> {
