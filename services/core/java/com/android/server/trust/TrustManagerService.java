@@ -1943,6 +1943,11 @@ public class TrustManagerService extends SystemService {
         public boolean isInSignificantPlace() {
             super.isInSignificantPlace_enforcePermission();
 
+            if (mSignificantPlaceServiceWatcher == null) {
+                mIsInSignificantPlace = false;
+                return mIsInSignificantPlace;
+            }
+
             mSignificantPlaceServiceWatcher.runOnBinder(
                     binder -> ISignificantPlaceProvider.Stub.asInterface(binder)
                             .onSignificantPlaceCheck());
