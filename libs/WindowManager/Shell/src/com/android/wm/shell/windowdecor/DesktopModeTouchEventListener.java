@@ -44,8 +44,6 @@ import android.view.PointerIcon;
 import android.view.SurfaceControl;
 import android.view.View;
 import android.view.ViewConfiguration;
-import android.window.DesktopModeFlags;
-import android.window.WindowContainerToken;
 
 import androidx.annotation.Nullable;
 
@@ -85,7 +83,6 @@ public class DesktopModeTouchEventListener
 
     private final @NonNull Context mContext;
     private final int mTaskId;
-    private final WindowContainerToken mTaskToken;
     private final @NonNull DragPositioningCallback mDragPositioningCallback;
     private final @NonNull Function<Integer, WindowDecorationWrapper> mWindowDecorationFinder;
     private final @NonNull DesktopTasksController mDesktopTasksController;
@@ -169,7 +166,6 @@ public class DesktopModeTouchEventListener
         mPinnedLayerController = pinnedLayerController;
 
         mTaskId = taskInfo.taskId;
-        mTaskToken = taskInfo.token;
         final int touchSlop = ViewConfiguration.get(mContext).getScaledTouchSlop();
         final long appHandleHoldToDragDuration = APP_HANDLE_HOLD_TO_DRAG_DURATION_MS;
         mHandleDragDetector = new DragDetector(this, appHandleHoldToDragDuration,
