@@ -288,3 +288,10 @@ flag {
   description: "Initialize hyphenator lazily"
   bug: "473856914"
 }
+
+flag {
+  name: "check_attach_state_in_start_action_mode"
+  namespace: "text"
+  description: "Fix Editor.startActionModeInternal will crash if the TextView is not attached to the window."
+  bug: "481597603"
+}
