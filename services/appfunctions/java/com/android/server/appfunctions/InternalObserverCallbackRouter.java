@@ -32,12 +32,17 @@ import android.util.ArraySet;
 import android.util.Slog;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.VisibleForTesting;
 
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Routes app function change notifications to registered callbacks.
@@ -56,64 +61,55 @@ class InternalObserverCallbackRouter {
 
     @NonNull private final ExecutorService mExecutor;
 
-    InternalObserverCallbackRouter(@NonNull ExecutorService executor) {
+    private final int mMetadataChangeDebounceMs;
+    private final ScheduledExecutorService mDebounceExecutor;
+    private final Object mDebounceLock = new Object();
+
+    @GuardedBy("mDebounceLock")
+    @Nullable
+    private ScheduledFuture<?> mDebounceFuture;
+
+    @GuardedBy("mDebounceLock")
+    @NonNull
+    private final Set<String> mPendingPackageChanges = new ArraySet<>();
+
+    InternalObserverCallbackRouter(
+            @NonNull ExecutorService executor, @NonNull ServiceConfig serviceConfig) {
+        this(
+                executor,
+                serviceConfig,
+                Executors.newSingleThreadScheduledExecutor(
+                        new NamedThreadFactory("DebounceExecutor")));
+    }
+
+    @VisibleForTesting
+    InternalObserverCallbackRouter(
+            @NonNull ExecutorService executor,
+            @NonNull ServiceConfig serviceConfig,
+            @NonNull ScheduledExecutorService debounceExecutor) {
         mExecutor = requireNonNull(executor);
+        mMetadataChangeDebounceMs =
+                serviceConfig.getAppFunctionMetadataChangeDebounceMilliseconds();
+        mDebounceExecutor = debounceExecutor;
     }
 
     public void onDocumentChanged(@NonNull DocumentChangeInfo documentChangeInfo) {
-        // TODO: b/481659383 - Batch change notifications.
-        // 1. In case both functions and top-level documents change we will receive two
-        // notifications as AppSearch groups changes by schema, but we should only notify once.
-        // 2. For each package, we will receive at least one notification or two at most. We can
-        // batch these to provide a list of changed packages within a timeframe.
-        Runnable runnable =
-                () -> {
-                    if (isAppFunctionStaticMetadataSchema(documentChangeInfo.getSchemaName())) {
-                        Set<AppFunctionName> changedFunctions = new ArraySet<>();
-                        for (String functionId : documentChangeInfo.getChangedDocumentIds()) {
-                            try {
-                                AppFunctionName functionName =
-                                        AppFunctionName.fromQualifiedId(functionId);
-                                changedFunctions.add(functionName);
-                            } catch (IllegalArgumentException e) {
-                                // Incorrect function id format, skip document
-                            }
-                        }
-                        onAppFunctionsChanged(changedFunctions);
-                    } else {
-                        // If the schema is for a top-level document and not
-                        // a function, treat it as a package change.
-                        String changedPackageName =
-                                getPackageNameFromSchemaName(documentChangeInfo.getSchemaName());
-                        if (changedPackageName != null) {
-                            onPackageLevelChange(Set.of(changedPackageName));
-                        }
-                    }
-                };
-        try {
-            var unused = mExecutor.submit(runnable);
-        } catch (RejectedExecutionException ex) {
-            Slog.w(TAG, "Failed to run onDocumentChanged due to executor shutdown.", ex);
+        String changedPackageName =
+                getPackageNameFromSchemaName(documentChangeInfo.getSchemaName());
+        if (changedPackageName != null) {
+            schedulePackageLevelChange(Set.of(changedPackageName));
         }
     }
 
     public void onSchemaChanged(@NonNull SchemaChangeInfo schemaChangeInfo) {
-        Runnable runnable =
-                () -> {
-                    Set<String> changedPackageNames = new ArraySet<>();
-                    for (String changedSchemaName : schemaChangeInfo.getChangedSchemaNames()) {
-                        String changedPackageName = getPackageNameFromSchemaName(changedSchemaName);
-                        if (changedPackageName != null) {
-                            changedPackageNames.add(changedPackageName);
-                        }
-                    }
-                    onPackageLevelChange(changedPackageNames);
-                };
-        try {
-            var unused = mExecutor.submit(runnable);
-        } catch (RejectedExecutionException ex) {
-            Slog.w(TAG, "Failed to run onSchemaChanged due to executor shutdown.", ex);
+        Set<String> changedPackageNames = new ArraySet<>();
+        for (String changedSchemaName : schemaChangeInfo.getChangedSchemaNames()) {
+            String changedPackageName = getPackageNameFromSchemaName(changedSchemaName);
+            if (changedPackageName != null) {
+                changedPackageNames.add(changedPackageName);
+            }
         }
+        schedulePackageLevelChange(changedPackageNames);
     }
 
     /**
@@ -129,6 +125,45 @@ class InternalObserverCallbackRouter {
             var unused = mExecutor.submit(() -> onAppFunctionStatesChanged(changedFunctionNames));
         } catch (RejectedExecutionException ex) {
             Slog.w(TAG, "Failed to run onEnabledStateChanged due to executor shutdown.", ex);
+        }
+    }
+
+    private void schedulePackageLevelChange(@NonNull Set<String> changedPackageNames) {
+        if (changedPackageNames.isEmpty()) {
+            return;
+        }
+
+        synchronized (mDebounceLock) {
+            if (mDebounceFuture != null) {
+                mDebounceFuture.cancel(false);
+            }
+            mPendingPackageChanges.addAll(changedPackageNames);
+
+            Runnable scheduledRunnable =
+                    () -> {
+                        Set<String> packagesToNotify;
+                        synchronized (mDebounceLock) {
+                            packagesToNotify = new ArraySet<>(mPendingPackageChanges);
+                            mPendingPackageChanges.clear();
+                            mDebounceFuture = null;
+                        }
+                        if (!packagesToNotify.isEmpty()) {
+                            onPackageLevelChange(packagesToNotify);
+                        }
+                    };
+
+            try {
+                mDebounceFuture =
+                        mDebounceExecutor.schedule(
+                                scheduledRunnable,
+                                mMetadataChangeDebounceMs,
+                                TimeUnit.MILLISECONDS);
+            } catch (RejectedExecutionException ex) {
+                Slog.w(
+                        TAG,
+                        "Failed to schedule package level change due to executor shutdown.",
+                        ex);
+            }
         }
     }
 
@@ -151,30 +186,6 @@ class InternalObserverCallbackRouter {
                             new ArrayList<>(filteredPackages));
                 } catch (RemoteException e) {
                     Slog.e(TAG, "Failed to execute callback#onPackagesChanged.", e);
-                }
-            }
-        }
-    }
-
-    private void onAppFunctionsChanged(@NonNull Set<AppFunctionName> changedFunctionNames) {
-        Set<InternalCallbackWrapper> callbacksToNotify;
-        synchronized (mInternalCallbacksLock) {
-            // Make a copy before iterating over the callbacks to prevent deadlocks.
-            callbacksToNotify = new ArraySet<>(mInternalCallbacks);
-        }
-        for (InternalCallbackWrapper internalCallbackWrapper : callbacksToNotify) {
-            Set<String> filteredPackageNames = new ArraySet<>();
-            for (AppFunctionName functionName : changedFunctionNames) {
-                if (internalCallbackWrapper.isObservedFunction(functionName)) {
-                    filteredPackageNames.add(functionName.getPackageName());
-                }
-            }
-            if (!filteredPackageNames.isEmpty()) {
-                try {
-                    internalCallbackWrapper.mInternalCallback.onPackagesChanged(
-                            new ArrayList<>(filteredPackageNames));
-                } catch (RemoteException e) {
-                    Slog.e(TAG, "Failed to execute callback#onAppFunctionsChanged.", e);
                 }
             }
         }
@@ -206,6 +217,7 @@ class InternalObserverCallbackRouter {
 
     void shutDown() {
         mExecutor.shutdown();
+        mDebounceExecutor.shutdown();
     }
 
     void addCallback(

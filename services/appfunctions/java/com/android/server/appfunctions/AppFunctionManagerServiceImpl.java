@@ -189,7 +189,6 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 uriGrantsManagerInternal,
                 dynamicAppFunctionRegistry,
                 appFunctionMetadataReader,
-                new AppFunctionMetadataObserver(context, appFunctionMetadataReader),
                 appInteractionService,
                 new VisibilityHelperImpl(context, packageManagerInternal),
                 activityTaskManagerInternal);
@@ -208,7 +207,6 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             UriGrantsManagerInternal uriGrantsManagerInternal,
             MultiUserDynamicAppFunctionRegistry dynamicAppFunctionRegistry,
             AppFunctionMetadataReader appFunctionMetadataReader,
-            AppFunctionMetadataObserver appFunctionMetadataObserver,
             @Nullable AppInteractionService appInteractionService,
             VisibilityHelper visibilityHelper,
             ActivityTaskManagerInternal activityTaskManagerInternal) {
@@ -227,7 +225,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                         mUriGrantsManagerInternal.newUriPermissionOwner("appfunctions"));
         mDynamicAppFunctionRegistry = Objects.requireNonNull(dynamicAppFunctionRegistry);
         mAppFunctionMetadataReader = Objects.requireNonNull(appFunctionMetadataReader);
-        mAppFunctionMetadataObserver = Objects.requireNonNull(appFunctionMetadataObserver);
+        mAppFunctionMetadataObserver =
+                new AppFunctionMetadataObserver(context, appFunctionMetadataReader, serviceConfig);
         mAppInteractionService = appInteractionService;
         mVisibilityHelper = Objects.requireNonNull(visibilityHelper);
         mActivityTaskManagerInternal = Objects.requireNonNull(activityTaskManagerInternal);

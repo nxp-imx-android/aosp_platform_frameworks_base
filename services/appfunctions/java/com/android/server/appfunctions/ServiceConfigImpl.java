@@ -31,6 +31,10 @@ public class ServiceConfigImpl implements ServiceConfig {
     private static final Range<Integer> VALID_PAGE_SIZE_RANGE =
             new Range<>(MIN_PAGE_SIZE, MAX_PAGE_SIZE);
 
+    static final String DEVICE_CONFIG_PROPERTY_APP_FUNCTION_METADATA_CHANGE_DEBOUNCE_MS =
+            "app_function_metadata_change_debounce_ms";
+    static final int DEFAULT_APP_FUNCTION_METADATA_CHANGE_DEBOUNCE_MS = 1000;
+
     @Override
     public long getExecuteAppFunctionCancellationTimeoutMillis() {
         return DeviceConfig.getLong(
@@ -56,5 +60,13 @@ public class ServiceConfigImpl implements ServiceConfig {
         }
 
         return DEFAULT_SEARCH_APP_FUNCTION_PAGE_SIZE;
+    }
+
+    @Override
+    public int getAppFunctionMetadataChangeDebounceMilliseconds() {
+        return DeviceConfig.getInt(
+                NAMESPACE_APP_FUNCTIONS,
+                DEVICE_CONFIG_PROPERTY_APP_FUNCTION_METADATA_CHANGE_DEBOUNCE_MS,
+                DEFAULT_APP_FUNCTION_METADATA_CHANGE_DEBOUNCE_MS);
     }
 }

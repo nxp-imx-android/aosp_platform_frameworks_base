@@ -75,6 +75,8 @@ class AppFunctionMetadataReaderTest {
                     override fun getExecuteAppFunctionCancellationTimeoutMillis(): Long = 0
 
                     override fun getSearchAppFunctionInternalPageSize(): Int = 100
+
+                    override fun getAppFunctionMetadataChangeDebounceMilliseconds(): Int = 0
                 },
             )
     }

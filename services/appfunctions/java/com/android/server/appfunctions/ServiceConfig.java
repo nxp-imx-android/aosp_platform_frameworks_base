@@ -55,4 +55,12 @@ public interface ServiceConfig {
      */
     @IntRange(from = MIN_PAGE_SIZE, to = MAX_PAGE_SIZE)
     int getSearchAppFunctionInternalPageSize();
+
+    /**
+     * Returns the debounce time in milliseconds for app function metadata changes.
+     *
+     * <p>This is the maximum time the system server will wait before notifying the observers of app
+     * function metadata changes.
+     */
+    int getAppFunctionMetadataChangeDebounceMilliseconds();
 }
