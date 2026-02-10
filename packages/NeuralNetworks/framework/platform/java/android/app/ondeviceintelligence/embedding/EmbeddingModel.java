@@ -145,6 +145,7 @@ public final class EmbeddingModel implements OnDeviceModel, Parcelable {
     /**
      * Returns the maximum token limit (number of tokens) supported by the model.
      */
+    @Override
     @IntRange(from = 1)
     public long getMaxTokenLimit() {
         return mMaxTokenLimit;
@@ -169,23 +170,35 @@ public final class EmbeddingModel implements OnDeviceModel, Parcelable {
      * Retrieves the current status of the model.
      *
      * @param executor The executor on which to invoke the callback.
-     * @param callback The callback to receive the model status (e.g., DOWNLOADABLE, AVAILABLE).
+     * @param callback The callback to receive the model status (e.g.,
+     *     {@link OnDeviceModel#MODEL_STATUS_DOWNLOADABLE},
+     *     {@link OnDeviceModel#MODEL_STATUS_AVAILABLE}).
      */
     @Override
     @RequiresPermission(Manifest.permission.USE_ON_DEVICE_INTELLIGENCE)
     public void getStatus(
             @NonNull Executor executor,
-            @NonNull OutcomeReceiver<Integer, OnDeviceIntelligenceException> callback) {
+            @NonNull OutcomeReceiver<@Status Integer, OnDeviceIntelligenceException> callback) {
         try {
-        Objects.requireNonNull(
-                mManager, "OnDeviceIntelligenceManager instance not attached to this Model.");
-        mManager.getFeatureDetails(
+            Objects.requireNonNull(
+                    mManager, "OnDeviceIntelligenceManager instance not attached to this Model.");
+            mManager.getFeatureDetails(
                     mFeature,
                     executor,
                     new OutcomeReceiver<>() {
                         @Override
                         public void onResult(FeatureDetails result) {
-                            callback.onResult(result.getFeatureStatus());
+                            int status = result.getFeatureStatus();
+                            int modelStatus = switch (status) {
+                                case FeatureDetails.FEATURE_STATUS_DOWNLOADABLE ->
+                                        MODEL_STATUS_DOWNLOADABLE;
+                                case FeatureDetails.FEATURE_STATUS_DOWNLOADING ->
+                                        MODEL_STATUS_DOWNLOADING;
+                                case FeatureDetails.FEATURE_STATUS_AVAILABLE ->
+                                        MODEL_STATUS_AVAILABLE;
+                                default -> MODEL_STATUS_UNAVAILABLE;
+                            };
+                            callback.onResult(modelStatus);
                         }
 
                         @Override
@@ -252,6 +265,15 @@ public final class EmbeddingModel implements OnDeviceModel, Parcelable {
         }
     }
 
+    /**
+     * Counts the number of tokens in the given content using the model's tokenizer. This is useful
+     * for ensuring that the input content fits within the model's maximum token limit.
+     *
+     * @param requestContent The content payload to tokenize.
+     * @param executor The executor to run the callback on.
+     * @param callback The callback to receive the token count.
+     */
+    @Override
     @RequiresPermission(Manifest.permission.USE_ON_DEVICE_INTELLIGENCE)
     public void countTokens(
             @NonNull Content requestContent,
