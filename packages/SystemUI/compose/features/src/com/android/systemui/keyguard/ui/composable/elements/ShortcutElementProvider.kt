@@ -140,7 +140,7 @@ constructor(
         messageDisplayer: (Int) -> Unit,
         modifier: Modifier = Modifier,
     ) {
-        val hapticsViewModel = hapticsViewModelFactory.create()
+        val hapticsViewModel = remember { hapticsViewModelFactory.create() }
         val quickAffordanceViewModel by
             viewModel.collectAsStateWithLifecycle(
                 initialValue = KeyguardQuickAffordanceViewModel(slotId = "")
@@ -373,13 +373,6 @@ constructor(
         viewModel: KeyguardQuickAffordanceViewModel,
         expandable: Expandable,
     ) {
-        vibratorHelper.vibrate(
-            if (viewModel.isActivated) {
-                KeyguardBottomAreaVibrations.Activated
-            } else {
-                KeyguardBottomAreaVibrations.Deactivated
-            }
-        )
         if (viewModel.configKey != null) {
             viewModel.onClicked(
                 KeyguardQuickAffordanceViewModel.OnClickedParameters(
