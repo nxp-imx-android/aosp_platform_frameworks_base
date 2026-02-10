@@ -122,6 +122,16 @@ flag {
 }
 
 flag {
+  name: "one_way_set_task_description"
+  namespace: "windowing_frontend"
+  description: "Reduce blocking calls that are usually called on UI thread"
+  bug: "482936553"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "use_known_display_id_for_base_context"
   namespace: "windowing_frontend"
   description: "Reduce binder calls that query display id using a token"

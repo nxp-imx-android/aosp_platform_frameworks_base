@@ -484,7 +484,11 @@ public class ActivityClient {
 
     void setTaskDescription(IBinder token, ActivityManager.TaskDescription td) {
         try {
-            getActivityClientController().setTaskDescription(token, td);
+            if (com.android.window.flags.Flags.oneWaySetTaskDescription()) {
+                getActivityClientController().setTaskDescriptionOneWay(token, td);
+            } else {
+                getActivityClientController().setTaskDescription(token, td);
+            }
         } catch (RemoteException e) {
             e.rethrowFromSystemServer();
         }
