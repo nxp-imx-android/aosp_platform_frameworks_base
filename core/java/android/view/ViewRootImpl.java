@@ -9972,32 +9972,74 @@ public final class ViewRootImpl implements ViewParent,
         return relayoutResult;
     }
 
+    private boolean canRelayoutAsync(StringBuilder denialReason) {
+        if (!WindowManager.useClientSurface()
+                && (mViewFrameInfo.flags & FrameInfo.FLAG_WINDOW_VISIBILITY_CHANGED) != 0) {
+            if (denialReason != null) {
+                denialReason.append("visChanged");
+            }
+            // The new surface needs to be obtained from window manager.
+            return false;
+        }
+        if (mWindowAttributes.type == TYPE_APPLICATION_STARTING) {
+            if (denialReason != null) {
+                denialReason.append("startingWin");
+            }
+            // The window configuration of the starting window won't be overridden during the fixed
+            // rotation. There is not enough information to compute the frames locally.
+            return false;
+        }
+        if (com.android.window.flags.Flags.improveFluidResizingPerformance()
+                && (mDragResizing || mPendingDragResizing)) {
+            // It is fine that the client only draws the latest state of what it acknowledges now
+            // during drag-resizing and doesn't need to obtain the latest state from window manager.
+            return true;
+        }
+        if (mSyncSeqId > mLastSyncSeqId) {
+            if (denialReason != null) {
+                denialReason.append("syncId").append(mSyncSeqId).append(">").append(mLastSyncSeqId);
+            }
+            // There is a BLAST sync resize request, and the latest state needs to be obtained from
+            // window manager.
+            return false;
+        }
+        if (NoPreloadHolder.sAlwaysSeqId && mSeqId > mLastSeqId) {
+            if (denialReason != null) {
+                denialReason.append("seqId").append(mSeqId).append(">").append(mLastSeqId);
+            }
+            // There is a resize request, and the latest state needs to be obtained from window
+            // manager.
+            return false;
+        }
+        final WindowConfiguration winConfigFromAm = getConfiguration().windowConfiguration;
+        final WindowConfiguration winConfigFromWm =
+                mLastReportedMergedConfiguration.getMergedConfiguration().windowConfiguration;
+        if (winConfigFromAm.diff(winConfigFromWm, false /* compareUndefined */) != 0) {
+            if (denialReason != null) {
+                denialReason.append("configDiff=").append(WindowConfiguration.diffToString(
+                        winConfigFromAm.diff(winConfigFromWm, false /* compareUndefined */)));
+            }
+            // The latest window configuration (winConfigFromAm or winConfigFromWm) is unknown and
+            // needed to obtained from window manager.
+            return false;
+        }
+        return true;
+    }
+
     private int relayoutWindow(WindowManager.LayoutParams params, int viewVisibility,
             boolean insetsPending) throws RemoteException {
         int relayoutResult = 0;
         if (WindowManager.useClientSurface() && !mWindowLayout.isLocallyManaged()) {
             relayoutResult = updateSurfaceControl(viewVisibility);
         }
-
-        final WindowConfiguration winConfigFromAm = getConfiguration().windowConfiguration;
-        final WindowConfiguration winConfigFromWm =
-                mLastReportedMergedConfiguration.getMergedConfiguration().windowConfiguration;
         final WindowConfiguration winConfig = getCompatWindowConfiguration();
-        final boolean relayAsyncDuringDragResizing =
-                com.android.window.flags.Flags.improveFluidResizingPerformance()
-                        && (mDragResizing || mPendingDragResizing);
         final int measuredWidth = mMeasuredWidth;
         final int measuredHeight = mMeasuredHeight;
-        final boolean viewVisibilityChanged =
-                (mViewFrameInfo.flags & FrameInfo.FLAG_WINDOW_VISIBILITY_CHANGED) != 0;
         final boolean relayoutAsync;
-        if ((!viewVisibilityChanged || WindowManager.useClientSurface())
-                && mWindowAttributes.type != TYPE_APPLICATION_STARTING
-                && mSyncSeqId <= mLastSyncSeqId
-                && (!NoPreloadHolder.sAlwaysSeqId
-                    || mSeqId <= mLastSeqId)
-                && (relayAsyncDuringDragResizing || winConfigFromAm.diff(
-                        winConfigFromWm, false /* compareUndefined */) == 0)) {
+        final StringBuilder relayoutSyncReason = Trace.isTagEnabled(Trace.TRACE_TAG_VIEW)
+                ? new StringBuilder()
+                : null;
+        if (canRelayoutAsync(relayoutSyncReason)) {
             final InsetsState state = mInsetsController.getState();
             final Rect displayCutoutSafe = mTempRect;
             state.getDisplayCutoutSafe(displayCutoutSafe);
@@ -10046,14 +10088,7 @@ public final class ViewRootImpl implements ViewParent,
         } else {
             relayoutAsync = false;
             if (Trace.isTagEnabled(Trace.TRACE_TAG_VIEW)) {
-                Trace.instant(Trace.TRACE_TAG_VIEW, "relayoutSync visChange="
-                        + viewVisibilityChanged
-                        + " starting=" + (mWindowAttributes.type == TYPE_APPLICATION_STARTING)
-                        + " bufferId=" + mSyncSeqId + ">" + mLastSyncSeqId
-                        + " seqId=" + mSeqId + ">" + mLastSeqId
-                        + " winCfg=" + WindowConfiguration.diffToString(
-                                winConfigFromAm.diff(winConfigFromWm, false /* compareUndefined */))
-                );
+                Trace.instant(Trace.TRACE_TAG_VIEW, "relayoutSync " + relayoutSyncReason);
             }
         }
 
@@ -10089,7 +10124,8 @@ public final class ViewRootImpl implements ViewParent,
                         requestedWidth, requestedHeight, viewVisibility,
                         insetsPending ? WindowManagerGlobal.RELAYOUT_INSETS_PENDING : 0,
                         mRelayoutSeq, seqId, surfaceControl);
-                if (surfaceControl != null && viewVisibilityChanged
+                if (surfaceControl != null
+                        && (mViewFrameInfo.flags & FrameInfo.FLAG_WINDOW_VISIBILITY_CHANGED) != 0
                         && !mWindowLayout.isLocallyManaged()) {
                     relayoutResult |= RELAYOUT_RES_FIRST_TIME;
                 }
