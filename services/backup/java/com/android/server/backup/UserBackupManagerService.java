@@ -103,6 +103,7 @@ import com.android.internal.util.Preconditions;
 import com.android.server.AppWidgetBackupBridge;
 import com.android.server.EventLogTags;
 import com.android.server.LocalServices;
+import com.android.server.backup.BackupRestoreTask;
 import com.android.server.backup.BackupRestoreTask.CancellationReason;
 import com.android.server.backup.OperationStorage.OpState;
 import com.android.server.backup.OperationStorage.OpType;
@@ -124,7 +125,7 @@ import com.android.server.backup.params.ClearParams;
 import com.android.server.backup.params.ClearRetryParams;
 import com.android.server.backup.params.RestoreParams;
 import com.android.server.backup.restore.ActiveRestoreSession;
-import com.android.server.backup.restore.PerformUnifiedRestoreTask;
+import com.android.server.backup.restore.DelayedRestoreJournal;
 import com.android.server.backup.transport.BackupTransportClient;
 import com.android.server.backup.transport.TransportConnection;
 import com.android.server.backup.transport.TransportNotAvailableException;
@@ -312,8 +313,11 @@ public class UserBackupManagerService {
     @GuardedBy("mPendingRestores")
     private boolean mIsRestoreInProgress;
 
+    // This queue is used to store BackupRestoreTask objects that are waiting for a restore
+    // operation to complete. Currently this is used for restore, delayed restore, and
+    // delayed restore cleanup tasks.
     @GuardedBy("mPendingRestores")
-    private final Queue<PerformUnifiedRestoreTask> mPendingRestores = new ArrayDeque<>();
+    private final Queue<BackupRestoreTask> mPendingRestores = new ArrayDeque<>();
 
     private ActiveRestoreSession mActiveRestoreSession;
 
@@ -328,6 +332,7 @@ public class UserBackupManagerService {
     private final File mDataDir;
     private final File mJournalDir;
     @Nullable private DataChangedJournal mJournal;
+    private final DelayedRestoreJournal mDelayedRestoreJournal;
     private final File mFullBackupScheduleFile;
 
     // Keep a log of all the apps we've ever backed up.
@@ -468,6 +473,7 @@ public class UserBackupManagerService {
         mDataDir = null;
         mJournalDir = null;
         mFullBackupScheduleFile = null;
+        mDelayedRestoreJournal = null;
         mSetupObserver = null;
         mRunInitReceiver = null;
         mRunInitIntent = null;
@@ -620,6 +626,8 @@ public class UserBackupManagerService {
         // Set up the various sorts of package tracking we do
         mFullBackupScheduleFile = new File(mBaseStateDir, "fb-schedule");
         initPackageTracking();
+
+        mDelayedRestoreJournal = new DelayedRestoreJournal(mBaseStateDir);
     }
 
     @VisibleForTesting
@@ -749,7 +757,7 @@ public class UserBackupManagerService {
         mIsRestoreInProgress = restoreInProgress;
     }
 
-    public Queue<PerformUnifiedRestoreTask> getPendingRestores() {
+    public Queue<BackupRestoreTask> getPendingRestores() {
         return mPendingRestores;
     }
 
@@ -777,6 +785,10 @@ public class UserBackupManagerService {
     @Nullable
     public DataChangedJournal getJournal() {
         return mJournal;
+    }
+
+    public DelayedRestoreJournal getDelayedRestoreJournal() {
+        return mDelayedRestoreJournal;
     }
 
     public void setJournal(@Nullable DataChangedJournal journal) {
