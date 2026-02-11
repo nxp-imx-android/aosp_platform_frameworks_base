@@ -219,3 +219,13 @@ flag {
   }
   bug: "470486743"
 }
+
+flag {
+    name: "multi_user_view_configuration"
+    namespace: "virtual_devices"
+    description: "Apply custom ViewConfiguration for virtual devices across users."
+    bug: "435495374"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

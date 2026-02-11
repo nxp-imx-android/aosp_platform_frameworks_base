@@ -839,7 +839,6 @@ public class VirtualDeviceManagerServiceTest {
                 DEVICE_OWNER_UID_1);
         addVirtualDisplay(secondDevice, DISPLAY_ID_2);
 
-
         mDeviceImpl.getDisplayWindowPolicyControllerForTest(DISPLAY_ID_1).onRunningAppsChanged(
                 Sets.newArraySet(new Pair<>(UID_1, PACKAGE_1)));
         secondDevice.getDisplayWindowPolicyControllerForTest(DISPLAY_ID_2).onRunningAppsChanged(
@@ -1585,6 +1584,23 @@ public class VirtualDeviceManagerServiceTest {
 
         verify(mViewConfigurationControllerMock).applyViewConfigurationParams(
                 eq(VIRTUAL_DEVICE_ID_1), eq(viewConfigurationParams));
+    }
+
+    @Test
+    public void onUserStarting_callsViewConfigurationController() {
+        mDeviceImpl.close();
+        int userId = 5;
+        ViewConfigurationParams viewConfigurationParams =
+                new ViewConfigurationParams.Builder().setDoubleTapTimeoutDuration(
+                        Duration.ofMillis(10L)).build();
+        mDeviceImpl = createVirtualDevice(VIRTUAL_DEVICE_ID_1, DEVICE_OWNER_UID_1,
+                new VirtualDeviceParams.Builder().setViewConfigurationParams(
+                        viewConfigurationParams).build());
+
+        mDeviceImpl.onUserStarting(userId);
+
+        verify(mViewConfigurationControllerMock).applyViewConfigurationParamsForUser(userId,
+                VIRTUAL_DEVICE_ID_1, viewConfigurationParams);
     }
 
     @Test

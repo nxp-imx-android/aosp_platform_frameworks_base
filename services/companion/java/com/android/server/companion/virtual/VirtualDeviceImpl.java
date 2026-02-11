@@ -650,6 +650,13 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
         }
     }
 
+    void onUserStarting(int userId) {
+        if (mViewConfigurationController != null) {
+            mViewConfigurationController.applyViewConfigurationParamsForUser(userId, mDeviceId,
+                    mParams.getViewConfigurationParams());
+        }
+    }
+
     @VisibleForTesting
     SensorController getSensorControllerForTest() {
         return mSensorController;
