@@ -15,8 +15,6 @@
  */
 package android.service.appprediction;
 
-import static android.service.appprediction.flags.Flags.fixCallbackSynchronization;
-
 import static com.android.internal.util.function.pooled.PooledLambda.obtainMessage;
 
 import android.annotation.CallSuper;
@@ -311,13 +309,9 @@ public abstract class AppPredictionService extends Service {
      */
     public final void updatePredictions(@NonNull AppPredictionSessionId sessionId,
             @NonNull List<AppTarget> targets) {
-        if (fixCallbackSynchronization()) {
-            mHandler.sendMessage(
-                    obtainMessage(AppPredictionService::doUpdatePredictions,
-                            AppPredictionService.this, sessionId, targets));
-        } else {
-            doUpdatePredictions(sessionId, targets);
-        }
+        mHandler.sendMessage(
+                obtainMessage(AppPredictionService::doUpdatePredictions,
+                        AppPredictionService.this, sessionId, targets));
     }
 
     private void doUpdatePredictions(

@@ -8,14 +8,3 @@ flag {
   description: "Guards the new requestServiceFeatures api"
   bug: "292565550"
 }
-
-flag {
-  name: "fix_callback_synchronization"
-  is_exported: false
-  namespace: "systemui"
-  description: "Fix AppPredictorService callback synchronization bug."
-  bug: "363017832"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
