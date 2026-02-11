@@ -159,3 +159,13 @@ flag {
       purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "string_rebuild_persistent_masterseed"
+  namespace: "autofill"
+  description: "make string rebuild masterseeed persistent across reboots but different per user profile."
+  bug: "456535350"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}

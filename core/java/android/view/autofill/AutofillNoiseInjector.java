@@ -20,6 +20,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.assist.AssistStructure.ViewNode;
 import android.content.ComponentName;
+import android.service.autofill.Flags;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.view.View;
@@ -48,6 +49,7 @@ public final class AutofillNoiseInjector {
 
     private final String mMasterSeed;
     private final ComponentName mActivityComponent;
+    private final int mUserId;
     private final byte mRetainedBitMask;
 
     /**
@@ -57,16 +59,26 @@ public final class AutofillNoiseInjector {
      *     unique per device.
      * @param activityComponent the componentName of the current assistStructure, which contains the
      *     package name and activity name. Needed for calculating seed.
+     * @param userId the id of the current user. It also included in the final hash used as the
+     *     randomization seed, so that the noise payload can not be used to cross associate
+     *     different user profiles from the same device.
      * @hide
      */
     public AutofillNoiseInjector(
-            @NonNull String masterSeed, @NonNull ComponentName activityComponent) {
+            @NonNull String masterSeed, @NonNull ComponentName activityComponent, int userId) {
         this.mMasterSeed = masterSeed;
         this.mActivityComponent = activityComponent;
+        this.mUserId = userId;
         // Determine mRetainedBitMask based on the masterSeed hash
         Random random;
         try {
-            random = new Random(hashString(masterSeed));
+            long seedHash;
+            if (Flags.stringRebuildPersistentMasterseed()) {
+                seedHash = hashString(masterSeed + "|" + userId);
+            } else {
+                seedHash = hashString(masterSeed);
+            }
+            random = new Random(seedHash);
         } catch (NoSuchAlgorithmException e) {
             // If we can't get a legitimate hash, then we should not retain any bit.
             mRetainedBitMask = 0;
@@ -90,20 +102,40 @@ public final class AutofillNoiseInjector {
 
     // Hash function for combining multiple inputs for the Random seed
     private long hashInputs(
-            String masterSeed, String packageName, String className, AutofillId autofillId)
+            String masterSeed,
+            String packageName,
+            String className,
+            AutofillId autofillId,
+            int userId)
             throws NoSuchAlgorithmException {
         // The virtual Id is also needed here because different virtual views may have the same view
         // id.
-        String combined =
-                masterSeed
-                        + "|"
-                        + packageName
-                        + "|"
-                        + className
-                        + "|"
-                        + autofillId.getViewId()
-                        + "|"
-                        + autofillId.getAutofillVirtualId();
+        String combined;
+        if (Flags.stringRebuildPersistentMasterseed()) {
+            combined =
+                    masterSeed
+                            + "|"
+                            + userId
+                            + "|"
+                            + packageName
+                            + "|"
+                            + className
+                            + "|"
+                            + autofillId.getViewId()
+                            + "|"
+                            + autofillId.getAutofillVirtualId();
+        } else {
+            combined =
+                    masterSeed
+                            + "|"
+                            + packageName
+                            + "|"
+                            + className
+                            + "|"
+                            + autofillId.getViewId()
+                            + "|"
+                            + autofillId.getAutofillVirtualId();
+        }
         return hashString(combined);
     }
 
@@ -146,7 +178,8 @@ public final class AutofillNoiseInjector {
                             mMasterSeed,
                             mActivityComponent.getPackageName(),
                             mActivityComponent.getClassName(),
-                            viewNode.getAutofillId());
+                            viewNode.getAutofillId(),
+                            mUserId);
         } catch (NoSuchAlgorithmException e) {
             return null;
         }
