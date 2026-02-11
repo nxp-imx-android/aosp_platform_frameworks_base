@@ -160,7 +160,12 @@ constructor(
                 // Make the surface behind the keyguard visible by calling keyguardGoingAway. The
                 // lockscreen is still showing as well, allowing us to animate unlocked.
                 Log.d(TAG, "ATMS#keyguardGoingAway()")
-                activityTaskManagerService.keyguardGoingAway(0)
+                try {
+                    activityTaskManagerService.keyguardGoingAway(0)
+                } catch (e: RemoteException) {
+                    isKeyguardGoingAway = false
+                    Log.e(TAG, "Remote exception", e)
+                }
             }
         } else if (isLockscreenShowing == true) {
             // Re-show the lockscreen if the surface was visible and we want to make it invisible,
