@@ -21,6 +21,14 @@ flag {
 }
 
 flag {
+    name: "enable_audio_policies_device_and_bluetooth_controller"
+    is_exported: true
+    namespace: "media_solutions"
+    description: "Use Audio Policies implementation for device and Bluetooth route controllers."
+    bug: "280576228"
+}
+
+flag {
     name: "enable_device_address_as_identifier_in_media_router_2"
     namespace: "media_better_together"
     description: "Allows audio devices to retain address in identifier and selection in MR2."
@@ -36,26 +44,10 @@ flag {
 }
 
 flag {
-    name: "enable_audio_policies_device_and_bluetooth_controller"
-    is_exported: true
-    namespace: "media_solutions"
-    description: "Use Audio Policies implementation for device and Bluetooth route controllers."
-    bug: "280576228"
-}
-
-flag {
-    name: "enable_remove_preferred_device_fixes"
+    name: "enable_device_suggestions_preference"
     namespace: "media_better_together"
-    description: "Prevents MediaRouter2 from changing routing policies in specific situations where it shouldn't change them."
-    bug: "448815259"
-}
-
-flag {
-    name: "enable_suggested_device_api"
-    is_exported: true
-    namespace: "media_better_together"
-    description: "Enables the API allowing proxy routers to suggest routes."
-    bug: "393216553"
+    description: "Add a preference for device suggestions in the media settings page"
+    bug: "415096359"
 }
 
 flag {
@@ -84,18 +76,18 @@ flag {
 }
 
 flag {
-    name: "enable_media_route_2_provider_info_builder_caching"
-    namespace: "media_better_together"
-    description: "Enables caching for mPackageName and mIsSystem of provider info in MediaRoute2ProviderInfo."
-    bug: "441980279"
-}
-
-flag {
     name: "enable_media_route_2_info_provider_package_name"
     namespace: "media_better_together"
     description: "Enables a new API to obtain the provider package name from MediaRoute2Info."
     bug: "378788958"
     is_exported: true
+}
+
+flag {
+    name: "enable_media_route_2_provider_info_builder_caching"
+    namespace: "media_better_together"
+    description: "Enables caching for mPackageName and mIsSystem of provider info in MediaRoute2ProviderInfo."
+    bug: "441980279"
 }
 
 flag {
@@ -148,6 +140,20 @@ flag {
 }
 
 flag {
+    name: "enable_output_switcher_compose"
+    namespace: "media_better_together"
+    description: "Enables migration of Output Switcher to Compose."
+    bug: "472871384"
+}
+
+flag {
+    name: "enable_output_switcher_personal_audio_sharing"
+    namespace: "cross_device_experiences"
+    description: "Enables personal audio sharing in the output switcher."
+    bug: "338479898"
+}
+
+flag {
     name: "enable_output_switcher_session_grouping"
     namespace: "media_better_together"
     description: "Enables selected items in Output Switcher to be grouped together."
@@ -163,6 +169,13 @@ flag {
     namespace: "media_solutions"
     description: "Allow access to privileged routing capabilities to MEDIA_ROUTING_CONTROL holders."
     bug: "305919655"
+}
+
+flag {
+    name: "enable_remove_preferred_device_fixes"
+    namespace: "media_better_together"
+    description: "Prevents MediaRouter2 from changing routing policies in specific situations where it shouldn't change them."
+    bug: "448815259"
 }
 
 flag {
@@ -192,14 +205,11 @@ flag {
 }
 
 flag {
-    name: "enable_use_of_singleton_audio_manager_route_controller"
+    name: "enable_suggested_device_api"
     is_exported: true
     namespace: "media_better_together"
-    description: "Use singleton AudioManagerRouteController shared across all users."
-    bug: "372868909"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
+    description: "Enables the API allowing proxy routers to suggest routes."
+    bug: "393216553"
 }
 
 flag {
@@ -213,24 +223,21 @@ flag {
 }
 
 flag {
+    name: "enable_use_of_singleton_audio_manager_route_controller"
+    is_exported: true
+    namespace: "media_better_together"
+    description: "Use singleton AudioManagerRouteController shared across all users."
+    bug: "372868909"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_waiting_state_for_system_session_creation_request"
     namespace: "media_solutions"
     description: "Introduces a waiting state for the session creation request and prevents it from early failing when the selectedRoute from the bluetooth stack doesn't match the pending request route id."
     bug: "307723189"
-}
-
-flag {
-    name: "enable_output_switcher_compose"
-    namespace: "media_better_together"
-    description: "Enables migration of Output Switcher to Compose."
-    bug: "472871384"
-}
-
-flag {
-    name: "enable_output_switcher_personal_audio_sharing"
-    namespace: "cross_device_experiences"
-    description: "Enables personal audio sharing in the output switcher."
-    bug: "338479898"
 }
 
 flag {
@@ -241,13 +248,6 @@ flag {
     metadata {
         purpose: PURPOSE_BUGFIX
     }
-}
-
-flag {
-    name: "enable_device_suggestions_preference"
-    namespace: "media_better_together"
-    description: "Add a preference for device suggestions in the media settings page"
-    bug: "415096359"
 }
 
 flag {
