@@ -17,7 +17,6 @@
 package com.android.systemui.graphics
 
 import android.annotation.AnyThread
-import android.annotation.DrawableRes
 import android.annotation.Px
 import android.annotation.SuppressLint
 import android.annotation.WorkerThread
@@ -33,105 +32,46 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.Icon
 import android.util.Log
 import android.util.Size
+import androidx.annotation.VisibleForTesting
 import androidx.core.content.res.ResourcesCompat
 import com.android.app.tracing.traceSection
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
-import java.io.IOException
+import com.android.systemui.graphics.ImageLoader.File
+import com.android.systemui.graphics.ImageLoader.InputStream
+import com.android.systemui.graphics.ImageLoader.OversizedImageException
+import com.android.systemui.graphics.ImageLoader.Res
+import com.android.systemui.graphics.ImageLoader.Source
+import com.android.systemui.graphics.ImageLoader.Uri
 import javax.inject.Inject
 import kotlin.math.min
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 
-/**
- * Helper class to load images for SystemUI. It allows for memory efficient image loading with size
- * restriction and attempts to use hardware bitmaps when sensible.
- */
 @SysUISingleton
-class ImageLoader
+class ImageLoaderImpl
 @Inject
 constructor(
     @Application private val defaultContext: Context,
     @Background private val backgroundDispatcher: CoroutineDispatcher,
-) {
+) : ImageLoader {
 
-    /** Source of the image data. */
-    sealed interface Source
-
-    /**
-     * Load image from a Resource ID. If the resource is part of another package or if it requires
-     * tinting, pass in a correct [Context].
-     */
-    data class Res(@DrawableRes val resId: Int, val context: Context?) : Source {
-        constructor(@DrawableRes resId: Int) : this(resId, null)
-    }
-
-    /** Load image from a Uri. */
-    data class Uri(val uri: android.net.Uri, val context: Context?) : Source {
-        constructor(uri: String) : this(android.net.Uri.parse(uri), null)
-
-        constructor(uri: android.net.Uri) : this(uri, null)
-    }
-
-    /** Load image from a [File]. */
-    data class File(val file: java.io.File) : Source {
-        constructor(path: String) : this(java.io.File(path))
-    }
-
-    /** Load image from an [InputStream]. */
-    data class InputStream(val inputStream: java.io.InputStream, val context: Context?) : Source {
-        constructor(inputStream: java.io.InputStream) : this(inputStream, null)
-    }
-
-    /** Exception thrown when the image is too large to be decoded. */
-    class OversizedImageException(message: String) : IOException(message)
-
-    /**
-     * Loads passed [Source] on a background thread and returns the [Bitmap].
-     *
-     * Maximum height and width can be passed as optional parameters - the image decoder will make
-     * sure to keep the decoded drawable size within those passed constraints while keeping aspect
-     * ratio.
-     *
-     * @param maxWidth Maximum width of the returned drawable (if able). 0 means no restriction. Set
-     *   to [DEFAULT_MAX_SAFE_BITMAP_SIZE_PX] by default.
-     * @param maxHeight Maximum height of the returned drawable (if able). 0 means no restriction.
-     *   Set to [DEFAULT_MAX_SAFE_BITMAP_SIZE_PX] by default.
-     * @param allocator Allocator to use for the loaded drawable - one of [ImageDecoder] allocator
-     *   ints. Use [ImageDecoder.ALLOCATOR_SOFTWARE] to force software bitmap.
-     * @return loaded [Bitmap] or `null` if loading failed.
-     */
     @AnyThread
-    suspend fun loadBitmap(
+    override suspend fun loadBitmap(
         source: Source,
-        @Px maxWidth: Int = DEFAULT_MAX_SAFE_BITMAP_SIZE_PX,
-        @Px maxHeight: Int = DEFAULT_MAX_SAFE_BITMAP_SIZE_PX,
-        allocator: Int = ImageDecoder.ALLOCATOR_DEFAULT,
+        @Px maxWidth: Int,
+        @Px maxHeight: Int,
+        allocator: Int,
     ): Bitmap? =
         withContext(backgroundDispatcher) { loadBitmapSync(source, maxWidth, maxHeight, allocator) }
 
-    /**
-     * Loads passed [Source] synchronously and returns the [Bitmap].
-     *
-     * Maximum height and width can be passed as optional parameters - the image decoder will make
-     * sure to keep the decoded drawable size within those passed constraints while keeping aspect
-     * ratio.
-     *
-     * @param maxWidth Maximum width of the returned drawable (if able). 0 means no restriction. Set
-     *   to [DEFAULT_MAX_SAFE_BITMAP_SIZE_PX] by default.
-     * @param maxHeight Maximum height of the returned drawable (if able). 0 means no restriction.
-     *   Set to [DEFAULT_MAX_SAFE_BITMAP_SIZE_PX] by default.
-     * @param allocator Allocator to use for the loaded drawable - one of [ImageDecoder] allocator
-     *   ints. Use [ImageDecoder.ALLOCATOR_SOFTWARE] to force software bitmap.
-     * @return loaded [Bitmap] or `null` if loading failed.
-     */
     @WorkerThread
-    fun loadBitmapSync(
+    override fun loadBitmapSync(
         source: Source,
-        @Px maxWidth: Int = DEFAULT_MAX_SAFE_BITMAP_SIZE_PX,
-        @Px maxHeight: Int = DEFAULT_MAX_SAFE_BITMAP_SIZE_PX,
-        allocator: Int = ImageDecoder.ALLOCATOR_DEFAULT,
+        @Px maxWidth: Int,
+        @Px maxHeight: Int,
+        allocator: Int,
     ): Bitmap? {
         return try {
             loadBitmapSync(
@@ -146,27 +86,12 @@ constructor(
         }
     }
 
-    /**
-     * Loads passed [ImageDecoder.Source] synchronously and returns the drawable.
-     *
-     * Maximum height and width can be passed as optional parameters - the image decoder will make
-     * sure to keep the decoded drawable size within those passed constraints (while keeping aspect
-     * ratio).
-     *
-     * @param maxWidth Maximum width of the returned drawable (if able). 0 means no restriction. Set
-     *   to [DEFAULT_MAX_SAFE_BITMAP_SIZE_PX] by default.
-     * @param maxHeight Maximum height of the returned drawable (if able). 0 means no restriction.
-     *   Set to [DEFAULT_MAX_SAFE_BITMAP_SIZE_PX] by default.
-     * @param allocator Allocator to use for the loaded drawable - one of [ImageDecoder] allocator
-     *   ints. Use [ImageDecoder.ALLOCATOR_SOFTWARE] to force software bitmap.
-     * @return loaded [Bitmap] or `null` if loading failed.
-     */
     @WorkerThread
-    fun loadBitmapSync(
+    override fun loadBitmapSync(
         source: ImageDecoder.Source,
-        @Px maxWidth: Int = DEFAULT_MAX_SAFE_BITMAP_SIZE_PX,
-        @Px maxHeight: Int = DEFAULT_MAX_SAFE_BITMAP_SIZE_PX,
-        allocator: Int = ImageDecoder.ALLOCATOR_DEFAULT,
+        @Px maxWidth: Int,
+        @Px maxHeight: Int,
+        allocator: Int,
     ): Bitmap? =
         traceSection("ImageLoader#loadBitmap") {
             return try {
@@ -182,82 +107,36 @@ constructor(
             }
         }
 
-    /**
-     * Loads passed [Source] on a background thread and returns the [Drawable].
-     *
-     * Maximum height and width can be passed as optional parameters - the image decoder will make
-     * sure to keep the decoded drawable size within those passed constraints (while keeping aspect
-     * ratio).
-     *
-     * @param maxWidth Maximum width of the returned drawable (if able). 0 means no restriction. Set
-     *   to [DEFAULT_MAX_SAFE_BITMAP_SIZE_PX] by default.
-     * @param maxHeight Maximum height of the returned drawable (if able). 0 means no restriction.
-     *   Set to [DEFAULT_MAX_SAFE_BITMAP_SIZE_PX] by default.
-     * @param allocator Allocator to use for the loaded drawable - one of [ImageDecoder] allocator
-     *   ints. Use [ImageDecoder.ALLOCATOR_SOFTWARE] to force software bitmap.
-     * @return loaded [Drawable] or `null` if loading failed.
-     */
     @AnyThread
-    suspend fun loadDrawable(
+    override suspend fun loadDrawable(
         source: Source,
-        @Px maxWidth: Int = DEFAULT_MAX_SAFE_BITMAP_SIZE_PX,
-        @Px maxHeight: Int = DEFAULT_MAX_SAFE_BITMAP_SIZE_PX,
-        allocator: Int = ImageDecoder.ALLOCATOR_DEFAULT,
+        @Px maxWidth: Int,
+        @Px maxHeight: Int,
+        allocator: Int,
     ): Drawable? =
         withContext(backgroundDispatcher) {
             loadDrawableSync(source, maxWidth, maxHeight, allocator)
         }
 
-    /**
-     * Loads passed [Icon] on a background thread and returns the drawable.
-     *
-     * Maximum height and width can be passed as optional parameters - the image decoder will make
-     * sure to keep the decoded drawable size within those passed constraints (while keeping aspect
-     * ratio).
-     *
-     * @param context Alternate context to use for resource loading (for e.g. cross-process use)
-     * @param maxWidth Maximum width of the returned drawable (if able). 0 means no restriction. Set
-     *   to [DEFAULT_MAX_SAFE_BITMAP_SIZE_PX] by default.
-     * @param maxHeight Maximum height of the returned drawable (if able). 0 means no restriction.
-     *   Set to [DEFAULT_MAX_SAFE_BITMAP_SIZE_PX] by default.
-     * @param allocator Allocator to use for the loaded drawable - one of [ImageDecoder] allocator
-     *   ints. Use [ImageDecoder.ALLOCATOR_SOFTWARE] to force software bitmap.
-     * @return loaded [Drawable] or `null` if loading failed.
-     */
     @AnyThread
-    suspend fun loadDrawable(
+    override suspend fun loadDrawable(
         icon: Icon,
-        context: Context = defaultContext,
-        @Px maxWidth: Int = DEFAULT_MAX_SAFE_BITMAP_SIZE_PX,
-        @Px maxHeight: Int = DEFAULT_MAX_SAFE_BITMAP_SIZE_PX,
-        allocator: Int = ImageDecoder.ALLOCATOR_DEFAULT,
+        context: Context,
+        @Px maxWidth: Int,
+        @Px maxHeight: Int,
+        allocator: Int,
     ): Drawable? =
         withContext(backgroundDispatcher) {
             loadDrawableSync(icon, context, maxWidth, maxHeight, allocator)
         }
 
-    /**
-     * Loads passed [Source] synchronously and returns the drawable.
-     *
-     * Maximum height and width can be passed as optional parameters - the image decoder will make
-     * sure to keep the decoded drawable size within those passed constraints (while keeping aspect
-     * ratio).
-     *
-     * @param maxWidth Maximum width of the returned drawable (if able). 0 means no restriction. Set
-     *   to [DEFAULT_MAX_SAFE_BITMAP_SIZE_PX] by default.
-     * @param maxHeight Maximum height of the returned drawable (if able). 0 means no restriction.
-     *   Set to [DEFAULT_MAX_SAFE_BITMAP_SIZE_PX] by default.
-     * @param allocator Allocator to use for the loaded drawable - one of [ImageDecoder] allocator
-     *   ints. Use [ImageDecoder.ALLOCATOR_SOFTWARE] to force software bitmap.
-     * @return loaded [Drawable] or `null` if loading failed.
-     */
     @WorkerThread
     @SuppressLint("UseCompatLoadingForDrawables")
-    fun loadDrawableSync(
+    override fun loadDrawableSync(
         source: Source,
-        @Px maxWidth: Int = DEFAULT_MAX_SAFE_BITMAP_SIZE_PX,
-        @Px maxHeight: Int = DEFAULT_MAX_SAFE_BITMAP_SIZE_PX,
-        allocator: Int = ImageDecoder.ALLOCATOR_DEFAULT,
+        @Px maxWidth: Int,
+        @Px maxHeight: Int,
+        allocator: Int,
     ): Drawable? =
         traceSection("ImageLoader#loadDrawable") {
             return try {
@@ -290,27 +169,12 @@ constructor(
             }
         }
 
-    /**
-     * Loads passed [ImageDecoder.Source] synchronously and returns the drawable.
-     *
-     * Maximum height and width can be passed as optional parameters - the image decoder will make
-     * sure to keep the decoded drawable size within those passed constraints (while keeping aspect
-     * ratio).
-     *
-     * @param maxWidth Maximum width of the returned drawable (if able). 0 means no restriction. Set
-     *   to [DEFAULT_MAX_SAFE_BITMAP_SIZE_PX] by default.
-     * @param maxHeight Maximum height of the returned drawable (if able). 0 means no restriction.
-     *   Set to [DEFAULT_MAX_SAFE_BITMAP_SIZE_PX] by default.
-     * @param allocator Allocator to use for the loaded drawable - one of [ImageDecoder] allocator
-     *   ints. Use [ImageDecoder.ALLOCATOR_SOFTWARE] to force software bitmap.
-     * @return loaded [Drawable] or `null` if loading failed.
-     */
     @WorkerThread
-    fun loadDrawableSync(
+    override fun loadDrawableSync(
         source: ImageDecoder.Source,
-        @Px maxWidth: Int = DEFAULT_MAX_SAFE_BITMAP_SIZE_PX,
-        @Px maxHeight: Int = DEFAULT_MAX_SAFE_BITMAP_SIZE_PX,
-        allocator: Int = ImageDecoder.ALLOCATOR_DEFAULT,
+        @Px maxWidth: Int,
+        @Px maxHeight: Int,
+        allocator: Int,
     ): Drawable? =
         traceSection("ImageLoader#loadDrawable") {
             return try {
@@ -326,14 +190,13 @@ constructor(
             }
         }
 
-    /** Loads icon drawable while attempting to size restrict the drawable. */
     @WorkerThread
-    fun loadDrawableSync(
+    override fun loadDrawableSync(
         icon: Icon,
-        context: Context = defaultContext,
-        @Px maxWidth: Int = DEFAULT_MAX_SAFE_BITMAP_SIZE_PX,
-        @Px maxHeight: Int = DEFAULT_MAX_SAFE_BITMAP_SIZE_PX,
-        allocator: Int = ImageDecoder.ALLOCATOR_DEFAULT,
+        context: Context,
+        @Px maxWidth: Int,
+        @Px maxHeight: Int,
+        allocator: Int,
     ): Drawable? =
         traceSection("ImageLoader#loadDrawable") {
             return when (icon.type) {
@@ -383,7 +246,7 @@ constructor(
         }
 
     @WorkerThread
-    fun loadIconDrawable(icon: Icon, context: Context): Drawable? {
+    override fun loadIconDrawable(icon: Icon, context: Context): Drawable? {
         icon.loadDrawable(context)?.let {
             return it
         }
@@ -392,23 +255,11 @@ constructor(
         return null
     }
 
-    /**
-     * Obtains the image size from the image header, without decoding the full image.
-     *
-     * @param icon an [Icon] representing the source of the image
-     * @return the [Size] if it could be determined from the image header, or `null` otherwise
-     */
-    suspend fun loadSize(icon: Icon, context: Context): Size? =
+    override suspend fun loadSize(icon: Icon, context: Context): Size? =
         withContext(backgroundDispatcher) { loadSizeSync(icon, context) }
 
-    /**
-     * Obtains the image size from the image header, without decoding the full image.
-     *
-     * @param icon an [Icon] representing the source of the image
-     * @return the [Size] if it could be determined from the image header, or `null` otherwise
-     */
     @WorkerThread
-    fun loadSizeSync(icon: Icon, context: Context): Size? {
+    override fun loadSizeSync(icon: Icon, context: Context): Size? {
         return when (icon.type) {
             Icon.TYPE_URI,
             Icon.TYPE_URI_ADAPTIVE_BITMAP -> {
@@ -419,14 +270,8 @@ constructor(
         }
     }
 
-    /**
-     * Obtains the image size from the image header, without decoding the full image.
-     *
-     * @param source [ImageDecoder.Source] of the image
-     * @return the [Size] if it could be determined from the image header, or `null` otherwise
-     */
     @WorkerThread
-    fun loadSizeSync(source: ImageDecoder.Source): Size? {
+    override fun loadSizeSync(source: ImageDecoder.Source): Size? {
         return try {
             ImageDecoder.decodeHeader(source).size
         } catch (e: Exception) {
@@ -437,20 +282,13 @@ constructor(
     }
 
     companion object {
-        const val TAG = "ImageLoader"
-
-        // 4096 is a reasonable default - most devices will support 4096x4096 texture size for
-        // Canvas rendering and by default we SystemUI has no need to render larger bitmaps.
-        // This prevents exceptions and crashes if the code accidentally loads larger Bitmap
-        // and then attempts to render it on Canvas.
-        // It can always be overridden by the parameters.
-        const val DEFAULT_MAX_SAFE_BITMAP_SIZE_PX = 4096
+        private const val TAG = "ImageLoader"
 
         /**
          * If an image is larger than this, we won't even attempt to decode it, as we risk taking up
          * all of the device memory.
          */
-        const val DEFAULT_DECODE_HARD_LIMIT_PX = 4096
+        private const val DEFAULT_DECODE_HARD_LIMIT_PX = 4096
 
         /**
          * This constant signals that ImageLoader shouldn't attempt to resize the passed bitmap in a
@@ -458,7 +296,7 @@ constructor(
          *
          * Set both maxWidth and maxHeight to [DO_NOT_RESIZE] if you wish to prevent resizing.
          */
-        const val DO_NOT_RESIZE = 0
+        @VisibleForTesting const val DO_NOT_RESIZE = 0
 
         /** Maps [Source] to [ImageDecoder.Source]. */
         private fun toImageDecoderSource(source: Source, defaultContext: Context) =
