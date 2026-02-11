@@ -26,7 +26,7 @@ import android.app.appfunctions.AppFunctionSearchSpec;
 import android.app.appfunctions.IObserveAppFunctionChangesCallback;
 import android.app.appsearch.observer.DocumentChangeInfo;
 import android.app.appsearch.observer.SchemaChangeInfo;
-import android.os.IBinder;
+import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.util.ArraySet;
 import android.util.Slog;
@@ -53,16 +53,14 @@ import java.util.concurrent.TimeUnit;
  */
 class InternalObserverCallbackRouter {
     private static final String TAG = InternalObserverCallbackRouter.class.getSimpleName();
-    private final Object mInternalCallbacksLock = new Object();
 
-    @GuardedBy("mInternalCallbacksLock")
+    // TODO: b/481984551 - Handle callbacks for frozen processes.
     @NonNull
-    private final Set<InternalCallbackWrapper> mInternalCallbacks = new ArraySet<>();
-
-    @NonNull private final ExecutorService mExecutor;
+    private final RemoteCallbackList<IObserveAppFunctionChangesCallback> mInternalCallbacks =
+            new RemoteCallbackList<>();
 
     private final int mMetadataChangeDebounceMs;
-    private final ScheduledExecutorService mDebounceExecutor;
+    private final ScheduledExecutorService mExecutor;
     private final Object mDebounceLock = new Object();
 
     @GuardedBy("mDebounceLock")
@@ -73,24 +71,19 @@ class InternalObserverCallbackRouter {
     @NonNull
     private final Set<String> mPendingPackageChanges = new ArraySet<>();
 
-    InternalObserverCallbackRouter(
-            @NonNull ExecutorService executor, @NonNull ServiceConfig serviceConfig) {
+    InternalObserverCallbackRouter(@NonNull ServiceConfig serviceConfig) {
         this(
-                executor,
                 serviceConfig,
                 Executors.newSingleThreadScheduledExecutor(
-                        new NamedThreadFactory("DebounceExecutor")));
+                        new NamedThreadFactory("AppFunctionsObserverRouter")));
     }
 
     @VisibleForTesting
     InternalObserverCallbackRouter(
-            @NonNull ExecutorService executor,
-            @NonNull ServiceConfig serviceConfig,
-            @NonNull ScheduledExecutorService debounceExecutor) {
-        mExecutor = requireNonNull(executor);
+            @NonNull ServiceConfig serviceConfig, @NonNull ScheduledExecutorService executor) {
         mMetadataChangeDebounceMs =
                 serviceConfig.getAppFunctionMetadataChangeDebounceMilliseconds();
-        mDebounceExecutor = debounceExecutor;
+        mExecutor = executor;
     }
 
     public void onDocumentChanged(@NonNull DocumentChangeInfo documentChangeInfo) {
@@ -154,7 +147,7 @@ class InternalObserverCallbackRouter {
 
             try {
                 mDebounceFuture =
-                        mDebounceExecutor.schedule(
+                        mExecutor.schedule(
                                 scheduledRunnable,
                                 mMetadataChangeDebounceMs,
                                 TimeUnit.MILLISECONDS);
@@ -168,102 +161,46 @@ class InternalObserverCallbackRouter {
     }
 
     private void onPackageLevelChange(@NonNull Set<String> changedPackageNames) {
-        Set<InternalCallbackWrapper> callbacksToNotify;
-        synchronized (mInternalCallbacksLock) {
-            // Make a copy before iterating over the callbacks to prevent deadlocks.
-            callbacksToNotify = new ArraySet<>(mInternalCallbacks);
+        if (changedPackageNames.isEmpty()) {
+            return;
         }
-        for (InternalCallbackWrapper internalCallbackWrapper : callbacksToNotify) {
-            Set<String> filteredPackages = new ArraySet<>();
-            for (String changedPackageName : changedPackageNames) {
-                if (internalCallbackWrapper.isObservedPackage(changedPackageName)) {
-                    filteredPackages.add(changedPackageName);
-                }
-            }
-            if (!filteredPackages.isEmpty()) {
-                try {
-                    internalCallbackWrapper.mInternalCallback.onPackagesChanged(
-                            new ArrayList<>(filteredPackages));
-                } catch (RemoteException e) {
-                    Slog.e(TAG, "Failed to execute callback#onPackagesChanged.", e);
-                }
-            }
-        }
+        mInternalCallbacks.broadcast(
+                (callback, searchSpec) -> {
+                    try {
+                        callback.onPackagesChanged(new ArrayList<>(changedPackageNames));
+                    } catch (RemoteException e) {
+                        Slog.e(TAG, "Failed to execute callback#onPackagesChanged.", e);
+                    }
+                });
     }
 
     private void onAppFunctionStatesChanged(@NonNull Set<AppFunctionName> changedFunctionNames) {
-        Set<InternalCallbackWrapper> callbacksToNotify;
-        synchronized (mInternalCallbacksLock) {
-            // Make a copy before iterating over the callbacks to prevent deadlocks.
-            callbacksToNotify = new ArraySet<>(mInternalCallbacks);
+        if (changedFunctionNames.isEmpty()) {
+            return;
         }
-        for (InternalCallbackWrapper internalCallbackWrapper : callbacksToNotify) {
-            Set<AppFunctionName> filteredNames = new ArraySet<>();
-            for (AppFunctionName functionName : changedFunctionNames) {
-                if (internalCallbackWrapper.isObservedFunction(functionName)) {
-                    filteredNames.add(functionName);
-                }
-            }
-            if (!filteredNames.isEmpty()) {
-                try {
-                    internalCallbackWrapper.mInternalCallback.onAppFunctionStatesChanged(
-                            new ArrayList<>(filteredNames));
-                } catch (RemoteException e) {
-                    Slog.e(TAG, "Failed to execute callback#onAppFunctionStatesChanged.", e);
-                }
-            }
-        }
+        mInternalCallbacks.broadcast(
+                (callback, searchSpec) -> {
+                    try {
+                        callback.onAppFunctionStatesChanged(new ArrayList<>(changedFunctionNames));
+                    } catch (RemoteException e) {
+                        Slog.e(TAG, "Failed to execute callback#onAppFunctionStatesChanged.", e);
+                    }
+                });
     }
 
     void shutDown() {
+        mInternalCallbacks.kill();
         mExecutor.shutdown();
-        mDebounceExecutor.shutdown();
     }
 
     void addCallback(
             @NonNull IObserveAppFunctionChangesCallback callbackToAdd,
-            @NonNull AppFunctionSearchSpec searchSpec)
-            throws RemoteException {
-        synchronized (mInternalCallbacksLock) {
-            mInternalCallbacks.add(
-                    new InternalCallbackWrapper(
-                            callbackToAdd,
-                            searchSpec.getObservedPackageNames(),
-                            searchSpec.getObservedAppFunctions(),
-                            attachDeathRecipient(callbackToAdd)));
-        }
+            @NonNull AppFunctionSearchSpec searchSpec) {
+        mInternalCallbacks.register(callbackToAdd, searchSpec);
     }
 
     void removeCallback(@NonNull IObserveAppFunctionChangesCallback callbackToRemove) {
-        synchronized (mInternalCallbacksLock) {
-            for (InternalCallbackWrapper callbackWrapper : mInternalCallbacks) {
-                if (Objects.equals(
-                        callbackWrapper.mInternalCallback.asBinder(),
-                        callbackToRemove.asBinder())) {
-                    mInternalCallbacks.remove(callbackWrapper);
-                    callbackWrapper.unlinkDeathRecipient();
-                    break;
-                }
-            }
-        }
-    }
-
-    private IBinder.DeathRecipient attachDeathRecipient(
-            @NonNull IObserveAppFunctionChangesCallback observeAppFunctionsCallback)
-            throws RemoteException {
-        IBinder remoteBinder = observeAppFunctionsCallback.asBinder();
-        IBinder.DeathRecipient deathRecipient =
-                new IBinder.DeathRecipient() {
-                    @Override
-                    public void binderDied() {
-                        removeCallback(observeAppFunctionsCallback);
-                        remoteBinder.unlinkToDeath(this, 0);
-                    }
-                };
-
-        remoteBinder.linkToDeath(deathRecipient, 0);
-
-        return deathRecipient;
+        mInternalCallbacks.unregister(callbackToRemove);
     }
 
     // AppSearch schema names for app functions are expected to be in the format
@@ -283,51 +220,5 @@ class InternalObserverCallbackRouter {
 
     private boolean isAppFunctionStaticMetadataSchema(String schemaName) {
         return schemaName.startsWith(STATIC_SCHEMA_TYPE);
-    }
-
-    /** Wraps an {@link IObserveAppFunctionChangesCallback} with its observation filters. */
-    static class InternalCallbackWrapper {
-        @NonNull private final IObserveAppFunctionChangesCallback mInternalCallback;
-        @Nullable private final Set<AppFunctionName> mObservedAppFunctions;
-        @Nullable private final Set<String> mObservedPackages;
-        @NonNull private final IBinder.DeathRecipient mDeathRecipient;
-
-        /**
-         * Creates an instance of {@link InternalCallbackWrapper}.
-         *
-         * @param internalCallback The callback to notify with updates to observed packages and app
-         *     functions
-         * @param observedPackages The set of packages to receive updates for. If null, all packages
-         *     and functions are accepted.
-         * @param observedAppFunctions The set of app functions to receive updates for. If null, all
-         *     app functions matching {@code observedPackages} are accepted.
-         * @param deathRecipient The listener linked to the callback's death. Used to release the
-         *     memory when the callback is no longer used.
-         */
-        InternalCallbackWrapper(
-                @NonNull IObserveAppFunctionChangesCallback internalCallback,
-                @Nullable Set<String> observedPackages,
-                @Nullable Set<AppFunctionName> observedAppFunctions,
-                @NonNull IBinder.DeathRecipient deathRecipient) {
-            mInternalCallback = requireNonNull(internalCallback);
-            mObservedPackages = observedPackages;
-            mObservedAppFunctions = observedAppFunctions;
-            mDeathRecipient = deathRecipient;
-        }
-
-        private void unlinkDeathRecipient() {
-            mInternalCallback.asBinder().unlinkToDeath(mDeathRecipient, 0);
-        }
-
-        private boolean isObservedPackage(String packageName) {
-            return mObservedPackages == null || mObservedPackages.contains(packageName);
-        }
-
-        private boolean isObservedFunction(AppFunctionName functionName) {
-            if (mObservedAppFunctions == null) {
-                return isObservedPackage(functionName.getPackageName());
-            }
-            return mObservedAppFunctions.contains(functionName);
-        }
     }
 }
