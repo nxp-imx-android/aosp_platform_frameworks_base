@@ -328,17 +328,20 @@ void CanvasContext::setupPipelineSurface() {
 
     mFrameNumber = 0;
 
-    if (mNativeSurface != nullptr && hasSurface) {
+    if (hasSurface) {
         mHaveNewSurface = true;
         mSwapHistory.clear();
-        // Enable frame stats after the surface has been bound to the appropriate graphics API.
-        // Order is important when new and old surfaces are the same, because old surface has
-        // its frame stats disabled automatically.
-        native_window_enable_frame_timestamps(mNativeSurface->getNativeWindow(), true);
-        native_window_set_scaling_mode(mNativeSurface->getNativeWindow(),
-                                       NATIVE_WINDOW_SCALING_MODE_FREEZE);
-        native_window_set_producer_throttling_enabled(mNativeSurface->getNativeWindow(), false);
-    } else {
+
+        if (mNativeSurface != nullptr) {
+            // Enable frame stats after the surface has been bound to the appropriate graphics API.
+            // Order is important when new and old surfaces are the same, because old surface has
+            // its frame stats disabled automatically.
+            native_window_enable_frame_timestamps(mNativeSurface->getNativeWindow(), true);
+            native_window_set_scaling_mode(mNativeSurface->getNativeWindow(),
+                                        NATIVE_WINDOW_SCALING_MODE_FREEZE);
+            native_window_set_producer_throttling_enabled(mNativeSurface->getNativeWindow(), false);
+        }
+    } else if (mNativeSurface == nullptr) {
         mRenderThread.removeFrameCallback(this);
         mGenerationID++;
     }

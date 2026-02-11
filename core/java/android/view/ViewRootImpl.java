@@ -3016,7 +3016,9 @@ public final class ViewRootImpl implements ViewParent,
             mAttachInfo.mThreadedRenderer.updateRenderTargetSize(mSurfaceSize.x, mSurfaceSize.y);
         }
 
-        updateBlastSurfaceIfNeeded();
+        if (!mIpcRenderingEnabled) {
+            updateBlastSurfaceIfNeeded();
+        }
 
         mRenderTargetIsValid = true;
     }
@@ -6011,7 +6013,7 @@ public final class ViewRootImpl implements ViewParent,
     private boolean draw(boolean fullRedrawNeeded, @Nullable SurfaceSyncGroup activeSyncGroup,
             boolean syncBuffer) {
         Surface surface = mSurface;
-        if (!surface.isValid()) {
+        if (!mRenderTargetIsValid) {
             return false;
         }
 
