@@ -10864,6 +10864,10 @@
                  android:permission="android.permission.BIND_JOB_SERVICE" >
         </service>
 
+        <service android:name="com.android.server.backup.DelayedRestoreCleanupJobService"
+                 android:permission="android.permission.BIND_JOB_SERVICE" >
+        </service>
+
         <service android:name="com.android.server.content.SyncJobService"
                  android:permission="android.permission.BIND_JOB_SERVICE" >
         </service>

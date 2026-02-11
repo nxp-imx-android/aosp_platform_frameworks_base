@@ -327,6 +327,18 @@ public class BackupManagerMonitor {
   public static final int LOG_EVENT_ID_RESTORE_CANCELLED = 83;
 
   /**
+   * The delayed restore cleanup for a package has started.
+   * @hide
+   */
+  public static final int LOG_EVENT_ID_START_DELAYED_RESTORE_CLEANUP = 84;
+
+  /**
+   * The delayed restore cleanup for a package has finished.
+   * @hide
+   */
+  public static final int LOG_EVENT_ID_DELAYED_RESTORE_CLEANUP_FINISHED = 85;
+
+  /**
    * This method will be called each time something important happens on BackupManager.
    *
    * @param event bundle will contain data about event:
