@@ -10735,8 +10735,23 @@ public abstract class PackageManager {
      * cannot be set, either because App Lock is not supported for that package, or because it is
      * already set to that value.
      *
-     * App Lock is a feature that allows users to add authentication as a requirement to open
-     * individual apps, even if the device is unlocked.
+     * <p>App Lock is a feature that allows users to add authentication as a requirement to open
+     * individual apps, even if the device is unlocked. When App Lock is enabled for an app, the
+     * system performs the following protections:
+     * <ul>
+     *   <li>Requires authentication using device credentials (e.g. PIN, pattern, or password) or
+     *   Class 3 biometrics, whenever the user attempts to open the app, share information to it
+     *   via the Sharesheet, or uninstall it.</li>
+     *   <li>Redacts sensitive content of notifications sent by the app.</li>
+     *   <li>Removes the app's widgets and shortcuts from the home screen.</li>
+     *   <li>Displays a locked view of the app in Recents to prevent content leakage.</li>
+     *   <li>Hides the app's Direct Share targets from the Sharesheet.</li>
+     * </ul>
+     *
+     * <p>Once authenticated, an App Lock enabled app remains unlocked while it is visible in
+     * the foreground. The app will remain unlocked for a short grace period after the user
+     * navigates away, after which the system will re-lock it. Additionally, all App Lock
+     * enabled apps are immediately locked whenever the device is locked.
      *
      * <p> Before calling this API to avoid getting a null {@link PendingIntent} callers should
      * first verify that App Lock is supported for the specified package by first checking
