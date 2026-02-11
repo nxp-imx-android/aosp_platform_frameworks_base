@@ -260,10 +260,9 @@ constructor(
 
     /** Whether or not Split Shade is enabled. */
     val isSplitShade: Flow<Boolean> =
-        shadeModeInteractor.shadeMode.flatMapLatest { shadeMode ->
-            flowOf(shadeMode is ShadeMode.Split)
-        }
-
+        shadeModeInteractor.shadeMode
+            .map { shadeMode -> shadeMode is ShadeMode.Split }
+            .distinctUntilChanged()
     /**
      * Scale of the blur effect that should be applied to Notifications.
      *
