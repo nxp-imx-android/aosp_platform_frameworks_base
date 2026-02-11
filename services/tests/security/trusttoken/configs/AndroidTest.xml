@@ -19,7 +19,7 @@
         <option name="test-file-name" value="TrustTokenTestsDevice.apk" />
     </target_preparer>
     <test class="com.android.tradefed.testtype.AndroidJUnitTest" >
-        <option name="package" value="com.android.server.security.talisman" />
+        <option name="package" value="com.android.server.security.trusttoken" />
         <option name="runner" value="androidx.test.runner.AndroidJUnitRunner" />
     </test>
 </configuration>

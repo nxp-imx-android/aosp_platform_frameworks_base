@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.server.security.talisman;
+package com.android.server.security.trusttoken;
 
 import static android.security.trusttoken.TrustTokenManager.VERIFICATION_FAILURE_CHALLENGE_INCORRECT;
 import static android.security.trusttoken.TrustTokenManager.VERIFICATION_FAILURE_SIGNATURE_INVALID;

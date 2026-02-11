@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.server.security.talisman;
+package com.android.server.security.trusttoken;
 
 import static com.android.internal.util.FrameworkStatsLog.ACQUIRE_TRUST_TOKEN_CALLED;
 import static com.android.internal.util.FrameworkStatsLog.ACQUIRE_TRUST_TOKEN_CALLED__OUTCOME__OUTCOME_ANCHOR_UNAVAILABLE;
