@@ -26,9 +26,6 @@
       "keywords": ["primary-device"]
     },
     {
-      "name": "CtsVirtualDevicesComputerControlTests"
-    },
-    {
       "name": "CtsHardwareTestCases_cts_tests",
       "file_patterns": ["Virtual[^/]*\\.java"]
     },
@@ -40,6 +37,10 @@
     }
   ],
   "postsubmit": [
+    {
+      // TODO: b/454903475 - Move to presubmit once bug is fixed.
+      "name": "CtsVirtualDevicesComputerControlTests"
+    },
     {
       "name": "CtsMediaAudioTestCases_cts_audiofocuswithvdmtest"
     },
