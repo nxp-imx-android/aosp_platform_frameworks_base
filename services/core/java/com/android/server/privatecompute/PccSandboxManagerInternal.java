@@ -281,7 +281,7 @@ public final class PccSandboxManagerInternal implements OnRoleHoldersChangedList
      */
     public boolean isPccTrustedSystemComponent(int appUid, String appPackage) {
         for (int uid : TRUSTED_UIDS) {
-            if (appUid == uid) {
+            if (UserHandle.isSameApp(appUid, uid)) {
                 return true;
             }
         }
