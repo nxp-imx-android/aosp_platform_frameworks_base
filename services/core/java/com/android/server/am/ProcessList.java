@@ -26,6 +26,7 @@ import static android.app.ApplicationExitInfo.subreasonToString;
 import static android.app.privatecompute.flags.Flags.enablePccFrameworkSupport;
 import static android.content.pm.Flags.appCompatOption16kb;
 import static android.content.pm.PackageManager.MATCH_DIRECT_BOOT_AUTO;
+import static android.content.res.Flags.updateAmsServiceAppinfo;
 import static android.net.NetworkPolicyManager.isProcStateAllowedWhileIdleOrPowerSaveMode;
 import static android.net.NetworkPolicyManager.isProcStateAllowedWhileOnRestrictBackground;
 import static android.os.MessageQueue.OnFileDescriptorEventListener.EVENT_INPUT;
@@ -5342,6 +5343,19 @@ public final class ProcessList extends ProcessListInternal
                                 app.getWindowProcessController().updateApplicationInfo(ai);
                                 PlatformCompatCache.getInstance()
                                         .onApplicationInfoChanged(ai);
+                            }
+                            // Service fields rarely matter, but if we're restarting an app's
+                            // service when it has no running activities, we're using these cached
+                            // ones, and they have to be up to date.
+                            if (updateAmsServiceAppinfo()) {
+                                for (int j = app.mServices.numberOfRunningServices() - 1; j >= 0;
+                                        j--) {
+                                    final ServiceRecord sr = app.mServices.getRunningServiceAt(j);
+                                    if (ai.packageName.equals(sr.appInfo.packageName)) {
+                                        sr.appInfo = ai;
+                                        sr.serviceInfo.applicationInfo = ai;
+                                    }
+                                }
                             }
                             app.getThread().scheduleApplicationInfoChanged(ai);
                             targetProcesses.add(app.getWindowProcessController());
