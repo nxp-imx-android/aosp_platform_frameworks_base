@@ -1391,7 +1391,7 @@ public class PerformUnifiedRestoreTask implements BackupRestoreTask {
         synchronized (backupManagerService.getPendingRestores()) {
             if (backupManagerService.getPendingRestores().size() > 0) {
                 Slog.d(TAG, "Starting next pending restore.");
-                PerformUnifiedRestoreTask task = backupManagerService.getPendingRestores().remove();
+                BackupRestoreTask task = backupManagerService.getPendingRestores().remove();
                 backupManagerService
                         .getBackupHandler()
                         .sendMessage(
