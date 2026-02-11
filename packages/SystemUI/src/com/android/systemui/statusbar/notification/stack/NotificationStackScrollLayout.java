@@ -3978,6 +3978,7 @@ public class NotificationStackScrollLayout
 
         ShadeScrimShape shape = mScrollViewFields.clippingShape;
         if (shape == null) {
+            Log.d(TAG, "outsideScrimBounds:false, reason:`\"clippingShape null\"");
             return false;
         }
         ShadeScrimBounds bounds = shape.getBounds();
@@ -6382,6 +6383,12 @@ public class NotificationStackScrollLayout
     public void setClippingShape(@Nullable ShadeScrimShape shape) {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
         if (Objects.equals(mScrollViewFields.clippingShape, shape)) return;
+        // Check if the clipping shape is flipping from non-null to null or vice versa.
+        boolean wasPresent = mScrollViewFields.clippingShape != null;
+        boolean isPresent = shape != null;
+        if (wasPresent != isPresent) {
+            Log.d(TAG, "clipping shape flipped to " + (isPresent ? "value" : "null"));
+        }
         mScrollViewFields.clippingShape = shape;
         mShouldUseRoundedRectClipping = shape != null;
         mRoundedClipPath.reset();
@@ -6410,6 +6417,12 @@ public class NotificationStackScrollLayout
     public void setNegativeClippingShape(@Nullable ShadeScrimShape shape) {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
         if (Objects.equals(mScrollViewFields.negativeClippingShape, shape)) return;
+        // Check if the negative clipping shape is flipping from non-null to null or vice versa.
+        boolean wasPresent = mScrollViewFields.negativeClippingShape != null;
+        boolean isPresent = shape != null;
+        if (wasPresent != isPresent) {
+            Log.d(TAG, "negative clipping shape flipped to " + (isPresent ? "value" : "null"));
+        }
         mScrollViewFields.negativeClippingShape = shape;
         mShouldUseNegativeRoundedRectClipping = shape != null;
         mNegativeRoundedClipPath.reset();
