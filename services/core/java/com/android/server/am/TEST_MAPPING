@@ -66,6 +66,10 @@
     {
       "file_patterns": ["MemoryLimiter.*"],
       "name": "MemoryLimiterTests"
+    },
+    {
+      "file_patterns": ["AppExit.*"],
+      "name": "CtsStatsdAtomHostTestCases_appexit_appexithosttest"
     }
   ],
   "postsubmit": [
