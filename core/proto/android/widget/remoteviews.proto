@@ -324,6 +324,10 @@ message RemoteViewsProto {
         }
     }
 
+    message CharSequenceList {
+        repeated CharSequence items = 1;
+    }
+
     // Next tag: 23
     message Action {
         oneof action {
@@ -419,6 +423,8 @@ message RemoteViewsProto {
             int32 blend_mode_value = 18;
             Instant instant_value = 19;
             Duration duration_value = 20;
+            CharSequenceList char_sequence_list_value = 21;
+
             // Intent and Bundle values are excluded.
         }
     }
