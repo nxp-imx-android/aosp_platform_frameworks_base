@@ -422,7 +422,7 @@ class AnnotationBasedFilter(
                 } else {""}
                 throw InvalidAnnotationException(
                     "${desc()} is not allowed to have " +
-                            "Ravenwood annotations.$extInfo Contact g/ravenwood for more details."
+                            "Ravenwood annotations.$extInfo See http://go/ravenwood/annotations.md#new-api for more details."
                 )
             }
             if (visibleCount > 1) {
