@@ -15753,7 +15753,7 @@ public class DevicePolicyManager {
      * Clears the multi-user device management state for testing purposes. Can only remove
      * management set up by test packages. Does not send a broadcast about the removal.
      *
-     * @param adminReceiver The administration compononent to remove.
+     * @param deviceControllerPackageName Package name of the device controller.
      * @throws SecurityException if the caller is not shell / root or the admin package
      *         isn't a test application see {@link ApplicationInfo#FLAG_TEST_APP}.
      * @hide
@@ -15761,12 +15761,10 @@ public class DevicePolicyManager {
     @TestApi
     @FlaggedApi(Flags.FLAG_MULTI_USER_MANAGEMENT_DEVICE_PROVISIONING)
     @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS)
-    // TODO(b/390162247): Remove adminReceiver param once we decide where to store
-    // provisioning-related data instead of ActiveAdmin.
-    public void clearMultiUserDeviceManagement(@NonNull ComponentName adminReceiver) {
+    public void clearMultiuserDeviceManagement(@NonNull String deviceControllerPackageName) {
         try {
             if (mService != null) {
-                mService.clearMultiUserDeviceManagement(adminReceiver);
+                mService.clearMultiuserDeviceManagement(deviceControllerPackageName);
             }
         } catch (RemoteException re) {
             throw re.rethrowFromSystemServer();
@@ -17984,6 +17982,8 @@ public class DevicePolicyManager {
      * <p>The method {@link #checkProvisioningPrecondition} must be returning {@link #STATUS_OK}
      * before calling this method. If it doesn't, a {@link ProvisioningException} will be thrown.
      *
+     * <p>This will be removed soon. Please use {@link #provisionMultiuserManagedDevice} instead.
+     *
      * @param provisioningParams Params required to provision a multi-user device, see
      * {@link MultiUserDeviceProvisioningParams}.
      *
@@ -17997,9 +17997,35 @@ public class DevicePolicyManager {
     public void provisionMultiUserDevice(
             @NonNull MultiUserDeviceProvisioningParams provisioningParams)
             throws ProvisioningException {
+        MultiuserManagedDeviceProvisioningParams newProvisioningParams =
+                new MultiuserManagedDeviceProvisioningParams.Builder(
+                                provisioningParams.getDeviceAdminComponentName().getPackageName())
+                        .build();
+        provisionMultiuserManagedDevice(newProvisioningParams);
+    }
+
+    /**
+     * Provisions a device intended for use by multiple users for management.
+     *
+     * <p>The method {@link #checkProvisioningPrecondition} must be returning {@link #STATUS_OK}
+     * before calling this method. If it doesn't, a {@link ProvisioningException} will be thrown.
+     *
+     * @param provisioningParams Params required to provision a multi-user device, see
+     * {@link MultiuserManagedDeviceProvisioningParams}.
+     *
+     * @throws ProvisioningException if an error occurred during provisioning.
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(FLAG_MULTI_USER_MANAGEMENT_DEVICE_PROVISIONING)
+    @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS)
+    public void provisionMultiuserManagedDevice(
+            @NonNull MultiuserManagedDeviceProvisioningParams provisioningParams)
+            throws ProvisioningException {
         if (mService != null) {
             try {
-                mService.provisionMultiUserDevice(
+                mService.provisionMultiuserManagedDevice(
                         provisioningParams.getTransportParams(), mContext.getPackageName());
             } catch (ServiceSpecificException e) {
                 throw new ProvisioningException(e, e.errorCode, getErrorMessage(e));

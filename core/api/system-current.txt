@@ -1600,6 +1600,7 @@ package android.app.admin {
     method @RequiresPermission(anyOf={android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS, android.Manifest.permission.PROVISION_DEMO_DEVICE}) public void provisionFullyManagedDevice(@NonNull android.app.admin.FullyManagedDeviceProvisioningParams) throws android.app.admin.ProvisioningException;
     method @FlaggedApi("android.app.admin.flags.multi_user_management_device_provisioning") @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS) public void provisionMultiUserDevice(@NonNull android.app.admin.MultiUserDeviceProvisioningParams) throws android.app.admin.ProvisioningException;
     method @FlaggedApi("android.app.admin.flags.multi_user_management_user_provisioning") @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS) public void provisionMultiUserManagedUser(@NonNull android.app.admin.MultiUserManagedUserProvisioningParams) throws android.app.admin.ProvisioningException;
+    method @FlaggedApi("android.app.admin.flags.multi_user_management_device_provisioning") @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS) public void provisionMultiuserManagedDevice(@NonNull android.app.admin.MultiuserManagedDeviceProvisioningParams) throws android.app.admin.ProvisioningException;
     method @FlaggedApi("android.app.admin.flags.remove_managed_profile_enabled") @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS) public boolean removeManagedProfile();
     method @RequiresPermission(android.Manifest.permission.TRIGGER_LOST_MODE) public void sendLostModeLocationUpdate(@NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.lang.Boolean>);
     method @Deprecated @RequiresPermission(android.Manifest.permission.MANAGE_DEVICE_ADMINS) public boolean setActiveProfileOwner(@NonNull android.content.ComponentName, String) throws java.lang.IllegalArgumentException;
@@ -1857,6 +1858,15 @@ package android.app.admin {
     ctor public MultiUserManagedUserProvisioningParams.Builder(@NonNull android.content.ComponentName);
     method @NonNull public android.app.admin.MultiUserManagedUserProvisioningParams build();
     method @NonNull public android.app.admin.MultiUserManagedUserProvisioningParams.Builder setLeaveAllSystemAppsEnabled(boolean);
+  }
+
+  @FlaggedApi("android.app.admin.flags.multi_user_management_device_provisioning") public final class MultiuserManagedDeviceProvisioningParams {
+    method @NonNull public String getDeviceControllerPackageName();
+  }
+
+  @FlaggedApi("android.app.admin.flags.multi_user_management_device_provisioning") public static final class MultiuserManagedDeviceProvisioningParams.Builder {
+    ctor public MultiuserManagedDeviceProvisioningParams.Builder(@NonNull String);
+    method @NonNull public android.app.admin.MultiuserManagedDeviceProvisioningParams build();
   }
 
   public final class NoArgsPolicyKey extends android.app.admin.PolicyKey {
