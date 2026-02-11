@@ -234,10 +234,10 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
         DOWN_MOVE_OR_SCROLL(KeyEvent.KEYCODE_K, KeyEvent.KEYCODE_NUMPAD_2),
         DIAGONAL_DOWN_RIGHT_MOVE(KeyEvent.KEYCODE_L, KeyEvent.KEYCODE_NUMPAD_3),
         LEFT_CLICK(KeyEvent.KEYCODE_I, KeyEvent.KEYCODE_NUMPAD_5),
-        RIGHT_CLICK(KeyEvent.KEYCODE_SLASH, KeyEvent.KEYCODE_SLASH),
-        HOLD(KeyEvent.KEYCODE_M, KeyEvent.KEYCODE_M),
-        RELEASE(KeyEvent.KEYCODE_COMMA, KeyEvent.KEYCODE_COMMA),
-        SCROLL_TOGGLE(KeyEvent.KEYCODE_PERIOD, KeyEvent.KEYCODE_PERIOD);
+        RIGHT_CLICK(KeyEvent.KEYCODE_SLASH, KeyEvent.KEYCODE_NUMPAD_DOT),
+        HOLD(KeyEvent.KEYCODE_M, KeyEvent.KEYCODE_NUMPAD_MULTIPLY),
+        RELEASE(KeyEvent.KEYCODE_COMMA, KeyEvent.KEYCODE_NUMPAD_SUBTRACT),
+        SCROLL_TOGGLE(KeyEvent.KEYCODE_PERIOD, KeyEvent.KEYCODE_NUMPAD_0);
 
         private final int mPrimaryKeyCode;
         private final int mNumpadKeyCode;
@@ -644,23 +644,12 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
         }
     }
 
-    private boolean isMouseKey(int keyCode, int deviceId) {
-        SparseArray<MouseKeyEvent> keyCodeToEnumMap = mDeviceKeyCodeMap.get(deviceId);
-        return keyCodeToEnumMap.contains(keyCode);
-    }
-
-    private boolean isMouseButtonKey(int keyCode) {
-        MouseKeyEvent mouseKeyEvent = MouseKeyEvent.from(
-                keyCode, mActiveInputDeviceId, mDeviceKeyCodeMap
-        );
+    private boolean isMouseButtonKey(MouseKeyEvent mouseKeyEvent) {
         return mouseKeyEvent == MouseKeyEvent.LEFT_CLICK
                 || mouseKeyEvent == MouseKeyEvent.RIGHT_CLICK;
     }
 
-    private boolean isMouseScrollKey(int keyCode) {
-        MouseKeyEvent mouseKeyEvent = MouseKeyEvent.from(
-                keyCode, mActiveInputDeviceId, mDeviceKeyCodeMap
-        );
+    private boolean isMouseScrollKey(MouseKeyEvent mouseKeyEvent) {
         return  mouseKeyEvent == MouseKeyEvent.UP_MOVE_OR_SCROLL
                 || mouseKeyEvent == MouseKeyEvent.DOWN_MOVE_OR_SCROLL
                 || mouseKeyEvent == MouseKeyEvent.LEFT_MOVE_OR_SCROLL
@@ -738,14 +727,25 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
         if (!mDeviceKeyCodeMap.contains(mActiveInputDeviceId)) {
             initializeDeviceToEnumMap(inputDevice);
         }
+
         MouseKeyEvent mouseKeyEvent = MouseKeyEvent.from(
                 keyCode, mActiveInputDeviceId, mDeviceKeyCodeMap
         );
-
-        if (!isMouseKey(keyCode, mActiveInputDeviceId)) {
-            // Pass non-mouse key events to the next handler
+        if (mouseKeyEvent == null) {
+            // Pass non-mouse key events to the next handler.
             super.onKeyEvent(event, policyFlags);
-        } else if (isDown) {
+            return;
+        }
+
+        // If we are using numpad keys, they only work if Num Lock is on.
+        boolean isNumLockOn = (event.getMetaState() & KeyEvent.META_NUM_LOCK_ON) != 0;
+        if (keyCode == mouseKeyEvent.getNumpadKeyCode(inputDevice) && !isNumLockOn) {
+            // Pass non-mouse key events to the next handler.
+            super.onKeyEvent(event, policyFlags);
+            return;
+        }
+
+        if (isDown) {
             if (mouseKeyEvent == MouseKeyEvent.SCROLL_TOGGLE) {
                 mScrollToggleOn = !mScrollToggleOn;
                 if (DEBUG) {
@@ -761,9 +761,9 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
                         VirtualMouseButtonEvent.BUTTON_PRIMARY,
                         VirtualMouseButtonEvent.ACTION_BUTTON_RELEASE
                 );
-            } else if (isMouseButtonKey(keyCode)) {
+            } else if (isMouseButtonKey(mouseKeyEvent)) {
                 performMouseButtonAction(keyCode);
-            } else if (mScrollToggleOn && isMouseScrollKey(keyCode)) {
+            } else if (mScrollToggleOn && isMouseScrollKey(mouseKeyEvent)) {
                 stopActiveMouseActions(MESSAGE_STOP_MOUSE_ACTION);
                 // If the scroll key is pressed down and no other key is active,
                 // set it as the active key and send a message to scroll the pointer
