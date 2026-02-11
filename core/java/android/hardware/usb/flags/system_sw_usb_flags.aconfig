@@ -51,3 +51,10 @@ flag {
     bug: "450113925"
     is_exported: true
 }
+
+flag {
+    name: "enable_usb_dp_upstream_irq"
+    namespace: "system_sw_usb"
+    description: "Feature flag to migrate usbdp library to upstream irq reporting"
+    bug: "396745823"
+}
