@@ -81,6 +81,7 @@ package android {
     field public static final String BIND_GBA_SERVICE = "android.permission.BIND_GBA_SERVICE";
     field public static final String BIND_HOTWORD_DETECTION_SERVICE = "android.permission.BIND_HOTWORD_DETECTION_SERVICE";
     field public static final String BIND_IMS_SERVICE = "android.permission.BIND_IMS_SERVICE";
+    field @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final String BIND_INSIGHT_SURFACE_VISUALIZER_SERVICE = "android.permission.BIND_INSIGHT_SURFACE_VISUALIZER_SERVICE";
     field @FlaggedApi("android.security.afl_api") public static final String BIND_INTRUSION_DETECTION_EVENT_TRANSPORT_SERVICE = "android.permission.BIND_INTRUSION_DETECTION_EVENT_TRANSPORT_SERVICE";
     field public static final String BIND_KEYGUARD_APPWIDGET = "android.permission.BIND_KEYGUARD_APPWIDGET";
     field @FlaggedApi("android.app.enable_motion_cues") public static final String BIND_MOTION_CUES_SERVICE = "android.permission.BIND_MOTION_CUES_SERVICE";

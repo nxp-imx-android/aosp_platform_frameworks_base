@@ -10265,7 +10265,9 @@
          {@link android.service.personalcontext.embedded.InsightSurfaceVisualizerService}, to ensure
          that only the system can bind to it.
          <p>Protection level: signature
+         @SystemApi
          @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+         @hide
     -->
     <permission android:name="android.permission.BIND_INSIGHT_SURFACE_VISUALIZER_SERVICE"
         android:protectionLevel="signature"
