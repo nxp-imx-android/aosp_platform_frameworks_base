@@ -19,6 +19,26 @@ package com.android.server.am;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_START_RECEIVER;
 import static android.os.Process.ZYGOTE_POLICY_FLAG_EMPTY;
 import static android.os.Process.ZYGOTE_POLICY_FLAG_LATENCY_SENSITIVE;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidTrackEvent.BROADCAST_EVENT;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidBroadcastEvent.ACTION_NAME;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidBroadcastEvent.RECEIVER_UID;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidBroadcastEvent.RECEIVER_PID;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidBroadcastEvent.SENDER_UID;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidBroadcastEvent.SENDER_PID;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidBroadcastEvent.RECEIVER_TYPE;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidBroadcastEvent.PROC_START_TYPE;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidBroadcastEvent.DISPATCH_DELAY_MS;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidBroadcastEvent.RECEIVE_DELAY_MS;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidBroadcastEvent.FINISH_DELAY_MS;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidBroadcastEvent.PACKAGE_STOPPED_STATE;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidBroadcastEvent.BROADCAST_TYPE;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidBroadcastEvent.DELIVERY_GROUP_POLICY;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidBroadcastEvent.INTENT_FLAGS;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidBroadcastEvent.FILTER_PRIORITY;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidBroadcastEvent.SENDER_PROCESS_STATE;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidBroadcastEvent.RECEIVER_PROCESS_STATE;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidBroadcastEvent.FIRST_LAUNCH;
+import static android.os.PerfettoTrace.BROADCAST_V3;
 
 import static com.android.internal.util.FrameworkStatsLog.BOOT_COMPLETED_BROADCAST_COMPLETION_LATENCY_REPORTED;
 import static com.android.internal.util.FrameworkStatsLog.BOOT_COMPLETED_BROADCAST_COMPLETION_LATENCY_REPORTED__EVENT__BOOT_COMPLETED;
@@ -92,6 +112,8 @@ import android.util.proto.ProtoOutputStream;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.dev.perfetto.sdk.PerfettoTrace;
+import com.android.internal.dev.perfetto.sdk.PerfettoTrackEventBuilder;
 import com.android.internal.os.SomeArgs;
 import com.android.internal.os.TimeoutRecord;
 import com.android.internal.util.FrameworkStatsLog;
@@ -2406,13 +2428,51 @@ class BroadcastQueueImpl extends BroadcastQueue {
             final int packageState = queue.getActiveWasStopped()
                     ? SERVICE_REQUEST_EVENT_REPORTED__PACKAGE_STOPPED_STATE__PACKAGE_STATE_STOPPED
                     : SERVICE_REQUEST_EVENT_REPORTED__PACKAGE_STOPPED_STATE__PACKAGE_STATE_NORMAL;
+            final int broadcastType = r.calculateTypeForLogging();
             FrameworkStatsLog.write(BROADCAST_DELIVERY_EVENT_REPORTED, uid, senderUid, actionName,
                     receiverType, type, dispatchDelay, receiveDelay, finishDelay, packageState,
                     app != null ? app.info.packageName : null, r.callerPackage,
-                    r.calculateTypeForLogging(), r.getDeliveryGroupPolicy(), r.intent.getFlags(),
+                    broadcastType, r.getDeliveryGroupPolicy(), r.intent.getFlags(),
                     BroadcastRecord.getReceiverPriority(receiver), r.callerProcState,
                     receiverProcessState, queue.getActiveFirstLaunch(),
                     0L /* TODO: stoppedDuration */);
+            if (android.os.Flags.perfettoSdkTracingV3()) {
+                PerfettoTrackEventBuilder builder = PerfettoTrace
+                        .instant(BROADCAST_V3, "broadcast_delivered")
+                        .beginProto()
+                        .beginNested(BROADCAST_EVENT);
+
+                // Receiver Info
+                if (app != null) {
+                    builder = builder.addField(RECEIVER_PID, app.getPid());
+                }
+                builder.addField(ACTION_NAME, actionName)
+                        .addField(RECEIVER_UID, uid)
+                        .addField(RECEIVER_TYPE, receiverType)
+                        .addField(RECEIVER_PROCESS_STATE, receiverProcessState)
+
+                        // Sender Info
+                        .addField(SENDER_UID, senderUid)
+                        .addField(SENDER_PID, r.callingPid)
+                        .addField(SENDER_PROCESS_STATE, r.callerProcState)
+
+                        // Timing/Latency Info
+                        .addField(DISPATCH_DELAY_MS, dispatchDelay)
+                        .addField(RECEIVE_DELAY_MS, receiveDelay)
+                        .addField(FINISH_DELAY_MS, finishDelay)
+
+                        // Additional State
+                        .addField(PROC_START_TYPE, type)
+                        .addField(INTENT_FLAGS, r.intent.getFlags())
+                        .addField(PACKAGE_STOPPED_STATE, packageState)
+                        .addField(FIRST_LAUNCH, queue.getActiveFirstLaunch() ? 1 : 0)
+                        .addField(FILTER_PRIORITY, BroadcastRecord.getReceiverPriority(receiver))
+                        .addField(BROADCAST_TYPE, broadcastType)
+                        .addField(DELIVERY_GROUP_POLICY, r.getDeliveryGroupPolicy())
+                        .endNested()
+                        .endProto()
+                        .emit();
+            }
             // Reset the states after logging
             queue.setActiveFirstLaunch(false);
             queue.setActiveWasStopped(false);
