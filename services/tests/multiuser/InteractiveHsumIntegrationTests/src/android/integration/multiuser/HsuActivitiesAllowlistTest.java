@@ -54,7 +54,6 @@ public final class HsuActivitiesAllowlistTest {
     private static final int ALLOWLIST_MODE_INVALID = -1;
     private static final int ALLOWLIST_MODE_DISABLED = 0;
     private static final int ALLOWLIST_MODE_ENABLED = 1;
-    private static final int ALLOWLIST_MODE_LOG_ONLY = 2;
 
     private static final ComponentName[] NULL_ALLOWLIST = null;
 
@@ -82,21 +81,14 @@ public final class HsuActivitiesAllowlistTest {
     @After
     public void restoreAllowlistInfo() throws Exception {
         Log.d(TAG, "restoreAllowlistInfo(): restoring allowlist mode to " + mPreviousAllowlistMode);
+        setAllowlistModeEnabled(false);
         setAllowlistMode(mPreviousAllowlistMode);
         setTemporaryAllowlist(NULL_ALLOWLIST);
     }
 
     @Test
     public void testActivityLaunchIsAllowed_whenAllowlistModeIsDisabled() throws Exception {
-        setAllowlistMode(ALLOWLIST_MODE_DISABLED);
-
-        assertCanLaunchActivity(Activity1.class);
-        assertCanLaunchActivity(Activity2.class);
-    }
-
-    @Test
-    public void testActivityLaunchIsAllowed_whenAllowlistModeIsLogOnly() throws Exception {
-        setAllowlistMode(ALLOWLIST_MODE_LOG_ONLY);
+        setAllowlistModeEnabled(false);
 
         assertCanLaunchActivity(Activity1.class);
         assertCanLaunchActivity(Activity2.class);
@@ -104,7 +96,7 @@ public final class HsuActivitiesAllowlistTest {
 
     @Test
     public void testActivityLaunchIsAllowed_whenTemporaryAllowlistIsEmpty() throws Exception {
-        setAllowlistMode(ALLOWLIST_MODE_ENABLED);
+        setAllowlistModeEnabled(true);
         setTemporaryAllowlist();
 
         assertCanLaunchActivity(Activity1.class);
@@ -113,7 +105,7 @@ public final class HsuActivitiesAllowlistTest {
 
     @Test
     public void testActivityLaunchDepends_whenAllowlistIsExplicitlySet() throws Exception {
-        setAllowlistMode(ALLOWLIST_MODE_ENABLED);
+        setAllowlistModeEnabled(true);
         setTemporaryAllowlist(new ComponentName(mContext, Activity1.class));
 
         assertCanLaunchActivity(Activity1.class);
@@ -138,6 +130,10 @@ public final class HsuActivitiesAllowlistTest {
 
     private int getAllowlistMode() throws IOException {
         return Integer.parseInt(runHamCmd("get-mode"));
+    }
+
+    private void setAllowlistModeEnabled(boolean enabled) throws IOException {
+        setAllowlistMode(enabled ? ALLOWLIST_MODE_ENABLED : ALLOWLIST_MODE_DISABLED);
     }
 
     private void setAllowlistMode(int mode) throws IOException {
