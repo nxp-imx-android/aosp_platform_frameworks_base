@@ -508,3 +508,13 @@ flag {
     description: "Sync storage before enabling screen during boot"
     bug: "467888558"
 }
+
+flag {
+    name: "keep_show_wallpaper_on_bottom"
+    namespace: "windowing_frontend"
+    description: "Keep changes with the SHOW_WALLPAPER flag at the bottom of the transition."
+    bug: "479707267"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

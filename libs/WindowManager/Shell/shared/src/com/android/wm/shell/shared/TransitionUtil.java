@@ -38,6 +38,7 @@ import static android.window.TransitionInfo.FLAG_IS_DISPLAY;
 import static android.window.TransitionInfo.FLAG_IS_WALLPAPER;
 import static android.window.TransitionInfo.FLAG_MOVED_TO_TOP;
 import static android.window.TransitionInfo.FLAG_NO_ANIMATION;
+import static android.window.TransitionInfo.FLAG_SHOW_WALLPAPER;
 import static android.window.TransitionInfo.FLAG_STARTING_WINDOW_TRANSFER_RECIPIENT;
 
 import android.annotation.NonNull;
@@ -346,7 +347,9 @@ public class TransitionUtil {
                 return zSplitLine + numChanges - order;
             }
         } else if (mode == TRANSIT_CLOSE || mode == TRANSIT_TO_BACK) {
-            if (isOpening || change.hasFlags(FLAG_IS_WALLPAPER)) {
+            if (isOpening || change.hasFlags(FLAG_IS_WALLPAPER)
+                    || (com.android.window.flags.Flags.keepShowWallpaperOnBottom()
+                    && change.hasFlags(FLAG_SHOW_WALLPAPER))) {
                 // put on bottom and leave visible
                 return zSplitLine - order;
             } else {
