@@ -9756,21 +9756,21 @@ package android.app.blob {
 
 package android.app.contentrestriction {
 
-  @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public final class Content implements android.os.Parcelable {
+  @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public final class ClassifiableContent implements android.os.Parcelable {
     method public int describeContents();
     method @Nullable public android.os.ParcelFileDescriptor getData();
     method @NonNull public android.content.LocusId getId();
     method @NonNull public String getMimeType();
     method @Nullable public android.net.Uri getUri();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
-    field @NonNull public static final android.os.Parcelable.Creator<android.app.contentrestriction.Content> CREATOR;
+    field @NonNull public static final android.os.Parcelable.Creator<android.app.contentrestriction.ClassifiableContent> CREATOR;
   }
 
-  public static final class Content.Builder {
-    ctor public Content.Builder(@NonNull android.content.LocusId, @NonNull String);
-    method @NonNull public android.app.contentrestriction.Content build();
-    method @NonNull public android.app.contentrestriction.Content.Builder setData(@NonNull android.os.ParcelFileDescriptor);
-    method @NonNull public android.app.contentrestriction.Content.Builder setUri(@NonNull android.net.Uri);
+  public static final class ClassifiableContent.Builder {
+    ctor public ClassifiableContent.Builder(@NonNull android.content.LocusId, @NonNull String);
+    method @NonNull public android.app.contentrestriction.ClassifiableContent build();
+    method @NonNull public android.app.contentrestriction.ClassifiableContent.Builder setData(@NonNull android.os.ParcelFileDescriptor);
+    method @NonNull public android.app.contentrestriction.ClassifiableContent.Builder setUri(@NonNull android.net.Uri);
   }
 
   @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public final class ContentClassificationResult implements android.os.Parcelable {
@@ -9789,15 +9789,15 @@ package android.app.contentrestriction {
   @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public class ContentRestrictionAppService extends android.app.Service {
     ctor public ContentRestrictionAppService();
     method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
-    method @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") @Nullable public android.app.contentrestriction.ContentClassificationResult onClassifyContent(@NonNull android.app.contentrestriction.Content);
+    method @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") @Nullable public android.app.contentrestriction.ContentClassificationResult onClassifyContent(@NonNull android.app.contentrestriction.ClassifiableContent);
     method @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public void onContentRestrictionDisabled();
     method @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public void onContentRestrictionEnabled();
     field public static final String ACTION_CONTENT_RESTRICTION_APP_SERVICE = "android.app.action.CONTENT_RESTRICTION_SERVICE";
   }
 
   @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public class ContentRestrictionManager {
-    method @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public void isContentAllowed(@NonNull android.app.contentrestriction.Content, @NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.lang.Boolean>);
     method @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public boolean isContentRestrictionEnabled();
+    method @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public void requestClassification(@NonNull android.app.contentrestriction.ClassifiableContent, @NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.lang.Boolean>);
   }
 
 }
