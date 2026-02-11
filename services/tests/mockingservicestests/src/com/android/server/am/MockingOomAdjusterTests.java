@@ -787,7 +787,7 @@ public class MockingOomAdjusterTests {
                 MOCKAPP_PACKAGENAME, true);
         WindowProcessController wpc = app.getWindowProcessController();
         setHasRecentTasks(wpc, true);
-        app.setLastTopTime(SystemClock.uptimeMillis());
+        MockUtils.setLastTopTime(app, SystemClock.uptimeMillis());
         setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
         updateOomAdj(app);
         doCallRealMethod().when(wpc).hasRecentTasks();
@@ -848,7 +848,7 @@ public class MockingOomAdjusterTests {
             app.mServices.startService(s);
             mProcessStateController.setHasForegroundServices(app.mServices, true,
                     FOREGROUND_SERVICE_TYPE_SHORT_SERVICE, /* hasNoneType=*/false);
-            app.setLastTopTime(SystemClock.uptimeMillis());
+            MockUtils.setLastTopTime(app, SystemClock.uptimeMillis());
             setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
 
             updateOomAdj(app);
@@ -866,7 +866,8 @@ public class MockingOomAdjusterTests {
             mProcessStateController.setHasForegroundServices(app.mServices, true,
                     FOREGROUND_SERVICE_TYPE_SHORT_SERVICE, /* hasNoneType=*/false);
             app.mServices.startService(s);
-            app.setLastTopTime(SystemClock.uptimeMillis() - mOomConstants.mTopToFgsGraceDuration);
+            MockUtils.setLastTopTime(app,
+                    SystemClock.uptimeMillis() - mOomConstants.mTopToFgsGraceDuration);
             mService.mWakefulness.set(PowerManagerInternal.WAKEFULNESS_AWAKE);
 
             updateOomAdj(app);
@@ -893,7 +894,8 @@ public class MockingOomAdjusterTests {
             mProcessStateController.setHasForegroundServices(app.mServices, true,
                     FOREGROUND_SERVICE_TYPE_SHORT_SERVICE, /* hasNoneType=*/false);
             app.mServices.startService(s);
-            app.setLastTopTime(SystemClock.uptimeMillis() - mOomConstants.mTopToFgsGraceDuration);
+            MockUtils.setLastTopTime(app,
+                    SystemClock.uptimeMillis() - mOomConstants.mTopToFgsGraceDuration);
             setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
 
             updateOomAdj(app);
@@ -1248,7 +1250,7 @@ public class MockingOomAdjusterTests {
                 MOCKAPP_PACKAGENAME, true);
         mProcessStateController.setHasForegroundServices(app.mServices, true, 0, /* hasNoneType=*/
                 true);
-        app.setLastTopTime(SystemClock.uptimeMillis());
+        MockUtils.setLastTopTime(app, SystemClock.uptimeMillis());
         setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
         updateOomAdj(app);
 
@@ -1281,7 +1283,7 @@ public class MockingOomAdjusterTests {
             ProcessRecord app = makeDefaultProcessRecord(MOCKAPP2_PID, MOCKAPP2_UID,
                     MOCKAPP2_PROCESSNAME, MOCKAPP2_PACKAGENAME, true);
             long nowUptime = SystemClock.uptimeMillis();
-            app.setLastTopTime(nowUptime);
+            MockUtils.setLastTopTime(app, nowUptime);
             // Simulate the system starting and binding to a service in the app.
             ServiceRecord s = bindService(app, system,
                     null, null, Context.BIND_ALMOST_PERCEPTIBLE, mock(IBinder.class));
@@ -1314,7 +1316,7 @@ public class MockingOomAdjusterTests {
             ProcessRecord app = makeDefaultProcessRecord(MOCKAPP2_PID, MOCKAPP2_UID,
                     MOCKAPP2_PROCESSNAME, MOCKAPP2_PACKAGENAME, true);
             long nowUptime = SystemClock.uptimeMillis();
-            app.setLastTopTime(nowUptime);
+            MockUtils.setLastTopTime(app, nowUptime);
             // Simulate the system starting and binding to a service in the app.
             ServiceRecord s = bindService(app, system,
                     null, null, Context.BIND_ALMOST_PERCEPTIBLE + 2, mock(IBinder.class));
@@ -1336,7 +1338,7 @@ public class MockingOomAdjusterTests {
             ProcessRecord app = makeDefaultProcessRecord(MOCKAPP2_PID, MOCKAPP2_UID,
                     MOCKAPP2_PROCESSNAME, MOCKAPP2_PACKAGENAME, true);
             long nowUptime = SystemClock.uptimeMillis();
-            app.setLastTopTime(nowUptime);
+            MockUtils.setLastTopTime(app, nowUptime);
             // Simulate the system starting and binding to a service in the app.
             ServiceRecord s = bindService(app, system,
                     null, null, Context.BIND_ALMOST_PERCEPTIBLE, mock(IBinder.class));
@@ -1993,7 +1995,7 @@ public class MockingOomAdjusterTests {
         mProcessStateController.setForegroundServiceType(s, FOREGROUND_SERVICE_TYPE_SHORT_SERVICE);
         s.setShortFgsInfo(SystemClock.uptimeMillis());
         client.mServices.startService(s);
-        client.setLastTopTime(SystemClock.uptimeMillis());
+        MockUtils.setLastTopTime(client, SystemClock.uptimeMillis());
 
         mProcessStateController.setHasForegroundServices(client.mServices, true,
                 FOREGROUND_SERVICE_TYPE_SHORT_SERVICE, /* hasNoneType=*/false);
@@ -2024,7 +2026,7 @@ public class MockingOomAdjusterTests {
         mProcessStateController.setForegroundServiceType(s, FOREGROUND_SERVICE_TYPE_SHORT_SERVICE);
         s.setShortFgsInfo(SystemClock.uptimeMillis());
         app2.mServices.startService(s);
-        app2.setLastTopTime(SystemClock.uptimeMillis());
+        MockUtils.setLastTopTime(app2, SystemClock.uptimeMillis());
 
         mProcessStateController.setHasForegroundServices(app2.mServices, true,
                 FOREGROUND_SERVICE_TYPE_SHORT_SERVICE, /* hasNoneType=*/false);
@@ -2346,7 +2348,7 @@ public class MockingOomAdjusterTests {
         mProcessStateController.setForegroundServiceType(s, FOREGROUND_SERVICE_TYPE_SHORT_SERVICE);
         s.setShortFgsInfo(SystemClock.uptimeMillis());
         client.mServices.startService(s);
-        client.setLastTopTime(SystemClock.uptimeMillis());
+        MockUtils.setLastTopTime(client, SystemClock.uptimeMillis());
 
         mProcessStateController.setHasForegroundServices(client.mServices, true,
                 FOREGROUND_SERVICE_TYPE_SHORT_SERVICE, false);
@@ -3021,8 +3023,8 @@ public class MockingOomAdjusterTests {
 
         s1.getConnections().clear();
         s2.getConnections().clear();
-        client1.mServices.removeAllConnections();
-        client2.mServices.removeAllConnections();
+        mProcessStateController.removeAllConnections(client1.mServices);
+        mProcessStateController.removeAllConnections(client2.mServices);
         mProcessStateController.setMaxAdj(client1, UNKNOWN_ADJ);
         mProcessStateController.setMaxAdj(client2, UNKNOWN_ADJ);
         mProcessStateController.setHasForegroundServices(client1.mServices, true, 0, true);
@@ -3902,7 +3904,7 @@ public class MockingOomAdjusterTests {
     public void testUpdateOomAdj_DoAll_Isolated_stopServiceWithEntryPoint() {
         ProcessRecord app = makeSpiedProcessRecord(MOCKAPP_PID, MOCKAPP_ISOLATED_UID,
                 MOCKAPP_ISOLATED_PROCESSNAME, MOCKAPP_PACKAGENAME, false);
-        app.setIsolatedEntryPoint("test");
+        mProcessStateController.setIsolatedEntryPoint(app, "test");
 
         setProcessesToLru(app);
         ServiceRecord s = makeServiceRecord(app);
@@ -3925,7 +3927,7 @@ public class MockingOomAdjusterTests {
     public void testUpdateOomAdj_DoPending_Isolated_stopServiceWithEntryPoint() {
         ProcessRecord app = makeSpiedProcessRecord(MOCKAPP_PID, MOCKAPP_ISOLATED_UID,
                 MOCKAPP_ISOLATED_PROCESSNAME, MOCKAPP_PACKAGENAME, false);
-        app.setIsolatedEntryPoint("test");
+        mProcessStateController.setIsolatedEntryPoint(app, "test");
 
         ServiceRecord s = makeServiceRecord(app);
         mProcessStateController.setStartRequested(s, true);
@@ -4990,9 +4992,9 @@ public class MockingOomAdjusterTests {
             final ProcessProfileRecord profile = app.mProfile;
             final ProcessProviderRecord providers = app.mProviders;
             app.makeActive(mock(ApplicationThreadDeferred.class), mService.mProcessStats);
-            app.setLastActivityTime(mLastActivityTime);
+            mProcessStateController.setLastActivityTime(app, mLastActivityTime);
             mProcessStateController.setKilledByAm(app, mKilledByAm);
-            app.setIsolatedEntryPoint(mIsolatedEntryPoint);
+            mProcessStateController.setIsolatedEntryPoint(app, mIsolatedEntryPoint);
             final WindowProcessController wpc = spy(app.getWindowProcessController());
             setFieldValue(ProcessRecord.class, app, "mWindowProcessController", wpc);
             doReturn(Long.MIN_VALUE)
@@ -5019,18 +5021,18 @@ public class MockingOomAdjusterTests {
             mProcessStateController.setHasTopUi(state, mHasTopUi);
             mProcessStateController.setRunningRemoteAnimation(state, mRunningRemoteAnimation);
             mProcessStateController.setHasOverlayUi(state, mHasOverlayUi);
-            state.setLastTopTime(mLastTopTime);
+            MockUtils.setLastTopTime(state, mLastTopTime);
             mProcessStateController.setForcingToImportant(state, mForcingToImportant);
-            services.setConnectionGroup(mConnectionGroup);
-            services.setConnectionImportance(mConnectionImportance);
-            services.setHasClientActivities(mHasClientActivities);
-            services.setHasForegroundServices(mHasForegroundServices, mFgServiceTypes,
-                    /* hasNoneType=*/false);
-            services.setHasAboveClient(mHasAboveClient);
-            services.setTreatLikeActivity(mTreatLikeActivity);
-            services.setExecServicesFg(mExecServicesFg);
+            mProcessStateController.setConnectionGroup(services, mConnectionGroup);
+            mProcessStateController.setConnectionImportance(services, mConnectionImportance);
+            mProcessStateController.setHasClientActivities(services, mHasClientActivities);
+            mProcessStateController.setHasForegroundServices(services, mHasForegroundServices,
+                    mFgServiceTypes, /* hasNoneType=*/false);
+            mProcessStateController.setHasAboveClient(services, mHasAboveClient);
+            mProcessStateController.setTreatLikeActivity(services, mTreatLikeActivity);
+            mProcessStateController.setExecServicesFg(services, mExecServicesFg);
             for (int i = 0; i < mNumOfExecutingServices; i++) {
-                services.startExecutingService(makeServiceRecord());
+                mProcessStateController.startExecutingService(services, makeServiceRecord());
             }
             mProcessStateController.setLastProviderTime(app, mLastProviderTime);
 

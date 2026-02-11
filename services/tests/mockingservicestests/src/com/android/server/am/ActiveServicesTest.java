@@ -56,6 +56,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
 import android.content.pm.ServiceInfo;
+import android.os.IBinder;
 import android.os.Process;
 import android.os.SystemClock;
 import android.platform.test.annotations.RequiresFlagsEnabled;
@@ -1229,5 +1230,128 @@ public final class ActiveServicesTest {
 
         // Verify that getUid() returns the App UID (TEST_UID = 10123)
         assertThat(r.serviceInfo.getUid()).isEqualTo(TEST_UID);
+    }
+
+    /**
+     * Verify that {@link ActiveServices#rebindServiceConnectionsLocked} correctly handles
+     * successful flag updates, ensuring LRU and OOM adj are updated for the host process.
+     */
+    @Test
+    public void testRebindServiceConnectionsLocked_Success() {
+        prepareTestRebindServiceConnections();
+        final IBinder binder = mock(IBinder.class);
+        final ProcessRecord host = mock(ProcessRecord.class);
+        final ConnectionRecord r = createConnectionRecord(host, Context.BIND_IMPORTANT);
+        final ArrayList<ConnectionRecord> clist = new ArrayList<>();
+        clist.add(r);
+
+        final long flags = Context.BIND_IMPORTANT | Context.BIND_NOT_FOREGROUND;
+        when(mService.mProcessStateController.updateConnectionFlags(r, flags)).thenReturn(true);
+
+        boolean needOomAdj = mActiveServices.rebindServiceConnectionsLocked(binder, clist, flags);
+
+        assertThat(needOomAdj).isTrue();
+        verify(mService).updateLruProcessLocked(eq(host), eq(true), any());
+        verify(mService).enqueueOomAdjTargetLocked(eq(host));
+    }
+
+    /**
+     * Verify that {@link ActiveServices#rebindServiceConnectionsLocked} correctly handles
+     * cases where no OOM adjustment is needed because the flags update didn't change the
+     * process state.
+     */
+    @Test
+    public void testRebindServiceConnectionsLocked_NoOomAdjNeeded() {
+        prepareTestRebindServiceConnections();
+        final IBinder binder = mock(IBinder.class);
+        final ProcessRecord host = mock(ProcessRecord.class);
+        final ConnectionRecord r = createConnectionRecord(host, Context.BIND_IMPORTANT);
+        final ArrayList<ConnectionRecord> clist = new ArrayList<>();
+        clist.add(r);
+
+        final long flags = Context.BIND_IMPORTANT | Context.BIND_NOT_FOREGROUND;
+        when(mService.mProcessStateController.updateConnectionFlags(r, flags)).thenReturn(false);
+
+        boolean needOomAdj = mActiveServices.rebindServiceConnectionsLocked(binder, clist, flags);
+
+        assertThat(needOomAdj).isFalse();
+        verify(mService, never()).updateLruProcessLocked(any(), anyBoolean(), any());
+        verify(mService, never()).enqueueOomAdjTargetLocked(any());
+    }
+
+    /**
+     * Verify that {@link ActiveServices#rebindServiceConnectionsLocked} throws
+     * {@link IllegalArgumentException} when attempting to update non-updateable flags.
+     */
+    @Test
+    public void testRebindServiceConnectionsLocked_InvalidFlags() {
+        prepareTestRebindServiceConnections();
+        final IBinder binder = mock(IBinder.class);
+        final ProcessRecord host = mock(ProcessRecord.class);
+        final ConnectionRecord r = createConnectionRecord(host, Context.BIND_IMPORTANT);
+        final ArrayList<ConnectionRecord> clist = new ArrayList<>();
+        clist.add(r);
+
+        // BIND_DEBUG_UNBIND is not in BIND_UPDATEABLE_FLAGS
+        final long flags = Context.BIND_IMPORTANT | Context.BIND_DEBUG_UNBIND;
+
+        try {
+            mActiveServices.rebindServiceConnectionsLocked(binder, clist, flags);
+            assertWithMessage("Should throw IllegalArgumentException").fail();
+        } catch (IllegalArgumentException e) {
+            // Expected
+        }
+    }
+
+    /**
+     * Verify that {@link ActiveServices#rebindServiceConnectionsLocked} correctly handles
+     * multiple connections, ensuring LRU and OOM adj are updated only for the processes
+     * that had their connection flags successfully updated.
+     */
+    @Test
+    public void testRebindServiceConnectionsLocked_MultipleConnections() {
+        prepareTestRebindServiceConnections();
+        final IBinder binder = mock(IBinder.class);
+        final ProcessRecord host1 = mock(ProcessRecord.class);
+        final ProcessRecord host2 = mock(ProcessRecord.class);
+        final ConnectionRecord r1 = createConnectionRecord(host1, Context.BIND_IMPORTANT);
+        final ConnectionRecord r2 = createConnectionRecord(host2, Context.BIND_IMPORTANT);
+        final ArrayList<ConnectionRecord> clist = new ArrayList<>();
+        clist.add(r1);
+        clist.add(r2);
+
+        final long flags = Context.BIND_IMPORTANT | Context.BIND_NOT_FOREGROUND;
+        when(mService.mProcessStateController.updateConnectionFlags(r1, flags)).thenReturn(true);
+        when(mService.mProcessStateController.updateConnectionFlags(r2, flags)).thenReturn(false);
+
+        boolean needOomAdj = mActiveServices.rebindServiceConnectionsLocked(binder, clist, flags);
+
+        assertThat(needOomAdj).isTrue();
+        verify(mService).updateLruProcessLocked(eq(host1), eq(true), any());
+        verify(mService).enqueueOomAdjTargetLocked(eq(host1));
+        verify(mService, never()).updateLruProcessLocked(eq(host2), anyBoolean(), any());
+        verify(mService, never()).enqueueOomAdjTargetLocked(eq(host2));
+    }
+
+    /**
+     * Helper to prepare {@code mActiveServices} as a real object and mock
+     * {@code mService.mProcessStateController}.
+     */
+    private void prepareTestRebindServiceConnections() {
+        mActiveServices = new ActiveServices(mService);
+        mService.mProcessStateController = mock(ProcessStateController.class);
+    }
+
+    /**
+     * Helper to create a {@link ConnectionRecord} with a mocked host process.
+     */
+    private ConnectionRecord createConnectionRecord(ProcessRecord host, long flags) {
+        final ServiceRecord sr = mock(ServiceRecord.class);
+        when(sr.getHostProcess()).thenReturn(host);
+
+        final AppBindRecord abr = new AppBindRecord(sr, mock(IntentBindRecord.class),
+                mock(ProcessRecord.class), mock(ProcessRecord.class));
+
+        return new ConnectionRecord(abr, null, null, flags, 0, null, 0, null, null, null);
     }
 }

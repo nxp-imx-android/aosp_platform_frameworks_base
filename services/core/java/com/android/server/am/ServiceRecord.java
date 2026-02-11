@@ -1254,8 +1254,8 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
         updateProcessStateOnRequest();
         if (pendingConnectionGroup > 0 && proc != null) {
             final ProcessServiceRecord psr = proc.mServices;
-            psr.setConnectionGroup(pendingConnectionGroup);
-            psr.setConnectionImportance(pendingConnectionImportance);
+            ams.mProcessStateController.setConnectionGroup(psr, pendingConnectionGroup);
+            ams.mProcessStateController.setConnectionImportance(psr, pendingConnectionImportance);
             pendingConnectionGroup = pendingConnectionImportance = 0;
         }
         if (ActivityManagerService.TRACK_PROCSTATS_ASSOCIATIONS) {

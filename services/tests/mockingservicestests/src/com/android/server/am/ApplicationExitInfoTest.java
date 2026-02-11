@@ -1316,7 +1316,7 @@ public class ApplicationExitInfoTest {
                     dummyPackageName, dummyClassName), "", definingUid, "",
                     isNativeService));
         }
-        app.mServices.setConnectionGroup(connectionGroup);
+        ams.mProcessStateController.setConnectionGroup(app.mServices, connectionGroup);
         app.setReportedProcState(procState);
         app.mProfile.setLastMemInfo(spy(new Debug.MemoryInfo()));
         app.mProfile.setLastPss(pss);

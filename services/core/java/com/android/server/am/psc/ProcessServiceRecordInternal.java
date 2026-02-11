@@ -103,7 +103,7 @@ public class ProcessServiceRecordInternal {
         return mConnectionGroup;
     }
 
-    public void setConnectionGroup(int connectionGroup) {
+    void setConnectionGroup(int connectionGroup) {
         mConnectionGroup = connectionGroup;
     }
 
@@ -111,7 +111,7 @@ public class ProcessServiceRecordInternal {
         return mConnectionImportance;
     }
 
-    public void setConnectionImportance(int connectionImportance) {
+    void setConnectionImportance(int connectionImportance) {
         mConnectionImportance = connectionImportance;
     }
 
@@ -119,7 +119,7 @@ public class ProcessServiceRecordInternal {
         return mTreatLikeActivity;
     }
 
-    public void setTreatLikeActivity(boolean treatLikeActivity) {
+    void setTreatLikeActivity(boolean treatLikeActivity) {
         mTreatLikeActivity = treatLikeActivity;
     }
 
@@ -127,7 +127,7 @@ public class ProcessServiceRecordInternal {
         return mHasAboveClient;
     }
 
-    public void setHasAboveClient(boolean hasAboveClient) {
+    void setHasAboveClient(boolean hasAboveClient) {
         mHasAboveClient = hasAboveClient;
     }
 
@@ -156,7 +156,7 @@ public class ProcessServiceRecordInternal {
      * Sets whether this process has any client services with activities.
      * This method also notifies the registered observer of the change.
      */
-    public void setHasClientActivities(boolean hasClientActivities) {
+    void setHasClientActivities(boolean hasClientActivities) {
         mHasClientActivities = hasClientActivities;
         mObserver.onHasClientActivitiesChanged(hasClientActivities);
     }
@@ -170,7 +170,7 @@ public class ProcessServiceRecordInternal {
         return mExecServicesFg;
     }
 
-    public void setExecServicesFg(boolean execServicesFg) {
+    void setExecServicesFg(boolean execServicesFg) {
         mExecServicesFg = execServicesFg;
     }
 
@@ -208,7 +208,7 @@ public class ProcessServiceRecordInternal {
      * Sets the foreground service status and types for this process.
      * This method also notifies the registered observer of the change.
      */
-    public void setHasForegroundServices(boolean hasForegroundServices, int fgServiceTypes,
+    void setHasForegroundServices(boolean hasForegroundServices, int fgServiceTypes,
             boolean hasTypeNoneFgs) {
         // hasForegroundServices should be the same as "either it has any FGS types, or none types".
         // We still take this as a parameter because it's used in the call site...
@@ -229,7 +229,7 @@ public class ProcessServiceRecordInternal {
         return mHasTopStartedAlmostPerceptibleServices;
     }
 
-    public void setHasTopStartedAlmostPerceptibleServices(boolean value) {
+    void setHasTopStartedAlmostPerceptibleServices(boolean value) {
         mHasTopStartedAlmostPerceptibleServices = value;
     }
 
@@ -237,7 +237,7 @@ public class ProcessServiceRecordInternal {
         return mLastTopStartedAlmostPerceptibleBindRequestUptimeMs;
     }
 
-    public void setLastTopStartedAlmostPerceptibleBindRequestUptimeMs(long value) {
+    void setLastTopStartedAlmostPerceptibleBindRequestUptimeMs(long value) {
         mLastTopStartedAlmostPerceptibleBindRequestUptimeMs = value;
     }
 
@@ -249,7 +249,7 @@ public class ProcessServiceRecordInternal {
      * It iterates through all running services to determine if any are considered
      * "almost perceptible" and updates the latest bind request uptime.
      */
-    public void updateHasTopStartedAlmostPerceptibleServices() {
+    void updateHasTopStartedAlmostPerceptibleServices() {
         mHasTopStartedAlmostPerceptibleServices = false;
         mLastTopStartedAlmostPerceptibleBindRequestUptimeMs = 0;
         for (int s = numberOfRunningServices() - 1; s >= 0; --s) {
@@ -349,7 +349,7 @@ public class ProcessServiceRecordInternal {
     }
 
     /** Adds a service to the set of services that are currently executing code. */
-    public void startExecutingService(ServiceRecordInternal service) {
+    void startExecutingService(ServiceRecordInternal service) {
         mExecutingServices.add(service);
     }
 
@@ -396,7 +396,7 @@ public class ProcessServiceRecordInternal {
      * This clears the connection set and performs necessary cleanup for any SDK sandbox
      * connections.
      */
-    public void removeAllConnections() {
+    void removeAllConnections() {
         for (int i = 0, size = mConnections.size(); i < size; i++) {
             removeSdkSandboxConnectionIfNecessary(mConnections.valueAt(i));
         }
@@ -431,7 +431,7 @@ public class ProcessServiceRecordInternal {
     }
 
     /** Adds a connection record that this process holds indirectly to an SDK sandbox process. */
-    public void addSdkSandboxConnection(ConnectionRecordInternal connection) {
+    void addSdkSandboxConnection(ConnectionRecordInternal connection) {
         if (mSdkSandboxConnections == null) {
             mSdkSandboxConnections = new ArraySet<>();
         }
@@ -439,7 +439,7 @@ public class ProcessServiceRecordInternal {
     }
 
     /** Removes a connection record to a service running in an SDK sandbox. */
-    public void removeSdkSandboxConnection(ConnectionRecordInternal connection) {
+    void removeSdkSandboxConnection(ConnectionRecordInternal connection) {
         if (mSdkSandboxConnections != null) {
             mSdkSandboxConnections.remove(connection);
         }
