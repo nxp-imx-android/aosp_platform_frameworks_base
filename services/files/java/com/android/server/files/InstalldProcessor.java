@@ -37,7 +37,7 @@ public class InstalldProcessor implements FileOperationProcessor {
     }
 
     @Override
-    public void process(FilesService.RequestContext ctx, StatusCallback callback)
+    public void process(FileService.RequestContext ctx, StatusCallback callback)
             throws IOException {
         Slog.d(TAG, "Processing via InstalldProcessor for uid " + ctx.initiatorUid());
         // TODO(b/467302127): Implement interaction with installd

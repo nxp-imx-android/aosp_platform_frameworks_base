@@ -27,7 +27,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManagerInternal;
 import android.os.UserHandle;
-import android.os.storage.IFilesService;
+import android.os.storage.IFileService;
 import android.os.storage.operations.FileOperationEnqueueResult;
 import android.os.storage.operations.FileOperationRequest;
 import android.os.storage.operations.FileOperationResult;
@@ -51,12 +51,12 @@ import java.util.List;
 
 @Presubmit
 @RunWith(AndroidJUnit4.class)
-public class FilesServiceTest {
+public class FileServiceTest {
 
     private static final String DEFAULT_PACKAGE_NAME = "com.android.server.files.test";
 
-    private FilesService mFilesService;
-    private IFilesService.Stub mBinderService;
+    private FileService mFileService;
+    private IFileService.Stub mBinderService;
     private TestFileOperationDispatcher mTestDispatcher;
 
     @Mock private Context mContext;
@@ -78,7 +78,7 @@ public class FilesServiceTest {
 
         @Override
         public void dispatch(
-                FilesService.RequestContext ctx, FileOperationProcessor.StatusCallback callback) {
+                FileService.RequestContext ctx, FileOperationProcessor.StatusCallback callback) {
             mDispatchedRequests.add(ctx.request());
             mLastCallback = callback;
             // Don't actually run anything async
@@ -99,10 +99,10 @@ public class FilesServiceTest {
 
         mTestDispatcher = new TestFileOperationDispatcher();
 
-        mFilesService =
-                new FilesService(
+        mFileService =
+                new FileService(
                         mContext,
-                        new FilesService.Injector() {
+                        new FileService.Injector() {
                             @Override
                             public FileOperationDispatcher getFileOperationDispatcher() {
                                 return mTestDispatcher;
@@ -113,7 +113,7 @@ public class FilesServiceTest {
                                 return TEST_UID;
                             }
                         });
-        mBinderService = mFilesService.mBinderService;
+        mBinderService = mFileService.mBinderService;
     }
 
     @After
@@ -265,7 +265,7 @@ public class FilesServiceTest {
 
     @Test
     public void testResultHistory_evictionPolicy() throws Exception {
-        // FilesService.MAX_HISTORY_SIZE = 50 + 10 = 60
+        // FileService.MAX_HISTORY_SIZE = 50 + 10 = 60
         int maxHistory = 60;
 
         // 1. Fill with completed items
@@ -282,7 +282,7 @@ public class FilesServiceTest {
             mTestDispatcher.mLastCallback.onResult(finishResult);
         }
 
-        assertThat(mFilesService.mResults.size()).isEqualTo(maxHistory);
+        assertThat(mFileService.mResults.size()).isEqualTo(maxHistory);
 
         // 2. Add one more. Should evict eldest.
         FileOperationRequest lastRequest = createValidRequest();
@@ -295,11 +295,11 @@ public class FilesServiceTest {
                         .setStatus(FileOperationResult.STATUS_FINISHED)
                         .build());
 
-        assertThat(mFilesService.mResults.size()).isEqualTo(maxHistory);
+        assertThat(mFileService.mResults.size()).isEqualTo(maxHistory);
 
         // 3. Test protection of active items
-        mFilesService.mResults.clear();
-        mFilesService.mPendingRequests.clear();
+        mFileService.mResults.clear();
+        mFileService.mPendingRequests.clear();
 
         // Add an active item (eldest)
         FileOperationEnqueueResult activeRes =
@@ -320,8 +320,8 @@ public class FilesServiceTest {
 
         // Total should be 61 (1 active + 60 finished). The active one (eldest) should NOT be
         // removed.
-        assertThat(mFilesService.mResults.size()).isEqualTo(maxHistory + 1);
-        assertThat(mFilesService.mResults.containsKey(activeId)).isTrue();
+        assertThat(mFileService.mResults.size()).isEqualTo(maxHistory + 1);
+        assertThat(mFileService.mResults.containsKey(activeId)).isTrue();
     }
 
     @Test

@@ -11904,8 +11904,8 @@ package android.content {
     field public static final String DOWNLOAD_SERVICE = "download";
     field public static final String DROPBOX_SERVICE = "dropbox";
     field public static final String EUICC_SERVICE = "euicc";
-    field @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public static final String FILES_SERVICE = "files";
     field public static final String FILE_INTEGRITY_SERVICE = "file_integrity";
+    field @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public static final String FILE_SERVICE = "file";
     field public static final String GAME_SERVICE = "game";
     field public static final String GRAMMATICAL_INFLECTION_SERVICE = "grammatical_inflection";
     field public static final String HARDWARE_PROPERTIES_SERVICE = "hardware_properties";
@@ -36858,7 +36858,7 @@ package android.os.multisensory {
 
 package android.os.storage {
 
-  @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public final class FilesManager {
+  @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public final class FileManager {
     method @NonNull public android.os.storage.operations.FileOperationEnqueueResult enqueueOperation(@NonNull android.os.storage.operations.FileOperationRequest);
     method @Nullable public android.os.storage.operations.FileOperationResult fetchResult(@NonNull String);
     method public void registerCompletionListener(@NonNull String);
