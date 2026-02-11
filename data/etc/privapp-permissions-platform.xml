@@ -719,6 +719,8 @@ applications that come with the platform
         <permission name="android.permission.TEST_LOCK_APPS"/>
         <!-- Permission required for personal context settings testing  -->
         <permission name="android.permission.CHANGE_PERSONAL_CONTEXT_MODE" />
+        <!-- Permission required for CTS test - CtsAttentionServiceDeviceTestCases -->
+        <permission name="android.permission.ACCESS_ATTENTION_LISTENER" />
     </privapp-permissions>
 
     <privapp-permissions package="com.android.soundpicker">
