@@ -27,6 +27,8 @@ import android.view.WindowManager.LayoutParams.TYPE_NOTIFICATION_SHADE
 import android.window.WindowContext
 import android.window.WindowProvider.KEY_REPARENT_TO_DEFAULT_DISPLAY_WITH_DISPLAY_REMOVAL
 import com.android.app.tracing.TrackGroupUtils.trackGroup
+import com.android.internal.util.EmergencyAffordanceManager
+import com.android.internal.util.ScreenshotHelper
 import com.android.systemui.CoreStartable
 import com.android.systemui.common.ui.ConfigurationState
 import com.android.systemui.common.ui.ConfigurationStateImpl
@@ -243,10 +245,7 @@ object ShadeDisplayAwareModule {
     @Provides
     @IntoMap
     @ClassKey(ShadePrimaryDisplayCommand::class)
-    fun provideShadePrimaryDisplayCommand(
-        impl: ShadePrimaryDisplayCommand
-    ): CoreStartable = impl
-
+    fun provideShadePrimaryDisplayCommand(impl: ShadePrimaryDisplayCommand): CoreStartable = impl
 
     /**
      * Provided for making classes easier to test. In tests, a custom method to wait for the next
@@ -275,9 +274,8 @@ object ShadeDisplayAwareModule {
     @Provides
     @IntoMap
     @ClassKey(ShadeDisplaysDialogInteractor::class)
-    fun provideShadeDisplayDialogInteractor(
-        impl: ShadeDisplaysDialogInteractor
-    ): CoreStartable = impl
+    fun provideShadeDisplayDialogInteractor(impl: ShadeDisplaysDialogInteractor): CoreStartable =
+        impl
 
     @Provides
     @ShadeDisplayAware
@@ -286,6 +284,22 @@ object ShadeDisplayAwareModule {
         shadeDisplayTypeRepository: ShadeDisplayTypeRepository
     ): DisplayTypeRepository {
         return shadeDisplayTypeRepository
+    }
+
+    @Provides
+    @ShadeDisplayAware
+    @SysUISingleton
+    fun emergencyAffordanceManager(
+        @ShadeDisplayAware shadeContext: Context
+    ): EmergencyAffordanceManager {
+        return EmergencyAffordanceManager(shadeContext)
+    }
+
+    @Provides
+    @ShadeDisplayAware
+    @SysUISingleton
+    fun provideScreenshotHelper(@ShadeDisplayAware shadeContext: Context): ScreenshotHelper {
+        return ScreenshotHelper(shadeContext)
     }
 }
 
