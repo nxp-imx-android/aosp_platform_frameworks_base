@@ -2490,7 +2490,7 @@ public class VoiceInteractionManagerService extends SystemService {
                 @Nullable IBinder activityToken) {
             super.showSessionForActiveService_enforcePermission();
 
-            if (DEBUG_USER) Slog.d(TAG, "showSessionForActiveService()");
+            Slog.d(TAG, "showSessionForActiveService()");
 
             synchronized (this) {
                 if (mImpl == null) {
