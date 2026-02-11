@@ -199,8 +199,8 @@ public final class InsightSurfaceClientUpdate implements Parcelable {
     }
 
     /**
-     * Return the {@link Set} of {@link ContextHint}s for this update, or null if the update doesn't
-     * contain a set of hints.
+     * Return the {@link Set} of {@link ContextHint}s for this update, or an empty {@link Set} if
+     * the update doesn't contain hints.
      */
     @NonNull
     public Set<ContextHint> getHints() {

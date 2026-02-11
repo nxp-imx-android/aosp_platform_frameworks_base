@@ -15019,7 +15019,7 @@ package android.service.personalcontext.embedded {
   }
 
   public static interface InsightSurfaceClient.ClientCallback {
-    method public default void onError(@NonNull Exception);
+    method public default void onError(@NonNull android.service.personalcontext.embedded.InsightSurfaceSessionException);
     method public default void onSessionCreated(@NonNull android.service.personalcontext.embedded.InsightSurfaceSession);
     method public default void onSessionDestroyed(@NonNull android.service.personalcontext.embedded.InsightSurfaceSession);
     method public default void onSessionUpdated(@NonNull android.service.personalcontext.embedded.InsightSurfaceSession);
@@ -15092,7 +15092,6 @@ package android.service.personalcontext.embedded {
     method public void close();
     method @Nullable public android.service.personalcontext.embedded.InsightSurfaceClient getClient();
     method @Nullable public android.view.SurfaceControlViewHost.SurfacePackage getSurfacePackage();
-    method public void publishHints(@NonNull java.util.Set<android.service.personalcontext.hint.ContextHint>);
     method public void update(@NonNull android.service.personalcontext.embedded.InsightSurfaceClientUpdate, @Nullable android.os.OutcomeReceiver<android.service.personalcontext.embedded.InsightSurfaceClientUpdate,android.service.personalcontext.embedded.ClientUpdateException>);
   }
 
