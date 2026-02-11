@@ -29,7 +29,9 @@ import com.android.systemui.communal.data.repository.CommunalSettingsRepositoryM
 import com.android.systemui.communal.data.repository.CommunalSmartspaceRepositoryModule
 import com.android.systemui.communal.data.repository.CommunalTutorialRepositoryModule
 import com.android.systemui.communal.data.repository.CommunalWidgetRepositoryModule
+import com.android.systemui.communal.domain.definition.ContextualSetupDefinition
 import com.android.systemui.communal.domain.definition.SetupTarget
+import com.android.systemui.communal.domain.definition.UprightChargingSetupDefinition
 import com.android.systemui.communal.domain.interactor.CommunalSceneTransitionInteractor
 import com.android.systemui.communal.domain.suppression.dagger.CommunalSuppressionModule
 import com.android.systemui.communal.shared.log.CommunalMetricsLogger
@@ -55,6 +57,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
+import dagger.multibindings.IntoSet
 import javax.inject.Named
 import kotlinx.coroutines.CoroutineScope
 
@@ -99,6 +102,12 @@ interface CommunalModule {
     fun bindGlanceableHubMultiUserHelper(
         impl: GlanceableHubMultiUserHelperImpl
     ): GlanceableHubMultiUserHelper
+
+    @Binds
+    @IntoSet
+    fun bindUprightChargingSetupDefinition(
+        impl: UprightChargingSetupDefinition
+    ): ContextualSetupDefinition
 
     companion object {
         const val LOGGABLE_PREFIXES = "loggable_prefixes"
@@ -166,9 +175,12 @@ interface CommunalModule {
         }
 
         @Provides
-        fun provideUprightChargingSetupTarget(): SetupTarget {
-            // TODO(b/475513342): Target should be read from RROs to allow OEM customization
-            return SetupTarget.Activity(ComponentName("", ""))
+        fun provideUprightChargingSetupTarget(@Main resources: Resources): SetupTarget {
+            val componentNameString =
+                resources.getString(R.string.config_communalUprightChargingSetupActivityComponent)
+            val componentName =
+                ComponentName.unflattenFromString(componentNameString) ?: ComponentName("", "")
+            return SetupTarget.Activity(componentName)
         }
     }
 }
