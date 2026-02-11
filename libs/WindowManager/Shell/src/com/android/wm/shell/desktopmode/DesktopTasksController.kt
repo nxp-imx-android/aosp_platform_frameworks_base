@@ -2052,7 +2052,7 @@ class DesktopTasksController(
             DesktopExperienceFlags.CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT.isTrue() &&
                 lockTaskChangeListener.isTaskLocked
         ) {
-            logW("closeTask(taskId=%d): %s", taskId, CloseTaskResult.NOT_CLOSED_TASK_LOCKED)
+            logW("closeTask(taskId=%d): ${CloseTaskResult.NOT_CLOSED_TASK_LOCKED}", taskId)
             return CloseTaskResult.NOT_CLOSED_TASK_LOCKED
         }
         if (
@@ -2060,9 +2060,8 @@ class DesktopTasksController(
                 desktopModeCompatPolicy.shouldDisableDesktopEntryPoints(task)
         ) {
             logW(
-                "closeTask(taskId=%d): %s",
+                "closeTask(taskId=%d): ${CloseTaskResult.NOT_CLOSED_DISABLED_DESKTOP_ENTRY}",
                 taskId,
-                CloseTaskResult.NOT_CLOSED_DISABLED_DESKTOP_ENTRY,
             )
             return CloseTaskResult.NOT_CLOSED_DISABLED_DESKTOP_ENTRY
         }
@@ -2070,9 +2069,8 @@ class DesktopTasksController(
             if (Flags.closeSplitTaskInsteadOfMovingToBack()) {
                 splitScreenController.closeTask(taskId)
                 logI(
-                    "closeTask(taskId=%d): %s",
+                    "closeTask(taskId=%d): ${CloseTaskResult.CLOSE_REQUESTED_SPLIT_SCREEN}",
                     taskId,
-                    CloseTaskResult.CLOSE_REQUESTED_SPLIT_SCREEN,
                 )
                 return CloseTaskResult.CLOSE_REQUESTED_SPLIT_SCREEN
             }
@@ -2080,11 +2078,7 @@ class DesktopTasksController(
                 DesktopExperienceFlags.CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT
                     .isTrue() && splitScreenController.isDividerFlinging()
             ) {
-                logW(
-                    "closeTask(taskId=%d): %s",
-                    taskId,
-                    CloseTaskResult.NOT_CLOSED_DIVIDER_FLINGING,
-                )
+                logW("closeTask(taskId=%d): ${CloseTaskResult.NOT_CLOSED_DIVIDER_FLINGING}", taskId)
                 return CloseTaskResult.NOT_CLOSED_DIVIDER_FLINGING
             }
             val otherTaskPosition =
@@ -2095,17 +2089,17 @@ class DesktopTasksController(
                 }
             val otherTask = splitScreenController.getTaskInfo(otherTaskPosition)
             if (otherTask == null) {
-                logW("closeTask(taskId=%d): %s", taskId, CloseTaskResult.NOT_CLOSED_NO_OTHER_TASK)
+                logW("closeTask(taskId=%d): ${CloseTaskResult.NOT_CLOSED_NO_OTHER_TASK}", taskId)
                 return CloseTaskResult.NOT_CLOSED_NO_OTHER_TASK
             }
             splitScreenController.moveTaskToFullscreen(otherTask.taskId, EXIT_REASON_DESKTOP_MODE)
-            logI("closeTask(taskId=%d): %s", taskId, CloseTaskResult.CLOSE_REQUESTED_SPLIT_SCREEN)
+            logI("closeTask(taskId=%d): ${CloseTaskResult.CLOSE_REQUESTED_SPLIT_SCREEN}", taskId)
             return CloseTaskResult.CLOSE_REQUESTED_SPLIT_SCREEN
         }
         if (isDesktopTask(task)) {
             // TODO: b/445825181 - Remove this check once minimized tasks never get focused.
             if (userRepositories.getProfile(task.userId).isMinimizedTask(task.taskId)) {
-                logW("closeTask(taskId=%d): %s", taskId, CloseTaskResult.NOT_CLOESD_MINIMIZED)
+                logW("closeTask(taskId=%d): ${CloseTaskResult.NOT_CLOESD_MINIMIZED}", taskId)
                 return CloseTaskResult.NOT_CLOESD_MINIMIZED
             }
             val wct = WindowContainerTransaction()
@@ -2115,7 +2109,7 @@ class DesktopTasksController(
             if (transition != null && runOnTransitionStart != null) {
                 runOnTransitionStart.invoke(transition)
             }
-            logI("closeTask(taskId=%d): %s", taskId, CloseTaskResult.CLOSED_DESKTOP)
+            logI("closeTask(taskId=%d): ${CloseTaskResult.CLOSED_DESKTOP}", taskId)
             return CloseTaskResult.CLOSED_DESKTOP
         }
         if (
@@ -2125,10 +2119,10 @@ class DesktopTasksController(
             val wct = WindowContainerTransaction()
             wct.removeTask(task.token)
             transitions.startTransition(TRANSIT_CLOSE, wct, null)
-            logI("closeTask(taskId=%d): %s", taskId, CloseTaskResult.CLOSED_FULLSCREEN)
+            logI("closeTask(taskId=%d): ${CloseTaskResult.CLOSED_FULLSCREEN}", taskId)
             return CloseTaskResult.CLOSED_FULLSCREEN
         }
-        logW("closeTask(taskId=%d): %s", taskId, CloseTaskResult.NOT_CLOSED_UNKNOWN_TASK)
+        logW("closeTask(taskId=%d): ${CloseTaskResult.NOT_CLOSED_UNKNOWN_TASK}", taskId)
         return CloseTaskResult.NOT_CLOSED_UNKNOWN_TASK
     }
 
@@ -3767,7 +3761,7 @@ class DesktopTasksController(
         val triggerTask = request.triggerTask
         // Skipping early if the trigger task is null
         if (triggerTask == null) {
-            logV("skipping handleRequest reason=%s", "triggerTask is null")
+            logV("skipping handleRequest reason=triggerTask is null")
             return null
         }
         val windowingLayerChange = request.windowingLayerChange
