@@ -605,11 +605,9 @@ constructor(
     fun onTransitionAnimationEnd(transaction: SurfaceControl.Transaction) {
         if (!Flags.notificationShadeBlur()) return
         blursDisabledForAppLaunch = false
-        if (SceneContainerFlag.isEnabled) {
-            val surface = root.viewRootImpl?.surfaceControl
-            if (surface?.isValid == true) {
-                transaction.setBackgroundBlurRadius(surface, 0)
-            }
+        val surface = root.viewRootImpl?.surfaceControl
+        if (surface?.isValid == true) {
+            transaction.setBackgroundBlurRadius(surface, 0)
         }
     }
 
