@@ -26,9 +26,11 @@ import androidx.test.filters.SmallTest
 import com.android.wm.shell.R
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.windowdecor.WindowDecorationTestHelper
+import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader
 import kotlin.test.Test
 import org.junit.Before
 import org.junit.runner.RunWith
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.spy
 import org.mockito.kotlin.verify
@@ -44,6 +46,7 @@ import org.mockito.kotlin.whenever
 class AppPinnedViewHolderTest : ShellTestCase() {
 
     private val mockView = mock<View>()
+    private val mockTaskResourceLoader = mock<WindowDecorTaskResourceLoader>()
     private val mockImageButton = mock<ImageButton>()
     private val mockCaptionView = mock<View>()
     private val mockTouchListener = mock<View.OnTouchListener>()
@@ -54,6 +57,7 @@ class AppPinnedViewHolderTest : ShellTestCase() {
     private fun createViewHolder() =
         AppPinnedViewHolder(
             mockView,
+            mockTaskResourceLoader,
             mockTouchListener,
             mockMotionListener,
             mockOpenSettings,
@@ -89,5 +93,20 @@ class AppPinnedViewHolderTest : ShellTestCase() {
         viewHolder.bindData(AppPinnedViewHolder.AppPinnedData(taskInfo))
 
         verify(mockCaptionView).setBackgroundColor(Color.TRANSPARENT)
+    }
+
+    @Test
+    fun bindsAppName() {
+        val appName = "Test App"
+        whenever(mockTaskResourceLoader.getNameAndHeaderIcon(any(), any())).thenAnswer { it ->
+            val callback = it.getArgument<(CharSequence, android.graphics.Bitmap) -> Unit>(1)
+            callback.invoke(appName, mock())
+        }
+        val viewHolder = createViewHolder()
+        val taskInfo = WindowDecorationTestHelper.createCustomAppHeaderTask()
+        viewHolder.bindData(AppPinnedViewHolder.AppPinnedData(taskInfo))
+
+        verify(mockImageButton).contentDescription =
+            mContext.getString(R.string.close_button_text, appName)
     }
 }
