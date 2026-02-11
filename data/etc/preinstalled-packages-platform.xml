@@ -207,4 +207,11 @@ to pre-existing users, but cannot uninstall pre-existing system packages from pr
         <install-in user-type="android.os.usertype.profile.MANAGED" />
         <install-in user-type="android.os.usertype.profile.PRIVATE" />
     </install-in-user-type>
+
+    <!--  Contacts provider app (ContactsProvider) -->
+    <install-in-user-type package="com.android.providers.contacts">
+        <install-in user-type="SYSTEM" />
+        <install-in user-type="FULL" />
+        <install-in user-type="PROFILE" />
+    </install-in-user-type>
 </config>
