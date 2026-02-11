@@ -41,6 +41,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.app.Activity;
+import android.app.DownloadManager;
 import android.app.KeyguardManager;
 import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
@@ -104,7 +105,7 @@ public class AppLockActivityTest {
     private static final int INVALID_TOAST_DURATION = -1;
     private static final int REQUEST_CODE_SET_SCREEN_LOCK = 1;
     private static final int REQUEST_CODE_USER_EDUCATION_DIALOG = 2;
-    private static final int REQUEST_CODE_PHOTOS_APP_PERMISSION_REVIEW_DIALOG = 3;
+    private static final int REQUEST_CODE_APP_PERMISSION_REVIEW_DIALOG = 3;
 
     private final Context mContext = ApplicationProvider.getApplicationContext();
 
@@ -534,7 +535,7 @@ public class AppLockActivityTest {
                         /* data= */ null);
 
                 assertThat(activity.mLastRequestCode).isEqualTo(
-                        REQUEST_CODE_PHOTOS_APP_PERMISSION_REVIEW_DIALOG);
+                        REQUEST_CODE_APP_PERMISSION_REVIEW_DIALOG);
                 assertThat(activity.mStartedIntentForResult).isNotNull();
                 assertThat(activity.mStartedIntentForResult.getComponent().getClassName())
                         .contains("AppLockPermissionReviewActivity");
@@ -544,7 +545,35 @@ public class AppLockActivityTest {
 
     @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
     @Test
-    public void onActivityResult_userEducationOk_isNotPhotoApp_doesNotStartPermissionReview() {
+    public void onActivityResult_userEducationOk_isFilesApp_startsPermissionReview() {
+        final Intent intent = createTestAppLockActivityIntent(/* newAppLockEnabled= */ true);
+        mApplicationInfo.isAppLockSupported = true;
+        mApplicationInfo.isAppLockEnabled = false;
+
+        final ResolveInfo resolveInfo = new ResolveInfo();
+        when(mPackageManager.resolveActivity(argThat((Intent argIntent) ->
+                DownloadManager.ACTION_VIEW_DOWNLOADS.equals(argIntent.getAction())
+                        && TEST_PACKAGE_NAME.equals(argIntent.getPackage())),
+                                any(PackageManager.ResolveInfoFlags.class)))
+                                        .thenReturn(resolveInfo);
+
+        try (ActivityScenario<TestAppLockActivity> scenario = ActivityScenario.launch(intent)) {
+            scenario.onActivity(activity -> {
+                activity.onActivityResult(REQUEST_CODE_USER_EDUCATION_DIALOG, Activity.RESULT_OK,
+                        /* data= */ null);
+
+                assertThat(activity.mLastRequestCode).isEqualTo(
+                        REQUEST_CODE_APP_PERMISSION_REVIEW_DIALOG);
+                assertThat(activity.mStartedIntentForResult).isNotNull();
+                assertThat(activity.mStartedIntentForResult.getComponent().getClassName())
+                        .contains("AppLockPermissionReviewActivity");
+            });
+        }
+    }
+
+    @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
+    @Test
+    public void onActivityResult_userEducationOk_notReviewableApp_doesNotStartPermissionReview() {
         final Intent intent = createTestAppLockActivityIntent(true);
         mApplicationInfo.isAppLockSupported = true;
         mApplicationInfo.isAppLockEnabled = false;
@@ -557,7 +586,7 @@ public class AppLockActivityTest {
                         /* data= */ null);
 
                 assertThat(activity.mLastRequestCode).isNotEqualTo(
-                        REQUEST_CODE_PHOTOS_APP_PERMISSION_REVIEW_DIALOG);
+                        REQUEST_CODE_APP_PERMISSION_REVIEW_DIALOG);
             });
         }
     }

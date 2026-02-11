@@ -19,6 +19,7 @@ package com.android.internal.app;
 import static android.view.WindowManager.LayoutParams.SYSTEM_FLAG_HIDE_NON_SYSTEM_OVERLAY_WINDOWS;
 
 import android.Manifest;
+import android.annotation.IntDef;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -27,27 +28,33 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.transition.TransitionManager;
+import android.util.Log;
+import android.util.Slog;
+import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.android.internal.R;
 import com.android.internal.widget.ResolverDrawerLayout;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
 /**
- * An activity that reviews app permissions for photo access during the App Lock setup.
+ * An activity that reviews app permissions for photos and files access during the App Lock setup.
  *
  * <p>This activity is launched by {@link AppLockActivity} using
  * {@link android.app.Activity#startActivityForResult(android.content.Intent, int)} with the
- * request code {@code REQUEST_CODE_PHOTOS_APP_PERMISSION_REVIEW_DIALOG}. It is shown when a user
- * is locking an app that can access photos, to make them aware of other applications that already
- * have permission to access media on their device.
+ * request code {@code REQUEST_CODE_APP_PERMISSION_REVIEW_DIALOG}. It is shown when a user is
+ * locking an app that can access specific data, to make them aware of other applications that hold
+ * the permission to access the same data on their device.
  *
  * <p>Upon completion, this activity returns {@link android.app.Activity#RESULT_OK} if the user
  * chooses to continue with the process, or {@link android.app.Activity#RESULT_CANCELED} if they
@@ -56,26 +63,58 @@ import java.util.concurrent.Executors;
  */
 public class AppLockPermissionReviewActivity extends Activity {
 
-    private static final String TAG = "AppLockPermissionReviewActivity";
-    private static final String[] PERMISSIONS_TO_CHECK = new String[] {
-            Manifest.permission.READ_MEDIA_IMAGES,
-            Manifest.permission.READ_MEDIA_VIDEO,
-            Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED,
-            Manifest.permission.MANAGE_EXTERNAL_STORAGE,
-    };
+    private static final String TAG = "AppLockPermissionReview";
+    private static final boolean DEBUG = Build.IS_DEBUGGABLE && Log.isLoggable(TAG, Log.DEBUG);
+
+    public static final String EXTRA_PERMISSION_REVIEW_TYPE =
+            "android.intent.extra.app_lock_permission_review_type";
+    public static final int REVIEW_TYPE_INVALID = -1;
+    public static final int REVIEW_TYPE_PHOTOS = 0;
+    public static final int REVIEW_TYPE_FILES = 1;
+
+    @IntDef(prefix = {"REVIEW_TYPE_"}, value = {
+            REVIEW_TYPE_PHOTOS,
+            REVIEW_TYPE_FILES
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ReviewType {}
+
+    private static final SparseArray<ReviewTypeConfig> REVIEW_CONFIGS = new SparseArray<>();
+    static {
+        REVIEW_CONFIGS.put(REVIEW_TYPE_PHOTOS, new ReviewTypeConfig(
+                new String[]{
+                        Manifest.permission.READ_MEDIA_IMAGES,
+                        Manifest.permission.READ_MEDIA_VIDEO,
+                        Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED,
+                        Manifest.permission.MANAGE_EXTERNAL_STORAGE
+                },
+                R.string.app_lock_permission_review_dialog_title_photos,
+                R.string.app_lock_permission_review_dialog_subtitle_photos
+        ));
+
+        REVIEW_CONFIGS.put(REVIEW_TYPE_FILES, new ReviewTypeConfig(
+                new String[]{Manifest.permission.MANAGE_EXTERNAL_STORAGE},
+                R.string.app_lock_permission_review_dialog_title_files,
+                R.string.app_lock_permission_review_dialog_subtitle_files
+        ));
+    }
 
     private final ExecutorService mBackgroundExecutor = Executors.newSingleThreadExecutor();
 
     /**
      * Creates an {@link Intent} to launch {@link AppLockPermissionReviewActivity} to show a
-     * permission review sheet that lists applications with existing photo access before the user
-     * confirms enabling App Lock for the provided package.
+     * permission review sheet that lists applications which can access the data within the target
+     * app before the user confirms enabling App Lock for the provided package.
+     *
+     * @param packageName The package name of the application the user intends to lock.
+     * @param reviewType The category of data access to review.
      */
-    static Intent createIntent(Context context, String photosPackageName) {
-        final Intent photoAccessActivityIntent = new Intent(context,
+    static Intent createIntent(Context context, String packageName, @ReviewType int reviewType) {
+        final Intent appLockPermissionReviewIntent = new Intent(context,
                 AppLockPermissionReviewActivity.class);
-        photoAccessActivityIntent.putExtra(Intent.EXTRA_PACKAGE_NAME, photosPackageName);
-        return photoAccessActivityIntent;
+        appLockPermissionReviewIntent.putExtra(Intent.EXTRA_PACKAGE_NAME, packageName);
+        appLockPermissionReviewIntent.putExtra(EXTRA_PERMISSION_REVIEW_TYPE, reviewType);
+        return appLockPermissionReviewIntent;
     }
 
     @Override
@@ -86,7 +125,25 @@ public class AppLockPermissionReviewActivity extends Activity {
         if (savedInstanceState != null) {
             return;
         }
+        @ReviewType
+        final int reviewType = getIntent().getIntExtra(EXTRA_PERMISSION_REVIEW_TYPE,
+                REVIEW_TYPE_INVALID);
+        final ReviewTypeConfig config = REVIEW_CONFIGS.get(reviewType);
+
+        if (config == null) {
+            if (DEBUG) {
+                Slog.d(TAG, "Invalid review type or no config found for: " + reviewType);
+            }
+            finish();
+            return;
+        }
         setContentView(R.layout.app_lock_permission_review_sheet);
+
+        // Updates the dialog title and subtitle based on the review type.
+        ((TextView) findViewById(R.id.app_lock_permission_review_dialog_title))
+                .setText(config.mTitleResId);
+        ((TextView) findViewById(R.id.app_lock_permission_review_dialog_subtitle))
+                .setText(config.mSubtitleResId);
 
         // Dismiss App Lock flow when the transparent background is tapped.
         final View rootLayout = findViewById(R.id.app_lock_activity_layout);
@@ -111,7 +168,7 @@ public class AppLockPermissionReviewActivity extends Activity {
             setResult(Activity.RESULT_OK);
             finish();
         });
-        populateAppsList(appLockPermissionReviewAdapter);
+        populateAppsList(appLockPermissionReviewAdapter, config);
     }
 
     @Override
@@ -140,22 +197,24 @@ public class AppLockPermissionReviewActivity extends Activity {
         mBackgroundExecutor.shutdownNow();
     }
 
-    /** Populates the list of apps with photo/video permission. */
-    protected void populateAppsList(AppLockPermissionReviewAdapter appLockPermissionReviewAdapter) {
+    /** Populates the list of apps that hold the permissions currently being reviewed. */
+    protected void populateAppsList(AppLockPermissionReviewAdapter appLockPermissionReviewAdapter,
+            ReviewTypeConfig config) {
         mBackgroundExecutor.execute(() -> {
-            final List<AppWithPermissionInfo> appsWithPermissions = getAppsWithPermissions();
+            final List<AppWithPermissionInfo> appsWithPermissions =
+                    getAppsWithPermissions(config);
             runOnUiThread(() -> updateUiWithAppList(appsWithPermissions,
                     appLockPermissionReviewAdapter));
         });
     }
 
-    /** Returns a list of user-facing apps that have photo/video access permissions. */
-    protected List<AppWithPermissionInfo> getAppsWithPermissions() {
+    /** Returns a list of user-facing apps that hold the permissions currently being reviewed.  */
+    protected List<AppWithPermissionInfo> getAppsWithPermissions(ReviewTypeConfig config) {
         final PackageManager packageManager = getPackageManager();
         final List<AppWithPermissionInfo> appsWithPermissions = new ArrayList<>();
 
         final List<PackageInfo> packages = packageManager
-                .getPackagesHoldingPermissions(PERMISSIONS_TO_CHECK, /* flags= */ 0);
+                .getPackagesHoldingPermissions(config.mPermissions, /* flags= */ 0);
         for (PackageInfo packageInfo : packages) {
             if (!isUserFacingApp(packageManager, packageInfo.packageName)) {
                 continue;
@@ -176,10 +235,13 @@ public class AppLockPermissionReviewActivity extends Activity {
     protected void updateUiWithAppList(List<AppWithPermissionInfo> appsWithPermissions,
             AppLockPermissionReviewAdapter appLockPermissionReviewAdapter) {
 
-        // If there are no apps with the photos permissions, we can just finish and return RESULT_OK
-        // to continue the app lock setup.
+        // If there are no apps with the permission being reviewed, we can just finish and return
+        // RESULT_OK to continue the app lock setup.
         if (appsWithPermissions.isEmpty()) {
             setResult(Activity.RESULT_OK);
+            if (DEBUG) {
+                Slog.d(TAG, "No app found holding the permission, skipping the permission review.");
+            }
             finish();
             return;
         }
@@ -209,8 +271,9 @@ public class AppLockPermissionReviewActivity extends Activity {
 
     /** Checks if an app is user-facing and should be shown in the list. */
     private boolean isUserFacingApp(PackageManager packageManager, String packageName) {
-        final String photosPackageName = getIntent().getStringExtra(Intent.EXTRA_PACKAGE_NAME);
-        if (photosPackageName != null && photosPackageName.equals(packageName)) {
+        // Exclude the application that is being App Lock enabled from the review list.
+        final String packageToLock = getIntent().getStringExtra(Intent.EXTRA_PACKAGE_NAME);
+        if (packageToLock != null && packageToLock.equals(packageName)) {
             return false;
         }
 
@@ -224,9 +287,9 @@ public class AppLockPermissionReviewActivity extends Activity {
     }
 
     /**
-     * Data class that holds information for an application that currently has permission to access
-     * photos or media on the device. This information (label, icon, and package name) is used to
-     * populate the list in the permission review sheet.
+     * Data class that holds information for an application that holds the permissions currently
+     * being reviewed. This information (label, icon, and package name) is used to populate the list
+     * in the permission review sheet.
      */
     static class AppWithPermissionInfo {
         final CharSequence mAppName;
@@ -237,6 +300,23 @@ public class AppLockPermissionReviewActivity extends Activity {
             this.mAppName = name;
             this.mAppIcon = icon;
             this.mPackageName = pkgName;
+        }
+    }
+
+    /**
+     * Data class that holds configuration for a specific type of permission review.
+     * This information (required permissions and UI resource IDs) is used to filter the application
+     * list and populate the strings in the permission review sheet.
+     */
+    static final class ReviewTypeConfig {
+        final String[] mPermissions;
+        final int mTitleResId;
+        final int mSubtitleResId;
+
+        ReviewTypeConfig(String[] permissions, int titleResId, int subtitleResId) {
+            this.mPermissions = permissions;
+            this.mTitleResId = titleResId;
+            this.mSubtitleResId = subtitleResId;
         }
     }
 }

@@ -30,6 +30,8 @@ import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import android.app.Activity;
@@ -71,8 +73,8 @@ import java.util.List;
  *
  * <p>We can't test {@link AppLockPermissionReviewActivity} directly since it launches in a
  * separate process and {@link ActivityScenario} only supports testing in the main process, so
- * we're using {@link AppLockPermissionReviewActivityTest} that extends {@link AppLockActivity} for
- * testing.
+ * we're using {@link AppLockPermissionReviewActivityTest} that extends
+ * {@link AppLockPermissionReviewActivity} for testing.
  */
 @RunWith(AndroidJUnit4.class)
 @EnableFlags({Flags.FLAG_APP_LOCK_CORE})
@@ -87,11 +89,21 @@ public class AppLockPermissionReviewActivityTest {
 
     private static final String TEST_PACKAGE_NAME = "com.android.test";
     private static final String TEST_APP_LABEL = "Test App";
-    private static final String PHOTOS_PACKAGE_NAME = "com.android.photos_package";
+    private static final String PACKAGE_TO_LOCK = "com.android.target_package";
+
+    private static final String[] PHOTO_PERMISSIONS = new String[] {
+        android.Manifest.permission.READ_MEDIA_IMAGES,
+        android.Manifest.permission.READ_MEDIA_VIDEO,
+        android.Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED,
+        android.Manifest.permission.MANAGE_EXTERNAL_STORAGE,
+    };
+    private static final String[] FILE_PERMISSIONS = new String[] {
+            android.Manifest.permission.MANAGE_EXTERNAL_STORAGE,
+    };
 
     private final Context mContext = ApplicationProvider.getApplicationContext();
     private final Intent mDefaultIntent = createTestAppLockPermissionReviewIntent(
-            PHOTOS_PACKAGE_NAME);
+            PACKAGE_TO_LOCK, AppLockPermissionReviewActivity.REVIEW_TYPE_PHOTOS);
 
     @Mock
     private PackageManager mPackageManager;
@@ -123,6 +135,48 @@ public class AppLockPermissionReviewActivityTest {
         try (ActivityScenario<TestAppLockPermissionReviewActivity> scenario =
                 ActivityScenario.launch(mDefaultIntent)) {
             assertThat(scenario.getState()).isEqualTo(Lifecycle.State.DESTROYED);
+        }
+    }
+
+    @Test
+    public void launchActivity_withInvalidReviewType_finishesActivity() {
+        setupMockPackages(/* count= */ 1, /* extraPackageName= */ null);
+        final Intent invalidReviewTypeIntent = createTestAppLockPermissionReviewIntent(
+                PACKAGE_TO_LOCK, /* reviewType= */ -1);
+
+        try (ActivityScenario<AppLockPermissionReviewActivity> scenario =
+                ActivityScenario.launch(invalidReviewTypeIntent)) {
+            assertThat(scenario.getState()).isEqualTo(Lifecycle.State.DESTROYED);
+        }
+    }
+
+    @Test
+    public void launchActivity_withPhotosReviewType_showsPhotosSpecificStrings() {
+        setupMockPackages(/* count= */ 1, /* extraPackageName= */ null);
+        final Intent photosPermissionReviewIntent = createTestAppLockPermissionReviewIntent(
+                PACKAGE_TO_LOCK, AppLockPermissionReviewActivity.REVIEW_TYPE_PHOTOS);
+
+        try (ActivityScenario<TestAppLockPermissionReviewActivity> scenario =
+                ActivityScenario.launch(photosPermissionReviewIntent)) {
+            onView(withText(R.string.app_lock_permission_review_dialog_title_photos))
+                    .check(matches(isDisplayed()));
+            onView(withText(R.string.app_lock_permission_review_dialog_subtitle_photos))
+                    .check(matches(isDisplayed()));
+        }
+    }
+
+    @Test
+    public void launchActivity_withFilesReviewType_showsFilesSpecificStrings() {
+        setupMockPackages(/* count= */ 1, /* extraPackageName= */ null);
+        final Intent filesPermissionReviewIntent = createTestAppLockPermissionReviewIntent(
+                PACKAGE_TO_LOCK, AppLockPermissionReviewActivity.REVIEW_TYPE_FILES);
+
+        try (ActivityScenario<TestAppLockPermissionReviewActivity> scenario =
+                ActivityScenario.launch(filesPermissionReviewIntent)) {
+            onView(withText(R.string.app_lock_permission_review_dialog_title_files))
+                    .check(matches(isDisplayed()));
+            onView(withText(R.string.app_lock_permission_review_dialog_subtitle_files))
+                    .check(matches(isDisplayed()));
         }
     }
 
@@ -177,13 +231,43 @@ public class AppLockPermissionReviewActivityTest {
     }
 
     @Test
-    public void photosPackage_isFilteredOutFromList() {
-        setupMockPackages(/* count= */ 1, /* extraPackageName= */ PHOTOS_PACKAGE_NAME);
+    public void packageToLock_isFilteredOutFromList() {
+        setupMockPackages(/* count= */ 1, /* extraPackageName= */ PACKAGE_TO_LOCK);
 
         try (ActivityScenario<TestAppLockPermissionReviewActivity> scenario =
                 ActivityScenario.launch(mDefaultIntent)) {
             onView(withText(TEST_APP_LABEL)).check(matches(isDisplayed()));
-            onView(withText(PHOTOS_PACKAGE_NAME)).check(doesNotExist());
+            onView(withText(PACKAGE_TO_LOCK)).check(doesNotExist());
+        }
+    }
+
+    @Test
+    public void launchPhotosReview_filtersOutAppsWithOnlyFilesPermissions() {
+        setupMockPackagesForPermissions(PHOTO_PERMISSIONS, Collections.singletonList("App_Photos"));
+        setupMockPackagesForPermissions(FILE_PERMISSIONS, Collections.singletonList("App_Files"));
+
+        final Intent photosPermissionReviewIntent = createTestAppLockPermissionReviewIntent(
+                PACKAGE_TO_LOCK, AppLockPermissionReviewActivity.REVIEW_TYPE_PHOTOS);
+
+        try (ActivityScenario<TestAppLockPermissionReviewActivity> scenario =
+                ActivityScenario.launch(photosPermissionReviewIntent)) {
+            onView(withText("App_Photos")).check(matches(isDisplayed()));
+            onView(withText("App_Files")).check(doesNotExist());
+        }
+    }
+
+    @Test
+    public void launchFilesReview_filtersOutAppsWithOnlyPhotosPermissions() {
+        setupMockPackagesForPermissions(PHOTO_PERMISSIONS, Collections.singletonList("App_Photos"));
+        setupMockPackagesForPermissions(FILE_PERMISSIONS, Collections.singletonList("App_Files"));
+
+        final Intent filesPermissionReviewIntent = createTestAppLockPermissionReviewIntent(
+                PACKAGE_TO_LOCK, AppLockPermissionReviewActivity.REVIEW_TYPE_FILES);
+
+        try (ActivityScenario<TestAppLockPermissionReviewActivity> scenario =
+                ActivityScenario.launch(filesPermissionReviewIntent)) {
+            onView(withText("App_Files")).check(matches(isDisplayed()));
+            onView(withText("App_Photos")).check(doesNotExist());
         }
     }
 
@@ -194,9 +278,10 @@ public class AppLockPermissionReviewActivityTest {
         return packageInfo;
     }
 
-    private Intent createTestAppLockPermissionReviewIntent(String photosPackageName) {
+    private Intent createTestAppLockPermissionReviewIntent(String packageToLock, int reviewType) {
         final Intent intent = new Intent(mContext, TestAppLockPermissionReviewActivity.class);
-        intent.putExtra(Intent.EXTRA_PACKAGE_NAME, photosPackageName);
+        intent.putExtra(Intent.EXTRA_PACKAGE_NAME, packageToLock);
+        intent.putExtra(AppLockPermissionReviewActivity.EXTRA_PERMISSION_REVIEW_TYPE, reviewType);
         return intent;
     }
 
@@ -213,6 +298,26 @@ public class AppLockPermissionReviewActivityTest {
         when(mPackageManager.checkPermission(anyString(), anyString()))
                 .thenReturn(PackageManager.PERMISSION_GRANTED);
         when(mPackageManager.queryIntentActivities(any(Intent.class), anyInt()))
+                .thenReturn(Collections.singletonList(new ResolveInfo()));
+    }
+
+    private void setupMockPackagesForPermissions(String[] permissions, List<String> packageNames) {
+        List<PackageInfo> packages = new ArrayList<>();
+        for (String pkg : packageNames) {
+            final PackageInfo packageInfo = new PackageInfo();
+            packageInfo.packageName = pkg;
+            packageInfo.applicationInfo = new ApplicationInfo();
+            packageInfo.applicationInfo.packageName = pkg;
+            packages.add(packageInfo);
+
+            when(mPackageManager.getApplicationLabel(argThat(info -> info != null
+                    && pkg.equals(info.packageName))))
+                    .thenReturn(pkg);
+        }
+        when(mPackageManager.getPackagesHoldingPermissions(eq(permissions), anyInt()))
+                .thenReturn(packages);
+        when(mPackageManager.queryIntentActivities(argThat(intent ->
+                intent != null && packageNames.contains(intent.getPackage())), anyInt()))
                 .thenReturn(Collections.singletonList(new ResolveInfo()));
     }
 
@@ -233,8 +338,10 @@ public class AppLockPermissionReviewActivityTest {
 
         @Override
         protected void populateAppsList(
-                AppLockPermissionReviewAdapter appLockPermissionReviewAdapter) {
-            final List<AppWithPermissionInfo> appWithPermissionInfo = getAppsWithPermissions();
+                AppLockPermissionReviewAdapter appLockPermissionReviewAdapter,
+                        ReviewTypeConfig config) {
+            final List<AppWithPermissionInfo> appWithPermissionInfo =
+                    getAppsWithPermissions(config);
             updateUiWithAppList(appWithPermissionInfo, appLockPermissionReviewAdapter);
         }
     }
