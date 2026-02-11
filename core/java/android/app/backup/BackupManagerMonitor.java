@@ -339,6 +339,12 @@ public class BackupManagerMonitor {
   public static final int LOG_EVENT_ID_DELAYED_RESTORE_CLEANUP_FINISHED = 85;
 
   /**
+   * A delayed restore operation was successfully scheduled.
+   * @hide
+   */
+  public static final int LOG_EVENT_ID_DELAYED_RESTORE_SCHEDULED = 86;
+
+  /**
    * This method will be called each time something important happens on BackupManager.
    *
    * @param event bundle will contain data about event:

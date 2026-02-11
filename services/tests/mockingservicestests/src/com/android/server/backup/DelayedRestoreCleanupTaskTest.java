@@ -212,6 +212,10 @@ public class DelayedRestoreCleanupTaskTest {
                 new DelayedRestoreCleanupTask(
                         mUserBackupManagerService, TEST_PACKAGE, mOperationStorage);
 
+        when(mBackupAgentConnectionManager.bindToAgentSynchronous(
+                        eq(mApplicationInfo), anyInt(), anyInt()))
+                .thenReturn(mBackupAgent);
+
         mTask.execute();
         mTask.operationComplete(0);
 
@@ -229,6 +233,10 @@ public class DelayedRestoreCleanupTaskTest {
         mTask =
                 new DelayedRestoreCleanupTask(
                         mUserBackupManagerService, TEST_PACKAGE, mOperationStorage);
+
+        when(mBackupAgentConnectionManager.bindToAgentSynchronous(
+                        eq(mApplicationInfo), anyInt(), anyInt()))
+                .thenReturn(mBackupAgent);
 
         mTask.execute();
         mTask.handleCancel(0);
