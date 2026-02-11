@@ -717,10 +717,20 @@ public class ExternalStorageProvider extends FileSystemProvider {
 
     @Override
     protected boolean isTrashSupported(@NonNull File file) {
+        if (!enableDocumentsTrashApi()) {
+            return false;
+        }
+
         try {
             String documentId = getDocIdForFile(file);
             // Trash not supported on USB devices.
             if (isOnRemovableUsbStorage(documentId)) {
+                return false;
+            }
+
+            final RootInfo root = getRootFromDocId(documentId);
+            // If the root doesn't support query trash then trash is not supported.
+            if ((root.flags & Root.FLAG_SUPPORTS_QUERY_TRASH) == 0) {
                 return false;
             }
 
@@ -729,7 +739,6 @@ public class ExternalStorageProvider extends FileSystemProvider {
                 return false;
             }
 
-            final RootInfo root = getRootFromDocId(documentId);
             // Trash operation not supported for the files present in trash location.
             if (isFileExistInTrashLocation(root, file)) {
                 return false;
@@ -738,6 +747,7 @@ public class ExternalStorageProvider extends FileSystemProvider {
             final String canonicalPath = getPathFromDocId(documentId);
             return !isRestrictedPath(root.rootId, canonicalPath);
         } catch (Exception e) {
+            Log.e(TAG, "Failed to determine isTrashSupported for file " + file, e);
             return false;
         }
     }
