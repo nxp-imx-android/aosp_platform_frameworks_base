@@ -128,6 +128,7 @@ import com.android.systemui.statusbar.notification.stack.domain.interactor.heads
 import com.android.systemui.statusbar.phone.fakeAutoHideControllerStore
 import com.android.systemui.statusbar.phone.keyguardBypassController
 import com.android.systemui.statusbar.phone.scrimController
+import com.android.systemui.statusbar.phone.systemUIDialogDotFactory
 import com.android.systemui.statusbar.phone.systemUIDialogManager
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.mobileConnectionsRepository
 import com.android.systemui.statusbar.pipeline.wifi.data.repository.fakeWifiRepository
@@ -294,6 +295,7 @@ class KosmosJavaAdapter() {
     val uiEventLoggerFake by lazy { kosmos.uiEventLoggerFake }
     val actionsDialogLiteDelegateFactory by lazy { kosmos.actionsDialogLiteDelegateFactory }
     val fakeGlobalSettings by lazy { kosmos.fakeGlobalSettings }
+    val systemUIDialogDotFactory by lazy { kosmos.systemUIDialogDotFactory }
 
     /** Use if you need a unique or mutate-able row */
     fun createRow(): ExpandableNotificationRow {
