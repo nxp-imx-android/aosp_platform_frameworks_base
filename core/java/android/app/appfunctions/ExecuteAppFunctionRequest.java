@@ -178,6 +178,23 @@ public final class ExecuteAppFunctionRequest implements Parcelable {
     }
 
     /**
+     * Returns a copy of this {@link ExecuteAppFunctionRequest} without the {@link
+     * AppInteractionAttribution}.
+     *
+     * @hide
+     */
+    @NonNull
+    public ExecuteAppFunctionRequest copyWithoutAttribution() {
+        return new ExecuteAppFunctionRequest(
+                mTargetPackageName,
+                mFunctionIdentifier,
+                mExtras,
+                mParameters,
+                /* attribution= */ null,
+                mActivityId);
+    }
+
+    /**
      * Returns the {@link AppFunctionActivityId} for this request.
      *
      * <p>This identifier is used to disambiguate between instances of the same app function running
