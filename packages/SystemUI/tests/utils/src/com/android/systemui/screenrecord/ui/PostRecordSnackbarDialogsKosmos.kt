@@ -17,6 +17,7 @@
 package com.android.systemui.screencapture.record.smallscreen.ui
 
 import android.content.applicationContext
+import com.android.internal.logging.uiEventLogger
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.plugins.activityStarter
 import com.android.systemui.screencapture.common.ui.viewmodel.drawableLoaderViewModel
@@ -31,5 +32,6 @@ val Kosmos.postRecordSnackbarDialogs by
             drawableViewModel = drawableLoaderViewModel,
             activityStarter = activityStarter,
             screenCaptureRecordFeaturesInteractor = screenCaptureRecordFeaturesInteractor,
+            uiEventLogger = uiEventLogger,
         )
     }

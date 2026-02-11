@@ -16,9 +16,6 @@
 
 package com.android.systemui.screenrecord.shared.model
 
-import com.android.systemui.screenrecord.shared.model.ScreenRecordingStatus.Started
-import com.android.systemui.screenrecord.shared.model.ScreenRecordingStatus.Starting
-import com.android.systemui.screenrecord.shared.model.ScreenRecordingStatus.Stopped
 import kotlin.time.Duration
 
 /**
@@ -27,15 +24,25 @@ import kotlin.time.Duration
  */
 sealed interface ScreenRecordingStatus {
 
-    /** @see ScreenRecordingStatus */
-    data class Starting(val untilStarted: Duration, val parameters: ScreenRecordingParameters) :
-        ScreenRecordingStatus
+    val isRecording: Boolean
 
     /** @see ScreenRecordingStatus */
-    data class Started(val parameters: ScreenRecordingParameters) : ScreenRecordingStatus
+    data class Starting(val untilStarted: Duration, val parameters: ScreenRecordingParameters) :
+        ScreenRecordingStatus {
+
+        override val isRecording: Boolean = true
+    }
+
+    /** @see ScreenRecordingStatus */
+    data class Started(val parameters: ScreenRecordingParameters) : ScreenRecordingStatus {
+
+        override val isRecording: Boolean = true
+    }
 
     /** @see ScreenRecordingStatus */
     data class Stopped(val reason: Int) : ScreenRecordingStatus {
+
+        override val isRecording: Boolean = false
 
         companion object {
             const val STOP_REASON_NOT_STARTED = -1

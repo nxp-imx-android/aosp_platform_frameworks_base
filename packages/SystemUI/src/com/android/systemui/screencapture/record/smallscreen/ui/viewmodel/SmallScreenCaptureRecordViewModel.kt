@@ -25,6 +25,7 @@ import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import com.android.app.tracing.coroutines.launchTraced
+import com.android.internal.logging.UiEventLogger
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.mediaprojection.MediaProjectionCaptureTarget
@@ -37,6 +38,7 @@ import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInter
 import com.android.systemui.screencapture.record.camera.domain.interactor.ScreenCaptureCameraTransformationInteractor
 import com.android.systemui.screencapture.record.camera.domain.interactor.ScreenRecordCameraInteractor
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
+import com.android.systemui.screencapture.record.shared.model.ScreenRecordEvent
 import com.android.systemui.screencapture.record.smallscreen.domain.interactor.RecordDetailsStateInteractor
 import com.android.systemui.screencapture.record.smallscreen.domain.interactor.RecordDetailsTargetInteractor
 import com.android.systemui.screencapture.record.smallscreen.shared.model.RecordDetailsPopupType
@@ -74,6 +76,7 @@ constructor(
     recordDetailsTargetInteractor: RecordDetailsTargetInteractor,
     private val recordDetailsStateInteractor: RecordDetailsStateInteractor,
     private val screenRecordCameraInteractor: ScreenRecordCameraInteractor,
+    private val uiEventLogger: UiEventLogger,
     private val defaultDetailsPopupType: RecordDetailsPopupType,
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModel {
 
@@ -95,6 +98,7 @@ constructor(
         recordDetailsTargetInteractor: RecordDetailsTargetInteractor,
         recordDetailsStateInteractor: RecordDetailsStateInteractor,
         screenRecordCameraInteractor: ScreenRecordCameraInteractor,
+        uiEventLogger: UiEventLogger,
     ) : this(
         bgContext,
         screenRecordingServiceInteractor,
@@ -111,6 +115,7 @@ constructor(
         recordDetailsTargetInteractor,
         recordDetailsStateInteractor,
         screenRecordCameraInteractor,
+        uiEventLogger,
         RecordDetailsPopupType.Invisible,
     )
 
@@ -235,18 +240,20 @@ constructor(
             withContext(bgContext) {
                 screenRecordingServiceInteractor.stopRecording(StopReason.STOP_HOST_APP)
             }
+            uiEventLogger.log(ScreenRecordEvent.SCREEN_RECORD_RECORDING_STOPPED_TOOLBAR)
         } else {
             startRecording()
+            uiEventLogger.log(ScreenRecordEvent.SCREEN_RECORD_RECORDING_STARTED)
         }
         dismiss()
     }
 
     private suspend fun startRecording() {
-        val audioSource = recordDetailsParametersViewModel.audioSource ?: return
+        val audioSource = recordDetailsParametersViewModel.audioSource
         val target = captureTargetModel?.currentTargetModel?.screenCaptureTarget ?: return
         when (target) {
             is ScreenCaptureTarget.Fullscreen -> {
-                val shouldShowTaps = recordDetailsParametersViewModel.shouldShowTaps ?: return
+                val shouldShowTaps = recordDetailsParametersViewModel.shouldShowTaps
                 screenRecordingServiceInteractor.startRecordingDelayed(
                     ScreenRecordingParameters(
                         captureTarget = null,
