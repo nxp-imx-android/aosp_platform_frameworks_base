@@ -156,8 +156,6 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE),
     ENABLE_REENABLE_APP_HANDLE_COLOR_ANIMATIONS(Flags::reenableAppHandleColorAnimations,
             false, Flags.FLAG_REENABLE_APP_HANDLE_COLOR_ANIMATIONS),
-    ENABLE_REMOVE_STATUS_BAR_INPUT_LAYER(Flags::enableRemoveStatusBarInputLayer, false,
-            Flags.FLAG_ENABLE_REMOVE_STATUS_BAR_INPUT_LAYER),
     ENABLE_REQUEST_FULLSCREEN_REFACTOR(
             Flags::enableRequestFullscreenRefactor, false,
             Flags.FLAG_ENABLE_REQUEST_FULLSCREEN_REFACTOR),

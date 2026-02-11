@@ -103,8 +103,7 @@ class AppHandleViewHolder(
     private var statusBarInputLayer: AdditionalSystemViewContainer? = null
     // TODO: b/444730302 - remove config once status bar input layer can be removed for all devices
     private val shouldAddStatusBarInputLayer =
-        !DesktopExperienceFlags.ENABLE_REMOVE_STATUS_BAR_INPUT_LAYER.isTrue ||
-            !context.resources.getBoolean(R.bool.config_removeStatusBarInputLayer)
+        !context.resources.getBoolean(R.bool.config_removeStatusBarInputLayer)
 
     init {
         captionView.setOnTouchListener(onCaptionTouchListener)
@@ -201,6 +200,8 @@ class AppHandleViewHolder(
         handleHeight: Int,
     ) {
         if (!DesktopModeFlags.ENABLE_HANDLE_INPUT_FIX.isTrue()) return
+        val ignoreCutouts =
+            Flags.showAppHandleLargeScreens() || BubbleFlagHelper.enableBubbleToFullscreen()
         statusBarInputLayer =
             AdditionalSystemViewContainer(
                 context,
@@ -211,9 +212,7 @@ class AppHandleViewHolder(
                 handleWidth,
                 handleHeight,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-                ignoreCutouts =
-                    Flags.showAppHandleLargeScreens() ||
-                        BubbleFlagHelper.enableBubbleToFullscreen(),
+                ignoreCutouts,
             )
         val view = statusBarInputLayer?.view ?: error("Unable to find statusBarInputLayer View")
         val lp =

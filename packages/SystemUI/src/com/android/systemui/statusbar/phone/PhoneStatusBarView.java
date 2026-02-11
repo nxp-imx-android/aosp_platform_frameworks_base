@@ -32,7 +32,6 @@ import android.view.WindowInsets;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.window.DesktopExperienceFlags;
 
 import androidx.annotation.NonNull;
 
@@ -243,8 +242,7 @@ public class PhoneStatusBarView extends FrameLayout {
         // the status bar to handle the event. ACTION_MOVE and ACTION_UP events outside the
         // touchable region should still be handled so that an open notification shade can be
         // correctly updated and closed.
-        if (DesktopExperienceFlags.ENABLE_REMOVE_STATUS_BAR_INPUT_LAYER.isTrue()
-                && event.getAction() == MotionEvent.ACTION_DOWN
+        if (event.getAction() == MotionEvent.ACTION_DOWN
                 && !mTouchableRegion.contains((int) event.getX(), (int) event.getY())) {
             return false;
         }
