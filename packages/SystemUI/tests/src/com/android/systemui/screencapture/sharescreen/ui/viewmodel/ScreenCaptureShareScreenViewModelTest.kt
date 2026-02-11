@@ -19,6 +19,8 @@ package com.android.systemui.screencapture.sharescreen.ui.viewmodel
 import android.app.WaitResult
 import android.content.ComponentName
 import android.content.Intent
+import android.content.packageManager
+import android.content.pm.PackageManager
 import android.content.testableContext
 import android.media.projection.MediaProjectionAppContent
 import android.media.projection.MediaProjectionConfig
@@ -105,6 +107,9 @@ class ScreenCaptureShareScreenViewModelTest : SysuiTestCase() {
 
     @Before
     fun setUp() {
+        whenever(kosmos.packageManager.checkPermission(any<String>(), any<String>()))
+            .thenReturn(PackageManager.PERMISSION_DENIED)
+
         runBlocking {
             kosmos.displayRepository.emit(
                 setOf(

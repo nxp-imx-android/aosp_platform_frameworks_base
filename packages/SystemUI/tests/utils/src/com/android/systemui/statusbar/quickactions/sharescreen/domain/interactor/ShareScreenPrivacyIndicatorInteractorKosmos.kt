@@ -17,12 +17,14 @@
 package com.android.systemui.statusbar.quickactions.sharescreen.domain.interactor
 
 import android.content.applicationContext
+import android.content.packageManager
 import android.content.res.mainResources
 import android.view.accessibility.accessibilityManager
 import com.android.systemui.common.ui.data.repository.configurationRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.mediaprojection.data.repository.fakeMediaProjectionRepository
+import com.android.systemui.screenrecord.data.repository.screenRecordRepository
 
 val Kosmos.shareScreenPrivacyIndicatorInteractor: ShareScreenPrivacyIndicatorInteractor by
     Kosmos.Fixture {
@@ -31,6 +33,8 @@ val Kosmos.shareScreenPrivacyIndicatorInteractor: ShareScreenPrivacyIndicatorInt
             configurationRepository,
             scope = testScope.backgroundScope,
             fakeMediaProjectionRepository,
+            screenRecordRepository,
+            packageManager,
             accessibilityManager,
             applicationContext,
         )
