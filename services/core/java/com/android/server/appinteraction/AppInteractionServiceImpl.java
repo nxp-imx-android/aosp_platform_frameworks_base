@@ -27,7 +27,9 @@ import android.util.Slog;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.content.PackageMonitor;
 import com.android.internal.os.BackgroundThread;
 import com.android.server.SystemService;
 
@@ -50,6 +52,11 @@ public class AppInteractionServiceImpl implements AppInteractionService {
                 BackgroundThread.getExecutor());
     }
 
+    @GuardedBy("mLock")
+    private boolean mPackageMonitorRegistered = false;
+
+    @NonNull private final Object mLock = new Object();
+
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
     public AppInteractionServiceImpl(
             @NonNull Context context,
@@ -65,6 +72,12 @@ public class AppInteractionServiceImpl implements AppInteractionService {
         if (!Flags.enableAppInteractionApi()) return;
 
         Objects.requireNonNull(user);
+        synchronized (mLock) {
+            if (!mPackageMonitorRegistered) {
+                mPackageMonitor.register(mContext, UserHandle.ALL, BackgroundThread.getHandler());
+                mPackageMonitorRegistered = true;
+            }
+        }
         mMultiUserAppInteractionHistory.onUserUnlocked(user);
     }
 
@@ -124,4 +137,20 @@ public class AppInteractionServiceImpl implements AppInteractionService {
                     "Package: " + packageName + " haven't installed for user " + userId);
         }
     }
+
+    @VisibleForTesting
+    final PackageMonitor mPackageMonitor =
+            new PackageMonitor() {
+                @Override
+                public void onPackageRemoved(String packageName, int uid) {
+                    int userId = UserHandle.getUserId(uid);
+                    try {
+                        mMultiUserAppInteractionHistory
+                                .asUser(userId)
+                                .deleteAppInteractionHistories(packageName);
+                    } catch (IllegalStateException e) {
+                        Slog.w(TAG, "Unable to delete App Interaction history", e);
+                    }
+                }
+            };
 }
