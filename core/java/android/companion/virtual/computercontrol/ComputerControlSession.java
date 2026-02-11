@@ -88,6 +88,9 @@ public final class ComputerControlSession implements AutoCloseable {
     public static final String EXTRA_AUTOMATING_PACKAGE_NAME =
             "android.companion.virtual.computercontrol.extra.AUTOMATING_PACKAGE_NAME";
 
+    /** @hide */
+    public static final int RESULT_STOP_AUTOMATION = Activity.RESULT_FIRST_USER;
+
     /**
      * Unknown session creation error.
      */

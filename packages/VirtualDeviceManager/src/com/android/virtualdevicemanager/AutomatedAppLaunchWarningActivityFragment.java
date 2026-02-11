@@ -16,18 +16,21 @@
 
 package com.android.virtualdevicemanager;
 
+import static android.companion.virtual.computercontrol.ComputerControlSession.RESULT_STOP_AUTOMATION;
+
 import android.app.Activity;
 import android.app.ActivityOptions;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.ResultReceiver;
-import android.util.Slog;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -44,6 +47,8 @@ public class AutomatedAppLaunchWarningActivityFragment  extends DialogFragment {
     private static final String ARG_TARGET = "argTarget";
     private static final String ARG_TARGET_PACKAGE_NAME = "argTargetPackageName";
     private static final String ARG_RESULT_RECEIVER = "argResultReceiver";
+
+    private static final int REQUEST_CODE_LAUNCH_TARGET_INTENT = 1;
 
     private String mAgentPackageName;
     private IntentSender mTarget;
@@ -125,9 +130,31 @@ public class AutomatedAppLaunchWarningActivityFragment  extends DialogFragment {
     }
 
     private void onStop(View view) {
-        mResultReceiver.send(Activity.RESULT_OK, null);
-        startIntentSender(requireActivity(), mTarget);
-        requireActivity().finish();
+        // Make sure that the target app is no longer considered as automated so the launch of the
+        // original intent is not intercepted again.
+        // TODO(b/477164279): Make this synchronous
+        mResultReceiver.send(RESULT_STOP_AUTOMATION, null);
+
+        final Bundle options = ActivityOptions.makeBasic()
+                .setPendingIntentBackgroundActivityStartMode(
+                        ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED)
+                .toBundle();
+        try {
+            startIntentSenderForResult(
+                    mTarget, REQUEST_CODE_LAUNCH_TARGET_INTENT, null, 0, 0, 0, options);
+        } catch (IntentSender.SendIntentException e) {
+            Log.e(TAG, "Error while starting intent " + mTarget, e);
+            requireActivity().finish();
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_CODE_LAUNCH_TARGET_INTENT) {
+            // Close the session if the launch was successful.
+            mResultReceiver.send(resultCode, null);
+            requireActivity().finish();
+        }
     }
 
     static void startIntentSender(@NonNull Context context, @NonNull IntentSender target) {
@@ -138,7 +165,7 @@ public class AutomatedAppLaunchWarningActivityFragment  extends DialogFragment {
         try {
             target.sendIntent(context, 0, null, null, activityOptions, null, null);
         } catch (IntentSender.SendIntentException e) {
-            Slog.e(TAG, "Error while starting intent " + target, e);
+            Log.e(TAG, "Error while starting intent " + target, e);
         }
     }
 }
