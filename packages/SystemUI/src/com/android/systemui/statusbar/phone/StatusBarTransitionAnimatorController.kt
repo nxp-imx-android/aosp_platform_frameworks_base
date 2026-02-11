@@ -35,7 +35,10 @@ class StatusBarTransitionAnimatorController(
     override fun onIntentStarted(willAnimate: Boolean) {
         delegate.onIntentStarted(willAnimate)
         if (willAnimate) {
-            shadeAnimationInteractor.setIsLaunchingActivity(true)
+            shadeAnimationInteractor.setIsLaunchingActivity(
+                true,
+                "StatusBarTransitionAnimatorController.onIntentStarted",
+            )
         } else {
             shadeController.collapseOnMainThread()
         }
@@ -45,7 +48,10 @@ class StatusBarTransitionAnimatorController(
         // We set this before calling the delegate to make sure that accessibility is disabled
         // for the whole duration of the transition, so that we don't have stray TalkBack events
         // once the animating view becomes invisible.
-        shadeAnimationInteractor.setIsLaunchingActivity(true)
+        shadeAnimationInteractor.setIsLaunchingActivity(
+            true,
+            "StatusBarTransitionAnimatorController.onTransitionAnimationStart",
+        )
         delegate.onTransitionAnimationStart(isExpandingFullyAbove)
 
         if (!isExpandingFullyAbove) {
@@ -57,7 +63,10 @@ class StatusBarTransitionAnimatorController(
 
     override fun onTransitionAnimationEnd(isExpandingFullyAbove: Boolean) {
         delegate.onTransitionAnimationEnd(isExpandingFullyAbove)
-        shadeAnimationInteractor.setIsLaunchingActivity(false)
+        shadeAnimationInteractor.setIsLaunchingActivity(
+            false,
+            "StatusBarTransitionAnimatorController.onTransitionAnimationEnd",
+        )
         shadeController.onLaunchAnimationEnd(isExpandingFullyAbove)
     }
 
@@ -84,7 +93,10 @@ class StatusBarTransitionAnimatorController(
 
     override fun onTransitionAnimationCancelled(newKeyguardOccludedState: Boolean?) {
         delegate.onTransitionAnimationCancelled()
-        shadeAnimationInteractor.setIsLaunchingActivity(false)
+        shadeAnimationInteractor.setIsLaunchingActivity(
+            false,
+            "StatusBarTransitionAnimatorController.onTransitionAnimationCancelled",
+        )
         shadeController.onLaunchAnimationCancelled(isLaunchForActivity)
     }
 

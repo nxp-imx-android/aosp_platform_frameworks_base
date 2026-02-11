@@ -327,7 +327,7 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
         mKeyguardInteractor = mKosmos.getKeyguardInteractor();
         mShadeRepository = new FakeShadeRepository();
         mShadeAnimationInteractor = new ShadeAnimationInteractorLegacyImpl(
-                new ShadeAnimationRepository(), mShadeRepository);
+                new ShadeAnimationRepository(), mShadeRepository, mock(ShadeWindowLogger.class));
         mPowerInteractor = mKosmos.getPowerInteractor();
         when(mKeyguardTransitionInteractor.isInTransitionWhere(any(), any())).thenReturn(
                 MutableStateFlow(false));
