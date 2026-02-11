@@ -4812,6 +4812,8 @@ public class Notification implements Parcelable
      * Returns the metadata associated with a notification originating on another device.
      * A copy of the original notification is sent to this device by a bridging app. This
      * metadata is used for displaying the notification as a bridged notification to the user.
+     *
+     * @return the metadata associated with the notification.
      */
     @Nullable
     @FlaggedApi(FLAG_BRIDGED_NOTIFICATIONS)
@@ -16328,6 +16330,7 @@ public class Notification implements Parcelable
         public static final int BRIDGED_METADATA_TYPE_LAPTOP = 3;
         public static final int BRIDGED_METADATA_TYPE_WATCH = 4;
         public static final int BRIDGED_METADATA_TYPE_TV = 5;
+        public static final int BRIDGED_METADATA_TYPE_XR = 6;
 
         /** @hide */
         @IntDef(prefix = { "BRIDGED_METADATA_TYPE_" }, value = {
@@ -16336,7 +16339,8 @@ public class Notification implements Parcelable
                 BRIDGED_METADATA_TYPE_TABLET,
                 BRIDGED_METADATA_TYPE_LAPTOP,
                 BRIDGED_METADATA_TYPE_WATCH,
-                BRIDGED_METADATA_TYPE_TV
+                BRIDGED_METADATA_TYPE_TV,
+                BRIDGED_METADATA_TYPE_XR
         })
         @Retention(RetentionPolicy.SOURCE)
         public @interface BridgedMetadataType {}
