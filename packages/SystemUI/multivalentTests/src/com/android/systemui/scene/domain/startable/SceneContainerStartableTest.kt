@@ -112,6 +112,7 @@ import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.model.fakeSysUIStatePerDisplayRepository
+import com.android.systemui.plugins.statusbar.statusBarStateController
 import com.android.systemui.power.data.repository.fakePowerRepository
 import com.android.systemui.power.data.repository.powerRepository
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAsleepForTest
@@ -143,7 +144,6 @@ import com.android.systemui.statusbar.phone.BiometricUnlockController
 import com.android.systemui.statusbar.phone.centralSurfaces
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.fakeMobileConnectionsRepository
 import com.android.systemui.statusbar.policy.data.repository.fakeDeviceProvisioningRepository
-import com.android.systemui.statusbar.sysuiStatusBarStateController
 import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.settings.data.repository.userAwareSecureSettingsRepository
@@ -376,7 +376,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
                 collectLastValue(keyguardBouncerRepository.alternateBouncerVisible)
             val currentSceneKey by collectLastValue(sceneInteractor.currentScene)
 
-            sysuiStatusBarStateController.leaveOpen = true // leave shade open
+            statusBarStateController.setLeaveOpenOnKeyguardHide(true) // leave shade open
             fakeKeyguardBouncerRepository.setAlternateVisible(true)
             assertThat(alternateBouncerVisible).isTrue()
 
@@ -475,7 +475,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
         val currentSceneKey by collectLastValue(sceneInteractor.currentScene)
         val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
         val backStack by collectLastValue(sceneBackInteractor.backStack)
-        sysuiStatusBarStateController.leaveOpen = true // leave shade open
+        statusBarStateController.setLeaveOpenOnKeyguardHide(true) // leave shade open
 
         val transitionState =
             prepareState(
@@ -517,7 +517,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
             enableSingleShade()
             val currentSceneKey by collectLastValue(sceneInteractor.currentScene)
             val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
-            sysuiStatusBarStateController.leaveOpen = false // don't leave shade open
+            statusBarStateController.setLeaveOpenOnKeyguardHide(false) // don't leave shade open
 
             val transitionState =
                 prepareState(
@@ -2706,7 +2706,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
 
             // Show the alternate bouncer.
             alternateBouncerInteractor.forceShow()
-            sysuiStatusBarStateController.leaveOpen = true // leave shade open
+            statusBarStateController.setLeaveOpenOnKeyguardHide(true) // leave shade open
             runCurrent()
             assertThat(isUnlocked).isFalse()
             assertThat(currentScene).isEqualTo(Scenes.Shade)
@@ -3059,7 +3059,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
 
             // Show the alternate bouncer.
             alternateBouncerInteractor.forceShow()
-            sysuiStatusBarStateController.leaveOpen = true // leave shade open
+            statusBarStateController.setLeaveOpenOnKeyguardHide(true) // leave shade open
             runCurrent()
             assertThat(isUnlocked).isFalse()
             assertThat(currentScene).isEqualTo(Scenes.Shade)

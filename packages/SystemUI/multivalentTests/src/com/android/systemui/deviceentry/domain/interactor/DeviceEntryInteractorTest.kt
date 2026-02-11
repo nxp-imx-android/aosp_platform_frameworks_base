@@ -60,6 +60,7 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useStandardTestDispatcher
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
+import com.android.systemui.plugins.statusbar.statusBarStateController
 import com.android.systemui.scene.data.model.SceneStack
 import com.android.systemui.scene.data.model.asIterable
 import com.android.systemui.scene.domain.interactor.sceneBackInteractor
@@ -69,7 +70,6 @@ import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.statusbar.phone.BiometricUnlockController
-import com.android.systemui.statusbar.sysuiStatusBarStateController
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -572,7 +572,7 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
             // Simulating a "leave it open when the keyguard is hidden" which means the bouncer will
             // be shown and successful authentication should take the user back to where they are,
             // the shade scene.
-            sysuiStatusBarStateController.setLeaveOpenOnKeyguardHide(true)
+            statusBarStateController.setLeaveOpenOnKeyguardHide(true)
             showBouncer()
             assertThat(currentOverlays).contains(Overlays.Bouncer)
 
