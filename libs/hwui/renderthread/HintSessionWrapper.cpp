@@ -83,6 +83,15 @@ void HintSessionWrapper::destroy() {
     mResetsSinceLastReport = 0;
 }
 
+void HintSessionWrapper::setHintSessionEnabled(bool enabled) {
+    mHintSessionEnabled = enabled;
+    if (mHintSessionEnabled) {
+        init();
+    } else {
+        destroy();
+    }
+}
+
 bool HintSessionWrapper::init() {
     if (mHintSession != nullptr) return true;
     // If we're waiting for the session
@@ -101,8 +110,8 @@ bool HintSessionWrapper::init() {
 
     // If it broke last time we tried this, shouldn't be running, or
     // has bad argument values, don't even bother
-    if (!mSessionValid || !Properties::useHintManager || !Properties::isDrawingEnabled() ||
-        mUiThreadId < 0 || mRenderThreadId < 0) {
+    if (!mSessionValid || !mHintSessionEnabled || !Properties::useHintManager ||
+        !Properties::isDrawingEnabled() || mUiThreadId < 0 || mRenderThreadId < 0) {
         return false;
     }
 
