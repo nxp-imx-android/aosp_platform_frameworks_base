@@ -77,6 +77,8 @@ class AppFunctionMetadataReaderTest {
                     override fun getSearchAppFunctionInternalPageSize(): Int = 100
 
                     override fun getAppFunctionMetadataChangeDebounceMilliseconds(): Int = 0
+
+                    override fun getAppFunctionAllowlistCacheSize(): Int = 5
                 },
             )
     }

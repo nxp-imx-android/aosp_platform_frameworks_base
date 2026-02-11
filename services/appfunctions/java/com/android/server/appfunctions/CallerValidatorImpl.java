@@ -105,7 +105,7 @@ class CallerValidatorImpl implements CallerValidator {
 
         if (android.app.appfunctions.flags.Flags.enableAppFunctionPermissionV2()) {
             return mAllowlistReader
-                    .isAllowlisted(callerPackageName, targetPackageName)
+                    .isAllowlisted(callerPackageName, targetPackageName, targetUser.getIdentifier())
                     .thenCompose(
                             (isAllowlisted) ->
                                     verifyCallerCanExecuteAppFunctionWithAllowlist(

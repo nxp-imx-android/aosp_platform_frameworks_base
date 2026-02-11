@@ -26,6 +26,7 @@ import static com.android.server.appfunctions.AppSearchDataJsonConverter.searchR
 import static com.android.server.appfunctions.AppSearchDataYamlConverter.convertGenericDocumentToYaml;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.annotation.RequiresNoPermission;
 import android.app.ActivityManager;
 import android.app.appfunctions.AppFunctionException;
@@ -39,6 +40,7 @@ import android.app.appfunctions.ISetAppFunctionEnabledCallback;
 import android.app.appsearch.GenericDocument;
 import android.app.appsearch.SearchResult;
 import android.content.Context;
+import android.content.pm.SignedPackage;
 import android.os.Binder;
 import android.os.ICancellationSignal;
 import android.os.Process;
@@ -56,7 +58,6 @@ import org.json.JSONObject;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -737,19 +738,28 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
 
     private int setTestAllowlistEntry() {
         final PrintWriter pw = getOutPrintWriter();
-        String agentPackage = null;
-        List<String> appPackages = null;
+        SignedPackage agentPackage = null;
+        List<SignedPackage> appPackages = null;
 
         String opt;
         while ((opt = getNextOption()) != null) {
             if (opt.equals("--agent-package")) {
-                agentPackage = getNextArgRequired();
+                agentPackage = parseSignedPackage(getNextArgRequired());
             } else if (opt.equals("--app-packages")) {
-                String rawAppPackages = getNextArgRequired();
+                String rawAppPackagesInput = getNextArgRequired();
                 try {
-                    appPackages = Arrays.asList(rawAppPackages.split(","));
+                    String[] rawAppPackages = rawAppPackagesInput.split(",");
+                    appPackages = new ArrayList<>();
+                    for (String rawAppPackage : rawAppPackages) {
+                        SignedPackage appPackage = parseSignedPackage(rawAppPackage);
+                        if (appPackage != null) {
+                            appPackages.add(appPackage);
+                        } else {
+                            throw new IllegalArgumentException("Unable to parse " + rawAppPackage);
+                        }
+                    }
                 } catch (Exception e) {
-                    pw.println("Unable to parse " + rawAppPackages);
+                    pw.println("Unable to parse " + rawAppPackagesInput);
                 }
             } else {
                 pw.println("Unknown option: " + opt);
@@ -771,6 +781,11 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
 
         pw.println("Set test allowlist entry");
         return 0;
+    }
+
+    @Nullable
+    private SignedPackage parseSignedPackage(@NonNull String rawString) {
+        return SignedPackageParser.parse(rawString);
     }
 
     private int clearTestAllowlist() {

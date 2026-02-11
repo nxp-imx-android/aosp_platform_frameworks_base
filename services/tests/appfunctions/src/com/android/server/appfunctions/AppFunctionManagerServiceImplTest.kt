@@ -30,6 +30,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.modules.utils.testing.ExtendedMockitoRule
 import com.android.server.LocalServices
+import com.android.server.appfunctions.allowlist.AppFunctionAllowlistReader
 import com.android.server.appinteraction.AppInteractionService
 import com.android.server.uri.UriGrantsManagerInternal
 import com.android.server.wm.ActivityTaskManagerInternal
@@ -80,6 +81,7 @@ class AppFunctionManagerServiceImplTest {
             appInteractionService,
             mock<AppFunctionMetadataReader>(),
             mock<ActivityTaskManagerInternal>(),
+            mock<AppFunctionAllowlistReader>(),
         )
 
     @Test

@@ -28,9 +28,10 @@ public interface AppFunctionAllowlistReader {
      *
      * @param agentPackageName The agent package name.
      * @param targetPackageName The target package name.
+     * @param userId The target user id.
      * @return The {@link AndroidFuture} for the result.
      */
     @NonNull
     AndroidFuture<Boolean> isAllowlisted(
-            @NonNull String agentPackageName, @NonNull String targetPackageName);
+            @NonNull String agentPackageName, @NonNull String targetPackageName, int userId);
 }
