@@ -16,6 +16,7 @@
 
 package com.android.systemui.qs.panels.ui.compose.toolbar
 
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -106,7 +107,7 @@ private fun ActionRow(viewModel: GlobalActionUiState.Visible, modifier: Modifier
                 .height(PowerMenuConstants.ActionHeight),
     ) {
         Icon(viewModel.icon)
-        Text(text = stringResource(viewModel.textResId))
+        Text(modifier = Modifier.basicMarquee(), text = stringResource(viewModel.textResId))
     }
 }
 
