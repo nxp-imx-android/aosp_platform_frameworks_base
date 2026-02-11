@@ -130,12 +130,13 @@ import com.android.wm.shell.onehanded.OneHandedController;
 import com.android.wm.shell.onehanded.OneHandedTransitionCallback;
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
-import com.android.wm.shell.shared.bubbles.BubbleFlagHelper;
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation.UpdateLocationRequest;
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation.UpdateSource;
 import com.android.wm.shell.shared.bubbles.BubbleBarUpdate;
 import com.android.wm.shell.shared.bubbles.BubbleDropTargetBoundsProvider;
+import com.android.wm.shell.shared.bubbles.BubbleFeatureConfig;
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper;
 import com.android.wm.shell.shared.bubbles.ContextUtils;
 import com.android.wm.shell.shared.bubbles.DeviceConfig;
 import com.android.wm.shell.shared.bubbles.logging.BubbleLog;
@@ -262,6 +263,7 @@ public class BubbleController implements ConfigurationChangeListener,
     @Nullable private BubbleBarLayerView mLayerView;
     private BubbleIconFactory mBubbleIconFactory;
     private final BubblePositioner mBubblePositioner;
+    private final BubbleFeatureConfig mFeatureConfig;
     private Bubbles.SysuiProxy mSysuiProxy;
 
     @Nullable private Runnable mOnImeHidden;
@@ -386,7 +388,8 @@ public class BubbleController implements ConfigurationChangeListener,
             BubblesFoldLockSettingsObserver foldLockSettingsObserver,
             BubbleSessionTracker sessionTracker,
             BubbleViewInfoTask.Factory bubbleViewInfoTaskFactory,
-            BubbleHelper bubbleHelper) {
+            BubbleHelper bubbleHelper,
+            BubbleFeatureConfig featureConfig) {
         BubbleLog.addLogger(new BubbleProtoLog());
         mContext = context;
         mShellCommandHandler = shellCommandHandler;
@@ -447,6 +450,7 @@ public class BubbleController implements ConfigurationChangeListener,
         mBubbleViewInfoTaskFactory = bubbleViewInfoTaskFactory;
         mBubbleShellCommandHandler = new BubbleShellCommandHandler(this);
         mBubbleHelper = bubbleHelper;
+        mFeatureConfig = featureConfig;
         shellInit.addInitCallback(this::onInit, this);
 
         if (unfoldProgressProvider.isPresent() && Flags.enableBubbleBar()) {
@@ -1107,8 +1111,8 @@ public class BubbleController implements ConfigurationChangeListener,
             // window to show this in, but we use a separate code path.
             // TODO(b/273312602): consider foldables where we do need a stack view when folded
             if (mLayerView == null) {
-                mLayerView = new BubbleBarLayerView(mContext, this, mBubbleData, mLogger,
-                        mMainExecutor);
+                mLayerView = new BubbleBarLayerView(mContext, this, mBubbleData, mFeatureConfig,
+                        mLogger, mMainExecutor);
                 mLayerView.setUnBubbleConversationCallback(mSysuiProxy::onUnbubbleConversation);
             }
         } else {
@@ -3109,6 +3113,8 @@ public class BubbleController implements ConfigurationChangeListener,
         pw.print(prefix); pw.println("  stackViewSet= " + (mStackView != null));
         pw.print(prefix); pw.println("  layerViewSet= " + (mLayerView != null));
         pw.print(prefix); pw.println("  mOnImeHidden= " + mOnImeHidden);
+        final boolean isScrimEnabled = mFeatureConfig.isScrimEnabled(mContext.getDisplayId());
+        pw.print(prefix); pw.println("  isScrimEnabled= " + isScrimEnabled);
         pw.println();
 
         mBubbleData.dump(pw);

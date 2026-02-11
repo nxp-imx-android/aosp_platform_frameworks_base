@@ -50,6 +50,7 @@ import com.android.wm.shell.common.HomeIntentProvider
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.common.SyncTransactionQueue
 import com.android.wm.shell.common.TaskStackListenerImpl
+import com.android.wm.shell.shared.bubbles.FakeBubbleFeatureConfig
 import com.android.wm.shell.sysui.ShellCommandHandler
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
@@ -85,6 +86,7 @@ class BubbleViewInfoTest : ShellTestCase() {
     private lateinit var bubblePositioner: BubblePositioner
     private lateinit var bubbleAppInfoProvider: BubbleAppInfoProvider
     private lateinit var userResolver: BubbleUserResolver
+    private val featureConfig: FakeBubbleFeatureConfig = FakeBubbleFeatureConfig()
 
     private val bubbleTaskViewFactory = BubbleTaskViewFactory {
         BubbleTaskView(mock<TaskView>(), mock<Executor>(), bubbleController)
@@ -174,6 +176,7 @@ class BubbleViewInfoTest : ShellTestCase() {
                 bubbleSessionTracker,
                 mock<BubbleViewInfoTask.Factory>(),
                 mock<BubbleHelper>(),
+                featureConfig,
             )
 
         val bubbleStackViewManager = BubbleStackViewManager.fromBubbleController(bubbleController)
@@ -190,7 +193,14 @@ class BubbleViewInfoTest : ShellTestCase() {
                 bubbleSessionTracker,
             )
         bubbleBarLayerView =
-            BubbleBarLayerView(context, bubbleController, bubbleData, bubbleLogger, mainExecutor)
+            BubbleBarLayerView(
+                context,
+                bubbleController,
+                bubbleData,
+                featureConfig,
+                bubbleLogger,
+                mainExecutor,
+            )
     }
 
     @Test

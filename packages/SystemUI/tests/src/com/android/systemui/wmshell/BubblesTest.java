@@ -200,6 +200,7 @@ import com.android.wm.shell.onehanded.OneHandedController;
 import com.android.wm.shell.shared.animation.PhysicsAnimatorTestUtils;
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
 import com.android.wm.shell.shared.bubbles.BubbleBarUpdate;
+import com.android.wm.shell.shared.bubbles.FakeBubbleFeatureConfig;
 import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellController;
 import com.android.wm.shell.sysui.ShellInit;
@@ -567,7 +568,8 @@ public class BubblesTest extends SysuiTestCase {
                 Optional.empty(),
                 mSessionTracker,
                 bubbleViewInfoTaskFactory,
-                mBubbleHelper);
+                mBubbleHelper,
+                new FakeBubbleFeatureConfig());
         mBubbleController.setExpandListener(mBubbleExpandListener);
         spyOn(mBubbleController);
 

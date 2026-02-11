@@ -21,9 +21,11 @@ import android.content.Context
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
+import android.view.Display.DEFAULT_DISPLAY
 import androidx.test.filters.SmallTest
 import com.android.wm.shell.Flags
 import com.android.wm.shell.ShellTestCase
+import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
 import org.junit.Before
@@ -37,12 +39,13 @@ class BubbleFeatureConfigTest : ShellTestCase() {
 
     private val context = mock<Context>()
     private val activityManager = mock<ActivityManager>()
+    private val desktopState = FakeDesktopState()
     private lateinit var bubbleFeatureConfig: BubbleFeatureConfig
 
     @Before
     fun setup() {
         whenever(context.getSystemService(Context.ACTIVITY_SERVICE)).thenReturn(activityManager)
-        bubbleFeatureConfig = BubbleFeatureConfig(context)
+        bubbleFeatureConfig = BubbleFeatureConfigImpl(context, { desktopState })
     }
 
     @EnableFlags(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
@@ -64,5 +67,33 @@ class BubbleFeatureConfigTest : ShellTestCase() {
     fun areAppBubblesSupported() {
         whenever(activityManager.isLowRamDevice).thenReturn(false)
         assertThat(bubbleFeatureConfig.areAppBubblesSupported()).isTrue()
+    }
+
+    @DisableFlags(Flags.FLAG_DISABLE_BUBBLE_SCRIM_LARGE_SCREENS)
+    @Test
+    fun isScrimEnabled_flagDisabled_desktopSupported_returnsTrue() {
+        desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
+        assertThat(bubbleFeatureConfig.isScrimEnabled(DEFAULT_DISPLAY)).isTrue()
+    }
+
+    @DisableFlags(Flags.FLAG_DISABLE_BUBBLE_SCRIM_LARGE_SCREENS)
+    @Test
+    fun isScrimEnabled_flagDisabled_desktopNotSupported_returnsTrue() {
+        desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = false
+        assertThat(bubbleFeatureConfig.isScrimEnabled(DEFAULT_DISPLAY)).isTrue()
+    }
+
+    @EnableFlags(Flags.FLAG_DISABLE_BUBBLE_SCRIM_LARGE_SCREENS)
+    @Test
+    fun isScrimEnabled_flagEnabled_desktopSupported_returnsFalse() {
+        desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
+        assertThat(bubbleFeatureConfig.isScrimEnabled(DEFAULT_DISPLAY)).isFalse()
+    }
+
+    @EnableFlags(Flags.FLAG_DISABLE_BUBBLE_SCRIM_LARGE_SCREENS)
+    @Test
+    fun isScrimEnabled_flagEnabled_desktopNotSupported_returnsTrue() {
+        desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = false
+        assertThat(bubbleFeatureConfig.isScrimEnabled(DEFAULT_DISPLAY)).isTrue()
     }
 }
