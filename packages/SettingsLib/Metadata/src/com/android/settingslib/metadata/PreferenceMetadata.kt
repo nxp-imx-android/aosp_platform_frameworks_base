@@ -194,7 +194,9 @@ interface PreferenceGroup : PreferenceMetadata {
 
 /** Metadata of preference category. */
 @AnyThread
-open class PreferenceCategory(override val key: String, override val purpose: Int, override val title: Int) : PreferenceGroup
+open class PreferenceCategory(override val key: String, override val purpose: Int, override val title: Int) : PreferenceGroup {
+    override fun tags(context: Context) = arrayOf(UI_ONLY_PREFERENCE)
+}
 
 /** Tag representing a preference that is ui only*/
 const val UI_ONLY_PREFERENCE="ui_only_preference"
