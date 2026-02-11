@@ -31,6 +31,7 @@ import android.annotation.TestApi;
 import android.compat.annotation.ChangeId;
 import android.compat.annotation.EnabledSince;
 import android.compat.annotation.UnsupportedAppUsage;
+import android.content.ContentProvider;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
@@ -494,13 +495,13 @@ public class AlarmManager {
      * supplies an {@link OnAlarmListener} instance that will be invoked at that time.
      *
      * <p>
-     * The {@link OnAlarmListener} instance supplied is tied to the lifecycle of the
-     * component that scheduled it. The system can drop the alarm once this component
-     * is no longer in an active state. For example, if this alarm is scheduled from a foreground
-     * service, it should not be expected to trigger after the foreground service terminates.
-     * <p>
-     * To schedule alarms that fire reliably even after the current lifecycle completes,
-     * and starts the app if required, use {@link #set(int, long, PendingIntent)}.
+     * Listener based alarms may be canceled by the Android system whenever the calling process
+     * no longer has any components running, such as {@link Activity}, {@link Service}, or
+     * {@link ContentProvider}, so only use these APIs when you do not need to receive alarms
+     * after the current component finishes, and also make sure to
+     * {@linkplain #cancel(OnAlarmListener)} them when it does. For example, if you use these
+     * APIs from an Activity, make sure to cancel the respective alarms when the activity
+     * finishes. If you need to receive the alarm even after that, use the PendingIntent based APIs.
      *
      * <p>
      * The OnAlarmListener's {@link OnAlarmListener#onAlarm() onAlarm()} method will be
@@ -653,13 +654,13 @@ public class AlarmManager {
      * supplies an {@link OnAlarmListener} instance that will be invoked at that time.
      *
      * <p>
-     * The {@link OnAlarmListener} instance supplied is tied to the lifecycle of the
-     * component that scheduled it. The system can drop the alarm once this component
-     * is no longer in an active state. For example, if this alarm is scheduled from a foreground
-     * service, it should not be expected to trigger after the foreground service terminates.
-     * <p>
-     * To schedule alarms that fire reliably even after the current lifecycle completes,
-     * and starts the app if required, use {@link #setWindow(int, long, long, PendingIntent)}.
+     * Listener based alarms may be canceled by the Android system whenever the calling process
+     * no longer has any components running, such as {@link Activity}, {@link Service}, or
+     * {@link ContentProvider}, so only use these APIs when you do not need to receive alarms
+     * after the current component finishes, and also make sure to
+     * {@linkplain #cancel(OnAlarmListener)} them when it does. For example, if you use these
+     * APIs from an Activity, make sure to cancel the respective alarms when the activity
+     * finishes. If you need to receive the alarm even after that, use the PendingIntent based APIs.
      *
      * <p>
      * The OnAlarmListener {@link OnAlarmListener#onAlarm() onAlarm()} method will be
@@ -687,13 +688,13 @@ public class AlarmManager {
      * supplies an {@link OnAlarmListener} instance that will be invoked at that time.
      *
      * <p>
-     * The {@link OnAlarmListener} instance supplied is tied to the lifecycle of the
-     * component that scheduled it. The system can drop the alarm once this component
-     * is no longer in an active state. For example, if this alarm is scheduled from a foreground
-     * service, it should not be expected to trigger after the foreground service terminates.
-     * <p>
-     * To schedule alarms that fire reliably even after the current lifecycle completes,
-     * and starts the app if required, use {@link #setWindow(int, long, long, PendingIntent)}.
+     * Listener based alarms may be canceled by the Android system whenever the calling process
+     * no longer has any components running, such as {@link Activity}, {@link Service}, or
+     * {@link ContentProvider}, so only use these APIs when you do not need to receive alarms
+     * after the current component finishes, and also make sure to
+     * {@linkplain #cancel(OnAlarmListener)} them when it does. For example, if you use these
+     * APIs from an Activity, make sure to cancel the respective alarms when the activity
+     * finishes. If you need to receive the alarm even after that, use the PendingIntent based APIs.
      *
      * <p>
      * The OnAlarmListener {@link OnAlarmListener#onAlarm() onAlarm()} method will be
@@ -719,13 +720,13 @@ public class AlarmManager {
      * supplies an {@link OnAlarmListener} instance that will be invoked at that time.
      *
      * <p>
-     * The {@link OnAlarmListener} instance supplied is tied to the lifecycle of the
-     * component that scheduled it. The system can drop the alarm once this component
-     * is no longer in an active state. For example, if this alarm is scheduled from a foreground
-     * service, it should not be expected to trigger after the foreground service terminates.
-     * <p>
-     * To schedule alarms that fire reliably even after the current lifecycle completes,
-     * and starts the app if required, use {@link #setWindow(int, long, long, PendingIntent)}.
+     * Listener based alarms may be canceled by the Android system whenever the calling process
+     * no longer has any components running, such as {@link Activity}, {@link Service}, or
+     * {@link ContentProvider}, so only use these APIs when you do not need to receive alarms
+     * after the current component finishes, and also make sure to
+     * {@linkplain #cancel(OnAlarmListener)} them when it does. For example, if you use these
+     * APIs from an Activity, make sure to cancel the respective alarms when the activity
+     * finishes. If you need to receive the alarm even after that, use the PendingIntent based APIs.
      *
      * <p>
      * The OnAlarmListener's {@link OnAlarmListener#onAlarm() onAlarm()} method will be
@@ -768,10 +769,13 @@ public class AlarmManager {
      * expect these to arrive in any relative order to its other alarms.
      *
      * <p>
-     * The {@link OnAlarmListener} instance supplied is tied to the lifecycle of the
-     * component that scheduled it. The system can drop the alarm once this component
-     * is no longer in an active state. For example, if this alarm is scheduled from a foreground
-     * service, it should not be expected to trigger after the foreground service terminates.
+     * Listener based alarms may be canceled by the Android system whenever the calling process
+     * no longer has any components running, such as {@link Activity}, {@link Service}, or
+     * {@link ContentProvider}, so only use these APIs when you do not need to receive alarms
+     * after the current component finishes, and also make sure to
+     * {@linkplain #cancel(OnAlarmListener)} them when it does. For example, if you use these
+     * APIs from an Activity, make sure to cancel the respective alarms when the activity
+     * finishes.
      *
      * @param type type of alarm
      * @param windowStartMillis The earliest time, in milliseconds, that the alarm should
@@ -863,13 +867,13 @@ public class AlarmManager {
      * supplies an {@link OnAlarmListener} instance that will be invoked at that time.
      *
      * <p>
-     * The {@link OnAlarmListener} instance supplied is tied to the lifecycle of the
-     * component that scheduled it. The system can drop the alarm once this component
-     * is no longer in an active state. For example, if this alarm is scheduled from a foreground
-     * service, it should not be expected to trigger after the foreground service terminates.
-     * <p>
-     * To schedule alarms that fire reliably even after the current lifecycle completes,
-     * and starts the app if required, use {@link #setExact(int, long, PendingIntent)}.
+     * Listener based alarms may be canceled by the Android system whenever the calling process
+     * no longer has any components running, such as {@link Activity}, {@link Service}, or
+     * {@link ContentProvider}, so only use these APIs when you do not need to receive alarms
+     * after the current component finishes, and also make sure to
+     * {@linkplain #cancel(OnAlarmListener)} them when it does. For example, if you use these
+     * APIs from an Activity, make sure to cancel the respective alarms when the activity
+     * finishes. If you need to receive the alarm even after that, use the PendingIntent based APIs.
      *
      * <p>
      * The OnAlarmListener's {@link OnAlarmListener#onAlarm() onAlarm()} method will be
@@ -897,10 +901,13 @@ public class AlarmManager {
      * Schedule an idle-until alarm, which will keep the alarm manager idle until
      * the given time.
      * <p>
-     * The {@link OnAlarmListener} instance supplied is tied to the lifecycle of the
-     * component that scheduled it. The system can drop the alarm once this component
-     * is no longer in an active state. For example, if this alarm is scheduled from a foreground
-     * service, it should not be expected to trigger after the foreground service terminates.
+     * Listener based alarms may be canceled by the Android system whenever the calling process
+     * no longer has any components running, such as {@link Activity}, {@link Service}, or
+     * {@link ContentProvider}, so only use these APIs when you do not need to receive alarms
+     * after the current component finishes, and also make sure to
+     * {@linkplain #cancel(OnAlarmListener)} them when it does. For example, if you use these
+     * APIs from an Activity, make sure to cancel the respective alarms when the activity
+     * finishes.
      * @hide
      */
     public void setIdleUntil(@AlarmType int type, long triggerAtMillis, @Nullable String tag,
@@ -983,13 +990,13 @@ public class AlarmManager {
      * Direct callback version of {@link #set(int, long, long, long, PendingIntent, WorkSource)}.
      * Note that repeating alarms must use the PendingIntent variant, not an OnAlarmListener.
      * <p>
-     * The {@link OnAlarmListener} instance supplied is tied to the lifecycle of the
-     * component that scheduled it. The system can drop the alarm once this component
-     * is no longer in an active state. For example, if this alarm is scheduled from a foreground
-     * service, it should not be expected to trigger after the foreground service terminates.
-     * <p>
-     * To schedule alarms that fire reliably even after the current lifecycle completes,
-     * and starts the app if required, use {@link #set(int, long, PendingIntent)}.
+     * Listener based alarms may be canceled by the Android system whenever the calling process
+     * no longer has any components running, such as {@link Activity}, {@link Service}, or
+     * {@link ContentProvider}, so only use these APIs when you do not need to receive alarms
+     * after the current component finishes, and also make sure to
+     * {@linkplain #cancel(OnAlarmListener)} them when it does. For example, if you use these
+     * APIs from an Activity, make sure to cancel the respective alarms when the activity
+     * finishes. If you need to receive the alarm even after that, use the PendingIntent based APIs.
      * <p>
      * The OnAlarmListener's {@link OnAlarmListener#onAlarm() onAlarm()} method will be
      * invoked via the specified target Handler, or on the application's main looper
@@ -1062,13 +1069,13 @@ public class AlarmManager {
      * {@link #setExact(int, long, String, OnAlarmListener, Handler)} instead.
      *
      * <p>
-     * The {@link OnAlarmListener} instance supplied is tied to the lifecycle of the
-     * component that scheduled it. The system can drop the alarm once this component
-     * is no longer in an active state. For example, if this alarm is scheduled from a foreground
-     * service, it should not be expected to trigger after the foreground service terminates.
-     * <p>
-     * To schedule alarms that fire reliably even after the current lifecycle completes,
-     * and starts the app if required, use {@link #setExact(int, long, PendingIntent)}.
+     * Listener based alarms may be canceled by the Android system whenever the calling process
+     * no longer has any components running, such as {@link Activity}, {@link Service}, or
+     * {@link ContentProvider}, so only use these APIs when you do not need to receive alarms
+     * after the current component finishes, and also make sure to
+     * {@linkplain #cancel(OnAlarmListener)} them when it does. For example, if you use these
+     * APIs from an Activity, make sure to cancel the respective alarms when the activity
+     * finishes. If you need to receive the alarm even after that, use the PendingIntent based APIs.
      *
      * <p>
      * Note that on previous Android versions {@link Build.VERSION_CODES#S} and
@@ -1391,14 +1398,13 @@ public class AlarmManager {
      * alarm will be allowed to execute even when the system is in low-power idle modes.
      *
      * <p>
-     * The {@link OnAlarmListener} instance supplied is tied to the lifecycle of the
-     * component that scheduled it. The system can drop the alarm once this component
-     * is no longer in an active state. For example, if this alarm is scheduled from a foreground
-     * service, it should not be expected to trigger after the foreground service terminates.
-     * <p>
-     * To schedule alarms that fire reliably even after the current lifecycle completes,
-     * and starts the app if required, use
-     * {@link #setExactAndAllowWhileIdle(int, long, PendingIntent)}.
+     * Listener based alarms may be canceled by the Android system whenever the calling process
+     * no longer has any components running, such as {@link Activity}, {@link Service}, or
+     * {@link ContentProvider}, so only use these APIs when you do not need to receive alarms
+     * after the current component finishes, and also make sure to
+     * {@linkplain #cancel(OnAlarmListener)} them when it does. For example, if you use these
+     * APIs from an Activity, make sure to cancel the respective alarms when the activity
+     * finishes. If you need to receive the alarm even after that, use the PendingIntent based APIs.
      *
      * <p class="note"><strong>Note:</strong>
      * Starting with android version {@link Build.VERSION_CODES#UPSIDE_DOWN_CAKE}, the system will
@@ -1436,14 +1442,13 @@ public class AlarmManager {
      * quota.
      *
      * <p>
-     * The {@link OnAlarmListener} instance supplied is tied to the lifecycle of the
-     * component that scheduled it. The system can drop the alarm once this component
-     * is no longer in an active state. For example, if this alarm is scheduled from a foreground
-     * service, it should not be expected to trigger after the foreground service terminates.
-     * <p>
-     * To schedule alarms that fire reliably even after the current lifecycle completes,
-     * and starts the app if required, use
-     * {@link #setExactAndAllowWhileIdle(int, long, PendingIntent)}.
+     * Listener based alarms may be canceled by the Android system whenever the calling process
+     * no longer has any components running, such as {@link Activity}, {@link Service}, or
+     * {@link ContentProvider}, so only use these APIs when you do not need to receive alarms
+     * after the current component finishes, and also make sure to
+     * {@linkplain #cancel(OnAlarmListener)} them when it does. For example, if you use these
+     * APIs from an Activity, make sure to cancel the respective alarms when the activity
+     * finishes. If you need to receive the alarm even after that, use the PendingIntent based APIs.
      *
      * @param type            type of alarm.
      * @param triggerAtMillis The exact time in milliseconds, that the alarm should be delivered,
