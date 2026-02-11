@@ -949,6 +949,13 @@ flag {
 }
 
 flag {
+    name: "enable_stepped_cascading"
+    namespace: "lse_desktop_experience"
+    description: "Enable traditional stepped cascading for desktop windowing."
+    bug: "410787173"
+}
+
+flag {
     name: "enable_sys_decors_callbacks_via_wm"
     namespace: "lse_desktop_experience"
     description: "Send onDisplay(Add|Remove)SystemDecorations callbacks via WM's IDisplayWindowListener."

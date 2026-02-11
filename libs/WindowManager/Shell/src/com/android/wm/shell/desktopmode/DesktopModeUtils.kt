@@ -43,6 +43,7 @@ import android.view.DragEvent
 import android.window.DesktopExperienceFlags
 import android.window.SplashScreen.SPLASH_SCREEN_STYLE_ICON
 import com.android.internal.policy.DesktopModeCompatUtils
+import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayLayout
@@ -445,31 +446,36 @@ fun cascadeWindow(
                     ?: recentTasksController?.findTaskInBackground(taskId)
             taskInfo?.let {
                 val taskBounds = it.configuration.windowConfiguration.bounds
-                if (!taskBounds.isEmpty()) {
-                    cascadeWindow(
-                        context.resources,
-                        stableBounds,
-                        taskBounds,
-                        bounds,
-                        isRememberedBounds,
-                    )
-                    return@let
-                }
-                // RecentsTaskInfo might not have configuration bounds populated yet so use
-                // task lastNonFullscreenBounds if available. If null or empty bounds are found
-                // do not cascade.
-                if (it is RecentTaskInfo) {
-                    it.lastNonFullscreenBounds?.let {
-                        if (!it.isEmpty()) {
-                            cascadeWindow(
-                                context.resources,
-                                stableBounds,
-                                it,
-                                bounds,
-                                isRememberedBounds,
-                            )
-                        }
+                val prevBounds =
+                    if (!taskBounds.isEmpty()) {
+                        taskBounds
+                    } else if (it is RecentTaskInfo) {
+                        // RecentsTaskInfo might not have configuration bounds populated yet so use
+                        // task lastNonFullscreenBounds if available. If null or empty bounds are
+                        // found do not cascade.
+                        it.lastNonFullscreenBounds?.takeIf { !it.isEmpty }
+                    } else {
+                        null
                     }
+                if (prevBounds != null) {
+                    if (Flags.enableSteppedCascading()) {
+                        cascadeWindowStepped(
+                            context.resources,
+                            stableBounds,
+                            prevBounds,
+                            bounds,
+                            isRememberedBounds,
+                        )
+                    } else {
+                        cascadeWindow(
+                            context.resources,
+                            stableBounds,
+                            prevBounds,
+                            bounds,
+                            isRememberedBounds,
+                        )
+                    }
+                    return@let
                 }
             }
         }
