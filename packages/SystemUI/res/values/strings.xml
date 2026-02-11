@@ -3177,6 +3177,10 @@
     <string name="accessibility_shortcutchooser_picker_dialog_title">Select a feature</string>
     <!-- Text for the Edit button on the Toggle dialog. [CHAR LIMIT=NONE] -->
     <string name="accessibility_shortcutchooser_edit_button">Edit</string>
+    <!-- Title for the dialog that allows the user to select which accessibility feature is triggered by the accessibility button. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_nav_bar_more_options_title">Choose a feature</string>
+    <!--Subtitle text explaining the user's selection will become the default action for future clicks on the accessibility button. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_nav_bar_more_options_subtitle">This feature will open next time you select the accessibility button</string>
 
     <!-- Title text for the accessibility quick access dialog that allows users to quickly toggle on accessibility features. [CHAR LIMIT=NONE] -->
     <string name="accessibility_quick_access_dialog_title">Accessibility</string>

@@ -54,6 +54,7 @@ constructor(
         EDIT_TARGETS,
         TOGGLE_TARGETS,
         QUICK_ACCESS,
+        NAV_BAR_CHOOSER,
     }
 
     override suspend fun onActivated() {
@@ -116,6 +117,10 @@ constructor(
         targetName: String,
     ) = interactor.performAccessibilityShortcut(displayId, shortcutType, targetName)
 
+    suspend fun onNavBarTargetSelected(targetName: String) {
+        interactor.setAccessibilityButtonTargetComponent(targetName)
+    }
+
     fun dismissDialog() {
         _dialogType.value = DialogType.NONE
     }
@@ -146,6 +151,11 @@ constructor(
         _dialogRequest.value = requestModel
 
         val shortcutType = requestModel.shortcutType
+
+        if (shortcutType == UserShortcutType.SOFTWARE) {
+            _dialogType.value = DialogType.NAV_BAR_CHOOSER
+            return
+        }
 
         if (shortcutType == UserShortcutType.QUICK_ACCESS) {
             if (Flags.quickAccessShortcutType()) {

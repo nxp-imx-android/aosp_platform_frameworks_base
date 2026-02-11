@@ -127,6 +127,17 @@ class ShortcutChooserDialogInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    fun dialogRequest_softwareType_onDefaultDisplay_flowIsValid() =
+        kosmos.runTest {
+            val requestModel by collectLastValue(underTest.dialogRequest)
+
+            sendIntentBroadcast(UserShortcutType.SOFTWARE, DEFAULT_DISPLAY)
+
+            assertThat(requestModel).isNotNull()
+            assertThat(requestModel?.shortcutType).isEqualTo(UserShortcutType.SOFTWARE)
+        }
+
+    @Test
     @EnableFlags(SystemUIFlags.FLAG_LAUNCH_ACCESSIBILITY_QUICK_ACCESS_DIALOG_PERMISSION)
     fun dialogRequest_quickAccess_validDisplay_emitsRequestModel() =
         kosmos.runTest {

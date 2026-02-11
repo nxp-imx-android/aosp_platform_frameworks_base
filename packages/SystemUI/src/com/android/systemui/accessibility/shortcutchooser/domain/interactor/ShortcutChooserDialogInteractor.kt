@@ -36,6 +36,7 @@ import com.android.systemui.broadcast.BroadcastSender
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.display.data.repository.DisplayRepository
+import com.android.systemui.shared.system.QuickStepContract
 import com.android.systemui.user.data.repository.UserRepository
 import com.android.systemui.user.domain.interactor.HeadlessSystemUserMode
 import javax.inject.Inject
@@ -60,8 +61,9 @@ constructor(
         merge(
                 broadcastDispatcher.broadcastFlow(
                     filter = IntentFilter().apply { addAction(SHORTCUT_CHOOSER_ACTION) },
-                    user = UserHandle.SYSTEM,
-                    flags = Context.RECEIVER_NOT_EXPORTED,
+                    user = UserHandle.ALL,
+                    flags = Context.RECEIVER_EXPORTED,
+                    permission = SHORTCUT_CHOOSER_PERMISSION,
                 ) { intent, _ ->
                     processShortcutChooserIntent(intent)
                 },
@@ -153,7 +155,7 @@ constructor(
             Intent().apply {
                 setPackage(SYSTEMUI_PACKAGE)
                 setAction(QUICK_ACCESS_ACTION)
-                putExtra(ShortcutChooserDialogConstants.DISPLAY_ID, displayId)
+                putExtra(QuickStepContract.EXTRA_ACCESSIBILITY_DISPLAY_ID, displayId)
             },
             UserHandle.SYSTEM,
         )
@@ -185,7 +187,7 @@ constructor(
         }
         val shortcutType =
             intent.getIntExtra(
-                ShortcutChooserDialogConstants.SHORTCUT_TYPE,
+                QuickStepContract.EXTRA_ACCESSIBILITY_SHORTCUT_TYPE,
                 UserShortcutType.DEFAULT,
             )
         val displayId =
@@ -226,13 +228,16 @@ constructor(
 
         @VisibleForTesting
         const val SHORTCUT_CHOOSER_ACTION =
-            "com.android.systemui.action.LAUNCH_ACCESSIBILITY_SHORTCUT_CHOOSER_DIALOG"
+            QuickStepContract.ACTION_LAUNCH_ACCESSIBILITY_SHORTCUT_CHOOSER_DIALOG
+
+        const val SHORTCUT_CHOOSER_PERMISSION =
+            QuickStepContract.PERMISSION_LAUNCH_ACCESSIBILITY_SHORTCUT_CHOOSER_DIALOG
 
         @VisibleForTesting
         const val QUICK_ACCESS_ACTION =
-            "com.android.systemui.action.LAUNCH_ACCESSIBILITY_QUICK_ACCESS_DIALOG"
+            QuickStepContract.ACTION_LAUNCH_ACCESSIBILITY_QUICK_ACCESS_DIALOG
         const val QUICK_ACCESS_PERMISSION =
-            "com.android.systemui.permission.LAUNCH_ACCESSIBILITY_QUICK_ACCESS_DIALOG"
-        @VisibleForTesting const val SYSTEMUI_PACKAGE = "com.android.systemui"
+            QuickStepContract.PERMISSION_LAUNCH_ACCESSIBILITY_QUICK_ACCESS_DIALOG
+        @VisibleForTesting val SYSTEMUI_PACKAGE = QuickStepContract.SYSUI_PACKAGE
     }
 }
