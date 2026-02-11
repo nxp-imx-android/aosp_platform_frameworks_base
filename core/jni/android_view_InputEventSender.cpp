@@ -75,7 +75,7 @@ private:
 
     uint32_t mNextPublishedSeq;
 
-    const std::string getInputChannelName() {
+    const std::string& getInputChannelName() {
         return mInputPublisher.getChannel().getName();
     }
 
