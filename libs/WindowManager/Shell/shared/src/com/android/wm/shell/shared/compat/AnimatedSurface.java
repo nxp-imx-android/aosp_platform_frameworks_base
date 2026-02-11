@@ -146,7 +146,7 @@ public class AnimatedSurface {
     }
 
     /** Utility function to convert RemoteAnimationTarget array to AnimatedSurface array. */
-    public static AnimatedSurface[] from(RemoteAnimationTarget[] targets) {
+    public static AnimatedSurface[] mapFromTargets(RemoteAnimationTarget[] targets) {
         return Arrays.stream(targets)
                 .map(AnimatedSurface::from)
                 .toArray(AnimatedSurface[]::new);
