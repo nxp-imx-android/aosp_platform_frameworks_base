@@ -97,7 +97,11 @@ private constructor(
     private val includeParameters = (request.flags and PreferenceGetterFlags.PARAMETERS) != 0
     private val includeHierarchy = (request.flags and PreferenceGetterFlags.EXCLUDE_HIERARCHY) == 0
     private val shrinkHierarchy = (request.flags and PreferenceGetterFlags.SHRINK_HIERARCHY) != 0
-    private val excludeUiOnlyPreferences = true
+    private val excludeUiOnlyPreferences = !AppUtils.isDebuggable() || Settings.Global.getInt(
+        context.contentResolver,
+        "com.android.settings.EXCLUDE_UI_ONLY_PREFERENCES",
+        1
+    ) == 1
 
     private suspend fun init() {
         val factories = PreferenceScreenRegistry.preferenceScreenMetadataFactories
