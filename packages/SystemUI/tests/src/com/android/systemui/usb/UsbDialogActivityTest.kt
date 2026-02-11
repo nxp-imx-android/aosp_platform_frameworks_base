@@ -31,6 +31,7 @@ import android.os.IBinder
 import android.os.ServiceManager
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
+import android.text.Html
 import android.view.View
 import android.view.WindowManager
 import androidx.test.rule.ActivityTestRule
@@ -83,8 +84,8 @@ abstract class UsbDialogActivityTest<T> : SysuiTestCase()
 
     protected val mMessage: UsbAudioWarningDialogMessage = UsbAudioWarningDialogMessage()
     protected val mUsbService: IUsbManager = mock<IUsbManager>()
-    protected lateinit var mUsbDevice: UsbDevice
-    protected lateinit var mUsbAccessory: UsbAccessory
+    protected var mUsbDevice: UsbDevice? = null
+    protected var mUsbAccessory: UsbAccessory? = null
     protected lateinit var mAppName: CharSequence
     protected lateinit var mAlertParams: AlertController.AlertParams
 
@@ -99,6 +100,8 @@ abstract class UsbDialogActivityTest<T> : SysuiTestCase()
     protected abstract fun createActivity(): T
 
     protected abstract fun getActivityClass(): Class<T>
+
+    protected abstract fun getTitleResId(): Int
 
     protected open fun createIntent(canBeDefault: Boolean): Intent {
         return Intent(mContext, getActivityClass()).apply {
@@ -140,6 +143,9 @@ abstract class UsbDialogActivityTest<T> : SysuiTestCase()
     fun tearDown() {
         activityRule.finishActivity()
         mMockSession.finishMocking()
+
+        mUsbDevice = null
+        mUsbAccessory = null
     }
 
     private fun createDeviceIntent(
@@ -231,6 +237,34 @@ abstract class UsbDialogActivityTest<T> : SysuiTestCase()
         assertThat(mAlertParams.mNegativeButtonText).isNull()
         assertThat(mAlertParams.mPositiveButtonListener).isNull()
         assertThat(mAlertParams.mNegativeButtonListener).isNull()
+    }
+
+    protected fun getDeviceName(): String {
+        if (mUsbDevice != null) {
+            return USB_DEVICE_PRODUCT_NAME
+        }
+
+        return USB_ACCESSORY_DESCRIPTION
+    }
+
+    protected fun getTitle(): String {
+        return Html.fromHtml(
+                context.getString(getTitleResId(), mAppName, getDeviceName()),
+                Html.FROM_HTML_MODE_LEGACY,
+            )
+            .toString()
+    }
+
+    protected fun getMessage(resId: Int): String {
+        return context.getString(resId, mAppName, getDeviceName())
+    }
+
+    protected fun getAlwaysUseCheckboxMessage(): String {
+        if (mUsbDevice != null) {
+            return context.getString(R.string.always_use_device, mAppName, USB_DEVICE_PRODUCT_NAME)
+        }
+
+        return context.getString(R.string.always_use_accessory, mAppName, USB_ACCESSORY_DESCRIPTION)
     }
 
     protected fun prepareNewDialogCancel(isUsbDevice: Boolean) {

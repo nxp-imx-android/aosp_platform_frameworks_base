@@ -18,6 +18,7 @@ package com.android.systemui.usb;
 
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.text.Html;
 
 import androidx.annotation.VisibleForTesting;
 
@@ -48,11 +49,15 @@ public class UsbPermissionActivity extends UsbDialogActivity {
         super.onResume();
 
         final int titleId = mUsbPermissionMessageHandler.getPromptTitleId();
-        final String title =
-                getString(
-                        titleId, mDialogHelper.getAppName(), mDialogHelper.getDeviceDescription());
+        final CharSequence title =
+                Html.fromHtml(
+                        getString(
+                                titleId,
+                                mDialogHelper.getAppName(),
+                                mDialogHelper.getDeviceDescription()),
+                        Html.FROM_HTML_MODE_LEGACY);
         final int messageId = mUsbPermissionMessageHandler.getMessageId();
-        final String message =
+        final CharSequence message =
                 (messageId != Resources.ID_NULL)
                         ? getString(
                                 messageId,

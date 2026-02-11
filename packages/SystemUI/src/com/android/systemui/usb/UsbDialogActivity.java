@@ -94,7 +94,7 @@ abstract class UsbDialogActivity extends AlertActivity
         }
     }
 
-    private void setAlertParams(String title, String message) {
+    private void setAlertParams(CharSequence title, CharSequence message) {
         final AlertController.AlertParams ap = mAlertParams;
         ap.mTitle = title;
         ap.mMessage = message;
@@ -133,7 +133,7 @@ abstract class UsbDialogActivity extends AlertActivity
         return alwaysUseCheckboxView;
     }
 
-    private View createDialogView(String title, String message) {
+    private View createDialogView(CharSequence title, CharSequence message) {
         final View view =
                 LayoutInflater.from(this).inflate(R.layout.usb_device_dialog, /* root= */ null);
 
@@ -165,11 +165,11 @@ abstract class UsbDialogActivity extends AlertActivity
     /**
      * Displays the USB dialog.
      *
-     * <p>This method determines whether to show the new UI (behind the
-     * {@code enable_persistent_device_permissions} flag) or the legacy UI. It also handles the
-     * logic for showing the "Always use" checkbox.
+     * <p>This method determines whether to show the new UI (behind the {@code
+     * enable_persistent_device_permissions} flag) or the legacy UI. It also handles the logic for
+     * showing the "Always use" checkbox.
      */
-    protected void showDialog(String title, String message, boolean canBeDefault) {
+    protected void showDialog(CharSequence title, CharSequence message, boolean canBeDefault) {
         // Only show the "always use" checkbox if there is no USB/Record warning
         final boolean useRecordWarning =
                 mDialogHelper.isUsbDevice()

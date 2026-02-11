@@ -81,6 +81,10 @@ class UsbConfirmActivityTest :
         return super.createIntent(canBeDefault).putExtra(RESOLVE_INFO, resolveInfo)
     }
 
+    override fun getTitleResId(): Int {
+        return R.string.usb_audio_device_confirm_prompt_title
+    }
+
     // Tests for old Usb Dialog UI
 
     @Test
@@ -90,27 +94,14 @@ class UsbConfirmActivityTest :
 
         checkNewUiIsNotInitialized()
 
-        val expectedTitle: String =
-            context.getString(
-                R.string.usb_audio_device_confirm_prompt_title,
-                mAppName,
-                USB_ACCESSORY_DESCRIPTION,
-            )
-        assertThat(mAlertParams.mTitle).isEqualTo(expectedTitle)
+        assertThat(mAlertParams.mTitle.toString()).isEqualTo(getTitle())
 
         // Usb Accessory shouldn't have a message.
         assertThat(mAlertParams.mMessage).isNull()
 
         val alwaysUseView: CheckBox? =
             mAlertParams.mView.findViewById(com.android.internal.R.id.alwaysUse)
-        assertThat(alwaysUseView!!.text)
-            .isEqualTo(
-                context.getString(
-                    R.string.always_use_accessory,
-                    mAppName,
-                    USB_ACCESSORY_DESCRIPTION,
-                )
-            )
+        assertThat(alwaysUseView!!.text).isEqualTo(getAlwaysUseCheckboxMessage())
     }
 
     @Test
@@ -120,21 +111,9 @@ class UsbConfirmActivityTest :
 
         checkNewUiIsNotInitialized()
 
-        val expectedTitle: String =
-            context.getString(
-                R.string.usb_audio_device_confirm_prompt_title,
-                mAppName,
-                USB_DEVICE_PRODUCT_NAME,
-            )
-        assertThat(mAlertParams.mTitle).isEqualTo(expectedTitle)
-
-        val expectedMessage: String =
-            context.getString(
-                R.string.usb_audio_device_prompt_warn,
-                mAppName,
-                USB_DEVICE_PRODUCT_NAME,
-            )
-        assertThat(mAlertParams.mMessage).isEqualTo(expectedMessage)
+        assertThat(mAlertParams.mTitle.toString()).isEqualTo(getTitle())
+        assertThat(mAlertParams.mMessage)
+            .isEqualTo(getMessage(R.string.usb_audio_device_prompt_warn))
 
         // Dialog shouldn't have a checkbox, if there is record warning.
         assertThat(mAlertParams.mView).isNull()
@@ -147,23 +126,14 @@ class UsbConfirmActivityTest :
 
         checkNewUiIsNotInitialized()
 
-        val expectedTitle: String =
-            context.getString(
-                R.string.usb_audio_device_confirm_prompt_title,
-                mAppName,
-                USB_DEVICE_PRODUCT_NAME,
-            )
-        assertThat(mAlertParams.mTitle).isEqualTo(expectedTitle)
+        assertThat(mAlertParams.mTitle.toString()).isEqualTo(getTitle())
 
         // Dialog shouldn't have a message, if it is not an audio device.
         assertThat(mAlertParams.mMessage).isNull()
 
         val alwaysUseView: CheckBox? =
             mAlertParams.mView.findViewById(com.android.internal.R.id.alwaysUse)
-        assertThat(alwaysUseView!!.text)
-            .isEqualTo(
-                context.getString(R.string.always_use_device, mAppName, USB_DEVICE_PRODUCT_NAME)
-            )
+        assertThat(alwaysUseView!!.text).isEqualTo(getAlwaysUseCheckboxMessage())
     }
 
     @Test
@@ -177,24 +147,12 @@ class UsbConfirmActivityTest :
 
         checkNewUiIsNotInitialized()
 
-        val expectedTitle: String =
-            context.getString(
-                R.string.usb_audio_device_confirm_prompt_title,
-                mAppName,
-                USB_DEVICE_PRODUCT_NAME,
-            )
-        assertThat(mAlertParams.mTitle).isEqualTo(expectedTitle)
-
-        val expectedMessage: String =
-            context.getString(R.string.usb_audio_device_prompt, mAppName, USB_DEVICE_PRODUCT_NAME)
-        assertThat(mAlertParams.mMessage).isEqualTo(expectedMessage)
+        assertThat(mAlertParams.mTitle.toString()).isEqualTo(getTitle())
+        assertThat(mAlertParams.mMessage).isEqualTo(getMessage(R.string.usb_audio_device_prompt))
 
         val alwaysUseView: CheckBox? =
             mAlertParams.mView.findViewById(com.android.internal.R.id.alwaysUse)
-        assertThat(alwaysUseView!!.text)
-            .isEqualTo(
-                context.getString(R.string.always_use_device, mAppName, USB_DEVICE_PRODUCT_NAME)
-            )
+        assertThat(alwaysUseView!!.text).isEqualTo(getAlwaysUseCheckboxMessage())
     }
 
     // Tests for new Usb Dialog UI
@@ -208,14 +166,8 @@ class UsbConfirmActivityTest :
 
         val dialogView: View = mAlertParams.mView
 
-        val expectedTitle: String =
-            context.getString(
-                R.string.usb_audio_device_confirm_prompt_title,
-                mAppName,
-                USB_ACCESSORY_DESCRIPTION,
-            )
-        assertThat(dialogView.findViewById<TextView>(R.id.usb_device_dialog_title).text)
-            .isEqualTo(expectedTitle)
+        assertThat(dialogView.findViewById<TextView>(R.id.usb_device_dialog_title).text.toString())
+            .isEqualTo(getTitle())
 
         // Usb Accessory shouldn't have a message.
         assertThat(dialogView.findViewById<TextView>(R.id.usb_device_dialog_message).visibility)
@@ -227,13 +179,7 @@ class UsbConfirmActivityTest :
                     .findViewById<CheckBox>(com.android.internal.R.id.alwaysUse)
                     .text
             )
-            .isEqualTo(
-                context.getString(
-                    R.string.always_use_accessory,
-                    mAppName,
-                    USB_ACCESSORY_DESCRIPTION,
-                )
-            )
+            .isEqualTo(getAlwaysUseCheckboxMessage())
     }
 
     @Test
@@ -281,23 +227,10 @@ class UsbConfirmActivityTest :
 
         val dialogView: View = mAlertParams.mView
 
-        val expectedTitle: String =
-            context.getString(
-                R.string.usb_audio_device_confirm_prompt_title,
-                mAppName,
-                USB_DEVICE_PRODUCT_NAME,
-            )
-        assertThat(dialogView.findViewById<TextView>(R.id.usb_device_dialog_title).text)
-            .isEqualTo(expectedTitle)
-
-        val expectedMessage: String =
-            context.getString(
-                R.string.usb_audio_device_prompt_warn,
-                mAppName,
-                USB_DEVICE_PRODUCT_NAME,
-            )
+        assertThat(dialogView.findViewById<TextView>(R.id.usb_device_dialog_title).text.toString())
+            .isEqualTo(getTitle())
         assertThat(dialogView.findViewById<TextView>(R.id.usb_device_dialog_message).text)
-            .isEqualTo(expectedMessage)
+            .isEqualTo(getMessage(R.string.usb_audio_device_prompt_warn))
 
         // Dialog shouldn't have a checkbox, if there is record warning.
         assertThat(
@@ -317,14 +250,8 @@ class UsbConfirmActivityTest :
 
         val dialogView: View = mAlertParams.mView
 
-        val expectedTitle: String =
-            context.getString(
-                R.string.usb_audio_device_confirm_prompt_title,
-                mAppName,
-                USB_DEVICE_PRODUCT_NAME,
-            )
-        assertThat(dialogView.findViewById<TextView>(R.id.usb_device_dialog_title).text)
-            .isEqualTo(expectedTitle)
+        assertThat(dialogView.findViewById<TextView>(R.id.usb_device_dialog_title).text.toString())
+            .isEqualTo(getTitle())
 
         // Dialog shouldn't have a message, if it is not an audio device.
         assertThat(dialogView.findViewById<TextView>(R.id.usb_device_dialog_message).visibility)
@@ -336,9 +263,7 @@ class UsbConfirmActivityTest :
                     .findViewById<CheckBox>(com.android.internal.R.id.alwaysUse)
                     .text
             )
-            .isEqualTo(
-                context.getString(R.string.always_use_device, mAppName, USB_DEVICE_PRODUCT_NAME)
-            )
+            .isEqualTo(getAlwaysUseCheckboxMessage())
     }
 
     @Test
@@ -354,19 +279,10 @@ class UsbConfirmActivityTest :
 
         val dialogView: View = mAlertParams.mView
 
-        val expectedTitle: String =
-            context.getString(
-                R.string.usb_audio_device_confirm_prompt_title,
-                mAppName,
-                USB_DEVICE_PRODUCT_NAME,
-            )
-        assertThat(dialogView.findViewById<TextView>(R.id.usb_device_dialog_title).text)
-            .isEqualTo(expectedTitle)
-
-        val expectedMessage: String =
-            context.getString(R.string.usb_audio_device_prompt, mAppName, USB_DEVICE_PRODUCT_NAME)
+        assertThat(dialogView.findViewById<TextView>(R.id.usb_device_dialog_title).text.toString())
+            .isEqualTo(getTitle())
         assertThat(dialogView.findViewById<TextView>(R.id.usb_device_dialog_message).text)
-            .isEqualTo(expectedMessage)
+            .isEqualTo(getMessage(R.string.usb_audio_device_prompt))
 
         assertThat(
                 dialogView
@@ -374,9 +290,7 @@ class UsbConfirmActivityTest :
                     .findViewById<CheckBox>(com.android.internal.R.id.alwaysUse)
                     .text
             )
-            .isEqualTo(
-                context.getString(R.string.always_use_device, mAppName, USB_DEVICE_PRODUCT_NAME)
-            )
+            .isEqualTo(getAlwaysUseCheckboxMessage())
     }
 
     @Test
