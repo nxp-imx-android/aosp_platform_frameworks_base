@@ -102,6 +102,7 @@ import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.common.TaskStackListenerImpl;
 import com.android.wm.shell.common.UserProfileContexts;
 import com.android.wm.shell.common.pip.PipBoundsState;
+import com.android.wm.shell.common.pip.PipDisplayLayoutState;
 import com.android.wm.shell.common.split.SplitState;
 import com.android.wm.shell.common.suppliers.TransactionSupplier;
 import com.android.wm.shell.common.transition.TransitionStateHolder;
@@ -204,6 +205,7 @@ import com.android.wm.shell.pinnedlayer.phone.PinnedLayerHandler;
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerUiState;
 import com.android.wm.shell.pip.PipTransitionController;
 import com.android.wm.shell.pip2.phone.PipDisplayDisconnectHandler;
+import com.android.wm.shell.pip2.phone.PipDisplayReconnectHandler;
 import com.android.wm.shell.pip2.phone.PipDisplayTransferHandler;
 import com.android.wm.shell.pip2.phone.PipScheduler;
 import com.android.wm.shell.pip2.phone.PipTransitionState;
@@ -1374,9 +1376,11 @@ public abstract class WMShellModule {
             PipScheduler pipScheduler,
             PipTransitionState pipTransitionState,
             PipBoundsState pipBoundsState,
+            PipDisplayLayoutState pipDisplayLayoutState,
             ShellDesktopState desktopState,
             RootTaskDisplayAreaOrganizer taskDisplayAreaOrganizer,
-            PipDisplayTransferHandler pipDisplayTransferHandler
+            PipDisplayTransferHandler pipDisplayTransferHandler,
+            PipDisplayReconnectHandler pipDisplayReconnectHandler
     ) {
         if (!com.android.window.flags.Flags.enableDisplayDisconnectPip()
                 || !PipFlags.isPip2ExperimentEnabled()) {
@@ -1387,12 +1391,36 @@ public abstract class WMShellModule {
                             pipScheduler,
                             pipTransitionState,
                             pipBoundsState,
+                            pipDisplayLayoutState,
                             desktopState,
                             taskDisplayAreaOrganizer,
-                            pipDisplayTransferHandler
+                            pipDisplayTransferHandler,
+                            pipDisplayReconnectHandler
                     )
             );
         }
+    }
+
+    @WMSingleton
+    @Provides
+    static PipDisplayReconnectHandler providePipDisplayReconnectHandler(
+            KeyguardManager keyguardManager,
+            DisplayController displayController,
+            RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
+            ShellController shellController,
+            PipTransitionState pipState,
+            PipDisplayTransferHandler pipDisplayTransferHandler,
+            ShellInit shellInit
+    ) {
+        return new PipDisplayReconnectHandler(
+                keyguardManager,
+                displayController,
+                rootTaskDisplayAreaOrganizer,
+                shellController,
+                pipState,
+                pipDisplayTransferHandler,
+                shellInit
+        );
     }
 
     @WMSingleton

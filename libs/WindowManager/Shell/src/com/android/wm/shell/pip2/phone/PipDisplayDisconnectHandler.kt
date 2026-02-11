@@ -24,6 +24,7 @@ import android.window.WindowContainerTransaction
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.common.pip.PipBoundsState
+import com.android.wm.shell.common.pip.PipDisplayLayoutState
 import com.android.wm.shell.desktopmode.ShellDesktopState
 import com.android.wm.shell.protolog.ShellProtoLogGroup
 
@@ -32,9 +33,11 @@ class PipDisplayDisconnectHandler(
     private val pipScheduler: PipScheduler,
     private val pipState: PipTransitionState,
     private val pipBoundsState: PipBoundsState,
+    private val pipDisplayLayoutState: PipDisplayLayoutState,
     private val desktopState: ShellDesktopState,
     private val rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer,
     private val pipDisplayTransferHandler: PipDisplayTransferHandler,
+    private val pipDisplayReconnectHandler: PipDisplayReconnectHandler,
 ) {
 
     /**
@@ -51,24 +54,34 @@ class PipDisplayDisconnectHandler(
         val reparentDisplayAreaInfo =
             rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(reparentDisplayId)
         if (reparentDisplayAreaInfo == null) {
-            ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
-                "reparentDisplayAreaInfo is null; aborting");
+            ProtoLog.d(
+                ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
+                "reparentDisplayAreaInfo is null; aborting",
+            )
             return wct
         }
         if (pipTask == null) {
-            ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
-                "pipTask is null; aborting");
+            ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE, "pipTask is null; aborting")
             return wct
         }
-        if (pipTask.displayId != disconnectedDisplayId) {
-            ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
-                "pipTask not on disconnected display; aborting");
+        if (pipDisplayLayoutState.displayId != disconnectedDisplayId) {
+            ProtoLog.d(
+                ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
+                "pipTask not on disconnected display; aborting",
+            )
             return wct
         }
-        val taskId = pipTask.taskId
         if (desktopState.isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)) {
-            ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
-                "Moving pipTask to internal display");
+            ProtoLog.d(
+                ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
+                "Moving pipTask to internal display",
+            )
+            pipDisplayReconnectHandler.preserveTask(
+                pipTask.taskId,
+                disconnectedDisplayId,
+                pipTask.userId,
+                pipBoundsState.bounds,
+            )
             scheduleMovePipToInternalDisplay(
                 pipTask,
                 disconnectedDisplayId,
@@ -76,7 +89,7 @@ class PipDisplayDisconnectHandler(
                 wct,
             )
         } else {
-           ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE, "Scheduling pip exit.");
+            ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE, "Scheduling pip exit.")
             schedulePipExitOnInternalDisplay(reparentDisplayAreaInfo.token, pipTask, wct)
         }
         return wct
