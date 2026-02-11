@@ -1474,7 +1474,8 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
             if (transition == mClosePrepareTransition && aborted) {
                 mClosePrepareTransition = null;
                 applyFinishOpenTransition();
-            } else if (!aborted) {
+            } else if (!aborted
+                    && !com.android.window.flags.Flags.mergePredictiveBackTransactionTogether()) {
                 // Since the closing target participates in the predictive back transition, the
                 // merged transition must be applied with the first transition to ensure a seamless
                 // animation.
@@ -1661,6 +1662,10 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
             finishCallback.onTransitionFinished(null);
             startT.apply();
             if (mCloseTransitionRequested) {
+                if (com.android.window.flags.Flags.mergePredictiveBackTransactionTogether()
+                        && mFinishOpenTransaction != null) {
+                    mFinishOpenTransaction.merge(finishT);
+                }
                 if (mApps == null || mApps.length == 0) {
                     // animation was done
                     applyFinishOpenTransition();

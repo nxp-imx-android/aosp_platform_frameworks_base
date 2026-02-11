@@ -500,3 +500,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "merge_predictive_back_transaction_together"
+    namespace: "windowing_frontend"
+    description: "Merge the close transition's finish transaction into the back navigation during mergeAnimation"
+    bug: "471522918"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
