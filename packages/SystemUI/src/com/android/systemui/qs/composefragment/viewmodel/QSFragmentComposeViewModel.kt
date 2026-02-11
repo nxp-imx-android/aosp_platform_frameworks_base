@@ -31,7 +31,6 @@ import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.internal.logging.UiEventLogger
 import com.android.keyguard.BouncerPanelExpansionCalculator
 import com.android.systemui.Dumpable
-import com.android.systemui.Flags
 import com.android.systemui.animation.ShadeInterpolation
 import com.android.systemui.classifier.Classifier
 import com.android.systemui.classifier.domain.interactor.FalsingInteractor
@@ -240,7 +239,7 @@ constructor(
             QSExpansionState(1f)
         } else {
             QSExpansionState(
-                if (Flags.noExpansionOnOverscroll() && isStackScrollerOverscrolling) 0f
+                if (isStackScrollerOverscrolling) 0f
                 else
                     qsExpansion.coerceIn(
                         // Only apply early expansion if we are not collapsing QQS, measured by

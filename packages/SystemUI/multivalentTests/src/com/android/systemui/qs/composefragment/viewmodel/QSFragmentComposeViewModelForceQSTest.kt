@@ -16,11 +16,8 @@
 
 package com.android.systemui.qs.composefragment.viewmodel
 
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper.RunWithLooper
 import androidx.test.filters.SmallTest
-import com.android.systemui.Flags
 import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryBypassRepository
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.statusbar.StatusBarState
@@ -37,26 +34,6 @@ import platform.test.runner.parameterized.Parameters
 class QSFragmentComposeViewModelForceQSTest(private val testData: TestData) :
     AbstractQSFragmentComposeViewModelTest() {
 
-    @DisableFlags(Flags.FLAG_NO_EXPANSION_ON_OVERSCROLL)
-    @Test
-    fun forceQs_orRealExpansion() = runTest {
-        with(testData) {
-            sysuiStatusBarStateController.setState(statusBarState)
-            underTest.isQsExpanded = expanded
-            underTest.isStackScrollerOverscrolling = stackScrollerOverScrolling
-            fakeDeviceEntryBypassRepository.setBypassEnabled(bypassEnabled)
-            underTest.isTransitioningToFullShade = transitioningToFullShade
-            underTest.isInSplitShade = inSplitShade
-
-            underTest.setQsExpansionValue(EXPANSION)
-
-            runCurrent()
-            assertThat(underTest.expansionState.progress)
-                .isEqualTo(if (expectedForceQS) 1f else EXPANSION)
-        }
-    }
-
-    @EnableFlags(Flags.FLAG_NO_EXPANSION_ON_OVERSCROLL)
     @Test
     fun forceQs_orRealExpansion_withNoExpansionOnOverscroll() = runTest {
         with(testData) {
