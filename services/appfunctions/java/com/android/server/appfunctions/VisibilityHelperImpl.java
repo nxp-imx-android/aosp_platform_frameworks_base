@@ -20,6 +20,7 @@ import android.Manifest;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.appfunctions.AppFunctionAidlSearchSpec;
+import android.app.appfunctions.AppFunctionActivityState;
 import android.app.appfunctions.AppFunctionName;
 import android.app.appfunctions.AppFunctionSearchSpec;
 import android.app.appfunctions.flags.Flags;
@@ -29,6 +30,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
 import android.os.Binder;
 import android.util.ArraySet;
+import java.util.ArrayList;
 
 import java.util.List;
 import java.util.Objects;
@@ -163,6 +165,34 @@ public final class VisibilityHelperImpl implements VisibilityHelper {
                 .build();
     }
 
+    @Override
+    public List<AppFunctionActivityState> filterVisibleAppFunctionActivityStates(
+            @NonNull List<AppFunctionActivityState> appFunctionActivityStates,
+            @NonNull String callingPackageName,
+            int callingUid,
+            int callingPid) {
+        Objects.requireNonNull(appFunctionActivityStates);
+        Objects.requireNonNull(callingPackageName);
+
+        if (hasPermissionsToQueryRuntimeMetadata(callingUid, callingPid)) {
+            return appFunctionActivityStates;
+        }
+        // Otherwise, only return the function names from the calling package, if any.
+        List<AppFunctionActivityState> visibleAppFunctionActivityStates = new ArrayList<>();
+        for (AppFunctionActivityState appFunctionActivityState : appFunctionActivityStates) {
+            if (appFunctionActivityState.getFunctionNames().isEmpty()) {
+                continue;
+            }
+            // All the function names from the same activity must come from the same package.
+            if (appFunctionActivityState.getFunctionNames().valueAt(0).getPackageName()
+                    .equals(callingPackageName)) {
+                visibleAppFunctionActivityStates.add(appFunctionActivityState);
+            }
+
+        }
+        return visibleAppFunctionActivityStates;
+    }
+
     private boolean hasPermissionsToQueryRuntimeMetadata(int callingUid, int callingPid) {
         if (Flags.enableAppFunctionPermissionV2()
                 && mContext.checkPermission(
@@ -170,7 +200,6 @@ public final class VisibilityHelperImpl implements VisibilityHelper {
                         == PackageManager.PERMISSION_GRANTED) {
             return true;
         }
-
         if (Flags.enableAppFunctionPermissionV2()
                 && mContext.checkPermission(
                                 Manifest.permission.EXECUTE_APP_FUNCTIONS_SYSTEM,
@@ -179,7 +208,6 @@ public final class VisibilityHelperImpl implements VisibilityHelper {
                         == PackageManager.PERMISSION_GRANTED) {
             return true;
         }
-
         return mContext.checkPermission(
                         Manifest.permission.EXECUTE_APP_FUNCTIONS, callingPid, callingUid)
                 == PackageManager.PERMISSION_GRANTED;

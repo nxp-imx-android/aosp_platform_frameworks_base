@@ -21,7 +21,9 @@ import android.annotation.Nullable;
 import android.app.appfunctions.AppFunctionAidlSearchSpec;
 import android.app.appfunctions.AppFunctionName;
 import android.app.appfunctions.AppFunctionSearchSpec;
+import android.app.appfunctions.AppFunctionActivityState;
 
+import java.util.List;
 import java.util.Set;
 
 /** Helper for handling AppFunction visibility. */
@@ -49,6 +51,23 @@ public interface VisibilityHelper {
     @NonNull
     Set<AppFunctionName> filterVisibleAppFunctions(
             @NonNull Set<AppFunctionName> functionNames,
+            @NonNull String callingPackageName,
+            int callingUid,
+            int callingPid);
+
+
+    /**
+     * Filters the {@code appFunctionActivityStates} to only return the visible ones.
+     *
+     * @param appFunctionActivityStates The list of {@link AppFunctionActivityState}.
+     * @param callingPackageName The calling package name.
+     * @param callingUid The calling uid.
+     * @param callingPid The calling pid.
+     * @return The list of {@link AppFunctionActivityState} that the caller has visibility with.
+     */
+    @NonNull
+    List<AppFunctionActivityState> filterVisibleAppFunctionActivityStates(
+            @NonNull List<AppFunctionActivityState> appFunctionActivityStates,
             @NonNull String callingPackageName,
             int callingUid,
             int callingPid);
