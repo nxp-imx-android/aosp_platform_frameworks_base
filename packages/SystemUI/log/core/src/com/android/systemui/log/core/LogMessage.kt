@@ -48,6 +48,7 @@ interface LogMessage {
     var str3: String?
     var int1: Int
     var int2: Int
+    var int3: Int
     var long1: Long
     var long2: Long
     var double1: Double
