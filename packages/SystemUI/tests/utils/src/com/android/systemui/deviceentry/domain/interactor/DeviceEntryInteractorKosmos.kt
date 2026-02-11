@@ -16,16 +16,21 @@
 
 package com.android.systemui.deviceentry.domain.interactor
 
+import com.android.internal.logging.uiEventLogger
 import com.android.systemui.authentication.domain.interactor.authenticationInteractor
 import com.android.systemui.bouncer.domain.interactor.alternateBouncerInteractor
 import com.android.systemui.deviceentry.data.repository.deviceEntryRepository
 import com.android.systemui.keyguard.dismissCallbackRegistry
 import com.android.systemui.keyguard.domain.interactor.keyguardDismissActionInteractor
+import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.log.table.logcatTableLogBuffer
+import com.android.systemui.plugins.statusbar.statusBarStateController
 import com.android.systemui.scene.domain.interactor.sceneBackInteractor
 import com.android.systemui.scene.domain.interactor.sceneInteractor
+import com.android.systemui.shade.domain.interactor.shadeInteractor
+import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 
 val Kosmos.deviceEntryInteractor by
     Kosmos.Fixture {
@@ -40,5 +45,10 @@ val Kosmos.deviceEntryInteractor by
             sceneBackInteractor = { sceneBackInteractor },
             tableLogBuffer = { logcatTableLogBuffer(this, "sceneFrameworkTableLogBuffer") },
             keyguardDismissActionInteractor = { keyguardDismissActionInteractor },
+            statusBarStateController = statusBarStateController,
+            uiEventLogger = uiEventLogger,
+            keyguardInteractor = keyguardInteractor,
+            shadeInteractor = { shadeInteractor },
+            shadeModeInteractor = shadeModeInteractor,
         )
     }
