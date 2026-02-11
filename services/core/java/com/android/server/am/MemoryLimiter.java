@@ -28,12 +28,12 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.app.ActivityManager.ProcessState;
+import android.app.ActivityManagerInternal;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Process;
 import android.os.ProfilingServiceHelper;
 import android.os.ProfilingTrigger;
-import android.os.Trace;
 import android.system.Os;
 import android.system.OsConstants;
 import android.util.Slog;
@@ -43,6 +43,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.BackgroundThread;
 import com.android.internal.util.FrameworkStatsLog;
 import com.android.internal.util.MemInfoReader;
+import com.android.server.LocalServices;
 import com.android.server.am.memorylimiter.config.MemoryLimiterConfig;
 import com.android.server.am.memorylimiter.config.XmlParser;
 import com.android.tools.r8.keepanno.annotations.UsedByNative;
@@ -57,6 +58,7 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.time.Duration;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 
@@ -77,14 +79,6 @@ import javax.xml.datatype.DatatypeConfigurationException;
 class MemoryLimiter implements AutoCloseable {
     // The standard logcat tag for this module.
     private static final String TAG = "MemoryLimiter";
-
-    // The trace tag.
-    private static final long TRACE_TAG = Trace.TRACE_TAG_ACTIVITY_MANAGER;
-
-    // The trace track.  Keep this aligned with the track in the native layer.
-    // LINT.IfChange(traceTrack)
-    private static final String TRACE_TRACK = "MemoryLimiter";
-    // LINT.ThenChange(/services/core/jni/com_android_server_am_MemoryLimiter.cpp:traceTrack)
 
     // The limits that this feature monitors.
     // LINT.IfChange(limitTypes)
@@ -177,10 +171,6 @@ class MemoryLimiter implements AutoCloseable {
         // Get the memory limit for the process state.
         Long getStateLimit(@ProcessState int newState);
 
-        // The callback when an over-limit event occurs.
-        @UsedByNative
-        void onLimitExceeded(int pid, int uid, int type, long limit);
-
         // Block or unblock the limiter from monitoring/configuring the UID.
         void ignoreUid(int uid, boolean ignore);
 
@@ -221,10 +211,6 @@ class MemoryLimiter implements AutoCloseable {
         }
 
         @Override
-        public void onLimitExceeded(int pid, int uid, int type, long limit) {
-        }
-
-        @Override
         public void ignoreUid(int uid, boolean ignore) {
         }
 
@@ -243,6 +229,38 @@ class MemoryLimiter implements AutoCloseable {
     }
 
     /**
+     * An Injector class for ControllerEnabled.  This class allows test code to override the
+     * default behavior.
+     */
+    static class Injector {
+        // Return true if the monitoring is enabled.  The default behavior returns the value of
+        // the feature flag.
+        boolean isMonitoringEnabled() {
+            return Flags.memoryLimiterTrigger();
+        }
+
+        // The configuration file.
+        @NonNull
+        String configFile() {
+            return CONFIG_PATH;
+        }
+
+        // The ActivityManagerInternal that supplies the package name.  The value is not assigned
+        // in the constructor because that may be too early in system startup.
+        private final AtomicReference<ActivityManagerInternal> mAm = new AtomicReference<>();
+
+        // Fetch the package name for a PID.  The default behavior queries ActivityManager.
+        @Nullable
+        String getPackageNameForPid(int pid) {
+            // This logic is safe because the local service is a singleton.
+            if (mAm.get() == null) {
+                mAm.set(LocalServices.getService(ActivityManagerInternal.class));
+            }
+            return mAm.get().getPackageNameByPid(pid);
+        }
+    }
+
+    /**
      * The controller for production use when the flag is enabled.  This uses a message queue to
      * handle process updates, which allows the updates to happen outside the AMS lock.  Since
      * everything happens in the message handler, no locks are required.
@@ -254,9 +272,8 @@ class MemoryLimiter implements AutoCloseable {
         // lock is only taken one of those two places.
         private final Object mLock = new Object();
 
-        // The activity manager service, used to fetch package names based on pids.
-        @Nullable
-        private final ActivityManagerService mAm;
+        // The Injector to modify behavior.
+        private final Injector mInjector;
 
         // The message queue that distributes calls into the native layer.
         private final Handler mQueue;
@@ -282,6 +299,9 @@ class MemoryLimiter implements AutoCloseable {
         private final long mVmem;
         private final long mPageSize;
 
+        // An array of limits, indexed by proc state.
+        private final Long[] mStateLimit = new Long[ActivityManager.MAX_PROCESS_STATE + 1];
+
         // The ignore list.  The code supports exactly one ignored uid.  The invalid uid never
         // matches a uid, so that value turns off ignoring.
         @GuardedBy("mLock")
@@ -291,8 +311,8 @@ class MemoryLimiter implements AutoCloseable {
          * In the constructor, create the native peer and the message queue that will handle all
          * requests directed to the native layer.
          */
-        ControllerEnabled(@Nullable String configFile, @Nullable ActivityManagerService ams) {
-            mAm = ams;
+        ControllerEnabled(@NonNull Injector injector) {
+            mInjector = injector;
 
             mQueue = new Handler(BackgroundThread.getHandler().getLooper()) {
                     // Toggles to false once the Controller is closed.
@@ -300,7 +320,7 @@ class MemoryLimiter implements AutoCloseable {
 
                     // The native handler.
                     private final long mNative = initLimiter(ControllerEnabled.this,
-                            enableMonitoring());
+                            mInjector.isMonitoringEnabled());
 
                     @Override
                     public void handleMessage(Message msg) {
@@ -316,7 +336,7 @@ class MemoryLimiter implements AutoCloseable {
                         synchronized (mLock) {
                             switch (op) {
                                 case MESSAGE_START -> {
-                                    if (enableMonitoring() && !shouldIgnore(uid)) {
+                                    if (!shouldIgnore(uid)) {
                                         onProcessStarted(mNative, pid, uid);
                                     }
                                 }
@@ -358,22 +378,16 @@ class MemoryLimiter implements AutoCloseable {
             mPageSize = Os.sysconf(OsConstants._SC_PAGE_SIZE);
 
             // Note that getConfiguration() accepts a null input.
-            Configuration cfg = getConfiguration(configFile);
+            Configuration cfg = getConfiguration(mInjector.configFile());
             mMemoryVisible = memLimit(mVmem, mPageSize, cfg.visible);
             mMemoryNotVisible = memLimit(mVmem, mPageSize, cfg.notVisible);
-        }
 
-        /**
-         * The no-argument default tries to pick its configuration from the vendor partition.
-         */
-        ControllerEnabled(@Nullable ActivityManagerService ams) {
-            this(CONFIG_PATH, ams);
-        }
-
-        // Return true if the controller should monitor for over-limit events.  Test instances can
-        // override this.
-        boolean enableMonitoring() {
-            return Flags.memoryLimiterTrigger();
+            // Initialize the procState/limit map.
+            for (int state = ActivityManager.MIN_PROCESS_STATE;
+                    state <= ActivityManager.MAX_PROCESS_STATE;
+                    state++) {
+                mStateLimit[state] = initStateLimit(state);
+            }
         }
 
         // A helper function that returns the correct memory limit given a total memory size and a
@@ -389,6 +403,21 @@ class MemoryLimiter implements AutoCloseable {
                 long limit = (percentage * total) / 100;
                 limit = (limit / pageSize) * pageSize;
                 return limit;
+            }
+        }
+
+        // Compute the memory limit by state.
+        private Long initStateLimit(@ProcessState int newState) {
+            // Never try to configure a process that does not exist or is cached.
+            if (newState == ActivityManager.PROCESS_STATE_UNKNOWN
+                    || newState == ActivityManager.PROCESS_STATE_NONEXISTENT) {
+                return null;
+            } else if (ActivityManager.isProcStateCached(newState)) {
+                return null;
+            } else if (ActivityManager.isProcStateJankPerceptible(newState)) {
+                return mMemoryVisible;
+            } else {
+                return mMemoryNotVisible;
             }
         }
 
@@ -411,28 +440,12 @@ class MemoryLimiter implements AutoCloseable {
 
         @Override
         public void setLimit(int pid, int uid, Long limit) {
-            Trace.asyncTraceForTrackBegin(TRACE_TAG, TRACE_TRACK, "newLimit", pid);
             sendCommand(MESSAGE_CONFIG, pid, uid, limit);
         }
 
-        /**
-         * Objects containing the app configuration parameters.  The only configuration parameter is
-         * memory.high, captured in a Long.
-         */
-
         @Override
         public Long getStateLimit(@ProcessState int newState) {
-            // Never try to configure a process that does not exist or is cached.
-            if (newState == ActivityManager.PROCESS_STATE_UNKNOWN
-                    || newState == ActivityManager.PROCESS_STATE_NONEXISTENT) {
-                return null;
-            } else if (ActivityManager.isProcStateCached(newState)) {
-                return null;
-            } else if (ActivityManager.isProcStateJankPerceptible(newState)) {
-                return mMemoryVisible;
-            } else {
-                return mMemoryNotVisible;
-            }
+            return mStateLimit[newState];
         }
 
         // Allow burst of up to MAX_TOKENS reports in any period.
@@ -479,9 +492,8 @@ class MemoryLimiter implements AutoCloseable {
         }
 
         @UsedByNative
-        @Override
-        public void onLimitExceeded(int pid, int uid, int type, long limit) {
-            final String pkg = (mAm != null) ? mAm.mInternal.getPackageNameByPid(pid) : null;
+        private void onLimitExceeded(int pid, int uid, int type, long limit) {
+            final String pkg = mInjector.getPackageNameForPid(pid);
 
             Slog.i(TAG, formatSimple("onLimitExceeded: pid=%d uid=%d type=%s limit=%d pkg=%s",
                     pid, uid, limitTypeToString(type), limit, pkg));
@@ -491,7 +503,11 @@ class MemoryLimiter implements AutoCloseable {
                 FrameworkStatsLog.write(FrameworkStatsLog.MEMORY_LIMITER_OVER_LIMIT_EVENT,
                         uid, limitTypeToAtom(type), limit);
             }
+            onLimitExceeded(pid, uid, type, limit, pkg);
+        }
 
+        // This method can be overridden by test clients to capture the full over-limit event.
+        public void onLimitExceeded(int pid, int uid, int type, long limit, String pkg) {
             if (pkg == null) {
                 // A null package cannot be reported.
                 return;
@@ -622,7 +638,7 @@ class MemoryLimiter implements AutoCloseable {
     /**
      * Construct the default memory limiter.
      */
-    private static Controller getDefaultController(@Nullable ActivityManagerService ams) {
+    private static Controller getDefaultController() {
         if (!Flags.memoryLimiterEnable()) {
             // The feature is disabled.
             return new ControllerDisabled();
@@ -633,7 +649,7 @@ class MemoryLimiter implements AutoCloseable {
             return new ControllerDisabled();
         } else {
             // The feature is enabled and this is system_server.
-            return new ControllerEnabled(ams);
+            return new ControllerEnabled(new Injector());
         }
     }
 
@@ -641,7 +657,7 @@ class MemoryLimiter implements AutoCloseable {
      * Create the default MemoryLimiter, based on the feature flag and the enclosing process.
      */
     static MemoryLimiter getDefaultMemoryLimiter(@Nullable ActivityManagerService ams) {
-        return new MemoryLimiter(getDefaultController(ams));
+        return new MemoryLimiter(getDefaultController());
     }
 
     // The object that tracks the state of an individual process.  It is not static.  Methods in

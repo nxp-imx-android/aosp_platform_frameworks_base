@@ -17,10 +17,6 @@
 #define ATRACE_TAG ATRACE_TAG_ACTIVITY_MANAGER
 #define LOG_TAG "MemoryLimiter"
 
-// LINT.IfChange(traceTrack)
-#define TRACE_TRACK "MemoryLimiter"
-// LINT.ThenChange(/services/core/java/com/android/server/am/MemoryLimiter.java:traceTrack)
-
 #include <android-base/file.h>
 #include <android-base/stringprintf.h>
 #include <android-base/unique_fd.h>
@@ -39,11 +35,8 @@
 #include <sys/eventfd.h>
 #include <sys/inotify.h>
 #include <sys/stat.h>
-#include <sys/syscall.h>
-#include <sys/sysinfo.h>
 #include <unistd.h>
 #include <utils/Log.h>
-#include <utils/Trace.h>
 
 #include <map>
 #include <mutex>
@@ -58,8 +51,8 @@ namespace {
 const bool DEBUG = false;
 
 // The timeout for the process scrub poll.  It is elevated to this point in the file because we
-// like to see constants near the top.  Units are milliseconds.  The value is 60s.
-const int POLL_PERIOD_MS = 60 * 1000;
+// like to see constants near the top.  Units are milliseconds.  The value is 5 minutes.
+const int POLL_PERIOD_MS = 5 * 60 * 1000;
 
 /**
  * The different limits that this process monitors.
@@ -119,14 +112,12 @@ public:
 
         char path[PATH_MAX];
         watchPath(path, sizeof(path));
-        struct stat sbuff;
-        if (stat(path, &sbuff) != 0) {
-            ALOGE("path %s not found: %s", path, strerror(errno));
-            return;
-        }
         mMemoryWd = inotify_add_watch(inotify_fd, path, IN_MODIFY);
         if (mMemoryWd < 0) {
-            ALOGE("add_watch(%s) failed: %s", path, strerror(errno));
+            // Only report the failure if the error is not path-not-found.  The path will
+            // not be found if the process has already exited or if the process has not been
+            // moved into its cgroup yet.
+            ALOGE_IF(errno != ENOENT, "add_watch(%s) failed: %s", path, strerror(errno));
             return;
         }
         wdmap[mMemoryWd] = mPid;
@@ -210,15 +201,16 @@ public:
             throwRuntime(env, "Callback: GetJavaVM() failed");
             return;
         }
-        char const* class_name = "com/android/server/am/MemoryLimiter$Controller";
+        char const* class_name = "com/android/server/am/MemoryLimiter$ControllerEnabled";
         jclass service = env->FindClass(class_name);
         if (service == nullptr) {
-            throwRuntime(env, "failed to find Controller class");
+            // Throws ClassFormatError, ClassCircularityError, NoClassDefFoundError,
+            // OutOfMemoryError
             return;
         }
         mFunc = env->GetMethodID(service, "onLimitExceeded", "(IIIJ)V");
         if (mFunc == nullptr) {
-            throwRuntime(env, "failed to find limiter callback");
+            // Throws NoSuchMethodError, ExceptionInInitializerError, or OutOfMemoryError
             return;
         }
         mLimiter = env->NewGlobalRef(jlimiter);
@@ -593,18 +585,6 @@ void startProcess(JNIEnv* env, jclass, jlong service, jint pid, jint /* uid */) 
     m->forget(pid);
 }
 
-// A tiny class that emits a trace in its destructor.
-class EndTracer {
-    char const* track;
-    const int tag;
-
-public:
-    EndTracer(char const* track, int tag) : track(track), tag(tag) {}
-    ~EndTracer() {
-        ATRACE_ASYNC_FOR_TRACK_END(track, tag);
-    }
-};
-
 // A small wrapper to make lines shorter.  The compiler will inline this.
 bool writeString(std::string text, std::string& path) {
     return android::base::WriteStringToFile(text, path);
@@ -614,10 +594,6 @@ bool writeString(std::string text, std::string& path) {
 void configureLimit(JNIEnv*, jclass, jlong service, jint pid, jint uid, jlong limit) {
     Monitor* m = getMonitor(service);
 
-    // The Java layer started a slice.  Ensure it is terminated, regardless of how this method
-    // exits.
-    EndTracer _tracer(TRACE_TRACK, pid);
-
     // Start watching for over-limit events, if possible.  The call is idempotent.  Once it
     // succeeds further invocations do nothing.
     m->watch(pid, uid);
@@ -625,12 +601,14 @@ void configureLimit(JNIEnv*, jclass, jlong service, jint pid, jint uid, jlong li
     std::string name = "MemHigh";
     std::string path;
     if (!CgroupGetAttributePathForProcess(name, uid, pid, path)) {
-        ALOGE("failed to get memory.high path for pid=%d uid=%d", pid, uid);
         return;
     }
     if (!writeString((limit < 0) ? "max" : std::to_string(limit), path)) {
-        ALOGE("failed to write memory.high (pid=%d uid=%d): %s", pid, uid, strerror(errno));
-        return;
+        // Only report the failure if the error is not path-not-found.  The path will
+        // not be found if the process has already exited or if the process has not been
+        // moved into its cgroup yet.
+        ALOGE_IF(errno != ENOENT, "failed to write memory.high (%s): %s", path.c_str(),
+                 strerror(errno));
     }
 }
 
