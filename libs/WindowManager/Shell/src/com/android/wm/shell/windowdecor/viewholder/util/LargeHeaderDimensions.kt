@@ -22,15 +22,15 @@ import com.android.wm.shell.R
 import com.android.wm.shell.windowdecor.common.DrawableInsets
 
 /**
- * The dimensions of the App Header in its larger form, adapted to the minimum a11y requirements.
+ * The dimensions of the Header in its larger form, adapted to the minimum a11y requirements.
  */
-class LargeAppHeaderDimensions
+class LargeHeaderDimensions
 private constructor(
     private val resources: Resources,
-    private val defaultAppHeaderDimensions: DefaultAppHeaderDimensions,
-) : AppHeaderDimensions by defaultAppHeaderDimensions {
+    private val defaultHeaderDimensions: DefaultHeaderDimensions,
+) : HeaderDimensions by defaultHeaderDimensions {
 
-    constructor(resources: Resources) : this(resources, DefaultAppHeaderDimensions(resources))
+    constructor(resources: Resources) : this(resources, DefaultHeaderDimensions(resources))
 
     override val appChipBackgroundInsets: DrawableInsets =
         DrawableInsets(
