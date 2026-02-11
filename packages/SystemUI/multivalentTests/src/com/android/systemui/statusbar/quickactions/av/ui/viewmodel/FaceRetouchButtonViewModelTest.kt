@@ -59,7 +59,7 @@ class FaceRetouchButtonViewModelTest : SysuiTestCase() {
             assertThat(underTest.state.mainTitle)
                 .isEqualTo(com.android.systemui.res.R.string.av_camera_face_retouch)
             assertThat(underTest.state.image)
-                .isEqualTo(com.android.systemui.res.R.drawable.gs_face_retouch)
+                .isEqualTo(com.android.systemui.res.R.drawable.gs_portrait_lighting)
         }
 
     @Test

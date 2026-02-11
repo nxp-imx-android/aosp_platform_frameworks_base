@@ -4874,6 +4874,8 @@
     <string name="av_blur">Blur</string>
     <!-- Title for live captions button [CHAR LIMIT=NONE] -->
     <string name="av_live_captions">Live Captions</string>
+    <!-- Content description for return action -->
+    <string name="av_drill_in_return_to_main">Back</string>
 
     <!-- Notification title for hearing device battery [CHAR LIMIT=NONE] -->
     <string name="accessibility_hearing_device_battery_level">Battery %s</string>

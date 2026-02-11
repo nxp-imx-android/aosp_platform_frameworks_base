@@ -32,7 +32,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.android.systemui.Flags
 import com.android.systemui.shade.ui.ShadeColors
 import com.android.systemui.statusbar.quickactions.av.ui.viewmodel.AvControlsPopupViewModel
 import com.android.systemui.statusbar.quickactions.av.ui.viewmodel.PageType
@@ -40,16 +39,24 @@ import com.android.systemui.statusbar.quickactions.av.ui.viewmodel.PageType
 /** Displays a popup containing the Audio, Video and Privacy controls. */
 @Composable
 fun AvControlsChipPopup(viewModel: AvControlsPopupViewModel) {
-    check(Flags.desktopAvControlsPopup()) { "Flag desktop_av_controls_popup is not enabled." }
+    // check(Flags.desktopAvControlsPopup()) { "Flag desktop_av_controls_popup is not enabled." }
 
     var screen by remember { mutableStateOf(PageType.MAIN) }
     val setCurrentPage: (PageType) -> Unit = { screen = it }
     val returnToMainPage = { screen = PageType.MAIN }
 
     Surface(
-        // TODO(469370207): consider wrappinf the hardcoded dimensions in s resource
+        // TODO(469370207): consider wrapping the hardcoded dimensions in s resource
         modifier = Modifier.width(376.dp).clip(shape = RoundedCornerShape(36.dp)).fillMaxWidth(),
-        color = Color(ShadeColors.shadePanelScrimBehind(LocalContext.current)),
+        // color = Color(ShadeColors.shadePanelScrimBehind(LocalContext.current)),
+        color =
+            Color(
+                ShadeColors.shadePanel(
+                    LocalContext.current,
+                    blurSupported = false,
+                    withScrim = false,
+                )
+            ),
     ) {
         Box(modifier = Modifier.fillMaxWidth().padding(14.dp)) {
             when (screen) {

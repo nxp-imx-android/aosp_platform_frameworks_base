@@ -18,6 +18,7 @@ package com.android.systemui.statusbar.quickactions.av.ui.compose
 
 import android.graphics.drawable.Drawable
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -26,12 +27,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -41,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.android.compose.ui.graphics.painter.DrawablePainter
@@ -65,69 +65,73 @@ fun SensorActivityDrillIn(
     val typography = MaterialTheme.typography
     val colorScheme = MaterialTheme.colorScheme
 
-    Column(modifier = modifier) {
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-            IconButton(onClick = { viewModel.returnToMainPage() }) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = stringResource(R.string.sensor_activity_back_button_cd),
-                )
-            }
+    DrillIn(
+        drillInTitle = stringResource(R.string.av_panel_title),
+        returnToMainPage = { setCurrentPage(PageType.MAIN) },
+        modifier = modifier,
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Top),
+            modifier = modifier,
+        ) {
             Text(
-                text = stringResource(R.string.av_panel_title),
-                modifier =
-                    Modifier.weight(1f) // Takes all available horizontal space.
-                        .height(24.dp)
-                        .fillMaxWidth(), // Ensures the composable fills it's weighted space.
-                style = typography.titleMedium,
+                text = stringResource(R.string.sensor_activity_header),
+                modifier = Modifier.height(32.dp).width(256.dp),
+                style = typography.labelMedium,
                 textAlign = TextAlign.Center,
-                color = colorScheme.onSurface,
+                color = colorScheme.onSurfaceVariant,
+            )
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.Top),
+            ) {
+                viewModel.appDetails.let {
+                    val count = it.size
+                    it.forEachIndexed { index, item ->
+                        val isFirstItem = (index == 0)
+                        val isLastItem = (index == count - 1)
+                        if (!isFirstItem) {
+                            Spacer(modifier = Modifier.height(2.dp))
+                        }
+                        AppDetailItem(
+                            viewModel = viewModel,
+                            appIcon = item.icon,
+                            appName = item.appName,
+                            packageName = item.packageName,
+                            sensorUsages = item.sensorUsages,
+                            isFirstItem = isFirstItem,
+                            isLastItem = isLastItem,
+                        )
+                    }
+                }
+            }
+
+            ListItem(
+                headlineContent = {
+                    Text(
+                        text = stringResource(R.string.sensor_activity_see_all_access_button),
+                        textAlign = TextAlign.Center,
+                        style =
+                            MaterialTheme.typography.labelMedium.copy(
+                                fontWeight = FontWeight.ExtraBold
+                            ),
+                        color = colorScheme.onSurface,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                },
+                modifier =
+                    Modifier.clip(shape = RoundedCornerShape(size = 26.dp))
+                        .clickable(onClick = { viewModel.openPrivacyDashboard() }),
+                colors =
+                    ListItemDefaults.colors()
+                        .copy(
+                            containerColor = colorScheme.surface,
+                            headlineColor = colorScheme.onSurface,
+                        ),
             )
         }
-        Text(
-            text = stringResource(R.string.sensor_activity_header),
-            modifier = Modifier.height(32.dp),
-            style = typography.labelMedium,
-            textAlign = TextAlign.Center,
-            color = colorScheme.onSurfaceVariant,
-        )
-        viewModel.appDetails.let {
-            val count = it.size
-            it.forEachIndexed { index, item ->
-                val isFirstItem = (index == 0)
-                val isLastItem = (index == count - 1)
-                if (!isFirstItem) {
-                    Spacer(modifier = Modifier.height(2.dp))
-                }
-                AppDetailItem(
-                    viewModel = viewModel,
-                    appIcon = item.icon,
-                    appName = item.appName,
-                    packageName = item.packageName,
-                    sensorUsages = item.sensorUsages,
-                    isFirstItem = isFirstItem,
-                    isLastItem = isLastItem,
-                )
-            }
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-        ListItem(
-            headlineContent = {
-                Text(
-                    text = stringResource(R.string.sensor_activity_see_all_access_button),
-                    textAlign = TextAlign.Center,
-                )
-            },
-            modifier =
-                Modifier.clip(shape = RoundedCornerShape(size = 26.dp))
-                    .clickable(onClick = { viewModel.openPrivacyDashboard() }),
-            colors =
-                ListItemDefaults.colors()
-                    .copy(
-                        containerColor = colorScheme.surface,
-                        headlineColor = colorScheme.onSurface,
-                    ),
-        )
     }
 }
 
@@ -158,11 +162,20 @@ private fun AppDetailItem(
             bottomEnd = bottomCornerRadius,
         )
     ListItem(
-        leadingContent = if(ICONS_ENABLED)
-            appIcon?.let {
-                { Icon(painter = DrawablePainter(drawable = it), contentDescription = null) }
-            } else null,
-        headlineContent = { Text(text = appName) },
+        leadingContent =
+            if (ICONS_ENABLED)
+                appIcon?.let {
+                    { Icon(painter = DrawablePainter(drawable = it), contentDescription = null) }
+                }
+            else null,
+        headlineContent = {
+            Text(
+                text = appName,
+                style =
+                    MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.ExtraBold),
+                color = colorScheme.onSurface,
+            )
+        },
         supportingContent = {
             SupportingContent(
                 viewModel = viewModel,
@@ -191,47 +204,61 @@ private fun SupportingContent(
     val colorScheme = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
 
-    Column() {
-        Row(modifier = Modifier.height(20.dp).fillMaxWidth()) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterVertically),
+        horizontalAlignment = Alignment.Start,
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(3.dp, Alignment.Start),
+        ) {
             val hasCamera = sensors.contains(Sensor.CAMERA)
             val hasMicrophone = sensors.contains(Sensor.MICROPHONE)
             if (hasCamera) {
                 Icon(
                     imageVector = Icons.Filled.Videocam,
                     contentDescription = null,
-                    tint = colorScheme.onSurfaceVariant,
+                    tint = colorScheme.onSurface,
                 )
                 Text(
                     text = stringResource(R.string.sensor_activity_camera_label),
                     style = MaterialTheme.typography.bodySmall,
+                    color = colorScheme.onSurfaceVariant,
                 )
             }
             if (hasCamera && hasMicrophone) {
-                Spacer(modifier = Modifier.width(16.dp))
+                Text(
+                    text = "•",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colorScheme.onSurfaceVariant,
+                )
             }
             if (hasMicrophone) {
                 Icon(
                     imageVector = Icons.Filled.Mic,
                     contentDescription = null,
-                    tint = colorScheme.onSurfaceVariant,
+                    tint = colorScheme.onSurface,
                 )
                 Text(
                     text = stringResource(R.string.sensor_activity_microphone_label),
                     style = MaterialTheme.typography.bodySmall,
+                    color = colorScheme.onSurfaceVariant,
                 )
             }
         }
-        Row(modifier = Modifier.height(24.dp).fillMaxWidth()) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.Start),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             Text(
                 text = stringResource(R.string.sensor_activity_manage_access_button),
-                style = typography.labelMedium,
+                style = typography.labelMedium.copy(fontWeight = FontWeight.ExtraBold),
                 color = colorScheme.primary,
                 modifier = Modifier.clickable(onClick = { viewModel.manageApp(packageName) }),
             )
-            Spacer(modifier = Modifier.width(16.dp))
             Text(
                 text = stringResource(R.string.sensor_activity_close_app_button),
-                style = typography.labelMedium,
+                style = typography.labelMedium.copy(fontWeight = FontWeight.ExtraBold),
                 color = colorScheme.primary,
                 modifier = Modifier.clickable(onClick = { viewModel.closeApp(packageName) }),
             )
