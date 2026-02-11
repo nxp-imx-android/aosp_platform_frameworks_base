@@ -22,6 +22,7 @@ import com.android.internal.util.mockScreenshotHelper
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.backgroundCoroutineContext
 import com.android.systemui.screenshot.mockImageCapture
+import com.android.systemui.shade.data.repository.fakeFocusedDisplayRepository
 import com.android.systemui.user.data.repository.userRepository
 
 val Kosmos.screenshotInteractor by
@@ -33,5 +34,6 @@ val Kosmos.screenshotInteractor by
             imageCapture = mockImageCapture,
             screenshotHelper = mockScreenshotHelper,
             userRepository = userRepository,
+            focusedDisplayRepository = fakeFocusedDisplayRepository,
         )
     }
