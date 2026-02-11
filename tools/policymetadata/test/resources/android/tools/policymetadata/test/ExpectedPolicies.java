@@ -46,7 +46,9 @@ import java.util.Set;
  */
 public class Policies {
     /**
-     * Generated method that returns a list of all policy metadata
+     * Generated method that returns a list of all policy metadata.
+     *
+     * @hide
      */
     public static List<PolicyMetadata<?>> loadPolicyMetadata() {
         List<PolicyMetadata<?>> policies = new ArrayList<PolicyMetadata<?>>();
