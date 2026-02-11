@@ -164,18 +164,18 @@ class HierarchyUtils {
         fun removeAllTransientContainers(container: Container) {
             val containers = toContainersList(container)
             for (c in containers) {
-                if (c.isTransientAnimatingContainer) {
+                if (c.isTemporaryAnimatingContainer) {
                     c.parent = null
                 }
             }
         }
 
         /**
-         * Breadth-first traversal of container hierarchy, applying the test function to each
-         * container. If the test function returns true, then it will be added to the collector
-         * list, and the consumer function will be called with that container. If no test function
-         * is specified, then every container will be added to the collector list and called on
-         * the consumer function.
+         * Breadth-first traversal of container hierarchy starting at the given container as the
+         * root, applying the test function to each container. If the test function returns true,
+         * then it will be added to the collector list, and the consumer function will be called
+         * with that container. If no test function is specified, then every container will be added
+         * to the collector list and called on the consumer function.
          *
          * This can be used for things like:
          * - Applying logic to all containers (ie. test fn always returns true, consumer applies it)
@@ -187,17 +187,21 @@ class HierarchyUtils {
          */
         @Suppress("UNCHECKED_CAST")
         private fun <T : Container> forEachContainer(
-            container: Container,
+            root: Container,
             consumer: (Container) -> Unit,
             test: ((Container) -> Boolean)? = null,
             collector: MutableList<T>? = null
         ) {
-            if (test == null || test(container)) {
-                consumer(container)
-                collector?.add(container as T)
-            }
-            for (child in container.children) {
-                forEachContainer(child, consumer, test, collector)
+            var index = 0
+            val containers = mutableListOf(root)
+            while (index < containers.size) {
+                val candidate = containers[index]
+                if (test == null || test(candidate)) {
+                    consumer(candidate)
+                    collector?.add(candidate as T)
+                }
+                containers.addAll(candidate.children)
+                index++
             }
         }
 
@@ -212,20 +216,6 @@ class HierarchyUtils {
             // Look through which containers were removed
             val removedContainers = preUpdateContainers - postUpdateContainers.toSet()
             return removedContainers.filter { it.props is DisplayContainerProperties }
-        }
-
-        /**
-         * Returns a list of added displays in no particular order given the list of containers
-         * before and after an update.
-         */
-        fun getAddedDisplays(
-            preUpdateContainers: List<Container>,
-            postUpdateContainers: List<Container>,
-        ): List<Container> {
-            // Look through which containers were removed
-            val addedContainers = postUpdateContainers - preUpdateContainers.toSet()
-            return addedContainers.filter { it.props is DisplayContainerProperties }
-
         }
 
         /**

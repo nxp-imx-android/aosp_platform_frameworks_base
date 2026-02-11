@@ -20,6 +20,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.wm.shell.Flags.FLAG_ENABLE_SHELL_MODES
 import com.android.wm.shell.ShellTestCase
+import com.android.wm.shell.hierarchy.updates.HierarchyChangeFlags
+import com.android.wm.shell.hierarchy.updates.HierarchySnapshot
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -56,5 +58,50 @@ class RootContainerPropertiesTest : ShellTestCase() {
 
         // Ensure it's a deep copy
         assertThat(copy.config).isNotSameInstanceAs(properties.config)
+    }
+
+    @Test
+    fun testDiff_globallyFocusedDisplayIdChanged() {
+        val properties1 = RootContainerProperties()
+        properties1.focusState.globallyFocusedDisplayId = 1234
+        val properties2 = RootContainerProperties()
+        properties2.focusState.globallyFocusedDisplayId = 5678
+
+        val chgs = HierarchyChangeFlags()
+        properties1.diff(properties2, chgs)
+
+        assertThat(chgs.get(HierarchySnapshot.CHANGED_FOCUS)).isTrue()
+    }
+
+    @Test
+    fun testDiff_globallyFocusedTaskIdChanged() {
+        val properties1 = RootContainerProperties()
+        properties1.focusState.globallyFocusedTaskId = 1
+        val properties2 = RootContainerProperties()
+        properties2.focusState.globallyFocusedTaskId = 2
+
+        val chgs = HierarchyChangeFlags()
+        properties1.diff(properties2, chgs)
+
+        assertThat(chgs.get(HierarchySnapshot.CHANGED_FOCUS)).isTrue()
+    }
+
+    @Test
+    fun testDiff_perDisplayFocusedTaskChanged() {
+        val properties1 = RootContainerProperties()
+        properties1.focusState.perDisplayFocusedTaskId = mutableMapOf(
+            0 to 1,
+            1 to 2,
+        )
+        val properties2 = RootContainerProperties()
+        properties2.focusState.perDisplayFocusedTaskId = mutableMapOf(
+            0 to 2,
+            1 to 3,
+        )
+
+        val chgs = HierarchyChangeFlags()
+        properties1.diff(properties2, chgs)
+
+        assertThat(chgs.get(HierarchySnapshot.CHANGED_FOCUS)).isTrue()
     }
 }

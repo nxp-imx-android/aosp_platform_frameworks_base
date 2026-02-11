@@ -18,7 +18,7 @@ package com.android.wm.shell.hierarchy.modes
 import android.view.SurfaceControl
 import android.window.WindowContainerTransaction
 import com.android.wm.shell.hierarchy.containers.Container
-import com.android.wm.shell.hierarchy.updates.HierarchyChanges
+import com.android.wm.shell.hierarchy.updates.HierarchySnapshot
 import java.io.PrintWriter
 
 /**
@@ -82,7 +82,7 @@ interface Mode {
     fun containerChanged(
         updateContext: UpdateContext,
         container: Container,
-        changes: HierarchyChanges,
+        snapshot: HierarchySnapshot,
     ) {}
 
     /**
