@@ -44263,6 +44263,7 @@ package android.service.personalcontext.hint {
     method public int getModality();
     method @NonNull public java.util.Set<android.app.Person> getParticipants();
     field public static final int MODALITY_AUDIO = 1; // 0x1
+    field public static final int MODALITY_UNKNOWN = -1; // 0xffffffff
     field public static final int MODALITY_VIDEO = 2; // 0x2
   }
 

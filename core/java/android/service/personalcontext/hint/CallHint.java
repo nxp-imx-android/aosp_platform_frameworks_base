@@ -52,12 +52,16 @@ public final class CallHint extends ContextHint {
     @IntDef(
             prefix = {"MODALITY_"},
             value = {
+                    MODALITY_UNKNOWN,
                     MODALITY_AUDIO,
                     MODALITY_VIDEO
             }
     )
     @Retention(RetentionPolicy.SOURCE)
     public @interface Modality {}
+
+    /** Call modality for calls where the type is unknown. */
+    public static final int MODALITY_UNKNOWN = -1;
 
     /** Call modality for audio calls. */
     public static final int MODALITY_AUDIO = 1;
