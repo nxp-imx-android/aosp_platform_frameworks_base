@@ -2366,7 +2366,8 @@ public abstract class WMShellModule {
             Transitions transitions,
             Lazy<DragToBubbleController> dragToBubbleControllerLazy,
             @ShellMainThread ShellExecutor mainExecutor,
-            DesktopState desktopState) {
+            DesktopState desktopState,
+            BubbleFeatureConfig bubbleFeatureConfig) {
         return new DragAndDropController(
                 context,
                 shellInit,
@@ -2380,7 +2381,8 @@ public abstract class WMShellModule {
                 transitions,
                 dragToBubbleControllerLazy,
                 mainExecutor,
-                desktopState);
+                desktopState,
+                bubbleFeatureConfig);
     }
 
     @WMSingleton
