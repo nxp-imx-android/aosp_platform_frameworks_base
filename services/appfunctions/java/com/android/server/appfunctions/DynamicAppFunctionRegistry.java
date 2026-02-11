@@ -278,8 +278,16 @@ final class DynamicAppFunctionRegistry {
 
         try {
             safeExecuteAppFunctionCallback.attachOnDeathListener(executor.asBinder());
+            ExecuteAppFunctionRequest clientRequest;
+            if (android.app.appfunctions.flags.Flags.enableAppInteractionApi()) {
+                // Attribution contains caller information that can be used to identify the caller.
+                // This information should not be leaked to the target app.
+                clientRequest = request.copyWithoutAttribution();
+            } else {
+                clientRequest = request;
+            }
             executor.execute(
-                    request,
+                    clientRequest,
                     getICancellationCallback(cancellationTransport),
                     safeExecuteAppFunctionCallback.wrapToExecutionCallback());
         } catch (RemoteException e) {
