@@ -49,6 +49,7 @@ fun PrimaryButton(
     contentPadding: PaddingValues = ButtonPaddings,
     iconPadding: Dp = 5.dp,
     stateDescription: String? = null,
+    contentDescription: String? = null,
     colors: ButtonColors =
         ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.primary,
@@ -59,7 +60,7 @@ fun PrimaryButton(
         onClick = onClick,
         modifier =
             modifier.semantics(true) {
-                contentDescription = text
+                this.contentDescription = contentDescription ?: text
                 stateDescription?.let { this.stateDescription = it }
             },
         enabled = enabled,
