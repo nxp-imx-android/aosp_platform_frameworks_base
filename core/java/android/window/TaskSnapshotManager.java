@@ -168,7 +168,8 @@ public class TaskSnapshotManager {
      *         corresponding task can be found.
      */
     public TaskSnapshot takeTaskSnapshot(int taskId, boolean updateCache) throws RemoteException {
-        return takeTaskSnapshot(taskId, updateCache, false /* lowResolution */);
+        return takeTaskSnapshot(taskId, updateCache, false /* lowResolution */,
+                false /* includeDecors */);
     }
 
     /**
@@ -186,16 +187,38 @@ public class TaskSnapshotManager {
      */
     public TaskSnapshot takeTaskSnapshot(int taskId, boolean updateCache,
             boolean lowResolution) throws RemoteException {
+        return takeTaskSnapshot(taskId, updateCache, lowResolution, false /* includeDecors */);
+    }
+
+    /**
+     * Requests for a new snapshot to be taken for the task with the given id, storing it in the
+     * task snapshot cache only if requested.
+     *
+     * @param taskId the id of the task to take a snapshot of
+     * @param updateCache Whether to store the new snapshot in the system's task snapshot cache.
+     *                    If it is true, the snapshot can be either real content or app-theme mode
+     *                    depending on the attributes of app. Otherwise, the snapshot will be taken
+     *                    with real content.
+     * @param lowResolution Whether to get the new snapshot in low resolution.
+     * @param includeDecors Whether to include window decorations in the snapshot.
+     * @return a graphic buffer representing a screenshot of a task,  or {@code null} if no
+     *         corresponding task can be found.
+     */
+    public TaskSnapshot takeTaskSnapshot(int taskId, boolean updateCache,
+            boolean lowResolution, boolean includeDecors) throws RemoteException {
+        if (includeDecors && updateCache) {
+            throw new IllegalArgumentException("Cannot update cache when includeDecors is true");
+        }
         sIsUsed = true;
         final TaskSnapshot t;
         final boolean traceEnabled = Trace.isTagEnabled(TRACE_TAG_WINDOW_MANAGER);
         if (traceEnabled) {
             Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "takeTaskSnapshot#" + taskId
-                    + "_low=" + lowResolution);
+                    + "_low=" + lowResolution + "_decors=" + includeDecors);
         }
         try {
             t = ISnapshotManagerSingleton.get().takeTaskSnapshot(taskId, updateCache,
-                    lowResolution);
+                    lowResolution, includeDecors);
         } catch (RemoteException r) {
             Log.e(TAG, "takeTaskSnapshot fail: " + r);
             throw r;

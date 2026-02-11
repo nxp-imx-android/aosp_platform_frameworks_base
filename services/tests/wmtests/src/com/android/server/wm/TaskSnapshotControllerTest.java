@@ -94,14 +94,16 @@ public class TaskSnapshotControllerTest extends WindowTestsBase {
         final int disabledInRecentsTaskId = disabledWindow.getTask().mTaskId;
         if (com.android.window.flags.Flags.cleanUpTaskSnapshotLegacyMethods()) {
             mWm.mSnapshotController.mSnapshotManagerService.takeTaskSnapshot(
-                    disabledInRecentsTaskId, true /* updateCache */, false /* isLowRes */);
+                    disabledInRecentsTaskId, true /* updateCache */, false /* isLowRes */,
+                    false /* includeDecors */);
         } else {
             mAtm.takeTaskSnapshot(disabledInRecentsTaskId, true /* updateCache */);
         }
         verify(mWm.mTaskSnapshotController, never()).prepareTaskSnapshot(any(), any());
         if (com.android.window.flags.Flags.cleanUpTaskSnapshotLegacyMethods()) {
             mWm.mSnapshotController.mSnapshotManagerService.takeTaskSnapshot(
-                    disabledInRecentsTaskId, false /* updateCache */, false /* isLowRes */);
+                    disabledInRecentsTaskId, false /* updateCache */, false /* isLowRes */,
+                    false /* includeDecors */);
         } else {
             mAtm.takeTaskSnapshot(disabledInRecentsTaskId, false /* updateCache */);
         }
