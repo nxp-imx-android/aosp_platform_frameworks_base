@@ -173,8 +173,6 @@ final class SaveUi {
 
     private final @NonNull OneActionThenDestroyListener mListener;
 
-    private final @NonNull OverlayControl mOverlayControl;
-
     private final CharSequence mTitle;
     private final CharSequence mSubTitle;
     private final PendingUi mPendingUi;
@@ -194,15 +192,14 @@ final class SaveUi {
             @NonNull CharSequence serviceLabel, @NonNull Drawable serviceIcon,
             @Nullable String servicePackageName, @NonNull ComponentName componentName,
             @NonNull SaveInfo info, @NonNull ValueFinder valueFinder,
-            @NonNull OverlayControl overlayControl, @NonNull OnSaveListener listener,
-            boolean nightMode, boolean isUpdate, boolean compatMode, boolean showServiceIcon) {
+            @NonNull OnSaveListener listener, boolean nightMode, boolean isUpdate,
+            boolean compatMode, boolean showServiceIcon) {
         if (sVerbose) {
             Slogf.v(TAG, "nightMode: %b displayId: %d", nightMode, context.getDisplayId());
         }
         mThemeId = getThemeId(nightMode, context);
         mPendingUi = pendingUi;
         mListener = new OneActionThenDestroyListener(listener);
-        mOverlayControl = overlayControl;
         mServicePackageName = servicePackageName;
         mComponentName = componentName;
         mCompatMode = compatMode;
@@ -387,6 +384,7 @@ final class SaveUi {
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
         window.setGravity(Gravity.BOTTOM | Gravity.CENTER);
         window.setCloseOnTouchOutside(true);
+        window.setHideOverlayWindows(true);
         final WindowManager.LayoutParams params = window.getAttributes();
 
         params.accessibilityTitle = context.getString(R.string.autofill_save_accessibility_title);
@@ -677,16 +675,11 @@ final class SaveUi {
     private void show() {
         Slog.i(TAG, "Showing save dialog: " + mTitle);
         mDialog.show();
-        mOverlayControl.hideOverlays();
     }
 
     PendingUi hide() {
         if (sVerbose) Slog.v(TAG, "Hiding save dialog.");
-        try {
-            mDialog.hide();
-        } finally {
-            mOverlayControl.showOverlays();
-        }
+        mDialog.hide();
         return mPendingUi;
     }
 
@@ -695,26 +688,22 @@ final class SaveUi {
     }
 
     void destroy() {
-        try {
-            if (sDebug) Slog.d(TAG, "destroy()");
-            throwIfDestroyed();
-            if (Flags.expressiveSaveDialog()) {
-                ScrollView scrollView = mDialog.findViewById(R.id.autofill_sheet_scroll_view);
-                if (scrollView != null) {
-                    ViewTreeObserver observer = scrollView.getViewTreeObserver();
-                    if (observer.isAlive()) {
-                        observer.removeOnGlobalLayoutListener(mOnGlobalLayoutListener);
-                        observer.removeOnScrollChangedListener(mOnScrollChangedListener);
-                    }
+        if (sDebug) Slog.d(TAG, "destroy()");
+        throwIfDestroyed();
+        if (Flags.expressiveSaveDialog()) {
+            ScrollView scrollView = mDialog.findViewById(R.id.autofill_sheet_scroll_view);
+            if (scrollView != null) {
+                ViewTreeObserver observer = scrollView.getViewTreeObserver();
+                if (observer.isAlive()) {
+                    observer.removeOnGlobalLayoutListener(mOnGlobalLayoutListener);
+                    observer.removeOnScrollChangedListener(mOnScrollChangedListener);
                 }
             }
-            mListener.onDestroy();
-            mHandler.removeCallbacksAndMessages(mListener);
-            mDialog.dismiss();
-            mDestroyed = true;
-        } finally {
-            mOverlayControl.showOverlays();
         }
+        mListener.onDestroy();
+        mHandler.removeCallbacksAndMessages(mListener);
+        mDialog.dismiss();
+        mDestroyed = true;
     }
 
     private void throwIfDestroyed() {
