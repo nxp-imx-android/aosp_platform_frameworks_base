@@ -17,6 +17,7 @@
 package com.android.server.lskfreset;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import android.app.lskfreset.flags.Flags;
 import android.content.Context;
@@ -31,6 +32,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.security.GeneralSecurityException;
+
 @RunWith(AndroidJUnit4.class)
 public class LskfResetKeyManagerTest {
     @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
@@ -39,7 +42,7 @@ public class LskfResetKeyManagerTest {
     private LskfResetKeyManager mLskfResetKeyManager;
 
     @Before
-    public void setUp() {
+    public void setUp() throws GeneralSecurityException {
         mContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
         mLskfResetKeyManager = new LskfResetKeyManager(mContext);
     }
@@ -49,4 +52,11 @@ public class LskfResetKeyManagerTest {
     public void testGenerateKeyRuns() {
         assertNotNull(mLskfResetKeyManager.generateAndStoreLskfResetKey("TestAlias"));
     }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_LSKF_RESET_MANAGER)
+    public void testGenerateLocalAndDeviceKeysRuns() {
+        assertTrue(mLskfResetKeyManager.generateDeviceAndAccountKeys("TestAlias"));
+    }
+
 }
