@@ -34,6 +34,9 @@ import java.util.Objects;
  * Params required to provision a multi-user managed device, see {@link
  * DevicePolicyManager#provisionMultiUserDevice}.
  *
+ * <p>This will be removed soon. Please use
+ * {@link #MultiuserManagedDeviceProvisioningParams} instead.
+ *
  * @hide
  */
 @SystemApi
@@ -132,6 +135,9 @@ public final class MultiUserDeviceProvisioningParams {
 
     /**
      * Builder class for {@link MultiUserDeviceProvisioningParams} objects.
+     *
+     * <p>This will be removed soon. Please use
+     * {@link MultiuserManagedDeviceProvisioningParams.Builder} instead.
      *
      * @hide
      */
