@@ -1823,8 +1823,14 @@ public class SettingsProvider extends ContentProvider {
             Binder.restoreCallingIdentity(token);
         }
 
-        final SettingsState ssaidSettings = mSettingsRegistry.getSettingsLocked(
-                SETTINGS_TYPE_SSAID, owningUserId, Context.DEVICE_ID_DEFAULT);
+        final long ssaidKey = makeKey(SETTINGS_TYPE_SSAID, owningUserId,
+                Context.DEVICE_ID_DEFAULT);
+        final SettingsState ssaidSettings = mSettingsRegistry.getOrCreateSettingsStateLocked(
+                ssaidKey);
+
+        if (ssaidSettings == null) {
+            return null;
+        }
 
         if (instantSsaid != null) {
             // Use the stored value if it is still valid.
@@ -3371,8 +3377,11 @@ public class SettingsProvider extends ContentProvider {
             // Store the key in the ssaid table.
             // Note that ssaid settings are applicable only for the default device, hence pass
             // Context.DEVICE_ID_DEFAULT as the deviceId.
-            final SettingsState ssaidSettings = getSettingsLocked(SETTINGS_TYPE_SSAID, userId,
-                    Context.DEVICE_ID_DEFAULT);
+            final long ssaidKey = makeKey(SETTINGS_TYPE_SSAID, userId, Context.DEVICE_ID_DEFAULT);
+            final SettingsState ssaidSettings = getOrCreateSettingsStateLocked(ssaidKey);
+            if (ssaidSettings == null) {
+                throw new IllegalStateException("Ssaid settings not accessible");
+            }
             final boolean success = ssaidSettings.insertSettingLocked(SSAID_USER_KEY, userKey, null,
                     true, SettingsState.SYSTEM_PACKAGE_NAME);
 
@@ -3441,8 +3450,11 @@ public class SettingsProvider extends ContentProvider {
             final String uid = Integer.toString(callingPkg.applicationInfo.uid);
             // Note that ssaid settings are applicable only for the default device, hence pass
             // Context.DEVICE_ID_DEFAULT as the deviceId.
-            final SettingsState ssaidSettings = getSettingsLocked(SETTINGS_TYPE_SSAID, userId,
-                    Context.DEVICE_ID_DEFAULT);
+            final long ssaidKey = makeKey(SETTINGS_TYPE_SSAID, userId, Context.DEVICE_ID_DEFAULT);
+            final SettingsState ssaidSettings = getOrCreateSettingsStateLocked(ssaidKey);
+            if (ssaidSettings == null) {
+                throw new IllegalStateException("Ssaid settings not accessible");
+            }
             final boolean success = ssaidSettings.insertSettingLocked(uid, ssaid, null, true,
                 callingPkg.packageName);
 
@@ -3482,10 +3494,13 @@ public class SettingsProvider extends ContentProvider {
                 ssaidUids.removeAll(appUids);
 
                 // If there are ssaidUids left over they need to be removed from the table.
-                final SettingsState ssaidSettings = getSettingsLocked(SETTINGS_TYPE_SSAID,
-                        user.id, Context.DEVICE_ID_DEFAULT);
-                for (String uid : ssaidUids) {
-                    ssaidSettings.deleteSettingLocked(uid);
+                final long ssaidKey = makeKey(SETTINGS_TYPE_SSAID, user.id,
+                        Context.DEVICE_ID_DEFAULT);
+                final SettingsState ssaidSettings = getOrCreateSettingsStateLocked(ssaidKey);
+                if (ssaidSettings != null) {
+                    for (String uid : ssaidUids) {
+                        ssaidSettings.deleteSettingLocked(uid);
+                    }
                 }
             }
         }
@@ -3513,6 +3528,8 @@ public class SettingsProvider extends ContentProvider {
             return mSettingsStates.get(key);
         }
 
+        // This should only be called when the settings are modified (insert/reset/delete) and
+        // should not be called on read-only access.
         @Nullable
         private SettingsState getOrCreateSettingsStateLocked(long key) {
             SettingsState settingsState = mSettingsStates.get(key);
@@ -3560,8 +3577,7 @@ public class SettingsProvider extends ContentProvider {
             ensureSettingsStateLocked(secureKey);
 
             // Make sure the secure settings have an Android id set.
-            SettingsState secureSettings = getSettingsLocked(SETTINGS_TYPE_SECURE, userId,
-                    deviceId);
+            SettingsState secureSettings = mSettingsStates.get(secureKey);
             ensureSecureSettingAndroidIdSetLocked(secureSettings);
 
             // Ensure system settings loaded.
@@ -3926,8 +3942,9 @@ public class SettingsProvider extends ContentProvider {
         public void onUidRemovedLocked(int uid) {
             // Ssaid settings are applicable only for the default device, hence pass
             // Context.DEVICE_ID_DEFAULT as the deviceId.
-            final SettingsState ssaidSettings = getSettingsLocked(SETTINGS_TYPE_SSAID,
-                    UserHandle.getUserId(uid), Context.DEVICE_ID_DEFAULT);
+            final long ssaidKey = makeKey(SETTINGS_TYPE_SSAID, UserHandle.getUserId(uid),
+                    Context.DEVICE_ID_DEFAULT);
+            final SettingsState ssaidSettings = getOrCreateSettingsStateLocked(ssaidKey);
             if (ssaidSettings != null) {
                 ssaidSettings.deleteSettingLocked(Integer.toString(uid));
             }
