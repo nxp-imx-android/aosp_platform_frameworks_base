@@ -194,4 +194,69 @@
     <string name="dream_setup_description" product="tablet">Show a clock, photos, or weather when your tablet is charging</string>
     <!-- Description for the dream contextual setup bottom sheet. [CHAR LIMIT=NONE] -->
     <string name="dream_setup_description" product="device">Show a clock, photos, or weather when your device is charging</string>
+
+   <!-- Content description of the try again button shown when a face auth error occurs on lock screen and user interaction is required to retry auth. [CHAR LIMIT=30] -->
+   <string name="accessibility_retry_face_auth" product="default">Try Face Unlock again</string>
+   <!-- Content description of the try again button shown when a face auth error occurs on lock screen and user interaction is required to retry auth. [CHAR LIMIT=50] -->
+   <string name="accessibility_retry_face_auth" product="desktop">Try unlocking with face again</string>
+   <!-- Notification title shown when the system requires the user to re-enroll their face. [CHAR LIMIT=NONE] -->
+   <string name="face_re_enroll_notification_title" product="default">Set up Face Unlock again</string>
+   <!-- Notification title shown when the system requires the user to re-enroll their face. [CHAR LIMIT=NONE] -->
+   <string name="face_re_enroll_notification_title" product="desktop">Set up unlocking with face again</string>
+   <!-- Message shown when a biometric has authenticated with a user's face and is waiting for the user to confirm authentication [CHAR LIMIT=60]-->
+   <string name="biometric_dialog_tap_confirm_with_face" product="default">Unlocked by face</string>
+   <!-- Message shown when a biometric has authenticated with a user's face and is waiting for the user to confirm authentication [CHAR LIMIT=60]-->
+   <string name="biometric_dialog_tap_confirm_with_face" product="desktop">Unlocked with face</string>
+   <!-- Message shown when a biometric has authenticated with a user's face and is waiting for the user to confirm authentication [CHAR LIMIT=60]-->
+   <string name="biometric_dialog_tap_confirm_with_face_alt_1" product="default">Unlocked by face. Press to continue.</string>
+   <!-- Message shown when a biometric has authenticated with a user's face and is waiting for the user to confirm authentication [CHAR LIMIT=60]-->
+   <string name="biometric_dialog_tap_confirm_with_face_alt_1" product="desktop">Unlocked with face. Press to continue.</string>
+   <!-- Message shown when a biometric has authenticated with a user's face and is waiting for the user to confirm authentication with SFPS [CHAR LIMIT=60]-->
+   <string name="biometric_dialog_tap_confirm_with_face_sfps" product="default">Unlocked by face. Tap to continue.</string>
+   <!-- Message shown when a biometric has authenticated with a user's face and is waiting for the user to confirm authentication with SFPS [CHAR LIMIT=60]-->
+   <string name="biometric_dialog_tap_confirm_with_face_sfps" product="desktop">Unlocked with face. Tap to continue.</string>
+   <!-- Name shown for system notifications related to the face unlock feature. [CHAR LIMIT=NONE] -->
+   <string name="face_re_enroll_notification_name" product="default">Face Unlock</string>
+   <!-- Name shown for system notifications related to the face unlock feature. [CHAR LIMIT=NONE] -->
+   <string name="face_re_enroll_notification_name" product="desktop">Unlocking with face</string>
+   <!-- Title for a dialog shown when the system requires the user to re-enroll their face. [CHAR LIMIT=NONE] -->
+   <string name="face_re_enroll_dialog_title" product="default">Set up Face Unlock</string>
+   <!-- Title for a dialog shown when the system requires the user to re-enroll their face. [CHAR LIMIT=NONE] -->
+   <string name="face_re_enroll_dialog_title" product="desktop">Set up unlocking with face</string>
+   <!-- Content for a dialog shown when the system requires the user to re-enroll their face. [CHAR LIMIT=NONE] -->
+   <string name="face_re_enroll_dialog_content" product="default">To set up Face Unlock again, your current face model will be deleted.\n\nYou\’ll need to set up this feature again to use your face to unlock your phone.</string>
+   <!-- Content for a dialog shown when the system requires the user to re-enroll their face. [CHAR LIMIT=NONE] -->
+   <string name="face_re_enroll_dialog_content" product="desktop">To set up unlocking with face again, your current face model will be deleted.\n\nYou\’ll need to set up this feature again to use your face to unlock your device.</string>
+   <!-- Content for a dialog shown when an error occurs while the user is trying to re-enroll their face. [CHAR LIMIT=NONE] -->
+   <string name="face_reenroll_failure_dialog_content" product="default">Couldn\u2019t set up face unlock. Go to Settings to try again.</string>
+   <!-- Content for a dialog shown when an error occurs while the user is trying to re-enroll their face. [CHAR LIMIT=NONE] -->
+   <string name="face_reenroll_failure_dialog_content" product="desktop">Couldn\u2019t set up unlocking with face. Try again in Settings.</string>
+   <!-- Message shown to inform the user that face unlock is not available. [CHAR LIMIT=59] -->
+   <string name="keyguard_face_unlock_unavailable" product="default">Face Unlock unavailable</string>
+   <!-- Message shown to inform the user that face unlock is not available. [CHAR LIMIT=80] -->
+   <string name="keyguard_face_unlock_unavailable" product="desktop">Unlocking with face unavailable</string>
+   <!-- Message shown when face authentication fails and the pin pad is visible. [CHAR LIMIT=60] -->
+   <string name="accesssibility_keyguard_retry" product="default">Swipe up to try Face Unlock again</string>
+   <!-- Message shown when face authentication fails and the pin pad is visible. [CHAR LIMIT=80] -->
+   <string name="accesssibility_keyguard_retry" product="desktop">Swipe up to try unlocking with face again</string>
+   <!-- Message shown when non-bypass face authentication succeeds. Provides extra instructions for how the user can enter their device [CHAR LIMIT=60] -->
+   <string name="keyguard_face_successful_unlock_swipe" product="default">Unlocked by face. Swipe up to open.</string>
+   <!-- Message shown when non-bypass face authentication succeeds. Provides extra instructions for how the user can enter their device [CHAR LIMIT=60] -->
+   <string name="keyguard_face_successful_unlock_swipe" product="desktop">Unlocked with face. Swipe up to open.</string>
+   <!-- Message shown when non-bypass face authentication succeeds and UDFPS is supported. Provides extra instructions for how the user can enter their device [CHAR LIMIT=60] -->
+   <string name="keyguard_face_successful_unlock_confirm_button" product="default">Unlocked by face. Press confirm to continue.</string>
+   <!-- Message shown when non-bypass face authentication succeeds and UDFPS is supported. Provides extra instructions for how the user can enter their device [CHAR LIMIT=60] -->
+   <string name="keyguard_face_successful_unlock_confirm_button" product="desktop">Unlocked with face. Press confirm to continue.</string>
+   <!-- Message shown when non-bypass face authentication succeeds and UDFPS is supported. Provides extra instructions for how the user can enter their device [CHAR LIMIT=60] -->
+   <string name="keyguard_face_successful_unlock_press" product="default">Unlocked by face. Press the unlock icon to open.</string>
+   <!-- Message shown when non-bypass face authentication succeeds and UDFPS is supported. Provides extra instructions for how the user can enter their device [CHAR LIMIT=60] -->
+   <string name="keyguard_face_successful_unlock_press" product="desktop">Unlocked with face. Press the unlock icon to open.</string>
+   <!-- Message shown when non-bypass face authentication succeeds and UDFPS is supported. Provides extra instructions for how the user can enter their device [CHAR LIMIT=60] -->
+   <string name="keyguard_face_successful_unlock_press_alt_1" product="default">Unlocked by face. Press to open.</string>
+   <!-- Message shown when non-bypass face authentication succeeds and UDFPS is supported. Provides extra instructions for how the user can enter their device [CHAR LIMIT=60] -->
+   <string name="keyguard_face_successful_unlock_press_alt_1" product="desktop">Unlocked with face. Press to open.</string>
+   <!-- Message shown when non-bypass face authentication succeeds. [CHAR LIMIT=60] -->
+   <string name="keyguard_face_successful_unlock" product="default">Unlocked by face</string>
+   <!-- Message shown when non-bypass face authentication succeeds. [CHAR LIMIT=60] -->
+   <string name="keyguard_face_successful_unlock" product="desktop">Unlocked with face</string>
 </resources>
