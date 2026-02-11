@@ -369,7 +369,8 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
                 () -> mKosmos.getSceneInteractor(),
                 () -> mKosmos.getKeyguardClockInteractor(),
                 () -> mKosmos.getSceneBackInteractor(),
-                () -> mKosmos.getAlternateBouncerInteractor());
+                () -> mKosmos.getAlternateBouncerInteractor(),
+                () -> mKosmos.getDeviceEntryInteractor());
 
         when(mHeadsUpCallback.getContext()).thenReturn(mContext);
         when(mView.getResources()).thenReturn(mResources);
@@ -449,7 +450,8 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
                                 () -> mKosmos.getSceneInteractor(),
                                 () -> mKosmos.getKeyguardClockInteractor(),
                                 () -> mKosmos.getSceneBackInteractor(),
-                                () -> mKosmos.getAlternateBouncerInteractor()),
+                                () -> mKosmos.getAlternateBouncerInteractor(),
+                                () -> mKosmos.getDeviceEntryInteractor()),
                         mKeyguardBypassController,
                         mDozeParameters,
                         mScreenOffAnimationController,
