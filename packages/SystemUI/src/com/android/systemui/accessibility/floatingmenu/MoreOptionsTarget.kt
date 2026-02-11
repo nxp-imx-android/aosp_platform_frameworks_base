@@ -16,6 +16,7 @@
 package com.android.systemui.accessibility.floatingmenu
 
 import android.content.Context
+import android.graphics.drawable.Drawable
 import androidx.core.content.ContextCompat
 import com.android.internal.accessibility.common.ShortcutConstants
 import com.android.internal.accessibility.dialog.AccessibilityTarget
@@ -26,7 +27,7 @@ import com.android.systemui.res.R
  * A simple data class used to identify the "More Options" button in the menu list. It holds no
  * logic; its behavior is handled by the AccessibilityTargetAdapter and MenuViewLayer.
  */
-class MoreOptionsTarget(context: Context) :
+class MoreOptionsTarget(private val context: Context) :
     AccessibilityTarget(
         context,
         ShortcutConstants.UserShortcutType.SOFTWARE,
@@ -38,6 +39,11 @@ class MoreOptionsTarget(context: Context) :
         ContextCompat.getDrawable(context, FloatingMenuR.drawable.ic_more_vert_themed),
         /* key= */ ID,
     ) {
+
+    override fun getIcon(): Drawable? {
+        return ContextCompat.getDrawable(context, FloatingMenuR.drawable.ic_more_vert_themed)
+    }
+
     companion object {
         const val ID = "more_options_target_id"
     }
