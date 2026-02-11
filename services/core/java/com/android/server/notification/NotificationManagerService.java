@@ -120,7 +120,6 @@ import static android.os.UserHandle.USER_NULL;
 import static android.os.UserHandle.USER_SYSTEM;
 import static android.os.UserHandle.getUserHandleForUid;
 import static android.security.Flags.secureLockDevice;
-import static android.security.Flags.secureLockdown;
 import static android.service.notification.Adjustment.KEY_GROUP_KEY;
 import static android.service.notification.Adjustment.KEY_SUMMARIZATION;
 import static android.service.notification.Adjustment.KEY_TYPE;
@@ -13607,9 +13606,9 @@ public class NotificationManagerService extends SystemService {
                                     adjustmentKeyStrings.add(TextUtils.join(",", signals.keySet()));
                                 }
                             }
-                            EventLogTags.writeNotificationSystemAdjustmentsRequested(
+                            EventLogTags.writeNotificationSystemAdjustmentsReceived(
                                     sbnToPost.getKey(), TextUtils.join("|", adjustmentKeyStrings));
-                            assistant.onSystemAdjustmentsRequest(adjustments);
+                            assistant.onSystemAdjustmentsReceived(adjustments);
                         } catch (RemoteException ex) {
                             Slog.e(
                                     TAG,

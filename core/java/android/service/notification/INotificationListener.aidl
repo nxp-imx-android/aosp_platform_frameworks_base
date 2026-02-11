@@ -64,5 +64,5 @@ oneway interface INotificationListener
     void onAllowedAdjustmentsChanged();
     void onNotificationFeedbackReceived(
             String key, in NotificationRankingUpdate update, in Bundle feedback);
-    void onSystemAdjustmentsRequest(in List<Adjustment> adjustments);
+    void onSystemAdjustmentsReceived(in List<Adjustment> adjustments);
 }
