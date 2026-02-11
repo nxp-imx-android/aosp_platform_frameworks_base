@@ -39,6 +39,7 @@ import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.flags.FakeFeatureFlags
 import com.android.systemui.haptics.msdl.fakeMSDLPlayer
+import com.android.systemui.inputdevice.domain.interactor.PointerDeviceInteractor
 import com.android.systemui.keyguard.data.quickaffordance.BuiltInKeyguardQuickAffordanceKeys
 import com.android.systemui.keyguard.data.quickaffordance.FakeKeyguardQuickAffordanceConfig
 import com.android.systemui.keyguard.data.quickaffordance.FakeKeyguardQuickAffordanceProviderClientFactory
@@ -105,6 +106,7 @@ class KeyguardQuickAffordanceInteractorTest : SysuiTestCase() {
     @Mock private lateinit var logger: KeyguardQuickAffordancesLogger
     @Mock private lateinit var metricsLogger: KeyguardQuickAffordancesMetricsLogger
     @Mock private lateinit var accessibilityInteractor: AccessibilityInteractor
+    @Mock private lateinit var pointerDeviceInteractor: PointerDeviceInteractor
 
     private lateinit var underTest: KeyguardQuickAffordanceInteractor
 
@@ -209,6 +211,7 @@ class KeyguardQuickAffordanceInteractorTest : SysuiTestCase() {
                 secureLockDeviceInteractor = { kosmos.secureLockDeviceInteractor },
                 devicePolicyManager = devicePolicyManager,
                 dockManager = dockManager,
+                pointerDeviceInteractor = pointerDeviceInteractor,
                 biometricSettingsRepository = biometricSettingsRepository,
                 backgroundDispatcher = kosmos.testDispatcher,
                 appContext = context,
@@ -220,6 +223,8 @@ class KeyguardQuickAffordanceInteractorTest : SysuiTestCase() {
 
         whenever(shadeInteractor.anyExpansion).thenReturn(MutableStateFlow(0f))
         whenever(accessibilityInteractor.isEnabledFiltered).thenReturn(MutableStateFlow(false))
+        whenever(pointerDeviceInteractor.isAnyPointerDeviceConnected)
+            .thenReturn(MutableStateFlow(false))
     }
 
     @Test
@@ -760,6 +765,28 @@ class KeyguardQuickAffordanceInteractorTest : SysuiTestCase() {
             runCurrent()
 
             assertThat(secondUseLongPress).isFalse()
+        }
+
+    @Test
+    fun useLongPress_whenPointerDeviceConnected_isFalse() =
+        testScope.runTest {
+            whenever(pointerDeviceInteractor.isAnyPointerDeviceConnected)
+                .thenReturn(MutableStateFlow(true))
+
+            val useLongPress by collectLastValue(underTest.useLongPress())
+
+            assertThat(useLongPress).isFalse()
+        }
+
+    @Test
+    fun useLongPress_whenPointerDeviceNotConnected_isTrue() =
+        testScope.runTest {
+            whenever(pointerDeviceInteractor.isAnyPointerDeviceConnected)
+                .thenReturn(MutableStateFlow(false))
+
+            val useLongPress by collectLastValue(underTest.useLongPress())
+
+            assertThat(useLongPress).isTrue()
         }
 
     @Test
