@@ -171,7 +171,9 @@ public abstract class InlineSuggestionRenderService extends Service {
             host.setView(suggestionRoot, lp);
 
             // The IME window does not allow force invert so neither should the inline suggestion.
-            host.getViewRoot().setForceInvertAllowed(false);
+            if (android.view.accessibility.Flags.disableEdtForAutofillInlineView()) {
+                host.getViewRoot().setForceInvertAllowed(false);
+            }
 
             // Set the suggestion view to be non-focusable so that if its background is set to a
             // ripple drawable, the ripple won't be shown initially.

@@ -2232,9 +2232,7 @@ public final class ViewRootImpl implements ViewParent,
 
     /** Set whether this ViewRootImpl is allowed to enable force invert (expanded dark theme). */
     public void setForceInvertAllowed(boolean allowed) {
-        if (android.view.accessibility.Flags.disableEdtForAutofillInlineView()) {
-            mForceInvertAllowed = allowed;
-        }
+        mForceInvertAllowed = allowed;
     }
 
     private @ForceDarkType.ForceDarkTypeDef int determineForceInvertDarkOverride(
