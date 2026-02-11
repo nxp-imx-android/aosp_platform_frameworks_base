@@ -341,6 +341,7 @@ final class LocalDisplayAdapter extends DisplayAdapter {
             ArrayList<DisplayModeRecord> records = new ArrayList<>();
             SparseArray<SurfaceControl.DisplayMode> modeIdToSfMode = new SparseArray<>();
             boolean modesAdded = false;
+            boolean sfModeIdsChanged = false;
             for (int i = 0; i < displayModes.length; i++) {
                 SurfaceControl.DisplayMode mode = displayModes[i];
                 List<Float> alternativeRefreshRates = new ArrayList<>();
@@ -384,6 +385,11 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                             hasArrSupport, sizeOverrideEnabled);
                     record = new DisplayModeRecord(displayMode);
                     modesAdded = true;
+                } else if (record.mMode.getSfModeId() != INVALID_MODE_ID
+                        && record.mMode.getSfModeId() != mode.id) {
+                    // If the existing matching mode has a different SF mode id, let's update it
+                    record = record.copyWithSfId(mode.id);
+                    sfModeIdsChanged = true;
                 }
                 records.add(record);
                 modeIdToSfMode.append(record.mMode.getModeId(), mode);
@@ -466,7 +472,7 @@ final class LocalDisplayAdapter extends DisplayAdapter {
             records.addAll(syntheticModes);
 
             boolean recordsChanged = records.size() != mSupportedModes.size() || modesAdded
-                    || !syntheticModes.isEmpty();
+                    || sfModeIdsChanged || !syntheticModes.isEmpty();
             // If the records haven't changed then we're done here.
             if (!recordsChanged) {
                 return activeModeChanged || preferredModeChanged || renderFrameRateChanged;
@@ -1597,6 +1603,28 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                     && Float.floatToIntBits(mMode.getVsyncRate())
                     == Float.floatToIntBits(mode.vsyncRate)
                     && hdrTypesEqual(mode.supportedHdrTypes, mMode.getSupportedHdrTypes());
+        }
+
+        /**
+         * Creates a copy of DisplayModeRecord with an overridden sfModeId
+         * @param sfModeId new SF mode id to set
+         */
+        public DisplayModeRecord copyWithSfId(int sfModeId) {
+            final Display.Mode mode = new Display.Mode(
+                    mMode.getModeId(),
+                    mMode.getParentModeId(),
+                    sfModeId,
+                    mMode.getFlags(),
+                    mMode.getPhysicalWidth(),
+                    mMode.getPhysicalHeight(),
+                    mMode.getRefreshRate(),
+                    mMode.getVsyncRate(),
+                    Arrays.copyOf(mMode.getAlternativeRefreshRates(),
+                            mMode.getAlternativeRefreshRates().length),
+                    Arrays.copyOf(mMode.getSupportedHdrTypes(),
+                            mMode.getSupportedHdrTypes().length)
+            );
+            return new DisplayModeRecord(mode);
         }
 
         public String toString() {

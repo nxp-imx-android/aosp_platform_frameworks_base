@@ -17,6 +17,7 @@
 package com.android.server.display;
 
 import static android.view.Display.Mode.FLAG_SIZE_OVERRIDE;
+import static android.view.Display.Mode.INVALID_MODE_ID;
 import static android.view.Surface.ROTATION_0;
 import static android.view.Surface.ROTATION_180;
 import static android.view.Surface.ROTATION_270;
@@ -111,7 +112,8 @@ public class DisplayDeviceTest {
         mDisplayDeviceInfo.xDpi = 0.5f;
         mDisplayDeviceInfo.yDpi = 1.0f;
         setUserPreferredMode(TestUtilsKt.createDisplayMode(
-                /* id= */ 1, /* parentId= */ 2, /* flags= */ 0, OTHER_WIDTH, OTHER_HEIGHT));
+                /* id= */ 1, /* parentId= */ 2, /* sfModeId= */ INVALID_MODE_ID,
+                /* flags= */ 0, OTHER_WIDTH, OTHER_HEIGHT));
         FakeDisplayDevice displayDevice = new FakeDisplayDevice(mDisplayDeviceInfo,
                 mMockDisplayAdapter);
         assertThat(displayDevice.getDisplaySurfaceDefaultSizeLocked()).isEqualTo(PORTRAIT_SIZE);
@@ -123,7 +125,8 @@ public class DisplayDeviceTest {
         mDisplayDeviceInfo.xDpi = 0.5f;
         mDisplayDeviceInfo.yDpi = 1.0f;
         setUserPreferredMode(TestUtilsKt.createDisplayMode(
-                /* id= */ 1, /* parentId= */ 2, FLAG_SIZE_OVERRIDE, OTHER_WIDTH, OTHER_HEIGHT));
+                /* id= */ 1, /* parentId= */ 2, /* sfModeId= */ INVALID_MODE_ID,
+                FLAG_SIZE_OVERRIDE, OTHER_WIDTH, OTHER_HEIGHT));
 
         FakeDisplayDevice displayDevice = new FakeDisplayDevice(mDisplayDeviceInfo,
                 mMockDisplayAdapter);
@@ -167,7 +170,8 @@ public class DisplayDeviceTest {
         mDisplayDeviceInfo.xDpi = 0.5f;
         mDisplayDeviceInfo.yDpi = 1.0f;
         setUserPreferredMode(TestUtilsKt.createDisplayMode(
-                /* id= */ 1, /* parentId= */ 2, /* flags= */ 0, OTHER_WIDTH, OTHER_HEIGHT));
+                /* id= */ 1, /* parentId= */ 2, /* sfModeId= */ INVALID_MODE_ID,
+                /* flags= */ 0, OTHER_WIDTH, OTHER_HEIGHT));
         FakeDisplayDevice displayDevice = new FakeDisplayDevice(mDisplayDeviceInfo,
                 mMockDisplayAdapter);
         displayDevice.setProjectionLocked(mMockTransaction, ROTATION_90, new Rect(), new Rect(),
@@ -182,7 +186,8 @@ public class DisplayDeviceTest {
         mDisplayDeviceInfo.xDpi = 0.5f;
         mDisplayDeviceInfo.yDpi = 1.0f;
         setUserPreferredMode(TestUtilsKt.createDisplayMode(
-                /* id= */ 1, /* parentId= */ 2, FLAG_SIZE_OVERRIDE, OTHER_WIDTH, OTHER_HEIGHT));
+                /* id= */ 1, /* parentId= */ 2, /* sfModeId= */ INVALID_MODE_ID,
+                FLAG_SIZE_OVERRIDE, OTHER_WIDTH, OTHER_HEIGHT));
         FakeDisplayDevice displayDevice = new FakeDisplayDevice(mDisplayDeviceInfo,
                 mMockDisplayAdapter);
         displayDevice.setProjectionLocked(mMockTransaction, ROTATION_90, new Rect(), new Rect(),

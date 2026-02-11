@@ -64,9 +64,9 @@ final class VoteSummary {
     public List<Integer> supportedModeIds;
 
     /**
-     * set of rejected modes due to mode config failure for connected display
+     * Set of rejected SF mode IDs due to mode config failure for connected display
      */
-    public Set<Integer> rejectedModeIds = new HashSet<>();
+    public Set<Integer> rejectedSfModeIds = new HashSet<>();
 
     private final boolean mSupportedModesVoteEnabled;
     private final boolean mSupportsFrameRateOverride;
@@ -399,17 +399,20 @@ final class VoteSummary {
     }
 
     private boolean validateModeRejected(Display.Mode mode) {
-        if (rejectedModeIds == null) {
+        if (mode.getSfModeId() == INVALID_MODE_ID) {
             return true;
         }
-        if (!rejectedModeIds.contains(mode.getModeId())) {
+        if (rejectedSfModeIds == null) {
+            return true;
+        }
+        if (!rejectedSfModeIds.contains(mode.getSfModeId())) {
             return true;
         }
         if (mLoggingEnabled) {
             Slog.w(TAG, "Discarding mode" + mode.getModeId()
                     + ", is a rejectedMode"
-                    + ": mode.modeId=" + mode.getModeId()
-                    + ", rejectedModeIds=" + rejectedModeIds);
+                    + ": mode.sfModeId=" + mode.getSfModeId()
+                    + ", rejectedSfModeIds=" + rejectedSfModeIds);
         }
         return false;
     }
@@ -498,6 +501,8 @@ final class VoteSummary {
                     || mode.getPhysicalHeight() < minHeight
                     || mode.getRefreshRate() < (minPhysicalRefreshRate - FLOAT_TOLERANCE)
                     || mode.getRefreshRate() > (maxPhysicalRefreshRate + FLOAT_TOLERANCE)
+                    || (mode.getSfModeId() != INVALID_MODE_ID
+                        && rejectedSfModeIds.contains(mode.getSfModeId()))
             ) {
                 continue;
             }
@@ -527,7 +532,7 @@ final class VoteSummary {
         supportedRefreshRates = null;
         allowHdr = true;
         supportedModeIds = null;
-        rejectedModeIds.clear();
+        rejectedSfModeIds.clear();
         if (mLoggingEnabled) {
             Slog.i(TAG, "Summary reset: " + this);
         }
@@ -553,7 +558,7 @@ final class VoteSummary {
                 + ", supportedRefreshRates=" + supportedRefreshRates
                 + ", allowHdr=" + allowHdr
                 + ", supportedModeIds=" + supportedModeIds
-                + ", rejectedModeIds=" + rejectedModeIds
+                + ", rejectedModeIds=" + rejectedSfModeIds
                 + ", mSupportedModesVoteEnabled=" + mSupportedModesVoteEnabled
                 + ", mSupportsFrameRateOverride=" + mSupportsFrameRateOverride + " }";
     }

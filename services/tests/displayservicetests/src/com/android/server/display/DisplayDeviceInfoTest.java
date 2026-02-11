@@ -142,7 +142,8 @@ public class DisplayDeviceInfoTest {
     public void testDisplayModeForSizeOverride_sizeOverride() {
         var ddi = createInfo();
         var mode = TestUtilsKt.createDisplayMode(
-                /* id= */ 1, /* parentId= */ 2, FLAG_SIZE_OVERRIDE, 100, 100);
+                /* id= */ 1, /* parentId= */ 2, /* sfModeId= */ INVALID_MODE_ID,
+                FLAG_SIZE_OVERRIDE, 100, 100);
         ddi.supportedModes = new Display.Mode[] { mode };
         ddi.userPreferredModeId = mode.getModeId();
 
@@ -153,7 +154,8 @@ public class DisplayDeviceInfoTest {
     public void testDisplayModeForSizeOverride_sizeOverrideNotMatching() {
         var ddi = createInfo();
         var mode1 = TestUtilsKt.createDisplayMode(
-                /* id= */ 1, /* parentId= */ 2, FLAG_SIZE_OVERRIDE, 100, 100);
+                /* id= */ 1, /* parentId= */ 2, /* sfModeId= */ INVALID_MODE_ID,
+                FLAG_SIZE_OVERRIDE, 100, 100);
         ddi.supportedModes = new Display.Mode[] { mode1 };
         ddi.userPreferredModeId = 100;
 
@@ -164,9 +166,11 @@ public class DisplayDeviceInfoTest {
     public void testDisplayModeForSizeOverride_anisotropyCorrected_baseModeActive() {
         var ddi = createInfo();
         var baseMode = TestUtilsKt.createDisplayMode(
-                /* id= */ 1, /* parentId= */ INVALID_MODE_ID, 0, 100, 100);
+                /* id= */ 1, /* parentId= */ INVALID_MODE_ID, /* sfModeId= */ INVALID_MODE_ID,
+                0, 100, 100);
         var anisotropyCorrectedMode = TestUtilsKt.createDisplayMode(
-                /* id= */ 2, /* parentId= */ 1, FLAG_ANISOTROPY_CORRECTION, 200, 200);
+                /* id= */ 2, /* parentId= */ 1, /* sfModeId= */ INVALID_MODE_ID,
+                FLAG_ANISOTROPY_CORRECTION, 200, 200);
         ddi.supportedModes = new Display.Mode[] { baseMode, anisotropyCorrectedMode };
         ddi.userPreferredModeId = anisotropyCorrectedMode.getModeId();
         ddi.modeId = baseMode.getModeId();
@@ -178,11 +182,14 @@ public class DisplayDeviceInfoTest {
     public void testDisplayModeForSizeOverride_anisotropyCorrected_matchingSizeModeActive() {
         var ddi = createInfo();
         var baseMode = TestUtilsKt.createDisplayMode(
-                /* id= */ 1, /* parentId= */ INVALID_MODE_ID, 0, 100, 100);
+                /* id= */ 1, /* parentId= */ INVALID_MODE_ID, /* sfModeId= */ INVALID_MODE_ID,
+                0, 100, 100);
         var anisotropyCorrectedMode = TestUtilsKt.createDisplayMode(
-                /* id= */ 2, /* parentId= */ 1, FLAG_ANISOTROPY_CORRECTION, 200, 200);
+                /* id= */ 2, /* parentId= */ 1, /* sfModeId= */ INVALID_MODE_ID,
+                FLAG_ANISOTROPY_CORRECTION, 200, 200);
         var matchingSizeMode = TestUtilsKt.createDisplayMode(
-                /* id= */ 3, /* parentId= */ INVALID_MODE_ID, 0, 100, 100);
+                /* id= */ 3, /* parentId= */ INVALID_MODE_ID, /* sfModeId= */ INVALID_MODE_ID,
+                0, 100, 100);
         ddi.supportedModes = new Display.Mode[] { baseMode, anisotropyCorrectedMode,
                 matchingSizeMode };
         ddi.userPreferredModeId = anisotropyCorrectedMode.getModeId();
@@ -195,9 +202,11 @@ public class DisplayDeviceInfoTest {
     public void testDisplayModeForSizeOverride_anisotropyCorrected_baseModeNotActive() {
         var ddi = createInfo();
         var baseMode = TestUtilsKt.createDisplayMode(
-                /* id= */ 1, /* parentId= */ INVALID_MODE_ID, 0, 100, 100);
+                /* id= */ 1, /* parentId= */ INVALID_MODE_ID, /* sfModeId= */ INVALID_MODE_ID,
+                0, 100, 100);
         var anisotropyCorrectedMode = TestUtilsKt.createDisplayMode(
-                /* id= */ 2, /* parentId= */ 1, FLAG_ANISOTROPY_CORRECTION, 200, 200);
+                /* id= */ 2, /* parentId= */ 1, /* sfModeId= */ INVALID_MODE_ID,
+                FLAG_ANISOTROPY_CORRECTION, 200, 200);
         ddi.supportedModes = new Display.Mode[] { baseMode, anisotropyCorrectedMode };
         ddi.userPreferredModeId = anisotropyCorrectedMode.getModeId();
         ddi.modeId = 100;

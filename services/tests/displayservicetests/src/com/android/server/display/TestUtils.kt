@@ -76,6 +76,7 @@ internal fun createSensorEvent(
 fun createDisplayMode(
     id: Int = Display.Mode.INVALID_MODE_ID,
     parentId: Int = Display.Mode.INVALID_MODE_ID,
+    sfModeId: Int = Display.Mode.INVALID_MODE_ID,
     flags: Int = 0,
     width: Int = 100,
     height: Int = 200,
@@ -85,7 +86,7 @@ fun createDisplayMode(
     supportedHdrTypes: IntArray = intArrayOf()
 
 ): Display.Mode = Display.Mode(
-    id, parentId, flags, width, height, peakRefreshRate, vsyncRate,
+    id, parentId, sfModeId, flags, width, height, peakRefreshRate, vsyncRate,
     alternativeRefreshRates, supportedHdrTypes
 )
 

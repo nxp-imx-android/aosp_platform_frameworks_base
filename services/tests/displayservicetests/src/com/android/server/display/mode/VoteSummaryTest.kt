@@ -240,38 +240,57 @@ class VoteSummaryTest {
         assertThat(summary.minRenderFrameRate).isWithin(FLOAT_TOLERANCE).of(80f)
     }
 
+    @Test
+    fun testAdjustSize_preferredSizeRejected_usesNextBestResolution() {
+        val summary = createSummary()
+        val defaultMode = createMode(1, 11, 90f, 90f, 1920, 1080)
+        summary.rejectedSfModeIds = setOf(11)
+        val modes = arrayOf(defaultMode,
+            createMode(2, 12, 90f, 60f, 1280, 720),
+            createMode(3, 13, 60f, 90f, 640, 480))
+        summary.width = 1920
+        summary.height = 1080
+
+        summary.filterModes(modes)
+        summary.adjustSize(defaultMode, modes)
+
+        // Next mode by size after rejected 1920x1080 is 1280x720
+        assertThat(summary.width).isEqualTo(1280)
+        assertThat(summary.height).isEqualTo(720)
+    }
+
     enum class RejectedModesTestCase(
-            internal val summaryRejectedModes: Set<Int>?,
+            internal val summaryRejectedSfModes: Set<Int>?,
             val modesToFilter: Array<Display.Mode>,
             val expectedModeIds: Set<Int>
     ) {
         HAS_NO_MATCHING_VOTE(
-                setOf(4, 5),
-                arrayOf(createMode(1, 90f, 90f),
-                        createMode(2, 90f, 60f),
-                        createMode(3, 60f, 90f)),
-                setOf(1, 2, 3)
+            setOf(14, 15),
+            arrayOf(createMode(1, 11, 90f, 90f),
+                createMode(2, 12, 90f, 60f),
+                createMode(3, 1360f, 90f)),
+            setOf(1, 2, 3)
         ),
         HAS_SINGLE_MATCHING_VOTE(
-                setOf(1),
-                arrayOf(createMode(1, 90f, 90f),
-                        createMode(2, 90f, 60f),
-                        createMode(3, 60f, 90f)),
-                setOf(2, 3)
+            setOf(11),
+            arrayOf(createMode(1, 11, 90f, 90f),
+                createMode(2, 12, 90f, 60f),
+                createMode(3, 13, 60f, 90f)),
+            setOf(2, 3)
         ),
         HAS_MULTIPLE_MATCHING_VOTES(
-                setOf(1, 2),
-                arrayOf(createMode(1, 90f, 90f),
-                        createMode(2, 90f, 60f),
-                        createMode(3, 60f, 90f)),
-                setOf(3)
+            setOf(11, 12),
+            arrayOf(createMode(1, 11, 90f, 90f),
+                createMode(2, 12, 90f, 60f),
+                createMode(3, 13, 60f, 90f)),
+            setOf(3)
         ),
     }
 
     @Test
     fun testFilterModes_rejectedModes(@TestParameter testCase: RejectedModesTestCase) {
         val summary = createSummary()
-        summary.rejectedModeIds = testCase.summaryRejectedModes
+        summary.rejectedSfModeIds = testCase.summaryRejectedSfModes
 
         val result = summary.filterModes(testCase.modesToFilter)
 
@@ -488,8 +507,14 @@ private fun createMode(
     modeId: Int, refreshRate: Float, vsyncRate: Float, hdrTypes: IntArray = IntArray(0)
 ): Display.Mode {
     return Display.Mode(
-        modeId, -1, 0, 600, 800, refreshRate, vsyncRate, FloatArray(0), hdrTypes
+        modeId, -1, -1, 0, 600, 800, refreshRate, vsyncRate, FloatArray(0), hdrTypes
     )
+}
+
+private fun createMode(modeId: Int, sfModeId: Int, refreshRate: Float, vsyncRate: Float,
+                       width: Int = 600, height: Int = 800): Display.Mode {
+    return Display.Mode(modeId, -1, sfModeId, 0, width, height, refreshRate, vsyncRate,
+        FloatArray(0), IntArray(0))
 }
 
 private fun createSummary(
