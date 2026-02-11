@@ -371,22 +371,13 @@ public class PersonalContextManagerService extends SystemService {
     private void registerInsightSurfaceClient(
             int userId,
             int processId,
-            Set<ContextHint> clientHints,
             InsightSurfaceClientInfo clientInfo) {
         final UserState userState = getUserStateSynchronized(userId);
         if (userState == null) {
             return;
         }
 
-        userState.embeddedInsightRenderer.registerInsightSurfaceClient(
-                clientInfo, renderToken -> {
-                    if (renderToken == null) {
-                        Slog.e(TAG, "No render token for client " + clientInfo.getId());
-                        return;
-                    }
-                    startRefinerWorkflow(
-                            userId, processId, clientHints, Set.of(renderToken), emptySet());
-                });
+        userState.embeddedInsightRenderer.registerInsightSurfaceClient(clientInfo);
     }
 
     private void unregisterInsightSurfaceClient(int userId, UUID id) {
@@ -612,7 +603,6 @@ public class PersonalContextManagerService extends SystemService {
         @PermissionManuallyEnforced
         @Override
         public void registerInsightSurfaceClient(
-                List<ContextHintWrapper> clientHints,
                 InsightSurfaceClientInfo clientInfo,
                 int userId) {
             verifyUser(userId);
@@ -626,8 +616,6 @@ public class PersonalContextManagerService extends SystemService {
                                     .registerInsightSurfaceClient(
                                             userId,
                                             callingPid,
-                                            ContextHintWrapper.unwrapInto(
-                                                    clientHints, new HashSet<>()),
                                             clientInfo));
         }
 

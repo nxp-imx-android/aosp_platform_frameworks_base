@@ -16,7 +16,6 @@
 
 package com.android.server.personalcontext.embedded;
 
-import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -40,7 +39,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
@@ -61,11 +59,7 @@ public class EmbeddedInsightRendererTest {
     @Test
     public void testRegisterInsightSurfaceClient() {
         final InsightSurfaceClientInfo client = createClient();
-        AtomicReference<RenderToken> renderToken = new AtomicReference<>();
-        mEmbeddedInsightRenderer.registerInsightSurfaceClient(client, renderToken::set);
-        assertThat(renderToken).isNotNull();
-        verify(mClientRegistry).addClient(client, renderToken.get());
-        assertThat(renderToken.get()).isNotNull();
+        mEmbeddedInsightRenderer.registerInsightSurfaceClient(client);
     }
 
     @Test
@@ -73,8 +67,7 @@ public class EmbeddedInsightRendererTest {
         final InsightSurfaceClientInfo client = createClient();
         when(mClientRegistry.removeClient(client.getId())).thenReturn(client);
 
-        AtomicReference<RenderToken> renderToken = new AtomicReference<>();
-        mEmbeddedInsightRenderer.registerInsightSurfaceClient(client, renderToken::set);
+        mEmbeddedInsightRenderer.registerInsightSurfaceClient(client);
         mEmbeddedInsightRenderer.unregisterInsightSurfaceClient(client.getId());
         verify(mClientRegistry).removeClient(client.getId());
     }

@@ -32,7 +32,6 @@ import com.android.server.personalcontext.component.Renderer;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executor;
-import java.util.function.Consumer;
 
 /** @hide */
 public class EmbeddedInsightRenderer implements Renderer {
@@ -75,9 +74,7 @@ public class EmbeddedInsightRenderer implements Renderer {
      * Register an insight surface client and return the {@link RenderToken} associated with that
      * client via the onRegistered callback.
      */
-    public void registerInsightSurfaceClient(
-            InsightSurfaceClientInfo clientInfo,
-            Consumer<RenderToken> onRegistered) {
+    public void registerInsightSurfaceClient(InsightSurfaceClientInfo clientInfo) {
         mExecutor.execute(() -> {
             logDebug("registering insight surface client, id=" + clientInfo.getId());
 
@@ -94,8 +91,6 @@ public class EmbeddedInsightRenderer implements Renderer {
             } catch (RemoteException e) {
                 throw e.rethrowFromSystemServer();
             }
-
-            onRegistered.accept(clientRenderToken);
         });
     }
 

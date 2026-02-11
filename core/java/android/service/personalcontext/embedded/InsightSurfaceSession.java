@@ -139,12 +139,6 @@ public class InsightSurfaceSession implements AutoCloseable {
         } catch (RemoteException e) {
             Log.e(TAG, "Error updating session client", e);
         }
-
-        // If there are hints in the update, publish them.
-        if (!update.getHints().isEmpty()) {
-            personalContextManager.publishInsightSurfaceHints(
-                    update.getHints(), newClientInfo);
-        }
     }
 
     /**
