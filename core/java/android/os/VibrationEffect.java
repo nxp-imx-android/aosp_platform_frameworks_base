@@ -16,8 +16,6 @@
 
 package android.os;
 
-import static android.os.vibrator.Flags.FLAG_VENDOR_VIBRATION_EFFECTS;
-
 import android.annotation.DurationMillisLong;
 import android.annotation.FlaggedApi;
 import android.annotation.FloatRange;
@@ -341,7 +339,6 @@ public abstract class VibrationEffect implements Parcelable {
      */
     @NonNull
     @SystemApi
-    @FlaggedApi(FLAG_VENDOR_VIBRATION_EFFECTS)
     @RequiresPermission(android.Manifest.permission.VIBRATE_VENDOR_EFFECTS)
     public static VibrationEffect createVendorEffect(@NonNull PersistableBundle effect) {
         VibrationEffect vendorEffect = new VendorEffect(effect, VendorEffect.DEFAULT_STRENGTH,
@@ -1109,7 +1106,6 @@ public abstract class VibrationEffect implements Parcelable {
      * @hide
      */
     @TestApi
-    @FlaggedApi(FLAG_VENDOR_VIBRATION_EFFECTS)
     public static final class VendorEffect extends VibrationEffect {
         /** @hide */
         public static final int DEFAULT_STRENGTH = VibrationEffect.EFFECT_STRENGTH_MEDIUM;
@@ -2379,9 +2375,7 @@ public abstract class VibrationEffect implements Parcelable {
                         case PARCEL_TOKEN_COMPOSED:
                             return new Composed(in);
                         case PARCEL_TOKEN_VENDOR_EFFECT:
-                            if (Flags.vendorVibrationEffects()) {
-                                return new VendorEffect(in);
-                            } // else fall through
+                            return new VendorEffect(in);
                         default:
                             throw new IllegalStateException(
                                     "Unexpected vibration effect type token in parcel.");

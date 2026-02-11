@@ -19,7 +19,6 @@ package android.os;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.TestApi;
-import android.os.vibrator.Flags;
 import android.util.SparseArray;
 
 import com.android.internal.util.Preconditions;
@@ -327,9 +326,6 @@ public abstract class CombinedVibration implements Parcelable {
         /** @hide */
         @Override
         public boolean hasVendorEffects() {
-            if (!Flags.vendorVibrationEffects()) {
-                return false;
-            }
             return mEffect instanceof VibrationEffect.VendorEffect;
         }
 
@@ -538,9 +534,6 @@ public abstract class CombinedVibration implements Parcelable {
         /** @hide */
         @Override
         public boolean hasVendorEffects() {
-            if (!Flags.vendorVibrationEffects()) {
-                return false;
-            }
             for (int i = 0; i < mEffects.size(); i++) {
                 if (mEffects.get(i) instanceof VibrationEffect.VendorEffect) {
                     return true;

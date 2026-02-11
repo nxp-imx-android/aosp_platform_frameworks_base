@@ -451,7 +451,6 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void createService_resetsVibratorManager() {
         mHalHelper.setCapabilities(IVibratorManager.CAP_SYNC, IVibratorManager.CAP_START_SESSIONS);
         mHalHelper.setVibratorIds(new int[]{1, 2});
@@ -510,7 +509,7 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_REMOVE_HIDL_SUPPORT, Flags.FLAG_VENDOR_VIBRATION_EFFECTS})
+    @EnableFlags(Flags.FLAG_REMOVE_HIDL_SUPPORT)
     public void createService_withLegacyManager_initializesEmptyManager() {
         int defaultVibratorId = VintfHalVibratorManager.DEFAULT_VIBRATOR_ID;
         mUseLegacyHalManager = true;
@@ -1326,7 +1325,6 @@ public class VibratorManagerServiceTest {
                 .anyMatch(PrebakedSegment.class::isInstance));
     }
 
-    @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     @Test
     public void vibrate_withOngoingHigherImportanceVendorSession_ignoresEffect() throws Exception {
         mHalHelper.setCapabilities(IVibratorManager.CAP_START_SESSIONS);
@@ -1416,7 +1414,6 @@ public class VibratorManagerServiceTest {
                 .filter(PrebakedSegment.class::isInstance).count());
     }
 
-    @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     @Test
     public void vibrate_withOngoingLowerImportanceVendorSession_cancelsOngoingSession()
             throws Exception {
@@ -2043,7 +2040,6 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void vibrate_vendorEffectsWithoutPermission_doesNotVibrate() throws Exception {
         // Deny permission to vibrate with vendor effects
         denyPermission(android.Manifest.permission.VIBRATE_VENDOR_EFFECTS);
@@ -2069,7 +2065,6 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void vibrate_vendorEffectsWithPermission_successful() throws Exception {
         // Grant permission to vibrate with vendor effects
         grantPermission(android.Manifest.permission.VIBRATE_VENDOR_EFFECTS);
@@ -2198,7 +2193,6 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void vibrate_withIntensitySettingsAndAdaptiveHaptics_appliesSettingsToVendorEffects()
             throws Exception {
         // Grant permission to vibrate with vendor effects
@@ -2536,7 +2530,6 @@ public class VibratorManagerServiceTest {
                 mHalHelper.getVibratorHelper(1).getExternalControlStates());
     }
 
-    @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     @Test
     public void onExternalVibration_withOngoingHigherImportanceVendorSession_ignoreNewVibration()
             throws Exception {
@@ -2622,7 +2615,6 @@ public class VibratorManagerServiceTest {
                 mHalHelper.getVibratorHelper(1).getExternalControlStates());
     }
 
-    @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     @Test
     public void onExternalVibration_withOngoingLowerImportanceVendorSession_cancelsOngoingSession()
             throws Exception {
@@ -2880,35 +2872,6 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
-    public void startVibrationSession_withoutFeatureFlag_throwsException() throws Exception {
-        mHalHelper.setCapabilities(IVibratorManager.CAP_START_SESSIONS);
-        int vibratorId = 1;
-        mHalHelper.setVibratorIds(new int[]{vibratorId});
-        VibratorManagerService service = createSystemReadyService();
-
-        IVibrationSessionCallback callback = mockSessionCallbacks();
-        assertThrows("Expected starting session without feature flag to fail!",
-                UnsupportedOperationException.class,
-                () -> startSession(service, RINGTONE_ATTRS, callback, vibratorId));
-
-        // Make sure all messages are processed before asserting on the session callbacks.
-        stopAutoDispatcherAndDispatchAll();
-
-        assertThat(mHalHelper.getStartSessionCount()).isEqualTo(0);
-        verify(mVibratorFrameworkStatsLoggerMock, never())
-                .logVibrationVendorSessionStarted(anyInt());
-        verify(mVibratorFrameworkStatsLoggerMock, never())
-                .logVibrationVendorSessionVibrations(anyInt(), anyInt());
-        verify(mVibratorFrameworkStatsLoggerMock, never())
-                .logVibrationVendorSessionInterrupted(anyInt());
-        verify(callback, never()).onStarted(any(IVibrationSession.class));
-        verify(callback, never()).onFinishing();
-        verify(callback, never()).onFinished(anyInt());
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void startVibrationSession_withoutCapability_doesNotStart() throws Exception {
         int vibratorId = 1;
         mHalHelper.setVibratorIds(new int[]{vibratorId});
@@ -2935,7 +2898,6 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void startVibrationSession_withoutCallback_doesNotStart() {
         mHalHelper.setCapabilities(IVibratorManager.CAP_START_SESSIONS);
         int vibratorId = 1;
@@ -2959,7 +2921,6 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void startVibrationSession_withoutVibratorIds_doesNotStart() throws Exception {
         mHalHelper.setCapabilities(IVibratorManager.CAP_START_SESSIONS);
         mHalHelper.setVibratorIds(new int[]{1});
@@ -2990,7 +2951,6 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void startVibrationSession_badVibratorId_failsToStart() throws Exception {
         mHalHelper.setCapabilities(IVibratorManager.CAP_START_SESSIONS);
         mHalHelper.setVibratorIds(new int[]{1, 2});
@@ -3017,7 +2977,7 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_REMOVE_HIDL_SUPPORT, Flags.FLAG_VENDOR_VIBRATION_EFFECTS})
+    @EnableFlags(Flags.FLAG_REMOVE_HIDL_SUPPORT)
     public void startVibrationSession_withLegacyHal_doesNotStart() throws Exception {
         // Capabilities and IDs ignored by legacy HAL service, as it's backed by single IVibrator.
         mHalHelper.setCapabilities(IVibratorManager.CAP_START_SESSIONS);
@@ -3046,7 +3006,6 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void startVibrationSession_thenFinish_returnsSuccessAfterCallback() throws Exception {
         mHalHelper.setCapabilities(IVibratorManager.CAP_START_SESSIONS);
         mHalHelper.setVibratorIds(new int[]{1, 2});
@@ -3088,7 +3047,6 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void startVibrationSession_thenSendCancelSignal_cancelsSession() throws Exception {
         mHalHelper.setCapabilities(IVibratorManager.CAP_START_SESSIONS);
         mHalHelper.setVibratorIds(new int[]{1, 2});
@@ -3123,7 +3081,6 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void startVibrationSession_thenCancel_returnsCancelStatus() throws Exception {
         mHalHelper.setCapabilities(IVibratorManager.CAP_START_SESSIONS);
         mHalHelper.setVibratorIds(new int[]{1, 2});
@@ -3151,7 +3108,6 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void startVibrationSession_finishThenCancel_returnsRightAwayWithFinishedStatus()
             throws Exception {
         mHalHelper.setCapabilities(IVibratorManager.CAP_START_SESSIONS);
@@ -3185,7 +3141,6 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void startVibrationSession_thenHalCancels_returnsCancelStatus()
             throws Exception {
         mHalHelper.setCapabilities(IVibratorManager.CAP_START_SESSIONS);
@@ -3220,7 +3175,6 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void startVibrationSession_withPowerMode_usesPowerModeState() throws Exception {
         mHalHelper.setCapabilities(IVibratorManager.CAP_START_SESSIONS);
         mHalHelper.setVibratorIds(new int[]{1});
@@ -3251,7 +3205,6 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void startVibrationSession_withOngoingHigherImportanceVibration_ignoresSession()
             throws Exception {
         mHalHelper.setCapabilities(IVibratorManager.CAP_START_SESSIONS);
@@ -3283,7 +3236,6 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void startVibrationSession_withOngoingLowerImportanceVibration_cancelsOngoing()
             throws Exception {
         mHalHelper.setCapabilities(IVibratorManager.CAP_START_SESSIONS);
@@ -3318,7 +3270,6 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void startVibrationSession_withOngoingLowerImportanceExternalVibration_cancelsOngoing()
             throws Exception {
         mHalHelper.setCapabilities(IVibratorManager.CAP_START_SESSIONS);
@@ -3353,7 +3304,6 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void vibrateInSession_afterCancel_vibrationIgnored() throws Exception {
         mHalHelper.setCapabilities(IVibratorManager.CAP_START_SESSIONS);
         mHalHelper.setVibratorIds(new int[]{1, 2});
@@ -3394,7 +3344,6 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void vibrateInSession_afterFinish_vibrationIgnored() throws Exception {
         mHalHelper.setCapabilities(IVibratorManager.CAP_START_SESSIONS);
         mHalHelper.setVibratorIds(new int[]{1, 2});
@@ -3440,7 +3389,6 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void vibrateInSession_repeatingVibration_vibrationIgnored() throws Exception {
         mHalHelper.setCapabilities(IVibratorManager.CAP_START_SESSIONS);
         mHalHelper.setVibratorIds(new int[]{1, 2});
@@ -3486,7 +3434,6 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void vibrateInSession_singleVibration_playsAllVibrateCommands() throws Exception {
         mHalHelper.setCapabilities(IVibratorManager.CAP_START_SESSIONS);
         mHalHelper.setVibratorIds(new int[]{1, 2});
@@ -3541,7 +3488,6 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void vibrateInSession_multipleVibrations_playsAllVibrations() throws Exception {
         mHalHelper.setCapabilities(IVibratorManager.CAP_START_SESSIONS);
         mHalHelper.setVibratorIds(new int[]{1, 2});
@@ -4295,7 +4241,7 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_HAPTIC_PCM_GENERATION, Flags.FLAG_VENDOR_VIBRATION_EFFECTS})
+    @EnableFlags(Flags.FLAG_HAPTIC_PCM_GENERATION)
     public void generateHapticChannelInputStream_rejectsVendorEffect() throws Exception {
         mHalHelper.setCapabilities(IVibratorManager.CAP_HAPTIC_GENERATOR);
         mHalHelper.setVibratorIds(new int[]{1});

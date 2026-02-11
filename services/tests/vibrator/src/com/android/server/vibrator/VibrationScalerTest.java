@@ -298,7 +298,6 @@ public class VibrationScalerTest {
     }
 
     @Test
-    @EnableFlags(android.os.vibrator.Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void scale_withVendorEffect_setsEffectStrengthAndScaleBasedOnSettings() {
         mConfigBuilder.setDefaultNotificationVibrationIntensity(VIBRATION_INTENSITY_MEDIUM);
         VibrationScaler scaler = createSystemReadyScaler();
@@ -483,7 +482,6 @@ public class VibrationScalerTest {
     }
 
     @Test
-    @EnableFlags(android.os.vibrator.Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void scale_adaptiveHapticsOnVendorEffect_setsAdaptiveScaleParameter() {
         mConfigBuilder.setDefaultRingVibrationIntensity(VIBRATION_INTENSITY_HIGH);
         VibrationScaler scaler = createSystemReadyScaler();

@@ -69,7 +69,6 @@ public abstract class HalVibratorManagerTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void init_initializesHalAndClearSyncedAndSessions() {
         mHelper.setCapabilities(IVibratorManager.CAP_SYNC, IVibratorManager.CAP_START_SESSIONS);
         mHelper.setVibratorIds(new int[] {1, 2});

@@ -47,9 +47,7 @@ import android.os.vibrator.PrimitiveSegment;
 import android.os.vibrator.PwleSegment;
 import android.os.vibrator.StepSegment;
 import android.os.vibrator.VibrationEffectSegment;
-import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
-import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.platform.test.flag.junit.SetFlagsRule;
@@ -308,10 +306,8 @@ public class VibrationEffectTest {
     public void computeLegacyPattern_notPatternBased() {
         assertNull(VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK)
                 .computeCreateWaveformOffOnTimingsOrNull());
-        if (Flags.vendorVibrationEffects()) {
-            assertNull(VibrationEffect.createVendorEffect(createNonEmptyBundle())
-                    .computeCreateWaveformOffOnTimingsOrNull());
-        }
+        assertNull(VibrationEffect.createVendorEffect(createNonEmptyBundle())
+                .computeCreateWaveformOffOnTimingsOrNull());
     }
 
     @Test
@@ -542,7 +538,6 @@ public class VibrationEffectTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(android.os.vibrator.Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void cropToLength_vendorEffect() {
         PersistableBundle vendorData = new PersistableBundle();
         vendorData.putInt("key", 1);
@@ -615,7 +610,6 @@ public class VibrationEffectTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(android.os.vibrator.Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void testValidateVendorEffect() {
         PersistableBundle vendorData = new PersistableBundle();
         vendorData.putInt("key", 1);
@@ -1032,7 +1026,6 @@ public class VibrationEffectTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(android.os.vibrator.Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void testResolveVendorEffect() {
         VibrationEffect effect = VibrationEffect.createVendorEffect(createNonEmptyBundle());
         assertEquals(effect, effect.resolve(51));
@@ -1082,7 +1075,6 @@ public class VibrationEffectTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(android.os.vibrator.Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void testScaleVendorEffect() {
         VibrationEffect effect = VibrationEffect.createVendorEffect(createNonEmptyBundle());
 
@@ -1144,7 +1136,6 @@ public class VibrationEffectTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(android.os.vibrator.Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void testApplyAdaptiveScaleVendorEffect() {
         VibrationEffect effect = VibrationEffect.createVendorEffect(createNonEmptyBundle());
 
@@ -1206,7 +1197,6 @@ public class VibrationEffectTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(android.os.vibrator.Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void testApplyEffectStrengthToVendorEffect() {
         VibrationEffect effect = VibrationEffect.createVendorEffect(createNonEmptyBundle());
 
@@ -1316,7 +1306,6 @@ public class VibrationEffectTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(android.os.vibrator.Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void testApplyRepeatingIndefinitely_vendorEffect() {
         VibrationEffect effect = VibrationEffect.createVendorEffect(createNonEmptyBundle());
 
@@ -1338,10 +1327,8 @@ public class VibrationEffectTest {
                 new long[]{1, 2, 3}, new int[]{1, 2, 3}, -1).getDuration());
         assertEquals(Long.MAX_VALUE, VibrationEffect.createWaveform(
                 new long[]{1, 2, 3}, new int[]{1, 2, 3}, 0).getDuration());
-        if (Flags.vendorVibrationEffects()) {
-            assertEquals(-1,
-                    VibrationEffect.createVendorEffect(createNonEmptyBundle()).getDuration());
-        }
+        assertEquals(-1,
+                VibrationEffect.createVendorEffect(createNonEmptyBundle()).getDuration());
     }
 
     @Test
@@ -1362,10 +1349,8 @@ public class VibrationEffectTest {
         assertEquals(115, composition.getDuration(info));
         assertEquals(Long.MAX_VALUE,
                 VibrationEffect.createRepeatingEffect(composition).getDuration(info));
-        if (Flags.vendorVibrationEffects()) {
-            assertEquals(-1,
-                    VibrationEffect.createVendorEffect(createNonEmptyBundle()).getDuration(info));
-        }
+        assertEquals(-1,
+                VibrationEffect.createVendorEffect(createNonEmptyBundle()).getDuration(info));
     }
 
     @Test
@@ -1421,7 +1406,6 @@ public class VibrationEffectTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(android.os.vibrator.Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void testAreVibrationFeaturesSupported_vendorEffects() {
         VibratorInfo supportedVibratorInfo = new VibratorInfo.Builder(/* id= */ 1)
                 .setCapabilities(IVibrator.CAP_PERFORM_VENDOR_EFFECTS)
@@ -1586,7 +1570,6 @@ public class VibrationEffectTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(android.os.vibrator.Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void testIsHapticFeedbackCandidate_vendorEffects_notCandidates() {
         assertFalse(VibrationEffect.createVendorEffect(createNonEmptyBundle())
                 .isHapticFeedbackCandidate());
@@ -1629,7 +1612,6 @@ public class VibrationEffectTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(android.os.vibrator.Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void testParcelingVendorEffect() {
         Parcel p = Parcel.obtain();
         VibrationEffect effect = VibrationEffect.createVendorEffect(createNonEmptyBundle());

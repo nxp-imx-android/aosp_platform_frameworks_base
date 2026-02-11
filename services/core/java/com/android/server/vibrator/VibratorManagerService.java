@@ -700,11 +700,6 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
             return null;
         }
         if (effect.hasVendorEffects()) {
-            if (!Flags.vendorVibrationEffects()) {
-                Slog.e(TAG, "vibrate; vendor effects feature disabled");
-                logAndRecordVibrationAttempt(effect, callerInfo, Status.IGNORED_UNSUPPORTED);
-                return null;
-            }
             if (!hasPermission(android.Manifest.permission.VIBRATE_VENDOR_EFFECTS)) {
                 Slog.e(TAG, "vibrate; no permission for vendor effects");
                 logAndRecordVibrationAttempt(effect, callerInfo, Status.IGNORED_MISSING_PERMISSION);
@@ -847,9 +842,6 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
     VendorVibrationSession startVendorVibrationSessionInternal(int uid, int deviceId, String opPkg,
             int[] vibratorIds, VibrationAttributes attrs, String reason,
             IVibrationSessionCallback callback) {
-        if (!Flags.vendorVibrationEffects()) {
-            throw new UnsupportedOperationException("Vibration sessions not supported");
-        }
         attrs = fixupVibrationAttributes(attrs, /* effect= */ null);
         CallerInfo callerInfo = new CallerInfo(attrs, uid, deviceId, opPkg, reason);
         if (callback == null) {
@@ -2405,9 +2397,7 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
             // Reset the hardware to a default state.
             // In case this is a runtime restart instead of a fresh boot.
             cancelSynced();
-            if (Flags.vendorVibrationEffects()) {
-                mNativeWrapper.clearSessions();
-            }
+            mNativeWrapper.clearSessions();
         }
 
         @Override
