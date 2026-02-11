@@ -25,6 +25,7 @@ import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.os.Bundle
 import android.content.res.Resources
+import android.os.UserHandle
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import androidx.test.filters.SmallTest
@@ -59,7 +60,6 @@ class GameControlsHelperTest : ShellTestCase() {
     private val mockActivityInfo = mock<ActivityInfo>()
     private val mockApplicationInfo = mock<ApplicationInfo>()
     private val mockResolveInfo = mock<ResolveInfo>()
-    private var intentCaptor = argumentCaptor<Intent>()
 
     @Before
     fun setUp() {
@@ -173,13 +173,21 @@ class GameControlsHelperTest : ShellTestCase() {
 
     @Test
     fun onLaunchGameControls_sendsBroadcast() {
+        val intentCaptor = argumentCaptor<Intent>()
+        val userCaptor = argumentCaptor<UserHandle>()
+        mockTaskInfo.userId = 10
+        mockTaskInfo.taskId = 123
 
         GameControlsHelper.onLaunchGameControls(mockContext, mockTaskInfo)
 
-        verify(mockContext, times(1)).sendBroadcast(intentCaptor.capture())
+        verify(mockContext, times(1))
+            .sendBroadcastAsUser(intentCaptor.capture(), userCaptor.capture())
         val intent = intentCaptor.firstValue
         assertThat(intent.action).isEqualTo("com.test.ACTION")
         assertThat(intent.`package`).isEqualTo("com.test.package")
+        assertThat(intent.getIntExtra(Intent.EXTRA_TASK_ID, -1)).isEqualTo(mockTaskInfo.taskId)
+        val user = userCaptor.firstValue
+        assertThat(user.identifier).isEqualTo(mockTaskInfo.userId)
     }
 
     @Test
@@ -189,7 +197,7 @@ class GameControlsHelperTest : ShellTestCase() {
 
         GameControlsHelper.onLaunchGameControls(mockContext, mockTaskInfo)
 
-        verify(mockContext, never()).sendBroadcast(any())
+        verify(mockContext, never()).sendBroadcastAsUser(any(), any())
     }
 
     @Test
@@ -198,6 +206,6 @@ class GameControlsHelperTest : ShellTestCase() {
 
         GameControlsHelper.onLaunchGameControls(mockContext, mockTaskInfo)
 
-        verify(mockContext, never()).sendBroadcast(any())
+        verify(mockContext, never()).sendBroadcastAsUser(any(), any())
     }
 }

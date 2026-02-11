@@ -20,6 +20,7 @@ import android.app.TaskInfo
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
+import android.os.UserHandle
 import android.window.DesktopExperienceFlags
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.R
@@ -68,6 +69,7 @@ object GameControlsHelper {
         if (intent == null) {
             return
         }
+        context.sendBroadcastAsUser(intent, UserHandle.of(taskInfo.userId))
         ProtoLog.i(
             WM_SHELL_WINDOW_DECORATION,
             "GameControlsHelper: Sending the game controls intent %s to %s with task id %d",
@@ -75,7 +77,6 @@ object GameControlsHelper {
             intent.getPackage(),
             intent.getIntExtra(Intent.EXTRA_TASK_ID, -1),
         )
-        context.sendBroadcast(intent)
     }
 
     private fun createLaunchGameControlsIntent(context: Context, taskInfo: TaskInfo): Intent? {
