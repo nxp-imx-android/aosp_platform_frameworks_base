@@ -49,8 +49,8 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresFeature;
 import android.annotation.RequiresPermission;
-import android.annotation.SpecialUsers.CanBeCURRENT;
 import android.annotation.SpecialUsers.CanBeALL;
+import android.annotation.SpecialUsers.CanBeCURRENT;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
@@ -709,8 +709,6 @@ public final class InputMethodManager {
     private final SparseArray<IAccessibilityInputMethodSessionInvoker>
             mAccessibilityInputMethodSession = new SparseArray<>();
 
-    @GuardedBy("mH")
-    private InputChannel mCurChannel;
     @GuardedBy("mH")
     private ImeInputEventSender mCurSender;
 
@@ -2283,7 +2281,10 @@ public final class InputMethodManager {
 
     @GuardedBy("mH")
     private void updateInputChannelLocked(InputChannel channel) {
-        if (areSameInputChannel(mCurChannel, channel)) {
+        if (mCurSender != null && channel != null && mCurSender.getToken() == channel.getToken()) {
+            // Keep the existing sender, and avoid recreating it. The provided input channel is a
+            // dup, so we still need to dispose it before returning.
+            channel.dispose();
             return;
         }
         // TODO(b/238720598) : Requirements when design a new protocol for InputChannel
@@ -2296,21 +2297,9 @@ public final class InputMethodManager {
             mCurSender = null;
         }
 
-        if (mCurChannel != null) {
-            mCurChannel.dispose();
+        if (channel != null) {
+            mCurSender = new ImeInputEventSender(channel, mH.getLooper());
         }
-        mCurChannel = channel;
-    }
-
-    private static boolean areSameInputChannel(@Nullable InputChannel lhs,
-            @Nullable InputChannel rhs) {
-        if (lhs == rhs) {
-            return true;
-        }
-        if (lhs == null || rhs == null) {
-            return false;
-        }
-        return lhs.getToken() == rhs.getToken();
     }
 
     /**
@@ -4623,11 +4612,7 @@ public final class InputMethodManager {
     // Must be called on the main looper
     @GuardedBy("mH")
     private int sendInputEventOnMainLooperLocked(PendingEvent p) {
-        if (mCurChannel != null) {
-            if (mCurSender == null) {
-                mCurSender = new ImeInputEventSender(mCurChannel, mH.getLooper());
-            }
-
+        if (mCurSender != null) {
             final InputEvent event = p.mEvent;
             final int seq = event.getSequenceNumber();
             if (mCurSender.sendInputEvent(seq, event)) {
