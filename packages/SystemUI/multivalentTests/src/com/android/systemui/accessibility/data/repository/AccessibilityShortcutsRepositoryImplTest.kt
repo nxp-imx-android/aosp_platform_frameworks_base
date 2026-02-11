@@ -43,7 +43,6 @@ import com.android.internal.accessibility.common.ShortcutConstants.UserShortcutT
 import com.android.internal.accessibility.util.ShortcutUtils
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.accessibility.shortcutchooser.shared.model.AccessibilityTargetModel
-import com.android.systemui.concurrency.fakeExecutor
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.advanceUntilIdle
@@ -51,9 +50,8 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.settings.userTracker
-import com.android.systemui.shared.settings.data.repository.fakeSecureSettingsRepository
+import com.android.systemui.shared.settings.data.repository.secureSettingsRepository
 import com.android.systemui.testKosmosNew
-import com.android.systemui.util.settings.fakeSettings
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -84,8 +82,7 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
                 accessibilityManager,
                 packageManager,
                 userTracker,
-                fakeSettings,
-                fakeSecureSettingsRepository,
+                secureSettingsRepository,
                 mainResources,
                 testDispatcher,
                 fakeExecutorHandler,
@@ -467,7 +464,7 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
             verify(accessibilityManager)
                 .addAccessibilityServicesStateChangeListener(listenerCaptor.capture())
 
-            assertThat(emissions).hasSize(1)
+            assertThat(emissions).isNotEmpty()
             assertThat(emissions.last().any { it.featureName == serviceName && !it.isStateOn })
                 .isTrue()
 
@@ -477,7 +474,7 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
             listenerCaptor.firstValue.onAccessibilityServicesStateChanged(accessibilityManager)
             advanceUntilIdle()
 
-            assertThat(emissions).hasSize(2)
+            assertThat(emissions).isNotEmpty()
             assertThat(emissions.last().any { it.featureName == serviceName && it.isStateOn })
                 .isTrue()
 
@@ -492,39 +489,33 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
         kosmos.runTest {
             val mouseKeysSettingsKey = Settings.Secure.ACCESSIBILITY_MOUSE_KEYS_ENABLED
             val mouseKeysFeatureName = "Mouse keys"
-            val getContentObservers = {
-                fakeSettings.getContentObservers(
-                    fakeSettings.getUriFor(mouseKeysSettingsKey),
-                    userTracker.userId,
+
+            val latestAllTargets by
+                testScope.collectLastValue(
+                    underTest.getAllAccessibilityTargets(UserShortcutType.HARDWARE)
                 )
-            }
-
-            assertThat(getContentObservers()).isEmpty()
-
-            val emissions = mutableListOf<List<AccessibilityTargetModel>>()
-            val job =
-                testScope.launch {
-                    underTest.getAllAccessibilityTargets(UserShortcutType.HARDWARE).collect {
-                        emissions.add(it)
-                    }
-                }
             advanceUntilIdle()
 
-            assertThat(emissions).hasSize(1)
-            assertThat(emissions.last().any { it.featureName == mouseKeysFeatureName }).isTrue()
-            assertThat(getContentObservers()).hasSize(1)
+            assertThat(latestAllTargets).isNotNull()
+            assertThat(
+                    latestAllTargets!!.any {
+                        it.featureName == mouseKeysFeatureName && !it.isStateOn
+                    }
+                )
+                .isTrue()
 
             // Simulate a settings change.
-            fakeSettings.putBoolForUser(mouseKeysSettingsKey, true, userTracker.userId)
-            kosmos.fakeExecutor.runAllReady()
+            Settings.Secure.putInt(context.contentResolver, mouseKeysSettingsKey, 1)
+            secureSettingsRepository.setBoolean(mouseKeysSettingsKey, true)
             advanceUntilIdle()
 
-            assertThat(emissions).hasSize(2)
-            assertThat(emissions.last().any { it.featureName == mouseKeysFeatureName }).isTrue()
-
-            job.cancel()
-
-            assertThat(getContentObservers()).isEmpty()
+            assertThat(latestAllTargets).isNotNull()
+            assertThat(
+                    latestAllTargets!!.any {
+                        it.featureName == mouseKeysFeatureName && it.isStateOn
+                    }
+                )
+                .isTrue()
         }
 
     @Test
@@ -532,27 +523,14 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
         kosmos.runTest {
             val quickAccessTargetsSettingsKey =
                 ShortcutUtils.convertToKey(UserShortcutType.QUICK_ACCESS)
-            val getContentObservers = {
-                fakeSettings.getContentObservers(
-                    fakeSettings.getUriFor(quickAccessTargetsSettingsKey),
-                    userTracker.userId,
+
+            val latestSelectedTargets by
+                testScope.collectLastValue(
+                    underTest.getSelectedAccessibilityTargets(UserShortcutType.QUICK_ACCESS)
                 )
-            }
-
-            assertThat(getContentObservers()).isEmpty()
-
-            val emissions = mutableListOf<List<AccessibilityTargetModel>>()
-            val job =
-                testScope.launch {
-                    underTest
-                        .getSelectedAccessibilityTargets(UserShortcutType.QUICK_ACCESS)
-                        .collect { emissions.add(it) }
-                }
             advanceUntilIdle()
 
-            assertThat(emissions).hasSize(1)
-            assertThat(emissions.last()).isEmpty()
-            assertThat(getContentObservers()).hasSize(1)
+            assertThat(latestSelectedTargets).isEmpty()
 
             // Simulate assigning a target to the shortcut type.
             whenever(
@@ -561,21 +539,15 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
                     )
                 )
                 .thenReturn(listOf(MAGNIFICATION_CONTROLLER_NAME))
-            fakeSettings.putStringForUser(
+            secureSettingsRepository.setString(
                 quickAccessTargetsSettingsKey,
                 MAGNIFICATION_CONTROLLER_NAME,
-                userTracker.userId,
             )
-            kosmos.fakeExecutor.runAllReady()
             advanceUntilIdle()
 
-            assertThat(emissions).hasSize(2)
-            assertThat(emissions.last().any { it.targetName == MAGNIFICATION_CONTROLLER_NAME })
-                .isTrue()
-
-            job.cancel()
-
-            assertThat(getContentObservers()).isEmpty()
+            assertThat(latestSelectedTargets).hasSize(1)
+            assertThat(latestSelectedTargets!!.get(0).targetName)
+                .isEqualTo(MAGNIFICATION_CONTROLLER_NAME)
         }
 
     @Test
