@@ -29,6 +29,7 @@ java_library {
     name: "com.android.systemui.notifications.intelligence.rules_main",
     defaults: ["sysui_main"],
     static_libs: [
+        "com.android.systemui.graphics_api",
         "com.android.systemui.notifications.intelligence.rules_api",
         "kotlinx_coroutines",
         "SystemUISharedLib",

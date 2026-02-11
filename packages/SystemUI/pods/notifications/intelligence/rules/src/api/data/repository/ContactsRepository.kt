@@ -25,8 +25,6 @@ public interface ContactsRepository {
      * Fetches all contacts whose name matches [searchQuery].
      *
      * @param contentResolver the content resolver for the current user.
-     *
-     * TODO: b/478225883 - For pre-existing rules, search by URI instead of name.
      */
     public suspend fun fetchContacts(
         searchQuery: String,

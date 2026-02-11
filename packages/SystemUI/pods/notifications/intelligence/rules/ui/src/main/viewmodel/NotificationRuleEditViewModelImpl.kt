@@ -16,7 +16,11 @@
 
 package com.android.systemui.notifications.intelligence.rules.ui.viewmodel
 
+import android.annotation.Px
 import android.content.ContentResolver
+import android.content.Context
+import android.graphics.Bitmap
+import android.net.Uri
 import com.android.systemui.notifications.intelligence.rules.domain.interactor.ContactsInteractor
 import com.android.systemui.notifications.intelligence.rules.domain.interactor.InstalledAppsInteractor
 import com.android.systemui.notifications.intelligence.rules.shared.NmContextualDisplayLaunch
@@ -40,6 +44,14 @@ constructor(
             return emptyList()
         }
         return contactsInteractor.fetchContacts(searchQuery, contentResolver)
+    }
+
+    override suspend fun loadContactBitmapFromUri(
+        uri: Uri,
+        userContext: Context,
+        @Px sizePx: Int,
+    ): Bitmap? {
+        return contactsInteractor.loadBitmapFromUri(uri, userContext, sizePx)
     }
 
     override suspend fun fetchInstalledApps(): List<AppModel> {

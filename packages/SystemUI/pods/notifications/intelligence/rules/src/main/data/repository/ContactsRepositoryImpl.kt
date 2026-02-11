@@ -17,8 +17,8 @@
 package com.android.systemui.notifications.intelligence.rules.data.repository
 
 import android.content.ContentResolver
-import android.database.Cursor
 import android.provider.ContactsContract
+import androidx.core.net.toUri
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
@@ -40,36 +40,58 @@ constructor(@Background private val backgroundDispatcher: CoroutineDispatcher) :
             val selectionArgs = arrayOf("%$searchQuery%")
 
             val foundContacts = mutableListOf<ContactModel>()
-            var cursor: Cursor? = null
             // TODO: b/478225883 - Handle work contacts, similar to ValidateNotificationPeople.
             try {
-                cursor =
-                    contentResolver.query(
+                contentResolver
+                    .query(
                         ContactsContract.Contacts.CONTENT_URI,
                         CONTACT_LOOKUP_PROJECTION,
                         selection,
                         selectionArgs,
                         null, // sortOrder
                     )
-                while (cursor != null && cursor.moveToNext()) {
-                    val name =
-                        cursor.getString(
-                            cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY)
-                        )
-                    foundContacts.add(ContactModel(name = name))
-                }
+                    .use { cursor ->
+                        while (cursor != null && cursor.moveToNext()) {
+                            val id: Long? =
+                                cursor.getString(cursor.getColumnIndex(ID_FIELD)).toLongOrNull()
+                            val lookupKey: String? =
+                                cursor.getString(cursor.getColumnIndex(LOOKUP_KEY_FIELD))
+                            val name: String? = cursor.getString(cursor.getColumnIndex(NAME_FIELD))
+                            val photoUri: String? =
+                                cursor.getString(cursor.getColumnIndex(PHOTO_URI_FIELD))
+
+                            if (id == null || lookupKey == null || name == null) {
+                                continue
+                            }
+
+                            // TODO: b/478225883 - Add a wrapper around #getLookupUri so it's
+                            // testable.
+                            val lookupUri =
+                                ContactsContract.Contacts.getLookupUri(id, lookupKey) ?: continue
+                            foundContacts.add(
+                                ContactModel(
+                                    lookupUri = lookupUri,
+                                    name = name,
+                                    photoUri = photoUri?.toUri(),
+                                )
+                            )
+                        }
+                    }
             } catch (e: Throwable) {
                 // TODO: b/478225883 - Error logging.
-            } finally {
-                cursor?.close()
             }
+
             foundContacts.toList()
         }
     }
 
     companion object {
+        private const val ID_FIELD = ContactsContract.Contacts._ID
+        private const val LOOKUP_KEY_FIELD = ContactsContract.Contacts.LOOKUP_KEY
+        private const val NAME_FIELD = ContactsContract.Contacts.DISPLAY_NAME_PRIMARY
+        private const val PHOTO_URI_FIELD = ContactsContract.Contacts.PHOTO_THUMBNAIL_URI
         /** The list of fields (columns) to fetch from the contacts table. */
         private val CONTACT_LOOKUP_PROJECTION =
-            arrayOf(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY)
+            arrayOf(ID_FIELD, LOOKUP_KEY_FIELD, NAME_FIELD, PHOTO_URI_FIELD)
     }
 }

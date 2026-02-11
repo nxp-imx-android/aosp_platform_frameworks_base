@@ -16,6 +16,7 @@
 
 package com.android.systemui.notifications.intelligence.rules.ui.composable
 
+import android.graphics.drawable.ShapeDrawable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -39,9 +40,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
-import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
-import com.android.systemui.notifications.intelligence.rules.shared.model.ContactsModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.FilterModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.IncludedAppsModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleModel
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRulesScreenViewModel
 import javax.inject.Inject
@@ -133,17 +134,28 @@ private fun RuleModel.toText(): String {
             ""
         }
 
-    return "${action.name} notifications$contactsString"
+    val includedAppsList = filter.includedApps?.apps
+    val includedAppsString =
+        if (includedAppsList != null) {
+            " from ${includedAppsList.joinToString { it.label }}"
+        } else {
+            ""
+        }
+
+    return "${action.name} notifications$contactsString$includedAppsString"
 }
 
 private fun generateFakeRule(): RuleModel {
-    val contactId = (0..1000).random()
+    val id = (0..1000).random()
     return RuleModel(
         ActionModel.Silence,
         filter =
             FilterModel(
-                contacts = ContactsModel(listOf(ContactModel("Contact #$contactId"))),
-                includedApps = null,
+                contacts = null,
+                includedApps =
+                    IncludedAppsModel(
+                        apps = listOf(AppModel(label = "Fake app #$id", icon = ShapeDrawable()))
+                    ),
             ),
     )
 }
