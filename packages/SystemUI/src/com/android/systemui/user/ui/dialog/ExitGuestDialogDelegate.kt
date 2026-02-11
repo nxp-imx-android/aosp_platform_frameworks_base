@@ -17,6 +17,7 @@
 package com.android.systemui.user.ui.dialog
 
 import android.annotation.UserIdInt
+import android.content.Context
 import android.content.DialogInterface
 import com.android.settingslib.R
 import com.android.systemui.animation.DialogTransitionAnimator
@@ -33,6 +34,7 @@ constructor(
     private val falsingManager: FalsingManager,
     private val dialogTransitionAnimator: DialogTransitionAnimator,
     private val systemUIDialogFactory: SystemUIDialog.Factory,
+    @Assisted(EXIT_GUEST_CONTEXT) private val context: Context,
     @Assisted(GUEST_USER_ID) private val guestUserId: Int,
     @Assisted(GUEST_EPHEMERAL) private val isGuestEphemeral: Boolean,
     @Assisted(TARGET_ID) private val targetUserId: Int,
@@ -41,6 +43,7 @@ constructor(
 ) : SystemUIDialog.Delegate {
 
     companion object {
+        private const val EXIT_GUEST_CONTEXT = "context"
         private const val GUEST_USER_ID = "guest_user_id"
         private const val GUEST_EPHEMERAL = "is_guest_ephemeral"
         private const val TARGET_ID = "target_id"
@@ -51,6 +54,7 @@ constructor(
     @AssistedFactory
     interface Factory {
         fun create(
+            @Assisted(EXIT_GUEST_CONTEXT) context: Context,
             @Assisted(GUEST_USER_ID) guestUserId: Int,
             @Assisted(GUEST_EPHEMERAL) isGuestEphemeral: Boolean,
             @Assisted(TARGET_ID) targetId: Int,
@@ -117,7 +121,7 @@ constructor(
         }
 
     override fun createDialog(): SystemUIDialog {
-        val dialog = systemUIDialogFactory.create()
+        val dialog = systemUIDialogFactory.create(context)
         with(dialog) {
             if (isGuestEphemeral) {
                 setTitle(context.getString(R.string.guest_exit_dialog_title))
