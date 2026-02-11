@@ -15,9 +15,14 @@
  */
 package com.android.server.am.psc;
 
+import static com.android.server.am.psc.OomAdjuster.CPU_TIME_REASON_NONE;
+
 import android.annotation.NonNull;
+import android.app.ActivityManager;
 import android.app.ActivityManager.ProcessCapability;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
+
+import com.android.server.am.psc.OomAdjuster.CpuTimeReasons;
 
 import java.util.Objects;
 
@@ -29,8 +34,27 @@ import java.util.Objects;
 final class ProcessEdge extends GraphEdge {
     private final @NonNull GraphNode mNode;
 
+    /**
+     * The cached reasons for granting {@link ActivityManager#PROCESS_CAPABILITY_CPU_TIME} through
+     * this edge.
+     */
+    private @CpuTimeReasons int mCpuTimeReasons = CPU_TIME_REASON_NONE;
+
     ProcessEdge(@NonNull GraphNode node) {
         mNode = Objects.requireNonNull(node);
+    }
+
+    @CpuTimeReasons
+    int getCpuTimeReasons() {
+        return mCpuTimeReasons;
+    }
+
+    void addCpuTimeReasons(@CpuTimeReasons int reasons) {
+        mCpuTimeReasons |= reasons;
+    }
+
+    void clearCpuTimeReasons() {
+        mCpuTimeReasons = CPU_TIME_REASON_NONE;
     }
 
     /**

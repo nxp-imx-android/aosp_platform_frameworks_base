@@ -1151,6 +1151,11 @@ public class OomAdjusterImpl extends OomAdjuster {
         app.clearCurCpuTimeReasons();
         app.clearCurImplicitCpuTimeReasons();
 
+        if (Flags.enableCapabilityControllerComputation()) {
+            // We'll set this later when evaluating implicit CPU time capability.
+            app.getGraphNode().setHasIntrinsicImplicitCpuTime(false);
+        }
+
         // Remove any follow up update this process might have. It will be rescheduled if still
         // needed.
         app.setFollowupUpdateUptimeMs(NO_FOLLOW_UP_TIME);
@@ -1189,6 +1194,9 @@ public class OomAdjusterImpl extends OomAdjuster {
             app.setCurCapability(PROCESS_CAPABILITY_ALL); // BFSL allowed
             app.addCurCpuTimeReasons(CPU_TIME_REASON_OTHER);
             app.addCurImplicitCpuTimeReasons(IMPLICIT_CPU_TIME_REASON_OTHER);
+            if (Flags.enableCapabilityControllerComputation()) {
+                app.getGraphNode().setHasIntrinsicImplicitCpuTime(true);
+            }
             app.setCurProcState(ActivityManager.PROCESS_STATE_PERSISTENT);
             // System processes can do UI, and when they do we want to have
             // them trim their memory after the user leaves the UI.  To
@@ -1619,6 +1627,7 @@ public class OomAdjusterImpl extends OomAdjuster {
                 }
             }
 
+            // LINT.IfChange(getForegroundServiceCapability)
             if (s.isForeground()) {
                 final int fgsType = s.getForegroundServiceType();
                 if (s.isFgsAllowedWiu_forCapabilities()) {
@@ -1647,6 +1656,7 @@ public class OomAdjusterImpl extends OomAdjuster {
                     }
                 }
             }
+            // LINT.ThenChange(CapabilityController.java:getForegroundServiceCapability)
         }
 
         final ProcessProviderRecordInternal ppr = app.getProviders();

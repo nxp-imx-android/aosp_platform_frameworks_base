@@ -274,6 +274,7 @@ android.media.MediaMetrics
 android.media.Utils
 android.media.VolumeInfo
 android.metrics.LogMaker
+android.net.NetworkPolicyManager
 android.os.AggregateBatteryConsumer
 android.os.AsyncTask
 android.os.BadParcelableException
