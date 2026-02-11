@@ -16,15 +16,20 @@
 package com.android.systemui.lowlightclock
 
 import android.animation.Animator
+import android.widget.TextClock
+import android.widget.TextView
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.dream.lowlight.LowLightTransitionCoordinator
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.runTest
+import com.android.systemui.res.R
 import com.android.systemui.testKosmos
+import com.google.common.truth.Truth.assertThat
 import java.util.Optional
 import javax.inject.Provider
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
@@ -41,9 +46,8 @@ class LowLightClockDreamServiceTest : SysuiTestCase() {
 
     private val Kosmos.chargingStatusProvider by Kosmos.Fixture { mock<ChargingStatusProvider>() }
     private val Kosmos.displayController by Kosmos.Fixture { mock<LowLightDisplayController>() }
-    private val Kosmos.lowLightTransitionCoordinator by Kosmos.Fixture {
-        mock<LowLightTransitionCoordinator>()
-    }
+    private val Kosmos.lowLightTransitionCoordinator by
+        Kosmos.Fixture { mock<LowLightTransitionCoordinator>() }
     private val Kosmos.animationInAnimator by Kosmos.Fixture { mock<Animator>() }
     private val Kosmos.animationOutAnimator by Kosmos.Fixture { mock<Animator>() }
     private val Kosmos.animationProvider by
@@ -53,21 +57,33 @@ class LowLightClockDreamServiceTest : SysuiTestCase() {
                 on { provideAnimationOut(any(), any()) }.thenReturn(animationOutAnimator)
             }
         }
+    private val Kosmos.textClock by Kosmos.Fixture { mock<TextClock>() }
+    private val Kosmos.chargingStatusTextView by Kosmos.Fixture { mock<TextView>() }
 
-    private val Kosmos.underTest by Kosmos.Fixture {
-        LowLightClockDreamService(
-            chargingStatusProvider,
-            animationProvider,
-            lowLightTransitionCoordinator,
-            Optional.of(Provider { displayController }),
-        )
+    private val Kosmos.underTest by
+        Kosmos.Fixture {
+            LowLightClockDreamServiceImpl(
+                dreamServiceDelegate,
+                chargingStatusProvider,
+                animationProvider,
+                lowLightTransitionCoordinator,
+                Optional.of(Provider { displayController }),
+            )
+        }
+
+    @Before
+    fun setUp() {
+        with(kosmos.dreamServiceDelegate.fake) {
+            setViewForId(R.id.low_light_text_clock, kosmos.textClock)
+            setViewForId(R.id.charging_status_text_view, kosmos.chargingStatusTextView)
+        }
     }
 
     @Test
     fun testSetDbmStateWhenSupported() =
         kosmos.runTest {
             whenever(displayController.isDisplayBrightnessModeSupported()).thenReturn(true)
-
+            underTest.onAttachedToWindow()
             underTest.onDreamingStarted()
 
             verify(displayController).setDisplayBrightnessModeEnabled(true)
@@ -77,7 +93,7 @@ class LowLightClockDreamServiceTest : SysuiTestCase() {
     fun testNotSetDbmStateWhenNotSupported() =
         kosmos.runTest {
             whenever(displayController.isDisplayBrightnessModeSupported()).thenReturn(false)
-
+            underTest.onAttachedToWindow()
             underTest.onDreamingStarted()
 
             verify(displayController, never()).setDisplayBrightnessModeEnabled(any())
@@ -88,6 +104,7 @@ class LowLightClockDreamServiceTest : SysuiTestCase() {
         kosmos.runTest {
             whenever(displayController.isDisplayBrightnessModeSupported()).thenReturn(true)
 
+            underTest.onAttachedToWindow()
             underTest.onDreamingStarted()
             clearInvocations(displayController)
 
@@ -99,6 +116,7 @@ class LowLightClockDreamServiceTest : SysuiTestCase() {
     @Test
     fun testAnimationsStartedOnDreamingStarted() =
         kosmos.runTest {
+            underTest.onAttachedToWindow()
             underTest.onDreamingStarted()
 
             // Entry animation started.
@@ -109,6 +127,7 @@ class LowLightClockDreamServiceTest : SysuiTestCase() {
     fun testAnimationsStartedOnWakeUp() =
         kosmos.runTest {
             // Start dreaming then wake up.
+            underTest.onAttachedToWindow()
             underTest.onDreamingStarted()
             underTest.onWakeUp()
 
@@ -122,6 +141,7 @@ class LowLightClockDreamServiceTest : SysuiTestCase() {
     @Test
     fun testAnimationsStartedBeforeExitingLowLight() =
         kosmos.runTest {
+            underTest.onAttachedToWindow()
             underTest.onBeforeExitLowLight()
 
             // Exit animation started.
@@ -131,6 +151,7 @@ class LowLightClockDreamServiceTest : SysuiTestCase() {
     @Test
     fun testWakeUpAnimationCancelledOnDetach() =
         kosmos.runTest {
+            underTest.onAttachedToWindow()
             underTest.onWakeUp()
 
             // Exit animation started.
@@ -144,6 +165,7 @@ class LowLightClockDreamServiceTest : SysuiTestCase() {
     @Test
     fun testExitLowLightAnimationCancelledOnDetach() =
         kosmos.runTest {
+            underTest.onAttachedToWindow()
             underTest.onBeforeExitLowLight()
 
             // Exit animation started.
@@ -152,5 +174,22 @@ class LowLightClockDreamServiceTest : SysuiTestCase() {
             underTest.onDetachedFromWindow()
 
             verify(animationOutAnimator).cancel()
+        }
+
+    @Test
+    fun testSetScreenBrightnessWhenDisplayControllerIsNull() =
+        kosmos.runTest {
+            val underTestWithoutController =
+                LowLightClockDreamServiceImpl(
+                    dreamServiceDelegate,
+                    chargingStatusProvider,
+                    animationProvider,
+                    lowLightTransitionCoordinator,
+                    Optional.empty(),
+                )
+            underTestWithoutController.onAttachedToWindow()
+            underTestWithoutController.onDreamingStarted()
+
+            assertThat(dreamServiceDelegate.fake.screenBrightness).isEqualTo(0f)
         }
 }
