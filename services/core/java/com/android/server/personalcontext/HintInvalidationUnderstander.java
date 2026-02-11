@@ -44,7 +44,7 @@ import java.util.function.Consumer;
  */
 public class HintInvalidationUnderstander implements Refiner {
     private static final HintFilter HINT_FILTER = new HintFilter.Builder()
-            .addHintType(HintInvalidationHint.class, true)
+            .addHintType(HintInvalidationHint.class, HintFilter.FILTER_TYPE_REQUIRED)
             .build();
 
     private final UUID mComponentId = UUID.randomUUID();

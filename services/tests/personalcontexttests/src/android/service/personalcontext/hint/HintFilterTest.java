@@ -18,6 +18,8 @@ package android.service.personalcontext.hint;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.os.Parcel;
+
 import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
 
@@ -58,9 +60,9 @@ public class HintFilterTest {
 
         final Set<ContextHintWithSignature> interestedHintSet =
                 new HintFilter.Builder()
-                        .addHintType(HINT_CLASS_A, true)
-                        .addHintType(HINT_CLASS_B, true)
-                        .addHintType(HINT_CLASS_C, true)
+                        .addBundleHintTypeName(HINT_CLASS_A, HintFilter.FILTER_TYPE_REQUIRED)
+                        .addBundleHintTypeName(HINT_CLASS_B, HintFilter.FILTER_TYPE_REQUIRED)
+                        .addBundleHintTypeName(HINT_CLASS_C, HintFilter.FILTER_TYPE_REQUIRED)
                         .build()
                         .getInterestedHintClusters(
                                 Set.of(hintA, hintB, hintC), Collections.emptySet());
@@ -76,14 +78,27 @@ public class HintFilterTest {
 
         final Set<ContextHintWithSignature> interestedHintSet =
                 new HintFilter.Builder()
-                        .addHintType(HINT_CLASS_A, true)
-                        .addHintType(HINT_CLASS_B, true)
+                        .addBundleHintTypeName(HINT_CLASS_A, HintFilter.FILTER_TYPE_REQUIRED)
+                        .addBundleHintTypeName(HINT_CLASS_B, HintFilter.FILTER_TYPE_REQUIRED)
                         .build()
                         .getInterestedHintClusters(
                                 Set.of(hintA, hintB, hintC), Collections.emptySet());
 
         assertThat(interestedHintSet).containsExactly(hintA, hintB);
     }
+
+    @Test
+    public void testHintFilterParceling() throws GeneralSecurityException {
+        final HintFilter filter = new HintFilter.Builder()
+                .addBundleHintTypeName("hintTypeName", HintFilter.FILTER_TYPE_ALLOWED)
+                .build();
+
+        Parcel parcel = Parcel.obtain();
+        parcel.writeParcelable(filter, 0);
+
+        final HintFilter filter2 = parcel.readParcelable(HintFilter.class.getClassLoader());
+    }
+
 
     @Test
     public void testHintFilterRequireMissingSome() throws GeneralSecurityException {
@@ -93,11 +108,11 @@ public class HintFilterTest {
 
         final Set<ContextHintWithSignature> interestedHintSet =
                 new HintFilter.Builder()
-                        .addHintType(HINT_CLASS_A, true)
-                        .addHintType(HINT_CLASS_B, true)
-                        .addHintType(HINT_CLASS_C, true)
-                        .addHintType(HINT_CLASS_D, true)
-                        .addHintType(HINT_CLASS_E, true)
+                        .addBundleHintTypeName(HINT_CLASS_A, HintFilter.FILTER_TYPE_REQUIRED)
+                        .addBundleHintTypeName(HINT_CLASS_B, HintFilter.FILTER_TYPE_REQUIRED)
+                        .addBundleHintTypeName(HINT_CLASS_C, HintFilter.FILTER_TYPE_REQUIRED)
+                        .addBundleHintTypeName(HINT_CLASS_D, HintFilter.FILTER_TYPE_REQUIRED)
+                        .addBundleHintTypeName(HINT_CLASS_E, HintFilter.FILTER_TYPE_REQUIRED)
                         .build()
                         .getInterestedHintClusters(
                                 Set.of(hintA, hintB, hintC), Collections.emptySet());
@@ -113,8 +128,8 @@ public class HintFilterTest {
 
         final Set<ContextHintWithSignature> interestedHintSet =
                 new HintFilter.Builder()
-                        .addHintType(HINT_CLASS_D, true)
-                        .addHintType(HINT_CLASS_E, true)
+                        .addBundleHintTypeName(HINT_CLASS_D, HintFilter.FILTER_TYPE_REQUIRED)
+                        .addBundleHintTypeName(HINT_CLASS_E, HintFilter.FILTER_TYPE_REQUIRED)
                         .build()
                         .getInterestedHintClusters(
                                 Set.of(hintA, hintB, hintC), Collections.emptySet());
@@ -130,8 +145,8 @@ public class HintFilterTest {
 
         final Set<ContextHintWithSignature> interestedHintSet =
                 new HintFilter.Builder()
-                        .addHintType(HINT_CLASS_A, false)
-                        .addHintType(HINT_CLASS_D, false)
+                        .addBundleHintTypeName(HINT_CLASS_A, HintFilter.FILTER_TYPE_ALLOWED)
+                        .addBundleHintTypeName(HINT_CLASS_D, HintFilter.FILTER_TYPE_ALLOWED)
                         .build()
                         .getInterestedHintClusters(
                                 Set.of(hintA, hintB, hintC), Collections.emptySet());
@@ -147,9 +162,9 @@ public class HintFilterTest {
 
         final Set<ContextHintWithSignature> interestedHintSet =
                 new HintFilter.Builder()
-                        .addHintType(HINT_CLASS_A, false)
-                        .addHintType(HINT_CLASS_B, false)
-                        .addHintType(HINT_CLASS_C, false)
+                        .addBundleHintTypeName(HINT_CLASS_A, HintFilter.FILTER_TYPE_ALLOWED)
+                        .addBundleHintTypeName(HINT_CLASS_B, HintFilter.FILTER_TYPE_ALLOWED)
+                        .addBundleHintTypeName(HINT_CLASS_C, HintFilter.FILTER_TYPE_ALLOWED)
                         .build()
                         .getInterestedHintClusters(
                                 Set.of(hintA, hintB, hintC), Collections.emptySet());
@@ -165,8 +180,8 @@ public class HintFilterTest {
 
         final Set<ContextHintWithSignature> interestedHintSet =
                 new HintFilter.Builder()
-                        .addHintType(HINT_CLASS_A, false)
-                        .addHintType(HINT_CLASS_B, false)
+                        .addBundleHintTypeName(HINT_CLASS_A, HintFilter.FILTER_TYPE_ALLOWED)
+                        .addBundleHintTypeName(HINT_CLASS_B, HintFilter.FILTER_TYPE_ALLOWED)
                         .build()
                         .getInterestedHintClusters(
                                 Set.of(hintA, hintB, hintC), Collections.emptySet());
