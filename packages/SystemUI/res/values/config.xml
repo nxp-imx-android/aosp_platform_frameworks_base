@@ -1194,4 +1194,10 @@
 
     <!-- Enable/disable keyguard connected display presentation -->
     <bool name="config_enableKeyguardOnConnectedDisplay">true</bool>
+
+    <!--
+    Indicates whether to use InfiniteGridLayout as the default grid layout for the Quick Settings
+    tiles.
+    -->
+    <bool name="config_useInfiniteGridLayoutAsDefault">false</bool>
 </resources>
