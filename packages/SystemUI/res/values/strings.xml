@@ -3168,6 +3168,7 @@
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content">You can press the accessibility key to start using accessibility features.</string>
     <!-- Text for the confirmation button of top row key tutorial dialog. [CHAR LIMIT=NONE] -->
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text">Add features</string>
+    <string name="accessibility_shortcutchooser_toprow_editor_dialog_title">Set up accessibility key</string>
     <!-- Title text for the dialog where the user chooses a set of accessibility features to be activated by this accessibility shortcut type. [CHAR LIMIT=NONE] -->
     <string name="accessibility_shortcutchooser_editor_dialog_title">Set up <xliff:g name="shortcut_type" example="accessibility key">%1$s</xliff:g></string>
     <!-- Text for the Done button on the Edit dialog and the Toggle dialog. [CHAR LIMIT=NONE] -->
