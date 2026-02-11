@@ -18,5 +18,6 @@ package com.android.systemui.dreams.ui.viewmodel
 
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
+import com.android.systemui.plugins.activityStarter
 
-val Kosmos.dreamSetupViewModel by Fixture { DreamSetupViewModel() }
+val Kosmos.dreamSetupViewModel by Fixture { DreamSetupViewModel(activityStarter) }

@@ -20,6 +20,7 @@ import android.app.Activity;
 
 import com.android.systemui.ForegroundServicesDialog;
 import com.android.systemui.communal.widgets.EditWidgetsActivity;
+import com.android.systemui.dreams.ui.activity.DreamSetupActivity;
 import com.android.systemui.keyguard.WorkLockActivity;
 import com.android.systemui.people.PeopleSpaceActivity;
 import com.android.systemui.people.widget.LaunchConversationActivity;
@@ -149,6 +150,12 @@ public abstract class DefaultActivityBinder {
     @IntoMap
     @ClassKey(EditWidgetsActivity.class)
     public abstract Activity bindEditWidgetsActivity(EditWidgetsActivity activity);
+
+    /** Inject into DreamSetupActivity. */
+    @Binds
+    @IntoMap
+    @ClassKey(DreamSetupActivity.class)
+    public abstract Activity bindDreamSetupActivity(DreamSetupActivity activity);
 
     /** Inject into SwitchToManagedProfileForCallActivity. */
     @Binds
