@@ -395,7 +395,7 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableSceneContainer
-    fun surfaceBehindVisibility_whileDeviceNotProvisioned_alwaysTrue() =
+    fun surfaceBehindVisibility_whileDeviceNotProvisionedAndLocked_isFalse() =
         kosmos.runTest {
             val isSurfaceBehindVisible by collectLastValue(underTest.surfaceBehindVisibility)
             val currentScene by collectLastValue(sceneInteractor.currentScene)
@@ -406,6 +406,28 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
             runCurrent()
 
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+            assertThat(isSurfaceBehindVisible).isFalse()
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun surfaceBehindVisibility_whileDeviceNotProvisionedAndUnlocked_isTrue() =
+        kosmos.runTest {
+            val isSurfaceBehindVisible by collectLastValue(underTest.surfaceBehindVisibility)
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+            assertThat(isSurfaceBehindVisible).isFalse()
+
+            fakeDeviceProvisioningRepository.setDeviceProvisioned(false)
+            runCurrent()
+
+            // Should be false before unlocking.
+            assertThat(isSurfaceBehindVisible).isFalse()
+
+            unlockDevice()
+            runCurrent()
+
+            // Should be true after unlocking.
             assertThat(isSurfaceBehindVisible).isTrue()
         }
 
