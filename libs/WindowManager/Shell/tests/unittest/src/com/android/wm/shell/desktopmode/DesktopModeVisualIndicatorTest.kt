@@ -37,9 +37,13 @@ import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.common.SyncTransactionQueue
 import com.android.wm.shell.shared.R as sharedR
+import com.android.wm.shell.shared.ShellSharedConstants.SMALL_TABLET_MAX_EDGE_DP
 import com.android.wm.shell.shared.bubbles.BubbleDropTargetBoundsProvider
+import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.windowdecor.tiling.SnapEventHandler
 import com.google.common.truth.Truth.assertThat
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
@@ -514,6 +518,49 @@ class DesktopModeVisualIndicatorTest : ShellTestCase() {
         createVisualIndicator(DesktopModeVisualIndicator.DragStartState.FROM_SPLIT)
 
         verify(taskDisplayAreaOrganizer, never()).attachToDisplayArea(anyInt(), any())
+    }
+
+    @Test
+    fun useSmallTabletRegions_appHandleNotOverridden_returnsFalse() {
+        val fakeDesktopState = FakeDesktopState().apply { overridesShowAppHandle = false }
+
+        assertFalse(
+            DesktopModeVisualIndicator.useSmallTabletRegions(
+                fakeDesktopState,
+                displayController,
+                taskInfo,
+            )
+        )
+    }
+
+    @Test
+    fun useSmallTabletRegions_smallTabletWithAppHandleOverridden_returnsTrue() {
+        val fakeDesktopState = FakeDesktopState().apply { overridesShowAppHandle = true }
+        whenever(displayLayout.pxToDp(context.display.maximumSizeDimension))
+            .thenReturn(SMALL_TABLET_MAX_EDGE_DP - 10F)
+
+        assertTrue(
+            DesktopModeVisualIndicator.useSmallTabletRegions(
+                fakeDesktopState,
+                displayController,
+                taskInfo,
+            )
+        )
+    }
+
+    @Test
+    fun useSmallTabletRegions_LargeTabletWithAppHandleOverridden_returnsFalse() {
+        val fakeDesktopState = FakeDesktopState().apply { overridesShowAppHandle = true }
+        whenever(displayLayout.pxToDp(context.display.maximumSizeDimension))
+            .thenReturn(SMALL_TABLET_MAX_EDGE_DP + 10F)
+
+        assertFalse(
+            DesktopModeVisualIndicator.useSmallTabletRegions(
+                fakeDesktopState,
+                displayController,
+                taskInfo,
+            )
+        )
     }
 
     private fun createVisualIndicator(
