@@ -105,34 +105,7 @@ public class DelayedRestoreCleanupTask implements BackupRestoreTask {
                 // No need to bind to the agent for full backup delayed restore cleanup since there
                 // is no cached data to clear up.
                 Slog.i(TAG, "Cleaned up full backup delayed restore for " + mPackageName);
-
-                // We need to dispose of the transport client if there is one.
-                if (mTransportConnection != null) {
-                    mBackupManagerService
-                            .getTransportManager()
-                            .disposeOfTransportClient(
-                                    mTransportConnection,
-                                    "DelayedRestoreCleanupTask.execute()");
-                }
-
-                // Schedule the next pending restore task if there is one.
-                synchronized (mBackupManagerService.getPendingRestores()) {
-                    if (mBackupManagerService.getPendingRestores().size() > 0) {
-                        BackupRestoreTask task =
-                                mBackupManagerService.getPendingRestores().remove();
-                        mBackupManagerService
-                                .getBackupHandler()
-                                .sendMessage(
-                                        mBackupManagerService
-                                                .getBackupHandler()
-                                                .obtainMessage(MSG_BACKUP_RESTORE_STEP, task));
-                    } else {
-                        mBackupManagerService.setRestoreInProgress(false);
-                        if (DEBUG) {
-                            Slog.d(TAG, "No pending restores.");
-                        }
-                    }
-                }
+                cleanup();
                 return;
             }
 
@@ -151,6 +124,7 @@ public class DelayedRestoreCleanupTask implements BackupRestoreTask {
                         mPackageInfo,
                         BackupManagerMonitor.LOG_EVENT_CATEGORY_BACKUP_MANAGER_POLICY,
                         monitoringExtras);
+                cleanup();
                 return;
             }
 
@@ -170,6 +144,7 @@ public class DelayedRestoreCleanupTask implements BackupRestoreTask {
                     createPackageInfoForBMMLogging(mPackageName),
                     BackupManagerMonitor.LOG_EVENT_CATEGORY_BACKUP_MANAGER_POLICY,
                     monitoringExtras);
+            cleanup();
         } catch (Exception e) {
             Slog.e(TAG, "Error clearing cached data for " + mPackageName, e);
             mBackupManagerMonitorEventSender.monitorEvent(
@@ -177,12 +152,15 @@ public class DelayedRestoreCleanupTask implements BackupRestoreTask {
                     mPackageInfo,
                     BackupManagerMonitor.LOG_EVENT_CATEGORY_AGENT,
                     monitoringExtras);
+            cleanup();
         }
     }
 
     @Override
     public void operationComplete(long result) {
         Slog.i(TAG, "Delayed restore cleanup finished for " + mPackageName);
+        mOperationStorage.removeOperation(mEphemeralOpToken);
+
         mBackupManagerMonitorEventSender.monitorEvent(
                 BackupManagerMonitor.LOG_EVENT_ID_DELAYED_RESTORE_CLEANUP_FINISHED,
                 mPackageInfo,
@@ -194,6 +172,8 @@ public class DelayedRestoreCleanupTask implements BackupRestoreTask {
     @Override
     public void handleCancel(@CancellationReason int cancellationReason) {
         Slog.w(TAG, "Delayed restore cleanup failed with reason: " + cancellationReason);
+        mOperationStorage.removeOperation(mEphemeralOpToken);
+
         if (cancellationReason == CancellationReason.TIMEOUT) {
             mBackupManagerMonitorEventSender.monitorEvent(
                     BackupManagerMonitor.LOG_EVENT_ID_KEY_VALUE_RESTORE_TIMEOUT,
@@ -230,8 +210,6 @@ public class DelayedRestoreCleanupTask implements BackupRestoreTask {
                     .disposeOfTransportClient(
                             mTransportConnection, "DelayedRestoreCleanupTask.cleanup()");
         }
-
-        mOperationStorage.removeOperation(mEphemeralOpToken);
 
         if (mAppInfo != null) {
             mBackupManagerService

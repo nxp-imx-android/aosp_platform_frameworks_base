@@ -97,6 +97,7 @@ public class DelayedRestoreTask implements BackupRestoreTask {
                     null,
                     BackupManagerMonitor.LOG_EVENT_CATEGORY_TRANSPORT,
                     monitoringExtras);
+            cleanup(true);
             return;
         }
         try {
@@ -176,6 +177,7 @@ public class DelayedRestoreTask implements BackupRestoreTask {
                         mCurrentPackageInfo,
                         BackupManagerMonitor.LOG_EVENT_CATEGORY_BACKUP_MANAGER_POLICY,
                         monitoringExtras);
+                cleanup(false);
                 return;
             }
         } catch (NameNotFoundException e) {
@@ -185,6 +187,7 @@ public class DelayedRestoreTask implements BackupRestoreTask {
                     createPackageInfoForBMMLogging(mCurrentPackageName),
                     BackupManagerMonitor.LOG_EVENT_CATEGORY_BACKUP_MANAGER_POLICY,
                     monitoringExtras);
+            cleanup(false);
             return;
         } catch (Exception e) {
             Slog.w(TAG, "Failed to perform delayed restore: ", e);
@@ -193,6 +196,7 @@ public class DelayedRestoreTask implements BackupRestoreTask {
                     mCurrentPackageInfo,
                     BackupManagerMonitor.LOG_EVENT_CATEGORY_AGENT,
                     monitoringExtras);
+            cleanup(false);
             return;
         }
     }
@@ -212,6 +216,7 @@ public class DelayedRestoreTask implements BackupRestoreTask {
     @Override
     public void operationComplete(long result) {
         Slog.i(TAG, "Delayed restore operation complete for package: " + mCurrentPackageName);
+        mOperationStorage.removeOperation(mEphemeralOpToken);
         mBackupManagerService
                 .getDelayedRestoreJournal()
                 .removeRequest(mRequest, mCurrentPackageName);
@@ -221,12 +226,13 @@ public class DelayedRestoreTask implements BackupRestoreTask {
                 mCurrentPackageInfo,
                 BackupManagerMonitor.LOG_EVENT_CATEGORY_BACKUP_MANAGER_POLICY,
                 addDelayedRestoreOperationTypeToEvent());
-        cleanup();
+        cleanup(false);
     }
 
     /** The task is cancelled for the given {@link CancellationReason}. */
     public void handleCancel(@CancellationReason int cancellationReason) {
         Slog.w(TAG, "Delayed restore failed with reason: " + cancellationReason);
+        mOperationStorage.removeOperation(mEphemeralOpToken);
         Bundle monitoringExtras = addDelayedRestoreOperationTypeToEvent();
         if (cancellationReason == CancellationReason.TIMEOUT) {
             if (mBackupEligibilityRules.appGetsFullBackup(mCurrentPackageInfo)) {
@@ -254,7 +260,7 @@ public class DelayedRestoreTask implements BackupRestoreTask {
                     BackupManagerMonitor.LOG_EVENT_CATEGORY_AGENT,
                     monitoringExtrasWithCancellationReason);
         }
-        cleanup();
+        cleanup(false);
     }
 
     /*
@@ -266,14 +272,12 @@ public class DelayedRestoreTask implements BackupRestoreTask {
      * is one. This method is called for both KV and full delayed restore operations, and is called
      * from both the operationComplete() and handleCancel() methods.
      */
-    private void cleanup() {
+    private void cleanup(boolean shouldClearRequesterPackageNames) {
         if (mTransportConnection != null) {
             mBackupManagerService
                     .getTransportManager()
                     .disposeOfTransportClient(mTransportConnection, "DelayedRestoreTask.cleanup()");
         }
-
-        mOperationStorage.removeOperation(mEphemeralOpToken);
 
         try {
             if (mNewStatePfd != null) {
@@ -300,15 +304,21 @@ public class DelayedRestoreTask implements BackupRestoreTask {
             mNewStateFile.delete(); // TODO: remove; see above comment
         }
 
-        mBackupManagerService
-                .getBackupAgentConnectionManager()
-                .unbindAgent(mCurrentPackageInfo.applicationInfo, /* allowKill= */ false);
+        if (mCurrentPackageInfo != null) {
+            mBackupManagerService
+                    .getBackupAgentConnectionManager()
+                    .unbindAgent(mCurrentPackageInfo.applicationInfo, /* allowKill= */ false);
+        }
 
         // Remove the operation timeout message since the operation is complete. In the case of
         // timeout, this will be a no-op since the message will have already been handled.
         mBackupManagerService
                 .getBackupHandler()
                 .removeMessages(MSG_RESTORE_OPERATION_TIMEOUT, this);
+
+        if (shouldClearRequesterPackageNames) {
+            mRequesterPackageNames.clear();
+        }
 
         if (mRequesterPackageNames.size() > 0) {
             // There are more packages to delayed restore in this request, so schedule the next

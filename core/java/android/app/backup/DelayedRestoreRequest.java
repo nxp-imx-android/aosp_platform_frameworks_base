@@ -59,6 +59,8 @@ public final class DelayedRestoreRequest implements Parcelable {
     /**
      * Restore that depends on the managed profile being provisioned indicated by the broadcast
      * action {@link android.app.admin.DeviceAdminReceiver#ACTION_PROFILE_PROVISIONING_COMPLETE}.
+     *
+     * Note: Work provisioning dependency is not supported yet.
      */
     public static final int TYPE_MANAGED_PROFILE_PROVISIONED = 4;
 
