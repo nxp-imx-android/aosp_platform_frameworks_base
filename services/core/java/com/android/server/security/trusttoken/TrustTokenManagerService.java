@@ -86,14 +86,14 @@ public class TrustTokenManagerService extends SystemService {
      * Creates a new instance of {@link TrustTokenManagerService}.
      *
      * @param context The {@link Context} of the service.
-     * @return A new instance of {@link TrustTokenManagerService}.
      */
-    public static TrustTokenManagerService create(Context context) {
-        var database =
+    TrustTokenManagerService(Context context) {
+        this(
+                context,
+                /* masterKey= */ null,
                 TrustTokenSqliteDatabase.create(
-                        context, context.getDatabasePath(DATABASE_NAME), Clock.SYSTEM_CLOCK);
-        return new TrustTokenManagerService(
-                context, /* masterKey= */ null, database, Clock.SYSTEM_CLOCK);
+                        context, context.getDatabasePath(DATABASE_NAME), Clock.SYSTEM_CLOCK),
+                Clock.SYSTEM_CLOCK);
     }
 
     TrustTokenManagerService(
