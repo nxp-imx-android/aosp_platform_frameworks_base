@@ -128,7 +128,7 @@ public class VisualizerConnection {
             return mContext.bindService(
                     intent,
                     serviceConnection,
-                    Context.BIND_AUTO_CREATE | Context.BIND_ALLOW_ACTIVITY_STARTS);
+                    Context.BIND_AUTO_CREATE | Context.BIND_ALLOW_BACKGROUND_ACTIVITY_STARTS);
         }
 
         @Override
