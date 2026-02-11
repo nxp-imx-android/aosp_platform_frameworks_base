@@ -78,6 +78,7 @@ import static android.window.DisplayAreaOrganizer.FEATURE_UNDEFINED;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ADD_REMOVE;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_LOCKTASK;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_PACKAGE_UPDATE;
+import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_RESIZE;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_STATES;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_TASKS;
 import static com.android.server.wm.ActivityRecord.State.PAUSED;
@@ -1336,6 +1337,7 @@ class Task extends TaskFragment {
 
     @Override
     void onResize() {
+        ProtoLog.v(WM_DEBUG_RESIZE, "onResize to %s on %s", getBounds(), this);
         super.onResize();
         mLeafTaskBoundsFromOptions = false;
         onTaskBoundsChangedForFreeform();
@@ -1343,6 +1345,7 @@ class Task extends TaskFragment {
 
     @Override
     void onMovedByResize() {
+        ProtoLog.v(WM_DEBUG_RESIZE, "onMovedByResize to %s on %s", getBounds(), this);
         super.onMovedByResize();
         mLeafTaskBoundsFromOptions = false;
         onTaskBoundsChangedForFreeform();
