@@ -132,4 +132,28 @@ public class InsightSurfaceClientInfoTest {
         clientInfo.onReceiveInsight(new BundleInsight.Builder().build());
         verify(mClient).onReceiveInsight(any());
     }
+
+    @Test
+    public void testShouldBlurUpdate() {
+        final InsightSurfaceClientInfo clientInfo =
+                new InsightSurfaceClientInfo(
+                        UUID.randomUUID(),
+                        0,
+                        0,
+                        0,
+                        Color.valueOf(Color.BLACK),
+                        View.SCROLL_AXIS_NONE,
+                        false,
+                        false,
+                        null,
+                        "package.name",
+                        new Configuration(),
+                        mClient);
+        assertThat(clientInfo.shouldBlur()).isFalse();
+        final InsightSurfaceClientUpdate update = new InsightSurfaceClientUpdate.Builder()
+                .setShouldBlur(true)
+                .build();
+        final InsightSurfaceClientInfo updatedInfo = clientInfo.createInfoFromUpdate(update);
+        assertThat(updatedInfo.shouldBlur()).isTrue();
+    }
 }
