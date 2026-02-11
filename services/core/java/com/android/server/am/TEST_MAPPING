@@ -49,6 +49,9 @@
       "name": "FrameworksMockingServicesTests_android_server_am_broadcast"
     },
     {
+      "name": "CtsContentTestCases_context_cts"
+    },
+    {
       "file_patterns": ["Broadcast.*"],
       "name": "CtsBroadcastTestCases_android_server_am"
     },
