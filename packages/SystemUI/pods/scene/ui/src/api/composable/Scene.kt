@@ -30,10 +30,10 @@ import com.android.systemui.lifecycle.Activatable
  * based on either user action (for example, swiping down while on the lock screen scene may switch
  * to the shade scene).
  */
-interface Scene : Activatable, ActionableContent {
+public interface Scene : Activatable, ActionableContent {
 
     /** Uniquely-identifying key for this scene. The key must be unique within its container. */
-    val key: SceneKey
+    public val key: SceneKey
 
     /**
      * Whether this scene should be invisibly composed even when it's not a current scene and even
@@ -49,7 +49,7 @@ interface Scene : Activatable, ActionableContent {
      * longer showing. Once b/433309418 is closed, there will be good ways to more granularly decide
      * which pieces of work should run ahead of time and which should run just in time.
      */
-    val alwaysCompose: Boolean
+    public val alwaysCompose: Boolean
 
-    @Composable fun ContentScope.Content(modifier: Modifier)
+    @Composable public fun ContentScope.Content(modifier: Modifier)
 }

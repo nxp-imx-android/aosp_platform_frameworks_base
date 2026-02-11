@@ -24,18 +24,18 @@ import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenMo
  *
  * PLEASE KEEP THE KEYS SORTED ALPHABETICALLY.
  */
-object Scenes {
+public object Scenes {
     /** The communal scene shows the glanceable hub when device is locked and docked. */
-    @JvmField val Communal = SceneKey("communal")
+    @JvmField public val Communal: SceneKey = SceneKey("communal")
 
     /** The dream scene shows up when a dream activity is showing. */
-    @JvmField val Dream = SceneKey("dream")
+    @JvmField public val Dream: SceneKey = SceneKey("dream")
 
     /**
      * "Gone" is not a real scene but rather the absence of scenes when we want to skip showing any
      * content from the scene framework.
      */
-    @JvmField val Gone = SceneKey("gone")
+    @JvmField public val Gone: SceneKey = SceneKey("gone")
 
     /**
      * The lockscreen is the scene that shows when the device is locked.
@@ -44,7 +44,7 @@ object Scenes {
      * are part of this scene. This is necessary due to the dependency order of the plugin lib and
      * the need to use MovableElement for animating our legacy views.
      */
-    @JvmField val Lockscreen = LockscreenMovableParentKeys.Lockscreen
+    @JvmField public val Lockscreen: SceneKey = LockscreenMovableParentKeys.Lockscreen
 
     /**
      * Activities that render over lockscreen. Similar to [Gone], it is the absence of any SystemUI
@@ -54,7 +54,7 @@ object Scenes {
      * keyguard dismissal directly, so it not required to navigate back to [Lockscreen] before
      * unlocking.
      */
-    @JvmField val Occluded = SceneKey("occluded")
+    @JvmField public val Occluded: SceneKey = SceneKey("occluded")
 
     /**
      * The quick settings scene shows the quick setting tiles.
@@ -70,7 +70,7 @@ object Scenes {
      * and one for quick settings, the overlays `NotificationsShade` and `QuickSettingsShade` are
      * used respectively.
      */
-    @JvmField val QuickSettings = SceneKey("quick_settings")
+    @JvmField public val QuickSettings: SceneKey = SceneKey("quick_settings")
 
     /**
      * The shade is the scene that shows a scrollable list of notifications and the minimized
@@ -83,7 +83,7 @@ object Scenes {
      * separate shades: one for notifications and one for quick settings, the overlays
      * `NotificationsShade` and `QuickSettingsShade` are used respectively.
      */
-    @JvmField val Shade = SceneKey("shade")
+    @JvmField public val Shade: SceneKey = SceneKey("shade")
 }
 
 /**
@@ -92,10 +92,10 @@ object Scenes {
  *
  * PLEASE KEEP THE KEYS SORTED ALPHABETICALLY.
  */
-object SceneFamilies {
+public object SceneFamilies {
     /**
      * The "base" scene, from the user's perspective. This is generally Gone or Lockscreen,
      * depending on whether the device is unlocked and has been entered.
      */
-    @JvmField val Home = SceneKey(debugName = "scene_family_home")
+    @JvmField public val Home: SceneKey = SceneKey(debugName = "scene_family_home")
 }
