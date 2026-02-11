@@ -31,7 +31,6 @@ import org.junit.Ignore
 import org.junit.Test
 import javax.tools.JavaFileObject
 
-@Ignore("b/481103556 - Disabled until the processor is fixed.")
 class DevicePolicyAnnotationProcessorTest {
     private val mCompilerWithoutProcessor = Compiler.javac()
     private val mCompiler = Compiler.javac().withProcessors(DevicePolicyAnnotationProcessor())
@@ -42,7 +41,6 @@ class DevicePolicyAnnotationProcessorTest {
         const val POLICY_IDENTIFIER_JAVA = "$RESOURCE_ROOT/TestPolicyIdentifier.java"
         const val POLICY_IDENTIFIER_LOCATION = "android/app/admin/PolicyIdentifier"
         const val POLICY_IDENTIFIER_TEXTPROTO = "$RESOURCE_ROOT/ExpectedPolicyIdentifier.textproto"
-        const val POLICY_METADATA_CODEGEN = "$RESOURCE_ROOT/ExpectedPolicies.java"
 
         // Can be used by tests that do not care about the allowedDpcTypes field.
         const val ALLOWED_DPC_TYPES_SNIPPET = """
@@ -79,11 +77,6 @@ class DevicePolicyAnnotationProcessorTest {
          * Build path for the output.
          */
         const val POLICIES_TEXTPROTO_LOCATION = "android/processor/devicepolicy/policies.textproto"
-
-        /**
-         * Build path for the generated metadata.
-         */
-        const val POLICY_METADATA_CODEGEN_LOCATION = "android/app/admin/metadata/Policies.java"
 
         fun loadTextResource(path: String): String {
             try {
@@ -138,7 +131,6 @@ class DevicePolicyAnnotationProcessorTest {
     @Test
     fun test_policyIdentifierFake_generates() {
         val expectedOutput = loadTextResource(POLICY_IDENTIFIER_TEXTPROTO)
-        val expectedMetadata = loadTextResource(POLICY_METADATA_CODEGEN)
 
         val metadataSources = METADATA_FILES_JAVA.map {
             JavaFileObjects.forResource(it)
@@ -157,8 +149,6 @@ class DevicePolicyAnnotationProcessorTest {
         assertThat(compilation).succeeded()
         assertThat(compilation).generatedFile(SOURCE_OUTPUT,
             POLICIES_TEXTPROTO_LOCATION).contentsAsUtf8String().isEqualTo(expectedOutput)
-        assertThat(compilation).generatedFile(SOURCE_OUTPUT,
-            POLICY_METADATA_CODEGEN_LOCATION).contentsAsUtf8String().isEqualTo(expectedMetadata)
     }
 
     @Test

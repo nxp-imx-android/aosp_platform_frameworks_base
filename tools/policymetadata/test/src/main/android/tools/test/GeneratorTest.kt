@@ -16,11 +16,11 @@
 
 package android.processor.devicepolicy.test
 
-import android.processor.devicepolicy.PolicyMetadataCodeGenerator
 import android.processor.devicepolicy.protos.FullyQualifiedFieldName
 import android.processor.devicepolicy.protos.PolicyMetadata
 import android.processor.devicepolicy.protos.PolicyMetadataList
 import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata
+import android.tools.policymetadata.Generator
 import com.google.common.truth.Truth.assertThat
 import com.squareup.javapoet.JavaFile
 import java.io.CharArrayWriter
@@ -30,7 +30,7 @@ import org.junit.Test
 private fun trimLines(string: String) =
     string.lines().map { it.trim() }.filter { !it.isEmpty() }.joinToString("\n")
 
-class PolicyMetadataCodeGeneratorTest {
+class GeneratorTest {
     private fun fillInFile(
         code: String,
         includes: String =
@@ -117,7 +117,7 @@ class PolicyMetadataCodeGeneratorTest {
                 )
                 .build()
 
-        val javaFile = PolicyMetadataCodeGenerator.generate(policyList)
+        val javaFile = Generator.generate(policyList)
 
         assertThat(javaFileToString(javaFile))
             .isEqualTo(
@@ -167,7 +167,7 @@ class PolicyMetadataCodeGeneratorTest {
                 )
                 .build()
 
-        val javaFile = PolicyMetadataCodeGenerator.generate(policyList)
+        val javaFile = Generator.generate(policyList)
 
         assertThat(javaFileToString(javaFile))
             .isEqualTo(
@@ -227,7 +227,7 @@ class PolicyMetadataCodeGeneratorTest {
                 )
                 .build()
 
-        val javaFile = PolicyMetadataCodeGenerator.generate(policyList)
+        val javaFile = Generator.generate(policyList)
 
         assertThat(javaFileToString(javaFile))
             .isEqualTo(
@@ -271,7 +271,7 @@ class PolicyMetadataCodeGeneratorTest {
                 )
                 .build()
 
-        val javaFile = PolicyMetadataCodeGenerator.generate(policyList)
+        val javaFile = Generator.generate(policyList)
 
         assertThat(javaFileToString(javaFile))
             .isEqualTo(
@@ -324,7 +324,7 @@ class PolicyMetadataCodeGeneratorTest {
                 )
                 .build()
 
-        val javaFile = PolicyMetadataCodeGenerator.generate(policyList)
+        val javaFile = Generator.generate(policyList)
 
         assertThat(javaFileToString(javaFile))
             .isEqualTo(
@@ -362,7 +362,7 @@ class PolicyMetadataCodeGeneratorTest {
                 )
                 .build()
 
-        val javaFile = PolicyMetadataCodeGenerator.generate(policyList)
+        val javaFile = Generator.generate(policyList)
 
         assertThat(javaFileToString(javaFile))
             .isEqualTo(
@@ -419,7 +419,7 @@ class PolicyMetadataCodeGeneratorTest {
                 )
                 .build()
 
-        val javaFile = PolicyMetadataCodeGenerator.generate(policyList)
+        val javaFile = Generator.generate(policyList)
 
         assertThat(javaFileToString(javaFile))
             .isEqualTo(
@@ -466,7 +466,7 @@ class PolicyMetadataCodeGeneratorTest {
                 )
                 .build()
 
-        val javaFile = PolicyMetadataCodeGenerator.generate(policyList)
+        val javaFile = Generator.generate(policyList)
 
         assertThat(javaFileToString(javaFile))
             .isEqualTo(
@@ -516,7 +516,7 @@ class PolicyMetadataCodeGeneratorTest {
                 )
                 .build()
 
-        val javaFile = PolicyMetadataCodeGenerator.generate(policyList)
+        val javaFile = Generator.generate(policyList)
 
         assertThat(javaFileToString(javaFile))
             .isEqualTo(
@@ -584,7 +584,7 @@ class PolicyMetadataCodeGeneratorTest {
                 )
                 .build()
 
-        val javaFile = PolicyMetadataCodeGenerator.generate(policyList)
+        val javaFile = Generator.generate(policyList)
 
         assertThat(javaFileToString(javaFile))
             .isEqualTo(
@@ -657,7 +657,7 @@ class PolicyMetadataCodeGeneratorTest {
                 )
                 .build()
 
-        val javaFile = PolicyMetadataCodeGenerator.generate(policyList)
+        val javaFile = Generator.generate(policyList)
 
         assertThat(javaFileToString(javaFile))
             .isEqualTo(
@@ -715,7 +715,7 @@ class PolicyMetadataCodeGeneratorTest {
                 )
                 .build()
 
-        val javaFile = PolicyMetadataCodeGenerator.generate(policyList)
+        val javaFile = Generator.generate(policyList)
 
         assertThat(javaFileToString(javaFile))
             .isEqualTo(
@@ -757,7 +757,7 @@ class PolicyMetadataCodeGeneratorTest {
                 )
                 .build()
 
-        val javaFile = PolicyMetadataCodeGenerator.generate(policyList)
+        val javaFile = Generator.generate(policyList)
 
         assertThat(javaFileToString(javaFile))
             .isEqualTo(
@@ -809,7 +809,7 @@ class PolicyMetadataCodeGeneratorTest {
                 )
                 .build()
 
-        val javaFile = PolicyMetadataCodeGenerator.generate(policyList)
+        val javaFile = Generator.generate(policyList)
 
         assertThat(javaFileToString(javaFile))
             .isEqualTo(
