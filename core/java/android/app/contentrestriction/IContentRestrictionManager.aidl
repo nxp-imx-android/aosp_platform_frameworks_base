@@ -25,7 +25,7 @@ import android.app.contentrestriction.IContentRestrictionCallback;
  * @hide
  */
 interface IContentRestrictionManager {
-    oneway void isContentAllowed(int userId, in ClassifiableContent content, in IContentRestrictionCallback callback);
+    oneway void requestClassification(int userId, in ClassifiableContent content, in IContentRestrictionCallback callback);
     boolean isContentRestrictionEnabledForUser(int userId);
     boolean isDevicePolicyBypassingEnabledForUser(int userId);
     void setDevicePolicyBypassingEnabledForUser(int userId, boolean enabled);

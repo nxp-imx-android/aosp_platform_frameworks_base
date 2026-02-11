@@ -126,7 +126,7 @@ public class ContentRestrictionService extends IContentRestrictionManager.Stub {
 
     @Override
     @PermissionManuallyEnforced
-    public void isContentAllowed(
+    public void requestClassification(
             @UserIdInt int userId, ClassifiableContent content,
             IContentRestrictionCallback callback) {
         if (UserHandle.getUserId(Binder.getCallingUid()) != userId) {

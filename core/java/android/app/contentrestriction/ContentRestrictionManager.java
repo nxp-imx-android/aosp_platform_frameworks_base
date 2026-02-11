@@ -67,7 +67,7 @@ public class ContentRestrictionManager {
      * @param callback the callback for whether the content is allowed
      */
     @FlaggedApi(Flags.FLAG_CONTENT_RESTRICTION_API)
-    public void isContentAllowed(
+    public void requestClassification(
             @NonNull ClassifiableContent content,
             @NonNull @CallbackExecutor Executor executor,
             @NonNull Consumer<Boolean> callback) {
@@ -78,7 +78,7 @@ public class ContentRestrictionManager {
         }
 
         try {
-            mService.isContentAllowed(mContext.getUserId(), content,
+            mService.requestClassification(mContext.getUserId(), content,
                     new IContentRestrictionCallback.Stub() {
                 @Override
                 public void onResult(boolean isContentAllowed) {
