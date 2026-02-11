@@ -127,7 +127,7 @@
         android:paddingEnd="16dip"
         android:paddingBottom="8dip"
         android:orientation="horizontal"
-        android:gravity="right"
+        android:gravity="end"
         android:elevation="@dimen/preview_controls_elevation"
         style="?android:actionBarStyle"
         android:featureFlag="com.android.printspooler.flags.updated_button_layout">
