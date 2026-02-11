@@ -27,7 +27,7 @@ import com.android.systemui.screenrecord.ui.postRecordingActionsViewModelFactory
 import com.android.systemui.screenrecord.ui.postRecordingImmediateVideoViewModelFactory
 import com.android.systemui.statusbar.phone.systemUIDialogFactory
 
-val Kosmos.postRecordingShelfFactory by
+var Kosmos.postRecordingShelfFactory: PostRecordingShelf.Factory by
     Kosmos.Fixture {
         object : PostRecordingShelf.Factory {
             override fun create(uri: Uri, thumbnail: Icon?, display: Display): PostRecordingShelf =

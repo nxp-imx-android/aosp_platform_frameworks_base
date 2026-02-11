@@ -16,20 +16,17 @@
 
 package com.android.systemui.screenrecord.data.repository
 
-import android.content.applicationContext
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.screenrecord.screenRecordUxController
 import com.android.systemui.screenrecord.service.fakeScreenRecordingService
-import com.android.systemui.user.data.repository.userRepository
+import kotlinx.coroutines.flow.flowOf
 
-var Kosmos.screenRecordingServiceRepository: ScreenRecordingServiceRepository by
+val Kosmos.screenRecordingServiceRepository: ScreenRecordingServiceRepository by
     Kosmos.Fixture {
         ScreenRecordingServiceRepository(
-            applicationContext,
             applicationCoroutineScope,
-            userRepository,
             screenRecordUxController,
-            { _, _ -> fakeScreenRecordingService },
+            flowOf(fakeScreenRecordingService),
         )
     }

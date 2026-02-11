@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package com.android.systemui.screencapture
 
 import android.content.Context
@@ -41,6 +43,7 @@ import com.android.systemui.screenrecord.shared.model.ScreenRecording
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
@@ -50,6 +53,8 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+
+private const val TAG = "ScreenCapture"
 
 @SysUISingleton
 class ScreenCaptureCoreStartable
@@ -86,11 +91,8 @@ constructor(
                     .onEach { it.start() },
             ) { state, screenCaptureComponent ->
                 if (state is ScreenCaptureUiState.Visible) {
-                    val displayId = focusedDisplayRepository.focusedDisplayId.value
-                    val display = displayRepository.getDisplay(displayId)
-
+                    val display = getDisplayToShowUi()
                     if (display == null) {
-                        Log.e("ScreenCapture", "Couldn't find display for id=$displayId")
                         screenCaptureUiInteractor.hide(type)
                         null
                     } else {
@@ -113,7 +115,7 @@ constructor(
     }
 
     /**
-     * Shows the UI and suspends until it's is dismissed. Cancelling the suspension dismisses the UI
+     * Shows the UI and suspends until it's dismissed. Cancelling the suspension dismisses the UI
      */
     private suspend fun ScreenCaptureUiContext.showUi(type: ScreenCaptureType): Unit =
         suspendCancellableCoroutine { invocation ->
@@ -152,15 +154,8 @@ constructor(
         screenRecordingServiceInteractor.screenRecordings
             .filterIsInstance<ScreenRecording.Saved>()
             .onEach { recording ->
-                val displayId = focusedDisplayRepository.focusedDisplayId.value
-                val display = displayRepository.getDisplay(displayId)
-
-                if (display == null) {
-                    Log.e(
-                        "ScreenCapture",
-                        "PostRecordingShelf: Couldn't find display for id=$displayId",
-                    )
-                } else {
+                val display = getDisplayToShowUi()
+                if (display != null) {
                     val shelf =
                         postRecordingShelfFactory.create(
                             recording.uri,
@@ -182,6 +177,20 @@ constructor(
                 }
             }
             .launchInTraced("ScreenCaptureOverlayStateInteractor#show", coroutineScope())
+    }
+
+    private fun getDisplayToShowUi(): Display? {
+        val displayId = focusedDisplayRepository.focusedDisplayId.value
+        val display =
+            displayRepository.getDisplay(displayId)
+                ?: run {
+                    Log.w(TAG, "Couldn't find display for focused id=$displayId")
+                    displayRepository.displays.value.firstOrNull()
+                }
+        if (display == null) {
+            Log.w(TAG, "Couldn't find display to show the ui")
+        }
+        return display
     }
 }
 
