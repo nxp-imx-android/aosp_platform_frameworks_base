@@ -96,6 +96,16 @@ flag {
 }
 
 flag {
+    name: "fix_edt_multiuser_management"
+    namespace: "accessibility"
+    description: "Use the main current user id to identify the force invert state."
+    bug: "478227501"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "fix_window_magnification_inactive_double_tap"
     namespace: "accessibility"
     description: "Fixes a bug where Window Magnification interferes with double-tap gestures in apps when inactive by correcting timestamp corruption and adding a bypass optimization."
