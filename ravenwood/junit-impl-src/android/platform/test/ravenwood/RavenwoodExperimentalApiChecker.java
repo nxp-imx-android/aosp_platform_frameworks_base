@@ -22,7 +22,9 @@ import com.android.internal.annotations.GuardedBy;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class RavenwoodExperimentalApiChecker {
@@ -43,6 +45,15 @@ public class RavenwoodExperimentalApiChecker {
     @GuardedBy("sLock")
     private static final Map<MethodInfo, IntRef> sStats = new HashMap<>();
 
+    /**
+     * These tests modules get experimental APIs enabled by default.
+     *
+     * Only tests owned by the ravenwood team should be listed here.
+     */
+    private static final List<String> EXP_API_ENABLED_MODULE = Arrays.asList(
+            "RavenwoodUiTest_exp"
+    );
+
     private record MethodInfo(Class<?> clazz, String name, String desc) {
         MethodInfo(StackWalker.StackFrame frame) {
             this(frame.getDeclaringClass(), frame.getMethodName(), frame.getDescriptor());
@@ -61,7 +72,10 @@ public class RavenwoodExperimentalApiChecker {
     public static boolean isExperimentalApiEnabled() {
         var enable = sExperimentalApiEnabled;
         if (enable == null) {
-            enable = RavenwoodEnvironment.getInstance().getBoolEnvVar("RAVENWOOD_ENABLE_EXP_API");
+            var def = EXP_API_ENABLED_MODULE.contains(
+                    RavenwoodEnvironment.getInstance().getTestModuleName());
+            enable = RavenwoodEnvironment.getInstance().getBoolEnvVar(
+                    "RAVENWOOD_ENABLE_EXP_API", def);
             sExperimentalApiEnabled = enable;
         }
         return enable;

@@ -687,10 +687,11 @@ constructor(
                         .distinctUntilChanged(),
                 ) { bouncerExpansion, isNotificationsExpanded, inLockscreenTransition, isIdle ->
                     if (isNotificationsExpanded) {
-                        // While the notifications Shade is expanded, whether we transition to the
-                        // bouncer or are on the bouncer, always keep the shade opaque, as it gets
-                        // blurred. If it needs to be hidden otherwise, let any other relevant
-                        // transition values declare the alpha if necessary.
+                        // While the notifications Shade is expanded, always keep the shade opaque.
+                        // This is expected during the transition to bouncer and as long the bouncer
+                        // is open; the notifications are blurred underneath the bouncer.
+                        // If the notifications need to be hidden for other reasons, let other
+                        // relevant transition values declare the alpha.
                         emit(1f)
                     } else if (bouncerExpansion > 0f) {
                         // If bouncerExpansion is nonzero, we are currently transitioning to or from

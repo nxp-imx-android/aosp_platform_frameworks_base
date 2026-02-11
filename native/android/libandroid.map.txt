@@ -432,7 +432,6 @@ LIBANDROID {
     ASessionCreationConfig_setGraphicsPipeline; # introduced=36
     ASessionCreationConfig_setNativeSurfaces; # introduced=36
     ASessionCreationConfig_setUseAutoTiming; # introduced=36
-    ASessionCreationConfig_setAudioPerformance; # introduced=37
     ANativeService_setOnBindCallback; # introduced=37 artless
     ANativeService_setOnUnbindCallback; # introduced=37 artless
     ANativeService_setOnRebindCallback; # introduced=37 artless

@@ -29,7 +29,6 @@ import android.view.LayoutInflater
 import android.view.MotionEvent.ACTION_DOWN
 import android.view.SurfaceControl
 import android.view.View
-import android.view.View.OnClickListener
 import android.view.ViewDebug
 import android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
 import android.view.WindowManager
@@ -51,6 +50,7 @@ import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventE
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_WINDOW_DECORATION
 import com.android.wm.shell.shared.bubbles.BubbleFlagHelper
 import com.android.wm.shell.windowdecor.WindowDecorLinearLayout
+import com.android.wm.shell.windowdecor.WindowDecorationActions
 import com.android.wm.shell.windowdecor.WindowManagerWrapper
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalSystemViewContainer
 import com.android.wm.shell.windowdecor.common.DecorThemeUtil
@@ -65,8 +65,8 @@ import com.android.wm.shell.windowdecor.extension.throttleFirstClicks
 class AppHandleViewHolder(
     appHandleView: View?,
     private val context: Context,
+    windowDecorationActions: WindowDecorationActions,
     onCaptionTouchListener: View.OnTouchListener,
-    onCaptionButtonClickListener: OnClickListener,
     private val windowManagerWrapper: WindowManagerWrapper,
     private val handler: Handler,
     private val desktopModeUiEventLogger: DesktopModeUiEventLogger,
@@ -109,7 +109,7 @@ class AppHandleViewHolder(
     init {
         captionView.setOnTouchListener(onCaptionTouchListener)
         captionHandle.throttleFirstClicks(CLICK_DELAY) { v ->
-            onCaptionButtonClickListener.onClick(v)
+            windowDecorationActions.onOpenHandleMenu(taskInfo.taskId)
         }
         captionHandle.setOnTouchListener(onCaptionTouchListener)
         if (!shouldAddStatusBarInputLayer) {
@@ -413,8 +413,8 @@ class AppHandleViewHolder(
         fun create(
             rootView: View?,
             context: Context,
+            windowDecorationActions: WindowDecorationActions,
             onCaptionTouchListener: View.OnTouchListener,
-            onCaptionButtonClickListener: OnClickListener,
             windowManagerWrapper: WindowManagerWrapper,
             handler: Handler,
             desktopModeUiEventLogger: DesktopModeUiEventLogger,
@@ -422,8 +422,8 @@ class AppHandleViewHolder(
             AppHandleViewHolder(
                 rootView,
                 context,
+                windowDecorationActions,
                 onCaptionTouchListener,
-                onCaptionButtonClickListener,
                 windowManagerWrapper,
                 handler,
                 desktopModeUiEventLogger,

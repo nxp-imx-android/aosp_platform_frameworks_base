@@ -729,7 +729,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
                 eq(mockUserHandle),
             )
         // Verify that the task is closed.
-        verify(mockDesktopTasksController).closeTask(taskInfo)
+        verify(mockDesktopTasksController).closeTask(taskInfo, true)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)

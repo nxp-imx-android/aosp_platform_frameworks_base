@@ -39,7 +39,7 @@ fun PreShareUI(shareScreenViewModel: ScreenCaptureShareScreenViewModel) {
             Modifier.fillMaxSize().padding(top = 16.dp).semantics { testTagsAsResourceId = true },
     ) {
         Column(
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.width(560.dp),
         ) {

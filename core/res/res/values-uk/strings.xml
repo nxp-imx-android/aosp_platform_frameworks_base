@@ -1501,6 +1501,22 @@
     <string name="usb_contaminant_detected_message" msgid="7346100585390795743">"USB-порт автоматично вимкнено. Торкніться, щоб дізнатися більше."</string>
     <string name="usb_contaminant_not_detected_title" msgid="2651167729563264053">"Можна використовувати USB-порт"</string>
     <string name="usb_contaminant_not_detected_message" msgid="892863190942660462">"Телефон уже не виявляє рідини або сміття."</string>
+    <!-- no translation found for usb_authorization_notify_on_screenlock_title (4219670768084927681) -->
+    <skip />
+    <!-- no translation found for usb_authorization_notify_on_screenlock_message (3391658768099414499) -->
+    <skip />
+    <!-- no translation found for usb_authorization_notify_on_screenlock_message_multiple (1722575755931059980) -->
+    <skip />
+    <!-- no translation found for usb_authorization_notify_finish_logging_in_title (3417036506115006412) -->
+    <skip />
+    <!-- no translation found for usb_authorization_notify_finish_logging_in_message (7996802340128367690) -->
+    <skip />
+    <!-- no translation found for usb_authorization_notify_finish_logging_in_title_multiple (3184839817149193434) -->
+    <skip />
+    <!-- no translation found for usb_authorization_notify_finish_logging_in_message_multiple (6745916608298736853) -->
+    <skip />
+    <!-- no translation found for notification_channel_usb_authorization (7567851967410736399) -->
+    <skip />
     <string name="taking_remote_bugreport_notification_title" msgid="1582531382166919850">"Створення звіту про помилку…"</string>
     <string name="share_remote_bugreport_notification_title" msgid="6708897723753334999">"Надіслати звіт про помилку?"</string>
     <string name="sharing_remote_bugreport_notification_title" msgid="3077385149217638550">"Надсилається звіт про помилку…"</string>
@@ -2118,18 +2134,21 @@
     <string name="app_lock_add_screen_lock_button_text" msgid="9209013414563206600">"Додати спосіб розблокування екрана"</string>
     <string name="app_lock_add_screen_lock_message" msgid="6107009360675769892">"Ви можете використовувати PIN-код, ключ або пароль, щоб розблоковувати пристрій і отримувати доступ до заблокованих додатків."</string>
     <string name="app_lock_add_screen_lock_title" msgid="6905612843620128689">"Спершу додайте спосіб розблокування екрана"</string>
-    <string name="enable_app_lock_success_toast_message" msgid="3339622779190529987">"Додаток <xliff:g id="APP_NAME">%1$s</xliff:g> заблоковано"</string>
-    <string name="enable_app_lock_failure_toast_message" msgid="1055838896510445566">"Не вдається заблокувати додаток <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
-    <string name="disable_app_lock_success_toast_message" msgid="70733620589071266">"Блокування для додатка <xliff:g id="APP_NAME">%1$s</xliff:g> вимкнено"</string>
-    <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"Додаток <xliff:g id="APP_NAME">%1$s</xliff:g> заблоковано"</string>
+    <string name="enable_app_lock_success_toast_message" msgid="3339622779190529987">"Доступ до додатка <xliff:g id="APP_NAME">%1$s</xliff:g> заблоковано"</string>
+    <string name="enable_app_lock_failure_toast_message" msgid="1055838896510445566">"Не вдається заблокувати доступ до додатка <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+    <string name="disable_app_lock_success_toast_message" msgid="70733620589071266">"Блокування доступу до додатка <xliff:g id="APP_NAME">%1$s</xliff:g> вимкнено"</string>
+    <!-- no translation found for locked_app_biometric_prompt_description (5892653396104581919) -->
+    <skip />
     <string name="locked_app_external_display_message" msgid="5483884799685545338">"Щоб отримати доступ до додатка на цьому екрані, спершу підтвердьте свою особу на іншому пристрої"</string>
-    <string name="app_lock_edu_dialog_enable_app_lock_title" msgid="283314042336592322">"Увімкнути блокування для додатка <xliff:g id="APP_NAME">%1$s</xliff:g>?"</string>
-    <string name="app_lock_edu_dialog_description" msgid="8176807243219769518">"З міркувань безпеки доступ до цього додатка за допомогою відбитка пальця, фейс-контролю або PIN-коду маєте лише ви"</string>
-    <string name="app_lock_edu_dialog_description_template" msgid="8563718120753342530">"З міркувань безпеки доступ до цього додатка за допомогою %1$s або %2$s маєте лише ви"</string>
-    <string name="app_lock_edu_dialog_description_template_no_biometrics" msgid="7122017109150633691">"З міркувань безпеки доступ до цього додатка за допомогою %1$s маєте лише ви"</string>
-    <string name="app_lock_edu_dialog_info_header" msgid="5876120209204270990">"Блокування додатка"</string>
+    <string name="app_lock_edu_dialog_enable_app_lock_title" msgid="283314042336592322">"Увімкнути блокування доступу до додатка <xliff:g id="APP_NAME">%1$s</xliff:g>?"</string>
+    <string name="app_lock_edu_dialog_description" msgid="8176807243219769518">"З міркувань безпеки лише ви матимете доступ до цього додатка за допомогою відбитка пальця, фейс-контролю або PIN-коду."</string>
+    <string name="app_lock_edu_dialog_description_template" msgid="8563718120753342530">"З міркувань безпеки лише ви матимете доступ до цього додатка за допомогою вибраних способів розблокування (%1$s або %2$s)."</string>
+    <string name="app_lock_edu_dialog_description_template_no_biometrics" msgid="7122017109150633691">"З міркувань безпеки лише ви матимете доступ до цього додатка за допомогою вибраних способів розблокування (%1$s)."</string>
+    <string name="app_lock_edu_dialog_info_header" msgid="5876120209204270990">"Блокування доступу до додатка"</string>
     <string name="app_lock_edu_dialog_info_notifications" msgid="1124438392204873305">"Вміст сповіщень буде приховано"</string>
     <string name="app_lock_edu_dialog_info_widgets" msgid="8809009414650740872">"Віджети і ярлики буде вилучено"</string>
+    <!-- no translation found for app_lock_edu_dialog_info_ai_disclaimer (5623615653703542050) -->
+    <skip />
     <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"Увімкнути блокування"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_face" msgid="1348151645996748654">"Фейс-контроль"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"Розблокування відбитком пальця"</string>
@@ -2137,8 +2156,8 @@
     <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="8487096457702445059">"Пароль"</string>
     <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="991436996281983547">"Ключ"</string>
     <string name="app_lock_edu_dialog_lockscreen_pin_name" msgid="6458607126966304795">"PIN-код"</string>
-    <string name="app_lock_permission_review_dialog_title" msgid="5030286398974840579">"Фотографії можуть і далі показуватися в інших додатках"</string>
-    <string name="app_lock_permission_review_dialog_sub_title" msgid="310758587817184145">"Додатки, які мають доступ до фотографій"</string>
+    <string name="app_lock_permission_review_dialog_title" msgid="5030286398974840579">"Ваші фотографії можуть і далі показуватися в інших додатках"</string>
+    <string name="app_lock_permission_review_dialog_sub_title" msgid="310758587817184145">"Додатки з доступом до ваших фотографій"</string>
     <string name="app_lock_permission_review_expand_app_list_button" msgid="3214809707125223273">"Переглянути всі"</string>
     <string name="app_lock_permission_review_continue_button" msgid="4045066724173414043">"Продовжити"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"Увімкнути робочі додатки?"</string>
@@ -2621,8 +2640,7 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"Щоб обмінюватися повідомленнями через супутник, потрібно зробити Google Повідомлення додатком для обміну повідомленнями за умовчанням"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"Супутниковий обмін повідомленнями недоступний"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"Щоб дізнатися, чи доступний супутниковий обмін повідомленнями в цій країні або регіоні, увімкніть доступ до геоданих"</string>
-    <!-- no translation found for satellite_indicator (6846063647532086110) -->
-    <skip />
+    <string name="satellite_indicator" msgid="6846063647532086110">"СУП."</string>
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"Налаштуйте розблокування відбитком пальця повторно"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"Відбиток пальця <xliff:g id="FINGERPRINT">%s</xliff:g> більше не розпізнається."</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"Відбитки пальців <xliff:g id="FINGERPRINT_0">%1$s</xliff:g> і <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> більше не розпізнаються."</string>

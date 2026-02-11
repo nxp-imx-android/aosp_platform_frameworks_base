@@ -795,8 +795,10 @@ public class MediaQualityService extends SystemService {
                     pp.pictureParameters = pictureParameters;
 
                     mMediaQuality.sendDefaultPictureParameters(pp);
-                    mMediaQuality.sendDefaultPictureProfile(
-                            mHalNotifier.convertToHalPictureProfile(longId, params));
+                    if (mMediaQuality.getInterfaceVersion() > 1) {
+                        mMediaQuality.sendDefaultPictureProfile(
+                                mHalNotifier.convertToHalPictureProfile(longId, params));
+                    }
                     parcel.recycle();
                     return true;
                 }

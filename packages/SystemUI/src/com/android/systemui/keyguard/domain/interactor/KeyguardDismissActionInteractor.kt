@@ -179,12 +179,13 @@ constructor(
 
     /** Run the dismiss action and starts the dismiss keyguard transition. */
     private suspend fun runDismissAction() {
-        val dismissAction = repository.dismissAction.value
+        val dismissAction = repository.setDismissAction(DismissAction.None)
         var keyguardDoneTiming: KeyguardDone = KeyguardDone.IMMEDIATE
         if (dismissAction != DismissAction.None) {
             keyguardDoneTiming = dismissAction.onDismissAction.invoke()
             dismissInteractor.setKeyguardDone(keyguardDoneTiming)
-            clearDismissAction()
+            // onCancel should be run when complete as well
+            dismissAction.onCancelAction.run()
         }
         if (!SceneContainerFlag.isEnabled) {
             // This is required to reset some state flows in the repository which ideally should be

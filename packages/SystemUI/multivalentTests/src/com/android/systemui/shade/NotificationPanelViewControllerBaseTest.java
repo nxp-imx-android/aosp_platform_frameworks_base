@@ -116,6 +116,7 @@ import com.android.systemui.statusbar.QsFrameTranslateController;
 import com.android.systemui.statusbar.StatusBarStateControllerImpl;
 import com.android.systemui.statusbar.SysuiStatusBarStateController;
 import com.android.systemui.statusbar.VibratorHelper;
+import com.android.systemui.statusbar.gesture.StatusBarLongPressGestureDetector;
 import com.android.systemui.statusbar.notification.ConversationNotificationManager;
 import com.android.systemui.statusbar.notification.DynamicPrivacyController;
 import com.android.systemui.statusbar.notification.NotificationWakeUpCoordinator;
@@ -623,6 +624,8 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
                 mShadeHeaderController,
                 mShadeTouchableRegionManager,
                 () -> mStatusBarLongPressGestureDetector,
+                mKosmos.getSystemUiReferenceDisplaySubcomponentRepository(),
+                () -> mKosmos.getShadeDisplaysInteractor(),
                 mKeyguardStateController,
                 mKeyguardBypassController,
                 mScrimController,
@@ -656,7 +659,7 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
         if (mNotificationPanelViewController != null) {
             mNotificationPanelViewController.cancelHeightAnimator();
             leakedAnimators = mNotificationPanelViewController.mTestSetOfAnimatorsUsed.stream()
-                .filter(Animator::isRunning).toList();
+                    .filter(Animator::isRunning).toList();
             mNotificationPanelViewController.mTestSetOfAnimatorsUsed.forEach(Animator::cancel);
         }
         if (mMainHandler != null) {

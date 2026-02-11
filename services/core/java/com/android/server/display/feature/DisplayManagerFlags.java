@@ -63,11 +63,6 @@ public class DisplayManagerFlags {
             Flags::sensorBasedBrightnessThrottling
     );
 
-    private final FlagState mDozeBrightnessStrategy = new FlagState(
-            Flags.FLAG_DOZE_BRIGHTNESS_STRATEGY,
-            Flags::dozeBrightnessStrategy
-    );
-
     private final FlagState mUseFusionProxSensor = new FlagState(
             Flags.FLAG_USE_FUSION_PROX_SENSOR,
             Flags::useFusionProxSensor
@@ -184,10 +179,6 @@ public class DisplayManagerFlags {
 
     public boolean isSensorBasedBrightnessThrottlingEnabled() {
         return mSensorBasedBrightnessThrottling.isEnabled();
-    }
-
-    public boolean isDozeBrightnessStrategyEnabled() {
-        return mDozeBrightnessStrategy.isEnabled();
     }
 
     public boolean isUseFusionProxSensorEnabled() {
@@ -339,7 +330,6 @@ public class DisplayManagerFlags {
         pw.println(" " + mSyncedResolutionSwitch);
         pw.println(" " + mFastHdrTransitions);
         pw.println(" " + mSensorBasedBrightnessThrottling);
-        pw.println(" " + mDozeBrightnessStrategy);
         pw.println(" " + mUseFusionProxSensor);
         pw.println(" " + mNormalBrightnessForDozeParameter);
         pw.println(" " + mEnableBatteryStatsForAllDisplays);

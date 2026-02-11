@@ -40,7 +40,9 @@ import org.junit.runners.MethodSorters
  *
  * Pre-steps:
  * ```
- *     Launch [testApp] and [secondApp].
+ *     Launch [testApp].
+ *     Launch [secondApp] to ensure overview is not empty after moving [testApp] to a bubble and
+ *     that we are not entering a bubble from a live tile.
  *     Enter overview.
  * ```
  *

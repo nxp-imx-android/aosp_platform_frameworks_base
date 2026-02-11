@@ -59,7 +59,7 @@
     <string name="accessibility_split_right" msgid="8441001008181296837">"오른쪽으로 분할"</string>
     <string name="accessibility_split_top" msgid="2789329702027147146">"위쪽으로 분할"</string>
     <string name="accessibility_split_bottom" msgid="8694551025220868191">"아래쪽으로 분할"</string>
-    <string name="one_handed_tutorial_title" msgid="4583241688067426350">"한 손 사용 모드 사용하기"</string>
+    <string name="one_handed_tutorial_title" msgid="4583241688067426350">"한 손 모드 사용하기"</string>
     <string name="one_handed_tutorial_description" msgid="3486582858591353067">"화면 하단에서 위로 스와이프하거나 앱 상단을 탭하여 종료합니다."</string>
     <string name="accessibility_action_start_one_handed" msgid="5070337354072861426">"한 손 사용 모드 시작"</string>
     <string name="accessibility_action_stop_one_handed" msgid="1369940261782179442">"한 손 사용 모드 종료"</string>

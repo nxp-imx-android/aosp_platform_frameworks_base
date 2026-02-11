@@ -15,6 +15,7 @@
 
 package com.android.server.pm;
 
+import static android.Manifest.permission.INJECT_EVENTS;
 import static android.Manifest.permission.MANAGE_DEVICE_ADMINS;
 import static android.Manifest.permission.SET_HARMFUL_APP_WARNINGS;
 import static android.app.AppOpsManager.MODE_IGNORED;
@@ -185,6 +186,7 @@ import android.view.Display;
 
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.SystemServerLock;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.app.ResolverActivity;
 import com.android.internal.content.F2fsUtils;
@@ -622,6 +624,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
     // Lock for state used when installing and doing other long running
     // operations.  Methods that must be called with this lock held have
     // the suffix "LI".
+    @SystemServerLock(LockGuard.INDEX_PACKAGE_INSTALL)
     final PackageManagerTracedLock mInstallLock;
 
     // ----------------------------------------------------------------
@@ -629,6 +632,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
     // Lock for global state used when modifying package state or settings.
     // Methods that must be called with this lock held have
     // the suffix "Locked". Some methods may use the legacy suffix "LP"
+    @SystemServerLock(LockGuard.INDEX_PACKAGES)
     final PackageManagerTracedLock mLock;
 
     // Ensures order of overlay updates until data storage can be moved to overlay code
@@ -5376,7 +5380,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             }
 
             mContext.enforceCallingPermission(
-                    Manifest.permission.INJECT_EVENTS,
+                    INJECT_EVENTS,
                     "getHoldLockToken requires INJECT_EVENTS permission");
 
             final Binder token = new Binder();
@@ -5582,13 +5586,15 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
 
             // The user option can be read by the app itself or system apps holding the
             // INJECT_EVENTS signature permission (system gamepad and Settings).
-            if (mPermissionManager.checkUidPermission(callingUid, Manifest.permission.INJECT_EVENTS,
-                    Context.DEVICE_ID_DEFAULT) != PERMISSION_GRANTED) {
+            final PackageStateInternal packageState;
+            if (snapshot.checkUidPermission(INJECT_EVENTS, callingUid) == PERMISSION_GRANTED) {
+                packageState = snapshot.getPackageStateInternal(packageName);
+            } else {
                 enforceOwnerRights(snapshot, packageName, callingUid);
+                packageState = snapshot
+                        .getPackageStateForInstalledAndFiltered(packageName, callingUid, userId);
             }
 
-            final PackageStateInternal packageState = snapshot
-                    .getPackageStateForInstalledAndFiltered(packageName, callingUid, userId);
             return packageState == null ? VIRTUAL_GAMEPAD_USER_OPTION_UNSET
                     : packageState.getUserStateOrDefault(userId).getVirtualGamepadUserOption();
         }
@@ -6693,7 +6699,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                     state.userState(userId).setMinAspectRatio(aspectRatio));
         }
 
-        @android.annotation.EnforcePermission(Manifest.permission.INJECT_EVENTS)
+        @android.annotation.EnforcePermission(INJECT_EVENTS)
         @Override
         public void setVirtualGamepadUserOption(@NonNull String packageName, int userId,
                 @PackageManager.VirtualGamepadUserOption int userOption) {
@@ -6704,8 +6710,9 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                     false /* requireFullPermission */, false /* checkShell */,
                     "setVirtualGamepadUserOption");
 
-            final PackageStateInternal packageState = snapshot
-                    .getPackageStateForInstalledAndFiltered(packageName, callingUid, userId);
+            // We have checked that the caller has the INJECT_EVENTS signature permission, so the
+            // caller is allowed to modify the gamepad user option of other apps.
+            final PackageStateInternal packageState = snapshot.getPackageStateInternal(packageName);
             if (packageState == null) {
                 return;
             }
@@ -7596,6 +7603,15 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             }
             final Computer snapshot = snapshotComputer();
             return mAppLockPackageHelper.getAppLockEnabledPackages(snapshot, userId);
+        }
+
+        @Override
+        public void reportLockCredentialChanged(@UserIdInt int userId) {
+            if (!android.security.Flags.appLockApis()) {
+                return;
+            }
+            final Computer snapshot = snapshotComputer();
+            mAppLockPackageHelper.reportLockCredentialChanged(snapshot, userId);
         }
 
         @Nullable

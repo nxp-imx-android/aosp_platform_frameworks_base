@@ -46,8 +46,7 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"要打开<xliff:g id="APPLICATION">%1$s</xliff:g>来处理<xliff:g id="USB_ACCESSORY">%2$s</xliff:g>吗？"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"未安装此USB配件适用的应用。要了解此配件的详情，请访问：<xliff:g id="URL">%1$s</xliff:g>"</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"USB配件"</string>
-    <!-- no translation found for usb_device_dialog_always_allow_button (7426535342650638393) -->
-    <skip />
+    <string name="usb_device_dialog_always_allow_button" msgid="7426535342650638393">"始终允许"</string>
     <string name="usb_device_dialog_allow_only_this_time_button" msgid="3653881633944232491">"仅限这一次"</string>
     <string name="usb_device_dialog_cancel_button" msgid="9050554648474787233">"取消"</string>
     <string name="label_view" msgid="6815442985276363364">"查看"</string>
@@ -59,6 +58,24 @@
     <string name="usb_debugging_allow" msgid="1722643858015321328">"允许"</string>
     <string name="usb_debugging_secondary_user_title" msgid="7843050591380107998">"不允许使用 USB 调试功能"</string>
     <string name="usb_debugging_secondary_user_message" msgid="1888835696965417845">"当前已登录此设备的用户无法开启 USB 调试功能。要使用此功能，请切换为管理员用户。"</string>
+    <!-- no translation found for usb_authorization_title (3332796080113535331) -->
+    <skip />
+    <!-- no translation found for usb_authorization_title_multi (1966181648363433366) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message (1107567912094941105) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message_multi (4867596373922923637) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message_untrusted (4407977362840907960) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message_multi_untrusted (85055448435495205) -->
+    <skip />
+    <!-- no translation found for usb_authorization_unknown_device (1107933381080189970) -->
+    <skip />
+    <!-- no translation found for usb_authorization_allow (5517449937301874244) -->
+    <skip />
+    <!-- no translation found for usb_authorization_deny (8156333001876101456) -->
+    <skip />
     <string name="hdmi_cec_set_menu_language_title" msgid="1259765420091503742">"是否要将系统语言更改为<xliff:g id="LANGUAGE">%1$s</xliff:g>？"</string>
     <string name="hdmi_cec_set_menu_language_description" msgid="8176716678074126619">"另一台设备请求更改系统语言"</string>
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"更改语言"</string>
@@ -104,6 +121,10 @@
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"截取更多内容"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"关闭屏幕截图"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"关闭工作资料消息"</string>
+    <!-- no translation found for screenshot_open_in_folder_label (7030308792263959983) -->
+    <skip />
+    <!-- no translation found for screenshot_open_in_folder_description (2181459418652236210) -->
+    <skip />
     <string name="screenshot_preview_description" msgid="7606510140714080474">"屏幕截图预览"</string>
     <string name="screenshot_top_boundary_pct" msgid="2520148599096479332">"顶部边界百分之 <xliff:g id="PERCENT">%1$d</xliff:g>"</string>
     <string name="screenshot_bottom_boundary_pct" msgid="3880821519814946478">"底部边界百分之 <xliff:g id="PERCENT">%1$d</xliff:g>"</string>
@@ -203,32 +224,19 @@
     <string name="screen_share_a11y_stopped_sharing_app" msgid="6928492106881188404">"已停止共享“<xliff:g id="APP_NAME">%1$s</xliff:g>”应用，未与任何人共享屏幕。"</string>
     <string name="screen_share_a11y_stopped_sharing_tab" msgid="5929089339684027985">"已停止共享“<xliff:g id="TAB_TITLE">%1$s</xliff:g>”标签页，未与任何人共享屏幕。"</string>
     <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"已停止共享“<xliff:g id="DISPLAY_NAME">%1$s</xliff:g>”显示屏，未与任何人共享屏幕。"</string>
-    <!-- no translation found for screen_share_a11y_close_button (8017115316741874857) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_button_unselected (5363622532939787310) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_button_selected (4304681826101817704) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_app_button_unselected (4539549394242556282) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_app_button_selected (6049272377472922732) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_fullscreen_button_unselected (2492516552817892989) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_fullscreen_button_selected (6706822615908429473) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_share_button_off (2004866083045967602) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_share_button_on (1311279200212158833) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_item_unselected (7479321583507874795) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_item_selected (2538971376128528640) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_audio_on (7240792268381508075) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_audio_off (8545238601433952854) -->
-    <skip />
+    <string name="screen_share_a11y_close_button" msgid="8017115316741874857">"“关闭”按钮。按 Enter 键可关闭分享前对话框。"</string>
+    <string name="screen_share_a11y_tab_button_unselected" msgid="5363622532939787310">"标签页分享按钮。未选择。按 Enter 键即可分享标签页。"</string>
+    <string name="screen_share_a11y_tab_button_selected" msgid="4304681826101817704">"正在分享标签页。前往查看可分享的标签页。"</string>
+    <string name="screen_share_a11y_app_button_unselected" msgid="4539549394242556282">"应用分享按钮。未选择。按 Enter 键即可分享应用。"</string>
+    <string name="screen_share_a11y_app_button_selected" msgid="6049272377472922732">"正在分享应用。前往查看可分享的应用。"</string>
+    <string name="screen_share_a11y_fullscreen_button_unselected" msgid="2492516552817892989">"全屏按钮。未选择。按 Enter 键即可分享全屏。"</string>
+    <string name="screen_share_a11y_fullscreen_button_selected" msgid="6706822615908429473">"正在分享全屏。前往查看可分享的显示屏。"</string>
+    <string name="screen_share_a11y_share_button_off" msgid="2004866083045967602">"“分享”按钮。已关闭。选择要分享的应用、标签页或显示屏。"</string>
+    <string name="screen_share_a11y_share_button_on" msgid="1311279200212158833">"分享设置已开启。已选择“<xliff:g id="ITEM">%1$s</xliff:g>”。按 Enter 键即可开始分享。"</string>
+    <string name="screen_share_a11y_item_unselected" msgid="7479321583507874795">"未选择“<xliff:g id="ITEM_NAME">%1$s</xliff:g>”。按 Enter 键进行选择。"</string>
+    <string name="screen_share_a11y_item_selected" msgid="2538971376128528640">"已选择“<xliff:g id="ITEM_NAME">%1$s</xliff:g>”。前往分享按钮即可开始分享。"</string>
+    <string name="screen_share_a11y_tab_audio_on" msgid="7240792268381508075">"标签页音频已开启"</string>
+    <string name="screen_share_a11y_tab_audio_off" msgid="8545238601433952854">"标签页音频已关闭"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"窗口截图"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"录制窗口"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"所选区域局部截图"</string>
@@ -239,7 +247,8 @@
     <string name="screen_capture_post_recording_shelf_share_button_a11y" msgid="2907313384921655711">"分享屏幕录制内容"</string>
     <string name="screen_capture_post_recording_shelf_folder_button_a11y" msgid="4217075254383938093">"在文件管理器中打开屏幕录制内容"</string>
     <string name="screen_capture_post_recording_shelf_delete_button_a11y" msgid="8519897681775354217">"删除屏幕录制内容"</string>
-    <string name="screen_capture_post_recording_shelf_thumbnail_a11y" msgid="8342622016203434332">"在视频观看器中打开屏幕录制"</string>
+    <!-- no translation found for screen_capture_post_recording_shelf_thumbnail_a11y (4764732838982357845) -->
+    <skip />
     <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"显示点击操作和按键"</string>
     <string name="screen_capture_device_audio" msgid="1537290197773737349">"设备音频"</string>
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"麦克风"</string>
@@ -432,8 +441,7 @@
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"通知"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Google 助理"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"键盘"</string>
-    <!-- no translation found for input_method_switcher_title_large_screen (8490419050265486980) -->
-    <skip />
+    <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"键盘"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{此群组内还有 # 条通知。}other{此群组内还有 # 条通知。}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"屏幕锁定为横屏模式。"</string>
@@ -462,7 +470,7 @@
     <string name="quick_settings_bluetooth_audio_sharing_button_sharing" msgid="3069309588231072128">"正在分享音频"</string>
     <string name="quick_settings_bluetooth_audio_sharing_button_accessibility" msgid="7604615019302091708">"进入音频分享设置"</string>
     <string name="quick_settings_bluetooth_audio_sharing_dialog_message" msgid="4251807313264307426">"此设备上的音乐和视频会同时通过两副耳机播放"</string>
-    <string name="quick_settings_bluetooth_audio_sharing_dialog_title" msgid="4406818346036286793">"分享您的音频"</string>
+    <string name="quick_settings_bluetooth_audio_sharing_dialog_title" msgid="4406818346036286793">"分享音频"</string>
     <string name="quick_settings_bluetooth_audio_sharing_dialog_subtitle" msgid="3014906864710059236">"“<xliff:g id="AVAILABLE_DEVICE_NAME">%1$s</xliff:g>”和“<xliff:g id="ACTIVE_DEVICE_NAME">%2$s</xliff:g>”"</string>
     <string name="quick_settings_bluetooth_audio_sharing_dialog_switch_to_button" msgid="7546825655978203773">"切换到“<xliff:g id="AVAILABLE_DEVICE_NAME">%1$s</xliff:g>”"</string>
     <string name="quick_settings_bluetooth_secondary_label_battery_level" msgid="4182034939479344093">"<xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%s</xliff:g> 的电量"</string>
@@ -595,7 +603,7 @@
     <string name="sensor_privacy_start_use_mic_camera_dialog_title" msgid="4316471859905020023">"要解锁设备摄像头和麦克风吗？"</string>
     <string name="sensor_privacy_start_use_mic_dialog_content" msgid="1624701280680913717">"解锁后，所有具有麦克风使用权的应用和服务都可使用您的麦克风。"</string>
     <string name="sensor_privacy_start_use_camera_dialog_content" msgid="4704948062372435963">"解锁后，所有具有摄像头使用权的应用和服务都可使用您的摄像头。"</string>
-    <string name="sensor_privacy_start_use_mic_camera_dialog_content" msgid="3577642558418404919">"这将会为所有获准使用您的摄像头或麦克风的应用和服务启用这项权限。"</string>
+    <string name="sensor_privacy_start_use_mic_camera_dialog_content" msgid="3577642558418404919">"解锁后，所有具有摄像头和麦克风使用权的应用和服务都可使用您的摄像头和麦克风。"</string>
     <string name="sensor_privacy_start_use_mic_blocked_dialog_title" msgid="2640140287496469689">"麦克风已被屏蔽"</string>
     <string name="sensor_privacy_start_use_camera_blocked_dialog_title" msgid="7398084286822440384">"摄像头已被屏蔽"</string>
     <string name="sensor_privacy_start_use_mic_camera_blocked_dialog_title" msgid="195236134743281973">"麦克风和摄像头已被屏蔽"</string>
@@ -1873,18 +1881,11 @@
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"左侧电量：%1$s"</string>
     <string name="accessibility_hearing_device_right_battery_level" msgid="7598843215226414563">"右侧电量：%1$s"</string>
     <string name="accessibility_hearing_device_notification_channel_name" msgid="7365020777623709400">"助听装置状态"</string>
-    <!-- no translation found for more_options_edit (6337988646114341329) -->
-    <skip />
-    <!-- no translation found for more_options_move (2226159413422979066) -->
-    <skip />
-    <!-- no translation found for more_options_remove_all (194855000797536179) -->
-    <skip />
-    <!-- no translation found for floating_menu_more_options_label (7859269790323628599) -->
-    <skip />
-    <!-- no translation found for dream_setup_title (7996530071414508238) -->
-    <skip />
-    <!-- no translation found for dream_setup_button_not_now (8028385323668620805) -->
-    <skip />
-    <!-- no translation found for dream_setup_button_setup (4755361016017554826) -->
-    <skip />
+    <string name="more_options_edit" msgid="6337988646114341329">"修改"</string>
+    <string name="more_options_move" msgid="2226159413422979066">"移动"</string>
+    <string name="more_options_remove_all" msgid="194855000797536179">"全部移除"</string>
+    <string name="floating_menu_more_options_label" msgid="7859269790323628599">"更多选项"</string>
+    <string name="dream_setup_title" msgid="7996530071414508238">"设置屏保"</string>
+    <string name="dream_setup_button_not_now" msgid="8028385323668620805">"以后再说"</string>
+    <string name="dream_setup_button_setup" msgid="4755361016017554826">"设置"</string>
 </resources>

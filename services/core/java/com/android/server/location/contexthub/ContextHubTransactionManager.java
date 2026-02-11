@@ -627,6 +627,7 @@ import java.util.function.BiConsumer;
         ContextHubServiceTransaction transaction = getTransactionAndHandleNext(conditions);
         if (transaction == null) {
             Log.w(TAG, "Received unexpected transaction response");
+            return;
         }
 
         if (!transaction.getAndSetComplete()) {

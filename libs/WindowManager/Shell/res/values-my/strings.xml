@@ -126,7 +126,7 @@
     <string name="more_button_text" msgid="3655388105592893530">"ပိုပြပါ"</string>
     <string name="float_button_text" msgid="9221657008391364581">"မျှောရန်"</string>
     <string name="select_text" msgid="5139083974039906583">"ရွေးရန်"</string>
-    <string name="screenshot_text" msgid="1477704010087786671">"ဖန်သားပြင်ဓာတ်ပုံ"</string>
+    <string name="screenshot_text" msgid="1477704010087786671">"ဖန်သားပြင်ပုံ"</string>
     <string name="open_in_browser_text" msgid="9181692926376072904">"ဘရောင်ဇာတွင် ဖွင့်ရန်"</string>
     <string name="open_in_app_text" msgid="2874590745116268525">"အက်ပ်တွင် ဖွင့်ရန်"</string>
     <string name="new_window_text" msgid="6318648868380652280">"ဝင်းဒိုးအသစ်"</string>

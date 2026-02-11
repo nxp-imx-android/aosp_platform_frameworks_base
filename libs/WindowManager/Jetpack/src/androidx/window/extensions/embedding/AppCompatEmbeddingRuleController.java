@@ -48,7 +48,8 @@ public class AppCompatEmbeddingRuleController {
 
     /** Initializes the controller. Must be called before any other functions. */
     public static void init(@NonNull Context context) {
-        sIsVirtualGamepadEnabled = isVirtualGamepadEnabled(context);
+        sIsVirtualGamepadEnabled =
+                isVirtualGamepadEnabled(context.getPackageName(), context.getUserId());
     }
 
     /** Loads {@link EmbeddingRule}s if any app compat override rules apply to the app. */
@@ -64,7 +65,9 @@ public class AppCompatEmbeddingRuleController {
             final EmbeddingRule rule = createVirtualGamepadOverrideRule(
                     context.getResources().getString(R.string.config_virtual_gamepad_package_name),
                     context.getResources().getString(R.string.config_virtual_gamepad_activity_name),
-                    defaultMinSize(context));
+                    defaultMinSize(context),
+                    context.getPackageName(),
+                    context.getUserId());
             if (rule != null) {
                 rules.add(rule);
             }
@@ -77,13 +80,15 @@ public class AppCompatEmbeddingRuleController {
     @VisibleForTesting
     @Nullable
     public static EmbeddingRule createVirtualGamepadOverrideRule(
-            @NonNull String packageName, @NonNull String activityName, int minSizePx) {
+            @NonNull String packageName, @NonNull String activityName, int minSizePx,
+            @NonNull String selfPackageName, int userId) {
         if (packageName.isEmpty() || activityName.isEmpty()) {
             return null;
         }
 
         final Intent placeholderIntent = new Intent();
         placeholderIntent.setClassName(packageName, activityName);
+        placeholderIntent.putExtra(Intent.EXTRA_PACKAGE_NAME, selfPackageName);
 
         // TODO(b/454729069) confirm the desired split ratio and whether to use hinge split
         final SplitAttributes defaultAttributes = new SplitAttributes.Builder()
@@ -94,10 +99,12 @@ public class AppCompatEmbeddingRuleController {
                 placeholderIntent,
                 (androidx.window.extensions.core.util.function.Predicate<Activity>)
                         activity -> activity.getResources().getConfiguration().touchscreen
-                                == TOUCHSCREEN_FINGER,
+                                == TOUCHSCREEN_FINGER
+                                && isVirtualGamepadEnabled(selfPackageName, userId),
                 intent -> true,
                 parentMetrics -> parentMetrics.getBounds().height() >= minSizePx
                         && parentMetrics.getBounds().width() >= minSizePx)
+                .setFinishPrimaryWithPlaceholder(SplitRule.FINISH_NEVER)
                 .setDefaultSplitAttributes(defaultAttributes)
                 .build();
     }
@@ -140,8 +147,8 @@ public class AppCompatEmbeddingRuleController {
         }
     }
 
-    private static boolean isVirtualGamepadEnabled(@NonNull Context context) {
-        int userOption = getVirtualGamepadUserOption(context);
+    private static boolean isVirtualGamepadEnabled(@NonNull String packageName, int userId) {
+        int userOption = getVirtualGamepadUserOption(packageName, userId);
         if (userOption == PackageManager.VIRTUAL_GAMEPAD_USER_OPTION_OPT_OUT) {
             return false;
         }
@@ -149,10 +156,10 @@ public class AppCompatEmbeddingRuleController {
     }
 
     @PackageManager.VirtualGamepadUserOption
-    private static int getVirtualGamepadUserOption(@NonNull Context context) {
+    private static int getVirtualGamepadUserOption(@NonNull String packageName, int userId) {
         final IPackageManager pm = AppGlobals.getPackageManager();
         try {
-            return pm.getVirtualGamepadUserOption(context.getPackageName(), context.getUserId());
+            return pm.getVirtualGamepadUserOption(packageName, userId);
         } catch (RemoteException e) {
             return PackageManager.VIRTUAL_GAMEPAD_USER_OPTION_UNSET;
         }

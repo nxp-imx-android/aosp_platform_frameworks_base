@@ -26,6 +26,7 @@ import static android.app.ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_I
 import static android.app.ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_COMPAT;
 import static android.app.ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_DENIED;
 import static android.app.ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_SYSTEM_DEFINED;
+import static android.app.privatecompute.flags.Flags.enablePccFrameworkSupport;
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION_CODES.BAKLAVA;
@@ -192,6 +193,7 @@ public class BackgroundActivityStartController {
             BAL_ALLOW_NON_APP_VISIBLE_WINDOW,
             BAL_ALLOW_WALLPAPER,
             BAL_ALLOW_NOTIFICATION_TOKEN,
+            BAL_ALLOW_PCC_DEFINING_APP_HAS_VISIBLE_WINDOW,
             BAL_BLOCK
     })
     public @interface BalCode {}
@@ -245,6 +247,10 @@ public class BackgroundActivityStartController {
     static final int BAL_ALLOW_SDK_SANDBOX =
             FrameworkStatsLog.BAL_ALLOWED__ALLOWED_REASON__BAL_ALLOW_SDK_SANDBOX;
 
+    /** Process belongs to PCC process and defining app has a visible window */
+    static final int BAL_ALLOW_PCC_DEFINING_APP_HAS_VISIBLE_WINDOW =
+            FrameworkStatsLog.BAL_ALLOWED__ALLOWED_REASON__BAL_ALLOW_PCC;
+
     /** Process belongs to a SDK sandbox */
     static final int BAL_ALLOW_NON_APP_VISIBLE_WINDOW =
             FrameworkStatsLog.BAL_ALLOWED__ALLOWED_REASON__BAL_ALLOW_NON_APP_VISIBLE_WINDOW;
@@ -280,6 +286,8 @@ public class BackgroundActivityStartController {
             case BAL_ALLOW_VISIBLE_WINDOW -> "BAL_ALLOW_VISIBLE_WINDOW";
             case BAL_ALLOW_NOTIFICATION_TOKEN -> "BAL_ALLOW_NOTIFICATION_TOKEN";
             case BAL_ALLOW_WALLPAPER -> "BAL_ALLOW_WALLPAPER";
+            case BAL_ALLOW_PCC_DEFINING_APP_HAS_VISIBLE_WINDOW ->
+                    "BAL_ALLOW_PCC_DEFINING_APP_HAS_VISIBLE_WINDOW";
             case BAL_BLOCK -> "BAL_BLOCK";
             default -> throw new IllegalArgumentException("Unexpected value: " + balCode);
         };
@@ -887,6 +895,22 @@ public class BackgroundActivityStartController {
             if (getService().hasActiveVisibleWindow(realCallingSdkSandboxUidToAppUid)) {
                 state.setResultForRealCaller(new BalVerdict(BAL_ALLOW_SDK_SANDBOX,
                         "uid in SDK sandbox has visible (non-toast) window").allowNewTask());
+                return allowBasedOnRealCaller(state);
+            }
+        }
+
+        // In the case of a PCC calling uid, check if the corresponding app uid has a
+        // visible window.
+        if (enablePccFrameworkSupport() && Process.isPrivateComputeCoreUid(state.mRealCallingUid)) {
+            int realCallingAppUid =
+                    getService().mContext.getPackageManager()
+                            .getAppUidForPrivateComputeCoreUid(state.mRealCallingUid);
+
+            if (getService().hasActiveVisibleWindow(realCallingAppUid)) {
+                state.setResultForRealCaller(new BalVerdict(
+                        BAL_ALLOW_PCC_DEFINING_APP_HAS_VISIBLE_WINDOW,
+                        "PCC process's parent app has visible (non-toast) window")
+                        .allowNewTask());
                 return allowBasedOnRealCaller(state);
             }
         }

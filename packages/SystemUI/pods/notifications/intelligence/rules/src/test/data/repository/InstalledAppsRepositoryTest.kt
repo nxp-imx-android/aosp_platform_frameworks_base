@@ -42,7 +42,7 @@ class InstalledAppsRepositoryTest : SysuiTestCase() {
 
     // TODO: b/478225883 - Put InstalledAppsRepository in a test fixture.
     private val Kosmos.underTest by
-        Kosmos.Fixture { InstalledAppsRepository(kosmos.testDispatcher, kosmos.packageManager) }
+        Kosmos.Fixture { InstalledAppsRepositoryImpl(kosmos.testDispatcher, kosmos.packageManager) }
 
     @Test
     fun fetchInstalledApps_getsAll() =

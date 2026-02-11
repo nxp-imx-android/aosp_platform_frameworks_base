@@ -63,6 +63,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
@@ -289,7 +290,8 @@ interface KeyguardRepository {
 
     fun showDismissibleKeyguard()
 
-    fun setDismissAction(dismissAction: DismissAction)
+    /** Atomically update the current action and return the prior dismiss action */
+    fun setDismissAction(dismissAction: DismissAction): DismissAction
 
     suspend fun setKeyguardDone(keyguardDoneType: KeyguardDone)
 
@@ -331,8 +333,8 @@ constructor(
         MutableStateFlow(DismissAction.None)
     override val dismissAction = _dismissAction.asStateFlow()
 
-    override fun setDismissAction(dismissAction: DismissAction) {
-        _dismissAction.value = dismissAction
+    override fun setDismissAction(dismissAction: DismissAction): DismissAction {
+        return _dismissAction.getAndUpdate { dismissAction }
     }
 
     private val _keyguardDone: MutableSharedFlow<KeyguardDone> = MutableSharedFlow()

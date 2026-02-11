@@ -68,6 +68,9 @@ java_defaults {
         "jsr330", // javax.inject.*
         "dagger2", // Dagger-specific annotations
     ],
+    visibility: [
+        "//frameworks/base/packages/SystemUI/pods/bundle:__subpackages__",
+    ],
     defaults_visibility: ["//frameworks/base/packages/SystemUI/pods:__subpackages__"],
 }
 

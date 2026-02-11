@@ -37,6 +37,7 @@ import android.app.WindowConfiguration;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.graphics.Rect;
+import android.util.Slog;
 import android.view.Display;
 import android.window.DesktopExperienceFlags;
 
@@ -62,6 +63,8 @@ class DesktopModeLaunchParamsModifier extends DefaultLaunchParamsModifier {
 
     @NonNull
     private final DesktopModeCompatPolicy mDesktopModeCompatPolicy;
+
+    private static final String TAG = "DesktopModeLaunchParamsModifier";
 
     DesktopModeLaunchParamsModifier(@NonNull Context context,
             @NonNull ActivityTaskSupervisor supervisor,
@@ -441,13 +444,32 @@ class DesktopModeLaunchParamsModifier extends DefaultLaunchParamsModifier {
         }
 
         if (DesktopExperienceFlags.ENABLE_DESKTOP_FIRST_TOP_FULLSCREEN_BUGFIX.isTrue()) {
-            final Task launchRootCandidate = taskDisplayArea.getLaunchRootTask(
+            final Task launchRootCandidateFreeform = taskDisplayArea.getLaunchRootTask(
                     WINDOWING_MODE_FREEFORM, ACTIVITY_TYPE_STANDARD,
                     /* options= */ null, /* sourceTask= */ null, /* launchFlags= */ 0
             );
-            final boolean isAnyDeskActive = launchRootCandidate != null
-                    && launchRootCandidate.mCreatedByOrganizer
-                    && launchRootCandidate.getWindowingMode() == WINDOWING_MODE_FREEFORM;
+
+            if (Flags.enableDesktopFirstMultipleLaunchRootBugfix()) {
+                final Task launchRootCandidateUndefined = taskDisplayArea.getLaunchRootTask(
+                        WINDOWING_MODE_UNDEFINED, ACTIVITY_TYPE_STANDARD,
+                        /* options= */ null, /* sourceTask= */ null, /* launchFlags= */ 0
+                );
+                if (launchRootCandidateFreeform != launchRootCandidateUndefined
+                        && launchRootCandidateUndefined != null
+                        && launchRootCandidateUndefined.mCreatedByOrganizer) {
+                    // If a different launch root for WINDOWING_MODE_UNDEFINED is available, use it.
+                    // This usually happens on CTS runs with TestTaskOrganizer.
+                    Slog.w(TAG, "Multiple launch root detected. Skip entering desktop for " + task
+                            + ", launchRootCandidateUndefined=" + launchRootCandidateUndefined
+                            + ", launchRootCandidateFreeform=" + launchRootCandidateFreeform);
+                    appendLog("desktop-first-but-undefined-launch-root-exists");
+                    return WINDOWING_MODE_UNDEFINED;
+                }
+            }
+
+            final boolean isAnyDeskActive = launchRootCandidateFreeform != null
+                    && launchRootCandidateFreeform.mCreatedByOrganizer
+                    && launchRootCandidateFreeform.getWindowingMode() == WINDOWING_MODE_FREEFORM;
             final boolean isHomeVisible = taskDisplayArea.getDisplayContent()
                     .getTask(t -> t.isActivityTypeHome() && t.isVisibleRequested()) != null;
             if (!isAnyDeskActive && !isHomeVisible) {

@@ -341,6 +341,7 @@
     <string name="desktop_mode_layout_menu_immersive_button_text">Immersive</string>
     <!-- Accessibility text for the Layout Menu's immersive restore button [CHAR LIMIT=NONE] -->
     <string name="desktop_mode_layout_menu_immersive_restore_button_text">Restore</string>
+    <!-- Accessibility text for the Layout Menu's maximize button [CHAR LIMIT=NONE] -->
     <string name="desktop_mode_layout_menu_maximize_button_text">Maximize</string>
     <!-- Accessibility text for the Layout Menu's restore button [CHAR LIMIT=NONE] -->
     <string name="desktop_mode_layout_menu_restore_button_text">Restore</string>
@@ -364,8 +365,14 @@
     <string name="layout_menu_talkback_action_snap_left_text">Resize window to left</string>
     <!-- Accessibility action replacement for layout menu enter snap right button [CHAR LIMIT=NONE] -->
     <string name="layout_menu_talkback_action_snap_right_text">Resize window to right</string>
-    <!-- Accessibility action replacement for layout menu enter maximize/restore button [CHAR LIMIT=NONE] -->
-    <string name="layout_menu_talkback_action_maximize_restore_text">Maximize or restore window size</string>
+    <!-- Accessibility action replacement for layout menu maximize button [CHAR LIMIT=NONE] -->
+    <string name="layout_menu_talkback_action_maximize_restore_text">Maximize app window size</string>
+    <!-- Accessibility action replacement for layout menu restore button [CHAR LIMIT=NONE] -->
+    <string name="layout_menu_talkback_action_restore_text">Restore window size</string>
+    <!-- Accessibility action replacement for layout menu immersive mode enter button [CHAR LIMIT=NONE] -->
+    <string name="layout_menu_talkback_action_immersive_enter_text">Enter immersive mode</string>
+    <!-- Accessibility action replacement for layout menu immersive mode restore button [CHAR LIMIT=NONE] -->
+    <string name="layout_menu_talkback_action_immersive_restore_text">Restore window size</string>
     <!-- Accessibility action replacement for app header maximize button [CHAR LIMIT=NONE] -->
     <string name="app_header_talkback_action_maximize_button_text">Maximize app window size</string>
     <!-- Accessibility action replacement for app header restore button [CHAR LIMIT=NONE] -->

@@ -347,7 +347,9 @@ import android.content.pm.ProviderInfoList;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.content.pm.SharedLibraryInfo;
+import android.content.pm.Signature;
 import android.content.pm.SignedPackage;
+import android.content.pm.SigningDetails;
 import android.content.pm.SystemFeaturesCache;
 import android.content.pm.TestUtilityService;
 import android.content.pm.UserInfo;
@@ -427,6 +429,7 @@ import android.util.IndentingPrintWriter;
 import android.util.IntArray;
 import android.util.Log;
 import android.util.MathUtils;
+import android.util.PackageUtils;
 import android.util.Pair;
 import android.util.Slog;
 import android.util.SparseArray;
@@ -444,6 +447,7 @@ import android.view.autofill.AutofillManagerInternal;
 
 import com.android.internal.annotations.CompositeRWLock;
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.SystemServerLock;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.app.IAppOpsActiveCallback;
 import com.android.internal.app.IAppOpsCallback;
@@ -754,6 +758,7 @@ public class ActivityManagerService extends IActivityManager.Stub
     /**
      * The global lock for AMS, it's de-facto the ActivityManagerService object as of now.
      */
+    @SystemServerLock(LockGuard.INDEX_ACTIVITY)
     final ActivityManagerGlobalLock mGlobalLock = ActivityManagerService.this;
 
     /**
@@ -3023,6 +3028,7 @@ public class ActivityManagerService extends IActivityManager.Stub
             return false;
         }
 
+        final List<String> expectedDigests = new ArrayList<>();
         final List<SignedPackage> rules = policy.getAllowlistedSignedPackages();
         final int rulesSize = rules.size();
         for (int i = 0; i < rulesSize; i++) {
@@ -3034,16 +3040,49 @@ public class ActivityManagerService extends IActivityManager.Stub
                             .hasSha256Certificate(rule.getCertificateDigest())) {
                         return true;
                     }
+                    expectedDigests.add(
+                            HexDump.toHexString(rule.getCertificateDigest()).toUpperCase());
                 } else {
                     return true;
                 }
             }
         }
 
-        Slog.w(TAG, "Access denied: " + policyOwnerPkg + " blocks " + candidatePkg + " (uid "
-                        + candidateUid + ")");
+        logAssociationDenialLocked(policyOwnerPkg, candidatePkg, candidateUid,
+                expectedDigests, candidateInfo.getSigningDetails());
         return false;
     }
+
+    private void logAssociationDenialLocked(String owner, String target, int targetUid,
+            List<String> expectedDigests, SigningDetails details) {
+        if (expectedDigests.isEmpty()) {
+            Slog.w(TAG, "Access denied: " + owner + " blocks " + target
+                    + " (uid " + targetUid + "): package not listed in policy");
+            return;
+        }
+
+        List<String> actualDigests = new ArrayList<>();
+        if (details != null) {
+            final Signature[] signatures = details.getSignatures();
+            if (signatures != null) {
+                for (int i = 0; i < signatures.length; i++) {
+                    final Signature sig = signatures[i];
+                    byte[] digest = PackageUtils.computeSha256DigestBytes(sig.toByteArray());
+                    if (digest != null) {
+                        actualDigests.add(HexDump.toHexString(digest).toUpperCase());
+                    }
+                }
+            }
+        }
+
+        final String actualOutput =
+                actualDigests.isEmpty() ? "unknown" : actualDigests.toString();
+
+        Slog.w(TAG, "Access denied: " + owner + " has a policy for " + target
+                + " but the certificate digest did not match. Expected one of: "
+                + expectedDigests + ". Package on device has: " + actualOutput);
+    }
+
 
     /**
      * Checks if the association is allowed by the App's own Manifest policy (the {@code
@@ -5471,19 +5510,18 @@ public class ActivityManagerService extends IActivityManager.Stub
             }
 
             final HostingRecord hostingRecord = app.getHostingRecord();
-            final String shortAction = getShortAction(hostingRecord.getAction());
             FrameworkStatsLog.write(
                     FrameworkStatsLog.PROCESS_START_TIME,
                     app.info.uid,
                     pid,
-                    app.info.packageName,
+                    app.processName,
                     FrameworkStatsLog.PROCESS_START_TIME__TYPE__COLD,
                     app.getStartElapsedTime(),
                     (int) (app.getBindApplicationTime() - app.getStartUptime()),
                     (int) (SystemClock.uptimeMillis() - app.getStartUptime()),
                     hostingRecord.getType(),
                     hostingRecord.getName(),
-                    shortAction,
+                    hostingRecord.getAction(),
                     HostingRecord.getHostingTypeIdStatsd(hostingRecord.getType()),
                     HostingRecord.getTriggerTypeForStatsd(hostingRecord.getTriggerType()));
         }
@@ -20431,6 +20469,11 @@ public class ActivityManagerService extends IActivityManager.Stub
         @Override
         public boolean isLastMemoryLevelNormal() {
             return mAppProfiler.isLastMemoryLevelNormal();
+        }
+
+        @Override
+        public int getFrozenProcessCount() {
+            return mCachedAppOptimizer.getFrozenProcessCount();
         }
     }
 

@@ -731,9 +731,39 @@ constructor(
             return
         }
 
-        // TODO(b/467481923): Satellite and mobile data improvement implementation!
-
         mobileNetworkLayout.visibility = View.VISIBLE
+        if (
+            internetContent.currentSatelliteState >
+                InternetDetailsContentController.SATELLITE_NOT_STARTED
+        ) {
+            mobileTitleTextView.setText(R.string.satellite_network_title_text)
+            mobileDataToggle.visibility = View.INVISIBLE
+            mobileToggleDivider?.visibility = View.INVISIBLE
+            mobileSummaryTextView.text = ""
+            if (
+                internetContent.currentSatelliteState ==
+                    InternetDetailsContentController.SATELLITE_CONNECTED
+            ) {
+                mobileSummaryTextView.setText(R.string.mobile_data_connection_active)
+                mobileSummaryTextView.setBreakStrategy(Layout.BREAK_STRATEGY_SIMPLE)
+                mobileSummaryTextView.visibility = View.VISIBLE
+            } else {
+                mobileSummaryTextView.visibility = View.GONE
+            }
+            val drawable =
+                context.resources.getDrawable(
+                    if (
+                        internetContent.currentSatelliteState >
+                            InternetDetailsContentController.SATELLITE_STARTED
+                    )
+                        R.drawable.ic_satellite_connected_2
+                    else R.drawable.ic_satellite_not_connected
+                )
+            drawable.setTint(context.getColor(R.color.connected_network_primary_color))
+            signalIcon.setImageDrawable(drawable)
+            return
+        }
+
         mobileDataToggle.setChecked(internetDetailsContentController.isMobileDataEnabled)
         mobileTitleTextView.text = getMobileNetworkTitle(defaultDataSubId)
         val summary = getMobileNetworkSummary(defaultDataSubId)
@@ -1136,6 +1166,10 @@ constructor(
             activeAutoSwitchNonDdsSubId =
                 internetDetailsContentController.getActiveAutoSwitchNonDdsSubId(),
             showAllWifiInList = hasSeeAllClicked,
+            activeDataSubId = internetDetailsContentController.getActiveDataSubId(),
+            currentSatelliteState = internetDetailsContentController.getCurrentSatelliteState(),
+            defaultSubSignalStrengthIcon =
+                internetDetailsContentController.getSignalStrengthDrawable(defaultDataSubId),
         )
     }
 
@@ -1257,6 +1291,9 @@ constructor(
         val isWifiScanEnabled: Boolean = false,
         val showAllWifiInList: Boolean = false,
         val activeAutoSwitchNonDdsSubId: Int = SubscriptionManager.INVALID_SUBSCRIPTION_ID,
+        val activeDataSubId: Int = SubscriptionManager.INVALID_SUBSCRIPTION_ID,
+        val currentSatelliteState: Int = InternetDetailsContentController.SATELLITE_NOT_STARTED,
+        val defaultSubSignalStrengthIcon: Drawable? = null,
     )
 
     companion object {

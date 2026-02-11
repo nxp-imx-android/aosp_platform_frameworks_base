@@ -316,10 +316,13 @@ public class AppLockActivity extends Activity {
                     }
                 };
 
+        final String biometricPromptSubtitle = newAppLockEnabled
+                ? getString(R.string.enable_app_lock_biometric_prompt_subtitle, packageLabel)
+                : getString(R.string.disable_app_lock_biometric_prompt_subtitle, packageLabel);
         final BiometricPrompt.Builder biometricPromptBuilder =
                 mInjector.getBiometricPromptBuilder(this)
                 .setTitle(getString(R.string.biometric_dialog_default_title))
-                .setSubtitle(getString(R.string.biometric_or_screen_lock_dialog_default_subtitle))
+                .setSubtitle(biometricPromptSubtitle)
                 .setLogoDescription(packageLabel.toString())
                 .setAllowedAuthenticators(Authenticators.BIOMETRIC_STRONG
                        | Authenticators.DEVICE_CREDENTIAL);

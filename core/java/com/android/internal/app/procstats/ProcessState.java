@@ -81,7 +81,7 @@ public final class ProcessState {
     private static final boolean DEBUG_PARCEL = false;
 
     // Map from process states to the states we track.
-    static final int[] PROCESS_STATE_TO_STATE = new int[] {
+    public static final int[] PROCESS_STATE_TO_STATE = new int[] {
         STATE_PERSISTENT,               // ActivityManager.PROCESS_STATE_PERSISTENT
         STATE_PERSISTENT,               // ActivityManager.PROCESS_STATE_PERSISTENT_UI
         STATE_TOP,                      // ActivityManager.PROCESS_STATE_TOP

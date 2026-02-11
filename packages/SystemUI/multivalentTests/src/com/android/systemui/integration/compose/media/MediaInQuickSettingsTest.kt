@@ -17,6 +17,7 @@
 package com.android.systemui.media
 
 import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.Saver
@@ -28,7 +29,6 @@ import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.TestContentScope
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.Flags
-import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.integration.SystemUiIntegrationTest
@@ -38,14 +38,21 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.media.remedia.data.repository.fakeActiveMedia
 import com.android.systemui.media.remedia.data.repository.setFakeCurrentMedia
 import com.android.systemui.media.remedia.data.repository.setHasMedia
+import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.notificationRulesShadeStateViewModelFactory
 import com.android.systemui.qs.composefragment.dagger.usingMediaInComposeFragment
 import com.android.systemui.qs.ui.composable.QuickSettingsScene
+import com.android.systemui.qs.ui.composable.QuickSettingsShadeOverlay
+import com.android.systemui.qs.ui.viewmodel.quickSettingsContainerViewModelFactory
 import com.android.systemui.qs.ui.viewmodel.quickSettingsSceneContentViewModelFactory
+import com.android.systemui.qs.ui.viewmodel.quickSettingsShadeOverlayActionsViewModelFactory
+import com.android.systemui.qs.ui.viewmodel.quickSettingsShadeOverlayContentViewModelFactory
 import com.android.systemui.qs.ui.viewmodel.quickSettingsUserActionsViewModelFactory
 import com.android.systemui.scene.session.shared.SessionStorage
 import com.android.systemui.scene.session.ui.composable.SaveableSession
 import com.android.systemui.scene.session.ui.composable.Session
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.scene.ui.composable.WithSceneContainerPreloadedResources
+import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.shade.ui.composable.WithStatusIconContext
 import com.android.systemui.statusbar.notification.stack.ui.view.notificationScrollView
@@ -61,7 +68,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper
 @EnableSceneContainer
-@DisableFlags(FLAG_DUAL_SHADE)
+@EnableFlags(Flags.FLAG_DUAL_SHADE)
 @SystemUiIntegrationTest
 class MediaInQuickSettingsTest : SysuiTestCase() {
     @get:Rule val composeTestRule = createComposeRule()
@@ -77,7 +84,6 @@ class MediaInQuickSettingsTest : SysuiTestCase() {
                 init: () -> T,
             ): T = rememberSession(key, inputs = inputs, init = init)
         }
-
     private val scene =
         QuickSettingsScene(
             shadeSession = shadeSession,
@@ -86,7 +92,19 @@ class MediaInQuickSettingsTest : SysuiTestCase() {
                 kosmos.notificationsPlaceholderViewModelFactory,
             actionsViewModelFactory = kosmos.quickSettingsUserActionsViewModelFactory,
             contentViewModelFactory = kosmos.quickSettingsSceneContentViewModelFactory,
+            notificationRulesShadeStateViewModelFactory =
+                kosmos.notificationRulesShadeStateViewModelFactory,
             jankMonitor = kosmos.interactionJankMonitor,
+        )
+
+    private val overlay =
+        QuickSettingsShadeOverlay(
+            actionsViewModelFactory = kosmos.quickSettingsShadeOverlayActionsViewModelFactory,
+            contentViewModelFactory = kosmos.quickSettingsShadeOverlayContentViewModelFactory,
+            quickSettingsContainerViewModelFactory = kosmos.quickSettingsContainerViewModelFactory,
+            notificationStackScrollView = { kosmos.notificationScrollView },
+            notificationsPlaceholderViewModelFactory =
+                kosmos.notificationsPlaceholderViewModelFactory,
         )
 
     @Before
@@ -109,6 +127,35 @@ class MediaInQuickSettingsTest : SysuiTestCase() {
                         with(scene) {
                             TestContentScope(currentScene = Scenes.QuickSettings) {
                                 Content(Modifier)
+                            }
+                        }
+                    }
+                }
+            }
+            runCurrent()
+            composeTestRule.waitForIdle()
+
+            // Verify that the UMO exists.
+            composeTestRule
+                .onNodeWithContentDescription(EXPECTED_UMO_CONTENT_DESC, substring = true)
+                .assertExists()
+        }
+
+    @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
+    @Test
+    fun umoInQuickSettingsOverlay() =
+        kosmos.runTest {
+            usingMediaInComposeFragment = true
+            enableDualShade()
+            setHasMedia(true)
+
+            // Set the quick settings overlay content.
+            composeTestRule.setContent {
+                WithSceneContainerPreloadedResources {
+                    PlatformTheme {
+                        WithStatusIconContext(tintedIconManagerFactory) {
+                            with(overlay) {
+                                TestContentScope(currentScene = Scenes.Gone) { Content(Modifier) }
                             }
                         }
                     }

@@ -70,10 +70,7 @@
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"పవర్ ఆఫ్‌లో ఉన్నప్పుడు కూడా మీరు Find My Deviceతో ఈ టాబ్లెట్‌ను గుర్తించవచ్చు"</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"పవర్ ఆఫ్‌లో ఉన్నప్పుడు కూడా మీరు Find Hubతో ఈ ఫోన్‌ను గుర్తించవచ్చు"</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"పవర్ ఆఫ్‌లో ఉన్నప్పుడు కూడా మీరు Find Hubతో ఈ టాబ్లెట్‌ను గుర్తించవచ్చు"</string>
-    <!-- no translation found for dream_setup_description (5167691612621831552) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (6296793330727926553) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (3098487756905462324) -->
-    <skip />
+    <string name="dream_setup_description" product="default" msgid="5167691612621831552">"మీ ఫోన్ ఛార్జ్ అవుతున్నప్పుడు గడియారం, ఫోటోలు లేదా వాతావరణ సమాచారం కనిపించేలా చేయండి"</string>
+    <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"మీ టాబ్లెట్ ఛార్జ్ అవుతున్నప్పుడు గడియారం, ఫోటోలు లేదా వాతావరణ సమాచారం కనిపించేలా చేయండి"</string>
+    <string name="dream_setup_description" product="device" msgid="3098487756905462324">"మీ డివైజ్ ఛార్జ్ అవుతున్నప్పుడు గడియారం, ఫోటోలు లేదా వాతావరణ సమాచారం కనిపించేలా చేయండి"</string>
 </resources>

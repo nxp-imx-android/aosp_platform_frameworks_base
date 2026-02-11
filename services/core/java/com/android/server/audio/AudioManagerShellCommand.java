@@ -893,6 +893,8 @@ class AudioManagerShellCommand extends ShellCommand {
         sDeviceTypeStringToInteger.put("BLE_BROADCAST", AudioDeviceInfo.TYPE_BLE_BROADCAST);
         sDeviceTypeStringToInteger.put(
                 "MULTICHANNEL_GROUP", AudioDeviceInfo.TYPE_MULTICHANNEL_GROUP);
+        sDeviceTypeStringToInteger.put(
+                "BLE_HEARING_AID", AudioDeviceInfo.TYPE_BLE_HEARING_AID);
 
         sDeviceTypeIntegerToString.put(AudioDeviceInfo.TYPE_BUILTIN_EARPIECE, "BUILTIN_EARPIECE");
         sDeviceTypeIntegerToString.put(AudioDeviceInfo.TYPE_BUILTIN_MIC, "BUILTIN_MIC");
@@ -928,6 +930,8 @@ class AudioManagerShellCommand extends ShellCommand {
         sDeviceTypeIntegerToString.put(AudioDeviceInfo.TYPE_BLE_BROADCAST, "BLE_BROADCAST");
         sDeviceTypeIntegerToString.put(
                 AudioDeviceInfo.TYPE_MULTICHANNEL_GROUP, "MULTICHANNEL_GROUP");
+        sDeviceTypeIntegerToString.put(
+                AudioDeviceInfo.TYPE_BLE_HEARING_AID, "BLE_HEARING_AID");
 
         // "DEFAULT" indicates invalid audio source.
         sAudioSourceStringToInteger.put("MIC", AudioSource.MIC);

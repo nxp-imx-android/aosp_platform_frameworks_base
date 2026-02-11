@@ -147,7 +147,7 @@ public class StatusBarNotificationActivityStarter implements NotificationActivit
     private final LockPatternUtils mLockPatternUtils;
     private final StatusBarRemoteInputCallback mStatusBarRemoteInputCallback;
     private final ActivityIntentHelper mActivityIntentHelper;
-    private final ActivityIntentRepository mActivityIntentRepository;
+    private ActivityIntentRepository mActivityIntentRepository;
     private final ShadeAnimationInteractor mShadeAnimationInteractor;
 
     private final MetricsLogger mMetricsLogger;
@@ -386,8 +386,14 @@ public class StatusBarNotificationActivityStarter implements NotificationActivit
         final Runnable runnable = () -> handleNotificationClickAfterPanelCollapsed(
                 entry, row, intent, isActivityIntent, animate);
         if (showOverLockscreen) {
-            mShadeController.addPostCollapseAction(runnable);
-            mShadeController.collapseShade(true /* animate */);
+            if (SceneContainerFlag.isEnabled()) {
+                // Launch activity immediately to update keyguard occlusion state
+                // and directly transition from Shade to Occluded.
+                runnable.run();
+            } else {
+                mShadeController.addPostCollapseAction(runnable);
+                mShadeController.collapseShade(true /* animate */);
+            }
         } else if (mKeyguardStateController.isShowing()
                 && mKeyguardStateController.isOccluded()) {
             mStatusBarKeyguardViewManager.addAfterKeyguardGoneRunnable(runnable);
@@ -797,5 +803,10 @@ public class StatusBarNotificationActivityStarter implements NotificationActivit
             return false;
         }
         return true;
+    }
+
+    @VisibleForTesting
+    void setActivityIntentRepository(ActivityIntentRepository activityIntentRepository) {
+        mActivityIntentRepository = activityIntentRepository;
     }
 }

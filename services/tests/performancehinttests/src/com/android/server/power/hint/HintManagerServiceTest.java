@@ -583,33 +583,6 @@ public class HintManagerServiceTest {
     }
 
     @Test
-    public void testCreateAudioPerformanceSessions() throws Exception {
-        HintManagerService service = createService();
-        IBinder token = new Binder();
-
-        IHintManager.HintManagerClientData data = service.getBinderServiceInstance()
-                .registerClient(mClientCallback);
-
-        long sessionPtr1 = 1112L;
-        long sessionId1 = 11112L;
-        final int threadCount = 5;
-        CountDownLatch stopLatch1 = new CountDownLatch(1);
-        int[] tids1 = createThreads(threadCount, stopLatch1);
-        when(mNativeWrapperMock.halCreateHintSessionWithConfig(eq(TGID), eq(UID), eq(tids1),
-                eq(DEFAULT_TARGET_DURATION), anyInt(), any(SessionConfig.class)))
-                .thenAnswer(fakeCreateWithConfig(sessionPtr1, sessionId1));
-        SessionCreationConfig creationConfig =
-                makeSessionCreationConfig(tids1, DEFAULT_TARGET_DURATION);
-
-        creationConfig.modesToEnable = new int[] {4}; // AUDIO_PERFORMANCE
-
-        SessionConfig config = new SessionConfig();
-        IHintSession a = service.getBinderServiceInstance().createHintSessionWithConfig(token,
-                SessionTag.OTHER, creationConfig, config).session;
-        assertNotNull(a);
-        assertEquals(sessionId1, config.id);
-    }
-    @Test
     public void testPauseResumeHintSession() throws Exception {
         HintManagerService service = createService();
         IBinder token = new Binder();

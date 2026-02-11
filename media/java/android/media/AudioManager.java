@@ -62,6 +62,7 @@ import android.bluetooth.BluetoothCodecConfig;
 import android.bluetooth.BluetoothCodecType;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothLeAudioCodecConfig;
+import android.companion.virtual.VirtualDevice;
 import android.companion.virtual.VirtualDeviceManager;
 import android.compat.annotation.ChangeId;
 import android.compat.annotation.EnabledSince;
@@ -75,7 +76,6 @@ import android.content.pm.PackageManager;
 import android.media.AudioAttributes.AttributeSystemUsage;
 import android.media.CallbackUtil.ListenerInfo;
 import android.media.audio.AudioModeSessionRequest;
-import android.media.audio.Flags;
 import android.media.audio.IAudioModeSession;
 import android.media.audio.IAudioModeSessionCallback;
 import android.media.audiopolicy.AudioPolicy;
@@ -133,7 +133,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * AudioManager provides access to volume and ringer mode control.
@@ -3996,7 +3995,8 @@ public class AudioManager {
     public boolean isAudioFocusExclusive() {
         final IAudioService service = getService();
         try {
-            return service.getCurrentAudioFocus() == AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE;
+            return service.getCurrentAudioFocus(getDeviceFocusEnvironmentToken())
+                    == AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE;
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -5087,7 +5087,8 @@ public class AudioManager {
                         mAudioFocusDispatcher,
                         clientFakeId, "com.android.test.fakeclient",
                         afr.getFlags() | AudioManager.AUDIOFOCUS_FLAG_TEST,
-                        clientFakeUid, clientTargetSdk);
+                        clientFakeUid, clientTargetSdk,
+                        getDeviceFocusEnvironmentToken());
             } catch (RemoteException e) {
                 throw e.rethrowFromSystemServer();
             }
@@ -5100,6 +5101,51 @@ public class AudioManager {
         }
 
         return handleExternalAudioPolicyWaitIfNeeded(clientFakeId, focusReceiver, afr);
+    }
+
+    /**
+     * @hide
+     * Create a separate audio focus environment.
+     * @param focusEnvToken the IBinder token that can be used to identify the requested focus
+     *                     environment.
+     */
+    @RequiresPermission(anyOf = {
+            Manifest.permission.MODIFY_AUDIO_ROUTING,
+            Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED
+    })
+    public boolean createFocusEnvironment(@NonNull IBinder focusEnvToken) {
+        if (!android.companion.virtualdevice.flags.Flags.audioFocusEnvironments()) {
+            throw new UnsupportedOperationException("Audio Focus Environments flag is not enabled");
+        }
+        Objects.requireNonNull(focusEnvToken);
+        try {
+            return getService().createFocusEnvironment(focusEnvToken);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * @hide
+     * Destroy an audio focus environment identified by its IBinder token.
+     * @param focusEnvToken the IBinder token that can be used to identify the focus environment
+     *                     to be destroyed.
+     * @return true if the focus environment was destroyed, false otherwise
+     */
+    @RequiresPermission(anyOf = {
+            Manifest.permission.MODIFY_AUDIO_ROUTING,
+            Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED
+    })
+    public boolean destroyFocusEnvironment(@NonNull IBinder focusEnvToken) {
+        if (!android.companion.virtualdevice.flags.Flags.audioFocusEnvironments()) {
+            throw new UnsupportedOperationException("Audio Focus Environments flag is not enabled");
+        }
+        Objects.requireNonNull(focusEnvToken);
+        try {
+            return getService().destroyFocusEnvironment(focusEnvToken);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
     }
 
     /**
@@ -5119,7 +5165,8 @@ public class AudioManager {
         Objects.requireNonNull(clientFakeId);
         try {
             return getService().abandonAudioFocusForTest(mAudioFocusDispatcher,
-                    clientFakeId, afr.getAudioAttributes(), "com.android.test.fakeclient");
+                    clientFakeId, afr.getAudioAttributes(), "com.android.test.fakeclient",
+                    getDeviceFocusEnvironmentToken());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -5388,13 +5435,24 @@ public class AudioManager {
                     "Illegal null audio policy when locking audio focus");
         }
 
-        if (hasCustomPolicyVirtualDeviceContext()) {
-            // If the focus request was made within context associated with VirtualDevice
-            // configured with custom device policy for audio, bypass audio service focus handling.
-            // The custom device policy for audio means that audio associated with this device
-            // is likely rerouted to VirtualAudioDevice and playback on the VirtualAudioDevice
-            // shouldn't affect non-virtual audio tracks (and vice versa).
-            return AUDIOFOCUS_REQUEST_GRANTED;
+        // keep legacy behavior until full adoption of the audio_focus_environments flag
+        if (!android.companion.virtualdevice.flags.Flags.audioFocusEnvironments()) {
+            if (hasCustomPolicyVirtualDeviceContext()) {
+                // If the focus request was made within context associated with VirtualDevice
+                // configured with custom device policy for audio, bypass audio service focus
+                // handling.
+                // The custom device policy for audio means that audio associated with this device
+                // is likely rerouted to VirtualAudioDevice and playback on the VirtualAudioDevice
+                // shouldn't affect non-virtual audio tracks (and vice versa).
+                return AUDIOFOCUS_REQUEST_GRANTED;
+            }
+        } else {
+            if (hasCustomPolicyVirtualDeviceContext() && getDeviceFocusEnvironmentToken() == null) {
+                // Also keep the behavior of automatically granting the audio focus on virtual
+                // devices with a custom audio policy that couldn't create a separate audio focus
+                // environment
+                return AUDIOFOCUS_REQUEST_GRANTED;
+            }
         }
 
         registerAudioFocusRequest(afr);
@@ -5422,7 +5480,7 @@ public class AudioManager {
                         getContext().getAttributionTag(),
                         afr.getFlags(),
                         ap != null ? ap.cb() : null,
-                        sdk);
+                        sdk, getDeviceFocusEnvironmentToken());
             } catch (RemoteException e) {
                 throw e.rethrowFromSystemServer();
             }
@@ -5553,7 +5611,9 @@ public class AudioManager {
                     getContext().getOpPackageName(),
                     getContext().getAttributionTag(),
                     AUDIOFOCUS_FLAG_LOCK,
-                    null /* policy token */, 0 /* sdk n/a here*/);
+                    null /* policy token */,
+                    0 /* sdk n/a here*/,
+                    getDeviceFocusEnvironmentToken());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -5716,7 +5776,8 @@ public class AudioManager {
         final IAudioService service = getService();
         try {
             service.abandonAudioFocus(null, AudioSystem.IN_VOICE_COMM_FOCUS_ID,
-                    null /*AudioAttributes, legacy behavior*/, getContext().getOpPackageName());
+                    null /*AudioAttributes, legacy behavior*/, getContext().getOpPackageName(),
+                    getDeviceFocusEnvironmentToken());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -5744,19 +5805,53 @@ public class AudioManager {
     @SuppressLint("RequiresPermission") // no permission enforcement, but only "undoes" what would
     // have been done by a matching requestAudioFocus
     public int abandonAudioFocus(OnAudioFocusChangeListener l, AudioAttributes aa) {
-        if (hasCustomPolicyVirtualDeviceContext()) {
-            // If this AudioManager instance is running within VirtualDevice context configured
-            // with custom device policy for audio, the audio focus handling is bypassed.
-            return AUDIOFOCUS_REQUEST_GRANTED;
+        if (!android.companion.virtualdevice.flags.Flags.audioFocusEnvironments()) {
+            if (hasCustomPolicyVirtualDeviceContext()) {
+                // If this AudioManager instance is running within VirtualDevice context configured
+                // with custom device policy for audio, the audio focus handling is bypassed.
+                return AUDIOFOCUS_REQUEST_GRANTED;
+            }
+        } else {
+            if (hasCustomPolicyVirtualDeviceContext() && getDeviceFocusEnvironmentToken() == null) {
+                // Also keep the behavior of automatically bypassing the audio focus on virtual
+                // devices with a custom audio policy that couldn't create a separate audio focus
+                // environment
+                return AUDIOFOCUS_REQUEST_GRANTED;
+            }
         }
+
         unregisterAudioFocusRequest(l);
         final IAudioService service = getService();
         try {
             return service.abandonAudioFocus(mAudioFocusDispatcher,
-                    getIdForAudioFocusListener(l), aa, getContext().getOpPackageName());
+                    getIdForAudioFocusListener(l), aa, getContext().getOpPackageName(),
+                    getDeviceFocusEnvironmentToken());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
+    }
+
+    /**
+     * Returns the focus environment token associated with a virtual device. It is the token
+     * returned by AudioService#createFocusEnvironment() when creating the virtual device with
+     * separate audio focus environment.
+     */
+    @Nullable
+    private IBinder getDeviceFocusEnvironmentToken() {
+        if (!android.companion.virtualdevice.flags.Flags.audioFocusEnvironments()) {
+            return null;
+        }
+
+        if (mOriginalContextDeviceId == DEVICE_ID_DEFAULT) {
+            return null;
+        }
+
+        VirtualDeviceManager vdm = getVirtualDeviceManager();
+        if (vdm == null) {
+            return null;
+        }
+
+        return vdm.getAudioFocusEnvironment(mOriginalContextDeviceId);
     }
 
     //====================================================================

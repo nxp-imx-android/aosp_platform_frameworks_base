@@ -268,7 +268,7 @@
     <string name="apn_settings_not_available" msgid="1147111671403342300">"Nastavitve imena dostopne točke niso na voljo za tega uporabnika"</string>
     <string name="enable_adb" msgid="8072776357237289039">"Odpravljanje napak prek USB-ja"</string>
     <string name="enable_adb_summary" msgid="3711526030096574316">"Način za odpravljanje napak, ko je vzpostavljena povezava USB."</string>
-    <string name="clear_adb_keys" msgid="2696065439790970581">"Preklic dovoljenj za odpravljanje napak prek povezave USB"</string>
+    <string name="clear_adb_keys" msgid="2696065439790970581">"Preklic dovoljenj za odpravljanje napak z orodjem Android Debug Bridge (adb)"</string>
     <string name="enable_adb_wireless" msgid="6973226350963971018">"Brezžično odpravljanje napak"</string>
     <string name="enable_adb_wireless_summary" msgid="7344391423657093011">"Način za odpravljanje napak, ko je vzpostavljena povezava Wi‑Fi."</string>
     <string name="adb_wireless_error" msgid="721958772149779856">"Napaka"</string>
@@ -293,10 +293,8 @@
     <string name="adb_wireless_verifying_qrcode_text" msgid="6123192424916029207">"Seznanjanje naprave …"</string>
     <string name="adb_qrcode_pairing_device_failed_msg" msgid="6936292092592914132">"Seznanitev naprave ni uspela. Koda QR je nepravilna ali pa naprava ni povezana v isto omrežje."</string>
     <string name="adb_wireless_ip_addr_preference_title" msgid="8335132107715311730">"Naslov IP in vrata"</string>
-    <!-- no translation found for adb_wireless_unavailable_not_allowed (83310404140556806) -->
-    <skip />
-    <!-- no translation found for adb_wireless_unavailable_disconnected (8819105186435736128) -->
-    <skip />
+    <string name="adb_wireless_unavailable_not_allowed" msgid="83310404140556806">"Ni na voljo (ni dovoljeno)"</string>
+    <string name="adb_wireless_unavailable_disconnected" msgid="8819105186435736128">"Ni na voljo (povezava Wi-Fi je prekinjena)"</string>
     <string name="adb_wireless_qrcode_pairing_title" msgid="1906409667944674707">"Optično branje kode QR"</string>
     <string name="adb_wireless_qrcode_pairing_description" msgid="6014121407143607851">"Seznanite napravo prek Wi‑Fi-ja z optičnim branjem kode QR."</string>
     <string name="adb_wireless_no_network_msg" msgid="2365795244718494658">"Vzpostavite povezavo z omrežjem Wi-Fi"</string>
@@ -370,7 +368,7 @@
     <string name="adb_warning_message" msgid="8145270656419669221">"Odpravljanje težav s povezavo USB je namenjeno samo za razvoj. Lahko ga uporabljate za kopiranje podatkov med računalnikom in napravo, nameščanje aplikacij v napravo brez obveščanja in branje podatkov v dnevniku."</string>
     <string name="adbwifi_warning_title" msgid="727104571653031865">"Ali dovolite brezžično odpravljanje napak?"</string>
     <string name="adbwifi_warning_message" msgid="8005936574322702388">"Brezžično odpravljanje napak je namenjeno samo za razvoj. Lahko ga uporabljate za kopiranje podatkov med računalnikom in napravo, nameščanje aplikacij v napravo brez obveščanja in branje podatkov v dnevniku."</string>
-    <string name="adb_keys_warning_message" msgid="7827514623080777814">"Ali želite preklicati dostop do odpravljanja težav prek povezave USB iz vseh računalnikov, ki ste jih pooblastili?"</string>
+    <string name="adb_keys_warning_message" msgid="7827514623080777814">"Ali želite preklicati dostop do odpravljanja napak prek orodja Android Debug Bridge (adb) iz vseh računalnikov in omrežij, ki ste jih pooblastili?"</string>
     <string name="dev_settings_warning_title" msgid="8251234890169074553">"Ali želite omogočiti nastavitve za razvijanje?"</string>
     <string name="dev_settings_warning_message" msgid="37741686486073668">"Te nastavitve so namenjene samo za razvijanje in lahko povzročijo prekinitev ali napačno delovanje naprave in aplikacij v njej."</string>
     <string name="verify_apps_over_usb_title" msgid="6031809675604442636">"Preveri aplikacije prek USB-ja"</string>

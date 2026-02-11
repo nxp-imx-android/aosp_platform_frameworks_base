@@ -268,7 +268,7 @@
     <string name="apn_settings_not_available" msgid="1147111671403342300">"Postavke za ime pristupne tačke nisu dostupne za ovog korisnika"</string>
     <string name="enable_adb" msgid="8072776357237289039">"Otklanjanje grešaka putem USB-a"</string>
     <string name="enable_adb_summary" msgid="3711526030096574316">"Način rada za otklanjanje grešaka kada je povezan USB"</string>
-    <string name="clear_adb_keys" msgid="2696065439790970581">"Ukidanje odobrenja otklanjanja grešaka putem USB-a"</string>
+    <string name="clear_adb_keys" msgid="2696065439790970581">"Opozovi autorizacije za otklanjanje grešaka ADB-om"</string>
     <string name="enable_adb_wireless" msgid="6973226350963971018">"Bežično otklanjanje grešaka"</string>
     <string name="enable_adb_wireless_summary" msgid="7344391423657093011">"Način rada za otklanjanje grešaka kada je povezan WiFi"</string>
     <string name="adb_wireless_error" msgid="721958772149779856">"Greška"</string>
@@ -293,10 +293,8 @@
     <string name="adb_wireless_verifying_qrcode_text" msgid="6123192424916029207">"Uparivanje uređaja…"</string>
     <string name="adb_qrcode_pairing_device_failed_msg" msgid="6936292092592914132">"Uparivanje uređaja nije uspjelo. QR kȏd nije tačan ili uređaj nije povezan na istu mrežu."</string>
     <string name="adb_wireless_ip_addr_preference_title" msgid="8335132107715311730">"IP adresa i priključak"</string>
-    <!-- no translation found for adb_wireless_unavailable_not_allowed (83310404140556806) -->
-    <skip />
-    <!-- no translation found for adb_wireless_unavailable_disconnected (8819105186435736128) -->
-    <skip />
+    <string name="adb_wireless_unavailable_not_allowed" msgid="83310404140556806">"Nedostupno (nije dozvoljeno)"</string>
+    <string name="adb_wireless_unavailable_disconnected" msgid="8819105186435736128">"Nedostupno (WiFi je isključen)"</string>
     <string name="adb_wireless_qrcode_pairing_title" msgid="1906409667944674707">"Skenirajte QR kôd"</string>
     <string name="adb_wireless_qrcode_pairing_description" msgid="6014121407143607851">"Uparite uređaj putem WiFi-ja skeniranjem QR koda"</string>
     <string name="adb_wireless_no_network_msg" msgid="2365795244718494658">"Povežite se na WiFi mrežu"</string>
@@ -370,7 +368,7 @@
     <string name="adb_warning_message" msgid="8145270656419669221">"Otklanjanje grešaka putem USB-a je namijenjeno samo u svrhe razvoja aplikacija. Koristite ga za kopiranje podataka između računara i uređaja, instaliranje aplikacija na uređaj bez obavještenja te čitanje podataka iz zapisnika."</string>
     <string name="adbwifi_warning_title" msgid="727104571653031865">"Omogućiti bežično otklanjanje grešaka?"</string>
     <string name="adbwifi_warning_message" msgid="8005936574322702388">"Bežično otklanjanje grešaka je namijenjeno samo u svrhe razvoja aplikacija. Koristite ga za kopiranje podataka između računara i uređaja, instaliranje aplikacija na uređaj bez obavještenja te čitanje podataka iz zapisnika."</string>
-    <string name="adb_keys_warning_message" msgid="7827514623080777814">"Opozvati pristup otklanjanju grešaka putem USB-a za sve računare koje ste prethodno ovlastili?"</string>
+    <string name="adb_keys_warning_message" msgid="7827514623080777814">"Opozvati pristup otklanjanju grešaka ADB-om za sve računare i mreže koje ste prethodno autorizirali?"</string>
     <string name="dev_settings_warning_title" msgid="8251234890169074553">"Dopustiti postavke za razvoj?"</string>
     <string name="dev_settings_warning_message" msgid="37741686486073668">"Ove postavke su namijenjene samo za svrhe razvoja. Mogu izazvati pogrešno ponašanje uređaja i aplikacija na njemu."</string>
     <string name="verify_apps_over_usb_title" msgid="6031809675604442636">"Potvrdi aplikacije putem USB-a"</string>

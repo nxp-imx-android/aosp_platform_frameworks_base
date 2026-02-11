@@ -31,8 +31,11 @@ import android.media.audio.DeviceIdentity;
 import android.media.audio.IAudioModeSession;
 import android.os.RemoteException;
 
+import com.android.internal.util.ArrayUtils;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -256,7 +259,11 @@ public final class AudioModeSession implements AutoCloseable {
             if (mParcelable.noFocusModes == null) {
                 return Collections.emptyList();
             }
-            return java.util.Arrays.stream(mParcelable.noFocusModes).boxed().toList();
+            ArrayList<Integer> list = new ArrayList<>(mParcelable.noFocusModes.length);
+            for (int mode : mParcelable.noFocusModes) {
+                list.add(mode);
+            }
+            return list;
         }
 
         /**
@@ -349,7 +356,7 @@ public final class AudioModeSession implements AutoCloseable {
                 if (mClientAttribution != null) {
                     request.clientAttribution = mClientAttribution.asState();
                 }
-                request.noFocusModes = mNoFocusModes.stream().mapToInt(Integer::intValue).toArray();
+                request.noFocusModes = ArrayUtils.convertToIntArray(mNoFocusModes);
                 return new Request(request);
             }
         }
@@ -528,9 +535,12 @@ public final class AudioModeSession implements AutoCloseable {
     @NonNull
     public List<AudioRoute> getAvailableRoutes() {
         try {
-            return mSession.getAvailableRoutes().stream()
-                    .map(AudioRoute::new)
-                    .toList();
+            var routes = mSession.getAvailableRoutes();
+            List<AudioRoute> audioRoutes = new ArrayList<>(routes.size());
+            for (var route : routes) {
+                audioRoutes.add(new AudioRoute(route));
+            }
+            return audioRoutes;
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

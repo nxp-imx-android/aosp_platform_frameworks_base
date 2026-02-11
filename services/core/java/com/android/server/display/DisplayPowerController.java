@@ -76,14 +76,17 @@ import android.view.Display;
 
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.SystemServerLock;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.app.IBatteryStats;
 import com.android.internal.display.BrightnessSynchronizer;
 import com.android.internal.logging.MetricsLogger;
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
 import com.android.internal.util.FrameworkStatsLog;
+import com.android.internal.util.NamedLock;
 import com.android.internal.util.RingBuffer;
 import com.android.server.LocalServices;
+import com.android.server.LockGuard;
 import com.android.server.am.BatteryStatsService;
 import com.android.server.display.RampAnimator.DualRampAnimator;
 import com.android.server.display.brightness.BrightnessEvent;
@@ -93,7 +96,6 @@ import com.android.server.display.brightness.DisplayBrightnessController;
 import com.android.server.display.brightness.clamper.BrightnessClamperController;
 import com.android.server.display.brightness.strategy.AutomaticBrightnessStrategy;
 import com.android.server.display.brightness.strategy.DisplayBrightnessStrategy;
-import com.android.server.display.brightness.strategy.DisplayBrightnessStrategyConstants;
 import com.android.server.display.color.ColorDisplayService.ColorDisplayServiceInternal;
 import com.android.server.display.color.ColorDisplayService.ReduceBrightColorsListener;
 import com.android.server.display.config.HighBrightnessModeData;
@@ -267,7 +269,8 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
 
     private final String mTag;
 
-    private final Object mLock = new Object();
+    @SystemServerLock(LockGuard.INDEX_DISPLAY_POWER_CONTROLLER)
+    private final Object mLock = NamedLock.create("DisplayPowerController");
 
     private final Context mContext;
 
@@ -1396,9 +1399,6 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         // Use doze brightness if one of following is true:
         // 1. The target `state` isDozeState.
         // 2. Doze power request(POLICY_DOZE) if there's no exception(useNormalBrightnessForDoze).
-        final boolean useDozeBrightness = mFlags.isNormalBrightnessForDozeParameterEnabled(mContext)
-                ? (!mPowerRequest.useNormalBrightnessForDoze && mPowerRequest.policy == POLICY_DOZE)
-                        || Display.isDozeState(state) : Display.isDozeState(state);
         final boolean shouldUseChargingMode =
                 mIsWearChargingExperienceEnabled && mChargingStateReceiver.isPlugged();
         DisplayBrightnessState displayBrightnessState =
@@ -1440,30 +1440,6 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
 
         if (!Float.isNaN(brightnessState)) {
             brightnessState = clampScreenBrightness(brightnessState);
-        }
-
-        if (!mFlags.isDozeBrightnessStrategyEnabled() && useDozeBrightness
-                && (Float.isNaN(brightnessState)
-                || displayBrightnessState.getDisplayBrightnessStrategyName()
-                .equals(DisplayBrightnessStrategyConstants.FALLBACK_BRIGHTNESS_STRATEGY_NAME))) {
-            if (mDisplayOffloadSession != null && (mAutomaticBrightnessController == null
-                    || !mAutomaticBrightnessStrategy.shouldUseAutoBrightness())) {
-                // TODO(b/329676661): Introduce a config property to choose between this brightness
-                //  strategy and DOZE_DEFAULT
-                // On some devices, when auto-brightness is disabled and the device is dozing, we
-                // use the current brightness setting scaled by the doze scale factor
-                rawBrightnessState = getDozeBrightnessForOffload();
-                brightnessState = clampScreenBrightness(rawBrightnessState);
-                mBrightnessReasonTemp.setReason(BrightnessReason.REASON_DOZE_MANUAL);
-                mTempBrightnessEvent.setFlags(
-                        mTempBrightnessEvent.getFlags() | BrightnessEvent.FLAG_DOZE_SCALE);
-            } else if (!mDisplayBrightnessController.isAllowAutoBrightnessWhileDozingConfig()) {
-                // Use default brightness when dozing unless overridden.
-                rawBrightnessState = mScreenBrightnessDozeConfig;
-                brightnessState = clampScreenBrightness(rawBrightnessState);
-                mBrightnessReasonTemp.setReason(BrightnessReason.REASON_DOZE_DEFAULT);
-            }
-            updateScreenBrightnessSetting = false;
         }
 
         float ambientLux = mAutomaticBrightnessController == null ? 0
@@ -2468,11 +2444,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
     }
 
     public float getDozeBrightnessForOffload() {
-        if (mFlags.isDozeBrightnessStrategyEnabled()) {
-            return mDisplayBrightnessController.getManualDozeBrightness();
-        } else {
-            return mDisplayBrightnessController.getCurrentBrightness() * mDozeScaleFactor;
-        }
+        return mDisplayBrightnessController.getManualDozeBrightness();
     }
 
     public void setBrightness(float brightness) {

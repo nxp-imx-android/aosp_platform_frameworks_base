@@ -18,6 +18,19 @@ package {
 }
 
 java_library {
+    name: "com.android.systemui.notifications.intelligence.rules.ui_api",
+    defaults: ["sysui_api"],
+    static_libs: [
+        "androidx.compose.runtime_runtime",
+    ],
+    libs: [
+        "androidx.compose.foundation_foundation",
+        "com.android.systemui.lifecycle_api",
+        "com.android.systemui.notifications.intelligence.rules_api",
+    ],
+}
+
+java_library {
     name: "com.android.systemui.notifications.intelligence.rules.ui_main",
     defaults: ["sysui_main"],
     visibility: [
@@ -27,7 +40,7 @@ java_library {
     static_libs: [
         "com.android.systemui.lifecycle_api",
         "com.android.systemui.notifications.intelligence.rules_api",
-        "com.android.systemui.notifications.intelligence.rules_main",
+        "com.android.systemui.notifications.intelligence.rules.ui_api",
         "PlatformComposeCore",
         "androidx.compose.foundation_foundation",
         "androidx.compose.foundation_foundation-layout",
@@ -35,4 +48,17 @@ java_library {
         "androidx.compose.material_material-icons-core",
         "androidx.compose.runtime_runtime",
     ],
+}
+
+java_library {
+    name: "com.android.systemui.notifications.intelligence.rules.ui_dagger",
+    defaults: ["sysui_dagger"],
+    static_libs: [
+        "com.android.systemui.notifications.intelligence.rules.ui_main",
+    ],
+}
+
+filegroup {
+    name: "com.android.systemui.notifications.intelligence.rules.ui_fixtureFiles",
+    defaults: ["sysui_fixtureFiles"],
 }

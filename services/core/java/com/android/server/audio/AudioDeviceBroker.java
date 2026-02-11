@@ -45,6 +45,7 @@ import static com.android.media.audio.metrics.AudioAtomsLog.HFP_AUDIO_DISCONNECT
 import static com.android.media.audio.metrics.AudioAtomsLog.HFP_AUDIO_DISCONNECT_REPORTED__REASON__HFP_AUDIO_DISCONNECT_REASON_REMOTE_INITIATED;
 import static com.android.media.audio.metrics.AudioAtomsLog.HFP_AUDIO_DISCONNECT_REPORTED__REASON__HFP_AUDIO_DISCONNECT_REASON_UNKNOWN;
 import static com.android.server.audio.AudioService.BT_COMM_DEVICE_ACTIVE_BLE_HEADSET;
+import static com.android.server.audio.AudioService.BT_COMM_DEVICE_ACTIVE_BLE_HEARING_AID;
 import static com.android.server.audio.AudioService.BT_COMM_DEVICE_ACTIVE_BLE_SPEAKER;
 import static com.android.server.audio.AudioService.BT_COMM_DEVICE_ACTIVE_HA;
 import static com.android.server.audio.AudioService.BT_COMM_DEVICE_ACTIVE_SCO;
@@ -63,7 +64,6 @@ import android.content.AttributionSource;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.media.AudioAttributes;
 import android.media.AudioDeviceAttributes;
 import android.media.AudioDeviceInfo;
@@ -530,7 +530,8 @@ public class AudioDeviceBroker {
             AudioDeviceInfo.TYPE_LINE_ANALOG,
             AudioDeviceInfo.TYPE_HDMI,
             AudioDeviceInfo.TYPE_AUX_LINE,
-            AudioDeviceInfo.TYPE_BUS
+            AudioDeviceInfo.TYPE_BUS,
+            AudioDeviceInfo.TYPE_BLE_HEARING_AID
     };
 
     /*package */ static boolean isValidCommunicationDevice(@NonNull AudioDeviceInfo device) {
@@ -751,7 +752,8 @@ public class AudioDeviceBroker {
      */
     /*package*/ boolean isBluetoothLeAudioRequested() {
         return isDeviceRequestedForCommunication(AudioDeviceInfo.TYPE_BLE_HEADSET)
-                || isDeviceRequestedForCommunication(AudioDeviceInfo.TYPE_BLE_SPEAKER);
+                || isDeviceRequestedForCommunication(AudioDeviceInfo.TYPE_BLE_SPEAKER)
+                || isDeviceRequestedForCommunication(AudioDeviceInfo.TYPE_BLE_HEARING_AID);
     }
 
     /**
@@ -772,6 +774,10 @@ public class AudioDeviceBroker {
 
     private boolean isBluetoothBleSpeakerActive() {
         return isDeviceActiveForCommunication(AudioDeviceInfo.TYPE_BLE_SPEAKER);
+    }
+
+    private boolean isBluetoothBleHearingAidActive() {
+        return isDeviceActiveForCommunication(AudioDeviceInfo.TYPE_BLE_HEARING_AID);
     }
 
     private boolean isBluetoothHaActive() {
@@ -934,15 +940,15 @@ public class AudioDeviceBroker {
                             + " volume=" + mVolume
                             + " isLeOutput=" + mIsLeOutput
                             + " eventSource=" + mEventSource
-                            + " audioSystemDevice=" + mAudioSystemDevice
+                            + " audioSystemDevice=" + AudioSystem.getDeviceName(mAudioSystemDevice)
                             + " musicDevice=" + mMusicDevice
                             + " isDeviceSwitch=" + mIsDeviceSwitch;
         }
     }
 
-    /*package*/ static BtDeviceInfo createBtDeviceInfo(@NonNull BtDeviceChangedData d,
+    /*package*/ BtDeviceInfo createBtDeviceInfo(@NonNull BtDeviceChangedData d,
             @NonNull BluetoothDevice device, int state) {
-        int audioDevice = BtHelper.getTypeFromProfile(
+        int audioDevice = mBtHelper.getTypeFromProfile(
                 d.mInfo.getProfile(), d.mInfo.isLeOutput(), device);
         return new BtDeviceInfo(d, device, state, audioDevice, AudioSystem.AUDIO_FORMAT_DEFAULT);
     }
@@ -1365,7 +1371,9 @@ public class AudioDeviceBroker {
                 btCommDeviceActiveType = BT_COMM_DEVICE_ACTIVE_BLE_HEADSET;
             } else if (isBluetoothBleSpeakerActive()) {
                 btCommDeviceActiveType = BT_COMM_DEVICE_ACTIVE_BLE_SPEAKER;
-            } else if (equalScoHaVcIndexRange() && isBluetoothHaActive()) {
+            } else if (isBluetoothBleHearingAidActive()) {
+                btCommDeviceActiveType = BT_COMM_DEVICE_ACTIVE_BLE_HEARING_AID;
+            }  else if (equalScoHaVcIndexRange() && isBluetoothHaActive()) {
                 btCommDeviceActiveType = BT_COMM_DEVICE_ACTIVE_HA;
             }
             mAudioService.updateBtCommDeviceActive(btCommDeviceActiveType);
@@ -2604,7 +2612,7 @@ public class AudioDeviceBroker {
         return mAudioModeOwner.mMode == AudioSystem.MODE_IN_COMMUNICATION
                 && !(CompatChanges.isChangeEnabled(
                         USE_SET_COMMUNICATION_DEVICE, mAudioModeOwner.mUid)
-                     || mAudioModeOwner.mUid == android.os.Process.SYSTEM_UID);
+                     || mAudioModeOwner.mUid == Process.SYSTEM_UID);
     }
 
     @GuardedBy("mDeviceStateLock")
@@ -2614,7 +2622,7 @@ public class AudioDeviceBroker {
     // backwards compatibility
     private boolean communnicationDeviceHaCompatOn() {
         return mAudioModeOwner.mMode == AudioSystem.MODE_IN_COMMUNICATION
-                && !(mAudioModeOwner.mUid == android.os.Process.SYSTEM_UID);
+                && !(mAudioModeOwner.mUid == Process.SYSTEM_UID);
     }
 
     @GuardedBy("mDeviceStateLock")

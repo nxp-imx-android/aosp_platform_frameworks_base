@@ -5846,7 +5846,6 @@
     <!-- Title of the button to unsuspend a suspended app immediately [CHAR LIMIT=50]-->
     <string name="app_suspended_unsuspend_message">Unpause app</string>
 
-    <!-- TODO(b/436380342): Finalize AppLockActivity strings.   -->
     <!-- Text of the button to navigate to screen lock settings. [CHAR LIMIT=50] -->
     <string name="app_lock_add_screen_lock_button_text">
         Add screen lock
@@ -5869,7 +5868,15 @@
     </string>
     <!-- Message shown in a toast notifying the user about the successful disablement of App Lock on the provided application [CHAR LIMIT=NONE] -->
     <string name="disable_app_lock_success_toast_message">
-        App Lock is removed from <xliff:g id="app_name" example="Gmail">%1$s</xliff:g>
+        App Lock removed
+    </string>
+    <!-- Message shown on the system-provided BiometricPrompt, informing the user that App Lock is being enabled for the app [CHAR LIMIT=NONE] -->
+    <string name="enable_app_lock_biometric_prompt_subtitle">
+        App lock will be added to <xliff:g id="app_name" example="Gmail">%1$s</xliff:g>
+    </string>
+    <!-- Message shown on the system-provided BiometricPrompt, informing the user that App Lock is being disabled for the app [CHAR LIMIT=NONE] -->
+    <string name="disable_app_lock_biometric_prompt_subtitle">
+        App lock will be removed from <xliff:g id="app_name" example="Gmail">%1$s</xliff:g>
     </string>
     <!-- Message shown on the system-provided BiometricPrompt, informing the user the app they're trying to open is locked by App Lock. [CHAR LIMIT=NONE] -->
     <string name="locked_app_biometric_prompt_description">
@@ -5882,10 +5889,6 @@
     <!-- Title of the dialog that is shown when the user tries to enable App Lock on the provided application. [CHAR LIMIT=NONE] -->
     <string name="app_lock_edu_dialog_enable_app_lock_title">
         Add app lock to <xliff:g id="app_name" example="Gmail">%1$s</xliff:g>?
-    </string>
-    <!-- Description for the App Lock user education dialog. Explains the security measures. [CHAR LIMIT=NONE] -->
-    <string name="app_lock_edu_dialog_description">
-        For your security, only you can access this app with Fingerprint and Face Unlock or your PIN
     </string>
     <!-- Description for the App Lock user education dialog, with placeholders for biometric and credential types. [CHAR LIMIT=NONE] -->
     <string name="app_lock_edu_dialog_description_template">
@@ -5927,15 +5930,15 @@
     </string>
     <!-- A string that combines the names for both Fingerprint and Face Unlock. Used when both are available. [CHAR LIMIT=40] -->
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face">
-        Fingerprint or Face Unlock
+        Fingerprint Unlock, Face Unlock
     </string>
     <!-- Credential type name for a password-based screen lock, shown in the App Lock education dialog. [CHAR LIMIT=20] -->
     <string name="app_lock_edu_dialog_lockscreen_password_name">
-        Password
+        password
     </string>
     <!-- Credential type name for a pattern-based screen lock, shown in the App Lock education dialog. [CHAR LIMIT=20] -->
     <string name="app_lock_edu_dialog_lockscreen_pattern_name">
-        Pattern
+        pattern
     </string>
     <!-- Credential type name for a PIN-based screen lock, shown in the App Lock education dialog. [CHAR LIMIT=20] -->
     <string name="app_lock_edu_dialog_lockscreen_pin_name">

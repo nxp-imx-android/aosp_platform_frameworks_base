@@ -87,9 +87,13 @@ interface LockscreenScope<out TScope : BaseContentScope> {
         fun scene(sceneKey: SceneKey, content: @Composable LockscreenScope<ContentScope>.() -> Unit)
     }
 
-    fun Modifier.burnInAware(isClock: Boolean) = with(context) { burnInAware(isClock) }
+    fun Modifier.burnInAware(isClock: Boolean): Modifier {
+        return this.then(if (isClock) context.burnInAwareClock else context.burnInAware)
+    }
 
-    fun Modifier.nonAuthUI() = with(context) { nonAuthUI() }
+    fun Modifier.nonAuthUI(): Modifier {
+        return this.then(context.nonAuthUI)
+    }
 
     @Immutable
     class NestedSceneScopeImpl(

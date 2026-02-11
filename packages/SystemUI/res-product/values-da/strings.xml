@@ -70,10 +70,7 @@
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"Du kan finde denne tablet med Find min enhed, også selvom den er slukket"</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"Du kan finde denne telefon med Find Hub, også selvom den er slukket"</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"Du kan finde denne tablet med Find Hub, også selvom den er slukket"</string>
-    <!-- no translation found for dream_setup_description (5167691612621831552) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (6296793330727926553) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (3098487756905462324) -->
-    <skip />
+    <string name="dream_setup_description" product="default" msgid="5167691612621831552">"Vis et ur, billeder eller vejret, når din telefon oplader"</string>
+    <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"Vis et ur, billeder eller vejret, når din tablet oplader"</string>
+    <string name="dream_setup_description" product="device" msgid="3098487756905462324">"Vis et ur, billeder eller vejret, når din enhed oplader"</string>
 </resources>

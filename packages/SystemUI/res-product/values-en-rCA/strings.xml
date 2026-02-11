@@ -70,10 +70,7 @@
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"You can locate this tablet with Find My Device even when powered off"</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"You can locate this phone with Find Hub even when powered off"</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"You can locate this tablet with Find Hub even when powered off"</string>
-    <!-- no translation found for dream_setup_description (5167691612621831552) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (6296793330727926553) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (3098487756905462324) -->
-    <skip />
+    <string name="dream_setup_description" product="default" msgid="5167691612621831552">"Show a clock, photos, or weather when your phone is charging"</string>
+    <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"Show a clock, photos, or weather when your tablet is charging"</string>
+    <string name="dream_setup_description" product="device" msgid="3098487756905462324">"Show a clock, photos, or weather when your device is charging"</string>
 </resources>

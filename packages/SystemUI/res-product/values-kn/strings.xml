@@ -70,10 +70,7 @@
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"ಪವರ್ ಆಫ್ ಆಗಿರುವಾಗಲೂ ನೀವು Find My Device ಮೂಲಕ ಈ ಟ್ಯಾಬ್ಲೆಟ್‌‌ ಅನ್ನು ಪತ್ತೆ ಮಾಡಬಹುದು"</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"ಪವರ್ ಆಫ್ ಆಗಿದ್ದರೂ ಸಹ ನೀವು Find Hub ಮೂಲಕ ಈ ಫೋನ್ ಅನ್ನು ಪತ್ತೆ ಮಾಡಬಹುದು"</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"ಪವರ್ ಆಫ್ ಆಗಿದ್ದರೂ ಸಹ ನೀವು Find Hub ಮೂಲಕ ಈ ಟ್ಯಾಬ್ಲೆಟ್ ಅನ್ನು ಪತ್ತೆ ಮಾಡಬಹುದು"</string>
-    <!-- no translation found for dream_setup_description (5167691612621831552) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (6296793330727926553) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (3098487756905462324) -->
-    <skip />
+    <string name="dream_setup_description" product="default" msgid="5167691612621831552">"ನಿಮ್ಮ ಫೋನ್‌ ಚಾರ್ಜ್‌ ಆಗುತ್ತಿರುವಾಗ ಗಡಿಯಾರ, ಫೋಟೋಗಳು ಅಥವಾ ಹವಾಮಾನವನ್ನು ತೋರಿಸಿ"</string>
+    <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"ನಿಮ್ಮ ಟ್ಯಾಬ್ಲೆಟ್‌‌ ಚಾರ್ಜ್‌ ಆಗುತ್ತಿರುವಾಗ ಗಡಿಯಾರ, ಫೋಟೋಗಳು ಅಥವಾ ಹವಾಮಾನವನ್ನು ತೋರಿಸಿ"</string>
+    <string name="dream_setup_description" product="device" msgid="3098487756905462324">"ನಿಮ್ಮ ಫೋನ್‌ ಚಾರ್ಜ್ ಟ್‌ ಆಗುತ್ತಿರುವಾಗ ಗಡಿಯಾರ, ಫೋಟೋಗಳು ಅಥವಾ ಹವಾಮಾನವನ್ನು ತೋರಿಸಿ"</string>
 </resources>

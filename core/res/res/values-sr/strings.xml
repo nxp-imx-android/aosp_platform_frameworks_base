@@ -1500,6 +1500,14 @@
     <string name="usb_contaminant_detected_message" msgid="7346100585390795743">"USB порт је аутоматски искључен. Додирните да бисте сазнали више."</string>
     <string name="usb_contaminant_not_detected_title" msgid="2651167729563264053">"Коришћење USB порта је дозвољено"</string>
     <string name="usb_contaminant_not_detected_message" msgid="892863190942660462">"Телефон више не открива течност или нечистоћу."</string>
+    <string name="usb_authorization_notify_on_screenlock_title" msgid="4219670768084927681">"Повезан је нови USB уређај"</string>
+    <string name="usb_authorization_notify_on_screenlock_message" msgid="3391658768099414499">"Пријавите се да бисте показали да имате поверење у овај USB уређај и почели да га користите."</string>
+    <string name="usb_authorization_notify_on_screenlock_message_multiple" msgid="1722575755931059980">"Пријавите се да бисте показали да имате поверење у ове USB уређаје и почели да их користите."</string>
+    <string name="usb_authorization_notify_finish_logging_in_title" msgid="3417036506115006412">"Повезан је нови USB уређај"</string>
+    <string name="usb_authorization_notify_finish_logging_in_message" msgid="7996802340128367690">"Пријавите се у року од <xliff:g id="NUM_SECONDS">%1$d</xliff:g> сек да бисте показали да имате потпуно поверење у овај USB уређај. Ако то не урадите, мораћете да прекинете везу са њим и поново је успоставите."</string>
+    <string name="usb_authorization_notify_finish_logging_in_title_multiple" msgid="3184839817149193434">"Повезани су нови USB уређаји"</string>
+    <string name="usb_authorization_notify_finish_logging_in_message_multiple" msgid="6745916608298736853">"Пријавите се у року од <xliff:g id="NUM_SECONDS">%1$d</xliff:g> сек да бисте показали да имате потпуно поверење у ове USB уређаје. Ако то не урадите, мораћете да прекинете везу са њима и поново је успоставите."</string>
+    <string name="notification_channel_usb_authorization" msgid="7567851967410736399">"Овлашћење за USB уређај"</string>
     <string name="taking_remote_bugreport_notification_title" msgid="1582531382166919850">"Извештај о грешци се генерише…"</string>
     <string name="share_remote_bugreport_notification_title" msgid="6708897723753334999">"Желите ли да поделите извештај о грешци?"</string>
     <string name="sharing_remote_bugreport_notification_title" msgid="3077385149217638550">"Дели се извештај о грешци…"</string>
@@ -2120,7 +2128,8 @@
     <string name="enable_app_lock_success_toast_message" msgid="3339622779190529987">"Апликација <xliff:g id="APP_NAME">%1$s</xliff:g> је закључана"</string>
     <string name="enable_app_lock_failure_toast_message" msgid="1055838896510445566">"Не можете да закључате апликацију <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="disable_app_lock_success_toast_message" msgid="70733620589071266">"Закључавање апликација је уклоњено из апликације <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
-    <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"Апликација <xliff:g id="APP_NAME">%1$s</xliff:g> је закључана"</string>
+    <!-- no translation found for locked_app_biometric_prompt_description (5892653396104581919) -->
+    <skip />
     <string name="locked_app_external_display_message" msgid="5483884799685545338">"Да бисте приступили апликацији на овом екрану, прво потврдите идентитет на другом уређају"</string>
     <string name="app_lock_edu_dialog_enable_app_lock_title" msgid="283314042336592322">"Желите да додате закључавање апликације за апликацију <xliff:g id="APP_NAME">%1$s</xliff:g>?"</string>
     <string name="app_lock_edu_dialog_description" msgid="8176807243219769518">"Ради ваше безбедности, само ви можете да приступите овој апликацији помоћу откључавања отиском прста и лицем или помоћу PIN-а"</string>
@@ -2129,6 +2138,8 @@
     <string name="app_lock_edu_dialog_info_header" msgid="5876120209204270990">"Са закључавањем апликација"</string>
     <string name="app_lock_edu_dialog_info_notifications" msgid="1124438392204873305">"Садржај обавештења ће бити скривен"</string>
     <string name="app_lock_edu_dialog_info_widgets" msgid="8809009414650740872">"Виџети и пречице ће бити уклоњени"</string>
+    <!-- no translation found for app_lock_edu_dialog_info_ai_disclaimer (5623615653703542050) -->
+    <skip />
     <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"Додај закључавање апликација"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_face" msgid="1348151645996748654">"Откључавање лицем"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"Откључавање отиском прста"</string>
@@ -2620,8 +2631,7 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"Да бисте слали поруке преко сателита, подесите Google Messages као подразумевану апликацију за размену порука"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"Размена порука преко сателита није доступна"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"Да бисте проверили да ли је размена порука преко сателита доступна у овој земљи или региону, укључите подешавања локације"</string>
-    <!-- no translation found for satellite_indicator (6846063647532086110) -->
-    <skip />
+    <string name="satellite_indicator" msgid="6846063647532086110">"SAT"</string>
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"Поново подесите откључавање отиском прста"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"<xliff:g id="FINGERPRINT">%s</xliff:g> више не може да се препозна."</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> и <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> више не могу да се препознају."</string>

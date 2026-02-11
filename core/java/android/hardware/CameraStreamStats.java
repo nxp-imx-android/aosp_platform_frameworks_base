@@ -52,6 +52,7 @@ public class CameraStreamStats implements Parcelable {
     private long mDynamicRangeProfile;
     private long mStreamUseCase;
     private int mColorSpace;
+    private int mCurrentSurfaceId;
 
     private static final String TAG = "CameraStreamStats";
 
@@ -71,12 +72,13 @@ public class CameraStreamStats implements Parcelable {
         mDynamicRangeProfile = DynamicRangeProfiles.STANDARD;
         mStreamUseCase = CameraMetadata.SCALER_AVAILABLE_STREAM_USE_CASES_DEFAULT;
         mColorSpace = ColorSpaceProfiles.UNSPECIFIED;
+        mCurrentSurfaceId = 0;
     }
 
     public CameraStreamStats(int width, int height, int format, float maxPreviewFps,
             int dataSpace, long usage, long requestCount, long errorCount,
             int startLatencyMs, int maxHalBuffers, int maxAppBuffers, long dynamicRangeProfile,
-            long streamUseCase, int colorSpace) {
+            long streamUseCase, int colorSpace, int currentSurfaceId) {
         mWidth = width;
         mHeight = height;
         mFormat = format;
@@ -92,6 +94,7 @@ public class CameraStreamStats implements Parcelable {
         mDynamicRangeProfile = dynamicRangeProfile;
         mStreamUseCase = streamUseCase;
         mColorSpace = colorSpace;
+        mCurrentSurfaceId = currentSurfaceId;
     }
 
     public static final @android.annotation.NonNull Parcelable.Creator<CameraStreamStats> CREATOR =
@@ -141,6 +144,7 @@ public class CameraStreamStats implements Parcelable {
         dest.writeLong(mDynamicRangeProfile);
         dest.writeLong(mStreamUseCase);
         dest.writeInt(mColorSpace);
+        dest.writeInt(mCurrentSurfaceId);
     }
 
     public void readFromParcel(Parcel in) {
@@ -161,6 +165,7 @@ public class CameraStreamStats implements Parcelable {
         mDynamicRangeProfile = in.readLong();
         mStreamUseCase = in.readLong();
         mColorSpace = in.readInt();
+        mCurrentSurfaceId = in.readInt();
     }
 
     public int getWidth() {
@@ -230,4 +235,6 @@ public class CameraStreamStats implements Parcelable {
     public long getStreamUseCase() {
         return mStreamUseCase;
     }
+
+    public int getCurrentSurfaceId() { return mCurrentSurfaceId; }
 }

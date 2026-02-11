@@ -200,6 +200,16 @@ flag {
 }
 
 flag {
+    name: "track_proxyed_clients_in_a11y_user_state"
+    namespace: "accessibility"
+    description: "Track proxyed A11yManagerClient clients in A11yUserState.mUserClients to fix a bug when moving apps from proxy to non-proxy"
+    bug: "475227571"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "type_speech_state_change_allowed"
     namespace: "accessibility"
     description: "Allow global dispatch for TYPE_SPEECH_STATE_CHANGE"

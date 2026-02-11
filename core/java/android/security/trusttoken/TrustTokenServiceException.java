@@ -64,11 +64,7 @@ public final class TrustTokenServiceException extends Exception {
      */
     public static final int ERROR_UNAVAILABLE = 3;
 
-    /**
-     * The request was cancelled by the caller (the system).
-     * This is usually because of the system is busy, so the caller should wait until the system
-     * is at a proper state (such as idle and plugged in) to retry.
-     */
+    /** The request was cancelled by the caller. */
     public static final int ERROR_CANCELLED = 4;
 
     @ErrorCode

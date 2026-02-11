@@ -46,8 +46,7 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"<xliff:g id="USB_ACCESSORY">%2$s</xliff:g>ক ব্যৱহাৰ কৰিবলৈ <xliff:g id="APPLICATION">%1$s</xliff:g>ক খোলেনে?"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"ইনষ্টল হৈ থকা কোনো এপে ইউএছবি সহায়ক সামগ্ৰীটো চলাব নোৱাৰে। এই সহায়ক সামগ্ৰীৰ বিষয়ে <xliff:g id="URL">%1$s</xliff:g>ৰ জৰিয়তে অধিক জানক৷"</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"ইউএছবিৰ সহায়ক সামগ্ৰী"</string>
-    <!-- no translation found for usb_device_dialog_always_allow_button (7426535342650638393) -->
-    <skip />
+    <string name="usb_device_dialog_always_allow_button" msgid="7426535342650638393">"সদায়ৰ বাবে অনুমোদন দিয়ক"</string>
     <string name="usb_device_dialog_allow_only_this_time_button" msgid="3653881633944232491">"কেৱল এইবাৰৰ বাবে"</string>
     <string name="usb_device_dialog_cancel_button" msgid="9050554648474787233">"বাতিল কৰক"</string>
     <string name="label_view" msgid="6815442985276363364">"চাওক"</string>
@@ -59,6 +58,24 @@
     <string name="usb_debugging_allow" msgid="1722643858015321328">"অনুমতি দিয়ক"</string>
     <string name="usb_debugging_secondary_user_title" msgid="7843050591380107998">"ইউএছবি ডিবাগিঙৰ অনুমতি নাই"</string>
     <string name="usb_debugging_secondary_user_message" msgid="1888835696965417845">"বৰ্তমান এই ডিভাইচটোত ছাইন ইন হৈ থকা ব্যৱহাৰকাৰীগৰাকীয়ে ইউএছবি ডিবাগিং অন কৰিব নোৱাৰে। এই সুবিধাটো ব্যৱহাৰ কৰিবলৈ, এগৰাকী প্ৰশাসক ব্যৱহাৰকাৰীলৈ সলনি কৰক।"</string>
+    <!-- no translation found for usb_authorization_title (3332796080113535331) -->
+    <skip />
+    <!-- no translation found for usb_authorization_title_multi (1966181648363433366) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message (1107567912094941105) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message_multi (4867596373922923637) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message_untrusted (4407977362840907960) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message_multi_untrusted (85055448435495205) -->
+    <skip />
+    <!-- no translation found for usb_authorization_unknown_device (1107933381080189970) -->
+    <skip />
+    <!-- no translation found for usb_authorization_allow (5517449937301874244) -->
+    <skip />
+    <!-- no translation found for usb_authorization_deny (8156333001876101456) -->
+    <skip />
     <string name="hdmi_cec_set_menu_language_title" msgid="1259765420091503742">"আপুনি ছিষ্টেমৰ ভাষা <xliff:g id="LANGUAGE">%1$s</xliff:g>লৈ সলনি কৰিবলৈ বিচাৰেনে?"</string>
     <string name="hdmi_cec_set_menu_language_description" msgid="8176716678074126619">"অন্য এটা ডিভাইচে ছিষ্টেমৰ ভাষা সলনি কৰাৰ অনুৰোধ কৰিছে"</string>
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"ভাষা সলনি কৰক"</string>
@@ -104,6 +121,10 @@
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"অধিক কেপচাৰ কৰক"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"স্ক্ৰীনশ্বট অগ্ৰাহ্য কৰক"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"কৰ্মস্থানৰ প্ৰ’ফাইলৰ বাৰ্তা অগ্ৰাহ্য কৰক"</string>
+    <!-- no translation found for screenshot_open_in_folder_label (7030308792263959983) -->
+    <skip />
+    <!-- no translation found for screenshot_open_in_folder_description (2181459418652236210) -->
+    <skip />
     <string name="screenshot_preview_description" msgid="7606510140714080474">"স্ক্ৰীনশ্বটৰ পূৰ্বদৰ্শন"</string>
     <string name="screenshot_top_boundary_pct" msgid="2520148599096479332">"শীৰ্ষৰ সীমা <xliff:g id="PERCENT">%1$d</xliff:g> শতাংশ"</string>
     <string name="screenshot_bottom_boundary_pct" msgid="3880821519814946478">"তলৰ সীমা <xliff:g id="PERCENT">%1$d</xliff:g> শতাংশ"</string>
@@ -203,32 +224,19 @@
     <string name="screen_share_a11y_stopped_sharing_app" msgid="6928492106881188404">"এপ্‌টো শ্বেয়াৰ কৰাটো বন্ধ কৰা হৈছে: <xliff:g id="APP_NAME">%1$s</xliff:g>। স্ক্ৰীনখন কাৰো সৈতে শ্বেয়াৰ কৰা হোৱা নাই।"</string>
     <string name="screen_share_a11y_stopped_sharing_tab" msgid="5929089339684027985">"টেব শ্বেয়াৰ কৰাটো বন্ধ কৰা হৈছে: <xliff:g id="TAB_TITLE">%1$s</xliff:g>। স্ক্ৰীনখন কাৰো সৈতে শ্বেয়াৰ কৰা হোৱা নাই।"</string>
     <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"ডিছপ্লে’ শ্বেয়াৰ কৰা বন্ধ কৰা হৈছে: <xliff:g id="DISPLAY_NAME">%1$s</xliff:g>। স্ক্ৰীনখন কাৰো সৈতে শ্বেয়াৰ কৰা হোৱা নাই।"</string>
-    <!-- no translation found for screen_share_a11y_close_button (8017115316741874857) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_button_unselected (5363622532939787310) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_button_selected (4304681826101817704) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_app_button_unselected (4539549394242556282) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_app_button_selected (6049272377472922732) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_fullscreen_button_unselected (2492516552817892989) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_fullscreen_button_selected (6706822615908429473) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_share_button_off (2004866083045967602) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_share_button_on (1311279200212158833) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_item_unselected (7479321583507874795) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_item_selected (2538971376128528640) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_audio_on (7240792268381508075) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_audio_off (8545238601433952854) -->
-    <skip />
+    <string name="screen_share_a11y_close_button" msgid="8017115316741874857">"বন্ধ কৰাৰ বুটাম। শ্বেয়াৰ কৰাৰ আগৰ ডায়লগ বন্ধ কৰিবলৈ এণ্টাৰ টিপক।"</string>
+    <string name="screen_share_a11y_tab_button_unselected" msgid="5363622532939787310">"টেব শ্বেয়াৰ কৰাৰ বুটাম। বাছনি কৰা হোৱা নাই। টেব শ্বেয়াৰ কৰিবলৈ এণ্টাৰ টিপক।"</string>
+    <string name="screen_share_a11y_tab_button_selected" msgid="4304681826101817704">"টেব শ্বেয়াৰ কৰি থকা হৈছে। উপলব্ধ টেবসমূহ চাবলৈ নেভিগে’ট কৰক।"</string>
+    <string name="screen_share_a11y_app_button_unselected" msgid="4539549394242556282">"এপ্‌ শ্বেয়াৰ কৰাৰ বুটাম। বাছনি কৰা হোৱা নাই। এপ্‌টো শ্বেয়াৰ কৰিবলৈ এণ্টাৰ টিপক।"</string>
+    <string name="screen_share_a11y_app_button_selected" msgid="6049272377472922732">"এপ্‌ শ্বেয়াৰ কৰি থকা হৈছে। উপলব্ধ এপ্‌সমূহ চাবলৈ নেভিগে’ট কৰক।"</string>
+    <string name="screen_share_a11y_fullscreen_button_unselected" msgid="2492516552817892989">"পূৰ্ণ স্ক্ৰীনৰ বুটাম। বাছনি কৰা হোৱা নাই। পূৰ্ণ স্ক্ৰীন শ্বেয়াৰ কৰিবলৈ এণ্টাৰ টিপক।"</string>
+    <string name="screen_share_a11y_fullscreen_button_selected" msgid="6706822615908429473">"পূৰ্ণ স্ক্ৰীন শ্বেয়াৰ কৰি থকা হৈছে। উপলব্ধ ডিছপ্লে’সমূহ চাবলৈ নেভিগে’ট কৰক।"</string>
+    <string name="screen_share_a11y_share_button_off" msgid="2004866083045967602">"শ্বেয়াৰ কৰাৰ বুটাম। অফ আছে। শ্বেয়াৰ কৰিবলৈ এপ্‌, টেব বা ডিছপ্লে’ বাছনি কৰক।"</string>
+    <string name="screen_share_a11y_share_button_on" msgid="1311279200212158833">"শ্বেয়াৰ কৰি থকা হৈছে। <xliff:g id="ITEM">%1$s</xliff:g> বাছনি কৰা হৈছে। শ্বেয়াৰ কৰা আৰম্ভ কৰিবলৈ এণ্টাৰ টিপক।"</string>
+    <string name="screen_share_a11y_item_unselected" msgid="7479321583507874795">"<xliff:g id="ITEM_NAME">%1$s</xliff:g>। বাছনি কৰা হোৱা নাই। বাছনি কৰিবলৈ এণ্টাৰ টিপক।"</string>
+    <string name="screen_share_a11y_item_selected" msgid="2538971376128528640">"<xliff:g id="ITEM_NAME">%1$s</xliff:g> বাছনি কৰা হৈছে। শ্বেয়াৰ কৰা আৰম্ভ কৰিবলৈ শ্বেয়াৰ কৰক বুটামটোলৈ নেভিগে’ট কৰক।"</string>
+    <string name="screen_share_a11y_tab_audio_on" msgid="7240792268381508075">"টেবৰ অডিঅ’ অন আছে"</string>
+    <string name="screen_share_a11y_tab_audio_off" msgid="8545238601433952854">"টেবৰ অডিঅ’ অফ আছে"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"ৱিণ্ড’খনৰ স্ক্ৰীনশ্বট লওক"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"ৱিণ্ড’ ৰেকৰ্ড কৰক"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"বাছনি কৰা এলেকাৰ স্ক্ৰীনশ্বট লওক"</string>
@@ -239,7 +247,8 @@
     <string name="screen_capture_post_recording_shelf_share_button_a11y" msgid="2907313384921655711">"স্ক্ৰীন ৰেকৰ্ডিং শ্বেয়াৰ কৰক"</string>
     <string name="screen_capture_post_recording_shelf_folder_button_a11y" msgid="4217075254383938093">"ফাইল পৰিচালকত স্ক্ৰীন ৰেকৰ্ডিং খোলক"</string>
     <string name="screen_capture_post_recording_shelf_delete_button_a11y" msgid="8519897681775354217">"স্ক্ৰীন ৰেকৰ্ডিং মচক"</string>
-    <string name="screen_capture_post_recording_shelf_thumbnail_a11y" msgid="8342622016203434332">"ভিডিঅ’ ভিউৱাৰত স্ক্ৰীন ৰেকৰ্ডিং খোলক"</string>
+    <!-- no translation found for screen_capture_post_recording_shelf_thumbnail_a11y (4764732838982357845) -->
+    <skip />
     <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"ক্লিক আৰু কীসমূহ দেখুৱাওক"</string>
     <string name="screen_capture_device_audio" msgid="1537290197773737349">"ডিভাইচৰ অডিঅ’"</string>
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"মাইক্ৰ’ফ’ন"</string>
@@ -432,8 +441,7 @@
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"জাননী"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistant"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"কীব’ৰ্ড"</string>
-    <!-- no translation found for input_method_switcher_title_large_screen (8490419050265486980) -->
-    <skip />
+    <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"কীব’ৰ্ড"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{ভিতৰত আৰু # টা জাননী আছে।}one{ভিতৰত আৰু # টা জাননী আছে।}other{ভিতৰত আৰু # টা জাননী আছে।}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"স্ক্ৰীন লেণ্ডস্কে\'প দিশত লক কৰা হ’ল।"</string>
@@ -1873,18 +1881,11 @@
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"বাওঁফালৰ বেটাৰী %1$s"</string>
     <string name="accessibility_hearing_device_right_battery_level" msgid="7598843215226414563">"সোঁফালৰ বেটাৰী %1$s"</string>
     <string name="accessibility_hearing_device_notification_channel_name" msgid="7365020777623709400">"শুনাৰ ডিভাইচৰ স্থিতি"</string>
-    <!-- no translation found for more_options_edit (6337988646114341329) -->
-    <skip />
-    <!-- no translation found for more_options_move (2226159413422979066) -->
-    <skip />
-    <!-- no translation found for more_options_remove_all (194855000797536179) -->
-    <skip />
-    <!-- no translation found for floating_menu_more_options_label (7859269790323628599) -->
-    <skip />
-    <!-- no translation found for dream_setup_title (7996530071414508238) -->
-    <skip />
-    <!-- no translation found for dream_setup_button_not_now (8028385323668620805) -->
-    <skip />
-    <!-- no translation found for dream_setup_button_setup (4755361016017554826) -->
-    <skip />
+    <string name="more_options_edit" msgid="6337988646114341329">"সম্পাদনা কৰক"</string>
+    <string name="more_options_move" msgid="2226159413422979066">"স্থানান্তৰ কৰক"</string>
+    <string name="more_options_remove_all" msgid="194855000797536179">"আটাইবোৰ আঁতৰাওক"</string>
+    <string name="floating_menu_more_options_label" msgid="7859269790323628599">"অধিক বিকল্প"</string>
+    <string name="dream_setup_title" msgid="7996530071414508238">"স্ক্ৰীনছেভাৰ ছেট আপ কৰক"</string>
+    <string name="dream_setup_button_not_now" msgid="8028385323668620805">"এতিয়া নহয়"</string>
+    <string name="dream_setup_button_setup" msgid="4755361016017554826">"ছেট আপ কৰক"</string>
 </resources>

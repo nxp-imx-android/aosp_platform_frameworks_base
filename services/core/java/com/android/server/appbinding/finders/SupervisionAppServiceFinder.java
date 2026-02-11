@@ -55,10 +55,14 @@ public class SupervisionAppServiceFinder
 
     @Override
     protected boolean isEnabled(AppBindingConstants constants, int userId) {
+        return constants.SUPERVISION_APP_SERVICE_ENABLED && Flags.enableSupervisionAppService()
+                && isSupervisionEnabledForUser(userId);
+    }
+
+    private boolean isSupervisionEnabledForUser(int userId) {
         SupervisionManagerInternal smi =
                 LocalServices.getService(SupervisionManagerInternal.class);
-        return constants.SUPERVISION_APP_SERVICE_ENABLED && Flags.enableSupervisionAppService()
-                && smi.isSupervisionEnabledForUser(userId);
+        return smi.isSupervisionEnabledForUser(userId);
     }
 
     @NonNull
@@ -128,8 +132,17 @@ public class SupervisionAppServiceFinder
 
     private final OnRoleHoldersChangedListener mRoleHolderChangedListener =
             (role, user) -> {
-                if (RoleManager.ROLE_SYSTEM_SUPERVISION.equals(role)) {
-                    mListener.accept(SupervisionAppServiceFinder.this, user.getIdentifier());
+                if (Flags.appBindingServiceRework()) {
+                    int userId = user.getIdentifier();
+                    if ((RoleManager.ROLE_SYSTEM_SUPERVISION.equals(role)
+                            || RoleManager.ROLE_SUPERVISION.equals(role))
+                            && isSupervisionEnabledForUser(userId)) {
+                        mListener.accept(SupervisionAppServiceFinder.this, userId);
+                    }
+                } else {
+                    if (RoleManager.ROLE_SYSTEM_SUPERVISION.equals(role)) {
+                        mListener.accept(SupervisionAppServiceFinder.this, user.getIdentifier());
+                    }
                 }
             };
 }

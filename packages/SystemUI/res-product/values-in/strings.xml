@@ -70,10 +70,7 @@
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"Anda dapat menemukan lokasi tablet ini dengan aplikasi Temukan Perangkat Saya meskipun tablet dimatikan"</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"Anda dapat menemukan lokasi ponsel ini dengan Hub Pencari meskipun ponsel dimatikan"</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"Anda dapat menemukan lokasi tablet ini dengan Hub Pencari meskipun tablet dimatikan"</string>
-    <!-- no translation found for dream_setup_description (5167691612621831552) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (6296793330727926553) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (3098487756905462324) -->
-    <skip />
+    <string name="dream_setup_description" product="default" msgid="5167691612621831552">"Tampilkan jam, foto, atau cuaca saat ponsel sedang mengisi daya"</string>
+    <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"Tampilkan jam, foto, atau cuaca saat tablet sedang mengisi daya"</string>
+    <string name="dream_setup_description" product="device" msgid="3098487756905462324">"Tampilkan jam, foto, atau cuaca saat perangkat sedang mengisi daya"</string>
 </resources>

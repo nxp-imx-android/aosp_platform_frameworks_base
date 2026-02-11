@@ -58,4 +58,12 @@
     <string name="keyboard_layout_montenegrin_cyrillic" msgid="2391253952894077421">"مونته‌نگرویی (سیریلیک)"</string>
     <string name="keyboard_layout_romanian" msgid="8698989892731726903">"رومانیایی"</string>
     <string name="keyboard_layout_english_india" msgid="7962353311188603367">"انگلیسی (هند)"</string>
+    <!-- no translation found for default_game_controller_down_button (230251187173899352) -->
+    <skip />
+    <!-- no translation found for default_game_controller_left_button (230625759940755272) -->
+    <skip />
+    <!-- no translation found for default_game_controller_right_button (6973117058284059868) -->
+    <skip />
+    <!-- no translation found for default_game_controller_up_button (793659885012306267) -->
+    <skip />
 </resources>

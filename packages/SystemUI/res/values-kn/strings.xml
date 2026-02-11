@@ -46,8 +46,7 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"<xliff:g id="USB_ACCESSORY">%2$s</xliff:g> ಅನ್ನು ನಿರ್ವಹಿಸಲು <xliff:g id="APPLICATION">%1$s</xliff:g> ಅನ್ನು ತೆರೆಯುವುದೇ?"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"ಆಪ್‌ಗಳು USB ಪರಿಕರದಲ್ಲಿ ಕಾರ್ಯನಿರ್ವಹಿಸುವುದಿಲ್ಲ. ಆ ಬಗ್ಗೆ <xliff:g id="URL">%1$s</xliff:g> ನಲ್ಲಿ ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ"</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"USB ಆ್ಯಕ್ಸೆಸರಿ"</string>
-    <!-- no translation found for usb_device_dialog_always_allow_button (7426535342650638393) -->
-    <skip />
+    <string name="usb_device_dialog_always_allow_button" msgid="7426535342650638393">"ಯಾವಾಗಲೂ ಅನುಮತಿಸಿ"</string>
     <string name="usb_device_dialog_allow_only_this_time_button" msgid="3653881633944232491">"ಈ ಬಾರಿ ಮಾತ್ರ"</string>
     <string name="usb_device_dialog_cancel_button" msgid="9050554648474787233">"ರದ್ದುಮಾಡಿ"</string>
     <string name="label_view" msgid="6815442985276363364">"ವೀಕ್ಷಿಸು"</string>
@@ -59,6 +58,24 @@
     <string name="usb_debugging_allow" msgid="1722643858015321328">"ಅನುಮತಿಸಿ"</string>
     <string name="usb_debugging_secondary_user_title" msgid="7843050591380107998">"USB ಡೀಬಗ್ ಮಾಡುವಿಕೆಯನ್ನು ಅನುಮತಿಸಲಾಗಿಲ್ಲ"</string>
     <string name="usb_debugging_secondary_user_message" msgid="1888835696965417845">"ಬಳಕೆದಾರರು ಪ್ರಸ್ತುತ ಈ ಸಾಧನಕ್ಕೆ ಸೈನ್ ಇನ್ ಮಾಡಿದ್ದಾರೆ USB ಡೀಬಗ್ ಮಾಡುವುದನ್ನು ಆನ್ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ. ಈ ಫೀಚರ್ ಅನ್ನು ಬಳಸಲು, ನಿರ್ವಾಹಕ ಬಳಕೆದಾರರಿಗೆ ಬದಲಾಯಿಸಿ."</string>
+    <!-- no translation found for usb_authorization_title (3332796080113535331) -->
+    <skip />
+    <!-- no translation found for usb_authorization_title_multi (1966181648363433366) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message (1107567912094941105) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message_multi (4867596373922923637) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message_untrusted (4407977362840907960) -->
+    <skip />
+    <!-- no translation found for usb_authorization_message_multi_untrusted (85055448435495205) -->
+    <skip />
+    <!-- no translation found for usb_authorization_unknown_device (1107933381080189970) -->
+    <skip />
+    <!-- no translation found for usb_authorization_allow (5517449937301874244) -->
+    <skip />
+    <!-- no translation found for usb_authorization_deny (8156333001876101456) -->
+    <skip />
     <string name="hdmi_cec_set_menu_language_title" msgid="1259765420091503742">"ಸಿಸ್ಟಮ್ ಭಾಷೆಯನ್ನು <xliff:g id="LANGUAGE">%1$s</xliff:g> ಭಾಷೆಗೆ ಬದಲಾಯಿಸಲು ನೀವು ಬಯಸುತ್ತೀರಾ?"</string>
     <string name="hdmi_cec_set_menu_language_description" msgid="8176716678074126619">"ಬೇರೊಂದು ಸಾಧನದಿಂದ ಸಿಸ್ಟಮ್ ಭಾಷೆಯ ಬದಲಾವಣೆಯನ್ನು ವಿನಂತಿಸಲಾಗಿದೆ"</string>
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"ಭಾಷೆಯನ್ನು ಬದಲಾಯಿಸಿ"</string>
@@ -104,6 +121,10 @@
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"ಇನ್ನಷ್ಟು ಕ್ಯಾಪ್ಚರ್ ಮಾಡಿ"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ಅನ್ನು ವಜಾಗೊಳಿಸಿ"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"ಉದ್ಯೋಗ ಪ್ರೊಫೈಲ್ ಸಂದೇಶವನ್ನು ವಜಾಗೊಳಿಸಿ"</string>
+    <!-- no translation found for screenshot_open_in_folder_label (7030308792263959983) -->
+    <skip />
+    <!-- no translation found for screenshot_open_in_folder_description (2181459418652236210) -->
+    <skip />
     <string name="screenshot_preview_description" msgid="7606510140714080474">"ಸ್ಕ್ರೀನ್‍ಶಾಟ್‍ನ ಪೂರ್ವವೀಕ್ಷಣೆ"</string>
     <string name="screenshot_top_boundary_pct" msgid="2520148599096479332">"ಮೇಲಿನ ಬೌಂಡರಿ ಶೇಕಡಾ <xliff:g id="PERCENT">%1$d</xliff:g>"</string>
     <string name="screenshot_bottom_boundary_pct" msgid="3880821519814946478">"ಕೆಳಗಿನ ಬೌಂಡರಿ ಶೇಕಡಾ <xliff:g id="PERCENT">%1$d</xliff:g>"</string>
@@ -203,32 +224,19 @@
     <string name="screen_share_a11y_stopped_sharing_app" msgid="6928492106881188404">"ಆ್ಯಪ್‌ ಹಂಚಿಕೊಳ್ಳುವಿಕೆಯನ್ನು ನಿಲ್ಲಿಸಲಾಗಿದೆ: <xliff:g id="APP_NAME">%1$s</xliff:g>. ಸ್ಕ್ರೀನ್‌ ಅನ್ನು ಯಾರೊಂದಿಗೂ ಹಂಚಿಕೊಳ್ಳಲಾಗಿಲ್ಲ."</string>
     <string name="screen_share_a11y_stopped_sharing_tab" msgid="5929089339684027985">"ಟ್ಯಾಬ್‌ ಹಂಚಿಕೊಳ್ಳುವಿಕೆಯನ್ನು ನಿಲ್ಲಿಸಲಾಗಿದೆ: <xliff:g id="TAB_TITLE">%1$s</xliff:g>. ಸ್ಕ್ರೀನ್‌ ಅನ್ನು ಯಾರೊಂದಿಗೂ ಹಂಚಿಕೊಳ್ಳಲಾಗಿಲ್ಲ."</string>
     <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"ಡಿಸ್‌ಪ್ಲೇ ಹಂಚಿಕೊಳ್ಳುವಿಕೆಯನ್ನು ನಿಲ್ಲಿಸಲಾಗಿದೆ: <xliff:g id="DISPLAY_NAME">%1$s</xliff:g>. ಸ್ಕ್ರೀನ್‌ ಅನ್ನು ಯಾರೊಂದಿಗೂ ಹಂಚಿಕೊಳ್ಳಲಾಗಿಲ್ಲ."</string>
-    <!-- no translation found for screen_share_a11y_close_button (8017115316741874857) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_button_unselected (5363622532939787310) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_button_selected (4304681826101817704) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_app_button_unselected (4539549394242556282) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_app_button_selected (6049272377472922732) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_fullscreen_button_unselected (2492516552817892989) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_fullscreen_button_selected (6706822615908429473) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_share_button_off (2004866083045967602) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_share_button_on (1311279200212158833) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_item_unselected (7479321583507874795) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_item_selected (2538971376128528640) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_audio_on (7240792268381508075) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_audio_off (8545238601433952854) -->
-    <skip />
+    <string name="screen_share_a11y_close_button" msgid="8017115316741874857">"ಮುಚ್ಚುವ ಬಟನ್‌. ಪೂರ್ವ-ಹಂಚಿಕೆ ಡೈಲಾಗ್‌ ಅನ್ನು ಮುಚ್ಚಲು Enter ಒತ್ತಿರಿ."</string>
+    <string name="screen_share_a11y_tab_button_unselected" msgid="5363622532939787310">"ಟ್ಯಾಬ್ ಹಂಚಿಕೊಳ್ಳುವಿಕೆ ಬಟನ್‌. ಆಯ್ಕೆಮಾಡಲಾಗಿಲ್ಲ. ಟ್ಯಾಬ್‌ ಅನ್ನು ಹಂಚಿಕೊಳ್ಳಲು ಎಂಟರ್‌ ಅನ್ನು ಒತ್ತಿರಿ."</string>
+    <string name="screen_share_a11y_tab_button_selected" msgid="4304681826101817704">"ಹಂಚಿಕೊಳ್ಳಲಾಗುತ್ತಿದೆ, ಟ್ಯಾಬ್‌. ಲಭ್ಯವಿರುವ ಟ್ಯಾಬ್‌ಗಳನ್ನು ನೋಡಲು ನ್ಯಾವಿಗೇಟ್‌ ಮಾಡಿ."</string>
+    <string name="screen_share_a11y_app_button_unselected" msgid="4539549394242556282">"ಆ್ಯಪ್‌ ಹಂಚಿಕೊಳ್ಳುವ ಬಟನ್‌. ಆಯ್ಕೆಮಾಡಲಾಗಿಲ್ಲ. ಆ್ಯಪ್‌ ಅನ್ನು ಹಂಚಿಕೊಳ್ಳಲು Enter ಒತ್ತಿರಿ."</string>
+    <string name="screen_share_a11y_app_button_selected" msgid="6049272377472922732">"ಆ್ಯಪ್ ಅನ್ನು ಹಂಚಿಕೊಳ್ಳಲಾಗುತ್ತಿದೆ. ಲಭ್ಯವಿರುವ ಆ್ಯಪ್‌ಗಳನ್ನು ನೋಡಲು ನ್ಯಾವಿಗೇಟ್‌ ಮಾಡಿ."</string>
+    <string name="screen_share_a11y_fullscreen_button_unselected" msgid="2492516552817892989">"ಫುಲ್‌ಸ್ಕ್ರೀನ್‌ ಬಟನ್‌. ಆಯ್ಕೆಮಾಡಲಾಗಿಲ್ಲ. ಫುಲ್‌ಸ್ಕ್ರೀನ್‌ ಅನ್ನು ಹಂಚಿಕೊಳ್ಳಲು Enter ಒತ್ತಿರಿ."</string>
+    <string name="screen_share_a11y_fullscreen_button_selected" msgid="6706822615908429473">"ಫುಲ್‌ಸ್ಕ್ರೀನ್‌ ಅನ್ನು ಹಂಚಿಕೊಳ್ಳಲಾಗುತ್ತಿದೆ. ಲಭ್ಯವಿರುವ ಡಿಸ್‌ಪ್ಲೇಗಳನ್ನು ನೋಡಲು ನ್ಯಾವಿಗೇಟ್ ಮಾಡಿ."</string>
+    <string name="screen_share_a11y_share_button_off" msgid="2004866083045967602">"ಹಂಚಿಕೆ ಬಟನ್‌. ಆಫ್ ಆಗಿದೆ. ಹಂಚಿಕೊಳ್ಳಲು ಆ್ಯಪ್‌, ಟ್ಯಾಬ್‌ ಅಥವಾ ಡಿಸ್‌ಪ್ಲೇ ಅನ್ನು ಆಯ್ಕೆಮಾಡಿ."</string>
+    <string name="screen_share_a11y_share_button_on" msgid="1311279200212158833">"ಹಂಚಿಕೊಳ್ಳುವಿಕೆ ಆನ್‌ ಆಗಿದೆ. <xliff:g id="ITEM">%1$s</xliff:g> ಆಯ್ಕೆಮಾಡಲಾಗಿದೆ. ಹಂಚಿಕೊಳ್ಳುವಿಕೆಯನ್ನು ಪ್ರಾರಂಭಿಸಲು ಎಂಟರ್‌ ಅನ್ನು ಒತ್ತಿರಿ."</string>
+    <string name="screen_share_a11y_item_unselected" msgid="7479321583507874795">"<xliff:g id="ITEM_NAME">%1$s</xliff:g>. ಆಯ್ಕೆಮಾಡಲಾಗಿಲ್ಲ. ಆಯ್ಕೆ ಮಾಡಲು Enter ಅನ್ನು ಒತ್ತಿರಿ."</string>
+    <string name="screen_share_a11y_item_selected" msgid="2538971376128528640">"<xliff:g id="ITEM_NAME">%1$s</xliff:g> ಆಯ್ಕೆಮಾಡಲಾಗಿದೆ. ಹಂಚಿಕೊಳ್ಳುವಿಕೆಯನ್ನು ಪ್ರಾರಂಭಿಸಲು ಹಂಚಿಕೊಳ್ಳಿ ಬಟನ್‌ಗೆ ನ್ಯಾವಿಗೇಟ್‌ ಮಾಡಿ."</string>
+    <string name="screen_share_a11y_tab_audio_on" msgid="7240792268381508075">"ಟ್ಯಾಬ್‌ ಆಡಿಯೋ ಆನ್‌ ಆಗಿದೆ"</string>
+    <string name="screen_share_a11y_tab_audio_off" msgid="8545238601433952854">"ಟ್ಯಾಬ್‌ ಆಡಿಯೋ ಆಫ್‌ ಆಗಿದೆ"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"ವಿಂಡೋದ ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ತೆಗೆದುಕೊಳ್ಳಿ"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"ವಿಂಡೋ ರೆಕಾರ್ಡ್ ಮಾಡಿ"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"ಆಯ್ಕೆಮಾಡಿದ ಪ್ರದೇಶದ ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ತೆಗೆದುಕೊಳ್ಳಿ"</string>
@@ -239,7 +247,8 @@
     <string name="screen_capture_post_recording_shelf_share_button_a11y" msgid="2907313384921655711">"ಸ್ಕ್ರೀನ್ ರೆಕಾರ್ಡಿಂಗ್ ಅನ್ನು ಹಂಚಿಕೊಳ್ಳಿ"</string>
     <string name="screen_capture_post_recording_shelf_folder_button_a11y" msgid="4217075254383938093">"ಫೈಲ್ ಮ್ಯಾನೇಜರ್‌ನಲ್ಲಿ ಸ್ಕ್ರೀನ್ ರೆಕಾರ್ಡಿಂಗ್ ಅನ್ನು ತೆರೆಯಿರಿ"</string>
     <string name="screen_capture_post_recording_shelf_delete_button_a11y" msgid="8519897681775354217">"ಸ್ಕ್ರೀನ್ ರೆಕಾರ್ಡಿಂಗ್ ಅನ್ನು ಅಳಿಸಿ"</string>
-    <string name="screen_capture_post_recording_shelf_thumbnail_a11y" msgid="8342622016203434332">"ವೀಡಿಯೊ ವೀಕ್ಷಕದಲ್ಲಿ ಸ್ಕ್ರೀನ್ ರೆಕಾರ್ಡಿಂಗ್ ಅನ್ನು ತೆರೆಯಿರಿ"</string>
+    <!-- no translation found for screen_capture_post_recording_shelf_thumbnail_a11y (4764732838982357845) -->
+    <skip />
     <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"ಕ್ಲಿಕ್‌ಗಳು ಮತ್ತು ಕೀಗಳನ್ನು ತೋರಿಸಿ"</string>
     <string name="screen_capture_device_audio" msgid="1537290197773737349">"ಸಾಧನದ ಆಡಿಯೋ"</string>
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"ಮೈಕ್ರೊಫೋನ್‌"</string>
@@ -432,8 +441,7 @@
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"ನೋಟಿಫಿಕೇಶನ್‌ಗಳು"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistant"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"ಕೀಬೋರ್ಡ್"</string>
-    <!-- no translation found for input_method_switcher_title_large_screen (8490419050265486980) -->
-    <skip />
+    <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"ಕೀಬೋರ್ಡ್‌"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{ಇನ್ನೂ # ನೋಟಿಫಿಕೇಶನ್ ಒಳಗಿದೆ.}one{ಇನ್ನೂ # ನೋಟಿಫಿಕೇಶನ್‌ಗಳು ಒಳಗಿವೆ.}other{ಇನ್ನೂ # ನೋಟಿಫಿಕೇಶನ್‌ಗಳು ಒಳಗಿವೆ.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"ಪರದೆಯನ್ನು ಲ್ಯಾಂಡ್‌ಸ್ಕೇಪ್ ಓರಿಯಂಟೇಶನ್‍ನಲ್ಲಿ ಲಾಕ್ ಮಾಡಲಾಗಿದೆ."</string>
@@ -593,9 +601,9 @@
     <string name="sensor_privacy_start_use_mic_dialog_title" msgid="563796653825944944">"ಸಾಧನದ ಮೈಕ್ರೋಫೋನ್ ನಿರ್ಬಂಧವನ್ನು ತೆಗೆಯಬೇಕೆ?"</string>
     <string name="sensor_privacy_start_use_camera_dialog_title" msgid="8807639852654305227">"ಸಾಧನದ ಕ್ಯಾಮರಾ ನಿರ್ಬಂಧವನ್ನು ತೆಗೆಯಬೇಕೆ?"</string>
     <string name="sensor_privacy_start_use_mic_camera_dialog_title" msgid="4316471859905020023">"ಸಾಧನದ ಕ್ಯಾಮರಾ ಮತ್ತು ಮೈಕ್ರೋಫೋನ್ ಅನ್ನು ಅನ್‍ಬ್ಲಾಕ್ ಮಾಡಬೇಕೇ?"</string>
-    <string name="sensor_privacy_start_use_mic_dialog_content" msgid="1624701280680913717">"ಇದು ಎಲ್ಲಾ ಆ್ಯಪ್‌ಗಳಿಗೆ ಹಾಗೂ ಸೇವೆಗಳಿಗೆ ನಿಮ್ಮ ಮೈಕ್ರೋಫೋನ್ ಬಳಸುವುದಕ್ಕಾಗಿ ಇರುವ ಪ್ರವೇಶದ ನಿರ್ಬಂಧವನ್ನು ತೆಗೆದುಹಾಕುತ್ತದೆ."</string>
-    <string name="sensor_privacy_start_use_camera_dialog_content" msgid="4704948062372435963">"ಇದು ಎಲ್ಲಾ ಆ್ಯಪ್‌ಗಳಿಗೆ ಹಾಗೂ ಸೇವೆಗಳಿಗೆ ನಿಮ್ಮ ಕ್ಯಾಮರಾವನ್ನು ಬಳಸುವುದಕ್ಕಾಗಿ ಇರುವ ಪ್ರವೇಶದ ನಿರ್ಬಂಧವನ್ನು ತೆಗೆದುಹಾಕುತ್ತದೆ."</string>
-    <string name="sensor_privacy_start_use_mic_camera_dialog_content" msgid="3577642558418404919">"ಇದು ಎಲ್ಲಾ ಆ್ಯಪ್‌ಗಳಿಗೆ ಹಾಗೂ ಸೇವೆಗಳಿಗೆ ನಿಮ್ಮ ಕ್ಯಾಮರಾ ಅಥವಾ ಮೈಕ್ರೋಫೋನ್ ಬಳಸುವುದಕ್ಕಾಗಿ ಇರುವ ಪ್ರವೇಶದ ನಿರ್ಬಂಧವನ್ನು ತೆಗೆದುಹಾಕುತ್ತದೆ."</string>
+    <string name="sensor_privacy_start_use_mic_dialog_content" msgid="1624701280680913717">"ಇದು ಎಲ್ಲಾ ಆ್ಯಪ್‌ಗಳಿಗೆ ಹಾಗೂ ಸೇವೆಗಳಿಗೆ ನಿಮ್ಮ ಮೈಕ್ರೋಫೋನ್ ಬಳಸುವುದಕ್ಕಾಗಿ ಇರುವ ಆ್ಯಕ್ಸೆಸ್‌ನ ನಿರ್ಬಂಧವನ್ನು ತೆಗೆದುಹಾಕುತ್ತದೆ."</string>
+    <string name="sensor_privacy_start_use_camera_dialog_content" msgid="4704948062372435963">"ಇದು ಎಲ್ಲಾ ಆ್ಯಪ್‌ಗಳಿಗೆ ಹಾಗೂ ಸೇವೆಗಳಿಗೆ ನಿಮ್ಮ ಕ್ಯಾಮರಾವನ್ನು ಬಳಸುವುದಕ್ಕಾಗಿ ಇರುವ ಆ್ಯಕ್ಸೆಸ್‌ನ ನಿರ್ಬಂಧವನ್ನು ತೆಗೆದುಹಾಕುತ್ತದೆ."</string>
+    <string name="sensor_privacy_start_use_mic_camera_dialog_content" msgid="3577642558418404919">"ಇದು ಎಲ್ಲಾ ಆ್ಯಪ್‌ಗಳಿಗೆ ಹಾಗೂ ಸೇವೆಗಳಿಗೆ ನಿಮ್ಮ ಕ್ಯಾಮರಾ ಅಥವಾ ಮೈಕ್ರೋಫೋನ್ ಬಳಸುವುದಕ್ಕಾಗಿ ಇರುವ ಆ್ಯಕ್ಸೆಸ್‌ನ ನಿರ್ಬಂಧವನ್ನು ತೆಗೆದುಹಾಕುತ್ತದೆ."</string>
     <string name="sensor_privacy_start_use_mic_blocked_dialog_title" msgid="2640140287496469689">"ಮೈಕ್ರೋಫೋನ್ ಅನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ"</string>
     <string name="sensor_privacy_start_use_camera_blocked_dialog_title" msgid="7398084286822440384">"ಕ್ಯಾಮರಾವನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ"</string>
     <string name="sensor_privacy_start_use_mic_camera_blocked_dialog_title" msgid="195236134743281973">"ಮೈಕ್ ಮತ್ತು ಕ್ಯಾಮರಾವನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ"</string>
@@ -1873,18 +1881,11 @@
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"ಎಡ ಬ್ಯಾಟರಿ %1$s"</string>
     <string name="accessibility_hearing_device_right_battery_level" msgid="7598843215226414563">"ಬಲ ಬ್ಯಾಟರಿ %1$s"</string>
     <string name="accessibility_hearing_device_notification_channel_name" msgid="7365020777623709400">"ಹಿಯರಿಂಗ್ ಸಾಧನದ ಸ್ಥಿತಿ"</string>
-    <!-- no translation found for more_options_edit (6337988646114341329) -->
-    <skip />
-    <!-- no translation found for more_options_move (2226159413422979066) -->
-    <skip />
-    <!-- no translation found for more_options_remove_all (194855000797536179) -->
-    <skip />
-    <!-- no translation found for floating_menu_more_options_label (7859269790323628599) -->
-    <skip />
-    <!-- no translation found for dream_setup_title (7996530071414508238) -->
-    <skip />
-    <!-- no translation found for dream_setup_button_not_now (8028385323668620805) -->
-    <skip />
-    <!-- no translation found for dream_setup_button_setup (4755361016017554826) -->
-    <skip />
+    <string name="more_options_edit" msgid="6337988646114341329">"ಎಡಿಟ್‌ ಮಾಡಿ"</string>
+    <string name="more_options_move" msgid="2226159413422979066">"ಸರಿಸಿ"</string>
+    <string name="more_options_remove_all" msgid="194855000797536179">"ಎಲ್ಲವನ್ನೂ ತೆಗೆದುಹಾಕಿ"</string>
+    <string name="floating_menu_more_options_label" msgid="7859269790323628599">"ಇನ್ನಷ್ಟು ಆಯ್ಕೆಗಳು"</string>
+    <string name="dream_setup_title" msgid="7996530071414508238">"ಸ್ಕ್ರೀನ್‌ ಸೇವರ್‌ ಅನ್ನು ಸೆಟಪ್‌ ಮಾಡಿ"</string>
+    <string name="dream_setup_button_not_now" msgid="8028385323668620805">"ಈಗ ಬೇಡ"</string>
+    <string name="dream_setup_button_setup" msgid="4755361016017554826">"ಸೆಟಪ್‌ ಮಾಡಿ"</string>
 </resources>

@@ -268,7 +268,7 @@
     <string name="apn_settings_not_available" msgid="1147111671403342300">"Nastavení přístupového bodu pro tohoto uživatele není dostupné."</string>
     <string name="enable_adb" msgid="8072776357237289039">"Ladění přes USB"</string>
     <string name="enable_adb_summary" msgid="3711526030096574316">"Povolit režim ladění s připojeným zařízením USB"</string>
-    <string name="clear_adb_keys" msgid="2696065439790970581">"Zrušit autorizace k ladění přes USB"</string>
+    <string name="clear_adb_keys" msgid="2696065439790970581">"Zrušit autorizace k ladění adb"</string>
     <string name="enable_adb_wireless" msgid="6973226350963971018">"Bezdrátové ladění"</string>
     <string name="enable_adb_wireless_summary" msgid="7344391423657093011">"Režim ladění při připojení k Wi-Fi"</string>
     <string name="adb_wireless_error" msgid="721958772149779856">"Chyba"</string>
@@ -293,10 +293,8 @@
     <string name="adb_wireless_verifying_qrcode_text" msgid="6123192424916029207">"Párování zařízení…"</string>
     <string name="adb_qrcode_pairing_device_failed_msg" msgid="6936292092592914132">"Spárování zařízení se nezdařilo. Buď byl QR kód chybný, nebo zařízení není připojeno ke stejné síti."</string>
     <string name="adb_wireless_ip_addr_preference_title" msgid="8335132107715311730">"IP adresa a port"</string>
-    <!-- no translation found for adb_wireless_unavailable_not_allowed (83310404140556806) -->
-    <skip />
-    <!-- no translation found for adb_wireless_unavailable_disconnected (8819105186435736128) -->
-    <skip />
+    <string name="adb_wireless_unavailable_not_allowed" msgid="83310404140556806">"Nedostupné (nepovoleno)"</string>
+    <string name="adb_wireless_unavailable_disconnected" msgid="8819105186435736128">"Nedostupné (Wi‑Fi odpojená)"</string>
     <string name="adb_wireless_qrcode_pairing_title" msgid="1906409667944674707">"Naskenování QR kódu"</string>
     <string name="adb_wireless_qrcode_pairing_description" msgid="6014121407143607851">"Spárujte zařízení přes Wi-Fi naskenováním QR kódu"</string>
     <string name="adb_wireless_no_network_msg" msgid="2365795244718494658">"Připojte se k síti Wi-Fi"</string>
@@ -370,7 +368,7 @@
     <string name="adb_warning_message" msgid="8145270656419669221">"Ladění prostřednictvím rozhraní USB je určeno pouze pro účely vývoje. Použijte je ke kopírování dat mezi počítačem a zařízením, instalaci aplikací do zařízení bez upozornění a čtení dat protokolů."</string>
     <string name="adbwifi_warning_title" msgid="727104571653031865">"Povolit bezdrátové ladění?"</string>
     <string name="adbwifi_warning_message" msgid="8005936574322702388">"Bezdrátové ladění je určeno pouze pro účely vývoje. Použijte jej ke kopírování dat mezi počítačem a zařízením, instalaci aplikací do zařízení bez upozornění a čtení dat protokolů."</string>
-    <string name="adb_keys_warning_message" msgid="7827514623080777814">"Zrušit přístup k ladění přes USB ze všech počítačů, které jste v minulosti autorizovali?"</string>
+    <string name="adb_keys_warning_message" msgid="7827514623080777814">"Zrušit přístup k ladění adb ze všech počítačů a sítí, které jste v minulosti autorizovali?"</string>
     <string name="dev_settings_warning_title" msgid="8251234890169074553">"Povolit nastavení pro vývojáře?"</string>
     <string name="dev_settings_warning_message" msgid="37741686486073668">"Tato nastavení jsou určena pouze pro vývojáře. Mohou způsobit rozbití nebo nesprávné fungování zařízení a nainstalovaných aplikací."</string>
     <string name="verify_apps_over_usb_title" msgid="6031809675604442636">"Ověřovat aplikace z USB"</string>

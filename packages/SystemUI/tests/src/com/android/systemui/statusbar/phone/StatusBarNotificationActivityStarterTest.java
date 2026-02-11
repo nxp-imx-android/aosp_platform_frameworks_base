@@ -32,6 +32,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -110,6 +111,7 @@ import com.android.systemui.wmshell.BubblesManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -125,6 +127,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import com.android.systemui.activity.data.repository.ActivityIntentRepository;
+import com.android.systemui.activity.data.repository.WouldPendingIntentShowOverLockscreenCallback;
 
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4.class)
@@ -610,5 +614,82 @@ public class StatusBarNotificationActivityStarterTest extends SysuiTestCase {
         verify(() -> FrameworkStatsLog.write(FrameworkStatsLog.FULL_SCREEN_INTENT_LAUNCHED,
                 kTestUid, kTestActivityName));
         mockingSession.finishMocking();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SCENE_CONTAINER)
+    @DisableFlags(Flags.FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION)
+    public void testOnNotificationClicked_showOverLockscreen_launchesImmediately()
+            throws Exception {
+        // GIVEN a notification that should show over lockscreen
+        Notification notification = mNotificationEntry.getSbn().getNotification();
+        notification.contentIntent = mContentIntent;
+        notification.flags |= Notification.FLAG_AUTO_CANCEL;
+
+        when(mKeyguardStateController.isShowing()).thenReturn(true);
+        when(mKeyguardStateController.isOccluded()).thenReturn(false); // Not yet occluded
+
+        // Mock ActivityIntentRepository to simulate wouldPendingIntentShowOverLockscreen = true
+        ActivityIntentRepository mockRepository = mock(ActivityIntentRepository.class);
+        doAnswer(invocation -> {
+            Object callbackArg = invocation.getArgument(4);
+            WouldPendingIntentShowOverLockscreenCallback<Object> callback =
+                    (WouldPendingIntentShowOverLockscreenCallback<Object>) callbackArg;
+            Object params = invocation.getArgument(3);
+            callback.onWouldPendingShowOverLockscreenFetched(true, params);
+            return null;
+        }).when(mockRepository)
+                .wouldPendingIntentShowOverLockscreen(any(), anyInt(), any(), any(), any());
+
+        mUnderTest.setActivityIntentRepository(mockRepository);
+
+        // WHEN notification is clicked
+        mUnderTest.onNotificationClicked(mNotificationEntry, mNotificationRow);
+        mMainExecutor.runAllReady(); // Execute async callbacks
+
+        // THEN:
+        // Verify launch happened
+        verify(mActivityTransitionAnimator).startPendingIntentWithAnimation(
+                any(), eq(false), any(),
+                any(ActivityTransitionAnimator.LegacyPendingIntentStarter.class));
+
+        // Verify ShadeController was NOT asked to collapse
+        verify(mShadeController, never()).collapseShade();
+        verify(mShadeController, never()).collapseShade(anyBoolean());
+        verify(mShadeController, never()).animateCollapseShade();
+        verify(mShadeController, never()).addPostCollapseAction(any());
+    }
+
+    @Test
+    @DisableFlags({Flags.FLAG_SCENE_CONTAINER, Flags.FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION})
+    public void testOnNotificationClicked_sceneContainerDisabled_activityLaunchesAfterCollapse()
+            throws PendingIntent.CanceledException {
+        // GIVEN a notification that should show over lockscreen
+        NotificationEntry entry = mNotificationEntry;
+        when(mKeyguardStateController.isShowing()).thenReturn(true);
+        when(mActivityIntentHelper.wouldPendingShowOverLockscreen(any(), anyInt()))
+                .thenReturn(true);
+
+        // GIVEN addPostCollapseAction does NOT run immediately (override setup to verify deferral)
+        ArgumentCaptor<Runnable> postCollapseActionCaptor = ArgumentCaptor.forClass(Runnable.class);
+        doNothing().when(mShadeController)
+                .addPostCollapseAction(postCollapseActionCaptor.capture());
+
+        // WHEN notification is clicked
+        mUnderTest.onNotificationClicked(entry, mNotificationRow);
+
+        // THEN shade collapse is requested
+        verify(mShadeController).collapseShade(eq(true));
+
+        // THEN activity launch is NOT called yet (it is deferred)
+        verify(mActivityTransitionAnimator, never())
+                .startPendingIntentWithAnimation(any(), anyBoolean(), any(), any());
+
+        // WHEN the post-collapse action finally runs
+        postCollapseActionCaptor.getValue().run();
+
+        // THEN the activity launch is now executed
+        verify(mActivityTransitionAnimator)
+                .startPendingIntentWithAnimation(any(), anyBoolean(), any(), any());
     }
 }

@@ -2266,39 +2266,6 @@ public final class DisplayPowerControllerTest {
     }
 
     @Test
-    public void testManualBrightness_stateDozePolicyOnUseNormalBrightnessForDozeTrue_brightnessDoze() {
-        when(mDisplayManagerFlagsMock.isNormalBrightnessForDozeParameterEnabled(
-                mContext)).thenReturn(true);
-        mHolder.dpc.setDisplayOffloadSession(mDisplayOffloadSession);
-        Settings.System.putInt(mContext.getContentResolver(),
-                Settings.System.SCREEN_BRIGHTNESS_MODE,
-                Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL);
-        float brightness = 0.277f;
-        when(mHolder.displayPowerState.getColorFadeLevel()).thenReturn(1.0f);
-        when(mHolder.brightnessSetting.getBrightness()).thenReturn(brightness);
-        when(mHolder.hbmController.getCurrentBrightnessMax())
-                .thenReturn(PowerManager.BRIGHTNESS_MAX);
-        when(mHolder.displayPowerState.getScreenState()).thenReturn(Display.STATE_DOZE);
-
-        DisplayPowerRequest dprInit = new DisplayPowerRequest();
-        dprInit.policy = DisplayPowerRequest.POLICY_BRIGHT;
-        mHolder.dpc.requestPowerState(dprInit, /* waitForNegativeProximity= */ false);
-        advanceTime(1); // Run updatePowerState
-
-        ArgumentCaptor<BrightnessSetting.BrightnessSettingListener> listenerCaptor =
-                ArgumentCaptor.forClass(BrightnessSetting.BrightnessSettingListener.class);
-        verify(mHolder.brightnessSetting).registerListener(listenerCaptor.capture());
-        BrightnessSetting.BrightnessSettingListener listener = listenerCaptor.getValue();
-        listener.onBrightnessChanged(brightness);
-        advanceTime(1); // Send messages, run updatePowerState
-
-        // When state=DOZE, force doze brightness regardless the requested policy.
-        verify(mHolder.animator).animateTo(eq(brightness * DOZE_SCALE_FACTOR),
-                /* linearSecondTarget= */ anyFloat(), /* rate= */ anyFloat(),
-                /* ignoreAnimationLimits= */ anyBoolean());
-    }
-
-    @Test
     public void testDozeManualBrightness_AbcIsNull() {
         mHolder = createDisplayPowerController(DISPLAY_ID, UNIQUE_ID, /* isEnabled= */ true,
                 /* isAutoBrightnessAvailable= */ false);
@@ -2370,6 +2337,9 @@ public final class DisplayPowerControllerTest {
 
     @Test
     public void testDefaultDozeBrightness_ShouldNotBeUsedIfAutoBrightnessAllowedInDoze() {
+        Settings.System.putInt(mContext.getContentResolver(),
+                Settings.System.SCREEN_BRIGHTNESS_MODE,
+                Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC);
         mContext.getOrCreateTestableResources().addOverride(
                 com.android.internal.R.bool.config_allowAutoBrightnessWhileDozing, true);
         mHolder = createDisplayPowerController(DISPLAY_ID, UNIQUE_ID);

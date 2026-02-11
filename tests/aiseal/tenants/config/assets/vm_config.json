@@ -15,5 +15,6 @@
   ],
   "export_tombstones": false,
   "enable_authfs": false,
-  "hugepages": true
+  "hugepages": true,
+  "dm_default_key": true
 }

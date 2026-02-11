@@ -268,7 +268,7 @@
     <string name="apn_settings_not_available" msgid="1147111671403342300">"Erabiltzaile honek ezin ditu APN ezarpenak atzitu"</string>
     <string name="enable_adb" msgid="8072776357237289039">"USB bidezko arazketa"</string>
     <string name="enable_adb_summary" msgid="3711526030096574316">"Gaitu arazketa modua USBa konektatzean"</string>
-    <string name="clear_adb_keys" msgid="2696065439790970581">"Baliogabetu USB bidezko arazketarako baimenak"</string>
+    <string name="clear_adb_keys" msgid="2696065439790970581">"Kendu ADB arazketa egiteko baimenak"</string>
     <string name="enable_adb_wireless" msgid="6973226350963971018">"Hari gabeko arazketa"</string>
     <string name="enable_adb_wireless_summary" msgid="7344391423657093011">"Arazketa modua wifi-konexioa aktibatuta dagoenean"</string>
     <string name="adb_wireless_error" msgid="721958772149779856">"Errorea"</string>
@@ -293,10 +293,8 @@
     <string name="adb_wireless_verifying_qrcode_text" msgid="6123192424916029207">"Gailua parekatzen…"</string>
     <string name="adb_qrcode_pairing_device_failed_msg" msgid="6936292092592914132">"Ezin izan da parekatu gailua. QR kodea ez da zuzena edo gailua ez dago sare berera konektatuta."</string>
     <string name="adb_wireless_ip_addr_preference_title" msgid="8335132107715311730">"IP helbidea eta ataka"</string>
-    <!-- no translation found for adb_wireless_unavailable_not_allowed (83310404140556806) -->
-    <skip />
-    <!-- no translation found for adb_wireless_unavailable_disconnected (8819105186435736128) -->
-    <skip />
+    <string name="adb_wireless_unavailable_not_allowed" msgid="83310404140556806">"Ez dago erabilgarri (ez da onartzen)"</string>
+    <string name="adb_wireless_unavailable_disconnected" msgid="8819105186435736128">"Ez dago erabilgarri (wifia deskonektatuta)"</string>
     <string name="adb_wireless_qrcode_pairing_title" msgid="1906409667944674707">"Eskaneatu QR kodea"</string>
     <string name="adb_wireless_qrcode_pairing_description" msgid="6014121407143607851">"Parekatu gailua wifi-sare baten bidez QR kode bat eskaneatuta"</string>
     <string name="adb_wireless_no_network_msg" msgid="2365795244718494658">"Konektatu wifi-sare batera"</string>
@@ -370,7 +368,7 @@
     <string name="adb_warning_message" msgid="8145270656419669221">"USB bidezko arazketa garapen-xedeetarako soilik dago diseinatuta. Erabil ezazu ordenagailuaren eta gailuaren artean datuak kopiatzeko, aplikazioak gailuan jakinarazi gabe instalatzeko eta erregistro-datuak irakurtzeko."</string>
     <string name="adbwifi_warning_title" msgid="727104571653031865">"Hari gabeko arazketa baimendu nahi duzu?"</string>
     <string name="adbwifi_warning_message" msgid="8005936574322702388">"Hari gabeko arazketa garapen-xedeetarako soilik dago diseinatuta. Erabil ezazu ordenagailuaren eta gailuaren artean datuak kopiatzeko, gailuan aplikazioak jakinarazi gabe instalatzeko eta erregistroko datuak irakurtzeko."</string>
-    <string name="adb_keys_warning_message" msgid="7827514623080777814">"Aurretik baimendutako ordenagailu guztiei USB bidezko arazketarako sarbidea kendu nahi diezu?"</string>
+    <string name="adb_keys_warning_message" msgid="7827514623080777814">"Aurrez baimena eman diezun ordenagailu eta sare guztiei ADB arazketarako sarbidea kendu nahi diezu?"</string>
     <string name="dev_settings_warning_title" msgid="8251234890169074553">"Baimendu garapenerako ezarpenak?"</string>
     <string name="dev_settings_warning_message" msgid="37741686486073668">"Ezarpen hauek garapen-xedeetarako pentsatu dira soilik. Baliteke ezarpenen eraginez gailua matxuratzea edo funtzionamendu okerra izatea."</string>
     <string name="verify_apps_over_usb_title" msgid="6031809675604442636">"Egiaztatu USB bidezko aplik."</string>
@@ -556,7 +554,7 @@
     <string name="external_source_trusted" msgid="1146522036773132905">"Baimenduta"</string>
     <string name="external_source_untrusted" msgid="5037891688911672227">"Baimendu gabe"</string>
     <string name="install_other_apps" msgid="3232595082023199454">"Instalatu aplikazio ezezagunak"</string>
-    <string name="home" msgid="973834627243661438">"Ezarpenen hasierako pantaila"</string>
+    <string name="home" msgid="973834627243661438">"Ezarpenen orri nagusia"</string>
   <string-array name="battery_labels">
     <item msgid="7878690469765357158">"% 0"</item>
     <item msgid="8894873528875953317">"% 50"</item>

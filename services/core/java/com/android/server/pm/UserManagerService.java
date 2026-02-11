@@ -159,6 +159,7 @@ import android.util.Xml;
 
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.SystemServerLock;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.annotations.VisibleForTesting.Visibility;
 import com.android.internal.app.IAppOpsService;
@@ -395,15 +396,19 @@ public class UserManagerService extends IUserManager.Stub {
      * Lock for packages. If using with {@link #mUsersLock}, {@link #mPackagesLock} should be
      * acquired first.
      */
+    @SystemServerLock(LockGuard.INDEX_PACKAGES)
     private final Object mPackagesLock;
     private final UserDataPreparer mUserDataPreparer;
     /**
      * Short-term lock for internal state, when interaction/sync with PM is not required. If using
      * with {@link #mPackagesLock}, {@link #mPackagesLock} should be acquired first.
      */
+    @SystemServerLock(LockGuard.INDEX_USER)
     private final Object mUsersLock = LockGuard.installNewLock(LockGuard.INDEX_USER);
+    @SystemServerLock(LockGuard.INDEX_USER_RESTRICTIONS)
     private final Object mRestrictionsLock = NamedLock.create("mRestrictionsLock");
     // Used for serializing access to app restriction files
+    @SystemServerLock(LockGuard.INDEX_USER_APP_RESTRICTIONS)
     private final Object mAppRestrictionsLock = NamedLock.create("mAppRestrictionsLock");
 
     private final Handler mHandler;

@@ -61,6 +61,7 @@ import com.android.systemui.keyguard.ui.viewmodel.lockscreenUserActionsViewModel
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.motion.createSysUiComposeMotionTestRule
+import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.notificationRulesShadeStateViewModelFactory
 import com.android.systemui.plugins.keyguard.ui.composable.elements.BaseLockscreenElement
 import com.android.systemui.qs.ui.composable.QuickSettingsScene
 import com.android.systemui.qs.ui.viewmodel.quickSettingsSceneContentViewModelFactory
@@ -206,6 +207,8 @@ class LockScreenTransitionTest : SysuiTestCase() {
                 kosmos.notificationsPlaceholderViewModelFactory,
             actionsViewModelFactory = kosmos.quickSettingsUserActionsViewModelFactory,
             contentViewModelFactory = kosmos.quickSettingsSceneContentViewModelFactory,
+            notificationRulesShadeStateViewModelFactory =
+                kosmos.notificationRulesShadeStateViewModelFactory,
             jankMonitor = kosmos.interactionJankMonitor,
         )
 

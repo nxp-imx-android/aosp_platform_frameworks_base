@@ -292,14 +292,15 @@ interface IAudioService {
 
     int requestAudioFocus(in AudioAttributes aa, int focusReqType, IBinder cb,
             IAudioFocusDispatcher fd, in String clientId, in String callingPackageName,
-            in String attributionTag, int flags, IAudioPolicyCallback pcb, int sdk);
+            in String attributionTag, int flags, IAudioPolicyCallback pcb, int sdk,
+            in @nullable IBinder focusEnvToken);
 
     int abandonAudioFocus(IAudioFocusDispatcher fd, String clientId, in AudioAttributes aa,
-            in String callingPackageName);
+            in String callingPackageName, in @nullable IBinder focusEnvToken);
 
     void unregisterAudioFocusClient(String clientId);
 
-    int getCurrentAudioFocus();
+    int getCurrentAudioFocus(in @nullable IBinder focusEnvToken);
 
     void startBluetoothSco(IBinder cb, int targetSdkVersion,
             in AttributionSource attributionSource);
@@ -614,10 +615,17 @@ interface IAudioService {
 
     int requestAudioFocusForTest(in AudioAttributes aa, int focusReqType, IBinder cb,
             in IAudioFocusDispatcher fd, in String clientId, in String callingPackageName,
-            int flags, int uid, int sdk);
+            int flags, int uid, int sdk, in @nullable IBinder focusEnvToken);
 
     int abandonAudioFocusForTest(in IAudioFocusDispatcher fd, in String clientId,
-            in AudioAttributes aa, in String callingPackageName);
+            in AudioAttributes aa, in String callingPackageName,
+            in @nullable IBinder focusEnvToken);
+
+    @EnforcePermission(anyOf = {"MODIFY_AUDIO_ROUTING", "MODIFY_AUDIO_SETTINGS_PRIVILEGED"})
+    boolean createFocusEnvironment(in IBinder focusEnvToken);
+
+    @EnforcePermission(anyOf = {"MODIFY_AUDIO_ROUTING", "MODIFY_AUDIO_SETTINGS_PRIVILEGED"})
+    boolean destroyFocusEnvironment(in IBinder focusEnvToken);
 
     @EnforcePermission("MODIFY_AUDIO_SETTINGS_PRIVILEGED")
     boolean enterFocusIsolation(int uid, IBinder cb);

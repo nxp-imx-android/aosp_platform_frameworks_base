@@ -70,10 +70,7 @@
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"Tento tablet můžete pomocí funkce Najdi moje zařízení najít, i když je vypnutý"</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"Tento telefon můžete pomocí Pátracího centra najít, i když je vypnutý"</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"Tento tablet můžete pomocí Pátracího centra najít, i když je vypnutý"</string>
-    <!-- no translation found for dream_setup_description (5167691612621831552) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (6296793330727926553) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (3098487756905462324) -->
-    <skip />
+    <string name="dream_setup_description" product="default" msgid="5167691612621831552">"Při nabíjení telefonu se zobrazí hodiny, fotky nebo počasí"</string>
+    <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"Při nabíjení tabletu se zobrazí hodiny, fotky nebo počasí"</string>
+    <string name="dream_setup_description" product="device" msgid="3098487756905462324">"Při nabíjení zařízení se zobrazí hodiny, fotky nebo počasí"</string>
 </resources>

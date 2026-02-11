@@ -70,10 +70,7 @@
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"「デバイスを探す」を使うと、電源が OFF の状態でもこのタブレットの現在地を確認できます"</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"Find Hub を使用すると、このスマートフォンの電源が切れていても現在地を確認できます"</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"Find Hub を使用すると、このタブレットの電源が切れていても現在地を確認できます"</string>
-    <!-- no translation found for dream_setup_description (5167691612621831552) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (6296793330727926553) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (3098487756905462324) -->
-    <skip />
+    <string name="dream_setup_description" product="default" msgid="5167691612621831552">"スマートフォンの充電中に時計、写真、天気を表示できます"</string>
+    <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"タブレットの充電中に時計、写真、天気を表示できます"</string>
+    <string name="dream_setup_description" product="device" msgid="3098487756905462324">"デバイスの充電中に時計、写真、天気を表示できます"</string>
 </resources>

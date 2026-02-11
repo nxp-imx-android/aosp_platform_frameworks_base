@@ -268,7 +268,7 @@
     <string name="apn_settings_not_available" msgid="1147111671403342300">"Die Einstellungen für den Zugangspunkt sind für diesen Nutzer nicht verfügbar."</string>
     <string name="enable_adb" msgid="8072776357237289039">"USB-Debugging"</string>
     <string name="enable_adb_summary" msgid="3711526030096574316">"Debugging-Modus bei Anschluss über USB"</string>
-    <string name="clear_adb_keys" msgid="2696065439790970581">"USB-Debugging-Autorisierungen aufheben"</string>
+    <string name="clear_adb_keys" msgid="2696065439790970581">"Autorisierungen für das ADB-Debugging aufheben"</string>
     <string name="enable_adb_wireless" msgid="6973226350963971018">"Debugging über WLAN"</string>
     <string name="enable_adb_wireless_summary" msgid="7344391423657093011">"Debugging-Modus, wenn eine WLAN-Verbindung besteht"</string>
     <string name="adb_wireless_error" msgid="721958772149779856">"Fehler"</string>
@@ -293,10 +293,8 @@
     <string name="adb_wireless_verifying_qrcode_text" msgid="6123192424916029207">"Gerät wird gekoppelt…"</string>
     <string name="adb_qrcode_pairing_device_failed_msg" msgid="6936292092592914132">"Das Gerät konnte nicht gekoppelt werden. Der QR-Code war nicht korrekt oder das Gerät ist nicht mit demselben Netzwerk verbunden."</string>
     <string name="adb_wireless_ip_addr_preference_title" msgid="8335132107715311730">"IP-Adresse &amp; Port"</string>
-    <!-- no translation found for adb_wireless_unavailable_not_allowed (83310404140556806) -->
-    <skip />
-    <!-- no translation found for adb_wireless_unavailable_disconnected (8819105186435736128) -->
-    <skip />
+    <string name="adb_wireless_unavailable_not_allowed" msgid="83310404140556806">"Nicht verfügbar (nicht zulässig)"</string>
+    <string name="adb_wireless_unavailable_disconnected" msgid="8819105186435736128">"Nicht verfügbar (WLAN getrennt)"</string>
     <string name="adb_wireless_qrcode_pairing_title" msgid="1906409667944674707">"QR-Code scannen"</string>
     <string name="adb_wireless_qrcode_pairing_description" msgid="6014121407143607851">"Scanne einen QR-Code, um das Gerät über WLAN zu koppeln"</string>
     <string name="adb_wireless_no_network_msg" msgid="2365795244718494658">"Bitte stell eine WLAN-Verbindung her"</string>
@@ -370,7 +368,7 @@
     <string name="adb_warning_message" msgid="8145270656419669221">"USB-Debugging ist nur für Entwicklungszwecke vorgesehen. Damit kannst du Daten zwischen deinem Computer und deinem Gerät kopieren, Apps auf deinem Gerät ohne Benachrichtigung installieren und Protokolldaten lesen."</string>
     <string name="adbwifi_warning_title" msgid="727104571653031865">"Debugging über WLAN zulassen?"</string>
     <string name="adbwifi_warning_message" msgid="8005936574322702388">"\"Debugging über WLAN\" ist nur für Entwicklungszwecke vorgesehen. Damit kannst du Daten zwischen deinem Computer und deinem Gerät kopieren, Apps auf deinem Gerät ohne Benachrichtigung installieren und Protokolldaten lesen."</string>
-    <string name="adb_keys_warning_message" msgid="7827514623080777814">"Zugriff auf USB-Debugging für alle zuvor autorisierten Computer aufheben?"</string>
+    <string name="adb_keys_warning_message" msgid="7827514623080777814">"Zugriff auf ADB-Debugging für alle zuvor autorisierten Computer und Netzwerke aufheben?"</string>
     <string name="dev_settings_warning_title" msgid="8251234890169074553">"Entwicklungseinstellungen zulassen?"</string>
     <string name="dev_settings_warning_message" msgid="37741686486073668">"Diese Einstellungen sind ausschließlich für Entwicklungszwecke gedacht. Sie können dein Gerät und die darauf installierten Apps beschädigen oder zu unerwünschtem Verhalten führen."</string>
     <string name="verify_apps_over_usb_title" msgid="6031809675604442636">"Über USB installierte Apps prüfen"</string>

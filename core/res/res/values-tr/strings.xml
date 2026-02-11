@@ -1499,6 +1499,14 @@
     <string name="usb_contaminant_detected_message" msgid="7346100585390795743">"USB bağlantı noktası otomatik olarak devre dışı bırakıldı. Daha fazla bilgi için dokunun."</string>
     <string name="usb_contaminant_not_detected_title" msgid="2651167729563264053">"USB bağlantı noktasını kullanabilirsiniz"</string>
     <string name="usb_contaminant_not_detected_message" msgid="892863190942660462">"Telefon artık sıvıları veya tozları algılamıyor."</string>
+    <string name="usb_authorization_notify_on_screenlock_title" msgid="4219670768084927681">"Yeni USB cihazı bağlandı"</string>
+    <string name="usb_authorization_notify_on_screenlock_message" msgid="3391658768099414499">"Bu USB cihazına güvenmek ve kullanmaya başlamak için oturum açın."</string>
+    <string name="usb_authorization_notify_on_screenlock_message_multiple" msgid="1722575755931059980">"Bu USB cihazlarına güvenmek ve kullanmaya başlamak için oturum açın."</string>
+    <string name="usb_authorization_notify_finish_logging_in_title" msgid="3417036506115006412">"Yeni USB cihazı bağlandı"</string>
+    <string name="usb_authorization_notify_finish_logging_in_message" msgid="7996802340128367690">"Bu USB cihazına tamamen güvenmek için <xliff:g id="NUM_SECONDS">%1$d</xliff:g> saniye içinde oturum açın. Açmadığınız takdirde, cihazın bağlantısını kesip yeniden bağlamanız gerekir."</string>
+    <string name="usb_authorization_notify_finish_logging_in_title_multiple" msgid="3184839817149193434">"Yeni USB cihazları bağlandı"</string>
+    <string name="usb_authorization_notify_finish_logging_in_message_multiple" msgid="6745916608298736853">"Bu USB cihazlarına tamamen güvenmek için <xliff:g id="NUM_SECONDS">%1$d</xliff:g> saniye içinde oturum açın. Açmadığınız takdirde, cihazların bağlantısını kesip yeniden bağlamanız gerekir."</string>
+    <string name="notification_channel_usb_authorization" msgid="7567851967410736399">"USB Cihaz Yetkilendirmesi"</string>
     <string name="taking_remote_bugreport_notification_title" msgid="1582531382166919850">"Hata raporu alınıyor…"</string>
     <string name="share_remote_bugreport_notification_title" msgid="6708897723753334999">"Hata raporu paylaşılsın mı?"</string>
     <string name="sharing_remote_bugreport_notification_title" msgid="3077385149217638550">"Hata raporu paylaşılıyor..."</string>
@@ -2119,7 +2127,8 @@
     <string name="enable_app_lock_success_toast_message" msgid="3339622779190529987">"<xliff:g id="APP_NAME">%1$s</xliff:g> kilitli"</string>
     <string name="enable_app_lock_failure_toast_message" msgid="1055838896510445566">"<xliff:g id="APP_NAME">%1$s</xliff:g> kilitlenemiyor"</string>
     <string name="disable_app_lock_success_toast_message" msgid="70733620589071266">"Uygulama kilidi, <xliff:g id="APP_NAME">%1$s</xliff:g> uygulamasından kaldırıldı"</string>
-    <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"<xliff:g id="APP_NAME">%1$s</xliff:g> kilitli"</string>
+    <!-- no translation found for locked_app_biometric_prompt_description (5892653396104581919) -->
+    <skip />
     <string name="locked_app_external_display_message" msgid="5483884799685545338">"Uygulamaya bu ekranda erişmek için öncelikle diğer cihazınızda kimliğinizi doğrulayın"</string>
     <string name="app_lock_edu_dialog_enable_app_lock_title" msgid="283314042336592322">"<xliff:g id="APP_NAME">%1$s</xliff:g> uygulamasına uygulama kilidi eklensin mi?"</string>
     <string name="app_lock_edu_dialog_description" msgid="8176807243219769518">"Güvenliğiniz için bu uygulamaya Parmak İzi ve Yüz Tanıma Kilidi veya PIN\'inizle yalnızca siz erişebilirsiniz."</string>
@@ -2128,6 +2137,8 @@
     <string name="app_lock_edu_dialog_info_header" msgid="5876120209204270990">"Uygulama kilidiyle"</string>
     <string name="app_lock_edu_dialog_info_notifications" msgid="1124438392204873305">"Bildirim içerikleri gizlenir"</string>
     <string name="app_lock_edu_dialog_info_widgets" msgid="8809009414650740872">"Widget\'lar ve kısayollar kaldırılır"</string>
+    <!-- no translation found for app_lock_edu_dialog_info_ai_disclaimer (5623615653703542050) -->
+    <skip />
     <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"Uygulama kilidi ekle"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_face" msgid="1348151645996748654">"Yüz Tanıma Kilidi"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"Parmak İzi Kilidi"</string>
@@ -2619,8 +2630,7 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"Uydu üzerinden mesajlaşmak için Google Mesajlar\'ı varsayılan mesajlaşma uygulamanız olarak ayarlayın"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"Uydu üzerinden mesajlaşma özelliği kullanılamıyor"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"Uydu üzerinden mesajlaşma özelliğinin bu ülkede veya bölgede kullanılıp kullanılamadığını kontrol etmek için konum ayarlarını açın"</string>
-    <!-- no translation found for satellite_indicator (6846063647532086110) -->
-    <skip />
+    <string name="satellite_indicator" msgid="6846063647532086110">"UYD"</string>
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"Parmak İzi Kilidi\'ni tekrar kurun"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"<xliff:g id="FINGERPRINT">%s</xliff:g> artık tanınamayacak."</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> ve <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> artık tanınamayacak."</string>

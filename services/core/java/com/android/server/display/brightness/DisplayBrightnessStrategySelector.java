@@ -355,17 +355,11 @@ public class DisplayBrightnessStrategySelector {
                         || !displayPowerRequest.useNormalBrightnessForDoze || Display.isDozeState(
                         targetDisplayState);
 
-        // If the flag is disabled, only use the strategy if there's a valid override from Dream
-        // Manager (the original behavior)
-        boolean overrideDozeBrightnessCheck = mDisplayManagerFlags.isDozeBrightnessStrategyEnabled()
-                || BrightnessUtils.isValidBrightnessValue(displayPowerRequest.dozeScreenBrightness);
-
         // We are not checking the targetDisplayState, but rather relying on the policy because
         // a user can define a different display state (displayPowerRequest.dozeScreenState) too
         // in the request with the Doze policy and user might request an override to force certain
         // brightness.
-        return displayPowerRequest.policy == POLICY_DOZE && normalBrightnessExceptionCheck
-                && overrideDozeBrightnessCheck;
+        return displayPowerRequest.policy == POLICY_DOZE && normalBrightnessExceptionCheck;
     }
 
     @VisibleForTesting

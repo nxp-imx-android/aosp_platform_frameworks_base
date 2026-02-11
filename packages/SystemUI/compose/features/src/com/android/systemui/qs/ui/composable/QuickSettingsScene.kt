@@ -78,6 +78,8 @@ import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.rememberViewModel
+import com.android.systemui.notifications.intelligence.rules.shared.NmContextualDisplayLaunch
+import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRulesShadeStateViewModel
 import com.android.systemui.notifications.ui.composable.HeadsUpNotificationPlaceholder
 import com.android.systemui.notifications.ui.composable.ScrollingNotificationPanel
 import com.android.systemui.qs.composefragment.ui.GridAnchor
@@ -114,6 +116,8 @@ constructor(
     private val notificationsPlaceholderViewModelFactory: NotificationsPlaceholderViewModel.Factory,
     private val actionsViewModelFactory: QuickSettingsUserActionsViewModel.Factory,
     private val contentViewModelFactory: QuickSettingsSceneContentViewModel.Factory,
+    private val notificationRulesShadeStateViewModelFactory:
+        NotificationRulesShadeStateViewModel.Factory,
     private val jankMonitor: InteractionJankMonitor,
 ) : ExclusiveActivatable(), Scene {
     override val key = Scenes.QuickSettings
@@ -137,6 +141,14 @@ constructor(
         val notificationsPlaceholderViewModel =
             rememberViewModel("QuickSettingsScene-notifPlaceholderViewModel") {
                 notificationsPlaceholderViewModelFactory.create(Scenes.QuickSettings)
+            }
+        val notificationRulesShadeStateViewModel =
+            if (NmContextualDisplayLaunch.isEnabled) {
+                rememberViewModel("QuickSettingsScene-notifRulesShadeStateViewModel") {
+                    notificationRulesShadeStateViewModelFactory.create()
+                }
+            } else {
+                null
             }
 
         val brightnessMirrorShowing =
@@ -163,6 +175,7 @@ constructor(
             viewModel = viewModel,
             headerViewModel = viewModel.qsContainerViewModel.shadeHeaderViewModel,
             notificationsPlaceholderViewModel = notificationsPlaceholderViewModel,
+            notificationRulesShadeStateViewModel = notificationRulesShadeStateViewModel,
             modifier =
                 modifier
                     .graphicsLayer { alpha = contentAlpha }
@@ -196,6 +209,7 @@ private fun ContentScope.QuickSettingsScene(
     viewModel: QuickSettingsSceneContentViewModel,
     headerViewModel: ShadeHeaderViewModel,
     notificationsPlaceholderViewModel: NotificationsPlaceholderViewModel,
+    notificationRulesShadeStateViewModel: NotificationRulesShadeStateViewModel?,
     modifier: Modifier = Modifier,
     shadeSession: SaveableSession,
     jankMonitor: InteractionJankMonitor,
@@ -315,6 +329,7 @@ private fun ContentScope.QuickSettingsScene(
                 shadeSession = shadeSession,
                 stackScrollView = notificationStackScrollView,
                 viewModel = notificationsPlaceholderViewModel,
+                notificationRulesShadeStateViewModel = notificationRulesShadeStateViewModel,
                 jankMonitor = jankMonitor,
                 shouldPunchHoleBehindScrim = true,
                 shouldFillMaxHeight = true,

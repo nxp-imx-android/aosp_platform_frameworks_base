@@ -70,10 +70,7 @@
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"Itzalita badago ere aurki dezakezu tableta Bilatu nire gailua erabilita"</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"Itzalita badago ere aurki dezakezu telefonoa Aurkitzailea erabilita"</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"Itzalita badago ere aurki dezakezu tableta Aurkitzailea erabilita"</string>
-    <!-- no translation found for dream_setup_description (5167691612621831552) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (6296793330727926553) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (3098487756905462324) -->
-    <skip />
+    <string name="dream_setup_description" product="default" msgid="5167691612621831552">"Erakutsi erlojua, argazkiak edo eguraldia telefonoa kargatzen ari denean"</string>
+    <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"Erakutsi erlojua, argazkiak edo eguraldia tableta kargatzen ari denean"</string>
+    <string name="dream_setup_description" product="device" msgid="3098487756905462324">"Erakutsi erlojua, argazkiak edo eguraldia gailua kargatzen ari denean"</string>
 </resources>

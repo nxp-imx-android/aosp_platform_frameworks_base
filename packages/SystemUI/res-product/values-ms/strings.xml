@@ -70,10 +70,7 @@
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"Anda boleh mengesan tablet ini dengan Find My Device walaupun apabila tablet ini dimatikan kuasa"</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"Anda boleh mengesan lokasi telefon ini dengan Find Hub walaupun apabila telefon ini dimatikan kuasa"</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"Anda boleh mengesan lokasi tablet ini dengan Find Hub walaupun apabila tablet ini dimatikan kuasa"</string>
-    <!-- no translation found for dream_setup_description (5167691612621831552) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (6296793330727926553) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (3098487756905462324) -->
-    <skip />
+    <string name="dream_setup_description" product="default" msgid="5167691612621831552">"Tunjukkan jam, foto atau cuaca semasa telefon anda dicas"</string>
+    <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"Tunjukkan jam, foto atau cuaca semasa tablet anda dicas"</string>
+    <string name="dream_setup_description" product="device" msgid="3098487756905462324">"Tunjukkan jam, foto atau cuaca semasa peranti anda dicas"</string>
 </resources>

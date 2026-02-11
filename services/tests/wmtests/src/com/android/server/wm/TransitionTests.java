@@ -2676,12 +2676,97 @@ public class TransitionTests extends WindowTestsBase {
         transition.collectOrderChanges(true);
         targets = Transition.calculateTargets(participants, changes);
         assertEquals(1, targets.size());
+        // rootTaskA and leafTaskA are in changes.
+        assertNotNull(changes.get(leafTaskA));
+        assertNotNull(changes.get(rootTaskA));
 
         // Make sure the flag is set
         final TransitionInfo info = Transition.calculateTransitionInfo(
                 transition.mType, 0 /* flags */, targets, mMockT);
         assertTrue((info.getChanges().get(0).getFlags() & TransitionInfo.FLAG_MOVED_TO_TOP) != 0);
         assertEquals(TRANSIT_CHANGE, info.getChanges().get(0).getMode());
+    }
+
+    @Test
+    public void testMoveTaskToTopWhileLeafNotVisible() {
+        final Transition transition = createTestTransition(TRANSIT_OPEN);
+        final ArrayMap<WindowContainer, Transition.ChangeInfo> changes = transition.mChanges;
+        final ArraySet<WindowContainer> participants = transition.mParticipants;
+
+        // Start with taskB on top and taskA on bottom but both visible.
+        final Task rootTaskA = createTask(mDisplayContent);
+        final Task leafTaskA = createTaskInRootTask(rootTaskA, 0 /* userId */);
+        final Task taskB = createTask(mDisplayContent);
+        // Set leafTaskA not visible.
+        leafTaskA.setVisibleRequested(false);
+        rootTaskA.setVisibleRequested(true);
+        taskB.setVisibleRequested(true);
+        // manually collect since this is a test transition and not known by transitionController.
+        transition.collect(rootTaskA);
+        rootTaskA.moveToFront("test");
+
+        // Test has order changes, a shallow check of order changes
+        assertTrue(transition.hasOrderChanges());
+
+        // All the tasks were already visible, so there shouldn't be any changes
+        ArrayList<Transition.ChangeInfo> targets = Transition.calculateTargets(
+                participants, changes);
+        assertTrue(targets.isEmpty());
+
+        // After collecting order changes, it should recognize that a task moved to top.
+        transition.collectOrderChanges(true);
+        targets = Transition.calculateTargets(participants, changes);
+        assertEquals(1, targets.size());
+        // leafTaskA is not in changes as it is not visible.
+        assertNull(changes.get(leafTaskA));
+        assertNotNull(changes.get(rootTaskA));
+
+        // Make sure the flag is set
+        final TransitionInfo info = Transition.calculateTransitionInfo(
+                transition.mType, 0 /* flags */, targets, mMockT);
+        assertTrue((info.getChanges().get(0).getFlags() & TransitionInfo.FLAG_MOVED_TO_TOP) != 0);
+        assertEquals(TRANSIT_CHANGE, info.getChanges().get(0).getMode());
+    }
+
+    @Test
+    public void testMoveTaskToTopWhileNotVisible() {
+        final Transition transition = createTestTransition(TRANSIT_OPEN);
+        final ArrayMap<WindowContainer, Transition.ChangeInfo> changes = transition.mChanges;
+        final ArraySet<WindowContainer> participants = transition.mParticipants;
+
+        // Start with taskB on top and taskA on bottom but only taskB visible.
+        final Task rootTaskA = createTask(mDisplayContent);
+        final Task leafTaskA = createTaskInRootTask(rootTaskA, 0 /* userId */);
+        final Task taskB = createTask(mDisplayContent);
+        // Set rootTaskA not visible.
+        rootTaskA.setVisibleRequested(false);
+        taskB.setVisibleRequested(true);
+        // manually collect since this is a test transition and not known by transitionController.
+        transition.collect(rootTaskA);
+        rootTaskA.moveToFront("test");
+
+        // Test has order changes, a shallow check of order changes
+        assertFalse(transition.hasOrderChanges());
+
+        // All the tasks were already visible, so there shouldn't be any changes
+        ArrayList<Transition.ChangeInfo> targets = Transition.calculateTargets(
+                participants, changes);
+        assertTrue(targets.isEmpty());
+
+        // After collecting order changes, it should recognize that no task moved to top.
+        transition.collectOrderChanges(true);
+        targets = Transition.calculateTargets(participants, changes);
+        assertTrue(targets.isEmpty());
+        // leafTaskA is not in changes as it is not visible.
+        assertNull(changes.get(leafTaskA));
+        assertNotNull(changes.get(rootTaskA));
+        assertFalse((changes.get(rootTaskA).mFlags
+                & Transition.ChangeInfo.FLAG_CHANGE_MOVED_TO_TOP) != 0);
+
+        // Make sure the flag is set
+        final TransitionInfo info = Transition.calculateTransitionInfo(
+                transition.mType, 0 /* flags */, targets, mMockT);
+        assertTrue(info.getChanges().isEmpty());
     }
 
     @Test

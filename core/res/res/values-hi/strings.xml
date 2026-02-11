@@ -1499,6 +1499,22 @@
     <string name="usb_contaminant_detected_message" msgid="7346100585390795743">"यूएसबी पोर्ट अपने आप बंद हो गया है. ज़्यादा जानने के लिए टैप करें."</string>
     <string name="usb_contaminant_not_detected_title" msgid="2651167729563264053">"यूएसबी पोर्ट का इस्तेमाल करना सुरक्षित है"</string>
     <string name="usb_contaminant_not_detected_message" msgid="892863190942660462">"फ़ोन अब तरल चीज़ों या कचरे की पहचान नहीं करता."</string>
+    <!-- no translation found for usb_authorization_notify_on_screenlock_title (4219670768084927681) -->
+    <skip />
+    <!-- no translation found for usb_authorization_notify_on_screenlock_message (3391658768099414499) -->
+    <skip />
+    <!-- no translation found for usb_authorization_notify_on_screenlock_message_multiple (1722575755931059980) -->
+    <skip />
+    <!-- no translation found for usb_authorization_notify_finish_logging_in_title (3417036506115006412) -->
+    <skip />
+    <!-- no translation found for usb_authorization_notify_finish_logging_in_message (7996802340128367690) -->
+    <skip />
+    <!-- no translation found for usb_authorization_notify_finish_logging_in_title_multiple (3184839817149193434) -->
+    <skip />
+    <!-- no translation found for usb_authorization_notify_finish_logging_in_message_multiple (6745916608298736853) -->
+    <skip />
+    <!-- no translation found for notification_channel_usb_authorization (7567851967410736399) -->
+    <skip />
     <string name="taking_remote_bugreport_notification_title" msgid="1582531382166919850">"गड़बड़ी की रिपोर्ट ली जा रही है…"</string>
     <string name="share_remote_bugreport_notification_title" msgid="6708897723753334999">"गड़बड़ी की रिपोर्ट शेयर करें?"</string>
     <string name="sharing_remote_bugreport_notification_title" msgid="3077385149217638550">"गड़बड़ी की रिपोर्ट शेयर की जा रही है…"</string>
@@ -2119,7 +2135,8 @@
     <string name="enable_app_lock_success_toast_message" msgid="3339622779190529987">"<xliff:g id="APP_NAME">%1$s</xliff:g> के लिए ऐप्लिकेशन लॉक सेट अप कर दिया गया है"</string>
     <string name="enable_app_lock_failure_toast_message" msgid="1055838896510445566">"<xliff:g id="APP_NAME">%1$s</xliff:g> के लिए ऐप्लिकेशन लॉक सेट अप नहीं किया जा सका"</string>
     <string name="disable_app_lock_success_toast_message" msgid="70733620589071266">"<xliff:g id="APP_NAME">%1$s</xliff:g> के लिए ऐप्लिकेशन लॉक हटा दिया गया है"</string>
-    <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"<xliff:g id="APP_NAME">%1$s</xliff:g> लॉक है"</string>
+    <!-- no translation found for locked_app_biometric_prompt_description (5892653396104581919) -->
+    <skip />
     <string name="locked_app_external_display_message" msgid="5483884799685545338">"इस डिस्पले पर ऐप्लिकेशन ऐक्सेस करने के लिए, पहले अपने दूसरे डिवाइस पर अपनी पहचान की पुष्टि करें"</string>
     <string name="app_lock_edu_dialog_enable_app_lock_title" msgid="283314042336592322">"क्या <xliff:g id="APP_NAME">%1$s</xliff:g> के लिए ऐप्लिकेशन लॉक सेट अप करना है?"</string>
     <string name="app_lock_edu_dialog_description" msgid="8176807243219769518">"आपकी सुरक्षा के लिए, सिर्फ़ आपके पास इस ऐप्लिकेशन को ऐक्सेस करने का विकल्प होगा. इसके लिए, आपको फ़िंगरप्रिंट और फ़ेस अनलॉक या अपना पिन इस्तेमाल करना होगा"</string>
@@ -2128,6 +2145,8 @@
     <string name="app_lock_edu_dialog_info_header" msgid="5876120209204270990">"ऐप्लिकेशन लॉक सेट अप करने पर"</string>
     <string name="app_lock_edu_dialog_info_notifications" msgid="1124438392204873305">"सूचना से जुड़ा कॉन्टेंट छिप जाएगा"</string>
     <string name="app_lock_edu_dialog_info_widgets" msgid="8809009414650740872">"विजेट और शॉर्टकट हटा दिए जाएंगे"</string>
+    <!-- no translation found for app_lock_edu_dialog_info_ai_disclaimer (5623615653703542050) -->
+    <skip />
     <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"ऐप लॉक सेट अप करें"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_face" msgid="1348151645996748654">"फ़ेस अनलॉक"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"फ़िंगरप्रिंट अनलॉक"</string>
@@ -2619,8 +2638,7 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"सैटलाइट से मैसेज भेजने के लिए, Google Messages को डिफ़ॉल्ट मैसेजिंग ऐप्लिकेशन के तौर पर सेट करें"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"सैटलाइट के ज़रिए मैसेज भेजने की सुविधा उपलब्ध नहीं है"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"जगह की जानकारी की सेटिंग चालू करें. इससे यह देखा जा सकता है कि इस देश या इलाके में सैटलाइट के ज़रिए मैसेज भेजने की सुविधा उपलब्ध है या नहीं"</string>
-    <!-- no translation found for satellite_indicator (6846063647532086110) -->
-    <skip />
+    <string name="satellite_indicator" msgid="6846063647532086110">"सैटलाइट"</string>
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"फ़िंगरप्रिंट अनलॉक की सुविधा दोबारा सेट अप करें"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"अब <xliff:g id="FINGERPRINT">%s</xliff:g> की पहचान नहीं की जा सकती."</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"अब <xliff:g id="FINGERPRINT_0">%1$s</xliff:g> और <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> की पहचान नहीं की जा सकती."</string>

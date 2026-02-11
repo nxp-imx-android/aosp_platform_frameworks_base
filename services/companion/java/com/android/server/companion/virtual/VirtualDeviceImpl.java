@@ -20,6 +20,7 @@ import static android.Manifest.permission.ACCESS_COMPUTER_CONTROL;
 import static android.Manifest.permission.ADD_ALWAYS_UNLOCKED_DISPLAY;
 import static android.Manifest.permission.ADD_MIRROR_DISPLAY;
 import static android.Manifest.permission.ADD_TRUSTED_DISPLAY;
+import static android.Manifest.permission.MODIFY_AUDIO_ROUTING;
 import static android.app.admin.DevicePolicyManager.NEARBY_STREAMING_ENABLED;
 import static android.app.admin.DevicePolicyManager.NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY;
 import static android.app.admin.DevicePolicyManager.NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY;
@@ -92,6 +93,8 @@ import android.hardware.input.VirtualStylusConfig;
 import android.hardware.input.VirtualTouchscreenConfig;
 import android.media.AudioManager;
 import android.media.audiopolicy.AudioMix;
+import android.media.permission.ClearCallingIdentityContext;
+import android.media.permission.SafeCloseable;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
@@ -120,10 +123,13 @@ import android.window.DisplayWindowPolicyController;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.Initializer;
+import com.android.internal.annotations.SystemServerLock;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.app.BlockedAppStreamingActivity;
+import com.android.internal.util.NamedLock;
 import com.android.modules.expresslog.Counter;
 import com.android.server.LocalServices;
+import com.android.server.LockGuard;
 import com.android.server.UiModeManagerInternal;
 import com.android.server.companion.virtual.audio.VirtualAudioController;
 import com.android.server.companion.virtual.camera.VirtualCameraController;
@@ -187,7 +193,8 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
      * Making a call to another service while holding this lock creates lock order inversion and
      * will potentially cause a deadlock.
      */
-    private final Object mVirtualDeviceLock = new Object();
+    @SystemServerLock(LockGuard.INDEX_VIRTUAL_DEVICE_MANAGER_DEVICE)
+    private final Object mVirtualDeviceLock = NamedLock.create("VirtualDevice");
 
     private final int mBaseVirtualDisplayFlags;
 
@@ -223,6 +230,13 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
     private final VirtualCameraController mVirtualCameraController;
     @Nullable
     private VirtualAudioController mVirtualAudioController;
+    // The IBinder token for a separate audio focus environment for the virtual device. VD owner
+    // apps can have an outside of VDM implementation for the audio policies, so keep the audio
+    // focus environment as part of the virtual device and not in the mVirtualAudioController
+    // Reusing the app Binder token, though it can be null if the virtual device doesn't have
+    // a custom audio policy
+    @Nullable
+    private IBinder mAudioFocusEnvToken = null;
     @NonNull
     private final IBinder mAppToken;
     @NonNull
@@ -247,6 +261,8 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
     private final PowerManager mPowerManager;
     @NonNull
     private final IWindowManager mWindowManager;
+    @Nullable
+    private final AudioManager mAudioManager;
     @GuardedBy("mIntentInterceptors")
     private final Map<IBinder, IntentFilter> mIntentInterceptors = new ArrayMap<>();
 
@@ -544,6 +560,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
         mDisplayManagerInternal = LocalServices.getService(DisplayManagerInternal.class);
         mUiModeManagerInternal = LocalServices.getService(UiModeManagerInternal.class);
         mPowerManager = Objects.requireNonNull(context.getSystemService(PowerManager.class));
+        mAudioManager = context.getSystemService(AudioManager.class);
 
         if (mDevicePolicies.get(POLICY_TYPE_CLIPBOARD, DEVICE_POLICY_DEFAULT)
                 != DEVICE_POLICY_DEFAULT) {
@@ -605,6 +622,9 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
                     + deviceId);
             InputMethodManagerInternal.get().setVirtualDeviceInputMethodForAllUsers(
                     mDeviceId, imeId);
+        }
+        if (Flags.audioFocusEnvironments()) {
+            createAudioFocusEnvironment(token);
         }
     }
 
@@ -726,6 +746,14 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
     /** Returns device-specific audio session id for recording. */
     public int getAudioRecordingSessionId() {
         return mParams.getAudioRecordingSessionId();
+    }
+
+    /**
+     * Returns the token for the audio focus environment associated with this device.
+     */
+    @Nullable
+    public IBinder getAudioFocusEnvironment() {
+        return mAudioFocusEnvToken;
     }
 
     /** Returns the unique device ID of this device. */
@@ -948,6 +976,9 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
             mSensorController.close();
         } finally {
             Binder.restoreCallingIdentity(ident);
+        }
+        if (Flags.audioFocusEnvironments()) {
+            destroyAudioFocusEnvironment();
         }
         if (mVirtualCameraController != null) {
             mVirtualCameraController.close();
@@ -1347,8 +1378,64 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
         return DEVICE_PROFILES_ALLOWING_MIRROR_DISPLAYS.contains(deviceProfile);
     }
 
+    // MODIFY_AUDIO_ROUTING is used, though not mandated
+    @SuppressWarnings("AndroidFrameworkRequiresPermission")
+    private void createAudioFocusEnvironment(@NonNull IBinder token) {
+        if (mAudioManager == null || getDevicePolicy(POLICY_TYPE_AUDIO) != DEVICE_POLICY_CUSTOM) {
+            return;
+        }
+
+        if (mContext.checkCallingOrSelfPermission(MODIFY_AUDIO_ROUTING)
+                != PackageManager.PERMISSION_GRANTED) {
+            Slog.w(TAG, "Can't create a separate audio focus environment for the virtual "
+                    + "device " + mDeviceId + " without the MODIFY_AUDIO_ROUTING permission.");
+            return;
+        }
+
+        // If the virtual device has a custom audio policy and the VD owner has the
+        // MODIFY_AUDIO_ROUTING permission create a separate audio focus environment
+        // and reuse the app token for it
+        if (mAudioManager.createFocusEnvironment(token)) {
+            Slog.d(TAG, "Created a separate audio focus environment for the virtual "
+                    + "device with id " + mDeviceId + " using token: " + token);
+            mAudioFocusEnvToken = token;
+        } else {
+            Slog.e(TAG, "Failed to create a separate audio focus environment for the virtual"
+                    + " device with id " + mDeviceId + " using token: " + token);
+            mAudioFocusEnvToken = null;
+        }
+    }
+
+    // MODIFY_AUDIO_ROUTING is used, though not mandated
+    @SuppressWarnings("AndroidFrameworkRequiresPermission")
+    private void destroyAudioFocusEnvironment() {
+        if (mAudioFocusEnvToken == null || mAudioManager == null) {
+            return;
+        }
+
+        if (mContext.checkCallingOrSelfPermission(MODIFY_AUDIO_ROUTING)
+                != PackageManager.PERMISSION_GRANTED) {
+            // Just log if permission is not available at close (since it was enforced at creation)
+            Slog.w(TAG, "MODIFY_AUDIO_ROUTING missing at closing of the audio focus environment"
+                    + " for the virtual device " + mDeviceId);
+        }
+
+        // use the VDM system identity to always destroy the audio focus environment
+        try (SafeCloseable ignored = ClearCallingIdentityContext.create()) {
+            if (mAudioManager.destroyFocusEnvironment(mAudioFocusEnvToken)) {
+                Slog.d(TAG, "Destroyed the separate audio focus environment: " + mAudioFocusEnvToken
+                        + " for the virtual device " + mDeviceId);
+            } else {
+                Slog.e(TAG, "Failed to destroy the separate audio focus environment: "
+                        + mAudioFocusEnvToken + " for the virtual device " + mDeviceId);
+            }
+        }
+        mAudioFocusEnvToken = null;
+    }
+
     private boolean hasCustomAudioInputSupportInternal() {
-        if (!android.media.audiopolicy.Flags.recordAudioDeviceAwarePermission()) {
+        if (!android.media.audiopolicy.Flags.recordAudioDeviceAwarePermission()
+                || mAudioManager == null) {
             return false;
         }
 
@@ -1357,8 +1444,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
         }
         final long token = Binder.clearCallingIdentity();
         try {
-            AudioManager audioManager = mContext.getSystemService(AudioManager.class);
-            for (AudioMix mix : audioManager.getRegisteredPolicyMixes()) {
+            for (AudioMix mix : mAudioManager.getRegisteredPolicyMixes()) {
                 if (mix.matchesVirtualDeviceId(getDeviceId())
                         && mix.getMixType() == AudioMix.MIX_TYPE_RECORDERS) {
                     return true;

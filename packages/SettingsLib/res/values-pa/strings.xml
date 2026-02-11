@@ -268,7 +268,7 @@
     <string name="apn_settings_not_available" msgid="1147111671403342300">"ਐਕਸੈੱਸ ਪੁਆਇੰਟ ਨਾਮ ਸੈਟਿੰਗਾਂ ਇਸ ਵਰਤੋਂਕਾਰ ਲਈ ਉਪਲਬਧ ਨਹੀਂ ਹਨ"</string>
     <string name="enable_adb" msgid="8072776357237289039">"USB ਡੀਬੱਗਿੰਗ"</string>
     <string name="enable_adb_summary" msgid="3711526030096574316">"USB ਕਨੈਕਟ ਕੀਤੇ ਜਾਣ \'ਤੇ ਡੀਬੱਗ ਮੋਡ"</string>
-    <string name="clear_adb_keys" msgid="2696065439790970581">"USB ਡੀਬਗਿੰਗ ਇਖਤਿਆਰੀਕਰਨ ਰੱਦ ਕਰੋ"</string>
+    <string name="clear_adb_keys" msgid="2696065439790970581">"adb ਡੀਬੱਗਿੰਗ ਇਖਤਿਆਰੀਕਰਨ ਰੱਦ ਕਰੋ"</string>
     <string name="enable_adb_wireless" msgid="6973226350963971018">"ਵਾਇਰਲੈੱਸ ਡੀਬੱਗਿੰਗ"</string>
     <string name="enable_adb_wireless_summary" msgid="7344391423657093011">"ਵਾਈ-ਫਾਈ ਕਨੈਕਟ ਹੋਣ \'ਤੇ ਡੀਬੱਗ ਮੋਡ"</string>
     <string name="adb_wireless_error" msgid="721958772149779856">"ਗੜਬੜ"</string>
@@ -293,10 +293,8 @@
     <string name="adb_wireless_verifying_qrcode_text" msgid="6123192424916029207">"ਡੀਵਾਈਸ ਜੋੜਾਬੱਧ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ…"</string>
     <string name="adb_qrcode_pairing_device_failed_msg" msgid="6936292092592914132">"ਡੀਵਾਈਸ ਨੂੰ ਜੋੜਾਬੱਧ ਕਰਨਾ ਅਸਫਲ ਰਿਹਾ। ਜਾਂ ਤਾਂ QR ਕੋਡ ਗਲਤ ਸੀ, ਜਾਂ ਡੀਵਾਈਸ ਉਸੇ ਨੈੱਟਵਰਕ ਨਾਲ ਕਨੈਕਟ ਨਹੀਂ ਹੈ।"</string>
     <string name="adb_wireless_ip_addr_preference_title" msgid="8335132107715311730">"IP ਪਤਾ ਅਤੇ ਪੋਰਟ"</string>
-    <!-- no translation found for adb_wireless_unavailable_not_allowed (83310404140556806) -->
-    <skip />
-    <!-- no translation found for adb_wireless_unavailable_disconnected (8819105186435736128) -->
-    <skip />
+    <string name="adb_wireless_unavailable_not_allowed" msgid="83310404140556806">"ਅਣਉਪਲਬਧ (ਆਗਿਆ ਨਹੀਂ ਹੈ)"</string>
+    <string name="adb_wireless_unavailable_disconnected" msgid="8819105186435736128">"ਅਣਉਪਲਬਧ (ਵਾਈ-ਫਾਈ ਡਿਸਕਨੈਕਟ ਹੋ ਗਿਆ ਹੈ)"</string>
     <string name="adb_wireless_qrcode_pairing_title" msgid="1906409667944674707">"QR ਕੋਡ ਸਕੈਨ ਕਰੋ"</string>
     <string name="adb_wireless_qrcode_pairing_description" msgid="6014121407143607851">"QR ਕੋਡ ਸਕੈਨ ਕਰ ਕੇ ਵਾਈ-ਫਾਈ \'ਤੇ ਡੀਵਾਈਸ ਜੋੜਾਬੱਧ ਕਰੋ"</string>
     <string name="adb_wireless_no_network_msg" msgid="2365795244718494658">"ਕਿਰਪਾ ਕਰਕੇ ਕਿਸੇ ਵਾਈ-ਫਾਈ ਨੈੱਟਵਰਕ ਨਾਲ ਕਨੈਕਟ ਕਰੋ"</string>
@@ -370,7 +368,7 @@
     <string name="adb_warning_message" msgid="8145270656419669221">"USB ਡੀਬਗਿੰਗ ਸਿਰਫ਼ ਵਿਕਾਸ ਮੰਤਵਾਂ ਲਈ ਹੁੰਦੀ ਹੈ। ਇਸਨੂੰ ਆਪਣੇ ਕੰਪਿਊਟਰ ਅਤੇ ਆਪਣੇ ਡੀਵਾਈਸ ਵਿਚਕਾਰ ਡਾਟਾ ਕਾਪੀ ਕਰਨ ਲਈ ਵਰਤੋ, ਸੂਚਨਾ ਦੇ ਬਿਨਾਂ ਆਪਣੇ ਡੀਵਾਈਸ ਤੇ ਐਪਾਂ ਸਥਾਪਤ ਕਰੋ ਅਤੇ ਲੌਗ ਡਾਟਾ ਪੜ੍ਹੋ।"</string>
     <string name="adbwifi_warning_title" msgid="727104571653031865">"ਕੀ ਵਾਇਰਲੈੱਸ ਡੀਬੱਗਿੰਗ ਕਰਨ ਦੇਣੀ ਹੈ?"</string>
     <string name="adbwifi_warning_message" msgid="8005936574322702388">"ਵਾਇਰਲੈੱਸ ਡੀਬੱਗਿੰਗ ਕੇਵਲ ਵਿਕਾਸ ਦੇ ਉਦੇਸ਼ਾਂ ਲਈ ਨਿਯਤ ਕੀਤੀ ਹੁੰਦੀ ਹੈ। ਇਸਨੂੰ ਆਪਣੇ ਕੰਪਿਊਟਰ ਅਤੇ ਆਪਣੇ ਡੀਵਾਈਸ ਵਿਚਕਾਰ ਡਾਟਾ ਕਾਪੀ ਕਰਨ, ਸੂਚਨਾ ਦੇ ਬਿਨਾਂ ਆਪਣੇ ਡੀਵਾਈਸ \'ਤੇ ਐਪਾਂ ਸਥਾਪਤ ਕਰਨ ਅਤੇ ਲੌਗ ਡਾਟਾ ਪੜ੍ਹਨ ਲਈ ਵਰਤੋ।"</string>
-    <string name="adb_keys_warning_message" msgid="7827514623080777814">"ਕੀ ਉਹਨਾਂ ਸਾਰੇ ਕੰਪਿਊਟਰਾਂ ਤੋਂ USB ਡੀਬੱਗਿੰਗ ਤੱਕ ਪਹੁੰਚ ਰੱਦ ਕਰਨੀ ਹੈ, ਜਿਹਨਾਂ ਲਈ ਪਹਿਲਾਂ ਤੁਸੀਂ ਅਧਿਕਾਰਤ ਕੀਤਾ ਹੈ?"</string>
+    <string name="adb_keys_warning_message" msgid="7827514623080777814">"ਕੀ ਤੁਹਾਡੇ ਵੱਲੋਂ ਪਹਿਲਾਂ ਅਧਿਕਾਰਿਤ ਕੀਤੇ ਗਏ ਸਾਰੇ ਕੰਪਿਊਟਰਾਂ ਅਤੇ ਨੈੱਟਵਰਕਾਂ ਤੋਂ adb ਡੀਬੱਗਿੰਗ ਤੱਕ ਪਹੁੰਚ ਨੂੰ ਰੱਦ ਕਰਨਾ ਹੈ?"</string>
     <string name="dev_settings_warning_title" msgid="8251234890169074553">"ਕੀ ਵਿਕਾਸ ਸੈਟਿੰਗਾਂ ਦੀ ਆਗਿਆ ਦੇਣੀ ਹੈ?"</string>
     <string name="dev_settings_warning_message" msgid="37741686486073668">"ਇਹ ਸੈਟਿੰਗਾਂ ਕੇਵਲ ਵਿਕਾਸਕਾਰ ਦੀ ਵਰਤੋਂ ਲਈ ਹਨ। ਇਹ ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਅਤੇ ਇਸਤੇ ਮੌਜੂਦ ਐਪਲੀਕੇਸ਼ਨ ਨੂੰ ਬ੍ਰੇਕ ਕਰਨ ਜਾਂ ਦੁਰਵਿਵਹਾਰ ਕਰਨ ਦਾ ਕਾਰਨ ਬਣ ਸਕਦੇ ਹਨ।"</string>
     <string name="verify_apps_over_usb_title" msgid="6031809675604442636">"USB \'ਤੇ ਐਪਾਂ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ"</string>

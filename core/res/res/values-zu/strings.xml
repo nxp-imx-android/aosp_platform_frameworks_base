@@ -1499,6 +1499,14 @@
     <string name="usb_contaminant_detected_message" msgid="7346100585390795743">"Imbobo ye-USB inqanyulwa ngokuzenzakalela. Thepha ukuze ufunde kabanzi."</string>
     <string name="usb_contaminant_not_detected_title" msgid="2651167729563264053">"KULUNGILE ukusebenzisa imbobo ye-USB"</string>
     <string name="usb_contaminant_not_detected_message" msgid="892863190942660462">"Ifoni ayisatholi uketshezi noma ama-debris."</string>
+    <string name="usb_authorization_notify_on_screenlock_title" msgid="4219670768084927681">"Idivayisi entsha ye-USB ixhunyiwe"</string>
+    <string name="usb_authorization_notify_on_screenlock_message" msgid="3391658768099414499">"Ngena ngemvume ukuze uthembe le divayisi ye-USB bese uqala ukuyisebenzisa."</string>
+    <string name="usb_authorization_notify_on_screenlock_message_multiple" msgid="1722575755931059980">"Ngena ngemvume ukuze uthembe la madivayisi e-USB bese uqala ukuwasebenzisa."</string>
+    <string name="usb_authorization_notify_finish_logging_in_title" msgid="3417036506115006412">"Idivayisi entsha ye-USB ixhunyiwe"</string>
+    <string name="usb_authorization_notify_finish_logging_in_message" msgid="7996802340128367690">"Ngena ngemvume phakathi nemizuzwana engu-<xliff:g id="NUM_SECONDS">%1$d</xliff:g> ukuze uyethembe ngokugcwele le divayisi ye-USB. Uma kungenjalo, kuzodingeka uyikhiphe uphinde uyixhume."</string>
+    <string name="usb_authorization_notify_finish_logging_in_title_multiple" msgid="3184839817149193434">"Amadivayisi amasha e-USB axhunyiwe"</string>
+    <string name="usb_authorization_notify_finish_logging_in_message_multiple" msgid="6745916608298736853">"Ngena ngemvume phakathi nemizuzwana engu-<xliff:g id="NUM_SECONDS">%1$d</xliff:g> ukuze uwethembe ngokugcwele la madivayisi e-USB. Uma ungakwenzi lokho, kuzodingeka uwakhiphe uphinde uwaxhume kabusha."</string>
+    <string name="notification_channel_usb_authorization" msgid="7567851967410736399">"Ukugunyazwa Kwedivayisi Ye-USB"</string>
     <string name="taking_remote_bugreport_notification_title" msgid="1582531382166919850">"Ithatha umbiko wesiphazamisi..."</string>
     <string name="share_remote_bugreport_notification_title" msgid="6708897723753334999">"Yabelana ngombiko wesiphazamisi?"</string>
     <string name="sharing_remote_bugreport_notification_title" msgid="3077385149217638550">"Yabelana ngombiko wesiphazamisi..."</string>
@@ -2119,7 +2127,8 @@
     <string name="enable_app_lock_success_toast_message" msgid="3339622779190529987">"I-<xliff:g id="APP_NAME">%1$s</xliff:g> ikhiyiwe"</string>
     <string name="enable_app_lock_failure_toast_message" msgid="1055838896510445566">"Ayikwazi ukukhiya i-<xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="disable_app_lock_success_toast_message" msgid="70733620589071266">"Ukukhiya i-app kususiwe ku-<xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
-    <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"I-<xliff:g id="APP_NAME">%1$s</xliff:g> ikhiyiwe"</string>
+    <!-- no translation found for locked_app_biometric_prompt_description (5892653396104581919) -->
+    <skip />
     <string name="locked_app_external_display_message" msgid="5483884799685545338">"Ukuze ufinyelele i-app kulesi sibonisi, qala uqinisekise ukuthi nguwe kwenye idivayisi yakho"</string>
     <string name="app_lock_edu_dialog_enable_app_lock_title" msgid="283314042336592322">"Faka ukukhiya i-app ku-<xliff:g id="APP_NAME">%1$s</xliff:g>?"</string>
     <string name="app_lock_edu_dialog_description" msgid="8176807243219769518">"Ukuze uvikeleke, nguwe kuphela ongakwazi ukufinyelela le app Ngesigxivizo Somunwe Nokuvula Ngobuso noma Iphinikhodi yakho"</string>
@@ -2128,6 +2137,8 @@
     <string name="app_lock_edu_dialog_info_header" msgid="5876120209204270990">"Ngokukhiya i-app"</string>
     <string name="app_lock_edu_dialog_info_notifications" msgid="1124438392204873305">"Ikhontenti yesaziso izofihlwa"</string>
     <string name="app_lock_edu_dialog_info_widgets" msgid="8809009414650740872">"Amawijethi nezinqamuleli zizosuswa"</string>
+    <!-- no translation found for app_lock_edu_dialog_info_ai_disclaimer (5623615653703542050) -->
+    <skip />
     <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"Faka ukukhiya i-app"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_face" msgid="1348151645996748654">"Ukuvula ngobuso"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"Ukuvula Ngesigxivizo Somunwe"</string>
@@ -2619,8 +2630,7 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"Ukuze uthumele umlayezo ngesathelayithi, setha iGoogle Messages ngenge-app yakho yemilayezo ezenzakalelayo"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"Ukuthumela umyalezo ngesethelayithi akutholakali"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"Ukuze uhlole ukuthi ukuthumela umyalezo ngesethelayithi kuyatholakala yini kuleli zwe noma kulesi sifunda, vula amasethingi endawo"</string>
-    <!-- no translation found for satellite_indicator (6846063647532086110) -->
-    <skip />
+    <string name="satellite_indicator" msgid="6846063647532086110">"SAT"</string>
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"Setha Ukuvula ngesigxivizo somunwe futhi"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"I-<xliff:g id="FINGERPRINT">%s</xliff:g> angeke isaziwa."</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"I-<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> kanye ne-<xliff:g id="FINGERPRINT_1">%2$s</xliff:g> angeke isaziwa."</string>

@@ -19,6 +19,7 @@ package com.android.systemui.scene.data.repository
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
+import com.android.compose.animation.scene.TransitionKey
 import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryRepository
 import com.android.systemui.deviceentry.shared.model.DeviceUnlockStatus
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
@@ -151,6 +152,7 @@ fun Transition(
     isUserInputOngoing: Flow<Boolean> = flowOf(false),
     previewProgress: Flow<Float> = flowOf(0f),
     isInPreviewStage: Flow<Boolean> = flowOf(false),
+    key: TransitionKey? = null,
 ): ObservableTransitionState.Transition {
     return ObservableTransitionState.Transition(
         fromScene = from,
@@ -161,6 +163,7 @@ fun Transition(
         isUserInputOngoing = isUserInputOngoing,
         previewProgress = previewProgress,
         isInPreviewStage = isInPreviewStage,
+        key = key,
     )
 }
 

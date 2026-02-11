@@ -36,6 +36,9 @@ import com.android.systemui.jank.interactionJankMonitor
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.notifications.intelligence.rules.ui.composable.notificationRulesScreen
+import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.notificationRulesScreenViewModelFactory
+import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.notificationRulesShadeStateViewModelFactory
 import com.android.systemui.qs.composefragment.dagger.usingMediaInComposeFragment
 import com.android.systemui.qs.pipeline.domain.interactor.currentTilesInteractor
 import com.android.systemui.qs.pipeline.shared.TileSpec
@@ -104,6 +107,11 @@ class ShadeSceneTest : SysuiTestCase() {
                         contentViewModelFactory = shadeSceneContentViewModelFactory,
                         notificationsPlaceholderViewModelFactory =
                             notificationsPlaceholderViewModelFactory,
+                        notificationRulesShadeStateViewModelFactory =
+                            kosmos.notificationRulesShadeStateViewModelFactory,
+                        notificationRulesScreenViewModelFactory =
+                            kosmos.notificationRulesScreenViewModelFactory,
+                        notificationRulesScreen = kosmos.notificationRulesScreen,
                         jankMonitor = interactionJankMonitor,
                     )
 
@@ -157,6 +165,11 @@ class ShadeSceneTest : SysuiTestCase() {
                     contentViewModelFactory = shadeSceneContentViewModelFactory,
                     notificationsPlaceholderViewModelFactory =
                         notificationsPlaceholderViewModelFactory,
+                    notificationRulesShadeStateViewModelFactory =
+                        kosmos.notificationRulesShadeStateViewModelFactory,
+                    notificationRulesScreenViewModelFactory =
+                        kosmos.notificationRulesScreenViewModelFactory,
+                    notificationRulesScreen = kosmos.notificationRulesScreen,
                     jankMonitor = interactionJankMonitor,
                 )
 

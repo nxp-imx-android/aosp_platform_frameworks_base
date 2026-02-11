@@ -19897,7 +19897,8 @@ public class TelephonyManager {
          *                  retrieve the SIM PIN.
          * @hide
          */
-        SimAutoPinManagementException(int errorCode) {
+        @VisibleForTesting
+        public SimAutoPinManagementException(int errorCode) {
             mErrorCode = errorCode;
         }
 

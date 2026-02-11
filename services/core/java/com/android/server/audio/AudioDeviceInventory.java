@@ -1134,9 +1134,6 @@ public class AudioDeviceInventory {
                 "onBluetoothDeviceConfigChange addr=" + address
                     + " event=" + BtHelper.deviceEventToString(event)));
 
-        int deviceType = BtHelper.getTypeFromProfile(
-                btInfo.mProfile, btInfo.mIsLeOutput, btDevice);
-
         boolean disconnectDevice = false;
         synchronized (mDevicesLock) {
             if (mDeviceBroker.hasScheduledA2dpConnection(btDevice, btInfo.mProfile)) {
@@ -1147,7 +1144,7 @@ public class AudioDeviceInventory {
                         .record();
                 return delayMs;
             }
-            final String key = DeviceInfo.makeDeviceListKey(deviceType, address);
+            final String key = DeviceInfo.makeDeviceListKey(btInfo.mAudioSystemDevice, address);
             final DeviceInfo di = mConnectedDevices.get(key);
             if (di == null) {
                 Log.e(TAG, "invalid null DeviceInfo in onBluetoothDeviceConfigChange");

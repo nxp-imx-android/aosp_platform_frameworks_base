@@ -184,7 +184,7 @@ public final class DisplayBrightnessStrategySelectorTest {
     }
 
     @Test
-    public void selectDozeStrategyWhenValid() {
+    public void selectDozeStrategyWhenOverrideSet() {
         DisplayManagerInternal.DisplayPowerRequest displayPowerRequest = mock(
                 DisplayManagerInternal.DisplayPowerRequest.class);
         displayPowerRequest.policy = DisplayManagerInternal.DisplayPowerRequest.POLICY_DOZE;
@@ -257,8 +257,7 @@ public final class DisplayBrightnessStrategySelectorTest {
     }
 
     @Test
-    public void selectStrategySelectsDozeStrategyWhenValid_DozeStrategyFlagEnabled() {
-        when(mDisplayManagerFlags.isDozeBrightnessStrategyEnabled()).thenReturn(true);
+    public void selectDozeStrategyWhenNoOverride() {
         DisplayManagerInternal.DisplayPowerRequest displayPowerRequest = mock(
                 DisplayManagerInternal.DisplayPowerRequest.class);
         displayPowerRequest.policy = DisplayManagerInternal.DisplayPowerRequest.POLICY_DOZE;
@@ -271,22 +270,6 @@ public final class DisplayBrightnessStrategySelectorTest {
                         false, mDisplayOffloadSession,
                         STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false,
                         /* isChargingModeEnabled= */ false)));
-    }
-
-    @Test
-    public void selectStrategyDoesNotSelectDozeStrategyWhenInvalidBrightnessOverride() {
-        DisplayManagerInternal.DisplayPowerRequest displayPowerRequest = mock(
-                DisplayManagerInternal.DisplayPowerRequest.class);
-        displayPowerRequest.policy = DisplayManagerInternal.DisplayPowerRequest.POLICY_DOZE;
-        displayPowerRequest.dozeScreenBrightness = PowerManager.BRIGHTNESS_INVALID_FLOAT;
-        when(mResources.getBoolean(R.bool.config_allowAutoBrightnessWhileDozing)).thenReturn(false);
-        assertNotEquals(mDozeBrightnessModeStrategy,
-                mDisplayBrightnessStrategySelector.selectStrategy(
-                        new StrategySelectionRequest(displayPowerRequest, Display.STATE_DOZE,
-                                /* lastUserSetScreenBrightness= */ 0.1f,
-                                /* userSetBrightnessChanged= */ false, mDisplayOffloadSession,
-                                STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false,
-                                /* isChargingModeEnabled= */ false)));
     }
 
     @Test

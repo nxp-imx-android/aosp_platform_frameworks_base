@@ -268,7 +268,7 @@
     <string name="apn_settings_not_available" msgid="1147111671403342300">"இவரால் ஆக்சஸ் பாயிண்ட் நேம் அமைப்புகளை மாற்ற முடியாது"</string>
     <string name="enable_adb" msgid="8072776357237289039">"USB பிழைதிருத்தம்"</string>
     <string name="enable_adb_summary" msgid="3711526030096574316">"USB இணைக்கப்பட்டிருக்கும்போது பிழைத்திருத்தப் பயன்முறை இயக்கப்படும்"</string>
-    <string name="clear_adb_keys" msgid="2696065439790970581">"USB பிழைத்திருத்த அங்கீகரிப்புகளை நிராகரி"</string>
+    <string name="clear_adb_keys" msgid="2696065439790970581">"adb பிழைதிருத்த அங்கீகரிப்புகளை ரத்துசெய்தல்"</string>
     <string name="enable_adb_wireless" msgid="6973226350963971018">"வைஃபை பிழைதிருத்தம்"</string>
     <string name="enable_adb_wireless_summary" msgid="7344391423657093011">"வைஃபையை இணைக்கும்போது பிழைதிருத்தப் பயன்முறை இயக்கப்படும்"</string>
     <string name="adb_wireless_error" msgid="721958772149779856">"பிழை"</string>
@@ -293,10 +293,8 @@
     <string name="adb_wireless_verifying_qrcode_text" msgid="6123192424916029207">"சாதனத்தை இணைக்கிறது…"</string>
     <string name="adb_qrcode_pairing_device_failed_msg" msgid="6936292092592914132">"சாதனத்துடன் இணைக்க முடியவில்லை. தவறான QR குறியீடாகவோ சாதனம் அதே நெர்வொர்க்குடன் இணைக்கப்படாமலோ இருக்கலாம்."</string>
     <string name="adb_wireless_ip_addr_preference_title" msgid="8335132107715311730">"IP முகவரி &amp; போர்ட்"</string>
-    <!-- no translation found for adb_wireless_unavailable_not_allowed (83310404140556806) -->
-    <skip />
-    <!-- no translation found for adb_wireless_unavailable_disconnected (8819105186435736128) -->
-    <skip />
+    <string name="adb_wireless_unavailable_not_allowed" msgid="83310404140556806">"கிடைக்கவில்லை (அனுமதிக்கப்படவில்லை)"</string>
+    <string name="adb_wireless_unavailable_disconnected" msgid="8819105186435736128">"கிடைக்கவில்லை (வைஃபை துண்டிக்கப்பட்டது)"</string>
     <string name="adb_wireless_qrcode_pairing_title" msgid="1906409667944674707">"QR குறியீட்டை ஸ்கேன் செய்தல்"</string>
     <string name="adb_wireless_qrcode_pairing_description" msgid="6014121407143607851">"QR குறியீட்டை ஸ்கேன் செய்வதன் மூலம் சாதனத்தை வைஃபை மூலம் இணைக்கலாம்"</string>
     <string name="adb_wireless_no_network_msg" msgid="2365795244718494658">"வைஃபை நெட்வொர்க்குடன் இணைக்கவும்"</string>
@@ -370,7 +368,7 @@
     <string name="adb_warning_message" msgid="8145270656419669221">"USB பிழைதிருத்தம் மேம்படுத்தல் நோக்கங்களுக்காக மட்டுமே. அதை உங்கள் கணினி மற்றும் சாதனத்திற்கு இடையில் தரவை நகலெடுக்கவும், அறிவிப்பு இல்லாமல் உங்கள் சாதனத்தில் ஆப்ஸை நிறுவவும், பதிவு தரவைப் படிக்கவும் பயன்படுத்தவும்."</string>
     <string name="adbwifi_warning_title" msgid="727104571653031865">"வைஃபை பிழைதிருத்தத்தை அனுமதிக்கவா?"</string>
     <string name="adbwifi_warning_message" msgid="8005936574322702388">"\'வைஃபை பிழைதிருத்தம்\' டெவெலப்மெண்ட் நோக்கங்களுக்காக மட்டுமே. அதை உங்கள் கம்ப்யூட்டருக்கும் சாதனத்திற்கும் இடையே தரவை நகலெடுக்கவும், உங்கள் சாதனத்தில் அறிவிப்பின்றி ஆப்ஸை நிறுவவும், பதிவுத் தரவைப் படிக்கவும் பயன்படுத்தவும்."</string>
-    <string name="adb_keys_warning_message" msgid="7827514623080777814">"நீங்கள் ஏற்கனவே அனுமதித்த எல்லா கணினிகளிலிருந்தும் USB பிழைத்திருத்தத்திற்கான அணுகலைத் திரும்பப்பெற வேண்டுமா?"</string>
+    <string name="adb_keys_warning_message" msgid="7827514623080777814">"நீங்கள் ஏற்கெனவே அங்கீகரித்த அனைத்து கம்ப்யூட்டர்கள் மற்றும் நெட்வொர்க்குகளில் இருந்தும் adb பிழைதிருத்தத்திற்கான அணுகலை ரத்துசெய்யவா?"</string>
     <string name="dev_settings_warning_title" msgid="8251234890169074553">"மேம்பட்ட அமைப்புகளை அனுமதிக்கவா?"</string>
     <string name="dev_settings_warning_message" msgid="37741686486073668">"இந்த அமைப்பு மேம்பட்டப் பயன்பாட்டிற்காக மட்டுமே. உங்கள் சாதனம் மற்றும் அதில் உள்ள பயன்பாடுகளைச் சிதைக்கும் அல்லது தவறாகச் செயல்படும் வகையில் பாதிப்பை ஏற்படுத்தும்."</string>
     <string name="verify_apps_over_usb_title" msgid="6031809675604442636">"USB ஆப்ஸைச் சரிபார்"</string>

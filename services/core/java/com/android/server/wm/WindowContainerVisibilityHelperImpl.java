@@ -112,36 +112,13 @@ final class WindowContainerVisibilityHelperImpl implements WindowContainerVisibi
 
             final boolean containsCanBeVisibleActivity = containsCanBeVisibleActivity(other);
             if (other == current) {
-                if (Flags.fixTfAdjacentVisibility()) {
-                    if (adjacentVisibilityHelper != null
-                            && !adjacentVisibilityHelper.isUnprocessedAdjacentTaskFragment(
-                                    current)) {
-                        if (!adjacentVisibilityHelper.isBehindTranslucentTaskFragment(current)) {
-                            return TASK_FRAGMENT_VISIBILITY_INVISIBLE;
-                        } else {
-                            gotTranslucentFullscreen = true;
-                        }
-                    }
-                } else {
-                    if (!adjacentTaskFragments.isEmpty() && !gotTranslucentAdjacent) {
-                        // The z-order of this TaskFragment is in middle of two adjacent
-                        // TaskFragments and it cannot be visible if the TaskFragment on top is
-                        // not translucent and is occluding this one.
-                        tmpRect.set(current.getBounds());
-                        for (int j = adjacentTaskFragments.size() - 1; j >= 0; --j) {
-                            final TaskFragment taskFragment = adjacentTaskFragments.get(j);
-                            if (taskFragment.isAdjacentTo(current)) {
-                                continue;
-                            }
-                            final boolean isOccluding = tmpRect.intersect(taskFragment.getBounds())
-                                    || taskFragment.forOtherAdjacentTaskFragments(
-                                            adjacentTf -> {
-                                                return tmpRect.intersect(adjacentTf.getBounds());
-                                            });
-                            if (isOccluding) {
-                                return TASK_FRAGMENT_VISIBILITY_INVISIBLE;
-                            }
-                        }
+                if (adjacentVisibilityHelper != null
+                        && !adjacentVisibilityHelper.isUnprocessedAdjacentTaskFragment(
+                        current)) {
+                    if (!adjacentVisibilityHelper.isBehindTranslucentTaskFragment(current)) {
+                        return TASK_FRAGMENT_VISIBILITY_INVISIBLE;
+                    } else {
+                        gotTranslucentFullscreen = true;
                     }
                 }
                 // Should be visible if there is no other fragment occluding it, unless it doesn't
@@ -186,48 +163,26 @@ final class WindowContainerVisibilityHelperImpl implements WindowContainerVisibi
                 // 2. Adjacent TaskFragments do not overlap, so that if this TaskFragment is behind
                 // any translucent TaskFragment in the adjacent set, then this TaskFragment is
                 // visible behind translucent.
-                if (Flags.fixTfAdjacentVisibility()) {
-                    if (otherTaskFrag.hasAdjacentTaskFragment()
-                            && (adjacentVisibilityHelper == null
-                            || adjacentVisibilityHelper.isAllAdjacentTaskFragmentProcessed())) {
-                        // Same as above. The TaskFragment must have filling content itself,
-                        // otherwise it cannot affect the visibility.
-                        adjacentVisibilityHelper = new AdjacentVisibilityHelper(
-                                otherTaskFrag,
-                                t -> t.hasFillingContent() && !isTranslucent(t, starting));
-                    }
+                if (otherTaskFrag.hasAdjacentTaskFragment()
+                        && (adjacentVisibilityHelper == null
+                        || adjacentVisibilityHelper.isAllAdjacentTaskFragmentProcessed())) {
+                    // Same as above. The TaskFragment must have filling content itself,
+                    // otherwise it cannot affect the visibility.
+                    adjacentVisibilityHelper = new AdjacentVisibilityHelper(
+                            otherTaskFrag,
+                            t -> t.hasFillingContent() && !isTranslucent(t, starting));
+                }
 
-                    if (adjacentVisibilityHelper != null) {
-                        adjacentVisibilityHelper.process(otherTaskFrag);
-                        if (adjacentVisibilityHelper.isAllAdjacentTaskFragmentProcessed()) {
-                            if (adjacentVisibilityHelper.occludesParent()) {
-                                // Can not be visible behind adjacent TaskFragments.
-                                return TASK_FRAGMENT_VISIBILITY_INVISIBLE;
-                            }
-                            // Can be visible behind a translucent adjacent TaskFragments.
-                            gotTranslucentFullscreen = true;
+                if (adjacentVisibilityHelper != null) {
+                    adjacentVisibilityHelper.process(otherTaskFrag);
+                    if (adjacentVisibilityHelper.isAllAdjacentTaskFragmentProcessed()) {
+                        if (adjacentVisibilityHelper.occludesParent()) {
+                            // Can not be visible behind adjacent TaskFragments.
+                            return TASK_FRAGMENT_VISIBILITY_INVISIBLE;
                         }
+                        // Can be visible behind a translucent adjacent TaskFragments.
+                        gotTranslucentFullscreen = true;
                     }
-                } else if (otherTaskFrag.hasAdjacentTaskFragment()) {
-                    final boolean hasTraversedAdj = otherTaskFrag.forOtherAdjacentTaskFragments(
-                            adjacentTaskFragments::contains);
-                    if (hasTraversedAdj) {
-                        final boolean isTranslucent =
-                                isBehindTransparentTaskFragment(current, otherTaskFrag, starting)
-                                        || otherTaskFrag.forOtherAdjacentTaskFragments(
-                                                (Predicate<TaskFragment>) tf ->
-                                                        isBehindTransparentTaskFragment(
-                                                                current, tf, starting));
-                        if (isTranslucent) {
-                            // Can be visible behind a translucent adjacent TaskFragments.
-                            gotTranslucentFullscreen = true;
-                            gotTranslucentAdjacent = true;
-                            continue;
-                        }
-                        // Can not be visible behind adjacent TaskFragments.
-                        return TASK_FRAGMENT_VISIBILITY_INVISIBLE;
-                    }
-                    adjacentTaskFragments.add(otherTaskFrag);
                 }
             }
         }
@@ -274,35 +229,20 @@ final class WindowContainerVisibilityHelperImpl implements WindowContainerVisibi
                 return true;
             }
 
-            if (Flags.fixTfAdjacentVisibility()) {
-                final TaskFragment tf = child.asTaskFragment();
-                if (tf != null) {
-                    if (tf.hasAdjacentTaskFragment() && adjacentVisibilityHelper == null) {
-                        adjacentVisibilityHelper = new AdjacentVisibilityHelper(
-                                tf, TaskFragment::hasFillingContent);
-                    }
-                    if (adjacentVisibilityHelper != null) {
-                        adjacentVisibilityHelper.process(tf);
-                        if (adjacentVisibilityHelper.isAllAdjacentTaskFragmentProcessed()) {
-                            if (adjacentVisibilityHelper.occludesParent()) {
-                                return true;
-                            } else {
-                                adjacentVisibilityHelper = null;
-                            }
-                        }
-                    }
+            final TaskFragment tf = child.asTaskFragment();
+            if (tf != null) {
+                if (tf.hasAdjacentTaskFragment() && adjacentVisibilityHelper == null) {
+                    adjacentVisibilityHelper = new AdjacentVisibilityHelper(
+                            tf, TaskFragment::hasFillingContent);
                 }
-            } else {
-                if (child.asTaskFragment() != null
-                        && child.asTaskFragment().hasAdjacentTaskFragment()) {
-                    // There's at least one child adjacent task fragment. Consider the parent
-                    // filling as long as all of the adjacent task fragments have filling content.
-                    // Whether or not they fill the parent in union is not important.
-                    final boolean allFillingContent = child.hasFillingContent()
-                            && !child.asTaskFragment().forOtherAdjacentTaskFragments(
-                                    tf -> !tf.hasFillingContent());
-                    if (allFillingContent) {
-                        return true;
+                if (adjacentVisibilityHelper != null) {
+                    adjacentVisibilityHelper.process(tf);
+                    if (adjacentVisibilityHelper.isAllAdjacentTaskFragmentProcessed()) {
+                        if (adjacentVisibilityHelper.occludesParent()) {
+                            return true;
+                        } else {
+                            adjacentVisibilityHelper = null;
+                        }
                     }
                 }
             }
@@ -554,44 +494,23 @@ final class WindowContainerVisibilityHelperImpl implements WindowContainerVisibi
                     return true;
                 }
 
-                if (Flags.fixTfAdjacentVisibility()) {
-                    final TaskFragment tf = child.asTaskFragment();
-                    if (tf != null) {
-                        if (tf.hasAdjacentTaskFragment() && adjacentVisibilityHelper == null) {
-                            adjacentVisibilityHelper = new AdjacentVisibilityHelper(tf,
-                                    Flags.improveOcclusionCalculation()
-                                            ? this::isOpaqueInner
-                                            : this::isOpaque);
-                        }
-                        if (adjacentVisibilityHelper != null) {
-                            adjacentVisibilityHelper.process(tf);
-                            if (adjacentVisibilityHelper.isAllAdjacentTaskFragmentProcessed()) {
-                                if (adjacentVisibilityHelper.occludesParent()) {
-                                    // return early if the adjacent TFs are opaque.
-                                    return true;
-                                } else {
-                                    adjacentVisibilityHelper = null;
-                                }
-                            }
-                        }
+                final TaskFragment tf = child.asTaskFragment();
+                if (tf != null) {
+                    if (tf.hasAdjacentTaskFragment() && adjacentVisibilityHelper == null) {
+                        adjacentVisibilityHelper = new AdjacentVisibilityHelper(tf,
+                                Flags.improveOcclusionCalculation()
+                                        ? this::isOpaqueInner
+                                        : this::isOpaque);
                     }
-                } else {
-                    if (child.asTaskFragment() != null
-                            && child.asTaskFragment().hasAdjacentTaskFragment()) {
-                        final boolean isAnyTranslucent;
-                        if (Flags.improveOcclusionCalculation()) {
-                            isAnyTranslucent = !isOpaqueInner(child)
-                                    || child.asTaskFragment().forOtherAdjacentTaskFragments(
-                                            tf -> !isOpaqueInner(tf));
-                        } else {
-                            isAnyTranslucent = !isOpaque(child)
-                                    || child.asTaskFragment().forOtherAdjacentTaskFragments(
-                                            tf -> !isOpaque(tf));
-                        }
-                        if (!isAnyTranslucent) {
-                            // This task fragment and all its adjacent task fragments are opaque,
-                            // consider it opaque even if it doesn't fill its parent.
-                            return true;
+                    if (adjacentVisibilityHelper != null) {
+                        adjacentVisibilityHelper.process(tf);
+                        if (adjacentVisibilityHelper.isAllAdjacentTaskFragmentProcessed()) {
+                            if (adjacentVisibilityHelper.occludesParent()) {
+                                // return early if the adjacent TFs are opaque.
+                                return true;
+                            } else {
+                                adjacentVisibilityHelper = null;
+                            }
                         }
                     }
                 }

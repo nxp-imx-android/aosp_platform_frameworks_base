@@ -70,10 +70,7 @@
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"Þú getur fundið þessa spjaldtölvu með „Finna tækið mitt“, jafnvel þótt slökkt sé á henni"</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"Þú getur fundið þennan síma í Leitarmiðstöðinni þrátt fyrir að slökkt sé á honum"</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"Þú getur fundið þessa spjaldtölvu í Leitarmiðstöðinni þrátt fyrir að slökkt sé á henni"</string>
-    <!-- no translation found for dream_setup_description (5167691612621831552) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (6296793330727926553) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (3098487756905462324) -->
-    <skip />
+    <string name="dream_setup_description" product="default" msgid="5167691612621831552">"Sýna klukku, myndir eða veðrið þegar síminn er í hleðslu"</string>
+    <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"Sýna klukku, myndir eða veðrið þegar spjaldtölvan er í hleðslu"</string>
+    <string name="dream_setup_description" product="device" msgid="3098487756905462324">"Sýna klukku, myndir eða veðrið þegar tækið er í hleðslu"</string>
 </resources>

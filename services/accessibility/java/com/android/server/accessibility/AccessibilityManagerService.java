@@ -528,6 +528,11 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             return mService.getPermittedAccessibilityServicePackages(adminPermittedServices,
                     userId);
         }
+
+        @Override
+        public AccessibilityFeatureRestrictedCounts getA11yFeatureRestrictedCounts(int userId) {
+            return mService.getA11yFeatureRestrictedCounts(userId);
+        }
     }
 
     public static final class Lifecycle extends SystemService {
@@ -1349,6 +1354,54 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     }
 
     /**
+     * These counts are logged by AdvancedProtectionService before APM is actually enabled.
+     * At the time of logging any A11yServices that will be shut down are still enabled;
+     * those services will be shut down when we receive the signal that APM is actually enabled.
+     */
+    @VisibleForTesting
+    AccessibilityManagerInternal.AccessibilityFeatureRestrictedCounts
+            getA11yFeatureRestrictedCounts(int userId) {
+        final Set<String> currentPermittedSet = getPermittedAccessibilityServices(userId);
+        final List<String> currentPermittedList = currentPermittedSet != null
+                ? new ArrayList<>(currentPermittedSet) : null;
+
+        synchronized (mLock) {
+            final AccessibilityUserState userState = getUserStateLocked(userId);
+            final Set<String> finalAllowedPackages = getPermittedServicesStrictApm(
+                    currentPermittedList, userId);
+
+            return new AccessibilityManagerInternal.AccessibilityFeatureRestrictedCounts(
+                    getServicesDisabledByDevicePolicyCountLocked(userState, finalAllowedPackages),
+                    getShortcutsDisabledByDevicePolicyCountLocked(userState, finalAllowedPackages));
+        }
+    }
+
+    @GuardedBy("mLock")
+    private int getServicesDisabledByDevicePolicyCountLocked(AccessibilityUserState userState,
+            Set<String> finalAllowedPackages) {
+        int count = 0;
+        for (ComponentName component : userState.mEnabledServices) {
+            if (!finalAllowedPackages.contains(component.getPackageName())) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    @GuardedBy("mLock")
+    private int getShortcutsDisabledByDevicePolicyCountLocked(AccessibilityUserState userState,
+            Set<String> finalAllowedPackages) {
+        int count = 0;
+        final Set<String> targets = userState.getShortcutTargetsLocked(ALL);
+        for (String target : targets) {
+            if (!userState.isShortcutTargetPermittedLocked(target, finalAllowedPackages)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /**
      * Handles changes to the Advanced Protection Mode (APM) state by applying
      * a global user restriction on non-tool accessibility services.
      */
@@ -1470,47 +1523,47 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             // device.
             final int deviceId = mProxyManager.getFirstDeviceIdForUidLocked(
                     Binder.getCallingUid());
+            final boolean isProxyedClient = mProxyManager.isProxyedDeviceId(deviceId);
             Client client = new Client(callback, Binder.getCallingUid(), userState, deviceId);
+            final int state;
+            if (isProxyedClient) {
+                state = mProxyManager.getStateLocked(deviceId);
+            } else if (resolvedUserId == mCurrentUserId) {
+                state = getClientStateLocked(userState);
+            } else {
+                // If this client is not for the current user we do not return a state since it is
+                // not for the foreground user. We will send the state to the client on a user
+                // switch.
+                state = 0;
+            }
+            final boolean global;
             // If the client is from a process that runs across users such as
             // the system UI or the system we add it to the global state that
             // is shared across users.
             if (mSecurityPolicy.isCallerInteractingAcrossUsers(userId)) {
-                if (mProxyManager.isProxyedDeviceId(deviceId)) {
-                    if (DEBUG) {
-                        Slog.v(LOG_TAG, "Added global client for proxy-ed pid: "
-                                + Binder.getCallingPid() + " for device id " + deviceId
-                                + " with package names " + Arrays.toString(client.mPackageNames));
-                    }
-                    return IntPair.of(mProxyManager.getStateLocked(deviceId),
-                            client.mLastSentRelevantEventTypes);
-                }
-                mGlobalClients.register(callback, client);
-                if (DEBUG) {
-                    Slog.i(LOG_TAG, "Added global client for pid:" + Binder.getCallingPid());
+                global = true;
+                if (!isProxyedClient || Flags.trackProxyedClientsInA11yUserState()) {
+                    mGlobalClients.register(callback, client);
                 }
             } else {
-                // If the display belongs to a proxy connections
-                if (mProxyManager.isProxyedDeviceId(deviceId)) {
-                    if (DEBUG) {
-                        Slog.v(LOG_TAG, "Added user client for proxy-ed pid: "
-                                + Binder.getCallingPid() + " for device id " + deviceId
-                                + " with package names " + Arrays.toString(client.mPackageNames));
-                    }
-                    return IntPair.of(mProxyManager.getStateLocked(deviceId),
-                            client.mLastSentRelevantEventTypes);
-                }
-                userState.mUserClients.register(callback, client);
-                // If this client is not for the current user we do not
-                // return a state since it is not for the foreground user.
-                // We will send the state to the client on a user switch.
-                if (DEBUG) {
-                    Slog.i(LOG_TAG, "Added user client for pid:" + Binder.getCallingPid()
-                            + " and userId:" + mCurrentUserId);
+                global = false;
+                if (!isProxyedClient || Flags.trackProxyedClientsInA11yUserState()) {
+                    userState.mUserClients.register(callback, client);
                 }
             }
-            return IntPair.of(
-                    (resolvedUserId == mCurrentUserId) ? getClientStateLocked(userState) : 0,
-                    client.mLastSentRelevantEventTypes);
+            if (DEBUG) {
+                if (isProxyedClient) {
+                    Slog.v(LOG_TAG,
+                            "Added " + (global ? "global" : "user") + " client for proxy-ed pid: "
+                                    + Binder.getCallingPid() + " for device id " + deviceId
+                                    + " with package names " + Arrays.toString(
+                                    client.mPackageNames));
+                } else {
+                    Slog.i(LOG_TAG, "Added " + (global ? "global" : "user") + " client for pid:"
+                            + Binder.getCallingPid());
+                }
+            }
+            return IntPair.of(state, client.mLastSentRelevantEventTypes);
         }
     }
 

@@ -33,6 +33,7 @@ import static android.view.accessibility.Flags.FLAG_ENABLE_TRUSTED_ACCESSIBILITY
 
 import static com.android.hardware.input.Flags.enableColorInversionKeyGestures;
 import static com.android.internal.accessibility.AccessibilityShortcutController.ACCESSIBILITY_HEARING_AIDS_COMPONENT_NAME;
+import static com.android.internal.accessibility.AccessibilityShortcutController.MAGNIFICATION_COMPONENT_NAME;
 import static com.android.internal.accessibility.AccessibilityShortcutController.MAGNIFICATION_CONTROLLER_NAME;
 import static com.android.internal.accessibility.common.ShortcutConstants.USER_SHORTCUT_TYPES;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.GESTURE;
@@ -150,6 +151,7 @@ import com.android.internal.accessibility.util.AccessibilityUtils;
 import com.android.internal.accessibility.util.ShortcutUtils;
 import com.android.internal.compat.IPlatformCompat;
 import com.android.internal.content.PackageMonitor;
+import com.android.server.AccessibilityManagerInternal.AccessibilityFeatureRestrictedCounts;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
 import com.android.server.accessibility.AccessibilityManagerService.AccessibilityDisplayListener;
@@ -3023,6 +3025,96 @@ public class AccessibilityManagerServiceTest {
 
         assertThat(permitted).containsExactly("com.system.tool", "com.user.tool", "com.user.test",
                 "com.system.nontool");
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_EXTEND_AAPM_TO_A11Y_SERVICES)
+    public void getA11yFeatureRestrictedCounts_calculatesStatsCorrectly() {
+        mTestableContext.mIgnoreBindService = true;
+        final int userId = mA11yms.mCurrentUserId;
+
+        // 1. Setup Installed Services
+        ComponentName toolComp = new ComponentName("com.pkg.tool", "ToolService");
+        AccessibilityServiceInfo toolInfo = mockAccessibilityServiceInfo(toolComp, true, false,
+                true);
+
+        ComponentName nonToolComp = new ComponentName("com.pkg.nontool", "NonToolService");
+        AccessibilityServiceInfo nonToolInfo = mockAccessibilityServiceInfo(
+                nonToolComp, true, false, false);
+
+        ComponentName nonToolShortcutComp = new ComponentName(
+                "com.pkg.nontool2", "NonToolShortcutService");
+        AccessibilityServiceInfo nonToolShortcutInfo = mockAccessibilityServiceInfo(
+                nonToolShortcutComp, true, false, false);
+
+        List<AccessibilityServiceInfo> installed = new ArrayList<>();
+        installed.add(toolInfo);
+        installed.add(nonToolInfo);
+        installed.add(nonToolShortcutInfo);
+
+        // 2. Enable Services in UserState and Settings
+        mockUserStateWithInstalledShortcuts(userId, List.of(
+                        toolComp.flattenToString(),
+                        nonToolComp.flattenToString(),
+                        nonToolShortcutComp.flattenToString(),
+                        MAGNIFICATION_COMPONENT_NAME.flattenToString()),
+                List.of(userId));
+        AccessibilityUserState spyUserState = mA11yms.getUserStateLocked(userId);
+        spyUserState.buildInstalledServicesMapLocked(installed);
+
+        spyUserState.mEnabledServices.clear();
+        spyUserState.mEnabledServices.add(toolComp);
+        spyUserState.mEnabledServices.add(nonToolComp);
+        writeStringsToSetting(Set.of(toolComp.flattenToString(),
+                        nonToolComp.flattenToString()),
+                Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
+
+        spyUserState.updateShortcutTargetsLocked(Set.of(
+                toolComp.flattenToString(),
+                nonToolShortcutComp.flattenToString(),
+                MAGNIFICATION_COMPONENT_NAME.flattenToString()), HARDWARE);
+        writeStringsToSetting(Set.of(
+                        toolComp.flattenToString(),
+                        nonToolShortcutComp.flattenToString(),
+                        MAGNIFICATION_COMPONENT_NAME.flattenToString()),
+                ShortcutUtils.convertToKey(HARDWARE));
+
+        doReturn(true).when(spyUserState).isShortcutTargetPermittedLocked(
+                eq(toolComp.flattenToString()), any());
+        doReturn(true).when(spyUserState).isShortcutTargetPermittedLocked(
+                eq(MAGNIFICATION_COMPONENT_NAME.flattenToString()), any());
+        doReturn(false).when(spyUserState).isShortcutTargetPermittedLocked(
+                eq(nonToolShortcutComp.flattenToString()), any());
+
+        // 3. Mock DPM to return only Tool when APM is ON
+        when(mDevicePolicyManager.getPermittedAccessibilityServices(anyInt()))
+                .thenReturn(Arrays.asList("com.pkg.tool"));
+
+        // 4. Verify Stats (calculate counts as if APM were enabled)
+        AccessibilityFeatureRestrictedCounts counts =
+                mA11yms.getA11yFeatureRestrictedCounts(userId);
+
+        assertThat(counts.disabledServices()).isEqualTo(1);
+        assertThat(counts.removedShortcuts()).isEqualTo(1);
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_EXTEND_AAPM_TO_A11Y_SERVICES)
+    public void getA11yFeatureRestrictedCounts_apmOff_returnsZero() {
+        // 1. Mock DPM to allow nothing (shouldn't matter if APM is off)
+        when(mDevicePolicyManager.getPermittedAccessibilityServices(anyInt()))
+                .thenReturn(new ArrayList<>());
+        final int userId = mA11yms.getCurrentUserIdLocked();
+
+        // 2. Trigger APM (ensure it's off)
+        mA11yms.handleAdvancedProtectionModeStateChanged(false);
+
+        // 3. Verify Stats
+        AccessibilityFeatureRestrictedCounts counts =
+                mA11yms.getA11yFeatureRestrictedCounts(userId);
+
+        assertThat(counts.disabledServices()).isEqualTo(0);
+        assertThat(counts.removedShortcuts()).isEqualTo(0);
     }
 
     private AccessibilityServiceInfo getServiceInfoForEnableTrustedServiceTest(

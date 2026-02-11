@@ -447,6 +447,11 @@ public abstract class PackageManagerInternal {
     public abstract @NonNull List<String> getAppLockEnabledPackagesForUser(int userId);
 
     /**
+     * Called when the lock credential is changed or removed for a user.
+     */
+    public abstract void reportLockCredentialChanged(@UserIdInt int userId);
+
+    /**
      * Returns {@code true} if a given package can't be wiped. Otherwise, returns {@code false}.
      */
     public abstract boolean isPackageDataProtected(int userId, String packageName);

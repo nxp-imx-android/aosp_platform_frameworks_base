@@ -268,7 +268,7 @@
     <string name="apn_settings_not_available" msgid="1147111671403342300">"Instellingen voor toegangspuntnamen zijn niet beschikbaar voor deze gebruiker"</string>
     <string name="enable_adb" msgid="8072776357237289039">"USB-foutopsporing"</string>
     <string name="enable_adb_summary" msgid="3711526030096574316">"Foutopsporingsmodus als USB is verbonden"</string>
-    <string name="clear_adb_keys" msgid="2696065439790970581">"Autorisatie USB-foutopsporing intrekken"</string>
+    <string name="clear_adb_keys" msgid="2696065439790970581">"Autorisaties voor adb-foutopsporing intrekken"</string>
     <string name="enable_adb_wireless" msgid="6973226350963971018">"Draadloze foutopsporing"</string>
     <string name="enable_adb_wireless_summary" msgid="7344391423657093011">"Foutopsporingsmodus als wifi is verbonden"</string>
     <string name="adb_wireless_error" msgid="721958772149779856">"Fout"</string>
@@ -293,10 +293,8 @@
     <string name="adb_wireless_verifying_qrcode_text" msgid="6123192424916029207">"Apparaat koppelen…"</string>
     <string name="adb_qrcode_pairing_device_failed_msg" msgid="6936292092592914132">"Kan het apparaat niet koppelen. De QR-code was onjuist of het apparaat is niet verbonden met hetzelfde netwerk."</string>
     <string name="adb_wireless_ip_addr_preference_title" msgid="8335132107715311730">"IP-adres en poort"</string>
-    <!-- no translation found for adb_wireless_unavailable_not_allowed (83310404140556806) -->
-    <skip />
-    <!-- no translation found for adb_wireless_unavailable_disconnected (8819105186435736128) -->
-    <skip />
+    <string name="adb_wireless_unavailable_not_allowed" msgid="83310404140556806">"Niet beschikbaar (niet toegestaan)"</string>
+    <string name="adb_wireless_unavailable_disconnected" msgid="8819105186435736128">"Niet beschikbaar (wifi-verbinding verbroken)"</string>
     <string name="adb_wireless_qrcode_pairing_title" msgid="1906409667944674707">"QR-code scannen"</string>
     <string name="adb_wireless_qrcode_pairing_description" msgid="6014121407143607851">"Koppel apparaat via wifi door een QR-code te scannen"</string>
     <string name="adb_wireless_no_network_msg" msgid="2365795244718494658">"Maak verbinding met een wifi-netwerk"</string>
@@ -370,7 +368,7 @@
     <string name="adb_warning_message" msgid="8145270656419669221">"USB-foutopsporing is alleen bedoeld voor ontwikkeldoeleinden. Het kan worden gebruikt om gegevens te kopiëren tussen je computer en je apparaat, apps zonder melding op je apparaat te installeren en loggegevens te lezen."</string>
     <string name="adbwifi_warning_title" msgid="727104571653031865">"Draadloze foutopsporing toestaan?"</string>
     <string name="adbwifi_warning_message" msgid="8005936574322702388">"Draadloze foutopsporing is alleen bedoeld voor ontwikkeldoeleinden. Het kan worden gebruikt om gegevens te kopiëren tussen je computer en je apparaat, apps zonder melding op je apparaat te installeren en logboekgegevens te lezen."</string>
-    <string name="adb_keys_warning_message" msgid="7827514623080777814">"Toegang tot USB-foutopsporing intrekken voor alle computers waarvoor je dit eerder hebt toegestaan?"</string>
+    <string name="adb_keys_warning_message" msgid="7827514623080777814">"Toegang tot adb-foutopsporing intrekken voor alle computers en netwerken waarvoor je dit eerder hebt toegestaan?"</string>
     <string name="dev_settings_warning_title" msgid="8251234890169074553">"Ontwikkelingsinstellingen toestaan?"</string>
     <string name="dev_settings_warning_message" msgid="37741686486073668">"Deze instellingen zijn uitsluitend bedoeld voor ontwikkelingsgebruik. Je apparaat en apps kunnen hierdoor vastlopen of anders reageren."</string>
     <string name="verify_apps_over_usb_title" msgid="6031809675604442636">"Apps verifiëren via USB"</string>

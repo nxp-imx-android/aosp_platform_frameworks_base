@@ -32,6 +32,7 @@ import com.android.systemui.qs.pipeline.domain.interactor.PanelInteractor
 import com.android.systemui.qs.tiles.base.domain.interactor.QSTileUserActionInteractor
 import com.android.systemui.qs.tiles.base.domain.model.QSTileInput
 import com.android.systemui.qs.tiles.base.shared.model.QSTileUserAction
+import com.android.systemui.qs.tiles.impl.screenrecord.domain.model.ScreenRecordTileModel
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiSource
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
@@ -64,13 +65,14 @@ constructor(
     private val mediaProjectionMetricsLogger: MediaProjectionMetricsLogger,
     private val screenRecordingServiceInteractor: ScreenRecordingServiceInteractor,
     private val screenCaptureRecordFeaturesInteractor: ScreenCaptureRecordFeaturesInteractor,
-) : QSTileUserActionInteractor<ScreenRecordModel> {
-    override suspend fun handleInput(input: QSTileInput<ScreenRecordModel>): Unit =
+) : QSTileUserActionInteractor<ScreenRecordTileModel> {
+    override suspend fun handleInput(input: QSTileInput<ScreenRecordTileModel>): Unit =
         with(input) {
             when (action) {
                 is QSTileUserAction.Click -> {
+                    val screenRecordState = input.data.screenRecordModel
                     if (screenCaptureRecordFeaturesInteractor.shouldShowNewRecordingToolbar) {
-                        if (input.data is ScreenRecordModel.DoingNothing) {
+                        if (screenRecordState is ScreenRecordModel.DoingNothing) {
                             withContext(mainDispatcher) {
                                 // TODO(b/412723197): pass actual params here.
                                 activityStarter.executeRunnableDismissingKeyguard(
@@ -90,7 +92,7 @@ constructor(
                             screenRecordingServiceInteractor.stopRecording(StopReason.STOP_QS_TILE)
                         }
                     } else {
-                        when (data) {
+                        when (screenRecordState) {
                             is ScreenRecordModel.Starting -> {
                                 Log.d(TAG, "Cancelling countdown")
                                 withContext(backgroundContext) {

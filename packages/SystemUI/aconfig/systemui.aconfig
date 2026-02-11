@@ -1762,6 +1762,16 @@ flag {
 }
 
 flag {
+   name: "status_bar_long_press_gesture_detector_per_display"
+   namespace: "systemui"
+   description: "Makes StatusBarLongPressGestureDetector per-display"
+   bug: "383125226"
+   metadata {
+       purpose: PURPOSE_BUGFIX
+   }
+}
+
+flag {
     name: "status_bar_mobile_icon_kairos"
     namespace: "systemui"
     description: "Refactors the mobile connection icon in the status bar to use the Kairos library"

@@ -25,6 +25,7 @@ import com.android.systemui.keyguard.data.repository.KeyguardTransitionRepositor
 import com.android.systemui.keyguard.shared.model.Edge
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.KeyguardState.Companion.deviceIsAsleepInState
+import com.android.systemui.keyguard.shared.model.KeyguardTransitionKeys.WithAnimationOverLockscreen
 import com.android.systemui.keyguard.shared.model.TransitionState
 import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.scene.data.model.asIterable
@@ -303,6 +304,16 @@ constructor(
                                         it.fromScene == Scenes.Gone &&
                                             it.toScene == Scenes.Lockscreen ->
                                             goneToLockscreenLsVisibility
+                                        // Look for animation from lockscreen/shade -> gone
+                                        it.fromScene == Scenes.Shade &&
+                                            it.toScene == Scenes.Gone -> {
+                                            val animatingOverLockscreen =
+                                                it.key == WithAnimationOverLockscreen
+                                            flowOf(
+                                                animatingOverLockscreen to
+                                                    "shade to gone with animation"
+                                            )
+                                        }
                                         // Otherwise, default to showing the lockscreen if the
                                         // device is not yet entered, or leaving it not showing if
                                         // the device was entered. This covers two requirements:
