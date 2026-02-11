@@ -18,25 +18,24 @@ package com.android.server.lights;
 
 import android.annotation.Nullable;
 import android.hardware.light.LightType;
-import android.hardware.light.V2_0.Type;
 
 public abstract class LightsManager {
-    public static final int LIGHT_ID_BACKLIGHT = Type.BACKLIGHT;
-    public static final int LIGHT_ID_KEYBOARD = Type.KEYBOARD;
-    public static final int LIGHT_ID_BUTTONS = Type.BUTTONS;
-    public static final int LIGHT_ID_BATTERY = Type.BATTERY;
-    public static final int LIGHT_ID_NOTIFICATIONS = Type.NOTIFICATIONS;
-    public static final int LIGHT_ID_ATTENTION = Type.ATTENTION;
-    public static final int LIGHT_ID_BLUETOOTH = Type.BLUETOOTH;
-    public static final int LIGHT_ID_WIFI = Type.WIFI;
-    public static final int LIGHT_ID_COUNT = Type.COUNT;
+    public static final int LIGHT_ID_BACKLIGHT = LightType.BACKLIGHT;
+    public static final int LIGHT_ID_KEYBOARD = LightType.KEYBOARD;
+    public static final int LIGHT_ID_BUTTONS = LightType.BUTTONS;
+    public static final int LIGHT_ID_BATTERY = LightType.BATTERY;
+    public static final int LIGHT_ID_NOTIFICATIONS = LightType.NOTIFICATIONS;
+    public static final int LIGHT_ID_ATTENTION = LightType.ATTENTION;
+    public static final int LIGHT_ID_BLUETOOTH = LightType.BLUETOOTH;
+    public static final int LIGHT_ID_WIFI = LightType.WIFI;
+    public static final int LIGHT_ID_COUNT = 8;
     /*
      * The list of lights above is kept for backwards compatibility with HIDL
      * based HALs. Specifically, COUNT should remain constant from now on since
      * it only plays a role in HIDL.
      * <p>
      * New system lights can be added below without updating COUNT. On AIDL HALs
-     * the system accounts for gaps and interleaved system and non-system lights
+     * the system accounts for gaps and interleaved system and non-system light
      * types.
      */
     public static final int LIGHT_ID_PRIORITY_NOTIFICATIONS = LightType.PRIORITY_NOTIFICATIONS;
