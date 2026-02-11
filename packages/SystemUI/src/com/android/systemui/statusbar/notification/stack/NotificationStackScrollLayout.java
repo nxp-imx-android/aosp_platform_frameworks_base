@@ -1021,6 +1021,11 @@ public class NotificationStackScrollLayout
         }
     }
 
+    @VisibleForTesting
+    int getSidePaddings() {
+        return mSidePaddings;
+    }
+
     void updateCornerRadius() {
         int newRadius = getResources().getDimensionPixelSize(R.dimen.notification_corner_radius);
         if (mCornerRadius != newRadius) {
