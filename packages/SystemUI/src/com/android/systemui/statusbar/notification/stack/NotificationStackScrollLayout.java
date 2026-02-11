@@ -165,6 +165,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * A layout which handles a dynamic amount of notifications and presents them in a scrollable stack.
@@ -239,7 +240,7 @@ public class NotificationStackScrollLayout
     int mImeInset = 0;
     private float mQsExpansionFraction;
     private final int mSplitShadeMinContentHeight;
-    private String mLastUpdateSidePaddingDumpString;
+    private Supplier<String> mLastUpdateSidePaddingDumpStringSupplier;
 
     private final HeadsUpAnimator mHeadsUpAnimator;
     /**
@@ -990,10 +991,12 @@ public class NotificationStackScrollLayout
 
     void updateSidePadding(int viewWidth) {
         final int orientation = getResources().getConfiguration().orientation;
-
-        mLastUpdateSidePaddingDumpString = "viewWidth=" + viewWidth
+        final boolean useLargeSidePaddings = SceneContainerFlag.isEnabled()
+                ? mScrollViewFields.useLargeSidePaddings
+                : !mShouldUseSplitNotificationShade;
+        mLastUpdateSidePaddingDumpStringSupplier = () -> "viewWidth=" + viewWidth
                 + " orientation=" + orientation
-                + " shouldUseSplitNotificationShade=" + mShouldUseSplitNotificationShade;
+                + " useLargeSidePaddings=" + useLargeSidePaddings;
 
         mSidePaddings = mMinimumPaddings;
         if (viewWidth == 0) {
@@ -1001,7 +1004,7 @@ public class NotificationStackScrollLayout
             return;
         }
 
-        if (orientation == Configuration.ORIENTATION_PORTRAIT || mShouldUseSplitNotificationShade) {
+        if (orientation == Configuration.ORIENTATION_PORTRAIT || !useLargeSidePaddings) {
             return;
         }
 
@@ -1016,6 +1019,11 @@ public class NotificationStackScrollLayout
             final int qsTileWidth = (innerWidth - mQsTilePadding * 3) / 4;
             mSidePaddings = mMinimumPaddings + qsTileWidth + mQsTilePadding;
         }
+    }
+
+    @VisibleForTesting
+    int getSidePaddings() {
+        return mSidePaddings;
     }
 
     void updateCornerRadius() {
@@ -3466,6 +3474,12 @@ public class NotificationStackScrollLayout
         }
     }
 
+    @Override
+    public void setUseLargeSidePaddings(boolean useLargeSidePaddings) {
+        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
+        mScrollViewFields.useLargeSidePaddings = useLargeSidePaddings;
+    }
+
     private void updateNotificationAnimationStates() {
         boolean running = mAnimationsEnabled || hasPulsingNotifications();
         mShelf.setAnimationsEnabled(running);
@@ -5886,9 +5900,9 @@ public class NotificationStackScrollLayout
             println(pw, "minimumPaddings", mMinimumPaddings);
             println(pw, "qsTilePadding", mQsTilePadding);
             println(pw, "sidePaddings", mSidePaddings);
+            println(pw, "lastUpdateSidePadding", mLastUpdateSidePaddingDumpStringSupplier.get());
             println(pw, "elapsedRealtime", elapsedRealtime);
             println(pw, "shouldUseSplitNotificationShade", mShouldUseSplitNotificationShade);
-            println(pw, "lastUpdateSidePadding", mLastUpdateSidePaddingDumpString);
             println(pw, "isAnimating", isCurrentlyAnimating());
             mNotificationStackSizeCalculator.dump(pw, args);
             mScrollViewFields.dump(pw);
