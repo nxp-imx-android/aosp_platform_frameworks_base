@@ -58,6 +58,16 @@ flag {
 }
 
 flag {
+    name: "async_notification_launch_ipc"
+    namespace: "systemui"
+    description: "Makes StatusBarNotificationActivityStarter do binder transactions on background"
+    bug: "462728621"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "av_controls_chip_per_display"
     namespace: "systemui"
     description: "Makes Av Controls Chip related code per display."
