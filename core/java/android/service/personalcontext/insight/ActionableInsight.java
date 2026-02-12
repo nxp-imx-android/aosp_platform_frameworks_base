@@ -166,7 +166,10 @@ public final class ActionableInsight extends ContextInsight {
         }
 
         /**
-         * Adds an origin {@link ContextHint} to the resulting {@link BundleInsight}.
+         * Adds an origin {@link ContextHint} to the resulting {@link ActionableInsight}. This hint
+         * will be used in determining how the insight should be delivered based on present
+         * {@link android.service.personalcontext.RenderToken}. It can also be potentially used
+         * to determine how the insight was formulated (attribution).
          *
          * @param hint the origin {@link ContextHint} to add
          */
