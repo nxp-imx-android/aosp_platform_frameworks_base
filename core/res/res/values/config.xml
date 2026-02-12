@@ -7766,6 +7766,9 @@
     <!-- List of packages which should be exempt from desktop mode. -->
     <string-array name="config_desktopExemptPackages" translatable="false"/>
 
+    <!-- List of packages which should be excluded from transparency based desktop exemptions. -->
+    <string-array name="config_desktopTransparentExemptionIgnoreList" translatable="false"/>
+
     <!-- Frame rate compatibility value for Wallpaper
          FRAME_RATE_COMPATIBILITY_MIN (102) is used by default for lower power consumption -->
     <integer name="config_wallpaperFrameRateCompatibility">102</integer>

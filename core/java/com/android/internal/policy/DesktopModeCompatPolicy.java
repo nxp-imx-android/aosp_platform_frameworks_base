@@ -54,6 +54,8 @@ public class DesktopModeCompatPolicy {
     private final String mSystemUiPackage;
     @NonNull
     private final List<String> mConfigExemptPackages;
+    @NonNull
+    private final List<String> mConfigTransparentExemptionIgnoreList;
     private final Map<String, Boolean> mPackageInfoCache = new HashMap<>();
     private PackageManager mPackageManager = null;
 
@@ -64,6 +66,8 @@ public class DesktopModeCompatPolicy {
         mSystemUiPackage = context.getResources().getString(R.string.config_systemUi);
         mConfigExemptPackages = Arrays.asList(context.getResources().getStringArray(
                 R.array.config_desktopExemptPackages));
+        mConfigTransparentExemptionIgnoreList = Arrays.asList(context.getResources().getStringArray(
+                R.array.config_desktopTransparentExemptionIgnoreList));
     }
 
     public void setDefaultHomePackageSupplier(
@@ -150,7 +154,8 @@ public class DesktopModeCompatPolicy {
                 && (hasFullscreenTransparentPermission(packageName, userId, info)
                     || hasPlatformSignature(info)
                     || (Flags.enablePrivilegedAppTransparentWindowingExemptions()
-                        && isPrivilegedApp(info)));
+                        && isPrivilegedApp(info)))
+                && !mConfigTransparentExemptionIgnoreList.contains(packageName);
     }
 
     /** @see #shouldDisableDesktopEntryPoints(String, int, boolean, boolean, int, int) */

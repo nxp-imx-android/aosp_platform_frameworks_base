@@ -84,6 +84,8 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
     private val baseActivityTest = ComponentName("com.test.dummypackage", "TestClass")
     private val configExemptActivity = ComponentName("com.test.configExemptPackage", /* class */ "")
     private val configExemptPackageList = arrayOf(configExemptActivity.packageName)
+    private val configIgnoreActivity = ComponentName("com.test.configIgnorePackage", /* class */ "")
+    private val configIgnorePackageList = arrayOf(configIgnoreActivity.packageName)
 
     @Before
     fun setUp() {
@@ -98,6 +100,9 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
         doReturn(configExemptPackageList)
             .`when`(resources)
             .getStringArray(R.array.config_desktopExemptPackages)
+        doReturn(configIgnorePackageList)
+            .`when`(resources)
+            .getStringArray(R.array.config_desktopTransparentExemptionIgnoreList)
         doReturn(resources).`when`(mockContext).resources
         desktopModeCompatPolicy = spy(DesktopModeCompatPolicy(mockContext))
         mContext.addMockSystemService(RoleManager::class.java, roleManager)
@@ -302,6 +307,31 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
                     numActivities = 1
                     topActivityInfo = ActivityInfo().apply { applicationInfo = ApplicationInfo() }
                     baseActivity = baseActivityTest
+                }
+            )
+        )
+    }
+
+    @Test
+    fun testIsTopActivityExempt_packageInConfigIgnoreList() {
+        toggleOverlayAppOpForAllUsers(true)
+        requestOverlayPermissionForAllUsers(arrayOf(SYSTEM_ALERT_WINDOW))
+        assertFalse(
+            desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
+                createFreeformTask().apply {
+                    isActivityStackTransparent = true
+                    isTopActivityNoDisplay = false
+                    numActivities = 1
+                    topActivityInfo =
+                        ActivityInfo().apply {
+                            applicationInfo =
+                                ApplicationInfo().apply {
+                                    privateFlags =
+                                        ApplicationInfo.PRIVATE_FLAG_SIGNED_WITH_PLATFORM_KEY and
+                                            ApplicationInfo.PRIVATE_FLAG_PRIVILEGED
+                                }
+                        }
+                    baseActivity = configIgnoreActivity
                 }
             )
         )
