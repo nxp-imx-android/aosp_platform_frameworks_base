@@ -49,6 +49,7 @@ import android.app.appfunctions.AppFunctionSearchSpec;
 import android.app.appfunctions.AppFunctionStateList;
 import android.app.appfunctions.AppFunctionStaticMetadataHelper;
 import android.app.appfunctions.AppFunctionUriGrant;
+import android.app.appfunctions.ExecuteAppFunctionRequest;
 import android.app.appfunctions.ExecuteAppFunctionAidlRequest;
 import android.app.appfunctions.ExecuteAppFunctionResponse;
 import android.app.appfunctions.IAppFunctionExecutor;
@@ -395,6 +396,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                             "Target package name cannot be empty."));
             return;
         }
+
         mCallerValidator
                 .verifyCallerCanExecuteAppFunction(
                         callingUid,
@@ -411,6 +413,19 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                                                 "Caller does not have permission to execute the"
                                                         + " appfunction"));
                             }
+
+                            if (android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()) {
+                                try {
+                                    validateExecuteAppFunctionRequestTargetScope(
+                                            requestInternal.getClientRequest(),
+                                            targetPackageName,
+                                            targetUser
+                                    );
+                                } catch (AppFunctionNotFoundException e) {
+                                    return AndroidFuture.failedFuture(e);
+                                }
+                            }
+
                             return isAppFunctionEnabledInternal(
                                             requestInternal
                                                     .getClientRequest()
@@ -466,6 +481,59 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                                     mapExceptionToExecuteAppFunctionResponse(ex));
                             return null;
                         });
+    }
+
+    /**
+     * Validates the target scope of the execute app function request. If the function is a
+     * SCOPE_GLOBAL function, the request must not have an AppFunctionActivityId. If the function
+     * is a SCOPE_ACTIVITY function, the request must have an AppFunctionActivityId and the
+     * function must be registered for the given AppFunctionActivityId.
+     *
+     * @param executeRequest The execute app function request.
+     * @param targetPackageName The target package name of the app function.
+     * @param targetUser The target user of the app function.
+     * @throws AppFunctionNotFoundException If the target scope is not valid.
+     */
+    private void validateExecuteAppFunctionRequestTargetScope(
+            @NonNull ExecuteAppFunctionRequest executeRequest,
+            @NonNull String targetPackageName,
+            @NonNull UserHandle targetUser)
+            throws AppFunctionNotFoundException {
+        final String functionIdentifier = executeRequest.getFunctionIdentifier();
+        final AppFunctionActivityId activityId = executeRequest.getActivityId();
+        final boolean isDynamic =
+                mAppFunctionMetadataReader.isDynamicFunction(
+                        targetPackageName, functionIdentifier, targetUser);
+
+        if (!isDynamic) {
+            if (activityId != null) {
+                throw new AppFunctionNotFoundException(
+                        "SCOPE_GLOBAL functions cannot have an AppFunctionActivityId.");
+            }
+        } else {
+            final boolean isActivityScoped =
+                    mAppFunctionMetadataReader.isActivityScopedDynamicFunction(
+                            targetPackageName, functionIdentifier, targetUser);
+
+            if (isActivityScoped) {
+                if (activityId == null) {
+                    throw new AppFunctionNotFoundException(
+                            "SCOPE_ACTIVITY functions must be targeted with an"
+                                    + " AppFunctionActivityId");
+                }
+                final RegistrationScopeId scopeId = new RegistrationScopeId(activityId);
+                if (!mDynamicAppFunctionRegistry.isRegistered(
+                        targetPackageName, functionIdentifier, targetUser, scopeId)) {
+                    throw new AppFunctionNotFoundException(
+                            "Function is not registered for the given AppFunctionActivityId.");
+                }
+            } else { // Global-scoped dynamic function
+                if (activityId != null) {
+                    throw new AppFunctionNotFoundException(
+                            "SCOPE_GLOBAL functions cannot have an AppFunctionActivityId.");
+                }
+            }
+        }
     }
 
     private void executeServiceAppFunctionInternal(

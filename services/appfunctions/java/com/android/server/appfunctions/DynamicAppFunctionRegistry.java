@@ -267,12 +267,21 @@ final class DynamicAppFunctionRegistry {
         }
 
         if (executor == null) {
-            safeExecuteAppFunctionCallback.onError(
-                    new AppFunctionException(
-                            AppFunctionException.ERROR_DISABLED,
-                            "Function with ID: "
-                                    + request.getFunctionIdentifier()
-                                    + " is disabled"));
+            if (request.getActivityId() == null) {
+                safeExecuteAppFunctionCallback.onError(
+                        new AppFunctionException(
+                                AppFunctionException.ERROR_DISABLED,
+                                "Function with ID: "
+                                        + request.getFunctionIdentifier()
+                                        + " is disabled."));
+            } else {
+                safeExecuteAppFunctionCallback.onError(
+                        new AppFunctionException(
+                                AppFunctionException.ERROR_FUNCTION_NOT_FOUND,
+                                "Function with ID: "
+                                        + request.getFunctionIdentifier()
+                                        + " is not found for provided activity. "));
+            }
             return;
         }
 
@@ -299,15 +308,34 @@ final class DynamicAppFunctionRegistry {
     }
 
     /**
-     * Checks if dynamic app function is registered.
+     * Checks if dynamic app function has any registrations.
      *
      * @param packageName Name of the package containing the app function.
      * @param functionIdentifier Identifier of the app function.
      * @return True if the app function is registered, false otherwise.
      */
-    public boolean isAppFunctionRegistered(String packageName, String functionIdentifier) {
+    public boolean hasRegistrations(String packageName, String functionIdentifier) {
         synchronized (mLock) {
             return mRegistrations.containsKey(new AppFunctionName(packageName, functionIdentifier));
+        }
+    }
+
+    /**
+     * Checks if a dynamic app function is registered with a specific scope.
+     *
+     * @param packageName package name of the app function.
+     * @param functionIdentifier identifier of the app function.
+     * @param scopeId registration scope to check for.
+     * @return {@code true} if the app function is registered.
+     */
+    boolean isRegistered(
+            @NonNull String packageName,
+            @NonNull String functionIdentifier,
+            @NonNull RegistrationScopeId scopeId) {
+        synchronized (mLock) {
+            AppFunctionName name = new AppFunctionName(packageName, functionIdentifier);
+            ArrayMap<RegistrationScopeId, IAppFunctionExecutor> scopes = mRegistrations.get(name);
+            return scopes != null && scopes.containsKey(scopeId);
         }
     }
 

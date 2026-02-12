@@ -59,7 +59,7 @@ class MultiUserDynamicAppFunctionRegistryTest {
         val executor = createExecutorMock()
         registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor, USER_10, globalScope)
 
-        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION, USER_10)).isTrue()
+        assertThat(registry.hasRegistrations(TEST_PACKAGE, TEST_FUNCTION, USER_10)).isTrue()
     }
 
     @Test
@@ -67,7 +67,7 @@ class MultiUserDynamicAppFunctionRegistryTest {
         val executor = createExecutorMock()
         registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor, USER_10, globalScope)
 
-        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION, USER_11))
+        assertThat(registry.hasRegistrations(TEST_PACKAGE, TEST_FUNCTION, USER_11))
             .isFalse()
     }
 
@@ -92,11 +92,11 @@ class MultiUserDynamicAppFunctionRegistryTest {
     fun unregister_correctUser_success() {
         val executor = createExecutorMock()
         registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor, USER_10, globalScope)
-        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION, USER_10)).isTrue()
+        assertThat(registry.hasRegistrations(TEST_PACKAGE, TEST_FUNCTION, USER_10)).isTrue()
 
         registry.unregisterAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor, USER_10, globalScope)
 
-        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION, USER_10))
+        assertThat(registry.hasRegistrations(TEST_PACKAGE, TEST_FUNCTION, USER_10))
             .isFalse()
     }
 
@@ -107,7 +107,7 @@ class MultiUserDynamicAppFunctionRegistryTest {
 
         registry.unregisterAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor, USER_11, globalScope)
 
-        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION, USER_10)).isTrue()
+        assertThat(registry.hasRegistrations(TEST_PACKAGE, TEST_FUNCTION, USER_10)).isTrue()
     }
 
     @Test
@@ -120,17 +120,17 @@ class MultiUserDynamicAppFunctionRegistryTest {
         registry.onUserStopped(TARGET_USER_10)
 
         assertThrows(IllegalStateException::class.java) {
-            registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION, USER_10)
+            registry.hasRegistrations(TEST_PACKAGE, TEST_FUNCTION, USER_10)
         }
 
-        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION, USER_11)).isTrue()
+        assertThat(registry.hasRegistrations(TEST_PACKAGE, TEST_FUNCTION, USER_11)).isTrue()
     }
 
     @Test
     fun accessBeforeUnlock_throwsException() {
         val user12 = UserHandle.of(12)
         assertThrows(IllegalStateException::class.java) {
-            registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION, user12)
+            registry.hasRegistrations(TEST_PACKAGE, TEST_FUNCTION, user12)
         }
     }
 
@@ -141,7 +141,7 @@ class MultiUserDynamicAppFunctionRegistryTest {
 
         registry.onUserUnlocked(mockMetadataObserver, TARGET_USER_10)
 
-        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION, USER_10)).isTrue()
+        assertThat(registry.hasRegistrations(TEST_PACKAGE, TEST_FUNCTION, USER_10)).isTrue()
     }
 
     @Test
@@ -161,7 +161,7 @@ class MultiUserDynamicAppFunctionRegistryTest {
         registry.onUserUnlocked(mockMetadataObserver, TARGET_USER_10)
 
         // Verify the old registration is gone
-        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION, USER_10))
+        assertThat(registry.hasRegistrations(TEST_PACKAGE, TEST_FUNCTION, USER_10))
             .isFalse()
     }
 
@@ -213,7 +213,7 @@ class MultiUserDynamicAppFunctionRegistryTest {
         executorService.shutdown()
 
         assertThrows(IllegalStateException::class.java) {
-            registry.isAppFunctionRegistered(TEST_PACKAGE, "contextFunction", USER_10)
+            registry.hasRegistrations(TEST_PACKAGE, "contextFunction", USER_10)
         }
     }
 
