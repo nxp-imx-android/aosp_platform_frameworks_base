@@ -40,6 +40,7 @@ import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipU
 import com.android.systemui.testKosmosNew
 import com.android.systemui.user.data.repository.fakeUserRepository
 import com.google.common.truth.Truth.assertThat
+import kotlin.test.assertIs
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runCurrent
 import org.junit.Before
@@ -74,9 +75,7 @@ class ImeIndicatorChipViewModelTest : SysuiTestCase() {
     @Test
     @DisableFlags(Flags.FLAG_STATUS_BAR_IME_CHIP)
     fun chip_flagDisabled_isHidden() =
-        kosmos.runTest {
-            assertThat(underTest.chip).isInstanceOf(QuickActionChipUiState.Hidden::class.java)
-        }
+        kosmos.runTest { assertIs<QuickActionChipUiState.Hidden>(underTest.chip) }
 
     @Test
     @EnableFlags(Flags.FLAG_STATUS_BAR_IME_CHIP)
@@ -88,7 +87,7 @@ class ImeIndicatorChipViewModelTest : SysuiTestCase() {
                     InputMethodModel.Subtype(subtypeId = 2, isAuxiliary = false),
                 )
 
-            assertThat(underTest.chip).isInstanceOf(QuickActionChipUiState.PopupChip::class.java)
+            assertIs<QuickActionChipUiState.LaunchChip>(underTest.chip)
         }
 
     @Test
@@ -111,14 +110,12 @@ class ImeIndicatorChipViewModelTest : SysuiTestCase() {
                 listOf(subtype, InputMethodModel.Subtype(subtypeId = 1, isAuxiliary = false))
             fakeInputMethodRepository.setSelectedInputMethodSubtypeId(subtype.subtypeId)
 
-            val chip = underTest.chip as QuickActionChipUiState.PopupChip
+            val chip = assertIs<QuickActionChipUiState.LaunchChip>(underTest.chip)
+            val content = assertIs<ChipContent.IconOnly>(chip.chipContent)
+            val loadedIcon = assertIs<Icon.Loaded>(content.icon)
 
-            assertThat(chip.icons).hasSize(1)
-            assertThat(chip.icons[0].icon).isInstanceOf(Icon.Loaded::class.java)
-            val loadedIcon = chip.icons[0].icon as Icon.Loaded
             assertThat(loadedIcon.resId).isEqualTo(subtypeIcon.resId)
             assertThat(loadedIcon.packageName).isEqualTo(subtypeIcon.packageName)
-            assertThat(chip.chipContent).isNull()
             assertThat(chip.contentDescription)
                 .isEqualTo(
                     ContentDescription.Resource(
@@ -142,10 +139,10 @@ class ImeIndicatorChipViewModelTest : SysuiTestCase() {
                 listOf(subtype, InputMethodModel.Subtype(subtypeId = 1, isAuxiliary = false))
             fakeInputMethodRepository.setSelectedInputMethodSubtypeId(subtype.subtypeId)
 
-            val chip = underTest.chip as QuickActionChipUiState.PopupChip
+            val chip = assertIs<QuickActionChipUiState.LaunchChip>(underTest.chip)
+            val content = assertIs<ChipContent.Text>(chip.chipContent)
 
-            assertThat(chip.icons).isEmpty()
-            assertThat((chip.chipContent as ChipContent.Text).text).isEqualTo("EN")
+            assertThat(content.text).isEqualTo("EN")
         }
 
     @Test
@@ -163,10 +160,10 @@ class ImeIndicatorChipViewModelTest : SysuiTestCase() {
                 listOf(subtype, InputMethodModel.Subtype(subtypeId = 1, isAuxiliary = false))
             fakeInputMethodRepository.setSelectedInputMethodSubtypeId(subtype.subtypeId)
 
-            val chip = underTest.chip as QuickActionChipUiState.PopupChip
+            val chip = assertIs<QuickActionChipUiState.LaunchChip>(underTest.chip)
+            val content = assertIs<ChipContent.IconOnly>(chip.chipContent)
 
-            assertThat(chip.icons).hasSize(1)
-            assertThat(chip.icons[0].icon)
+            assertThat(content.icon)
                 .isEqualTo(
                     Icon.Resource(
                         R.drawable.ic_keyboard,
@@ -187,10 +184,10 @@ class ImeIndicatorChipViewModelTest : SysuiTestCase() {
                     InputMethodModel.Subtype(subtypeId = 2, isAuxiliary = false),
                 )
 
-            val chip = underTest.chip as QuickActionChipUiState.PopupChip
+            val chip = assertIs<QuickActionChipUiState.LaunchChip>(underTest.chip)
+            val content = assertIs<ChipContent.IconOnly>(chip.chipContent)
 
-            assertThat(chip.icons).hasSize(1)
-            assertThat(chip.icons[0].icon)
+            assertThat(content.icon)
                 .isEqualTo(
                     Icon.Resource(
                         R.drawable.ic_keyboard,
@@ -203,18 +200,16 @@ class ImeIndicatorChipViewModelTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_STATUS_BAR_IME_CHIP)
-    fun chip_showPopup_callsShowInputMethodPicker() =
+    fun chip_onClick_callsShowInputMethodPicker() =
         kosmos.runTest {
             fakeInputMethodRepository.selectedInputMethodSubtypes =
                 listOf(
                     InputMethodModel.Subtype(subtypeId = 1, isAuxiliary = false),
                     InputMethodModel.Subtype(subtypeId = 2, isAuxiliary = false),
                 )
-            val chip = underTest.chip
-            assertThat(chip).isInstanceOf(QuickActionChipUiState.PopupChip::class.java)
-            val shownChip = chip as QuickActionChipUiState.PopupChip
+            val chip = assertIs<QuickActionChipUiState.LaunchChip>(underTest.chip)
 
-            shownChip.showPopup(context)
+            chip.onClick(context)
             testScope.runCurrent()
 
             assertThat(fakeInputMethodRepository.inputMethodPickerShownDisplayId)

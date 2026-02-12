@@ -182,7 +182,7 @@ fun QuickActionChip(
                                 ),
                     )
                 }
-                is ChipContent.SideIcon -> {
+                is ChipContent.IconOnly -> {
                     Icon(
                         icon = chipContent.icon,
                         modifier = Modifier.size(13.3.dp).clickable { onClick() },

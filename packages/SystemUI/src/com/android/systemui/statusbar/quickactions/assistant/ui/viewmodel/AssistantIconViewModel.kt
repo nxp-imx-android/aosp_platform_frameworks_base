@@ -26,6 +26,7 @@ import com.android.systemui.res.R
 import com.android.systemui.statusbar.quickactions.assistant.domain.interactor.AssistantIconInteractor
 import com.android.systemui.statusbar.quickactions.assistant.shared.model.AssistantIconSharedModel
 import com.android.systemui.statusbar.quickactions.popups.ui.viewmodel.StatusBarPopupChipViewModel
+import com.android.systemui.statusbar.quickactions.ui.viewmodel.ChipContent
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipId
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
 import dagger.assisted.AssistedFactory
@@ -71,7 +72,10 @@ fun AssistantIconSharedModel.toLaunchChipModel(
 
         QuickActionChipUiState.LaunchChip(
             chipId = QuickActionChipId.AssistantIcon,
-            icon = Icon.Resource(resId = R.drawable.ic_assistant_icon, contentDescription = null),
+            chipContent =
+                ChipContent.IconOnly(
+                    Icon.Resource(resId = R.drawable.ic_assistant_icon, contentDescription = null)
+                ),
             onClick = startAssistant,
             contentDescription =
                 ContentDescription.Resource(R.string.accessibility_status_bar_assistant_icon),

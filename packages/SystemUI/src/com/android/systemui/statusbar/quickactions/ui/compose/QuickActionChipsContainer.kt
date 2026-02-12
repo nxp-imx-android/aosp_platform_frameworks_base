@@ -22,12 +22,18 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.PlatformTextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.LineHeightStyle
+import androidx.compose.ui.unit.sp
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.ui.compose.load
 import com.android.systemui.compose.modifiers.sysuiResTag
@@ -37,6 +43,7 @@ import com.android.systemui.shade.ui.composable.ShadeHighlightChip
 import com.android.systemui.statusbar.pipeline.shared.ui.composable.DesktopStatusBar
 import com.android.systemui.statusbar.pipeline.shared.ui.composable.WithAdaptiveTint
 import com.android.systemui.statusbar.quickactions.popups.ui.compose.StatusBarPopup
+import com.android.systemui.statusbar.quickactions.ui.viewmodel.ChipContent
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
 import com.android.systemui.statusbar.shared.ui.compose.StatusBarIcon
 
@@ -108,11 +115,30 @@ private fun Launch(chip: QuickActionChipUiState.LaunchChip, isDarkProvider: (Rec
             includePadding = false,
             isClickable = true,
         ) {
-            StatusBarIcon(
-                icon = chip.icon,
-                tint = tint,
-                modifier = Modifier.align(Alignment.CenterVertically),
-            )
+            when (chip.chipContent) {
+                is ChipContent.IconOnly ->
+                    StatusBarIcon(
+                        icon = chip.chipContent.icon,
+                        tint = tint,
+                        modifier = Modifier.align(Alignment.CenterVertically),
+                    )
+                is ChipContent.Text ->
+                    Text(
+                        text = chip.chipContent.text,
+                        color = tint,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 13.sp,
+                        style =
+                            LocalTextStyle.current.copy(
+                                platformStyle = PlatformTextStyle(includeFontPadding = false),
+                                lineHeightStyle =
+                                    LineHeightStyle(
+                                        alignment = LineHeightStyle.Alignment.Center,
+                                        trim = LineHeightStyle.Trim.Both,
+                                    ),
+                            ),
+                    )
+            }
         }
     }
 }

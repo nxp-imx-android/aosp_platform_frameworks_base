@@ -30,6 +30,7 @@ import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.quickactions.assistant.domain.interactor.fakeAssistantIconInteractor
 import com.android.systemui.statusbar.quickactions.assistant.shared.model.AssistantIconSharedModel
+import com.android.systemui.statusbar.quickactions.ui.viewmodel.ChipContent
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipId
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
 import com.android.systemui.testKosmosNew
@@ -115,5 +116,6 @@ private fun QuickActionChipUiState.assertIsShown(): QuickActionChipUiState.Launc
 }
 
 private fun QuickActionChipUiState.LaunchChip.verifyIcon(res: Int) {
-    assertThat(this.icon).isEqualTo(Icon.Resource(resId = res, contentDescription = null))
+    assertThat(this.chipContent)
+        .isEqualTo(ChipContent.IconOnly(Icon.Resource(resId = res, contentDescription = null)))
 }
