@@ -358,4 +358,9 @@ cc_library {
         // The polyglot approach relies on multi-line // comments
         "-Wno-comment",
     ],
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.media",
+    ],
+    min_sdk_version: "29",
 }
