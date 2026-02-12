@@ -579,7 +579,6 @@ package android.app.admin {
     method @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS) public void calculateHasIncompatibleAccounts();
     method @FlaggedApi("android.app.admin.flags.multi_user_management_device_provisioning") @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS) public void clearMultiuserDeviceManagement(@NonNull String);
     method @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS) public void clearOrganizationId();
-    method public void clearPolicy(@NonNull String, int);
     method @RequiresPermission(android.Manifest.permission.CLEAR_FREEZE_PERIOD) public void clearSystemUpdatePolicyFreezePeriodRecord();
     method @RequiresPermission(android.Manifest.permission.FORCE_DEVICE_POLICY_MANAGER_LOGS) public long forceNetworkLogs();
     method @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS) public void forceRemoveActiveAdmin(@NonNull android.content.ComponentName, int);
@@ -591,15 +590,12 @@ package android.app.admin {
     method @Nullable public String getDevicePolicyManagementRoleHolderUpdaterPackage();
     method @NonNull public java.util.Set<java.lang.String> getDisallowedSystemApps(@NonNull android.content.ComponentName, int, @NonNull String);
     method @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS) public int getHeadlessDeviceOwnerMode();
-    method public int getIntegerPolicy(@NonNull String, int);
-    method public int getIntegerResolvedPerUserPolicy(@NonNull String);
     method public long getLastBugReportRequestTime();
     method public long getLastNetworkLogRetrievalTime();
     method public long getLastSecurityLogRetrievalTime();
     method public java.util.List<java.lang.String> getOwnerInstalledCaCerts(@NonNull android.os.UserHandle);
     method @NonNull @RequiresPermission(android.Manifest.permission.MANAGE_DEVICE_ADMINS) public java.util.Set<java.lang.String> getPolicyExemptApps();
     method @RequiresPermission("android.permission.MANAGE_DEVICE_POLICY_STORAGE_LIMIT") public int getPolicySizeForAdmin(@NonNull android.app.admin.EnforcingAdmin);
-    method @Nullable public String getStringPolicy(@NonNull String, int);
     method public boolean isCurrentInputMethodSetByOwner();
     method public boolean isFactoryResetProtectionPolicySupported();
     method @RequiresPermission(anyOf={android.Manifest.permission.MANAGE_USERS, android.Manifest.permission.INTERACT_ACROSS_USERS}) public boolean isNewUserDisclaimerAcknowledged();
@@ -610,14 +606,11 @@ package android.app.admin {
     method @RequiresPermission(android.Manifest.permission.MANAGE_ROLE_HOLDERS) public void resetShouldAllowBypassingDevicePolicyManagementRoleQualificationState();
     method @RequiresPermission(allOf={android.Manifest.permission.MANAGE_DEVICE_ADMINS, android.Manifest.permission.INTERACT_ACROSS_USERS_FULL}) public void setActiveAdmin(@NonNull android.content.ComponentName, boolean, int);
     method @FlaggedApi("android.app.admin.flags.provisioning_context_parameter") @RequiresPermission(allOf={android.Manifest.permission.MANAGE_DEVICE_ADMINS, android.Manifest.permission.INTERACT_ACROSS_USERS_FULL}) public void setActiveAdmin(@NonNull android.content.ComponentName, boolean, int, @Nullable String);
-    method public void setBooleanPolicy(@NonNull String, int, boolean);
     method @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS) public boolean setDeviceOwner(@NonNull android.content.ComponentName, int);
     method @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS) public boolean setDeviceOwnerOnly(@NonNull android.content.ComponentName, int);
     method public void setDeviceOwnerType(@NonNull android.content.ComponentName, int);
-    method public void setIntegerPolicy(@NonNull String, int, int);
     method @RequiresPermission(android.Manifest.permission.MANAGE_DEVICE_ADMINS) public void setNextOperationSafety(int, int);
     method @RequiresPermission(anyOf={android.Manifest.permission.MARK_DEVICE_ORGANIZATION_OWNED, android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS}, conditional=true) public void setProfileOwnerOnOrganizationOwnedDevice(@NonNull android.content.ComponentName, boolean);
-    method public void setStringPolicy(@NonNull String, int, @Nullable String);
     method @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS) public boolean triggerDevicePolicyEngineMigration(boolean);
     field public static final String ACTION_DATA_SHARING_RESTRICTION_APPLIED = "android.app.action.DATA_SHARING_RESTRICTION_APPLIED";
     field public static final String ACTION_DEVICE_POLICY_CONSTANTS_CHANGED = "android.app.action.DEVICE_POLICY_CONSTANTS_CHANGED";
