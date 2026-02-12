@@ -221,13 +221,6 @@ public class ProcessStateController {
     }
 
     /**
-     * Sets the number of frozen processes.
-     */
-    public void setFrozenProcessCount(int count) {
-        mGlobalState.mFrozenProcessCount = count;
-    }
-
-    /**
      * Start a batch session for specifically service state changes. ProcessStateController updates
      * will not be triggered until until the returned SyncBatchSession is closed.
      */
@@ -412,7 +405,6 @@ public class ProcessStateController {
         private static final int NONE_DEBUG_UID = -1;
         private volatile int mDebugUid = NONE_DEBUG_UID;
         private volatile long mLastUserUnlockingUptime = 0;
-        private volatile int mFrozenProcessCount = 0;
 
         private void commitStagedState() {
             mUnlocking = mUnlockingStaged;
@@ -474,10 +466,6 @@ public class ProcessStateController {
 
         public long getLastUserUnlockingUptime() {
             return mLastUserUnlockingUptime;
-        }
-
-        public int getFrozenProcessCount() {
-            return mFrozenProcessCount;
         }
     }
 

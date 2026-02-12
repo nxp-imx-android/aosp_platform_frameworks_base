@@ -48,7 +48,6 @@ import static com.android.internal.app.procstats.ProcessStats.STATE_TOP;
 import android.os.UserHandle;
 import android.service.procstats.ProcessStatsEnums;
 import android.service.procstats.ProcessStatsStateProto;
-import android.text.TextUtils;
 import android.util.TimeUtils;
 import android.util.proto.ProtoOutputStream;
 
@@ -64,7 +63,6 @@ public final class DumpUtils {
     public static final String STATE_LABEL_TOTAL;
     public static final String STATE_LABEL_CACHED;
     public static final String[] STATE_NAMES_CSV;
-    public static final String[] STATE_PERFETTO_TRACK_NAMES;
     static final String[] STATE_TAGS;
     static final int[] STATE_PROTO_ENUMS;
     private static final int[] PROCESS_STATS_STATE_TO_AGGREGATED_STATE;
@@ -165,13 +163,6 @@ public final class DumpUtils {
         STATE_PROTO_ENUMS[STATE_LAST_ACTIVITY] = ProcessStatsEnums.PROCESS_STATE_LAST_ACTIVITY;
         STATE_PROTO_ENUMS[STATE_CACHED] = ProcessStatsEnums.PROCESS_STATE_CACHED_ACTIVITY;
         STATE_PROTO_ENUMS[STATE_FROZEN] = ProcessStatsEnums.PROCESS_STATE_FROZEN;
-
-        STATE_PERFETTO_TRACK_NAMES = new String[STATE_COUNT];
-        // This forces the tracks to be consistently ordered by state names in the perfetto UI.
-        for (int i = 0; i < STATE_COUNT; i++) {
-            STATE_PERFETTO_TRACK_NAMES[i] =
-                    TextUtils.formatSimple("proc_state: %d (%s)", i, STATE_NAMES[i]);
-        }
 
         // Remap states, as defined by ProcessStats.java, to a reduced subset of states for data
         // aggregation / size reduction purposes.

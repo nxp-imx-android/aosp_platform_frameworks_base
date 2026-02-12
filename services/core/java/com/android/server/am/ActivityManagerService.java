@@ -20365,11 +20365,6 @@ public class ActivityManagerService extends IActivityManager.Stub
         public boolean isLastMemoryLevelNormal() {
             return mAppProfiler.isLastMemoryLevelNormal();
         }
-
-        @Override
-        public int getFrozenProcessCount() {
-            return mCachedAppOptimizer.getFrozenProcessCount();
-        }
     }
 
     static void setProcessGroup(int pid, int group, String processName) {

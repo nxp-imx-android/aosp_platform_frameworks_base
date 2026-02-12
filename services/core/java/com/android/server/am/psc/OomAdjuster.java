@@ -17,11 +17,11 @@
 package com.android.server.am.psc;
 
 import static android.app.ActivityManager.PROCESS_CAPABILITY_ALL;
+import static android.app.ActivityManager.PROCESS_CAPABILITY_INSTRUMENTATION_DEFAULTS;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_BFSL;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_CPU_TIME;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_IMPLICIT_CPU_TIME;
-import static android.app.ActivityManager.PROCESS_CAPABILITY_INSTRUMENTATION_DEFAULTS;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_NONE;
 import static android.app.ActivityManager.PROCESS_STATE_BOUND_FOREGROUND_SERVICE;
 import static android.app.ActivityManager.PROCESS_STATE_BOUND_TOP;
@@ -62,8 +62,6 @@ import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_SYSTEM_INIT;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_UID_IDLE;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_UI_VISIBILITY;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_UNBIND_SERVICE;
-// TODO(b/475548318): Use PerfettoCategories from com.android.internal.dev.perfetto.sdk
-import static android.os.PerfettoTrace.PROC_STATE_CATEGORY;
 import static android.os.Process.THREAD_GROUP_BACKGROUND;
 import static android.os.Process.THREAD_GROUP_DEFAULT;
 import static android.os.Process.THREAD_GROUP_FOREGROUND_WINDOW;
@@ -72,10 +70,6 @@ import static android.os.Process.THREAD_GROUP_TOP_APP;
 import static android.os.Process.THREAD_PRIORITY_DISPLAY;
 import static android.os.Process.THREAD_PRIORITY_TOP_APP_BOOST;
 
-import static com.android.internal.app.procstats.DumpUtils.STATE_PERFETTO_TRACK_NAMES;
-import static com.android.internal.app.procstats.ProcessState.PROCESS_STATE_TO_STATE;
-import static com.android.internal.app.procstats.ProcessStats.STATE_COUNT;
-import static com.android.internal.app.procstats.ProcessStats.STATE_FROZEN;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_ALL;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_LRU;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_OOM_ADJ;
@@ -139,7 +133,6 @@ import android.util.proto.ProtoOutputStream;
 import com.android.internal.annotations.CompositeRWLock;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.internal.dev.perfetto.sdk.PerfettoTrace;
 import com.android.server.ServiceThread;
 import com.android.server.am.ActivityManagerServiceDumpProcessesProto;
 import com.android.server.am.EventLogTags;
@@ -280,8 +273,6 @@ public abstract class OomAdjuster {
             default -> "unknown";
         };
     }
-
-    private final int[] mProcessCountsByState = new int[STATE_COUNT];
 
     private final Handler mUpdateHandler;
 
@@ -521,8 +512,6 @@ public abstract class OomAdjuster {
         boolean isBackupProcess(ProcessRecordInternal app);
         /** Checks if the last reported memory pressure level was normal. */
         boolean isLastMemoryLevelNormal();
-        /** Returns the number of frozen processes. */
-        int getFrozenProcessCount();
     }
 
     /**
@@ -731,9 +720,6 @@ public abstract class OomAdjuster {
 
         /** Returns the uptime timestamp when any user most recently started unlocking. */
         long getLastUserUnlockingUptime();
-
-        /** Returns the number of frozen processes. */
-        int getFrozenProcessCount();
     }
 
     /**
@@ -1340,10 +1326,6 @@ public abstract class OomAdjuster {
                 ? mCallback.getFreeSwapPercent() : 1.00;
         ProcessRecordInternal lruCachedApp = null;
 
-        for (int i = 0; i < STATE_COUNT; i++) {
-            mProcessCountsByState[i] = 0;
-        }
-
         for (int i = numLru - 1; i >= 0; i--) {
             final ProcessRecordInternal app = lruList.get(i);
             if (!app.isKilledByAm() && app.isProcessRunning()) {
@@ -1352,14 +1334,6 @@ public abstract class OomAdjuster {
                     if (app.getCompletedAdjSeq() == mAdjSeq) {
                         applyResultsLSP(app, doingAll, now, nowElapsed, oomAdjReason, true);
                     }
-                }
-                int state = app.getCurProcState();
-                // PROCESS_STATE_TO_STATE mapping does not include PROCESS_STATE_NONEXISTENT.
-                // state < PROCESS_STATE_TO_STATE.length excludes PROCESS_STATE_NONEXISTENT.
-                if (state >= 0 && state < PROCESS_STATE_TO_STATE.length) {
-                    int transformedState = PROCESS_STATE_TO_STATE[state];
-                    mProcessCountsByState[transformedState] =
-                            (mProcessCountsByState[transformedState]) + 1;
                 }
 
                 if (app.isPendingFinishAttach()) {
@@ -1470,32 +1444,6 @@ public abstract class OomAdjuster {
                 if (!app.isKilledByAm() && app.isProcessRunning()
                         && app.getCompletedAdjSeq() == mAdjSeq) {
                     applyResultsLSP(app, doingAll, now, nowElapsed, oomAdjReason, true);
-                }
-            }
-        }
-
-        if (PROC_STATE_CATEGORY != null && PROC_STATE_CATEGORY.isEnabled()) {
-            for (int i = 0; i < STATE_COUNT; i++) {
-                try {
-                    int count;
-                    if (i == STATE_FROZEN) {
-                        if (Flags.pushGlobalStateToOomadjuster()) {
-                            count = mGlobalState != null ? mGlobalState.getFrozenProcessCount() : 0;
-                        } else {
-                            count = mStateGetter != null ? mStateGetter.getFrozenProcessCount() : 0;
-                        }
-                    } else {
-                        count = mProcessCountsByState[i];
-                    }
-
-                    final String trackName = STATE_PERFETTO_TRACK_NAMES[i];
-                    if (trackName != null) {
-                        PerfettoTrace.counter(PROC_STATE_CATEGORY, count)
-                                .usingProcessCounterTrack(trackName)
-                                .emit();
-                    }
-                } catch (Exception e) {
-                    Slog.e(TAG, "Failed to emit Perfetto proc state counter for state " + i, e);
                 }
             }
         }
