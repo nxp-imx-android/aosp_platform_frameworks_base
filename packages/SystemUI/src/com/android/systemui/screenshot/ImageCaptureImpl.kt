@@ -51,7 +51,13 @@ constructor(
     override suspend fun captureTask(taskId: Int): Bitmap? {
         val snapshot =
             withContext(bgContext) {
-                TaskSnapshotManager.getInstance().takeTaskSnapshot(taskId, false /* updateCache */)
+                TaskSnapshotManager.getInstance()
+                    .takeTaskSnapshot(
+                        taskId,
+                        false /* updateCache */,
+                        false /* lowResolution */,
+                        true, /* includeDecors */
+                    )
             } ?: return null
         return snapshot.wrapToBitmap()
     }
