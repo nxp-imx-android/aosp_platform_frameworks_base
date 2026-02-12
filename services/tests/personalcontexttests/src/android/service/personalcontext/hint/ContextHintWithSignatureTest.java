@@ -21,6 +21,8 @@ import static com.google.common.truth.Truth.assertThat;
 import android.content.ComponentName;
 import android.os.Parcel;
 import android.service.personalcontext.RenderToken;
+import android.text.TextUtils;
+import android.util.ArraySet;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
@@ -29,7 +31,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.security.GeneralSecurityException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.crypto.spec.SecretKeySpec;
@@ -37,6 +41,27 @@ import javax.crypto.spec.SecretKeySpec;
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 public class ContextHintWithSignatureTest {
+    private static void checkPresence(ContextHintWithSignature signedHint,
+            List<ContextHint> hints) {
+        final ArraySet<ContextHint> remainingHints = new ArraySet<>(hints);
+        final HashSet<ContextHintWithSignature> attributionHints =
+                new HashSet<>(signedHint.getAttributionHints());
+
+        assertThat(remainingHints.size()).isEqualTo(attributionHints.size());
+        for (ContextHintWithSignature targetHint : attributionHints) {
+            assertThat(targetHint.getOriginatingPackage()).isNull();
+            final ContextHint targetContextHint = targetHint.getContextHint();
+            TextUtils.isEmpty(targetHint.getOriginatingPackage());
+            final Optional<ContextHint> foundHint = remainingHints.stream().filter(hint ->
+                            targetContextHint.getHintId().equals(hint.getHintId()))
+                    .findFirst();
+
+            foundHint.ifPresent(remainingHints::remove);
+        }
+
+        assertThat(remainingHints).isEmpty();
+    }
+
     @Test
     public void testParcelAndUnparcel() throws GeneralSecurityException {
         final SecretKeySpec key = ContextHintTestUtils.generateSignedHintKey();
@@ -78,13 +103,8 @@ public class ContextHintWithSignatureTest {
         assertThat(signedHint.getContextHint().getHintId()).isEqualTo(hint.getHintId());
         assertThat(signedHint.getRenderTokens()).containsExactly(renderToken1, renderToken2);
         assertThat(signedHint.getOriginatingPackage()).isEqualTo(origin.getPackageName());
-        assertThat(signedHint.getAttributionHints().size()).isEqualTo(2);
-        assertThat(signedHint.getAttributionHints().get(0).getOriginatingPackage()).isNull();
-        assertThat(signedHint.getAttributionHints().get(0).getContextHint().getHintId())
-                .isEqualTo(attributedHint1.getHintId());
-        assertThat(signedHint.getAttributionHints().get(1).getOriginatingPackage()).isNull();
-        assertThat(signedHint.getAttributionHints().get(1).getContextHint().getHintId())
-                .isEqualTo(attributedHint2.getHintId());
+
+        checkPresence(signedHint, List.of(attributedHint1, attributedHint2));
     }
 
     @Test
@@ -125,13 +145,8 @@ public class ContextHintWithSignatureTest {
         assertThat(signedHint.getContextHint().getHintId()).isEqualTo(hint.getHintId());
         assertThat(signedHint.getRenderTokens()).containsExactly(renderToken);
         assertThat(signedHint.getOriginatingPackage()).isNull();
-        assertThat(signedHint.getAttributionHints().size()).isEqualTo(2);
-        assertThat(signedHint.getAttributionHints().get(0).getOriginatingPackage()).isNull();
-        assertThat(signedHint.getAttributionHints().get(0).getContextHint().getHintId())
-                .isEqualTo(attributedHint1.getHintId());
-        assertThat(signedHint.getAttributionHints().get(1).getOriginatingPackage()).isNull();
-        assertThat(signedHint.getAttributionHints().get(1).getContextHint().getHintId())
-                .isEqualTo(attributedHint2.getHintId());
+
+        checkPresence(signedHint, List.of(attributedHint1, attributedHint2));
     }
 
     @Test
@@ -167,11 +182,8 @@ public class ContextHintWithSignatureTest {
         assertThat(signedHint.getContextHint().getHintId()).isEqualTo(hint.getHintId());
         assertThat(signedHint.getRenderTokens()).isEmpty();
         assertThat(signedHint.getOriginatingPackage()).isEqualTo(origin.getPackageName());
-        assertThat(signedHint.getAttributionHints().size()).isEqualTo(2);
-        assertThat(signedHint.getAttributionHints().get(0).getContextHint().getHintId())
-                .isEqualTo(attributedHint1.getHintId());
-        assertThat(signedHint.getAttributionHints().get(1).getContextHint().getHintId())
-                .isEqualTo(attributedHint2.getHintId());
+
+        checkPresence(signedHint, List.of(attributedHint1, attributedHint2));
     }
 
     @Test
