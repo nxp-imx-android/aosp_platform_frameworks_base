@@ -16,9 +16,11 @@
 package com.android.systemui.lowlight
 
 import android.content.res.mockResources
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags.FLAG_LOW_LIGHT_SENSOR_WHILE_SCREEN_ON
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.display.domain.interactor.displayStateInteractor
@@ -180,9 +182,10 @@ class LowLightBehaviorCoreStartableTest() : SysuiTestCase() {
         }
 
     @Test
+    @DisableFlags(FLAG_LOW_LIGHT_SENSOR_WHILE_SCREEN_ON)
     fun testDreamDebounce() =
         kosmos.runTest {
-            kosmos.fakeKeyguardRepository.setKeyguardShowing(false)
+            fakeKeyguardRepository.setKeyguardShowing(false)
             setUserUnlocked(true)
             setDreamEnabled(true)
             setAllowLowLightWhenLocked(true)
@@ -196,6 +199,47 @@ class LowLightBehaviorCoreStartableTest() : SysuiTestCase() {
             setDreaming(false)
             assertThat(action.cancellationCount).isEqualTo(0)
             debounce()
+            assertThat(action.cancellationCount).isEqualTo(1)
+        }
+
+    @Test
+    @EnableFlags(FLAG_LOW_LIGHT_SENSOR_WHILE_SCREEN_ON)
+    fun testLowLightDreamStart_dreamSettingsDisabled() =
+        testLowLightDream_activationConditionNotMet({ setDreamEnabled(false) })
+
+    @Test
+    @EnableFlags(FLAG_LOW_LIGHT_SENSOR_WHILE_SCREEN_ON)
+    fun testLowLightDream_notPluggedIn() =
+        testLowLightDream_activationConditionNotMet({ setBatteryPluggedIn(false) })
+
+    @Test
+    @EnableFlags(FLAG_LOW_LIGHT_SENSOR_WHILE_SCREEN_ON)
+    fun testLowLightDream_screenOff() =
+        testLowLightDream_activationConditionNotMet({ setDisplayOn(false) })
+
+    @Test
+    @EnableFlags(FLAG_LOW_LIGHT_SENSOR_WHILE_SCREEN_ON)
+    fun testLowLightDream_deviceDozing() =
+        testLowLightDream_activationConditionNotMet({
+            fakeKeyguardRepository.setDozeTransitionModel(
+                DozeTransitionModel(from = DozeStateModel.UNINITIALIZED, to = DozeStateModel.DOZE)
+            )
+        })
+
+    @Test
+    @EnableFlags(FLAG_LOW_LIGHT_SENSOR_WHILE_SCREEN_ON)
+    fun testLowLightDreamStart_conditionsActivated() =
+        kosmos.runTest {
+            fakeKeyguardRepository.setKeyguardShowing(false)
+            setUserUnlocked(true)
+            setDreamEnabled(true)
+            setAllowLowLightWhenLocked(true)
+            setDisplayOn(true)
+            setLowLightFromSensor(true)
+            start()
+            setDreaming(true)
+            assertThat(action.activationCount).isEqualTo(1)
+            setLowLightFromSensor(false)
             assertThat(action.cancellationCount).isEqualTo(1)
         }
 
@@ -308,6 +352,25 @@ class LowLightBehaviorCoreStartableTest() : SysuiTestCase() {
 
             start()
             assertThat(ambientLightModeMonitor.fake.started).isFalse()
+        }
+
+    private fun testLowLightDream_activationConditionNotMet(
+        conditionTestCase: Kosmos.() -> Unit
+    ) =
+        kosmos.runTest {
+            fakeKeyguardRepository.setKeyguardShowing(false)
+            setUserUnlocked(true)
+            setDreamEnabled(true)
+            setAllowLowLightWhenLocked(true)
+            setDisplayOn(true)
+            setLowLightFromSensor(true)
+
+            // Apply the specific condition for this test case.
+            conditionTestCase(this)
+
+            start()
+            setDreaming(true)
+            assertThat(action.activationCount).isEqualTo(0)
         }
 
     private fun Kosmos.setLowLightFromSensor(lowlight: Boolean) {

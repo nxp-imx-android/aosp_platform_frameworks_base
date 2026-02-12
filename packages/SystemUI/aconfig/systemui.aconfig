@@ -1005,6 +1005,16 @@ flag {
 }
 
 flag {
+  name: "low_light_sensor_while_screen_on"
+  namespace: "systemui"
+  description: "Enables low light sensor listener while screen is on and not dreaming"
+  bug: "467654358"
+  metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
   name: "media_controls_button_media3"
   namespace: "systemui"
   description: "Enable media action buttons updates using media3"
