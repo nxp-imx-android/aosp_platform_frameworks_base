@@ -50,9 +50,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.ServiceInfo;
 import android.hardware.display.AmbientDisplayConfiguration;
 import android.hardware.health.BatteryChargingState;
 import android.os.BatteryManager;
@@ -127,6 +125,8 @@ public class DreamManagerServiceTest {
     @Mock private PowerManager.WakeLock mWakeLockMock;
     @Mock
     private AmbientDisplayConfiguration mDozeConfigMock;
+    @Mock
+    private DreamValidator mDreamValidatorMock;
 
     @Rule
     public LocalServiceKeeperRule mLocalServiceKeeperRule = new LocalServiceKeeperRule();
@@ -204,6 +204,7 @@ public class DreamManagerServiceTest {
                         mTestHandler,
                         mDreamControllerMock,
                         mDozeConfigMock,
+                        mDreamValidatorMock,
                         mCurrentUser.getIdentifier()));
     }
 
@@ -268,8 +269,12 @@ public class DreamManagerServiceTest {
     public void testCanStartDreaming_charging() throws PackageManager.NameNotFoundException {
         enableDreaming();
         setupDreamPreconditions();
-        setupDreamComponent(Settings.Secure.SCREENSAVER_DEFAULT_COMPONENT,
-                new ComponentName("a", "b"), true);
+        final ComponentName dream = new ComponentName("a", "b");
+        Settings.Secure.putStringForUser(mContextSpy.getContentResolver(),
+                Settings.Secure.SCREENSAVER_DEFAULT_COMPONENT,
+                dream.flattenToString(),
+                UserHandle.USER_CURRENT);
+        when(mDreamValidatorMock.validate(eq(dream), anyInt())).thenReturn(true);
 
 
         // Initialize service so settings are read.
@@ -335,11 +340,9 @@ public class DreamManagerServiceTest {
                 Settings.Secure.SCREENSAVER_ACTIVATE_ON_SLEEP, 1, UserHandle.USER_CURRENT);
 
         // Set up preconditions.
-        ServiceInfo dozeServiceInfo = new ServiceInfo();
-        dozeServiceInfo.applicationInfo = new ApplicationInfo();
         when(mUserManagerMock.isUserUnlocked(anyInt())).thenReturn(true);
         when(mDozeConfigMock.enabled(anyInt())).thenReturn(true);
-        when(mPackageManagerMock.getServiceInfo(any(), anyInt())).thenReturn(dozeServiceInfo);
+        when(mDreamValidatorMock.validate(any(), anyInt())).thenReturn(true);
 
         // Device is charging.
         when(mBatteryManagerInternal.isPowered(anyInt())).thenReturn(true);
@@ -561,11 +564,19 @@ public class DreamManagerServiceTest {
 
         final ComponentName nonExistentDream =
                 ComponentName.unflattenFromString("fake.package/.FakeDream");
-        setupDreamComponent(Settings.Secure.SCREENSAVER_COMPONENTS, nonExistentDream, false);
+        Settings.Secure.putStringForUser(mContextSpy.getContentResolver(),
+                Settings.Secure.SCREENSAVER_COMPONENTS,
+                nonExistentDream.flattenToString(),
+                UserHandle.USER_CURRENT);
+        when(mDreamValidatorMock.validate(eq(nonExistentDream), anyInt())).thenReturn(false);
 
         final ComponentName defaultDream =
                 ComponentName.unflattenFromString("default.package/.DefaultDream");
-        setupDreamComponent(Settings.Secure.SCREENSAVER_DEFAULT_COMPONENT, defaultDream, true);
+        Settings.Secure.putStringForUser(mContextSpy.getContentResolver(),
+                Settings.Secure.SCREENSAVER_DEFAULT_COMPONENT,
+                defaultDream.flattenToString(),
+                UserHandle.USER_CURRENT);
+        when(mDreamValidatorMock.validate(eq(defaultDream), anyInt())).thenReturn(true);
 
         // Initialize service and trigger dream.
         final DreamManagerService service = createService();
@@ -600,7 +611,11 @@ public class DreamManagerServiceTest {
 
         // Set up a user-configured dream to verify fallback.
         final ComponentName userDream = new ComponentName("user", "dream");
-        setupDreamComponent(Settings.Secure.SCREENSAVER_COMPONENTS, userDream, true);
+        Settings.Secure.putStringForUser(mContextSpy.getContentResolver(),
+                Settings.Secure.SCREENSAVER_COMPONENTS,
+                userDream.flattenToString(),
+                UserHandle.USER_CURRENT);
+        when(mDreamValidatorMock.validate(eq(userDream), anyInt())).thenReturn(true);
 
         final DreamManagerService service = createService();
         service.onBootPhase(SystemService.PHASE_THIRD_PARTY_APPS_CAN_START);
@@ -656,12 +671,19 @@ public class DreamManagerServiceTest {
 
         final ComponentName nonExistentDream =
                 ComponentName.unflattenFromString("fake.package/.FakeDream");
-        setupDreamComponent(Settings.Secure.SCREENSAVER_COMPONENTS, nonExistentDream, false);
+        Settings.Secure.putStringForUser(mContextSpy.getContentResolver(),
+                Settings.Secure.SCREENSAVER_COMPONENTS,
+                nonExistentDream.flattenToString(),
+                UserHandle.USER_CURRENT);
+        when(mDreamValidatorMock.validate(eq(nonExistentDream), anyInt())).thenReturn(false);
 
         final ComponentName nonExistentDefaultDream =
                 ComponentName.unflattenFromString("default.package/.DefaultDream");
-        setupDreamComponent(Settings.Secure.SCREENSAVER_DEFAULT_COMPONENT,
-                nonExistentDefaultDream, false);
+        Settings.Secure.putStringForUser(mContextSpy.getContentResolver(),
+                Settings.Secure.SCREENSAVER_DEFAULT_COMPONENT,
+                nonExistentDefaultDream.flattenToString(),
+                UserHandle.USER_CURRENT);
+        when(mDreamValidatorMock.validate(eq(nonExistentDefaultDream), anyInt())).thenReturn(false);
 
         // Initialize service and trigger dream.
         final DreamManagerService service = createService();
@@ -694,36 +716,22 @@ public class DreamManagerServiceTest {
                 .thenReturn(true);
     }
 
-    private void setupDreamComponent(String settingsKey, ComponentName dream, boolean exists)
-            throws PackageManager.NameNotFoundException {
-        Settings.Secure.putStringForUser(mContextSpy.getContentResolver(),
-                settingsKey,
-                dream.flattenToString(),
-                UserHandle.USER_CURRENT);
-        if (exists) {
-            ServiceInfo serviceInfo = new ServiceInfo();
-            serviceInfo.applicationInfo = new ApplicationInfo();
-            serviceInfo.permission = Manifest.permission.BIND_DREAM_SERVICE;
-            when(mPackageManagerMock.getServiceInfo(eq(dream), anyInt()))
-                    .thenReturn(serviceInfo);
-        } else {
-            when(mPackageManagerMock.getServiceInfo(eq(dream), anyInt())).thenReturn(null);
-        }
-    }
-
     private static final class TestInjector implements DreamManagerService.Injector {
         private final Context mContext;
         private final Handler mHandler;
         private final DreamController mDreamController;
         private final AmbientDisplayConfiguration mDozeConfig;
+        private final DreamValidator mDreamValidator;
         private final int mCurrentUser;
 
         TestInjector(Context context, Handler handler, DreamController dreamController,
-                AmbientDisplayConfiguration dozeConfig, @UserIdInt int currentUser) {
+                AmbientDisplayConfiguration dozeConfig, DreamValidator dreamValidator,
+                @UserIdInt int currentUser) {
             mContext = context;
             mHandler = handler;
             mDreamController = dreamController;
             mDozeConfig = dozeConfig;
+            mDreamValidator = dreamValidator;
             mCurrentUser = currentUser;
         }
 
@@ -745,6 +753,11 @@ public class DreamManagerServiceTest {
         @Override
         public DreamController getDreamController(DreamController.Listener controllerListener) {
             return mDreamController;
+        }
+
+        @Override
+        public DreamValidator getDreamValidator() {
+            return mDreamValidator;
         }
 
         @Override
