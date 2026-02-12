@@ -155,6 +155,9 @@ IRenderPipeline::DrawResult SkiaIpcPipeline::draw(
         return result;
     }
 
+    // Register any pending bitmaps (e.g. created during this frame)
+    oopr::registerPendingBitmaps();
+
     // This should be the size plummed down from ViewRoot instead.
     mIPCRecordingCanvas->storeSize(mWidth, mHeight);
     // draw all layers up front
@@ -178,9 +181,6 @@ IRenderPipeline::DrawResult SkiaIpcPipeline::draw(
         mSyncTransaction = nullptr;
         mTransactionReadyCallback = nullptr;
     }
-
-    // Register any pending bitmaps (e.g. created during this frame)
-    oopr::registerPendingBitmaps();
 
     if (syncTransaction != nullptr) {
         syncTransaction->setRenderCommandBufferFrameId(mSurfaceControl, getFrameNumber());
