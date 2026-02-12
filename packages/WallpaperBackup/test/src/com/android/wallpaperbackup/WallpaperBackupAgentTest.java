@@ -414,7 +414,7 @@ public class WallpaperBackupAgentTest {
 
     @Test
     public void testUpdateWallpaperComponent_immediate_systemAndLock() throws IOException {
-        mWallpaperBackupAgent.mPackageExists = true;
+        mWallpaperBackupAgent.mExistingPackages.add(TEST_WALLPAPER_PACKAGE);
 
         mWallpaperBackupAgent.updateWallpaperComponent(new Pair<>(mWallpaperComponent, null),
                 /* which */ FLAG_LOCK | FLAG_SYSTEM,
@@ -433,7 +433,7 @@ public class WallpaperBackupAgentTest {
     @Test
     public void testUpdateWallpaperComponent_immediate_systemOnly()
             throws IOException {
-        mWallpaperBackupAgent.mPackageExists = true;
+        mWallpaperBackupAgent.mExistingPackages.add(TEST_WALLPAPER_PACKAGE);
 
         mWallpaperBackupAgent.updateWallpaperComponent(new Pair<>(mWallpaperComponent, null),
                 /* which */ FLAG_SYSTEM, /* scheduledPackageRestores */ new HashSet<>());
@@ -451,7 +451,7 @@ public class WallpaperBackupAgentTest {
     @Test
     public void testUpdateWallpaperDescription_immediate_systemAndLock()
             throws IOException {
-        mWallpaperBackupAgent.mPackageExists = true;
+        mWallpaperBackupAgent.mExistingPackages.add(TEST_WALLPAPER_PACKAGE);
 
         mWallpaperBackupAgent.updateWallpaperComponent(
                 new Pair<>(mWallpaperComponent, mWallpaperDescription), /* which */
@@ -469,7 +469,7 @@ public class WallpaperBackupAgentTest {
 
     @Test
     public void testUpdateWallpaperDescription_immediate_systemOnly() throws IOException {
-        mWallpaperBackupAgent.mPackageExists = true;
+        mWallpaperBackupAgent.mExistingPackages.add(TEST_WALLPAPER_PACKAGE);
 
         mWallpaperBackupAgent.updateWallpaperComponent(
                 new Pair<>(mWallpaperComponent, mWallpaperDescription), /* which */ FLAG_SYSTEM,
@@ -1643,6 +1643,107 @@ public class WallpaperBackupAgentTest {
         );
     }
 
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_DELAYED_RESTORE_API)
+    public void testOnDelayedFullRestore_notInRestore_deletesStageFiles() throws Exception {
+        mWallpaperBackupAgent.mIsDeviceInRestore = false;
+        when(mBackupManager.getDelayedRestoreLogger()).thenReturn(new BackupRestoreEventLogger(
+                BackupAnnotations.OperationType.RESTORE));
+        mockRestoredLiveWallpaperFileWithComponents(mWallpaperComponent, null);
+        mockStagedWallpaperFile(LOCK_WALLPAPER_STAGE);
+
+        DelayedRestoreRequest request = new DelayedRestoreRequest.Builder(
+                DelayedRestoreRequest.TYPE_APP_INSTALL)
+                .setPackageName(TEST_WALLPAPER_PACKAGE)
+                .build();
+
+        mWallpaperBackupAgent.onDelayedFullRestore(request);
+
+        assertThat(new File(mContext.getFilesDir(), WALLPAPER_INFO_STAGE).exists()).isFalse();
+        assertThat(new File(mContext.getFilesDir(), LOCK_WALLPAPER_STAGE).exists()).isFalse();
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_DELAYED_RESTORE_API)
+    public void testOnDelayedFullRestore_inRestore_allPackagesInstalled_deletesStageFiles()
+            throws Exception {
+        mWallpaperBackupAgent.mIsDeviceInRestore = true;
+        when(mBackupManager.getDelayedRestoreLogger()).thenReturn(new BackupRestoreEventLogger(
+                BackupAnnotations.OperationType.RESTORE));
+        mWallpaperBackupAgent.mExistingPackages.add(TEST_WALLPAPER_PACKAGE);
+        mockRestoredLiveWallpaperFileWithComponents(mWallpaperComponent, null);
+        mockStagedWallpaperFile(LOCK_WALLPAPER_STAGE);
+
+        DelayedRestoreRequest request = new DelayedRestoreRequest.Builder(
+                DelayedRestoreRequest.TYPE_APP_INSTALL)
+                .setPackageName(TEST_WALLPAPER_PACKAGE)
+                .build();
+
+        mWallpaperBackupAgent.onDelayedFullRestore(request);
+
+        assertThat(new File(mContext.getFilesDir(), WALLPAPER_INFO_STAGE).exists()).isFalse();
+        assertThat(new File(mContext.getFilesDir(), LOCK_WALLPAPER_STAGE).exists()).isFalse();
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_DELAYED_RESTORE_API)
+    public void testOnDelayedFullRestore_inRestore_missingPackage_doesNotDeleteStageFiles()
+            throws Exception {
+        mWallpaperBackupAgent.mIsDeviceInRestore = true;
+        // TEST_WALLPAPER_PACKAGE (system) is installed/restored.
+        mWallpaperBackupAgent.mExistingPackages.add(TEST_WALLPAPER_PACKAGE);
+        ComponentName lockComponent = new ComponentName("missing.package", "cls");
+        // lockComponent is NOT installed.
+        mockRestoredLiveWallpaperFileWithComponents(mWallpaperComponent, lockComponent);
+        mockStagedWallpaperFile(LOCK_WALLPAPER_STAGE);
+
+        DelayedRestoreRequest request = new DelayedRestoreRequest.Builder(
+                DelayedRestoreRequest.TYPE_APP_INSTALL)
+                .setPackageName(TEST_WALLPAPER_PACKAGE)
+                .build();
+
+        mWallpaperBackupAgent.onDelayedFullRestore(request);
+
+        assertThat(new File(mContext.getFilesDir(), WALLPAPER_INFO_STAGE).exists()).isTrue();
+        assertThat(new File(mContext.getFilesDir(), LOCK_WALLPAPER_STAGE).exists()).isTrue();
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_DELAYED_RESTORE_API)
+    public void testOnDelayedFullRestore_liveSystem_staticLock_succeeds() throws Exception {
+        mWallpaperBackupAgent.mIsDeviceInRestore = true;
+        mWallpaperBackupAgent.mExistingPackages.add(TEST_WALLPAPER_PACKAGE);
+        when(mWallpaperManager.setWallpaperComponentWithFlags(any(), anyInt())).thenReturn(true);
+        BackupRestoreEventLogger logger = new BackupRestoreEventLogger(
+                BackupAnnotations.OperationType.RESTORE);
+        when(mBackupManager.getDelayedRestoreLogger()).thenReturn(logger);
+        mWallpaperBackupAgent.setBackupManagerForTesting(mBackupManager);
+
+        // System is live, Lock is static (so no component in info file for lock)
+        mockRestoredLiveWallpaperFileWithComponents(mWallpaperComponent, null);
+        // Ensure lock wallpaper stage exists so it's treated as static lock wallpaper presence
+        mockStagedWallpaperFile(LOCK_WALLPAPER_STAGE);
+
+        DelayedRestoreRequest request = new DelayedRestoreRequest.Builder(
+                DelayedRestoreRequest.TYPE_APP_INSTALL)
+                .setPackageName(TEST_WALLPAPER_PACKAGE)
+                .build();
+
+        mWallpaperBackupAgent.onDelayedFullRestore(request);
+
+        // Verify system wallpaper component was applied with FLAG_SYSTEM only
+        verify(mWallpaperManager).setWallpaperComponentWithFlags(mWallpaperComponent, FLAG_SYSTEM);
+        verify(mWallpaperManager, never()).setWallpaperComponentWithFlags(mWallpaperComponent,
+                FLAG_LOCK);
+        verify(mWallpaperManager, never()).setWallpaperComponentWithFlags(mWallpaperComponent,
+                FLAG_SYSTEM | FLAG_LOCK);
+
+        // Verify success logging for system
+        DataTypeResult system = getLoggingResult(WALLPAPER_LIVE_SYSTEM, logger.getLoggingResults());
+        assertThat(system).isNotNull();
+        assertThat(system.getSuccessCount()).isEqualTo(1);
+    }
+
     private void testRestoredCrops(
             Point bitmapDimensions,
             Point sourceDeviceDimensions,
@@ -1864,7 +1965,7 @@ public class WallpaperBackupAgentTest {
         List<File> mBackedUpFiles = new ArrayList<>();
         PackageMonitor mWallpaperPackageMonitor;
         boolean mIsDeviceInRestore = false;
-        boolean mPackageExists = false;
+        Set<String> mExistingPackages = new HashSet<>();
         int mGetPackageMonitorCallCount = 0;
 
         @Override
@@ -1874,7 +1975,7 @@ public class WallpaperBackupAgentTest {
 
         @Override
         boolean servicePackageExists(ComponentName comp) {
-            return mPackageExists;
+            return mExistingPackages.contains(comp.getPackageName());
         }
 
         @Override
