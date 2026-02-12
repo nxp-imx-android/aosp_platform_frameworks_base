@@ -198,6 +198,8 @@ public final class EmbeddingModel implements OnDeviceModel, Parcelable {
                                         MODEL_STATUS_DOWNLOADING;
                                 case FeatureDetails.FEATURE_STATUS_AVAILABLE ->
                                         MODEL_STATUS_AVAILABLE;
+                                case FeatureDetails.FEATURE_STATUS_DEPRECATED ->
+                                        MODEL_STATUS_DEPRECATED;
                                 default -> MODEL_STATUS_UNAVAILABLE;
                             };
                             callback.onResult(modelStatus);

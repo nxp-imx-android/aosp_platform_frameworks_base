@@ -25,6 +25,7 @@ import android.os.Parcelable;
 
 import android.app.ondeviceintelligence.Content;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,7 +38,7 @@ import java.util.Objects;
  */
 @SystemApi
 @FlaggedApi(Flags.FLAG_ON_DEVICE_INTELLIGENCE_26Q2)
-public final class EmbeddingRequest implements Parcelable {
+public final class EmbeddingRequest implements Parcelable, AutoCloseable {
     private final List<Content> mContent;
 
     /**
@@ -82,5 +83,12 @@ public final class EmbeddingRequest implements Parcelable {
 
     private EmbeddingRequest(Parcel in) {
         mContent = in.createTypedArrayList(Content.CREATOR);
+    }
+
+    @Override
+    public void close() throws IOException {
+        for (Content content : mContent) {
+            content.close();
+        }
     }
 }

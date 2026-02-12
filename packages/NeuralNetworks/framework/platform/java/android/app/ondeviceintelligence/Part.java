@@ -48,7 +48,7 @@ import java.util.Objects;
  */
 @SystemApi
 @FlaggedApi(Flags.FLAG_ON_DEVICE_INTELLIGENCE_26Q2)
-public final class Part implements Parcelable {
+public final class Part implements Parcelable, AutoCloseable {
     /** @hide */
     @IntDef(value = {TYPE_TEXT, TYPE_IMAGE, TYPE_AUDIO})
     @Retention(RetentionPolicy.SOURCE)
@@ -181,5 +181,15 @@ public final class Part implements Parcelable {
         mText = in.readString8();
         mImage = in.readTypedObject(Bitmap.CREATOR);
         mBlob = in.readTypedObject(ParcelFileDescriptor.CREATOR);
+    }
+
+    @Override
+    public void close() throws IOException {
+        if (mBlob != null) {
+            mBlob.close();
+        }
+        if (mImage != null) {
+            mImage.recycle();
+        }
     }
 }
