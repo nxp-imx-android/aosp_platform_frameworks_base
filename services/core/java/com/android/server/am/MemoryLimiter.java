@@ -36,6 +36,7 @@ import android.os.ProfilingServiceHelper;
 import android.os.ProfilingTrigger;
 import android.system.Os;
 import android.system.OsConstants;
+import android.util.IndentingPrintWriter;
 import android.util.Slog;
 
 import com.android.internal.annotations.GuardedBy;
@@ -58,6 +59,8 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.time.Duration;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -239,6 +242,12 @@ class MemoryLimiter implements AutoCloseable {
             return Flags.memoryLimiterTrigger();
         }
 
+        // True if running in test mode.  The default implementation assumes that test mode is
+        // false if running under the system UID and true otherwise.
+        boolean isTestMode() {
+            return Process.myUid() != Process.SYSTEM_UID;
+        }
+
         // The configuration file.
         @NonNull
         String configFile() {
@@ -267,10 +276,6 @@ class MemoryLimiter implements AutoCloseable {
      */
     @UsedByNative
     static class ControllerEnabled implements Controller {
-
-        // A lock for information that is shared between the status() method and the handler.  The
-        // lock is only taken one of those two places.
-        private final Object mLock = new Object();
 
         // The Injector to modify behavior.
         private final Injector mInjector;
@@ -303,9 +308,17 @@ class MemoryLimiter implements AutoCloseable {
         private final Long[] mStateLimit = new Long[ActivityManager.MAX_PROCESS_STATE + 1];
 
         // The ignore list.  The code supports exactly one ignored uid.  The invalid uid never
-        // matches a uid, so that value turns off ignoring.
-        @GuardedBy("mLock")
-        private int mIgnoredUid = INVALID_UID;
+        // matches a uid, so that value turns off ignoring.  It is set and read by the handler
+        // code and read by the dump() method.
+        private final AtomicInteger mIgnoredUid = new AtomicInteger(INVALID_UID);
+
+        // The native pointer.  It is set and read by the handler code and read by the dump()
+        // method.
+        private final AtomicLong mNative = new AtomicLong(0);
+
+        // A mutex to ensure that the native layer is not closed underneath a call to dump().
+        // dump() is the only operation against the native service that is not single-threaded.
+        private final Object mDumpLock = new Object();
 
         /**
          * In the constructor, create the native peer and the message queue that will handle all
@@ -314,13 +327,12 @@ class MemoryLimiter implements AutoCloseable {
         ControllerEnabled(@NonNull Injector injector) {
             mInjector = injector;
 
+            mNative.set(initLimiter(ControllerEnabled.this, mInjector.isMonitoringEnabled(),
+                            mInjector.isTestMode()));
+
             mQueue = new Handler(BackgroundThread.getHandler().getLooper()) {
                     // Toggles to false once the Controller is closed.
                     private boolean mOpen = true;
-
-                    // The native handler.
-                    private final long mNative = initLimiter(ControllerEnabled.this,
-                            mInjector.isMonitoringEnabled());
 
                     @Override
                     public void handleMessage(Message msg) {
@@ -330,44 +342,43 @@ class MemoryLimiter implements AutoCloseable {
                             // it.
                             return;
                         }
-                        int pid = msg.arg1;
-                        int uid = msg.arg2;
-                        int op = msg.what;
-                        synchronized (mLock) {
-                            switch (op) {
-                                case MESSAGE_START -> {
-                                    if (!shouldIgnore(uid)) {
-                                        onProcessStarted(mNative, pid, uid);
-                                    }
+                        final long service = mNative.get();
+                        final int pid = msg.arg1;
+                        final int uid = msg.arg2;
+                        final int op = msg.what;
+                        switch (op) {
+                            case MESSAGE_START -> {
+                                if (!shouldIgnore(uid)) {
+                                    onProcessStarted(service, pid, uid);
                                 }
-
-                                case MESSAGE_CONFIG -> {
-                                    if (msg.obj != null && !shouldIgnore(uid)) {
-                                        long limit = (Long) msg.obj;
-                                        configureLimit(mNative, pid, uid, limit);
-                                    }
-                                }
-
-                                case MESSAGE_IGNORE -> {
-                                    // This message is only issued during testing.
-                                    String oldValue = ignoredUid();
-                                    Boolean ignored = (Boolean) msg.obj;
-                                    if (!ignored) {
-                                        // Normalize the UID to INVALID if no UID is being ignored.
-                                        uid = INVALID_UID;
-                                    }
-                                    mIgnoredUid = uid;
-                                    Slog.i(TAG, "ignoring " + ignoredUid() + " was " + oldValue);
-                                }
-
-                                case MESSAGE_CLOSE -> {
-                                    closeLimiter(mNative);
-                                    mOpen = false;
-                                }
-
-                                default ->
-                                        Slog.e(TAG, "invalid message: op=" + op);
                             }
+
+                            case MESSAGE_CONFIG -> {
+                                if (msg.obj != null && !shouldIgnore(uid)) {
+                                    long limit = (Long) msg.obj;
+                                    configureLimit(service, pid, uid, limit);
+                                }
+                            }
+
+                            case MESSAGE_IGNORE -> {
+                                // This message is only issued during testing.
+                                String oldValue = ignoredUid();
+                                Boolean ignored = (Boolean) msg.obj;
+                                // Normalize the UID to INVALID if no UID is being ignored.
+                                mIgnoredUid.set(ignored ? uid : INVALID_UID);
+                                Slog.i(TAG, "ignoring " + ignoredUid() + " was " + oldValue);
+                            }
+
+                            case MESSAGE_CLOSE -> {
+                                synchronized (mDumpLock) {
+                                    mNative.set(0);
+                                    closeLimiter(service);
+                                }
+                                mOpen = false;
+                            }
+
+                            default ->
+                                    Slog.e(TAG, "invalid message: op=" + op);
                         }
                     }
                 };
@@ -552,28 +563,57 @@ class MemoryLimiter implements AutoCloseable {
 
         // A simple function to string-ify the ignored UID.
         private String ignoredUid() {
-            return switch (mIgnoredUid) {
+            final int ignored = mIgnoredUid.get();
+            return switch (ignored) {
                 case INVALID_UID -> "none";
                 case ALL_UIDS -> "all";
-                default -> Integer.toString(mIgnoredUid);
+                default -> Integer.toString(ignored);
             };
         }
 
         // Return true if the input UID is being ignored.
         private boolean shouldIgnore(int uid) {
-            return switch (mIgnoredUid) {
+            final int ignored = mIgnoredUid.get();
+            return switch (ignored) {
                 case INVALID_UID -> false;
                 case ALL_UIDS -> true;
-                default -> uid == mIgnoredUid;
+                default -> uid == ignored;
             };
+        }
+
+        // Print a set of white-space-delimited fields in columns.
+        private void dumpLine(PrintWriter pw, String line) {
+            StringBuilder out = new StringBuilder();
+            for (String field : line.trim().split("\\s+")) {
+                if (out.length() > 0) {
+                    // Force a space between columns, just in case one of the fields is longer
+                    // than the column width.
+                    out.append(" ");
+                }
+                // String.format() is used instead of formatSimple() because the latter does not
+                // support negative field widths for left justification.
+                out.append(String.format("%-24s", field));
+            }
+            pw.println(out.toString().stripTrailing());
         }
 
         @Override
         public void dump(PrintWriter pw) {
+            final String stats;
+            synchronized (mDumpLock) {
+                final long service = mNative.get();
+                stats = (service != 0) ? getStatistics(service) : "closed";
+            }
+
             final long meg = 1024 * 1024;
-            synchronized (mLock) {
-                pw.format("enabled low=%dMB high=%dMB ignored=%s\n",
-                        mMemoryNotVisible / meg, mMemoryVisible / meg, ignoredUid());
+            dumpLine(pw, formatSimple("enabled low=%dMB high=%dMB ignored=%s",
+                            mMemoryNotVisible / meg, mMemoryVisible / meg, ignoredUid()));
+            if (stats != null) {
+                // Format the output.  Use the line splits provided by the native layer but put
+                // the key/value pairs into columns.
+                for (String line : stats.split("\n")) {
+                    dumpLine(pw, line);
+                }
             }
         }
     }
@@ -774,7 +814,9 @@ class MemoryLimiter implements AutoCloseable {
      * Display the status of the limiter.
      */
     void dump(PrintWriter pw) {
-        mController.dump(pw);
+        pw.println("Memory limiter");
+        final IndentingPrintWriter ipw = new IndentingPrintWriter(pw).increaseIndent();
+        mController.dump(ipw);
     }
 
     /**
@@ -804,9 +846,11 @@ class MemoryLimiter implements AutoCloseable {
      *
      * @param controller is the Controller that receives over-limit events.
      * @param monitor is true if limit monitoring is enabled.
+     * @param testMode is true if running in test mode.
      * @return the native service.
      */
-    private static native long initLimiter(Controller controller, boolean monitor);
+    private static native long initLimiter(Controller controller, boolean monitor,
+            boolean testMode);
 
     /**
      * Release the native handler.
@@ -825,4 +869,11 @@ class MemoryLimiter implements AutoCloseable {
      * mean "maximum memory".
      */
     private static native void configureLimit(long servicePtr, int pid, int uid, long limit);
+
+    /**
+     * Fetch the native statistics.  This returns an null pointer if the service pointer is
+     * invalid.  The returned string is a list of key/value pairs with the format "key=value",
+     * separated by whitespace.
+     */
+    private static native @Nullable String getStatistics(long servicePtr);
 }

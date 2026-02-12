@@ -33,6 +33,7 @@ import android.platform.test.annotations.Presubmit;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
+import android.util.ArrayMap;
 import android.util.Log;
 
 import androidx.test.core.app.ApplicationProvider;
@@ -50,6 +51,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -233,6 +236,41 @@ public class MemoryLimiterTest {
                 mEvents.add(new Event(pid, uid, type));
             }
         }
+
+        /**
+         * Fetch the status from a MemoryLimiter and return the native statistics as a hash.
+         * Values that are not long are discarded.
+         */
+        ArrayMap<String, Long> stats() {
+            // Fetch the native string.
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            dump(pw);
+            pw.close();
+            String statsString = sw.getBuffer().toString();
+
+            ArrayMap<String, Long> stats = new ArrayMap<>();
+
+            // Now dice it for the hashmap
+            for (String word: statsString.split("\\s+")) {
+                String[] kv = word.split("=");
+                if (kv.length != 2) {
+                    continue;
+                }
+                try {
+                    stats.put(kv[0], Long.parseLong(kv[1]));
+                } catch (NumberFormatException e) {
+                    // Do nothing.  This is not a native statistic.
+                }
+            }
+            return stats;
+        }
+
+        // Fetch the named statistics from the native layer.  On any error, this returns zero.
+        // That simplifies the test code below.
+        long stat(String key) {
+            return stats().get(key);
+        }
     }
 
     @BeforeClass
@@ -399,7 +437,7 @@ public class MemoryLimiterTest {
             final Intent intent = new Intent(); // SendActivity.this, SendActivity.class);
             intent.setAction(HELPER + ".MEMORY");
             intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
-            intent.putExtra("size", Integer.toString(size));
+            intent.putExtra("size", size);
             mContext.sendBroadcast(intent);
         }
 
@@ -490,6 +528,53 @@ public class MemoryLimiterTest {
 
     private static void testConfig(Configuration cfg, Configuration ref) {
         testConfig(cfg, ref.visible(), ref.notVisible());
+    }
+
+    /**
+     * Test that process exit is captured.
+     */
+    @Test
+    public void testProcessExit() throws Exception {
+        try (EventCounter counter = new EventCounter(1)) {
+            try (MemoryLimiter controller = new MemoryLimiter(counter)) {
+                MemoryLimiter.Limiter limiter = controller.newLimiter();
+
+                assertThat(counter.stat("started")).isEqualTo(0);
+                assertThat(counter.stat("processes")).isEqualTo(0);
+
+                Helper helper = new Helper();
+                helper.attach(limiter);
+                // This call causes the native layer to start monitoring the process.  The process
+                // is not monitored until the first time a limit is configured.
+                limiter.onProcStateUpdated(PROCESS_STATE_MAX);
+
+                BooleanSupplier one = () -> {
+                    return counter.stat("processes") == 1;
+                };
+                assertThat(waitUntil(one, 4000)).isTrue();
+                assertThat(counter.stat("started")).isEqualTo(1);
+                assertThat(counter.stat("process-hwm")).isEqualTo(1);
+                assertThat(counter.stat("watched")).isEqualTo(1);
+
+                helper.exit();
+                BooleanSupplier exit = () -> {
+                    return !helper.exists();
+                };
+                waitUntil(exit, 4000);
+
+                BooleanSupplier zero = () -> {
+                    return counter.stat("processes") == 0;
+                };
+                assertThat(waitUntil(zero, 4000)).isTrue();
+
+                var stats = counter.stats();
+                Log.i(TAG, counter.stats().toString());
+                assertThat(stats.get("started")).isEqualTo(1);
+                assertThat(stats.get("process-hwm")).isEqualTo(1);
+                assertThat(stats.get("watched")).isEqualTo(1);
+                assertThat(stats.get("processes")).isEqualTo(0);
+            }
+        }
     }
 
     @RequiresFlagsEnabled(Flags.FLAG_MEMORY_LIMITER_ENABLE)

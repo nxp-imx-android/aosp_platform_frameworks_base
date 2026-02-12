@@ -36,7 +36,7 @@ public class ClientTestReceiver extends BroadcastReceiver {
         final String action = intent.getAction();
         if (action.contains(".MEMORY")) {
             Trace.beginSection("ClientTestReceiver.onReceive");
-            int size = Integer.valueOf(intent.getStringExtra("size"));
+            int size = intent.getIntExtra("size", 0);
             Log.i(TAG, "handling memory size " + size + "MB");
             if (size > 0) {
                 mTest.setMemory(size);
