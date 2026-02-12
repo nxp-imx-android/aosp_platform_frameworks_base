@@ -160,7 +160,8 @@ constructor(
 
                     // Do not transition to LOCKSCREEN if we are waking and dismissing.
                     // That transition is handled by listenForWakeFromDozing.
-                    if (isWakeAndDismiss(biometricUnlockState.mode)) {
+                    if (Flags.wakefulnessForAnimations() &&
+                            isWakeAndDismiss(biometricUnlockState.mode)) {
                         return@collect
                     }
 
