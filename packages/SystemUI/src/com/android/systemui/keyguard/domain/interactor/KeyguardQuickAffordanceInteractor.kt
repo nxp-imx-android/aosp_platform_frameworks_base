@@ -26,7 +26,6 @@ import com.android.app.tracing.coroutines.withContextTraced as withContext
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.internal.widget.LockPatternUtils
 import com.android.keyguard.logging.KeyguardQuickAffordancesLogger
-import com.android.systemui.Flags.msdlFeedback
 import com.android.systemui.accessibility.domain.interactor.AccessibilityInteractor
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.animation.Expandable
@@ -222,19 +221,15 @@ constructor(
                     canShowWhileLocked = result.canShowWhileLocked,
                     expandable = expandable,
                 )
-                if (msdlFeedback()) {
-                    msdlPlayer.playToken(MSDLToken.LONG_PRESS)
-                }
+                msdlPlayer.playToken(MSDLToken.LONG_PRESS)
             }
             is KeyguardQuickAffordanceConfig.OnTriggeredResult.Handled -> {
-                if (result.actionLaunched && msdlFeedback()) {
+                if (result.actionLaunched) {
                     msdlPlayer.playToken(MSDLToken.LONG_PRESS)
                 }
             }
             is KeyguardQuickAffordanceConfig.OnTriggeredResult.ShowDialog -> {
-                if (msdlFeedback()) {
-                    msdlPlayer.playToken(MSDLToken.LONG_PRESS)
-                }
+                msdlPlayer.playToken(MSDLToken.LONG_PRESS)
                 showDialog(result.dialog, result.expandable)
             }
         }
