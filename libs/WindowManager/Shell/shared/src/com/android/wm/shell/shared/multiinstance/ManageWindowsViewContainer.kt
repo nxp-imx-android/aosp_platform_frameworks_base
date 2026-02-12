@@ -35,6 +35,7 @@ import android.view.View.SCALE_Y
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.view.ViewGroup.MarginLayoutParams
 import android.view.WindowManager
+import android.view.WindowManagerPolicyConstants.APPLICATION_MEDIA_OVERLAY_SUBLAYER
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.window.TaskSnapshot
@@ -187,7 +188,7 @@ abstract class ManageWindowsViewContainer(
                     }
                 val appSnapshotButton = SurfaceView(context)
                 appSnapshotButton.cornerRadius = iconRadius
-                appSnapshotButton.setZOrderOnTop(true)
+                appSnapshotButton.compositionOrder = APPLICATION_MEDIA_OVERLAY_SUBLAYER
                 appSnapshotButton.contentDescription =
                     context.resources.getString(R.string.manage_windows_icon_text, iconCount + 1)
                 appSnapshotButton.setOnClickListener { onIconClickListener?.invoke(taskId) }
