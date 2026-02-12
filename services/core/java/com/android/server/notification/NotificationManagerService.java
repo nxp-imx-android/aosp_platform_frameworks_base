@@ -119,6 +119,8 @@ import static android.os.UserHandle.USER_ALL;
 import static android.os.UserHandle.USER_NULL;
 import static android.os.UserHandle.USER_SYSTEM;
 import static android.os.UserHandle.getUserHandleForUid;
+import static android.provider.DeviceConfig.NAMESPACE_SYSTEMUI;
+import static android.provider.DeviceConfig.Properties;
 import static android.security.Flags.secureLockDevice;
 import static android.service.notification.Adjustment.KEY_GROUP_KEY;
 import static android.service.notification.Adjustment.KEY_SUMMARIZATION;
@@ -180,6 +182,7 @@ import static android.service.personalcontext.Flags.enablePersonalContextService
 import static android.view.WindowManager.LayoutParams.TYPE_TOAST;
 import static android.view.contentprotection.flags.Flags.rapidClearNotificationsByListenerAppOpEnabled;
 
+import static com.android.internal.config.sysui.SystemUiDeviceConfigFlags.NLS_COMPLETION_DURATION_MS;
 import static com.android.internal.util.FrameworkStatsLog.DND_MODE_RULE;
 import static com.android.internal.util.FrameworkStatsLog.NOTIFICATION_ADJUSTMENT_PREFERENCES;
 import static com.android.internal.util.FrameworkStatsLog.PACKAGE_NOTIFICATION_CHANNEL_GROUP_PREFERENCES;
@@ -212,6 +215,7 @@ import android.annotation.RequiresPermission;
 import android.annotation.SpecialUsers.CanBeALL;
 import android.annotation.SpecialUsers.CanBeCURRENT;
 import android.annotation.SpecialUsers.CannotBeSpecialUser;
+import android.annotation.SuppressLint;
 import android.annotation.UserIdInt;
 import android.annotation.WorkerThread;
 import android.app.ActivityManager;
@@ -318,6 +322,7 @@ import android.os.UserHandle;
 import android.os.UserManager;
 import android.os.WorkSource;
 import android.permission.PermissionManager;
+import android.provider.DeviceConfig;
 import android.provider.Settings;
 import android.provider.Settings.Global;
 import android.provider.Settings.Secure;
@@ -353,6 +358,7 @@ import android.text.format.DateUtils;
 import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.AtomicFile;
+import android.util.IndentingPrintWriter;
 import android.util.IntArray;
 import android.util.Log;
 import android.util.Pair;
@@ -360,6 +366,7 @@ import android.util.Slog;
 import android.util.SparseArray;
 import android.util.SparseBooleanArray;
 import android.util.StatsEvent;
+import android.util.TimeUtils;
 import android.util.Xml;
 import android.util.proto.ProtoOutputStream;
 import android.view.Display;
@@ -2721,6 +2728,7 @@ public class NotificationManagerService extends SystemService {
         }
     }
 
+    private final ConfigurableParameters mConfigurableParameters = new ConfigurableParameters();
     private SettingsObserver mSettingsObserver;
     protected ZenModeHelper mZenModeHelper;
 
@@ -3307,7 +3315,7 @@ public class NotificationManagerService extends SystemService {
                 AppGlobals.getPackageManager(), getContext().getPackageManager(),
                 getLocalService(LightsManager.class),
                 new NotificationListeners(getContext(), mNotificationLock, mUserProfiles,
-                        AppGlobals.getPackageManager()),
+                        AppGlobals.getPackageManager(), mConfigurableParameters),
                 new NotificationAssistants(getContext(), mNotificationLock, mUserProfiles,
                         AppGlobals.getPackageManager()),
                 new ConditionProviders(getContext(), mUserProfiles, AppGlobals.getPackageManager()),
@@ -3637,6 +3645,7 @@ public class NotificationManagerService extends SystemService {
             }
             mLockUtils.registerStrongAuthTracker(mStrongAuthTracker);
             mAttentionHelper.onSystemReady();
+            mConfigurableParameters.initialize(BackgroundThread.getExecutor());
         } else if (phase == SystemService.PHASE_THIRD_PARTY_APPS_CAN_START) {
             // This observer will force an update when observe is called, causing us to
             // bind to listener services.
@@ -3708,6 +3717,41 @@ public class NotificationManagerService extends SystemService {
                 Trace.traceEnd(Trace.TRACE_TAG_SYSTEM_SERVER);
             }
         });
+    }
+
+    /**
+     * Class used to host values that can be configured via {@link DeviceConfig}. Once aconfig
+     * functionality attains parity with device config, this class can be removed.
+     */
+    static class ConfigurableParameters implements DeviceConfig.OnPropertiesChangedListener {
+        static final long DEFAULT_NLS_COMPLETION_DURATION_MS = TimeUnit.SECONDS.toMillis(10);
+
+        volatile long mNlsCompletionDurationMs = DEFAULT_NLS_COMPLETION_DURATION_MS;
+
+        @Override
+        public void onPropertiesChanged(@androidx.annotation.NonNull Properties properties) {
+            mNlsCompletionDurationMs = properties.getLong(NLS_COMPLETION_DURATION_MS,
+                    DEFAULT_NLS_COMPLETION_DURATION_MS);
+        }
+
+        @SuppressLint("MissingPermission")
+        void initialize(Executor executor) {
+            DeviceConfig.addOnPropertiesChangedListener(NAMESPACE_SYSTEMUI, executor, this);
+            // Fetch and load previously written properties at startup.
+            onPropertiesChanged(
+                    DeviceConfig.getProperties(NAMESPACE_SYSTEMUI, NLS_COMPLETION_DURATION_MS));
+        }
+
+        void dump(IndentingPrintWriter ipw) {
+            ipw.println("Configurable parameters:");
+            ipw.increaseIndent();
+
+            ipw.print(NLS_COMPLETION_DURATION_MS,
+                    TimeUtils.formatDuration(mNlsCompletionDurationMs));
+            ipw.println();
+
+            ipw.decreaseIndent();
+        }
     }
 
     private void sendAppBlockStateChangedBroadcast(String pkg, int uid, boolean blocked) {
@@ -8642,6 +8686,7 @@ public class NotificationManagerService extends SystemService {
             pw.println("\n  GroupHelper:");
             mGroupHelper.dump(pw, "    ");
         }
+        mConfigurableParameters.dump(new IndentingPrintWriter(pw, "  ", "  "));
     }
 
     /**
@@ -14272,8 +14317,6 @@ public class NotificationManagerService extends SystemService {
     }
 
     public class NotificationListeners extends ManagedServices {
-        private static final Duration NLS_COMPLETION_GRACE_PERIOD = Duration.ofSeconds(10);
-
         static final String TAG_ENABLED_NOTIFICATION_LISTENERS = "enabled_listeners";
         static final String TAG_REQUESTED_LISTENERS = "request_listeners";
         static final String TAG_REQUESTED_LISTENER = "listener";
@@ -14309,16 +14352,20 @@ public class NotificationManagerService extends SystemService {
         private final ArrayMap<Pair<ComponentName, Integer>, NotificationListenerFilter>
                 mRequestedNotificationListeners = new ArrayMap<>();
         private final boolean mIsHeadlessSystemUserMode;
+        private final ConfigurableParameters mConfigurableParameters;
 
         public NotificationListeners(Context context, Object lock, UserProfiles userProfiles,
-                IPackageManager pm) {
-            this(context, lock, userProfiles, pm, UserManager.isHeadlessSystemUserMode());
+                IPackageManager pm, ConfigurableParameters configurableParams) {
+            this(context, lock, userProfiles, pm, UserManager.isHeadlessSystemUserMode(),
+                    configurableParams);
         }
 
         @VisibleForTesting
         public NotificationListeners(Context context, Object lock, UserProfiles userProfiles,
-                IPackageManager pm, boolean isHeadlessSystemUserMode) {
+                IPackageManager pm, boolean isHeadlessSystemUserMode,
+                ConfigurableParameters configurableParams) {
             super(context, lock, userProfiles, pm);
+            this.mConfigurableParameters = configurableParams;
             this.mIsHeadlessSystemUserMode = isHeadlessSystemUserMode;
         }
 
@@ -14472,7 +14519,7 @@ public class NotificationManagerService extends SystemService {
                             } catch (RemoteException e) {
                                 // Local call
                             }
-                        }, NLS_COMPLETION_GRACE_PERIOD.toMillis());
+                        }, mConfigurableParameters.mNlsCompletionDurationMs);
                     }
                 };
             } else {

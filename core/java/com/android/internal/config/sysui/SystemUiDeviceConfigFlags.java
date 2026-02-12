@@ -541,6 +541,12 @@ public final class SystemUiDeviceConfigFlags {
     public static final String WIDGET_EVENTS_REPORT_INTERVAL_MS =
             "widget_events_report_interval_ms";
 
+    /**
+     * (long) The duration NLS callbacks are given to finish processing before the system freezes
+     * them.
+     */
+    public static final String NLS_COMPLETION_DURATION_MS = "nls_completion_duration_ms";
+
     private SystemUiDeviceConfigFlags() {
     }
 }
