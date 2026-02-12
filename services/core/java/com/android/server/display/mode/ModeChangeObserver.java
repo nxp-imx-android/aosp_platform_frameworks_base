@@ -16,6 +16,9 @@
 
 package com.android.server.display.mode;
 
+import static android.view.DisplayEventReceiver.EVENT_REGISTRATION_MODE_REJECTED_FLAG;
+import static android.view.DisplayEventReceiver.VSYNC_SOURCE_APP;
+
 import android.hardware.display.DisplayManager;
 import android.os.Handler;
 import android.os.Looper;
@@ -103,7 +106,8 @@ final class ModeChangeObserver {
                     DisplayManager.EVENT_TYPE_DISPLAY_ADDED
                             | DisplayManager.EVENT_TYPE_DISPLAY_CHANGED
                             | DisplayManager.EVENT_TYPE_DISPLAY_REMOVED);
-        mModeChangeListener = new DisplayEventReceiver(mLooper) {
+        mModeChangeListener = new DisplayEventReceiver(mLooper, VSYNC_SOURCE_APP,
+                EVENT_REGISTRATION_MODE_REJECTED_FLAG) {
             @Override
             public void onModeRejected(long physicalDisplayId, int modeId) {
                 Slog.d(TAG, "[Display " + physicalDisplayId + "] Mode Rejected event received,"

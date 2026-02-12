@@ -16,6 +16,8 @@
 
 package com.android.wm.shell.shared
 
+import android.app.WindowConfiguration.ACTIVITY_TYPE_HOME
+import android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
 import android.view.SurfaceControl
 import android.view.SurfaceControl.Transaction
 import android.view.WindowManager.TRANSIT_CHANGE
@@ -31,7 +33,10 @@ import androidx.test.filters.SmallTest
 import com.android.testing.wm.util.TransitionInfoBuilder
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import org.junit.runner.RunWith
+import org.mockito.Mockito.`when`
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -47,6 +52,7 @@ import org.mockito.kotlin.verify
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class TransitionUtilTest {
+
     @Test
     fun testCalculateAnimLayer() {
         val change = TransitionInfo.Change(mock<WindowContainerToken>(), mock<SurfaceControl>())
@@ -232,5 +238,46 @@ class TransitionUtilTest {
         verify(transaction, never())
             .setPosition(eq(independentChangeWithParentSurface), any(), any())
         verify(transaction).setLayer(eq(independentChangeWithParentSurface), any())
+    }
+
+    @Test
+    fun testIsHomeTransitionEndingOnDisplay() {
+        val displayId = 0
+
+        // Home task ending on the display
+        assertTrue(
+            TransitionUtil.isHomeTransitionEndingOnDisplay(
+                createTransitionInfoWithTask(ACTIVITY_TYPE_HOME, displayId),
+                displayId,
+            )
+        )
+
+        // Home task ending on a different display
+        assertFalse(
+            TransitionUtil.isHomeTransitionEndingOnDisplay(
+                createTransitionInfoWithTask(ACTIVITY_TYPE_HOME, displayId + 1),
+                displayId,
+            )
+        )
+
+        // Standard task ending on the display
+        assertFalse(
+            TransitionUtil.isHomeTransitionEndingOnDisplay(
+                createTransitionInfoWithTask(ACTIVITY_TYPE_STANDARD, displayId),
+                displayId,
+            )
+        )
+
+        // null TransitionInfo
+        assertFalse(TransitionUtil.isHomeTransitionEndingOnDisplay(null /* info */, displayId))
+    }
+
+    private fun createTransitionInfoWithTask(activityType: Int, endDisplayId: Int): TransitionInfo {
+        val change = TransitionInfo.Change(mock(), mock())
+        val taskInfo = mock<android.app.ActivityManager.RunningTaskInfo>()
+        `when`(taskInfo.activityType).thenReturn(activityType)
+        change.taskInfo = taskInfo
+        change.setDisplayId(endDisplayId, endDisplayId)
+        return TransitionInfo(TRANSIT_OPEN, 0).apply { addChange(change) }
     }
 }

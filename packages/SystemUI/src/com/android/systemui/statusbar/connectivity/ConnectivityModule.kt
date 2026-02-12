@@ -324,9 +324,10 @@ interface ConnectivityModule {
         fun provideMobileDataTileConfig(uiEventLogger: QsEventLogger): QSTileConfig =
             QSTileConfig(
                 tileSpec = TileSpec.create(MOBILE_DATA_TILE_SPEC),
+                // TODO(479241590): Change the iconRes here to use a static "on" icon.
                 uiConfig =
                     QSTileUIConfig.Resource(
-                        iconRes = com.android.settingslib.R.drawable.ic_mobile_4_4_bar,
+                        iconRes = R.drawable.ic_cell_on,
                         labelRes = R.string.quick_settings_cellular_detail_title,
                     ),
                 instanceId = uiEventLogger.getNewInstanceId(),

@@ -2542,6 +2542,11 @@ public final class Display {
 
         private final int mModeId;
         private final int mParentModeId;
+
+        /**
+         * Mode ID that could be used to communicate with SurfaceFlinger
+         */
+        private final int mSfModeId;
         @ModeFlags
         private final int mFlags;
         private final int mWidth;
@@ -2586,18 +2591,19 @@ public final class Display {
          */
         public Mode(int modeId, int width, int height, float refreshRate, float vsyncRate,
                 float[] alternativeRefreshRates, @HdrCapabilities.HdrType int[] supportedHdrTypes) {
-            this(modeId, INVALID_MODE_ID, 0, width, height, refreshRate, vsyncRate,
-                    alternativeRefreshRates, supportedHdrTypes);
+            this(modeId, INVALID_MODE_ID, INVALID_MODE_ID, 0, width, height, refreshRate,
+                    vsyncRate, alternativeRefreshRates, supportedHdrTypes);
         }
 
         /**
          * @hide
          */
-        public Mode(int modeId, int parentModeId, @ModeFlags int flags,
+        public Mode(int modeId, int parentModeId, int sfModeId, @ModeFlags int flags,
                 int width, int height, float refreshRate, float vsyncRate,
                 float[] alternativeRefreshRates, @HdrCapabilities.HdrType int[] supportedHdrTypes) {
             mModeId = modeId;
             mParentModeId = parentModeId;
+            mSfModeId = sfModeId;
             mFlags = flags;
             mWidth = width;
             mHeight = height;
@@ -2615,6 +2621,15 @@ public final class Display {
          */
         public int getModeId() {
             return mModeId;
+        }
+
+        /**
+         * Returns matching SurfaceFlinger mode ID or {@link Display.Mode.INVALID_MODE_ID}
+         * if it is not present (for example for synthetic modes)
+         * @hide
+         */
+        public int getSfModeId() {
+            return mSfModeId;
         }
 
         /**
@@ -2819,6 +2834,7 @@ public final class Display {
             }
             Mode that = (Mode) other;
             return mModeId == that.mModeId
+                    && mSfModeId == that.mSfModeId
                     && matches(that.mWidth, that.mHeight, that.mPeakRefreshRate)
                     && Arrays.equals(mAlternativeRefreshRates, that.mAlternativeRefreshRates)
                     && Arrays.equals(mSupportedHdrTypes, that.mSupportedHdrTypes);
@@ -2829,6 +2845,7 @@ public final class Display {
             int hash = 1;
             hash = hash * 17 + mModeId;
             hash = hash * 17 + mParentModeId;
+            hash = hash * 17 + mSfModeId;
             hash = hash * 17 + mFlags;
             hash = hash * 17 + mWidth;
             hash = hash * 17 + mHeight;
@@ -2844,6 +2861,7 @@ public final class Display {
             return new StringBuilder("{")
                     .append("id=").append(mModeId)
                     .append(", parentModeId=").append(mParentModeId)
+                    .append(", sfModeId=").append(mSfModeId)
                     .append(", flags=").append(flagsToString(mFlags))
                     .append(", width=").append(mWidth)
                     .append(", height=").append(mHeight)
@@ -2878,13 +2896,15 @@ public final class Display {
 
         private Mode(Parcel in) {
             this(in.readInt(), in.readInt(), in.readInt(), in.readInt(), in.readInt(),
-                    in.readFloat(), in.readFloat(), in.createFloatArray(), in.createIntArray());
+                    in.readInt(), in.readFloat(), in.readFloat(), in.createFloatArray(),
+                    in.createIntArray());
         }
 
         @Override
         public void writeToParcel(Parcel out, int parcelableFlags) {
             out.writeInt(mModeId);
             out.writeInt(mParentModeId);
+            out.writeInt(mSfModeId);
             out.writeInt(mFlags);
             out.writeInt(mWidth);
             out.writeInt(mHeight);

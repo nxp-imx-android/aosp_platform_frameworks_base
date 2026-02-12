@@ -24,11 +24,8 @@ import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.platform.test.flag.junit.FlagsParameterization
 import android.text.Html
 import androidx.test.filters.SmallTest
-import com.android.settingslib.graph.SignalDrawable
 import com.android.settingslib.mobile.TelephonyIcons
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.common.shared.model.ContentDescription
-import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.flags.Flags
 import com.android.systemui.flags.andSceneContainer
 import com.android.systemui.flags.fake
@@ -39,7 +36,6 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.log.table.logcatTableLogBuffer
 import com.android.systemui.qs.flags.QsSplitInternetTile
-import com.android.systemui.qs.tiles.impl.cell.domain.model.MobileDataTileIcon
 import com.android.systemui.qs.tiles.impl.cell.domain.model.MobileDataTileModel
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.connectivity.ui.MobileContextProvider
@@ -130,56 +126,12 @@ class MobileDataTileDataInteractorTest(flags: FlagsParameterization) : SysuiTest
             mobileConnectionsRepository.fake.setActiveMobileDataSubscriptionId(-1)
             runCurrent()
 
-            val expectedModel =
-                MobileDataTileModel(
-                    isSimActive = false,
-                    isEnabled = false,
-                    icon =
-                        MobileDataTileIcon.ResourceIcon(
-                            Icon.Resource(
-                                com.android.settingslib.R.drawable.ic_mobile_4_4_bar,
-                                ContentDescription.Loaded(
-                                    context.getString(R.string.quick_settings_cellular_detail_title)
-                                ),
-                            )
-                        ),
-                )
+            val expectedModel = MobileDataTileModel(isSimActive = false, isEnabled = false)
             assertThat(tileData).isEqualTo(expectedModel)
         }
 
     @Test
-    fun tileData_activeSim_dataDisabled_emitsOffIcon() =
-        kosmos.runTest {
-            val tileData by collectLastValue(underTest.tileData())
-            val mobileConnectionRepo =
-                FakeMobileConnectionRepository(SUB_ID, logcatTableLogBuffer(kosmos))
-            mobileConnectionsRepository.fake.setMobileConnectionRepositoryMap(
-                mapOf(SUB_ID to mobileConnectionRepo)
-            )
-            mobileConnectionsRepository.fake.activeMobileDataSubscriptionId.value = SUB_ID
-            mobileConnectionRepo.dataConnectionState.value = DataConnectionState.Connected
-
-            // Set data to disabled
-            mobileConnectionRepo.dataEnabled.value = false
-            runCurrent()
-
-            assertThat(tileData?.isSimActive).isTrue()
-            assertThat(tileData?.isEnabled).isFalse()
-            assertThat(tileData?.icon)
-                .isEqualTo(
-                    MobileDataTileIcon.ResourceIcon(
-                        Icon.Resource(
-                            R.drawable.ic_signal_mobile_data_off,
-                            ContentDescription.Loaded(
-                                context.getString(R.string.quick_settings_cellular_detail_title)
-                            ),
-                        )
-                    )
-                )
-        }
-
-    @Test
-    fun tileData_activeSim_dataEnabled_emitsCellularSignalIcon() =
+    fun tileData_activeSim_dataDisabled() =
         kosmos.runTest {
             val tileData by collectLastValue(underTest.tileData())
             val mobileConnectionRepo =
@@ -189,17 +141,34 @@ class MobileDataTileDataInteractorTest(flags: FlagsParameterization) : SysuiTest
             )
             mobileConnectionsRepository.fake.setActiveMobileDataSubscriptionId(SUB_ID)
             mobileConnectionRepo.dataConnectionState.value = DataConnectionState.Connected
-            mobileConnectionRepo.numberOfLevels.value = 4
+
+            // Set data to disabled
+            mobileConnectionRepo.dataEnabled.value = false
+            runCurrent()
+
+            assertThat(tileData?.isSimActive).isTrue()
+            assertThat(tileData?.isEnabled).isFalse()
+        }
+
+    @Test
+    fun tileData_activeSim_dataEnabled() =
+        kosmos.runTest {
+            val tileData by collectLastValue(underTest.tileData())
+            val mobileConnectionRepo =
+                FakeMobileConnectionRepository(SUB_ID, logcatTableLogBuffer(kosmos))
+            mobileConnectionsRepository.fake.setMobileConnectionRepositoryMap(
+                mapOf(SUB_ID to mobileConnectionRepo)
+            )
+            mobileConnectionsRepository.fake.setActiveMobileDataSubscriptionId(SUB_ID)
+            mobileConnectionRepo.dataConnectionState.value = DataConnectionState.Connected
             mobileConnectionRepo.dataEnabled.value = true
 
             // Update the signal level in the fake repo
             mobileConnectionRepo.setAllLevels(0)
             runCurrent()
 
-            val expectedState = SignalDrawable.getState(0, 4, true)
             assertThat(tileData?.isSimActive).isTrue()
             assertThat(tileData?.isEnabled).isTrue()
-            assertThat(tileData?.icon).isEqualTo(MobileDataTileIcon.SignalIcon(expectedState))
         }
 
     @Test

@@ -47,6 +47,7 @@ import static com.android.wm.shell.common.split.SplitScreenUtils.reverseSplitPos
 import static com.android.wm.shell.common.split.SplitScreenUtils.splitFailureMessage;
 import static com.android.wm.shell.common.split.SplitScreenUtils.updateSplitLayoutConfig;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_SPLIT_SCREEN;
+import static com.android.wm.shell.shared.TransitionUtil.isHomeTransitionEndingOnDisplay;
 import static com.android.wm.shell.shared.TransitionUtil.isClosingType;
 import static com.android.wm.shell.shared.TransitionUtil.isOpeningMode;
 import static com.android.wm.shell.shared.TransitionUtil.isOpeningType;
@@ -747,13 +748,19 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         return mLogger;
     }
 
-    void requestEnterSplitSelect(RunningTaskInfo taskInfo,
+    /**
+     * Notifies the [SplitSelectListener]s that split select has been requested. Returns [true] if
+     * at least one of the listeners is handling the request.
+     */
+    boolean requestEnterSplitSelect(RunningTaskInfo taskInfo,
             int splitPosition, Rect taskBounds, boolean startRecents,
             @Nullable WindowContainerTransaction withRecentsWct) {
+        Boolean requestHandled = false;
         for (SplitScreen.SplitSelectListener listener : mSelectListeners) {
-            listener.onRequestEnterSplitSelect(taskInfo, splitPosition, taskBounds,
-                    startRecents, withRecentsWct);
+            requestHandled |= listener.onRequestEnterSplitSelect(taskInfo, splitPosition,
+                    taskBounds, startRecents, withRecentsWct);
         }
+        return requestHandled;
     }
 
     void startShortcut(String packageName, String shortcutId, @SplitPosition int position,
@@ -4527,6 +4534,10 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "onRecentsInSplitAnimationStart: transition=%d",
                 info.getDebugId());
         if (isSplitScreenVisible()) {
+            if (isHomeTransitionEndingOnDisplay(info, mDisplayId)) {
+                mSplitLayout.setRecentsAnimating(true /* animating */);
+            }
+
             // Cache tasks on live tile.
             for (int i = 0; i < info.getChanges().size(); ++i) {
                 final TransitionInfo.Change change = info.getChanges().get(i);
@@ -4555,7 +4566,15 @@ public class StageCoordinator extends StageCoordinatorAbstract {
 
     /** Call this when the recents animation canceled during split-screen. */
     public void onRecentsInSplitAnimationCanceled() {
+        onRecentsInSplitAnimationCanceled(null /* info */);
+    }
+
+    /** Call this when the recents animation canceled during split-screen. */
+    public void onRecentsInSplitAnimationCanceled(@Nullable TransitionInfo info) {
         ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "onRecentsInSplitAnimationCanceled");
+        if (isHomeTransitionEndingOnDisplay(info, mDisplayId)) {
+            mSplitLayout.setRecentsAnimating(false /* animating */);
+        }
         mPausingTasks.clear();
         setSplitsVisible(false);
 
@@ -4593,8 +4612,18 @@ public class StageCoordinator extends StageCoordinatorAbstract {
     public void onRecentsInSplitAnimationFinishing(boolean returnToApp,
             @NonNull WindowContainerTransaction finishWct,
             @NonNull SurfaceControl.Transaction finishT) {
+        onRecentsInSplitAnimationFinishing(returnToApp, finishWct, finishT, null /* info */);
+    }
+
+    /** Called when the recents animation during split-screen finishes. */
+    public void onRecentsInSplitAnimationFinishing(boolean returnToApp,
+            @NonNull WindowContainerTransaction finishWct,
+            @NonNull SurfaceControl.Transaction finishT, @Nullable TransitionInfo info) {
         ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "onRecentsInSplitAnimationFinish: returnToApp=%b",
                 returnToApp);
+        if (isHomeTransitionEndingOnDisplay(info, mDisplayId)) {
+            mSplitLayout.setRecentsAnimating(false /* animating */);
+        }
         mPausingTasks.clear();
         if (returnToApp) {
             // Reparent auxiliary surfaces (divider bar and dim layers) back onto their

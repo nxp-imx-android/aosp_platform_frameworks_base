@@ -56,10 +56,9 @@ class CameraFramingViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun onClick_doesNothing() =
+    fun onClick() =
         kosmos.runTest {
             underTest.onClick()
-            // No state change expected as it is not implemented
-            assertThat(underTest.state.isEnabled).isFalse()
+            assertThat(underTest.state.isEnabled).isTrue()
         }
 }

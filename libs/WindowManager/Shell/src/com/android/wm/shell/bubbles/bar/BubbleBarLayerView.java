@@ -17,6 +17,7 @@
 package com.android.wm.shell.bubbles.bar;
 
 import static com.android.wm.shell.bubbles.Bubbles.DISMISS_USER_GESTURE;
+import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
 import static com.android.wm.shell.shared.animation.Interpolators.ALPHA_IN;
 import static com.android.wm.shell.shared.animation.Interpolators.ALPHA_OUT;
@@ -58,6 +59,7 @@ import com.android.wm.shell.bubbles.logging.BubbleLogger;
 import com.android.wm.shell.bubbles.util.ReferenceCounter;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
+import com.android.wm.shell.shared.bubbles.BubbleFeatureConfig;
 import com.android.wm.shell.shared.bubbles.ContextUtils;
 import com.android.wm.shell.shared.bubbles.DeviceConfig;
 import com.android.wm.shell.shared.bubbles.DismissView;
@@ -88,6 +90,7 @@ public class BubbleBarLayerView extends FrameLayout
     private final BubbleData mBubbleData;
     private final BubblePositioner mPositioner;
     private final BubbleLogger mBubbleLogger;
+    private final BubbleFeatureConfig mFeatureConfig;
     private final BubbleBarAnimationHelper mAnimationHelper;
     private final BubbleEducationViewController mEducationViewController;
     private final View mScrimView;
@@ -124,11 +127,13 @@ public class BubbleBarLayerView extends FrameLayout
     private final BubbleBarGestureNavSwipeController mBubbleBarGestureNavSwipeController;
 
     public BubbleBarLayerView(Context context, BubbleController controller, BubbleData bubbleData,
-            BubbleLogger bubbleLogger, ShellExecutor mainExecutor) {
+            BubbleFeatureConfig featureConfig, BubbleLogger bubbleLogger,
+            ShellExecutor mainExecutor) {
         super(context);
         mBubbleController = controller;
         mBubbleData = bubbleData;
         mPositioner = mBubbleController.getPositioner();
+        mFeatureConfig = featureConfig;
         mBubbleLogger = bubbleLogger;
 
         mAnimationHelper = new BubbleBarAnimationHelper(context, mPositioner, mainExecutor);
@@ -443,7 +448,9 @@ public class BubbleBarLayerView extends FrameLayout
 
         mIsExpanded = true;
         mBubbleController.getSysuiProxy().onStackExpandChanged(true);
-        showScrim(true);
+        if (isScrimEnabled()) {
+            showScrim(true);
+        }
         return previousBubble;
     }
 
@@ -616,7 +623,9 @@ public class BubbleBarLayerView extends FrameLayout
         mExpandedBubble = null;
         mDragController = null;
         setTouchDelegate(null);
-        showScrim(false);
+        if (isScrimEnabled()) {
+            showScrim(false);
+        }
     }
 
     /**
@@ -685,6 +694,19 @@ public class BubbleBarLayerView extends FrameLayout
         mExpandedView.setX(mTempRect.left);
         mExpandedView.setY(mTempRect.top);
         mExpandedView.updateBottomClip();
+    }
+
+    /**
+     * Returns if the scrim should be shown or hidden. If the device supports desktop mode on the
+     * current display, then the scrim shouldn't be shown.
+     */
+    private boolean isScrimEnabled() {
+        if (!mFeatureConfig.isScrimEnabled(mContext.getDisplayId())) {
+            ProtoLog.d(WM_SHELL_BUBBLES,
+                    "Do not show bubble scrim on a display eligible for desktop mode.");
+            return false;
+        }
+        return true;
     }
 
     private void showScrim(boolean show) {

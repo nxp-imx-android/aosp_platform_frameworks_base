@@ -130,7 +130,7 @@ import java.util.List;
  * <h3>Resource Management</h3>
  *
  * <p>The system maintains a limited cache of trust tokens, which are fetched by a {@link
- * android.service.security.talisman.TrustTokenService}. Fetching new trust tokens can consume
+ * android.security.trusttoken.TrustTokenService}. Fetching new trust tokens can consume
  * network and battery resources.
  *
  * <p>For {@link TrustTokenIdentitySet}s, clients <b>should</b> declare their needs ahead of time

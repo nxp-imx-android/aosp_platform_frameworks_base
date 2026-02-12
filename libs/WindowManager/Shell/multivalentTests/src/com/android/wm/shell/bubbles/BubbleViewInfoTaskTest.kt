@@ -54,6 +54,7 @@ import com.android.wm.shell.common.SyncTransactionQueue
 import com.android.wm.shell.common.TaskStackListenerImpl
 import com.android.wm.shell.common.TestShellExecutor
 import com.android.wm.shell.shared.TransactionPool
+import com.android.wm.shell.shared.bubbles.FakeBubbleFeatureConfig
 import com.android.wm.shell.sysui.ShellCommandHandler
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
@@ -195,6 +196,7 @@ class BubbleViewInfoTaskTest {
                 sessionTracker,
                 bubbleViewInfoTaskFactory,
                 mock<BubbleHelper>(),
+                FakeBubbleFeatureConfig(),
             )
 
         // TODO: (b/371829099) - when optional overflow is no longer flagged we can enable this

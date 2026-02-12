@@ -30,7 +30,7 @@
         android:orientation="horizontal"
         android:clickable="true"
         android:focusable="true"
-        android:contentDescription="@string/desktop_mode_app_header_chip_text"
+        android:contentDescription="@string/desktop_mode_header_chip_text"
         android:layout_marginStart="12dp">
         <ImageView
             android:id="@+id/application_icon"

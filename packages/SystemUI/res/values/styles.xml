@@ -983,10 +983,7 @@
 
     <style name="ScreenCapture.PostRecord" parent="@style/Theme.AppCompat.NoActionBar">
         <item name="android:windowNoTitle">true</item>
-        <item name="android:windowIsTranslucent">true</item>
-        <item name="android:windowBackground">@color/materialColorSurfaceBright</item>
-        <item name="android:backgroundDimEnabled">false</item>
-        <item name="android:windowCloseOnTouchOutside">false</item>
+        <item name="android:windowBackground">@color/materialColorSurface</item>
     </style>
 
     <style name="ScreenCapture.PostRecord.SnackbarDialog" parent="@style/Theme.SystemUI.Dialog">

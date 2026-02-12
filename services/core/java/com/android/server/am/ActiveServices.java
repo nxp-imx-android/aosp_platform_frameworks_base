@@ -932,17 +932,6 @@ public final class ActiveServices {
         return false;
     }
 
-    void updateAppRestrictedAnyInBackgroundLocked(final int uid, final String packageName) {
-        final boolean restricted = appRestrictedAnyInBackground(uid, packageName);
-        final UidRecord uidRec = mAm.mProcessList.getUidRecordLOSP(uid);
-        if (uidRec != null) {
-            final ProcessRecord app = uidRec.getProcessInPackage(packageName);
-            if (app != null) {
-                app.setBackgroundRestricted(restricted);
-            }
-        }
-    }
-
     static String getProcessNameForService(ServiceInfo sInfo, ComponentName name,
             String callingPackage, String instanceName, boolean isSdkSandbox,
             boolean inSharedIsolatedProcess, boolean inPrivateSharedIsolatedProcess) {
@@ -4699,11 +4688,11 @@ public final class ActiveServices {
                 if (srec.getHostProcess() != null) {
                     final ProcessServiceRecord psr = srec.getHostProcess().mServices;
                     if (group > 0) {
-                        psr.setConnectionGroup(group);
-                        psr.setConnectionImportance(importance);
+                        mAm.mProcessStateController.setConnectionGroup(psr, group);
+                        mAm.mProcessStateController.setConnectionImportance(psr, importance);
                     } else {
-                        psr.setConnectionGroup(0);
-                        psr.setConnectionImportance(0);
+                        mAm.mProcessStateController.setConnectionGroup(psr, 0);
+                        mAm.mProcessStateController.setConnectionImportance(psr, 0);
                     }
                 } else {
                     if (group > 0) {
@@ -4805,7 +4794,7 @@ public final class ActiveServices {
             final ConnectionRecord r = clist.get(i);
             final long updatedFlags = r.getFlags() ^ flags;
             if (updatedFlags != (updatedFlags & Context.BIND_UPDATEABLE_FLAGS)) {
-                throw new IllegalArgumentException("Attempting to update non-updatedable flags");
+                throw new IllegalArgumentException("Attempting to update non-updatable flags");
             }
             if (mAm.mProcessStateController.updateConnectionFlags(r, flags)) {
                 final ProcessRecord app = r.binding.service.getHostProcess();
@@ -7410,7 +7399,8 @@ public final class ActiveServices {
         boolean didSomething = false;
 
         // Update the app background restriction of the caller
-        proc.setBackgroundRestricted(appRestrictedAnyInBackground(proc.uid, proc.info.packageName));
+        mAm.mProcessStateController.setBackgroundRestricted(proc,
+                appRestrictedAnyInBackground(proc.uid, proc.info.packageName));
 
         // Collect any services that are waiting for this process to come up.
         if (mPendingServices.size() > 0) {

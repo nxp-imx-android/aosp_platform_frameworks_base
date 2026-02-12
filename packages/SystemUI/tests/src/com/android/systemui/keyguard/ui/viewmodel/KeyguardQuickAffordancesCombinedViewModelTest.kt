@@ -34,6 +34,7 @@ import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.dock.DockManagerFake
 import com.android.systemui.flags.fakeFeatureFlagsClassic
 import com.android.systemui.haptics.msdl.msdlPlayer
+import com.android.systemui.inputdevice.domain.interactor.pointerDeviceInteractor
 import com.android.systemui.keyguard.data.quickaffordance.BuiltInKeyguardQuickAffordanceKeys
 import com.android.systemui.keyguard.data.quickaffordance.FakeKeyguardQuickAffordanceConfig
 import com.android.systemui.keyguard.data.quickaffordance.FakeKeyguardQuickAffordanceProviderClientFactory
@@ -302,6 +303,7 @@ class KeyguardQuickAffordancesCombinedViewModelTest : SysuiTestCase() {
                         secureLockDeviceInteractor = { kosmos.secureLockDeviceInteractor },
                         devicePolicyManager = devicePolicyManager,
                         dockManager = dockManager,
+                        pointerDeviceInteractor = kosmos.pointerDeviceInteractor,
                         biometricSettingsRepository = biometricSettingsRepository,
                         backgroundDispatcher = kosmos.testDispatcher,
                         appContext = mContext,

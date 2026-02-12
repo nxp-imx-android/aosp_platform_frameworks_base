@@ -78,6 +78,7 @@ constructor(
     // Controls the visibility and animation state of the Compose UI.
     private val visibleState = MutableTransitionState(false)
     private var interactor: ShareScreenUiInteractor? = null
+    private var hasAnnouncedCancel = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -155,6 +156,7 @@ constructor(
                                     mediaProjectionMetricsLogger.notifyProjectionRequestCancelled(
                                         uid
                                     )
+                                    announceCancellationIfNeeded()
                                     hide()
                                 }
                                 is ShareScreenUiInteractor.SharingState.NotStarted -> {
@@ -207,14 +209,22 @@ constructor(
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-
+    override fun onPause() {
+        super.onPause()
         if (interactor?.sharingState?.value is ShareScreenUiInteractor.SharingState.Approved) {
             return
         }
 
-        if (!accessibilityManager.isEnabled) {
+        if (isFinishing) {
+            // Ensure cancellation state and accessibility announcement are triggered on dismissal
+            // (e.g., entering Overview).
+            interactor?.onClose()
+            announceCancellationIfNeeded()
+        }
+    }
+
+    private fun announceCancellationIfNeeded() {
+        if (hasAnnouncedCancel || !accessibilityManager.isEnabled) {
             return
         }
 
@@ -226,6 +236,8 @@ constructor(
                 text.add(announcement)
             }
         accessibilityManager.sendAccessibilityEvent(event)
+
+        hasAnnouncedCancel = true
     }
 
     private fun createSuccessIntent(projection: IMediaProjection): Intent {

@@ -45,4 +45,9 @@ public final class MockUtils {
         doCallRealMethod().when(record).setLastTopAlmostPerceptibleBindRequestUptimeMs(anyLong());
         doCallRealMethod().when(record).setHostProcess(nullable(ProcessRecordInternal.class));
     }
+
+    /** Sets the last time a process was in the TOP state. */
+    public static void setLastTopTime(ProcessRecordInternal proc, long lastTopTime) {
+        proc.setLastTopTime(lastTopTime);
+    }
 }

@@ -176,7 +176,8 @@ public class VisualizerConnectionTest {
                 intentCaptor.capture(), any(ServiceConnection.class), flagsCaptor.capture());
 
         // Verify that the BIND_ALLOW_ACTIVITY_STARTS flag is included.
-        final int expectedFlags = Context.BIND_AUTO_CREATE | Context.BIND_ALLOW_ACTIVITY_STARTS;
+        final int expectedFlags = Context.BIND_AUTO_CREATE
+                | Context.BIND_ALLOW_BACKGROUND_ACTIVITY_STARTS;
         assertThat(flagsCaptor.getValue()).isEqualTo(expectedFlags);
 
         // Also verify the intent is constructed correctly.

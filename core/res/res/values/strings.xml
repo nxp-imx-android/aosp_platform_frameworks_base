@@ -5945,12 +5945,20 @@
         PIN
     </string>
     <!-- Title of the dialog warning the user that locking the current app doesn't prevent other apps from seeing their photos. [CHAR LIMIT=60] -->
-    <string name="app_lock_permission_review_dialog_title">
+    <string name="app_lock_permission_review_dialog_title_photos">
         Your photos may still show in other apps
     </string>
     <!-- Subtitle introducing the list of other applications that have permission to access the user's photos. [CHAR LIMIT=40] -->
-    <string name="app_lock_permission_review_dialog_sub_title">
+    <string name="app_lock_permission_review_dialog_subtitle_photos">
         Apps with access to your photos
+    </string>
+    <!-- Title of the dialog warning the user that locking the current app doesn't prevent other apps from accessing the files. [CHAR LIMIT=60] -->
+    <string name="app_lock_permission_review_dialog_title_files">
+        Your files may still show in other apps
+    </string>
+    <!-- Subtitle introducing the list of other applications that have permission to access the user's files. [CHAR LIMIT=40] -->
+    <string name="app_lock_permission_review_dialog_subtitle_files">
+        Apps with access to your files
     </string>
     <!-- Label for the button that expands the collapsed list of apps to show all of them. [CHAR LIMIT=20] -->
     <string name="app_lock_permission_review_expand_app_list_button">

@@ -34,7 +34,7 @@ constructor(private val desktopEffectInteractor: DesktopEffectInteractor) :
                 ButtonUiState(
                     isEnabled = it.faceRetouch,
                     mainTitle = com.android.systemui.res.R.string.av_camera_face_retouch,
-                    image = com.android.systemui.res.R.drawable.gs_face_retouch,
+                    image = com.android.systemui.res.R.drawable.gs_portrait_lighting,
                 )
             }
             .hydratedStateOf(initialValue = ButtonUiState())

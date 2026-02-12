@@ -65,7 +65,7 @@ class PortraitRelightButtonViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             assertThat(underTest.state.isEnabled).isFalse()
             assertThat(underTest.state.image)
-                .isEqualTo(com.android.systemui.res.R.drawable.ic_lightbulb)
+                .isEqualTo(com.android.systemui.res.R.drawable.gs_lightbulb)
         }
 
     @Test

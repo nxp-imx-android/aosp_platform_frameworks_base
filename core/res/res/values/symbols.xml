@@ -388,7 +388,7 @@
   <java-symbol type="bool" name="config_experimental_designateMainUser"/>
   <java-symbol type="bool" name="config_canSwitchToHeadlessSystemUser"/>
   <java-symbol type="bool" name="config_hideUserSwitchingUiDuringSetup"/>
-  <java-symbol type="bool" name="config_enableMultiUserManagement"/>
+  <java-symbol type="bool" name="config_enableMultiuserManagement"/>
   <java-symbol type="bool" name="config_enableMultiUserUI"/>
   <java-symbol type="bool" name="config_enableMultipleAdmins"/>
   <java-symbol type="bool" name="config_allowAlarmsOnStoppedUsers"/>
@@ -3700,6 +3700,8 @@
   <java-symbol type="id" name="app_lock_permission_review_btn_continue" />
   <java-symbol type="id" name="app_lock_permission_review_btn_view_all" />
   <java-symbol type="id" name="app_lock_permission_review_bottom_sheet_divider" />
+  <java-symbol type="id" name="app_lock_permission_review_dialog_subtitle" />
+  <java-symbol type="id" name="app_lock_permission_review_dialog_title" />
   <java-symbol type="id" name="app_lock_permission_review_list_app_icon" />
   <java-symbol type="id" name="app_lock_permission_review_list_app_name" />
   <java-symbol type="id" name="locked_app_activity_external_display_message_id" />
@@ -3723,6 +3725,10 @@
   <java-symbol type="string" name="app_lock_edu_dialog_lockscreen_password_name" />
   <java-symbol type="string" name="app_lock_edu_dialog_lockscreen_pattern_name" />
   <java-symbol type="string" name="app_lock_edu_dialog_lockscreen_pin_name" />
+  <java-symbol type="string" name="app_lock_permission_review_dialog_subtitle_files" />
+  <java-symbol type="string" name="app_lock_permission_review_dialog_subtitle_photos" />
+  <java-symbol type="string" name="app_lock_permission_review_dialog_title_files" />
+  <java-symbol type="string" name="app_lock_permission_review_dialog_title_photos" />
   <java-symbol type="string" name="disable_app_lock_biometric_prompt_subtitle" />
   <java-symbol type="string" name="disable_app_lock_success_toast_message" />
   <java-symbol type="string" name="enable_app_lock_biometric_prompt_subtitle" />

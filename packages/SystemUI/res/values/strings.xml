@@ -97,10 +97,10 @@
     <string name="usb_device_permission_prompt_warn">Allow <xliff:g id="application" example= "Usb Mega Player">%1$s</xliff:g> to access <xliff:g id="usb_device" example="USB Headphones">%2$s</xliff:g>?\nThis app has not been granted record permission but could capture audio through this USB device.</string>
 
     <!-- USB audio device permission dialog title.  [CHAR LIMIT=200]-->
-    <string name="usb_audio_device_permission_prompt_title">Allow <xliff:g id="application" example= "Usb Mega Player">%1$s</xliff:g> to access <xliff:g id="usb_device" example="USB Headphones">%2$s</xliff:g>?</string>
+    <string name="usb_audio_device_permission_prompt_title">Allow &lt;b><xliff:g id="application" example= "Usb Mega Player">%1$s</xliff:g>&lt;/b> to access &lt;b><xliff:g id="usb_device" example="USB Headphones">%2$s</xliff:g>&lt;/b>?</string>
 
     <!-- USB audio device confirm dialog title.  [CHAR LIMIT=200]-->
-    <string name="usb_audio_device_confirm_prompt_title">Open <xliff:g id="application" example= "Usb Mega Player">%1$s</xliff:g> to handle <xliff:g id="usb_device" example="USB Headphones">%2$s</xliff:g>?</string>
+    <string name="usb_audio_device_confirm_prompt_title">Open &lt;b><xliff:g id="application" example= "Usb Mega Player">%1$s</xliff:g>&lt;/b> to handle &lt;b><xliff:g id="usb_device" example="USB Headphones">%2$s</xliff:g>&lt;/b>?</string>
 
     <!-- Checkbox label for USB audio device dialogs with warning text for USB audio device dialogs.  [CHAR LIMIT=NONE]-->
     <string name="usb_audio_device_prompt_warn">This app has not been granted record permission but could capture audio through this USB device. Using <xliff:g id="application" example= "Usb Mega Player">%1$s</xliff:g> with this device might prevent hearing calls, notifications and alarms.</string>
@@ -481,7 +481,11 @@
     <!-- Button text for screen sharing [CHAR LIMIT=35] -->
     <string name="screen_share_toolbar_share_button">Share</string>
     <!-- Text for app screen sharing thumbnail when no app is selected. [CHAR LIMIT=35] -->
-    <string name="screen_share_no_select_app_thumbnail">Select an app to share</string>
+    <string name="screen_share_no_select_app_thumbnail">Select app window to share</string>
+    <!-- Text for app screen sharing thumbnail when no tab is selected. [CHAR LIMIT=35] -->
+    <string name="screen_share_no_select_tab_thumbnail">Select tab to share</string>
+    <!-- Text for app screen sharing thumbnail when no display is selected. [CHAR LIMIT=35] -->
+    <string name="screen_share_no_select_display_thumbnail">Select display to share</string>
     <!-- Text for share audio. [CHAR LIMIT=35] -->
     <string name="screen_share_audio_sharing_text">Share audio</string>
     <!-- Text for app sharing title [CHAR LIMIT=35] -->
@@ -517,15 +521,15 @@
     <!-- Accessibility string for the tab sharing button when unselected [CHAR LIMIT=NONE] -->
     <string name="screen_share_a11y_tab_button_unselected">Tab sharing button. Not selected. Press enter to share tab.</string>
     <!-- Accessibility string for the tab sharing button when selected [CHAR LIMIT=NONE] -->
-    <string name="screen_share_a11y_tab_button_selected">Sharing tab. Navigate to see available tabs.</string>
+    <string name="screen_share_a11y_tab_button_selected">Sharing tab. Navigate to check available tabs.</string>
     <!-- Accessibility string for the app sharing button when unselected [CHAR LIMIT=NONE] -->
     <string name="screen_share_a11y_app_button_unselected">App sharing button. Not selected. Press enter to share app.</string>
     <!-- Accessibility string for the app sharing button when selected [CHAR LIMIT=NONE] -->
-    <string name="screen_share_a11y_app_button_selected">Sharing app. Navigate to see available apps.</string>
+    <string name="screen_share_a11y_app_button_selected">Sharing app. Navigate to check available apps.</string>
     <!-- Accessibility string for the fullscreen sharing button when unselected [CHAR LIMIT=NONE] -->
     <string name="screen_share_a11y_fullscreen_button_unselected">Fullscreen button. Not selected. Press enter to share fullscreen.</string>
     <!-- Accessibility string for the fullscreen sharing button when selected [CHAR LIMIT=NONE] -->
-    <string name="screen_share_a11y_fullscreen_button_selected">Sharing fullscreen. Navigate to see available displays.</string>
+    <string name="screen_share_a11y_fullscreen_button_selected">Sharing fullscreen. Navigate to check available displays.</string>
     <!-- Accessibility string for the share button when disabled [CHAR LIMIT=NONE] -->
     <string name="screen_share_a11y_share_button_off">Share button. Off. Select app, tab, or display to share.</string>
     <!-- Accessibility string for the share button when enabled [CHAR LIMIT=NONE] -->
@@ -681,8 +685,6 @@
     <string name="accessibility_lock_icon">Device locked</string>
     <!-- Content description of the confirm button shown when a passive biometric is authenticated on lock screen and user confirmation is required to unlock the device. [CHAR LIMIT=30] -->
     <string name="accessibility_confirm_biometric_auth_to_unlock">Confirm and unlock the device</string>
-    <!-- Content description of the try again button shown when a face auth error occurs on lock screen and user interaction is required to retry auth. [CHAR LIMIT=30] -->
-    <string name="accessibility_retry_face_auth">Try Face Unlock again</string>
     <!-- Content description hint of the unlock button when fingerprint is on (not shown on the screen). [CHAR LIMIT=NONE] -->
     <!-- Accessibility action of the unlock button when fingerpint is on (not shown on the screen). [CHAR LIMIT=NONE] -->
     <!-- Content description of the Trusted Face icon for accessibility. [CHAR LIMIT=NONE] -->
@@ -711,15 +713,9 @@
     <!-- Message shown when a biometric is authenticated, waiting for the user to confirm authentication [CHAR LIMIT=40]-->
     <string name="biometric_dialog_tap_confirm">Tap Confirm to complete</string>
     <!-- Message shown when a biometric has authenticated with a user's face and is waiting for the user to confirm authentication [CHAR LIMIT=60]-->
-    <string name="biometric_dialog_tap_confirm_with_face">Unlocked by face</string>
-    <!-- Message shown when a biometric has authenticated with a user's face and is waiting for the user to confirm authentication [CHAR LIMIT=60]-->
-    <string name="biometric_dialog_tap_confirm_with_face_alt_1">Unlocked by face. Press to continue.</string>
-    <!-- Message shown when a biometric has authenticated with a user's face and is waiting for the user to confirm authentication [CHAR LIMIT=60]-->
     <string name="biometric_dialog_tap_confirm_with_face_alt_2">Face recognized. Press to continue.</string>
     <!-- Message shown when a biometric has authenticated with a user's face and is waiting for the user to confirm authentication [CHAR LIMIT=60]-->
     <string name="biometric_dialog_tap_confirm_with_face_alt_3">Face recognized. Press the unlock icon to continue.</string>
-    <!-- Message shown when a biometric has authenticated with a user's face and is waiting for the user to confirm authentication with SFPS [CHAR LIMIT=60]-->
-    <string name="biometric_dialog_tap_confirm_with_face_sfps">Unlocked by face. Tap to continue.</string>
     <!-- Talkback string when a biometric is authenticated [CHAR LIMIT=NONE] -->
     <string name="biometric_dialog_authenticated">Authenticated</string>
     <!-- Talkback string when a canceling authentication [CHAR LIMIT=NONE] -->
@@ -805,16 +801,6 @@
     <string name="fingerprint_re_enroll_dialog_content_singular">To set up Fingerprint Unlock again, your current fingerprint images and model will be deleted.\n\nAfter they\’re deleted, you\’ll need to set up Fingerprint Unlock again to use your fingerprint to unlock your phone or verify it\’s you.</string>
     <!-- Content for a dialog shown when an error occurs while the user is trying to re-enroll their fingerprint. [CHAR LIMIT=NONE] -->
     <string name="fingerprint_reenroll_failure_dialog_content">Couldn\u2019t set up fingerprint unlock. Go to Settings to try again.</string>
-    <!-- Notification title shown when the system requires the user to re-enroll their face. [CHAR LIMIT=NONE] -->
-    <string name="face_re_enroll_notification_title">Set up Face Unlock again</string>
-    <!-- Name shown for system notifications related to the face unlock feature. [CHAR LIMIT=NONE] -->
-    <string name="face_re_enroll_notification_name">Face Unlock</string>
-    <!-- Title for a dialog shown when the system requires the user to re-enroll their face. [CHAR LIMIT=NONE] -->
-    <string name="face_re_enroll_dialog_title">Set up Face Unlock</string>
-    <!-- Content for a dialog shown when the system requires the user to re-enroll their face. [CHAR LIMIT=NONE] -->
-    <string name="face_re_enroll_dialog_content">To set up Face Unlock again, your current face model will be deleted.\n\nYou\’ll need to set up this feature again to use your face to unlock your phone.</string>
-    <!-- Content for a dialog shown when an error occurs while the user is trying to re-enroll their face. [CHAR LIMIT=NONE] -->
-    <string name="face_reenroll_failure_dialog_content">Couldn\u2019t set up face unlock. Go to Settings to try again.</string>
     <!-- Message shown when the system-provided fingerprint dialog is shown, asking for authentication -->
     <string name="fingerprint_dialog_touch_sensor">Touch the fingerprint sensor</string>
     <!-- Content description after successful auth when confirmation required -->
@@ -827,8 +813,6 @@
     <string name="keyguard_face_failed">Face not recognized</string>
     <!-- Message shown to suggest using fingerprint sensor to authenticate after another biometric failed. [CHAR LIMIT=25] -->
     <string name="keyguard_suggest_fingerprint">Use fingerprint instead</string>
-    <!-- Message shown to inform the user that face unlock is not available. [CHAR LIMIT=59] -->
-    <string name="keyguard_face_unlock_unavailable">Face Unlock unavailable</string>
 
     <!-- Content description of the bluetooth icon when connected for accessibility (not shown on the screen). [CHAR LIMIT=NONE] -->
     <string name="accessibility_bluetooth_connected">Bluetooth connected.</string>
@@ -1557,28 +1541,16 @@
     <!-- Message shown when lock screen is unlocked (ie: by trust agent or face auth). Provides extra instructions for how the user can enter their device [CHAR LIMIT=60] -->
     <string name="keyguard_unlock_press">Press the unlock icon to open</string>
 
-    <!-- Message shown when non-bypass face authentication succeeds. Provides extra instructions for how the user can enter their device [CHAR LIMIT=60] -->
-    <string name="keyguard_face_successful_unlock_swipe">Unlocked by face. Swipe up to open.</string>
-    <!-- Message shown when non-bypass face authentication succeeds and UDFPS is supported. Provides extra instructions for how the user can enter their device [CHAR LIMIT=60] -->
-    <string name="keyguard_face_successful_unlock_confirm_button">Unlocked by face. Press confirm to continue.</string>
-    <!-- Message shown when non-bypass face authentication succeeds and UDFPS is supported. Provides extra instructions for how the user can enter their device [CHAR LIMIT=60] -->
-    <string name="keyguard_face_successful_unlock_press">Unlocked by face. Press the unlock icon to open.</string>
-    <!-- Message shown when non-bypass face authentication succeeds and UDFPS is supported. Provides extra instructions for how the user can enter their device [CHAR LIMIT=60] -->
-    <string name="keyguard_face_successful_unlock_press_alt_1">Unlocked by face. Press to open.</string>
     <!-- Message shown when non-bypass face authentication succeeds and UDFPS is supported. Provides extra instructions for how the user can enter their device [CHAR LIMIT=60] -->
     <string name="keyguard_face_successful_unlock_press_alt_2">Face recognized. Press to open.</string>
     <!-- Message shown when non-bypass face authentication succeeds and UDFPS is supported. Provides extra instructions for how the user can enter their device [CHAR LIMIT=60] -->
     <string name="keyguard_face_successful_unlock_press_alt_3">Face recognized. Press the unlock icon to open.</string>
 
     <!-- Message shown when non-bypass face authentication succeeds. [CHAR LIMIT=60] -->
-    <string name="keyguard_face_successful_unlock">Unlocked by face</string>
-    <!-- Message shown when non-bypass face authentication succeeds. [CHAR LIMIT=60] -->
     <string name="keyguard_face_successful_unlock_alt1">Face recognized</string>
 
     <!-- Message shown when face authentication fails and the pin pad is visible. [CHAR LIMIT=60] -->
     <string name="keyguard_retry">Swipe up to try again</string>
-    <!-- Message shown when face authentication fails and the pin pad is visible. [CHAR LIMIT=60] -->
-    <string name="accesssibility_keyguard_retry">Swipe up to try Face Unlock again</string>
 
     <!-- Message shown when notifying user to unlock in order to use NFC. [CHAR LIMIT=60] -->
     <string name="require_unlock_for_nfc">Unlock to use NFC</string>
@@ -4902,6 +4874,8 @@
     <string name="av_blur">Blur</string>
     <!-- Title for live captions button [CHAR LIMIT=NONE] -->
     <string name="av_live_captions">Live Captions</string>
+    <!-- Content description for return action -->
+    <string name="av_drill_in_return_to_main">Back</string>
 
     <!-- Notification title for hearing device battery [CHAR LIMIT=NONE] -->
     <string name="accessibility_hearing_device_battery_level">Battery %s</string>

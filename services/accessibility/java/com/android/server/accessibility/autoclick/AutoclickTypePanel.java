@@ -278,7 +278,6 @@ public class AutoclickTypePanel {
      */
     private void snapToNearestEdge(WindowManager.LayoutParams params) {
         // Get screen width to determine which side to snap to.
-        // TODO(b/397944891): Handle device rotation case.
         int screenWidth = mContext.getResources().getDisplayMetrics().widthPixels;
         int screenHeight = mContext.getResources().getDisplayMetrics().heightPixels;
         int taskbarHeight = SystemBarUtils.getTaskbarHeight(mContext.getResources());

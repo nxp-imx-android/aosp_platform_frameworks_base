@@ -257,9 +257,22 @@ class DesktopRepository(
     fun setExclusionRegionListener(regionListener: Consumer<Region>, executor: Executor) {
         desktopGestureExclusionListener = regionListener
         desktopGestureExclusionExecutor = executor
-        executor.execute {
-            desktopGestureExclusionListener?.accept(calculateDesktopExclusionRegion())
+        notifyDesktopGestureExclusionListener()
+    }
+
+    /**
+     * Calculates the desktop gesture exclusion region and notifies
+     * [desktopGestureExclusionListener] if set.
+     */
+    private fun notifyDesktopGestureExclusionListener() {
+        val executor = desktopGestureExclusionExecutor
+        val listener = desktopGestureExclusionListener
+        if (executor == null || listener == null) {
+            return
         }
+
+        val desktopExclusionRegion = calculateDesktopExclusionRegion()
+        executor.execute { listener.accept(desktopExclusionRegion) }
     }
 
     /** Creates a new merged region representative of all exclusion regions in all desktop tasks. */
@@ -1197,9 +1210,7 @@ class DesktopRepository(
     fun updateTaskExclusionRegions(taskId: Int, taskExclusionRegions: Region) {
         val exclusionRegion = Region.obtain(taskExclusionRegions)
         desktopExclusionRegions.put(taskId, exclusionRegion)
-        desktopGestureExclusionExecutor?.execute {
-            desktopGestureExclusionListener?.accept(calculateDesktopExclusionRegion())
-        }
+        notifyDesktopGestureExclusionListener()
     }
 
     /**
@@ -1210,9 +1221,7 @@ class DesktopRepository(
      */
     fun removeExclusionRegion(taskId: Int) {
         desktopExclusionRegions.delete(taskId)
-        desktopGestureExclusionExecutor?.execute {
-            desktopGestureExclusionListener?.accept(calculateDesktopExclusionRegion())
-        }
+        notifyDesktopGestureExclusionListener()
     }
 
     /** Returns the bounds saved before snapping or maximizing the given task. */

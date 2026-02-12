@@ -216,6 +216,7 @@ import com.android.wm.shell.shared.annotations.ShellDesktopThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.annotations.ShellMainThreadImmediate;
 import com.android.wm.shell.shared.bubbles.BubbleFeatureConfig;
+import com.android.wm.shell.shared.bubbles.BubbleFeatureConfigImpl;
 import com.android.wm.shell.shared.desktopmode.DesktopConfig;
 import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.shared.pip.PipFlags;
@@ -301,7 +302,7 @@ public abstract class WMShellModule {
     @WMSingleton
     @Provides
     static BubbleFeatureConfig providesBubbleFeatureConfig(Context context) {
-        return new BubbleFeatureConfig(context);
+        return new BubbleFeatureConfigImpl(context);
     }
 
     @WMSingleton
@@ -448,7 +449,8 @@ public abstract class WMShellModule {
             BubblesFoldLockSettingsObserver foldLockSettingsObserver,
             BubbleSessionTracker sessionTracker,
             BubbleViewInfoTask.Factory bubbleViewInfoTaskFactory,
-            BubbleHelper bubbleHelper) {
+            BubbleHelper bubbleHelper,
+            BubbleFeatureConfig featureConfig) {
         final WindowManager wm = enableViewCaptureTracing()
                 ? ViewCaptureAwareWindowManagerFactory.getInstance(context)
                 : windowManager;
@@ -493,7 +495,8 @@ public abstract class WMShellModule {
                 foldLockSettingsObserver,
                 sessionTracker,
                 bubbleViewInfoTaskFactory,
-                bubbleHelper);
+                bubbleHelper,
+                featureConfig);
     }
 
     //

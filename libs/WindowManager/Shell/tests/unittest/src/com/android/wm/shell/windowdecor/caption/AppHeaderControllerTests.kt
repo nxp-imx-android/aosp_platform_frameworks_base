@@ -64,14 +64,11 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentMatchers.anyBoolean
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.kotlin.any
-import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.spy
 import org.mockito.kotlin.times
-import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 /**
@@ -169,42 +166,7 @@ class AppHeaderControllerTests : ShellTestCase() {
         testScope.advanceUntilIdle()
 
         // Verify menu was only created once
-        verifyHandleMenuCreated()
-    }
-
-    private fun verifyHandleMenuCreated(times: Int = 1) {
-        verify(mockHandleMenuFactory, times(times))
-            .create(
-                mainDispatcher = any(),
-                mainScope = any(),
-                context = any(),
-                taskInfo = any(),
-                parentSurface = any(),
-                display = any(),
-                windowManagerWrapper = any(),
-                windowDecorationActions = any(),
-                taskResourceLoader = any(),
-                layoutResId = anyInt(),
-                splitScreenController = any(),
-                shouldShowWindowingPill = anyBoolean(),
-                shouldShowNewWindowButton = anyBoolean(),
-                shouldShowManageWindowsButton = anyBoolean(),
-                shouldShowChangeAspectRatioButton = anyBoolean(),
-                shouldShowGameControlsButton = anyBoolean(),
-                shouldShowDesktopModeButton = anyBoolean(),
-                shouldShowRestartButton = anyBoolean(),
-                isBrowserApp = anyBoolean(),
-                openInAppOrBrowserIntent = anyOrNull(),
-                desktopModeUiEventLogger = any(),
-                captionView = any(),
-                captionWidth = anyInt(),
-                captionHeight = anyInt(),
-                captionX = anyInt(),
-                captionY = anyInt(),
-                surfaceControlBuilderSupplier = any(),
-                surfaceControlTransactionSupplier = any(),
-                surfaceControlViewHostFactory = any(),
-            )
+        mockHandleMenuFactory.verifyHandleMenuCreated()
     }
 
     private fun createAppHeaderController(taskInfo: RunningTaskInfo) =

@@ -43,6 +43,8 @@ import android.net.wifi.WifiInfo;
 import android.os.Build;
 import android.os.Process;
 import android.os.RemoteException;
+import android.ravenwood.annotation.RavenwoodKeep;
+import android.ravenwood.annotation.RavenwoodKeepPartialClass;
 import android.telephony.Annotation;
 import android.telephony.SubscriptionPlan;
 import android.util.DebugUtils;
@@ -67,6 +69,7 @@ import java.util.concurrent.Executor;
  *
  * @hide
  */
+@RavenwoodKeepPartialClass
 @TestApi
 @SystemApi(client = SystemApi.Client.MODULE_LIBRARIES)
 @SystemService(Context.NETWORK_POLICY_SERVICE)
@@ -800,6 +803,7 @@ public class NetworkPolicyManager {
      * This <b>DOES NOT</b> return all default process capabilities for a proc state.
      * @hide
      */
+    @RavenwoodKeep
     public static int getDefaultProcessNetworkCapabilities(int procState) {
         switch (procState) {
             case ActivityManager.PROCESS_STATE_PERSISTENT:

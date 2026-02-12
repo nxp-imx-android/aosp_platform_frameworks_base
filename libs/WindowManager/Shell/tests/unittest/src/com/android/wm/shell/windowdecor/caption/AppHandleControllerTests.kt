@@ -64,14 +64,10 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentMatchers.anyBoolean
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.kotlin.any
-import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.spy
-import org.mockito.kotlin.times
-import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 /**
@@ -111,6 +107,7 @@ class AppHandleControllerTests : ShellTestCase() {
     private lateinit var userRepositories: DesktopUserRepositories
     private lateinit var appToWebRepository: AppToWebRepositoryImpl
     private lateinit var appHandleController: AppHandleController
+    private lateinit var taskInfo: RunningTaskInfo
 
     @Before
     fun setup() {
@@ -151,7 +148,7 @@ class AppHandleControllerTests : ShellTestCase() {
         whenever(mockViewHostSupplier.acquire(any(), any())).thenReturn(mockViewHost)
         shellInit.init()
 
-        val taskInfo = createFullscreenTask()
+        taskInfo = createFullscreenTask()
         appHandleController = createAppHandleController(taskInfo).apply { relayout(taskInfo) }
     }
 
@@ -170,42 +167,19 @@ class AppHandleControllerTests : ShellTestCase() {
         testScope.advanceUntilIdle()
 
         // Verify menu was only created once
-        verifyHandleMenuCreated()
+        mockHandleMenuFactory.verifyHandleMenuCreated()
     }
 
-    private fun verifyHandleMenuCreated(times: Int = 1) {
-        verify(mockHandleMenuFactory, times(times))
-            .create(
-                mainDispatcher = any(),
-                mainScope = any(),
-                context = any(),
-                taskInfo = any(),
-                parentSurface = any(),
-                display = any(),
-                windowManagerWrapper = any(),
-                windowDecorationActions = any(),
-                taskResourceLoader = any(),
-                layoutResId = anyInt(),
-                splitScreenController = any(),
-                shouldShowWindowingPill = anyBoolean(),
-                shouldShowNewWindowButton = anyBoolean(),
-                shouldShowManageWindowsButton = anyBoolean(),
-                shouldShowChangeAspectRatioButton = anyBoolean(),
-                shouldShowGameControlsButton = anyBoolean(),
-                shouldShowDesktopModeButton = anyBoolean(),
-                shouldShowRestartButton = anyBoolean(),
-                isBrowserApp = anyBoolean(),
-                openInAppOrBrowserIntent = anyOrNull(),
-                desktopModeUiEventLogger = any(),
-                captionView = any(),
-                captionWidth = anyInt(),
-                captionHeight = anyInt(),
-                captionX = anyInt(),
-                captionY = anyInt(),
-                surfaceControlBuilderSupplier = any(),
-                surfaceControlTransactionSupplier = any(),
-                surfaceControlViewHostFactory = any(),
-            )
+    @Test
+    fun createHandleMenu_AppToWebDisabled_appToWebDataNull() {
+        desktopState.overrideDesktopModeSupportPerDisplay[taskInfo.displayId] = false
+
+        appHandleController.createHandleMenu(minimumInstancesFound = true)
+        testScope.advanceUntilIdle()
+
+        // Assert that handle menu was created with null App-to-Web data since app to web is
+        // disabled
+        mockHandleMenuFactory.verifyHandleMenuCreated(appToWebData = null)
     }
 
     private fun createAppHandleController(taskInfo: RunningTaskInfo) =

@@ -19,9 +19,6 @@ package com.android.server.devicepolicy.handlers;
 import static android.app.admin.DevicePolicyManager.POLICY_SCOPE_DEVICE;
 import static android.app.admin.DevicePolicyManager.POLICY_SCOPE_PARENT_USER;
 import static android.app.admin.DevicePolicyManager.POLICY_SCOPE_USER;
-import static android.app.role.RoleManager.ROLE_SYSTEM_FINANCED_DEVICE_CONTROLLER;
-import static android.app.role.RoleManager.ROLE_SYSTEM_SUPERVISION;
-import static com.android.server.devicepolicy.PolicyDefinition.POLICY_FLAG_GLOBAL_ONLY_POLICY;
 import static android.app.admin.DevicePolicyManager.RESOURCE_DEVICE_WIDE;
 import static android.app.admin.DevicePolicyManager.RESOURCE_PER_USER;
 
@@ -29,28 +26,17 @@ import android.Manifest.permission;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
-import android.app.admin.BooleanPolicyValue;
 import android.app.admin.DevicePolicyManager.DpcType;
 import android.app.admin.DevicePolicyManager.PolicyScope;
-import android.app.admin.NoArgsPolicyKey;
 import android.app.admin.PolicyIdentifier;
 import android.app.admin.PolicyValue;
 import android.app.admin.PolicyValueTransport;
 import android.app.admin.metadata.GeneratedPolicyMetadata;
 import android.app.admin.metadata.PolicyMetadata;
 import android.app.admin.metadata.PolicyTransportValueConvertor;
-import android.app.admin.DevicePolicyIdentifiers;
-
 import com.android.server.devicepolicy.CallerIdentity;
-import com.android.server.devicepolicy.DevicePolicyManagerService;
-import com.android.server.devicepolicy.EnforcingAdmin;
 import com.android.server.devicepolicy.IPermissionChecker;
-import com.android.server.devicepolicy.MostRecent;
 import com.android.server.devicepolicy.PolicyDefinition;
-import com.android.server.devicepolicy.PolicyEnforcerCallbacks;
-import com.android.server.devicepolicy.TopPriority;
-
-import com.android.server.utils.Slogf;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -62,8 +48,7 @@ import java.util.stream.Collectors;
  * <p>This logic uses the information provided in the PolicyDefinition annotation applied to the key
  * (of type {@link PolicyIdentifier}).
  *
- * <p>To add support for a new policy, simply add it to the {@link PolicyHandler.HANDLERS} list in
- * this class:
+ * <p>To add support for a new policy, simply add it to the {@link PolicyHandlerList.HANDLERS} list:
  *
  * {@snippet :
  *     public static List<PolicyHandler<?>> HANDLERS;
@@ -110,70 +95,6 @@ import java.util.stream.Collectors;
  */
 public class PolicyHandler<T> {
 
-    /**
-     * The list of {@link PolicyHandler}s that do not need to call a private method in the {@link
-     * DevicePolicyManagerService}.
-     */
-    public static List<PolicyHandler<?>> HANDLERS = new ArrayList<>();
-
-    static {
-        HANDLERS.add(
-                new PolicyHandler<Integer>(PolicyIdentifier.SCREEN_CAPTURE) {
-                    @Override
-                    protected void storePolicyValue(
-                            CallerIdentity caller, int scope, Integer value) {
-                        if (value == null) {
-                            clearPolicy(caller, PolicyDefinition.SCREEN_CAPTURE_DISABLED, scope);
-                        } else {
-                            boolean isDisabled =
-                                    value == PolicyIdentifier.SCREEN_CAPTURE_DISALLOWED;
-                            storePolicy(
-                                    caller,
-                                    PolicyDefinition.SCREEN_CAPTURE_DISABLED,
-                                    scope,
-                                    new BooleanPolicyValue(isDisabled));
-                        }
-                    }
-
-                    @Override
-                    protected Integer getPolicyValue(CallerIdentity caller, int scope) {
-                        var isDisabled =
-                                getPolicySetByAdmin(
-                                        caller, PolicyDefinition.SCREEN_CAPTURE_DISABLED, scope);
-
-                        return booleanToEnum(
-                                /* trueValue= */ PolicyIdentifier.SCREEN_CAPTURE_DISALLOWED,
-                                /* falseValue= */ PolicyIdentifier.SCREEN_CAPTURE_ALLOWED,
-                                isDisabled);
-                    }
-
-                    @Override
-                    protected Integer getResolvedPerUserPolicyValue(int userId) {
-                        var isDisabled =
-                                getDelegate()
-                                        .getResolvedPerUserPolicy(
-                                                userId, PolicyDefinition.SCREEN_CAPTURE_DISABLED);
-
-                        return booleanToEnum(
-                                /* trueValue= */ PolicyIdentifier.SCREEN_CAPTURE_DISALLOWED,
-                                /* falseValue= */ PolicyIdentifier.SCREEN_CAPTURE_ALLOWED,
-                                isDisabled);
-                    }
-                });
-        HANDLERS.add(new PolicyHandler<Integer>(PolicyIdentifier.AUTO_TIME));
-        HANDLERS.add(new PolicyHandler<String>(PolicyIdentifier.LOCKSCREEN_MESSAGE));
-    }
-
-    static Integer booleanToEnum(int trueValue, int falseValue, Boolean value) {
-        if (value == null) {
-            return null;
-        } else if (value) {
-            return trueValue;
-        } else {
-            return falseValue;
-        }
-    }
-
     private final PolicyIdentifier<T> mKey;
     private final PolicyMetadata<T> mPolicyMetadata;
     private final PolicyDefinition<T> mPolicyDefinition;
@@ -193,11 +114,11 @@ public class PolicyHandler<T> {
     }
 
     /** Constructor that uses the generated {@link PolicyDefinition}. */
-    private PolicyHandler(@NonNull PolicyIdentifier<T> key, @NonNull PolicyMetadata<T> metadata) {
+    protected PolicyHandler(@NonNull PolicyIdentifier<T> key, @NonNull PolicyMetadata<T> metadata) {
         this(key, metadata, PolicyDefinitionFactory.build(key, metadata));
     }
 
-    private PolicyHandler(
+    protected PolicyHandler(
             @NonNull PolicyIdentifier<T> key,
             @NonNull PolicyMetadata<T> policyMetadata,
             @Nullable PolicyDefinition<T> policyDefinition) {

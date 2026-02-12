@@ -325,7 +325,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 Display.DEFAULT_DISPLAY);
         when(mMockHandleMenuFactory.create(any(), any(), any(), any(), any(), any(), anyInt(),
                 any(), anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean(),
-                anyBoolean(), anyBoolean(), anyBoolean(), any(), any(), any(), anyInt(), anyInt(),
+                anyBoolean(), anyBoolean(), any(), any(), any(), anyInt(), anyInt(),
                 anyInt(), anyInt()))
                 .thenReturn(mMockHandleMenu);
         when(mMockMultiInstanceHelper.supportsMultiInstanceSplit(any(), anyInt()))
@@ -1765,9 +1765,15 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     private void verifyHandleMenuCreated(@Nullable Uri uri) {
         verify(mMockHandleMenuFactory).create(any(), any(), any(), any(), any(), any(), anyInt(),
                 any(), anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean(),
-                anyBoolean(), anyBoolean(), anyBoolean(), argThat(intent ->
-                        (uri == null && intent == null) || intent.getData().equals(uri)),
+                anyBoolean(), anyBoolean(), argThat(appToWebData ->
+                        verifyAppToWebData(uri, appToWebData)),
                 any(), any(), anyInt(), anyInt(), anyInt(), anyInt());
+    }
+
+    private boolean verifyAppToWebData(@Nullable Uri uri,
+            @Nullable HandleMenu.AppToWebData appToWebData) {
+        return uri == null ? appToWebData.getOpenInAppOrBrowserIntent() == null
+                : appToWebData.getOpenInAppOrBrowserIntent().getData().equals(uri);
     }
 
     private void createMaximizeMenu(DesktopModeWindowDecoration decoration) {

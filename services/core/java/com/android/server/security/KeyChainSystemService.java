@@ -18,15 +18,19 @@ package com.android.server.security;
 
 import static android.os.PowerWhitelistManager.REASON_KEY_CHAIN;
 
+import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageManager;
 import android.os.Process;
 import android.os.UserHandle;
+import android.security.Flags;
 import android.security.IKeyChainService;
+import android.security.KeyChain;
+import android.security.keystore.KeyGenParameterSpec;
 import android.util.Slog;
 
 import com.android.server.DeviceIdleInternal;
@@ -34,17 +38,35 @@ import com.android.server.LocalServices;
 import com.android.server.SystemService;
 
 /**
- * Service related to {@link android.security.KeyChain}.
+ * System service for managing KeyChain operations and certificate storage.
+ * It distinguishes between device-scoped and user-scoped certificates:
+ *
+ * <ul>
+ *   <li><b>Device-scoped certificates:</b> This service directly manages the storage,
+ *       retrieval, and access control for certificates that are shared across all
+ *       affiliated users on the device.
+ *   <li><b>User-scoped certificates:</b> Operations on traditional user-specific
+ *       certificates are delegated to the {@code com.android.keychain} app running
+ *       within the respective user profile, via the {@link android.security.IKeyChainService}
+ *       interface.
+ * </ul>
+ *
  * <p>
- * Most of the implementation of KeyChain is provided by the com.android.keychain app. Until O,
- * this was OK because a system app has roughly the same privileges as the system process.
+ * This service also publishes the {@link KeyChainLocalService} interface, allowing
+ * other components within the system server to interact with it efficiently without
+ * full Binder IPC overhead.
+ * <p>
+ * This dual responsibility marks a shift in KeyChain architecture, moving core
+ * device-level logic into the system server while still leveraging the existing
+ * KeyChain app for per-user credential management.
  * <p>
  * With the introduction of background check, PACKAGE_* broadcasts (_ADDED, _REMOVED, _REPLACED)
  * aren't received when the KeyChain app is in the background, which is bad as it uses those to
  * drive internal cleanup.
  * <p>
- * TODO (b/35968281): take a more sophisticated look at what bits of KeyChain should be inside the
- *                    system server and which make sense inside a system app.
+ *
+ * TODO (b/35968281) The long-term goal is to potentially centralize more logic here.
+ *
  * @hide
  */
 public class KeyChainSystemService extends SystemService {
@@ -56,8 +78,11 @@ public class KeyChainSystemService extends SystemService {
      */
     private static final int KEYCHAIN_IDLE_ALLOWLIST_DURATION_MS = 30 * 1000;
 
+    private final KeyChainLocalService mLocalService = new KeyChainLocalService(this);
+
     public KeyChainSystemService(final Context context) {
         super(context);
+        LocalServices.addService(KeyChainManagerInternal.class, mLocalService);
     }
 
     @Override
@@ -109,5 +134,98 @@ public class KeyChainSystemService extends SystemService {
                 REASON_KEY_CHAIN, "keychain");
 
         getContext().startServiceAsUser(intent, user);
+    }
+
+    /**
+     * Delegates key pair installation to the per-user KeyChain app.
+     *
+     * @param userId The target user.
+     * @return {@code true} on success.
+     */
+    public boolean installUserKeyPair(@NonNull byte[] pkcs8PrivateKey, @NonNull byte[] certificate,
+            @Nullable byte[][] certificateChain, @NonNull String alias, int userId) {
+        // TODO(b/475733339): Implement user-scoped delegation to IKeyChainService
+        Slog.i(TAG, "User-scoped installKeyPair not yet implemented.");
+        return false;
+    }
+
+    /**
+     * Installs a key pair into the device-wide keychain.
+     *
+     * @return {@code true} on success.
+     */
+    public boolean installDeviceKeyPair(@NonNull byte[] pkcs8PrivateKey,
+            @NonNull byte[] certificate, @Nullable byte[][] certificateChain,
+            @NonNull String alias) {
+        if (!Flags.enableDeviceCertificates()) {
+            Slog.w(TAG, "Device-scoped certificate installation requires "
+                    + "enable_device_certificates flag.");
+            return false;
+        }
+        // TODO(b/476375280): Implement device-scoped install
+        Slog.i(TAG, "Device-scoped installKeyPair not yet implemented.");
+        return false;
+    }
+
+    /**
+     * Delegates key pair generation to the per-user KeyChain app.
+     *
+     * @param userId The target user.
+     * @return A {@code KeyChain.KEY_GEN_*} status code.
+     */
+    public int generateUserKeyPair(@NonNull String algorithm, @NonNull KeyGenParameterSpec keySpec,
+            int userId) {
+        // TODO(b/475733339): Implement user-scoped delegation to IKeyChainService
+        Slog.i(TAG, "User-scoped generateKeyPair not yet implemented.");
+        return KeyChain.KEY_GEN_FAILURE;
+    }
+
+    /**
+     * Generates a key pair directly in the device-wide keychain.
+     *
+     * @return A {@code KeyChain.KEY_GEN_*} status code.
+     */
+    public int generateDeviceKeyPair(@NonNull String algorithm,
+            @NonNull KeyGenParameterSpec keySpec) {
+        if (!Flags.enableDeviceCertificates()) {
+            Slog.w(TAG, "Device-scoped certificate generation requires "
+                    + "enable_device_certificates flag.");
+            return KeyChain.KEY_GEN_FAILURE;
+        }
+        // TODO(b/476375280): Implement device-scoped generation
+        Slog.i(TAG, "Device-scoped generateKeyPair not yet implemented.");
+        return KeyChain.KEY_GEN_FAILURE;
+    }
+
+    /**
+     * Delegates setting the key pair certificate to the per-user KeyChain app.
+     *
+     * @param userId The target user.
+     * @return {@code true} on success.
+     */
+    public boolean setUserKeyPairCertificate(@NonNull String alias,
+            @NonNull byte[] clientCertificate,
+            @Nullable byte[] clientCertificateChain, int userId) {
+        // TODO(b/475733339): Implement user-scoped delegation to IKeyChainService
+        Slog.i(TAG, "User-scoped setKeyPairCertificate not yet implemented.");
+        return false;
+    }
+
+    /**
+     * Sets the certificate for a key pair in the device-wide keychain.
+     *
+     * @return {@code true} on success.
+     */
+    public boolean setDeviceKeyPairCertificate(@NonNull String alias,
+            @NonNull byte[] clientCertificate,
+            @Nullable byte[] clientCertificateChain) {
+        if (!Flags.enableDeviceCertificates()) {
+            Slog.w(TAG, "Device-scoped certificate setting requires "
+                    + "enable_device_certificates flag.");
+            return false;
+        }
+        // TODO(b/476375280): Implement device-scoped operation
+        Slog.i(TAG, "Device-scoped setKeyPairCertificate not yet implemented.");
+        return false;
     }
 }

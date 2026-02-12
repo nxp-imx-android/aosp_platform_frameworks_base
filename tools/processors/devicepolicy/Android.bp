@@ -9,11 +9,10 @@ package {
 }
 
 java_library_host {
-    name: "DevicePolicyAnnotationProcessorHostLibrary",
-    srcs: [
-        "src/**/*.kt",
-        "annotations/**/*.java",
-        "proto/**/*.proto",
+    name: "DevicePolicyAnnotationProcessorProto",
+    srcs: ["proto/**/*.proto"],
+    static_libs: [
+        "libprotobuf-java-full",
     ],
     proto: {
         type: "full",
@@ -21,10 +20,18 @@ java_library_host {
             "external/protobuf/src",
         ],
     },
+}
+
+java_library_host {
+    name: "DevicePolicyAnnotationProcessorHostLibrary",
+    srcs: [
+        "src/**/*.kt",
+        "annotations/**/*.java",
+    ],
     use_tools_jar: true,
     static_libs: [
         "libprotobuf-java-full",
-        "javapoet",
+        "DevicePolicyAnnotationProcessorProto",
     ],
 }
 

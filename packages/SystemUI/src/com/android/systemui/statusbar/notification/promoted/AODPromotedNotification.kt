@@ -521,8 +521,9 @@ private class AODPromotedNotificationViewUpdater(root: View) {
                     metricView.chronometer?.isCountDown = metric.isTimer
                     metricView.chronometer?.isUseAdaptiveFormat = metric.useAdaptiveFormat
                     metricView.chronometer?.format = null
-                    metricView.chronometer?.setStarted(metric !is Metric.TimeDifference.Paused)
-                    metricView.chronometer?.setLowFrequency(true)
+                    val isRunning = metric !is Metric.TimeDifference.Paused
+                    metricView.chronometer?.setStarted(isRunning)
+                    metricView.chronometer?.setLowFrequency(isRunning)
                     when (metric) {
                         is Metric.TimeDifference.ElapsedRealtime ->
                             metricView.chronometer?.setBase(metric.zeroElapsedRealtime)

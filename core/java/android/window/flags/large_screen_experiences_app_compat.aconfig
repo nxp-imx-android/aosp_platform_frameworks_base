@@ -53,6 +53,16 @@ flag {
 }
 
 flag {
+    name: "camera_compat_ignore_requested_orientation_allowed"
+    namespace: "large_screen_experiences_app_compat"
+    description: "Whether to ignore requested orientation when camera compat which simulates requested orientation is active."
+    bug: "479086789"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
   name: "camera_compat_update_treatment_on_rotation"
   namespace: "large_screen_experiences_app_compat"
   description: "Update the camera compatibility treatment when the display rotates, as it needs different rotate and crop amount."

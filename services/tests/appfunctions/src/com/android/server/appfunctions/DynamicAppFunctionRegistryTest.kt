@@ -529,7 +529,7 @@ class DynamicAppFunctionRegistryTest {
 
         registry.executeAppFunction(request, safeCallback, cancellationSignal)
 
-        verify(executor).execute(eq(request), any(), eq(executionCallback))
+        verify(executor).execute(any(), any(), eq(executionCallback))
     }
 
     @Test
@@ -624,7 +624,7 @@ class DynamicAppFunctionRegistryTest {
         verify(binder, times(2)).linkToDeath(deathRecipientCaptor.capture(), eq(0))
 
         val executorCallbackCaptor = argumentCaptor<IExecuteAppFunctionCallback>()
-        verify(executor).execute(eq(request), any(), executorCallbackCaptor.capture())
+        verify(executor).execute(any(), any(), executorCallbackCaptor.capture())
 
         val response = mock<ExecuteAppFunctionResponse>()
         executorCallbackCaptor.firstValue.onSuccess(response)
@@ -652,7 +652,7 @@ class DynamicAppFunctionRegistryTest {
         verify(binder, times(2)).linkToDeath(deathRecipientCaptor.capture(), eq(0))
 
         val executorCallbackCaptor = argumentCaptor<IExecuteAppFunctionCallback>()
-        verify(executor).execute(eq(request), any(), executorCallbackCaptor.capture())
+        verify(executor).execute(any(), any(), executorCallbackCaptor.capture())
 
         val error = AppFunctionException(AppFunctionException.ERROR_APP_UNKNOWN_ERROR, "Test error")
         executorCallbackCaptor.firstValue.onError(error)
@@ -716,10 +716,8 @@ class DynamicAppFunctionRegistryTest {
         packageName: String,
         functionId: String,
     ): ExecuteAppFunctionRequest {
-        val request = mock<ExecuteAppFunctionRequest>()
-        whenever(request.functionIdentifier).doReturn(functionId)
-        whenever(request.targetPackageName).doReturn(packageName)
-        return request
+        return ExecuteAppFunctionRequest.Builder(packageName, functionId)
+            .build()
     }
 
     private companion object {

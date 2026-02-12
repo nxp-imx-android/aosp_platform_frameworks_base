@@ -19,7 +19,6 @@ package android.processor.devicepolicy
 import android.processor.devicepolicy.protos.PolicyMetadataList
 import android.processor.devicepolicy.protos.PolicyMetadata
 import com.google.protobuf.TextFormat
-import com.squareup.javapoet.JavaFile
 import java.io.Writer
 import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.FilerException
@@ -119,19 +118,6 @@ class DevicePolicyAnnotationProcessor : AbstractProcessor() {
         } finally {
             protoWriter.close()
         }
-
-        // TODO(b/481103556): Generate policies in a separate package.
-        return
-
-        val policiesClass = PolicyMetadataCodeGenerator.generate(policyMetadata)
-        val policiesWriter = createSourceWriter(policiesClass)
-
-        try {
-            PolicyMetadataCodeGenerator.addLicense(policiesWriter)
-            policiesClass.writeTo(policiesWriter)
-        } finally {
-            policiesWriter.close()
-        }
     }
 
     fun createResourceWriter(name: String): Writer =
@@ -142,12 +128,6 @@ class DevicePolicyAnnotationProcessor : AbstractProcessor() {
                 "android.processor.devicepolicy",
                 name
             )
-            .openWriter()
-
-    fun createSourceWriter(file: JavaFile): Writer =
-        processingEnv
-            .filer
-            .createSourceFile("${file.packageName}.${file.typeSpec.name}")
             .openWriter()
 
     private fun printError(element: Element, message: String) {

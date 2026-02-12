@@ -90,9 +90,9 @@ public final class FileOperationEnqueueResult implements Parcelable {
      * <p>This can be used to reference track the status of this request, or (un)register via
      * completion notifications.
      *
-     * @see android.os.storage.FilesManager#fetchResult
-     * @see android.os.storage.FilesManager#registerCompletionListener
-     * @see android.os.storage.FilesManager#unregisterCompletionListener
+     * @see android.os.storage.FileManager#fetchResult
+     * @see android.os.storage.FileManager#registerCompletionListener
+     * @see android.os.storage.FileManager#unregisterCompletionListener
      */
     @Nullable
     public String getRequestId() {

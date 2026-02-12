@@ -858,6 +858,7 @@ public final class ImageDecoder implements AutoCloseable {
     private Rect       mCropRect;
     private Rect       mOutPaddingRect;
     private Source     mSource;
+    private long       mAllocationLimit = 536900000; // 0.5GiB
 
     private PostProcessor          mPostProcessor;
     private OnPartialImageListener mOnPartialImageListener;
@@ -1339,6 +1340,32 @@ public final class ImageDecoder implements AutoCloseable {
     }
 
     /**
+     *  Set a maximum memory limit (bytes) for an image decode.
+     *
+     *  <p>Memory usage is tracked during the decoding process, for instance when
+     * calling {@link decodeBitmap} or {@link decodeDrawable}. If an allocation is expected to
+     * raise the decode memory usage over the allocation limit, the decode is aborted and an
+     * {@link IOException} is thrown by decode function.
+     * <p>The limit is applied per each image decode. The default limit is 0.5GiB. 0 indicates no
+     * limit.</p>
+     */
+    @FlaggedApi(Flags.FLAG_IMAGE_DECODER_ALLOCATION_LIMIT)
+    public void setAllocationLimit(long limit) {
+        if (limit < 0) {
+            throw new IllegalArgumentException("allocation limit cannot be negative: " + limit);
+        }
+        mAllocationLimit = limit;
+    }
+
+    /**
+     *  Get the maximum memory limit in bytes for image decoding.
+     */
+    @FlaggedApi(Flags.FLAG_IMAGE_DECODER_ALLOCATION_LIMIT)
+    public long getAllocationLimit() {
+        return mAllocationLimit;
+    }
+
+    /**
      *  Specify whether the {@link Bitmap} should have unpremultiplied pixels.
      *
      *  <p>By default, ImageDecoder will create a {@link Bitmap} with
@@ -1693,7 +1720,7 @@ public final class ImageDecoder implements AutoCloseable {
                 mDesiredWidth, mDesiredHeight, mCropRect,
                 mMutable, mAllocator, mUnpremultipliedRequired,
                 mConserveMemory, mDecodeAsAlphaMask, getColorSpacePtr(),
-                checkForExtended());
+                checkForExtended(), mAllocationLimit);
     }
 
     private static OnHeaderDecodedListener sDefaultProcessListener = null;
@@ -2281,7 +2308,7 @@ public final class ImageDecoder implements AutoCloseable {
             @Nullable Rect cropRect, boolean mutable,
             int allocator, boolean unpremulRequired,
             boolean conserveMemory, boolean decodeAsAlphaMask,
-            long desiredColorSpace, boolean extended)
+            long desiredColorSpace, boolean extended, long allocationLimit)
         throws IOException;
     private static native Size nGetSampledSize(long nativePtr,
                                                int sampleSize);

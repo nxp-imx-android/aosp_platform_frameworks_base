@@ -18,7 +18,6 @@ package com.android.wm.shell.windowdecor.caption
 
 import android.app.ActivityManager.RunningTaskInfo
 import android.content.Context
-import android.content.Intent
 import android.content.pm.ActivityInfo.CONFIG_FONT_SCALE
 import android.content.pm.ActivityInfo.CONFIG_LOCALE
 import android.content.pm.ActivityInfo.CONFIG_UI_MODE
@@ -364,29 +363,35 @@ class AppHandleController(
     override fun createHandleMenu(minimumInstancesFound: Boolean) {
         if (isHandleMenuActive || handleMenuCreationJob?.isActive == true) return
 
+        // Only enable app App-to-Web if desktop state is supported on the display
+        val isAppToWebEnabled = desktopState.isDesktopModeSupportedOnDisplay(taskInfo.displayId)
         handleMenuCreationJob =
             mainScope.launch {
-                val isBrowserApp = isBrowserApp()
-                val appToWebIntent =
-                    if (canShowAppLinks(display, desktopState)) {
-                        appToWebRepository.getAppToWebIntent(taskInfo, isBrowserApp)
+                val appToWebData =
+                    if (isAppToWebEnabled) {
+                        val isBrowserApp = isBrowserApp()
+                        HandleMenu.AppToWebData(
+                            isBrowserApp = isBrowserApp,
+                            openInAppOrBrowserIntent =
+                                if (canShowAppLinks(display, desktopState)) {
+                                    appToWebRepository.getAppToWebIntent(taskInfo, isBrowserApp)
+                                } else {
+                                    // Skip request for assist content as it is only used for links,
+                                    // which are not supported
+                                    null
+                                },
+                        )
                     } else {
-                        // Skip request for assist content as it is only used for links, which are
-                        // not supported
+                        // Pass null App-to-web state if feature is disabled
                         null
                     }
-                createHandleMenu(
-                    openInAppOrBrowserIntent = appToWebIntent,
-                    isBrowserApp = isBrowserApp,
-                    minimumInstancesFound = minimumInstancesFound,
-                )
+                createHandleMenu(appToWebData, minimumInstancesFound)
             }
     }
 
     /** Creates and shows the handle menu. */
     private fun createHandleMenu(
-        openInAppOrBrowserIntent: Intent?,
-        isBrowserApp: Boolean,
+        appToWebData: HandleMenu.AppToWebData?,
         minimumInstancesFound: Boolean,
     ) {
         val supportsMultiInstance =
@@ -419,8 +424,7 @@ class AppHandleController(
                     shouldShowDesktopModeButton =
                         desktopState.isDesktopModeSupportedOnDisplay(display),
                     shouldShowRestartButton = shouldShowRestartButton,
-                    isBrowserApp = isBrowserApp,
-                    openInAppOrBrowserIntent = openInAppOrBrowserIntent,
+                    appToWebData = appToWebData,
                     desktopModeUiEventLogger = desktopModeUiEventLogger,
                     captionView = viewHolder.captionHandle,
                     captionWidth = captionLayoutResult.captionWidth,

@@ -37,7 +37,7 @@ public:
         AutoJavaFloatArray autoInterval(env, intervalArray);
         int         count = autoInterval.length() & ~1;  // even number
         SkScalar* intervals = autoInterval.ptr();
-        SkPathEffect* effect = SkDashPathEffect::Make(intervals, count, phase).release();
+        SkPathEffect* effect = SkDashPathEffect::Make({intervals, count}, phase).release();
         return reinterpret_cast<jlong>(effect);
     }
 

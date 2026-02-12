@@ -630,6 +630,7 @@ public class CachedAppOptimizer {
 
     private final ProcessDependencies mProcessDependencies;
     private final ProcLocksReader mProcLocksReader;
+    private final BinderfsStatsReader mBinderfsStatsReader;
 
     private final Freezer mFreezer;
 
@@ -655,6 +656,7 @@ public class CachedAppOptimizer {
         mTestCallback = callback;
         mSettingsObserver = new SettingsContentObserver();
         mProcLocksReader = new ProcLocksReader();
+        mBinderfsStatsReader = new BinderfsStatsReader();
         mFreezer = mAm.getFreezer();
 
         final Resources res = mAm.mContext.getResources();
@@ -2918,7 +2920,9 @@ public class CachedAppOptimizer {
 
     private void binderErrorInternal(IntArray pids) {
         // PIDs that run out of async binder buffer when being frozen
-        ArraySet<Integer> pidsAsync = (mFreezerBinderAsyncThreshold < 0) ? null : new ArraySet<>();
+        final int[] pidsWithAsync =
+                (mFreezerBinderAsyncThreshold < 0) ? null : new int[pids.size()];
+        int pidsWithAsyncCount = 0;
 
         Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "binderErrorSync");
         for (int i = 0; i < pids.size(); i++) {
@@ -2936,8 +2940,8 @@ public class CachedAppOptimizer {
                 }
 
                 if ((freezeInfo & ASYNC_RECEIVED_WHILE_FROZEN) != 0) {
-                    if (pidsAsync != null) {
-                        pidsAsync.add(current);
+                    if (pidsWithAsync != null) {
+                        pidsWithAsync[pidsWithAsyncCount++] = current;
                     }
                     if (DEBUG_FREEZER) {
                         Slog.w(TAG_AM, "pid " + current
@@ -2956,14 +2960,16 @@ public class CachedAppOptimizer {
         // only true source for now. The following code checks all frozen PIDs. If any of them
         // is running out of async binder buffer, kill it. Otherwise it will be killed at a
         // later time when AMS unfreezes it, which causes race issues.
-        if (pidsAsync == null || pidsAsync.size() == 0) {
+        if (pidsWithAsyncCount == 0) {
             return;
         }
 
         Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "binderErrorAsync");
-        new BinderfsStatsReader().handleFreeAsyncSpace(
+        final int[] pidsAsync = Arrays.copyOf(pidsWithAsync, pidsWithAsyncCount);
+        Arrays.sort(pidsAsync);
+        mBinderfsStatsReader.handleFreeAsyncSpace(
                 // Check if the frozen process has pending async calls
-                pidsAsync::contains,
+                pidsAsync,
 
                 // Kill the current process if it's running out of async binder space
                 (current, free) -> {

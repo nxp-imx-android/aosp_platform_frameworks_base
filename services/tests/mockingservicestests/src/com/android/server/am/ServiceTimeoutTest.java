@@ -163,7 +163,7 @@ public final class ServiceTimeoutTest {
         mAms.mProcessStateController.setStartRequested(sr, true);
         sr.executingStart = now;
 
-        app.mServices.startExecutingService(sr);
+        mAms.mProcessStateController.startExecutingService(app.mServices, sr);
         mActiveServices.scheduleServiceTimeoutLocked(app);
 
         verify(mActiveServices, timeout(DEFAULT_SERVICE_TIMEOUT * 2).times(1))
@@ -171,7 +171,7 @@ public final class ServiceTimeoutTest {
 
         clearInvocations(mActiveServices);
 
-        app.mServices.startExecutingService(sr);
+        mAms.mProcessStateController.startExecutingService(app.mServices, sr);
         mActiveServices.scheduleServiceTimeoutLocked(app);
 
         app.killLocked(TAG, 42, false);

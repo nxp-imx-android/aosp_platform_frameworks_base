@@ -2058,6 +2058,7 @@ public abstract class OomAdjuster {
             ProcessRecordInternal app, ProcessRecordInternal client, boolean dryRun);
 
     /** Determines the default process capabilities based on its current process state. */
+    // LINT.IfChange(getDefaultCapability)
     @VisibleForTesting
     public int getDefaultCapability(ProcessRecordInternal app, int procState) {
         final int networkCapabilities =
@@ -2093,7 +2094,9 @@ public abstract class OomAdjuster {
         }
         return baseCapabilities | networkCapabilities;
     }
+    // LINT.ThenChange(CapabilityController.java:evaluateProcStatePolicy)
 
+    // LINT.IfChange(getCpuCapability)
     @CpuTimeReasons
     private static int getCpuTimeReasons(ProcessRecordInternal app,
             boolean hasForegroundActivities) {
@@ -2135,12 +2138,16 @@ public abstract class OomAdjuster {
         app.addCurCpuTimeReasons(reasons);
         return (reasons != CPU_TIME_REASON_NONE) ? PROCESS_CAPABILITY_CPU_TIME : 0;
     }
+    // LINT.ThenChange(CapabilityController.java:evaluateCpuTimePolicy)
 
     // Grant PROCESS_CAPABILITY_IMPLICIT_CPU_TIME to processes based on oom adj score.
     protected int getImplicitCpuCapability(ProcessRecordInternal app, int adj) {
         if (adj < mOomConstants.mFreezerCutoffAdj
                 || app.getMaxAdj() < mOomConstants.mFreezerCutoffAdj) {
             app.addCurImplicitCpuTimeReasons(IMPLICIT_CPU_TIME_REASON_OTHER);
+            if (Flags.enableCapabilityControllerComputation()) {
+                app.getGraphNode().setHasIntrinsicImplicitCpuTime(true);
+            }
             return PROCESS_CAPABILITY_IMPLICIT_CPU_TIME;
         }
         return 0;
@@ -2499,6 +2506,9 @@ public abstract class OomAdjuster {
         app.setCurCapability(initialCapability);
         app.addCurCpuTimeReasons(CPU_TIME_REASON_OTHER);
         app.addCurImplicitCpuTimeReasons(IMPLICIT_CPU_TIME_REASON_OTHER);
+        if (Flags.enableCapabilityControllerComputation()) {
+            app.getGraphNode().setHasIntrinsicImplicitCpuTime(true);
+        }
 
         app.setCurAdj(FOREGROUND_APP_ADJ);
         app.setCurRawAdj(FOREGROUND_APP_ADJ);

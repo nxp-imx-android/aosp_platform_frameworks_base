@@ -2451,6 +2451,24 @@ public class TaskTests extends WindowTestsBase {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_APP_RESTART_AFTER_UPDATE)
+    public void testContinuePackageUpdateHandled_handlePackageUpdateFalseOnRoot_doesNothing() {
+        final Task rootTask = createTask(mDisplayContent);
+        final Task leafTask = new TaskBuilder(mSupervisor).setCreateActivity(true).setParentTask(
+                rootTask).build();
+
+        final ActivityRecord activity = leafTask.getTopMostActivity();
+        spyOn(activity);
+        activity.app = mock(WindowProcessController.class);
+        leafTask.mHandlePackageUpdate = true;
+        rootTask.mHandlePackageUpdate = false;
+
+        leafTask.continuePackageUpdate();
+
+        verify(activity.app, never()).onTaskPackageUpdateHandled(any());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_APP_RESTART_AFTER_UPDATE)
     public void testContinuePackageUpdate_noRootActivity_doesNothing() {
         final Task task = new TaskBuilder(mSupervisor).setCreateActivity(false).build();
         task.mHandlePackageUpdate = true;

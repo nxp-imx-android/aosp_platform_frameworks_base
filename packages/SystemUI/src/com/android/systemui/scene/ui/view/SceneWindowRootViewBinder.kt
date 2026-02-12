@@ -17,6 +17,7 @@
 package com.android.systemui.scene.ui.view
 
 import android.content.Context
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
@@ -35,8 +36,10 @@ import com.android.compose.animation.scene.HoistedSceneTransitionLayoutState
 import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.content.state.TransitionState
+import com.android.compose.modifiers.thenIf
 import com.android.compose.snapshot.ObserveReadsRoot
 import com.android.compose.theme.PlatformTheme
+import com.android.systemui.Flags
 import com.android.systemui.bouncer.ui.composable.BouncerSceneContainer
 import com.android.systemui.common.ui.compose.windowinsets.LocalDisplayCutout
 import com.android.systemui.common.ui.compose.windowinsets.LocalScreenCornerRadius
@@ -62,6 +65,7 @@ import com.android.systemui.scene.ui.composable.DualShadeEducationalTooltips
 import com.android.systemui.scene.ui.composable.Overlay
 import com.android.systemui.scene.ui.composable.Scene
 import com.android.systemui.scene.ui.composable.SceneContainer
+import com.android.systemui.scene.ui.compose.assertPointerState
 import com.android.systemui.scene.ui.viewmodel.DualShadeEducationalTooltipsViewModel
 import com.android.systemui.scene.ui.viewmodel.SceneContainerViewModel
 import com.android.systemui.shade.ui.composable.LocalStatusIconContext
@@ -293,6 +297,13 @@ object SceneWindowRootViewBinder {
                 SceneContainerContainer(
                     windowInsets = windowInsets,
                     tintedIconManagerFactory = tintedIconManagerFactory,
+                    modifier =
+                        Modifier
+                            // Gated because attaching a pointer modifier (even a passive one) can
+                            // subtly change event propagation or hit-testing behavior.
+                            .thenIf(Flags.notificationDeveloperLogging()) {
+                                Modifier.assertPointerState { Log.wtf(TAG, it) }
+                            },
                 ) { modifier ->
                     SceneContainer(
                         viewModel = viewModel,
@@ -425,4 +436,6 @@ object SceneWindowRootViewBinder {
             }
         }
     }
+
+    private const val TAG = "SceneWindowRootViewBinder"
 }

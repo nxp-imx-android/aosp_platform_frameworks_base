@@ -58,6 +58,9 @@ filegroup {
     srcs: [
         "src/**/*.kt",
     ],
+    exclude_srcs: [
+        "src/com/android/wm/shell/bubbles/user/model/*.kt",
+    ],
     path: "src",
 }
 
@@ -148,6 +151,7 @@ android_library {
     ],
     static_libs: [
         "android.gui.boxshadow-java",
+        "//frameworks/base/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/user/model:bubbles-user-model",
         "//frameworks/base/packages/SystemUI/aconfig:com_android_systemui_flags_lib",
         "//frameworks/libs/systemui:com_android_systemui_shared_flags_lib",
         "//frameworks/libs/systemui:iconloader_base",

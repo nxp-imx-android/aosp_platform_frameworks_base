@@ -47,6 +47,7 @@ import android.graphics.Rect;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.IBinder;
 import android.os.Parcelable;
 import android.os.RemoteCallback;
@@ -65,6 +66,7 @@ import android.service.autofill.UserData;
 import android.text.TextUtils;
 import android.text.TextUtils.SimpleStringSplitter;
 import android.util.ArrayMap;
+import android.util.AtomicFile;
 import android.util.LocalLog;
 import android.util.Log;
 import android.util.Slog;
@@ -92,6 +94,7 @@ import com.android.internal.util.DumpUtils;
 import com.android.internal.util.Preconditions;
 import com.android.internal.util.SyncResultReceiver;
 import com.android.server.FgThread;
+import com.android.server.IoThread;
 import com.android.server.LocalServices;
 import com.android.server.autofill.ui.AutoFillUI;
 import com.android.server.infra.AbstractMasterSystemService;
@@ -99,8 +102,12 @@ import com.android.server.infra.FrameworkResourcesServiceNameResolver;
 import com.android.server.infra.SecureSettingsServiceNameResolver;
 import com.android.server.pm.UserManagerInternal;
 
+import java.io.File;
 import java.io.FileDescriptor;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -108,6 +115,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Entry point service for autofill management.
@@ -171,6 +179,8 @@ public final class AutofillManagerService
     private final SparseArray<AutoFillUI> mUis = new SparseArray<>();
     final ComponentName mCredentialAutofillService;
 
+    private static final String NOISE_SEED_FILE_NAME = "noise_injection_masterseed";
+
     /**
      * Master seed for injecting noise to sensitive texts in AssistStructure to obfuscate user
      * private info.
@@ -178,11 +188,8 @@ public final class AutofillManagerService
      * view consistent for the same device so that the Autofill provider can not accumulate enough
      * copies with different randomized noise for the same view of the same device to rebuild the
      * user's private info.
-     * Hence this seed is intentionally held by AutofillManagerService rather
-     * AutofillManagerServiceImpl so that the master seed won't change when the user switches user
-     * profiles back and forth.
      */
-    private final String mNoiseInjectionMasterSeed;
+    private final AtomicReference<String> mNoiseInjectionMasterSeed = new AtomicReference<>(null);
 
     private final LocalLog mRequestsHistory = new LocalLog(20);
     private final LocalLog mUiLatencyHistory = new LocalLog(20);
@@ -297,8 +304,6 @@ public final class AutofillManagerService
         setMaxVisibleDatasetsFromSettings();
         setDeviceConfigProperties();
 
-        mNoiseInjectionMasterSeed = UUID.randomUUID().toString();
-
         final IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
         context.registerReceiver(mBroadcastReceiver, filter, null, FgThread.getHandler(),
@@ -340,6 +345,85 @@ public final class AutofillManagerService
         } else {
             mCredentialAutofillService = null;
             Slog.w(TAG, "Invalid CredentialAutofillService");
+        }
+    }
+
+    private File getNoiseSeedFile() {
+        File systemDir = Environment.getDataSystemDirectory();
+        File autofillDir = new File(systemDir, "autofill_service");
+        return new File(autofillDir, NOISE_SEED_FILE_NAME);
+    }
+
+    private void loadNoiseInjectionMasterSeed() {
+        String seed = null;
+        AtomicFile noiseSeedFile = new AtomicFile(getNoiseSeedFile());
+        try {
+            seed = new String(noiseSeedFile.readFully(), StandardCharsets.UTF_8);
+            if (TextUtils.isEmpty(seed)) {
+                // Treat empty file as no seed
+                seed = null;
+            } else {
+                Slog.i(TAG, "Loaded existing noise injection master seed.");
+            }
+        } catch (IOException e) {
+            Slog.i(TAG, "No existing noise injection master seed file found.");
+        }
+
+        // If no seed is loaded, generate a new one and save it to the file.
+        if (seed == null) {
+            seed = UUID.randomUUID().toString();
+            FileOutputStream fos = null;
+            try {
+                // Ensure directory exists
+                File parentDir = noiseSeedFile.getBaseFile().getParentFile();
+                if (!parentDir.exists() && !parentDir.mkdirs()) {
+                    Slog.e(TAG, "Failed to create directory for noise seed: " + parentDir);
+                    mNoiseInjectionMasterSeed.set(null);
+                    return;
+                }
+                fos = noiseSeedFile.startWrite();
+                fos.write(seed.getBytes(StandardCharsets.UTF_8));
+                noiseSeedFile.finishWrite(fos);
+                Slog.i(TAG, "Generated and wrote new noise injection master seed.");
+            } catch (IOException e) {
+                Slog.e(TAG, "Failed to write noise injection master seed to file.", e);
+                if (fos != null) {
+                    noiseSeedFile.failWrite(fos);
+                }
+                // Set seed to null on failure
+                seed = null;
+            }
+        }
+        mNoiseInjectionMasterSeed.set(seed);
+    }
+
+    /**
+     * Returns the noise injection master seed.
+     *
+     * @return The seed string, or null if not loaded yet.
+     */
+    @Nullable
+    String getNoiseInjectionMasterSeedValue() {
+        String seed = mNoiseInjectionMasterSeed.get();
+        if (seed == null) {
+            Slog.e(TAG, "Noise injection master seed not loaded yet.");
+        }
+        return seed;
+    }
+
+    @Override // from AbstractMasterSystemService
+    public void onBootPhase(int phase) {
+        super.onBootPhase(phase);
+        if (phase == PHASE_BOOT_COMPLETED) {
+            // Loading the masterseed involves file I/O using the IoThread, hence doing it after
+            // boot completed to avoid regressing boot time.
+            if (Flags.stringRebuildPersistentMasterseed()) {
+                Slog.d(TAG, "Loading master seed from the storage");
+                IoThread.getExecutor().execute(this::loadNoiseInjectionMasterSeed);
+            } else {
+                Slog.d(TAG, "Persistent masterseed flag is OFF, generating new seed");
+                mNoiseInjectionMasterSeed.set(UUID.randomUUID().toString());
+            }
         }
     }
 
@@ -1785,7 +1869,8 @@ public final class AutofillManagerService
                         getServiceForUserWithLocalBinderIdentityLocked(userId);
                 result = service.startSessionLocked(activityToken, taskId, getCallingUid(),
                         clientCallback, autofillId, bounds, value, hasCallback, clientActivity,
-                        compatMode, mAllowInstantService, mNoiseInjectionMasterSeed, flags);
+                        compatMode, mAllowInstantService, getNoiseInjectionMasterSeedValue(),
+                        flags);
             }
             final int sessionId = (int) result;
             final int resultFlags = (int) (result >> 32);
@@ -2264,7 +2349,7 @@ public final class AutofillManagerService
 
         @Override
         public void getNoiseInjectionMasterSeed(IResultReceiver result) {
-            send(result, mNoiseInjectionMasterSeed);
+            send(result, getNoiseInjectionMasterSeedValue());
         }
 
         @Override

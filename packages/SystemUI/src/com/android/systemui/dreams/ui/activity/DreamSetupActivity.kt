@@ -24,13 +24,16 @@ import androidx.activity.viewModels
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.dreams.ui.compose.DreamSetupScreen
 import com.android.systemui.dreams.ui.viewmodel.DreamSetupViewModel
+import javax.inject.Inject
 
 /**
  * A simple, transparent activity that displays the contextual setup UI as a bottom sheet. This
  * activity is intended to be launched by SystemUI when specific contextual conditions are met.
  */
-class DreamSetupActivity : ComponentActivity() {
-    private val viewModel: DreamSetupViewModel by viewModels()
+class DreamSetupActivity
+@Inject
+constructor(private val viewModelFactory: DreamSetupViewModel.Factory) : ComponentActivity() {
+    private val viewModel: DreamSetupViewModel by viewModels { viewModelFactory }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

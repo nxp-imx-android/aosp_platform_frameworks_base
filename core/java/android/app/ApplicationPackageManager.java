@@ -3488,13 +3488,18 @@ public class ApplicationPackageManager extends PackageManager {
     @Override
     public boolean isDeviceUpgrading() {
         if (isDeviceUpgradingUsesSharedMemory()) {
-            return ApplicationSharedMemory.getInstance().getIsDeviceUpgrading();
-        } else {
-            try {
-                return mPM.isDeviceUpgrading();
-            } catch (RemoteException e) {
-                throw e.rethrowFromSystemServer();
+            int deviceUpgrading = ApplicationSharedMemory.getInstance().getIsDeviceUpgrading();
+
+            if (deviceUpgrading != ApplicationSharedMemory.PM_DEVICE_UPGRADING_UNSET) {
+                return deviceUpgrading == ApplicationSharedMemory.PM_DEVICE_UPGRADING_TRUE;
             }
+            // When deviceUpgrading is UNSET the value was not yet set by packageManagerService,
+            // fallthrough and do a normal binder call to read the value instantly.
+        }
+        try {
+            return mPM.isDeviceUpgrading();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
         }
     }
 

@@ -166,11 +166,11 @@ final class AppFunctionMetadataReader {
         // Unregistered dynamic function is effectively disabled. No need to call app search.
         if (mCache.isDynamicFunction(
                         targetAppFunction.getPackageName(),
-                        targetAppFunction.getFunctionId(),
+                        targetAppFunction.getFunctionIdentifier(),
                         UserHandle.of(userId))
                 && !mMultiUserDynamicAppFunctionRegistry.isAppFunctionRegistered(
                         targetAppFunction.getPackageName(),
-                        targetAppFunction.getFunctionId(),
+                        targetAppFunction.getFunctionIdentifier(),
                         UserHandle.of(userId))) {
             return AndroidFuture.completedFuture(false);
         }
@@ -364,7 +364,7 @@ final class AppFunctionMetadataReader {
     private ArraySet<AppFunctionActivityId> getActivityIdInfo(
             @NonNull AppFunctionName functionName, @NonNull UserHandle user) {
         if (!mCache.isActivityScopedDynamicFunction(
-                functionName.getPackageName(), functionName.getFunctionId(), user)) {
+                functionName.getPackageName(), functionName.getFunctionIdentifier(), user)) {
             return null;
         }
         return mMultiUserDynamicAppFunctionRegistry.getRegisteredActivityIds(functionName, user);
@@ -452,7 +452,7 @@ final class AppFunctionMetadataReader {
 
         AppFunctionName appFunctionName = AppFunctionName.fromQualifiedId(staticDocument.getId());
         String packageName = appFunctionName.getPackageName();
-        String functionId = appFunctionName.getFunctionId();
+        String functionId = appFunctionName.getFunctionIdentifier();
 
         if (mCache.isDynamicFunction(packageName, functionId, UserHandle.of(userId))) {
             return isRuntimeEnabled

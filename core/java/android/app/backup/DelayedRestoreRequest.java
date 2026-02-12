@@ -29,6 +29,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -114,6 +115,23 @@ public final class DelayedRestoreRequest implements Parcelable {
     /** Returns the request type that this {@link DelayedRestoreRequest} is pending on. */
     public @Type int getType() {
         return mType;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        DelayedRestoreRequest that = (DelayedRestoreRequest) o;
+        return mType == that.mType && Objects.equals(mPackageName, that.mPackageName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mType, mPackageName);
     }
 
     @Override

@@ -53,7 +53,7 @@ import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.transition.Transitions
-import com.android.wm.shell.windowdecor.WindowDecorationTestHelper.TestAppHeaderDimensions.Companion.CUSTOMIZABLE_REGION_MARGIN_START
+import com.android.wm.shell.windowdecor.WindowDecorationTestHelper.TestHeaderDimensions.Companion.CUSTOMIZABLE_REGION_MARGIN_START
 import com.android.wm.shell.windowdecor.common.CaptionVisibilityHelper
 import com.android.wm.shell.windowdecor.common.DrawableInsets
 import com.android.wm.shell.windowdecor.common.InputPilferer
@@ -64,8 +64,8 @@ import com.android.wm.shell.windowdecor.common.viewhost.SurfaceControlViewHostAd
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier
 import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder
-import com.android.wm.shell.windowdecor.viewholder.util.AppHeaderDimensions
-import com.android.wm.shell.windowdecor.viewholder.util.LargeAppHeaderDimensions
+import com.android.wm.shell.windowdecor.viewholder.util.HeaderDimensions
+import com.android.wm.shell.windowdecor.viewholder.util.LargeHeaderDimensions
 import kotlinx.coroutines.CoroutineScope
 import org.mockito.kotlin.mock
 
@@ -351,7 +351,7 @@ object WindowDecorationTestHelper {
      * A test implementation of [AppHeaderViewHolder.Factory] that allows overriding the dimensions
      * used to create an app header.
      */
-    class TestAppHeaderViewHolderFactory(private val overrideDimensions: AppHeaderDimensions) :
+    class TestAppHeaderViewHolderFactory(private val overrideDimensions: HeaderDimensions) :
         AppHeaderViewHolder.Factory {
 
         override fun create(
@@ -363,7 +363,7 @@ object WindowDecorationTestHelper {
             onCaptionGenericMotionListener: View.OnGenericMotionListener,
             onMaximizeHoverAnimationFinishedListener: () -> Unit,
             desktopModeUiEventLogger: DesktopModeUiEventLogger,
-            dimensions: AppHeaderDimensions,
+            dimensions: HeaderDimensions,
             focusTransitionObserver: FocusTransitionObserver,
         ): AppHeaderViewHolder {
             return AppHeaderViewHolder(
@@ -382,14 +382,14 @@ object WindowDecorationTestHelper {
     }
 
     /**
-     * A test implementation of [AppHeaderDimensions] that uses hard-coded values instead of loading
+     * A test implementation of [HeaderDimensions] that uses hard-coded values instead of loading
      * them from a context.
      */
-    class TestAppHeaderDimensions
-    private constructor(private val largeAppHeaderDimensions: LargeAppHeaderDimensions) :
-        AppHeaderDimensions by largeAppHeaderDimensions {
+    class TestHeaderDimensions
+    private constructor(private val largeHeaderDimensions: LargeHeaderDimensions) :
+        HeaderDimensions by largeHeaderDimensions {
 
-        constructor(resources: Resources) : this(LargeAppHeaderDimensions(resources))
+        constructor(resources: Resources) : this(LargeHeaderDimensions(resources))
 
         override val height: Int = APP_HEADER_HEIGHT
         override val buttonCornerRadius: Int = 16

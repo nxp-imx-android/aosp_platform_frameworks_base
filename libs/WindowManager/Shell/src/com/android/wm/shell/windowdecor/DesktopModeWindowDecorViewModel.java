@@ -31,7 +31,6 @@ import static com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_MOVE_FROM_SPLIT_SCR
 import static com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.InputMethod;
 import static com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.MinimizeReason;
 import static com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ResizeTrigger;
-import static com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR;
 import static com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_LEFT_INDICATOR;
 import static com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_RIGHT_INDICATOR;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE;
@@ -1639,33 +1638,29 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                             DesktopModeVisualIndicator.DragStartState
                                     .getDragStartState(relevantDecor.getTaskInfo());
                     if (dragStartState == null) return;
-                    final DesktopModeVisualIndicator.IndicatorType indicatorType =
-                            mDesktopTasksController.updateVisualIndicator(
-                                    relevantDecor.getTaskInfo(), relevantDecor.getTaskSurface(),
-                                    ev.getDisplayId(), ev.getRawX(), ev.getRawY(),
-                                    dragStartState);
-                    if (indicatorType != TO_FULLSCREEN_INDICATOR
-                            || BubbleFlagHelper.enableBubbleToFullscreen()) {
-                        if (mMoveToDesktopAnimator == null) {
-                            Context displayContext = mDisplayController.getDisplayContext(
-                                    ev.getDisplayId());
-                            Context animatorContext =
-                                    displayContext != null ? displayContext : mContext;
-                            mMoveToDesktopAnimator = new MoveToDesktopAnimator(
-                                    animatorContext, mDragToDesktopAnimationStartBounds,
-                                    relevantDecor.getTaskInfo(), relevantDecor.getTaskSurface());
-                            mDesktopTasksController.startDragToDesktop(relevantDecor.getTaskInfo(),
-                                    mMoveToDesktopAnimator, relevantDecor.getTaskSurface(),
-                                    /* dragInterruptedCallback= */ () -> {
-                                        // Don't call into DesktopTasksController to cancel the
-                                        // transition here - the transition handler already handles
-                                        // that (including removing the visual indicator).
-                                        mTransitionDragActive = false;
-                                        mMoveToDesktopAnimator = null;
-                                        relevantDecor.handleDragInterrupted();
-                                        interruptDragCallback.run();
-                                    });
-                        }
+                    mDesktopTasksController.updateVisualIndicator(
+                            relevantDecor.getTaskInfo(), relevantDecor.getTaskSurface(),
+                            ev.getDisplayId(), ev.getRawX(), ev.getRawY(),
+                            dragStartState);
+                    if (mMoveToDesktopAnimator == null) {
+                        Context displayContext = mDisplayController.getDisplayContext(
+                                ev.getDisplayId());
+                        Context animatorContext =
+                                displayContext != null ? displayContext : mContext;
+                        mMoveToDesktopAnimator = new MoveToDesktopAnimator(
+                                animatorContext, mDragToDesktopAnimationStartBounds,
+                                relevantDecor.getTaskInfo(), relevantDecor.getTaskSurface());
+                        mDesktopTasksController.startDragToDesktop(relevantDecor.getTaskInfo(),
+                                mMoveToDesktopAnimator, relevantDecor.getTaskSurface(),
+                                /* dragInterruptedCallback= */ () -> {
+                                    // Don't call into DesktopTasksController to cancel the
+                                    // transition here - the transition handler already handles
+                                    // that (including removing the visual indicator).
+                                    mTransitionDragActive = false;
+                                    mMoveToDesktopAnimator = null;
+                                    relevantDecor.handleDragInterrupted();
+                                    interruptDragCallback.run();
+                                });
                     }
                     if (mMoveToDesktopAnimator != null) {
                         mMoveToDesktopAnimator.updatePosition(ev);

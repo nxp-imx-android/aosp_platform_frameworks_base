@@ -85,13 +85,6 @@ public class PolicyDefinitionFactory {
      */
     static {
         addFactory(
-                PolicyIdentifier.SCREEN_CAPTURE,
-                builder -> {
-                    // This policy is an `Enum` in the annotations but it is stored as a `Boolean`
-                    // in the DevicePolicyEngine, so we can not  build the `PolicyDefinition` here.
-                    return null;
-                });
-        addFactory(
                 PolicyIdentifier.AUTO_TIME,
                 builder -> {
                     return builder

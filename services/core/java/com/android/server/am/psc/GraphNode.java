@@ -15,7 +15,12 @@
  */
 package com.android.server.am.psc;
 
+import static com.android.server.am.psc.PlatformCompatCache.CACHED_COMPAT_CHANGE_CAMERA_MICROPHONE_CAPABILITY;
+
 import android.annotation.NonNull;
+import android.app.ActivityManager;
+import android.app.ActivityManager.ProcessState;
+import android.content.pm.ServiceInfo.ForegroundServiceType;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 
 import java.util.Objects;
@@ -34,8 +39,27 @@ class GraphNode {
     /** A reference to the underlying ProcessRecordInternal. */
     private final @NonNull ProcessRecordInternal mProc;
 
+    /**
+     * Whether this process node has {@link ActivityManager#PROCESS_CAPABILITY_IMPLICIT_CPU_TIME}
+     * intrinsically (i.e., not propagated from other processes).
+     *
+     * If it is true, this process will get {@link OomAdjuster#IMPLICIT_CPU_TIME_REASON_OTHER}.
+     */
+    // TODO(b/479393330): Remove this property and evaluate implicit CPU time directly from
+    //  ProcessRecordInternal once the computation can be decoupled from oomadj.
+    private boolean mHasIntrinsicImplicitCpuTime;
+
     GraphNode(@NonNull ProcessRecordInternal app) {
         mProc = Objects.requireNonNull(app);
+    }
+
+    // TODO: b/483182189 - Move state getters below to ProcessEdge.
+    boolean hasIntrinsicImplicitCpuTime() {
+        return mHasIntrinsicImplicitCpuTime;
+    }
+
+    void setHasIntrinsicImplicitCpuTime(boolean hasIntrinsicImplicitCpuTime) {
+        mHasIntrinsicImplicitCpuTime = hasIntrinsicImplicitCpuTime;
     }
 
     int getMaxAdj() {
@@ -46,7 +70,82 @@ class GraphNode {
         return mProc.isProcessRunning();
     }
 
+    boolean isCurAllowListed() {
+        final UidRecordInternal uidRec = mProc.getUidRecord();
+        return uidRec != null && uidRec.isCurAllowListed();
+    }
+
+    boolean isReceivingBroadcast() {
+        return mProc.getReceivers().isReceivingBroadcast();
+    }
+
     boolean hasActiveInstrumentation() {
         return mProc.hasActiveInstrumentation();
+    }
+
+    boolean hasForegroundServices() {
+        return mProc.getServices().hasForegroundServices();
+    }
+
+    boolean hasNonShortForegroundServices() {
+        return mProc.getServices().hasNonShortForegroundServices();
+    }
+
+    boolean hasForegroundActivities() {
+        return mProc.getHasForegroundActivities();
+    }
+
+    boolean hasExecutingServices() {
+        return mProc.getServices().hasExecutingServices();
+    }
+
+    int getNumberOfRunningServices() {
+        return mProc.getServices().numberOfRunningServices();
+    }
+
+    /**
+     * @param index The index of the running service to check.
+     * @return {@code true} if the service at the given index is a foreground service.
+     */
+    boolean isForegroundService(int index) {
+        return getRunningServiceAt(index).isForeground();
+    }
+
+    /**
+     * @param index The index of the running service to check.
+     *              <p>Note: The caller is responsible for ensuring that the service at the given
+     *              index is a foreground service (e.g., by calling {@link #isForegroundService})
+     *              before calling this method.
+     * @return {@code true} if the FGS at the given index is allowed to have while-in-use
+     * capabilities.
+     */
+    boolean isFgsAllowedWiuForCapabilities(int index) {
+        return getRunningServiceAt(index).isFgsAllowedWiu_forCapabilities();
+    }
+
+    /**
+     * @param index The index of the running service to get the FGS type from.
+     *              <p>Note: The caller is responsible for ensuring that the service at the given
+     *              index is a foreground service (e.g., by calling {@link #isForegroundService})
+     *              before calling this method.
+     * @return The foreground service type of the service at the given index.
+     */
+    @ForegroundServiceType
+    int getForegroundServiceType(int index) {
+        return getRunningServiceAt(index).getForegroundServiceType();
+    }
+
+    boolean getCachedCompatChangeCameraMicrophoneCapability() {
+        return mProc.getCachedCompatChange(
+                CACHED_COMPAT_CHANGE_CAMERA_MICROPHONE_CAPABILITY);
+    }
+
+    @ProcessState
+    int getProcState() {
+        return mProc.getCurProcState();
+    }
+
+    private ServiceRecordInternal getRunningServiceAt(int index) {
+        return mProc.getServices().getRunningServiceInternalAt(index);
     }
 }

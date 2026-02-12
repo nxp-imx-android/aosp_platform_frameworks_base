@@ -29,7 +29,6 @@ import com.android.systemui.qs.tiles.base.domain.actions.QSTileIntentUserInputHa
 import com.android.systemui.qs.tiles.base.domain.actions.qsTileIntentUserInputHandler
 import com.android.systemui.qs.tiles.base.domain.model.QSTileInputTestKtx
 import com.android.systemui.qs.tiles.dialog.InternetDialogManager
-import com.android.systemui.qs.tiles.impl.cell.domain.model.MobileDataTileIcon
 import com.android.systemui.qs.tiles.impl.cell.domain.model.MobileDataTileModel
 import com.android.systemui.statusbar.connectivity.AccessPointController
 import com.android.systemui.statusbar.phone.SystemUIDialog
@@ -93,7 +92,7 @@ class MobileDataTileUserActionInteractorTest : SysuiTestCase() {
     @Test
     fun handleClick_showsDialog() =
         testScope.runTest {
-            val testData = MobileDataTileModel(true, true, MobileDataTileIcon.SignalIcon(1))
+            val testData = MobileDataTileModel(true, true)
             underTest.handleInput(QSTileInputTestKtx.click(testData))
 
             verify(internetDialogManager)
@@ -103,7 +102,7 @@ class MobileDataTileUserActionInteractorTest : SysuiTestCase() {
     @Test
     fun handleLongClick_opensSimSettings() =
         testScope.runTest {
-            val testData = MobileDataTileModel(true, true, MobileDataTileIcon.SignalIcon(1))
+            val testData = MobileDataTileModel(true, true)
             underTest.handleInput(QSTileInputTestKtx.longClick(testData))
 
             QSTileIntentUserInputHandlerSubject.assertThat(intentHandler).handledOneIntentInput {
@@ -118,7 +117,7 @@ class MobileDataTileUserActionInteractorTest : SysuiTestCase() {
             mobileConnectionsRepository.activeMobileDataRepository.value?.setDataEnabled(true)
             runCurrent()
 
-            val testData = MobileDataTileModel(true, true, MobileDataTileIcon.SignalIcon(1))
+            val testData = MobileDataTileModel(true, true)
             underTest.handleInput(QSTileInputTestKtx.toggleClick(testData))
             runCurrent()
 
@@ -140,7 +139,7 @@ class MobileDataTileUserActionInteractorTest : SysuiTestCase() {
                 )
             defaultRepository.setDataEnabled(true)
 
-            val testData = MobileDataTileModel(true, true, MobileDataTileIcon.SignalIcon(1))
+            val testData = MobileDataTileModel(true, true)
             underTest.handleInput(QSTileInputTestKtx.toggleClick(testData))
             runCurrent()
 
@@ -152,7 +151,7 @@ class MobileDataTileUserActionInteractorTest : SysuiTestCase() {
         testScope.runTest {
             mobileConnectionsRepository.activeMobileDataRepository.value?.setDataEnabled(false)
 
-            val testData = MobileDataTileModel(true, false, MobileDataTileIcon.SignalIcon(1))
+            val testData = MobileDataTileModel(true, false)
             underTest.handleInput(QSTileInputTestKtx.toggleClick(testData))
 
             verify(dialogFactory).create()
@@ -164,7 +163,7 @@ class MobileDataTileUserActionInteractorTest : SysuiTestCase() {
         testScope.runTest {
             mobileConnectionsRepository.activeMobileDataRepository.value?.setDataEnabled(false)
             val captor = argumentCaptor<DialogInterface.OnClickListener>()
-            val testData = MobileDataTileModel(true, true, MobileDataTileIcon.SignalIcon(1))
+            val testData = MobileDataTileModel(true, true)
             underTest.handleInput(QSTileInputTestKtx.toggleClick(testData))
 
             verify(dialog).setPositiveButton(any(), captor.capture())

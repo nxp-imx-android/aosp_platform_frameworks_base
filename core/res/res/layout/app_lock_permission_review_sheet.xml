@@ -44,21 +44,20 @@
             android:layout_marginBottom="@dimen/app_lock_margin"/>
 
         <TextView
-            android:id="@+id/dialog_title"
+            android:id="@+id/app_lock_permission_review_dialog_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:textColor="?android:attr/textColorPrimary"
-            android:text="@string/app_lock_permission_review_dialog_title"
             android:paddingStart="@dimen/app_lock_padding_extra_large"
             android:paddingEnd="@dimen/app_lock_padding_extra_large"
             android:gravity="center"
             android:layout_marginBottom="@dimen/app_lock_margin"/>
 
         <TextView
+            android:id="@+id/app_lock_permission_review_dialog_subtitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/app_lock_permission_review_dialog_sub_title"
             android:textColor="@color/materialColorPrimary"
             android:paddingStart="@dimen/app_lock_padding_large"
             android:layout_marginBottom="@dimen/app_lock_item_margin"/>

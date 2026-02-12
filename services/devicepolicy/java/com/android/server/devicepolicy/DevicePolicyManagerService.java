@@ -518,6 +518,7 @@ import com.android.server.SystemServiceManager;
 import com.android.server.accounts.AccountManagerService;
 import com.android.server.devicepolicy.ActiveAdmin.TrustAgentInfo;
 import com.android.server.devicepolicy.handlers.PolicyHandler;
+import com.android.server.devicepolicy.handlers.PolicyHandlerList;
 import com.android.server.inputmethod.InputMethodManagerInternal;
 import com.android.server.locksettings.LockSettingsInternal;
 import com.android.server.pdb.PersistentDataBlockManagerInternal;
@@ -876,12 +877,12 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
     ){
         List<PolicyHandler<?>> handlers = new ArrayList<PolicyHandler<?>>();
 
-        // NEW HANDLERS SHOULD GO IN {@link PolicyHandler.HANDLERS}, NOT HERE!
+        // NEW HANDLERS SHOULD GO IN {@link PolicyHandlerList.HANDLERS}, NOT HERE!
         //
         // Handlers should only be added here if you are migrating a pre-existing policy and your
         // handler invokes the pre-existing hand-written code for this policy.
         //
-        // NEW HANDLERS SHOULD GO IN {@link PolicyHandler.HANDLERS}, NOT HERE!
+        // NEW HANDLERS SHOULD GO IN {@link PolicyHandlerList.HANDLERS}, NOT HERE!
 
         return handlers;
     }
@@ -2003,7 +2004,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         var delegate = dpms.new PolicyHandlerDelegate();
         var allHandlers =
                 Stream.concat(
-                        PolicyHandler.HANDLERS.stream(),
+                        PolicyHandlerList.HANDLERS.stream(),
                         createPolicyHandlersDependingOnDpms(dpms).stream());
         return allHandlers
                 .peek(
@@ -16783,7 +16784,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
     private int checkMultiUserDeviceProvisioningPreCondition(@UserIdInt int callingUserId) {
         synchronized (getLockObject()) {
             // Device needs to support multi-user management.
-            if (!multiUserManagementSupported()) {
+            if (!isMultiuserManagementEnabledUnchecked()) {
                 return STATUS_MULTI_USER_MANAGEMENT_NOT_SUPPORTED;
             }
             if (!mInjector.userManagerIsHeadlessSystemUserMode()) {
@@ -16864,7 +16865,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
 
     private int checkMultiUserManagedUserProvisioningPreCondition(@UserIdInt int userId) {
         // Device needs to support multi-user management.
-        if (!multiUserManagementSupported()) {
+        if (!isMultiuserManagementEnabledUnchecked()) {
             return STATUS_MULTI_USER_MANAGEMENT_NOT_SUPPORTED;
         }
 
@@ -16926,9 +16927,9 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         }
     }
 
-    private boolean multiUserManagementSupported() {
+    private boolean isMultiuserManagementEnabledUnchecked() {
         final boolean multiUserManagementEnabled = mContext.getResources()
-                .getBoolean(com.android.internal.R.bool.config_enableMultiUserManagement);
+                .getBoolean(com.android.internal.R.bool.config_enableMultiuserManagement);
         return multiUserManagementEnabled;
     }
 

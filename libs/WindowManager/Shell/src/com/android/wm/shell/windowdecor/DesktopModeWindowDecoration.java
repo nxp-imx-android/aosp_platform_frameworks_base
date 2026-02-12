@@ -126,7 +126,7 @@ import com.android.wm.shell.windowdecor.viewholder.AppHandleIdentifier;
 import com.android.wm.shell.windowdecor.viewholder.AppHandleViewHolder;
 import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder;
 import com.android.wm.shell.windowdecor.viewholder.WindowDecorationViewHolder;
-import com.android.wm.shell.windowdecor.viewholder.util.LargeAppHeaderDimensions;
+import com.android.wm.shell.windowdecor.viewholder.util.LargeHeaderDimensions;
 
 import kotlin.Pair;
 import kotlin.Unit;
@@ -1032,7 +1032,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                         return Unit.INSTANCE;
                     },
                     mDesktopModeUiEventLogger,
-                    /* dimensions= */ new LargeAppHeaderDimensions(
+                    /* dimensions= */ new LargeHeaderDimensions(
                             mDecorWindowContext.getResources()),
                     mFocusTransitionObserver
                     );
@@ -1645,8 +1645,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 shouldShowGameControlsButton,
                 mDesktopState.isDesktopModeSupportedOnDisplay(mDisplay),
                 shouldShowRestartButton,
-                isBrowserApp,
-                openInAppOrBrowserIntent,
+                new HandleMenu.AppToWebData(isBrowserApp, openInAppOrBrowserIntent),
                 mDesktopModeUiEventLogger,
                 captionView,
                 mResult.mCaptionWidth,

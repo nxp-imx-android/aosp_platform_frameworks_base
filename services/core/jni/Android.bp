@@ -187,13 +187,8 @@ cc_defaults {
         "android.hardware.graphics.bufferqueue@2.0",
         "android.hardware.graphics.common@1.2",
         "android.hardware.input.processor-V1-ndk",
-        "android.hardware.ir@1.0",
         "android.hardware.light@2.0",
         "android.hardware.memtrack-V1-ndk",
-        "android.hardware.power@1.0",
-        "android.hardware.power@1.1",
-        "android.hardware.power@1.2",
-        "android.hardware.power@1.3",
         "android.hardware.power.stats@1.0",
         "android.hardware.power.stats-V1-ndk",
         "android.hardware.thermal@1.0",
@@ -271,7 +266,6 @@ filegroup {
 filegroup {
     name: "lib_lazilyRegisteredServices_native",
     srcs: [
-        "com_android_server_ConsumerIrService.cpp",
         "com_android_server_app_GameManagerService.cpp",
         "com_android_server_connectivity_Vpn.cpp",
         "com_android_server_tv_TvUinputBridge.cpp",

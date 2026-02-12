@@ -56,14 +56,17 @@ public class AppFunctionMetadataObserver {
             new SparseArray<>();
 
     @NonNull private final AppFunctionMetadataReader mAppFunctionMetadataReader;
+    @NonNull private final ServiceConfig mServiceConfig;
 
     @NonNull private final Context mContext;
 
     AppFunctionMetadataObserver(
             @NonNull Context context,
-            @NonNull AppFunctionMetadataReader appFunctionMetadataReader) {
+            @NonNull AppFunctionMetadataReader appFunctionMetadataReader,
+            @NonNull ServiceConfig serviceConfig) {
         mAppFunctionMetadataReader = Objects.requireNonNull(appFunctionMetadataReader);
         mContext = Objects.requireNonNull(context);
+        mServiceConfig = Objects.requireNonNull(serviceConfig);
     }
 
     /** Registers a new {@link AppFunctionMetadataObserver} for {@code targetUser}. */
@@ -83,9 +86,7 @@ public class AppFunctionMetadataObserver {
                 new FutureGlobalSearchSession(perUserAppSearchManager, THREAD_POOL_EXECUTOR);
 
         InternalObserverCallbackRouter userCallbackRouter =
-                new InternalObserverCallbackRouter(
-                        Executors.newSingleThreadExecutor(
-                                new NamedThreadFactory("InternalCallbackRouterExecutors")));
+                new InternalObserverCallbackRouter(mServiceConfig);
         AppFunctionMetadataObserverCallback2 observerCallback =
                 new AppFunctionMetadataObserverCallback2(
                         mPerUserMetadataSyncAdapter,

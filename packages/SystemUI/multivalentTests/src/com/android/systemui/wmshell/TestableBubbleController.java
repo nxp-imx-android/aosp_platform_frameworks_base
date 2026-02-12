@@ -45,6 +45,7 @@ import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.common.TaskStackListenerImpl;
 import com.android.wm.shell.draganddrop.DragAndDropController;
 import com.android.wm.shell.onehanded.OneHandedController;
+import com.android.wm.shell.shared.bubbles.BubbleFeatureConfig;
 import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellController;
@@ -92,7 +93,8 @@ public class TestableBubbleController extends BubbleController {
             Optional<SplitScreenController> splitScreenController,
             BubbleSessionTracker sessionTracker,
             BubbleViewInfoTask.Factory bubbleViewInfoTaskFactory,
-            BubbleHelper bubbleHelper) {
+            BubbleHelper bubbleHelper,
+            BubbleFeatureConfig featureConfig) {
         super(context, shellInit, shellCommandHandler, shellController, data, Runnable::run,
                 floatingContentCoordinator, dataRepository, bubbleTransitions, statusBarService,
                 windowManager, displayInsetsController, displayImeController, userManager,
@@ -101,7 +103,7 @@ public class TestableBubbleController extends BubbleController {
                 shellMainHandler, new SyncExecutor(), taskViewTransitions,
                 transitions, syncQueue, wmService, resizabilityChecker, homeIntentProvider,
                 () -> splitScreenController, Optional.empty(), () -> false, sessionTracker,
-                bubbleViewInfoTaskFactory, bubbleHelper);
+                bubbleViewInfoTaskFactory, bubbleHelper, featureConfig);
         setInflateSynchronously(true);
         onInit();
     }

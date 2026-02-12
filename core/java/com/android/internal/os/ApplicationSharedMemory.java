@@ -57,6 +57,18 @@ public class ApplicationSharedMemory implements AutoCloseable {
     public static final long INVALID_NETWORK_TIME = -1;
     // LINT.ThenChange(frameworks/base/core/jni/com_android_internal_os_ApplicationSharedMemory.cpp:invalid_network_time)
 
+    // LINT.IfChange(pm_device_upgrading_unset)
+    public static final int PM_DEVICE_UPGRADING_UNSET = -1;
+    // LINT.ThenChange(frameworks/base/core/jni/com_android_internal_os_ApplicationSharedMemory.cpp:pm_device_upgrading_unset)
+
+    // LINT.IfChange(pm_device_upgrading_false)
+    public static final int PM_DEVICE_UPGRADING_FALSE = 0;
+    // LINT.ThenChange(frameworks/base/core/jni/com_android_internal_os_ApplicationSharedMemory.cpp:pm_device_upgrading_false)
+
+    // LINT.IfChange(pm_device_upgrading_true)
+    public static final int PM_DEVICE_UPGRADING_TRUE = 1;
+    // LINT.ThenChange(frameworks/base/core/jni/com_android_internal_os_ApplicationSharedMemory.cpp:pm_device_upgrading_true)
+
     private static final boolean DEBUG = false;
     private static final String LOG_TAG = "ApplicationSharedMemory";
 
@@ -373,8 +385,12 @@ public class ApplicationSharedMemory implements AutoCloseable {
     }
 
      /** Returns the device upgrading state set by PackageManagerService.
+      *  This method returns:
+      *    PM_DEVICE_UPGRADING_UNSET (-1) if PMS din not yet set the value,
+      *    PM_DEVICE_UPGRADING_FALSE ( 0) if the device is not upgrading,
+      *    PM_DEVICE_UPGRADING_TRUE  ( 1) if the device is upgrading.
       */
-    public boolean getIsDeviceUpgrading() {
+    public int getIsDeviceUpgrading() {
         checkMapped();
         return nativeGetIsDeviceUpgrading(mPtr);
     }
@@ -395,6 +411,6 @@ public class ApplicationSharedMemory implements AutoCloseable {
     private static native void nativeSetIsDeviceUpgrading(long ptr, boolean upgrading);
 
     @FastNative
-    private static native boolean nativeGetIsDeviceUpgrading(long ptr);
+    private static native int nativeGetIsDeviceUpgrading(long ptr);
 
 }

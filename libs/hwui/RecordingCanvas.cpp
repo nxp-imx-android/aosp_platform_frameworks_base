@@ -604,7 +604,7 @@ struct DrawPoints final : Op {
     SkPaint paint;
     void draw(SkCanvas* c, const SkMatrix&) const {
         if (paint.isAntiAlias()) {
-            c->drawPoints(mode, count, pod<SkPoint>(this), paint);
+            c->drawPoints(mode, {pod<SkPoint>(this), count}, paint);
         } else {
             c->save();
 #ifdef __ANDROID__
@@ -613,7 +613,7 @@ struct DrawPoints final : Op {
             transform.postConcat(pixelSnap);
             c->setMatrix(transform);
 #endif
-            c->drawPoints(mode, count, pod<SkPoint>(this), paint);
+            c->drawPoints(mode, {pod<SkPoint>(this), count}, paint);
             c->restore();
         }
     }
@@ -715,12 +715,15 @@ struct DrawAtlas final : Op {
     SkPaint paint;
     bool has_colors;
     void draw(SkCanvas* c, const SkMatrix&) const {
-        auto xforms = pod<SkRSXform>(this, 0);
-        auto texs = pod<SkRect>(this, count * sizeof(SkRSXform));
-        auto colors = has_colors ? pod<SkColor>(this, count * (sizeof(SkRSXform) + sizeof(SkRect)))
-                                 : nullptr;
-        c->drawAtlas(atlas.get(), xforms, texs, colors, count, mode, sampling, maybe_unset(cull),
-                     &paint);
+        size_t xformsOffset = 0;
+        SkSpan<const SkRSXform> xforms(pod<SkRSXform>(this, 0), count);
+        size_t texOffset = xformsOffset + count * sizeof(SkRSXform);
+        SkSpan<const SkRect> texs(pod<SkRect>(this, texOffset), count);
+        size_t colorsOffset = texOffset + count * sizeof(SkRect);
+        SkSpan<const SkColor> colors = has_colors
+            ? SkSpan<const SkColor>(pod<SkColor>(this, colorsOffset), count)
+            : SkSpan<const SkColor>();
+        c->drawAtlas(atlas.get(), xforms, texs, colors, mode, sampling, maybe_unset(cull), &paint);
     }
 
     [[nodiscard]] std::optional<SkRect> getConservativeBounds() const {

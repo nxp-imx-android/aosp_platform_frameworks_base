@@ -719,6 +719,13 @@ flag {
 }
 
 flag {
+    name: "enable_home_screen_peeking"
+    namespace: "lse_desktop_experience"
+    description: "Enables peeking the home screen behind desktop tasks."
+    bug: "447218327"
+}
+
+flag {
     name: "enable_interaction_dependent_tab_tearing_bounds"
     namespace: "lse_desktop_experience"
     description: "Update bounds of a torn tab and position it with respect to user /n"
@@ -946,6 +953,13 @@ flag {
     metadata {
         purpose: PURPOSE_BUGFIX
     }
+}
+
+flag {
+    name: "enable_stepped_cascading"
+    namespace: "lse_desktop_experience"
+    description: "Enable traditional stepped cascading for desktop windowing."
+    bug: "410787173"
 }
 
 flag {

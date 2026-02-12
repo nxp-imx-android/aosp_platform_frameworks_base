@@ -1,6 +1,6 @@
-# Android FilesService Architecture
+# Android FileService Architecture
 
-The `FilesService` is a dedicated system service designed to handle privileged,
+The `FileService` is a dedicated system service designed to handle privileged,
 long-running file operations—such as moving, copying, or deleting files on
 behalf of Android applications. By offloading these potentially blocking I/O
 tasks to a central system component, the platform ensures that operations are
@@ -16,7 +16,7 @@ introduces a robust asynchronous execution model to handle the latency and
 unpredictability of file system operations.
 
 At a high level, the system is designed to decouple the *request* for an
-operation from its *execution*. When a client application (via `FilesManager`)
+operation from its *execution*. When a client application (via `FileManager`)
 requests a file operation, the system does not block the calling thread.
 Instead, it validates the request, queues it, and immediately returns a handle
 (a `requestId`). This allows the client to remain responsive while the heavy
@@ -28,13 +28,13 @@ The system is composed of four distinct layers, each with a specific
 responsibility:
 
 ### 1. The Client Interface
-The `FilesManager` serves as the entry point for applications. It abstracts the
+The `FileManager` serves as the entry point for applications. It abstracts the
 IPC (Inter-Process Communication) complexities, presenting a clean API for
 enqueueing operations and fetching result updates. It communicates with the
-system server via the `IFilesService` AIDL interface.
+system server via the `IFileService` AIDL interface.
 
 ### 2. The Service Core (State Machine)
-The `FilesService` acts as the central brain of the system. It is responsible
+The `FileService` acts as the central brain of the system. It is responsible
 for:
 *   **Admission Control:** Deciding whether a request can be accepted based on
 current system load.
@@ -60,7 +60,7 @@ and report results or errors back to the dispatcher.
 ## Operational Mechanics
 
 ### Request Ingestion and Backpressure
-To maintain system stability, the `FilesService` enforces strict admission
+To maintain system stability, the `FileService` enforces strict admission
 control. When a request receives a call to `enqueueOperation`, the service
 checks the current load against a hard limit (`MAX_PENDING_REQUESTS`).
 *   **Under Load:** If the system is saturated, it immediately rejects the
@@ -80,7 +80,7 @@ that the main thread of the system server is never blocked by file I/O.
 3.  The processor runs the operation, periodically invoking a `StatusCallback`.
 
 ### State Management and History Retention
-One of the most complex aspects of the `FilesService` is managing the memory
+One of the most complex aspects of the `FileService` is managing the memory
 footprint of result objects while ensuring clients never lose track of active
 operations. The service uses a sophisticated dual-structure approach:
 
@@ -107,7 +107,7 @@ operation:
 
 ### 1. Polling (Pull Model)
 Clients can use the `requestId` returned during enqueueing to poll for the
-current state of the operation via `FilesManager.fetchResult()`. This design
+current state of the operation via `FileManager.fetchResult()`. This design
 choice avoids the overhead and complexity of managing persistent callback
 binders for clients that only need periodic or final updates.
 
@@ -117,7 +117,7 @@ operation finishes, the service supports a subscription-based broadcast
 mechanism:
 
 *   **Subscription:** Clients call
-    `FilesManager.registerCompletionListener(requestId)`.
+    `FileManager.registerCompletionListener(requestId)`.
 *   **Delivery:** Upon reaching a terminal state (`FINISHED` or `FAILED`), the
     service sends an explicit broadcast (`ACTION_FILE_OPERATION_COMPLETED`)
     directly to the registered package.

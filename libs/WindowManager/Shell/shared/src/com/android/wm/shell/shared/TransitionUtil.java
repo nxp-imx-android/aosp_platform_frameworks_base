@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.shared;
 
+import static android.app.WindowConfiguration.ACTIVITY_TYPE_HOME;
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 import static android.view.RemoteAnimationTarget.MODE_CHANGING;
 import static android.view.RemoteAnimationTarget.MODE_CLOSING;
@@ -192,6 +193,30 @@ public class TransitionUtil {
             }
         }
         return hasNoAnimation;
+    }
+
+    /**
+     * Checks if the transition contains a change transitioning to the Home task on the
+     * specific display.
+     *
+     * <p>Note: In Shell, a "Go Home" transition from split-screen is often handled within
+     * {@code RecentsMixedTransition}. This helper identifies those
+     * transitions so split-screen can coordinate its state (like suppressing local dimming) during
+     * the animation to Home.
+     */
+    public static boolean isHomeTransitionEndingOnDisplay(@Nullable TransitionInfo info,
+            int displayId) {
+        if (info == null || info.getChanges() == null) {
+            return false;
+        }
+        for (int i = 0; i < info.getChanges().size(); ++i) {
+            final TransitionInfo.Change change = info.getChanges().get(i);
+            if (change.getEndDisplayId() == displayId && change.getTaskInfo() != null
+                    && change.getTaskInfo().getActivityType() == ACTIVITY_TYPE_HOME) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

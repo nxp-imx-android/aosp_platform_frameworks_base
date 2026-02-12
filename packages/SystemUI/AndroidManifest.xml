@@ -556,6 +556,7 @@
             android:name=".screencapture.record.smallscreen.ui.SmallScreenPostRecordingActivity"
             android:exported="false"
             android:showForAllUsers="true"
+            android:windowSoftInputMode="adjustResize"
             android:theme="@style/ScreenCapture.PostRecord" />
 
         <activity

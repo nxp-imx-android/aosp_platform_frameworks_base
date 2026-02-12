@@ -1284,7 +1284,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy("mServiceLock")
-    public void setLastTopTime(long lastTopTime) {
+    void setLastTopTime(long lastTopTime) {
         mLastTopTime = lastTopTime;
     }
 
@@ -1567,7 +1567,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy("mServiceLock")
-    public void setBackgroundRestricted(boolean restricted) {
+    void setBackgroundRestricted(boolean restricted) {
         mBackgroundRestricted = restricted;
     }
 
@@ -1638,7 +1638,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy("mServiceLock")
-    public void setIsolatedEntryPoint(String isolatedEntryPoint) {
+    void setIsolatedEntryPoint(@Nullable String isolatedEntryPoint) {
         mIsolatedEntryPoint = isolatedEntryPoint;
     }
 
@@ -1648,7 +1648,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy("mServiceLock")
-    public void setWaitingToKill(String waitingToKill) {
+    void setWaitingToKill(@Nullable String waitingToKill) {
         mWaitingToKill = waitingToKill;
     }
 
@@ -1658,7 +1658,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    public void setLastActivityTime(long lastActivityTime) {
+    void setLastActivityTime(long lastActivityTime) {
         mLastActivityTime = lastActivityTime;
     }
 
@@ -1668,7 +1668,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy("mProcLock")
-    public void setRenderThreadTid(int renderThreadTid) {
+    void setRenderThreadTid(int renderThreadTid) {
         mRenderThreadTid = renderThreadTid;
     }
 

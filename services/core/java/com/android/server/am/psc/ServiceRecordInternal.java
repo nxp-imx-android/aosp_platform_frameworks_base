@@ -18,6 +18,7 @@ package com.android.server.am.psc;
 
 import android.content.ComponentName;
 import android.content.pm.ServiceInfo;
+import android.content.pm.ServiceInfo.ForegroundServiceType;
 import android.os.Binder;
 
 import java.util.ArrayList;
@@ -50,7 +51,7 @@ public abstract class ServiceRecordInternal extends Binder {
     /** The last time there was notable activity associated with this service. */
     private long mLastActivity;
     /** The bitmask of foreground service types declared for this service. */
-    private int mForegroundServiceType;
+    private @ForegroundServiceType int mForegroundServiceType;
 
     /**
      * The last time (in uptime timebase) a bind request was made with BIND_ALMOST_PERCEPTIBLE for
@@ -107,11 +108,11 @@ public abstract class ServiceRecordInternal extends Binder {
         mLastActivity = lastActivity;
     }
 
-    public int getForegroundServiceType() {
+    public @ForegroundServiceType int getForegroundServiceType() {
         return mForegroundServiceType;
     }
 
-    void setForegroundServiceType(int foregroundServiceType) {
+    void setForegroundServiceType(@ForegroundServiceType int foregroundServiceType) {
         mForegroundServiceType = foregroundServiceType;
     }
 

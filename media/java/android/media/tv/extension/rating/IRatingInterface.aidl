@@ -17,6 +17,7 @@
 package android.media.tv.extension.rating;
 
 import android.os.Bundle;
+import android.media.tv.extension.rating.IRatingUpdateListener;
 import android.media.tv.extension.rating.RatingRegionInfo;
 
 /**
@@ -42,4 +43,12 @@ interface IRatingInterface {
      * @return true if all RRT5 information was cleared successfully, false otherwise.
      */
     boolean setResetRrt5();
+    /**
+     * Registers a listener to be notified of RRT table changes.
+     */
+    void registerRrtUpdateListener(IRatingUpdateListener listener);
+    /**
+     * Unregisters an existing listener.
+     */
+    void unregisterRrtUpdateListener(IRatingUpdateListener listener);
 }

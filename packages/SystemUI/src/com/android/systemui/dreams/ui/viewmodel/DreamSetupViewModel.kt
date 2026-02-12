@@ -16,26 +16,63 @@
 
 package com.android.systemui.dreams.ui.viewmodel
 
+import android.content.Intent
+import android.provider.Settings
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import com.android.systemui.plugins.ActivityStarter
+import javax.inject.Inject
 
 /** Events that can be triggered from the dream setup screen. */
 sealed interface DreamSetupEvent {
     /** Called when the setup flow is dismissed without taking action. */
     object Dismiss : DreamSetupEvent
+
     /** Called when the user chooses not to set up the dream at this time. */
     object NotNow : DreamSetupEvent
+
     /** Called when the user chooses to proceed with setting up the dream. */
     object SetUp : DreamSetupEvent
 }
 
-class DreamSetupViewModel : ViewModel() {
+class DreamSetupViewModel(private val activityStarter: ActivityStarter) : ViewModel() {
+
+    class Factory @Inject constructor(private val activityStarter: ActivityStarter) :
+        ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            if (modelClass.isAssignableFrom(DreamSetupViewModel::class.java)) {
+                @Suppress("UNCHECKED_CAST")
+                return DreamSetupViewModel(activityStarter) as T
+            }
+            throw IllegalArgumentException("Unknown ViewModel class: $modelClass")
+        }
+    }
+
     fun onEvent(event: DreamSetupEvent) {
         when (event) {
-            is DreamSetupEvent.Dismiss -> Log.d(TAG, "User dismissed the setup flow.")
-            is DreamSetupEvent.NotNow -> Log.d(TAG, "User clicked 'Not now'.")
-            is DreamSetupEvent.SetUp -> Log.d(TAG, "User clicked 'Set up'.")
+            is DreamSetupEvent.Dismiss -> handleDismiss()
+            is DreamSetupEvent.NotNow -> handleNotNow()
+            is DreamSetupEvent.SetUp -> handleSetUp()
         }
+    }
+
+    private fun handleDismiss() {
+        Log.d(TAG, "User dismissed the setup flow.")
+    }
+
+    private fun handleNotNow() {
+        Log.d(TAG, "User clicked 'Not now'.")
+    }
+
+    private fun handleSetUp() {
+        Log.d(TAG, "User clicked 'Set up'.")
+        activityStarter.postStartActivityDismissingKeyguard(
+            Intent(Settings.ACTION_DREAM_SETTINGS)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP),
+            /* delay */ 0,
+            /* animationController */ null,
+        )
     }
 
     companion object {

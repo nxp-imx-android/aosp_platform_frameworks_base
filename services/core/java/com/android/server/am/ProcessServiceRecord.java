@@ -115,11 +115,12 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
             updateHostingComonentTypeForBindingsLocked();
         }
         if (record.getLastTopAlmostPerceptibleBindRequestUptimeMs() > 0) {
-            setLastTopStartedAlmostPerceptibleBindRequestUptimeMs(Math.max(
-                    getLastTopStartedAlmostPerceptibleBindRequestUptimeMs(),
-                    record.getLastTopAlmostPerceptibleBindRequestUptimeMs()));
+            mService.mProcessStateController.setLastTopStartedAlmostPerceptibleBindRequestUptimeMs(
+                    this, Math.max(getLastTopStartedAlmostPerceptibleBindRequestUptimeMs(),
+                            record.getLastTopAlmostPerceptibleBindRequestUptimeMs()));
             if (!getHasTopStartedAlmostPerceptibleServices()) {
-                setHasTopStartedAlmostPerceptibleServices(isAlmostPerceptible(record));
+                mService.mProcessStateController.setHasTopStartedAlmostPerceptibleServices(
+                        this, isAlmostPerceptible(record));
             }
         }
         return added;
@@ -134,7 +135,7 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
     boolean stopService(@NonNull ServiceRecord record) {
         final boolean removed = mService.mProcessStateController.removeRunningService(this, record);
         if (record.getLastTopAlmostPerceptibleBindRequestUptimeMs() > 0) {
-            updateHasTopStartedAlmostPerceptibleServices();
+            mService.mProcessStateController.updateHasTopStartedAlmostPerceptibleServices(this);
         }
         if (removed) {
             updateHostingComonentTypeForBindingsLocked();
