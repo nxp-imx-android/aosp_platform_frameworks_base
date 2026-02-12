@@ -192,7 +192,8 @@ constructor(
             ) { waitResult ->
                 if (
                     waitResult.result == ActivityManager.START_SUCCESS ||
-                        waitResult.result == ActivityManager.START_TASK_TO_FRONT
+                        waitResult.result == ActivityManager.START_TASK_TO_FRONT ||
+                        waitResult.result == ActivityManager.START_DELIVERED_TO_TOP
                 ) {
                     try {
                         // Configure the projection to capture a specific task using the same
