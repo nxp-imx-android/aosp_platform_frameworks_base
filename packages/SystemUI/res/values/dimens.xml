@@ -2202,6 +2202,8 @@
 
     <dimen name="volume_panel_slice_vertical_padding">8dp</dimen>
     <dimen name="volume_panel_slice_horizontal_padding">24dp</dimen>
+    <!-- The min height on the row of media input/output. -->
+    <dimen name="volume_panel_audio_tile_height">56dp</dimen>
     <!-- Volume end -->
 
     <!-- Gradient color wallpaper start -->
