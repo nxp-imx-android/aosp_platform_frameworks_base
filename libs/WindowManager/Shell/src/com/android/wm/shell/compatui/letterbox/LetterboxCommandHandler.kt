@@ -19,7 +19,6 @@ package com.android.wm.shell.compatui.letterbox
 import android.content.Context
 import android.graphics.Color
 import com.android.internal.protolog.ProtoLog
-import com.android.window.flags.Flags
 import com.android.wm.shell.dagger.WMSingleton
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_APP_COMPAT
 import com.android.wm.shell.sysui.ShellCommandHandler
@@ -48,13 +47,11 @@ constructor(
     }
 
     init {
-        if (Flags.appCompatRefactoring()) {
-            ProtoLog.v(WM_SHELL_APP_COMPAT, "$TAG: Initializing LetterboxCommandHandler")
-            shellInit.addInitCallback(
-                { shellCommandHandler.addCommandCallback("letterbox", this, this) },
-                this,
-            )
-        }
+        ProtoLog.v(WM_SHELL_APP_COMPAT, "$TAG: Initializing LetterboxCommandHandler")
+        shellInit.addInitCallback(
+            { shellCommandHandler.addCommandCallback("letterbox", this, this) },
+            this,
+        )
     }
 
     override fun onShellCommand(args: Array<out String>?, pw: PrintWriter?): Boolean {

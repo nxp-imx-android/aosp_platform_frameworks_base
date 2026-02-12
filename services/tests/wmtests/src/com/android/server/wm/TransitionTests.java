@@ -278,8 +278,7 @@ public class TransitionTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_APP_COMPAT_REFACTORING,
-            Flags.FLAG_APP_COMPAT_REFACTORING_USE_ACTIVITY_LEASH_FOR_LETTERBOXING})
+    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_USE_ACTIVITY_LEASH_FOR_LETTERBOXING)
     public void testCreateInfo_ActivityWithLeash() {
         final Task theTask = createTask(mDisplayContent);
         final ActivityRecord opening = createActivityRecord(theTask);

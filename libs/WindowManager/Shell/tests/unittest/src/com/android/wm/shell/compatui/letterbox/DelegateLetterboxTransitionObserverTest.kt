@@ -50,18 +50,6 @@ import org.mockito.kotlin.verify
 class DelegateLetterboxTransitionObserverTest : ShellTestCase() {
 
     @Test
-    @DisableFlags(Flags.FLAG_APP_COMPAT_REFACTORING)
-    fun `when initialized and flag disabled the observer is not registered`() {
-        runTestScenario { r ->
-            executeTransitionObserverTest(observerFactory = r.observerFactory) {
-                r.invokeShellInit()
-                r.checkObservableIsRegistered(expected = false)
-            }
-        }
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING)
     fun `when initialized and flag enabled the observer is registered`() {
         runTestScenario { r ->
             executeTransitionObserverTest(observerFactory = r.observerFactory) {
@@ -72,7 +60,6 @@ class DelegateLetterboxTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING)
     fun `LetterboxLifecycleController ignores Changes about Reachability`() {
         runTestScenario { r ->
             executeTransitionObserverTest(observerFactory = r.observerFactory) {
@@ -87,7 +74,6 @@ class DelegateLetterboxTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING)
     @DisableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY)
     fun `With flag disabled LetterboxLifecycleController ignored for not leaf tasks`() {
         runTestScenario { r ->
@@ -104,10 +90,7 @@ class DelegateLetterboxTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_APP_COMPAT_REFACTORING,
-        Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY,
-    )
+    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY)
     fun `With flag enabled LetterboxLifecycleController not for not leaf tasks`() {
         runTestScenario { r ->
             executeTransitionObserverTest(observerFactory = r.observerFactory) {
@@ -123,7 +106,6 @@ class DelegateLetterboxTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING)
     fun `LetterboxLifecycleController not used with no changes`() {
         runTestScenario { r ->
             executeTransitionObserverTest(observerFactory = r.observerFactory) {
@@ -135,7 +117,6 @@ class DelegateLetterboxTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING)
     fun `LetterboxLifecycleController used with a single change`() {
         runTestScenario { r ->
             executeTransitionObserverTest(observerFactory = r.observerFactory) {
@@ -149,7 +130,6 @@ class DelegateLetterboxTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING)
     fun `LetterboxLifecycleController used for each change`() {
         runTestScenario { r ->
             executeTransitionObserverTest(observerFactory = r.observerFactory) {

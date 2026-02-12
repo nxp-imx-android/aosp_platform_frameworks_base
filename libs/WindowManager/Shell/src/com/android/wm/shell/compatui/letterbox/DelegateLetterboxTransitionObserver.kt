@@ -46,10 +46,8 @@ class DelegateLetterboxTransitionObserver(
     }
 
     init {
-        if (Flags.appCompatRefactoring()) {
-            logV("Initializing LetterboxTransitionObserver")
-            shellInit.addInitCallback({ transitions.registerObserver(this) }, this)
-        }
+        logV("Initializing LetterboxTransitionObserver")
+        shellInit.addInitCallback({ transitions.registerObserver(this) }, this)
     }
 
     override fun onTransitionReady(
