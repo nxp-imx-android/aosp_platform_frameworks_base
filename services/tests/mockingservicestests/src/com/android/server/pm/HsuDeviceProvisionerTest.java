@@ -18,15 +18,19 @@ package com.android.server.pm;
 import static android.content.pm.UserInfo.FLAG_ADMIN;
 import static android.content.pm.UserInfo.FLAG_FULL;
 import static android.os.UserHandle.USER_SYSTEM;
+import static android.os.UserManager.USER_TYPE_SYSTEM_HEADLESS;
 import static android.provider.Settings.Global.DEVICE_PROVISIONED;
 import static android.provider.Settings.Secure.BUGREPORT_IN_POWER_MENU;
 import static android.provider.Settings.Secure.USER_SETUP_COMPLETE;
 
-import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doNothing;
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
-import static com.android.server.pm.HsumBootUserInitializerInitMethodTest.createUser;
+import static com.android.server.pm.GenericAllowlist.ALLOWLIST_MODE_DISABLED;
+import static com.android.server.pm.GenericAllowlist.ALLOWLIST_MODE_ENABLED;
+import static com.android.server.pm.GenericAllowlist.STATUS_ALLOWED_ALLOWLISTING_DISABLED_WHILE_DEVICE_IS_PROVISIONING;
 import static com.android.server.pm.HsumBootUserInitializer.getFullAdminFilter;
+import static com.android.server.pm.HsumBootUserInitializerInitMethodTest.createUser;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -36,6 +40,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.content.ComponentName;
 import android.content.ContentResolver;
@@ -54,6 +59,8 @@ import android.provider.Settings;
 import android.util.Log;
 
 import com.android.modules.utils.testing.ExtendedMockitoRule;
+import com.android.server.pm.GenericAllowlist;
+import com.android.server.pm.UserActivitiesAllowlist;
 
 import com.google.common.truth.Expect;
 
@@ -88,6 +95,7 @@ public final class HsuDeviceProvisionerTest {
     @Mock private UserManagerService mMockUms;
     @Mock private Context mMockContext;
     @Mock private PackageManager mMockPackageManager;
+    private UserActivitiesAllowlist mHsuActivitiesAllowlist;
 
     // Using a spy so we can test that "entry point" methods (like init() and onChange()) calls
     // "feature" methods (like copySecureSettingFromFirstAdmin()); these methods are then tested in
@@ -100,6 +108,9 @@ public final class HsuDeviceProvisionerTest {
     public void setFixtures() {
         when(mMockContext.getContentResolver()).thenReturn(mMockContentResolver);
         when(mMockContext.getPackageManager()).thenReturn(mMockPackageManager);
+        mHsuActivitiesAllowlist = spy(new UserActivitiesAllowlist(
+                GenericAllowlist.ALLOWLIST_MODE_DISABLED, new String[0]));
+        mockHsuActivitiesAllowlist(mHsuActivitiesAllowlist);
         mSpy = spy(new HsuDeviceProvisioner(mMockContext, new Handler(Looper.getMainLooper()),
                 mMockUms));
     }
@@ -227,6 +238,72 @@ public final class HsuDeviceProvisionerTest {
         verifyDisableSuwCalled();
     }
 
+    @Test
+    public void testDeviceNotProvisioned_hsuActivitiesAllowlistOverridden() {
+        mockIsDeviceProvisioned(false);
+
+        mSpy.init();
+
+        // Verify that the allowlist overridden status is not set when the device is to be
+        // provisioned.
+        verifyHsuActivitiesAllowlistOverriddenDisallowedStatus(
+                STATUS_ALLOWED_ALLOWLISTING_DISABLED_WHILE_DEVICE_IS_PROVISIONING);
+    }
+
+    @Test
+    public void testDeviceBeingProvisioned_initialStatusNotOverridden_overriddenStatusRemains() {
+        mockIsDeviceProvisioned(false);
+
+        mSpy.init();
+        verifyHsuActivitiesAllowlistOverriddenDisallowedStatus(
+                STATUS_ALLOWED_ALLOWLISTING_DISABLED_WHILE_DEVICE_IS_PROVISIONING);
+
+        mockIsDeviceProvisioned(true);
+        mSpy.onChange(false);
+
+        // Verify that the allowlist overridden status is still null, when the device is
+        // provisioned.
+        verifyHsuActivitiesAllowlistOverriddenDisallowedStatus(null);
+    }
+
+    @Test
+    public void testDeviceProvisioned_overriddenStatusNotSet() {
+        mockIsDeviceProvisioned(true);
+
+        mSpy.init();
+
+        // For device already provisioned, init() should not set the overridden status.
+        verifyHsuActivitiesAllowlistSetOverriddenDisallowedStatusNeverCalled();
+    }
+
+    @Test
+    public void testDeviceBeingProvisioned_hsuActivitiesAllowlistIsNull() {
+        mockIsDeviceProvisioned(false);
+        mockHsuActivitiesAllowlist(null);
+
+        mSpy = spy(new HsuDeviceProvisioner(mMockContext, new Handler(Looper.getMainLooper()),
+                mMockUms));
+
+        mSpy.init();
+
+        mSpy.onChange(false);
+        // Assert: no exception is thrown when the allowlist is null, and init() and onChange() are
+        // called.
+    }
+
+    @Test
+    public void testDeviceProvisioned_hsuActivitiesAllowlistIsNull() {
+        mockIsDeviceProvisioned(true);
+        mockHsuActivitiesAllowlist(null);
+
+        mSpy = spy(new HsuDeviceProvisioner(mMockContext, new Handler(Looper.getMainLooper()),
+                mMockUms));
+
+        mSpy.init();
+
+        // Assert: no exception is thrown when the allowlist is null, and init() is called.
+    }
+
     private void mockIsDeviceProvisioned(boolean value) {
         Log.v(TAG, "mockIsDeviceProvisioned(" + value + ")");
         doReturn(value ? 1 : 0).when(() -> Settings.Global.getInt(any(), eq(DEVICE_PROVISIONED)));
@@ -250,6 +327,12 @@ public final class HsuDeviceProvisionerTest {
         when(mMockUms.getUsers(filter)).thenReturn(list);
     }
 
+    private void mockHsuActivitiesAllowlist(@Nullable UserActivitiesAllowlist allowlist) {
+        Log.d(TAG, "mockHsuActivitiesAllowlist(): mMockUms.getActivitiesAllowlist("
+                + USER_TYPE_SYSTEM_HEADLESS + ") will return " + allowlist);
+        when(mMockUms.getActivitiesAllowlist(USER_TYPE_SYSTEM_HEADLESS)).thenReturn(allowlist);
+    }
+
     private void verifyNoSecureSettingsSet() {
         verify(() -> Settings.Secure.putInt(any(), any(), anyInt()), never());
     }
@@ -264,6 +347,16 @@ public final class HsuDeviceProvisionerTest {
 
     private void verifyContentObserverNeverUnregistered() {
         verify(mMockContentResolver, never()).unregisterContentObserver(any());
+    }
+
+    private void verifyHsuActivitiesAllowlistOverriddenDisallowedStatus(
+            Integer overriddenDisallowedStatus) {
+        expect.that(mHsuActivitiesAllowlist.getOverriddenDisallowedStatus())
+                .isEqualTo(overriddenDisallowedStatus);
+    }
+
+    private void verifyHsuActivitiesAllowlistSetOverriddenDisallowedStatusNeverCalled() {
+        verify(mHsuActivitiesAllowlist, never()).overrideDisallowedStatus(any());
     }
 
     private ContentObserver verifyContentObserverRegistered() {

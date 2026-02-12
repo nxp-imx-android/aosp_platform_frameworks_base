@@ -1196,7 +1196,7 @@ public class UserManagerService extends IUserManager.Stub {
             sInstance = this;
         }
         mSystemPackageInstaller = new UserSystemPackageInstaller(this, mUserTypes);
-        mPerUserTypeActivitiesAllowlist = buildActivitiesAllowlist(context, mUserTypes);
+        mPerUserTypeActivitiesAllowlist = buildActivitiesAllowlists(context, mUserTypes);
         // Most common sizes would be 1-3 (HSU, full user, profile), so setting to 4 as it's the
         // closed multiple of 2.
         mPerUserActivitiesAllowlist = Flags.hsuAllowlistActivities()
@@ -4952,7 +4952,7 @@ public class UserManagerService extends IUserManager.Stub {
     }
 
     /** This method is called in the constructor once (hence it's static) */
-    private static @Nullable ArrayMap<String, UserActivitiesAllowlist> buildActivitiesAllowlist(
+    private static @Nullable ArrayMap<String, UserActivitiesAllowlist> buildActivitiesAllowlists(
             Context context, ArrayMap<String, UserTypeDetails> userTypes) {
         if (!android.multiuser.Flags.hsuAllowlistActivities()) {
             return null;
@@ -4985,10 +4985,6 @@ public class UserManagerService extends IUserManager.Stub {
                     resources.getInteger(R.integer.config_hsuActivitiesAllowlistMode);
             final UserActivitiesAllowlist allowlist =
                     new UserActivitiesAllowlist(allowlistMode, allowlistedActivities);
-            // TODO(b/477998894): call overrideDisallowedStatus(
-            //   STATUS_ALLOWED_ALLOWLISTING_DISABLED_WHILE_DEVICE_IS_PROVISIONING) if the device is
-            // not provisioned (will be done in a separate CL as it'd also require changing
-            // HsuDeviceProvisioner to reset it later).
             userActivitiesAllowlist.put(userType, allowlist);
         }
         return userActivitiesAllowlist;

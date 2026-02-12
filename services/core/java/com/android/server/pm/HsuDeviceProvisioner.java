@@ -16,8 +16,10 @@
 package com.android.server.pm;
 
 import static com.android.server.pm.HsumBootUserInitializer.getFullAdminFilter;
+import static android.os.UserManager.USER_TYPE_SYSTEM_HEADLESS;
 
 import android.Manifest;
+import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.content.ComponentName;
 import android.content.ContentResolver;
@@ -80,6 +82,10 @@ final class HsuDeviceProvisioner extends ContentObserver {
             return;
         }
 
+        // Device is not provisioned yet. Override the HSU activities allowlist as to temporarily
+        // disable it. This will be reset once the device is provisioned (via onChange()).
+        overrideHsuActivitiesAllowlistDisallowedStatus();
+
         mContentResolver.registerContentObserver(
                 Settings.Global.getUriFor(Settings.Global.DEVICE_PROVISIONED), false, this);
     }
@@ -92,6 +98,9 @@ final class HsuDeviceProvisioner extends ContentObserver {
         if (!isDeviceProvisioned()) {
             return;
         }
+
+        // Device is now provisioned. Reset the HSU activities allowlist overridden status.
+        resetHsuActivitiesAllowlistOverriddenDisallowedStatus();
 
         Slogf.i(TAG, "Making changes on first boot");
         // Set USER_SETUP_COMPLETE for the (headless) system user only when the device
@@ -123,6 +132,38 @@ final class HsuDeviceProvisioner extends ContentObserver {
                 e);
             return false;
         }
+    }
+
+    /**
+     * Overrides the status of the HSU activities allowlist to be disallowed.
+     * This is to temporarily disable the allowlist while the device is unprovisioned.
+     */
+    private void overrideHsuActivitiesAllowlistDisallowedStatus() {
+        final UserActivitiesAllowlist hsuActivitiesAllowlist =
+                mUms.getActivitiesAllowlist(USER_TYPE_SYSTEM_HEADLESS);
+        if (hsuActivitiesAllowlist == null) {
+            Slogf.d(TAG, "HSU activities allowlist is null. Skipping overriding status.");
+            return;
+        }
+        Slogf.i(TAG, "Overriding HSU activities allowlist status");
+        hsuActivitiesAllowlist.overrideDisallowedStatus(
+                GenericAllowlist.STATUS_ALLOWED_ALLOWLISTING_DISABLED_WHILE_DEVICE_IS_PROVISIONING);
+    }
+
+    /**
+     * Resets the overridden status of the HSU activities allowlist.
+     * This should be called when the device is provisioned to clear any overrides that were set
+     * while the device was unprovisioned.
+     */
+    private void resetHsuActivitiesAllowlistOverriddenDisallowedStatus() {
+        final UserActivitiesAllowlist hsuActivitiesAllowlist =
+                mUms.getActivitiesAllowlist(USER_TYPE_SYSTEM_HEADLESS);
+        if (hsuActivitiesAllowlist == null) {
+            Slogf.d(TAG, "HSU activities allowlist is null. Skipping resetting overridden status.");
+            return;
+        }
+        Slogf.i(TAG, "Resetting HSU activities allowlist overridden status");
+        hsuActivitiesAllowlist.overrideDisallowedStatus(null);
     }
 
     @VisibleForTesting
