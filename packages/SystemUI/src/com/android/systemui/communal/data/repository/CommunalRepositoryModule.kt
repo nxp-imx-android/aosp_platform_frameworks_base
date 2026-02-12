@@ -28,7 +28,5 @@ interface CommunalRepositoryModule {
     @Binds fun carProjectionRepository(impl: CarProjectionRepositoryImpl): CarProjectionRepository
 
     @Binds
-    fun commonSetupPreconditions(
-        impl: CommonSetupPreconditionsImpl
-    ): CommonSetupPreconditions
+    fun commonSetupPreconditions(impl: CommonSetupPreconditionsImpl): CommonSetupPreconditions
 }

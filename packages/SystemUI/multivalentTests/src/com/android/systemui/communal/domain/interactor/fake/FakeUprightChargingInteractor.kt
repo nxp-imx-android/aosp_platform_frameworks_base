@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-package com.android.systemui.communal.data.repository.fake
+package com.android.systemui.communal.domain.interactor.fake
 
-import com.android.systemui.communal.data.repository.UprightChargingTriggerRepository
+import com.android.systemui.communal.domain.interactor.UprightChargingInteractor
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
-class FakeUprightChargingTriggerRepository : UprightChargingTriggerRepository {
+class FakeUprightChargingInteractor : UprightChargingInteractor {
     private val _isTriggered = MutableStateFlow(false)
-    override val isTriggered = _isTriggered
+    override val isTriggered: StateFlow<Boolean> = _isTriggered
 
-    fun setTriggered(value: Boolean) {
-        _isTriggered.value = value
+    fun setTriggered(triggered: Boolean) {
+        _isTriggered.value = triggered
     }
 }
