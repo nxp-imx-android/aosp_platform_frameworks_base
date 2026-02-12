@@ -710,6 +710,18 @@ int AndroidRuntime::startVm(JavaVM** pJavaVM, JNIEnv** pEnv, bool zygote, bool p
     char perfettoHprofOptBuf[sizeof("-XX:PerfettoHprof=") + PROPERTY_VALUE_MAX];
     char perfettoJavaHeapStackOptBuf[
             sizeof("-XX:PerfettoJavaHeapStackProf=") + PROPERTY_VALUE_MAX];
+    char hugeMethodMaxThresholdBuf[
+            sizeof("--huge-method-max=")-1 + PROPERTY_VALUE_MAX];
+    char inlineMaxCodeUnitsBuf[
+            sizeof("--inline-max-code-units=")-1 + PROPERTY_VALUE_MAX];
+    char inlineMaxTotalInstructionsBuf[
+            sizeof("--inline-max-total-instructions=")-1 + PROPERTY_VALUE_MAX];
+    char inlineMaxInstructionsForSmallMethodBuf[
+            sizeof("--inline-max-instructions-for-small-method=")-1 + PROPERTY_VALUE_MAX];
+    char inlineMaxCumulatedDexRegistersBuf[
+            sizeof("--inline-max-cumulated-dex-registers=")-1 + PROPERTY_VALUE_MAX];
+    char inlineMaxRecursiveCallsBuf[
+            sizeof("--inline-max-recursive-calls=")-1 + PROPERTY_VALUE_MAX];
     enum {
       kEMDefault,
       kEMIntPortable,
@@ -997,6 +1009,22 @@ int AndroidRuntime::startVm(JavaVM** pJavaVM, JNIEnv** pEnv, bool zygote, bool p
     parseCompilerOption("dalvik.vm.dex2oat-threads", dex2oatThreadsBuf, "-j", "-Xcompiler-option");
     parseCompilerOption("dalvik.vm.dex2oat-cpu-set", dex2oatCpuSetBuf, "--cpu-set=",
                         "-Xcompiler-option");
+
+    // Extra options for Inliner tuning.
+    parseCompilerOption("dalvik.vm.huge-method-max", hugeMethodMaxThresholdBuf,
+                        "--huge-method-max=", "-Xcompiler-option");
+    parseCompilerOption("dalvik.vm.inline-max-code-units", inlineMaxCodeUnitsBuf,
+                        "--inline-max-code-units=", "-Xcompiler-option");
+    parseCompilerOption("dalvik.vm.inline-max-total-instructions", inlineMaxTotalInstructionsBuf,
+                        "--inline-max-total-instructions=", "-Xcompiler-option");
+    parseCompilerOption("dalvik.vm.inline-max-instructions-for-small-method",
+                        inlineMaxInstructionsForSmallMethodBuf,
+                        "--inline-max-instructions-for-small-method=", "-Xcompiler-option");
+    parseCompilerOption("dalvik.vm.inline-max-cumulated-dex-registers",
+                        inlineMaxCumulatedDexRegistersBuf,
+                        "--inline-max-cumulated-dex-registers=", "-Xcompiler-option");
+    parseCompilerOption("dalvik.vm.inline-max-recursive-calls", inlineMaxRecursiveCallsBuf,
+                        "--inline-max-recursive-calls=", "-Xcompiler-option");
 
     // Copy the variant.
     sprintf(dex2oat_isa_variant_key, "dalvik.vm.isa.%s.variant", ABI_STRING);
