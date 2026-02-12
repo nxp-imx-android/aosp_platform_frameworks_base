@@ -100,6 +100,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.Insets;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
@@ -125,6 +126,8 @@ import android.view.accessibility.AccessibilityNodeInfo;
 import android.window.InputTransferToken;
 import android.window.TaskFpsCallback;
 import android.window.TrustedPresentationThresholds;
+
+import androidx.annotation.ColorLong;
 
 import com.android.internal.R;
 import com.android.window.flags.Flags;
@@ -4098,6 +4101,16 @@ public interface WindowManager extends ViewManager {
         public float dimAmount = 1.0f;
 
         /**
+         * When {@link #FLAG_DIM_BEHIND} is set, this is the color of the dimming
+         * to apply. The default value is black (0xFF000000). The alpha component
+         * of this color is ignored, as the opacity of the dim layer is controlled
+         * by {@link #dimAmount}.
+         */
+        @ColorLong
+        @FlaggedApi(com.android.window.flags.Flags.FLAG_SUPPORT_CUSTOM_DIM_COLOR)
+        public long dimColor = Color.pack(Color.BLACK);
+
+        /**
          * Default value for {@link #screenBrightness} and {@link #buttonBrightness}
          * indicating that the brightness value is not overridden for this window
          * and normal brightness policy should be used.
@@ -5353,6 +5366,7 @@ public interface WindowManager extends ViewManager {
             out.writeInt(windowAnimations);
             out.writeFloat(alpha);
             out.writeFloat(dimAmount);
+            out.writeLong(dimColor);
             out.writeFloat(screenBrightness);
             out.writeFloat(buttonBrightness);
             out.writeInt(rotationAnimation);
@@ -5430,6 +5444,7 @@ public interface WindowManager extends ViewManager {
             windowAnimations = in.readInt();
             alpha = in.readFloat();
             dimAmount = in.readFloat();
+            dimColor = in.readLong();
             screenBrightness = in.readFloat();
             buttonBrightness = in.readFloat();
             rotationAnimation = in.readInt();
@@ -5483,6 +5498,11 @@ public interface WindowManager extends ViewManager {
         public static final int FLAGS_CHANGED = 1<<2;
         public static final int FORMAT_CHANGED = 1<<3;
         public static final int ANIMATION_CHANGED = 1<<4;
+        /*
+            This flag is used to indicate a change in either dimAmount or dimColor
+            A unified flag is used because these properties are functionally coupled.
+            The original flag name is maintained for API compatibility.
+         */
         public static final int DIM_AMOUNT_CHANGED = 1<<5;
         public static final int TITLE_CHANGED = 1<<6;
         public static final int ALPHA_CHANGED = 1<<7;
@@ -5629,8 +5649,9 @@ public interface WindowManager extends ViewManager {
                 alpha = o.alpha;
                 changes |= ALPHA_CHANGED;
             }
-            if (dimAmount != o.dimAmount) {
+            if (dimAmount != o.dimAmount || dimColor != o.dimColor) {
                 dimAmount = o.dimAmount;
+                dimColor = o.dimColor;
                 changes |= DIM_AMOUNT_CHANGED;
             }
             if (screenBrightness != o.screenBrightness) {

@@ -28,13 +28,18 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.times;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 import static com.android.server.wm.utils.LastCallVerifier.lastCall;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.clearInvocations;
 
+import android.graphics.Color;
 import android.graphics.Rect;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.view.Choreographer;
 import android.view.SurfaceControl;
@@ -364,6 +369,89 @@ public class DimmerTests extends WindowTestsBase {
         dimmer.adjustAppearance(win, 0.0f /* alpha */, 10 /* blurRadius */);
         dimmer.adjustPosition(win, win);
         assertNotNull(dimmer.getDimLayer());
+    }
+
+    @Test
+    @EnableFlags(com.android.window.flags.Flags.FLAG_SUPPORT_CUSTOM_DIM_COLOR)
+    public void testCustomDimColorApplied() {
+        final WindowState win = createSystemWindow("win");
+        final Dimmer dimmer = mDisplayContent.mDimmer;
+
+        long customColor = Color.pack(Color.GREEN);
+        float[] expectedColor = new float[] {0f, 1f, 0f};
+
+        dimmer.adjustAppearance(win, 0.7f , 20 , customColor);
+        dimmer.adjustPosition(win, win);
+
+        updateDimsToRequestedState(dimmer);
+
+        verify(mTransaction).setColor(dimmer.getDimLayer(), expectedColor);
+    }
+
+    @Test
+    @EnableFlags(com.android.window.flags.Flags.FLAG_SUPPORT_CUSTOM_DIM_COLOR)
+    public void testDefaultDimColorIsBlack() {
+        final WindowState win = createSystemWindow("win");
+        final Dimmer dimmer = mDisplayContent.mDimmer;
+
+        float[] expectedBlack = new float[] {0f, 0f, 0f};
+
+        dimmer.adjustAppearance(win, 0.5f, 10);
+        dimmer.adjustPosition(win, win);
+        updateDimsToRequestedState(dimmer);
+
+        verify(mTransaction).setColor(dimmer.getDimLayer(), expectedBlack);
+    }
+
+    @Test
+    @EnableFlags(com.android.window.flags.Flags.FLAG_SUPPORT_CUSTOM_DIM_COLOR)
+    public void testMultipleWindowsDifferentDimColors() {
+        final WindowState bottomWin = createSystemWindow("bottomWin");
+        final WindowState topWin = createSystemWindow("topWin");
+        final Dimmer dimmer = mDisplayContent.mDimmer;
+
+        long bottomColor = Color.pack(Color.RED);
+        long topColor = Color.pack(Color.BLUE);
+        float[] expectedTopColor = new float[] {0f, 0f, 1f}; // BLUE
+        float[] bottomColorArray = new float[] {1f, 0f, 0f}; // RED
+
+        dimmer.adjustAppearance(bottomWin, 0.5f, 10, bottomColor);
+        dimmer.adjustAppearance(topWin, 0.5f, 10, topColor);
+        dimmer.adjustPosition(topWin, topWin);
+
+        updateDimsToRequestedState(dimmer);
+
+        verify(mTransaction).setColor(dimmer.getDimLayer(), expectedTopColor);
+        verify(mTransaction, never()).setColor(dimmer.getDimLayer(), bottomColorArray);
+    }
+
+    @Test
+    @EnableFlags(com.android.window.flags.Flags.FLAG_SUPPORT_CUSTOM_DIM_COLOR)
+    public void testDimColorHandover() {
+        final WindowState win1 = createSystemWindow("win1");
+        final WindowState win2 = createSystemWindow("win2");
+        final Dimmer dimmer = mDisplayContent.mDimmer;
+
+        dimmer.adjustAppearance(win1, 1.0f, 0, Color.pack(Color.RED));
+        dimmer.adjustPosition(win1, win1);
+        updateDimsToRequestedState(dimmer);
+
+        dimmer.resetDimStates();
+        dimmer.adjustAppearance(win2, 1.0f, 0, Color.pack(Color.BLUE));
+        dimmer.adjustPosition(win1, win2);
+
+        updateDimsToRequestedState(dimmer);
+
+        // Assert: Verify the final color applied to the dim layer's surface is BLUE.
+        final ArgumentCaptor<float[]> colorCaptor = ArgumentCaptor.forClass(float[].class);
+        // The animation, when finished, should have set the final color on the transaction.
+        // We verify the last call to setColor for the dim layer.
+        verify(mTransaction, atLeastOnce())
+                .setColor(eq(dimmer.getDimLayer()), colorCaptor.capture());
+
+        float[] expectedBlue = new float[] { 0f, 0f, 1f }; // Color.BLUE
+        assertArrayEquals("Dimmer color should be set to BLUE after the animation.",
+                expectedBlue, colorCaptor.getValue(), 0.0f);
     }
 
     /** Called after {@link Dimmer#updateDims} to apply the end state of dim. */

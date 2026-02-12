@@ -149,6 +149,8 @@
     <public name="suggestionBackgroundColor"/>
     <!-- @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE) -->
     <public name="suggestionCornerRadius"/>
+    <!-- @FlaggedApi(com.android.window.flags.Flags.FLAG_SUPPORT_CUSTOM_DIM_COLOR) -->
+    <public name="backgroundDimColor"/>
   </staging-public-group>
 
   <staging-public-group type="id" first-id="0x01a10000">
