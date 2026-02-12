@@ -18,11 +18,14 @@ package android.os.storage.operations.targets;
 
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.annotation.SuppressLint;
+import android.os.Environment;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.regex.Pattern;
@@ -117,6 +120,26 @@ public final class PccTarget extends OperationTarget {
         }
 
         return true;
+    }
+
+    /** @hide */
+    public @NonNull File getTargetPath(
+            @Nullable String volumeUuid,
+            boolean isDeviceEncrypted,
+            int userId,
+            @NonNull String packageName) {
+        File root;
+        if (isDeviceEncrypted) {
+            root = Environment.getPccDataUserDePackageDirectory(volumeUuid, userId, packageName);
+        } else {
+            root = Environment.getPccDataUserCePackageDirectory(volumeUuid, userId, packageName);
+        }
+
+        if (mPathPrefix.isEmpty()) {
+            return root;
+        } else {
+            return new File(root, mPathPrefix);
+        }
     }
 
     /** implemented for Parcelable */
