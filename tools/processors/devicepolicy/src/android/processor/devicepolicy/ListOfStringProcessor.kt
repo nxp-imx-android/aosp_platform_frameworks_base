@@ -71,15 +71,11 @@ class ListOfStringProcessor(processingEnv: ProcessingEnvironment) :
         }
 
         val typeSpecificMetadata =
-            TypeSpecificPolicyMetadata
-                .newBuilder()
+            TypeSpecificPolicyMetadata.newBuilder()
                 .setListMetadata(
                     TypeSpecificPolicyMetadata.ListPolicyMetadata.newBuilder()
-                        .setStringMetadata (
-                            stringProcessor
-                                .extractTypeSpecificMetadata(
-                                    listOfStringDefinition.base
-                                )
+                        .setStringMetadata(
+                            stringProcessor.extractTypeSpecificMetadata(listOfStringDefinition.base)
                         )
                         .setEmptyListAllowed(listOfStringDefinition.emptyListAllowed)
                 )

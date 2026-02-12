@@ -1,18 +1,18 @@
 /*
-* Copyright (C) 2025 The Android Open Source Project
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright (C) 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package android.processor.devicepolicy
 
@@ -27,11 +27,11 @@ import com.sun.source.util.Trees
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
 import javax.lang.model.element.ElementKind
+import javax.lang.model.element.Modifier
 import javax.lang.model.element.TypeElement
 import javax.lang.model.type.DeclaredType
 import javax.lang.model.type.TypeMirror
 import javax.tools.Diagnostic
-import javax.lang.model.element.Modifier
 
 abstract class PolicyProcessor<T : Annotation>(protected val processingEnv: ProcessingEnvironment) {
     private companion object {
@@ -39,30 +39,27 @@ abstract class PolicyProcessor<T : Annotation>(protected val processingEnv: Proc
     }
 
     val policyIdentifierElem =
-        processingEnv.elementUtils.getTypeElement(POLICY_IDENTIFIER) ?: throw IllegalStateException(
-            "Could not find $POLICY_IDENTIFIER"
-        )
+        processingEnv.elementUtils.getTypeElement(POLICY_IDENTIFIER)
+            ?: throw IllegalStateException("Could not find $POLICY_IDENTIFIER")
 
     /** Represents a android.app.admin.PolicyIdentifier<T> */
-    val policyIdentifierType = policyIdentifierElem.asType()
-        ?: throw IllegalStateException("Could not get type of $POLICY_IDENTIFIER")
+    val policyIdentifierType =
+        policyIdentifierElem.asType()
+            ?: throw IllegalStateException("Could not get type of $POLICY_IDENTIFIER")
 
     /** Represents a android.app.admin.PolicyIdentifier<?> */
-    val genericPolicyIdentifierType = processingEnv.typeUtils.getDeclaredType(
-        policyIdentifierElem, processingEnv.typeUtils.getWildcardType(null, null)
-    ) ?: throw IllegalStateException("Could not get generic type of $POLICY_IDENTIFIER")
+    val genericPolicyIdentifierType =
+        processingEnv.typeUtils.getDeclaredType(
+            policyIdentifierElem,
+            processingEnv.typeUtils.getWildcardType(null, null),
+        ) ?: throw IllegalStateException("Could not get generic type of $POLICY_IDENTIFIER")
 
-
-    /**
-     * Given an element that represents a PolicyIdentifier field, get the type of the policy.
-     */
+    /** Given an element that represents a PolicyIdentifier field, get the type of the policy. */
     protected fun policyType(element: Element): TypeMirror {
         val elementType = element.asType() as DeclaredType
 
         if (elementType.typeArguments.size != 1) {
-            printError(
-                element, "Only expected 1 type parameter in $elementType"
-            )
+            printError(element, "Only expected 1 type parameter in $elementType")
 
             throw IllegalArgumentException("Element $element is not a policy")
         }
@@ -70,30 +67,24 @@ abstract class PolicyProcessor<T : Annotation>(protected val processingEnv: Proc
         return elementType.typeArguments[0]
     }
 
-    /**
-     * Print an error and make compilation fail.
-     */
+    /** Print an error and make compilation fail. */
     protected fun printError(element: Element, message: String) {
-        processingEnv.messager.printMessage(
-            Diagnostic.Kind.ERROR,
-            message,
-            element,
-        )
+        processingEnv.messager.printMessage(Diagnostic.Kind.ERROR, message, element)
     }
 
     /**
      * Process policy metadata into a {@link (TypeSpecificPolicyMetadata, DevicePolicyDefinition)}.
      *
-     * Errors must be reported using {@link printError} to the user and processing should
-     * continue for as long as possible.
+     * Errors must be reported using {@link printError} to the user and processing should continue
+     * for as long as possible.
      *
      * @return Policy metadata or null when metadata can not be obtained.
      */
-    abstract fun processMetadata(element: Element): Pair<TypeSpecificPolicyMetadata, PolicyDefinition>?
+    abstract fun processMetadata(
+        element: Element
+    ): Pair<TypeSpecificPolicyMetadata, PolicyDefinition>?
 
-    /**
-     * Get the class of the annotation for this processor.
-     */
+    /** Get the class of the annotation for this processor. */
     abstract fun annotationClass(): Class<T>
 
     /**
@@ -130,7 +121,7 @@ abstract class PolicyProcessor<T : Annotation>(protected val processingEnv: Proc
         if (!processingEnv.typeUtils.isAssignable(elementType, genericPolicyIdentifierType)) {
             printError(
                 element,
-                "@PolicyDefinition can only be applied to $policyIdentifierType, it was applied to $elementType."
+                "@PolicyDefinition can only be applied to $policyIdentifierType, it was applied to $elementType.",
             )
 
             // Stop validating, we depend on the type next.
@@ -138,17 +129,16 @@ abstract class PolicyProcessor<T : Annotation>(protected val processingEnv: Proc
         }
 
         if (elementType.typeArguments.size != 1) {
-            printError(
-                element, "Only expected 1 type parameter in $elementType"
-            )
+            printError(element, "Only expected 1 type parameter in $elementType")
             valid = false
         }
 
-        // Temporary check until the API is rolled out. Later other module should be able to use @PolicyDefinition.
+        // Temporary check until the API is rolled out. Later other module should be able to use
+        // @PolicyDefinition.
         if (!processingEnv.typeUtils.isAssignable(enclosingType, genericPolicyIdentifierType)) {
             printError(
                 element,
-                "@PolicyDefinition can only be applied to fields in $policyIdentifierType, it was applied to a field in $enclosingType."
+                "@PolicyDefinition can only be applied to fields in $policyIdentifierType, it was applied to a field in $enclosingType.",
             )
 
             valid = false
@@ -158,8 +148,8 @@ abstract class PolicyProcessor<T : Annotation>(protected val processingEnv: Proc
     }
 
     /**
-     * Make sure that policy fields look like:
-     * {@code private static final POLICY_NAME = new PolicyIdentifier<>("POLICY_NAME"); }
+     * Make sure that policy fields look like: {@code private static final POLICY_NAME = new
+     * PolicyIdentifier<>("POLICY_NAME"); }
      */
     private fun checkPolicyFieldStructure(element: Element) {
         checkPolicyFieldModifiers(element)
@@ -168,10 +158,7 @@ abstract class PolicyProcessor<T : Annotation>(protected val processingEnv: Proc
         val expectedInitializer = "'new PolicyIdentifier<>($expectedName)'"
 
         fun error(cause: String) {
-            printError(
-                element,
-                "Policy must be initialized to $expectedInitializer: $cause."
-            )
+            printError(element, "Policy must be initialized to $expectedInitializer: $cause.")
         }
 
         val trees = Trees.instance(processingEnv)
@@ -214,24 +201,15 @@ abstract class PolicyProcessor<T : Annotation>(protected val processingEnv: Proc
 
     private fun checkPolicyFieldModifiers(element: Element) {
         if (!element.modifiers.contains(Modifier.STATIC)) {
-            printError(
-                element,
-                "Field must be static"
-            )
+            printError(element, "Field must be static")
         }
 
         if (!element.modifiers.contains(Modifier.FINAL)) {
-            printError(
-                element,
-                "Field must be final"
-            )
+            printError(element, "Field must be final")
         }
 
         if (!element.modifiers.contains(Modifier.PUBLIC)) {
-            printError(
-                element,
-                "Field must be public"
-            )
+            printError(element, "Field must be public")
         }
     }
 
@@ -240,17 +218,8 @@ abstract class PolicyProcessor<T : Annotation>(protected val processingEnv: Proc
             throw IllegalArgumentException("Element $element is not a type element")
         }
 
-        val packageName =
-            processingEnv
-                .elementUtils
-                .getPackageOf(element)
-                .qualifiedName
-                .toString()
-        val className =
-            element
-                .qualifiedName
-                .toString()
-                .removePrefix("$packageName.")
+        val packageName = processingEnv.elementUtils.getPackageOf(element).qualifiedName.toString()
+        val className = element.qualifiedName.toString().removePrefix("$packageName.")
 
         return FullyQualifiedClassName.newBuilder()
             .setClassName(className)
@@ -272,16 +241,8 @@ abstract class PolicyProcessor<T : Annotation>(protected val processingEnv: Proc
     private fun classTypeMirrorToName(type: TypeMirror): FullyQualifiedClassName {
         val element = processingEnv.typeUtils.asElement(type)
 
-        val packageName =
-            processingEnv
-                .elementUtils
-                .getPackageOf(element)
-                .qualifiedName
-                .toString()
-        val className =
-            type
-                .toString()
-                .removePrefix("$packageName.")
+        val packageName = processingEnv.elementUtils.getPackageOf(element).qualifiedName.toString()
+        val className = type.toString().removePrefix("$packageName.")
 
         return FullyQualifiedClassName.newBuilder()
             .setClassName(className)
@@ -290,18 +251,17 @@ abstract class PolicyProcessor<T : Annotation>(protected val processingEnv: Proc
     }
 
     private fun loadPolicyDefinition(
-        element: Element, definition: PolicyDefinition, typeSpecificMetadata: TypeSpecificPolicyMetadata
+        element: Element,
+        definition: PolicyDefinition,
+        typeSpecificMetadata: TypeSpecificPolicyMetadata,
     ): PolicyMetadata? {
         val identifier = getFullyQualifiedFieldName(element)
 
         val type = classTypeMirrorToName(policyType(element))
-        val documentation =
-            processingEnv.elementUtils
-                .getDocComment(element)
-                ?.trimIndent()
-                ?: ""
+        val documentation = processingEnv.elementUtils.getDocComment(element)?.trimIndent() ?: ""
         val allowedScopes = convertScopes(element, definition.allowedScopes.toList())
-        val affectedResource = convertResourceType(element, definition.affectedResource) ?: return null
+        val affectedResource =
+            convertResourceType(element, definition.affectedResource) ?: return null
         val allowedDpcTypes = convertDpcTypes(element, definition.allowedDpcTypes)
 
         if (documentation.trim().isEmpty()) {
@@ -311,15 +271,15 @@ abstract class PolicyProcessor<T : Annotation>(protected val processingEnv: Proc
         val requiredPermission = definition.requiredPermission
         val requiredCrossUserPermission = definition.requiredCrossUserPermission
 
-        val builder = PolicyMetadata
-            .newBuilder()
-            .setIdentifier(identifier)
-            .setType(type)
-            .setDocumentation(documentation)
-            .setTypeSpecificMetadata(typeSpecificMetadata)
-            .addAllAllowedScopes(allowedScopes)
-            .setAffectedResource(affectedResource)
-            .addAllAllowedDpcTypes(allowedDpcTypes)
+        val builder =
+            PolicyMetadata.newBuilder()
+                .setIdentifier(identifier)
+                .setType(type)
+                .setDocumentation(documentation)
+                .setTypeSpecificMetadata(typeSpecificMetadata)
+                .addAllAllowedScopes(allowedScopes)
+                .setAffectedResource(affectedResource)
+                .addAllAllowedDpcTypes(allowedDpcTypes)
 
         if (!requiredPermission.isEmpty()) {
             builder.setRequiredPermission(requiredPermission)
@@ -332,39 +292,48 @@ abstract class PolicyProcessor<T : Annotation>(protected val processingEnv: Proc
         return builder.build()
     }
 
-    private fun validateRequiredCrossUserPermission(element: Element, requiredCrossUserPermission: String) {
-        if (requiredCrossUserPermission !in setOf(
-            "android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS",
-            "android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS_FULL",
-            "android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS_SECURITY_CRITICAL"
-        )) {
+    private fun validateRequiredCrossUserPermission(
+        element: Element,
+        requiredCrossUserPermission: String,
+    ) {
+        if (
+            requiredCrossUserPermission !in
+                setOf(
+                    "android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS",
+                    "android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS_FULL",
+                    "android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS_SECURITY_CRITICAL",
+                )
+        ) {
             printError(
                 element,
-                "requiredCrossUserPermission was set to '$requiredCrossUserPermission', but can only be set to android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS, android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS_FULL, android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS_SECURITY_CRITICAL or left empty."
+                "requiredCrossUserPermission was set to '$requiredCrossUserPermission', but can only be set to android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS, android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS_FULL, android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS_SECURITY_CRITICAL or left empty.",
             )
         }
     }
 
-    private fun convertScopes(element: Element, allowedScopes: List<Int>): List<PolicyMetadata.PolicyScope> {
+    private fun convertScopes(
+        element: Element,
+        allowedScopes: List<Int>,
+    ): List<PolicyMetadata.PolicyScope> {
         if (allowedScopes.isEmpty()) {
             printError(element, "allowedScopes must not be empty.")
         }
 
-        ensureNoDuplicates(element, allowedScopes, "allowedScopes", {v -> scopeToString(v) })
+        ensureNoDuplicates(element, allowedScopes, "allowedScopes", { v -> scopeToString(v) })
 
         return allowedScopes.mapNotNull { allowedScope ->
-            PolicyMetadata.PolicyScope.forNumber(allowedScope)
-                ?.let {
-                    if (it == PolicyMetadata.PolicyScope.POLICY_SCOPE_UNSPECIFIED) {
-                        // Not valid.
-                        null
-                    } else {
-                        it
-                    }
-                } ?: run {
+            PolicyMetadata.PolicyScope.forNumber(allowedScope)?.let {
+                if (it == PolicyMetadata.PolicyScope.POLICY_SCOPE_UNSPECIFIED) {
+                    // Not valid.
+                    null
+                } else {
+                    it
+                }
+            }
+                ?: run {
                     printError(
                         element,
-                        "allowedScopes contains an unknown value $allowedScope, only use POLICY_SCOPE_* constants."
+                        "allowedScopes contains an unknown value $allowedScope, only use POLICY_SCOPE_* constants.",
                     )
 
                     null
@@ -372,32 +341,24 @@ abstract class PolicyProcessor<T : Annotation>(protected val processingEnv: Proc
         }
     }
 
-    private fun convertDpcTypes(element: Element, input: AllowedDpcTypes): List<PolicyMetadata.DpcType> {
+    private fun convertDpcTypes(
+        element: Element,
+        input: AllowedDpcTypes,
+    ): List<PolicyMetadata.DpcType> {
         var result = mutableListOf<PolicyMetadata.DpcType>()
 
-        fun addDpcType(
-            dpcType: PolicyMetadata.DpcType,
-            input: Int,
-        ) {
+        fun addDpcType(dpcType: PolicyMetadata.DpcType, input: Int) {
             when (input) {
                 AllowedDpcTypes.ALLOWED -> result.add(dpcType)
                 AllowedDpcTypes.DISALLOWED -> {}
-                AllowedDpcTypes.SAME_AS_UNAFFILIATED -> printError(
-                    element,
-                    "$dpcType cannot be set to SAME_AS_UNAFFILIATED."
-                )
+                AllowedDpcTypes.SAME_AS_UNAFFILIATED ->
+                    printError(element, "$dpcType cannot be set to SAME_AS_UNAFFILIATED.")
                 else -> throw IllegalArgumentException("Invalid value for $dpcType: ${input}")
             }
         }
 
-        addDpcType(
-            PolicyMetadata.DpcType.DPC_TYPE_DEVICE_OWNER,
-            input.deviceOwner,
-        )
-        addDpcType(
-            PolicyMetadata.DpcType.DPC_TYPE_FINANCED_DEVICE_OWNER,
-            input.financedDeviceOwner,
-        )
+        addDpcType(PolicyMetadata.DpcType.DPC_TYPE_DEVICE_OWNER, input.deviceOwner)
+        addDpcType(PolicyMetadata.DpcType.DPC_TYPE_FINANCED_DEVICE_OWNER, input.financedDeviceOwner)
         addDpcType(
             PolicyMetadata.DpcType.DPC_TYPE_MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE,
             input.managedProfileOwnerOfOrganizationOwnedDevice,
@@ -418,14 +379,18 @@ abstract class PolicyProcessor<T : Annotation>(protected val processingEnv: Proc
         // affiliatedFullUserProfileOwner supports SAME_AS_UNAFFILIATED.
         // Handle it separately.
         when (input.affiliatedFullUserProfileOwner) {
-            AllowedDpcTypes.ALLOWED -> result.add(PolicyMetadata.DpcType.DPC_TYPE_AFFILIATED_FULL_USER_PROFILE_OWNER)
+            AllowedDpcTypes.ALLOWED ->
+                result.add(PolicyMetadata.DpcType.DPC_TYPE_AFFILIATED_FULL_USER_PROFILE_OWNER)
             AllowedDpcTypes.DISALLOWED -> {}
             AllowedDpcTypes.SAME_AS_UNAFFILIATED -> {
                 if (input.unaffiliatedFullUserProfileOwner == AllowedDpcTypes.ALLOWED) {
                     result.add(PolicyMetadata.DpcType.DPC_TYPE_AFFILIATED_FULL_USER_PROFILE_OWNER)
                 }
             }
-            else -> throw IllegalArgumentException("Invalid value for affiliatedFullUserProfileOwner: ${input.affiliatedFullUserProfileOwner}")
+            else ->
+                throw IllegalArgumentException(
+                    "Invalid value for affiliatedFullUserProfileOwner: ${input.affiliatedFullUserProfileOwner}"
+                )
         }
 
         return result
@@ -433,16 +398,21 @@ abstract class PolicyProcessor<T : Annotation>(protected val processingEnv: Proc
 
     /**
      * Checks for duplicates in `values`, and prints an error if any are found.
+     *
      * @param elementToString: Method used to format the values in the error message.
      */
-    private fun ensureNoDuplicates(element: Element, values: List<Int>, listName: String,
-        elementToString: (Int) -> String) {
+    private fun ensureNoDuplicates(
+        element: Element,
+        values: List<Int>,
+        listName: String,
+        elementToString: (Int) -> String,
+    ) {
         val duplicates = getDuplicates(values)
         if (!duplicates.isEmpty()) {
             val duplicateNames = duplicates.map(elementToString)
             printError(
                 element,
-                "$listName contains duplicate values: ${duplicateNames.joinToString(",")}"
+                "$listName contains duplicate values: ${duplicateNames.joinToString(",")}",
             )
         }
     }
@@ -453,20 +423,20 @@ abstract class PolicyProcessor<T : Annotation>(protected val processingEnv: Proc
     }
 
     private fun getDuplicates(values: List<Int>) =
-         values.groupingBy { it }.eachCount().filter { it.value > 1 }.keys
+        values.groupingBy { it }.eachCount().filter { it.value > 1 }.keys
 
     fun convertResourceType(element: Element, affectedResource: Int): PolicyMetadata.ResourceType? =
-        PolicyMetadata.ResourceType.forNumber(affectedResource)
-            ?.let {
-                if (it == PolicyMetadata.ResourceType.RESOURCE_TYPE_UNSPECIFIED) {
-                    null
-                } else {
-                    it
-                }
-            } ?: run {
+        PolicyMetadata.ResourceType.forNumber(affectedResource)?.let {
+            if (it == PolicyMetadata.ResourceType.RESOURCE_TYPE_UNSPECIFIED) {
+                null
+            } else {
+                it
+            }
+        }
+            ?: run {
                 printError(
                     element,
-                    "affectedResource is set to an unknown value $affectedResource, only use RESOURCE_* constants."
+                    "affectedResource is set to an unknown value $affectedResource, only use RESOURCE_* constants.",
                 )
 
                 null
