@@ -782,7 +782,7 @@ class ProtoLogFormatDetectorTest : LintDetectorTest() {
                         fun check(param: Int) {
                             ProtoLog.d(ProtoLogGroup.TEST_GROUP, "Test %d", 123)
                             ProtoLog.d(ProtoLogGroup.TEST_GROUP, "Test %d", CONST_VAL)
-                            ProtoLog.d(ProtoLogGroup.TEST_GROUP, "Test %d", param) // Not constant
+                            ProtoLog.d(ProtoLogGroup.TEST_GROUP, "Test %d", param)
                         }
                     }
                     """.addLineContinuation()
@@ -796,11 +796,7 @@ class ProtoLogFormatDetectorTest : LintDetectorTest() {
                     be a constant. [ProtoLogConstantArgument]
                         ProtoLog.d(ProtoLogGroup.TEST_GROUP, "Test %d", 123)
                                                                         ~~~
-                src/test/pkg/TestClass.kt:11: Error: ProtoLog format string argument should not \
-                    be a constant. [ProtoLogConstantArgument]
-                        ProtoLog.d(ProtoLogGroup.TEST_GROUP, "Test %d", CONST_VAL)
-                                                                        ~~~~~~~~~
-                2 errors, 0 warnings
+                1 error
                 """.addLineContinuation()
             )
     }
@@ -913,8 +909,11 @@ class ProtoLogFormatDetectorTest : LintDetectorTest() {
                     import com.android.internal.protolog.ProtoLogGroup;
                     class TestClass {
                         void bad(int i) {
-                            ProtoLog.d(ProtoLogGroup.TEST_GROUP, "Test %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d",
-                                i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i);
+                            ProtoLog.d(ProtoLogGroup.TEST_GROUP, "Test %d %d %d %d %d %d %d %d %d \
+                            %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d \
+                            %d",
+                                i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, \
+                                i, i, i, i, i, i, i, i, i, i, i);
                         }
                     }
                     """.addLineContinuation()
@@ -924,10 +923,699 @@ class ProtoLogFormatDetectorTest : LintDetectorTest() {
             .run()
             .expect(
                 """
-                src/test/pkg/TestClass.java:6: Error: ProtoLog method has too many arguments 33 (limit is 32) [ProtoLogTooManyArgs]
-                        ProtoLog.d(ProtoLogGroup.TEST_GROUP, "Test %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d",
+                src/test/pkg/TestClass.java:6: Error: ProtoLog method has too many arguments 33 \
+                (limit is 32) [ProtoLogTooManyArgs]
+                        ProtoLog.d(ProtoLogGroup.TEST_GROUP, "Test %d %d %d %d %d %d %d %d %d %d \
+                        %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d",
                         ^
                 1 errors, 0 warnings
+                """.addLineContinuation()
+            )
+    }
+
+    @Test
+    fun testIndirectLogCallTypes() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                    package test.pkg
+
+                    import com.android.internal.protolog.ProtoLog
+                    import com.android.internal.protolog.ProtoLogGroup
+
+                    class TestClass {
+                        companion object {
+                            private const val TAG = "TestClass"
+                        }
+
+                        @SuppressWarnings("ProtoLogNonConstantFormat")
+                        private fun logV(msg: String, vararg arguments: Any?) {
+                            ProtoLog.v(ProtoLogGroup.TEST_GROUP, "%s: ${'$'}msg", TAG, *arguments)
+                        }
+
+                        fun check(s: String, d: Int) {
+                            logV("Test %d", s) // Mismatch
+                            logV("Test %s", d) // Mismatch
+                        }
+                    }
+                    """.addLineContinuation()
+                ).indented(),
+                *protologApi,
+            )
+            .run()
+            .expect(
+                """
+                src/test/pkg/TestClass.kt:17: Error: Incorrect argument type for format specifier \
+                '%d': expected integer, long, short, or byte but got String [ProtoLogArgType]
+                        logV("Test %d", s) // Mismatch
+                                        ~
+                src/test/pkg/TestClass.kt:18: Error: Incorrect argument type for format specifier \
+                '%s': expected String but got int [ProtoLogArgType]
+                        logV("Test %s", d) // Mismatch
+                                        ~
+                2 errors, 0 warnings
+                """.addLineContinuation()
+            )
+    }
+
+    @Test
+    fun testIndirectLogCallArity() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                    package test.pkg
+
+                    import com.android.internal.protolog.ProtoLog
+                    import com.android.internal.protolog.ProtoLogGroup
+
+                    class TestClass {
+                        companion object {
+                            private const val TAG = "TestClass"
+                        }
+
+                        @SuppressWarnings("ProtoLogNonConstantFormat")
+                        private fun logV(msg: String, vararg arguments: Any?) {
+                            ProtoLog.v(ProtoLogGroup.TEST_GROUP, "%s: ${'$'}msg", TAG, *arguments)
+                        }
+
+                        fun check() {
+                            logV("Test %d")   // Missing argument
+                            logV("Test", 123) // Extra argument
+                        }
+                    }
+                    """.addLineContinuation()
+                ).indented(),
+                *protologApi,
+            )
+            .run()
+            .expect(
+                """
+                src/test/pkg/TestClass.kt:17: Error: Incorrect argument count: format string \
+                expects 2 arguments but 1 were provided. [ProtoLogArgCount]
+                        logV("Test %d")   // Missing argument
+                        ~~~~~~~~~~~~~~~
+                src/test/pkg/TestClass.kt:18: Error: Incorrect argument count: format string \
+                expects 1 arguments but 2 were provided. [ProtoLogArgCount]
+                        logV("Test", 123) // Extra argument
+                        ~~~~~~~~~~~~~~~~~
+                2 errors, 0 warnings
+                """.addLineContinuation()
+            )
+    }
+
+    @Test
+    fun testIndirectLogCallPassthroughFormat() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                    package test.pkg
+
+                    import com.android.internal.protolog.ProtoLog
+                    import com.android.internal.protolog.ProtoLogGroup
+
+                    class TestClass {
+                        @SuppressWarnings("ProtoLogNonConstantFormat")
+                        private fun myLog(fmt: String, vararg args: Any?) {
+                            ProtoLog.d(ProtoLogGroup.TEST_GROUP, fmt, *args)
+                        }
+
+                        fun check(s: String, d: Int) {
+                            myLog("My Format %d", s) // Mismatch
+                            myLog("My Format %d", d) // Valid
+                        }
+                    }
+                    """.addLineContinuation()
+                ).indented(),
+                *protologApi,
+            )
+            .run()
+            .expect(
+                """
+                src/test/pkg/TestClass.kt:13: Error: Incorrect argument type for format specifier \
+                '%d': expected integer, long, short, or byte but got String [ProtoLogArgType]
+                        myLog("My Format %d", s) // Mismatch
+                                              ~
+                1 errors, 0 warnings
+                """.addLineContinuation()
+            )
+    }
+
+    @Test
+    fun testIndirectLogCallConcatenation() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                    package test.pkg
+
+                    import com.android.internal.protolog.ProtoLog
+                    import com.android.internal.protolog.ProtoLogGroup
+
+                    class TestClass {
+                        @SuppressWarnings("ProtoLogNonConstantFormat")
+                        private fun logWithPrefix(prefix: String, value: Int) {
+                            ProtoLog.d(ProtoLogGroup.TEST_GROUP, prefix + " code: %d", value)
+                        }
+
+                        fun check(d: Int, s: String) {
+                            logWithPrefix("Error", d) // Valid
+                            logWithPrefix("Error", s) // Mismatch
+                        }
+                    }
+                    """.addLineContinuation()
+                ).indented(),
+                *protologApi,
+            )
+            .run()
+            .expect(
+                """
+                src/test/pkg/TestClass.kt:14: Error: Incorrect argument type for format specifier \
+                '%d': expected integer, long, short, or byte but got String [ProtoLogArgType]
+                        logWithPrefix("Error", s) // Mismatch
+                                               ~
+                1 errors, 0 warnings
+                """.addLineContinuation()
+            )
+    }
+
+    @Test
+    fun testIndirectLogCallJava() {
+        lint()
+            .files(
+                java(
+                    """
+                    package test.pkg;
+
+                    import com.android.internal.protolog.ProtoLog;
+                    import com.android.internal.protolog.ProtoLogGroup;
+
+                    class JavaTestClass {
+                        @SuppressWarnings("ProtoLogNonConstantFormat")
+                        private void logWrapper(String msg, Object... args) {
+                            ProtoLog.v(ProtoLogGroup.TEST_GROUP, "Java: " + msg, args);
+                        }
+
+                        void check(int d, String s) {
+                            logWrapper("Test %d", d); // Valid
+                            logWrapper("Test %d", s); // Mismatch
+                        }
+                    }
+                    """.addLineContinuation()
+                ).indented(),
+                *protologApi,
+            )
+            .run()
+            .expect(
+                """
+                src/test/pkg/JavaTestClass.java:14: Error: Incorrect argument type for format \
+                specifier '%d': expected integer, long, short, or byte but got String \
+                [ProtoLogArgType]
+                        logWrapper("Test %d", s); // Mismatch
+                                              ~
+                1 errors, 0 warnings
+                """.addLineContinuation()
+            )
+    }
+
+    @Test
+    fun testSimpleWrapperExpressionBody() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                    package test.pkg
+
+                    import com.android.internal.protolog.ProtoLog
+                    import com.android.internal.protolog.ProtoLogGroup
+
+                    class TestClass {
+                        @SuppressWarnings("ProtoLogNonConstantFormat")
+                        fun log(msg: String, vararg args: Any?) =
+                            ProtoLog.d(ProtoLogGroup.TEST_GROUP, "Log: ${'$'}msg %d", *args)
+
+                        fun check(d: Int, s: String) {
+                            log("A message", d)
+                            log("A message", s)
+                        }
+                    }
+                    """.addLineContinuation()
+                ).indented(),
+                *protologApi,
+            )
+            .run()
+            .expect(
+                """
+                src/test/pkg/TestClass.kt:13: Error: Incorrect argument type for format specifier \
+                '%d': expected integer, long, short, or byte but got String [ProtoLogArgType]
+                        log("A message", s)
+                                         ~
+                1 error
+                """.addLineContinuation()
+            )
+    }
+
+    @Test
+    fun testComplexWrapperWithVarargs() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                    package test.pkg
+
+                    import com.android.internal.protolog.ProtoLog
+                    import com.android.internal.protolog.ProtoLogGroup
+
+                    class TestClass {
+                        @SuppressWarnings("ProtoLogNonConstantFormat")
+                        fun complexLog(check: Boolean, msg: String, vararg args: Any?) {
+                            if (check) {
+                                ProtoLog.v(ProtoLogGroup.TEST_GROUP, msg, *args)
+                            } else {
+                                // Do nothing
+                            }
+                        }
+
+                        fun check(d: Int, s: String) {
+                            complexLog(true, "Test %d", d) // Valid
+                            complexLog(true, "Test %d", s) // Mismatch
+                        }
+                    }
+                    """.addLineContinuation()
+                ).indented(),
+                *protologApi,
+            )
+            .run()
+            .expect(
+                """
+                src/test/pkg/TestClass.kt:18: Error: Incorrect argument type for format specifier \
+                '%d': expected integer, long, short, or byte but got String [ProtoLogArgType]
+                        complexLog(true, "Test %d", s) // Mismatch
+                                                    ~
+                1 errors, 0 warnings
+                """.addLineContinuation()
+            )
+    }
+
+    @Test
+    fun testTypeMismatchReproduction() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                    package test.pkg
+
+                    import com.android.internal.protolog.ProtoLog
+                    import com.android.internal.protolog.ProtoLogGroup
+
+                    class TestClass {
+                        fun check(value: Boolean?) {
+                            val boolVal = value ?: false
+                            ProtoLog.d(ProtoLogGroup.TEST_GROUP, "Boolean: %b", boolVal)
+                            ProtoLog.d(ProtoLogGroup.TEST_GROUP,
+                                "Boolean from Any: %b", (value ?: true))
+                        }
+                    }
+                    """.addLineContinuation()
+                ).indented(),
+                *protologApi,
+            )
+            .run()
+            .expectClean()
+    }
+
+    @Test
+    fun testKotlinDefaultArgumentsFormatMismatch() {
+        lint()
+             .files(
+                 kotlin(
+                     """
+                     package test.pkg
+
+                     import com.android.internal.protolog.ProtoLog
+                     import com.android.internal.protolog.ProtoLogGroup
+
+                     class TestClass {
+                         @SuppressWarnings("ProtoLogNonConstantFormat")
+                         fun log(msg: String, value: Any = 0) {
+                             ProtoLog.d(ProtoLogGroup.TEST_GROUP, msg, value)
+                         }
+
+                         fun check(s: String) {
+                             log("Value: %d", s)
+                             log("Value: %d")
+                             log("Value: %b")
+                         }
+                     }
+                     """.addLineContinuation()
+                 ).indented(),
+                 *protologApi,
+             )
+             .run()
+             .expect(
+                 """
+                 src/test/pkg/TestClass.kt:13: Error: Incorrect argument type for format specifier \
+                 '%d': expected integer, long, short, or byte but got String [ProtoLogArgType]
+                         log("Value: %d", s)
+                                          ~
+                 1 errors, 0 warnings
+                 """.addLineContinuation()
+             )
+    }
+
+    @Test
+    fun testKotlinNamedArguments() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                    package test.pkg
+
+                    import com.android.internal.protolog.ProtoLog
+                    import com.android.internal.protolog.ProtoLogGroup
+
+                    class TestClass {
+                        @SuppressWarnings("ProtoLogNonConstantFormat")
+                        fun log(msg: String, s: String, i: Int) {
+                            ProtoLog.d(ProtoLogGroup.TEST_GROUP, msg, s, i)
+                        }
+
+                        fun check(str: String, num: Int) {
+                            log(msg = "S: %s, I: %d", i = num, s = str)
+                            log(msg = "S: %s, I: %d", i = str, s = num)
+                        }
+                    }
+                    """.addLineContinuation()
+                ).indented(),
+                *protologApi,
+            )
+            .run()
+            .expect(
+                """
+                src/test/pkg/TestClass.kt:14: Error: Incorrect argument type for format specifier \
+                '%d': expected integer, long, short, or byte but got String [ProtoLogArgType]
+                        log(msg = "S: %s, I: %d", i = str, s = num)
+                                                      ~~~
+                src/test/pkg/TestClass.kt:14: Error: Incorrect argument type for format specifier \
+                '%s': expected String but got int [ProtoLogArgType]
+                        log(msg = "S: %s, I: %d", i = str, s = num)
+                                                               ~~~
+                2 errors, 0 warnings
+                """.addLineContinuation()
+            )
+    }
+
+    @Test
+    fun testKotlinNamedArgumentsFormatMismatch() {
+        lint()
+             .files(
+                 kotlin(
+                     """
+                     package test.pkg
+
+                     import com.android.internal.protolog.ProtoLog
+                     import com.android.internal.protolog.ProtoLogGroup
+
+                     class TestClass {
+                         @SuppressWarnings("ProtoLogNonConstantFormat")
+                         fun log(msg: String, param1: Any, param2: Any) {
+                             ProtoLog.d(ProtoLogGroup.TEST_GROUP, msg, param1, param2)
+                         }
+
+                         fun check(str: String, num: Int) {
+                             log(msg = "First: %d, Second: %s", param1 = str, param2 = num)
+                         }
+                     }
+                     """.addLineContinuation()
+                 ).indented(),
+                 *protologApi,
+             )
+             .run()
+             .expect(
+                 """
+                 src/test/pkg/TestClass.kt:13: Error: Incorrect argument type for format specifier \
+                 '%d': expected integer, long, short, or byte but got String [ProtoLogArgType]
+                         log(msg = "First: %d, Second: %s", param1 = str, param2 = num)
+                                                                     ~~~
+                 src/test/pkg/TestClass.kt:13: Error: Incorrect argument type for format specifier \
+                 '%s': expected String but got int [ProtoLogArgType]
+                         log(msg = "First: %d, Second: %s", param1 = str, param2 = num)
+                                                                                   ~~~
+                 2 errors, 0 warnings
+                 """.addLineContinuation()
+             )
+    }
+
+    @Test
+    fun testNullabilityInWrapper() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                    package test.pkg
+
+                    import com.android.internal.protolog.ProtoLog
+                    import com.android.internal.protolog.ProtoLogGroup
+
+                    class TestClass {
+                        @SuppressWarnings("ProtoLogNonConstantFormat")
+                        fun log(msg: String, value: Int?) {
+                            ProtoLog.d(ProtoLogGroup.TEST_GROUP, msg, value)
+                        }
+
+                        fun check() {
+                            log("Value: %d", null)
+                        }
+                    }
+                    """.addLineContinuation()
+                ).indented(),
+                *protologApi,
+            )
+            .run()
+            .expect(
+                """
+                src/test/pkg/TestClass.kt:13: Error: Incorrect argument type for format specifier \
+                '%d': expected integer, long, short, or byte but got null [ProtoLogArgType]
+                        log("Value: %d", null)
+                                         ~~~~
+                1 errors, 0 warnings
+                """.addLineContinuation()
+            )
+    }
+
+    @Test
+    fun testWrapperWithHardcodedFormatStringExcluded() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                    package test.pkg
+
+                    import com.android.internal.protolog.ProtoLog
+                    import com.android.internal.protolog.ProtoLogGroup
+
+                    class TestClass {
+                        fun wrapper(x: Int) {
+                            // This wrapper has an error (2 specifiers, 1 arg).
+                            // This error should be reported here.
+                            ProtoLog.d(ProtoLogGroup.TEST_GROUP, "Format %d %d", x)
+                        }
+
+                        fun caller() {
+                            // This call should NOT be validated because the format string
+                            // is not forwarded. If validation were enabled, it would report
+                            // an error here too (indirectly).
+                            wrapper(1)
+                        }
+                    }
+                    """
+                ).indented(),
+                *protologApi,
+            )
+            .run()
+            .expect(
+                """
+                src/test/pkg/TestClass.kt:10: Error: Incorrect argument count: format string \
+                expects 2 arguments but 1 were provided. [ProtoLogArgCount]
+                        ProtoLog.d(ProtoLogGroup.TEST_GROUP, "Format %d %d", x)
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                1 errors, 0 warnings
+                """.addLineContinuation()
+            )
+    }
+
+    @Test
+    fun testWrapperWithCalculatedFormatStringExcluded() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                    package test.pkg
+
+                    import com.android.internal.protolog.ProtoLog
+                    import com.android.internal.protolog.ProtoLogGroup
+
+                    class TestClass {
+                        fun wrapper(x: Int) {
+                            // This wrapper has an error (2 specifiers, 1 arg).
+                            // This error should be reported here.
+                            val format = "Format %d %d"
+                            ProtoLog.d(ProtoLogGroup.TEST_GROUP, "Prefix: " + format, x)
+                        }
+
+                        fun caller() {
+                            // This call should NOT be validated because the format string
+                            // is not forwarded. If validation were enabled, it would report
+                            // an error here too (indirectly).
+                            wrapper(1)
+                        }
+                    }
+                    """
+                ).indented(),
+                *protologApi,
+            )
+            .run()
+            .expect(
+                """
+                src/test/pkg/TestClass.kt:11: Error: Incorrect argument count: format string \
+                expects 2 arguments but 1 were provided. [ProtoLogArgCount]
+                        ProtoLog.d(ProtoLogGroup.TEST_GROUP, "Prefix: " + format, x)
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                1 errors, 0 warnings
+                """.addLineContinuation()
+            )
+    }
+
+    @Test
+    fun testWrapperWithInterpolatedFormatString() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                    package test.pkg
+
+                    import com.android.internal.protolog.ProtoLog
+                    import com.android.internal.protolog.ProtoLogGroup
+
+                    class TestClass {
+                        @SuppressWarnings("ProtoLogNonConstantFormat")
+                        fun wrapper(prefix: String, x: Int) {
+                            ProtoLog.d(ProtoLogGroup.TEST_GROUP, "Prefix: ${'$'}prefix %d", x)
+                        }
+
+                        fun callerGood(i: Int) {
+                            wrapper("MyString", i)
+                        }
+
+                        fun callerBad(i: Int) {
+                            wrapper("MyString %d", i)
+                        }
+                    }
+                    """
+                ).indented(),
+                *protologApi,
+            )
+            .run()
+            .expect(
+                """
+                src/test/pkg/TestClass.kt:17: Error: Incorrect argument count: format string \
+                expects 2 arguments but 1 were provided. [ProtoLogArgCount]
+                        wrapper("MyString %d", i)
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~
+                1 errors, 0 warnings
+                """.addLineContinuation()
+            )
+    }
+
+    @Test
+    fun testIndirectNonConstantFormatString() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                    package test.pkg
+
+                    import com.android.internal.protolog.ProtoLog
+                    import com.android.internal.protolog.ProtoLogGroup
+
+                    class TestClass {
+                        companion object {
+                            private const val TAG = "TestClass"
+                        }
+
+                        @SuppressWarnings("ProtoLogNonConstantFormat")
+                        private fun logE(msg: String, vararg arguments: Any?) {
+                            ProtoLog.e(ProtoLogGroup.TEST_GROUP, "%s: ${'$'}msg", TAG, *arguments)
+                        }
+
+                        fun check(i: Int) {
+                            logE("Non constant string ${'$'}i")
+                        }
+                    }
+                    """.addLineContinuation()
+                ).indented(),
+                *protologApi,
+            )
+            .run()
+            .expect(
+                """
+                src/test/pkg/TestClass.kt:17: Error: ProtoLog format string should be a \
+                compile-time constant. [ProtoLogNonConstantFormat]
+                        logE("Non constant string ${'$'}i")
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                1 error
+                """.addLineContinuation()
+            )
+    }
+
+    @Test
+    fun testConstantArgumentsWithNamedConstants() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                    package test.pkg
+
+                    import com.android.internal.protolog.ProtoLog
+                    import com.android.internal.protolog.ProtoLogGroup
+
+                    class TestClass {
+                        companion object {
+                            const val CONST_INT = 123
+                            const val CONST_STR = "state"
+                        }
+
+                        enum class MyEnum {
+                            VALUE_ONE, VALUE_TWO
+                        }
+
+                        fun check() {
+                            // These should ideally be ALLOWED, but currently might fail if we are too strict.
+                            ProtoLog.d(ProtoLogGroup.TEST_GROUP, "Int: %d", CONST_INT)
+                            ProtoLog.d(ProtoLogGroup.TEST_GROUP, "Q: %s", MyEnum.VALUE_ONE)
+                            ProtoLog.d(ProtoLogGroup.TEST_GROUP, "Str: %s", CONST_STR)
+
+                            // These should always FAIL (Literals)
+                            ProtoLog.d(ProtoLogGroup.TEST_GROUP, "Int: %d", 42)
+                            ProtoLog.d(ProtoLogGroup.TEST_GROUP, "Str: %s", "literal")
+                        }
+                    }
+                    """.addLineContinuation()
+                ).indented(),
+                *protologApi,
+            )
+            .run()
+            .expect(
+                """
+                src/test/pkg/TestClass.kt:23: Error: ProtoLog format string argument should not be a constant. [ProtoLogConstantArgument]
+                        ProtoLog.d(ProtoLogGroup.TEST_GROUP, "Int: %d", 42)
+                                                                        ~~
+                src/test/pkg/TestClass.kt:24: Error: ProtoLog format string argument should not be a constant. [ProtoLogConstantArgument]
+                        ProtoLog.d(ProtoLogGroup.TEST_GROUP, "Str: %s", "literal")
+                                                                        ~~~~~~~~~
+                2 errors, 0 warnings
                 """.addLineContinuation()
             )
     }
