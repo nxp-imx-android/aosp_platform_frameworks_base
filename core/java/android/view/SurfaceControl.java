@@ -79,6 +79,7 @@ import android.util.Slog;
 import android.util.SparseIntArray;
 import android.util.proto.ProtoOutputStream;
 import android.view.Surface.OutOfResourcesException;
+import android.window.ScreenCapture;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.util.Preconditions;
@@ -353,6 +354,10 @@ public final class SurfaceControl implements Parcelable {
     private static native void nativeSetSystemContentPriority(
             long transactionObj, long nativeObject, int priority);
     private static native String nativeGetName(long nativeObject);
+
+    private static native void nativeSetCompositionFilterFlag(long transactionObj,
+            long nativeObject,
+            int flag);
 
     /**
      * Transforms that can be applied to buffers as they are displayed to a window.
@@ -5402,6 +5407,27 @@ public final class SurfaceControl implements Parcelable {
         public Transaction setDestinationFrame(SurfaceControl sc, int width, int height) {
             checkPreconditions(sc);
             nativeSetDestinationFrame(mNativeObject, sc.mNativeObject, 0, 0, width, height);
+            return this;
+        }
+
+        /**
+         * Sets the composition filter flag for the given surface.
+         *
+         * <p>A Composition filter flag defines the category of the surfaces and it can affect the
+         * visibility of the surface in the screenshots or screen recording.
+         *
+         * @hide
+         */
+        public Transaction setCompositionFilterFlag(
+                SurfaceControl sc,
+                @ScreenCapture.ScreenCaptureParams.CompositionFilterFlag
+                        int compositionFilterFlag) {
+            if (!Flags.screenCaptureExclusionFlags()) {
+                Log.w(TAG, "setCompositionFilterFlag was called but flag is disabled.");
+                return this;
+            }
+            checkPreconditions(sc);
+            nativeSetCompositionFilterFlag(mNativeObject, sc.mNativeObject, compositionFilterFlag);
             return this;
         }
 
