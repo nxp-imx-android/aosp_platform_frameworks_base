@@ -7829,7 +7829,8 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
 
             // Only check if system user has set global proxy. We don't allow other users to set it.
             DevicePolicyData policy = mDeviceAdmins.getUserData(UserHandle.USER_SYSTEM);
-            ActiveAdmin admin = mDeviceAdmins.getActiveAdminForCaller(getCallerIdentity(who),
+            CallerIdentity caller = getCallerIdentity(who);
+            ActiveAdmin admin = mDeviceAdmins.getActiveAdminForCaller(caller,
                     DeviceAdminInfo.USES_POLICY_SETS_GLOBAL_PROXY);
 
             // Scan through active admins and find if anyone has already
@@ -7845,9 +7846,9 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
             }
 
             // If the user is not system, don't set the global proxy. Fail silently.
-            if (UserHandle.getCallingUserId() != UserHandle.USER_SYSTEM) {
+            if (caller.getUserId() != UserHandle.USER_SYSTEM) {
                 Slogf.w(LOG_TAG, "Only the owner is allowed to set the global proxy. User "
-                        + UserHandle.getCallingUserId() + " is not permitted.");
+                        + caller.getUserId() + " is not permitted.");
                 return null;
             }
             if (proxySpec == null) {
