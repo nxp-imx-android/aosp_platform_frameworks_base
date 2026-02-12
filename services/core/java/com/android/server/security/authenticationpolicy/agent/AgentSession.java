@@ -16,7 +16,13 @@
 
 package com.android.server.security.authenticationpolicy.agent;
 
-/** Immutable metadata for a connected agent. */
+import android.annotation.NonNull;
+
+/**
+ * Immutable metadata for a connected agent.
+ *
+ * @hide
+ */
 public class AgentSession {
 
     private final int mId;
@@ -31,6 +37,15 @@ public class AgentSession {
      */
     public static AgentSession authorized(int userId, int id) {
         return new AgentSession(userId, id, true);
+    }
+
+    /**
+     * Update an existing session to authorized and return a new copy.
+     *
+     * @param session existing session to copy from
+     */
+    public static AgentSession authorized(@NonNull AgentSession session) {
+        return new AgentSession(session.mUserId, session.mId, true);
     }
 
     /**
