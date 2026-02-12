@@ -48,6 +48,7 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Client facing access to the PersonalContext service.
@@ -291,13 +292,19 @@ public final class PersonalContextManager {
      * will be ignored.
      *
      * @param insights new insights to be injected into the context flow
+     * @param componentId the publisher's unique identifier as issued by the
+     * {@link com.android.server.personalcontext.PersonalContextManagerService}. This value is used
+     *                    to route any resulting events and information stemming from this
+     *                    {@link ContextInsight} back to the publisher.
      * @hide
      */
     @UserHandleAware(
             requiresPermissionIfNotCaller = android.Manifest.permission.INTERACT_ACROSS_USERS)
-    public void publishInsight(@NonNull List<ContextInsight> insights) {
+    public void publishInsight(@NonNull List<ContextInsight> insights, @NonNull UUID componentId) {
         try {
-            mService.publishInsight(ContextInsightWrapper.wrapList(insights), mContext.getUserId());
+            mService.publishInsight(ContextInsightWrapper.wrapList(insights),
+                    new ParcelUuid(componentId),
+                    mContext.getUserId());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

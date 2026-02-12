@@ -24,9 +24,9 @@ import android.os.ParcelUuid;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.service.personalcontext.RenderToken;
-import android.service.personalcontext.insight.ContextInsight;
-import android.service.personalcontext.insight.ContextInsightWrapper;
 import android.service.personalcontext.insight.InsightFilter;
+import android.service.personalcontext.insight.PublishedContextInsight;
+import android.service.personalcontext.insight.PublishedContextInsightWrapper;
 import android.service.personalcontext.renderer.IGetFilterCallback;
 import android.service.personalcontext.renderer.IInsightRenderer;
 import android.util.Slog;
@@ -76,15 +76,17 @@ public class ServiceClientRenderer
     }
 
     @Override
-    public boolean isInterestedInInsight(ContextInsight insight) {
-        return mFilter.isInterestedInInsight(insight);
+    public boolean isInterestedInInsight(PublishedContextInsight insight) {
+        return mFilter.isInterestedInInsight(insight.getInsight());
     }
 
     @Override
-    public void render(@NonNull ContextInsight insight, RenderToken renderToken) {
+    public void render(@NonNull PublishedContextInsight publishedContextInsight,
+            RenderToken renderToken) {
         runWithBinder(binder -> {
             try {
-                binder.render(new ContextInsightWrapper(insight), renderToken);
+                binder.render(new PublishedContextInsightWrapper(publishedContextInsight),
+                        renderToken);
             } catch (RemoteException e) {
                 Slog.e(TAG, "Failed to render insight", e);
             }

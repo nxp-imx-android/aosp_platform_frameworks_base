@@ -35,6 +35,7 @@ import android.service.personalcontext.insight.InsightDisplayDetails
 import android.service.personalcontext.insight.InsightFilter
 import android.service.personalcontext.insight.InsightTraverser
 import android.service.personalcontext.insight.InsightVisitor
+import android.service.personalcontext.insight.PublishedContextInsight
 import android.service.personalcontext.renderer.InsightRendererService
 import android.util.Log
 import android.view.autofill.AutofillManager
@@ -67,13 +68,16 @@ constructor(private val context: Context, private val autofillManager: AutofillM
             .build()
     }
 
-    override fun onRender(insight: ContextInsight, renderToken: RenderToken) {
+    override fun onRender(
+        publishedContextInsight: PublishedContextInsight,
+        renderToken: RenderToken,
+    ) {
         if (autofillManager == null) {
             return
         }
         val inlineSuggestionDetails = mutableListOf<InlineSuggestionDetails>()
         InsightTraverser.traverse(
-            insight,
+            publishedContextInsight.insight,
             object : InsightVisitor {
                 override fun visit(insight: ActionableInsight) {
                     findAutofillHint(insight)?.let { autofillHint ->

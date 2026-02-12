@@ -16,6 +16,8 @@
 
 package com.android.server.personalcontext.embedded;
 
+import static com.android.server.personalcontext.util.InsightUtils.fakePublishInsight;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -167,7 +169,7 @@ public class VisualizerConnectionTest {
 
         // Trigger the service binding.
         connection.createVisualizationForClient(
-                insight, createClient(), renderToken, (success) -> {});
+                fakePublishInsight(insight), createClient(), renderToken, (success) -> {});
 
         // Capture the arguments passed to context.bindService to verify the flags.
         final ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
@@ -202,9 +204,10 @@ public class VisualizerConnectionTest {
                 ArgumentCaptor.forClass(IVisualizationResult.class);
 
         mVisualizerConnection.createVisualizationForClient(
-                insight, client, renderToken, (success) -> {});
+                fakePublishInsight(insight), client, renderToken, (success) -> {});
         verify(mVisualizer).createVisualizationForClient(
-                argThat(wrapper -> wrapper.getContextInsight() == insight),
+                argThat(wrapper ->
+                        wrapper.getPublishedContextInsight().getInsight() == insight),
                 any(),
                 eq(renderToken),
                 resultCaptor.capture());

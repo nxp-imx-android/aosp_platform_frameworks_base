@@ -15185,7 +15185,7 @@ package android.service.personalcontext.embedded {
     method public abstract void onClientConnected(@NonNull android.service.personalcontext.embedded.InsightSurfaceClientInfo);
     method public abstract void onClientDisconnected(@NonNull android.service.personalcontext.embedded.InsightSurfaceClientInfo);
     method public boolean onClientUpdated(@NonNull android.service.personalcontext.embedded.InsightSurfaceClientInfo, @NonNull android.service.personalcontext.embedded.InsightSurfaceClientInfo);
-    method @Nullable public abstract android.view.View onCreateEmbeddedView(@NonNull android.content.Context, @NonNull android.service.personalcontext.insight.ContextInsight, @Nullable android.service.personalcontext.RenderToken, @NonNull android.service.personalcontext.embedded.InsightSurfaceClientInfo);
+    method @Nullable public abstract android.view.View onCreateEmbeddedView(@NonNull android.content.Context, @NonNull android.service.personalcontext.insight.PublishedContextInsight, @Nullable android.service.personalcontext.RenderToken, @NonNull android.service.personalcontext.embedded.InsightSurfaceClientInfo);
     field public static final String SERVICE_INTERFACE = "android.service.personalcontext.embedded.InsightSurfaceVisualizerService";
   }
 
@@ -15228,26 +15228,6 @@ package android.service.personalcontext.hint {
 
 package android.service.personalcontext.insight {
 
-  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class ActionableInsight.Builder {
-    method @NonNull public android.service.personalcontext.insight.ActionableInsight.Builder setOriginatingComponentId(@Nullable android.service.personalcontext.ComponentIdProvider);
-  }
-
-  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class BundleInsight.Builder {
-    method @NonNull public android.service.personalcontext.insight.BundleInsight.Builder setOriginatingComponentId(@Nullable android.service.personalcontext.ComponentIdProvider);
-  }
-
-  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class ContextInsight {
-    method @Nullable public java.util.UUID getOriginatingComponentId();
-  }
-
-  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class DisplayInsight.Builder {
-    method @NonNull public android.service.personalcontext.insight.DisplayInsight.Builder setOriginatingComponentId(@Nullable android.service.personalcontext.ComponentIdProvider);
-  }
-
-  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class InsightCollection.Builder {
-    method @NonNull public android.service.personalcontext.insight.InsightCollection.Builder setOriginatingComponentId(@Nullable android.service.personalcontext.ComponentIdProvider);
-  }
-
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class InsightFilter implements android.os.Parcelable {
     method public int describeContents();
     method @NonNull public java.util.Set<java.lang.String> getInsightTypes();
@@ -15271,7 +15251,7 @@ package android.service.personalcontext.insight.interaction {
     method public int describeContents();
     method public int getEventType();
     method @NonNull public android.os.Bundle getExtras();
-    method @NonNull public android.service.personalcontext.insight.ContextInsight getInsight();
+    method @NonNull public android.service.personalcontext.insight.PublishedContextInsight getInsight();
     method @NonNull public android.service.personalcontext.RenderToken getRenderToken();
     method public long getTimestamp();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
@@ -15310,7 +15290,7 @@ package android.service.personalcontext.renderer {
     method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
     method public void onConnected();
     method @NonNull public abstract android.service.personalcontext.insight.InsightFilter onInitializeFilter();
-    method public abstract void onRender(@NonNull android.service.personalcontext.insight.ContextInsight, @NonNull android.service.personalcontext.RenderToken);
+    method public abstract void onRender(@NonNull android.service.personalcontext.insight.PublishedContextInsight, @NonNull android.service.personalcontext.RenderToken);
     field public static final String SERVICE_INTERFACE = "android.service.personalcontext.renderer.InsightRendererService";
   }
 
@@ -15320,12 +15300,10 @@ package android.service.personalcontext.understander {
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class ContextUnderstanderService extends android.app.Service {
     ctor public ContextUnderstanderService();
-    method @NonNull public final java.util.UUID getComponentId();
-    method @NonNull public final android.service.personalcontext.ComponentIdProvider getComponentIdProvider();
     method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
     method public void onConnected();
     method public void onHandleEvent(@NonNull String, @NonNull android.service.personalcontext.insight.interaction.InsightEvent);
-    method public void onHandleUserFeedback(@NonNull android.service.personalcontext.insight.ContextInsight, @NonNull android.os.Bundle);
+    method public void onHandleUserFeedback(@NonNull android.service.personalcontext.insight.PublishedContextInsight, @NonNull android.os.Bundle);
     method @NonNull public abstract android.service.personalcontext.hint.HintFilter onInitializeFilter();
     method public abstract void onUnderstand(@NonNull java.util.List<android.service.personalcontext.hint.ContextHintWithSignature>);
     method public final void understood(@NonNull android.service.personalcontext.insight.ContextInsight);

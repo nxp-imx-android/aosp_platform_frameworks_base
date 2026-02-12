@@ -60,11 +60,6 @@ public class ContextUnderstanderServiceTest {
     }
 
     @Test
-    public void testComponentId() {
-        assertThat(mService.getComponentId()).isEqualTo(mComponentId);
-    }
-
-    @Test
     public void testOnUnderstandList() throws RemoteException, GeneralSecurityException {
         final ContextHintWithSignature hint1 =
                 new ContextHintWithSignature.Builder(

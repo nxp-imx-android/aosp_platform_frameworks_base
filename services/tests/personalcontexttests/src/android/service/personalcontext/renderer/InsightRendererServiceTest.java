@@ -16,6 +16,8 @@
 
 package android.service.personalcontext.renderer;
 
+import static com.android.server.personalcontext.util.InsightUtils.fakePublishInsight;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.eq;
@@ -28,8 +30,8 @@ import android.os.ParcelUuid;
 import android.os.RemoteException;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.insight.BundleInsight;
-import android.service.personalcontext.insight.ContextInsight;
-import android.service.personalcontext.insight.ContextInsightWrapper;
+import android.service.personalcontext.insight.PublishedContextInsight;
+import android.service.personalcontext.insight.PublishedContextInsightWrapper;
 
 import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
@@ -70,9 +72,10 @@ public class InsightRendererServiceTest {
         final IInsightRenderer renderer = IInsightRenderer.Stub.asInterface(binder);
         renderer.configure(new ParcelUuid(UUID.randomUUID()));
 
-        final ContextInsight insight = new BundleInsight.Builder().build();
+        final PublishedContextInsight insight = fakePublishInsight(
+                new BundleInsight.Builder().build());
         final RenderToken renderToken = service.mintRenderToken(null);
-        renderer.render(new ContextInsightWrapper(insight), renderToken);
+        renderer.render(new PublishedContextInsightWrapper(insight), renderToken);
         verify(service).onRender(eq(insight), eq(renderToken));
     }
 

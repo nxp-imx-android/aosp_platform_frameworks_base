@@ -16,6 +16,8 @@
 
 package com.android.server.personalcontext.embedded;
 
+import static com.android.server.personalcontext.util.InsightUtils.fakePublishInsight;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.eq;
@@ -27,6 +29,7 @@ import android.content.pm.ServiceInfo;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
 import android.service.personalcontext.insight.BundleInsight;
+import android.service.personalcontext.insight.PublishedContextInsight;
 
 import androidx.annotation.Nullable;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -153,7 +156,8 @@ public class VisualizerRegistryTest {
 
     @Test
     public void testCreateVisualizationForClient() {
-        final BundleInsight insight = new BundleInsight.Builder().build();
+        final PublishedContextInsight insight =
+                fakePublishInsight(new BundleInsight.Builder().build());
         final RenderToken renderToken = new RenderToken(UUID.randomUUID());
 
         final ComponentName componentName =

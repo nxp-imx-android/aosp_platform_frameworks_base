@@ -94,7 +94,8 @@ class AutofillRendererServiceTest : SysuiTestCase() {
                         ContextHintWithSignature.Builder(originHint, generateSignedHintKey())
                             .build()
                     )
-                    .build(),
+                    .build()
+                    .fakePublish(),
                 RenderToken(UUID.randomUUID()),
             )
 
@@ -146,7 +147,8 @@ class AutofillRendererServiceTest : SysuiTestCase() {
                         ContextHintWithSignature.Builder(bundleHint, generateSignedHintKey())
                             .build()
                     )
-                    .build(),
+                    .build()
+                    .fakePublish(),
                 RenderToken(UUID.randomUUID()),
             )
 
