@@ -469,14 +469,6 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
         }
     }
 
-    @Deprecated
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-
-        mDelegate.onBackPressed(this);
-    }
-
     public void setShowForAllUsers(boolean show) {
         setShowForAllUsers(this, show);
     }
