@@ -1265,6 +1265,13 @@ flag {
 }
 
 flag {
+    name: "opaque_status_bar"
+    namespace: "systemui"
+    description: "Ensure the status bar applies an opaque background in specific contexts, such as the maximized window state"
+    bug: "479261500"
+}
+
+flag {
     name: "optimize_flow_map_operators"
     namespace: "systemui"
     description: "Use map instead of mapLatest for non-suspend flow transformations"
