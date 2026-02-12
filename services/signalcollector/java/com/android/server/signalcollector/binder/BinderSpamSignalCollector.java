@@ -16,7 +16,8 @@
 
 package com.android.server.signalcollector.binder;
 
-import android.os.binder.BinderSpamStats;
+import android.os.binder.BinderCallsStats;
+import android.os.binder.SingleSecondBinderStats;
 
 import com.android.os.profiling.anomaly.collector.SignalCollector;
 import com.android.os.profiling.anomaly.collector.binder.BinderSpamConfigList;
@@ -29,7 +30,17 @@ public abstract class BinderSpamSignalCollector
         implements SignalCollector<BinderSpamConfigList, BinderSpamData> {
 
     /**
-     * Report some binder spam data based on the configurations.
+     * Report some binder stats that is in ~5-second granularity.
+     * Between this and {@link #onBinderStatsReported(SingleSecondBinderStats[])}, only one will
+     * receive stats.
      */
-    public abstract void onBinderSpamDataReported(BinderSpamStats[] statsArray);
+    public abstract void onBinderStatsReported(BinderCallsStats[] statsArray);
+
+
+    /**
+     * Report some binder stats that is in the one-second granularity.
+     * Between this and {@link #onBinderStatsReported(BinderCallsStats[])}, only one will receive
+     * stats.
+     */
+    public abstract void onBinderStatsReported(SingleSecondBinderStats[] statsArray);
 }
