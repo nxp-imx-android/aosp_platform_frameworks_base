@@ -459,7 +459,7 @@ public final class LoadedApk {
         // throughout the process
         if (enablePccFrameworkSupport()
                 && Process.isPrivateComputeCoreUid(myUid)
-                && aInfo.uid == myUid) {
+                && aInfo.pccUid == myUid) {
             setPccStorageDirPaths();
         }
 
