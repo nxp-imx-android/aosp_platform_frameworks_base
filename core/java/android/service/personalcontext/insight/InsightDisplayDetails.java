@@ -30,7 +30,14 @@ import com.android.internal.util.Preconditions;
 import java.util.Objects;
 
 /**
- * Represents the display details for an insight.
+ * This class captures a common set of display elements associated with a
+ * {@link ContextInsight} produced by the
+ * {@link android.service.personalcontext.understander.ContextUnderstanderService}. These details
+ * provide visual cues for the
+ * {@link android.service.personalcontext.renderer.InsightRendererService} to show the insight
+ * content. For example, a text suggestion as an insight might have a title and icon within a
+ * {@link InsightDisplayDetails}, which the appropriate input suggestion renderer would
+ * display to the user.
  */
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public final class InsightDisplayDetails implements Parcelable {
