@@ -485,7 +485,7 @@
     <!-- Smart replies in notifications: Whether by default tapping on a choice should let the user
          edit the input before it is sent to the app. Developers can override this via
          RemoteInput.Builder.setEditChoicesBeforeSending. -->
-    <bool name="config_smart_replies_in_notifications_edit_choices_before_sending">false</bool>
+    <bool name="config_smart_replies_in_notifications_edit_choices_before_sending">true</bool>
 
     <!-- Smart replies in notifications: Minimum number of system generated smart replies that
          should be shown in a notification. If we cannot show at least this many replies we instead
