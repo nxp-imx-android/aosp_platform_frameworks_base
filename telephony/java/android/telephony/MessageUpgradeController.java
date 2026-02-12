@@ -33,9 +33,15 @@ import android.service.messaging.AlternativeMessageTransportServiceWrapper;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.android.internal.annotations.GuardedBy;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 /**
@@ -50,9 +56,16 @@ public final class MessageUpgradeController {
 
     private static final String TAG = "MsgUpgradeController";
     private static final boolean VDBG = Log.isLoggable(TAG, Log.VERBOSE);
+    private static final int SERVICE_BIND_TIMEOUT = 10; // Seconds
+    private final ScheduledExecutorService mScheduler =
+            Executors.newSingleThreadScheduledExecutor();
+    private final Object mLock = new Object();
     private final Context mContext;
     private final AlternativeMessageTransportServiceWrapper mServiceWrapper =
             new AlternativeMessageTransportServiceWrapper();
+
+    @GuardedBy("mLock")
+    @Nullable private ScheduledFuture<?> mServiceCloseFuture;
 
     /** @hide */
     public MessageUpgradeController(@NonNull Context context) {
@@ -90,6 +103,7 @@ public final class MessageUpgradeController {
                     Log.v(TAG, "bindService() to the message upgrade service: "
                             + smsAppPackage + " succeeded.");
                 }
+                scheduleServiceClose();
             } else {
                 Log.e(TAG, "bindService() to the message upgrade service: "
                         + smsAppPackage + " failed.");
@@ -98,6 +112,21 @@ public final class MessageUpgradeController {
             }
         } finally {
             Binder.restoreCallingIdentity(identity);
+        }
+    }
+
+    private void scheduleServiceClose() {
+        synchronized (mLock) {
+            if (mServiceCloseFuture != null) {
+                Log.w(TAG, "Cancelling previous hard service close timer.");
+                mServiceCloseFuture.cancel(false);
+            }
+
+            mServiceCloseFuture = mScheduler.schedule(
+                    this::disposeServiceConnection,
+                    SERVICE_BIND_TIMEOUT,
+                    TimeUnit.SECONDS);
+            Log.d(TAG, "Scheduled hard service close in " + SERVICE_BIND_TIMEOUT + "s.");
         }
     }
 
@@ -153,7 +182,11 @@ public final class MessageUpgradeController {
      * Disposes the service connection to the AlternativeMessageTransportService.
      */
     private void disposeServiceConnection() {
+        Log.i(TAG, "disposeServiceConnection() called. Closing wrapper.");
         mServiceWrapper.close();
+        synchronized (mLock) {
+            mServiceCloseFuture = null;
+        }
     }
 
     // TODO(b/473718205): cache default sms package and update on sms app change
@@ -204,11 +237,7 @@ public final class MessageUpgradeController {
 
         @Override
         public void onUpgradeStatusAvailable(int status) {
-            try {
-                mClientCallbackExecutor.execute(() -> mClientCallback.accept(status));
-            } finally {
-                disposeServiceConnection();
-            }
+            mClientCallbackExecutor.execute(() -> mClientCallback.accept(status));
         }
     }
 }
