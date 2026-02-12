@@ -120,6 +120,9 @@
                 <xs:element type="sensorDetails" name="tempSensor">
                     <xs:annotation name="final"/>
                 </xs:element>
+                <xs:element type="sensorDetails" name="colorSensor" minOccurs="0" maxOccurs="1">
+                    <xs:annotation name="final"/>
+                </xs:element>
 
                 <!-- Length of the ambient light horizon used to calculate the long & short term
                 estimates of ambient light in milliseconds.-->
