@@ -549,10 +549,10 @@ abstract class LogModule {
         @SceneFrameworkLog
         fun provideSceneFrameworkLogBuffer(factory: LogBufferFactory): LogBuffer {
             return factory.create(
-                "SceneFramework",
-                100, /* systrace */
-                true, /* alwaysLogToLogcat */
-                true,
+                name = "SceneFramework",
+                maxSize = 100,
+                systrace = true,
+                alwaysLogToLogcat = true,
             )
         }
 

@@ -186,6 +186,7 @@ constructor(
 
     override fun start() {
         if (SceneContainerFlag.isEnabled) {
+            applicationScope.launch { sceneLogger.activate() }
             sceneLogger.logFrameworkEnabled(isEnabled = true)
             applicationScope.launch { hydrateTableLogBuffer() }
             maybeShowLockscreenOnStart()
