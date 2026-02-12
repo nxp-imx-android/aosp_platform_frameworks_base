@@ -100,7 +100,6 @@ public final class StorageEventHelper extends StorageEventListener {
         }
     }
 
-    @SuppressWarnings("AndroidFrameworkSystemServerLock")
     @Override
     public void onVolumeForgotten(String fsUuid) {
         if (TextUtils.isEmpty(fsUuid)) {
@@ -108,23 +107,28 @@ public final class StorageEventHelper extends StorageEventListener {
             return;
         }
 
-        // Remove any apps installed on the forgotten volume
+        final List<String> packageNames = new ArrayList<>();
         synchronized (mPm.mLock) {
-            final List<? extends PackageStateInternal> packages =
-                    mPm.mSettings.getVolumePackagesLPr(fsUuid);
-            for (PackageStateInternal ps : packages) {
-                Slog.d(TAG, "Destroying " + ps.getPackageName()
-                        + " because volume was forgotten");
-                mPm.deletePackageVersioned(new VersionedPackage(ps.getPackageName(),
-                                PackageManager.VERSION_CODE_HIGHEST),
-                        new PackageManager.LegacyPackageDeleteObserver(null).getBinder(),
-                        UserHandle.USER_SYSTEM, PackageManager.DELETE_ALL_USERS);
-                // Try very hard to release any references to this package
-                // so we don't risk the system server being killed due to
-                // open FDs
-                AttributeCache.instance().removePackage(ps.getPackageName());
+            for (PackageStateInternal ps : mPm.mSettings.getVolumePackagesLPr(fsUuid)) {
+                packageNames.add(ps.getPackageName());
             }
+        }
 
+        // Schedule removal of any apps installed on the forgotten volume.
+        for (String packageName : packageNames) {
+            Slog.d(TAG, "Destroying " + packageName
+                    + " because volume was forgotten");
+            mPm.deletePackageVersioned(new VersionedPackage(packageName,
+                            PackageManager.VERSION_CODE_HIGHEST),
+                    new PackageManager.LegacyPackageDeleteObserver(null).getBinder(),
+                    UserHandle.USER_SYSTEM, PackageManager.DELETE_ALL_USERS);
+            // Try very hard to release any references to this package
+            // so we don't risk the system server being killed due to
+            // open FDs
+            AttributeCache.instance().removePackage(packageName);
+        }
+
+        synchronized (mPm.mLock) {
             mPm.mSettings.onVolumeForgotten(fsUuid);
             mPm.writeSettingsLPrTEMP();
         }
