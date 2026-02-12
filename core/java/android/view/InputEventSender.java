@@ -107,6 +107,7 @@ public abstract class InputEventSender {
             mSenderPtr = 0;
         }
         mHandler = null;
+        mInputChannel.dispose();
         mInputChannel = null;
     }
 
