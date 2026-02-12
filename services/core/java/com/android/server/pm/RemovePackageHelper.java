@@ -34,7 +34,6 @@ import android.annotation.Nullable;
 import android.annotation.SpecialUsers.CanBeALL;
 import android.annotation.UserIdInt;
 import android.content.pm.PackageManager;
-import android.content.pm.UserInfo;
 import android.content.pm.parsing.ApkLiteParseUtils;
 import android.content.pm.parsing.PackageLite;
 import android.content.pm.parsing.result.ParseResult;
@@ -480,12 +479,11 @@ final class RemovePackageHelper {
                 }
             }
         }
-        final List<UserInfo> activeUsers = Settings.getActiveUsers(mPm.mUserManager);
         synchronized (mPm.mLock) {
             // can downgrade to reader
             if (writeSettings) {
                 // Save settings now
-                mPm.writeSettingsLPrTEMP(activeUsers);
+                mPm.writeSettingsLPrTEMP();
             }
             if (installedStateChanged) {
                 mPm.mSettings.writeKernelMappingLPr(deletedPs);

@@ -2934,13 +2934,7 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
         }
     }
 
-    /** only for test */
     void writeLPr(@NonNull Computer computer, boolean sync) {
-        final List<UserInfo> activeUsers = getActiveUsers(UserManagerService.getInstance());
-        writeLPr(computer, activeUsers, sync);
-    }
-
-    void writeLPr(@NonNull Computer computer, List<UserInfo> users, boolean sync) {
         //Debug.startMethodTracing("/data/system/packageprof", 8 * 1024 * 1024);
 
         final long startTime = SystemClock.uptimeMillis();
@@ -3042,7 +3036,7 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
                 atomicFile.finishWrite(str);
 
                 writeKernelMappingLPr();
-                writePackageListLPr(users);
+                writePackageListLPr();
                 writeAllUsersPackageRestrictionsLPr(sync);
                 writeAllRuntimePermissionsLPr();
                 com.android.internal.logging.EventLogTags.writeCommitSysConfigFile(
@@ -3159,11 +3153,11 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
         }
     }
 
-    void writePackageListLPr(List<UserInfo> users) {
-        writePackageListLPr(users, -1);
+    void writePackageListLPr() {
+        writePackageListLPr(-1);
     }
 
-    void writePackageListLPr(List<UserInfo> users, int creatingUserId) {
+    void writePackageListLPr(int creatingUserId) {
         String filename = mPackageListFilename.getAbsolutePath();
         String ctx = SELinux.fileSelabelLookup(filename);
         if (ctx == null) {
@@ -3175,14 +3169,15 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
             Slog.wtf(TAG, "Failed to set packages.list SELinux context");
         }
         try {
-            writePackageListLPrInternal(users, creatingUserId);
+            writePackageListLPrInternal(creatingUserId);
         } finally {
             SELinux.setFSCreateContext(null);
         }
     }
 
-    private void writePackageListLPrInternal(List<UserInfo> users, int creatingUserId) {
+    private void writePackageListLPrInternal(int creatingUserId) {
         // Only derive GIDs for active users (not dying)
+        final List<UserInfo> users = getActiveUsers(UserManagerService.getInstance());
         int[] userIds = new int[users.size()];
         for (int i = 0; i < userIds.length; i++) {
             userIds[i] = users.get(i).id;
@@ -4976,13 +4971,7 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
         t.traceEnd(); // createNewUser
     }
 
-    /** only for test */
     void removeUserLPw(int userId) {
-        final List<UserInfo> activeUsers = getActiveUsers(UserManagerService.getInstance());
-        removeUserLPw(activeUsers, userId);
-    }
-
-    void removeUserLPw(List<UserInfo> users, int userId) {
         Set<Entry<String, PackageSetting>> entries = mPackages.entrySet();
         for (Entry<String, PackageSetting> entry : entries) {
             entry.getValue().removeUser(userId);
@@ -4999,7 +4988,7 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
         mRuntimePermissionsPersistence.onUserRemoved(userId);
         mDomainVerificationManager.clearUser(userId);
 
-        writePackageListLPr(users);
+        writePackageListLPr();
 
         // Inform kernel that the user was removed, so that packages are marked uninstalled
         // for sdcardfs
@@ -5034,12 +5023,11 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
         }
     }
 
-    public VerifierDeviceIdentity getVerifierDeviceIdentityLPw(@NonNull Computer computer,
-            List<UserInfo> users) {
+    public VerifierDeviceIdentity getVerifierDeviceIdentityLPw(@NonNull Computer computer) {
         if (mVerifierDeviceIdentity == null) {
             mVerifierDeviceIdentity = VerifierDeviceIdentity.generate();
 
-            writeLPr(computer, users, /*sync=*/false);
+            writeLPr(computer, /*sync=*/false);
         }
 
         return mVerifierDeviceIdentity;
