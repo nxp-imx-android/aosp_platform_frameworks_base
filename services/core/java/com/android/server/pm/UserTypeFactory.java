@@ -465,10 +465,16 @@ public final class UserTypeFactory {
                 .setDefaultUserInfoPropertyFlags(FLAG_PRIMARY
                         | (android.multiuser.Flags.hsuNotAdmin() ? 0 : FLAG_ADMIN))
                 .setMaxAllowed(1)
-                .setDefaultRestrictions(getDefaultHeadlessSystemUserRestrictions())
-                .setActivitiesAllowlist(android.multiuser.Flags.hsuAllowlistActivities()
-                        ? com.android.internal.R.array.hsu_allowlist_activities
-                        : Resources.ID_NULL);
+                .setDefaultRestrictions(getDefaultHeadlessSystemUserRestrictions());
+
+        if (android.multiuser.Flags.hsuAllowlistActivities()) {
+            builder.setActivitiesAllowlist(
+                    com.android.internal.R.array.hsu_allowlist_activities);
+            // TODO(b/481454668): Use UserTypeDetails config to replace use of
+            // config_hsuActivitiesAllowlistMode.
+            builder.setActivitiesAllowlistMode(Resources.getSystem().getInteger(
+                    com.android.internal.R.integer.config_hsuActivitiesAllowlistMode));
+        }
 
         if (android.multiuser.Flags.hsuAppManagement()) {
             // We apply a specific badge to the Headless System User so that its apps can be
