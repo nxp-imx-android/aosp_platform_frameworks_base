@@ -260,10 +260,9 @@ constructor(
 
     /** Whether or not Split Shade is enabled. */
     val isSplitShade: Flow<Boolean> =
-        shadeModeInteractor.shadeMode.flatMapLatest { shadeMode ->
-            flowOf(shadeMode is ShadeMode.Split)
-        }
-
+        shadeModeInteractor.shadeMode
+            .map { shadeMode -> shadeMode is ShadeMode.Split }
+            .distinctUntilChanged()
     /**
      * Whether to align the horizontal side-padding of notifications to the QS tiles showing above.
      */
