@@ -793,16 +793,6 @@ flag {
 }
 
 flag {
-   name: "global_actions_emphasized_font"
-   namespace: "systemui"
-   description: "Use emphasized font for global actions."
-   bug: "393616338"
-   metadata {
-       purpose: PURPOSE_BUGFIX
-   }
-}
-
-flag {
     name: "global_actions_feedback_action"
     namespace: "systemui"
     description: "When enabled at build-time, the feedback global action will be available on "
