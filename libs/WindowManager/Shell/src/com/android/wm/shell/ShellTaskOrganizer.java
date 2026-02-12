@@ -46,6 +46,7 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.ArrayMap;
 import android.util.Log;
+import android.util.Pair;
 import android.util.SparseArray;
 import android.view.SurfaceControl;
 import android.window.ITaskOrganizerController;
@@ -438,6 +439,21 @@ public class ShellTaskOrganizer extends TaskOrganizer {
         if (mStartingWindow != null) {
             mStartingWindow.clearAllWindows();
         }
+    }
+
+    /**
+     * Returns the initial set of tasks.
+     * This can be removed once we have a synchronizing transition for the initial state when SysUI
+     * starts up.
+     */
+    @NonNull
+    public List<Pair<RunningTaskInfo, SurfaceControl>> getInitialTasks() {
+        final ArrayList<Pair<RunningTaskInfo, SurfaceControl>> tasks = new ArrayList<>();
+        for (int i = mTasks.size() - 1; i >= 0; --i) {
+            final TaskAppearedInfo task = mTasks.valueAt(i);
+            tasks.add(new Pair<>(task.getTaskInfo(), task.getLeash()));
+        }
+        return tasks;
     }
 
     /**
