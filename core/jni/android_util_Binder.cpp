@@ -26,7 +26,9 @@
 #include <binder/Parcel.h>
 #include <binder/ProcessState.h>
 #include <binder/Stability.h>
+#include <binder/internal/JavaBBinderBase.h>
 #include <binderthreadstate/CallerUtils.h>
+#include <com_android_base_core_jni_flags.h>
 #include <fcntl.h>
 #include <inttypes.h>
 #include <log/log.h>
@@ -48,7 +50,6 @@
 #include <mutex>
 #include <string>
 
-#include <com_android_base_core_jni_flags.h>
 #include "android_os_Parcel.h"
 #include "core_jni_helpers.h"
 
@@ -341,20 +342,17 @@ void binder_report_exception(JNIEnv* env, jthrowable excep, const char* msg) {
 
 class JavaBBinderHolder;
 
-class JavaBBinder : public BBinder
-{
+class JavaBBinderExt : public android::internal::JavaBBinderBase {
 public:
-    JavaBBinder(JNIEnv* env, jobject /* Java Binder */ object)
-        : mVM(jnienv_to_javavm(env)), mObject(env->NewGlobalRef(object))
-    {
-        ALOGV("Creating JavaBBinder %p\n", this);
+    JavaBBinderExt(JNIEnv* env, jobject object)
+          : mVM(jnienv_to_javavm(env)), mObject(env->NewGlobalRef(object)) {
+        ALOGV("Creating JavaBBinderExt %p\n", this);
         gNumLocalRefsCreated.fetch_add(1, std::memory_order_relaxed);
         gcIfManyNewRefs(env);
     }
 
-    bool    checkSubclass(const void* subclassID) const
-    {
-        return subclassID == &gBinderOffsets;
+    bool checkSubclass(const void* subclassID) const override {
+        return subclassID == android::internal::JavaBBinderBase::getSubclassID();
     }
 
     const String16& getInterfaceDescriptor() const override
@@ -386,8 +384,8 @@ public:
     }
 
 protected:
-    virtual ~JavaBBinder() {
-        ALOGV("Destroying JavaBBinder %p\n", this);
+    virtual ~JavaBBinderExt() {
+        ALOGV("Destroying JavaBBinderExt %p\n", this);
         gNumLocalRefsDeleted.fetch_add(1, std::memory_order_relaxed);
         JNIEnv* env = javavm_to_jnienv(mVM);
         env->DeleteGlobalRef(mObject);
@@ -469,9 +467,8 @@ private:
 class JavaBBinderHolder
 {
 public:
-    sp<JavaBBinder> get(JNIEnv* env, jobject obj)
-    {
-        sp<JavaBBinder> b;
+    sp<JavaBBinderExt> get(JNIEnv* env, jobject obj) {
+        sp<JavaBBinderExt> b;
         {
             AutoMutex _l(mLock);
             // must take lock to promote because we set the same wp<>
@@ -482,13 +479,13 @@ public:
         if (b) return b;
 
         // b/360067751: constructor may trigger GC, so call outside lock
-        b = sp<JavaBBinder>::make(env, obj);
+        b = sp<JavaBBinderExt>::make(env, obj);
 
         {
             AutoMutex _l(mLock);
             // if it was constructed on another thread in the meantime,
             // return that. 'b' will just get destructed.
-            if (sp<JavaBBinder> b2 = mBinder.promote(); b2) return b2;
+            if (sp<JavaBBinderExt> b2 = mBinder.promote(); b2) return b2;
 
             if (mVintf) {
                 ::android::internal::Stability::markVintf(b.get());
@@ -511,8 +508,7 @@ public:
         return b;
     }
 
-    sp<JavaBBinder> getExisting()
-    {
+    sp<JavaBBinderExt> getExisting() {
         AutoMutex _l(mLock);
         return mBinder.promote();
     }
@@ -530,7 +526,7 @@ public:
     void setExtension(const sp<IBinder>& extension) {
         AutoMutex _l(mLock);
         mSetExtensionCalled = true;
-        sp<JavaBBinder> b = mBinder.promote();
+        sp<JavaBBinderExt> b = mBinder.promote();
         if (b != nullptr) {
             b.get()->setExtension(extension);
         }
@@ -539,7 +535,7 @@ public:
     void setInheritRt(bool inheritRt) {
         AutoMutex _l(mLock);
         mInheritRt = inheritRt;
-        sp<JavaBBinder> b = mBinder.promote();
+        sp<JavaBBinderExt> b = mBinder.promote();
         if (b != nullptr) {
             b.get()->setInheritRt(inheritRt);
         }
@@ -547,10 +543,10 @@ public:
 
 private:
     Mutex           mLock;
-    wp<JavaBBinder> mBinder;
+    wp<JavaBBinderExt> mBinder;
 
     // in the future, we might condense this into int32_t stability, or if there
-    // is too much binder state here, we can think about making JavaBBinder an
+    // is too much binder state here, we can think about making JavaBBinderExt an
     // sp here (avoid recreating it)
     bool            mVintf = false;
     bool            mSetExtensionCalled = false;
@@ -990,7 +986,7 @@ BinderProxyNativeData* getBPNativeData(JNIEnv* env, jobject obj) {
     return (BinderProxyNativeData *) env->GetLongField(obj, gBinderProxyOffsets.mNativeData);
 }
 
-// If the argument is a JavaBBinder, return the Java object that was used to create it.
+// If the argument is a JavaBBinderExt, return the Java object that was used to create it.
 // Otherwise return a BinderProxy for the IBinder. If a previous call was passed the
 // same IBinder, and the original BinderProxy is still alive, return the same BinderProxy.
 jobject javaObjectForIBinder(JNIEnv* env, const sp<IBinder>& val)
@@ -1000,9 +996,9 @@ jobject javaObjectForIBinder(JNIEnv* env, const sp<IBinder>& val)
 
     if (val == NULL) return NULL;
 
-    if (val->checkSubclass(&gBinderOffsets)) {
-        // It's a JavaBBinder created by ibinderForJavaObject. Already has Java object.
-        jobject object = static_cast<JavaBBinder*>(val.get())->object();
+    if (val->checkSubclass(android::internal::JavaBBinderBase::getSubclassID())) {
+        // It's a JavaBBinderExt created by ibinderForJavaObject. Already has Java object.
+        jobject object = static_cast<JavaBBinderExt*>(val.get())->object();
         LOG_DEATH_FREEZE("objectForBinder %p: it's our own %p!\n", val.get(), object);
         return object;
     }
