@@ -411,6 +411,9 @@
          satellite capabilities when all other connections are out of service. -->
     <bool name="config_showOpportunisticSatelliteIcon">true</bool>
 
+    <!-- The delay in milliseconds after which low frequency mode is enabled for notification Chronometers on AOD. -->
+    <integer name="aod_notification_low_frequency_delay_ms">30000</integer>
+
     <!-- Whether or not to show the notification shelf that houses the icons of notifications that
      have been scrolled off-screen. -->
     <bool name="config_showNotificationShelf">true</bool>

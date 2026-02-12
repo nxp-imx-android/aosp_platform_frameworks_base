@@ -20,7 +20,6 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.os.Handler;
 import android.service.notification.NotificationListenerService;
-import android.view.Choreographer;
 
 import com.android.internal.jank.InteractionJankMonitor;
 import com.android.settingslib.notification.data.repository.ZenModeRepository;
@@ -31,7 +30,6 @@ import com.android.systemui.CoreStartable;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Application;
 import com.android.systemui.dagger.qualifiers.Background;
-import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.res.R;
 import com.android.systemui.shade.ShadeDisplayAware;
 import com.android.systemui.statusbar.NotificationListener;
@@ -77,6 +75,8 @@ import com.android.systemui.statusbar.notification.interruption.VisualInterrupti
 import com.android.systemui.statusbar.notification.logging.NotificationPanelLogger;
 import com.android.systemui.statusbar.notification.logging.NotificationPanelLoggerImpl;
 import com.android.systemui.statusbar.notification.logging.dagger.NotificationsLogModule;
+import com.android.systemui.statusbar.notification.promoted.AODLowFrequencyModeDelayMs;
+import com.android.systemui.statusbar.notification.promoted.AODLowFrequencyModeDelayMsImpl;
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationContentExtractor;
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationContentExtractorImpl;
 import com.android.systemui.statusbar.notification.promoted.ShowPromotedNotificationsOnAOD;
@@ -324,6 +324,14 @@ public interface NotificationsModule {
     @SysUISingleton
     ShowPromotedNotificationsOnAOD provideShowPromotedNotificationsOnAOD(
             ShowPromotedNotificationsOnAODImpl impl);
+
+    /**
+     *  Provides the default implementation of {@link AODLowFrequencyModeDelayMs}
+     */
+    @Binds
+    @SysUISingleton
+    AODLowFrequencyModeDelayMs provideAODLowFrequencyModeDelayMs(
+            AODLowFrequencyModeDelayMsImpl impl);
     /**
      * Provides the implementation of {@link MagneticNotificationRowManager}.
      */
