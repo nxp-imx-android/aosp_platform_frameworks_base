@@ -122,6 +122,8 @@ import com.android.wm.shell.recents.RecentTasks;
 import com.android.wm.shell.recents.RecentTasksController;
 import com.android.wm.shell.recents.RecentsTransitionHandler;
 import com.android.wm.shell.recents.TaskStackTransitionObserver;
+import com.android.wm.shell.scrolltotop.ScrollToTop;
+import com.android.wm.shell.scrolltotop.ScrollToTopController;
 import com.android.wm.shell.shared.ShellTransitions;
 import com.android.wm.shell.shared.TransactionPool;
 import com.android.wm.shell.shared.annotations.ShellAnimationThread;
@@ -1193,6 +1195,20 @@ public abstract class WMShellBaseModule {
     @BindsOptionalOf
     @DynamicOverride
     abstract PackageUpdateController optionalPackageUpdateController();
+
+    //
+    // Scroll to Top (optional feature)
+    //
+
+    @WMSingleton
+    @Provides
+    static Optional<ScrollToTop> provideScrollToTop(
+            Optional<ScrollToTopController> scrollToTopController) {
+        return scrollToTopController.map((controller) -> controller.asScrollToTop());
+    }
+
+    @BindsOptionalOf
+    abstract ScrollToTopController optionalScrollToTopController();
 
     //
     // App zoom out (optional feature)

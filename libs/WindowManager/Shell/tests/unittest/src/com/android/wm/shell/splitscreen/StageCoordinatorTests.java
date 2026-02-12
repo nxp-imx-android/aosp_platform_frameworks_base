@@ -1354,6 +1354,58 @@ public class StageCoordinatorTests extends ShellTestCase {
         verify(mSplitScreenListener).onSplitVisibilityChanged(eq(false));
     }
 
+    @Test
+    public void testGetTaskIdAt_horizontalSplit() {
+        when(mStageCoordinator.isSplitScreenVisible()).thenReturn(true);
+        // Horizontal split (Top/Bottom)
+        Rect topBounds = new Rect(0, 0, 1000, 500);
+        Rect bottomBounds = new Rect(0, 500, 1000, 1000);
+
+        doAnswer(invocation -> {
+            Rect topLeft = invocation.getArgument(0);
+            Rect bottomRight = invocation.getArgument(1);
+            topLeft.set(topBounds);
+            bottomRight.set(bottomBounds);
+            return null;
+        }).when(mSplitLayout).getStageBounds(any(), any());
+
+        // Side stage is Top/Left (so Top here)
+        mStageCoordinator.setSideStagePosition(SPLIT_POSITION_TOP_OR_LEFT, null);
+        when(mSideStage.getTopVisibleChildTaskId()).thenReturn(100); // Top task
+        when(mMainStage.getTopVisibleChildTaskId()).thenReturn(200); // Bottom task
+
+        // Tap at x=500. Matches topBounds X-range [0, 1000).
+        // Since getTaskIdAt only checks X, it matches Top first.
+        assertEquals(100, mStageCoordinator.getTaskIdAt(500, DEFAULT_DISPLAY));
+    }
+
+    @Test
+    public void testGetTaskIdAt_verticalSplit() {
+        when(mStageCoordinator.isSplitScreenVisible()).thenReturn(true);
+        // Vertical split (Left/Right)
+        Rect leftBounds = new Rect(0, 0, 500, 1000);
+        Rect rightBounds = new Rect(500, 0, 1000, 1000);
+
+        doAnswer(invocation -> {
+            Rect topLeft = invocation.getArgument(0);
+            Rect bottomRight = invocation.getArgument(1);
+            topLeft.set(leftBounds);
+            bottomRight.set(rightBounds);
+            return null;
+        }).when(mSplitLayout).getStageBounds(any(), any());
+
+        // Side stage is Top/Left (so Left here)
+        mStageCoordinator.setSideStagePosition(SPLIT_POSITION_TOP_OR_LEFT, null);
+        when(mSideStage.getTopVisibleChildTaskId()).thenReturn(100); // Left task
+        when(mMainStage.getTopVisibleChildTaskId()).thenReturn(200); // Right task
+
+        // Tap at x=250. Matches Left [0, 500).
+        assertEquals(100, mStageCoordinator.getTaskIdAt(250, DEFAULT_DISPLAY));
+
+        // Tap at x=750. Matches Right [500, 1000).
+        assertEquals(200, mStageCoordinator.getTaskIdAt(750, DEFAULT_DISPLAY));
+    }
+
     private static int getLaunchWindowingMode(Bundle options) {
         return options.getInt("android.activity.windowingMode", 0);
     }

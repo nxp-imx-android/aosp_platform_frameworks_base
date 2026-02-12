@@ -149,4 +149,8 @@ public class BaseIWindow extends WindowClientTransactionHandler {
     @Override
     public void requestViewAnimationsDisabled(boolean disabled) {
     }
+
+    @Override
+    public void dispatchScrollToTop(int x) {
+    }
 }

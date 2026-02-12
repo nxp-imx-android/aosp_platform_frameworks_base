@@ -12759,6 +12759,29 @@ public final class ViewRootImpl implements ViewParent,
                         /* arg1 */ disabled ? 1 : 0, /* arg2 */ 0).sendToTarget();
             }
         }
+
+        @Override
+        public void dispatchScrollToTop(int x) {
+            final ViewRootImpl viewAncestor = mViewAncestor.get();
+            if (viewAncestor != null) {
+                viewAncestor.dispatchScrollToTop(x);
+            }
+        }
+    }
+
+    /**
+     * Dispatches a command to scroll the main content to the top.
+     *
+     * @param x The x-coordinate of the scroll-to-top command, in the coordinate space of this
+     *          window. This coordinate can be used by the view hierarchy to determine the most
+     *          relevant scrollable container.
+     */
+    public void dispatchScrollToTop(int x) {
+        mHandler.post(() -> {
+            if (mView != null) {
+                mView.dispatchScrollToTop(x);
+            }
+        });
     }
 
     public static final class CalledFromWrongThreadException extends AndroidRuntimeException {
