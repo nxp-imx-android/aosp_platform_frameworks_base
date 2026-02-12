@@ -60,9 +60,6 @@ interface IPersonalContextManager {
 
     oneway void reportEvent(in InsightEvent event, int userId);
 
-    oneway void reportFeedback(
-        in ContextInsightWrapper insight, in Bundle partialFeedback, int userId);
-
     boolean isPersonalContextModeEnabled(in String packageName, int userId);
 
     // Avoiding oneway so that get and set have a consistent ordering.

@@ -56,7 +56,8 @@ public final class InsightEvent implements Parcelable {
                     EVENT_USER_LONG_PRESS,
                     EVENT_USER_DISMISS,
                     EVENT_USER_ATTRIBUTION_REQUESTED,
-                    EVENT_USER_FEEDBACK_INITITATED,
+                    EVENT_USER_FEEDBACK_POSITIVE,
+                    EVENT_USER_FEEDBACK_NEGATIVE,
             })
     @Retention(RetentionPolicy.SOURCE)
     public @interface EventType {
@@ -83,8 +84,11 @@ public final class InsightEvent implements Parcelable {
     /** Event type for when the user requests attribution for the insight. */
     public static final int EVENT_USER_ATTRIBUTION_REQUESTED = 6;
 
-    /** Event type for when the user begins entering feedback on the insight. */
-    public static final int EVENT_USER_FEEDBACK_INITITATED = 7;
+    /** Event type for when the user enters positive feedback on the insight. */
+    public static final int EVENT_USER_FEEDBACK_POSITIVE = 7;
+
+    /** Event type for when the user enters negative feedback on the insight. */
+    public static final int EVENT_USER_FEEDBACK_NEGATIVE = 8;
 
     private final @EventType int mEventType;
     private final ContextInsight mInsight;

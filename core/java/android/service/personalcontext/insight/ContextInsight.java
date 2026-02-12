@@ -33,7 +33,6 @@ import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.hint.ContextHintWithSignatureWrapper;
 import android.service.personalcontext.insight.interaction.AttributionDetails;
-import android.service.personalcontext.insight.interaction.FeedbackRequest;
 import android.service.personalcontext.insight.interaction.InsightEvent;
 import android.util.Log;
 
@@ -72,7 +71,6 @@ public abstract class ContextInsight {
     private static final String KEY_ATTRIBUTION = "key_attribution";
     private static final String KEY_ORIGINATING_COMPONENT_ID = "key_originating_component_id";
     private static final String KEY_CREATION_TIME = "key_creation_time";
-    private static final String KEY_FEEDBACK_REQUEST = "key_feedback_request";
 
     /**
      * Enumeration of insight types.
@@ -125,7 +123,6 @@ public abstract class ContextInsight {
                     /* originatingComponentId= */ UUID.randomUUID(),
                     /* originHints= */ Collections.emptySet(),
                     /* tokens= */ Collections.emptySet(),
-                    /* feedbackRequest= */ null,
                     /* attributionDetails= */ null)) {
         @Override
         @InsightType public int getInsightType() {
@@ -149,7 +146,6 @@ public abstract class ContextInsight {
     private final Set<ContextHintWithSignature> mOriginHints;
     private final Set<Token> mTokens;
     private final Instant mCreationTime;
-    private final FeedbackRequest mFeedbackRequest;
     private final AttributionDetails mAttributionDetails;
 
     /**
@@ -164,7 +160,6 @@ public abstract class ContextInsight {
         mOriginHints = Collections.unmodifiableSet(new HashSet<>(params.mOriginHints));
         mTokens = Collections.unmodifiableSet(new HashSet<>(params.mTokens));
         mCreationTime = params.mCreationTime;
-        mFeedbackRequest = params.mFeedbackRequest;
         mAttributionDetails = params.mAttributionDetails;
     }
 
@@ -279,7 +274,6 @@ public abstract class ContextInsight {
         b.putParcelableArrayList(KEY_TOKENS, new ArrayList<>(mTokens));
         b.putBundle(KEY_INSIGHT_DATA, toBundleImpl());
         b.putLong(KEY_CREATION_TIME, mCreationTime.toEpochMilli());
-        b.putParcelable(KEY_FEEDBACK_REQUEST, mFeedbackRequest);
         return b;
     }
 
@@ -333,7 +327,6 @@ public abstract class ContextInsight {
                                 KEY_ORIGIN_HINTS, ContextHintWithSignatureWrapper.class)),
                 bundle.getParcelableArrayList(KEY_TOKENS, Token.class),
                 Instant.ofEpochMilli(bundle.getLong(KEY_CREATION_TIME)),
-                bundle.getParcelable(KEY_FEEDBACK_REQUEST, FeedbackRequest.class),
                 bundle.getParcelable(KEY_ATTRIBUTION, AttributionDetails.class));
 
         try {
@@ -350,12 +343,6 @@ public abstract class ContextInsight {
             Log.e(TAG, "Error creating insight", e);
             return ERROR_INSIGHT;
         }
-    }
-
-    /** Gets the feedback that the understander has requested for this insight. */
-    @Nullable
-    public FeedbackRequest getUserFeedbackRequest() {
-        return mFeedbackRequest;
     }
 
     /**
@@ -409,14 +396,12 @@ public abstract class ContextInsight {
         private final Collection<ContextHintWithSignature> mOriginHints;
         private final Collection<Token> mTokens;
         private final Instant mCreationTime;
-        private final FeedbackRequest mFeedbackRequest;
         private final AttributionDetails mAttributionDetails;
 
         private ConstructorParams(
                 UUID originatingComponentId,
                 Collection<ContextHintWithSignature> originHints,
                 Collection<Token> tokens,
-                FeedbackRequest feedbackRequest,
                 AttributionDetails attributionDetails) {
             this(
                     UUID.randomUUID(),
@@ -424,7 +409,6 @@ public abstract class ContextInsight {
                     originHints,
                     tokens,
                     Instant.now(),
-                    feedbackRequest,
                     attributionDetails);
         }
 
@@ -434,14 +418,12 @@ public abstract class ContextInsight {
                 Collection<ContextHintWithSignature> originHints,
                 Collection<Token> tokens,
                 Instant creationTime,
-                FeedbackRequest feedbackRequest,
                 AttributionDetails attributionDetails) {
             mId = id;
             mOriginatingComponentId = originatingComponentId;
             mOriginHints = originHints;
             mTokens = tokens;
             mCreationTime = creationTime;
-            mFeedbackRequest = feedbackRequest;
             mAttributionDetails = attributionDetails;
         }
 
@@ -450,7 +432,6 @@ public abstract class ContextInsight {
             private final Set<Token> mTokens = new HashSet<>();
             private AttributionDetails mAttributionDetails;
             private UUID mOriginatingComponentId;
-            private FeedbackRequest mFeedbackRequest;
 
             /**
              * Adds an origin {@link ContextHint} to the resulting {@link BundleInsight}.
@@ -498,33 +479,11 @@ public abstract class ContextInsight {
                 return this;
             }
 
-            /**
-             * Sets the user feedback request in the resulting {@link ContextInsight}. If feedback
-             * is requested, the originating component id must be set via
-             * {@link #setOriginatingComponentId}, or else an exception will be thrown when calling
-             * {@link #build}.
-             *
-             * @param feedbackRequest the feedback that is being requested
-             */
-            @NonNull
-            Builder setUserFeedbackRequest(@Nullable FeedbackRequest feedbackRequest) {
-                mFeedbackRequest = feedbackRequest;
-                return this;
-            }
-
             ConstructorParams build() {
-                // Check that we have a component id if feedback is requested.
-                if (mFeedbackRequest != null && mOriginatingComponentId == null) {
-                    throw new IllegalStateException(
-                            "ContextInsight has a request for user feedback, but no originating "
-                            + "component id has been set");
-                }
-
                 return new ConstructorParams(
                         mOriginatingComponentId,
                         mOriginHints,
                         mTokens,
-                        mFeedbackRequest,
                         mAttributionDetails);
             }
         }

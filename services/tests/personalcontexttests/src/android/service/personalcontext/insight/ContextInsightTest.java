@@ -30,7 +30,6 @@ import android.service.personalcontext.ComponentIdProvider;
 import android.service.personalcontext.PersonalContextManager;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.hint.BundleHint;
-import android.service.personalcontext.insight.interaction.FeedbackRequest;
 import android.service.personalcontext.insight.interaction.InsightEvent;
 
 import androidx.test.filters.SmallTest;
@@ -41,7 +40,6 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 
 @SmallTest
@@ -51,9 +49,6 @@ public class ContextInsightTest {
     @Test
     public void testContextInsightWrapperParcelUnparcel() {
         final UUID componentId = UUID.randomUUID();
-        final FeedbackRequest feedbackRequest = new FeedbackRequest(
-                List.of(new FeedbackRequest.FeedbackField(
-                        FeedbackRequest.FEEDBACK_TYPE_APPROVAL, "thumbs", "Thumbs", null)));
 
         final ComponentIdProvider understanderIdProvider = mock(ComponentIdProvider.class);
         when(understanderIdProvider.getComponentId()).thenReturn(componentId);
@@ -63,18 +58,13 @@ public class ContextInsightTest {
         final BundleHint hint = new BundleHint.Builder().build();
         hint.getDataBundle().putInt(dataKey, inputValue);
 
-        final BundleInsight insight = new BundleInsight.Builder()
-                .setOriginatingComponentId(understanderIdProvider)
-                .setUserFeedbackRequest(feedbackRequest)
-                .build();
+        final BundleInsight insight = new BundleInsight.Builder().build();
 
         ContextInsight outputInsight = assertParcelUnparcel(insight);
         assertThat(insight.getInsightId()).isEqualTo(outputInsight.getInsightId());
-        assertThat(insight.getOriginatingComponentId()).isEqualTo(componentId);
         assertThat(insight.getCreationTime()).isGreaterThan(Instant.ofEpochMilli(0));
         assertThat(insight.getCreationTime().toEpochMilli())
                 .isEqualTo(outputInsight.getCreationTime().toEpochMilli());
-        assertThat(insight.getUserFeedbackRequest()).isEqualTo(feedbackRequest);
     }
 
     @Test
@@ -127,28 +117,6 @@ public class ContextInsightTest {
         assertThat(event.getTimestamp()).isNotEqualTo(0);
         assertThat(event.getRenderToken()).isEqualTo(renderToken);
         assertThat(event.getExtras().getString("hello")).isEqualTo("world");
-    }
-
-    @Test
-    public void testReportFeedback() {
-        final UUID understanderId = UUID.randomUUID();
-
-        final FeedbackRequest feedbackRequest = new FeedbackRequest(
-                List.of(new FeedbackRequest.FeedbackField(
-                        FeedbackRequest.FEEDBACK_TYPE_APPROVAL, "thumbs", "Thumbs", null)));
-        final ComponentIdProvider understanderIdProvider = mock(ComponentIdProvider.class);
-        final PersonalContextManager pcm = mock(PersonalContextManager.class);
-        final Context context = mock(Context.class);
-
-        when(understanderIdProvider.getComponentId()).thenReturn(understanderId);
-        when(context.getSystemService(eq(PersonalContextManager.class))).thenReturn(pcm);
-
-        final BundleInsight insight = new BundleInsight.Builder()
-                .setOriginatingComponentId(understanderIdProvider)
-                .setUserFeedbackRequest(feedbackRequest)
-                .build();
-
-        assertThat(insight.getUserFeedbackRequest()).isEqualTo(feedbackRequest);
     }
 
     /**
