@@ -298,6 +298,19 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     @GuardedBy("mWindowDrawLock")
     private boolean mIsWaitingForWindowDraw = false;
 
+    private final InteractiveMirrorImpl.InteractiveMirrorImplCallback mInteractiveMirrorCallback =
+            new InteractiveMirrorImpl.InteractiveMirrorImplCallback() {
+                @Override
+                public void onInteractiveChanged(boolean isInteractive) {
+                    mStatsController.onMirrorViewInteractive(isInteractive);
+                }
+
+                @Override
+                public void onClose(InteractiveMirrorImpl mirror) {
+                    removeInteractiveMirror(mirror);
+                }
+            };
+
     ComputerControlSessionImpl(Context context,
             ComputerControlAllowlistController allowlistController, IBinder appToken,
             ComputerControlSessionParams params, IApplicationThread appThread,
@@ -690,8 +703,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         }
         return new InteractiveMirrorImpl(mirror, mTransactionSupplier,
                 mDisplayManagerGlobal.getDisplayInfo(mVirtualDisplayId), mInputManagerInternal,
-                mStatsController::onMirrorViewInteractive, this::removeInteractiveMirror,
-                isMirrorInteractionAllowed());
+                isMirrorInteractionAllowed(), mInteractiveMirrorCallback);
     }
 
     private void removeInteractiveMirror(InteractiveMirrorImpl interactiveMirror) {

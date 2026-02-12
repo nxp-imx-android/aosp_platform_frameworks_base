@@ -29,7 +29,6 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.server.input.InputManagerInternal;
 import com.android.server.wm.WindowManagerInternal;
 
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -43,6 +42,21 @@ import java.util.function.Supplier;
 final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
     private static final String TAG = InteractiveMirrorImpl.class.getSimpleName();
 
+    /**
+     * Callbacks for events on an {@link InteractiveMirrorImpl}.
+     */
+    interface InteractiveMirrorImplCallback {
+        /**
+         * Called when the interactive state of the mirror changes.
+         */
+        void onInteractiveChanged(boolean isInteractive);
+
+        /**
+         * Called when the mirror is closed.
+         */
+        void onClose(InteractiveMirrorImpl mirror);
+    }
+
     private final DisplayInfo mDisplayInfo;
     // The mirror of the VirtualDisplay, used to control sensitive parameters of the surface.
     // NOTE: This must NOT be sent to the client app, and must remain in system_server.
@@ -52,8 +66,7 @@ final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
     private final SurfaceControl mMirrorLeash;
     private final Supplier<SurfaceControl.Transaction> mTransactionSupplier;
     private final InputManagerInternal mInputManagerInternal;
-    private final Consumer<Boolean> mStatsUpdateInteractiveMirror;
-    private final Consumer<InteractiveMirrorImpl> mRemoveInteractiveMirror;
+    private final InteractiveMirrorImplCallback mCallback;
 
     @GuardedBy("this")
     private boolean mIsInteractivityAllowed = false;
@@ -66,9 +79,8 @@ final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
     InteractiveMirrorImpl(WindowManagerInternal.DisplayMirror mirror,
             Supplier<SurfaceControl.Transaction> transactionSupplier, DisplayInfo displayInfo,
             InputManagerInternal inputManagerInternal,
-            Consumer<Boolean> statsUpdateInteractiveMirror,
-            Consumer<InteractiveMirrorImpl> removeInteractiveMirror,
-            boolean isInteractivityAllowed) {
+            boolean isInteractivityAllowed,
+            InteractiveMirrorImplCallback callback) {
         mMirror = mirror;
         mTransactionSupplier = transactionSupplier;
         mDisplayInfo = displayInfo;
@@ -77,8 +89,7 @@ final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
                 .setName("InteractiveMirrorImpl#mMirrorLeash$" + mMirror.hashCode())
                 .setContainerLayer()
                 .build();
-        mStatsUpdateInteractiveMirror = statsUpdateInteractiveMirror;
-        mRemoveInteractiveMirror = removeInteractiveMirror;
+        mCallback = callback;
 
         Slog.v(TAG, "Creating interactive mirror with SurfaceControl: " + mMirrorLeash);
 
@@ -128,7 +139,7 @@ final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
                 + (interactive ? "" : "not ") + "allowed");
         transaction.setDropInputMode(mMirror.getMirrorSurfaceControl(),
                 interactive ? DropInputMode.NONE : DropInputMode.ALL);
-        mStatsUpdateInteractiveMirror.accept(interactive);
+        mCallback.onInteractiveChanged(interactive);
     }
 
     @RequiresNoPermission
@@ -149,7 +160,7 @@ final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
     @RequiresNoPermission
     @Override
     public void close() {
-        mRemoveInteractiveMirror.accept(this);
+        mCallback.onClose(this);
     }
 
     /**
