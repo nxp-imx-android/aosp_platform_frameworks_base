@@ -24,6 +24,12 @@ package {
 }
 
 prebuilt_etc {
+    name: "app-lock-exempt.xml",
+    sub_dir: "sysconfig",
+    src: "app-lock-exempt.xml",
+}
+
+prebuilt_etc {
     name: "framework-sysconfig.xml",
     sub_dir: "sysconfig",
     src: "framework-sysconfig.xml",
@@ -82,12 +88,6 @@ prebuilt_etc {
     name: "oem-defined-uids.xml",
     sub_dir: "sysconfig",
     src: "oem-defined-uids.xml",
-}
-
-prebuilt_etc {
-    name: "preinstalled-packages-app-lock-exempt.xml",
-    sub_dir: "sysconfig",
-    src: "preinstalled-packages-app-lock-exempt.xml",
 }
 
 prebuilt_etc {
