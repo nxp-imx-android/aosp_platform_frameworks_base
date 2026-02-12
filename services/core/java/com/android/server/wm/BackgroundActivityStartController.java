@@ -1659,7 +1659,9 @@ public class BackgroundActivityStartController {
                 /* bal_code */
                 balVerdict.isBasedOnCaller() ? balVerdict.getCode() : BAL_ALLOW_PENDING_INTENT,
                 /* debug_info */
-                asmDebugInfo
+                asmDebugInfo,
+                /* block */
+                enforceBlock
         );
 
         String launchedFromPackageName = targetRecord.launchedFromPackage;
@@ -1811,6 +1813,7 @@ public class BackgroundActivityStartController {
         }
 
         ActivityRecord topActivity = task.getActivity(ar -> !ar.finishing && !ar.isAlwaysOnTop());
+
         FrameworkStatsLog.write(FrameworkStatsLog.ACTIVITY_ACTION_BLOCKED,
                 /* caller_uid */
                 callingUid,
@@ -1839,7 +1842,9 @@ public class BackgroundActivityStartController {
                 /* bal_code */
                 -1,
                 /* debug_info */
-                null
+                null,
+                /* block */
+                false
         );
 
         boolean restrictActivitySwitch = shouldRestrictActivitySwitch(callingUid)
