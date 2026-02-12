@@ -183,6 +183,7 @@ import com.android.server.StorageManagerInternal;
 import com.android.server.SystemService;
 import com.android.server.am.UserState;
 import com.android.server.locksettings.LockSettingsInternal;
+import com.android.server.pm.GenericAllowlist.AllowlistMode;
 import com.android.server.pm.GenericAllowlist.AllowlistStatus;
 import com.android.server.pm.UserFilter.DeathPredictor;
 import com.android.server.pm.UserManagerInternal.UserLifecycleListener;
@@ -4980,7 +4981,7 @@ public class UserManagerService extends IUserManager.Stub {
 
             }
 
-            final int allowlistMode =
+            final @AllowlistMode int allowlistMode =
                     resources.getInteger(R.integer.config_hsuActivitiesAllowlistMode);
             final UserActivitiesAllowlist allowlist =
                     new UserActivitiesAllowlist(allowlistMode, allowlistedActivities);

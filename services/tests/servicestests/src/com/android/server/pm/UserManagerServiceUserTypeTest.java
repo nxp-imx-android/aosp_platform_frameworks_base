@@ -112,6 +112,22 @@ public class UserManagerServiceUserTypeTest {
     }
 
     @Test
+    @EnableFlags(android.multiuser.Flags.FLAG_HSU_ALLOWLIST_ACTIVITIES)
+    public void testUserTypeBuilder_systemHeadless_hsuActivitiesAllowlistResourceAndMode()
+            throws Exception {
+        assumeTrue("Feature supported only on Headless System User Mode devices",
+                UserManager.isHeadlessSystemUserMode());
+
+        UserTypeDetails type = UserTypeFactory.getUserTypes().get(USER_TYPE_SYSTEM_HEADLESS);
+
+        expect.withMessage("getActivitiesAllowlist()").that(type.getActivitiesAllowlist())
+                .isEqualTo(com.android.internal.R.array.hsu_allowlist_activities);
+        expect.withMessage("getActivitiesAllowlistMode()").that(type.getActivitiesAllowlistMode())
+                .isEqualTo(Resources.getSystem().getInteger(
+                        com.android.internal.R.integer.config_hsuActivitiesAllowlistMode));
+    }
+
+    @Test
     public void testUserTypeBuilder_createUserType() {
         final Bundle restrictions = makeRestrictionsBundle("r1", "r2");
         final Bundle systemSettings = makeSettingsBundle("s1", "s2");
