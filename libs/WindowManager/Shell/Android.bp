@@ -58,9 +58,6 @@ filegroup {
     srcs: [
         "src/**/*.kt",
     ],
-    exclude_srcs: [
-        "src/com/android/wm/shell/bubbles/user/model/*.kt",
-    ],
     path: "src",
 }
 

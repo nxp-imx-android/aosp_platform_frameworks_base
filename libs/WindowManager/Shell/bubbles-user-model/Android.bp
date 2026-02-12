@@ -24,7 +24,7 @@ package {
 
 android_library {
     name: "bubbles-user-model",
-    srcs: ["*.kt"],
+    srcs: ["src/**/*.kt"],
     static_libs: [
         "//frameworks/base/WindowManager/Shell/shared:WindowManager-Shell-shared",
         "//frameworks/libs/systemui:iconloader_base",
