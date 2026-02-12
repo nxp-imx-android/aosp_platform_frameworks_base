@@ -1607,6 +1607,7 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
         for (int i = 0; i < activities.size(); i++) {
             final ActivityRecord r = activities.get(i);
             final Task task = r.getTask();
+            ProtoLog.w(WM_DEBUG_PACKAGE_UPDATE, "Found activity %s for the process", r);
             if (pkg.equals(r.packageName) && r.isRootOfTask()) {
                 if (task.getRootTask().mHandlePackageUpdate) {
                     mUpdatingTasks.add(task);
