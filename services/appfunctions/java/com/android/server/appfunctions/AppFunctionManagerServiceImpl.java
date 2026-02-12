@@ -642,7 +642,16 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                     var unused =
                             mAppFunctionMetadataReader
                                     .getAppFunctionActivityStates(activityIds, targetUserId)
-                                    .whenCompleteAsync(
+                                    .thenApplyAsync(
+                                            states ->
+                                                    mVisibilityHelper
+                                                            .filterVisibleAppFunctionActivityStates(
+                                                                    states,
+                                                                    callingPackageName,
+                                                                    callingUid,
+                                                                    callingPid),
+                                            THREAD_POOL_EXECUTOR)
+                                    .whenComplete(
                                             (states, exception) -> {
                                                 try {
                                                     if (exception != null) {
@@ -656,8 +665,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                                                 } catch (RemoteException ex) {
                                                     Slog.w(TAG, "Fail to call onError", ex);
                                                 }
-                                            },
-                                            THREAD_POOL_EXECUTOR);
+                                            });
                 });
     }
 
