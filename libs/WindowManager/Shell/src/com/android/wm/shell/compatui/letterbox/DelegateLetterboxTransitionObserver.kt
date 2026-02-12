@@ -75,8 +75,10 @@ class DelegateLetterboxTransitionObserver(
         }
     }
 
+    // TODO(b/478792808): Remove suppression
+    @SuppressWarnings("ProtoLogNonConstantFormat")
     private fun logV(msg: String) {
-        ProtoLog.v(WM_SHELL_APP_COMPAT, "$TAG: %s", msg)
+        ProtoLog.v(WM_SHELL_APP_COMPAT, "$TAG: $msg")
     }
 
     // When the flag is disabled all the changes related to leaf Tasks are skipped. This is because
