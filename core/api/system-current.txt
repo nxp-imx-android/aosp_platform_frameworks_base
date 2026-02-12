@@ -15231,6 +15231,7 @@ package android.service.personalcontext.renderer {
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class InsightRendererService extends android.app.Service {
     ctor public InsightRendererService();
+    method @NonNull public final android.service.personalcontext.RenderToken mintRenderToken(@Nullable String);
     method @NonNull public final android.service.personalcontext.RenderToken mintRenderToken();
     method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
     method public void onConnected();

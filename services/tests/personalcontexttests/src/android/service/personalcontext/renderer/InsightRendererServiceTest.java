@@ -71,7 +71,7 @@ public class InsightRendererServiceTest {
         renderer.configure(new ParcelUuid(UUID.randomUUID()));
 
         final ContextInsight insight = new BundleInsight.Builder().build();
-        final RenderToken renderToken = service.mintRenderToken();
+        final RenderToken renderToken = service.mintRenderToken(null);
         renderer.render(new ContextInsightWrapper(insight), renderToken);
         verify(service).onRender(eq(insight), eq(renderToken));
     }
@@ -86,7 +86,9 @@ public class InsightRendererServiceTest {
         final UUID id = UUID.randomUUID();
         renderer.configure(new ParcelUuid(id));
 
-        final RenderToken token = service.mintRenderToken();
+        final String tag = "baz";
+        final RenderToken token = service.mintRenderToken(tag);
         assertThat(token.getRendererComponentId()).isEqualTo(id);
+        assertThat(token.getTag()).isEqualTo(tag);
     }
 }
