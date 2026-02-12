@@ -378,7 +378,6 @@ flag {
     }
 }
 
-
 flag {
     name: "enable_desktop_first_policy_in_lpm"
     namespace: "lse_desktop_experience"
@@ -1110,6 +1109,16 @@ flag {
     description: "Fixes issue with retrieving the home package during the windowing exemptions \n"
                  "check."
     bug: "447111827"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "mask_presentation_flags_on_internal_displays"
+    namespace: "lse_desktop_experience"
+    description: "Mask Display.FLAG_PRESENTATION for certain apps on internal displays"
+    bug: "483802160"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

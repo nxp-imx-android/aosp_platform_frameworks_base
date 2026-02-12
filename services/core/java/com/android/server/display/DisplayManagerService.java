@@ -94,6 +94,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ParceledListSlice;
 import android.content.pm.UserInfo;
@@ -192,7 +193,6 @@ import com.android.internal.os.BackgroundThread;
 import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.DumpUtils;
 import com.android.internal.util.FrameworkStatsLog;
-import com.android.internal.util.NamedLock;
 import com.android.internal.util.SettingsWrapper;
 import com.android.server.AnimationThread;
 import com.android.server.DisplayThread;
@@ -1492,7 +1492,33 @@ public final class DisplayManagerService extends SystemService {
         }
     }
 
-    private DisplayInfo getDisplayInfoForFrameRateOverride(
+    private DisplayInfo getDisplayInfoForOverrides(
+            DisplayEventReceiver.FrameRateOverride[] frameRateOverrides,
+            DisplayInfo info, int callingUid) {
+        final DisplayInfo overriddenInfo = new DisplayInfo();
+        overriddenInfo.copyFrom(info);
+        applyFrameRateOverride(frameRateOverrides, overriddenInfo, callingUid);
+        applyPresentationMaskingOverride(overriddenInfo, callingUid);
+        return overriddenInfo;
+    }
+
+    private void applyPresentationMaskingOverride(DisplayInfo info, int callingUid) {
+        if (!com.android.window.flags.Flags.maskPresentationFlagsOnInternalDisplays()) {
+            return;
+        }
+
+        if (info.type != Display.TYPE_INTERNAL
+                || (info.flags & Display.FLAG_PRESENTATION) == 0) {
+            return;
+        }
+
+        if (CompatChanges.isChangeEnabled(
+                ActivityInfo.MASK_PRESENTATION_FLAGS_ON_INTERNAL_DISPLAYS, callingUid)) {
+            info.flags &= ~Display.FLAG_PRESENTATION;
+        }
+    }
+
+    private void applyFrameRateOverride(
             DisplayEventReceiver.FrameRateOverride[] frameRateOverrides,
             DisplayInfo info, int callingUid) {
         // Start with the display frame rate
@@ -1507,7 +1533,7 @@ public final class DisplayManagerService extends SystemService {
         }
 
         if (frameRateHz == 0) {
-            return info;
+            return;
         }
 
         // For non-apps users we always return the physical refresh rate from display mode
@@ -1524,12 +1550,9 @@ public final class DisplayManagerService extends SystemService {
         float numPeriods = vsyncRate / frameRateHz;
         float numPeriodsRound = Math.round(numPeriods);
         if (Math.abs(numPeriods - numPeriodsRound) > THRESHOLD_FOR_REFRESH_RATES_DIVISORS) {
-            return info;
+            return;
         }
         frameRateHz = vsyncRate / numPeriodsRound;
-
-        DisplayInfo overriddenInfo = new DisplayInfo();
-        overriddenInfo.copyFrom(info);
 
         // If there is a mode that matches the override, use that one.
         // On ARR devices, this logic is not needed as the mode doesn't change based
@@ -1547,32 +1570,31 @@ public final class DisplayManagerService extends SystemService {
                     if (DEBUG) {
                         Slog.d(TAG, "found matching modeId " + mode.getModeId());
                     }
-                    overriddenInfo.refreshRateOverride = mode.getRefreshRate();
+                    info.refreshRateOverride = mode.getRefreshRate();
 
                     if (!displayModeReturnsPhysicalRefreshRate) {
-                        overriddenInfo.modeId = mode.getModeId();
+                        info.modeId = mode.getModeId();
                     }
-                    return overriddenInfo;
+                    return;
                 }
             }
         }
-        overriddenInfo.refreshRateOverride = frameRateHz;
+        info.refreshRateOverride = frameRateHz;
 
         // Create a fake mode for app compat
         if (!displayModeReturnsPhysicalRefreshRate) {
-            overriddenInfo.supportedModes = Arrays.copyOf(info.supportedModes,
+            info.supportedModes = Arrays.copyOf(info.supportedModes,
                     info.supportedModes.length + 1);
-            overriddenInfo.supportedModes[overriddenInfo.supportedModes.length - 1] =
+            info.supportedModes[info.supportedModes.length - 1] =
                     new Display.Mode(Display.DISPLAY_MODE_ID_FOR_FRAME_RATE_OVERRIDE,
                             currentMode.getPhysicalWidth(), currentMode.getPhysicalHeight(),
-                            overriddenInfo.refreshRateOverride,
+                            info.refreshRateOverride,
                             currentMode.getVsyncRate(),
                             new float[0], currentMode.getSupportedHdrTypes());
-            overriddenInfo.modeId =
-                    overriddenInfo.supportedModes[overriddenInfo.supportedModes.length - 1]
+            info.modeId =
+                    info.supportedModes[info.supportedModes.length - 1]
                             .getModeId();
         }
-        return overriddenInfo;
     }
 
     private int[] getDisplayIdsInternal(int callingUid, boolean includeDisabled) {
@@ -1609,7 +1631,7 @@ public final class DisplayManagerService extends SystemService {
                             + " for uid " + callingUid
                             + " displayId " + displayId);
                 }
-                return getDisplayInfoForFrameRateOverride(
+                return getDisplayInfoForOverrides(
                         info.frameRateOverrides(), info.info(), callingUid);
             }
         }
@@ -1617,7 +1639,7 @@ public final class DisplayManagerService extends SystemService {
             final LogicalDisplay display = mLogicalDisplayMapper.getDisplayLocked(displayId);
             if (display != null) {
                 final DisplayInfo info =
-                        getDisplayInfoForFrameRateOverride(display.getFrameRateOverrides(),
+                        getDisplayInfoForOverrides(display.getFrameRateOverrides(),
                                 display.getDisplayInfoLocked(), callingUid);
                 if (mInjector.doesCallingUidHaveAccessToDisplay(callingUid, info)) {
                     if (DEBUG) {

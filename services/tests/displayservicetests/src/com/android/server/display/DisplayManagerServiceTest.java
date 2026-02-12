@@ -104,6 +104,7 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
 import android.content.pm.UserInfo;
@@ -1006,6 +1007,57 @@ public class DisplayManagerServiceTest {
         assertEquals(ddi.ownerPackageName, displayInfo.ownerPackageName);
         assertEquals(ddi.uniqueId, displayInfo.uniqueId);
         assertEquals(ddi.renderFrameRate, displayInfo.getRefreshRate(), 0.1f);
+    }
+
+    @Test
+    @EnableFlags(com.android.window.flags.Flags.FLAG_MASK_PRESENTATION_FLAGS_ON_INTERNAL_DISPLAYS)
+    @EnableCompatChanges({ActivityInfo.MASK_PRESENTATION_FLAGS_ON_INTERNAL_DISPLAYS})
+    public void getDisplayInfo_maskPresentationFlagOnInternalDisplay() {
+        assertPresentationFlagMasking(Display.TYPE_INTERNAL, /* shouldBeMasked= */ true);
+    }
+
+    @Test
+    @EnableFlags(com.android.window.flags.Flags.FLAG_MASK_PRESENTATION_FLAGS_ON_INTERNAL_DISPLAYS)
+    @DisableCompatChanges({ActivityInfo.MASK_PRESENTATION_FLAGS_ON_INTERNAL_DISPLAYS})
+    public void getDisplayInfo_noMaskPresentationFlagOnInternalDisplay_overrideDisabled() {
+        assertPresentationFlagMasking(Display.TYPE_INTERNAL, /* shouldBeMasked= */ false);
+    }
+
+    @Test
+    @DisableFlags(com.android.window.flags.Flags.FLAG_MASK_PRESENTATION_FLAGS_ON_INTERNAL_DISPLAYS)
+    @EnableCompatChanges({ActivityInfo.MASK_PRESENTATION_FLAGS_ON_INTERNAL_DISPLAYS})
+    public void getDisplayInfo_noMaskPresentationFlagOnInternalDisplay_featureDisabled() {
+        assertPresentationFlagMasking(Display.TYPE_INTERNAL, /* shouldBeMasked= */ false);
+    }
+
+    @Test
+    @EnableFlags(com.android.window.flags.Flags.FLAG_MASK_PRESENTATION_FLAGS_ON_INTERNAL_DISPLAYS)
+    @EnableCompatChanges({ActivityInfo.MASK_PRESENTATION_FLAGS_ON_INTERNAL_DISPLAYS})
+    public void getDisplayInfo_noMaskPresentationFlagOnExternalDisplay() {
+        assertPresentationFlagMasking(Display.TYPE_EXTERNAL, /* shouldBeMasked= */ false);
+    }
+
+    private void assertPresentationFlagMasking(int displayType, boolean shouldBeMasked) {
+        mDisplayManager = new DisplayManagerService(mContext, mShortMockedInjector);
+        registerDefaultDisplays(mDisplayManager);
+        DisplayManagerService.BinderService bs = mDisplayManager.new BinderService();
+        int displayId = Display.DEFAULT_DISPLAY;
+
+        // Force set FLAG_PRESENTATION for testing
+        synchronized (mDisplayManager.getSyncRoot()) {
+            LogicalDisplay display = mDisplayManager.getLogicalDisplayMapper().getDisplayLocked(
+                    displayId);
+            DisplayInfo internalInfo = display.getDisplayInfoLocked();
+            internalInfo.type = displayType;
+            internalInfo.flags |= Display.FLAG_PRESENTATION;
+        }
+
+        DisplayInfo info = bs.getDisplayInfo(displayId);
+        if (shouldBeMasked) {
+            assertEquals(0, info.flags & Display.FLAG_PRESENTATION);
+        } else {
+            assertNotEquals(0, info.flags & Display.FLAG_PRESENTATION);
+        }
     }
 
     /**
