@@ -55,10 +55,6 @@ constructor(
 ) : CoreStartable {
 
     override fun start() {
-        if (AmbientCueFlag.isCuebarAceMigrationEnabled) {
-            Log.d(TAG, "AmbientCue moved to taskbar, not starting AmbientCueCoreStartable.")
-            return
-        }
         if (!AmbientCueFlag.isEnabled) {
             Log.d(TAG, "AmbientCue flag is disabled, not starting.")
             return

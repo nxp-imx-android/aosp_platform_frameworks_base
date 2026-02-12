@@ -22,7 +22,6 @@ import com.android.systemui.Flags.ambientCuePlugin
 import com.android.systemui.Flags.enableAmbientCueWithImeVisible
 import com.android.systemui.Flags.enableCueBarAnimatedIcon
 import com.android.systemui.Flags.enableUnderlay
-import com.android.systemui.shared.Flags.cueBarAceMigration
 
 /** Helper for reading or using the underlay flag state. */
 object AmbientCueFlag {
@@ -34,10 +33,6 @@ object AmbientCueFlag {
     @JvmStatic
     inline val isAmbientCuePluginEnabled
         get() = ambientCuePlugin()
-
-    @JvmStatic
-    inline val isCuebarAceMigrationEnabled
-        get() = cueBarAceMigration()
 
     @JvmStatic
     inline val isCueBarAnimatedIconEnabled
