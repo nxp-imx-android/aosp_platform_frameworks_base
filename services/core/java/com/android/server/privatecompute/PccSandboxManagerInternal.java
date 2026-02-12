@@ -78,7 +78,7 @@ import java.util.concurrent.Future;
  *
  * @hide Only for use within system_server.
  */
-public final class PccSandboxManagerInternal implements OnRoleHoldersChangedListener {
+public class PccSandboxManagerInternal implements OnRoleHoldersChangedListener {
     private static final String TAG = "PccSandboxManagerInternal";
 
     private final PackageManagerInternal mPackageManagerInternal;
