@@ -33,6 +33,7 @@ namespace renderthread {
 
 class RenderThread;
 
+// NOTE also update libs/hwui/platform/host/renderthread/HintSessionWrapper.cpp
 class HintSessionWrapper {
 public:
     friend class HintSessionWrapperTests;
@@ -47,6 +48,7 @@ public:
     void sendGpuLoadIncreaseHint();
     bool init();
     void destroy();
+    void setHintSessionEnabled(bool enabled);
     bool alive();
     nsecs_t getLastUpdate();
     void delayedDestroy(renderthread::RenderThread& rt, nsecs_t delay,
@@ -71,6 +73,7 @@ private:
     std::vector<pid_t> mActiveFunctorTids;
 
     bool mSessionValid = true;
+    bool mHintSessionEnabled = true;
 
     static constexpr nsecs_t kResetHintTimeout = 100_ms;
     static constexpr int64_t kSanityCheckLowerBound = 100_us;
