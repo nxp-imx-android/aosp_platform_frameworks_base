@@ -448,10 +448,6 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
         return mCurSchedGroup;
     }
 
-    void setCurrentProcState(int curProcState) {
-        mCurProcState = curProcState;
-    }
-
     int getCurrentProcState() {
         return mCurProcState;
     }
@@ -1566,6 +1562,13 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
             packageName = info.packageName;
         } else {
             packageName = null;
+        }
+        if (mAtm.getActivityStartController().isInExecution()) {
+            // This is primarily for scenarios like freeform or translucent activities, where the
+            // launch request is executed directly without a prior pause of the previous activity,
+            // causing an immediate and asynchronous process state change before logging.
+            mAtm.mTaskSupervisor.getActivityMetricsLogger().setLastLaunchingProcessState(mPid,
+                    mCurProcState, mCurAdj);
         }
         // update ActivityManagerService.PendingStartActivityUids list.
         if (topProcessState == ActivityManager.PROCESS_STATE_TOP) {
