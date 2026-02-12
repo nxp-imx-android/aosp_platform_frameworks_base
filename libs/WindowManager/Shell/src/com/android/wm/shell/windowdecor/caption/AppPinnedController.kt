@@ -76,7 +76,6 @@ class AppPinnedController(
             LayoutInflater.from(decorWindowContext).inflate(R.layout.desktop_mode_app_pinned, null)
         return AppPinnedViewHolder(
                 rootView = rootView,
-                taskResourceLoader = taskResourceLoader,
                 onTouchListener = onTouchListener,
                 onGenericMotionEventListener = onGenericMotionEventListener,
                 onOpenSettings = {
@@ -86,7 +85,12 @@ class AppPinnedController(
                 },
                 onCloseWindow = { windowDecorationActions.onClose(taskInfo) },
             )
-            .also { viewHolder = it }
+            .also {
+                viewHolder = it
+                taskResourceLoader.getNameAndHeaderIcon(taskInfo) { name, _ ->
+                    viewHolder.setAppName(name)
+                }
+            }
     }
 
     override val captionType = CaptionType.APP_PINNED
@@ -115,7 +119,7 @@ class AppPinnedController(
                     wct,
                 )
 
-            viewHolder.bindData(AppPinnedViewHolder.AppPinnedData(taskInfo))
+            viewHolder.bindData(AppPinnedViewHolder.AppPinnedData(taskInfo, params.hasGlobalFocus))
             viewHolder.setTaskFocusState(params.hasGlobalFocus)
             return relayoutParams
         }
