@@ -50485,11 +50485,11 @@ package android.text {
     field public static final Object SELECTION_START;
   }
 
-  @FlaggedApi("com.android.text.flags.split_show_passwords_to_touch_and_physical") public class ShowSecretsSetting {
-    method @NonNull public static android.net.Uri getPhysicalUri();
-    method @NonNull public static android.net.Uri getTouchUri();
-    method public static boolean shouldShowPhysicalInputForUser(@NonNull android.content.ContentResolver, @NonNull android.os.UserHandle);
-    method public static boolean shouldShowTouchInputForUser(@NonNull android.content.ContentResolver, @NonNull android.os.UserHandle);
+  @FlaggedApi("com.android.text.flags.split_show_passwords_to_touch_and_physical") public final class ShowSecretsSetting {
+    method @NonNull public static Runnable registerCallback(@NonNull android.content.Context, @NonNull Runnable);
+    method @NonNull public static Runnable registerCallback(@NonNull android.content.Context, @NonNull java.util.concurrent.Executor, @NonNull Runnable);
+    method public static boolean shouldShowPhysicalInput(@NonNull android.content.Context);
+    method public static boolean shouldShowTouchInput(@NonNull android.content.Context);
   }
 
   public interface SpanWatcher extends android.text.NoCopySpan {

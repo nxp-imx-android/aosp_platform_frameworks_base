@@ -20,9 +20,7 @@ import android.app.compat.CompatChanges;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.ContentObserver;
-import android.net.Uri;
 import android.os.Handler;
-import android.os.UserHandle;
 import android.provider.Settings;
 import android.provider.Settings.System;
 import android.text.Editable;
@@ -72,8 +70,10 @@ public class TextKeyListener extends BaseKeyListener implements SpanWatcher {
     /* package */ static final int SHOW_PASSWORD = 8;
     /* package */ static final int SHOW_PASSWORD_TOUCH = 16;
     /* package */ static final int SHOW_PASSWORD_PHYSICAL = 32;
-    private WeakReference<ContentResolver> mResolver;
-    private TextKeyListener.SettingsObserver mObserver;
+
+    private WeakReference<Context> mContextRef;
+    private Runnable mShowSecretsUnregisterRunnable;
+    private SettingsObserver mSystemObserver;
 
     /**
      * Creates a new TextKeyListener with the specified capitalization
@@ -258,39 +258,43 @@ public class TextKeyListener extends BaseKeyListener implements SpanWatcher {
     }
 
     public void release() {
-        if (mResolver != null) {
-            final ContentResolver contentResolver = mResolver.get();
-            if (contentResolver != null) {
-                contentResolver.unregisterContentObserver(mObserver);
-                mResolver.clear();
+        if (mContextRef != null) {
+            final Context context = mContextRef.get();
+            if (context != null) {
+                if (mSystemObserver != null) {
+                    context.getContentResolver().unregisterContentObserver(mSystemObserver);
+                }
+                if (mShowSecretsUnregisterRunnable != null) {
+                    mShowSecretsUnregisterRunnable.run();
+                }
+                mContextRef.clear();
             }
-            mObserver = null;
-            mResolver = null;
+            mSystemObserver = null;
+            mShowSecretsUnregisterRunnable = null;
+            mContextRef = null;
             mPrefsInited = false;
         }
     }
 
     private void initPrefs(Context context) {
+        mContextRef = new WeakReference<>(context);
         final ContentResolver contentResolver = context.getContentResolver();
-        mResolver = new WeakReference<ContentResolver>(contentResolver);
-        if (mObserver == null) {
-            mObserver = new SettingsObserver();
-            contentResolver.registerContentObserver(Settings.System.CONTENT_URI, true, mObserver);
-            if (Flags.splitShowPasswordsToTouchAndPhysical()
-                    && CompatChanges.isChangeEnabled(
-                            ShowSecretsSetting.SPLIT_SHOW_PASSWORDS_TO_TOUCH_AND_PHYSICAL)) {
-                final Uri touchUri = ShowSecretsSetting.getTouchUri();
-                if (touchUri != null) {
-                    contentResolver.registerContentObserver(touchUri, true, mObserver);
-                }
-                final Uri physicalUri = ShowSecretsSetting.getPhysicalUri();
-                if (physicalUri != null) {
-                    contentResolver.registerContentObserver(physicalUri, true, mObserver);
-                }
+
+        if (mSystemObserver == null) {
+            mSystemObserver = new SettingsObserver();
+            contentResolver.registerContentObserver(
+                    Settings.System.CONTENT_URI, true, mSystemObserver);
+        }
+        if (Flags.splitShowPasswordsToTouchAndPhysical()
+                && CompatChanges.isChangeEnabled(
+                        ShowSecretsSetting.SPLIT_SHOW_PASSWORDS_TO_TOUCH_AND_PHYSICAL)) {
+            if (mShowSecretsUnregisterRunnable == null) {
+                mShowSecretsUnregisterRunnable =
+                        ShowSecretsSetting.registerCallback(context, this::onSettingsChanged);
             }
         }
 
-        updatePrefs(contentResolver);
+        updatePrefs(context);
         mPrefsInited = true;
     }
 
@@ -301,35 +305,37 @@ public class TextKeyListener extends BaseKeyListener implements SpanWatcher {
 
         @Override
         public void onChange(boolean selfChange) {
-            if (mResolver != null) {
-                final ContentResolver contentResolver = mResolver.get();
-                if (contentResolver == null) {
-                    mPrefsInited = false;
-                } else {
-                    updatePrefs(contentResolver);
-                }
-            } else {
-                mPrefsInited = false;
-            }
+            onSettingsChanged();
         }
     }
 
-    private void updatePrefs(ContentResolver resolver) {
+    private void onSettingsChanged() {
+        if (mContextRef != null) {
+            final Context context = mContextRef.get();
+            if (context == null) {
+                mPrefsInited = false;
+            } else {
+                updatePrefs(context);
+            }
+        } else {
+            mPrefsInited = false;
+        }
+    }
+
+    private void updatePrefs(Context context) {
+        final ContentResolver resolver = context.getContentResolver();
         boolean cap = System.getInt(resolver, System.TEXT_AUTO_CAPS, 1) > 0;
         boolean text = System.getInt(resolver, System.TEXT_AUTO_REPLACE, 1) > 0;
         boolean period = System.getInt(resolver, System.TEXT_AUTO_PUNCTUATE, 1) > 0;
         boolean pw = System.getInt(resolver, System.TEXT_SHOW_PASSWORD, 1) > 0;
         boolean touch = false;
         boolean physical = false;
+
         if (Flags.splitShowPasswordsToTouchAndPhysical()
                 && CompatChanges.isChangeEnabled(
                         ShowSecretsSetting.SPLIT_SHOW_PASSWORDS_TO_TOUCH_AND_PHYSICAL)) {
-            touch =
-                    ShowSecretsSetting.shouldShowTouchInputForUser(
-                            resolver, UserHandle.of(resolver.getUserId()));
-            physical =
-                    ShowSecretsSetting.shouldShowPhysicalInputForUser(
-                            resolver, UserHandle.of(resolver.getUserId()));
+            touch = ShowSecretsSetting.shouldShowTouchInput(context);
+            physical = ShowSecretsSetting.shouldShowPhysicalInput(context);
         }
 
         mPrefs =
@@ -345,7 +351,7 @@ public class TextKeyListener extends BaseKeyListener implements SpanWatcher {
     @VisibleForTesting
     public int getPrefs(Context context) {
         synchronized (this) {
-            if (!mPrefsInited || mResolver.refersTo(null)) {
+            if (!mPrefsInited || mContextRef.refersTo(null)) {
                 initPrefs(context);
             }
         }

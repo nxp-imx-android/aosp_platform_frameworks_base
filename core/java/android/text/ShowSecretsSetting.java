@@ -16,15 +16,17 @@
 package android.text;
 
 import android.Manifest;
+import android.annotation.CallbackExecutor;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.RequiresPermission;
 import android.annotation.SuppressLint;
-import android.annotation.SystemApi;
 import android.annotation.TestApi;
 import android.compat.annotation.ChangeId;
 import android.compat.annotation.EnabledSince;
 import android.content.ContentResolver;
+import android.content.Context;
+import android.database.ContentObserver;
 import android.net.Uri;
 import android.os.Build;
 import android.os.UserHandle;
@@ -33,6 +35,7 @@ import android.provider.Settings.Secure;
 import com.android.text.flags.Flags;
 
 import java.util.Objects;
+import java.util.concurrent.Executor;
 
 /**
  * This is the API surface for interacting with the settings that determine whether characters in
@@ -40,7 +43,7 @@ import java.util.Objects;
  */
 @FlaggedApi(Flags.FLAG_SPLIT_SHOW_PASSWORDS_TO_TOUCH_AND_PHYSICAL)
 @SuppressLint("PackageLayering")
-public class ShowSecretsSetting {
+public final class ShowSecretsSetting {
     private static final int SHOW = 1;
     private static final int HIDE = 0;
 
@@ -61,13 +64,12 @@ public class ShowSecretsSetting {
      * Returns {@code true} when characters entered into a password, pin or other secret field from
      * touch/virtual input sources should either be shown or echoed briefly.
      */
-    public static boolean shouldShowTouchInputForUser(
-            @NonNull ContentResolver resolver, @NonNull UserHandle user) {
+    public static boolean shouldShowTouchInput(@NonNull Context context) {
         return Secure.getIntForUser(
-                        Objects.requireNonNull(resolver),
+                        Objects.requireNonNull(context).getContentResolver(),
                         Secure.TEXT_SHOW_PASSWORD_TOUCH,
                         SHOW,
-                        user.getIdentifier())
+                        context.getUser().getIdentifier())
                 == SHOW;
     }
 
@@ -75,13 +77,12 @@ public class ShowSecretsSetting {
      * Returns {@code true} when characters entered into a password, pin or other secret field from
      * hardware/physical input sources should either be shown or echoed briefly.
      */
-    public static boolean shouldShowPhysicalInputForUser(
-            @NonNull ContentResolver resolver, @NonNull UserHandle user) {
+    public static boolean shouldShowPhysicalInput(@NonNull Context context) {
         return Secure.getIntForUser(
-                        Objects.requireNonNull(resolver),
+                        Objects.requireNonNull(context).getContentResolver(),
                         Secure.TEXT_SHOW_PASSWORD_PHYSICAL,
                         HIDE,
-                        user.getIdentifier())
+                        context.getUser().getIdentifier())
                 == SHOW;
     }
 
@@ -89,61 +90,88 @@ public class ShowSecretsSetting {
      * Set the underlying setting to either show/echo or hide characters from touch/virtual input in
      * password-like input fields immediately.
      *
-     * @param resolver The ContentResolver to access.
+     * @param context The Context to access.
      * @param shouldShow Set to {@code true} if characters should be shown/echoed briefly.
-     * @param user The id of the user you want to set the setting for.
      * @hide
      */
+    @TestApi
     @RequiresPermission(Manifest.permission.WRITE_SECURE_SETTINGS)
-    @SystemApi
-    public static void setShouldShowTouchInputForUser(
-            @NonNull ContentResolver resolver, boolean shouldShow, @NonNull UserHandle user) {
+    public static void setShouldShowTouchInput(@NonNull Context context, boolean shouldShow) {
         setSettingValue(
-                Objects.requireNonNull(resolver),
+                Objects.requireNonNull(context).getContentResolver(),
                 Secure.TEXT_SHOW_PASSWORD_TOUCH,
                 shouldShow,
-                user);
+                context.getUser());
     }
 
     /**
      * Set the underlying setting to either show/echo or hide characters from hardware/physical
      * inputs in password-like input fields immediately.
      *
-     * @param resolver The ContentResolver to access.
+     * @param context The Context to access.
      * @param shouldShow Set to {@code true} if characters should be shown/echoed briefly.
-     * @param user The id of the user you want to set the setting for.
      * @hide
      */
+    @TestApi
     @RequiresPermission(Manifest.permission.WRITE_SECURE_SETTINGS)
-    @SystemApi
-    public static void setShouldShowPhysicalInputForUser(
-            @NonNull ContentResolver resolver, boolean shouldShow, @NonNull UserHandle user) {
+    public static void setShouldShowPhysicalInput(@NonNull Context context, boolean shouldShow) {
         setSettingValue(
-                Objects.requireNonNull(resolver),
+                Objects.requireNonNull(context).getContentResolver(),
                 Secure.TEXT_SHOW_PASSWORD_PHYSICAL,
                 shouldShow,
-                user);
+                context.getUser());
     }
 
     /**
-     * Get the {@link android.net.Uri} of the setting for touch/virtual inputs. This is useful if
-     * you want to listen to setting changes with a {@link android.database.ContentObserver}.
+     * Registers a callback to be notified when show password settings change. The callback will be
+     * invoked on the main thread.
+     *
+     * @param context The context used to access settings.
+     * @param callback The callback to invoke.
+     * @return A runnable that unregisters the callback when run.
      */
-    public static @NonNull Uri getTouchUri() {
-        return Secure.getUriFor(Secure.TEXT_SHOW_PASSWORD_TOUCH);
+    @SuppressLint("PairedRegistration")
+    @NonNull
+    public static Runnable registerCallback(
+            @NonNull Context context, @NonNull Runnable callback) {
+        return registerCallback(context, context.getMainExecutor(), callback);
     }
 
     /**
-     * Get the {@link android.net.Uri} of the setting for hardware/physical inputs. This is useful
-     * if you want to listen to setting changes with a {@link android.database.ContentObserver}.
+     * Registers a callback to be notified when show password settings change.
+     *
+     * @param context The context used to access settings.
+     * @param executor The executor on which to invoke the callback.
+     * @param callback The callback to invoke.
+     * @return A runnable that unregisters the callback when run.
      */
-    public static @NonNull Uri getPhysicalUri() {
-        return Secure.getUriFor(Secure.TEXT_SHOW_PASSWORD_PHYSICAL);
+    @SuppressLint("PairedRegistration")
+    @NonNull
+    public static Runnable registerCallback(
+            @NonNull Context context,
+            @NonNull @CallbackExecutor Executor executor,
+            @NonNull Runnable callback) {
+        Objects.requireNonNull(context);
+        Objects.requireNonNull(executor);
+        Objects.requireNonNull(callback);
+        ContentObserver observer =
+                new ContentObserver(null) {
+                    @Override
+                    public void onChange(boolean selfChange, Uri uri) {
+                        executor.execute(callback);
+                    }
+                };
+        ContentResolver resolver = context.getContentResolver();
+        resolver.registerContentObserver(
+                Secure.getUriFor(Secure.TEXT_SHOW_PASSWORD_TOUCH), true, observer);
+        resolver.registerContentObserver(
+                Secure.getUriFor(Secure.TEXT_SHOW_PASSWORD_PHYSICAL), true, observer);
+        return () -> resolver.unregisterContentObserver(observer);
     }
 
     @RequiresPermission(Manifest.permission.WRITE_SECURE_SETTINGS)
     private static void setSettingValue(
-            ContentResolver resolver, String key, boolean newValue, @NonNull UserHandle user) {
+            ContentResolver resolver, String key, boolean newValue, UserHandle user) {
         Secure.putIntForUser(resolver, key, newValue ? SHOW : HIDE, user.getIdentifier());
     }
 }
