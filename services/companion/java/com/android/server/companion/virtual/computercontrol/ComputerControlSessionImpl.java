@@ -234,7 +234,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             new ComputerControlSession.LifecycleCallback() {
                 @Override
                 public void onActive() {
-                    updatePowerState();
+                    handleStateTransition();
                     mStatsController.onSessionActive();
                 }
 
@@ -242,8 +242,14 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 public void onBlocked(@ComputerControlSession.SessionBlockReason int reason,
                         @Nullable String blockingPackage) {
                     cancelOngoingInteractions();
-                    updatePowerState();
+                    handleStateTransition();
                     mStatsController.onSessionBlocked(reason);
+                }
+
+                // Shared configuration updates when transitioning between non-closed states.
+                private void handleStateTransition() {
+                    updatePowerState();
+                    updateMirrorInteractivity();
                 }
 
                 @Override
@@ -684,7 +690,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         }
         return new InteractiveMirrorImpl(mirror, mTransactionSupplier,
                 mDisplayManagerGlobal.getDisplayInfo(mVirtualDisplayId), mInputManagerInternal,
-                mStatsController::onMirrorViewInteractive, this::removeInteractiveMirror);
+                mStatsController::onMirrorViewInteractive, this::removeInteractiveMirror,
+                isMirrorInteractionAllowed());
     }
 
     private void removeInteractiveMirror(InteractiveMirrorImpl interactiveMirror) {
@@ -758,6 +765,25 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 mVirtualDevice.wakeUp();
             }
         }
+    }
+
+    private void updateMirrorInteractivity() {
+        try (var transaction = mTransactionSupplier.get()) {
+            synchronized (mInteractiveMirrors) {
+                for (int i = 0; i < mInteractiveMirrors.size(); i++) {
+                    mInteractiveMirrors.get(i).updateInteractivity(isMirrorInteractionAllowed(),
+                            transaction);
+                }
+            }
+            transaction.apply();
+        }
+    }
+
+    // Policy method for when any mirror is allowed to be interacted with by the user. The user
+    // currently must only interact when the client is blocked, to avoid interfering with client
+    // interactions.
+    private boolean isMirrorInteractionAllowed() {
+        return mLifecycle.getCurrentState() instanceof LifecycleState.Blocked;
     }
 
     @SuppressLint("WrongConstant")

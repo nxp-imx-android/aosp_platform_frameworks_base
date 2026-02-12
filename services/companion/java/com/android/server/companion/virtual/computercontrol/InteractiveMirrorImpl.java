@@ -16,6 +16,7 @@
 
 package com.android.server.companion.virtual.computercontrol;
 
+import android.annotation.Nullable;
 import android.annotation.RequiresNoPermission;
 import android.companion.virtual.computercontrol.IInteractiveMirror;
 import android.companion.virtual.computercontrol.InteractiveMirror;
@@ -24,6 +25,7 @@ import android.util.Slog;
 import android.view.DisplayInfo;
 import android.view.SurfaceControl;
 
+import com.android.internal.annotations.GuardedBy;
 import com.android.server.input.InputManagerInternal;
 import com.android.server.wm.WindowManagerInternal;
 
@@ -53,11 +55,20 @@ final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
     private final Consumer<Boolean> mStatsUpdateInteractiveMirror;
     private final Consumer<InteractiveMirrorImpl> mRemoveInteractiveMirror;
 
+    @GuardedBy("this")
+    private boolean mIsInteractivityAllowed = false;
+    @GuardedBy("this")
+    private boolean mIsInteractiveRequested = InteractiveMirror.DEFAULT_INTERACTIVE;
+    @GuardedBy("this")
+    @Nullable
+    private Boolean mIsInteractive = null;
+
     InteractiveMirrorImpl(WindowManagerInternal.DisplayMirror mirror,
             Supplier<SurfaceControl.Transaction> transactionSupplier, DisplayInfo displayInfo,
             InputManagerInternal inputManagerInternal,
             Consumer<Boolean> statsUpdateInteractiveMirror,
-            Consumer<InteractiveMirrorImpl> removeInteractiveMirror) {
+            Consumer<InteractiveMirrorImpl> removeInteractiveMirror,
+            boolean isInteractivityAllowed) {
         mMirror = mirror;
         mTransactionSupplier = transactionSupplier;
         mDisplayInfo = displayInfo;
@@ -70,15 +81,12 @@ final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
         mRemoveInteractiveMirror = removeInteractiveMirror;
 
         Slog.v(TAG, "Creating interactive mirror with SurfaceControl: " + mMirrorLeash);
-        initialize();
-    }
 
-    private void initialize() {
         try (var transaction = mTransactionSupplier.get()) {
             transaction
                     .reparent(mMirror.getMirrorSurfaceControl(), mMirrorLeash)
                     .show(mMirrorLeash);
-            setInteractiveWithTransaction(InteractiveMirror.DEFAULT_INTERACTIVE, transaction);
+            updateInteractivity(isInteractivityAllowed, transaction);
             transaction.apply();
         }
     }
@@ -88,17 +96,35 @@ final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
         return mMirrorLeash;
     }
 
-    @RequiresNoPermission
-    @Override
-    public void setInteractive(boolean interactive) {
-        try (var transaction = mTransactionSupplier.get()) {
-            setInteractiveWithTransaction(interactive, transaction);
-            transaction.apply();
+    /** Updates whether this mirror is allowed to be interactive. */
+    void updateInteractivity(boolean isInteractiveAllowed, SurfaceControl.Transaction transaction) {
+        synchronized (this) {
+            mIsInteractivityAllowed = isInteractiveAllowed;
+            applyInteractivityLocked(transaction);
         }
     }
 
-    private void setInteractiveWithTransaction(boolean interactive,
-            SurfaceControl.Transaction transaction) {
+    @RequiresNoPermission
+    @Override
+    public void setInteractive(boolean interactive) {
+        synchronized (this) {
+            mIsInteractiveRequested = interactive;
+            try (var transaction = mTransactionSupplier.get()) {
+                applyInteractivityLocked(transaction);
+                transaction.apply();
+            }
+        }
+    }
+
+    @GuardedBy("this")
+    private void applyInteractivityLocked(SurfaceControl.Transaction transaction) {
+        final boolean interactive = mIsInteractivityAllowed && mIsInteractiveRequested;
+        if (mIsInteractive != null && interactive == mIsInteractive) {
+            return;
+        }
+        mIsInteractive = interactive;
+        Slog.v(TAG, "Updating user interactivity: interactions are "
+                + (interactive ? "" : "not ") + "allowed");
         transaction.setDropInputMode(mMirror.getMirrorSurfaceControl(),
                 interactive ? DropInputMode.NONE : DropInputMode.ALL);
         mStatsUpdateInteractiveMirror.accept(interactive);
