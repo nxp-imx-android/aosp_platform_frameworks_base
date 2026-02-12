@@ -266,12 +266,19 @@ class AppToWebRepositoryImpl(
             // The prompt has been acknowledged before.
             return false
         }
+        if (isPackageInFirstRunPromptExemptList(packageName)) {
+            return false
+        }
         return true
     }
 
     private fun isFirstRunPromptSupportedOnDevice(): Boolean =
         context.resources.getBoolean(R.bool.config_appToWebActivePrompting) ||
             ALWAYS_SHOW_APP_TO_WEB_FIRST_RUN_PROMPT_FOR_TESTING
+
+    private fun isPackageInFirstRunPromptExemptList(packageName: String): Boolean =
+        packageName in
+            context.resources.getStringArray(R.array.config_appToWebFirstRunPromptExemptPackages)
 
     override fun isFirstRunPromptShown(taskInfo: RunningTaskInfo): Boolean {
         if (!Flags.enableEnhancedAppToWebTransition()) {
