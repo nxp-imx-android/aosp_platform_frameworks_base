@@ -1904,10 +1904,11 @@ class DesktopTasksController(
         val isMinimizingToPip =
             (taskInfo.pictureInPictureParams?.isAutoEnterEnabled ?: false) &&
                 isPipAllowedInAppOps(taskInfo)
+        val isAutoEnterEnabled = (taskInfo.pictureInPictureParams?.isAutoEnterEnabled ?: false)
         logD(
             "minimizeTask isMinimizingToPip=%b isAutoEnterEnabled=%b isPipAllowedInAppOps=%b",
             isMinimizingToPip,
-            (taskInfo.pictureInPictureParams?.isAutoEnterEnabled ?: false),
+            isAutoEnterEnabled,
             isPipAllowedInAppOps(taskInfo),
         )
         // If task is going to PiP, start a PiP transition instead of a minimize transition
