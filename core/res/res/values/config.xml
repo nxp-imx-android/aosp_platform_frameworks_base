@@ -7840,7 +7840,7 @@
     <!-- Package name of the on-device intelligent processor for vendor specific
          features. Examples include the search functionality or the app
          predictor. -->
-    <string name="config_systemVendorIntelligence" translatable="false"></string>
+    <string name="config_systemVendorIntelligence" translatable="false">com.android.personalcontext</string>
 
     <!-- Whether the device supports Wi-Fi USD feature. -->
     <bool name="config_deviceSupportsWifiUsd">false</bool>
