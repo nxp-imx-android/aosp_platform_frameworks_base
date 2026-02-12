@@ -42,13 +42,13 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Generated class to load policy metadata
+ * Generated class that contains metadata on all known policies.
+ *
+ * @hide
  */
 public class Policies {
     /**
-     * Generated method that returns a list of all policy metadata.
-     *
-     * @hide
+     * Generated method that returns a list of all policy metadata
      */
     public static List<PolicyMetadata<?>> loadPolicyMetadata() {
         List<PolicyMetadata<?>> policies = new ArrayList<PolicyMetadata<?>>();
