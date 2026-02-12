@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2022 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.android.systemui.mediaprojection.appselector.data
 
 import android.app.ActivityManager.RecentTaskInfo
@@ -8,6 +24,7 @@ import android.os.UserManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.screencapture.sharescreen.domain.interactor.ScreenCaptureShareScreenFeaturesInteractor
 import com.android.systemui.settings.UserTracker
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.mock
@@ -40,6 +57,7 @@ class ShellRecentTaskListProviderTest : SysuiTestCase() {
     private val userManager: UserManager = mock {
         whenever(getUserInfo(anyInt())).thenReturn(mock())
     }
+    private val screenShareFeatureInteractor: ScreenCaptureShareScreenFeaturesInteractor = mock()
     private val recentTaskListProvider =
         ShellRecentTaskListProvider(
             dispatcher,
@@ -47,7 +65,64 @@ class ShellRecentTaskListProviderTest : SysuiTestCase() {
             Optional.of(recentTasks),
             userTracker,
             userManager,
+            screenShareFeatureInteractor,
         )
+
+    @Test
+    fun loadRecentTasks_largeScreen_firstTaskIsForeground() {
+        whenever(screenShareFeatureInteractor.isLargeScreenSharingEnabled).thenReturn(true)
+        givenRecentTasks(
+            createSingleTask(taskId = 1, isVisible = true),
+            createSingleTask(taskId = 2, isVisible = true),
+        )
+
+        val result = runBlocking { recentTaskListProvider.loadRecentTasks() }
+
+        assertThat(result[0].taskId).isEqualTo(1)
+        assertThat(result[0].isForegroundTask).isTrue()
+        assertThat(result[1].taskId).isEqualTo(2)
+        assertThat(result[1].isForegroundTask).isFalse()
+    }
+
+    @Test
+    fun loadRecentTasks_typeDesk_largeScreen_firstTaskInDeskIsForeground() {
+        whenever(screenShareFeatureInteractor.isLargeScreenSharingEnabled).thenReturn(true)
+        givenRecentTasks(createDeskTask(taskIds = listOf(1, 2, 3), isVisible = true))
+
+        val result = runBlocking { recentTaskListProvider.loadRecentTasks() }
+
+        assertThat(result.map { it.taskId }).containsExactly(1, 2, 3).inOrder()
+        assertThat(result.map { it.isForegroundTask }).containsExactly(true, false, false).inOrder()
+    }
+
+    @Test
+    fun loadRecentTasks_typeDesk_notLargeScreen_secondTaskInDeskIsForeground() {
+        whenever(screenShareFeatureInteractor.isLargeScreenSharingEnabled).thenReturn(false)
+        givenRecentTasks(createDeskTask(taskIds = listOf(1, 2, 3), isVisible = true))
+
+        val result = runBlocking { recentTaskListProvider.loadRecentTasks() }
+
+        assertThat(result.map { it.taskId }).containsExactly(1, 2, 3).inOrder()
+        assertThat(result.map { it.isForegroundTask }).containsExactly(false, true, false).inOrder()
+    }
+
+    @Test
+    fun loadRecentTasks_hiddenFullscreenAndVisibleDesk_largeScreen_identifiesDeskTaskAsForeground() {
+        whenever(screenShareFeatureInteractor.isLargeScreenSharingEnabled).thenReturn(true)
+        givenRecentTasks(
+            createSingleTask(taskId = 1, isVisible = false),
+            createDeskTask(taskIds = listOf(2, 3), isVisible = true),
+        )
+
+        val result = runBlocking { recentTaskListProvider.loadRecentTasks() }
+
+        // Task 1 is NOT foreground because it's invisible
+        assertThat(result.find { it.taskId == 1 }?.isForegroundTask).isFalse()
+        // Task 2 is foreground because it's the first task in its visible desk
+        assertThat(result.find { it.taskId == 2 }?.isForegroundTask).isTrue()
+        // Task 3 is NOT foreground
+        assertThat(result.find { it.taskId == 3 }?.isForegroundTask).isFalse()
+    }
 
     @Test
     fun loadRecentTasks_oneTask_returnsTheSameTask() {
@@ -256,6 +331,15 @@ class ShellRecentTaskListProviderTest : SysuiTestCase() {
             }
         whenever(userManager.getUserInfo(userId)).thenReturn(userInfo)
         return GroupedTaskInfo.forFullscreenTasks(createTaskInfo(taskId, userId, isVisible))
+    }
+
+    private fun createDeskTask(
+        taskIds: List<Int>,
+        userId: Int = 0,
+        isVisible: Boolean = false,
+    ): GroupedTaskInfo {
+        val taskInfos = taskIds.map { createTaskInfo(it, userId, isVisible) }
+        return GroupedTaskInfo.forDeskTasks(1, 0, taskInfos, emptySet())
     }
 
     private fun createTaskPair(

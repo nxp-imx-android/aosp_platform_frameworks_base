@@ -18,6 +18,7 @@ package com.android.systemui.screencapture.sharescreen.domain.interactor
 
 import android.app.ActivityManager
 import android.app.ActivityOptions
+import android.content.Context
 import android.media.projection.IAppContentProjectionCallback
 import android.media.projection.IAppContentProjectionSession
 import android.media.projection.IMediaProjection
@@ -27,6 +28,7 @@ import android.media.projection.StopReason
 import android.os.RemoteException
 import android.os.UserHandle
 import android.util.Log
+import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.screencapture.common.ScreenCaptureUiScope
 import com.android.systemui.screencapture.common.domain.interactor.ScreenCaptureRecentTaskInteractor
 import com.android.systemui.util.AsyncActivityLauncher
@@ -42,6 +44,7 @@ constructor(
     private val recentTaskInteractor: ScreenCaptureRecentTaskInteractor,
     private val asyncActivityLauncher: AsyncActivityLauncher,
     private val mediaProjectionHelper: MediaProjectionServiceHelperWrapper,
+    @param:Application private val context: Context,
 ) {
 
     sealed class SharingState {
@@ -141,15 +144,49 @@ constructor(
                 return
             }
 
+            if (task.isForegroundTask && task.component?.packageName == packageName) {
+                // The task is already in the foreground and belongs to the host app, so we don't
+                // need to launch it again. Directly approve the projection for this taskId.
+                try {
+                    projection.taskId = taskId
+                    mediaProjectionHelper.setReviewedConsentIfNeeded(
+                        ReviewGrantedConsentResult.RECORD_CONTENT_TASK,
+                        reviewGrantedConsentRequired,
+                        projection,
+                    )
+                    _sharingState.value = SharingState.Approved(projection)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error granting projection permission for task", e)
+                    _sharingState.value = SharingState.Denied
+                }
+                return
+            }
+
             // Create a new LaunchCookie and ActivityOptions to perform the security handshake.
             val launchCookie = ActivityOptions.LaunchCookie(MEDIA_PROJECTION_LAUNCH_TOKEN)
             val options = ActivityOptions.makeBasic()
             options.launchCookie = launchCookie.binder
 
+            val launchIntent =
+                if (task.component?.packageName == packageName) {
+                    // If it's the host app, use the standard launch intent to ensure it brings the
+                    // existing task to the front correctly without triggering new window logic.
+                    val userContext = context.createContextAsUser(hostUserHandle, /* flags= */ 0)
+                    userContext.packageManager.getLaunchIntentForPackage(packageName)
+                } else {
+                    task.baseIntent
+                }
+
+            if (launchIntent == null) {
+                Log.w(TAG, "Launch intent not found for task: taskId=$taskId")
+                _sharingState.value = SharingState.Denied
+                return
+            }
+
             // Bring the task to be captured to the front using the new cookie, and finish this
             // activity in the callback once the app is started.
             asyncActivityLauncher.startActivityAsUser(
-                task.baseIntent,
+                launchIntent,
                 hostUserHandle,
                 options.toBundle(),
             ) { waitResult ->

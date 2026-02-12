@@ -16,6 +16,7 @@
 
 package com.android.systemui.screencapture.sharescreen.domain.interactor
 
+import android.content.applicationContext
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.screencapture.common.domain.interactor.screenCaptureRecentTaskInteractor
@@ -32,5 +33,6 @@ val Kosmos.shareScreenUiInteractor: ShareScreenUiInteractor by Fixture {
         recentTaskInteractor = screenCaptureRecentTaskInteractor,
         asyncActivityLauncher = mockAsyncActivityLauncher,
         mediaProjectionHelper = fakeMediaProjectionServiceHelperWrapper,
+        context = applicationContext,
     )
 }
