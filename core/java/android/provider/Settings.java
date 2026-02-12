@@ -14155,6 +14155,17 @@ public final class Settings {
          * @hide
          */
         public static final String IS_WALLET_SERVICE_AVAILABLE = "is_wallet_service_available";
+
+        /**
+         * Whether to show led light animation on incoming call from favorite contact.
+         *
+         * <p>Type: int (0 for false, 1 for true)
+         *
+         * @hide
+         */
+        @FlaggedApi("com.android.server.notification.favorites_incoming_call_lights")
+        public static final String LIGHT_ANIMATION_FAVORITE_CALLS_ENABLED =
+                "light_animation_favorite_calls_enabled";
     }
 
     /**

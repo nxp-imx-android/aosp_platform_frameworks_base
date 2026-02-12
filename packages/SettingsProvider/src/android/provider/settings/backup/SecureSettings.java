@@ -344,5 +344,6 @@ public class SecureSettings {
         Settings.Secure.TEXT_SHOW_PASSWORD_TOUCH,
         Settings.Secure.TEXT_SHOW_PASSWORD_PHYSICAL,
         Settings.Secure.PERSONAL_CONTEXT_ENABLED,
+        Settings.Secure.LIGHT_ANIMATION_FAVORITE_CALLS_ENABLED,
     };
 }
