@@ -36,6 +36,8 @@ class ScreenRecordCameraRepositoryImpl @Inject constructor() : ScreenRecordCamer
         MutableStateFlow(CameraState.Unavailable).asStateFlow()
     override val isConnected: StateFlow<Boolean> = MutableStateFlow(false).asStateFlow()
     override val cameraSubjectBounds: StateFlow<Region?> = MutableStateFlow(null).asStateFlow()
+    override val isBackgroundColorAvailable: StateFlow<Boolean> =
+        MutableStateFlow(false).asStateFlow()
 
     override fun connect() {}
 
