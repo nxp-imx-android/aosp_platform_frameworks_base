@@ -2596,7 +2596,8 @@
         android:permissionGroup="android.permission-group.UNDEFINED"
         android:description="@string/permdesc_bluetooth_scan"
         android:label="@string/permlab_bluetooth_scan"
-        android:protectionLevel="dangerous" />
+        android:protectionLevel="dangerous"
+        android:permissionFlags="allowedInPrivateComputeCore" />
 
     <!-- Required to be able to connect to paired Bluetooth devices.
          <p>Protection level: dangerous -->
