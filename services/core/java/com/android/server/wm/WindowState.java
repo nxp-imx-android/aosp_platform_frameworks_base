@@ -1728,9 +1728,9 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         }
 
         bounds.set(mWindowFrames.mFrame);
-        bounds.inset(getInsetsStateWithVisibilityOverride().calculateVisibleInsets(
-                bounds, bounds, mAttrs.type, getActivityType(), mAttrs.softInputMode, mAttrs.flags
-        ));
+        bounds.inset(getInsetsStateWithVisibilityOverride().calculateVisibleInsets(bounds, bounds,
+                mAttrs.type, getActivityType(), mAttrs.softInputMode, mAttrs.flags,
+                0 /* ignoringTypes */));
         if (intersectWithRootTaskBounds) {
             bounds.intersect(mTmpRect);
         }
