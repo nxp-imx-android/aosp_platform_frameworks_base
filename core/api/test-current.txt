@@ -2882,7 +2882,7 @@ package android.os {
     field @NonNull public static final android.os.Parcelable.Creator<android.os.VibrationEffect.Composed> CREATOR;
   }
 
-  @FlaggedApi("android.os.vibrator.vendor_vibration_effects") public static final class VibrationEffect.VendorEffect extends android.os.VibrationEffect {
+  public static final class VibrationEffect.VendorEffect extends android.os.VibrationEffect {
     method @Nullable public long[] computeCreateWaveformOffOnTimingsOrNull();
     method public float getAdaptiveScale();
     method public long getDuration();

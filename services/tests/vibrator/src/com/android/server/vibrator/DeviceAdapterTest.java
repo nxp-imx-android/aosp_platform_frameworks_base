@@ -158,7 +158,6 @@ public class DeviceAdapterTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void testVendorEffect_returnsOriginalSegment() {
         PersistableBundle vendorData = new PersistableBundle();
         vendorData.putInt("key", 1);

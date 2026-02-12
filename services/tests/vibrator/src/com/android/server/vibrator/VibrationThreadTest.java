@@ -647,7 +647,6 @@ public class VibrationThreadTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void vibrate_singleVibratorVendorEffectCancel_cancelsVibrationImmediately()
             throws Exception {
         mVibratorHelpers.get(VIBRATOR_ID).setCapabilities(IVibrator.CAP_PERFORM_VENDOR_EFFECTS);
@@ -802,7 +801,6 @@ public class VibrationThreadTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void vibrate_singleVibratorVendorEffect_runsVibration() {
         mVibratorHelpers.get(VIBRATOR_ID).setCapabilities(IVibrator.CAP_PERFORM_VENDOR_EFFECTS);
 
@@ -822,7 +820,6 @@ public class VibrationThreadTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void vibrate_singleVibratorVendorEffectFailed_returnsFailure() {
         HalVibratorHelper vibratorHelper = mVibratorHelpers.get(VIBRATOR_ID);
         vibratorHelper.setCapabilities(IVibrator.CAP_PERFORM_VENDOR_EFFECTS);
@@ -1905,7 +1902,6 @@ public class VibrationThreadTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void vibrate_multipleVendorEffectCancel_cancelsVibrationImmediately() throws Exception {
         mockVibrators(1, 2);
         mVibratorHelpers.get(1).setCapabilities(IVibrator.CAP_PERFORM_VENDOR_EFFECTS);
@@ -2098,7 +2094,6 @@ public class VibrationThreadTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void vibrate_vendorEffectWithRampDown_doesNotAddRampDown() {
         mVibrationConfigBuilder.setRampDownDurationMs(15);
         createThreadAndSettings();
