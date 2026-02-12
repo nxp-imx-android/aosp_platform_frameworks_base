@@ -848,18 +848,18 @@ public final class DreamManagerService extends SystemService {
             return null;
         }
 
-        String names = Settings.Secure.getStringForUser(mContext.getContentResolver(),
-                Settings.Secure.SCREENSAVER_COMPONENTS,
-                userId);
-        ComponentName[] components = componentsFromString(names);
+        final String names =
+                Settings.Secure.getStringForUser(
+                        mContext.getContentResolver(),
+                        Settings.Secure.SCREENSAVER_COMPONENTS,
+                        userId);
+        final ComponentName[] components = DreamComponentNameUtils.fromCommaSeparatedString(names);
 
         // first, ensure components point to valid services
         List<ComponentName> validComponents = new ArrayList<>();
-        if (components != null) {
-            for (ComponentName component : components) {
-                if (validateDream(component, userId)) {
-                    validComponents.add(component);
-                }
+        for (ComponentName component : components) {
+            if (validateDream(component, userId)) {
+                validComponents.add(component);
             }
         }
 
@@ -875,19 +875,20 @@ public final class DreamManagerService extends SystemService {
     }
 
     private void updateDreamOnPackageRemoved(String packageName, int userId) {
-        final ComponentName[] componentNames = componentsFromString(
-                Settings.Secure.getStringForUser(mContext.getContentResolver(),
-                        Settings.Secure.SCREENSAVER_COMPONENTS,
-                        userId));
-        if (componentNames != null) {
-            // Filter out any components in the removed package.
-            final ComponentName[] filteredComponents =
-                    Arrays.stream(componentNames)
-                            .filter((componentName -> !isSamePackage(packageName, componentName)))
-                            .toArray(ComponentName[]::new);
-            if (filteredComponents.length != componentNames.length) {
-                setDreamComponentsForUser(userId, filteredComponents);
-            }
+        final String names = Settings.Secure.getStringForUser(
+                mContext.getContentResolver(),
+                Settings.Secure.SCREENSAVER_COMPONENTS,
+                userId);
+        final ComponentName[] componentNames =
+                DreamComponentNameUtils.fromCommaSeparatedString(names);
+
+        // Filter out any components in the removed package.
+        final ComponentName[] filteredComponents =
+                Arrays.stream(componentNames)
+                        .filter((componentName -> !isSamePackage(packageName, componentName)))
+                        .toArray(ComponentName[]::new);
+        if (filteredComponents.length != componentNames.length) {
+            setDreamComponentsForUser(userId, filteredComponents);
         }
     }
 
@@ -901,7 +902,7 @@ public final class DreamManagerService extends SystemService {
     private void setDreamComponentsForUser(int userId, ComponentName[] componentNames) {
         Settings.Secure.putStringForUser(mContext.getContentResolver(),
                 Settings.Secure.SCREENSAVER_COMPONENTS,
-                componentsToString(componentNames),
+                DreamComponentNameUtils.toCommaSeparatedString(componentNames),
                 userId);
     }
 
@@ -1112,34 +1113,7 @@ public final class DreamManagerService extends SystemService {
         LocalServices.getService(InputManagerInternal.class).setPulseGestureEnabled(dozeEnabled);
     }
 
-    private static String componentsToString(ComponentName[] componentNames) {
-        if (componentNames == null) {
-            return null;
-        }
-        StringBuilder names = new StringBuilder();
-        for (ComponentName componentName : componentNames) {
-            if (componentName == null) {
-                continue;
-            }
-            if (!names.isEmpty()) {
-                names.append(',');
-            }
-            names.append(componentName.flattenToString());
-        }
-        return names.toString();
-    }
 
-    private static ComponentName[] componentsFromString(String names) {
-        if (names == null) {
-            return null;
-        }
-        String[] namesArray = names.split(",");
-        ComponentName[] componentNames = new ComponentName[namesArray.length];
-        for (int i = 0; i < namesArray.length; i++) {
-            componentNames[i] = ComponentName.unflattenFromString(namesArray[i]);
-        }
-        return componentNames;
-    }
 
     private final DreamController.Listener mControllerListener = new DreamController.Listener() {
         @Override
