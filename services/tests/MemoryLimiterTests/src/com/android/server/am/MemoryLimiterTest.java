@@ -18,7 +18,6 @@ package com.android.server.am;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
@@ -29,6 +28,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.ParcelFileDescriptor;
+import android.os.SystemClock;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
@@ -44,6 +44,7 @@ import com.android.server.am.MemoryLimiter.Configuration;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -56,6 +57,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BooleanSupplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -66,6 +68,7 @@ import java.util.regex.Pattern;
 @LargeTest
 @Presubmit
 @RunWith(AndroidJUnit4.class)
+@RequiresFlagsEnabled(Flags.FLAG_MEMORY_LIMITER_ENABLE)
 public class MemoryLimiterTest {
 
     private static final String TAG = "MemoryLimiterTest";
@@ -125,6 +128,35 @@ public class MemoryLimiterTest {
     // maximum memory in the native handlers, but the test uses -1 for consistency.
     private static final Long sProcessMemoryMax = (long) (-1);
 
+    // An Injector for testing.
+    private static class TestInjector extends MemoryLimiter.Injector {
+
+        private final String mConfigFile;
+
+        TestInjector(String config) {
+            mConfigFile = (config != null) ? DATA_DIR + config : super.configFile();
+        }
+
+        TestInjector() {
+            this(null);
+        }
+
+        @Override
+        boolean isMonitoringEnabled() {
+            return true;
+        }
+
+        @Override
+        String configFile() {
+            return mConfigFile;
+        }
+
+        @Override
+        String getPackageNameForPid(int pid) {
+            return "Package" + Integer.toString(pid);
+        }
+    }
+
     // Capture over-limit events.
     private static class EventCounter extends MemoryLimiter.ControllerEnabled {
         // A lock that ensures the countdown latch and the event count are consistent.
@@ -146,17 +178,11 @@ public class MemoryLimiterTest {
             this(expected, null);
         }
 
-        // Enable event monitoring
-        @Override
-        boolean enableMonitoring() {
-            return true;
-        }
-
         // The instance is created with the expected number of events.  The supplied configuration
         // file is parsed.  To simplify life, this method accepts the basename of the
         // configuration file.  It quietly prepends the path component.
         EventCounter(int expected, String config) {
-            super((config != null) ? DATA_DIR + config : null, null);
+            super(new TestInjector(config));
             mLatch = new CountDownLatch(expected);
         }
 
@@ -178,10 +204,10 @@ public class MemoryLimiterTest {
         }
 
         // Match the n'th event.  Fail the test if there is no match.
-        void expect(int index, int pid, int uid, int limit) {
+        void expect(int index, Helper helper, int limit) {
             final Event event = mEvents.get(index);
-            assertThat(event.pid).isEqualTo(pid);
-            assertThat(event.uid).isEqualTo(uid);
+            assertThat(event.pid).isEqualTo(helper.getPid());
+            assertThat(event.uid).isEqualTo(helper.getUid());
             assertThat(event.limit).isEqualTo(limit);
         }
 
@@ -201,12 +227,17 @@ public class MemoryLimiterTest {
 
         // Capture an actual event.
         @Override
-        public void onLimitExceeded(int pid, int uid, int type, long limit) {
+        public void onLimitExceeded(int pid, int uid, int type, long limit, String pkg) {
             synchronized (mLock) {
                 mLatch.countDown();
                 mEvents.add(new Event(pid, uid, type));
             }
         }
+    }
+
+    @BeforeClass
+    public static void setUpEarly() throws Exception {
+        shellCommand("am force-stop " + HELPER);
     }
 
     @Before
@@ -221,48 +252,164 @@ public class MemoryLimiterTest {
         blockSystemLimiter(mUid, false);
     }
 
-    // Fetch the pid of the helper application.
-    private static int getHelperPid() throws NumberFormatException {
-        String pid = shellCommand("pidof " + HELPER).trim();
-        assertNotNull("Could not get PID for package " + HELPER, pid);
-        return Integer.parseInt(pid);
-    }
-
     // Fetch the uid of the helper application.
     private int getHelperUid() throws PackageManager.NameNotFoundException {
         PackageManager pm = mContext.getPackageManager();
         return pm.getApplicationInfo(HELPER, 0).uid;
     }
 
-    // Prepare the helper group by allowing world access to the cgroup tree for the helper
-    // UID.  The UID is specific to the helper package, so there is no impact to any other
-    // functions on the system.  This must be done every time the helper app is started because
-    // the cgroup path disappears if there are no processes with the UID.
-    private static long prepareHelperCgroup(int pid, int uid) throws Exception {
-        String path = String.format("/sys/fs/cgroup/apps/uid_%d", uid);
-        String r = shellCommand("chmod -R a+rw " + path);
-        if (r != null && !r.trim().equals("")) {
-            Log.i(TAG, "unprotecting " + path + ": \"" + r + "\"");
-            fail("failed to prepare cgroup");
+    // A single instance of a helper application.
+    private class Helper {
+
+        // The helper pid.  The uid is inherited from the parent.
+        final int mPid;
+
+        Helper() throws Exception {
+            final String args = "-S -W --dismiss-keyguard";
+            final String cmd = String.format("am start-activity %s -n %s/.%s",
+                    args, HELPER, ACTIVITY);
+            final String ans = shellCommand(cmd);
+            if (!ans.contains("LaunchState: COLD")) {
+                // If the app was not launched cold then it did not initialize as expected and the
+                // test cannot run.  This seems to be an issue that is not related to the feature,
+                // so the test is skipped with assumption-failed rather than test-failed.  The
+                // results of launching the application are logged for debugging.
+                Log.i(TAG, "app failed to launch: " + ans);
+                assumeTrue(ans.contains("LaunchState: COLD"));
+            }
+
+            mPid = findPid();
+            if (mPid < 0) {
+                throw new IllegalStateException("helper process not found");
+            }
+            Log.i(TAG, String.format("helper at pid=%d uid=%d", mPid, mUid));
+            prepareCgroup();
         }
-        return currentMemory(pid, uid);
-    }
 
-    // Prepare the helper app.  Start the process, get its pid, and prepare the cgroup.  Then
-    // return the pid.
-    private static int prepareHelper(int uid) throws Exception {
-        final String args = "-S -W --dismiss-keyguard";
-        final String cmd = String.format("am start-activity %s -n %s/.%s", args, HELPER, ACTIVITY);
-        final String ans = shellCommand(cmd);
-        Log.i(TAG, "started: " + ans);
-        assumeTrue(ans.contains("LaunchState: COLD"));
+        // Fetch the pid of the helper application.
+        int findPid() {
+            String pid = shellCommand("pidof " + HELPER).trim();
+            if (pid == null || pid.equals("")) {
+                return -1;
+            }
+            try {
+                return Integer.parseInt(pid);
+            } catch (NumberFormatException e) {
+                Log.i(TAG, "helper pid not a number: " + pid);
+                return -1;
+            }
+        }
 
-        int pid = getHelperPid();
-        Log.i(TAG, String.format("helper at pid=%d uid=%d", pid, uid));
+        int getPid() {
+            return mPid;
+        }
 
-        // Prepare the cgroup for testing.
-        prepareHelperCgroup(pid, uid);
-        return pid;
+        int getUid() {
+            return mUid;
+        }
+
+        // Attach the Helper to the Limiter
+        void attach(MemoryLimiter.Limiter limiter) {
+            limiter.setUid(mUid);
+            limiter.setPid(mPid);
+        }
+
+        // Return true if the process exists.  The process must have existed for the constructor
+        // to succeed, but it might no longer exist.
+        boolean exists() {
+            return findPid() > 0;
+        }
+
+        // Prepare the helper group by allowing world access to the cgroup tree for the helper
+        // UID.  The UID is specific to the helper package, so there is no impact to any other
+        // functions on the system.  This must be done every time the helper app is started because
+        // the cgroup path disappears if there are no processes with the UID.
+        long prepareCgroup() throws Exception {
+            String path = String.format("/sys/fs/cgroup/apps/uid_%d", mUid);
+            String r = shellCommand("chmod -R a+rw " + path);
+            if (r != null && !r.trim().equals("")) {
+                Log.i(TAG, "unprotecting " + path + ": \"" + r + "\"");
+                fail("failed to prepare cgroup");
+            }
+            return currentMemory();
+        }
+
+        // Return the path to the memcg file.  A null file returns the directory.
+        String cgroupFile(String file) {
+            if (file == null) {
+                return String.format("/sys/fs/cgroup/apps/uid_%d/pid_%d", mUid, mPid);
+            } else {
+                return String.format("/sys/fs/cgroup/apps/uid_%d/pid_%d/%s", mUid, mPid, file);
+            }
+        }
+
+        // Return true if the cgroup directory exists.
+        boolean cgroupExists() throws Exception {
+            String path = cgroupFile(null);
+            return Files.exists(Paths.get(path));
+        }
+
+        // Return the current memory of the helper app, as reported by memcg.
+        long currentMemory() throws Exception {
+            String path = cgroupFile("memory.current");
+            Path filePath = Paths.get(path);
+            // Always specify the Charset, e.g., UTF_8.  This may throw: allow the test to fail.
+            String value = Files.readString(filePath, StandardCharsets.UTF_8).trim();
+            return Long.parseLong(value);
+        }
+
+        // Return the current memory.high limit of the helper app, as reported by memcg.
+        private long currentLimit() throws Exception {
+            String path = cgroupFile("memory.high");
+            Path filePath = Paths.get(path);
+
+            // Always specify the Charset, e.g., UTF_8.  This may throw: allow the test to fail.
+            String value = Files.readString(filePath, StandardCharsets.UTF_8).trim();
+
+            // The limit can be the string "max"; if so, return -1.  Otherwise, the string must be a
+            // valid integer.
+            if (value.equals("max")) {
+                return sProcessMemoryMax;
+            } else {
+                return Long.parseLong(value);
+            }
+        }
+
+        // Return the current value for high events.
+        private long currentEvents() throws Exception {
+            String path = cgroupFile("memory.events");
+            Path filePath = Paths.get(path);
+
+            // The system resets the protections of the memory.events file every time it changes.
+            prepareCgroup();
+
+            // Always specify the Charset, e.g., UTF_8.  This may throw: allow the test to fail.
+            final String value = Files.readString(filePath, StandardCharsets.UTF_8).trim();
+
+            Matcher high = Pattern.compile("high (\\d+)").matcher(value);
+            if (high.find()) {
+                return Integer.parseInt(high.group(1));
+            } else {
+                throw new IllegalArgumentException("bad memory.events");
+            }
+        }
+
+        // Send a request to the application to change its memory.  The size has unit MB.
+        void resize(int size) {
+            final Intent intent = new Intent(); // SendActivity.this, SendActivity.class);
+            intent.setAction(HELPER + ".MEMORY");
+            intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+            intent.putExtra("size", Integer.toString(size));
+            mContext.sendBroadcast(intent);
+        }
+
+        // Send a request to the application to exit.
+        private void exit() {
+            final Intent intent = new Intent(); // SendActivity.this, SendActivity.class);
+            intent.setAction(HELPER + ".EXIT");
+            intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+            mContext.sendBroadcast(intent);
+        }
     }
 
     // Disable the system MemoryLimiter for the UID under test.
@@ -270,59 +417,25 @@ public class MemoryLimiterTest {
         shellCommand("am memory-limiter ignore " + ((blocked) ? Integer.toString(uid) : "none"));
     }
 
-    // Return the current memory of the helper app, as reported by memcg.
-    private static long currentMemory(int pid, int uid) throws Exception {
-        String path = String.format("/sys/fs/cgroup/apps/uid_%d/pid_%d/memory.current", uid, pid);
-        Path filePath = Paths.get(path);
-        // Always specify the Charset, e.g., UTF_8.  This may throw: allow the test to fail.
-        String value = Files.readString(filePath, StandardCharsets.UTF_8).trim();
-
-        return Long.parseLong(value);
-    }
-
-    // Return the current memory.high limit of the helper app, as reported by memcg.
-    private static long currentLimit(int pid, int uid) throws Exception {
-        String path = String.format("/sys/fs/cgroup/apps/uid_%d/pid_%d/memory.high", uid, pid);
-        Path filePath = Paths.get(path);
-
-        // Always specify the Charset, e.g., UTF_8.  This may throw: allow the test to fail.
-        String value = Files.readString(filePath, StandardCharsets.UTF_8).trim();
-
-        // The limit can be the string "max"; if so, return -1.  Otherwise, the string must be a
-        // valid integer.
-        if (value.equals("max")) {
-            return sProcessMemoryMax;
-        } else {
-            return Long.parseLong(value);
+    // Spin until the predicate returns true or <timeout> milliseconds have elapsed.  Return true
+    // if the predicate returned true and false on timeout.  This polls every 10ms.  The function
+    // throws if the sleep() throws.
+    private static boolean waitUntil(BooleanSupplier f, long timeoutMs) {
+        final long start = SystemClock.uptimeMillis();
+        while (true) {
+            if (f.getAsBoolean()) {
+                return true;
+            }
+            final long now = SystemClock.uptimeMillis();
+            if (now - start > timeoutMs) {
+                return false;
+            }
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                // An early wake-up is not a problem.  Continue with the loop.
+            }
         }
-    }
-
-    // Return the current value for high events.
-    private static long currentEvents(int pid, int uid) throws Exception {
-        String path = String.format("/sys/fs/cgroup/apps/uid_%d/pid_%d/memory.events", uid, pid);
-        Path filePath = Paths.get(path);
-
-        // The system resets the protections of the memory.events file every time it changes.
-        prepareHelperCgroup(pid, uid);
-
-        // Always specify the Charset, e.g., UTF_8.  This may throw: allow the test to fail.
-        final String value = Files.readString(filePath, StandardCharsets.UTF_8).trim();
-
-        Matcher high = Pattern.compile("high (\\d+)").matcher(value);
-        if (high.find()) {
-            return Integer.parseInt(high.group(1));
-        } else {
-            throw new IllegalArgumentException("bad memory.events");
-        }
-    }
-
-    // Send a request to the application to change its memory.  The size has unit MB.
-    private void appCommand(int size) {
-        final Intent intent = new Intent(); // SendActivity.this, SendActivity.class);
-        intent.setAction(HELPER + ".MEMORY");
-        intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
-        intent.putExtra("size", Integer.toString(size));
-        mContext.sendBroadcast(intent);
     }
 
     @RequiresFlagsEnabled(Flags.FLAG_MEMORY_LIMITER_ENABLE)
@@ -332,18 +445,17 @@ public class MemoryLimiterTest {
             try (MemoryLimiter controller = new MemoryLimiter(counter)) {
                 MemoryLimiter.Limiter limiter = controller.newLimiter();
 
-                int pid = prepareHelper(mUid);
-                limiter.setUid(mUid);
-                limiter.setPid(pid);
+                Helper helper = new Helper();
+                helper.attach(limiter);
 
                 // Set the limit, grow the app, and wait for the over-limit event.
                 limiter.onProcStateUpdated(PROCESS_STATE_100M);
-                appCommand(100);
+                helper.resize(100);
                 assertTrue(counter.await(10));
 
                 // There should be exactly one event in the counter.
                 assertThat(counter.eventCount()).isEqualTo(1);
-                counter.expect(0, pid, mUid, MemoryLimiter.MEMORY_LIMIT_TYPE);
+                counter.expect(0, helper, MemoryLimiter.MEMORY_LIMIT_TYPE);
             }
         }
     }
@@ -355,18 +467,17 @@ public class MemoryLimiterTest {
             try (MemoryLimiter controller = new MemoryLimiter(counter)) {
                 MemoryLimiter.Limiter limiter = controller.newLimiter();
 
-                int pid = prepareHelper(mUid);
-                limiter.setUid(mUid);
-                limiter.setPid(pid);
+                Helper helper = new Helper();
+                helper.attach(limiter);
 
                 // Grow the app by 100M, set the limit, and wait for the over-limit event.
-                appCommand(100);
+                helper.resize(100);
                 limiter.onProcStateUpdated(PROCESS_STATE_100M);
                 assertTrue(counter.await(10));
 
                 // There should be exactly one event in the counter.
                 assertThat(counter.eventCount()).isEqualTo(1);
-                counter.expect(0, pid, mUid, MemoryLimiter.MEMORY_LIMIT_TYPE);
+                counter.expect(0, helper, MemoryLimiter.MEMORY_LIMIT_TYPE);
             }
         }
     }
@@ -428,20 +539,21 @@ public class MemoryLimiterTest {
         // Use the default "enabled" controller to fetch the limit.  There is no need for a full
         // MemoryLimiter.
         final long expectedLimit;
-        try (MemoryLimiter.Controller controller = new MemoryLimiter.ControllerEnabled(null)) {
+        final TestInjector inj = new TestInjector();
+        try (MemoryLimiter.Controller controller = new MemoryLimiter.ControllerEnabled(inj)) {
             expectedLimit = controller.getStateLimit(ActivityManager.PROCESS_STATE_TOP);
         }
 
         // Start by enabling system_server control over the app.
         blockSystemLimiter(mUid, false);
 
-        int pid = prepareHelper(mUid);
+        Helper helper = new Helper();
 
         // Poll until the limit is set by system_server.
-        for (int i = 0; i < 100 && currentLimit(pid, mUid) != expectedLimit; i++) {
+        for (int i = 0; i < 100 && helper.currentLimit() != expectedLimit; i++) {
             Thread.sleep(100); // Wait a bit before polling again.
         }
-        assertThat(currentLimit(pid, mUid)).isEqualTo(expectedLimit);
+        assertThat(helper.currentLimit()).isEqualTo(expectedLimit);
     }
 
     /**
@@ -461,14 +573,13 @@ public class MemoryLimiterTest {
             try (MemoryLimiter controller = new MemoryLimiter(counter)) {
                 MemoryLimiter.Limiter limiter = controller.newLimiter();
 
-                int pid = prepareHelper(mUid);
-                limiter.setUid(mUid);
-                limiter.setPid(pid);
+                Helper helper = new Helper();
+                helper.attach(limiter);
 
                 // Wait for the system server to set its limit.  Any limit that is not "max" is
                 // okay.  This test only runs if default app limits are configured, and none of
                 // thse are "max".
-                for (int i = 0; i < 100 && currentLimit(pid, mUid) != sProcessMemoryMax; i++) {
+                for (int i = 0; i < 100 && helper.currentLimit() != sProcessMemoryMax; i++) {
                     Thread.sleep(100); // Wait a bit before polling again.
                 }
 
@@ -478,12 +589,12 @@ public class MemoryLimiterTest {
 
                 // Set the limit, grow the app, and wait for the over-limit event.
                 limiter.onProcStateUpdated(PROCESS_STATE_100M);
-                appCommand(100);
+                helper.resize(100);
                 assertTrue(counter.await(10));
 
                 // There should be exactly one event in the counter.
                 assertThat(counter.eventCount()).isEqualTo(1);
-                counter.expect(0, pid, mUid, MemoryLimiter.MEMORY_LIMIT_TYPE);
+                counter.expect(0, helper, MemoryLimiter.MEMORY_LIMIT_TYPE);
             }
         }
     }
@@ -537,18 +648,17 @@ public class MemoryLimiterTest {
         try (MemoryLimiter.ControllerDisabled controllerDisabled =
                 new MemoryLimiter.ControllerDisabled()) {
             try (MemoryLimiter controller = new MemoryLimiter(controllerDisabled)) {
-                int pid = prepareHelper(mUid);
-
+                Helper helper = new Helper();
                 // The limit should be "max" initially because the test setup blocks the system
                 // limiter from acting on the test UID.
-                assertThat(currentLimit(pid, mUid)).isEqualTo(sProcessMemoryMax);
+                assertThat(helper.currentLimit()).isEqualTo(sProcessMemoryMax);
 
                 // Attempt to set a manual limit. Since the controller is disabled, this should be
                 // a no-op.
-                controller.setManualLimit(pid, mUid, 20);
+                controller.setManualLimit(helper.getPid(), helper.getUid(), 20);
 
                 // The call is a synchronous no-op, so the limit should be unchanged immediately.
-                assertThat(currentLimit(pid, mUid)).isEqualTo(sProcessMemoryMax);
+                assertThat(helper.currentLimit()).isEqualTo(sProcessMemoryMax);
             }
         }
     }

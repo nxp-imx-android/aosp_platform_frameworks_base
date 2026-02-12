@@ -84,9 +84,11 @@ public class TestActivity extends ListActivity {
                 android.R.layout.simple_list_item_1, labels));
 
         mReceiver = new ClientTestReceiver(this);
-        IntentFilter filter = new IntentFilter(SELF + ".MEMORY");
+        IntentFilter memFilter = new IntentFilter(SELF + ".MEMORY");
+        IntentFilter exitFilter = new IntentFilter(SELF + ".EXIT");
         int flags = Context.RECEIVER_EXPORTED;
-        registerReceiver(mReceiver, filter, flags);
+        registerReceiver(mReceiver, memFilter, flags);
+        registerReceiver(mReceiver, exitFilter, flags);
     }
 
     @Override
