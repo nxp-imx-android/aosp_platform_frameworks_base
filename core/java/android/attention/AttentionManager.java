@@ -16,16 +16,25 @@
 
 package android.attention;
 
+import android.annotation.CallbackExecutor;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
+import android.annotation.NonNull;
+import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
 import android.content.Context;
+import android.os.Binder;
+import android.os.RemoteException;
 
 import com.android.input.flags.Flags;
+import com.android.internal.util.Preconditions;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.time.Duration;
+import java.util.Objects;
+import java.util.concurrent.Executor;
 
 /**
  * AttentionManager allows privileged system apps or services to register a listener to subscribe
@@ -76,6 +85,84 @@ public final class AttentionManager {
     @FlaggedApi(Flags.FLAG_ENABLE_ATTENTION_SERVICE_APIS)
     public static final int INTERACTION_TYPE_ALL = InteractionState.INTERACTION_TYPE_ALL;
 
+    private final IAttentionManager mService;
+
+    /**
+     * @hide
+     */
+    public AttentionManager(@NonNull IAttentionManager service) {
+        Objects.requireNonNull(service);
+        mService = service;
+    }
+
+    /**
+     * Register a listener that will be called for specified {@link InteractionType}. Only one
+     * listener can be registered per process.
+     * <p/>
+     * The {@code debounceTime} is also the delay after which device will be considered idle for
+     * each interaction type. The listener will be called with type {@code INTERACTION_TYPE_NONE}
+     * when the device becomes idle for all subscribed interaction types. An exception is that if
+     * the interaction itself was longer than {@code debounceTime} then the listener will be called
+     * immediately. The minimum allowed value for {@code debounceTime} is 500 ms.
+     *
+     * @param interactionTypes a bitmask of {@code INTERACTION_TYPE_*}
+     * @param debounceTime     used to debounce end-activity notification for every
+     *                         {@code INTERACTION_TYPE_*} independently.
+     * @param executor         executor to execute the listener on.
+     * @param listener         the listener to be registered.
+     * @throws IllegalArgumentException if called from process with an existing listener.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_ENABLE_ATTENTION_SERVICE_APIS)
+    @RequiresPermission(android.Manifest.permission.ACCESS_ATTENTION_LISTENER)
+    public void registerInteractionListener(@InteractionType int interactionTypes,
+            @NonNull Duration debounceTime, @NonNull @CallbackExecutor Executor executor,
+            @NonNull InteractionListener listener) {
+        Objects.requireNonNull(debounceTime);
+        Objects.requireNonNull(executor);
+        Objects.requireNonNull(listener);
+        Preconditions.checkArgument(debounceTime.toMillis() >= 500,
+                "debounceTime must be >= 500ms");
+
+        try {
+            mService.registerListener(interactionTypes, debounceTime.toMillis(),
+                    new IInteractionListener.Stub() {
+                        @Override
+                        public void onInteractionStateChanged(InteractionState interactionState) {
+                            final long token = Binder.clearCallingIdentity();
+                            try {
+                                executor.execute(() ->
+                                        listener.onInteraction(
+                                                new InteractionInfo(
+                                                        interactionState.interactionTypes,
+                                                        interactionState.interactionTimeMillis)));
+                            } finally {
+                                Binder.restoreCallingIdentity(token);
+                            }
+                        }
+                    });
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Unregister the listener that was previously registered.
+     * @throws IllegalArgumentException if no listener was registered.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_ENABLE_ATTENTION_SERVICE_APIS)
+    @RequiresPermission(android.Manifest.permission.ACCESS_ATTENTION_LISTENER)
+    public void unregisterInteractionListener() {
+        try {
+            mService.unregisterListener();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
     /**
      * @hide
      */
@@ -88,10 +175,4 @@ public final class AttentionManager {
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface InteractionType {}
-
-    /**
-     * @hide
-     */
-    public AttentionManager() {
-    }
 }
