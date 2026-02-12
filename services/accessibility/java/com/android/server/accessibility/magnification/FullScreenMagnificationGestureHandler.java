@@ -711,13 +711,11 @@ public class FullScreenMagnificationGestureHandler extends MagnificationGestureH
                     // after exiting dragging state.
                     // Otherwise, the magnifier should be disabled.
                     if (mScaleToRecoverAfterDraggingEnd >= 1.0f) {
-                        zoomToScale(mScaleToRecoverAfterDraggingEnd, event.getX(),
-                                event.getY());
+                        zoomToScale(mScaleToRecoverAfterDraggingEnd, event.getX(), event.getY());
                     } else {
                         zoomOff();
                     }
                     clear();
-                    mScaleToRecoverAfterDraggingEnd = Float.NaN;
                     transitionTo(mDetectingState);
                 }
                     break;
@@ -765,7 +763,6 @@ public class FullScreenMagnificationGestureHandler extends MagnificationGestureH
         @Override
         public void clear() {
             mLastMoveOutsideMagnifiedRegion = false;
-
             mScaleToRecoverAfterDraggingEnd = Float.NaN;
         }
 
