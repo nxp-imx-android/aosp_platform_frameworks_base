@@ -228,6 +228,7 @@ abstract class PreferencesApiScreen private constructor(
     var parametersSchema: KeyParametersSchema? = null
     var screenPermissions: Permissions? = null
     var screenPreconditions: PreconditionsConfig? = null
+    var screenTags: List<String>? = null
 
     override val keyParameters: ValidatedKeyParameters?
         get() = if (::screenParameters.isInitialized) screenParameters else super.keyParameters
@@ -367,12 +368,15 @@ abstract class PreferencesApiScreen private constructor(
         return prepareSpaRoute?.invoke(keyParams) ?: spaRoutePrefix
     }
 
+    override fun tags(context: Context): Array<String> =
+        (screenTags?.toTypedArray() ?: emptyArray()) + "api-first"
+
     protected fun flag(lambda: () -> Boolean) {
         if (flag != null) {
             error(getExceptionMessageMultipleDefines("flag"))
         }
 
-        if (parametersSchema != null || preferences.isNotEmpty() || screenPermissions != null || screenPreconditions != null) {
+        if (parametersSchema != null || preferences.isNotEmpty() || screenPermissions != null || screenPreconditions != null || screenTags != null) {
             error(getExceptionMessageWrongOrder("flag"))
         }
 
@@ -454,6 +458,24 @@ abstract class PreferencesApiScreen private constructor(
         } else {
             throw IllegalStateException(getExceptionMessageWrongOrder("parameters"))
         }
+    }
+
+    /**
+     * Configure arbitrary tags related to this screen.
+     *
+     * These tags are visible in the API surface for clients to identify groups
+     * of screens and preferences.
+     */
+    protected fun tags(vararg tags: String) {
+        if (screenTags != null) {
+            error(getExceptionMessageMultipleDefines("tags"))
+        }
+
+        if (preferences.isNotEmpty()) {
+            error(getExceptionMessageWrongOrder("tags"))
+        }
+
+        screenTags = tags.toList()
     }
 
     /**

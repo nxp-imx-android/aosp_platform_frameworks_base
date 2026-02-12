@@ -373,7 +373,44 @@ class ApiPreferenceTest {
         assertThat(shouldSkipFlagCheck(context)).isFalse()
     }
 
+    @Test
+    fun tags_whenTagsAreDefined_returnsTagsWithApiFirst() {
+        val preference = ApiPreferenceConfigBuilder(
+            KEY,
+            R.string.preference_purpose1,
+            AnyBoolean,
+            Boolean::class.java,
+            null,
+            null,
+            { null }
+        ).apply {
+            tags("tag1", "tag2")
+            get { execute { true } }
+        }.build()
 
+        val tags = preference.tags(context)
+
+        assertThat(tags.toList()).containsExactly("api-first", "tag1", "tag2")
+    }
+
+    @Test
+    fun tags_whenNoTagsAreDefined_returnsApiFirstOnly() {
+        val preference = ApiPreferenceConfigBuilder(
+            KEY,
+            R.string.preference_purpose1,
+            AnyBoolean,
+            Boolean::class.java,
+            null,
+            null,
+            { null }
+        ).apply {
+            get { execute { true } }
+        }.build()
+
+        val tags = preference.tags(context)
+
+        assertThat(tags.toList()).containsExactly("api-first")
+    }
 
     companion object {
         const val KEY = "ApiPreferenceKey"
