@@ -3306,11 +3306,9 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             }
         } else {
             // Here only SHELL can suspend across users
-            final int packageUid =
-                    snapshot.getPackageUid(suspender.packageName, 0, targetUserId);
-            final boolean allowedPackageUid = packageUid == callingUid;
-            final boolean allowedShell = callingUid == SHELL_UID
-                    && UserHandle.isSameApp(packageUid, callingUid);
+            final boolean allowedPackageUid = snapshot.isCallerSameApp(suspender.packageName,
+                    callingUid);
+            final boolean allowedShell = callingUid == SHELL_UID && allowedPackageUid;
 
             if (!allowedShell && !allowedPackageUid) {
                 throw new SecurityException("Suspending package " + suspender.packageName
@@ -3941,8 +3939,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
 
         Computer computer = snapshotComputer();
 
-        int componentUid = computer.getPackageUid(componentPkgName, 0, userId);
-        if (!UserHandle.isSameApp(callingUid, componentUid)) {
+        if (!computer.isCallerSameApp(componentPkgName, callingUid)) {
             throw new SecurityException("The calling UID (" + callingUid + ")"
                     + " does not match the target UID");
         }
@@ -3954,9 +3951,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                     + "component's label or icon");
         }
 
-        int allowedCallerUid = computer.getPackageUid(allowedCallerPkg,
-                PackageManager.MATCH_SYSTEM_ONLY, userId);
-        if (allowedCallerUid == -1 || !UserHandle.isSameApp(callingUid, allowedCallerUid)) {
+        if (!computer.isCallerSameApp(allowedCallerPkg, callingUid)) {
             throw new SecurityException("The calling UID (" + callingUid + ")"
                     + " is not allowed to change a component's label or icon");
         }
