@@ -107,6 +107,12 @@ public final class CredentialManagerService
     private static final String DEVICE_CONFIG_ENABLE_CREDENTIAL_DESC_API =
             "enable_credential_description_api";
 
+    // LINT.IfChange(delim)
+    private static final String SETTINGS_DELIMITER = ":";
+    // LINT.ThenChange(
+    // /services/core/java/com/android/server/stats/pull/CredentialManagerUtil.java:delim
+    // )
+
     /**
      * Value stored in autofill pref when credential provider is primary. This is
      * used as a placeholder since a credman only provider will not have an
@@ -903,13 +909,13 @@ public final class CredentialManagerService
             boolean writeEnabledStatus =
                     Settings.Secure.putStringForUser(getContext().getContentResolver(),
                             Settings.Secure.CREDENTIAL_SERVICE,
-                            String.join(":", enableProvider),
+                            String.join(SETTINGS_DELIMITER, enableProvider),
                             userId);
 
             boolean writePrimaryStatus =
                     Settings.Secure.putStringForUser(getContext().getContentResolver(),
                             Settings.Secure.CREDENTIAL_SERVICE_PRIMARY,
-                            String.join(":", primaryProviders),
+                            String.join(SETTINGS_DELIMITER, primaryProviders),
                             userId);
 
             if (!writeEnabledStatus || !writePrimaryStatus) {
@@ -1039,7 +1045,7 @@ public final class CredentialManagerService
                     resolvedUserId);
 
             if (!TextUtils.isEmpty(directValue)) {
-                String[] components = directValue.split(":");
+                String[] components = directValue.split(SETTINGS_DELIMITER);
                 for (String componentString : components) {
                     ComponentName component = ComponentName.unflattenFromString(componentString);
                     if (component != null) {
@@ -1238,7 +1244,7 @@ public final class CredentialManagerService
             if (Flags.multiUserFixEnabled()) {
                 if (!settingsWrapper.putStringForUser(
                         Settings.Secure.CREDENTIAL_SERVICE_PRIMARY,
-                        String.join(":", filteredPrimaryProviders),
+                        String.join(SETTINGS_DELIMITER, filteredPrimaryProviders),
                         userId,
                         /* overrideableByRestore= */ true)) {
                     Slog.e(TAG, "Failed to remove primary service: " + componentName);
@@ -1247,7 +1253,7 @@ public final class CredentialManagerService
             } else {
                 if (!settingsWrapper.putStringForUser(
                         Settings.Secure.CREDENTIAL_SERVICE_PRIMARY,
-                        String.join(":", filteredPrimaryProviders),
+                        String.join(SETTINGS_DELIMITER, filteredPrimaryProviders),
                         UserHandle.myUserId(),
                         /* overrideableByRestore= */ true)) {
                     Slog.e(TAG, "Failed to remove primary service: " + componentName);
@@ -1277,7 +1283,7 @@ public final class CredentialManagerService
         if (Flags.multiUserFixEnabled()) {
             if (!settingsWrapper.putStringForUser(
                     Settings.Secure.CREDENTIAL_SERVICE,
-                    String.join(":", filteredCredentialProviders),
+                    String.join(SETTINGS_DELIMITER, filteredCredentialProviders),
                     userId,
                     /* overrideableByRestore= */ true)) {
                 Slog.e(TAG, "Failed to remove secondary service: " + componentName);
@@ -1285,7 +1291,7 @@ public final class CredentialManagerService
         } else {
             if (!settingsWrapper.putStringForUser(
                     Settings.Secure.CREDENTIAL_SERVICE,
-                    String.join(":", filteredCredentialProviders),
+                    String.join(SETTINGS_DELIMITER, filteredCredentialProviders),
                     UserHandle.myUserId(),
                     /* overrideableByRestore= */ true)) {
                 Slog.e(TAG, "Failed to remove secondary service: " + componentName);
@@ -1349,7 +1355,7 @@ public final class CredentialManagerService
                     packageName);
             if (!settingsWrapper.putStringForUser(
                     Settings.Secure.CREDENTIAL_SERVICE_PRIMARY,
-                    String.join(":", primaryProviders),
+                    String.join(SETTINGS_DELIMITER, primaryProviders),
                     userId,
                     /* overrideableByRestore= */ true)) {
                 Slog.e(TAG, "Failed to remove primary package: " + packageName);
@@ -1405,7 +1411,7 @@ public final class CredentialManagerService
                 rawCredentialProviders, packageName);
         if (!settingsWrapper.putStringForUser(
                 Settings.Secure.CREDENTIAL_SERVICE,
-                String.join(":", credentialProviders),
+                String.join(SETTINGS_DELIMITER, credentialProviders),
                 userId,
                 /* overrideableByRestore= */ true)) {
             Slog.e(TAG, "Failed to remove secondary package: " + packageName);
@@ -1421,7 +1427,7 @@ public final class CredentialManagerService
         if (rawProviders == null || componentName == null) {
             return providers;
         }
-        for (String rawComponentName : rawProviders.split(":")) {
+        for (String rawComponentName : rawProviders.split(SETTINGS_DELIMITER)) {
             if (TextUtils.isEmpty(rawComponentName) || rawComponentName.equals("null")) {
                 Slog.d(TAG, "provider component name is empty or null");
                 continue;
@@ -1445,7 +1451,7 @@ public final class CredentialManagerService
         if (rawProviders == null || packageName == null) {
             return providers;
         }
-        for (String rawComponentName : rawProviders.split(":")) {
+        for (String rawComponentName : rawProviders.split(SETTINGS_DELIMITER)) {
             if (TextUtils.isEmpty(rawComponentName) || rawComponentName.equals("null")) {
                 Slog.d(TAG, "provider component name is empty or null");
                 continue;

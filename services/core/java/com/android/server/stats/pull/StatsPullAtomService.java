@@ -63,8 +63,8 @@ import static com.android.internal.util.FrameworkStatsLog.ACCESSIBILITY_SHORTCUT
 import static com.android.internal.util.FrameworkStatsLog.ACCESSIBILITY_SHORTCUT_STATS__SOFTWARE_SHORTCUT_TYPE__A11Y_BUTTON;
 import static com.android.internal.util.FrameworkStatsLog.ACCESSIBILITY_SHORTCUT_STATS__SOFTWARE_SHORTCUT_TYPE__A11Y_FLOATING_MENU;
 import static com.android.internal.util.FrameworkStatsLog.ACCESSIBILITY_SHORTCUT_STATS__SOFTWARE_SHORTCUT_TYPE__A11Y_GESTURE;
-import static com.android.internal.util.FrameworkStatsLog.ACCESSIBILITY_SHORTCUT_STATS__SOFTWARE_SHORTCUT_TYPE__UNKNOWN_TYPE;
 import static com.android.internal.util.FrameworkStatsLog.ACCESSIBILITY_SHORTCUT_STATS__SOFTWARE_SHORTCUT_TYPE__TOP_ROW_KEY;
+import static com.android.internal.util.FrameworkStatsLog.ACCESSIBILITY_SHORTCUT_STATS__SOFTWARE_SHORTCUT_TYPE__UNKNOWN_TYPE;
 import static com.android.internal.util.FrameworkStatsLog.DATA_USAGE_BYTES_TRANSFER__OPPORTUNISTIC_DATA_SUB__NOT_OPPORTUNISTIC;
 import static com.android.internal.util.FrameworkStatsLog.DATA_USAGE_BYTES_TRANSFER__OPPORTUNISTIC_DATA_SUB__OPPORTUNISTIC;
 import static com.android.internal.util.FrameworkStatsLog.ETHERNET_BYTES_TRANSFER;
@@ -78,8 +78,8 @@ import static com.android.internal.util.FrameworkStatsLog.TIME_ZONE_DETECTOR_STA
 import static com.android.internal.util.FrameworkStatsLog.TIME_ZONE_DETECTOR_STATE__DETECTION_MODE__TELEPHONY;
 import static com.android.internal.util.FrameworkStatsLog.TIME_ZONE_DETECTOR_STATE__DETECTION_MODE__UNKNOWN;
 import static com.android.server.stats.Flags.addAdaptiveSuspendStatsPuller;
-import static com.android.server.stats.Flags.addMobileBytesTransferByProcStatePuller;
 import static com.android.server.stats.Flags.addMemcgMemoryInformationPuller;
+import static com.android.server.stats.Flags.addMobileBytesTransferByProcStatePuller;
 import static com.android.server.stats.pull.netstats.NetworkStatsUtils.fromPublicNetworkStats;
 import static com.android.server.stats.pull.netstats.NetworkStatsUtils.isAddEntriesSupported;
 import static com.android.server.stats.pull.netstats.NetworkStatsUtils.isTransportTypeSupported;
@@ -834,6 +834,10 @@ public class StatsPullAtomService extends SystemService {
                         synchronized (mSettingsStatsLock) {
                             return pullSettingsStatsLocked(atomTag, data);
                         }
+                    case FrameworkStatsLog.CREDENTIAL_MANAGER_SETTINGS_SNAPSHOT:
+                        synchronized (mSettingsStatsLock) {
+                            return pullCredentialManagerSettingsSnapshotLocked(atomTag, data);
+                        }
                     case FrameworkStatsLog.INSTALLED_INCREMENTAL_PACKAGE:
                         synchronized (mInstalledIncrementalPackagesLock) {
                             return pullInstalledIncrementalPackagesLocked(atomTag, data);
@@ -1061,6 +1065,7 @@ public class StatsPullAtomService extends SystemService {
         registerBatteryCycleCount();
         registerBatteryHealth();
         registerSettingsStats();
+        registerCredentialManagerSettingsSnapshot();
         registerStorageHealth();
         registerInstalledIncrementalPackages();
         registerKeystorePullers();
@@ -4689,6 +4694,40 @@ public class StatsPullAtomService extends SystemService {
             }
         } catch (Exception e) {
             Slog.e(TAG, "failed to pullSettingsStats", e);
+            return StatsManager.PULL_SKIP;
+        } finally {
+            Binder.restoreCallingIdentity(token);
+        }
+        return StatsManager.PULL_SUCCESS;
+    }
+
+    private void registerCredentialManagerSettingsSnapshot() {
+        int tagId = FrameworkStatsLog.CREDENTIAL_MANAGER_SETTINGS_SNAPSHOT;
+        mStatsManager.setPullAtomCallback(tagId, null, DIRECT_EXECUTOR, mStatsCallbackImpl);
+    }
+
+    @GuardedBy("mSettingsStatsLock")
+    private int pullCredentialManagerSettingsSnapshotLocked(int atomTag,
+            List<StatsEvent> pulledData) {
+        final UserManager userManager = mContext.getSystemService(UserManager.class);
+        if (userManager == null) {
+            return StatsManager.PULL_SKIP;
+        }
+        final long token = Binder.clearCallingIdentity();
+        try {
+            for (UserInfo user : userManager.getUsers()) {
+                int userId = user.getUserHandle().getIdentifier();
+                pulledData.add(FrameworkStatsLog.buildStatsEvent(atomTag,
+                        CredentialManagerUtil.getPreferredAutofillServiceBaseUid(mContext, userId),
+                        CredentialManagerUtil
+                                .getPreferredCredentialServicesBaseUids(mContext, userId),
+                        CredentialManagerUtil
+                                .getAvailableCredentialServicesBaseUids(mContext, userId),
+                        CredentialManagerUtil
+                                .getEnabledCredentialServicesBaseUids(mContext, userId)));
+            }
+        } catch (Exception e) {
+            Slog.e(TAG, "Failed to pullCredentialManagerSettingsSnapshotLocked", e);
             return StatsManager.PULL_SKIP;
         } finally {
             Binder.restoreCallingIdentity(token);
