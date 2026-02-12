@@ -2246,7 +2246,8 @@
          @hide
     -->
     <permission android:name="android.permission.ACCESS_CONTEXT_HUB"
-        android:protectionLevel="signature|privileged" />
+        android:protectionLevel="signature|privileged"
+        android:permissionFlags="allowedInPrivateComputeCore" />
     <uses-permission android:name="android.permission.ACCESS_CONTEXT_HUB"/>
 
     <!-- @SystemApi Allows an application to create mock location providers for testing.
