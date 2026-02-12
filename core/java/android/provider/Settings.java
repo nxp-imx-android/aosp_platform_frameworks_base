@@ -11029,12 +11029,28 @@ public final class Settings {
         /**
          * The user's chosen screensaver components.
          *
-         * These will be launched by the PhoneWindowManager after a timeout when not on
-         * battery, or upon dock insertion (if SCREENSAVER_ACTIVATE_ON_DOCK is set to 1).
+         * <p>These are the screensaver components that the user has chosen to be used.
+         *
          * @hide
          */
         @Readable
         public static final String SCREENSAVER_COMPONENTS = "screensaver_components";
+
+        /**
+         * The user's currently active screensaver component.
+         *
+         * <p>This will be launched by the PhoneWindowManager after a timeout when not on battery,
+         * or upon dock insertion (if SCREENSAVER_ACTIVATE_ON_DOCK is set to 1).
+         *
+         * <p>We will first try to start {@code SCREENSAVER_ACTIVE_COMPONENT}. If that isn't
+         * available or cannot be started, we will fallback to the first eligible item in
+         * {@link #SCREENSAVER_COMPONENTS}. If none of those are available, we will fallback to the
+         * default screensaver on the device, if one exists.
+         *
+         * @hide
+         */
+        @Readable
+        public static final String SCREENSAVER_ACTIVE_COMPONENT = "screensaver_active_component";
 
         /**
          * If screensavers are enabled, whether the screensaver should be automatically launched
