@@ -29,7 +29,7 @@ flag {
   name: "list_view_count_for_accessibility"
   namespace: "accessibility"
   description: "Provide CollectionInfo with the ListView item count."
-  bug: "338453190"
+  bug: "337323059"
   metadata {
     purpose: PURPOSE_BUGFIX
   }
