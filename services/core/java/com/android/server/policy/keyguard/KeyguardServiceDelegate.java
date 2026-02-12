@@ -282,7 +282,6 @@ public class KeyguardServiceDelegate {
         public void onServiceDisconnected(ComponentName name) {
             if (DEBUG) Log.v(TAG, "*** Keyguard disconnected (boo!)");
             mKeyguardService = null;
-            resetKeyguardState();
             mKeyguardReportedState.reset();
             try {
                 ActivityTaskManager.getService().setLockScreenShown(true /* showingKeyguard */,
@@ -295,10 +294,6 @@ public class KeyguardServiceDelegate {
 
     private void initializeKeyguardState() {
         mKeyguardState.userId = UserHandle.USER_NULL;
-    }
-
-    private void resetKeyguardState() {
-        mKeyguardState.occluded = false;
     }
 
     /**
