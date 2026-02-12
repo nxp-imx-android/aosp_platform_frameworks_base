@@ -37,6 +37,7 @@ import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.MultiInstanceHelper
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFullscreenTask
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
+import com.android.wm.shell.recents.PerDisplayRecentsTransitionStateListener
 import com.android.wm.shell.shared.desktopmode.FakeDesktopConfig
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.splitscreen.SplitScreenController
@@ -103,6 +104,11 @@ class AppHandleControllerTests : ShellTestCase() {
     private val shellInit = ShellInit(testExecutor)
     private val taskSurface = SurfaceControl()
     private val decorationSurface = SurfaceControl()
+    private val recentsTransitionStateListener =
+        PerDisplayRecentsTransitionStateListener(
+            shellInit = shellInit,
+            recentsTransitionHandler = mock(),
+        )
 
     private lateinit var userRepositories: DesktopUserRepositories
     private lateinit var appToWebRepository: AppToWebRepositoryImpl
@@ -209,6 +215,7 @@ class AppHandleControllerTests : ShellTestCase() {
             onCaptionTouchListener = mock(),
             appToWebRepository = appToWebRepository,
             handleMenuFactory = mockHandleMenuFactory,
+            recentsTransitionStateListener = recentsTransitionStateListener,
         )
 
     private fun AppHandleController.relayout(taskInfo: RunningTaskInfo) {

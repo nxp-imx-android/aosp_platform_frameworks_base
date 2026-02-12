@@ -72,7 +72,6 @@ abstract class CaptionController<T>(
     protected lateinit var display: Display
 
     protected var isCaptionVisible = false
-    var isRecentsTransitionRunning = false
     var hasGlobalFocus = false
     var isDragging = false
     var setExcludeLayerJob: Job? = null
