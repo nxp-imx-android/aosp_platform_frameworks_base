@@ -40,12 +40,9 @@ import android.app.ActivityManager;
 import android.app.Service;
 import android.app.WindowConfiguration;
 import android.content.Intent;
-import android.os.Binder;
 import android.os.Bundle;
-import android.os.Debug;
 import android.os.IBinder;
 import android.os.PowerManager;
-import android.os.Process;
 import android.os.RemoteException;
 import android.os.Trace;
 import android.util.ArrayMap;
@@ -91,7 +88,6 @@ import com.android.systemui.power.shared.model.ScreenPowerState;
 import com.android.systemui.scene.domain.interactor.SceneInteractor;
 import com.android.systemui.scene.domain.startable.KeyguardStateCallbackStartable;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
-import com.android.systemui.scene.shared.model.Scenes;
 import com.android.systemui.securelockdevice.domain.interactor.SecureLockDeviceInteractor;
 import com.android.systemui.settings.DisplayTracker;
 import com.android.wm.shell.shared.CounterRotator;
@@ -442,13 +438,13 @@ public class KeyguardService extends Service {
         }
 
         @Override // Binder interface
-        public void setOccluded(boolean isOccluded, boolean animate) {
-            trace("setOccluded isOccluded=" + isOccluded + " animate=" + animate);
+        public void setOccluded(boolean isOccluded) {
+            trace("setOccluded isOccluded=" + isOccluded);
             Log.d(TAG, "setOccluded(" + isOccluded + ")");
 
             Trace.beginSection("KeyguardService.mBinder#setOccluded");
             if (!KeyguardWmStateRefactor.isEnabled()) {
-                mKeyguardViewMediator.setOccluded(isOccluded, animate);
+                mKeyguardViewMediator.setOccluded(isOccluded);
             } else {
                 mWmOcclusionManager.onKeyguardServiceSetOccluded(isOccluded);
             }

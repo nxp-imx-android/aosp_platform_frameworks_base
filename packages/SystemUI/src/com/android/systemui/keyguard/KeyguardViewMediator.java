@@ -1270,7 +1270,7 @@ public class KeyguardViewMediator implements CoreStartable,
                     });
 
                     Log.d(TAG, "OccludeByDreamAnimator#onAnimationCancelled. Set occluded = true");
-                    setOccluded(true /* isOccluded */, false /* animate */);
+                    setOccluded(true /* isOccluded */);
                 }
 
                 @Override
@@ -1280,7 +1280,7 @@ public class KeyguardViewMediator implements CoreStartable,
                     if (!handleOnAnimationStart(apps, finishedCallback)) {
                         // Usually we rely on animation completion to synchronize occluded status,
                         // but there was no animation to play, so just update it now.
-                        setOccluded(true /* isOccluded */, false /* animate */);
+                        setOccluded(true /* isOccluded */);
                         finishedCallback.onAnimationFinished();
                     }
                 }
@@ -1336,8 +1336,7 @@ public class KeyguardViewMediator implements CoreStartable,
                                 try {
                                     if (!mIsCancelled) {
                                         // We're already on the main thread, don't queue this call
-                                        handleSetOccluded(true /* isOccluded */,
-                                                false /* animate */);
+                                        handleSetOccluded(true /* isOccluded */);
                                     }
                                     finishedCallback.onAnimationFinished();
                                     mOccludeByDreamAnimator = null;
@@ -1385,7 +1384,7 @@ public class KeyguardViewMediator implements CoreStartable,
                     mInteractionJankMonitor.begin(
                             createInteractionJankMonitorConf(CUJ_LOCKSCREEN_OCCLUSION)
                                     .setTag("UNOCCLUDE"));
-                    setOccluded(false /* isOccluded */, true /* animate */);
+                    setOccluded(false /* isOccluded */);
 
                     // This is a noop if we are not currently in the dream state. However, its
                     // important to trigger this here as there may be cases where WM doesn't provide
@@ -2340,13 +2339,14 @@ public class KeyguardViewMediator implements CoreStartable,
     /**
      * Notify us when the keyguard is occluded by another window
      */
-    public void setOccluded(boolean isOccluded, boolean animate) {
+    public void setOccluded(boolean isOccluded) {
         Log.d(TAG, "setOccluded(" + isOccluded + ")");
 
         Trace.beginSection("KeyguardViewMediator#setOccluded");
         if (DEBUG) Log.d(TAG, "setOccluded " + isOccluded);
         mHandler.removeMessages(SET_OCCLUDED);
-        Message msg = mHandler.obtainMessage(SET_OCCLUDED, isOccluded ? 1 : 0, animate ? 1 : 0);
+        // Pass in two ints to avoid the Boxing method signature.
+        Message msg = mHandler.obtainMessage(SET_OCCLUDED, isOccluded ? 1 : 0, 0 /* unused */);
         mHandler.sendMessage(msg);
         Trace.endSection();
     }
@@ -2407,10 +2407,10 @@ public class KeyguardViewMediator implements CoreStartable,
     /**
      * Handles SET_OCCLUDED message sent by setOccluded()
      */
-    private void handleSetOccluded(boolean isOccluded, boolean animate) {
+    private void handleSetOccluded(boolean isOccluded) {
         Trace.beginSection("KeyguardViewMediator#handleSetOccluded");
         Log.d(TAG, "handleSetOccluded(" + isOccluded + ")");
-        EventLogTags.writeSysuiKeyguard(isOccluded ? 1 : 0, animate ? 1 : 0);
+        EventLogTags.writeSysuiKeyguard(isOccluded ? 1 : 0, 0 /* animate */);
 
         mInteractionJankMonitor.cancel(CUJ_KEYGUARD_TRANSITION_AOD_TO_LOCKSCREEN);
 
@@ -2421,8 +2421,7 @@ public class KeyguardViewMediator implements CoreStartable,
             if (mOccluded != isOccluded) {
                 mOccluded = isOccluded;
                 if (!KeyguardWmStateRefactor.isEnabled()) {
-                    mKeyguardViewControllerLazy.get().setOccluded(isOccluded, animate
-                            && mDeviceInteractive);
+                    mKeyguardViewControllerLazy.get().setOccluded(isOccluded);
                 }
                 adjustStatusBarLocked();
             }
@@ -2925,7 +2924,7 @@ public class KeyguardViewMediator implements CoreStartable,
                 case SET_OCCLUDED:
                     message = "SET_OCCLUDED";
                     Trace.beginSection("KeyguardViewMediator#handleMessage SET_OCCLUDED");
-                    handleSetOccluded(msg.arg1 != 0, msg.arg2 != 0);
+                    handleSetOccluded(msg.arg1 != 0);
                     Trace.endSection();
                     break;
                 case KEYGUARD_TIMEOUT:
@@ -4491,7 +4490,7 @@ public class KeyguardViewMediator implements CoreStartable,
             // begin. Otherwise, calls to setShowingLocked, etc. will not know that we're about to
             // be occluded and might re-show the keyguard.
             Log.d(TAG, "OccludeAnimator#onAnimationStart. Set occluded = true.");
-            setOccluded(true /* isOccluded */, false /* animate */);
+            setOccluded(true /* isOccluded */);
         }
 
         @Override
@@ -4596,7 +4595,7 @@ public class KeyguardViewMediator implements CoreStartable,
             // begin. Otherwise, calls to setShowingLocked, etc. will not know that we're about to
             // be occluded and might re-show the keyguard.
             Log.d(TAG, "OccludeAnimator#onAnimationStart. Set occluded = true.");
-            setOccluded(true /* isOccluded */, false /* animate */);
+            setOccluded(true /* isOccluded */);
         }
 
         @Override

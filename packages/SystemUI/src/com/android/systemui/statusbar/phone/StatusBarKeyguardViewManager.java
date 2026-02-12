@@ -528,8 +528,7 @@ public class StatusBarKeyguardViewManager implements RemoteInputController.Callb
 
             mJavaAdapter.alwaysCollectFlow(
                     mStatusBarKeyguardViewManagerInteractor.getKeyguardViewOcclusionState(),
-                    (occlusionState) -> setOccluded(
-                            occlusionState.getOccluded(), occlusionState.getAnimate()));
+                    this::setOccluded);
 
             mJavaAdapter.alwaysCollectFlow(
                     mStatusBarKeyguardViewManagerInteractor
@@ -1180,7 +1179,7 @@ public class StatusBarKeyguardViewManager implements RemoteInputController.Callb
     }
 
     @Override
-    public void setOccluded(boolean occluded, boolean animate) {
+    public void setOccluded(boolean occluded) {
         final boolean wasOccluded = mKeyguardStateController.isOccluded();
         final boolean isOccluding = !wasOccluded && occluded;
         final boolean isUnOccluding = wasOccluded  && !occluded;

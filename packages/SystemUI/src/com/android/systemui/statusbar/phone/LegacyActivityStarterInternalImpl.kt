@@ -745,9 +745,7 @@ constructor(
                             !keyguardStateController.isKeyguardGoingAway
                     ) {
                         Log.d(TAG, "Setting occluded = true in #startActivity.")
-                        keyguardViewMediatorLazy
-                            .get()
-                            .setOccluded(true /* isOccluded */, true /* animate */)
+                        keyguardViewMediatorLazy.get().setOccluded(true /* isOccluded */)
                     }
                 }
 
@@ -763,9 +761,7 @@ constructor(
 
                 override fun onTransitionAnimationCancelled(newKeyguardOccludedState: Boolean?) {
                     if (newKeyguardOccludedState != null) {
-                        keyguardViewMediatorLazy
-                            .get()
-                            .setOccluded(newKeyguardOccludedState, false /* animate */)
+                        keyguardViewMediatorLazy.get().setOccluded(newKeyguardOccludedState)
                     }
 
                     // Set mIsLaunchingActivityOverLockscreen to false before actually
