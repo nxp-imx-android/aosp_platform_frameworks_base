@@ -10343,6 +10343,34 @@
         android:protectionLevel="signature"
         android:featureFlag="android.service.personalcontext.enable_personal_context_service" />
 
+    <!-- @SystemApi Allows privileged applications to determine if the personal context service is
+         enabled through the
+         {@link android.service.personalcontext.PersonalContextManager#isEnabled()} API.
+         <p>This permission is only granted to system apps.
+         <p>Protection level: signature|privileged
+
+         @hide
+         @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+     -->
+    <permission
+        android:name="android.permission.PERSONAL_CONTEXT_READ_SETTINGS"
+        android:protectionLevel="signature|privileged"
+        android:featureFlag="android.service.personalcontext.enable_personal_context_service" />
+
+    <!-- @SystemApi Allows privileged applications to enable or disable the personal context
+         service through the
+         {@link android.service.personalcontext.PersonalContextManager#setEnabled(boolean)} API.
+         <p>This permission is only granted to system apps.
+         <p>Protection level: signature|privileged
+
+         @hide
+         @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+     -->
+    <permission
+        android:name="android.permission.PERSONAL_CONTEXT_WRITE_SETTINGS"
+        android:protectionLevel="signature|privileged"
+        android:featureFlag="android.service.personalcontext.enable_personal_context_service" />
+
     <!-- Sets the allowlist for content protection.
         <p>Intended to be used by the holder of SYSTEM_APP_PROTECTION_SERVICE role only.
         <p>Protection level: signature|role

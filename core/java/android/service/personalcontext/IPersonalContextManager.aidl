@@ -69,6 +69,13 @@ interface IPersonalContextManager {
     @EnforcePermission("CHANGE_PERSONAL_CONTEXT_MODE")
     void setPersonalContextModeEnabled(in String packageName, int userId, boolean enabled);
 
+    // Used to enable/disable the entire service.
+    @EnforcePermission("PERSONAL_CONTEXT_WRITE_SETTINGS")
+    void setEnabled(int userId, boolean enabled);
+
+    @EnforcePermission("PERSONAL_CONTEXT_READ_SETTINGS")
+    boolean isEnabled(int userId);
+
     oneway void updateEmbeddedClientInfo(
         in InsightSurfaceClientInfo oldClientInfo,
         in InsightSurfaceClientInfo newClientInfo,

@@ -554,6 +554,47 @@ public class PersonalContextManagerService extends SystemService {
 
         // Suppressing warning as enforcement is currently behind a flag
         @SuppressWarnings("MissingEnforcePermissionHelper")
+        @EnforcePermission(android.Manifest.permission.PERSONAL_CONTEXT_READ_SETTINGS)
+        @Override
+        public boolean isEnabled(int userId) {
+            if (android.service.personalcontext.Flags.enforcePersonalContextPermissions()) {
+                isEnabled_enforcePermission();
+            }
+            verifyUser(userId);
+            return Boolean.TRUE.equals(
+                    Binder.withCleanCallingIdentity(
+                            () -> {
+                                // TODO(b/477958468): Correctly handle enabling/disabling the
+                                //  service and then make the default "disabled".
+                                final Context context = getService().getContext();
+                                return Settings.Secure.getIntForUser(
+                                        context.getContentResolver(),
+                                        Settings.Secure.PERSONAL_CONTEXT_ENABLED,
+                                        1, userId) == 1;
+                            }));
+        }
+
+        // Suppressing warning as enforcement is currently behind a flag
+        @SuppressWarnings("MissingEnforcePermissionHelper")
+        @EnforcePermission(android.Manifest.permission.PERSONAL_CONTEXT_WRITE_SETTINGS)
+        @Override
+        public void setEnabled(int userId, boolean enabled) {
+            if (android.service.personalcontext.Flags.enforcePersonalContextPermissions()) {
+                setEnabled_enforcePermission();
+            }
+            verifyUser(userId);
+            Binder.withCleanCallingIdentity(
+                    () -> {
+                        final Context context = getService().getContext();
+                        Settings.Secure.putIntForUser(
+                                context.getContentResolver(),
+                                Settings.Secure.PERSONAL_CONTEXT_ENABLED,
+                                enabled ? 1 : 0, userId);
+                    });
+        }
+
+        // Suppressing warning as enforcement is currently behind a flag
+        @SuppressWarnings("MissingEnforcePermissionHelper")
         @EnforcePermission(android.Manifest.permission.PERSONAL_CONTEXT_PUBLISH_HINTS)
         @Override
         public void publishTriggeringHint(
