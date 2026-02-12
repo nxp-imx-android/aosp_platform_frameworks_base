@@ -81,6 +81,7 @@ public final class ProcessState {
     private static final boolean DEBUG_PARCEL = false;
 
     // Map from process states to the states we track.
+    // LINT.IfChange(process_state_to_state)
     public static final int[] PROCESS_STATE_TO_STATE = new int[] {
         STATE_PERSISTENT,               // ActivityManager.PROCESS_STATE_PERSISTENT
         STATE_PERSISTENT,               // ActivityManager.PROCESS_STATE_PERSISTENT_UI
@@ -102,7 +103,9 @@ public final class ProcessState {
         STATE_CACHED,                   // ActivityManager.PROCESS_STATE_CACHED_ACTIVITY_CLIENT
         STATE_CACHED,                   // ActivityManager.PROCESS_STATE_CACHED_RECENT
         STATE_CACHED,                   // ActivityManager.PROCESS_STATE_CACHED_EMPTY
+        STATE_CACHED,                   // ActivityManager.PROCESS_STATE_NONEXISTENT
     };
+    // LINT.ThenChange()
 
     public static final Comparator<ProcessState> COMPARATOR = new Comparator<ProcessState>() {
             @Override
