@@ -301,10 +301,16 @@ public class AudioMix implements Parcelable {
 
     /**
      * Returns whether this mix was configured to be persistent with both source and sink ports
-     * present for the entire duration of the policy registration independently of its source and
+     * present for the entire duration of the policy registration, independently of its source and
      * sink states.
-     * Silence is provided to the sink if the source is not connected, active or doesn't provide
-     * audio data.
+     * <p>
+     * When isPersistent is true:
+     * <ul>
+     * <li> Silence is provided to the sink if the source is not connected, active or doesn't
+     * provide audio data.
+     * <li> Audio data captured from the source is consumed even if no sink is connected or
+     * actively recording.
+     * </ul>
      * @return the value set with {@link Builder#setPersistent(boolean)}, default is false.
      */
     @FlaggedApi(FLAG_DAP_INJECTION_STARVE_MANAGEMENT)
@@ -576,10 +582,19 @@ public class AudioMix implements Parcelable {
 
         /**
          * Configures this mix to be persistent with both source and sink ports present for
-         * the entire duration of the policy registration independently of its source and sink
+         * the entire duration of the policy registration, independently of its source and sink
          * states.
-         * Silence is provided to the sink if the source is not connected, active or doesn't
+         * <p>
+         * This applies only to loopback mixes and is not supported for mixes whose
+         * route flags specify {@link AudioMix#ROUTE_FLAG_RENDER}.
+         * <p>
+         * When set to {@code true} on a valid mix:
+         * <ul>
+         * <li> Silence is provided to the sink if the source is not connected, active, or doesn't
          * provide audio data.
+         * <li> Audio data captured from the source is consumed even if no sink is connected or
+         * actively recording.
+         * </ul>
          * @param isPersistent {@code true} to make the mix persistent.
          * @return the same Builder instance
          */
@@ -592,9 +607,8 @@ public class AudioMix implements Parcelable {
         /**
          * Combines all of the settings and return a new {@link AudioMix} object.
          * @return a new {@link AudioMix} object
-         * @throws IllegalArgumentException if no {@link AudioMixingRule} has been set
-         *     or if {@link #setPersistent(boolean)} was set to {@code true} on
-         *     a mix not used for injection
+         * @throws IllegalArgumentException if no {@link AudioMixingRule} has been set or the
+         * Builder set parameters are not a valid combination
          */
         public AudioMix build() throws IllegalArgumentException {
             if (mRule == null) {
@@ -656,13 +670,10 @@ public class AudioMix implements Parcelable {
                 }
             }
 
-            if (dapInjectionStarveManagement()
-                    && ((mRouteFlags & ROUTE_FLAG_LOOP_BACK) == ROUTE_FLAG_LOOP_BACK)
-                    && (mRule.getTargetMixType() != MIX_TYPE_RECORDERS)
-                    && (mIsPersistent)) {
+            if (dapInjectionStarveManagement() && mIsPersistent
+                    && ((mRouteFlags & ROUTE_FLAG_RENDER) == ROUTE_FLAG_RENDER)) {
                 throw new IllegalArgumentException(
-                        "AudioMix.Builder.setPersistent(true) called "
-                        + "on a non-injection AudioMix");
+                        "AudioMix.Builder.setPersistent(true) called on a RENDER AudioMix");
             }
 
             if (mRule.allowPrivilegedMediaPlaybackCapture()) {
