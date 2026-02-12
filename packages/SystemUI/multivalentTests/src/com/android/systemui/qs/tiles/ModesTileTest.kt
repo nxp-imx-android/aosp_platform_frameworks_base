@@ -59,6 +59,7 @@ import com.android.systemui.qs.tiles.impl.modes.domain.model.ModesTileModel
 import com.android.systemui.qs.tiles.impl.modes.domain.model.ModesTileModel.ActiveMode
 import com.android.systemui.qs.tiles.impl.modes.ui.mapper.ModesTileMapper
 import com.android.systemui.res.R
+import com.android.systemui.retail.domain.interactor.RetailModeInteractor
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.statusbar.policy.data.repository.zenModeRepository
 import com.android.systemui.statusbar.policy.domain.interactor.zenModeInteractor
@@ -109,6 +110,8 @@ class ModesTileTest(flags: FlagsParameterization) : SysuiTestCase() {
     @Mock private lateinit var qsTileConfigProvider: QSTileConfigProvider
 
     @Mock private lateinit var dialogDelegate: ModesDialogDelegate
+
+    @Mock private lateinit var retailModeInteractor: RetailModeInteractor
 
     init {
         mSetFlagsRule.setFlagsParameterization(flags)
@@ -187,6 +190,7 @@ class ModesTileTest(flags: FlagsParameterization) : SysuiTestCase() {
                 mapper,
                 userActionInteractor,
                 kosmos.modesDialogViewModel,
+                retailModeInteractor,
             )
 
         underTest.initialize()
@@ -199,6 +203,36 @@ class ModesTileTest(flags: FlagsParameterization) : SysuiTestCase() {
     fun tearDown() {
         underTest.destroy()
         testableLooper.processAllMessages()
+    }
+
+    @Test
+    fun isAvailable_hideDNDinQSinRetailDemoMode_returnsFalse() {
+        whenever(retailModeInteractor.isInRetailMode).thenReturn(true)
+        context
+            .getOrCreateTestableResources()
+            .addOverride(R.bool.config_hideDNDinQSinRetailDemoMode, true)
+
+        assertThat(underTest.isAvailable).isFalse()
+    }
+
+    @Test
+    fun isAvailable_notInRetailDemoMode_returnsTrue() {
+        whenever(retailModeInteractor.isInRetailMode).thenReturn(false)
+        context
+            .getOrCreateTestableResources()
+            .addOverride(R.bool.config_hideDNDinQSinRetailDemoMode, true)
+
+        assertThat(underTest.isAvailable).isTrue()
+    }
+
+    @Test
+    fun isAvailable_notHideDNDinQSinRetailDemoMode_returnsTrue() {
+        whenever(retailModeInteractor.isInRetailMode).thenReturn(true)
+        context
+            .getOrCreateTestableResources()
+            .addOverride(R.bool.config_hideDNDinQSinRetailDemoMode, false)
+
+        assertThat(underTest.isAvailable).isTrue()
     }
 
     @Test
