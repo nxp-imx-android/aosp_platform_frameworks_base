@@ -2402,13 +2402,15 @@ public class ActivityManagerServiceTest {
 
         HostingRecord managedHostingRecord = HostingRecord.byAppZygote(
                 new ComponentName(packageName, "ManagedService"),
-                packageName, appUid, processName, false /* isNativeService */);
+                packageName, appUid, processName, false /* isNativeService */,
+                Process.INVALID_UID /* callerUid */, null /* callerProcessName */);
         ProcessRecord managedApp = new ProcessRecord(mAms, info, processName, appUid);
         managedApp.setHostingRecord(managedHostingRecord);
 
         HostingRecord nativeHostingRecord = HostingRecord.byAppZygote(
                 new ComponentName(packageName, "NativeService"),
-                packageName, appUid, processName, true /* isNativeService */);
+                packageName, appUid, processName, true /* isNativeService */,
+                Process.INVALID_UID /* callerUid */, null /* callerProcessName */);
         ProcessRecord nativeApp = new ProcessRecord(mAms, info, processName, appUid);
         nativeApp.setHostingRecord(nativeHostingRecord);
 

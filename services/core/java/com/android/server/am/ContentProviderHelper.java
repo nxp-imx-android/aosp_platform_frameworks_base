@@ -557,12 +557,16 @@ public class ContentProviderHelper {
                             final int packageState = getPackageStateAtom(stopped);
                             final boolean firstLaunch = cpr.mAppInfo.isNotLaunched();
                             checkTime(startTime, "getContentProviderImpl: before start process");
+
+                            final HostingRecord hostingRecord = new HostingRecord(
+                                    HostingRecord.HOSTING_TYPE_CONTENT_PROVIDER,
+                                    new ComponentName(cpi.applicationInfo.packageName, cpi.name),
+                                    /* isTopApp */ false, cpi.shouldRunInPccSandbox(),
+                                    callingUid, r != null ? r.processName : null);
+
                             proc = mService.startProcessLocked(
                                     cpi.processName, cpr.mAppInfo, false, 0,
-                                    new HostingRecord(HostingRecord.HOSTING_TYPE_CONTENT_PROVIDER,
-                                        new ComponentName(
-                                                cpi.applicationInfo.packageName, cpi.name),
-                                            /* isTopApp */ false, cpi.shouldRunInPccSandbox()),
+                                    hostingRecord,
                                     Process.ZYGOTE_POLICY_FLAG_EMPTY, false, false);
                             checkTime(startTime, "getContentProviderImpl: after start process");
                             if (proc == null) {

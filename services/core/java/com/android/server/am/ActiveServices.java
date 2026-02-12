@@ -5169,8 +5169,7 @@ public final class ActiveServices {
                 smap.mServicesByInstanceName.put(cn, r);
                 smap.mServicesByIntent.put(filter, r);
                 if (DEBUG_SERVICE) Slog.v(TAG_SERVICE, "Retrieve created new service: " + r);
-                r.mRecentCallingPackage = callingPackage;
-                r.mRecentCallingUid = callingUid;
+                r.updateRecentCallingAppInfo(callingPackage, callingUid);
             }
             r.appInfo.seInfo += generateAdditionalSeInfoFromService(service, r);
             return new ServiceLookupResult(r, resolution.getAlias());
@@ -5372,14 +5371,7 @@ public final class ActiveServices {
             }
         }
         if (r != null) {
-            r.mRecentCallingPackage = callingPackage;
-            r.mRecentCallingUid = callingUid;
-            try {
-                r.mRecentCallerApplicationInfo =
-                        mAm.mContext.getPackageManager().getApplicationInfoAsUser(callingPackage,
-                                0, UserHandle.getUserId(callingUid));
-            } catch (PackageManager.NameNotFoundException e) {
-            }
+            r.updateRecentCallingAppInfo(callingPackage, callingUid);
             if (!mAm.validateAssociationAllowedLocked(callingPackage, callingUid,
                     r.packageName, getServiceUid(r),
                     ActivityManagerService.ASSOCIATION_TYPE_SERVICE,
@@ -6195,7 +6187,8 @@ public final class ActiveServices {
         HostingRecord hostingRecord = new HostingRecord(
                 HostingRecord.HOSTING_TYPE_SERVICE, r.instanceName,
                 r.definingPackageName, r.definingUid, r.serviceInfo.processName,
-                getHostingRecordTriggerType(r), isPcc);
+                getHostingRecordTriggerType(r), isPcc, r.mRecentCallingUid,
+                r.getRecentCallerProcessName());
         ProcessRecord app;
 
         if (!isolated) {
@@ -6274,13 +6267,15 @@ public final class ActiveServices {
                         && r.serviceInfo.packageName.equals(WebViewZygote.getPackageName())) {
                     hostingRecord = HostingRecord.byWebviewZygote(r.instanceName,
                             r.definingPackageName,
-                            r.definingUid, r.serviceInfo.processName);
+                            r.definingUid, r.serviceInfo.processName,
+                            r.mRecentCallingUid, r.getRecentCallerProcessName());
                 }
                 if ((r.serviceInfo.flags & ServiceInfo.FLAG_USE_APP_ZYGOTE) != 0) {
                     boolean isNativeService =
                             android.os.Flags.nativeAppZygote() && r.mIsNativeIsolated;
                     hostingRecord = HostingRecord.byAppZygote(r.instanceName, r.definingPackageName,
-                            r.definingUid, r.serviceInfo.processName, isNativeService);
+                            r.definingUid, r.serviceInfo.processName, isNativeService,
+                            r.mRecentCallingUid, r.getRecentCallerProcessName());
                 }
             }
         }

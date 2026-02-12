@@ -16,10 +16,10 @@
 
 package com.android.server.am;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static com.google.common.truth.Truth.assertThat;
 
 import android.content.ComponentName;
+import android.os.Process;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,23 +27,59 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public final class HostingRecordTest {
+    private static final String PACKAGE_NAME = "com.android.app";
+    private static final String COMPONENT_CLASS = "com.android.app.Component";
+    private static final ComponentName COMPONENT_NAME = new ComponentName(
+            PACKAGE_NAME, COMPONENT_CLASS);
+    private static final int UID = 10000;
+    private static final String PROCESS_NAME = "com.android.app.process";
+    private static final int CALLER_UID = 12345;
+    private static final String CALLER_PROCESS_NAME = "com.caller.process";
+    private static final String DEFINING_PACKAGE_NAME = "defPkg";
+    private static final int DEFINING_UID = 10001;
+    private static final String DEFINING_PROCESS_NAME = "proc";
+
     @Test
     public void testUsesNativeAppZygote() {
-        String packageName = "com.android.app";
-        ComponentName cn = new ComponentName(packageName, "com.android.app.Component");
-        int uid = 10000;
-        String processName = "com.android.app.process";
+        HostingRecord nativeServiceRecord = HostingRecord.byAppZygote(
+                COMPONENT_NAME, PACKAGE_NAME, UID, PROCESS_NAME,
+                /*isNativeService=*/ true,
+                /*callerUid=*/ Process.INVALID_UID, /*callerProcessName=*/ null);
+        assertThat(nativeServiceRecord.usesAppZygote()).isTrue();
+        assertThat(nativeServiceRecord.usesNativeAppZygote()).isTrue();
 
-        HostingRecord nativeServiceRecord =
-                HostingRecord.byAppZygote(cn, packageName, uid, processName,
-                                          /*isNativeService=*/ true);
-        assertTrue(nativeServiceRecord.usesAppZygote());
-        assertTrue(nativeServiceRecord.usesNativeAppZygote());
+        HostingRecord managedAppZygoteRecord = HostingRecord.byAppZygote(
+                COMPONENT_NAME, PACKAGE_NAME, UID, PROCESS_NAME,
+                /*isNativeService=*/ false,
+                /*callerUid=*/ Process.INVALID_UID, /*callerProcessName=*/ null);
+        assertThat(managedAppZygoteRecord.usesAppZygote()).isTrue();
+        assertThat(managedAppZygoteRecord.usesNativeAppZygote()).isFalse();
+    }
 
-        HostingRecord managedAppZygoteRecord =
-                HostingRecord.byAppZygote(cn, packageName, uid, processName,
-                                          /*isNativeService=*/ false);
-        assertTrue(managedAppZygoteRecord.usesAppZygote());
-        assertFalse(managedAppZygoteRecord.usesNativeAppZygote());
+    @Test
+    public void testCallerInfo() {
+        HostingRecord record = new HostingRecord(HostingRecord.HOSTING_TYPE_SERVICE, COMPONENT_NAME,
+                /* isTopApp */ false, /* isPcc */ false, CALLER_UID, CALLER_PROCESS_NAME);
+
+        assertThat(record.getCallerUid()).isEqualTo(CALLER_UID);
+        assertThat(record.getCallerProcessName()).isEqualTo(CALLER_PROCESS_NAME);
+    }
+
+    @Test
+    public void testCallerInfo_byWebviewZygote() {
+        HostingRecord record = HostingRecord.byWebviewZygote(COMPONENT_NAME,
+                DEFINING_PACKAGE_NAME, DEFINING_UID, DEFINING_PROCESS_NAME,
+                CALLER_UID, CALLER_PROCESS_NAME);
+        assertThat(record.getCallerUid()).isEqualTo(CALLER_UID);
+        assertThat(record.getCallerProcessName()).isEqualTo(CALLER_PROCESS_NAME);
+    }
+
+    @Test
+    public void testCallerInfo_byAppZygote() {
+        HostingRecord record = HostingRecord.byAppZygote(COMPONENT_NAME,
+                DEFINING_PACKAGE_NAME, DEFINING_UID, DEFINING_PROCESS_NAME,
+                false, CALLER_UID, CALLER_PROCESS_NAME);
+        assertThat(record.getCallerUid()).isEqualTo(CALLER_UID);
+        assertThat(record.getCallerProcessName()).isEqualTo(CALLER_PROCESS_NAME);
     }
 }

@@ -20,6 +20,7 @@ import static android.testing.DexmakerShareClassLoaderRule.runWithDexmakerShareC
 
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -208,6 +209,20 @@ public class ProcessRecordTests {
         assertFalse(mProcessErrorState.isCrashing());
         assertTrue(mProcessRecord.isKilledByAm());
         assertTrue(mProcessRecord.isKilled());
+    }
+
+    @Test
+    public void testHostingRecordCallerInfo() {
+        final int callerUid = 54321;
+        final String callerProcessName = "com.caller";
+        final HostingRecord hostingRecord = new HostingRecord(HostingRecord.HOSTING_TYPE_BROADCAST,
+                new ComponentName(sContext.getPackageName(), "Receiver"), "action",
+                HostingRecord.TRIGGER_TYPE_PUSH_MESSAGE, false, callerUid, callerProcessName);
+        mProcessRecord.setHostingRecord(hostingRecord);
+
+        assertEquals(hostingRecord, mProcessRecord.getHostingRecord());
+        assertEquals(callerUid, mProcessRecord.getHostingRecord().getCallerUid());
+        assertEquals(callerProcessName, mProcessRecord.getHostingRecord().getCallerProcessName());
     }
 
     private void appNotResponding(ProcessErrorStateRecord processErrorState,
