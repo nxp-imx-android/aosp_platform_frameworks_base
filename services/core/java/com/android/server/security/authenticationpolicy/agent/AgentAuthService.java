@@ -33,9 +33,7 @@ import com.android.server.LocalServices;
 import com.android.server.SystemService;
 
 import java.time.Clock;
-import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -63,7 +61,7 @@ public class AgentAuthService implements AgentAuthServiceInternal {
     private int mCurrentUserId = UserHandle.USER_NULL;
 
     // session list, writes must be done on the Handler
-    private final Map<Integer, AgentSession> mAgentSessionList = new ConcurrentHashMap<>();
+    private AgentSessionMap<Integer> mAgentSessionList;
 
     AgentAuthService(@NonNull Context context, @NonNull Handler handler,
             @NonNull Clock clock, @IntRange(from = 0) long lastAuthTimeIntervalMillis) {
@@ -71,6 +69,7 @@ public class AgentAuthService implements AgentAuthServiceInternal {
         mHandler = handler;
         mClock = clock;
         mLastAuthTimeIntervalMillis = lastAuthTimeIntervalMillis;
+        mAgentSessionList = new AgentSessionMap<>(mContext, ActivityManager.getCurrentUser());
     }
 
     @Override
@@ -112,6 +111,7 @@ public class AgentAuthService implements AgentAuthServiceInternal {
         // reset list to an initial state
         mCurrentUserId = userId;
         mAgentSessionList.clear();
+        mAgentSessionList = new AgentSessionMap<>(mContext, mCurrentUserId);
         mHandler.removeCallbacksAndMessages(null);
         Slog.d(TAG, "Reset sessions / dropped all pending updates");
 
