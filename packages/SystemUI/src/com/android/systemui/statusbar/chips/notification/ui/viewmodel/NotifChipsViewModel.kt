@@ -152,7 +152,8 @@ constructor(
                     contentText
                         ?.takeUnless { it is Notification.Metric.TimeDifference }
                         ?.toValueString(context)
-                        ?.text()
+                        ?.textVariants
+                        ?.first()
                 chipChronometer =
                     (contentText as? Notification.Metric.TimeDifference)?.toChronometer()
                 chipChronometerFormat =

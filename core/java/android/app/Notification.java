@@ -12656,7 +12656,9 @@ public class Notification implements Parcelable
                                             + metric);
                         }
                     } else {
-                        contentView.setTextViewText(metricView.textValueId(), valueString.text());
+                        contentView.setCharSequenceList(metricView.textValueId(),
+                                "setTextVariants",
+                                new ArrayList<>(valueString.textVariants()));
                     }
                 } else {
                     contentView.setViewVisibility(metricView.containerId(), View.GONE);
@@ -12902,7 +12904,7 @@ public class Notification implements Parcelable
             /**
              * Text representation of a {@link MetricValue}.
              *
-             * @param textAlternatives options for the text representation of a {@link MetricValue}.
+             * @param textVariants options for the text representation of a {@link MetricValue}.
              *     The first one is required and must be the "canonical" (i.e. preferred)
              *     representation. Any further items in the collection are alternative (presumably
              *     shorter and less precise) versions of the same value.
@@ -12910,10 +12912,10 @@ public class Notification implements Parcelable
 
              * @hide
              */
-            public record ValueString(List<String> textAlternatives, @Nullable String subtext) {
+            public record ValueString(List<String> textVariants, @Nullable String subtext) {
                 public ValueString {
-                    checkArgument(!textAlternatives.isEmpty());
-                    textAlternatives = textAlternatives.stream().distinct().toList();
+                    checkArgument(!textVariants.isEmpty());
+                    textVariants = textVariants.stream().distinct().toList();
                 }
 
                 public ValueString(String text) {
@@ -12922,11 +12924,6 @@ public class Notification implements Parcelable
 
                 public ValueString(String text, @Nullable String subtext) {
                     this(List.of(text), subtext);
-                }
-
-                /** Default (preferred) text representation. */
-                public String text() {
-                    return textAlternatives.get(0);
                 }
 
                 private static final ValueString EMPTY = new ValueString("");

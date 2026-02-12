@@ -108,11 +108,11 @@ fun Notification.MetricStyle.extractMetrics(systemUiContext: Context): Sequence<
                             label = label,
                         )
 
-                    else -> Metric.Text(valueString.text(), label)
+                    else -> Metric.Text(valueString.textVariants.first(), label)
                 }
             }
 
-            else -> Metric.Text(valueString.text(), label)
+            else -> Metric.Text(valueString.textVariants.first(), label)
         }
     }
 }
