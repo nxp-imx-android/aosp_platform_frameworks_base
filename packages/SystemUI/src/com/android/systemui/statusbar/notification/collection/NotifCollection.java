@@ -819,9 +819,9 @@ public class NotifCollection implements Dumpable, PipelineDumpable {
 
     private void cancelLocalDismissal(NotificationEntry entry) {
         if (entry.getDismissState() == NOT_DISMISSED) {
-            mLogger.logCancelLocalDismissalNotDismissedNotif(entry);
             return;
         }
+        mLogger.logCancelLocalDismissal(entry);
         entry.setDismissState(NOT_DISMISSED);
         if (entry.getSbn().getNotification().isGroupSummary()) {
             for (NotificationEntry otherEntry : mNotificationSet.values()) {
