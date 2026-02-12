@@ -520,3 +520,10 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "synced_insets_animation"
+    namespace: "windowing_frontend"
+    description: "Synchronize the applied insets to a view with the ongoing system insets animation."
+    bug: "463899193"
+}
