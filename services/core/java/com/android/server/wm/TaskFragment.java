@@ -2350,13 +2350,14 @@ class TaskFragment extends WindowContainer<WindowContainer> {
             outAppBounds = inOutConfig.windowConfiguration.getAppBounds();
 
             if (insideParentBounds && useOverrideInsetsForConfig && !customContainerPolicy
-                    && overrideHint.getParentAppBoundsOverride() != null
                     && !WindowConfiguration.isFloating(windowingMode)) {
                 // Clip decor insets for legacy apps (no INSETS_DECOUPLED_CONFIGURATION_ENFORCED).
                 outAppBounds.intersectUnchecked(overrideHint.getParentAppBoundsOverride());
             } else if (resolvedBounds.isEmpty()) {
                 // Inherit from parent if there is no override bounds.
-                final Rect parentAppBounds = parentConfig.windowConfiguration.getAppBounds();
+                final Rect parentAppBounds = overrideHint != null
+                        ? overrideHint.getParentAppBoundsOverride()
+                        : parentConfig.windowConfiguration.getAppBounds();
                 if (parentAppBounds != null) {
                     outAppBounds.set(parentAppBounds);
                 }

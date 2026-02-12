@@ -328,6 +328,9 @@ final class AppCompatConfiguration {
     // When true, display moves between internal displays are NOT exempt from the self-kil recovery.
     private final boolean mIsSelfKillRecoveryBetweenInternalDisplaysEnabled;
 
+    // Whether desktop mode can be entered on the current device.
+    private final boolean mCanEnterDesktopMode;
+
     // Flags dynamically updated with {@link android.provider.DeviceConfig}.
     @NonNull private final SynchedDeviceConfig mDeviceConfig;
 
@@ -402,6 +405,8 @@ final class AppCompatConfiguration {
                 R.dimen.config_letterboxThinLetterboxWidthDp);
         mThinLetterboxHeightPxSupplier = new DimenPxIntSupplier(mContext,
                 R.dimen.config_letterboxThinLetterboxHeightDp);
+
+        mCanEnterDesktopMode = DesktopModeHelper.canEnterDesktopMode(mContext);
 
         mAppCompatConfigurationPersister = appCompatConfigurationPersister;
         mAppCompatConfigurationPersister.start();
@@ -1287,6 +1292,11 @@ final class AppCompatConfiguration {
      */
     boolean isSelfKillRecoveryBetweenInternalDisplaysEnabled() {
         return mIsSelfKillRecoveryBetweenInternalDisplaysEnabled;
+    }
+
+    /** Return {@code true} if desktop mode can be entered on the current device. */
+    boolean canEnterDesktopMode() {
+        return mCanEnterDesktopMode;
     }
 
     /**

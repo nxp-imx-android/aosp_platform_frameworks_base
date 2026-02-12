@@ -145,6 +145,10 @@ class AppCompatConfigurationRobot {
                 .getLetterboxBackgroundWallpaperDarkScrimAlpha();
     }
 
+    void setCanEnterDesktopMode(boolean canEnter) {
+        doReturn(canEnter).when(mAppCompatConfiguration).canEnterDesktopMode();
+    }
+
     void checkToNextLeftStop(boolean invoked) {
         verify(mAppCompatConfiguration, times(invoked ? 1 : 0))
                 .movePositionForHorizontalReachabilityToNextLeftStop(anyBoolean());
