@@ -111,6 +111,7 @@ import com.android.internal.util.LatencyTracker;
 import com.android.internal.util.function.pooled.PooledLambda;
 import com.android.server.FgThread;
 import com.android.server.LocalServices;
+import com.android.server.am.psc.Constants.OomAdjust;
 import com.android.server.apphibernation.AppHibernationManagerInternal;
 import com.android.server.apphibernation.AppHibernationService;
 
@@ -316,7 +317,7 @@ class ActivityMetricsLogger {
         /** The process state of the launching activity prior to the launch */
         final int mProcessState;
         /** The oom adj score of the launching activity prior to the launch */
-        final int mProcessOomAdj;
+        final @OomAdjust int mProcessOomAdj;
         /** Whether the activity is launched above a visible activity in the same task. */
         final boolean mIsInTaskActivityStart;
         /** Whether the last launched activity has reported drawn. */
@@ -360,8 +361,9 @@ class ActivityMetricsLogger {
         @Nullable
         static TransitionInfo create(@NonNull ActivityRecord r,
                 @NonNull LaunchingState launchingState, @Nullable ActivityOptions options,
-                boolean processRunning, boolean processSwitch, int processState, int processOomAdj,
-                boolean newActivityCreated, boolean isInTaskActivityStart, int startResult) {
+                boolean processRunning, boolean processSwitch, int processState,
+                @OomAdjust int processOomAdj, boolean newActivityCreated,
+                boolean isInTaskActivityStart, int startResult) {
             if (startResult != START_SUCCESS && startResult != START_TASK_TO_FRONT) {
                 return null;
             }
@@ -382,7 +384,7 @@ class ActivityMetricsLogger {
         /** Use {@link TransitionInfo#create} instead to ensure the transition type is valid. */
         private TransitionInfo(ActivityRecord r, LaunchingState launchingState,
                 ActivityOptions options, int transitionType, boolean processRunning,
-                boolean processSwitch, int processState, int processOomAdj,
+                boolean processSwitch, int processState, @OomAdjust int processOomAdj,
                 boolean isInTaskActivityStart) {
             mLaunchingState = launchingState;
             mTransitionType = transitionType;
@@ -800,7 +802,7 @@ class ActivityMetricsLogger {
         final boolean processSwitch = !processRunning
                 || !processRecord.hasStartedActivity(launchedActivity);
         final int processState;
-        final int processOomAdj;
+        final @OomAdjust int processOomAdj;
         if (processRunning) {
             processState = processRecord.getCurrentProcState();
             processOomAdj = processRecord.getCurrentAdj();
@@ -1279,7 +1281,7 @@ class ActivityMetricsLogger {
         final long uptimeNs = info.mLaunchingState.mStartUptimeNs;
         final int transitionDelay = info.mCurrentTransitionDelayMs;
         final int processState = info.mProcessState;
-        final int processOomAdj = info.mProcessOomAdj;
+        final @OomAdjust int processOomAdj = info.mProcessOomAdj;
         mLoggerHandler.post(() -> {
             if (info.isInterestingToLoggerAndObserver()) {
                 logAppTransition(uptimeNs, transitionDelay, infoSnapshot, isHibernating,
@@ -1302,7 +1304,7 @@ class ActivityMetricsLogger {
     // This gets called on another thread without holding the activity manager lock.
     private void logAppTransition(long transitionDeviceUptimeNs,
             int currentTransitionDelayMs, TransitionInfoSnapshot info, boolean isHibernating,
-            int processState, int processOomAdj) {
+            int processState, @OomAdjust int processOomAdj) {
         final LogMaker builder = new LogMaker(APP_TRANSITION);
         builder.setPackageName(info.packageName);
         builder.setType(info.type);

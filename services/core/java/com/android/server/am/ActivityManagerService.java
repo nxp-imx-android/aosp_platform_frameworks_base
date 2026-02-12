@@ -502,6 +502,7 @@ import com.android.server.ThreadPriorityBooster;
 import com.android.server.Watchdog;
 import com.android.server.am.LowMemDetector.MemFactor;
 import com.android.server.am.psc.ActiveUidsInternal;
+import com.android.server.am.psc.Constants.OomAdjust;
 import com.android.server.am.psc.OomAdjuster;
 import com.android.server.am.psc.OomAdjusterDebugLogger;
 import com.android.server.am.psc.ProcessListInternal.ProcessChangeItem;
@@ -4830,7 +4831,8 @@ public class ActivityManagerService extends IActivityManager.Stub
     private boolean forceStopPackageInternalLocked(String packageName, int appId,
             boolean callerWillRestart, boolean purgeCache, boolean doit,
             boolean evenPersistent, boolean uninstalling, boolean packageStateStopped,
-            @CanBeALL @UserIdInt int userId, String reasonString, int reason, int minOomAdj) {
+            @CanBeALL @UserIdInt int userId, String reasonString, int reason,
+            @OomAdjust int minOomAdj) {
         int i;
 
         if (userId == UserHandle.USER_ALL && packageName == null) {
@@ -12984,7 +12986,7 @@ public class ActivityManagerService extends IActivityManager.Stub
             final ProcessRecord r = procs.get(i);
             final IApplicationThread thread;
             final int pid;
-            final int oomAdj;
+            final @OomAdjust int oomAdj;
             final boolean hasActivities;
             synchronized (mProcLock) {
                 thread = r.getThread();
@@ -13632,7 +13634,7 @@ public class ActivityManagerService extends IActivityManager.Stub
             final ProcessRecord r = procs.get(i);
             final IApplicationThread thread;
             final int pid;
-            final int oomAdj;
+            final @OomAdjust int oomAdj;
             final boolean hasActivities;
             synchronized (mProcLock) {
                 thread = r.getThread();
@@ -20059,13 +20061,14 @@ public class ActivityManagerService extends IActivityManager.Stub
     final class OomAdjusterCallback implements OomAdjuster.Callback {
         @Override
         @GuardedBy({"ActivityManagerService.this", "ActivityManagerService.this.mProcLock"})
-        public void onOomAdjustChanged(int oldAdj, int newAdj, ProcessRecordInternal app) {
+        public void onOomAdjustChanged(@OomAdjust int oldAdj, @OomAdjust int newAdj,
+                ProcessRecordInternal app) {
             mCachedAppOptimizer.onOomAdjustChanged(oldAdj, newAdj, (ProcessRecord) app);
         }
 
         @Override
         public void onProcessFreezabilityChanged(ProcessRecordInternal app, boolean freezePolicy,
-                @OomAdjReason int oomAdjReason, boolean immediate, int oldOomAdj) {
+                @OomAdjReason int oomAdjReason, boolean immediate, @OomAdjust int oldOomAdj) {
             if (!mCachedAppOptimizer.useFreezer()) {
                 return;
             }

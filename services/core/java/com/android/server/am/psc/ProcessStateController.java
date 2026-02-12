@@ -46,6 +46,7 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.ServiceThread;
 import com.android.server.am.Flags;
+import com.android.server.am.psc.Constants.OomAdjust;
 import com.android.server.am.psc.Constants.SchedGroup;
 import com.android.server.am.psc.annotation.RequiresEnclosingBatchSession;
 import com.android.server.wm.WindowProcessController;
@@ -746,7 +747,7 @@ public class ProcessStateController {
      * Set the maximum adj score a process can be assigned.
      */
     @GuardedBy("mLock")
-    public void setMaxAdj(@NonNull ProcessRecordInternal proc, int adj) {
+    public void setMaxAdj(@NonNull ProcessRecordInternal proc, @OomAdjust int adj) {
         proc.setMaxAdj(adj);
     }
 

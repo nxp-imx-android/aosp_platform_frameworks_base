@@ -87,7 +87,6 @@ import android.provider.DeviceConfig.OnPropertiesChangedListener;
 import android.provider.DeviceConfig.Properties;
 import android.provider.Settings;
 import android.text.TextUtils;
-import android.util.ArraySet;
 import android.util.EventLog;
 import android.util.IntArray;
 import android.util.Pair;
@@ -104,6 +103,7 @@ import com.android.internal.util.FrameworkStatsLog;
 import com.android.server.ServiceThread;
 import com.android.server.am.compaction.CompactionStatsManager;
 import com.android.server.am.compaction.SingleCompactionStats;
+import com.android.server.am.psc.Constants.OomAdjust;
 import com.android.server.am.psc.OomAdjuster;
 
 import dalvik.annotation.optimization.NeverCompile;
@@ -1677,7 +1677,7 @@ public class CachedAppOptimizer {
     }
 
     @GuardedBy({"mService", "mProcLock"})
-    void onOomAdjustChanged(int oldAdj, int newAdj, ProcessRecord app) {
+    void onOomAdjustChanged(@OomAdjust int oldAdj, @OomAdjust int newAdj, ProcessRecord app) {
         if (useCompaction()) {
             // Cancel any currently executing compactions
             // if the process moved out of cached state
