@@ -25,9 +25,11 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.ui.test.SemanticsNodeInteractionsProvider
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.swipeDown
+import androidx.compose.ui.test.swipeLeft
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import com.android.compose.animation.scene.Key
+import com.android.compose.animation.scene.isElement
 import com.android.compose.snapshot.ObserveReadsRoot
 import com.android.compose.theme.PlatformTheme
 import com.android.keyguard.dagger.KeyguardStatusBarViewComponent
@@ -35,8 +37,20 @@ import com.android.systemui.Flags
 import com.android.systemui.Flags.FLAG_NOTIFICATION_SHADE_BLUR
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.biometrics.authController
+import com.android.systemui.communal.data.repository.communalSettingsRepository
+import com.android.systemui.communal.domain.interactor.communalSettingsInteractor
+import com.android.systemui.communal.ui.compose.Communal
+import com.android.systemui.communal.ui.compose.CommunalScene
+import com.android.systemui.communal.ui.compose.section.AmbientStatusBarSection
+import com.android.systemui.communal.ui.viewmodel.CommunalUserActionsViewModel
+import com.android.systemui.communal.ui.viewmodel.ambientStatusBarSection
+import com.android.systemui.communal.ui.viewmodel.communalContent
+import com.android.systemui.communal.ui.viewmodel.communalUserActionsViewModel
+import com.android.systemui.communal.ui.viewmodel.communalViewModel
+import com.android.systemui.communal.util.communalColors
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.jank.interactionJankMonitor
+import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.domain.interactor.keyguardClockInteractorWithImpl
 import com.android.systemui.keyguard.ui.composable.LockscreenContent
 import com.android.systemui.keyguard.ui.composable.LockscreenScene
@@ -92,6 +106,7 @@ import org.junit.runner.RunWith
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import platform.test.motion.compose.ComposeFeatureCaptures
 import platform.test.motion.compose.ComposeRecordingSpec
 import platform.test.motion.compose.MotionControl
 import platform.test.motion.compose.feature
@@ -101,6 +116,7 @@ import platform.test.motion.compose.values.MotionTestValueKey
 import platform.test.motion.golden.FeatureCapture
 import platform.test.motion.golden.TimeSeriesCaptureScope
 import platform.test.motion.golden.asDataPoint
+import platform.test.motion.golden.feature
 import platform.test.screenshot.DeviceEmulationSpec
 import platform.test.screenshot.Displays.Phone
 
@@ -109,6 +125,7 @@ import platform.test.screenshot.Displays.Phone
 @LargeTest
 @RunWithLooper
 @EnableSceneContainer
+@EnableFlags(FLAG_NOTIFICATION_SHADE_BLUR)
 class LockScreenTransitionTest : SysuiTestCase() {
     private val kosmos = testKosmos()
     private val deviceSpec = DeviceEmulationSpec(Phone)
@@ -136,6 +153,7 @@ class LockScreenTransitionTest : SysuiTestCase() {
         whenever(keyguardStatusBarViewComponent.keyguardStatusBarViewController)
             .thenReturn(keyguardStatusBarViewController)
         whenever(kosmos.authController.scaleFactor).thenReturn(1.5f)
+        whenever(kosmos.communalSettingsRepository.getV2FlagEnabled()).thenReturn(true)
     }
 
     private val lockScreenContent =
@@ -198,7 +216,20 @@ class LockScreenTransitionTest : SysuiTestCase() {
                 init: () -> T,
             ): T = rememberSession(key, inputs = inputs, init = init)
         }
-
+    private val communalActionsViewModelFactory =
+        object : CommunalUserActionsViewModel.Factory {
+            override fun create(): CommunalUserActionsViewModel {
+                return kosmos.communalUserActionsViewModel
+            }
+        }
+    private val communalScene =
+        CommunalScene(
+            contentViewModel = kosmos.communalViewModel,
+            actionsViewModelFactory = communalActionsViewModelFactory,
+            communalColors = kosmos.communalColors,
+            communalContent = kosmos.communalContent,
+            ambientStatusBarSection = mock<AmbientStatusBarSection>(),
+        )
     private val quickSettingScene =
         QuickSettingsScene(
             shadeSession = shadeSession,
@@ -220,7 +251,48 @@ class LockScreenTransitionTest : SysuiTestCase() {
 
     @Test
     @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
-    @EnableFlags(FLAG_NOTIFICATION_SHADE_BLUR)
+    fun swipeLeftFromLockscreenToCommunalScene_recordingLockscreenAlpha() {
+        motionTestRule.runTest(60.seconds) {
+            kosmos.enableSingleShade()
+            kosmos.communalSettingsInteractor.setSuppressionReasons(emptyList())
+            kosmos.fakeKeyguardRepository.setKeyguardShowing(true)
+            kosmos.fakeWindowRootViewBlurRepository.isBlurSupported.value = true
+
+            val motion =
+                recordMotion(
+                    content = { SceneContainerUnderTest() },
+                    recordingSpec =
+                        ComposeRecordingSpec(
+                            MotionControl(
+                                delayRecording = {
+                                    awaitCondition {
+                                        kosmos.sceneInteractor.transitionState.isIdle()
+                                    }
+                                }
+                            ) {
+                                performTouchInputAsync(onRoot()) { swipeLeft(startX = centerX) }
+
+                                awaitCondition {
+                                    kosmos.sceneInteractor.transitionStateFlow.value.isIdle()
+                                }
+                            },
+                            recordAfter = false,
+                            recordBefore = false,
+                        ) {
+                            featureFloat(LockscreenContent.LockscreenContentMotionTestKeys.Alpha)
+                            feature(
+                                isElement(Communal.Elements.Grid),
+                                ComposeFeatureCaptures.x,
+                                useUnmergedTree = true,
+                            )
+                        },
+                )
+            assertThat(motion).timeSeriesMatchesGolden()
+        }
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
     fun recordLockscreenAlpha_duringSwipeDownToQS() {
         motionTestRule.runTest(60.seconds) {
             kosmos.enableSingleShade()
@@ -229,7 +301,7 @@ class LockScreenTransitionTest : SysuiTestCase() {
 
             val motion =
                 recordMotion(
-                    content = { LockscreenToQuickSettingsSceneHost() },
+                    content = { SceneContainerUnderTest() },
                     recordingSpec =
                         ComposeRecordingSpec(
                             MotionControl(
@@ -254,7 +326,7 @@ class LockScreenTransitionTest : SysuiTestCase() {
     }
 
     @Composable
-    private fun LockscreenToQuickSettingsSceneHost() {
+    private fun SceneContainerUnderTest() {
         PlatformTheme {
             WithStatusIconContext(kosmos.tintedIconManagerFactory) {
                 val vm =
@@ -268,6 +340,7 @@ class LockScreenTransitionTest : SysuiTestCase() {
                             mapOf(
                                 Scenes.Lockscreen to lockscreenScene,
                                 Scenes.QuickSettings to quickSettingScene,
+                                Scenes.Communal to communalScene,
                             ),
                         initialSceneKey = Scenes.Lockscreen,
                         transitionsBuilder = kosmos.sceneContainerTransitions,
