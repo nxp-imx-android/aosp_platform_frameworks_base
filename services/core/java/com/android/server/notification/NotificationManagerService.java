@@ -2586,6 +2586,9 @@ public class NotificationManagerService extends SystemService {
                     }
                     mHistoryManager.onUserAdded(userId);
                     mSettingsObserver.update(null, userId);
+                    if (nmContextualDisplayLaunch()) {
+                        mNotificationRuleManager.onUserAdded(userId);
+                    }
                 }
             } else if (action.equals(Intent.ACTION_USER_REMOVED)) {
                 final int userId = intent.getIntExtra(Intent.EXTRA_USER_HANDLE, USER_NULL);

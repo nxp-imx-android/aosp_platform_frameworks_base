@@ -376,11 +376,13 @@ package android.app {
 
   public class NotificationManager {
     method @NonNull public String addAutomaticZenRule(@NonNull android.app.AutomaticZenRule, boolean);
+    method @FlaggedApi("android.app.nm_contextual_display_launch") @Nullable public android.app.NotificationRule addNotificationRule(@NonNull android.app.NotificationRule, int);
     method public void allowAssistantAdjustment(@NonNull String);
     method public void cleanUpCallersAfter(long);
     method public void disallowAssistantAdjustment(@NonNull String);
     method @NonNull public android.service.notification.ZenPolicy getDefaultZenPolicy();
     method public android.content.ComponentName getEffectsSuppressor();
+    method @FlaggedApi("android.app.nm_contextual_display_launch") @NonNull public java.util.List<android.app.NotificationRule> getNotificationRules();
     method @NonNull public java.util.Set<java.lang.String> getUnsupportedAdjustmentTypes();
     method public boolean isNotificationPolicyAccessGrantedForPackage(@NonNull String);
     method public boolean removeAutomaticZenRule(@NonNull String, boolean);
