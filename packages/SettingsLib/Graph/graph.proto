@@ -133,6 +133,10 @@ message PreferenceProto {
     }
   }
   optional int32 purpose = 21;
+  // Preconditions of the preference.
+  repeated string get_preconditions = 22;
+  // Preconditions of the preference when setting values.
+  repeated string set_preconditions = 23;
 }
 
 // Proto of permissions
