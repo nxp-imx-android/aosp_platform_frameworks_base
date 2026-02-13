@@ -166,27 +166,4 @@ class HierarchyUtilsTest : ShellTestCase() {
             )
         ).isEqualTo(parentTask)
     }
-
-    @Test
-    fun testGetModes() {
-        // Create a hierarchy of A-B-C-Container, where only A & C have modes
-        val root = hierarchy.root
-        val parentA = StubContainer()
-        val parentB = StubContainer()
-        val parentC = StubContainer()
-        val container = StubContainer()
-        parentA.parent = root
-        parentA.mode = StubMode()
-        parentB.parent = parentA
-        parentC.parent = parentB
-        parentC.mode = StubMode()
-        container.parent = parentC
-
-        assertThat(HierarchyUtils.getModes(container)).isEqualTo(
-            listOf(
-                parentA.mode!!,
-                parentC.mode!!
-            )
-        )
-    }
 }

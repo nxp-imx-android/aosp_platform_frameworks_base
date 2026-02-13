@@ -35,4 +35,9 @@ class ActivityContainerProperties(
     override fun propsToString(): String {
         return "taskId=$taskId " + super.propsToString()
     }
+
+    /** @see ContainerProperties.getTypeName */
+    override fun getTypeName(): String {
+        return "Activity"
+    }
 }

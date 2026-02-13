@@ -99,7 +99,13 @@ class RootContainerProperties : ContainerProperties() {
         )
     }
 
+    /** @see ContainerProperties.propsToString */
     override fun propsToString(): String {
         return focusState.propsToString() + " example=$exampleTrackedShellOnlyState " + super.propsToString()
+    }
+
+    /** @see ContainerProperties.getTypeName */
+    override fun getTypeName(): String {
+        return "Root"
     }
 }

@@ -61,10 +61,11 @@ import org.junit.runner.RunWith
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.eq
-import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.spy
 import org.mockito.kotlin.stub
+import org.mockito.kotlin.verify
 
 /**
  * Tests for [HierarchyUpdater].
@@ -227,7 +228,7 @@ class HierarchyUpdaterTest : ShellTestCase() {
     }
 
     @Test
-    fun testNotifyAncestorModesInOrder_onAddContainer() {
+    fun testNotifyMode_onAddContainer() {
         // Create an open transition
         val wct = WindowContainerToken.createProxy("test")
         val change = TransitionInfo.Change(wct, mock<SurfaceControl>()).apply {
@@ -248,17 +249,16 @@ class HierarchyUpdaterTest : ShellTestCase() {
             mock<SurfaceControl.Transaction>(),
         )
 
-        // Verify the container was attached to the associated ancestor modes in order
+        // Verify the container was attached to the associated ancestor mode
         val newChild = hierarchy.getContainer(wct)!!
         val child1Mode = hierarchy.root.children[0].mode!!
         val child2Mode = hierarchy.root.children[0].children[0].mode!!
-        val inOrder = inOrder(child1Mode, child2Mode)
-        inOrder.verify(child1Mode).attachToContainer(any(), eq(newChild), eq(false))
-        inOrder.verify(child2Mode).attachToContainer(any(), eq(newChild), eq(false))
+        verify(child2Mode).attachToContainer(any(), eq(newChild), eq(false))
+        verify(child1Mode, never()).attachToContainer(any(), any(), any())
     }
 
     @Test
-    fun testNotifyAncestorModesInOrder_onRemoveContainer() {
+    fun testNotifyMode_onRemoveContainer() {
         // Create an close transition for a container that has some modes already applied
         val child1 = hierarchy.root.children[0]
         val child2 = hierarchy.root.children[0].children[0]
@@ -279,12 +279,11 @@ class HierarchyUpdaterTest : ShellTestCase() {
             mock<SurfaceControl.Transaction>(),
         )
 
-        // Verify the container was detached from the associated ancestor modes in order
+        // Verify the container was detached from the associated ancestor mode
         val child1Mode = child1.mode!!
         val child2Mode = child2.mode!!
-        val inOrder = inOrder(child2Mode, child1Mode)
-        inOrder.verify(child2Mode).detachFromContainer(any(), eq(container))
-        inOrder.verify(child1Mode).detachFromContainer(any(), eq(container))
+        verify(child2Mode).detachFromContainer(any(), eq(container))
+        verify(child1Mode, never()).detachFromContainer(any(), any())
     }
 
     @Test

@@ -164,30 +164,6 @@ class HierarchyUtils {
         }
 
         /**
-         * Returns a list of all ancestor & directly assigned modes that are associated with the
-         * given container. The returned list is in ancestor-first order.
-         */
-        fun getModes(container: Container): List<Mode> {
-            val modes = mutableListOf<Mode>()
-            var c: Container? = container
-            while (c != null) {
-                if (c.mode != null) {
-                    modes.add(0, c.mode!!)
-                }
-                c = c.parent
-            }
-            return modes
-        }
-
-        /**
-         * Returns whether the given container is associated (directly or indirectly) with the
-         * given mode.
-         */
-        fun isAttachedToMode(container: Container, mode: Mode): Boolean {
-            return mode in getModes(container)
-        }
-
-        /**
          * Returns a list of containers in top-down breadth-first traversal order.
          * Includes the provided root container.
          */
