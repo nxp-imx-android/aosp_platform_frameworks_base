@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -30,6 +31,7 @@ import android.graphics.Color;
 import android.os.RemoteException;
 import android.service.personalcontext.PersonalContextManager;
 import android.service.personalcontext.hint.BundleHint;
+import android.service.personalcontext.insight.ContextInsightWrapper;
 import android.view.Display;
 import android.view.SurfaceControlViewHost.SurfacePackage;
 import android.view.View;
@@ -74,14 +76,14 @@ public class InsightSurfaceClientTest {
                 .thenReturn(mPersonalContextManager);
 
         mClient =
-                new InsightSurfaceClient.Builder(mContext, mExecutor, mClientCallbacks)
+                new InsightSurfaceClient.Builder(mContext)
                         .addHint(mHint)
                         .build();
     }
 
     @Test
     public void testSurfaceCreated() throws RemoteException {
-        mClient.register();
+        mClient.register(mExecutor, mClientCallbacks);
         final ArgumentCaptor<InsightSurfaceClientInfo> clientInfoCaptor =
                 ArgumentCaptor.forClass(InsightSurfaceClientInfo.class);
         verify(mPersonalContextManager).registerInsightSurfaceClient(
@@ -94,7 +96,7 @@ public class InsightSurfaceClientTest {
 
     @Test
     public void testSurfaceDestroyed() throws RemoteException {
-        mClient.register();
+        mClient.register(mExecutor, mClientCallbacks);
         final ArgumentCaptor<InsightSurfaceClientInfo> clientInfoCaptor =
                 ArgumentCaptor.forClass(InsightSurfaceClientInfo.class);
         verify(mPersonalContextManager).registerInsightSurfaceClient(
@@ -107,12 +109,47 @@ public class InsightSurfaceClientTest {
     }
 
     @Test
+    public void testSurfaceUpdated() throws RemoteException {
+        mClient.register(mExecutor, mClientCallbacks);
+
+        final IInsightSurfaceClient client = mClient.getClientInfo().getClient();
+        client.onSurfaceCreated(mSurfacePackage, mSession);
+        client.onSurfaceUpdated(mSurfacePackage);
+        verify(mClientCallbacks).onSessionUpdated(any(InsightSurfaceSession.class));
+    }
+    @Test
     public void testInsightSurfaceClientCreation() {
         final InsightSurfaceClient client =
-                new InsightSurfaceClient.Builder(mContext, mClientCallbacks).build();
+                new InsightSurfaceClient.Builder(mContext).build();
 
         assertThat(client.getHints()).isEmpty();
         assertThat(client.getReceivers()).isEmpty();
+    }
+
+    @Test
+    public void testOnReceiveInsight() throws RemoteException {
+        final boolean[] insightReceived = {false};
+        final InsightSurfaceClient.InsightReceiver receiver = insight -> {
+            insightReceived[0] = true;
+            return true;
+        };
+
+        final InsightSurfaceClient client =
+                new InsightSurfaceClient.Builder(mContext)
+                        .addReceiver(receiver)
+                        .build();
+        client.register(mExecutor, mClientCallbacks);
+
+        final ContextInsightWrapper insightWrapper = mock(ContextInsightWrapper.class);
+        client.getClientInfo().getClient().onReceiveInsight(insightWrapper);
+        assertThat(insightReceived[0]).isTrue();
+    }
+
+    @Test
+    public void testOnSizeChangedCallback() throws RemoteException {
+        mClient.register(mExecutor, mClientCallbacks);
+        mClient.getClientInfo().getClient().onSizeChanged(0, 0);
+        verify(mClientCallbacks).onSizeChanged(0, 0);
     }
 
     @Test
@@ -122,7 +159,7 @@ public class InsightSurfaceClientTest {
         final int heightMeasureSpec =
                 View.MeasureSpec.makeMeasureSpec(200, View.MeasureSpec.EXACTLY);
         final InsightSurfaceClient client =
-                new InsightSurfaceClient.Builder(mContext, mClientCallbacks)
+                new InsightSurfaceClient.Builder(mContext)
                         .setMeasureSpecs(widthMeasureSpec, heightMeasureSpec)
                         .build();
 
@@ -134,7 +171,7 @@ public class InsightSurfaceClientTest {
     public void testInsightSurfaceClientCreation_withBackgroundColor() {
         final Color backgroundColor = Color.valueOf(Color.RED);
         final InsightSurfaceClient client =
-                new InsightSurfaceClient.Builder(mContext, mClientCallbacks)
+                new InsightSurfaceClient.Builder(mContext)
                         .setBackgroundColor(backgroundColor)
                         .build();
 
@@ -145,7 +182,7 @@ public class InsightSurfaceClientTest {
     public void testInsightSurfaceClientCreation_withNestedScrollAxes() {
         final int nestedScrollAxes = View.SCROLL_AXIS_HORIZONTAL | View.SCROLL_AXIS_VERTICAL;
         final InsightSurfaceClient client =
-                new InsightSurfaceClient.Builder(mContext, mClientCallbacks)
+                new InsightSurfaceClient.Builder(mContext)
                         .setNestedScrollAxes(nestedScrollAxes)
                         .build();
 
@@ -156,7 +193,7 @@ public class InsightSurfaceClientTest {
     public void testInsightSurfaceClientCreation_withNestedScrollAxisLocked() {
         final boolean nestedScrollAxisLocked = true;
         final InsightSurfaceClient client =
-                new InsightSurfaceClient.Builder(mContext, mClientCallbacks)
+                new InsightSurfaceClient.Builder(mContext)
                         .setNestedScrollAxisLocked(nestedScrollAxisLocked)
                         .build();
 
@@ -167,7 +204,7 @@ public class InsightSurfaceClientTest {
     public void testInsightSurfaceClientCreation_withThemeResourceName() {
         final String themeResourceName = "theme";
         final InsightSurfaceClient client =
-                new InsightSurfaceClient.Builder(mContext, mClientCallbacks)
+                new InsightSurfaceClient.Builder(mContext)
                         .setThemeResourceName(themeResourceName)
                         .build();
 
@@ -179,7 +216,7 @@ public class InsightSurfaceClientTest {
         final BundleHint hint = new BundleHint.Builder().build();
 
         final InsightSurfaceClient client =
-                new InsightSurfaceClient.Builder(mContext, mClientCallbacks)
+                new InsightSurfaceClient.Builder(mContext)
                         .addHint(hint).build();
 
         assertThat(client.getHints()).containsExactly(hint);
@@ -190,10 +227,37 @@ public class InsightSurfaceClientTest {
         final InsightSurfaceClient.InsightReceiver receiver = insight -> true;
 
         final InsightSurfaceClient client =
-                new InsightSurfaceClient.Builder(mContext, mClientCallbacks)
+                new InsightSurfaceClient.Builder(mContext)
                         .addReceiver(receiver)
                         .build();
 
         assertThat(client.getReceivers()).containsExactly(receiver);
+    }
+
+    @Test
+    public void testExecutorCalledForCallbacks() throws RemoteException {
+        final boolean[] executorCalled = {false};
+        final Executor executor = command -> {
+            executorCalled[0] = true;
+            command.run();
+        };
+
+        mClient.register(executor, mClientCallbacks);
+        mClient.getClientInfo().getClient().onSizeChanged(0, 0);
+        assertThat(executorCalled[0]).isTrue();
+    }
+
+    @Test
+    public void testMainExecutorCalledForCallbacks() throws RemoteException {
+        final boolean[] executorCalled = {false};
+        final Executor executor = command -> {
+            executorCalled[0] = true;
+            command.run();
+        };
+        when(mContext.getMainExecutor()).thenReturn(executor);
+
+        mClient.register(null, mClientCallbacks);
+        mClient.getClientInfo().getClient().onSizeChanged(0, 0);
+        assertThat(executorCalled[0]).isTrue();
     }
 }
