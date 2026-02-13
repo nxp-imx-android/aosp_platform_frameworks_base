@@ -18,9 +18,9 @@ package com.android.server.media;
 
 import static android.bluetooth.BluetoothAdapter.ACTIVE_DEVICE_AUDIO;
 
-import android.Manifest;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothA2dp;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -40,8 +40,6 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.util.Slog;
 import android.util.SparseBooleanArray;
-
-import androidx.annotation.RequiresPermission;
 
 import com.android.internal.R;
 import com.android.internal.annotations.VisibleForTesting;
@@ -79,6 +77,7 @@ import java.util.stream.Collectors;
  * <p>Note that a bluetooth device being active doesn't necessarily mean that the audio framework is
  * routing audio to it, which is subject to routing policies.
  */
+@SuppressLint("MissingPermission") // We are in system_server.
 /* package */ class BluetoothDeviceRoutesManager {
     private static final String TAG = SystemMediaRoute2Provider.TAG;
 
@@ -353,11 +352,6 @@ import java.util.stream.Collectors;
      *
      * @return list of selected bluetooth route infos.
      */
-    @RequiresPermission(
-            allOf = {
-                Manifest.permission.BLUETOOTH_PRIVILEGED,
-                Manifest.permission.BLUETOOTH_CONNECT
-            })
     public List<MediaRoute2Info> getBroadcastingDeviceRoutes() {
         // Use HashSet to check and avoid duplicates devices with same routeId
         Set<String> routeIdSet = new HashSet<>();
