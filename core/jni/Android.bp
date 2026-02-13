@@ -312,7 +312,6 @@ cc_defaults_for_libandroid_runtime {
                 "libgenfslabelsversion.ffi",
                 "libgui_window_info_static",
                 "libkernelconfigs",
-                "liblogger",
                 "libnativehelper_lazy",
                 "libseccomp_policy",
                 "libgrallocusage",
