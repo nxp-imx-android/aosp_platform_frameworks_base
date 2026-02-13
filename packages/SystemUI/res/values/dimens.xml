@@ -142,6 +142,9 @@
     <dimen name="status_bar_bottom_aligned_margin_rotation_180">-1px</dimen>
     <dimen name="status_bar_bottom_aligned_margin_rotation_270">-1px</dimen>
 
+     <!-- Height for shrink-wrapped icons displayed in composables in the status bar -->
+    <dimen name="status_bar_composable_icon_height_sp">13sp</dimen>
+
     <!-- Height of the icon container views in the status bar -->
     <dimen name="status_bar_icon_container_height">@dimen/status_bar_icon_size_sp</dimen>
 
