@@ -65,31 +65,61 @@ public final class FileOperationResult implements Parcelable {
     @Retention(RetentionPolicy.SOURCE)
     public @interface Status {}
 
-    /** No error or unknown error. */
+    /** Successful operation. */
+    public static final int ERROR_NONE = -1;
+
+    /** An unknown error. */
     public static final int ERROR_UNKNOWN = 0;
 
-    /** The system is too busy to handle the request. */
+    /**
+     * The system is too busy to handle the request.
+     *
+     * <p>This error is <b>transient</b>. Applications should consider retrying the operation after
+     * a short delay, potentially using an exponential backoff strategy.
+     */
     public static final int ERROR_BUSY = 1;
 
-    /** The system cannot fulfill the request as configured. */
+    /**
+     * The system cannot fulfill the request as configured.
+     *
+     * <p>This error is <b>permanent</b> as it indicates a malformed or invalid request.
+     */
     public static final int ERROR_INVALID_REQUEST = 2;
 
-    /** The source of the operation is unsupported or invalid. */
+    /**
+     * The source of the operation is unsupported or invalid.
+     *
+     * <p>This error is <b>permanent</b> as it indicates an issue with the request.
+     */
     public static final int ERROR_UNSUPPORTED_SOURCE = 3;
 
-    /** The target of the operation is unsupported or invalid. */
+    /**
+     * The target of the operation is unsupported or invalid.
+     *
+     * <p>This error is <b>permanent</b> as it indicates an issue with the request.
+     */
     public static final int ERROR_UNSUPPORTED_TARGET = 4;
 
-    /** The operation failed due to missing permissions. */
+    /**
+     * The operation failed due to missing permissions.
+     *
+     * <p>This error is <b>permanent</b> unless the user manually grants the required permissions.
+     */
     public static final int ERROR_PERMISSION_DENIED = 5;
 
-    /** The operation failed because the disk is full. */
+    /**
+     * The operation failed because the disk is full.
+     *
+     * <p>This error is <b>potentially transient</b> if the user clears enough space on the storage
+     * device.
+     */
     public static final int ERROR_DISK_FULL = 6;
 
     /** @hide */
     @IntDef(
             prefix = {"ERROR_"},
             value = {
+                ERROR_NONE,
                 ERROR_UNKNOWN,
                 ERROR_BUSY,
                 ERROR_INVALID_REQUEST,

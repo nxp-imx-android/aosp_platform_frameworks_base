@@ -141,6 +141,7 @@ public class FileServiceTest {
 
         assertThat(result.isSuccessful()).isTrue();
         assertThat(result.getRequestId()).isNotNull();
+        assertThat(result.getErrorCode()).isEqualTo(FileOperationResult.ERROR_NONE);
         assertThat(mTestDispatcher.mDispatchedRequests).contains(request);
     }
 

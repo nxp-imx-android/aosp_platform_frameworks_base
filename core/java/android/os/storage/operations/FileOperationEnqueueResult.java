@@ -38,7 +38,7 @@ public final class FileOperationEnqueueResult implements Parcelable {
     public FileOperationEnqueueResult(@NonNull String requestId) {
         mRequestId = requestId;
         mIsSuccessful = true;
-        mErrorCode = FileOperationResult.ERROR_UNKNOWN;
+        mErrorCode = FileOperationResult.ERROR_NONE;
     }
 
     /**

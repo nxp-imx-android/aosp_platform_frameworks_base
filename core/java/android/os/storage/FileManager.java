@@ -154,7 +154,12 @@ public final class FileManager {
     @NonNull
     public FileOperationEnqueueResult enqueueOperation(@NonNull FileOperationRequest request) {
         try {
-            return mService.enqueueOperation(request, mContext.getOpPackageName());
+            FileOperationEnqueueResult result =
+                    mService.enqueueOperation(request, mContext.getOpPackageName());
+            if (result.isSuccessful() && request.shouldRegisterCompletionListener()) {
+                registerCompletionListener(result.getRequestId());
+            }
+            return result;
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

@@ -36960,6 +36960,7 @@ package android.os.storage.operations {
     method public int getMode();
     method @NonNull public android.os.storage.operations.sources.OperationSource getSource();
     method @Nullable public android.os.storage.operations.targets.OperationTarget getTarget();
+    method public boolean shouldRegisterCompletionListener();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.os.storage.operations.FileOperationRequest> CREATOR;
     field public static final int OPERATION_COPY = 2; // 0x2
@@ -36969,6 +36970,7 @@ package android.os.storage.operations {
   public static final class FileOperationRequest.Builder {
     ctor public FileOperationRequest.Builder(int);
     method @NonNull public android.os.storage.operations.FileOperationRequest build();
+    method @NonNull public android.os.storage.operations.FileOperationRequest.Builder setRegisterCompletionListener(boolean);
     method @NonNull public android.os.storage.operations.FileOperationRequest.Builder setSource(@NonNull android.os.storage.operations.sources.OperationSource);
     method @NonNull public android.os.storage.operations.FileOperationRequest.Builder setTarget(@Nullable android.os.storage.operations.targets.OperationTarget);
   }
@@ -36987,6 +36989,7 @@ package android.os.storage.operations {
     field public static final int ERROR_BUSY = 1; // 0x1
     field public static final int ERROR_DISK_FULL = 6; // 0x6
     field public static final int ERROR_INVALID_REQUEST = 2; // 0x2
+    field public static final int ERROR_NONE = -1; // 0xffffffff
     field public static final int ERROR_PERMISSION_DENIED = 5; // 0x5
     field public static final int ERROR_UNKNOWN = 0; // 0x0
     field public static final int ERROR_UNSUPPORTED_SOURCE = 3; // 0x3
