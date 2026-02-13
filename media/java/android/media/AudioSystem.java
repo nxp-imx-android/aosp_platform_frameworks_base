@@ -434,10 +434,8 @@ public class AudioSystem
         if (codecId == BluetoothCodecType.CODEC_ID_OPUS) {
             return AudioSystem.AUDIO_FORMAT_OPUS;
         }
-        if (com.android.bluetooth.flags.Flags.a2dpLhdcApi()) {
-            if (codecId == BluetoothCodecType.CODEC_ID_LHDCV5) {
-                return AudioSystem.AUDIO_FORMAT_LHDC;
-            }
+        if (codecId == BluetoothCodecType.CODEC_ID_LHDCV5) {
+            return AudioSystem.AUDIO_FORMAT_LHDC;
         }
         Log.e(TAG, "Unknown A2DP BT codec: " + codecId + " for conversion to audio format");
         return AudioSystem.AUDIO_FORMAT_DEFAULT;
