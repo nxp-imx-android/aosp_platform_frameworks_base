@@ -35,6 +35,7 @@ import android.os.Process;
 import android.os.UserHandle;
 import android.provider.Settings;
 import android.service.notification.StatusBarNotification;
+import android.service.personalcontext.Flags;
 import android.service.personalcontext.IPersonalContextManager;
 import android.service.personalcontext.PersonalContextManager;
 import android.service.personalcontext.RenderToken;
@@ -332,13 +333,18 @@ public class PersonalContextManagerService extends SystemService {
                 signedHints.add(signHint(hint, processId, renderTokens, signedAttributionHints));
             }
 
-            RefinerWorkflow.start(
-                    componentManager,
-                    signedHints,
-                    renderTokens,
-                    HINT_SIGNING_KEY,
-                    mLogger,
-                    mExecutor);
+            if (Flags.enablePersonalContextServiceFeature()) {
+                RefinerWorkflow.start(
+                        componentManager,
+                        signedHints,
+                        renderTokens,
+                        HINT_SIGNING_KEY,
+                        mLogger,
+                        mExecutor);
+            } else {
+                Log.w(TAG, "Hint processing disabled by "
+                        + "enable_personal_context_service_breaking_bug_fixes flag");
+            }
         } catch (GeneralSecurityException e) {
             throw new RuntimeException(e);
         }
