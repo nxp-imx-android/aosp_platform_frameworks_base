@@ -15272,11 +15272,12 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         @Override
         public List<Bundle> getApplicationRestrictionsPerAdminForUser(
                 String packageName, @UserIdInt int userId) {
+            final int callingUid = Binder.getCallingUid();
             if (UserHandle.getCallingUserId() != userId
-                    || !UserHandle.isSameApp(
-                    Binder.getCallingUid(), getUidForPackage(packageName, userId))) {
-                final int uid = Binder.getCallingUid();
-                if (!UserHandle.isSameApp(uid, Process.SYSTEM_UID) && uid != Process.ROOT_UID) {
+                    || !mInjector.getPackageManagerInternal().isSameApp(packageName, callingUid,
+                            UserHandle.getUserId(callingUid))) {
+                if (!UserHandle.isSameApp(callingUid, Process.SYSTEM_UID)
+                        && callingUid != Process.ROOT_UID) {
                     throw new SecurityException("Only system may: get application restrictions for "
                             + "other user/app " + packageName);
                 }
