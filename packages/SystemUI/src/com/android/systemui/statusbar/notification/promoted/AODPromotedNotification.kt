@@ -119,8 +119,8 @@ fun AODPromotedNotification(
         AODPromotedNotificationView(
             notificationViewFactory = { notificationView },
             content = content,
-            audiblyAlertedIconVisible = audiblyAlertedIconVisible,
-            useLowFrequencyMode = useLowFrequencyMode,
+            audiblyAlertedIconVisible = { audiblyAlertedIconVisible },
+            useLowFrequencyMode = { useLowFrequencyMode },
             onBindingError = { hasBindingError = true },
             modifier = modifier,
         )
@@ -131,10 +131,10 @@ fun AODPromotedNotification(
 fun AODPromotedNotificationView(
     notificationViewFactory: (Context) -> View,
     content: PromotedNotificationContentModel,
-    audiblyAlertedIconVisible: Boolean,
+    audiblyAlertedIconVisible: () -> Boolean,
     onBindingError: () -> Unit,
     modifier: Modifier = Modifier,
-    useLowFrequencyMode: Boolean = true,
+    useLowFrequencyMode: () -> Boolean = { true },
 ) {
     val sidePaddings = dimensionResource(systemuiR.dimen.notification_side_paddings)
     val sidePaddingValues = PaddingValues(horizontal = sidePaddings, vertical = 0.dp)
@@ -189,7 +189,7 @@ fun AODPromotedNotificationView(
 
                 try {
                     traceSection("$TAG.update") {
-                        updater.update(content, audiblyAlertedIconVisible, useLowFrequencyMode)
+                        updater.update(content, audiblyAlertedIconVisible(), useLowFrequencyMode())
                     }
                     frame.maxHeight = maxHeight
                 } catch (tr: Throwable) {
