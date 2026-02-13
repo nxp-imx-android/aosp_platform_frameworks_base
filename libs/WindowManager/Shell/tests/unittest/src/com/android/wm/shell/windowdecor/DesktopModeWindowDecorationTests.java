@@ -29,7 +29,7 @@ import static android.view.WindowManager.TRANSIT_CHANGE;
 
 import static com.android.wm.shell.MockSurfaceControlHelper.createMockSurfaceControlTransaction;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT;
-import static com.android.wm.shell.windowdecor.DesktopModeWindowDecoration.CLOSE_MAXIMIZE_MENU_DELAY_MS;
+import static com.android.wm.shell.windowdecor.DesktopModeWindowDecoration.CLOSE_LAYOUT_MENU_DELAY_MS;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -1201,14 +1201,14 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    public void createMaximizeMenu_showsMenu() {
+    public void createLayoutMenu_showsMenu() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(true /* visible */);
         final LayoutMenu menu = mock(LayoutMenu.class);
         final DesktopModeWindowDecoration decoration = createWindowDecoration(taskInfo,
                 new FakeLayoutMenuFactory(menu));
         assertFalse(decoration.isLayoutMenuActive());
 
-        createMaximizeMenu(decoration);
+        createLayoutMenu(decoration);
 
         verify(menu).show(anyBoolean(), anyBoolean(), anyBoolean(),
                 mOnMaxMenuHoverChangeListener.capture(), any(), any());
@@ -1216,20 +1216,20 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    public void maximizeMenu_unHoversMenu_schedulesCloseMenu() {
+    public void layoutMenu_unHoversMenu_schedulesCloseMenu() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(true /* visible */);
         final LayoutMenu menu = mock(LayoutMenu.class);
         final DesktopModeWindowDecoration decoration = createWindowDecoration(taskInfo,
                 new FakeLayoutMenuFactory(menu));
-        decoration.setAppHeaderMaximizeButtonHovered(false);
-        createMaximizeMenu(decoration);
+        decoration.setHeaderMaximizeButtonHovered(false);
+        createLayoutMenu(decoration);
         verify(menu).show(anyBoolean(), anyBoolean(), anyBoolean(),
                 mOnMaxMenuHoverChangeListener.capture(), any(), any());
 
         mOnMaxMenuHoverChangeListener.getValue().invoke(false);
 
         verify(mMockHandler)
-                .postDelayed(mCloseMaxMenuRunnable.capture(), eq(CLOSE_MAXIMIZE_MENU_DELAY_MS));
+                .postDelayed(mCloseMaxMenuRunnable.capture(), eq(CLOSE_LAYOUT_MENU_DELAY_MS));
 
         mCloseMaxMenuRunnable.getValue().run();
         verify(menu).close(any());
@@ -1237,18 +1237,18 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    public void maximizeMenu_unHoversButton_schedulesCloseMenu() {
+    public void layoutMenu_unHoversButton_schedulesCloseMenu() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(true /* visible */);
         final LayoutMenu menu = mock(LayoutMenu.class);
         final DesktopModeWindowDecoration decoration = createWindowDecoration(taskInfo,
                 new FakeLayoutMenuFactory(menu));
-        decoration.setAppHeaderMaximizeButtonHovered(true);
-        createMaximizeMenu(decoration);
+        decoration.setHeaderMaximizeButtonHovered(true);
+        createLayoutMenu(decoration);
 
-        decoration.setAppHeaderMaximizeButtonHovered(false);
+        decoration.setHeaderMaximizeButtonHovered(false);
 
         verify(mMockHandler)
-                .postDelayed(mCloseMaxMenuRunnable.capture(), eq(CLOSE_MAXIMIZE_MENU_DELAY_MS));
+                .postDelayed(mCloseMaxMenuRunnable.capture(), eq(CLOSE_LAYOUT_MENU_DELAY_MS));
 
         mCloseMaxMenuRunnable.getValue().run();
         verify(menu).close(any());
@@ -1256,12 +1256,12 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    public void maximizeMenu_hoversMenu_cancelsCloseMenu() {
+    public void layoutMenu_hoversMenu_cancelsCloseMenu() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(true /* visible */);
         final LayoutMenu menu = mock(LayoutMenu.class);
         final DesktopModeWindowDecoration decoration = createWindowDecoration(taskInfo,
                 new FakeLayoutMenuFactory(menu));
-        createMaximizeMenu(decoration);
+        createLayoutMenu(decoration);
         verify(menu).show(anyBoolean(), anyBoolean(), anyBoolean(),
                 mOnMaxMenuHoverChangeListener.capture(), any(), any());
 
@@ -1271,29 +1271,29 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    public void maximizeMenu_hoversButton_cancelsCloseMenu() {
+    public void layoutMenu_hoversButton_cancelsCloseMenu() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(true /* visible */);
         final LayoutMenu menu = mock(LayoutMenu.class);
         final DesktopModeWindowDecoration decoration = createWindowDecoration(taskInfo,
                 new FakeLayoutMenuFactory(menu));
-        createMaximizeMenu(decoration);
+        createLayoutMenu(decoration);
         verify(menu).show(anyBoolean(), anyBoolean(), anyBoolean(),
                 mOnMaxMenuHoverChangeListener.capture(), any(), any());
 
-        decoration.setAppHeaderMaximizeButtonHovered(true);
+        decoration.setHeaderMaximizeButtonHovered(true);
 
         verify(mMockHandler).removeCallbacks(any());
     }
 
     @Test
-    public void createMaximizeMenu_taskRequestsImmersive_showsImmersiveOption() {
+    public void createLayoutMenu_taskRequestsImmersive_showsImmersiveOption() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(true /* visible */);
         taskInfo.requestedVisibleTypes = ~statusBars();
         final LayoutMenu menu = mock(LayoutMenu.class);
         final DesktopModeWindowDecoration decoration = createWindowDecoration(taskInfo,
                 new FakeLayoutMenuFactory(menu));
 
-        createMaximizeMenu(decoration);
+        createLayoutMenu(decoration);
 
         verify(menu).show(
                 anyBoolean(),
@@ -1306,14 +1306,14 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    public void createMaximizeMenu_taskDoesNotRequestImmersive_hiddenImmersiveOption() {
+    public void createLayoutMenu_taskDoesNotRequestImmersive_hiddenImmersiveOption() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(true /* visible */);
         taskInfo.requestedVisibleTypes = statusBars();
         final LayoutMenu menu = mock(LayoutMenu.class);
         final DesktopModeWindowDecoration decoration = createWindowDecoration(taskInfo,
                 new FakeLayoutMenuFactory(menu));
 
-        createMaximizeMenu(decoration);
+        createLayoutMenu(decoration);
 
         verify(menu).show(
                 anyBoolean(),
@@ -1326,14 +1326,14 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    public void createMaximizeMenu_taskResizable_showsSnapOptions() {
+    public void createLayoutMenu_taskResizable_showsSnapOptions() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(true /* visible */);
         taskInfo.isResizeable = true;
         final LayoutMenu menu = mock(LayoutMenu.class);
         final DesktopModeWindowDecoration decoration = createWindowDecoration(taskInfo,
                 new FakeLayoutMenuFactory(menu));
 
-        createMaximizeMenu(decoration);
+        createLayoutMenu(decoration);
 
         verify(menu).show(
                 anyBoolean(),
@@ -1346,14 +1346,14 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    public void createMaximizeMenu_taskUnresizable_hiddenSnapOptions() {
+    public void createLayoutMenu_taskUnresizable_hiddenSnapOptions() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(true /* visible */);
         taskInfo.isResizeable = false;
         final LayoutMenu menu = mock(LayoutMenu.class);
         final DesktopModeWindowDecoration decoration = createWindowDecoration(taskInfo,
                 new FakeLayoutMenuFactory(menu));
 
-        createMaximizeMenu(decoration);
+        createLayoutMenu(decoration);
 
         verify(menu).show(
                 anyBoolean(),
@@ -1763,7 +1763,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 : appToWebData.getOpenInAppOrBrowserIntent().getData().equals(uri);
     }
 
-    private void createMaximizeMenu(DesktopModeWindowDecoration decoration) {
+    private void createLayoutMenu(DesktopModeWindowDecoration decoration) {
         final Function0<Unit> l = () -> Unit.INSTANCE;
         decoration.createLayoutMenu();
     }
