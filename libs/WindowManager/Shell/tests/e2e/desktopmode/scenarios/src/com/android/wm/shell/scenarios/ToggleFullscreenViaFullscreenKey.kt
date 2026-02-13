@@ -16,7 +16,6 @@
 
 package com.android.wm.shell.scenarios
 
-import android.platform.test.annotations.RequiresFlagsEnabled
 import android.tools.traces.parsers.WindowManagerStateHelper
 import android.view.KeyEvent
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
@@ -26,14 +25,12 @@ import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
 import com.android.server.wm.flicker.helpers.ImmersiveAppHelper
 import com.android.server.wm.flicker.helpers.KeyEventHelper
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
-import com.android.window.flags.Flags
 import com.android.wm.shell.flicker.utils.SplitScreenUtils
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 
 /** Base scenario test for toggling fullscreen status via the fullscreen key. */
-@RequiresFlagsEnabled(Flags.FLAG_TOGGLE_FULLSCREEN_STATE_VIA_FULLSCREEN_KEY)
 abstract class ToggleFullscreenViaFullscreenKey : TestScenarioBase() {
     private val tapl = LauncherInstrumentation()
     private val wmHelper = WindowManagerStateHelper(getInstrumentation())
