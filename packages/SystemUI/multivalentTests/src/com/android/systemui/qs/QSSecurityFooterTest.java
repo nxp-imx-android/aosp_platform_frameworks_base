@@ -51,6 +51,7 @@ import androidx.annotation.Nullable;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
+import com.android.systemui.Flags;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.animation.DialogTransitionAnimator;
 import com.android.systemui.animation.Expandable;
@@ -859,6 +860,7 @@ public class QSSecurityFooterTest extends SysuiTestCase {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ANIMATION_LIBRARY_DYNAMIC_TARGET_RESOLUTION)
     public void testFinancedDeviceUsesSettingsButtonText() {
         when(mSecurityController.isDeviceManaged()).thenReturn(true);
         when(mSecurityController.getDeviceOwnerOrganizationName())
@@ -874,6 +876,33 @@ public class QSSecurityFooterTest extends SysuiTestCase {
         mTestableLooper.processAllMessages();
         verify(mDialogTransitionAnimator)
                 .show(dialogCaptor.capture(), any(DialogTransitionAnimator.Controller.class));
+
+        AlertDialog dialog = dialogCaptor.getValue();
+        dialog.create();
+
+        assertEquals(mFooterUtils.getSettingsButton(),
+                dialog.getButton(DialogInterface.BUTTON_NEGATIVE).getText());
+
+        dialog.dismiss();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ANIMATION_LIBRARY_DYNAMIC_TARGET_RESOLUTION)
+    public void testFinancedDeviceUsesSettingsButtonText_withDynamicTargetResolutionEnabled() {
+        when(mSecurityController.isDeviceManaged()).thenReturn(true);
+        when(mSecurityController.getDeviceOwnerOrganizationName())
+                .thenReturn(MANAGING_ORGANIZATION);
+        when(mSecurityController.isFinancedDevice()).thenReturn(true);
+
+        Expandable expandable = mock(Expandable.class);
+        when(expandable.dialogTransitionController(any())).thenReturn(
+                mock(DialogTransitionAnimator.Controller.class));
+        mFooterUtils.showDeviceMonitoringDialog(getContext(), expandable);
+        ArgumentCaptor<AlertDialog> dialogCaptor = ArgumentCaptor.forClass(AlertDialog.class);
+
+        mTestableLooper.processAllMessages();
+        verify(mDialogTransitionAnimator)
+                .show(dialogCaptor.capture(), any(), any());
 
         AlertDialog dialog = dialogCaptor.getValue();
         dialog.create();

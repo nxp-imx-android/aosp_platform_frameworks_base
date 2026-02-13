@@ -24,6 +24,7 @@ import android.view.View
 import android.view.ViewRootImpl
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.animation.Expandable
@@ -62,6 +63,7 @@ import org.junit.runner.RunWith
 import org.mockito.Mockito.anyBoolean
 import org.mockito.Mockito.times
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
@@ -598,7 +600,24 @@ class ShareToAppChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun chip_noScreen_clickBehaviorShowsGenericShareDialog() =
+    @EnableFlags(Flags.FLAG_ANIMATION_LIBRARY_DYNAMIC_TARGET_RESOLUTION)
+    fun chip_noScreen_clickBehaviorShowsGenericShareDialog_withDynamicTargetResolution() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chip)
+            mediaProjectionRepo.mediaProjectionState.value =
+                MediaProjectionState.Projecting.NoScreen(NORMAL_PACKAGE)
+
+            val expandAction =
+                ((latest as OngoingActivityChipModel.Active).clickBehavior
+                    as OngoingActivityChipModel.ClickBehavior.ExpandAction)
+            expandAction.onClick(mockExpandable)
+            verify(kosmos.mockDialogTransitionAnimator)
+                .show(eq(mockGenericShareDialog), any(), anyOrNull(), anyBoolean())
+        }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ANIMATION_LIBRARY_DYNAMIC_TARGET_RESOLUTION)
+    fun chip_noScreen_clickBehaviorShowsGenericShareDialog_withoutDynamicTargetResolution() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chip)
             mediaProjectionRepo.mediaProjectionState.value =
@@ -613,7 +632,24 @@ class ShareToAppChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun chip_entireScreen_clickBehaviorShowsScreenShareDialog() =
+    @EnableFlags(Flags.FLAG_ANIMATION_LIBRARY_DYNAMIC_TARGET_RESOLUTION)
+    fun chip_entireScreen_clickBehaviorShowsScreenShareDialog_withDynamicTargetResolution() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chip)
+            mediaProjectionRepo.mediaProjectionState.value =
+                MediaProjectionState.Projecting.EntireScreen(NORMAL_PACKAGE)
+
+            val expandAction =
+                ((latest as OngoingActivityChipModel.Active).clickBehavior
+                    as OngoingActivityChipModel.ClickBehavior.ExpandAction)
+            expandAction.onClick(mockExpandable)
+            verify(kosmos.mockDialogTransitionAnimator)
+                .show(eq(mockScreenShareDialog), anyOrNull(), anyOrNull(), anyBoolean())
+        }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ANIMATION_LIBRARY_DYNAMIC_TARGET_RESOLUTION)
+    fun chip_entireScreen_clickBehaviorShowsScreenShareDialog_withoutDynamicTargetResolution() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chip)
             mediaProjectionRepo.mediaProjectionState.value =
@@ -628,6 +664,7 @@ class ShareToAppChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableFlags(Flags.FLAG_ANIMATION_LIBRARY_DYNAMIC_TARGET_RESOLUTION)
     fun chip_singleTask_clickBehaviorShowsScreenShareDialog() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -645,6 +682,27 @@ class ShareToAppChipViewModelTest : SysuiTestCase() {
 
             verify(kosmos.mockDialogTransitionAnimator)
                 .show(eq(mockScreenShareDialog), any(), anyBoolean())
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ANIMATION_LIBRARY_DYNAMIC_TARGET_RESOLUTION)
+    fun chip_singleTask_clickBehaviorShowsScreenShareDialog_withDynamicTargetResolution() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chip)
+            mediaProjectionRepo.mediaProjectionState.value =
+                MediaProjectionState.Projecting.SingleTask(
+                    NORMAL_PACKAGE,
+                    hostDeviceName = null,
+                    createTask(taskId = 1),
+                )
+
+            val expandAction =
+                ((latest as OngoingActivityChipModel.Active).clickBehavior
+                    as OngoingActivityChipModel.ClickBehavior.ExpandAction)
+            expandAction.onClick(mockExpandable)
+
+            verify(kosmos.mockDialogTransitionAnimator)
+                .show(eq(mockScreenShareDialog), any(), anyOrNull(), anyBoolean())
         }
 
     @Test
