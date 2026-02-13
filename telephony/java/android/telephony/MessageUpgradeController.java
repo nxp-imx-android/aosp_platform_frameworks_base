@@ -237,7 +237,9 @@ public final class MessageUpgradeController {
 
         @Override
         public void onUpgradeStatusAvailable(int status) {
-            mClientCallbackExecutor.execute(() -> mClientCallback.accept(status));
+            Binder.withCleanCallingIdentity(() ->
+                    mClientCallbackExecutor.execute(() -> mClientCallback.accept(status))
+            );
         }
     }
 }
