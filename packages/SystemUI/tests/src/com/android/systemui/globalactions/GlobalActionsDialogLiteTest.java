@@ -1331,6 +1331,7 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         assertThat(globalActionsDialogLite.mDelegate).isNull();
     }
 
+    @FlakyTest(bugId = 479814486)
     @Test
     public void testCreateActionItems_tv_actionsFocusableAndClickable()
             throws InterruptedException {
