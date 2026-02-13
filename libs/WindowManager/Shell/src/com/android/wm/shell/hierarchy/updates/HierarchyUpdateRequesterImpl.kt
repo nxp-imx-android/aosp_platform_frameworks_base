@@ -15,13 +15,17 @@
  */
 package com.android.wm.shell.hierarchy.updates
 
+import android.util.Log
 import android.window.TaskCreationParams
 import android.window.WindowContainerTransaction
 import com.android.wm.shell.Flags
 import com.android.wm.shell.ShellTaskOrganizer
+import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.hierarchy.ContainerHierarchy
 import com.android.wm.shell.hierarchy.containers.Container
 import com.android.wm.shell.hierarchy.modes.Mode
+import com.android.wm.shell.protolog.ShellProtoLogGroup
+import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_MODES
 import com.android.wm.shell.transition.Transitions
 
 /**
@@ -29,6 +33,7 @@ import com.android.wm.shell.transition.Transitions
  * Allows overriding the wm/sf update appliers for easier testing.
  */
 class HierarchyUpdateRequesterImpl(
+    private val displayController: DisplayController,
     private val transitions: Transitions,
     private val hierarchy: ContainerHierarchy,
     private val updater: HierarchyUpdater,
@@ -74,5 +79,20 @@ class HierarchyUpdateRequesterImpl(
         // TODO: validate the given request -- look at the tokens and determine if the
         //  operations on that token are valid or not
         transitions.startTransition(transitType, wct, null)
+    }
+
+    /** @see HierarchyUpdateRequester.updateDisplay */
+    override fun updateDisplay(
+        displayId: Int,
+        outWct: WindowContainerTransaction
+    ) {
+        val display = hierarchy.getDisplay(displayId)
+        if (display == null) {
+            Log.w(WM_SHELL_MODES.tag, "Update requested for unknown display: $displayId")
+            return
+        }
+        // The display layout is always updated prior to this callback
+        val displayLayout = displayController.getDisplayLayout(displayId)!!
+        updater.updateDisplay(displayId, displayLayout, outWct)
     }
 }
