@@ -1342,7 +1342,7 @@ public class BubbleStackView extends FrameLayout
         }
 
         mExpandedViewAnimationController.setExpandedView(bev);
-        updateExpandedBubble();
+        updateExpandedBubble(previouslyExpandedBubble);
         updateExpandedView();
         bev.setAnimating(true);
         bev.setContentVisibility(true);
@@ -2606,7 +2606,8 @@ public class BubbleStackView extends FrameLayout
                         previouslySelected.setTaskViewVisibility(false);
                     }
 
-                    updateExpandedBubble(getExpandedBubbleCleanupRunnable(previouslySelected));
+                    updateExpandedBubble(previouslySelected,
+                            getExpandedBubbleCleanupRunnable(previouslySelected));
                     requestUpdate();
 
                     logBubbleEvent(previouslySelected,
@@ -2830,7 +2831,7 @@ public class BubbleStackView extends FrameLayout
     private void beforeExpandedViewAnimation() {
         mIsExpansionAnimating = true;
         hideFlyoutImmediate();
-        updateExpandedBubble();
+        updateExpandedBubble(/* previouslySelected= */ null);
         updateExpandedView();
     }
 
@@ -3927,11 +3928,12 @@ public class BubbleStackView extends FrameLayout
         return null;
     }
 
-    private void updateExpandedBubble() {
-        updateExpandedBubble(/* onEnd= */ null);
+    private void updateExpandedBubble(@Nullable BubbleViewProvider previouslySelected) {
+        updateExpandedBubble(previouslySelected, /* onEnd= */ null);
     }
 
-    private void updateExpandedBubble(@Nullable Runnable onEnd) {
+    private void updateExpandedBubble(@Nullable BubbleViewProvider previouslySelected,
+            @Nullable Runnable onEnd) {
         BubbleExpandedView bev = getExpandedView();
         if (!mIsExpanded || bev == null) {
             mExpandedViewContainer.removeAllViews();
@@ -3955,8 +3957,15 @@ public class BubbleStackView extends FrameLayout
             // will fill parent's height until #animateSwitchBubbles.
             updateExpandedView();
         } else {
-            mExpandedViewContainer.setVisibility(View.INVISIBLE);
-            mExpandedViewContainer.setAlpha(0f);
+            boolean wasOverflowPreviouslySelected =
+                    previouslySelected != null
+                            && BubbleOverflow.KEY.equals(previouslySelected.getKey());
+            // if the overflow bubble was previously selected, keep the expanded view container
+            // visible to avoid flickers
+            if (!wasOverflowPreviouslySelected || !Flags.fixFlickerWhenAppBubbleFromOverflow()) {
+                mExpandedViewContainer.setVisibility(View.INVISIBLE);
+                mExpandedViewContainer.setAlpha(0f);
+            }
             mExpandedViewContainer.addView(bev);
         }
         if (mIsExpansionAnimating) {
