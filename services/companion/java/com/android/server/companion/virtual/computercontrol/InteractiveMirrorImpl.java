@@ -85,7 +85,8 @@ final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
         try (var transaction = mTransactionSupplier.get()) {
             transaction
                     .reparent(mMirror.getMirrorSurfaceControl(), mMirrorLeash)
-                    .show(mMirrorLeash);
+                    .show(mMirror.getMirrorSurfaceControl())
+                    .hide(mMirrorLeash);
             updateInteractivity(isInteractivityAllowed, transaction);
             transaction.apply();
         }

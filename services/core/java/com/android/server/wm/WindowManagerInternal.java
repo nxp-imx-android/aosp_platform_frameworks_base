@@ -1296,7 +1296,7 @@ public abstract class WindowManagerInternal {
         /**
          * Get the mirror surface. The same SurfaceControl reference is returned throughout the
          * lifecycle of this mirror. This SurfaceControl will be released automatically on
-         * {@link #close()}.
+         * {@link #close()}. The SurfaceControl is initially hidden.
          */
         SurfaceControl getMirrorSurfaceControl();
     }

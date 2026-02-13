@@ -377,7 +377,9 @@ public class MirrorView extends FrameLayout {
             try (var transaction = new SurfaceControl.Transaction()) {
                 if (mirrorChanged) {
                     if (mCurrentMirrorSurface != null) {
-                        transaction.remove(mCurrentMirrorSurface);
+                        transaction
+                                .hide(mCurrentMirrorSurface)
+                                .remove(mCurrentMirrorSurface);
                     }
                     mCurrentMirrorSurface = mRequestedMirrorSurface != null
                             ? new SurfaceControl(mRequestedMirrorSurface,
@@ -386,15 +388,19 @@ public class MirrorView extends FrameLayout {
                 }
 
                 if (mCurrentMirrorSurface != null && (mirrorChanged || parentChanged)) {
-                    transaction.reparent(mCurrentMirrorSurface, parentSurface);
+                    transaction
+                            .reparent(mCurrentMirrorSurface, parentSurface)
+                            .show(mCurrentMirrorSurface);
                     mPreviousParentSurface = parentSurface;
                 }
 
-                if (requestedTransformation != null && mCurrentMirrorSurface != null) {
-                    transaction.setScale(mCurrentMirrorSurface, requestedTransformation.scale,
-                            requestedTransformation.scale);
-                    transaction.setPosition(mCurrentMirrorSurface,
-                            requestedTransformation.translateX, requestedTransformation.translateY);
+                if (mCurrentMirrorSurface != null) {
+                    transaction
+                            .setScale(mCurrentMirrorSurface, requestedTransformation.scale,
+                                    requestedTransformation.scale)
+                            .setPosition(mCurrentMirrorSurface,
+                                    requestedTransformation.translateX,
+                                    requestedTransformation.translateY);
                     mCurrentTransformation = requestedTransformation;
                 } else {
                     mCurrentTransformation = null;
@@ -410,12 +416,14 @@ public class MirrorView extends FrameLayout {
                     || (lhs != null && rhs != null && lhs.isSameSurface(rhs));
         }
 
+        @NonNull
         private Transformation computeTransformation() {
             if (mDisplaySize == null) {
-                return null;
+                return Transformation.IDENTITY;
             }
-            return computerCenterFillTransformation(mDisplaySize.getWidth(),
+            final var result = computerCenterFillTransformation(mDisplaySize.getWidth(),
                     mDisplaySize.getHeight(), getWidth(), getHeight());
+            return result != null ? result : Transformation.IDENTITY;
         }
 
         private void applyTransactionOnVriDraw(SurfaceControl.Transaction t) {
@@ -432,6 +440,7 @@ public class MirrorView extends FrameLayout {
      * The transformation to be applied to the mirror contents.
      */
     private record Transformation(float scale, float translateX, float translateY) {
+        static final Transformation IDENTITY = new Transformation(1f, 0f, 0f);
     }
 
     /**
