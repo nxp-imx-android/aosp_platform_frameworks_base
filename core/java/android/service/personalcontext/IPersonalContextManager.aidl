@@ -48,6 +48,7 @@ interface IPersonalContextManager {
             in ContextHintWrapper hint,
             in List<ContextHintWrapper> attributionHints);
 
+    @EnforcePermission("PERSONAL_CONTEXT_HOST_INSIGHT_SURFACE")
     oneway void registerInsightSurfaceClient(
             in InsightSurfaceClientInfo clientInfo,
             int userId);

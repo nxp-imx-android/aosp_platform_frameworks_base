@@ -670,11 +670,16 @@ public class PersonalContextManagerService extends SystemService {
                     });
         }
 
-        @PermissionManuallyEnforced
+        // Suppressing warning as enforcement is currently behind a flag
+        @SuppressWarnings("MissingEnforcePermissionHelper")
+        @EnforcePermission(android.Manifest.permission.PERSONAL_CONTEXT_HOST_INSIGHT_SURFACE)
         @Override
         public void registerInsightSurfaceClient(
                 InsightSurfaceClientInfo clientInfo,
                 int userId) {
+            if (android.service.personalcontext.Flags.enforcePersonalContextPermissions()) {
+                registerInsightSurfaceClient_enforcePermission();
+            }
             verifyUser(userId);
 
             final int callingPid = Binder.getCallingPid();

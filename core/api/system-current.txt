@@ -336,6 +336,7 @@ package android {
     field @FlaggedApi("com.android.nfc.module.flags.tap_to_x") public static final String PERFORM_GESTURE_EXCHANGE = "android.permission.PERFORM_GESTURE_EXCHANGE";
     field public static final String PERFORM_IMS_SINGLE_REGISTRATION = "android.permission.PERFORM_IMS_SINGLE_REGISTRATION";
     field public static final String PERFORM_SIM_ACTIVATION = "android.permission.PERFORM_SIM_ACTIVATION";
+    field @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final String PERSONAL_CONTEXT_HOST_INSIGHT_SURFACE = "android.permission.PERSONAL_CONTEXT_HOST_INSIGHT_SURFACE";
     field @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final String PERSONAL_CONTEXT_PUBLISH_HINTS = "android.permission.PERSONAL_CONTEXT_PUBLISH_HINTS";
     field @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final String PERSONAL_CONTEXT_PUBLISH_INSIGHTS = "android.permission.PERSONAL_CONTEXT_PUBLISH_INSIGHTS";
     field @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final String PERSONAL_CONTEXT_READ_SETTINGS = "android.permission.PERSONAL_CONTEXT_READ_SETTINGS";
@@ -15111,7 +15112,7 @@ package android.service.personalcontext.embedded {
     method @StyleRes public int getThemeResourceId();
     method public boolean isNestedScrollAxisLocked();
     method public void publishHints(@NonNull java.util.Set<android.service.personalcontext.hint.ContextHint>);
-    method public void register(@Nullable java.util.concurrent.Executor, @NonNull android.service.personalcontext.embedded.InsightSurfaceClient.ClientCallback);
+    method @RequiresPermission(android.Manifest.permission.PERSONAL_CONTEXT_HOST_INSIGHT_SURFACE) public void register(@Nullable java.util.concurrent.Executor, @NonNull android.service.personalcontext.embedded.InsightSurfaceClient.ClientCallback);
     method public boolean shouldBlur();
     method public void unregister();
   }

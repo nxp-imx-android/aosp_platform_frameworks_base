@@ -52,6 +52,7 @@ import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.service.personalcontext.Flags;
+import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
 import android.service.personalcontext.hint.BundleHint;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWrapper;
@@ -128,6 +129,8 @@ public class PersonalContextManagerServiceTest {
                 .setPermission(Manifest.permission.INTERACT_ACROSS_USERS, PERMISSION_GRANTED);
         mFakePermissionEnforcer = new FakePermissionEnforcer();
         mFakePermissionEnforcer.grant(Manifest.permission.CHANGE_PERSONAL_CONTEXT_MODE);
+        mFakePermissionEnforcer.grant(Manifest.permission.PERSONAL_CONTEXT_HOST_INSIGHT_SURFACE);
+        mFakePermissionEnforcer.grant(Manifest.permission.PERSONAL_CONTEXT_PUBLISH_HINTS);
         mFakePermissionEnforcer.grant(Manifest.permission.PERSONAL_CONTEXT_READ_SETTINGS);
         mFakePermissionEnforcer.grant(Manifest.permission.PERSONAL_CONTEXT_WRITE_SETTINGS);
         mFakePermissionEnforcer.grant(Manifest.permission.PERSONAL_CONTEXT_PUBLISH_HINTS);
@@ -344,6 +347,51 @@ public class PersonalContextManagerServiceTest {
         assertThrows(
                 SecurityException.class,
                 () -> binderService.publishTriggeringHint(hints, List.of(), List.of(), USER_ID_1));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_PERMISSIONS)
+    public void testRegisterInsightSurfaceClient_permissionsDenied_throwsSecurityException() {
+        PersonalContextManagerService.BinderService binderService =
+                new PersonalContextManagerService.BinderService(mService, mPackageManagerInternal);
+
+        mFakePermissionEnforcer.revoke(Manifest.permission.PERSONAL_CONTEXT_HOST_INSIGHT_SURFACE);
+
+        assertThrows(
+                SecurityException.class,
+                () ->
+                        binderService.registerInsightSurfaceClient(
+                                mock(InsightSurfaceClientInfo.class), USER_ID_1));
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_PERMISSIONS)
+    public void testRegisterInsightSurfaceClient_permissionFlagDisabled() {
+        PersonalContextManagerService.BinderService binderService =
+                new PersonalContextManagerService.BinderService(mService, mPackageManagerInternal);
+
+        mFakePermissionEnforcer.revoke(Manifest.permission.PERSONAL_CONTEXT_HOST_INSIGHT_SURFACE);
+
+        assertDoesNotThrow(
+                () ->
+                        binderService.registerInsightSurfaceClient(
+                                mock(InsightSurfaceClientInfo.class), USER_ID_1));
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+    @EnableFlags(Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_PERMISSIONS)
+    public void testRegisterInsightSurfaceClient_flagDisabled_throwsSecurityException() {
+        PersonalContextManagerService.BinderService binderService =
+                new PersonalContextManagerService.BinderService(mService, mPackageManagerInternal);
+
+        mFakePermissionEnforcer.revoke(Manifest.permission.PERSONAL_CONTEXT_HOST_INSIGHT_SURFACE);
+
+        assertThrows(
+                SecurityException.class,
+                () ->
+                        binderService.registerInsightSurfaceClient(
+                                mock(InsightSurfaceClientInfo.class), USER_ID_1));
     }
 
     @Test
