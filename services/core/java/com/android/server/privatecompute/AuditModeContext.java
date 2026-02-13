@@ -25,6 +25,7 @@ import android.annotation.Nullable;
 import android.os.Environment;
 import android.os.PersistableBundle;
 import android.util.Log;
+import android.sysprop.PccProperties;
 import com.android.internal.annotations.VisibleForTesting;
 import java.io.BufferedOutputStream;
 import java.util.Arrays;
@@ -65,6 +66,14 @@ class AuditModeContext {
 
     private static final String AUDIT_LOG_FILES_DIRNAME = "audit_logs";
 
+    // Max number of audit log files to keep on disk. When this limit is reached, old files will be
+    // overwritten. Overridden by the system property `persist.pcc.audit_mode.max_log_files` if set.
+    private static final int MAX_FILES = 10;
+
+    // Max size in KB of a single audit log file. Overridden by the system property
+    // `persist.pcc.audit_mode.log_file_max_size_kb` if set.
+    private static final int MAX_SIZE_KILOBYTES = 10 * 1024; // 10 MB
+
     // We have two kind of background tasks: serializing to a byte array, then writing to disk.
     // They are isolated to avoid one kind of task starving the other.
     private final ExecutorService mBundleSerializerExecutor;
@@ -81,6 +90,7 @@ class AuditModeContext {
     private final File mFolder;
     private final AuditLogFileManager mAuditLogFileManager;
     private final Object mLock = new Object();
+    private final Injector mInjector;
 
     // Once stopped, this can't be restarted. A new AuditModeContext should be created instead.
     @GuardedBy("mLock")
@@ -91,13 +101,18 @@ class AuditModeContext {
 
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
     AuditModeContext(
-            ExecutorService serializerExecutor, ExecutorService diskWriterExecutor, File folder) {
+            ExecutorService serializerExecutor,
+            ExecutorService diskWriterExecutor,
+            File folder,
+            Injector injector) {
         mBundleSerializerExecutor = serializerExecutor;
         mDiskWriterExecutor = diskWriterExecutor;
         mFolder = folder;
-        mAuditLogFileManager = new AuditLogFileManager(mFolder);
+        mInjector = injector;
+        mAuditLogFileManager = new AuditLogFileManager(mFolder, mInjector);
         mAuditLogInMemoryBuffer =
-                new AuditLogInMemoryBuffer(mAuditLogFileManager.rotateAndReturnNewFile());
+                new AuditLogInMemoryBuffer(
+                        mAuditLogFileManager.rotateAndReturnNewFile(), mInjector);
     }
 
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
@@ -117,7 +132,40 @@ class AuditModeContext {
     public static @NonNull AuditModeContext create() {
         File folder = new File(Environment.getDataSystemCeDirectory(), AUDIT_LOG_FILES_DIRNAME);
         return new AuditModeContext(
-                getBundleSerializerExecutorService(), getDiskWriterExecutorService(), folder);
+                getBundleSerializerExecutorService(),
+                getDiskWriterExecutorService(),
+                folder,
+                new Injector());
+    }
+
+
+
+    @VisibleForTesting
+    static class Injector {
+        /**
+         * The maximum number of audit log files to keep on disk. When this limit is reached, old
+         * files will be overwritten.
+         */
+        int auditModeMaxLogFiles() {
+            int maxFiles = PccProperties.audit_mode_max_log_files().orElse(MAX_FILES);
+            if (maxFiles <= 0) {
+                return MAX_FILES;
+            }
+            return maxFiles;
+        }
+
+        /**
+         * The maximum size of one audit log file in kB. When this limit is reached, the log file
+         * will be written to disk.
+         */
+        int auditModeLogFileMaxSizeKb() {
+            int maxSizeKB =
+                    PccProperties.audit_mode_log_file_max_size_kb().orElse(MAX_SIZE_KILOBYTES);
+            if (maxSizeKB <= 0) {
+                return MAX_SIZE_KILOBYTES;
+            }
+            return maxSizeKB;
+        }
     }
 
     /**
@@ -162,14 +210,15 @@ class AuditModeContext {
             if (!mAuditLogInMemoryBuffer.add(data)) {
 
                 try {
-                // Can't be added to this file, write it to disk and create a new one.
-                mDiskWriterExecutor.execute(mAuditLogInMemoryBuffer::writeToFile);
+                    // Can't be added to this file, write it to disk and create a new one.
+                    mDiskWriterExecutor.execute(mAuditLogInMemoryBuffer::writeToFile);
                 } catch (RejectedExecutionException e) {
                     Log.i(TAG, "Executor is shutting down, dropping data. " + e);
                     return;
                 }
                 mAuditLogInMemoryBuffer =
-                        new AuditLogInMemoryBuffer(mAuditLogFileManager.rotateAndReturnNewFile());
+                        new AuditLogInMemoryBuffer(
+                                mAuditLogFileManager.rotateAndReturnNewFile(), mInjector);
                 // New file, this will succeed.
                 if (!mAuditLogInMemoryBuffer.add(data)) {
                     // Log just in case, but this should never happen.
