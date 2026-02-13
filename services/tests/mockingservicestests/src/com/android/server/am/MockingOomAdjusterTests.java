@@ -224,7 +224,7 @@ public class MockingOomAdjusterTests {
     private final Handler mUpdateHandler = mock(Handler.class);
     // A limiter that does nothing, because it is created with no arguments, outside
     // system_server.
-    private final MemoryLimiter mMemoryLimiter = MemoryLimiter.getDefaultMemoryLimiter(null);
+    private final MemoryLimiter mMemoryLimiter = MemoryLimiter.getDefaultMemoryLimiter();
 
     private HandlerThread mActivityStateHandlerThread;
     private Handler mActivityStateHandler;

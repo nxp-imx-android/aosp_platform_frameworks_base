@@ -754,7 +754,7 @@ public class ActivityManagerService extends IActivityManager.Stub
 
     public final IntentFirewall mIntentFirewall;
 
-    private final MemoryLimiter mMemoryLimiter = MemoryLimiter.getDefaultMemoryLimiter(this);
+    private final MemoryLimiter mMemoryLimiter = MemoryLimiter.getDefaultMemoryLimiter();
 
     /**
      * The global lock for AMS, it's de-facto the ActivityManagerService object as of now.
@@ -11024,6 +11024,11 @@ public class ActivityManagerService extends IActivityManager.Stub
                 }
                 sdumper.dumpLocked();
             }
+        }
+
+        if (Flags.memoryLimiterEnable()) {
+            pw.println(TICK);
+            mMemoryLimiter.dump(pw);
         }
 
         // No need to hold the lock.
