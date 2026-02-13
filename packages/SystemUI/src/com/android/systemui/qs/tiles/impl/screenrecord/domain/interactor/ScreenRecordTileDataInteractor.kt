@@ -21,7 +21,7 @@ import com.android.systemui.qs.tiles.base.domain.interactor.QSTileDataInteractor
 import com.android.systemui.qs.tiles.base.domain.model.DataUpdateTrigger
 import com.android.systemui.qs.tiles.impl.screenrecord.domain.model.ScreenRecordTileModel
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
-import com.android.systemui.screenrecord.data.repository.ScreenRecordRepository
+import com.android.systemui.screenrecord.data.repository.ScreenRecordingServiceRepository
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
@@ -31,7 +31,7 @@ import kotlinx.coroutines.flow.map
 class ScreenRecordTileDataInteractor
 @Inject
 constructor(
-    private val screenRecordRepository: ScreenRecordRepository,
+    private val screenRecordRepository: ScreenRecordingServiceRepository,
     private val screenCaptureRecordFeaturesInteractor: ScreenCaptureRecordFeaturesInteractor,
 ) : QSTileDataInteractor<ScreenRecordTileModel> {
 
