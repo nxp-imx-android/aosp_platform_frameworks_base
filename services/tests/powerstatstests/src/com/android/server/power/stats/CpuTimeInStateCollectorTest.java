@@ -60,7 +60,7 @@ import java.io.StringWriter;
 
 @RunWith(AndroidJUnit4.class)
 @SmallTest
-public class CpuPowerStatsCollectorTest {
+public class CpuTimeInStateCollectorTest {
 
     private static final int ISOLATED_UID = 99123;
     private static final int UID_1 = 42;
@@ -76,7 +76,7 @@ public class CpuPowerStatsCollectorTest {
     private PowerStats mCollectedStats;
     private PowerProfile mPowerProfile = new PowerProfile();
     @Mock
-    private CpuPowerStatsCollector.KernelCpuStatsReader mMockKernelCpuStatsReader;
+    private CpuTimeInStateCollector.KernelCpuStatsReader mMockKernelCpuStatsReader;
     @Mock
     private PowerStatsCollector.ConsumedEnergyRetriever mConsumedEnergyRetriever;
     private CpuScalingPolicies mCpuScalingPolicies;
@@ -84,7 +84,7 @@ public class CpuPowerStatsCollectorTest {
     @Mock
     private PackageManager mPackageManager;
 
-    private class TestInjector implements CpuPowerStatsCollector.Injector {
+    private class TestInjector implements CpuTimeInStateCollector.Injector {
         private final int mDefaultCpuPowerBrackets;
         private final int mDefaultCpuPowerBracketsPerEnergyConsumer;
 
@@ -119,7 +119,7 @@ public class CpuPowerStatsCollectorTest {
         }
 
         @Override
-        public CpuPowerStatsCollector.KernelCpuStatsReader getKernelCpuStatsReader() {
+        public CpuTimeInStateCollector.KernelCpuStatsReader getKernelCpuStatsReader() {
             return mMockKernelCpuStatsReader;
         }
 
@@ -162,16 +162,20 @@ public class CpuPowerStatsCollectorTest {
         mPowerProfile.initForTesting(
                 BatteryUsageStatsRule.resolveParser("power_profile_test_power_brackets"));
         mCpuScalingPolicies = new CpuScalingPolicies(
-                new SparseArray<>() {{
-                    put(0, new int[]{0});
-                    put(4, new int[]{4});
-                }},
-                new SparseArray<>() {{
-                    put(0, new int[]{100});
-                    put(4, new int[]{400, 500});
-                }});
+                new SparseArray<>() {
+                    {
+                        put(0, new int[]{0});
+                        put(4, new int[]{4});
+                    }
+                },
+                new SparseArray<>() {
+                    {
+                        put(0, new int[]{100});
+                        put(4, new int[]{400, 500});
+                    }
+                });
 
-        CpuPowerStatsCollector collector = createCollector(8, 0);
+        CpuTimeInStateCollector collector = createCollector(8, 0);
 
         assertThat(getScalingStepToPowerBracketMap(collector))
                 .isEqualTo(new int[]{1, 1, 0});
@@ -182,7 +186,7 @@ public class CpuPowerStatsCollectorTest {
         mPowerProfile.initForTesting(BatteryUsageStatsRule.resolveParser("power_profile_test"));
         mockCpuScalingPolicies(2);
 
-        CpuPowerStatsCollector collector = createCollector(3, 0);
+        CpuTimeInStateCollector collector = createCollector(3, 0);
 
         assertThat(new String[]{
                 collector.getCpuPowerBracketDescription(0),
@@ -201,7 +205,7 @@ public class CpuPowerStatsCollectorTest {
         mPowerProfile.initForTesting(BatteryUsageStatsRule.resolveParser("power_profile_test"));
         mockCpuScalingPolicies(2);
 
-        CpuPowerStatsCollector collector = createCollector(8, 0);
+        CpuTimeInStateCollector collector = createCollector(8, 0);
 
         assertThat(getScalingStepToPowerBracketMap(collector))
                 .isEqualTo(new int[]{0, 1, 2, 3, 4, 5, 6});
@@ -213,7 +217,7 @@ public class CpuPowerStatsCollectorTest {
         mockCpuScalingPolicies(2);
         mockEnergyConsumers();
 
-        CpuPowerStatsCollector collector = createCollector(8, 2);
+        CpuTimeInStateCollector collector = createCollector(8, 2);
 
         assertThat(getScalingStepToPowerBracketMap(collector))
                 .isEqualTo(new int[]{0, 1, 1, 2, 2, 3, 3});
@@ -225,7 +229,7 @@ public class CpuPowerStatsCollectorTest {
         mockCpuScalingPolicies(2);
         mockEnergyConsumers();
 
-        CpuPowerStatsCollector collector = createCollector(8, 2);
+        CpuTimeInStateCollector collector = createCollector(8, 2);
         PowerStats.Descriptor descriptor = collector.getPowerStatsDescriptor();
         assertThat(descriptor.powerComponentId).isEqualTo(BatteryConsumer.POWER_COMPONENT_CPU);
         assertThat(descriptor.name).isEqualTo("cpu");
@@ -267,15 +271,17 @@ public class CpuPowerStatsCollectorTest {
         mockPowerProfile();
         mockEnergyConsumers();
 
-        CpuPowerStatsCollector collector = createCollector(8, 0);
+        CpuTimeInStateCollector collector = createCollector(8, 0);
         CpuPowerStatsLayout layout = new CpuPowerStatsLayout(collector.getPowerStatsDescriptor());
 
         mockKernelCpuStats(new long[]{1111, 2222, 3333},
-                new SparseArray<>() {{
-                    put(UID_1, new long[]{100, 200});
-                    put(UID_2, new long[]{100, 150});
-                    put(ISOLATED_UID, new long[]{200, 450});
-                }}, 0, 1234);
+                new SparseArray<>() {
+                    {
+                        put(UID_1, new long[]{100, 200});
+                        put(UID_2, new long[]{100, 150});
+                        put(ISOLATED_UID, new long[]{200, 450});
+                    }
+                }, 0, 1234);
 
         mMockClock.uptime = 1000;
         collector.forceSchedule();
@@ -341,7 +347,7 @@ public class CpuPowerStatsCollectorTest {
         mockPowerProfile();
         mockEnergyConsumers();
 
-        CpuPowerStatsCollector collector = createCollector(8, 0);
+        CpuTimeInStateCollector collector = createCollector(8, 0);
         CpuPowerStatsLayout layout = new CpuPowerStatsLayout(collector.getPowerStatsDescriptor());
 
         mockKernelCpuStats(new long[]{1111, 2222, 3333},
@@ -406,14 +412,16 @@ public class CpuPowerStatsCollectorTest {
         mockPowerProfile();
         mockEnergyConsumers();
 
-        CpuPowerStatsCollector collector = createCollector(8, 0);
+        CpuTimeInStateCollector collector = createCollector(8, 0);
         CpuPowerStatsLayout layout = new CpuPowerStatsLayout(collector.getPowerStatsDescriptor());
 
         mockKernelCpuStats(new long[]{1111, 2222, 3333},
-                new SparseArray<>() {{
-                    put(UID_2, new long[]{100, 150});
-                    put(ISOLATED_UID, new long[]{10000, 20000});
-                }}, 0, 1234);
+                new SparseArray<>() {
+                    {
+                        put(UID_2, new long[]{100, 150});
+                        put(ISOLATED_UID, new long[]{10000, 20000});
+                    }
+                }, 0, 1234);
 
         mMockClock.uptime = 1000;
         collector.schedule();
@@ -444,15 +452,17 @@ public class CpuPowerStatsCollectorTest {
         mockPowerProfile();
         mockEnergyConsumers();
 
-        CpuPowerStatsCollector collector = createCollector(8, 0);
+        CpuTimeInStateCollector collector = createCollector(8, 0);
         collector.collectStats();       // Establish baseline
 
         mockKernelCpuStats(new long[]{1111, 2222, 3333},
-                new SparseArray<>() {{
-                    put(UID_1, new long[]{100, 200});
-                    put(UID_2, new long[]{100, 150});
-                    put(ISOLATED_UID, new long[]{200, 450});
-                }}, 0, 1234);
+                new SparseArray<>() {
+                    {
+                        put(UID_1, new long[]{100, 200});
+                        put(UID_2, new long[]{100, 150});
+                        put(ISOLATED_UID, new long[]{200, 450});
+                    }
+                }, 0, 1234);
 
         PowerStats powerStats = collector.collectStats();
 
@@ -488,9 +498,9 @@ public class CpuPowerStatsCollectorTest {
         when(mPowerProfile.getCpuPowerBracketForScalingStep(0, 2)).thenReturn(1);
     }
 
-    private CpuPowerStatsCollector createCollector(int defaultCpuPowerBrackets,
+    private CpuTimeInStateCollector createCollector(int defaultCpuPowerBrackets,
             int defaultCpuPowerBracketsPerEnergyConsumer) {
-        CpuPowerStatsCollector collector = new CpuPowerStatsCollector(
+        CpuTimeInStateCollector collector = new CpuTimeInStateCollector(
                 new TestInjector(defaultCpuPowerBrackets, defaultCpuPowerBracketsPerEnergyConsumer)
         );
         collector.addConsumer((stats, elapsedRealtime, uptime) -> mCollectedStats = stats);
@@ -501,10 +511,10 @@ public class CpuPowerStatsCollectorTest {
     private void mockKernelCpuStats(long[] deviceStats, SparseArray<long[]> uidToCpuStats,
             long expectedLastUpdateTimestampMs, long newLastUpdateTimestampMs) {
         when(mMockKernelCpuStatsReader.readCpuStats(
-                any(CpuPowerStatsCollector.KernelCpuStatsCallback.class),
+                any(CpuTimeInStateCollector.KernelCpuStatsCallback.class),
                 any(int[].class), anyLong(), any(long[].class), any(long[].class)))
                 .thenAnswer(invocation -> {
-                    CpuPowerStatsCollector.KernelCpuStatsCallback callback =
+                    CpuTimeInStateCollector.KernelCpuStatsCallback callback =
                             invocation.getArgument(0);
                     int[] powerBucketIndexes = invocation.getArgument(1);
                     long lastTimestamp = invocation.getArgument(2);
@@ -546,7 +556,7 @@ public class CpuPowerStatsCollectorTest {
         return ecr;
     }
 
-    private static int[] getScalingStepToPowerBracketMap(CpuPowerStatsCollector collector) {
+    private static int[] getScalingStepToPowerBracketMap(CpuTimeInStateCollector collector) {
         CpuPowerStatsLayout layout = new CpuPowerStatsLayout(collector.getPowerStatsDescriptor());
         return layout.getScalingStepToPowerBracketMap();
     }

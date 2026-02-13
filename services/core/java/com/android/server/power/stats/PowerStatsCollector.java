@@ -103,6 +103,14 @@ public abstract class PowerStatsCollector {
         mClock = clock;
     }
 
+    public Handler getHandler() {
+        return mHandler;
+    }
+
+    public Clock getClock() {
+        return mClock;
+    }
+
     /**
      * Adds a consumer that will receive a callback every time a snapshot of stats is collected.
      * The method is thread safe.
