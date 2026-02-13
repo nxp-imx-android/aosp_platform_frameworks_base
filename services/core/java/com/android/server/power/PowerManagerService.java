@@ -4342,15 +4342,17 @@ public final class PowerManagerService extends SystemService
             if (!mSystemReady) {
                 return isGloballyInteractiveInternal();
             }
-            DisplayInfo displayInfo = mDisplayManagerInternal.getDisplayInfo(displayId);
-            if (displayInfo == null) {
-                Slog.w(TAG, "Did not find DisplayInfo for displayId " + displayId);
-                return false;
-            }
-            if (!displayInfo.hasAccess(uid)) {
-                throw new SecurityException(
-                        "uid " + uid + " does not have access to display " + displayId);
-            }
+        }
+        final DisplayInfo displayInfo = mDisplayManagerInternal.getDisplayInfo(displayId);
+        if (displayInfo == null) {
+            Slog.w(TAG, "Did not find DisplayInfo for displayId " + displayId);
+            return false;
+        }
+        if (!displayInfo.hasAccess(uid)) {
+            throw new SecurityException(
+                    "uid " + uid + " does not have access to display " + displayId);
+        }
+        synchronized (mLock) {
             PowerGroup powerGroup = mPowerGroups.get(displayInfo.displayGroupId);
             if (powerGroup == null) {
                 Slog.w(TAG, "Did not find PowerGroup for displayId " + displayId);
