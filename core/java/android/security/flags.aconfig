@@ -258,3 +258,13 @@ flag {
       purpose: PURPOSE_FEATURE
     }
 }
+
+flag {
+    name: "move_notify_lock_credential_calls"
+    namespace: "security"
+    description: "Move calls to consumers of new lock credentials to the proper helper in LockSettingsService"
+    bug: "481759344"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
