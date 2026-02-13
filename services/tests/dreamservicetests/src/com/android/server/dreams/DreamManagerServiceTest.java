@@ -25,7 +25,6 @@ import static android.service.dreams.Flags.FLAG_SYSTEM_DREAM_DEATH_RECIPIENT;
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
-import static org.mockito.Mockito.never;
 import static com.android.server.dreams.DreamManagerService.CHARGE_LIMIT_PERCENTAGE;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -39,6 +38,7 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -47,6 +47,7 @@ import android.annotation.UserIdInt;
 import android.app.ActivityManagerInternal;
 import android.app.UiModeManager;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
@@ -56,7 +57,6 @@ import android.hardware.health.BatteryChargingState;
 import android.os.BatteryManager;
 import android.os.BatteryManagerInternal;
 import android.os.Binder;
-import android.content.ComponentName;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
@@ -67,7 +67,6 @@ import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.testing.TestableContext;
-
 import android.testing.TestableResources;
 import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
@@ -127,6 +126,8 @@ public class DreamManagerServiceTest {
     private AmbientDisplayConfiguration mDozeConfigMock;
     @Mock
     private DreamValidator mDreamValidatorMock;
+    @Mock
+    private DreamComponentsResolver mDreamComponentsResolver;
 
     @Rule
     public LocalServiceKeeperRule mLocalServiceKeeperRule = new LocalServiceKeeperRule();
@@ -186,9 +187,8 @@ public class DreamManagerServiceTest {
         when(mContextSpy.getSystemService(PowerManager.class)).thenReturn(mPowerManagerMock);
         when(mContextSpy.getSystemService(UserManager.class)).thenReturn(mUserManagerMock);
         when(mContextSpy.getSystemService(UiModeManager.class)).thenReturn(mUiModeManagerMock);
-
         when(mDozeConfigMock.ambientDisplayComponent())
-                .thenReturn("test.doze.component/.TestDozeService");
+                .thenReturn("com.android.systemui/.doze.DozeService");
     }
 
     @After
@@ -205,6 +205,7 @@ public class DreamManagerServiceTest {
                         mDreamControllerMock,
                         mDozeConfigMock,
                         mDreamValidatorMock,
+                        mDreamComponentsResolver,
                         mCurrentUser.getIdentifier()));
     }
 
@@ -270,12 +271,8 @@ public class DreamManagerServiceTest {
         enableDreaming();
         setupDreamPreconditions();
         final ComponentName dream = new ComponentName("a", "b");
-        Settings.Secure.putStringForUser(mContextSpy.getContentResolver(),
-                Settings.Secure.SCREENSAVER_DEFAULT_COMPONENT,
-                dream.flattenToString(),
-                UserHandle.USER_CURRENT);
-        when(mDreamValidatorMock.validate(eq(dream), anyInt())).thenReturn(true);
-
+        when(mDreamComponentsResolver.resolve(anyBoolean(), anyInt(), anyBoolean(), any()))
+                .thenReturn(dream);
 
         // Initialize service so settings are read.
         final DreamManagerService service = createService();
@@ -292,6 +289,8 @@ public class DreamManagerServiceTest {
     public void testCanStartDreaming_returnsFalseWhenNoDreamConfigured() {
         enableDreaming();
         setupDreamPreconditions();
+        when(mDreamComponentsResolver.resolve(anyBoolean(), anyInt(), anyBoolean(), any()))
+                .thenReturn(null);
 
         // Initialize service so settings are read.
         final DreamManagerService service = createService();
@@ -318,7 +317,7 @@ public class DreamManagerServiceTest {
 
         // Connected to Android Auto.
         when(mUiModeManagerMock.getActiveProjectionTypes())
-                .thenReturn(UiModeManager.PROJECTION_TYPE_NONE);
+                .thenReturn(UiModeManager.PROJECTION_TYPE_AUTOMOTIVE);
 
         // Initialize service so settings are read.
         final DreamManagerService service = createService();
@@ -341,8 +340,9 @@ public class DreamManagerServiceTest {
 
         // Set up preconditions.
         when(mUserManagerMock.isUserUnlocked(anyInt())).thenReturn(true);
-        when(mDozeConfigMock.enabled(anyInt())).thenReturn(true);
-        when(mDreamValidatorMock.validate(any(), anyInt())).thenReturn(true);
+        final ComponentName dream = new ComponentName("a", "b");
+        when(mDreamComponentsResolver.resolve(anyBoolean(), anyInt(), anyBoolean(), any()))
+                .thenReturn(dream);
 
         // Device is charging.
         when(mBatteryManagerInternal.isPowered(anyInt())).thenReturn(true);
@@ -557,26 +557,14 @@ public class DreamManagerServiceTest {
     }
 
     @Test
-    public void testStartDream_fallsBackToDefaultDreamWhenUserDreamDoesNotExist()
-            throws PackageManager.NameNotFoundException {
+    public void testStartDream_startsResolvedDream() throws PackageManager.NameNotFoundException {
         enableDreaming();
         setupDreamPreconditions();
 
-        final ComponentName nonExistentDream =
-                ComponentName.unflattenFromString("fake.package/.FakeDream");
-        Settings.Secure.putStringForUser(mContextSpy.getContentResolver(),
-                Settings.Secure.SCREENSAVER_COMPONENTS,
-                nonExistentDream.flattenToString(),
-                UserHandle.USER_CURRENT);
-        when(mDreamValidatorMock.validate(eq(nonExistentDream), anyInt())).thenReturn(false);
-
-        final ComponentName defaultDream =
+        final ComponentName resolvedDream =
                 ComponentName.unflattenFromString("default.package/.DefaultDream");
-        Settings.Secure.putStringForUser(mContextSpy.getContentResolver(),
-                Settings.Secure.SCREENSAVER_DEFAULT_COMPONENT,
-                defaultDream.flattenToString(),
-                UserHandle.USER_CURRENT);
-        when(mDreamValidatorMock.validate(eq(defaultDream), anyInt())).thenReturn(true);
+        when(mDreamComponentsResolver.resolve(anyBoolean(), anyInt(), anyBoolean(), any()))
+                .thenReturn(resolvedDream);
 
         // Initialize service and trigger dream.
         final DreamManagerService service = createService();
@@ -588,7 +576,7 @@ public class DreamManagerServiceTest {
         verify(mWakeLockMock).wrap(runnableCaptor.capture());
         runnableCaptor.getValue().run();
 
-        // Verify that the default dream is started.
+        // Verify that the resolved dream is started.
         ArgumentCaptor<ComponentName> componentNameCaptor =
                 ArgumentCaptor.forClass(ComponentName.class);
         verify(mDreamControllerMock).startDream(
@@ -600,7 +588,7 @@ public class DreamManagerServiceTest {
                 any(PowerManager.WakeLock.class),
                 any(),
                 anyString());
-        assertThat(componentNameCaptor.getValue()).isEqualTo(defaultDream);
+        assertThat(componentNameCaptor.getValue()).isEqualTo(resolvedDream);
     }
 
     @Test
@@ -616,6 +604,11 @@ public class DreamManagerServiceTest {
                 userDream.flattenToString(),
                 UserHandle.USER_CURRENT);
         when(mDreamValidatorMock.validate(eq(userDream), anyInt())).thenReturn(true);
+        when(mDreamComponentsResolver.resolve(anyBoolean(), anyInt(), anyBoolean(), any()))
+                .thenAnswer(invocation -> {
+                    ComponentName systemDreamArg = invocation.getArgument(3);
+                    return systemDreamArg != null ? systemDreamArg : userDream;
+                });
 
         final DreamManagerService service = createService();
         service.onBootPhase(SystemService.PHASE_THIRD_PARTY_APPS_CAN_START);
@@ -664,26 +657,13 @@ public class DreamManagerServiceTest {
     }
 
     @Test
-    public void testStartDream_noFallbackWhenDefaultDreamDoesNotExist()
+    public void testStartDream_doesNotStartWhenNoDreamResolved()
             throws PackageManager.NameNotFoundException {
         enableDreaming();
         setupDreamPreconditions();
 
-        final ComponentName nonExistentDream =
-                ComponentName.unflattenFromString("fake.package/.FakeDream");
-        Settings.Secure.putStringForUser(mContextSpy.getContentResolver(),
-                Settings.Secure.SCREENSAVER_COMPONENTS,
-                nonExistentDream.flattenToString(),
-                UserHandle.USER_CURRENT);
-        when(mDreamValidatorMock.validate(eq(nonExistentDream), anyInt())).thenReturn(false);
-
-        final ComponentName nonExistentDefaultDream =
-                ComponentName.unflattenFromString("default.package/.DefaultDream");
-        Settings.Secure.putStringForUser(mContextSpy.getContentResolver(),
-                Settings.Secure.SCREENSAVER_DEFAULT_COMPONENT,
-                nonExistentDefaultDream.flattenToString(),
-                UserHandle.USER_CURRENT);
-        when(mDreamValidatorMock.validate(eq(nonExistentDefaultDream), anyInt())).thenReturn(false);
+        when(mDreamComponentsResolver.resolve(anyBoolean(), anyInt(), anyBoolean(), any()))
+                .thenReturn(null);
 
         // Initialize service and trigger dream.
         final DreamManagerService service = createService();
@@ -722,16 +702,19 @@ public class DreamManagerServiceTest {
         private final DreamController mDreamController;
         private final AmbientDisplayConfiguration mDozeConfig;
         private final DreamValidator mDreamValidator;
+        private final DreamComponentsResolver mDreamComponentsResolver;
         private final int mCurrentUser;
 
         TestInjector(Context context, Handler handler, DreamController dreamController,
                 AmbientDisplayConfiguration dozeConfig, DreamValidator dreamValidator,
+                DreamComponentsResolver dreamComponentsResolver,
                 @UserIdInt int currentUser) {
             mContext = context;
             mHandler = handler;
             mDreamController = dreamController;
             mDozeConfig = dozeConfig;
             mDreamValidator = dreamValidator;
+            mDreamComponentsResolver = dreamComponentsResolver;
             mCurrentUser = currentUser;
         }
 
@@ -758,6 +741,13 @@ public class DreamManagerServiceTest {
         @Override
         public DreamValidator getDreamValidator() {
             return mDreamValidator;
+        }
+
+        @Override
+        public DreamComponentsResolver getDreamComponentsResolver(Context context,
+                DreamValidator dreamValidator, AmbientDisplayConfiguration dozeConfig,
+                UserManagerInternal userManagerInternal, boolean dreamsOnlyEnabledForDockUser) {
+            return mDreamComponentsResolver;
         }
 
         @Override
