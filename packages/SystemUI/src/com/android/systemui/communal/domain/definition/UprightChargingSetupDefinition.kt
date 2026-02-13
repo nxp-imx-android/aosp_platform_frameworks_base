@@ -18,7 +18,7 @@ package com.android.systemui.communal.domain.definition
 import com.android.systemui.communal.data.preconditions.CommonSetupPreconditions
 import com.android.systemui.communal.data.repository.ContextualSetupRepository
 import com.android.systemui.communal.data.repository.SetupState
-import com.android.systemui.communal.data.repository.UprightChargingTriggerRepository
+import com.android.systemui.communal.domain.interactor.UprightChargingInteractor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.util.kotlin.FlowDumper
 import java.io.PrintWriter
@@ -34,7 +34,7 @@ class UprightChargingSetupDefinition
 @Inject
 constructor(
     private val commonConditions: CommonSetupPreconditions,
-    private val triggerRepo: UprightChargingTriggerRepository,
+    private val uprightChargingInteractor: UprightChargingInteractor,
     private val contextualSetupRepo: ContextualSetupRepository,
     private val flowDumper: FlowDumper,
     override val target: SetupTarget,
@@ -54,7 +54,7 @@ constructor(
             .flatMapLatest { preconditionsMet ->
                 if (preconditionsMet) {
                     // Preconditions met: Safe to subscribe to expensive hardware trigger
-                    triggerRepo.isTriggered
+                    uprightChargingInteractor.isTriggered
                 } else {
                     // Preconditions failed: Ensure sensor is OFF
                     flowOf(false)

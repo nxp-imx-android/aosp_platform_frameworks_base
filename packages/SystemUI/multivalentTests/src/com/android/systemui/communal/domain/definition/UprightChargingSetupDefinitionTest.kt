@@ -24,7 +24,7 @@ import com.android.systemui.communal.commonSetupPreconditions
 import com.android.systemui.communal.contextualSetupRepository
 import com.android.systemui.communal.data.repository.SetupState
 import com.android.systemui.communal.fake
-import com.android.systemui.communal.uprightChargingTriggerRepository
+import com.android.systemui.communal.uprightChargingInteractor
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.testKosmos
@@ -41,16 +41,20 @@ class UprightChargingSetupDefinitionTest : SysuiTestCase() {
     private val kosmos = testKosmos()
 
     private val commonPreconditions = kosmos.commonSetupPreconditions.fake
-    private val triggerRepository = kosmos.uprightChargingTriggerRepository.fake
+    private val uprightChargingInteractor = kosmos.uprightChargingInteractor.fake
     private val contextualSetupRepo = kosmos.contextualSetupRepository.fake
     private val underTest =
         UprightChargingSetupDefinition(
             commonConditions = commonPreconditions,
-            triggerRepo = triggerRepository,
+            uprightChargingInteractor = uprightChargingInteractor,
             contextualSetupRepo = contextualSetupRepo,
             flowDumper = SimpleFlowDumper(),
             target = SetupTarget.Activity(ComponentName("package", "class")),
         )
+
+    private fun setTriggered(triggered: Boolean) {
+        uprightChargingInteractor.setTriggered(triggered)
+    }
 
     @Test
     fun isReady_preconditionsNotMet_isFalse() =
@@ -58,13 +62,11 @@ class UprightChargingSetupDefinitionTest : SysuiTestCase() {
             val isReady by collectLastValue(underTest.isReady)
 
             contextualSetupRepo.setSetupState(underTest.id, SetupState.NotStarted)
-            triggerRepository.setTriggered(true)
+            setTriggered(true)
 
-            // Start with preconditions being met.
             commonPreconditions.setAllMet(true)
             assertThat(isReady).isTrue()
 
-            // When preconditions are no longer met, isReady is false.
             commonPreconditions.setAllMet(false)
             assertThat(isReady).isFalse()
         }
@@ -77,12 +79,10 @@ class UprightChargingSetupDefinitionTest : SysuiTestCase() {
             contextualSetupRepo.setSetupState(underTest.id, SetupState.NotStarted)
             commonPreconditions.setAllMet(true)
 
-            // Start with the trigger fired.
-            triggerRepository.setTriggered(true)
+            setTriggered(true)
             assertThat(isReady).isTrue()
 
-            // When the trigger is no longer fired, isReady is false.
-            triggerRepository.setTriggered(false)
+            setTriggered(false)
             assertThat(isReady).isFalse()
         }
 
@@ -93,7 +93,7 @@ class UprightChargingSetupDefinitionTest : SysuiTestCase() {
 
             contextualSetupRepo.setSetupState(underTest.id, SetupState.NotStarted)
             commonPreconditions.setAllMet(true)
-            triggerRepository.setTriggered(true)
+            setTriggered(true)
 
             assertThat(isReady).isTrue()
         }
@@ -103,13 +103,11 @@ class UprightChargingSetupDefinitionTest : SysuiTestCase() {
         kosmos.runTest {
             val isReady by collectLastValue(underTest.isReady)
 
-            // Start in a ready state.
             contextualSetupRepo.setSetupState(underTest.id, SetupState.NotStarted)
             commonPreconditions.setAllMet(true)
-            triggerRepository.setTriggered(true)
+            setTriggered(true)
             assertThat(isReady).isTrue()
 
-            // When setup is completed, isReady is false.
             contextualSetupRepo.setSetupState(underTest.id, SetupState.Completed)
             assertThat(isReady).isFalse()
         }
@@ -119,13 +117,11 @@ class UprightChargingSetupDefinitionTest : SysuiTestCase() {
         kosmos.runTest {
             val isReady by collectLastValue(underTest.isReady)
 
-            // Start in a ready state.
             contextualSetupRepo.setSetupState(underTest.id, SetupState.NotStarted)
             commonPreconditions.setAllMet(true)
-            triggerRepository.setTriggered(true)
+            setTriggered(true)
             assertThat(isReady).isTrue()
 
-            // When setup is dismissed, isReady is false.
             contextualSetupRepo.setSetupState(underTest.id, SetupState.Dismissed)
             assertThat(isReady).isFalse()
         }
@@ -135,13 +131,11 @@ class UprightChargingSetupDefinitionTest : SysuiTestCase() {
         kosmos.runTest {
             val isReady by collectLastValue(underTest.isReady)
 
-            // Start in a ready state.
             contextualSetupRepo.setSetupState(underTest.id, SetupState.NotStarted)
             commonPreconditions.setAllMet(true)
-            triggerRepository.setTriggered(true)
+            setTriggered(true)
             assertThat(isReady).isTrue()
 
-            // When setup is snoozed, isReady is false.
             contextualSetupRepo.setSetupState(
                 underTest.id,
                 SetupState.Snoozed(expirationTimeMillis = 100L),
