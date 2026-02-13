@@ -424,7 +424,7 @@ class InternetTileViewModelTest : SysuiTestCase() {
                     context.getString(
                         R.string.mobile_carrier_text_format,
                         networkName,
-                        context.getString(R.string.qs_tile_satellite_label),
+                        context.getString(com.android.internal.R.string.satellite_indicator),
                     ),
                     0,
                 )

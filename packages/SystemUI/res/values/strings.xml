@@ -4031,7 +4031,6 @@
     <!-- Content description for the tile's large format. [CHAR LIMIT=20] -->
     <string name="qs_tile_request_dialog_large_format_content_description">Large format</string>
     <!-- Label for available satellite connection on quick settings internet and bobile data tiles [CHAR LIMIT=NONE] -->
-    <string name="qs_tile_satellite_label">SAT</string>
 
     <!-- Title for User Switch dialog. [CHAR LIMIT=20] -->
     <string name="qs_user_switch_dialog_title">Select user</string>
