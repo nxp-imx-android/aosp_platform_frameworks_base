@@ -388,7 +388,7 @@ class DesktopTaskChangeListener(
                 ActivityTaskManager.getService().setTaskIsPerceptible(taskId, true)
                 perceptibleTasks += taskId
             } catch (re: RemoteException) {
-                logE("Failed to enable task as perceptible: $re")
+                logE("Failed to enable task as perceptible: %s", re)
             }
         }
     }
@@ -426,7 +426,7 @@ class DesktopTaskChangeListener(
                 ActivityTaskManager.getService().setTaskIsPerceptible(taskId, true)
                 perceptibleTasks += taskId
             } catch (re: RemoteException) {
-                logE("Failed to enable task as perceptible: $re")
+                logE("Failed to enable task as perceptible: %s", re)
             }
         }
     }

@@ -350,7 +350,7 @@ class RootTaskDesksOrganizer(
         task: TaskInfo,
         minimized: Boolean,
     ) {
-        logV("moveTaskToDesk task=${task.taskId} desk=$deskId minimized=$minimized")
+        logV("moveTaskToDesk task=%d desk=%d minimized=%b", task.taskId, deskId, minimized)
         val root = deskRootsByDeskId[deskId] ?: error("Root not found for desk: $deskId")
         if (task is RecentTaskInfo) {
             wct.startTask(task.taskId, createActivityOptionsForStartTask(deskId, this).toBundle())
@@ -374,7 +374,7 @@ class RootTaskDesksOrganizer(
         deskId: Int,
         task: RunningTaskInfo,
     ) {
-        logV("reorderTaskToFront task=${task.taskId} desk=$deskId")
+        logV("reorderTaskToFront task=%d desk=%d", task.taskId, deskId)
         val root = deskRootsByDeskId[deskId] ?: error("Root not found for desk: $deskId")
         if (task.taskId in root.children) {
             wct.reorder(task.token, /* onTop= */ true, /* includingParents= */ true)
@@ -389,11 +389,11 @@ class RootTaskDesksOrganizer(
             wct.reorder(task.token, /* onTop= */ true, /* includingParents= */ true)
             return
         }
-        logE("Attempted to reorder task=${task.taskId} in desk=$deskId but it was not a child")
+        logE("Attempted to reorder task=%d in desk=%d but it was not a child", task.taskId, deskId)
     }
 
     override fun minimizeTask(wct: WindowContainerTransaction, deskId: Int, task: RunningTaskInfo) {
-        logV("minimizeTask task=${task.taskId} desk=$deskId")
+        logV("minimizeTask task=%d desk=%d", task.taskId, deskId)
         minimizeTaskInner(wct, deskId, task, enforceTaskInDesk = true)
     }
 
@@ -417,11 +417,15 @@ class RootTaskDesksOrganizer(
             }
         val taskId = task.taskId
         if (taskId in minimizationRoot.children) {
-            logV("Task #$taskId is already minimized in desk #$deskId")
+            logV("Task #%d is already minimized in desk #%d", taskId, deskId)
             return
         }
         if (enforceTaskInDesk && taskId !in deskRoot.children) {
-            logE("Attempted to minimize task=${task.taskId} in desk=$deskId but it was not a child")
+            logE(
+                "Attempted to minimize task=%d in desk=%d but it was not a child",
+                task.taskId,
+                deskId,
+            )
             return
         }
         wct.reparent(task.token, minimizationRoot.token, /* onTop= */ true)
@@ -433,7 +437,7 @@ class RootTaskDesksOrganizer(
         task: RunningTaskInfo,
     ) {
         val taskId = task.taskId
-        logV("unminimizeTask task=$taskId desk=$deskId")
+        logV("unminimizeTask task=%d desk=%d", taskId, deskId)
         val deskRoot =
             checkNotNull(deskRootsByDeskId[deskId]) { "Root not found for desk: $deskId" }
         val minimizationRoot =
@@ -441,11 +445,15 @@ class RootTaskDesksOrganizer(
                 "Minimization root not found for desk: $deskId"
             }
         if (taskId in deskRoot.children) {
-            logV("Task #$taskId is already unminimized in desk=$deskId")
+            logV("Task #%d is already unminimized in desk=%d", taskId, deskId)
             return
         }
         if (taskId !in minimizationRoot.children) {
-            logE("Attempted to unminimize task=$taskId in desk=$deskId but it was not a child")
+            logE(
+                "Attempted to unminimize task=%d in desk=%d but it was not a child",
+                taskId,
+                deskId,
+            )
             return
         }
         wct.reparent(task.token, deskRoot.token, /* onTop= */ true)
@@ -565,7 +573,7 @@ class RootTaskDesksOrganizer(
         if (taskInfo.parentTaskId in deskRootsByDeskId) {
             val deskId = taskInfo.parentTaskId
             val taskId = taskInfo.taskId
-            logV("Task #$taskId appeared in desk #$deskId")
+            logV("Task #%d appeared in desk #%d", taskId, deskId)
             childLeashes.put(taskId, leash)
             addChildToDesk(taskId = taskId, deskId = deskId)
             return
@@ -576,7 +584,7 @@ class RootTaskDesksOrganizer(
         if (minimizationRoot != null) {
             val deskId = minimizationRoot.deskId
             val taskId = taskInfo.taskId
-            logV("Task #$taskId was minimized in desk #$deskId ")
+            logV("Task #%d was minimized in desk #%d", taskId, deskId)
             childLeashes.put(taskId, leash)
             addChildToMinimizationRoot(taskId = taskId, deskId = deskId)
             return
@@ -606,7 +614,7 @@ class RootTaskDesksOrganizer(
         if (deskRequest != null) {
             // Appearing root matches desk request.
             val deskId = taskInfo.taskId
-            logV("Desk #$deskId appeared")
+            logV("Desk #%d appeared", deskId)
             if (taskInfo.windowingMode != WINDOWING_MODE_FREEFORM) {
                 logW(
                     "Desk is not in FREEFORM mode: %s",
@@ -647,7 +655,7 @@ class RootTaskDesksOrganizer(
             return
         }
         val deskId = deskMinimizationRootRequest.deskId
-        logV("Minimization container for desk #$deskId appeared with id=${taskInfo.taskId}")
+        logV("Minimization container for desk #%d appeared with id=%d", deskId, taskInfo.taskId)
         val deskMinimizationRoot = DeskMinimizationRoot(deskId, taskInfo, leash)
         deskMinimizationRootsByDeskId[deskId] = deskMinimizationRoot
         createDeskMinimizationRootRequests.remove(deskMinimizationRootRequest)
@@ -660,7 +668,8 @@ class RootTaskDesksOrganizer(
             val deskId = taskInfo.taskId
             deskRootsByDeskId[deskId] = deskRootsByDeskId[deskId].copy(taskInfo = taskInfo)
             logV(
-                "Desk #$deskId's task info changed in display#%d visible=%b children=%s",
+                "Desk #%d's task info changed in display#%d visible=%b children=%s",
+                deskId,
                 taskInfo.displayId,
                 taskInfo.isVisible,
                 deskRootsByDeskId[deskId].children,
@@ -679,7 +688,7 @@ class RootTaskDesksOrganizer(
             deskMinimizationRootsByDeskId.remove(minimizationRoot.deskId)
             deskMinimizationRootsByDeskId[minimizationRoot.deskId] =
                 minimizationRoot.copy(taskInfo = taskInfo)
-            logV("Minimization root for desk#${minimizationRoot.deskId} task info changed")
+            logV("Minimization root for desk#%d task info changed", minimizationRoot.deskId)
             return
         }
 
@@ -702,11 +711,11 @@ class RootTaskDesksOrganizer(
         if (parentMinimizationRoot != null) {
             val deskId = parentMinimizationRoot.deskId
             val taskId = taskInfo.taskId
-            logV("onTaskInfoChanged: Task #$taskId was minimized in desk #$deskId ")
+            logV("onTaskInfoChanged: Task #%d was minimized in desk #%d", taskId, deskId)
             addChildToMinimizationRoot(taskId = taskId, deskId = deskId)
             return
         }
-        logE("onTaskInfoChanged: unknown task: ${taskInfo.taskId}")
+        logE("onTaskInfoChanged: unknown task: %d", taskInfo.taskId)
     }
 
     private fun handleTaskVanished(taskInfo: RunningTaskInfo) {
@@ -716,7 +725,7 @@ class RootTaskDesksOrganizer(
             // Use the last saved taskInfo to obtain the displayId. Using the local one here will
             // return -1 since the task is not unassociated with a display.
             val displayId = deskRoot.taskInfo.displayId
-            logV("Desk #$deskId vanished from display #$displayId")
+            logV("Desk #%d vanished from display #%d", deskId, displayId)
             deskRootsByDeskId.remove(deskId)
             removeDeskRootRequests.remove(deskId)
             return
@@ -724,7 +733,7 @@ class RootTaskDesksOrganizer(
         val deskMinimizationRoot =
             deskMinimizationRootsByDeskId.values.singleOrNull { it.rootId == taskInfo.taskId }
         if (deskMinimizationRoot != null) {
-            logV("Minimization root for desk ${deskMinimizationRoot.deskId} vanished")
+            logV("Minimization root for desk %d vanished", deskMinimizationRoot.deskId)
             deskMinimizationRootsByDeskId.remove(deskMinimizationRoot.deskId)
             return
         }
@@ -734,7 +743,7 @@ class RootTaskDesksOrganizer(
         // so search through each root to remove this if it's a child.
         deskRootsByDeskId.forEach { deskId, deskRoot ->
             if (deskRoot.children.remove(taskInfo.taskId)) {
-                logV("Task #${taskInfo.taskId} vanished from desk #$deskId")
+                logV("Task #%d vanished from desk #%d", taskInfo.taskId, deskId)
                 cleanUpChildTask(taskInfo)
                 return
             }
@@ -743,7 +752,7 @@ class RootTaskDesksOrganizer(
         deskMinimizationRootsByDeskId.values.forEach { root ->
             val taskId = taskInfo.taskId
             if (root.children.remove(taskId)) {
-                logV("Task #$taskId vanished from minimization root of desk #${root.deskId}")
+                logV("Task #%d vanished from minimization root of desk #%d", taskId, root.deskId)
                 cleanUpChildTask(taskInfo)
                 return
             }
@@ -773,7 +782,7 @@ class RootTaskDesksOrganizer(
                 .build()
         val taskAppearedInfo = shellTaskOrganizer.createTask(params, this)
         if (taskAppearedInfo == null) {
-            logE("Failed to create minimization root for desk #$deskId")
+            logE("Failed to create minimization root for desk #%d", deskId)
             return
         }
         createDeskMinimizationRootRequests +=

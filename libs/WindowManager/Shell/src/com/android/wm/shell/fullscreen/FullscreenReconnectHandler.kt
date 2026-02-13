@@ -92,7 +92,12 @@ class FullscreenReconnectHandler(
      */
     fun preserveTask(taskId: Int, displayId: Int, userId: Int, isTop: Boolean) {
         val uniqueDisplayId = uniqueIdByDisplayId[displayId] ?: return
-        logV("preserveTask: taskId=$taskId, uniqueDisplayId=$uniqueDisplayId, userId=$userId")
+        logV(
+            "preserveTask: taskId=%d, uniqueDisplayId=%s, userId=%d",
+            taskId,
+            uniqueDisplayId,
+            userId,
+        )
         val preservedDisplayRepository =
             preservedDisplaysByUser.getOrPut(userId) { PreservedDisplayRepository() }
         val preservedDisplay =
@@ -104,7 +109,12 @@ class FullscreenReconnectHandler(
     }
 
     private fun handlePotentialReconnect(displayId: Int, userId: Int, reason: String) {
-        logV("handlePotentialReconnect: displayId=$displayId, userId=$userId, reason= $reason")
+        logV(
+            "handlePotentialReconnect: displayId=%d, userId=%d, reason=%s",
+            displayId,
+            userId,
+            reason,
+        )
         // Reconnect is handled on keyguard unlock, so don't proceed if locked.
         if (keyguardManager.isKeyguardLocked) {
             logV("handlePotentialReconnect: Keyguard is locked; aborting.")
@@ -158,7 +168,7 @@ class FullscreenReconnectHandler(
     }
 
     private fun restoreDisplay(displayId: Int, preservedDisplay: PreservedDisplay) {
-        logV("restoreDisplay: displayId=$displayId, preservedDisplay=$preservedDisplay")
+        logV("restoreDisplay: displayId=%d, preservedDisplay=%s", displayId, preservedDisplay)
         val displayAreaInfo = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(displayId) ?: return
         val wct = WindowContainerTransaction()
         for (taskId in preservedDisplay.tasks) {
@@ -201,14 +211,14 @@ class FullscreenReconnectHandler(
     override fun onDisplayAdded(displayId: Int) {
         rootTaskDisplayAreaOrganizer.registerListener(displayId, rootTaskDisplayAreaListener)
         displayController.getDisplay(displayId)?.uniqueId?.let { uniqueId ->
-            logV("onDisplayAdded: displayId=$displayId, uniqueId=$uniqueId")
+            logV("onDisplayAdded: displayId=%d, uniqueId=%s", displayId, uniqueId)
             uniqueIdByDisplayId[displayId] = uniqueId
         }
     }
 
     override fun onDisplayRemoved(displayId: Int) {
         val uniqueId = uniqueIdByDisplayId.remove(displayId)
-        logV("onDisplayRemoved: displayId=$displayId, uniqueId=$uniqueId")
+        logV("onDisplayRemoved: displayId=%d, uniqueId=%s", displayId, uniqueId)
     }
 
     private data class PreservedDisplay(
