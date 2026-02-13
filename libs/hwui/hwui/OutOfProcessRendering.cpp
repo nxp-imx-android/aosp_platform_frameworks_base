@@ -24,6 +24,7 @@
 #include <com_android_graphics_libgui_flags.h>
 #include <gui/GraphicBuffersRegisterInfo.h>
 #include <gui/GraphicBuffersUnregisterInfo.h>
+#include <gui/LocklessQueue.h>
 #include <gui/TraceUtils.h>
 #include <include/android/GrAHardwareBufferUtils.h>
 #include <inttypes.h>
@@ -32,7 +33,6 @@
 #include <private/gui/ComposerServiceAIDL.h>
 #include <ui/GraphicBuffer.h>
 
-#include <mutex>
 #include <thread>
 #include <unordered_map>
 
@@ -57,7 +57,7 @@ NodeResources::~NodeResources() {
 static bool sEnableOOPR;
 static sp<BBinder> sRenderResourceToken = sp<BBinder>::make();
 static IPCClientResourceCache sRenderResourceCache;
-static std::mutex sRenderResourceLock;
+static LocklessQueue<std::function<void()>> sRenderResourceQueue;
 
 void enableOutOfProcessRendering() {
     if (com_android_graphics_libgui_flags_out_of_process_rendering()) {
@@ -119,6 +119,9 @@ AllocationResult createLayerSurface(uint32_t width, uint32_t height, GrDirectCon
     return result;
 }
 
+// This function is called from SkiaIpcPipeline::renderLayersImpl on the RenderThread.
+// Since the RenderThread also executes the pending bitmap registration (via
+// registerPendingBitmaps), it is safe to update the cache directly here.
 void registerSnapshot(NodeResources* resources, const sk_sp<SkImage>& image) {
     if (!sEnableOOPR || !image || !resources) return;
 
@@ -133,7 +136,7 @@ void registerSnapshot(NodeResources* resources, const sk_sp<SkImage>& image) {
 
     LOG_ALWAYS_FATAL_IF(!buffer, "buffer should never be null");
 
-    std::lock_guard lock{sRenderResourceLock};
+    // We are on the render thread, so we can update the cache directly.
     auto& bitmaps = sRenderResourceCache.bitmaps;
     if (lastImage) {
         auto it = bitmaps.find(lastImage->uniqueID());
@@ -151,12 +154,17 @@ void registerSnapshot(NodeResources* resources, const sk_sp<SkImage>& image) {
             IPCClientBitmap{buffer->getId(), false, buffer};
 }
 
+// This function is called from Bitmap.cpp, potentially from any thread (e.g. background loading).
+// Therefore, we must use the thread-safe lockless queue to defer the cache update to the
+// RenderThread (in registerPendingBitmaps).
 void registerBuffer(const sp<GraphicBuffer>& buffer, const sk_sp<SkImage>& image) {
     if (!sEnableOOPR || !image) return;
-    std::lock_guard lock{sRenderResourceLock};
-    ATRACE_FORMAT("registerBuffer bufferId=%llu imageId=%u", buffer->getId(), image->uniqueID());
-    sRenderResourceCache.bitmaps[image->uniqueID()] =
-            IPCClientBitmap{buffer->getId(), false, buffer};
+    sRenderResourceQueue.push([buffer, image]() {
+        ATRACE_FORMAT("registerBuffer bufferId=%llu imageId=%u", buffer->getId(),
+                      image->uniqueID());
+        sRenderResourceCache.bitmaps[image->uniqueID()] =
+                IPCClientBitmap{buffer->getId(), false, buffer};
+    });
 }
 
 void registerPendingBitmaps() {
@@ -164,7 +172,10 @@ void registerPendingBitmaps() {
         return;
     }
     ATRACE_CALL();
-    std::lock_guard lock{sRenderResourceLock};
+
+    while (auto op = sRenderResourceQueue.pop()) {
+        (*op)();
+    }
 
     gui::GraphicBuffersRegisterInfo registerInfo;
     registerInfo.renderResourceToken = sRenderResourceToken;
@@ -190,27 +201,30 @@ void deregisterBuffer(const sk_sp<SkImage>& image) {
         LOG_ALWAYS_FATAL("Trying to deregister null image.");
         return;
     }
-    std::lock_guard lock{sRenderResourceLock};
-    auto it = sRenderResourceCache.bitmaps.find(image->uniqueID());
-    if (it == sRenderResourceCache.bitmaps.end()) {
-        LOG_ALWAYS_FATAL("Trying to deregister image that was never registered.");
-        return;
-    }
-    uint64_t bufferId = it->second.id;
-    bool registered = it->second.registeredWithServer;
-    sRenderResourceCache.bitmaps.erase(it);
 
-    ATRACE_FORMAT("deregisterBuffer bufferId=%llu imageId=%u", bufferId, image->uniqueID());
+    sRenderResourceQueue.push([image]() {
+        auto it = sRenderResourceCache.bitmaps.find(image->uniqueID());
+        if (it == sRenderResourceCache.bitmaps.end()) {
+            LOG_ALWAYS_FATAL("Trying to deregister image that was never registered.");
+            return;
+        }
 
-    if (!registered) {
-        return;
-    }
-    // Deregister with SF
-    // TODO: b/448196792 - batching
-    gui::GraphicBuffersUnregisterInfo unregisterInfo;
-    unregisterInfo.renderResourceToken = sRenderResourceToken;
-    unregisterInfo.bufferIds.push_back(bufferId);
-    ComposerServiceAIDL::getComposerService()->unregisterGraphicBuffers(unregisterInfo);
+        uint64_t bufferId = it->second.id;
+        bool registered = it->second.registeredWithServer;
+        sRenderResourceCache.bitmaps.erase(it);
+
+        ATRACE_FORMAT("deregisterBuffer bufferId=%llu imageId=%u", bufferId, image->uniqueID());
+
+        if (!registered) {
+            return;
+        }
+        // Deregister with SF
+        // TODO: b/448196792 - batching
+        gui::GraphicBuffersUnregisterInfo unregisterInfo;
+        unregisterInfo.renderResourceToken = sRenderResourceToken;
+        unregisterInfo.bufferIds.push_back(bufferId);
+        ComposerServiceAIDL::getComposerService()->unregisterGraphicBuffers(unregisterInfo);
+    });
 }
 
 #endif
