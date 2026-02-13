@@ -2911,6 +2911,14 @@
         android:label="@string/permlab_changeWifiMulticastState"
         android:protectionLevel="normal" />
 
+    <!-- Allows registration of a remote player of multisensory feedback.
+      <p>Protection level: signature|privileged
+      @hide
+    -->
+    <permission android:name="android.permission.REMOTE_MULTISENSORY_PLAYBACK"
+      android:protectionLevel="signature|privileged"
+      android:featureFlag="android.os.multisensory.enable_multisensory_feedback" />
+
     <!-- Allows access to the vibrator.
          <p>Protection level: normal
     -->
