@@ -17,6 +17,8 @@
 package com.android.wm.shell.shared.compat;
 
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
+import static android.view.RemoteAnimationTarget.MODE_CLOSING;
+import static android.view.RemoteAnimationTarget.MODE_OPENING;
 import static android.view.WindowManager.LayoutParams.INVALID_WINDOW_TYPE;
 
 import android.annotation.Nullable;
@@ -247,6 +249,19 @@ public class AnimatedSurface {
                 /* willShowImeOnTarget = */ willShowImeOnTarget,
                 /* isNotInRecents = */ isNotInRecents,
                 /* allowEnterPip = */ change.isAllowEnterPip());
+    }
+
+    /**
+     * Util to obtain mapped {@link AnimatedSurface.Mode} from {@link RemoteAnimationTarget.Mode}.
+     */
+    public static Mode mappedModeFromTarget(@RemoteAnimationTarget.Mode int mode) {
+        final Mode mappedMode;
+        switch (mode) {
+            case MODE_OPENING -> mappedMode = Mode.OPENING;
+            case MODE_CLOSING -> mappedMode = Mode.CLOSING;
+            default -> mappedMode = Mode.OTHER;
+        }
+        return mappedMode;
     }
 
     /** Checks whether this surface is closing based on its mode. */
