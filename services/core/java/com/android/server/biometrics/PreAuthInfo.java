@@ -400,7 +400,7 @@ class PreAuthInfo {
             cameraPrivacyEnabled = mBiometricCameraManager.isCameraPrivacyEnabled();
         }
 
-        if (isExternalDisplay()) {
+        if (!Flags.externalBp() && isExternalDisplay()) {
             status = BIOMETRIC_HARDWARE_NOT_DETECTED;
             modality = TYPE_ANY_BIOMETRIC | TYPE_CREDENTIAL;
         } else if (mBiometricRequested && credentialRequested) {
