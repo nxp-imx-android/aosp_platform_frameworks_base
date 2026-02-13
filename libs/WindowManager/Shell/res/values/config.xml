@@ -199,6 +199,8 @@
 
     <!-- Whether to actively prompt user to use web rather than apps. -->
     <bool name="config_appToWebActivePrompting">false</bool>
+    <!-- Packages that are exempt from the app-to-web first run prompt. -->
+    <string-array name="config_appToWebFirstRunPromptExemptPackages"></string-array>
 
     <!-- Parameters for launching game controls -->
     <string name="config_gameControlsSystemFeature" translatable="false"/>
