@@ -31,7 +31,9 @@ import android.window.WindowContainerTransaction;
 
 import com.android.wm.shell.shared.TransitionUtil;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Abstraction layer for a remote animation or remote transition that can animate surfaces.
@@ -315,15 +317,27 @@ public class SurfaceTransition {
             this.finishedCallbackShell = finishedCallbackShell;
 
             if (info != null) {
-                TransitionUtil.LeafTaskFilter filter = new TransitionUtil.LeafTaskFilter(info);
-                this.mApps = info.getChanges().stream().filter(filter).map(AnimatedSurface::from)
-                        .toArray(AnimatedSurface[]::new);
-
-                this.mWallpapers = info.getChanges().stream().filter(TransitionUtil::isWallpaper)
-                        .map(AnimatedSurface::from).toArray(AnimatedSurface[]::new);
-
-                this.mNonApps = info.getChanges().stream().filter(TransitionUtil::isNonApp)
-                        .map(AnimatedSurface::from).toArray(AnimatedSurface[]::new);
+                TransitionUtil.LeafTaskFilter leafTaskFilter =
+                        new TransitionUtil.LeafTaskFilter(info);
+                List<AnimatedSurface> apps = new ArrayList<>();
+                List<AnimatedSurface> wallpapers = new ArrayList<>();
+                List<AnimatedSurface> nonApps = new ArrayList<>();
+                final int numChanges = info.getChanges().size();
+                for (int i = 0; i < info.getChanges().size(); i++) {
+                    TransitionInfo.Change change = info.getChanges().get(i);
+                    if (leafTaskFilter.test(change)) {
+                        apps.add(AnimatedSurface.from(change, numChanges - i));
+                    }
+                    if (TransitionUtil.isWallpaper(change)) {
+                        wallpapers.add(AnimatedSurface.from(change, numChanges - i));
+                    }
+                    if (TransitionUtil.isNonApp(change)) {
+                        nonApps.add(AnimatedSurface.from(change, numChanges - i));
+                    }
+                }
+                this.mApps = apps.toArray(AnimatedSurface[]::new);
+                this.mWallpapers = wallpapers.toArray(AnimatedSurface[]::new);
+                this.mNonApps = nonApps.toArray(AnimatedSurface[]::new);
             }
         }
 

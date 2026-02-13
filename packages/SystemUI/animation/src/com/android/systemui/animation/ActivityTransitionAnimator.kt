@@ -2001,6 +2001,7 @@ constructor(
                 }
 
             var candidate: TransitionInfo.Change? = null
+            var candidateOrder: Int? = null
             var state: WindowAnimationState? = null
 
             val leafTaskFilter = TransitionUtil.LeafTaskFilter(info)
@@ -2037,17 +2038,21 @@ constructor(
 
                     if (candidate == null) {
                         candidate = it
+                        candidateOrder = info.changes.size - index
                         state = states?.get(index)
                         continue
                     }
                     if (it.endAbsBounds.hasGreaterAreaThan(candidate.endAbsBounds)) {
                         candidate = it
+                        candidateOrder = info.changes.size - index
                         state = states?.get(index)
                     }
                 }
             }
 
-            return candidate?.let { AnimatedSurface.from(candidate, state) }
+            return if (candidate != null && candidateOrder != null) {
+                AnimatedSurface.from(candidate, state, candidateOrder)
+            } else null
         }
 
         private fun Rect.hasGreaterAreaThan(other: Rect): Boolean {
