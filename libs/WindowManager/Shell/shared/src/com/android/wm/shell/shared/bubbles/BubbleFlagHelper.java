@@ -25,7 +25,12 @@ public class BubbleFlagHelper {
 
     private BubbleFlagHelper() {}
 
-    /** Whether creating any bubble or the overall bubble anything feature is enabled. */
+    /**
+     * Whether creating any bubble or the overall bubble anything feature is enabled.
+     * <br>
+     * If evaluating an entry point to Bubble Anything, use
+     * {@link BubbleFeatureConfig#areAppBubblesSupported()} instead.
+     */
     public static boolean enableCreateAnyBubble() {
         return enableBubbleAnything() || Flags.enableCreateAnyBubble();
     }

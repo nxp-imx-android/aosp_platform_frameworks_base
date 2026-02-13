@@ -45,6 +45,8 @@ class BubbleFeatureConfigTest : ShellTestCase() {
     @Before
     fun setup() {
         whenever(context.getSystemService(Context.ACTIVITY_SERVICE)).thenReturn(activityManager)
+        whenever(activityManager.isLowRamDevice).thenReturn(false)
+
         bubbleFeatureConfig = BubbleFeatureConfigImpl(context, { desktopState })
     }
 
@@ -58,7 +60,6 @@ class BubbleFeatureConfigTest : ShellTestCase() {
     @DisableFlags(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
     @Test
     fun areAppBubblesSupported_noFlag() {
-        whenever(activityManager.isLowRamDevice).thenReturn(false)
         assertThat(bubbleFeatureConfig.areAppBubblesSupported()).isFalse()
     }
 
@@ -66,6 +67,38 @@ class BubbleFeatureConfigTest : ShellTestCase() {
     @Test
     fun areAppBubblesSupported() {
         whenever(activityManager.isLowRamDevice).thenReturn(false)
+        assertThat(bubbleFeatureConfig.areAppBubblesSupported()).isTrue()
+    }
+
+    @DisableFlags(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
+    @EnableFlags(Flags.FLAG_DISABLE_BUBBLE_ANYTHING_DESKTOP_WINDOWING)
+    @Test
+    fun areAppBubblesSupported_desktopWindowingSupported_appBubblesDisabled() {
+        desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
+        assertThat(bubbleFeatureConfig.areAppBubblesSupported()).isFalse()
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
+    @DisableFlags(Flags.FLAG_DISABLE_BUBBLE_ANYTHING_DESKTOP_WINDOWING)
+    @Test
+    fun areAppBubblesSupported_desktopWindowingSupported_disableAppBubbleFlagDisabled() {
+        desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
+        assertThat(bubbleFeatureConfig.areAppBubblesSupported()).isTrue()
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
+    @EnableFlags(Flags.FLAG_DISABLE_BUBBLE_ANYTHING_DESKTOP_WINDOWING)
+    @Test
+    fun areAppBubblesSupported_desktopWindowingEnabled() {
+        desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
+        assertThat(bubbleFeatureConfig.areAppBubblesSupported()).isFalse()
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
+    @EnableFlags(Flags.FLAG_DISABLE_BUBBLE_ANYTHING_DESKTOP_WINDOWING)
+    @Test
+    fun areAppBubblesSupported_desktopWindowingDisabled() {
+        desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = false
         assertThat(bubbleFeatureConfig.areAppBubblesSupported()).isTrue()
     }
 
