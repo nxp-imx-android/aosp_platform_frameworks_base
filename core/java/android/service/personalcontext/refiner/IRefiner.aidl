@@ -18,6 +18,7 @@ package android.service.personalcontext.refiner;
 
 import android.os.Bundle;
 import android.os.ParcelUuid;
+import android.service.personalcontext.IOpCallback;
 import android.service.personalcontext.hint.ContextHintWithSignatureWrapper;
 import android.service.personalcontext.insight.PublishedContextInsightWrapper;
 import android.service.personalcontext.insight.interaction.InsightEvent;
@@ -30,22 +31,23 @@ import android.service.personalcontext.refiner.IRefineCallback;
  * @hide
  */
 oneway interface IRefiner {
-    /** Provides configuration information to the refiner. */
-    void configure(in ParcelUuid componentId);
-
     /**
      * Requests that a set of new hints be refined. All of the hints in inputHints will be
      * hints that this refiner hasn't seen before. The callback may be called exactly once,
      * with a new set of hints.
      */
-    void refine(in List<ContextHintWithSignatureWrapper> inputHints, in IRefineCallback callback);
+    void refine(in ParcelUuid componentId, in List<ContextHintWithSignatureWrapper> inputHints,
+        in IRefineCallback callback, in IOpCallback opCallback);
 
     /** Gets a filter to be used when deciding whether to send an insight to this refiner. */
-    void getFilter(in IGetFilterCallback callback);
+    void getFilter(in ParcelUuid componentId, in IGetFilterCallback callback,
+        in IOpCallback opCallback);
 
     /** Reports an insight event back to the understander. */
-    void handleEvent(String packageName, in InsightEvent event);
+    void handleEvent(in ParcelUuid componentId, String packageName, in InsightEvent event,
+        in IOpCallback opCallback);
 
     /** Reports user feedback back to the understander. */
-    void handleFeedback(in PublishedContextInsightWrapper insight, in Bundle feedback);
+    void handleFeedback(in ParcelUuid componentId, in PublishedContextInsightWrapper insight,
+        in Bundle feedback, in IOpCallback opCallback);
 }

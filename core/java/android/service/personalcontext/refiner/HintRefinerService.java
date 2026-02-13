@@ -26,6 +26,7 @@ import android.os.IBinder;
 import android.os.ParcelUuid;
 import android.os.RemoteException;
 import android.service.personalcontext.Flags;
+import android.service.personalcontext.IOpCallback;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.hint.ContextHintWithSignatureWrapper;
@@ -85,8 +86,10 @@ public abstract class HintRefinerService extends Service {
     }
 
     private void configure(UUID componentId) {
-        mComponentId = componentId;
-        onConnected();
+        if (mComponentId == null) {
+            mComponentId = componentId;
+            onConnected();
+        }
     }
 
     /** Called when the refiner has been configured and is ready to receive hints. */
@@ -142,39 +145,58 @@ public abstract class HintRefinerService extends Service {
             }
         }
 
-        @Override
-        public void configure(ParcelUuid componentId) throws RemoteException {
+        private void configure(ParcelUuid componentId) throws RemoteException {
             getServiceOrThrow().configure(componentId.getUuid());
         }
 
         @Override
         public void refine(
-                List<ContextHintWithSignatureWrapper> inputHints, IRefineCallback callback)
+                ParcelUuid componentId,
+                List<ContextHintWithSignatureWrapper> inputHints, IRefineCallback callback,
+                IOpCallback opCallback)
                 throws RemoteException {
-            getServiceOrThrow().onRefine(
-                    ContextHintWithSignature.unwrapList(
-                            ContextHintWithSignatureWrapper.unwrapList(inputHints)),
-                    hints -> {
-                        try {
-                            callback.onHintsRefined(ContextHintWrapper.wrapList(hints));
-                        } catch (RemoteException e) {
-                            Log.i(TAG, "Could not return refined hints", e);
-                        }
-                    });
+            try {
+                configure(componentId);
+                getServiceOrThrow().onRefine(
+                        ContextHintWithSignature.unwrapList(
+                                ContextHintWithSignatureWrapper.unwrapList(inputHints)),
+                        hints -> {
+                            try {
+                                callback.onHintsRefined(ContextHintWrapper.wrapList(hints));
+                            } catch (RemoteException e) {
+                                Log.i(TAG, "Could not return refined hints", e);
+                            }
+                        });
+            } finally {
+                opCallback.signalCompletion();
+            }
         }
 
         @Override
-        public void getFilter(IGetFilterCallback callback) throws RemoteException {
-            callback.updateFilter(getServiceOrThrow().onInitializeFilter());
+        public void getFilter(ParcelUuid componentId, IGetFilterCallback callback,
+                IOpCallback opCallback) throws RemoteException {
+            try {
+                configure(componentId);
+                callback.updateFilter(getServiceOrThrow().onInitializeFilter());
+            } finally {
+                opCallback.signalCompletion();
+            }
         }
 
         @Override
-        public void handleEvent(String packageName, InsightEvent event) {
-            throw new UnsupportedOperationException("Can not handle insight events in a refiner");
+        public void handleEvent(ParcelUuid componentId, String packageName, InsightEvent event,
+                IOpCallback opCallback) throws RemoteException {
+            try {
+                throw new UnsupportedOperationException(
+                        "Can not handle insight events in a refiner");
+            } finally {
+                opCallback.signalCompletion();
+            }
         }
 
         @Override
-        public void handleFeedback(PublishedContextInsightWrapper insight, Bundle feedback) {
+        public void handleFeedback(ParcelUuid componentId, PublishedContextInsightWrapper insight,
+                Bundle feedback, IOpCallback opCallback) {
             throw new UnsupportedOperationException("Can not handle user feedback in a refiner");
         }
     }

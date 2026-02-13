@@ -27,6 +27,7 @@ import android.os.IBinder;
 import android.os.ParcelUuid;
 import android.os.RemoteException;
 import android.service.personalcontext.Flags;
+import android.service.personalcontext.IOpCallback;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.insight.InsightFilter;
 import android.service.personalcontext.insight.PublishedContextInsight;
@@ -133,8 +134,10 @@ public abstract class InsightRendererService extends Service {
     }
 
     private void configure(UUID componentId) {
-        mComponentId = componentId;
-        onConnected();
+        if (mComponentId == null) {
+            mComponentId = componentId;
+            onConnected();
+        }
     }
 
     /** Called when the renderer has been configured and is ready to receive insights. */
@@ -188,19 +191,33 @@ public abstract class InsightRendererService extends Service {
         }
 
         @Override
-        public void render(PublishedContextInsightWrapper insight, RenderToken renderToken)
-                throws RemoteException {
-            getServiceOrThrow().onRender(insight.getPublishedContextInsight(), renderToken);
+        public void render(ParcelUuid componentId, PublishedContextInsightWrapper insight,
+                RenderToken renderToken, IOpCallback opCallback) throws RemoteException {
+            try {
+                configureInternal(componentId);
+                getServiceOrThrow().onRender(insight.getPublishedContextInsight(), renderToken);
+            } finally {
+                opCallback.signalCompletion();
+            }
         }
 
         @Override
         public void configure(ParcelUuid componentId) throws RemoteException {
+            configureInternal(componentId);
+        }
+        private void configureInternal(ParcelUuid componentId) throws RemoteException {
             getServiceOrThrow().configure(componentId.getUuid());
         }
 
         @Override
-        public void getFilter(IGetFilterCallback callback) throws RemoteException {
-            callback.updateFilter(getServiceOrThrow().onInitializeFilter());
+        public void getFilter(ParcelUuid componentId, IGetFilterCallback callback,
+                IOpCallback opCallback) throws RemoteException {
+            try {
+                configureInternal(componentId);
+                callback.updateFilter(getServiceOrThrow().onInitializeFilter());
+            } finally {
+                opCallback.signalCompletion();
+            }
         }
     }
 }

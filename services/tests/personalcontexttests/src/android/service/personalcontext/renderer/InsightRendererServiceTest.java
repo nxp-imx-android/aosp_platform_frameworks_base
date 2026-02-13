@@ -28,6 +28,7 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.os.ParcelUuid;
 import android.os.RemoteException;
+import android.service.personalcontext.IOpCallback;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.insight.BundleInsight;
 import android.service.personalcontext.insight.PublishedContextInsight;
@@ -55,28 +56,26 @@ public class InsightRendererServiceTest {
     }
 
     @Test
-    public void testOnRegisteredCalled() throws RemoteException {
-        final InsightRendererService service =
-                mock(InsightRendererService.class, Answers.CALLS_REAL_METHODS);
-        final IBinder binder = service.onBind(new Intent(InsightRendererService.SERVICE_INTERFACE));
-        final IInsightRenderer renderer = IInsightRenderer.Stub.asInterface(binder);
-        renderer.configure(new ParcelUuid(UUID.randomUUID()));
-        verify(service).onConnected();
-    }
-
-    @Test
     public void testOnRenderCalledWithRenderToken() throws RemoteException {
         final InsightRendererService service =
                 mock(InsightRendererService.class, Answers.CALLS_REAL_METHODS);
         final IBinder binder = service.onBind(new Intent(InsightRendererService.SERVICE_INTERFACE));
         final IInsightRenderer renderer = IInsightRenderer.Stub.asInterface(binder);
-        renderer.configure(new ParcelUuid(UUID.randomUUID()));
 
         final PublishedContextInsight insight = fakePublishInsight(
                 new BundleInsight.Builder().build());
+        // prime the renderer by getting the filter first
+        renderer.getFilter(new ParcelUuid(UUID.randomUUID()), mock(IGetFilterCallback.class),
+                mock(IOpCallback.class));
+
         final RenderToken renderToken = service.mintRenderToken(null);
-        renderer.render(new PublishedContextInsightWrapper(insight), renderToken);
+        final IOpCallback callback = mock(IOpCallback.Stub.class);
+        renderer.render(new ParcelUuid(UUID.randomUUID()),
+                new PublishedContextInsightWrapper(insight),
+                renderToken,
+                callback);
         verify(service).onRender(eq(insight), eq(renderToken));
+        verify(callback).signalCompletion();
     }
 
     @Test
@@ -87,7 +86,8 @@ public class InsightRendererServiceTest {
         final IInsightRenderer renderer = IInsightRenderer.Stub.asInterface(binder);
 
         final UUID id = UUID.randomUUID();
-        renderer.configure(new ParcelUuid(id));
+        final IOpCallback callback = mock(IOpCallback.Stub.class);
+        renderer.getFilter(new ParcelUuid(id), mock(IGetFilterCallback.class), callback);
 
         final String tag = "baz";
         final RenderToken token = service.mintRenderToken(tag);
