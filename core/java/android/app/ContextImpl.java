@@ -3352,12 +3352,32 @@ class ContextImpl extends Context {
     }
 
     Display getDisplayNoVerifyInner() {
-        if (mDisplay == null) {
-            return mResourcesManager.getAdjustedDisplay(Display.DEFAULT_DISPLAY,
-                    mResources);
+        if (!android.app.Flags.enableDynamicDisplayRetrieval()) {
+            if (mDisplay == null) {
+                return mResourcesManager.getAdjustedDisplay(Display.DEFAULT_DISPLAY,
+                        mResources);
+            }
+            return mDisplay;
+        }
+        if (mDisplay != null) {
+            return mDisplay;
         }
 
-        return mDisplay;
+        int targetDisplayId = Display.DEFAULT_DISPLAY;
+        UserManager userManager = getSystemService(UserManager.class);
+
+        if (userManager != null && UserManager.isVisibleBackgroundUsersEnabled()) {
+            try {
+                int mainDisplayId = userManager.getMainDisplayIdAssignedToUser();
+                if (mainDisplayId != Display.INVALID_DISPLAY) {
+                    targetDisplayId = mainDisplayId;
+                }
+            } catch (SecurityException e) {
+                Log.w(TAG, "SecurityException when getting display id, fallback to default", e);
+            }
+        }
+
+        return mResourcesManager.getAdjustedDisplay(targetDisplayId, mResources);
     }
 
     @Override
