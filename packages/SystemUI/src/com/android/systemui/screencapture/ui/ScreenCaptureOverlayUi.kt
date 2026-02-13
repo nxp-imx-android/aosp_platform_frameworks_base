@@ -179,14 +179,16 @@ constructor(
                         targetValue = if (shouldShowCamera) 1f else 0f,
                         animationSpec = spring(stiffness = Spring.StiffnessHigh),
                     )
+                val sizeModifier =
+                    Modifier.fillMaxSmallDimension(windowBounds)
+                        .aspectRatio(
+                            viewModel.outputStreamSize?.run { width.toFloat() / height } ?: 1f
+                        )
                 AndroidEmbeddedExternalSurface(
                     surfaceSize = surfaceSize,
                     isOpaque = false,
                     transform = transformationViewModel.surfaceTransformation,
-                    modifier =
-                        Modifier.fillMaxSmallDimension(windowBounds)
-                            .graphicsLayer { alpha = surfaceAlpha }
-                            .aspectRatio(surfaceSize.height.toFloat() / surfaceSize.width),
+                    modifier = sizeModifier.graphicsLayer { alpha = surfaceAlpha },
                 ) {
                     onSurface { surface, width, height ->
                         viewModel.onSurfaceReady(surface = surface, width = width, height = height)
@@ -202,8 +204,7 @@ constructor(
                 }
                 Spacer(
                     modifier =
-                        Modifier.fillMaxSmallDimension(windowBounds)
-                            .aspectRatio(surfaceSize.height.toFloat() / surfaceSize.width)
+                        sizeModifier
                             .onGloballyPositioned { layoutCoordinates ->
                                 val boundsInWindow = layoutCoordinates.boundsInWindow(false)
                                 transformationViewModel.onSurfaceScreenBoundsUpdated(boundsInWindow)
