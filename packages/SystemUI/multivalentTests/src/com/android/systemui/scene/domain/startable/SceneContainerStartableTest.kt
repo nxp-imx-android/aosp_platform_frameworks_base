@@ -139,6 +139,7 @@ import com.android.systemui.statusbar.disableflags.data.repository.fakeDisableFl
 import com.android.systemui.statusbar.disableflags.shared.model.DisableFlagsModel
 import com.android.systemui.statusbar.notification.data.repository.FakeHeadsUpRowRepository
 import com.android.systemui.statusbar.notification.data.repository.HeadsUpRowRepository
+import com.android.systemui.statusbar.notificationLockscreenUserManager
 import com.android.systemui.statusbar.notificationShadeWindowController
 import com.android.systemui.statusbar.phone.BiometricUnlockController
 import com.android.systemui.statusbar.phone.centralSurfaces
@@ -441,6 +442,71 @@ class SceneContainerStartableTest : SysuiTestCase() {
                 expectedOverlaysAfterUnlock = setOf(Overlays.QuickSettingsShade),
                 expectedLastBackStackSceneAfterUnlock = null,
             )
+        }
+
+    @Test
+    fun hydrateNotifLockscreenUserManager_waitsForKeyguardDismiss() =
+        kosmos.runTest {
+            prepareState(isDeviceUnlocked = false, initialSceneKey = Scenes.Lockscreen)
+            underTest.hydrateLockScreenUserManager()
+            runCurrent()
+            clearInvocations(notificationLockscreenUserManager)
+
+            deviceEntryRepository.deviceUnlockStatus.value =
+                DeviceUnlockStatus(
+                    isUnlocked = true,
+                    deviceUnlockSource = DeviceUnlockSource.Fingerprint,
+                )
+            runCurrent()
+
+            verify(notificationLockscreenUserManager, never()).updatePublicMode()
+
+            sceneInteractor.changeScene(Scenes.Gone, "dismissing keyguard from fingerprint unlock")
+            runCurrent()
+
+            verify(notificationLockscreenUserManager).updatePublicMode()
+        }
+
+    @Test
+    fun hydrateNotifLockscreenUserManager_unlockOnSingleShade() =
+        kosmos.runTest {
+            prepareState(isDeviceUnlocked = false, initialSceneKey = Scenes.Shade)
+            underTest.hydrateLockScreenUserManager()
+            runCurrent()
+            clearInvocations(notificationLockscreenUserManager)
+
+            deviceEntryRepository.deviceUnlockStatus.value =
+                DeviceUnlockStatus(
+                    isUnlocked = true,
+                    deviceUnlockSource = DeviceUnlockSource.Fingerprint,
+                )
+            runCurrent()
+
+            verify(notificationLockscreenUserManager).updatePublicMode()
+        }
+
+    @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
+    fun hydrateNotifLockscreenUserManager_unlockOnDualShade() =
+        kosmos.runTest {
+            enableDualShade()
+            prepareState(
+                isDeviceUnlocked = false,
+                initialSceneKey = Scenes.Lockscreen,
+                initialOverlays = setOf(Overlays.NotificationsShade),
+            )
+            underTest.hydrateLockScreenUserManager()
+            runCurrent()
+            clearInvocations(notificationLockscreenUserManager)
+
+            deviceEntryRepository.deviceUnlockStatus.value =
+                DeviceUnlockStatus(
+                    isUnlocked = true,
+                    deviceUnlockSource = DeviceUnlockSource.Fingerprint,
+                )
+            runCurrent()
+
+            verify(notificationLockscreenUserManager).updatePublicMode()
         }
 
     /**
