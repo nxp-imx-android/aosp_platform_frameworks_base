@@ -21,6 +21,7 @@ import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentat
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -172,6 +173,12 @@ public class ThemeOverlayHelperTest {
         ThemeStatePair statePair = new ThemeStatePair(PRIMARY_USER_ID, true, SEED_COLOR_VALID,
                 CONTRAST_DEFAULT, STYLE_VALID, SpecVersion.SPEC_2025, Platform.PHONE);
         ThemeStatePair.OverlaySnapshot snapshot = statePair.commitAndGetOverlayData();
+
+        // Setup: Simulate overlays exist so we don't fallback to register
+        OverlayIdentifier identifier = new OverlayIdentifier("android", "dynamic_10");
+        when(mOverlayManager.getOverlayInfo(eq(identifier), eq(UserHandle.of(PRIMARY_USER_ID))))
+                .thenReturn(new OverlayInfo("android", "dynamic_10", "android", null, null,
+                        "/path", 0, 0, 0, true, true));
 
         // Action: Pass true for applyToSystem, but FALSE for shouldRegister.
         mThemeOverlayHelper.applyCurrentStateOverlays(snapshot, true, false);

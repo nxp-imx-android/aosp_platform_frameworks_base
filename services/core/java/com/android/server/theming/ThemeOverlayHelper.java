@@ -65,11 +65,26 @@ public class ThemeOverlayHelper {
      */
     public void applyCurrentStateOverlays(ThemeStatePair.OverlaySnapshot snapshot,
             boolean applyToSystem, boolean shouldRegister) throws CancellationException {
-        if (shouldRegister) {
+        if (shouldRegister || areOverlaysMissing(snapshot.userId())) {
             registerAndEnableOverlays(snapshot, applyToSystem);
         } else if (applyToSystem) {
             enableOverlaysOnly(snapshot);
         }
+    }
+
+    private boolean areOverlaysMissing(int userId) {
+        final OverlayIdentifier identifier = new OverlayIdentifier(ANDROID_PACKAGE,
+                OVERLAY_NAME_DYNAMIC + "_" + userId);
+        try {
+            if (mOverlayManager.getOverlayInfo(identifier, UserHandle.of(userId)) == null) {
+                return true;
+            }
+        } catch (Exception e) {
+            Slog.w(TAG, "Failed to check if overlay exists: " + identifier, e);
+            return true;
+        }
+
+        return false;
     }
 
     /**
