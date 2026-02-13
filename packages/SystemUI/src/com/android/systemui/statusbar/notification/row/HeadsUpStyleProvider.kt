@@ -19,7 +19,6 @@ package com.android.systemui.statusbar.notification.row
 import android.view.Display
 import com.android.app.displaylib.PerDisplayRepository
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
-import com.android.systemui.statusbar.notification.shared.HeadlinePrototypes
 import javax.inject.Inject
 
 /**
@@ -37,7 +36,7 @@ constructor(
 ) : HeadsUpStyleProvider {
 
     override fun shouldApplyCompactStyle(displayId: Int): Boolean {
-        return isInImmersiveMode(displayId) || HeadlinePrototypes.alwaysShowMinimalHun()
+        return android.app.Flags.alwaysShowMinimalHun() || isInImmersiveMode(displayId)
     }
 
     private fun isInImmersiveMode(displayId: Int): Boolean {

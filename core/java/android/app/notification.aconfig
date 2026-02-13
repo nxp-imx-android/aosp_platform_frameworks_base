@@ -14,9 +14,9 @@ flag {
 }
 
 flag {
-  name: "headline_prototypes"
+  name: "always_show_minimal_hun"
   namespace: "notifications"
-  description: "This flag adds static control for enabling prototypes for the headline project"
+  description: "[prototype] Always show Minimal HUN, even if the device is not in full screen."
   bug: "449676256"
 }
 
