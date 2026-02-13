@@ -25,9 +25,12 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.graphics.ImageLoader
 import com.android.systemui.notifications.intelligence.rules.data.repository.ContactsRepository
 import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
+import javax.inject.Inject
 
 @SysUISingleton
-public class ContactsInteractorImpl(
+public class ContactsInteractorImpl
+@Inject
+constructor(
     private val contactsRepository: ContactsRepository,
     private val imageLoader: ImageLoader,
 ) : ContactsInteractor {
