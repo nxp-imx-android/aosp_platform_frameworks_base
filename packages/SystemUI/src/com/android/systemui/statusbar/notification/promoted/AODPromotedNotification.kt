@@ -115,12 +115,14 @@ fun AODPromotedNotification(
     }
 
     key(content.identity, notificationView.getTag(viewInflationIdentity)) {
+        val sidePaddings = dimensionResource(systemuiR.dimen.notification_side_paddings)
+        val sidePaddingValues = PaddingValues(horizontal = sidePaddings, vertical = 0.dp)
         AODPromotedNotificationView(
             notificationViewFactory = { notificationView },
             content = content,
             audiblyAlertedIconVisible = audiblyAlertedIconVisible,
             onBindingError = { hasBindingError = true },
-            modifier = modifier,
+            modifier = modifier.padding(sidePaddingValues),
         )
     }
 }
@@ -133,11 +135,6 @@ fun AODPromotedNotificationView(
     onBindingError: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val sidePaddings = dimensionResource(systemuiR.dimen.notification_side_paddings)
-    val sidePaddingValues = PaddingValues(horizontal = sidePaddings, vertical = 0.dp)
-
-    val boxModifier = modifier.padding(sidePaddingValues)
-
     val borderStroke = BorderStroke(0.5.dp, SecondaryText.brush.value.copy(alpha = 0.32f))
 
     val borderRadius = dimensionResource(systemuiR.dimen.notification_corner_radius)
@@ -151,7 +148,7 @@ fun AODPromotedNotificationView(
             .toInt()
 
     val viewModifier = Modifier.border(borderStroke, borderShape)
-    Box(modifier = boxModifier) {
+    Box(modifier) {
         AndroidView(
             factory = { context ->
                 val notificationView = notificationViewFactory(context)

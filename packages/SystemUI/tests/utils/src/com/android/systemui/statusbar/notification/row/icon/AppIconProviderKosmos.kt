@@ -57,6 +57,14 @@ data class FakeNotificationPackage(
                     label = "Android System",
                     iconRes = android.R.drawable.sym_def_app_icon,
                 )
+
+        val TestApp: FakeNotificationPackage
+            get() =
+                FakeNotificationPackage(
+                    packageName = "com.example.test",
+                    label = "Test App",
+                    iconRes = android.R.drawable.sym_def_app_icon,
+                )
     }
 }
 
