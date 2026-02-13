@@ -33,6 +33,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.service.personalcontext.IOpCallback;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.embedded.IInsightSurfaceVisualizer;
 import android.service.personalcontext.embedded.IVisualizationResult;
@@ -64,6 +65,9 @@ public class VisualizerConnectionTest {
     private IBinder mBinder;
     @Mock
     private Context mContext;
+
+    @Mock
+    private IOpCallback mOpCallback;
 
     private final TestInjector mTestInjector = new TestInjector();
     private VisualizerConnection mVisualizerConnection;
@@ -121,7 +125,7 @@ public class VisualizerConnectionTest {
         final InsightSurfaceClientInfo client = createClient();
         createVisualizationForClient(client, true);
         mVisualizerConnection.onClientDisconnected(client);
-        verify(mVisualizer).onClientDisconnected(client);
+        verify(mVisualizer).onClientDisconnected(eq(client), any());
     }
 
     @Test
@@ -135,7 +139,7 @@ public class VisualizerConnectionTest {
         createVisualizationForClient(client, true);
         assertThat(mTestInjector.getServiceConnection()).isNotNull();
         mVisualizerConnection.onClientDisconnected(client);
-        verify(mVisualizer).onClientDisconnected(client);
+        verify(mVisualizer).onClientDisconnected(eq(client), any());
         assertThat(mTestInjector.getServiceConnection()).isNull();
     }
 
@@ -210,7 +214,8 @@ public class VisualizerConnectionTest {
                         wrapper.getPublishedContextInsight().getInsight() == insight),
                 any(),
                 eq(renderToken),
-                resultCaptor.capture());
+                resultCaptor.capture(),
+                any());
         resultCaptor.getValue().onResult(shouldSucceed);
     }
 }

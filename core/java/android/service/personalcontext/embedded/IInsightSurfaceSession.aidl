@@ -20,6 +20,7 @@ import android.os.ResultReceiver;
 import android.service.personalcontext.embedded.IVisualizationResult;
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
 import android.service.personalcontext.insight.ContextInsightWrapper;
+import android.service.personalcontext.IOpCallback;
 import android.view.SurfaceControlViewHost;
 
 /**
@@ -35,5 +36,6 @@ interface IInsightSurfaceSession {
     oneway void onClientUpdated(
         in InsightSurfaceClientInfo oldClientInfo,
         in InsightSurfaceClientInfo newClientInfo,
-        in ResultReceiver result);
+        in ResultReceiver result,
+        in IOpCallback opCallback);
 }

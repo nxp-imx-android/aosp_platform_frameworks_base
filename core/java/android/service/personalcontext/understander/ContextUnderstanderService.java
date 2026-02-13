@@ -25,9 +25,11 @@ import android.annotation.SystemApi;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.HandlerExecutor;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.ParcelUuid;
-import android.os.RemoteException;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.IOpCallback;
 import android.service.personalcontext.PersonalContextManager;
@@ -42,12 +44,12 @@ import android.service.personalcontext.insight.interaction.InsightEvent;
 import android.service.personalcontext.refiner.IGetFilterCallback;
 import android.service.personalcontext.refiner.IRefineCallback;
 import android.service.personalcontext.refiner.IRefiner;
-import android.util.Log;
+import android.service.personalcontext.util.BinderRequestProcessor;
 
-import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.Executor;
 
 /**
  * This is the base class for understander services to implement, handling service details.
@@ -68,16 +70,27 @@ public abstract class ContextUnderstanderService extends Service {
     private static final String TAG = "ContextUnderstanderSvc";
 
     private PersonalContextManager mPersonalContextManager;
+
     private UUID mComponentId = null;
 
-    public ContextUnderstanderService() {
-    }
+    private Executor mBinderExecutor = null;
 
     private void configure(UUID componentId) {
         if (mComponentId == null) {
             mComponentId = componentId;
             onConnected();
         }
+    }
+
+    /**
+     * Sets the executor to be used when methods are invoked on this service. By default, an
+     * Executor running on the main looper is used. This method should be called within
+     * {@link #onCreate()}.
+     *
+     * @param executor The {@link Executor} to run calls on.
+     */
+    public final void setExecutor(@androidx.annotation.NonNull Executor executor) {
+        mBinderExecutor = executor;
     }
 
     @NonNull
@@ -91,7 +104,10 @@ public abstract class ContextUnderstanderService extends Service {
     @Override
     @Nullable
     public final IBinder onBind(@Nullable Intent intent) {
-        return new Binder(this);
+        final Executor executor = mBinderExecutor != null
+                ? mBinderExecutor
+                : new HandlerExecutor(new Handler(Looper.getMainLooper()));
+        return new Binder(this, executor);
     }
 
     /** Called when the understander has been configured and is ready to receive insights. */
@@ -136,7 +152,8 @@ public abstract class ContextUnderstanderService extends Service {
      * of these models are allowed.
      *
      * @throws IllegalStateException when called before the system service has started. The call
-     * can be re-attempted in a few seconds, once system services have started.
+     *                               can be re-attempted in a few seconds, once system services have
+     *                               started.
      */
     @RequiresPermission(Manifest.permission.PERSONAL_CONTEXT_PUBLISH_INSIGHTS)
     public final void understood(@NonNull ContextInsight insight) {
@@ -156,7 +173,7 @@ public abstract class ContextUnderstanderService extends Service {
      * published by this {@link ContextUnderstanderService}.
      *
      * @param packageName the package of the application reporting the event.
-     * @param event The reported {@link InsightEvent}.
+     * @param event       The reported {@link InsightEvent}.
      */
     public void onHandleEvent(@NonNull String packageName, @NonNull InsightEvent event) {
         // Do nothing by default.
@@ -165,10 +182,9 @@ public abstract class ContextUnderstanderService extends Service {
     /**
      * Override this method to revieve user feedback on an insight.
      *
-     * @see android.service.personalcontext.insight.interaction.FeedbackRequest
-     *
-     * @param insight {@link ContextInsight} that the user feedback is related to
+     * @param insight  {@link ContextInsight} that the user feedback is related to
      * @param feedback information about the requested feedback and user responses
+     * @see android.service.personalcontext.insight.interaction.FeedbackRequest
      */
     public void onHandleUserFeedback(@NonNull PublishedContextInsight insight,
             @NonNull Bundle feedback) {
@@ -176,80 +192,58 @@ public abstract class ContextUnderstanderService extends Service {
     }
 
     private static final class Binder extends IRefiner.Stub {
-        private final WeakReference<ContextUnderstanderService> mService;
+        private final BinderRequestProcessor<ContextUnderstanderService> mRequestProcessor;
 
-        private Binder(ContextUnderstanderService service) {
-            mService = new WeakReference<>(service);
-        }
-
-        private ContextUnderstanderService getServiceOrThrow() throws RemoteException {
-            final ContextUnderstanderService service = mService.get();
-            if (service == null) {
-                Log.e(TAG, "Service is no longer available");
-                throw new RemoteException("Service is no longer available");
-            } else {
-                return service;
-            }
-        }
-
-        private void configure(ParcelUuid componentId) throws RemoteException {
-            getServiceOrThrow().configure(componentId.getUuid());
+        private Binder(ContextUnderstanderService service, Executor executor) {
+            mRequestProcessor = new BinderRequestProcessor.Builder<>(service, executor)
+                    .setInitializer(ContextUnderstanderService::configure)
+                    .build();
         }
 
         @Override
         public void refine(
                 ParcelUuid componentId,
                 List<ContextHintWithSignatureWrapper> inputHints, IRefineCallback callback,
-                IOpCallback opCallback)
-                throws RemoteException {
-            try {
-                configure(componentId);
-                // Report that hints were refined right away so that the core doesn't wait around.
-                callback.onHintsRefined(Collections.emptyList());
-
-                getServiceOrThrow().onUnderstand(
-                        ContextHintWithSignatureWrapper.unwrapList(inputHints));
-            } finally {
-                opCallback.signalCompletion();
-            }
+                IOpCallback opCallback) {
+            mRequestProcessor.execute(
+                    new BinderRequestProcessor.ExecutionParams.Builder<ContextUnderstanderService>(
+                            opCallback, serviceInstance -> {
+                        callback.onHintsRefined(Collections.emptyList());
+                        serviceInstance.onUnderstand(
+                                ContextHintWithSignatureWrapper.unwrapList(inputHints));
+                    }).setComponentId(componentId).build());
         }
 
         @Override
         public void getFilter(
-                ParcelUuid componentId, IGetFilterCallback callback, IOpCallback opCallback)
-                throws RemoteException {
-            try {
-                configure(componentId);
-                callback.updateFilter(getServiceOrThrow().onInitializeFilter());
-            } finally {
-                opCallback.signalCompletion();
-            }
+                ParcelUuid componentId, IGetFilterCallback callback, IOpCallback opCallback) {
+            mRequestProcessor.execute(
+                    new BinderRequestProcessor.ExecutionParams.Builder<ContextUnderstanderService>(
+                            opCallback, serviceInstance -> {
+                        callback.updateFilter(serviceInstance.onInitializeFilter());
+                    }).setComponentId(componentId).build());
         }
 
         @Override
         public void handleEvent(ParcelUuid componentId, String packageName, InsightEvent event,
-                IOpCallback opCallback)
-                throws RemoteException {
-            try {
-                configure(componentId);
-                getServiceOrThrow().onHandleEvent(packageName, event);
-            } finally {
-                opCallback.signalCompletion();
-            }
+                IOpCallback opCallback) {
+            mRequestProcessor.execute(
+                    new BinderRequestProcessor.ExecutionParams.Builder<ContextUnderstanderService>(
+                            opCallback, serviceInstance -> serviceInstance.onHandleEvent(
+                            packageName, event)
+                    ).setComponentId(componentId).build());
         }
 
         @Override
         public void handleFeedback(ParcelUuid componentId, PublishedContextInsightWrapper insight,
-                Bundle feedback, IOpCallback opCallback)
-                throws RemoteException {
-            try {
-                configure(componentId);
-                getServiceOrThrow().onHandleUserFeedback(
-                        insight.getPublishedContextInsight(),
-                        feedback);
-            } finally {
-                opCallback.signalCompletion();
-            }
+                Bundle feedback, IOpCallback opCallback) {
+            mRequestProcessor.execute(
+                    new BinderRequestProcessor.ExecutionParams.Builder<ContextUnderstanderService>(
+                            opCallback, serviceInstance ->
+                            serviceInstance.onHandleUserFeedback(
+                                    insight.getPublishedContextInsight(),
+                                    feedback)
+                    ).setComponentId(componentId).build());
         }
     }
 }

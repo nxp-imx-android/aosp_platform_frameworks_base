@@ -23,6 +23,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.service.personalcontext.IOpCallback;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.embedded.IInsightSurfaceVisualizer;
 import android.service.personalcontext.embedded.IVisualizationResult;
@@ -176,6 +177,15 @@ public class VisualizerConnection {
                 return;
             }
             try {
+                // TODO(b/485403335): Track connection lifetime.
+                final IOpCallback opCallback = new IOpCallback.Stub() {
+
+                    @RequiresNoPermission
+                    @Override
+                    public void signalCompletion() {
+                    }
+                };
+
                 mVisualizer.createVisualizationForClient(
                         new PublishedContextInsightWrapper(publishedContextInsight),
                         client,
@@ -192,7 +202,8 @@ public class VisualizerConnection {
                                             mComponentName, "no visualization for client");
                                 }
                             }
-                        });
+                        },
+                        opCallback);
             } catch (RemoteException e) {
                 throw e.rethrowFromSystemServer();
             }
@@ -203,9 +214,18 @@ public class VisualizerConnection {
     public void onClientDisconnected(InsightSurfaceClientInfo client) {
         mInjector.executeAction(() -> {
             try {
+                // TODO(b/485403335): Track connection lifetime.
+                final IOpCallback opCallback = new IOpCallback.Stub() {
+
+                    @RequiresNoPermission
+                    @Override
+                    public void signalCompletion() {
+                    }
+                };
+
                 // Don't bother trying to disconnect if the visualizer is null.
                 if (mVisualizer != null) {
-                    mVisualizer.onClientDisconnected(client);
+                    mVisualizer.onClientDisconnected(client, opCallback);
                 }
 
                 // Tear the visualizer down if there are no more connected clients.

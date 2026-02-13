@@ -15217,6 +15217,7 @@ package android.service.personalcontext.embedded {
     method public abstract void onClientDisconnected(@NonNull android.service.personalcontext.embedded.InsightSurfaceClientInfo);
     method public boolean onClientUpdated(@NonNull android.service.personalcontext.embedded.InsightSurfaceClientInfo, @NonNull android.service.personalcontext.embedded.InsightSurfaceClientInfo);
     method @Nullable public abstract android.view.View onCreateEmbeddedView(@NonNull android.content.Context, @NonNull android.service.personalcontext.insight.PublishedContextInsight, @Nullable android.service.personalcontext.RenderToken, @NonNull android.service.personalcontext.embedded.InsightSurfaceClientInfo);
+    method public final void setExecutor(@NonNull java.util.concurrent.Executor);
     field public static final String SERVICE_INTERFACE = "android.service.personalcontext.embedded.InsightSurfaceVisualizerService";
   }
 
@@ -15747,6 +15748,7 @@ package android.service.personalcontext.refiner {
     method public void onConnected();
     method @NonNull public abstract android.service.personalcontext.hint.HintFilter onInitializeFilter();
     method public abstract void onRefine(@NonNull java.util.List<android.service.personalcontext.hint.ContextHint>, @NonNull java.util.function.Consumer<java.util.List<android.service.personalcontext.hint.ContextHint>>);
+    method public final void setExecutor(@NonNull java.util.concurrent.Executor);
   }
 
 }
@@ -15761,6 +15763,7 @@ package android.service.personalcontext.renderer {
     method public void onConnected();
     method @NonNull public abstract android.service.personalcontext.insight.InsightFilter onInitializeFilter();
     method public abstract void onRender(@NonNull android.service.personalcontext.insight.PublishedContextInsight, @NonNull android.service.personalcontext.RenderToken);
+    method public final void setExecutor(@NonNull java.util.concurrent.Executor);
     field public static final String SERVICE_INTERFACE = "android.service.personalcontext.renderer.InsightRendererService";
   }
 
@@ -15776,6 +15779,7 @@ package android.service.personalcontext.understander {
     method public void onHandleUserFeedback(@NonNull android.service.personalcontext.insight.PublishedContextInsight, @NonNull android.os.Bundle);
     method @NonNull public abstract android.service.personalcontext.hint.HintFilter onInitializeFilter();
     method @RequiresPermission(android.Manifest.permission.PERSONAL_CONTEXT_PUBLISH_INSIGHTS) public abstract void onUnderstand(@NonNull java.util.List<android.service.personalcontext.hint.ContextHintWithSignature>);
+    method public final void setExecutor(@NonNull java.util.concurrent.Executor);
     method @RequiresPermission(android.Manifest.permission.PERSONAL_CONTEXT_PUBLISH_INSIGHTS) public final void understood(@NonNull android.service.personalcontext.insight.ContextInsight);
   }
 

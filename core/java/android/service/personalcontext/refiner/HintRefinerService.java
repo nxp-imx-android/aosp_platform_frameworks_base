@@ -22,7 +22,10 @@ import android.annotation.SystemApi;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.HandlerExecutor;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.ParcelUuid;
 import android.os.RemoteException;
 import android.service.personalcontext.Flags;
@@ -34,13 +37,14 @@ import android.service.personalcontext.hint.ContextHintWrapper;
 import android.service.personalcontext.hint.HintFilter;
 import android.service.personalcontext.insight.PublishedContextInsightWrapper;
 import android.service.personalcontext.insight.interaction.InsightEvent;
-import android.util.Log;
+import android.service.personalcontext.util.BinderRequestProcessor;
 
 import androidx.annotation.NonNull;
 
-import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
 /**
@@ -69,6 +73,7 @@ public abstract class HintRefinerService extends Service {
     private static final String TAG = "HintRefinerService";
 
     private UUID mComponentId = null;
+    private Executor mBinderExecutor = null;
 
     /** @hide */
     @NonNull
@@ -82,7 +87,10 @@ public abstract class HintRefinerService extends Service {
     @Override
     @Nullable
     public final IBinder onBind(@Nullable Intent intent) {
-        return new Binder(this);
+        final Executor executor = mBinderExecutor != null
+                ? mBinderExecutor
+                : new HandlerExecutor(new Handler(Looper.getMainLooper()));
+        return new Binder(this, executor);
     }
 
     private void configure(UUID componentId) {
@@ -95,6 +103,17 @@ public abstract class HintRefinerService extends Service {
     /** Called when the refiner has been configured and is ready to receive hints. */
     public void onConnected() {
         // Default implementation does nothing.
+    }
+
+    /**
+     * Sets the executor to be used when methods are invoked on this service. By default, an
+     * Executor running on the main looper is used. This method should be called within
+     * {@link #onCreate()}.
+     *
+     * @param executor The {@link Executor} to run calls on.
+     */
+    public final void setExecutor(@NonNull Executor executor) {
+        mBinderExecutor = executor;
     }
 
     /**
@@ -129,58 +148,47 @@ public abstract class HintRefinerService extends Service {
             @NonNull Consumer<List<ContextHint>> callback);
 
     private static final class Binder extends IRefiner.Stub {
-        private final WeakReference<HintRefinerService> mService;
 
-        private Binder(HintRefinerService service) {
-            mService = new WeakReference<>(service);
-        }
+        private final BinderRequestProcessor<HintRefinerService> mRequestProcessor;
 
-        private HintRefinerService getServiceOrThrow() throws RemoteException {
-            final HintRefinerService service = mService.get();
-            if (service == null) {
-                Log.e(TAG, "Service is no longer available");
-                throw new RemoteException("Service is no longer available");
-            } else {
-                return service;
-            }
-        }
-
-        private void configure(ParcelUuid componentId) throws RemoteException {
-            getServiceOrThrow().configure(componentId.getUuid());
+        private Binder(HintRefinerService service, Executor executor) {
+            mRequestProcessor = new BinderRequestProcessor.Builder<>(service, executor)
+                    .setInitializer(HintRefinerService::configure)
+                    .build();
         }
 
         @Override
         public void refine(
                 ParcelUuid componentId,
                 List<ContextHintWithSignatureWrapper> inputHints, IRefineCallback callback,
-                IOpCallback opCallback)
-                throws RemoteException {
-            try {
-                configure(componentId);
-                getServiceOrThrow().onRefine(
-                        ContextHintWithSignature.unwrapList(
-                                ContextHintWithSignatureWrapper.unwrapList(inputHints)),
-                        hints -> {
-                            try {
-                                callback.onHintsRefined(ContextHintWrapper.wrapList(hints));
-                            } catch (RemoteException e) {
-                                Log.i(TAG, "Could not return refined hints", e);
-                            }
-                        });
-            } finally {
-                opCallback.signalCompletion();
-            }
+                IOpCallback opCallback) {
+            mRequestProcessor.execute(
+                    new BinderRequestProcessor.ExecutionParams.Builder<HintRefinerService>(
+                            opCallback, serviceInstance -> {
+                        final ArrayList<ContextHint> hints = new ArrayList<>();
+                        serviceInstance.onRefine(ContextHintWithSignature.unwrapList(
+                                        ContextHintWithSignatureWrapper.unwrapList(inputHints)),
+                                contextHints -> {
+                                    if (contextHints != null) {
+                                        hints.addAll(contextHints);
+                                    }
+                                });
+                        callback.onHintsRefined(ContextHintWrapper.wrapList(hints));
+                    }).setComponentId(componentId)
+                            .build());
+
         }
 
         @Override
         public void getFilter(ParcelUuid componentId, IGetFilterCallback callback,
-                IOpCallback opCallback) throws RemoteException {
-            try {
-                configure(componentId);
-                callback.updateFilter(getServiceOrThrow().onInitializeFilter());
-            } finally {
-                opCallback.signalCompletion();
-            }
+                IOpCallback opCallback) {
+            mRequestProcessor.execute(
+                    new BinderRequestProcessor.ExecutionParams.Builder<HintRefinerService>(
+                            opCallback,
+                            serviceInstance -> callback.updateFilter(
+                                    serviceInstance.onInitializeFilter())
+                    ).setComponentId(componentId)
+                            .build());
         }
 
         @Override
@@ -196,8 +204,13 @@ public abstract class HintRefinerService extends Service {
 
         @Override
         public void handleFeedback(ParcelUuid componentId, PublishedContextInsightWrapper insight,
-                Bundle feedback, IOpCallback opCallback) {
-            throw new UnsupportedOperationException("Can not handle user feedback in a refiner");
+                Bundle feedback, IOpCallback opCallback) throws RemoteException {
+            try {
+                throw new UnsupportedOperationException(
+                        "Can not handle user feedback in a refiner");
+            } finally {
+                opCallback.signalCompletion();
+            }
         }
     }
 }
