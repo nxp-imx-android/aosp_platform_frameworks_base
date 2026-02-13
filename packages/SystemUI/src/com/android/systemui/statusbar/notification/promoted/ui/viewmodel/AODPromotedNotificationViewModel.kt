@@ -97,6 +97,13 @@ constructor(
             source = audiblyAlertedIconVisibleFlow,
         )
 
+    val useLowFrequencyMode: Boolean by
+        hydrator.hydratedStateOf(
+            traceName = "useLowFrequencyMode",
+            initialValue = false,
+            source = interactor.useLowFrequencyMode,
+        )
+
     override suspend fun onActivated(): Nothing {
         coroutineScope {
             launch { activateFlowDumper() }

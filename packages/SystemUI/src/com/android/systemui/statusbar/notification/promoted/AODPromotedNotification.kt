@@ -100,6 +100,7 @@ fun AODPromotedNotification(
 
     val content = viewModel.content ?: return
     val audiblyAlertedIconVisible = viewModel.audiblyAlertedIconVisible
+    val useLowFrequencyMode = viewModel.useLowFrequencyMode
 
     val notificationView = content.notificationView
     if (notificationView == null) {
@@ -121,6 +122,7 @@ fun AODPromotedNotification(
             notificationViewFactory = { notificationView },
             content = content,
             audiblyAlertedIconVisible = audiblyAlertedIconVisible,
+            useLowFrequencyMode = useLowFrequencyMode,
             onBindingError = { hasBindingError = true },
             modifier = modifier.padding(sidePaddingValues),
         )
@@ -134,6 +136,7 @@ fun AODPromotedNotificationView(
     audiblyAlertedIconVisible: Boolean,
     onBindingError: () -> Unit,
     modifier: Modifier = Modifier,
+    useLowFrequencyMode: Boolean = true,
 ) {
     val borderStroke = BorderStroke(0.5.dp, SecondaryText.brush.value.copy(alpha = 0.32f))
 
@@ -183,7 +186,7 @@ fun AODPromotedNotificationView(
 
                 try {
                     traceSection("$TAG.update") {
-                        updater.update(content, audiblyAlertedIconVisible)
+                        updater.update(content, audiblyAlertedIconVisible, useLowFrequencyMode)
                     }
                     frame.maxHeight = maxHeight
                 } catch (tr: Throwable) {
@@ -384,7 +387,11 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         }
     }
 
-    fun update(content: PromotedNotificationContentModel, audiblyAlertedIconVisible: Boolean) {
+    fun update(
+        content: PromotedNotificationContentModel,
+        audiblyAlertedIconVisible: Boolean,
+        useLowFrequencyMode: Boolean,
+    ) {
         when (content.style) {
             Style.Base -> updateBase(content, collapsed = false)
             Style.CollapsedBase -> updateBase(content, collapsed = true)
@@ -393,11 +400,11 @@ private class AODPromotedNotificationViewUpdater(root: View) {
             Style.CollapsedCall -> updateCallStyle(content, collapsed = true)
             Style.Progress -> updateProgressStyle(content)
             Style.Metric,
-            Style.MetricSingle -> updateMetricStyle(content)
+            Style.MetricSingle -> updateMetricStyle(content, useLowFrequencyMode)
 
             Style.Ineligible -> {}
         }
-
+        chronometer?.setLowFrequency(useLowFrequencyMode)
         alertedIcon?.isVisible = audiblyAlertedIconVisible
     }
 
@@ -483,7 +490,10 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         }
     }
 
-    private fun updateMetricStyle(content: PromotedNotificationContentModel) {
+    private fun updateMetricStyle(
+        content: PromotedNotificationContentModel,
+        useLowFrequencyMode: Boolean,
+    ) {
         if (!richOngoingImprovements()) {
             updateHeader(content, collapsed = false, null)
             updateNotifIcon(icon, content.skeletonNotifIcon, content.iconLevel)
@@ -518,9 +528,9 @@ private class AODPromotedNotificationViewUpdater(root: View) {
                     metricView.chronometer?.isCountDown = metric.isTimer
                     metricView.chronometer?.isUseAdaptiveFormat = metric.useAdaptiveFormat
                     metricView.chronometer?.format = null
-                    val isRunning = metric !is Metric.TimeDifference.Paused
-                    metricView.chronometer?.setStarted(isRunning)
-                    metricView.chronometer?.setLowFrequency(isRunning)
+                    val isPaused = metric is Metric.TimeDifference.Paused
+                    metricView.chronometer?.setStarted(!isPaused)
+                    metricView.chronometer?.setLowFrequency(!isPaused && useLowFrequencyMode)
                     when (metric) {
                         is Metric.TimeDifference.ElapsedRealtime ->
                             metricView.chronometer?.setBase(metric.zeroElapsedRealtime)
