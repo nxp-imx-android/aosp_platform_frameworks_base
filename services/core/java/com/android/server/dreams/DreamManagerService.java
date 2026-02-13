@@ -138,6 +138,7 @@ public final class DreamManagerService extends SystemService {
     private final Context mContext;
     private final Handler mHandler;
     private final DreamController mController;
+    private final DreamValidator mDreamValidator;
     private final Injector mInjector;
     private final PowerManager mPowerManager;
     private final UiModeManager mUiModeManager;
@@ -286,6 +287,7 @@ public final class DreamManagerService extends SystemService {
         mContext = injector.getContext();
         mHandler = injector.getHandler();
         mController = injector.getDreamController(mControllerListener);
+        mDreamValidator = injector.getDreamValidator();
         mInjector = injector;
 
         mPowerManager = mContext.getSystemService(PowerManager.class);
@@ -815,7 +817,7 @@ public final class DreamManagerService extends SystemService {
     private ComponentName chooseDreamForUser(boolean doze, int userId) {
         if (doze) {
             ComponentName dozeComponent = getDozeComponent(userId);
-            return validateDream(dozeComponent, userId) ? dozeComponent : null;
+            return mDreamValidator.validate(dozeComponent, userId) ? dozeComponent : null;
         }
 
         if (mSystemDreamComponent != null) {
@@ -824,22 +826,6 @@ public final class DreamManagerService extends SystemService {
 
         ComponentName[] dreams = getDreamComponentsForUser(userId);
         return dreams != null && dreams.length != 0 ? dreams[0] : null;
-    }
-
-    private boolean validateDream(ComponentName component, int userId) {
-        if (component == null) return false;
-        final ServiceInfo serviceInfo = getServiceInfo(component, userId);
-        if (serviceInfo == null) {
-            Slog.w(TAG, "Dream " + component + " does not exist on user " + userId);
-            return false;
-        } else if (serviceInfo.applicationInfo.targetSdkVersion >= Build.VERSION_CODES.LOLLIPOP
-                && !BIND_DREAM_SERVICE.equals(serviceInfo.permission)) {
-            Slog.w(TAG, "Dream " + component
-                    + " is not available because its manifest is missing the " + BIND_DREAM_SERVICE
-                    + " permission on the dream service declaration.");
-            return false;
-        }
-        return true;
     }
 
     private ComponentName[] getDreamComponentsForUser(int userId) {
@@ -858,7 +844,7 @@ public final class DreamManagerService extends SystemService {
         // first, ensure components point to valid services
         List<ComponentName> validComponents = new ArrayList<>();
         for (ComponentName component : components) {
-            if (validateDream(component, userId)) {
+            if (mDreamValidator.validate(component, userId)) {
                 validComponents.add(component);
             }
         }
@@ -866,7 +852,7 @@ public final class DreamManagerService extends SystemService {
         // fallback to the default dream component if necessary
         if (validComponents.isEmpty()) {
             ComponentName defaultDream = getDefaultDreamComponentForUser(userId);
-            if (defaultDream != null && validateDream(defaultDream, userId)) {
+            if (defaultDream != null && mDreamValidator.validate(defaultDream, userId)) {
                 Slog.w(TAG, "Falling back to default dream " + defaultDream);
                 validComponents.add(defaultDream);
             }
@@ -1009,15 +995,6 @@ public final class DreamManagerService extends SystemService {
         return userId == mainUserId;
     }
 
-    private ServiceInfo getServiceInfo(ComponentName name, int userId) {
-        final Context userContext = mContext.createContextAsUser(UserHandle.of(userId), 0);
-        try {
-            return name != null ? userContext.getPackageManager().getServiceInfo(name,
-                    PackageManager.MATCH_DEBUG_TRIAGED_MISSING) : null;
-        } catch (NameNotFoundException e) {
-            return null;
-        }
-    }
 
     @GuardedBy("mLock")
     private void startDreamLocked(final ComponentName name,
@@ -1109,11 +1086,9 @@ public final class DreamManagerService extends SystemService {
 
     private void writePulseGestureEnabled() {
         ComponentName name = getDozeComponent();
-        boolean dozeEnabled = validateDream(name, mInjector.getCurrentUser());
+        boolean dozeEnabled = mDreamValidator.validate(name, mInjector.getCurrentUser());
         LocalServices.getService(InputManagerInternal.class).setPulseGestureEnabled(dozeEnabled);
     }
-
-
 
     private final DreamController.Listener mControllerListener = new DreamController.Listener() {
         @Override
@@ -1154,6 +1129,7 @@ public final class DreamManagerService extends SystemService {
         Handler getHandler();
         AmbientDisplayConfiguration getDozeConfig();
         DreamController getDreamController(DreamController.Listener controllerListener);
+        DreamValidator getDreamValidator();
         @UserIdInt int getCurrentUser();
     }
 
@@ -1184,6 +1160,11 @@ public final class DreamManagerService extends SystemService {
         @Override
         public DreamController getDreamController(DreamController.Listener controllerListener) {
             return new DreamController(mContext, mHandler, controllerListener);
+        }
+
+        @Override
+        public DreamValidator getDreamValidator() {
+            return new DreamValidator(mContext);
         }
 
         @Override
