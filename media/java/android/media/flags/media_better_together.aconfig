@@ -44,13 +44,6 @@ flag {
 }
 
 flag {
-    name: "enable_device_suggestions_preference"
-    namespace: "media_better_together"
-    description: "Add a preference for device suggestions in the media settings page"
-    bug: "415096359"
-}
-
-flag {
     name: "enable_full_scan_with_media_content_control"
     namespace: "media_better_together"
     description: "Allows holders of the MEDIA_CONTENT_CONTROL permission to scan for routes while not in the foreground."
