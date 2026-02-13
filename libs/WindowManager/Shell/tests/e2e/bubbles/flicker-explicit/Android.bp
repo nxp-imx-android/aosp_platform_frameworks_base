@@ -68,6 +68,7 @@ test_module_config {
         "com.android.wm.shell.flicker.bubbles.EnterBubbleFromHomeScreenTest",
         "com.android.wm.shell.flicker.bubbles.EnterBubbleFromHomeScreenTrampolineTest",
         "com.android.wm.shell.flicker.bubbles.EnterBubbleFromHomeScreenTrampolineTwiceTest",
+        "com.android.wm.shell.flicker.bubbles.EnterBubbleFromOverviewLiveTileTest",
         "com.android.wm.shell.flicker.bubbles.EnterBubbleFromOverviewTest",
         "com.android.wm.shell.flicker.bubbles.EnterBubbleViaBubbleMenuTest",
         "com.android.wm.shell.flicker.bubbles.EnterBubbleViaDragToBubbleBarTest",
