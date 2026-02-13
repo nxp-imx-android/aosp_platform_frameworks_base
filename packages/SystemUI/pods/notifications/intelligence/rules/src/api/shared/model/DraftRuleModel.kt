@@ -43,7 +43,27 @@ public data class DraftRuleModel(
      * [android.app.NotificationRule.Filter.getIncludedPackageUids].
      */
     val includedApps: RuleValue<IncludedAppsModel>?,
-)
+) {
+    public companion object {
+        /** Converts a rule to a draft version so it can be edited. */
+        public fun RuleModel.toDraft(): DraftRuleModel {
+            return DraftRuleModel(
+                action = action,
+                contacts = filter.contacts.toDraft(),
+                includedApps = filter.includedApps.toDraft(),
+            )
+        }
+
+        /** Converts a given type to a [RuleValue.Specified] version of that type. */
+        private fun <T> T?.toDraft(): RuleValue<T>? {
+            return if (this == null) {
+                null
+            } else {
+                RuleValue.Specified(this)
+            }
+        }
+    }
+}
 
 /** Represents various actions that a rule can apply to a notification. */
 public enum class ActionModel {

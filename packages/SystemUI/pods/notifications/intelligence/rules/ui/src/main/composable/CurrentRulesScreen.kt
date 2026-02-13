@@ -17,8 +17,11 @@
 package com.android.systemui.notifications.intelligence.rules.ui.composable
 
 import android.graphics.drawable.ShapeDrawable
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -33,13 +36,18 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel.Companion.toDraft
 import com.android.systemui.notifications.intelligence.rules.shared.model.FilterModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.IncludedAppsModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleModel
@@ -53,6 +61,7 @@ fun CurrentRulesScreen(
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
+    BackHandler(enabled = true, onBack = dismissRulesScreen)
 
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(8.dp, alignment = Alignment.Top),
@@ -81,7 +90,9 @@ fun CurrentRulesScreen(
             }
         }
 
-        viewModel.rules.forEach { rule -> item(rule.toString()) { CurrentRule(rule) } }
+        viewModel.rules.forEach { rule ->
+            item(rule.toString()) { CurrentRule(rule = rule, screenViewModel = viewModel) }
+        }
 
         item("Fake rule button") {
             Button(onClick = { scope.launch { viewModel.createRule(generateFakeRule()) } }) {
@@ -92,29 +103,42 @@ fun CurrentRulesScreen(
 }
 
 @Composable
-private fun CurrentRule(rule: RuleModel) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
+private fun CurrentRule(rule: RuleModel, screenViewModel: NotificationRulesScreenViewModel) {
+    var isExpanded by remember { mutableStateOf(false) }
+
+    Column(
         modifier =
             Modifier.fillMaxWidth()
                 .background(
                     color = MaterialTheme.colorScheme.surfaceContainer,
                     shape = MaterialTheme.shapes.large,
                 )
-                .minimumInteractiveComponentSize(),
+                .padding(8.dp)
+                .clickable(onClick = { isExpanded = !isExpanded })
     ) {
-        Icon(
-            imageVector = Icons.Filled.Star,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.size(18.dp).padding(start = 4.dp),
-        )
-        Text(
-            text = rule.toText(),
-            color = MaterialTheme.colorScheme.onSurface,
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.weight(1f).padding(start = 4.dp),
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.minimumInteractiveComponentSize(),
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Star,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.size(18.dp).padding(start = 4.dp),
+            )
+            Text(
+                text = rule.toText(),
+                color = MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.weight(1f).padding(start = 4.dp),
+            )
+        }
+
+        if (isExpanded) {
+            Button(onClick = { screenViewModel.launchEditRuleScreen(rule.toDraft()) }) {
+                Text("Edit")
+            }
+        }
     }
 }
 

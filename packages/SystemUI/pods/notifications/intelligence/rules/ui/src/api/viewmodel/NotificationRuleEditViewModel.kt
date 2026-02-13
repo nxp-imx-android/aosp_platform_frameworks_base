@@ -23,9 +23,13 @@ import android.graphics.Bitmap
 import android.net.Uri
 import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel
 
 /** A view model for editing a specific notification rule. Work-in-progress. */
 public interface NotificationRuleEditViewModel {
+    /** The rule being edited. */
+    public val rule: DraftRuleModel
+
     /**
      * Fetches all contacts whose name matches [searchQuery].
      *
@@ -51,6 +55,6 @@ public interface NotificationRuleEditViewModel {
     public suspend fun fetchInstalledApps(): List<AppModel>
 
     public interface Factory {
-        public fun create(): NotificationRuleEditViewModel
+        public fun create(rule: DraftRuleModel): NotificationRuleEditViewModel
     }
 }
