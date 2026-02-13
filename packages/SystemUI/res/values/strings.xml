@@ -2475,22 +2475,7 @@
     <string name="inline_turn_off_notifications">Turn off</string>
 
     <!-- Notification Inline controls: device type for button to open bridged notification settings on associated device [CHAR_LIMIT=20] -->
-    <string name="bridged_device_type_unknown">device</string>
-
-    <!-- Notification Inline controls: device type for button to open bridged notification settings on associated device [CHAR_LIMIT=20] -->
-    <string name="bridged_device_type_phone">phone</string>
-
-    <!-- Notification Inline controls: device type for button to open bridged notification settings on associated device [CHAR_LIMIT=20] -->
-    <string name="bridged_device_type_tablet">tablet</string>
-
-    <!-- Notification Inline controls: device type for button to open bridged notification settings on associated device [CHAR_LIMIT=20] -->
-    <string name="bridged_device_type_laptop">laptop</string>
-
-    <!-- Notification Inline controls: device type for button to open bridged notification settings on associated device [CHAR_LIMIT=20] -->
-    <string name="bridged_device_type_watch">watch</string>
-
-    <!-- Notification Inline controls: device type for button to open bridged notification settings on associated device [CHAR_LIMIT=20] -->
-    <string name="bridged_device_type_tv">TV</string>
+    <string name="bridged_source_device">source device</string>
 
     <!-- Notification inline controls: button to open bridged notification settings on associated device [CHAR_LIMIT=35] -->
     <string name="inline_bridged_open_associated_device_settings">Open <xliff:g id="device_type" example="phone">%1$s</xliff:g> settings</string>
