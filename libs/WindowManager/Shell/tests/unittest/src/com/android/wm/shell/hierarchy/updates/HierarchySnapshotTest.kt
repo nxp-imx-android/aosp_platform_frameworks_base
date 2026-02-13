@@ -26,6 +26,7 @@ import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.hierarchy.ContainerHierarchy
 import com.android.wm.shell.hierarchy.containers.StubContainer
 import com.android.wm.shell.hierarchy.modes.StubMode
+import com.android.wm.shell.hierarchy.utils.HierarchyUtils
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -55,7 +56,7 @@ class HierarchySnapshotTest : ShellTestCase() {
         assertThat(chgs.isEmpty).isTrue()
 
         // The saved state should be retrievable and match the original container
-        val savedState = snapshot.snapshots.getValue(container).state
+        val savedState = snapshot.snapshots.getValue(container)
         assertThat(savedState.parentToken).isEqualTo(container.parent?.token)
         assertThat(savedState.children).isEqualTo(container.children)
         assertThat(savedState.props.bounds).isEqualTo(container.props.bounds)
@@ -64,7 +65,7 @@ class HierarchySnapshotTest : ShellTestCase() {
     }
 
     @Test
-    fun testSaveAndGetContainerModes() {
+    fun testSaveAndGetContainerMode() {
         val root = hierarchy.root
         val parentA = StubContainer()
         val parentB = StubContainer()
@@ -77,17 +78,8 @@ class HierarchySnapshotTest : ShellTestCase() {
 
         val snapshot = HierarchySnapshot(hierarchy.toContainerList())
 
-        // No changes should be reported for the same container
-        val chgs = snapshot.getChanges(container)
-        assertThat(chgs.isEmpty).isTrue()
-
-        // The saved modes should be retrievable and match the original modes
-        assertThat(snapshot.snapshots.getValue(container).modes).isEqualTo(
-            listOf(
-                parentA.mode!!,
-                parentB.mode!!
-            )
-        )
+        // The saved mode should be retrievable and match the original mode
+        assertThat(snapshot.snapshots.getValue(container).mode).isEqualTo(parentB.mode!!)
     }
 
     @Test
@@ -117,7 +109,7 @@ class HierarchySnapshotTest : ShellTestCase() {
 
         val expectedChanges = HierarchyChangeFlags(
             HierarchySnapshot.CHANGED_PARENT,
-            HierarchySnapshot.CHANGED_MODES,
+            HierarchySnapshot.CHANGED_MODE,
             HierarchySnapshot.CHANGED_VISIBILITY,
             HierarchySnapshot.CHANGED_CHILDREN,
             HierarchySnapshot.CHANGED_BOUNDS,

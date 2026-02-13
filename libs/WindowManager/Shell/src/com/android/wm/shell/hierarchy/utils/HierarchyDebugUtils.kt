@@ -61,7 +61,7 @@ class HierarchyDebugUtils {
             val changeFlags = snapshot.getChanges(container)
             val oldState =
                 if (!changeFlags.isEmpty) {
-                    snapshot.snapshots.getValue(container).state
+                    snapshot.snapshots.getValue(container)
                 } else null
             val startColorTag = withColor ?: ""
             val endColorTag = if (withColor != null) NONE else ""

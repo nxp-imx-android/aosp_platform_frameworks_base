@@ -15,6 +15,7 @@
  */
 package com.android.wm.shell.hierarchy.properties
 
+import android.window.DisplayAreaOrganizer.FEATURE_DEFAULT_TASK_CONTAINER
 import com.android.wm.shell.dagger.hierarchy.WmSyncedProperty
 
 /**
@@ -34,5 +35,10 @@ class DisplayAreaContainerProperties(
     /** @see ContainerProperties.propsToString */
     override fun propsToString(): String {
         return "featureId=$featureId " + super.propsToString()
+    }
+
+    /** @see ContainerProperties.getTypeName */
+    override fun getTypeName(): String {
+        return if (featureId == FEATURE_DEFAULT_TASK_CONTAINER) "TDA" else "DA"
     }
 }

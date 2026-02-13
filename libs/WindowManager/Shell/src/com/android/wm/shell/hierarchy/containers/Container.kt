@@ -39,7 +39,7 @@ open class Container(
     name: String? = null
 ) {
     // A debug name for this container
-    var name = "${name ?: props::class.simpleName}_${tokenToString(token)}"
+    var name = "${name ?: props.getTypeName()}_${tokenToString(token)}"
 
     // The actual SurfaceControl for this container. For containers that have corresponding WM
     // containers, then this leash is provided by WM via transitions. Otherwise the creator of

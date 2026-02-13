@@ -74,6 +74,11 @@ class DisplayContainerProperties(
 
     /** @see ContainerProperties.propsToString */
     override fun propsToString(): String {
-        return "displayId=$displayId " + super.propsToString()
+        return "#$displayId " + super.propsToString()
+    }
+
+    /** @see ContainerProperties.getTypeName */
+    override fun getTypeName(): String {
+        return "Display"
     }
 }

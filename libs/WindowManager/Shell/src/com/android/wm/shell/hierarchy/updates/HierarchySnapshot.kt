@@ -16,8 +16,6 @@
 package com.android.wm.shell.hierarchy.updates
 
 import com.android.wm.shell.hierarchy.containers.Container
-import com.android.wm.shell.hierarchy.modes.Mode
-import com.android.wm.shell.hierarchy.utils.HierarchyUtils
 import java.util.BitSet
 
 val EMPTY_SNAPSHOT = HierarchySnapshot()
@@ -49,9 +47,9 @@ class HierarchyChangeFlags(vararg flags: Int) : BitSet() {
 class HierarchySnapshot {
 
     // Do not use containers in this list for parent relationships, use the parent token in the
-    // ContainerSnapshot
+    // container snapshot
     val preUpdateContainers: List<Container>
-    val snapshots = mutableMapOf<Container, ContainerSnapshot>()
+    val snapshots = mutableMapOf<Container, SavedContainerState>()
 
     /**
      * Constructor for default initialization and testing
@@ -66,11 +64,7 @@ class HierarchySnapshot {
     constructor(containers: List<Container>) {
         preUpdateContainers = containers
         for (container in containers) {
-            snapshots[container] =
-                ContainerSnapshot(
-                    HierarchyUtils.getModes(container),
-                    SavedContainerState(container)
-                )
+            snapshots[container] = SavedContainerState(container)
         }
     }
 
@@ -80,10 +74,8 @@ class HierarchySnapshot {
     fun getChanges(container: Container): HierarchyChangeFlags {
         val chgs = HierarchyChangeFlags()
         if (container in snapshots) {
-            val snapshot = snapshots[container]!!
-            snapshot.state.diff(container, chgs)
-            val modes = HierarchyUtils.getModes(container)
-            chgs.compareAndSet(snapshot.modes, modes, CHANGED_MODES)
+            val snapshot = snapshots.getValue(container)
+            snapshot.diff(container, chgs)
         }
         return chgs
     }
@@ -102,19 +94,10 @@ class HierarchySnapshot {
         return false
     }
 
-    /**
-     * The per-container snapshot data.
-     * Saved modes in ancestor-first order.
-     */
-    data class ContainerSnapshot(
-        val modes: List<Mode>,
-        val state: SavedContainerState
-    )
-
     companion object {
         // Flags describing changes to a generic container
         const val CHANGED_PARENT = 1
-        const val CHANGED_MODES = 2
+        const val CHANGED_MODE = 2
         const val CHANGED_CHILDREN = 3
         const val CHANGED_BOUNDS = 4
         const val CHANGED_ROTATION = 5

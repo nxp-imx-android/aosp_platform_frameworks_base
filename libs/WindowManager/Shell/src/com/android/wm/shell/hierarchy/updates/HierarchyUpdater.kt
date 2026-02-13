@@ -46,11 +46,6 @@ import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
 
 /**
- * Keeps track of the changes in the hierarchy between update & mixpatcher transition dispatching.
- */
-data class CurrentTransitionChanges(var transition: IBinder?, var snapshot: HierarchySnapshot)
-
-/**
  * Helper class to update the container hierarchy from transitions or task organizer (for root tasks
  * only).
  */
@@ -98,17 +93,16 @@ class HierarchyUpdater(
         // Iterate the pre-existing containers from bottom-up to notify old modes that their
         // descendants have been removed
         for (container in snapshot.preUpdateContainers.asReversed()) {
-            val oldModes = snapshot.snapshots.getValue(container).modes
-            val modes = HierarchyUtils.getModes(container)
-            val removedModesBottomUp = (oldModes - modes).reversed()
-            for (mode in removedModesBottomUp) {
+            val oldMode = snapshot.snapshots[container]?.mode
+            val mode = HierarchyUtils.getMode(container)
+            if (oldMode != null && oldMode != mode) {
                 ProtoLog.v(
                     WM_SHELL_MODES,
                     "\tDetaching container: %s to %s",
                     container.name,
-                    mode.getId()
+                    oldMode.getId()
                 )
-                mode.detachFromContainer(updateContext, container)
+                oldMode.detachFromContainer(updateContext, container)
             }
         }
 
@@ -142,14 +136,10 @@ class HierarchyUpdater(
         val postUpdateContainersList = mutableListOf(hierarchy.root)
         while (postUpdateContainersList.isNotEmpty()) {
             val container = postUpdateContainersList.removeFirst()
-            val oldModes = if (container in snapshot.snapshots) {
-                snapshot.snapshots.getValue(container).modes
-            } else {
-                listOf()
-            }
-            val modes = HierarchyUtils.getModes(container)
-            for (mode in modes) {
-                if (mode !in oldModes) {
+            val oldMode = snapshot.snapshots[container]?.mode
+            val mode = HierarchyUtils.getMode(container)
+            if (mode != null) {
+                if (mode != oldMode) {
                     // This container has not been associated with the mode yet (either directly
                     // or indirectly)
                     ProtoLog.v(

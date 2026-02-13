@@ -18,4 +18,10 @@ package com.android.wm.shell.hierarchy.properties
 /**
  * Properties for a container that is associated with a wallpaper in the WindowManager hierarchy.
  */
-class WallpaperContainerProperties() : ContainerProperties() {}
+class WallpaperContainerProperties() : ContainerProperties() {
+
+    /** @see ContainerProperties.getTypeName */
+    override fun getTypeName(): String {
+        return "Wallpaper"
+    }
+}
