@@ -27,7 +27,7 @@ interface IScanSession {
      *
      * @param broadcastType @ScanConstants.BroadcastType broadcast type, such as ATSC.
      * @param countryCode countryCode based on ISO 3166-1 alpha-3.
-     * @param operator @ScanConstants.OperatorType satellite, cable and IP-based operator type.
+     * @param operator values based on @TvExtensionContract.TunerOperators.OperatorType.
      * @param frequency the list of the frequency of the scan.
      * @param scanType @ScanConstants.ScanType type of scan, such as MANUAL.
      * @param languageCode language code based on ISO 639-2/T.

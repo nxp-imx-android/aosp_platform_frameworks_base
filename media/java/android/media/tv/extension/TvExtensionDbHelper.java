@@ -33,7 +33,7 @@ import android.util.Log;
  * A helper class to manage the tv extension database.
  *
  * <p>This class implements the {@link #onCreate}, {@link #onUpgrade} that is
- * inherited from SQLiteOpenHelper. The on create pcreates the tv_extension.db
+ * inherited from SQLiteOpenHelper. The on create pre-creates the tv_extension.db
  * and populates it. </p>
  *
  * @hide
@@ -157,13 +157,13 @@ public class TvExtensionDbHelper extends SQLiteOpenHelper {
                 + DigitalTunerSettings.COLUMN_DIGITAL_SUBTITLE_TRACK
                 + " INTEGER, "
                 + DigitalTunerSettings.COLUMN_SUPERIMPOSE
-                + " INTEGER DEFAULT 0 "
+                + " INTEGER DEFAULT 0, "
                 + DigitalTunerSettings.COLUMN_CC_DISPLAY
                 + " INTEGER DEFAULT 0, "
                 + "CHECK (" + DigitalTunerSettings.COLUMN_DIGITAL_SUBTITLE_DISPLAY
                 + " BETWEEN 0 AND 2), "
                 + "CHECK (" + DigitalTunerSettings.COLUMN_SUPERIMPOSE
-                + " BETWEEN 0 AND 2) "
+                + " BETWEEN 0 AND 2), "
                 + "CHECK (" + DigitalTunerSettings.COLUMN_CC_DISPLAY + " BETWEEN 0 AND 2) "
                 + ");");
         db.execSQL("INSERT INTO " + TvExtensionContract.DIGITAL_TUNER_SETTING_TABLE

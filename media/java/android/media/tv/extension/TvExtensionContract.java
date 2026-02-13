@@ -305,7 +305,7 @@ public class TvExtensionContract {
                     KEY_TUNER_SATELLITE_TYPE, KEY_CHANNEL_LIST_TYPE, KEY_SATELLITE_BROADCASTER,
                     KEY_CURRENT_COUNTRY_REGION, KEY_OAD_OFFSET, KEY_OAD_SIZE, KEY_OAD_PROPERTIES,
                     KEY_OAD_REJECT_UPDATE, KEY_OAD_MARK, KEY_OAD_UNDONE,
-                    KEY_RECORDING_STATE, KEY_TIMESHIFT_MODE, KEY_TIMESHIFT_PATH,
+                    KEY_RECORDING_STATE, KEY_RECORDING_PATH, KEY_TIMESHIFT_MODE, KEY_TIMESHIFT_PATH,
                     KEY_TIMESHIFT_FREE_SIZE, KEY_UI_KEYPAD_SHOW_MENU, KEY_UI_KEYPAD_IS_FOREGROUND,
                     KEY_UI_CHANNEL_UPDATE_MSG, KEY_EAS_STATUS, KEY_EAS_IS_CHANNEL_CHANGE,
                     KEY_CAM_PIN_CODE, KEY_CAM_IS_CI2PLUS_SUPPORTED -> true;
@@ -321,7 +321,7 @@ public class TvExtensionContract {
         public static final Uri CONTENT_URI = buildTableUri(TUNER_OPERATOR_TABLE);
 
        /**
-        * The name of the tuner. Value is a {@link broadcast_tuner_type}.
+        * The name of the tuner. Value is a {@link BroadcastTunerType}.
         *
         */
         public static final String COLUMN_TUNER_NAME = "broadcast_tuner_type";
@@ -338,15 +338,243 @@ public class TvExtensionContract {
         @Retention(RetentionPolicy.SOURCE)
         public @interface BroadcastTunerType {}
 
-       /**
-        * The name of the tuner. Value is an integer type.
-        *
-        */
+        // ==========================================
+        // AUSTRIA (AT)
+        // ==========================================
+        public static final int OPERATOR_AT_MAGENTA_UPC = 33;
+        public static final int OPERATOR_AT_ORF = 39;
+        public static final int OPERATOR_AT_SIMPLITV = 31;
+        public static final int OPERATOR_AT_M7_HD_AUSTRIA = 700;
+
+        // ==========================================
+        // AUSTRALIA (AU)
+        // ==========================================
+        public static final int OPERATOR_AU_FREEVIEW_PLUS = 10001;
+
+        // ==========================================
+        // BELGIUM (BE)
+        // ==========================================
+        public static final int OPERATOR_BE_M7_TELESAT = 705;
+        public static final int OPERATOR_BE_M7_TV_VLAANDEREN = 702;
+        public static final int OPERATOR_BE_TELENET = 20;
+        public static final int OPERATOR_BE_VOO = 24;
+
+        // ==========================================
+        // SWITZERLAND (CH)
+        // ==========================================
+        public static final int OPERATOR_CH_KABELIO = 10002;
+        public static final int OPERATOR_CH_SUNRISE_UPC = 62;
+
+        // ==========================================
+        // CZECH REPUBLIC (CZ)
+        // ==========================================
+        public static final int OPERATOR_CZ_M7_SKYLINK = 703;
+
+        // ==========================================
+        // GERMANY (DE)
+        // ==========================================
+        public static final int OPERATOR_DE_M7_FAST_SCAN_DEUTSCHLAND = 3004;
+        public static final int OPERATOR_DE_DTVP = 10003;
+        public static final int OPERATOR_DE_HD_PLUS = 26;
+        public static final int OPERATOR_DE_SKY_DEUTSCHLAND = 27;
+        public static final int OPERATOR_DE_VODAFONE_KDG = 17;
+        public static final int OPERATOR_DE_VODAFONE_UNITY = 8;
+        public static final int OPERATOR_DE_FREENET = 10004;
+
+        // ==========================================
+        // DENMARK (DK)
+        // ==========================================
+        public static final int OPERATOR_DK_NORLYS = 10005;
+        public static final int OPERATOR_DK_STOFA = 5;
+        public static final int OPERATOR_DK_YOUSEE = 6;
+
+        // ==========================================
+        // ESTONIA (EE)
+        // ==========================================
+        public static final int OPERATOR_EE_ANTENNI_TV = 10006;
+
+        // ==========================================
+        // SPAIN (ES)
+        // ==========================================
+        public static final int OPERATOR_ES_LOVESTV = 10007;
+        public static final int OPERATOR_ES_TDT_HIBRIDA = 10008;
+        public static final int OPERATOR_ES_DIGI = 10009;
+
+        // ==========================================
+        // FINLAND (FI)
+        // ==========================================
+        public static final int OPERATOR_FI_ANTENNA_READY = 10010;
+        public static final int OPERATOR_FI_CABLE_READY = 35;
+
+        // ==========================================
+        // FRANCE (FR)
+        // ==========================================
+        public static final int OPERATOR_FR_FRANSAT = 10011;
+        public static final int OPERATOR_FR_TNT_HD = 10012;
+        public static final int OPERATOR_FR_CANAL_READY = 18;
+
+        // ==========================================
+        // GREECE (GR)
+        // ==========================================
+        public static final int OPERATOR_GR_ERTFLIX = 10013;
+
+        // ==========================================
+        // CROATIA (HR)
+        // ==========================================
+        public static final int OPERATOR_HR_OIV = 10014;
+
+        // ==========================================
+        // HUNGARY (HU)
+        // ==========================================
+        public static final int OPERATOR_HU_DIGI = 706;
+        public static final int OPERATOR_HU_MINDIG = 10015;
+        public static final int OPERATOR_HU_VODAFONE_UPC = 10016;
+
+        // ==========================================
+        // IRELAND (IE)
+        // ==========================================
+        public static final int OPERATOR_IE_SAORVIEW = 10017;
+
+        // ==========================================
+        // ITALY (IT)
+        // ==========================================
+        public static final int OPERATOR_IT_LATIVU = 10018;
+        public static final int OPERATOR_IT_TIVUSAT = 25;
+
+        // ==========================================
+        // NETHERLANDS (NL)
+        // ==========================================
+        public static final int OPERATOR_NL_M7_CANAL_DIGITAAL = 701;
+        public static final int OPERATOR_NL_ZIGGO_UPC = 7;
+
+        // ==========================================
+        // NORWAY (NO)
+        // ==========================================
+        public static final int OPERATOR_NO_CANAL_DIGITAL = 103;
+        public static final int OPERATOR_NO_RIKSTV = 10019;
+
+        // ==========================================
+        // NORDIC REGION
+        // ==========================================
+        public static final int OPERATOR_NORDIC_VIASAT = 10020;
+
+        // ==========================================
+        // NEW ZEALAND (NZ)
+        // ==========================================
+        public static final int OPERATOR_NZ_FREEVIEW = 10021;
+
+        // ==========================================
+        // POLAND (PL)
+        // ==========================================
+        public static final int OPERATOR_PL_CANAL_PLUS = 10022;
+        public static final int OPERATOR_PL_UPC = 10023;
+
+        // ==========================================
+        // ROMANIA (RO)
+        // ==========================================
+        public static final int OPERATOR_RO_M7_FOCUSSAT = 10024;
+        public static final int OPERATOR_RO_DIGI = 709;
+        public static final int OPERATOR_RO_VODAFONE_UPC = 10025;
+
+        // ==========================================
+        // SERBIA (RS)
+        // ==========================================
+        public static final int OPERATOR_RS_DIGITAL_TV = 54;
+
+        // ==========================================
+        // SWEDEN (SE)
+        // ==========================================
+        public static final int OPERATOR_SE_BOXER = 10026;
+        public static final int OPERATOR_SE_TELE2_COMHEM = 2;
+        public static final int OPERATOR_SE_TELENOR = 104;
+
+        // ==========================================
+        // TURKEY (TR)
+        // ==========================================
+        public static final int OPERATOR_TR_TKGS = 3001;
+        public static final int OPERATOR_TR_DSMART = 30;
+
+        // ==========================================
+        // GENERIC / LEGACY
+        // ==========================================
+        public static final int OPERATOR_DEFAULT_TERRESTRIAL = 900; // DVBT_OTHERS
+        public static final int OPERATOR_DEFAULT_CABLE = 901;       // DVBC_OTHERS
+        public static final int OPERATOR_GENERAL_SATELLITE = 902;
+
+        @IntDef({
+                OPERATOR_AT_MAGENTA_UPC,
+                OPERATOR_AT_ORF,
+                OPERATOR_AT_SIMPLITV,
+                OPERATOR_AT_M7_HD_AUSTRIA,
+                OPERATOR_AU_FREEVIEW_PLUS,
+                OPERATOR_BE_M7_TELESAT,
+                OPERATOR_BE_M7_TV_VLAANDEREN,
+                OPERATOR_BE_TELENET,
+                OPERATOR_BE_VOO,
+                OPERATOR_CH_KABELIO,
+                OPERATOR_CH_SUNRISE_UPC,
+                OPERATOR_CZ_M7_SKYLINK,
+                OPERATOR_DE_SKY_DEUTSCHLAND,
+                OPERATOR_DE_DTVP,
+                OPERATOR_DE_HD_PLUS,
+                OPERATOR_DE_M7_FAST_SCAN_DEUTSCHLAND,
+                OPERATOR_DE_VODAFONE_KDG,
+                OPERATOR_DE_VODAFONE_UNITY,
+                OPERATOR_DE_FREENET,
+                OPERATOR_DK_NORLYS,
+                OPERATOR_DK_STOFA,
+                OPERATOR_DK_YOUSEE,
+                OPERATOR_EE_ANTENNI_TV,
+                OPERATOR_ES_LOVESTV,
+                OPERATOR_ES_TDT_HIBRIDA,
+                OPERATOR_ES_DIGI,
+                OPERATOR_FI_ANTENNA_READY,
+                OPERATOR_FI_CABLE_READY,
+                OPERATOR_FR_FRANSAT,
+                OPERATOR_FR_TNT_HD,
+                OPERATOR_FR_CANAL_READY,
+                OPERATOR_GR_ERTFLIX,
+                OPERATOR_HR_OIV,
+                OPERATOR_HU_DIGI,
+                OPERATOR_HU_MINDIG,
+                OPERATOR_HU_VODAFONE_UPC,
+                OPERATOR_IE_SAORVIEW,
+                OPERATOR_IT_LATIVU,
+                OPERATOR_IT_TIVUSAT,
+                OPERATOR_NL_M7_CANAL_DIGITAAL,
+                OPERATOR_NL_ZIGGO_UPC,
+                OPERATOR_NO_CANAL_DIGITAL,
+                OPERATOR_NO_RIKSTV,
+                OPERATOR_NORDIC_VIASAT,
+                OPERATOR_NZ_FREEVIEW,
+                OPERATOR_PL_CANAL_PLUS,
+                OPERATOR_PL_UPC,
+                OPERATOR_RO_M7_FOCUSSAT,
+                OPERATOR_RO_DIGI,
+                OPERATOR_RO_VODAFONE_UPC,
+                OPERATOR_RS_DIGITAL_TV,
+                OPERATOR_SE_BOXER,
+                OPERATOR_SE_TELE2_COMHEM,
+                OPERATOR_SE_TELENOR,
+                OPERATOR_TR_TKGS,
+                OPERATOR_TR_DSMART,
+                OPERATOR_DEFAULT_TERRESTRIAL,
+                OPERATOR_DEFAULT_CABLE,
+                OPERATOR_GENERAL_SATELLITE
+        })
+        @Retention(RetentionPolicy.SOURCE)
+        public @interface OperatorId {}
+
+        /**
+         * The operator Id. Value is an integer type.
+         * Value follows <a
+         * href="https://docs.partner.android.com/tv/build/apps/cltv?hl=en#ref+6">Ref 6+ doc</a>
+         * See {@link OperatorId}
+         */
         public static final String COLUMN_OPERATOR_ID = "operator_id";
 
        /**
-        * The name of the tuner. This is a string.
-        *
+        * The name of the operator. This is a string.
         */
         public static final String COLUMN_OPERATOR_NAME = "operator_name";
 
@@ -540,17 +768,20 @@ public class TvExtensionContract {
         @Retention(RetentionPolicy.SOURCE)
         public @interface SuperImposeSetup {}
 
+        /**
+         * Digital cc display mode, value must be one of {@link DigitalCCDisplay}
+         */
         public static final String COLUMN_CC_DISPLAY = "digital_cc_display";
-        public final int DIGITAL_CC_DISPLAY_OFF = 0;
-        public final int DIGITAL_CC_DISPLAY_ON = 1;
-        public final int DIGITAL_CC_DISPLAY_MUTE = 2;
+        public static final int DIGITAL_CC_DISPLAY_OFF = 0;
+        public static final int DIGITAL_CC_DISPLAY_ON = 1;
+        public static final int DIGITAL_CC_DISPLAY_MUTE = 2;
         @IntDef({
                 DIGITAL_CC_DISPLAY_OFF,
                 DIGITAL_CC_DISPLAY_ON,
                 DIGITAL_CC_DISPLAY_MUTE
         })
         @Retention(RetentionPolicy.SOURCE)
-        public @interface DigitalCCDisPlay{}
+        public @interface DigitalCCDisplay{}
     }
 
     /**
@@ -750,7 +981,7 @@ public class TvExtensionContract {
             CLOSED_CAPTION_OPACITY_FLASHING
         })
         @Retention(RetentionPolicy.SOURCE)
-        public @interface BackgroundOpacity {};
+        public @interface BackgroundOpacity {}
 
        /**
         * The value is an {@link ClosedCaptionEdgeType}.
@@ -862,7 +1093,7 @@ public class TvExtensionContract {
             CLOSED_CAPTION_COLOR_MAGENTA
         })
         @Retention(RetentionPolicy.SOURCE)
-        public @interface ClosedCaptionEdgeColor {};
+        public @interface ClosedCaptionEdgeColor {}
 
        /**
         * The value is an {@link ClosedCaptionTextOpacity}.
@@ -877,7 +1108,7 @@ public class TvExtensionContract {
             CLOSED_CAPTION_OPACITY_FLASHING
         })
         @Retention(RetentionPolicy.SOURCE)
-        public @interface ClosedCaptionTextOpacity {};
+        public @interface ClosedCaptionTextOpacity {}
 
        /**
         * The value is an {@link ClosedCaptionTextSize}.
