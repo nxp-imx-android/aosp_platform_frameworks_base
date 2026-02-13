@@ -402,6 +402,7 @@ cc_defaults_for_libandroid_runtime {
                 "libmedia_helper",
                 "libmediametrics",
                 "libmeminfo",
+                "libaudiobase",
                 "libaudioclient",
                 "libaudioclient_aidl_conversion",
                 "libaudiofoundation",

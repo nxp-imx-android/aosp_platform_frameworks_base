@@ -112,6 +112,7 @@ cc_defaults {
         "libandroid_runtime",
         "libandroidfw",
         "libattention_native",
+        "libaudiobase",
         "libaudioclient",
         "libasyncio",
         "libbase",
