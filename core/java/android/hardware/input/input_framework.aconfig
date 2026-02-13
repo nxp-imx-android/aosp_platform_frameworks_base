@@ -267,3 +267,10 @@ flag {
     description: "Adds an API for peripheral OEMs to build customization apps"
     bug: "433405394"
 }
+
+flag {
+    name: "enable_contextual_cursor_desktop_entrypoints"
+    namespace: "input"
+    description: "Enables desktop entrypoints for contextual cursor"
+    bug: "484184229"
+}
