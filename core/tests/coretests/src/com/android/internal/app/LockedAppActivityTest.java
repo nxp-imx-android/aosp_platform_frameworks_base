@@ -521,6 +521,29 @@ public class LockedAppActivityTest {
 
     @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
     @Test
+    public void completeUnlockAndFinish_calledMultipleTimes_sendsTargetIntentOnlyOnce() {
+        Intent intent = createTestLockedAppActivityIntent(ActivityMode.INTERCEPT);
+
+        try (ActivityScenario<LockedAppActivity> scenario = ActivityScenario.launch(intent)) {
+            // Trigger authentication success.
+            captureAuthenticationCallback().onAuthenticationSucceeded(
+                    mock(BiometricPrompt.AuthenticationResult.class));
+
+            // Manually trigger the package locked state listener to simulate a race condition
+            // or another event that calls completeUnlockAndFinish().
+            verify(mAppLockInternal).registerPackageLockedStateListener(
+                    mPackageLockedListenerCaptor.capture());
+            AppLockInternal.PackageLockedStateListener listener =
+                    mPackageLockedListenerCaptor.getValue();
+            listener.onPackageLockedStateChanged(TEST_PACKAGE_NAME, TEST_USER_ID, false);
+
+            assertThat(mTestInjector.getTargetIntentSentCount()).isEqualTo(1);
+            scenario.onActivity(activity -> assertThat(activity.isFinishing()).isTrue());
+        }
+    }
+
+    @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
+    @Test
     public void authError_inInterceptMode_finishesWithoutUnlockingAndSendingIntent() {
         Intent intent = createTestLockedAppActivityIntent(ActivityMode.INTERCEPT);
 
@@ -926,7 +949,7 @@ public class LockedAppActivityTest {
     }
 
     private class TestLockedAppActivityInjector extends LockedAppActivity.Injector {
-        private boolean mTargetIntentSent = false;
+        private int mTargetIntentSentCount = 0;
         private int mThemeResId = 0;
         private boolean mIsTranslucent = false;
         private int mSetContentViewCount = 0;
@@ -999,11 +1022,17 @@ public class LockedAppActivityTest {
 
         @Override
         public void sendTargetIntent(Activity activity, @NonNull IntentSender target) {
-            mTargetIntentSent = target.equals(mOriginalIntentSender);
+            if (target.equals(mOriginalIntentSender)) {
+                mTargetIntentSentCount++;
+            }
         }
 
         boolean wasTargetIntentSent() {
-            return mTargetIntentSent;
+            return mTargetIntentSentCount > 0;
+        }
+
+        int getTargetIntentSentCount() {
+            return mTargetIntentSentCount;
         }
 
         int getThemeResId() {
