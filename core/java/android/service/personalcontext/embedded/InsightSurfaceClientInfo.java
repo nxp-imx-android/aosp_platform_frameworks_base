@@ -73,7 +73,7 @@ public final class InsightSurfaceClientInfo implements Parcelable {
      * @param backgroundColor the background color of the client surface
      * @param nestedScrollAxes the nested scroll axes supported by the client surface
      * @param nestedScrollAxisLocked whether scrolling is locked to the nested scroll axes
-     * @param shouldBlur whether the client surface should be blurred
+     * @param shouldBlur {@code true} if the client surface should be blurred
      * @param themeResourceName the name of a theme resource specifying client styling
      * @param packageName the package name of the client application
      * @param configuration resource configuration from the client's local context
@@ -198,7 +198,8 @@ public final class InsightSurfaceClientInfo implements Parcelable {
     }
 
     /**
-     * Return whether the embedded surface should apply a blur to match the client's blur.
+     * Return whether the embedded surface should apply a blur. This should be {@code true} when the
+     * client view is blurred so that the embedded surface can also apply a blur to match it.
      */
     public boolean shouldBlur() {
         return mShouldBlur;

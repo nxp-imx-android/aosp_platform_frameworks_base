@@ -342,7 +342,8 @@ public class InsightSurfaceClient implements AutoCloseable {
     }
 
     /**
-     * Return whether the embedded surface should apply a blur to match the client.
+     * Return whether the embedded surface should apply a blur. This should be {@code true} when the
+     * client view is blurred so that the embedded surface can also apply a blur to match it.
      */
     public boolean shouldBlur() {
         return mClientInfo.shouldBlur();
@@ -552,7 +553,9 @@ public class InsightSurfaceClient implements AutoCloseable {
         }
 
         /**
-         * Set whether the embedded surface should apply a blur to match the client.
+         * Set whether the embedded surface should apply a blur. Clients would set this to
+         * {@code true} when the client view is blurred so that the embedded surface can also apply
+         * a blur to match it.
          * @param shouldBlur whether to apply a blur
          */
         @NonNull
