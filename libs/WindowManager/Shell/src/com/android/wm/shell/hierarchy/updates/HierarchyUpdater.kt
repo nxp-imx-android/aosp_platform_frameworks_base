@@ -23,7 +23,6 @@ import android.window.TaskAppearedInfo
 import android.window.TransitionInfo
 import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
-import androidx.annotation.VisibleForTesting
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.Flags
 import com.android.wm.shell.ShellTaskOrganizer
@@ -40,12 +39,16 @@ import com.android.wm.shell.hierarchy.properties.RootContainerProperties
 import com.android.wm.shell.hierarchy.properties.TaskContainerProperties
 import com.android.wm.shell.hierarchy.properties.WallpaperContainerProperties
 import com.android.wm.shell.hierarchy.utils.HierarchyDebugUtils
-import com.android.wm.shell.hierarchy.utils.HierarchyDebugUtils.Companion.WHITE
 import com.android.wm.shell.hierarchy.utils.HierarchyUtils
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_MODES
 import com.android.wm.shell.shared.TransitionUtil
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
+
+/**
+ * Keeps track of the changes in the hierarchy between update & mixpatcher transition dispatching.
+ */
+data class CurrentTransitionChanges(var transition: IBinder?, var snapshot: HierarchySnapshot)
 
 /**
  * Helper class to update the container hierarchy from transitions or task organizer (for root tasks
@@ -71,7 +74,10 @@ class HierarchyUpdater(
         shellTaskOrganizer.setContainerHierarchyCreateRootTaskListener(
             ContainerHierarchyRootTaskHook()
         )
-        transitions.registerContainerHierarchyAdapter(ContainerHierarchyTransitionObserver())
+        if (!com.android.window.flags.Flags.transitMixpatcherBase()) {
+            // The planner will update the hierarchy in lieu of the observer with mixpatcher
+            transitions.registerObserver(ContainerHierarchyTransitionObserver())
+        }
     }
 
     /**
@@ -180,12 +186,7 @@ class HierarchyUpdater(
         updaterTestHook?.onModesNotified()
 
         // Dump the hierarchy
-        ProtoLog.v(WM_SHELL_MODES, "=======================================================")
-        val hierarchyDump =
-            HierarchyDebugUtils.dumpToString(hierarchy.root, "", snapshot, WHITE)
-        @SuppressWarnings("ProtoLogNoContext")
-        ProtoLog.v(WM_SHELL_MODES, "%s", hierarchyDump)
-        ProtoLog.v(WM_SHELL_MODES, "=======================================================")
+        HierarchyDebugUtils.dumpHierarchy(hierarchy, snapshot)
     }
 
     fun handleCreateRootTask(
@@ -239,13 +240,11 @@ class HierarchyUpdater(
         notifyModes(Mode.UpdateContext(), snapshot)
     }
 
-    @VisibleForTesting
     fun handleTransition(
         transition: IBinder,
         info: TransitionInfo,
-        startTransaction: SurfaceControl.Transaction,
-        finishTransaction: SurfaceControl.Transaction
-    ) {
+        startTransaction: SurfaceControl.Transaction
+    ): HierarchySnapshot {
         ProtoLog.v(
             WM_SHELL_MODES,
             "Updating hierarchy from transition: %d",
@@ -257,6 +256,7 @@ class HierarchyUpdater(
         // Update the root first
         hierarchy.root.props<RootContainerProperties>().updateFromTransition(info)
 
+        // Update the rest of the hierarchy
         // We iterate the changes in reverse order to handle parent containers first (especially
         // when new containers are being added)
         val reversedChanges = info.changes.reversed()
@@ -264,10 +264,24 @@ class HierarchyUpdater(
             updateHierarchyFromChange(change)
         }
 
-        notifyModes(Mode.UpdateContext(startTransaction, finishTransaction), snapshot)
+        // Notify all the modes
+        notifyModes(Mode.UpdateContext(startTransaction), snapshot)
 
-        // TODO: Move this to *after* transitions play when they are finally hooked up
-        HierarchyUtils.removeAllTransientContainers(hierarchy.root)
+        if (HierarchyUtils.hasTemporaryAnimatingContainers(hierarchy.root)) {
+            // If there are temporary containers, then schedule them to be cleaned up after all
+            // transitions finish playing
+            transitions.runOnIdle {
+                ProtoLog.v(
+                    WM_SHELL_MODES,
+                    "Cleaning up temporary animating conatiners from transition: %d",
+                    info.debugId
+                )
+                val snapshot = HierarchySnapshot(hierarchy.toContainerList())
+                HierarchyUtils.removeAllTemporaryAnimatingContainers(hierarchy.root)
+                notifyModes(Mode.UpdateContext(), snapshot)
+            }
+        }
+        return snapshot
     }
 
     /**
@@ -440,7 +454,7 @@ class HierarchyUpdater(
             startTransaction: SurfaceControl.Transaction,
             finishTransaction: SurfaceControl.Transaction
         ) {
-            handleTransition(transition, info, startTransaction, finishTransaction)
+            handleTransition(transition, info, startTransaction)
         }
     }
 

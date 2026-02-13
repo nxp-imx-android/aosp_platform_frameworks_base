@@ -27,6 +27,7 @@ import com.android.wm.shell.hierarchy.ContainerHierarchy
 import com.android.wm.shell.hierarchy.ContainerHierarchyCommandHandler
 import com.android.wm.shell.hierarchy.ContainerHierarchyController
 import com.android.wm.shell.hierarchy.modes.FormFactorModes
+import com.android.wm.shell.hierarchy.transitions.HierarchyTransitionPlanner
 import com.android.wm.shell.hierarchy.updates.HierarchyUpdateRequester
 import com.android.wm.shell.hierarchy.updates.HierarchyUpdateRequesterImpl
 import com.android.wm.shell.hierarchy.updates.HierarchyUpdater
@@ -111,6 +112,22 @@ abstract class ContainerHierarchyModule {
             )
         }
 
+        @WMSingleton
+        @Provides
+        fun provideHierarchyTransitionPlanner(
+            transitions: Transitions,
+            hierarchy: ContainerHierarchy,
+            updater: HierarchyUpdater,
+            shellInit: ShellInit,
+        ): HierarchyTransitionPlanner {
+            return HierarchyTransitionPlanner(
+                transitions,
+                hierarchy,
+                updater,
+                shellInit
+            )
+        }
+
         // NOTE: To be removed once b/463244413 is fixed
         @WMSingleton
         @Provides
@@ -164,6 +181,7 @@ abstract class ContainerHierarchyModule {
             initialContainerHierarchyPopulator: InitialHierarchyPopulator,
             containerHierarchyUpdater: HierarchyUpdater,
             containerHierarchyUpdateRequester: HierarchyUpdateRequester,
+            containerHierarchyTransitionPlanner: HierarchyTransitionPlanner,
             containerHierarchyCommandHandler: ContainerHierarchyCommandHandler,
             containerHierarchyController: Optional<ContainerHierarchyController>
         ): Object {
