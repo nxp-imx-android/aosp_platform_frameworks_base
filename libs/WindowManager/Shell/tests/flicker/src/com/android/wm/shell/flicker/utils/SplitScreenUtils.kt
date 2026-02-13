@@ -108,9 +108,9 @@ object SplitScreenUtils {
         displayId: Int = Display.DEFAULT_DISPLAY,
     ) =
         withAppTransitionIdle(displayId)
-            .withWindowSurfaceAppeared(primaryApp)
-            .withWindowSurfaceAppeared(secondaryApp)
-            .withSplitDividerVisible()
+            .withWindowSurfaceAppeared(primaryApp, displayId)
+            .withWindowSurfaceAppeared(secondaryApp, displayId)
+            .withSplitDividerVisible(displayId)
 
     /** Waits and verifies that the device has entered split-screen with the specified apps. */
     fun waitForSplitComplete(
