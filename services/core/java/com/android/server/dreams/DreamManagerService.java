@@ -139,6 +139,7 @@ public final class DreamManagerService extends SystemService {
     private final Handler mHandler;
     private final DreamController mController;
     private final DreamValidator mDreamValidator;
+    private final DreamComponentsResolver mDreamComponentsResolver;
     private final Injector mInjector;
     private final PowerManager mPowerManager;
     private final UiModeManager mUiModeManager;
@@ -328,6 +329,9 @@ public final class DreamManagerService extends SystemService {
 
         mBatteryManagerInternal = getLocalService(BatteryManagerInternal.class);
         mSystemDreamComponentDeathRecipient = new SystemDreamComponentDeathRecipient();
+        mDreamComponentsResolver = injector.getDreamComponentsResolver(mContext, mDreamValidator,
+                mDozeConfig, LocalServices.getService(UserManagerInternal.class),
+                mDreamsOnlyEnabledForDockUser);
     }
 
     @Override
@@ -641,10 +645,6 @@ public final class DreamManagerService extends SystemService {
 
             final int userId = mInjector.getCurrentUser();
 
-            if (!dreamsEnabledForUser(userId)) {
-                return false;
-            }
-
             if (!mUserManager.isUserUnlocked(userId)) {
                 return false;
             }
@@ -815,49 +815,12 @@ public final class DreamManagerService extends SystemService {
      * Otherwise, returns the first valid user configured dream component.
      */
     private ComponentName chooseDreamForUser(boolean doze, int userId) {
-        if (doze) {
-            ComponentName dozeComponent = getDozeComponent(userId);
-            return mDreamValidator.validate(dozeComponent, userId) ? dozeComponent : null;
-        }
-
-        if (mSystemDreamComponent != null) {
-            return mSystemDreamComponent;
-        }
-
-        ComponentName[] dreams = getDreamComponentsForUser(userId);
-        return dreams != null && dreams.length != 0 ? dreams[0] : null;
+        return mDreamComponentsResolver.resolve(doze, userId, mForceAmbientDisplayEnabled,
+                mSystemDreamComponent);
     }
 
     private ComponentName[] getDreamComponentsForUser(int userId) {
-        if (!dreamsEnabledForUser(userId)) {
-            // Don't return any dream components if the user is not allowed to dream.
-            return null;
-        }
-
-        final String names =
-                Settings.Secure.getStringForUser(
-                        mContext.getContentResolver(),
-                        Settings.Secure.SCREENSAVER_COMPONENTS,
-                        userId);
-        final ComponentName[] components = DreamComponentNameUtils.fromCommaSeparatedString(names);
-
-        // first, ensure components point to valid services
-        List<ComponentName> validComponents = new ArrayList<>();
-        for (ComponentName component : components) {
-            if (mDreamValidator.validate(component, userId)) {
-                validComponents.add(component);
-            }
-        }
-
-        // fallback to the default dream component if necessary
-        if (validComponents.isEmpty()) {
-            ComponentName defaultDream = getDefaultDreamComponentForUser(userId);
-            if (defaultDream != null && mDreamValidator.validate(defaultDream, userId)) {
-                Slog.w(TAG, "Falling back to default dream " + defaultDream);
-                validComponents.add(defaultDream);
-            }
-        }
-        return validComponents.toArray(new ComponentName[validComponents.size()]);
+        return mDreamComponentsResolver.getDreamComponentsForUser(userId);
     }
 
     private void updateDreamOnPackageRemoved(String packageName, int userId) {
@@ -969,10 +932,7 @@ public final class DreamManagerService extends SystemService {
     }
 
     private ComponentName getDefaultDreamComponentForUser(int userId) {
-        String name = Settings.Secure.getStringForUser(mContext.getContentResolver(),
-                Settings.Secure.SCREENSAVER_DEFAULT_COMPONENT,
-                userId);
-        return name == null ? null : ComponentName.unflattenFromString(name);
+        return mDreamComponentsResolver.getDefaultDreamComponentForUser(userId);
     }
 
     private ComponentName getDozeComponent() {
@@ -980,19 +940,7 @@ public final class DreamManagerService extends SystemService {
     }
 
     private ComponentName getDozeComponent(int userId) {
-        if (mForceAmbientDisplayEnabled || mDozeConfig.enabled(userId)) {
-            return ComponentName.unflattenFromString(mDozeConfig.ambientDisplayComponent());
-        } else {
-            return null;
-        }
-
-    }
-
-    private boolean dreamsEnabledForUser(int userId) {
-        if (!mDreamsOnlyEnabledForDockUser) return true;
-        if (userId < 0) return false;
-        final int mainUserId = LocalServices.getService(UserManagerInternal.class).getMainUserId();
-        return userId == mainUserId;
+        return mDreamComponentsResolver.getDozeComponent(userId, mForceAmbientDisplayEnabled);
     }
 
 
@@ -1130,6 +1078,9 @@ public final class DreamManagerService extends SystemService {
         AmbientDisplayConfiguration getDozeConfig();
         DreamController getDreamController(DreamController.Listener controllerListener);
         DreamValidator getDreamValidator();
+        DreamComponentsResolver getDreamComponentsResolver(Context context,
+                DreamValidator dreamValidator, AmbientDisplayConfiguration dozeConfig,
+                UserManagerInternal userManagerInternal, boolean dreamsOnlyEnabledForDockUser);
         @UserIdInt int getCurrentUser();
     }
 
@@ -1165,6 +1116,14 @@ public final class DreamManagerService extends SystemService {
         @Override
         public DreamValidator getDreamValidator() {
             return new DreamValidator(mContext);
+        }
+
+        @Override
+        public DreamComponentsResolver getDreamComponentsResolver(Context context,
+                DreamValidator dreamValidator, AmbientDisplayConfiguration dozeConfig,
+                UserManagerInternal userManagerInternal, boolean dreamsOnlyEnabledForDockUser) {
+            return new DreamComponentsResolver(context, dreamValidator, dozeConfig,
+                    userManagerInternal, dreamsOnlyEnabledForDockUser);
         }
 
         @Override
