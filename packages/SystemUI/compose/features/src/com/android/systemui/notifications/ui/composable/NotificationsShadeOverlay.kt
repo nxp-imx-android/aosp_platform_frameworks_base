@@ -35,6 +35,9 @@ import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.paneTitle
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
@@ -161,7 +164,14 @@ constructor(
                 focusRequester.requestFocus()
             }
 
-            Column(modifier = Modifier.focusRequester(focusRequester).focusable()) {
+            val accessibilityTitle = stringResource(R.string.accessibility_desc_notification_shade)
+
+            Column(
+                modifier =
+                    Modifier.focusRequester(focusRequester).focusable().semantics {
+                        paneTitle = accessibilityTitle
+                    }
+            ) {
                 if (isFullWidth) {
                     Box(
                         Modifier.padding(
