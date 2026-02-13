@@ -16,8 +16,6 @@
 
 package com.android.systemui.communal.data.repository
 
-import com.android.systemui.communal.data.preconditions.CommonSetupPreconditions
-import com.android.systemui.communal.data.preconditions.CommonSetupPreconditionsImpl
 import dagger.Binds
 import dagger.Module
 
@@ -26,7 +24,4 @@ interface CommunalRepositoryModule {
     @Binds fun communalRepository(impl: CommunalSceneRepositoryImpl): CommunalSceneRepository
 
     @Binds fun carProjectionRepository(impl: CarProjectionRepositoryImpl): CarProjectionRepository
-
-    @Binds
-    fun commonSetupPreconditions(impl: CommonSetupPreconditionsImpl): CommonSetupPreconditions
 }
