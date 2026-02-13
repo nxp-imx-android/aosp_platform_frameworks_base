@@ -59,7 +59,7 @@ class ImageLoaderContentProviderTest : SysuiTestCase() {
     @Before
     fun setUp() {
         whenever(mockContext.contentResolver).thenReturn(providerTestRule.resolver)
-        imageLoader = ImageLoader(mockContext, kosmos.testDispatcher)
+        imageLoader = ImageLoaderImpl(mockContext, kosmos.testDispatcher)
     }
 
     @Test

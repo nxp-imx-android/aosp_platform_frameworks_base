@@ -17,13 +17,18 @@
 package com.android.systemui.notifications.intelligence.rules.ui.composable
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
@@ -36,6 +41,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
@@ -49,10 +55,9 @@ import kotlinx.coroutines.launch
 fun AppChoiceDialog(viewModel: NotificationRuleEditViewModel) {
     val scope = rememberCoroutineScope()
 
-    // TODO: b/478225883 - Show apps for other profiles in separate tabs.
-    var allApps by remember { mutableStateOf(emptyList<AppModel>()) }
+    // All apps on the device. Null while the apps are being fetched.
+    var allApps by remember { mutableStateOf<List<AppModel>?>(null) }
     // When the dialog first opens, fetch all apps.
-    // TODO: b/478225883 - Show a loading icon while the apps are being fetched.
     LaunchedEffect(Unit) { scope.launch { allApps = viewModel.fetchInstalledApps() } }
 
     var currentQuery by remember { mutableStateOf("") }
@@ -77,27 +82,54 @@ fun AppChoiceDialog(viewModel: NotificationRuleEditViewModel) {
         expanded = isExpanded,
         onExpandedChange = { isExpanded = it },
     ) {
-        // TODO: b/478225883 - Allow users to select apps and save them.
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(3),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            items(currentSearchResults.value) {
-                Column {
-                    Image(
-                        rememberDrawablePainter(it.icon),
-                        contentDescription = null,
-                        modifier = Modifier.size(32.dp),
-                    )
-                    Text(it.label)
-                }
-            }
+        val searchResults = currentSearchResults.value
+        val modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
+        if (searchResults != null) {
+            AppSearchResults(searchResults, modifier = modifier)
+        } else {
+            LoadingIcon(modifier = modifier)
         }
     }
 }
 
+@Composable
+private fun AppSearchResults(currentSearchResults: List<AppModel>, modifier: Modifier = Modifier) {
+    // TODO: b/478225883 - Allow users to select apps and save them.
+    // TODO: b/478225883 - Show apps for other profiles in separate tabs.
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(3),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = modifier,
+    ) {
+        // TODO: b/478225883 - Use package name as item key.
+        items(currentSearchResults) { AppIcon(it) }
+    }
+}
+
+@Composable
+private fun AppIcon(appModel: AppModel) {
+    Column {
+        Image(
+            rememberDrawablePainter(appModel.icon),
+            contentDescription = null,
+            modifier = Modifier.size(32.dp),
+        )
+        Text(appModel.label)
+    }
+}
+
+@Composable
+private fun LoadingIcon(modifier: Modifier = Modifier) {
+    Box(contentAlignment = Alignment.Center, modifier = modifier) {
+        CircularProgressIndicator(
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.size(32.dp),
+        )
+    }
+}
+
 /** Returns the subset of [allApps] that match [query]. */
-private fun getSearchResults(allApps: List<AppModel>, query: String): List<AppModel> {
-    return allApps.filter { it.label.contains(query, ignoreCase = true) }
+private fun getSearchResults(allApps: List<AppModel>?, query: String): List<AppModel>? {
+    return allApps?.filter { it.label.contains(query, ignoreCase = true) }
 }
