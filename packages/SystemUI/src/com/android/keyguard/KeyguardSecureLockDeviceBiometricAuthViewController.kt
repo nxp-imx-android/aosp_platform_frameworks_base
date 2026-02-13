@@ -47,7 +47,7 @@ class KeyguardSecureLockDeviceBiometricAuthViewController(
     mEmergencyButtonController: EmergencyButtonController,
     messageAreaControllerFactory: KeyguardMessageAreaController.Factory?,
     featureFlags: FeatureFlags,
-    bouncerHapticPlayer: BouncerHapticPlayer?,
+    bouncerHapticPlayer: BouncerHapticPlayer,
 ) :
     KeyguardInputViewController<KeyguardSecureLockDeviceBiometricAuthView>(
         view,

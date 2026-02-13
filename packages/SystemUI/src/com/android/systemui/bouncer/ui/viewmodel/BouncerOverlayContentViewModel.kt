@@ -371,6 +371,7 @@ constructor(
                 passwordViewModelFactory.create(
                     onIntentionalUserInput = ::onIntentionalUserInput,
                     isInputEnabled = isInputEnabled,
+                    bouncerHapticPlayer = bouncerHapticPlayer,
                 )
             is AuthenticationMethodModel.Pattern ->
                 patternViewModelFactory.create(
