@@ -31,6 +31,8 @@ import java.util.List;
  *
  * It will search for connected devices that are able & authorized by CDM to perform
  * automated actions on behalf of the user and notify callers when their connection status changes.
+ *
+ * @hide
  */
 public class CDMAgentMonitor {
 

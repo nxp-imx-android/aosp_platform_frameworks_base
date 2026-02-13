@@ -21,6 +21,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.companion.AssociationInfo;
@@ -40,12 +41,15 @@ import android.testing.AndroidTestingRunner;
 import android.testing.TestableLooper;
 
 import com.android.internal.util.test.FakeSettingsProvider;
+import com.android.server.locksettings.LockSettingsInternal;
+import com.android.server.locksettings.LockSettingsStateListener;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
@@ -74,6 +78,8 @@ public class AgentAuthServiceTest {
     private ICompanionDeviceManager mMockCDMService;
     @Mock
     private BiometricManager mBiometricManager;
+    @Mock
+    private LockSettingsInternal mLockSettings;
     private CompanionDeviceManager mCompanionDeviceManager;
     private Handler mHandler;
     private AgentAuthService mService;
@@ -118,7 +124,7 @@ public class AgentAuthServiceTest {
         mService = new AgentAuthService(mMockContext, mHandler, mClock, AUTH_INTERVAL);
 
         // Initialize for USER_ID, flushing each step to avoid task removal
-        mService.start(mBiometricManager, mCompanionDeviceManager);
+        mService.start(mLockSettings, mBiometricManager, mCompanionDeviceManager);
         TestableLooper.get(this).processAllMessages();
 
         mService.initInBackgroundForUser(USER_ID);
@@ -184,6 +190,32 @@ public class AgentAuthServiceTest {
         TestableLooper.get(this).processAllMessages();
 
         assertThat(mService.isAgentAuthorized(USER_ID, 123)).isFalse();
+    }
+
+    @Test
+    public void testStrongAuth_promotesSession() throws RemoteException {
+        // Capture the listener registered in start()
+        ArgumentCaptor<LockSettingsStateListener> captor =
+                ArgumentCaptor.forClass(LockSettingsStateListener.class);
+        verify(mLockSettings).registerLockSettingsStateListener(captor.capture());
+        LockSettingsStateListener listener = captor.getValue();
+
+        // Simulate connection with stale auth (unauthorized)
+        mClock.setNow(TimeUnit.HOURS.toMillis(1));
+        when(mBiometricManager.getLastAuthenticationTime(anyInt()))
+                .thenReturn(TimeUnit.HOURS.toMillis(1) - AUTH_INTERVAL - 1000);
+
+        triggerAgentConnected(123);
+        assertThat(mService.isAgentAuthorized(USER_ID, 123)).isFalse();
+
+        // Now simulate strong auth
+        when(mBiometricManager.getLastAuthenticationTime(anyInt()))
+                .thenReturn(TimeUnit.HOURS.toMillis(1));
+
+        listener.onAuthenticationSucceeded(USER_ID);
+        TestableLooper.get(this).processAllMessages();
+
+        assertThat(mService.isAgentAuthorized(USER_ID, 123)).isTrue();
     }
 
     private void triggerAgentConnected(int associationId) throws RemoteException {
