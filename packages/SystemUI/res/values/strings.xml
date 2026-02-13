@@ -583,6 +583,10 @@
     <string name="screen_capture_region_dimensions"><xliff:g example="210" id="width">%1$d</xliff:g> x <xliff:g example="129" id="height">%2$d</xliff:g></string>
     <!-- Description for the click action of the selectable radio buttons in the screen capture toolbar. [CHAR LIMIT=NONE] -->
     <string name="screen_capture_a11y_toolbar_radio_button_action">select</string>
+    <!-- State description for the screen capture settings menu when expanded. [CHAR LIMIT=NONE] -->
+    <string name="screen_capture_a11y_settings_menu_expanded">Menu expanded</string>
+    <!-- State description for the screen capture settings menu when collapsed. [CHAR LIMIT=NONE] -->
+    <string name="screen_capture_a11y_settings_menu_collapsed">Menu collapsed</string>
 
     <!-- Text of the button popup on the share screen privacy indicator to stop screen sharing. -->
     <string name="screen_share_privacy_indicator_stop_sharing">Stop sharing</string>
