@@ -120,9 +120,10 @@ public final class JobServiceContext implements ServiceConnection {
     /**
      * Whether to trigger an ANR when apps are slow to respond on pre-UDC APIs and functionality.
      */
+    @VisibleForTesting
     @ChangeId
     @EnabledAfter(targetSdkVersion = Build.VERSION_CODES.TIRAMISU)
-    private static final long ANR_PRE_UDC_APIS_ON_SLOW_RESPONSES = 258236856L;
+    static final long ANR_PRE_UDC_APIS_ON_SLOW_RESPONSES = 258236856L;
 
     private static final String TAG = "JobServiceContext";
     /** Amount of time the JobScheduler waits for the initial service launch+bind. */
@@ -1637,6 +1638,11 @@ public final class JobServiceContext implements ServiceConnection {
                     debugReason);
         }
         if (triggerAnr) {
+            if (Flags.includeJobNameInAnrMessage()) {
+                final String jobName = mRunningJob != null
+                        ? mRunningJob.getBatteryName() : "<null>";
+                anrMessage = anrMessage + " for " + jobName;
+            }
             final TimeoutRecord tr = TimeoutRecord.forJobService(anrMessage);
             mAnrTimer.accept(tr);
             mActivityManagerInternal.appNotResponding(
