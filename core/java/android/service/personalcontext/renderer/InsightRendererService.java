@@ -103,6 +103,7 @@ public abstract class InsightRendererService extends Service {
      *            identification.
      *
      * @return a token that uniquely identifies this renderer
+     * @throws IllegalStateException if {@link #onConnected()} has not yet been called
      */
     @NonNull
     public final RenderToken mintRenderToken(@Nullable String tag) {
@@ -118,6 +119,7 @@ public abstract class InsightRendererService extends Service {
      *
      * @see #mintRenderToken(String)
      * @return a token that uniquely identifies this renderer
+     * @throws IllegalStateException if {@link #onConnected()} has not yet been called
      */
     @NonNull
     public final RenderToken mintRenderToken() {
@@ -139,7 +141,7 @@ public abstract class InsightRendererService extends Service {
     }
 
     /**
-     * The renderer should return a {@link RendererFilter} that will be used to filter the insights
+     * The renderer should return an {@link InsightFilter} that will be used to filter the insights
      * that this renderer's {@link #onRender} method will be called with.
      *
      * The result of this method will be cached and re-used between service bindings. If the filter
@@ -152,8 +154,11 @@ public abstract class InsightRendererService extends Service {
     public abstract InsightFilter onInitializeFilter();
 
     /**
-     * This method will be called when the given
-     * {@link android.service.personalcontext.insight.PublishedContextInsight} needs to be rendered.
+     * This method will be called when the given {@link ContextInsight} needs to be rendered
+     * visually to the user.
+     *
+     * For example, a renderer could add adjustments to notifications, provide autofill
+     * suggestions, or supply embedded surfaces to a client application to display to the user.
      *
      * @param insight the {@link android.service.personalcontext.insight.PublishedContextInsight}
      *                to render
