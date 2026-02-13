@@ -628,7 +628,7 @@ public interface ImeTracker {
             IInputMethodManagerGlobalInvoker.onStart(token, uid, type, origin, reason, fromUser,
                     userId, displayId, startWallTimeMs, startTimestampMs);
 
-            log("%s: %s at %s reason %s fromUser %s%s displayId %s%s", token.mTag,
+            log("%s: %s at %s reason %s fromUser %b%s displayId %d%s", token.mTag,
                     getOnStartPrefix(type), Debug.originToString(origin),
                     InputMethodDebug.softInputDisplayReasonToString(reason), fromUser,
                     userId != UserHandle.USER_NULL ? " userId " + userId : "",
