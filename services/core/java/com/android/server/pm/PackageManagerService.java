@@ -5346,7 +5346,8 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         @Override
         public byte[] getDomainVerificationBackup(int userId) {
             if (Binder.getCallingUid() != Process.SYSTEM_UID) {
-                throw new SecurityException("Only the system may call getDomainVerificationBackup()");
+                throw new SecurityException(
+                        "Only the system may call getDomainVerificationBackup()");
             }
 
             try {
@@ -5358,7 +5359,10 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                 }
             } catch (Exception e) {
                 if (PackageManagerService.DEBUG_BACKUP) {
-                    Slog.e(PackageManagerService.TAG, "Unable to write domain verification for backup", e);
+                    Slog.e(
+                            PackageManagerService.TAG,
+                            "Unable to write domain verification for backup",
+                            e);
                 }
                 return null;
             }
@@ -5980,7 +5984,8 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         @Override
         public void restoreDomainVerification(byte[] backup, int userId) {
             if (Binder.getCallingUid() != Process.SYSTEM_UID) {
-                throw new SecurityException("Only the system may call restorePreferredActivities()");
+                throw new SecurityException(
+                        "Only the system may call restorePreferredActivities()");
             }
 
             try {
@@ -5993,7 +5998,9 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                 input.close();
             } catch (Exception e) {
                 if (PackageManagerService.DEBUG_BACKUP) {
-                    Slog.e(PackageManagerService.TAG, "Exception restoring domain verification: " + e.getMessage());
+                    Slog.e(
+                            PackageManagerService.TAG,
+                            "Exception restoring domain verification: " + e.getMessage());
                 }
             }
         }
@@ -6253,16 +6260,24 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                 AndroidPackage pkg = packageState.getPkg();
                 // Cannot block uninstall SDK libs as they are controlled by SDK manager.
                 if (pkg.getSdkLibraryName() != null) {
-                    Slog.w(PackageManagerService.TAG, "Cannot block uninstall of package: " + packageName
-                            + " providing SDK library: " + pkg.getSdkLibraryName());
+                    Slog.w(
+                            PackageManagerService.TAG,
+                            "Cannot block uninstall of package: "
+                                    + packageName
+                                    + " providing SDK library: "
+                                    + pkg.getSdkLibraryName());
                     return false;
                 }
                 // Cannot block uninstall of static shared libs as they are
                 // considered a part of the using app (emulating static linking).
                 // Also static libs are installed always on internal storage.
                 if (pkg.getStaticSharedLibraryName() != null) {
-                    Slog.w(PackageManagerService.TAG, "Cannot block uninstall of package: " + packageName
-                            + " providing static shared library: " + pkg.getStaticSharedLibraryName());
+                    Slog.w(
+                            PackageManagerService.TAG,
+                            "Cannot block uninstall of package: "
+                                    + packageName
+                                    + " providing static shared library: "
+                                    + pkg.getStaticSharedLibraryName());
                     return false;
                 }
             }
@@ -7658,6 +7673,67 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                         new PackageManager.NameNotFoundException(packageName));
             }
             return packageState.getUserStateOrDefault(userId).getPersonalContextMode();
+        }
+
+        @Override
+        public boolean snapshotAppData(
+                String packageName, int userId, int rollbackId, int storageFlags)
+                throws InstallerException {
+            if (!Flags.wrapInstallerApis()) {
+                throw new UnsupportedOperationException();
+            }
+            try (PackageManagerTracedLock installLock = mInstallLock.acquireLock()) {
+                return mInstaller.snapshotAppData(packageName, userId, rollbackId, storageFlags);
+            }
+        }
+
+        @Override
+        public void clearAppData(
+                String volumeUuid,
+                String packageName,
+                int userId,
+                int flags,
+                long ceDataInode,
+                long pccCeDataInode)
+                throws InstallerException {
+            if (!Flags.wrapInstallerApis()) {
+                throw new UnsupportedOperationException();
+            }
+            try (PackageManagerTracedLock installLock = mInstallLock.acquireLock()) {
+                mInstaller.clearAppData(
+                        volumeUuid, packageName, userId, flags, ceDataInode, pccCeDataInode);
+            }
+        }
+
+        @Override
+        public boolean restoreAppDataSnapshot(
+                String packageName,
+                int appId,
+                int pccId,
+                String seInfo,
+                int userId,
+                int rollbackId,
+                int storageFlags)
+                throws InstallerException {
+            if (!Flags.wrapInstallerApis()) {
+                throw new UnsupportedOperationException();
+            }
+            try (PackageManagerTracedLock installLock = mInstallLock.acquireLock()) {
+                return mInstaller.restoreAppDataSnapshot(
+                        packageName, appId, pccId, seInfo, userId, rollbackId, storageFlags);
+            }
+        }
+
+        @Override
+        public void destroyAppDataSnapshot(
+                String packageName, int userId, int rollbackId, int storageFlags)
+                throws InstallerException {
+            if (!Flags.wrapInstallerApis()) {
+                throw new UnsupportedOperationException();
+            }
+            try (PackageManagerTracedLock installLock = mInstallLock.acquireLock()) {
+                mInstaller.destroyAppDataSnapshot(packageName, userId, rollbackId, storageFlags);
+            }
         }
     }
 

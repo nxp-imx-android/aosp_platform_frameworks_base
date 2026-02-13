@@ -16,13 +16,16 @@
 
 package com.android.server.rollback;
 
+import android.content.pm.Flags;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManagerInternal;
 import android.content.rollback.PackageRollbackInfo;
 import android.content.rollback.PackageRollbackInfo.RestoreInfo;
 import android.os.storage.StorageManager;
 import android.util.Slog;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.server.LocalServices;
 import com.android.server.pm.ApexManager;
 import com.android.server.pm.Installer;
 import com.android.server.pm.Installer.InstallerException;
@@ -41,15 +44,25 @@ public class AppDataRollbackHelper {
 
     private final Installer mInstaller;
     private final ApexManager mApexManager;
+    private final PackageManagerInternal mPmInternal;
 
     AppDataRollbackHelper(Installer installer) {
         mInstaller = installer;
         mApexManager = ApexManager.getInstance();
+        mPmInternal = LocalServices.getService(PackageManagerInternal.class);
     }
 
     @VisibleForTesting
     AppDataRollbackHelper(Installer installer, ApexManager apexManager) {
         mInstaller = installer;
+        mApexManager = apexManager;
+        mPmInternal = null;
+    }
+
+    @VisibleForTesting
+    AppDataRollbackHelper(ApexManager apexManager, PackageManagerInternal pmInternal) {
+        mInstaller = null;
+        mPmInternal = pmInternal;
         mApexManager = apexManager;
     }
 
@@ -129,8 +142,13 @@ public class AppDataRollbackHelper {
         } else {
             // APK
             try {
-                return mInstaller.snapshotAppData(
-                        packageRollbackInfo.getPackageName(), userId, rollbackId, flags);
+                if (Flags.wrapInstallerApis()) {
+                    return mPmInternal.snapshotAppData(
+                            packageRollbackInfo.getPackageName(), userId, rollbackId, flags);
+                } else {
+                    return mInstaller.snapshotAppData(
+                            packageRollbackInfo.getPackageName(), userId, rollbackId, flags);
+                }
             } catch (InstallerException ie) {
                 Slog.e(TAG, "Unable to create app data snapshot for: "
                         + packageRollbackInfo.getPackageName() + ", userId: " + userId, ie);
@@ -162,13 +180,44 @@ public class AppDataRollbackHelper {
             try {
                 switch (packageRollbackInfo.getRollbackDataPolicy()) {
                     case PackageManager.ROLLBACK_DATA_POLICY_WIPE:
-                        mInstaller.clearAppData(null, packageRollbackInfo.getPackageName(),
-                                userId, flags, /* ceDataInode= */ 0, /* pccCeDataInode= */ 0);
+                        if (Flags.wrapInstallerApis()) {
+                            mPmInternal.clearAppData(
+                                    null,
+                                    packageRollbackInfo.getPackageName(),
+                                    userId,
+                                    flags,
+                                    /* ceDataInode= */ 0,
+                                    /* pccCeDataInode= */ 0);
+                        } else {
+                            mInstaller.clearAppData(
+                                    null,
+                                    packageRollbackInfo.getPackageName(),
+                                    userId,
+                                    flags,
+                                    /* ceDataInode= */ 0,
+                                    /* pccCeDataInode= */ 0);
+                        }
                         break;
                     case PackageManager.ROLLBACK_DATA_POLICY_RESTORE:
-
-                        mInstaller.restoreAppDataSnapshot(packageRollbackInfo.getPackageName(),
-                                appId, pccId, seInfo, userId, rollbackId, flags);
+                        if (Flags.wrapInstallerApis()) {
+                            mPmInternal.restoreAppDataSnapshot(
+                                    packageRollbackInfo.getPackageName(),
+                                    appId,
+                                    pccId,
+                                    seInfo,
+                                    userId,
+                                    rollbackId,
+                                    flags);
+                        } else {
+                            mInstaller.restoreAppDataSnapshot(
+                                    packageRollbackInfo.getPackageName(),
+                                    appId,
+                                    pccId,
+                                    seInfo,
+                                    userId,
+                                    rollbackId,
+                                    flags);
+                        }
                         break;
                     default:
                         break;
@@ -191,8 +240,20 @@ public class AppDataRollbackHelper {
             int user) {
         try {
             // Delete both DE and CE snapshots if any
-            mInstaller.destroyAppDataSnapshot(packageRollbackInfo.getPackageName(), user,
-                    rollbackId, Installer.FLAG_STORAGE_DE | Installer.FLAG_STORAGE_CE);
+
+            if (Flags.wrapInstallerApis()) {
+                mPmInternal.destroyAppDataSnapshot(
+                        packageRollbackInfo.getPackageName(),
+                        user,
+                        rollbackId,
+                        Installer.FLAG_STORAGE_DE | Installer.FLAG_STORAGE_CE);
+            } else {
+                mInstaller.destroyAppDataSnapshot(
+                        packageRollbackInfo.getPackageName(),
+                        user,
+                        rollbackId,
+                        Installer.FLAG_STORAGE_DE | Installer.FLAG_STORAGE_CE);
+            }
         } catch (InstallerException ie) {
             Slog.e(TAG, "Unable to delete app data snapshot for "
                         + packageRollbackInfo.getPackageName(), ie);
