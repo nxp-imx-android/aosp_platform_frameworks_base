@@ -27,6 +27,7 @@ import android.graphics.Bitmap;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -42,7 +43,7 @@ import java.util.Locale;
  */
 @SystemApi
 @FlaggedApi(Flags.FLAG_ON_DEVICE_INTELLIGENCE_26Q2)
-public final class ImageDescriptionRequest implements Parcelable {
+public final class ImageDescriptionRequest implements Parcelable, AutoCloseable {
     private final Content mContent;
     @Nullable
     private final Locale mLocale;
@@ -90,6 +91,13 @@ public final class ImageDescriptionRequest implements Parcelable {
     @Nullable
     public Locale getLocale() {
         return mLocale;
+    }
+
+    @Override
+    public void close() throws IOException {
+        if (mContent != null) {
+            mContent.close();
+        }
     }
 
     @Override
