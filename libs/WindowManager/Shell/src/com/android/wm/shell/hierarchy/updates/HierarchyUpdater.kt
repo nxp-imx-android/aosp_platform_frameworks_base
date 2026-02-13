@@ -181,6 +181,7 @@ class HierarchyUpdater(
         ProtoLog.v(WM_SHELL_MODES, "=======================================================")
         val hierarchyDump =
             HierarchyDebugUtils.dumpToString(hierarchy.root, "", snapshot, WHITE)
+        @SuppressWarnings("ProtoLogNoContext")
         ProtoLog.v(WM_SHELL_MODES, "%s", hierarchyDump)
         ProtoLog.v(WM_SHELL_MODES, "=======================================================")
     }
