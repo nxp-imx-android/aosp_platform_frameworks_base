@@ -8073,10 +8073,6 @@ public final class ActivityThread extends ClientTransactionHandler
                     data.sdkSandboxClientAppPackage);
         }
 
-        if (enablePccFrameworkSupport() && Process.isPrivateComputeCoreUid(Process.myUid())) {
-            data.info.setPccStorageDirPaths();
-        }
-
         if (agent != null) {
             handleAttachAgent(agent, data.info);
         }

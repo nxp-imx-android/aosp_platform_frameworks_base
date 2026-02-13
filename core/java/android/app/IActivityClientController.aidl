@@ -128,6 +128,8 @@ interface IActivityClientController {
     void stopLockTaskModeByToken(in IBinder token);
     oneway void showLockTaskEscapeMessage(in IBinder token);
     void setTaskDescription(in IBinder token, in ActivityManager.TaskDescription values);
+    oneway void setTaskDescriptionOneWay(in IBinder token,
+            in ActivityManager.TaskDescription values);
 
     boolean showAssistFromActivity(in IBinder token, in Bundle args);
     boolean isRootVoiceInteraction(in IBinder token);

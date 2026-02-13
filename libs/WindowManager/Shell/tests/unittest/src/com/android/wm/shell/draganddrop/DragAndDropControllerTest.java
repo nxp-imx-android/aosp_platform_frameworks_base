@@ -28,12 +28,15 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import android.content.ClipData;
 import android.content.Context;
 import android.os.RemoteException;
+import android.platform.test.annotations.EnableFlags;
 import android.view.Display;
 import android.view.DragEvent;
 import android.view.View;
@@ -45,11 +48,13 @@ import androidx.test.filters.SmallTest;
 
 import com.android.internal.logging.UiEventLogger;
 import com.android.launcher3.icons.IconProvider;
+import com.android.wm.shell.Flags;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.bubbles.bar.DragToBubbleController;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.ShellExecutor;
+import com.android.wm.shell.shared.bubbles.BubbleFeatureConfig;
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState;
 import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellController;
@@ -93,7 +98,8 @@ public class DragAndDropControllerTest extends ShellTestCase {
     private Transitions mTransitions;
     @Mock
     private GlobalDragListener mGlobalDragListener;
-
+    @Mock
+    private BubbleFeatureConfig mBubbleFeatureConfig;
     @Mock
     private DragToBubbleController mDragToBubbleController;
     private FakeDesktopState mDesktopState;
@@ -104,10 +110,11 @@ public class DragAndDropControllerTest extends ShellTestCase {
     public void setUp() throws RemoteException {
         mDesktopState = new FakeDesktopState();
         MockitoAnnotations.initMocks(this);
+
         mController = new DragAndDropController(mContext, mShellInit, mShellController,
                 mShellCommandHandler, mShellTaskOrganizer, mDisplayController, mUiEventLogger,
                 mIconProvider, mGlobalDragListener, mTransitions, () -> mDragToBubbleController,
-                mMainExecutor, mDesktopState);
+                mMainExecutor, mDesktopState, mBubbleFeatureConfig);
         mController.onInit();
     }
 
@@ -177,5 +184,35 @@ public class DragAndDropControllerTest extends ShellTestCase {
 
         // Verify the listener is called on a valid drag action.
         mController.onDrag(dragLayout, event);
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
+    @Test
+    public void testOnInit_addBubblesListener_enabled() {
+        when(mBubbleFeatureConfig.areAppBubblesSupported()).thenReturn(true);
+
+        mController = spy(new DragAndDropController(mContext, mShellInit, mShellController,
+                mShellCommandHandler, mShellTaskOrganizer, mDisplayController, mUiEventLogger,
+                mIconProvider, mGlobalDragListener, mTransitions, () -> mDragToBubbleController,
+                mMainExecutor, mDesktopState, mBubbleFeatureConfig));
+
+        mController.onInit();
+
+        verify(mController).addListener(mDragToBubbleController);
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
+    @Test
+    public void testOnInit_addBubblesListener_disabled() {
+        when(mBubbleFeatureConfig.areAppBubblesSupported()).thenReturn(false);
+
+        mController = spy(new DragAndDropController(mContext, mShellInit, mShellController,
+                mShellCommandHandler, mShellTaskOrganizer, mDisplayController, mUiEventLogger,
+                mIconProvider, mGlobalDragListener, mTransitions, () -> mDragToBubbleController,
+                mMainExecutor, mDesktopState, mBubbleFeatureConfig));
+
+        mController.onInit();
+
+        verify(mController, never()).addListener(mDragToBubbleController);
     }
 }

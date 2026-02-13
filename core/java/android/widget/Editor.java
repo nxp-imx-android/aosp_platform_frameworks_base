@@ -2641,6 +2641,10 @@ public class Editor {
             return false;
         }
 
+        if (Flags.checkAttachStateInStartActionMode() && !mTextView.isAttachedToWindow()) {
+            return false;
+        }
+
         ActionMode.Callback actionModeCallback = new TextActionModeCallback(actionMode);
         mTextActionMode = mTextView.startActionMode(actionModeCallback, ActionMode.TYPE_FLOATING);
         registerOnBackInvokedCallback();

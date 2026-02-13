@@ -683,6 +683,7 @@ com.android.internal.util.BitUtils
 com.android.internal.util.BitwiseInputStream
 com.android.internal.util.BitwiseOutputStream
 com.android.internal.util.CallbackRegistry
+com.android.internal.util.ClientListenerMultiplexer
 com.android.internal.util.CollectionUtils
 com.android.internal.util.ContrastColorUtil
 com.android.internal.util.DumpUtils

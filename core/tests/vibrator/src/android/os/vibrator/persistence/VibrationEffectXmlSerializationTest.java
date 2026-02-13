@@ -1470,7 +1470,6 @@ public class VibrationEffectXmlSerializationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void testVendorEffect_allSucceed() throws Exception {
         PersistableBundle vendorData = new PersistableBundle();
         vendorData.putInt("id", 1);
@@ -1509,7 +1508,6 @@ public class VibrationEffectXmlSerializationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void testInvalidVendorEffect_allFail() throws IOException {
         String emptyTag = "<vibration-effect><vendor-effect/></vibration-effect>";
         assertPublicApisParserFails(emptyTag);
@@ -1538,26 +1536,6 @@ public class VibrationEffectXmlSerializationTest {
                 + "</vendor-effect></vibration-effect>";
         assertPublicApisParserFails(emptyBundleString);
         assertHiddenApisParserFails(emptyBundleString);
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
-    public void testVendorEffect_featureFlagDisabled_allFail() throws Exception {
-        PersistableBundle vendorData = new PersistableBundle();
-        vendorData.putInt("id", 1);
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        vendorData.writeToStream(outputStream);
-        String vendorDataStr = Base64.getEncoder().encodeToString(outputStream.toByteArray());
-        String xml = "<vibration-effect><vendor-effect>"
-                + vendorDataStr
-                + "</vendor-effect></vibration-effect>";
-        VibrationEffect vendorEffect = VibrationEffect.createVendorEffect(vendorData);
-
-        assertPublicApisParserFails(xml);
-        assertPublicApisSerializerFails(vendorEffect);
-
-        assertHiddenApisParserFails(xml);
-        assertHiddenApisSerializerFails(vendorEffect);
     }
 
     @Test

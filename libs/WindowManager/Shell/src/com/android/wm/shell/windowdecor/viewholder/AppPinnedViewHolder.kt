@@ -17,15 +17,22 @@ package com.android.wm.shell.windowdecor.viewholder
 
 import android.app.ActivityManager
 import android.content.res.ColorStateList
+import android.content.res.Configuration
 import android.graphics.Color
 import android.view.View
 import android.widget.ImageButton
 import androidx.annotation.DimenRes
 import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.ui.graphics.toArgb
 import com.android.wm.shell.R
 import com.android.wm.shell.windowdecor.WindowDecorLinearLayout
+import com.android.wm.shell.windowdecor.common.DecorThemeUtil
 import com.android.wm.shell.windowdecor.common.DrawableInsets
+import com.android.wm.shell.windowdecor.common.OPACITY_100
+import com.android.wm.shell.windowdecor.common.OPACITY_55
+import com.android.wm.shell.windowdecor.common.OPACITY_65
+import com.android.wm.shell.windowdecor.common.Theme
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader
 import com.android.wm.shell.windowdecor.common.createBackgroundDrawable
 import com.android.wm.shell.windowdecor.extension.isTransparentCaptionBarAppearance
@@ -37,21 +44,25 @@ import com.android.wm.shell.windowdecor.viewholder.AppPinnedViewHolder.AppPinned
  */
 class AppPinnedViewHolder(
     override val rootView: View,
-    private val taskResourceLoader: WindowDecorTaskResourceLoader,
     onTouchListener: View.OnTouchListener,
     onGenericMotionEventListener: View.OnGenericMotionListener,
     onOpenSettings: View.OnClickListener,
     onCloseWindow: View.OnClickListener,
 ) : WindowDecorationViewHolder<AppPinnedData>() {
 
-    data class AppPinnedData(val taskInfo: ActivityManager.RunningTaskInfo) : Data()
+    data class AppPinnedData(
+        val taskInfo: ActivityManager.RunningTaskInfo,
+        val hasGlobalFocus: Boolean,
+    ) : Data()
 
     private val captionView: View = rootView.requireViewById(R.id.pinned_caption)
     private val captionHandle: View = rootView.requireViewById(R.id.caption_handle)
     private val settingsButton = rootView.requireViewById<ImageButton>(R.id.settings_button)
     private val closeButton = rootView.requireViewById<ImageButton>(R.id.close_window)
+    private val decorThemeUtil = DecorThemeUtil(rootView.context)
 
     private val darkColors = dynamicDarkColorScheme(rootView.context)
+    private val lightColors = dynamicLightColorScheme(rootView.context)
 
     init {
         captionView.setOnTouchListener(onTouchListener)
@@ -62,19 +73,30 @@ class AppPinnedViewHolder(
     }
 
     override fun bindData(data: AppPinnedData) {
-        val foregroundColor = darkColors.onSurface.toArgb()
-        val colorStateList = ColorStateList.valueOf(foregroundColor).withAlpha(255)
-
-        if (data.taskInfo.isTransparentCaptionBarAppearance) {
-            captionView.setBackgroundColor(Color.TRANSPARENT)
-        } else {
-            captionView.setBackgroundColor(darkColors.surfaceContainerHigh.toArgb())
+        // by default pinned windows are always dark, unless the app explicitly sets a transparent
+        // caption bar, in which case we use the best color scheme based on the background color's
+        // luminance.
+        val isTransparentCaptionBar = data.taskInfo.isTransparentCaptionBarAppearance
+        val theme = when {
+            isTransparentCaptionBar -> decorThemeUtil.getAppTheme(data.taskInfo)
+            else -> Theme.DARK
         }
+        val isThemeDark = theme == Theme.DARK
+        val colorScheme = decorThemeUtil.getColorScheme(/* isDarkMode= */ isThemeDark)
 
-        taskResourceLoader.getNameAndHeaderIcon(data.taskInfo) { name, _ ->
-            closeButton.contentDescription =
-                rootView.context.getString(R.string.close_button_text, name)
+        val backgroundColor = when {
+            isTransparentCaptionBar -> Color.TRANSPARENT
+            else -> colorScheme.surfaceContainerHigh.toArgb()
         }
+        captionView.setBackgroundColor(backgroundColor)
+
+        val foregroundColor = colorScheme.onSurface.toArgb()
+        val opacity = when {
+            isThemeDark && !data.hasGlobalFocus -> OPACITY_55
+            !isThemeDark && !data.hasGlobalFocus -> OPACITY_65
+            else -> OPACITY_100
+        }
+        val colorStateList = ColorStateList.valueOf(foregroundColor).withAlpha(opacity)
 
         closeButton.apply {
             imageTintList = colorStateList
@@ -103,6 +125,11 @@ class AppPinnedViewHolder(
                         getDrawableInsets(R.dimen.desktop_mode_pinned_header_button_inset),
                 )
         }
+    }
+
+    fun setAppName(name: CharSequence) {
+        closeButton.contentDescription =
+            rootView.context.getString(R.string.close_button_text, name)
     }
 
     private fun getDrawableInsets(@DimenRes res: Int) =

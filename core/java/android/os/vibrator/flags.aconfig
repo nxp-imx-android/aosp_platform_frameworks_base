@@ -3,17 +3,6 @@ container: "system"
 
 flag {
     namespace: "haptics"
-    name: "vendor_vibration_effects"
-    is_exported: true
-    description: "Enabled System APIs for vendor-defined vibration effects"
-    bug: "345454923"
-    metadata {
-        purpose: PURPOSE_FEATURE
-    }
-}
-
-flag {
-    namespace: "haptics"
     name: "vibration_attribute_ime_usage_api"
     is_exported: true
     description: "A public API for IME usage vibration attribute"

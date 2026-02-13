@@ -20,6 +20,7 @@ import android.content.pm.UserInfo
 import android.graphics.Bitmap
 import android.graphics.Rect
 import android.net.Uri
+import android.view.Display.DEFAULT_DISPLAY
 import android.view.WindowManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -30,6 +31,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.screencapture.ScreenCaptureEvent
 import com.android.systemui.screenshot.mockImageCapture
+import com.android.systemui.shade.data.repository.fakeFocusedDisplayRepository
 import com.android.systemui.testKosmosNew
 import com.android.systemui.user.data.repository.fakeUserRepository
 import com.google.common.truth.Truth.assertThat
@@ -42,7 +44,6 @@ import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
-import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -67,7 +68,7 @@ class ScreenshotInteractorTest : SysuiTestCase() {
             interactor.requestFullscreenScreenshot(displayId, null)
 
             val screenshotRequestCaptor = argumentCaptor<ScreenshotRequest>()
-            verify(mockScreenshotHelper, times(1))
+            verify(mockScreenshotHelper)
                 .takeScreenshot(screenshotRequestCaptor.capture(), any(), isNull())
 
             val capturedRequest = screenshotRequestCaptor.lastValue
@@ -75,6 +76,23 @@ class ScreenshotInteractorTest : SysuiTestCase() {
             assertThat(capturedRequest.source)
                 .isEqualTo(WindowManager.ScreenshotSource.SCREENSHOT_SCREEN_CAPTURE_UI)
             assertThat(capturedRequest.displayId).isEqualTo(displayId)
+        }
+    }
+
+    @Test
+    fun requestFullscreenScreenshot_withoutDisplayIdArg_callsScreenshotHelper_withFocusedDisplayId() {
+        kosmos.runTest {
+            val focusedDisplayId = 123
+            fakeFocusedDisplayRepository.setDisplayId(focusedDisplayId)
+
+            interactor.requestFullscreenScreenshot()
+
+            val screenshotRequestCaptor = argumentCaptor<ScreenshotRequest>()
+            verify(mockScreenshotHelper)
+                .takeScreenshot(screenshotRequestCaptor.capture(), any(), isNull())
+
+            val capturedRequest = screenshotRequestCaptor.lastValue
+            assertThat(capturedRequest.displayId).isEqualTo(focusedDisplayId)
         }
     }
 
@@ -87,7 +105,7 @@ class ScreenshotInteractorTest : SysuiTestCase() {
             interactor.requestFullscreenScreenshot(displayId, customUri)
 
             val screenshotRequestCaptor = argumentCaptor<ScreenshotRequest>()
-            verify(mockScreenshotHelper, times(1))
+            verify(mockScreenshotHelper)
                 .takeScreenshot(screenshotRequestCaptor.capture(), any(), isNull())
 
             val capturedRequest = screenshotRequestCaptor.lastValue
@@ -126,8 +144,8 @@ class ScreenshotInteractorTest : SysuiTestCase() {
             interactor.requestPartialScreenshot(bounds, displayId, null)
 
             val screenshotRequestCaptor = argumentCaptor<ScreenshotRequest>()
-            verify(mockImageCapture, times(1)).captureDisplay(any(), eq(bounds))
-            verify(mockScreenshotHelper, times(1))
+            verify(mockImageCapture).captureDisplay(any(), eq(bounds))
+            verify(mockScreenshotHelper)
                 .takeScreenshot(screenshotRequestCaptor.capture(), any(), isNull())
 
             val capturedRequest = screenshotRequestCaptor.lastValue
@@ -154,7 +172,7 @@ class ScreenshotInteractorTest : SysuiTestCase() {
             interactor.requestPartialScreenshot(bounds, displayId, customUri)
 
             val screenshotRequestCaptor = argumentCaptor<ScreenshotRequest>()
-            verify(mockScreenshotHelper, times(1))
+            verify(mockScreenshotHelper)
                 .takeScreenshot(screenshotRequestCaptor.capture(), any(), isNull())
 
             val capturedRequest = screenshotRequestCaptor.lastValue
@@ -194,8 +212,8 @@ class ScreenshotInteractorTest : SysuiTestCase() {
             interactor.requestAppWindowScreenshot(taskId, displayId)
 
             val screenshotRequestCaptor = argumentCaptor<ScreenshotRequest>()
-            verify(mockImageCapture, times(1)).captureTask(eq(taskId))
-            verify(mockScreenshotHelper, times(1))
+            verify(mockImageCapture).captureTask(eq(taskId))
+            verify(mockScreenshotHelper)
                 .takeScreenshot(screenshotRequestCaptor.capture(), any(), isNull())
 
             val capturedRequest = screenshotRequestCaptor.lastValue

@@ -17,9 +17,11 @@
 package com.android.server.aiseal;
 
 import android.content.Context;
+import android.os.Environment;
 import android.os.IBinder;
 import android.os.IBinder.DeathRecipient;
 import android.os.RemoteException;
+import android.os.SELinux;
 import android.os.ServiceManager;
 import android.text.format.DateUtils;
 import android.util.ArraySet;
@@ -31,12 +33,15 @@ import com.android.internal.os.BackgroundThread;
 import com.android.server.SystemService;
 import com.android.server.SystemService.TargetUser;
 
+import java.io.File;
 import java.util.Set;
 
 /** AiSeal system service. */
 public class AiSealSystemService extends SystemService {
 
     private static final String TAG = "AiSealSystemService";
+    private static final String AISEAL_PRIVATE_FOLDER = "AiSeal";
+    private static final String KEK_FILENAME = "kek";
 
     // Synchronizes user state changes with the AiSeal internal service connection.
     private static final Object sLock = new Object();
@@ -120,11 +125,7 @@ public class AiSealSystemService extends SystemService {
     @GuardedBy("sLock")
     private void onAiSealInternalServiceConnectedLocked() {
         for (int userId : mUnlockedUsers) {
-            try {
-                mAiSealInternalService.onUserUnlocking(userId);
-            } catch (Exception e) {
-                Slog.wtf(TAG, "Unable to unlock user " + userId, e);
-            }
+            notifyUserUnlockingLocked(userId);
         }
     }
 
@@ -153,7 +154,11 @@ public class AiSealSystemService extends SystemService {
     @GuardedBy("sLock")
     public void notifyUserUnlockingLocked(int userId) {
         try {
-            mAiSealInternalService.onUserUnlocking(userId);
+            File kekFile = Environment.buildPath(Environment.getDataSystemCeDirectory(userId),
+                    AISEAL_PRIVATE_FOLDER, KEK_FILENAME);
+            kekFile.getParentFile().mkdirs();
+            SELinux.restorecon(kekFile.getParentFile());
+            mAiSealInternalService.onUserUnlocking(userId, kekFile.getAbsolutePath());
         } catch (Exception e) {
             Slog.wtf(TAG, "Unable to unlock user " + userId, e);
         }

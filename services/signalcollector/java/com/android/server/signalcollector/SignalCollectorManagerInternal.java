@@ -16,7 +16,8 @@
 
 package com.android.server.signalcollector;
 
-import android.os.binder.BinderSpamStats;
+import android.os.binder.BinderCallsStats;
+import android.os.binder.SingleSecondBinderStats;
 
 /**
  * Internal interface for the SignalCollectorService.
@@ -25,7 +26,15 @@ import android.os.binder.BinderSpamStats;
  */
 public abstract class SignalCollectorManagerInternal {
     /**
-     * Report a list of binder call stats based on the configurations.
+     * Report some binder stats that is in ~5-second granularity to the collector.
+     * Between this and {@link #reportBinderStats(SingleSecondBinderStats[])}, only one will receive
+     * stats.
      */
-    public abstract void reportBinderStats(BinderSpamStats[] statsArray);
+    public abstract void reportBinderStats(BinderCallsStats[] statsArray);
+
+    /**
+     * Report a list of single-second binder call stats to the collector.
+     * Between this and {@link #reportBinderStats(BinderCallsStats[])}, only one will receive stats.
+     */
+    public abstract void reportBinderStats(SingleSecondBinderStats[] statsArray);
 }

@@ -42,6 +42,8 @@ private val restartButtonPositionFn: ComponentUiPositionFactory = { layout, _, s
 }
 
 /** CompatUISpec for the Restart Button */
+// TODO(b/478792808): Remove suppression
+@SuppressWarnings("ProtoLogNonConstantFormat")
 @SuppressLint("InflateParams")
 val RestartButtonSpec =
     CompatUISpec(

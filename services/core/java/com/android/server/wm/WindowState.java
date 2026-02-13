@@ -194,6 +194,7 @@ import android.app.servertransaction.WindowStateInsetsControlChangeItem;
 import android.app.servertransaction.WindowStateResizeItem;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
@@ -5296,6 +5297,8 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             // 5. The window is not in a transition or is in a transition that allows to dim.
             mIsDimming = true;
             final float dimAmount = (mAttrs.flags & FLAG_DIM_BEHIND) != 0 ? mAttrs.dimAmount : 0;
+            final long dimColor = (mAttrs.flags & FLAG_DIM_BEHIND) != 0 ? mAttrs.dimColor :
+                    Color.pack(Color.BLACK);
             final int blurRadius = shouldDrawBlurBehind() ? mAttrs.getBlurBehindRadius() : 0;
             // If the window is visible from surface flinger perspective (mWinAnimator.getShown())
             // but not window manager visible (!isVisibleNow()), it can still be the parent of the
@@ -5309,7 +5312,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             }
 
             if (isVisibleNow()) {
-                dimmer.adjustAppearance(this, dimAmount, blurRadius);
+                dimmer.adjustAppearance(this, dimAmount, blurRadius, dimColor);
             }
             dimmer.adjustPosition(geometryParent, this /* relativeParent */);
         }

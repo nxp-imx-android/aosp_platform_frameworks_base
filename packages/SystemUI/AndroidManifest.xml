@@ -276,6 +276,12 @@
     <uses-permission android:name="android.permission.ACT_AS_PACKAGE_FOR_ACCESSIBILITY" />
 
     <permission
+            android:name="com.android.systemui.permission.LAUNCH_ACCESSIBILITY_SHORTCUT_CHOOSER_DIALOG"
+            android:protectionLevel="signature|privileged"/>
+    <uses-permission
+            android:name="com.android.systemui.permission.LAUNCH_ACCESSIBILITY_SHORTCUT_CHOOSER_DIALOG"/>
+
+    <permission
             android:name="com.android.systemui.permission.LAUNCH_ACCESSIBILITY_QUICK_ACCESS_DIALOG"
             android:protectionLevel="signature"
             android:featureFlag="com.android.systemui.launch_accessibility_quick_access_dialog_permission" />

@@ -53,6 +53,7 @@ import com.android.internal.util.FrameworkStatsLog;
 import com.android.internal.widget.LockPatternUtils;
 import com.android.systemui.ActivityIntentHelper;
 import com.android.systemui.EventLogTags;
+import com.android.systemui.Flags;
 import com.android.systemui.activity.data.repository.ActivityIntentRepository;
 import com.android.systemui.animation.ActivityTransitionAnimator;
 import com.android.systemui.assist.AssistManager;
@@ -415,14 +416,22 @@ public class StatusBarNotificationActivityStarter implements NotificationActivit
         String notificationKey = entry.getKey();
         mLogger.logHandleClickAfterPanelCollapsed(entry);
 
-        try {
-            // The intent we are sending is for the application, which
-            // won't have permission to immediately start an activity after
-            // the user switches to home.  We know it is safe to do at this
-            // point, so make sure new activity switches are now allowed.
-            ActivityManager.getService().resumeAppSwitches();
-        } catch (RemoteException e) {
+        Runnable resumeAppSwitches = () -> {
+            try {
+                // The intent we are sending is for the application, which
+                // won't have permission to immediately start an activity after
+                // the user switches to home.  We know it is safe to do at this
+                // point, so make sure new activity switches are now allowed.
+                ActivityManager.getService().resumeAppSwitches();
+            } catch (RemoteException ignored) { }
+        };
+
+        if (Flags.asyncNotificationLaunchIpc()) {
+            mUiBgExecutor.execute(resumeAppSwitches);
+        } else {
+            resumeAppSwitches.run();
         }
+
         // If the notification should be cancelled on click and we are launching a work activity in
         // a locked profile with separate challenge, we defer the activity action and cancelling of
         // the notification until work challenge is unlocked. If the notification shouldn't be
@@ -461,8 +470,13 @@ public class StatusBarNotificationActivityStarter implements NotificationActivit
         } else {
             startNotificationIntent(intent, fillInIntent, entry, row, animate, isActivityIntent);
         }
+
         if (isActivityIntent || canBubble) {
-            mAssistManagerLazy.get().hideAssist();
+            if (Flags.asyncNotificationLaunchIpc()) {
+                mUiBgExecutor.execute(() -> mAssistManagerLazy.get().hideAssist());
+            } else {
+                mAssistManagerLazy.get().hideAssist();
+            }
         }
 
         final NotificationVisibility nv = mVisibilityProvider.obtain(entry, true);
@@ -483,7 +497,11 @@ public class StatusBarNotificationActivityStarter implements NotificationActivit
         }
 
         // inform NMS that the notification was clicked
-        mClickNotifier.onNotificationClick(notificationKey, nv);
+        if (Flags.asyncNotificationLaunchIpc()) {
+            mUiBgExecutor.execute(() -> mClickNotifier.onNotificationClick(notificationKey, nv));
+        } else {
+            mClickNotifier.onNotificationClick(notificationKey, nv);
+        }
 
         mIsCollapsingToShowActivityOverLockscreen = false;
     }
@@ -541,6 +559,29 @@ public class StatusBarNotificationActivityStarter implements NotificationActivit
         mShadeController.collapseShade();
     }
 
+  private int sendPendingIntent(
+      PendingIntent intent, Intent fillInIntent, Bundle options, NotificationEntry entry)
+      throws PendingIntent.CanceledException {
+
+        if (Flags.asyncNotificationLaunchIpc()) {
+            mUiBgExecutor.execute(() -> {
+                try {
+                    int result = intent.sendAndReturnResult(mContext, 0, fillInIntent,
+                            null, null, null, options);
+                    mLogger.logSendPendingIntent(entry, intent, result);
+                } catch (PendingIntent.CanceledException e) {
+                    mLogger.logSendingIntentFailed(e);
+                }
+            });
+            return ActivityManager.START_SUCCESS;
+        } else {
+            int result = intent.sendAndReturnResult(mContext, 0, fillInIntent,
+                    null, null, null, options);
+            mLogger.logSendPendingIntent(entry, intent, result);
+            return result;
+        }
+    }
+
     private void startNotificationIntent(
             PendingIntent intent,
             Intent fillInIntent,
@@ -584,10 +625,7 @@ public class StatusBarNotificationActivityStarter implements NotificationActivit
                                     mKeyguardStateController.isShowing(),
                                     eventTime)
                                     : createActivityOptions(displayId, transition, cookie);
-                            int result = intent.sendAndReturnResult(mContext, 0, fillInIntent, null,
-                                    null, null, options);
-                            mLogger.logSendPendingIntent(entry, intent, result);
-                            return result;
+                            return sendPendingIntent(intent, fillInIntent, options, entry);
                         });
             } else {
                 mActivityTransitionAnimator.startPendingIntentWithAnimation(
@@ -603,15 +641,13 @@ public class StatusBarNotificationActivityStarter implements NotificationActivit
                                     mKeyguardStateController.isShowing(),
                                     eventTime)
                                     : createActivityOptions(displayId, adapter);
-                            int result = intent.sendAndReturnResult(mContext, 0, fillInIntent, null,
-                                    null, null, options);
-                            mLogger.logSendPendingIntent(entry, intent, result);
-                            return result;
+                            return sendPendingIntent(intent, fillInIntent, options, entry);
                         });
             }
         } catch (PendingIntent.CanceledException e) {
             // the stack trace isn't very helpful here.
             // Just log the exception message.
+            // TODO: Useless after asyncNotificationLaunchIpc, already handled in sendPendingIntent
             mLogger.logSendingIntentFailed(e);
             // TODO: Dismiss Keyguard.
         }

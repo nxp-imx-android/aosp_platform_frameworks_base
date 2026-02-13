@@ -57,6 +57,7 @@ class RecentTaskViewModelTest : SysuiTestCase() {
                     backgroundColor = 0x99123456.toInt(),
                     splitBounds = null,
                     baseIntent = null,
+                    isForegroundTask = false,
                 )
 
             // Act
@@ -91,6 +92,7 @@ class RecentTaskViewModelTest : SysuiTestCase() {
                     backgroundColor = null,
                     splitBounds = null,
                     baseIntent = null,
+                    isForegroundTask = false,
                 )
 
             // Act
@@ -125,6 +127,7 @@ class RecentTaskViewModelTest : SysuiTestCase() {
                     backgroundColor = 0x99123456.toInt(),
                     splitBounds = null,
                     baseIntent = null,
+                    isForegroundTask = false,
                 )
             val viewModel =
                 RecentTaskViewModel(

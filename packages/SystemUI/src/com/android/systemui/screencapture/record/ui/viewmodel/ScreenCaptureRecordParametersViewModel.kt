@@ -16,8 +16,10 @@
 
 package com.android.systemui.screencapture.record.ui.viewmodel
 
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import com.android.systemui.lifecycle.HydratedActivatable
+import com.android.systemui.screencapture.record.camera.domain.interactor.ScreenCaptureCameraHintInteractor
 import com.android.systemui.screencapture.record.camera.domain.interactor.ScreenRecordCameraInteractor
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordParametersInteractor
@@ -37,6 +39,7 @@ constructor(
     screenRecordCameraInteractor: ScreenRecordCameraInteractor,
     screenCaptureRecordFeaturesInteractor: ScreenCaptureRecordFeaturesInteractor,
     recordDetailsTargetInteractor: RecordDetailsTargetInteractor,
+    private val screenCaptureCameraHintInteractor: ScreenCaptureCameraHintInteractor,
 ) : HydratedActivatable() {
 
     val audioSource: ScreenRecordingAudioSource by interactor::audioSource
@@ -106,6 +109,14 @@ constructor(
                 flowOf(false)
             }
             .hydratedStateOf("ScreenCaptureAudioSourceViewModel#canUseFrontCamera", true)
+
+    val shouldShowHint: Boolean by derivedStateOf {
+        screenCaptureCameraHintInteractor.shouldShowHint
+    }
+
+    suspend fun onCameraHintShown() {
+        screenCaptureCameraHintInteractor.onHintShown()
+    }
 
     @AssistedFactory
     interface Factory {

@@ -35,9 +35,19 @@ public class RavenwoodExperimentalApiChecker {
 
     private static final Object sLock = new Object();
 
-    private static volatile Boolean sExperimentalApiEnabled;
+    /**
+     * Value from $RAVENWOOD_ENABLE_EXP_API
+     *
+     * -1: uninitialized, 0: disabled, 1: enabled.
+     */
+    private static volatile int sExperimentalApiEnabled = -1;
 
-    private static volatile Boolean sLogExperimentalApiCall;
+    /**
+     * $RAVENWOOD_LOG_EXP_API
+     *
+     * -1: uninitialized, 0: disabled, 1: enabled, 2: with stack trace
+     */
+    private static volatile int sLogExperimentalApiCall = -1;
 
     /**
      * A map with key = "method info", value = "number of times the method was called".
@@ -71,26 +81,30 @@ public class RavenwoodExperimentalApiChecker {
 
     public static boolean isExperimentalApiEnabled() {
         var enable = sExperimentalApiEnabled;
-        if (enable == null) {
+        if (enable < 0) {
             var def = EXP_API_ENABLED_MODULE.contains(
-                    RavenwoodEnvironment.getInstance().getTestModuleName());
-            enable = RavenwoodEnvironment.getInstance().getBoolEnvVar(
+                    RavenwoodEnvironment.getInstance().getTestModuleName()) ? 1 : 0;
+            enable = RavenwoodEnvironment.getInstance().getIntEnvVar(
                     "RAVENWOOD_ENABLE_EXP_API", def);
             sExperimentalApiEnabled = enable;
         }
-        return enable;
+        return enable == 1;
     }
 
     private static void maybeLogExperimentalApiCall(@NonNull MethodInfo mi) {
         var enable = sLogExperimentalApiCall;
-        if (enable == null) {
-            enable = RavenwoodEnvironment.getInstance().getBoolEnvVar("RAVENWOOD_LOG_EXP_API");
+        if (enable < 0) {
+            enable = RavenwoodEnvironment.getInstance().getIntEnvVar("RAVENWOOD_LOG_EXP_API", 0);
             sLogExperimentalApiCall = enable;
         }
-        if (!enable) {
+        if (enable < 1) {
             return;
         }
         Log.i(TAG_EXP_CALL, mi.toString());
+        if (enable < 2) {
+            return;
+        }
+        RavenwoodImplUtils.dumpStack(TAG_EXP_CALL, 3);
     }
 
     /**
@@ -167,6 +181,6 @@ public class RavenwoodExperimentalApiChecker {
      */
     public static void setExperimentalApiEnabledOnlyForTesting(boolean experimentalApiEnabled) {
         ensureCoreTest();
-        sExperimentalApiEnabled = experimentalApiEnabled;
+        sExperimentalApiEnabled = experimentalApiEnabled ? 1 : 0;
     }
 }

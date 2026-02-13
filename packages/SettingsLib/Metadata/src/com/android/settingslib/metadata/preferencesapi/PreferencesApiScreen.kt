@@ -66,6 +66,7 @@ class ParameterizationConfig {
 
     internal val parameters = mutableMapOf<String, ApiParameterDefinition>()
     internal var prepareScreenExtras: ((ValidatedKeyParameters, Bundle) -> Unit)? = null
+    internal var prepareSpaRoute: ((ValidatedKeyParameters) -> String)? = null
 
     /**
      * Defines a parameter and adds it to the schema.
@@ -98,6 +99,16 @@ class ParameterizationConfig {
             throw IllegalStateException(getExceptionMessageMultipleDefines("prepareScreenExtras"))
         }
         prepareScreenExtras = lambda
+    }
+
+    /**
+     * Declares how to generate the SPA route from the API-First parameters.
+     */
+    fun prepareSpaRoute(lambda: (ValidatedKeyParameters) -> String) {
+        if (prepareSpaRoute != null) {
+            throw IllegalStateException(getExceptionMessageMultipleDefines("prepareSpaRoute"))
+        }
+        prepareSpaRoute = lambda
     }
 
     /**
@@ -146,7 +157,8 @@ abstract class PreferencesApiScreen private constructor(
     ) : this(key, topLevelSettingsCategory, fragment, purpose, alreadyPartiallyMigrated, null)
 
     /**
-     * Constructor for screens implemented using the Settings Platform Architecture (SPA).
+     * Constructor for screens implemented using the Settings Platform Architecture (SPA) with a
+     * static route.
      */
     constructor(
         key: String,
@@ -156,7 +168,29 @@ abstract class PreferencesApiScreen private constructor(
         alreadyPartiallyMigrated: KClass<*>? = null,
     ) : this(key, topLevelSettingsCategory, null, purpose, alreadyPartiallyMigrated, spaRoutePrefix)
 
-    override fun fragmentClass(): Class<out Fragment>? = fragment?.java
+    /**
+     * Constructor for screens implemented using the Settings Platform Architecture (SPA) with a
+     * dynamic route generated from parameters.
+     */
+    constructor(
+        key: String,
+        topLevelSettingsCategory: Category,
+        purpose: Int,
+        alreadyPartiallyMigrated: KClass<*>? = null,
+    ) : this(key, topLevelSettingsCategory, null, purpose, alreadyPartiallyMigrated, null)
+
+    override fun fragmentClass(): Class<out Fragment>? {
+        // If it's a valid fragment screen, return the class
+        if (fragment != null) return fragment.java
+
+        // If it's a valid SPA screen (static or dynamic), it's correct to return null.
+        if (spaRoutePrefix != null || prepareSpaRoute != null) return null
+
+        // Otherwise, the developer used the dynamic SPA constructor but didn't define parameters.
+        throw IllegalStateException(
+            "A screen must have a destination. It must either be a Fragment screen, or define a `spaRoutePrefix` for a static SPA screen, or use the `parameters` block to define a `prepareSpaRoute` for a dynamic SPA screen."
+        )
+    }
 
     override fun isFlagEnabled(context: Context): Boolean =
         flag?.check(FlagContext(context)) ?: super.isFlagEnabled(context)
@@ -217,6 +251,7 @@ abstract class PreferencesApiScreen private constructor(
 
     private lateinit var screenParameters: ValidatedKeyParameters
     private var prepareScreenExtras: ((ValidatedKeyParameters, Bundle) -> Unit)? = null
+    private var prepareSpaRoute: ((ValidatedKeyParameters) -> String)? = null
     private var allPossibleParameters: ((Context) -> Collection<ValidatedKeyParameters>) = { emptyList() }
 
     val preferencesPermissions = mutableListOf<String>()
@@ -324,6 +359,14 @@ abstract class PreferencesApiScreen private constructor(
      */
     override fun getAllPossibleParameters(context: Context) = allPossibleParameters(context).asFlow()
 
+    /**
+     * Returns the SPA route for this screen, generating it dynamically if parameters are present.
+     */
+    fun getSpaRoute(): String? {
+        val keyParams = keyParameters ?: return spaRoutePrefix
+        return prepareSpaRoute?.invoke(keyParams) ?: spaRoutePrefix
+    }
+
     protected fun flag(lambda: () -> Boolean) {
         if (flag != null) {
             error(getExceptionMessageMultipleDefines("flag"))
@@ -374,6 +417,7 @@ abstract class PreferencesApiScreen private constructor(
             scope.lambda()
             parametersSchema = scope.buildSchema()
             prepareScreenExtras = scope.prepareScreenExtras
+            prepareSpaRoute = scope.prepareSpaRoute
 
             val parametersSize = scope.parameters.size
             if (parametersSize == 0) {
@@ -382,6 +426,19 @@ abstract class PreferencesApiScreen private constructor(
             if (parametersSize > 1) {
                 throw IllegalStateException(
                     getExceptionMessageMultipleParametersDefined(parametersSize)
+                )
+            }
+
+            if (spaRoutePrefix != null && prepareSpaRoute != null) {
+                throw IllegalStateException(
+                    "A screen cannot have both a static `spaRoutePrefix` and a dynamic `prepareSpaRoute`."
+                )
+            }
+
+            // A screen with a dynamic SPA route must define how to prepare it.
+            if (fragment == null && spaRoutePrefix == null && prepareSpaRoute == null) {
+                throw IllegalStateException(
+                    "A screen with a dynamic SPA route must define a `prepareSpaRoute`."
                 )
             }
 

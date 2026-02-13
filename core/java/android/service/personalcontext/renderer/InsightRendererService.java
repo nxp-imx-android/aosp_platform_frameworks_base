@@ -98,6 +98,24 @@ public abstract class InsightRendererService extends Service {
      * those hints are meant to be rendered by the renderer that minted that token. This method
      * will throw an error if it is called before {@link #onConnected} is called.
      *
+     * @param tag An optional {@link String} value that can be associated with the token for future
+     *            identification.
+     *
+     * @return a token that uniquely identifies this renderer
+     */
+    @NonNull
+    public final RenderToken mintRenderToken(@Nullable String tag) {
+        if (mComponentId == null) {
+            throw new IllegalStateException(
+                    "RenderTokens can not be minted until after onConnected has been called");
+        }
+        return new RenderToken(mComponentId, tag);
+    }
+
+    /**
+     * Mint and return a new {@link RenderToken} without a specified tag.
+     *
+     * @see #mintRenderToken(String)
      * @return a token that uniquely identifies this renderer
      */
     @NonNull
@@ -106,7 +124,7 @@ public abstract class InsightRendererService extends Service {
             throw new IllegalStateException(
                     "RenderTokens can not be minted until after onConnected has been called");
         }
-        return new RenderToken(mComponentId);
+        return new RenderToken(mComponentId, null);
     }
 
     private void configure(UUID componentId) {

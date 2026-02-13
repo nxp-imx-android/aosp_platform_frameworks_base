@@ -63,8 +63,7 @@ public final class LegacyVibrationEffectXmlSerializer {
     public static XmlSerializedVibration<? extends VibrationEffect> serialize(
             @NonNull VibrationEffect vibration, @XmlConstants.Flags int flags)
             throws XmlSerializerException {
-        if (Flags.vendorVibrationEffects()
-                && (vibration instanceof VibrationEffect.VendorEffect vendorEffect)) {
+        if (vibration instanceof VibrationEffect.VendorEffect vendorEffect) {
             return serializeVendorEffect(vendorEffect);
         }
 

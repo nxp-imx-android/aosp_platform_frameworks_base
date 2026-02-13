@@ -167,7 +167,7 @@ public final class TransitionFilter implements Parcelable {
             }
         }
         sb.append("] flags=0x" + Integer.toHexString(mFlags));
-        sb.append("] notFlags=0x" + Integer.toHexString(mNotFlags));
+        sb.append(" notFlags=0x" + Integer.toHexString(mNotFlags));
         sb.append(" checks=[");
         if (mRequirements != null) {
             for (int i = 0; i < mRequirements.length; ++i) {

@@ -25,7 +25,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.widget.LockPatternUtils
 import com.android.keyguard.logging.KeyguardQuickAffordancesLogger
-import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.accessibility.domain.interactor.AccessibilityInteractor
 import com.android.systemui.animation.DialogTransitionAnimator
@@ -848,7 +847,6 @@ class KeyguardQuickAffordanceInteractorTest : SysuiTestCase() {
             assertThat(launchingAffordance).isFalse()
         }
 
-    @EnableFlags(Flags.FLAG_MSDL_FEEDBACK)
     @Test
     fun onQuickAffordanceTriggered_onLaunched_playsMSDLLongPress() =
         testScope.runTest {

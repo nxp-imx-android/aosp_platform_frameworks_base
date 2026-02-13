@@ -62,6 +62,7 @@ import com.android.settingslib.metadata.PreferenceTitleProvider
 import com.android.settingslib.metadata.ReadWritePermit
 import com.android.settingslib.metadata.SensitivityLevel.Companion.HIGH_SENSITIVITY
 import com.android.settingslib.metadata.SensitivityLevel.Companion.UNKNOWN_SENSITIVITY
+import com.android.settingslib.metadata.preferencesapi.ApiPreference
 import com.android.settingslib.metadata.preferencesapi.PreferencesApiScreen
 import com.android.settingslib.metadata.getPreferenceIcon
 import com.android.settingslib.metadata.isPreferenceIndexable
@@ -97,7 +98,11 @@ private constructor(
     private val includeParameters = (request.flags and PreferenceGetterFlags.PARAMETERS) != 0
     private val includeHierarchy = (request.flags and PreferenceGetterFlags.EXCLUDE_HIERARCHY) == 0
     private val shrinkHierarchy = (request.flags and PreferenceGetterFlags.SHRINK_HIERARCHY) != 0
-    private val excludeUiOnlyPreferences = true
+    private val excludeUiOnlyPreferences = !AppUtils.isDebuggable() || Settings.Global.getInt(
+        context.contentResolver,
+        "com.android.settings.EXCLUDE_UI_ONLY_PREFERENCES",
+        1
+    ) == 1
 
     private suspend fun init() {
         val factories = PreferenceScreenRegistry.preferenceScreenMetadataFactories
@@ -599,6 +604,15 @@ fun PreferenceMetadata.toProto(
         for (tag in metadata.tags(context)) addTags(tag)
     }
     purpose = metadata.purpose
+    if (metadata is ApiPreference<*>) {
+        metadata.screenPreconditions?.getDescription(context)?.let { addGetPreconditions(it) }
+        metadata.preconditions?.getDescription(context)?.let { addGetPreconditions(it) }
+        metadata.get.preconditions?.getDescription(context)?.let { addGetPreconditions(it) }
+        metadata.set?.preconditions?.getDescription(context)?.let { addSetPreconditions(it) }
+        metadata.set?.valuePreconditions?.getDescription(context)?.let { addSetPreconditions(it) }
+    } else if (metadata is PreferencesApiScreen) {
+        metadata.screenPreconditions?.getDescription(context)?.let { addGetPreconditions(it) }
+    }
     persistent = metadata.isPersistent(context)
     if (metadata !is PersistentPreference<*>) return@preferenceProto
     sensitivityLevel = metadata.sensitivityLevel

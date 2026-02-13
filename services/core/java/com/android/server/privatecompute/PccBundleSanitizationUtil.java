@@ -83,7 +83,7 @@ class PccBundleSanitizationUtil {
                 continue;
             }
             switch (value) {
-                case Bundle subBundle -> sanitizeBundleInternal(subBundle, depth + 1);
+                case BaseBundle subBundle -> sanitizeBundleInternal(subBundle, depth + 1);
                 case ParcelFileDescriptor pfd -> validatePfdIsReadOnly(pfd);
                 case SharedMemory sm -> {
                     if (!sm.isRegionReadOnly()) {
@@ -114,8 +114,7 @@ class PccBundleSanitizationUtil {
                 || (value instanceof char[]) || (value instanceof short[])
                 || (value instanceof int[]) || (value instanceof long[])
                 || (value instanceof float[]) || (value instanceof double[])
-                || (value instanceof boolean[]) || (value instanceof String[])
-                || (value instanceof PersistableBundle);
+                || (value instanceof boolean[]) || (value instanceof String[]);
     }
 
     private static void validatePfdIsReadOnly(ParcelFileDescriptor pfd) {

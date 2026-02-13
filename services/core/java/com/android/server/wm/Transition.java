@@ -3352,8 +3352,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
                     setEndFixedRotationIfNeeded(change, task, topRunningActivity);
                     // The Activity leash is added to the Change in case the Transition is
                     // about a Task with a letterboxed top activity.
-                    if (Flags.appCompatRefactoring()
-                            && Flags.appCompatRefactoringUseActivityLeashForLetterboxing()) {
+                    if (Flags.appCompatRefactoringUseActivityLeashForLetterboxing()) {
                         final AppCompatLetterboxPolicy letterboxPolicy =
                                 topRunningActivity.mAppCompatController.getLetterboxPolicy();
                         if (letterboxPolicy.isRunning()) {

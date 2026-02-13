@@ -26,6 +26,7 @@ import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiPar
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiSource
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.LargeScreenCaptureFeaturesInteractor
+import com.android.systemui.screencapture.record.largescreen.domain.interactor.ScreenshotInteractor
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureRegion as LargeScreenCaptureRegion
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureType as LargeScreenCaptureType
 import com.android.systemui.user.data.repository.UserRepository
@@ -46,6 +47,7 @@ constructor(
     private val hsum: HeadlessSystemUserMode,
     private val featuresInteractor: LargeScreenCaptureFeaturesInteractor,
     private val screenCaptureRecordFeaturesInteractor: ScreenCaptureRecordFeaturesInteractor,
+    private val screenshotInteractor: ScreenshotInteractor,
 ) {
     fun attemptPartialRegionScreenshot() {
         backgroundScope.launch {
@@ -72,10 +74,9 @@ constructor(
         captureType: LargeScreenCaptureType,
         captureRegion: LargeScreenCaptureRegion,
     ) {
-        // TODO(b/420714826) Check if the large-screen screen capture UI is supported on this device
-        // device's display (i.e. the focused display or external display). If not supported,
-        // default to taking a fullscreen screenshot.
+        // If large-screen capture UI is not supported, default to taking a fullscreen screenshot.
         if (!screenCaptureRecordFeaturesInteractor.isLargeScreenScreencaptureEnabled) {
+            screenshotInteractor.requestFullscreenScreenshot()
             return
         }
 

@@ -429,6 +429,7 @@ android_library {
         "androidx.slice_slice-core",
         "androidx.slice_slice-view",
         "dynamiccolors",
+        "AccessibilityFloatingMenu-res",
     ],
     manifest: "AndroidManifest-res.xml",
     flags_packages: [
@@ -796,7 +797,6 @@ android_library {
         "aconfig_settings_flags_lib",
         "kairos",
         "displaylib",
-        "device_policy_aconfig_flags_lib",
         "dynamiccolors",
         "SurfaceEffectsComposeLib",
     ],

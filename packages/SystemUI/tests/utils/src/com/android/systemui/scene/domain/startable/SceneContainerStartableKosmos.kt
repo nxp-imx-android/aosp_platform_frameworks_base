@@ -45,6 +45,7 @@ import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.log.table.logcatTableLogBuffer
 import com.android.systemui.model.sysuiStateInteractor
+import com.android.systemui.plugins.statusbar.statusBarStateController
 import com.android.systemui.power.domain.interactor.powerInteractor
 import com.android.systemui.scene.domain.interactor.disabledContentInteractor
 import com.android.systemui.scene.domain.interactor.onBootTransitionInteractor
@@ -59,7 +60,6 @@ import com.android.systemui.statusbar.notification.stack.domain.interactor.heads
 import com.android.systemui.statusbar.notificationShadeWindowController
 import com.android.systemui.statusbar.phone.centralSurfacesOptional
 import com.android.systemui.statusbar.policy.domain.interactor.deviceProvisioningInteractor
-import com.android.systemui.statusbar.sysuiStatusBarStateController
 
 val Kosmos.sceneContainerStartable by Fixture {
     SceneContainerStartable(
@@ -88,7 +88,7 @@ val Kosmos.sceneContainerStartable by Fixture {
         shadeSessionStorage = shadeSessionStorage,
         keyguardEnabledInteractor = keyguardEnabledInteractor,
         dismissCallbackRegistry = dismissCallbackRegistry,
-        statusBarStateController = sysuiStatusBarStateController,
+        statusBarStateController = statusBarStateController,
         alternateBouncerInteractor = alternateBouncerInteractor,
         vibratorHelper = vibratorHelper,
         msdlPlayer = msdlPlayer,

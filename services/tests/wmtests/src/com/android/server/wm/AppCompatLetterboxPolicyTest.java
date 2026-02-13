@@ -29,7 +29,6 @@ import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
 
 import android.graphics.Rect;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.view.InsetsSource;
 import android.view.InsetsState;
@@ -43,7 +42,6 @@ import androidx.annotation.Nullable;
 import androidx.test.filters.SmallTest;
 
 import com.android.internal.R;
-import com.android.window.flags.Flags;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -273,7 +271,6 @@ public class AppCompatLetterboxPolicyTest extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING)
     public void testHide_clearsLetterboxInsets_shellPolicy() {
         runTestScenario((robot) -> {
             // Setup: configure window state and create a visible activity.

@@ -156,8 +156,8 @@ public class PccBundleSanitizationUtilTest {
     }
 
     @Test
-    public void sanitizeBundle_withFd_checkRecursiveDepthLimit() throws Exception {
-        Bundle nestedBundle100 = getDeepNestedBundle100();
+    public void sanitizeBundle_withBundleAndFd_checkDepth() throws Exception {
+        Bundle nestedBundle100 = getBundleOfDepth100();
         addTriggerPfd(nestedBundle100);
 
         try {
@@ -176,8 +176,8 @@ public class PccBundleSanitizationUtilTest {
     }
 
     @Test
-    public void sanitizeBundle_withoutFd_checkRecursiveDepthLimit() throws Exception {
-        Bundle nestedBundle100 = getDeepNestedBundle100();
+    public void sanitizeBundle_withBundleWithoutFd_checkDepth() throws Exception {
+        Bundle nestedBundle100 = getBundleOfDepth100();
 
         try {
             PccBundleSanitizationUtil.sanitizeBundle(parcelAndUnparcel(nestedBundle100));
@@ -190,6 +190,24 @@ public class PccBundleSanitizationUtilTest {
 
         assertThrows(IllegalArgumentException.class, () -> {
             PccBundleSanitizationUtil.sanitizeBundle(parcelAndUnparcel(nestedBundle101));
+        });
+    }
+
+    @Test
+    public void sanitizeBundle_withPersistable_checkDepth() throws Exception {
+        PersistableBundle nestedBundle100 = getPersistableBundleOfDepth100();
+
+        try {
+            PccBundleSanitizationUtil.sanitizeBundle(nestedBundle100);
+        } catch (IllegalArgumentException e) {
+            throw new AssertionError("PersistableBundle of depth 100 not accepted.", e);
+        }
+
+        PersistableBundle nestedBundle101 = new PersistableBundle();
+        nestedBundle101.putPersistableBundle("NESTED_BUNDLE_KEY", nestedBundle100);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            PccBundleSanitizationUtil.sanitizeBundle(nestedBundle101);
         });
     }
 
@@ -293,7 +311,7 @@ public class PccBundleSanitizationUtilTest {
 
 
     /** Create a nested bundle of depth 100. */
-    private static Bundle getDeepNestedBundle100() {
+    private static Bundle getBundleOfDepth100() {
         Bundle rootBundle = new Bundle();
 
         Bundle currentBundle = rootBundle;
@@ -304,6 +322,23 @@ public class PccBundleSanitizationUtilTest {
         }
 
         currentBundle.putBundle("NESTED_BUNDLE_KEY", new Bundle());
+
+        return rootBundle;
+    }
+
+
+    /** Create a nested bundle of depth 100. */
+    private static PersistableBundle getPersistableBundleOfDepth100() {
+        PersistableBundle rootBundle = new PersistableBundle();
+
+        PersistableBundle currentBundle = rootBundle;
+        for (int i = 0; i < 99; i++) {
+            PersistableBundle newInnerBundle = new PersistableBundle();
+            currentBundle.putPersistableBundle("NESTED_BUNDLE_KEY", newInnerBundle);
+            currentBundle = newInnerBundle; // Move down one level
+        }
+
+        currentBundle.putPersistableBundle("NESTED_BUNDLE_KEY", new PersistableBundle());
 
         return rootBundle;
     }

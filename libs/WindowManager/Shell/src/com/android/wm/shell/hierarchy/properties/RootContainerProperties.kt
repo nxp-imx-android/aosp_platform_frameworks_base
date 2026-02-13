@@ -16,10 +16,12 @@
 package com.android.wm.shell.hierarchy.properties
 
 import android.view.Display.DEFAULT_DISPLAY
+import android.window.TransitionInfo
 import com.android.wm.shell.dagger.hierarchy.WmSyncedProperty
 import com.android.wm.shell.hierarchy.updates.HierarchyChangeFlags
-import com.android.wm.shell.hierarchy.updates.HierarchyChanges.Companion.CHANGED_FOCUS
-import com.android.wm.shell.hierarchy.updates.HierarchyChanges.Companion.CHANGED_ROOT_EXAMPLE_SHELL_PROPERTY
+import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_FOCUS
+import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_ROOT_EXAMPLE_SHELL_PROPERTY
+import com.android.wm.shell.transition.FocusTransitionObserver
 
 /**
  * Tracks the currently focused state in the hierarchy.
@@ -59,11 +61,23 @@ class RootContainerProperties : ContainerProperties() {
     // An example of a tracked shell state that modes can listen for
     var exampleTrackedShellOnlyState = false
 
+    private val focusTransitionObserver = FocusTransitionObserver()
+
+    /**
+     * Updates the root of the hierarchy from any ongoing transition.
+     */
+    fun updateFromTransition(info: TransitionInfo) {
+        focusTransitionObserver.updateFocusState(info)
+        focusState.globallyFocusedDisplayId = focusTransitionObserver.globallyFocusedDisplayId
+        focusState.globallyFocusedTaskId = focusTransitionObserver.globallyFocusedTaskId
+        focusTransitionObserver.setFocusedTaskIdsPerDisplay(focusState.perDisplayFocusedTaskId)
+    }
+
     /** @see ContainerProperties.copyFrom */
-    override fun copyFrom(otherProps: ContainerProperties) {
-        val other = otherProps as RootContainerProperties
-        focusState.copyFrom(other.focusState)
-        exampleTrackedShellOnlyState = other.exampleTrackedShellOnlyState
+    override fun copyFrom(other: ContainerProperties) {
+        val otherRoot = other as RootContainerProperties
+        focusState.copyFrom(otherRoot.focusState)
+        exampleTrackedShellOnlyState = otherRoot.exampleTrackedShellOnlyState
         super.copyFrom(other)
     }
 
@@ -75,12 +89,12 @@ class RootContainerProperties : ContainerProperties() {
     }
 
     /** @see ContainerProperties.propsToString */
-    override fun diff(otherProps: ContainerProperties, chgs: HierarchyChangeFlags) {
-        super.diff(otherProps, chgs)
-        val other = otherProps as RootContainerProperties
-        focusState.diff(other.focusState, chgs)
+    override fun diff(other: ContainerProperties, chgs: HierarchyChangeFlags) {
+        super.diff(other, chgs)
+        val otherRoot = other as RootContainerProperties
+        focusState.diff(otherRoot.focusState, chgs)
         chgs.compareAndSet(
-            exampleTrackedShellOnlyState, other.exampleTrackedShellOnlyState,
+            exampleTrackedShellOnlyState, otherRoot.exampleTrackedShellOnlyState,
             CHANGED_ROOT_EXAMPLE_SHELL_PROPERTY
         )
     }

@@ -17,10 +17,6 @@
 #define ATRACE_TAG ATRACE_TAG_ACTIVITY_MANAGER
 #define LOG_TAG "MemoryLimiter"
 
-// LINT.IfChange(traceTrack)
-#define TRACE_TRACK "MemoryLimiter"
-// LINT.ThenChange(/services/core/java/com/android/server/am/MemoryLimiter.java:traceTrack)
-
 #include <android-base/file.h>
 #include <android-base/stringprintf.h>
 #include <android-base/unique_fd.h>
@@ -39,15 +35,13 @@
 #include <sys/eventfd.h>
 #include <sys/inotify.h>
 #include <sys/stat.h>
-#include <sys/syscall.h>
-#include <sys/sysinfo.h>
 #include <unistd.h>
 #include <utils/Log.h>
-#include <utils/Trace.h>
 
 #include <map>
 #include <mutex>
 #include <optional>
+#include <queue>
 #include <string>
 
 namespace android {
@@ -58,8 +52,8 @@ namespace {
 const bool DEBUG = false;
 
 // The timeout for the process scrub poll.  It is elevated to this point in the file because we
-// like to see constants near the top.  Units are milliseconds.  The value is 60s.
-const int POLL_PERIOD_MS = 60 * 1000;
+// like to see constants near the top.  Units are milliseconds.  The value is 5 minutes.
+const int POLL_PERIOD_MS = 5 * 60 * 1000;
 
 /**
  * The different limits that this process monitors.
@@ -74,6 +68,9 @@ enum class MonitoredLimit {
 // A convenience type declaration.
 using wdmap_t = std::unordered_map<int, pid_t>;
 
+// Enable the short form of StringPrintf.
+using ::android::base::StringPrintf;
+
 /**
  * A wrapper that throws a message constructed from a printf string.
  */
@@ -85,6 +82,37 @@ void throwRuntime(JNIEnv* env, char const* fmt, ...) {
     va_end(args);
     jniThrowRuntimeException(env, msg);
 }
+
+/**
+ * Statistics for the limiter.  All counts are int64_t to be compatible with Java long.
+ */
+struct Statistics {
+    // The number of times start() was called.
+    std::atomic<uint64_t> mStarted;
+
+    // The number of times watch() was called and succeeded.
+    std::atomic<uint64_t> mWatched;
+
+    // The number of times watch() was called and failed.
+    std::atomic<uint64_t> mWatchFailed;
+
+    // The number of events that were generated.
+    std::atomic<uint64_t> mEvents;
+
+    // The current number of processes being watched.
+    std::atomic<uint64_t> mProcesses;
+
+    // The high watch mark for processes.  A process record exists only once watch() succeeds.
+    std::atomic<uint64_t> mProcessesHwm;
+
+    std::string toString() const {
+        const char* fmt = "started=%" PRIu64 " watched=%" PRIu64 " watch-failed=%" PRIu64
+                          " events=%" PRIu64 "\n"
+                          "processes=%" PRIu64 " process-hwm=%" PRIu64 "\n";
+        return StringPrintf(fmt, mStarted.load(), mWatched.load(), mWatchFailed.load(),
+                            mEvents.load(), mProcesses.load(), mProcessesHwm.load());
+    }
+};
 
 /**
  * A monitored process.
@@ -113,24 +141,23 @@ public:
     // Watch the events files.  This cannot be called immediately after a process starts because
     // the threads that move the process into its cgroup may take tens of microseconds to
     // complete.  Once the call succeeds, further calls quietly do nothing.
-    void watch(int inotify_fd, wdmap_t& wdmap) {
+    void watch(int inotify_fd, wdmap_t& wdmap, Statistics& stats) {
         // If the process has been initialized, do nothing.
         if (mInitialized) return;
 
         char path[PATH_MAX];
         watchPath(path, sizeof(path));
-        struct stat sbuff;
-        if (stat(path, &sbuff) != 0) {
-            ALOGE("path %s not found: %s", path, strerror(errno));
-            return;
-        }
         mMemoryWd = inotify_add_watch(inotify_fd, path, IN_MODIFY);
         if (mMemoryWd < 0) {
-            ALOGE("add_watch(%s) failed: %s", path, strerror(errno));
+            // Only report the failure if the error is not path-not-found.  The path will
+            // not be found if the process has already exited or if the process has not been
+            // moved into its cgroup yet.
+            ALOGE_IF(errno != ENOENT, "add_watch(%s) failed: %s", path, strerror(errno));
+            stats.mWatchFailed++;
             return;
         }
         wdmap[mMemoryWd] = mPid;
-
+        stats.mWatched++;
         mInitialized = true;
     }
 
@@ -210,15 +237,16 @@ public:
             throwRuntime(env, "Callback: GetJavaVM() failed");
             return;
         }
-        char const* class_name = "com/android/server/am/MemoryLimiter$Controller";
+        char const* class_name = "com/android/server/am/MemoryLimiter$ControllerEnabled";
         jclass service = env->FindClass(class_name);
         if (service == nullptr) {
-            throwRuntime(env, "failed to find Controller class");
+            // Throws ClassFormatError, ClassCircularityError, NoClassDefFoundError,
+            // OutOfMemoryError
             return;
         }
         mFunc = env->GetMethodID(service, "onLimitExceeded", "(IIIJ)V");
         if (mFunc == nullptr) {
-            throwRuntime(env, "failed to find limiter callback");
+            // Throws NoSuchMethodError, ExceptionInInitializerError, or OutOfMemoryError
             return;
         }
         mLimiter = env->NewGlobalRef(jlimiter);
@@ -282,14 +310,18 @@ class Monitor {
     // The map from watch descriptors to pids.
     wdmap_t mWdMap;
 
+    // Performance statistics.
+    Statistics mStatistics;
+
     // Event FD commands.
     enum class Cmd {
+        Error = 0,
         Stop = 1,
     };
 
 public:
-    Monitor(JNIEnv* env, jobject jlimiter, bool privileged, bool monitor)
-          : mCallback(env, jlimiter), mSystem(privileged), mMonitor(monitor) {
+    Monitor(JNIEnv* env, jobject jlimiter, bool privileged, bool monitor, bool testMode)
+          : mCallback(env, jlimiter), mSystem(privileged), mMonitor(monitor), mTestMode(testMode) {
         if (env->ExceptionCheck()) {
             // The callback has probably failed in its constructor.  Exit immediately.
             return;
@@ -371,6 +403,13 @@ public:
         }
     }
 
+    // Prepare to watch a process.
+    void start(int pid) {
+        if (!mMonitor) return;
+        forget(pid);
+        mStatistics.mStarted++;
+    }
+
     // Ensure the process is being watched.
     void watch(int pid, int uid) {
         if (!mMonitor) return;
@@ -382,9 +421,12 @@ public:
                 return;
             } else {
                 i = j;
+                mStatistics.mProcesses = mTargets.size();
+                mStatistics.mProcessesHwm.store(
+                        std::max(mStatistics.mProcessesHwm, mStatistics.mProcesses));
             }
         }
-        i->second.watch(mInotifyFd, mWdMap);
+        i->second.watch(mInotifyFd, mWdMap, mStatistics);
     }
 
     // Forget about a monitored process, if it exists.
@@ -393,12 +435,25 @@ public:
         std::lock_guard _l(mLock);
         auto i = mTargets.find(pid);
         if (i != mTargets.end()) {
-            i->second.unwatch(mInotifyFd, mWdMap);
-            mTargets.erase(i);
+            forgetLocked(i);
         }
     }
 
+    // Return the statistics as a string.
+    std::string getStatistics() const {
+        std::lock_guard _l(mLock);
+        return mStatistics.toString();
+    }
+
 private:
+    std::unordered_map<pid_t, Process>::iterator forgetLocked(
+            std::unordered_map<pid_t, Process>::iterator p) {
+        p->second.unwatch(mInotifyFd, mWdMap);
+        p = mTargets.erase(p);
+        mStatistics.mProcesses = mTargets.size();
+        return p;
+    }
+
     static void* startMonitoring(void* arg) {
         return reinterpret_cast<Monitor*>(arg)->run();
     }
@@ -419,9 +474,9 @@ private:
         memset(events, 0, sizeof(events));
 
         // The timeout governs how frequently the thread will scrub non-existent processes.  The
-        // units are milliseconds.  The scrub occurs every minute in normal operation.  If DEBUG
-        // is true, the timeout occurs every second.
-        static const int timeout = (DEBUG) ? 1000 : POLL_PERIOD_MS;
+        // units are milliseconds.  The scrub occurs every minute in normal operation.  If
+        // running in test mode, the timeout occurs every second.
+        static const int timeout = (mTestMode) ? 1000 : POLL_PERIOD_MS;
 
         int ready;
         while ((ready = epoll_wait(mEpollFd, events, event_size, timeout)) >= 0) {
@@ -444,8 +499,7 @@ private:
             Process& p = i->second;
             if (!p.isAlive(mSystem)) {
                 ALOGI_IF(DEBUG, "scrubbing %s", p.toString().c_str());
-                p.unwatch(mInotifyFd, mWdMap);
-                i = mTargets.erase(i);
+                i = forgetLocked(i);
                 count++;
             } else {
                 ++i;
@@ -477,33 +531,50 @@ private:
         return true;
     }
 
-    // This class defines the data sent and received through the event fd.  Event fd takes 8
-    // bytes (uint64_t).  Thus, the size of EventData must be 8.  The u64 field is just for
-    // logging.
-    union EventData {
-        char raw[8];
-        uint64_t u64;
-        struct {
-            Cmd cmd;
-        };
-    };
-    static_assert(sizeof(EventData) == 8, "EventData must be 8 bytes");
+    // A thread-safe FIFO queue of commands.
+    class CmdQueue {
+        mutable std::mutex mLock;
+        std::queue<Cmd> mCmd;
 
-    // Send a command the thread via eventfd.
+    public:
+        void push(Cmd cmd) {
+            std::lock_guard _l(mLock);
+            mCmd.push(cmd);
+        }
+        Cmd pop() {
+            std::lock_guard _l(mLock);
+            if (mCmd.empty()) return Cmd::Error;
+            Cmd cmd = mCmd.front();
+            mCmd.pop();
+            return cmd;
+        }
+    };
+    CmdQueue mCmd;
+
+    // Push the command on the queue and notify the poller that a command is ready.  The
+    // operations must proceed in that order, to ensure that the poller does not try to read
+    // the queue before a command has been placed in it.
     bool sendCommand(Cmd cmd) {
-        EventData data = {.cmd = cmd};
+        mCmd.push(cmd);
+        uint64_t data = 1;
         return ::write(mEventFd, &data, sizeof(data)) == sizeof(data);
     }
 
     // Handle an event that is sent to the loop from the upper layers.  The function returns
     // false if the thread should terminate.
     bool handle_event() {
-        EventData data;
+        uint64_t data;
         if (read(mEventFd, &data, sizeof(data)) == 8) {
-            if (data.cmd == Cmd::Stop) {
-                return false;
+            while (data-- > 0) {
+                Cmd cmd = mCmd.pop();
+                switch (cmd) {
+                    case Cmd::Stop:
+                        return false;
+                    default:
+                        ALOGE("read(event) unknown cmd %d", cmd);
+                        break;
+                }
             }
-            ALOGI("read(event) returns 0x%" PRIx64, data.u64);
         } else {
             ALOGE("read(event) failed: %s", strerror(errno));
         }
@@ -551,6 +622,7 @@ private:
                     }
                 }
                 mCallback(pid, uid, type, limit);
+                mStatistics.mEvents++;
             }
         } else {
             ALOGE("read(inotify) failed: %s", strerror(errno));
@@ -563,6 +635,10 @@ private:
 
     // True if monitoring is enabled.
     const bool mMonitor;
+
+    // True if running in test mode.  This primarily affects the poller, which is busier (less
+    // efficient) in test mode.
+    const bool mTestMode;
 };
 
 // Convert a long from the java layer into a Monitor*.
@@ -571,9 +647,9 @@ Monitor* getMonitor(jlong service) {
 }
 
 // Create a new Monitor object and returns its address.
-jlong initLimiter(JNIEnv* env, jclass, jobject jlimiter, jboolean monitor) {
+jlong initLimiter(JNIEnv* env, jclass, jobject jlimiter, jboolean monitor, jboolean testMode) {
     const bool system = (getuid() == AID_SYSTEM);
-    std::unique_ptr<Monitor> m(new Monitor(env, jlimiter, system, monitor));
+    std::unique_ptr<Monitor> m(new Monitor(env, jlimiter, system, monitor, testMode));
     if (env->ExceptionCheck()) {
         return 0;
     }
@@ -590,20 +666,8 @@ void closeLimiter(JNIEnv* env, jclass, jlong service) {
 // stale references to the pid.
 void startProcess(JNIEnv* env, jclass, jlong service, jint pid, jint /* uid */) {
     Monitor* m = getMonitor(service);
-    m->forget(pid);
+    m->start(pid);
 }
-
-// A tiny class that emits a trace in its destructor.
-class EndTracer {
-    char const* track;
-    const int tag;
-
-public:
-    EndTracer(char const* track, int tag) : track(track), tag(tag) {}
-    ~EndTracer() {
-        ATRACE_ASYNC_FOR_TRACK_END(track, tag);
-    }
-};
 
 // A small wrapper to make lines shorter.  The compiler will inline this.
 bool writeString(std::string text, std::string& path) {
@@ -614,10 +678,6 @@ bool writeString(std::string text, std::string& path) {
 void configureLimit(JNIEnv*, jclass, jlong service, jint pid, jint uid, jlong limit) {
     Monitor* m = getMonitor(service);
 
-    // The Java layer started a slice.  Ensure it is terminated, regardless of how this method
-    // exits.
-    EndTracer _tracer(TRACE_TRACK, pid);
-
     // Start watching for over-limit events, if possible.  The call is idempotent.  Once it
     // succeeds further invocations do nothing.
     m->watch(pid, uid);
@@ -625,20 +685,31 @@ void configureLimit(JNIEnv*, jclass, jlong service, jint pid, jint uid, jlong li
     std::string name = "MemHigh";
     std::string path;
     if (!CgroupGetAttributePathForProcess(name, uid, pid, path)) {
-        ALOGE("failed to get memory.high path for pid=%d uid=%d", pid, uid);
         return;
     }
     if (!writeString((limit < 0) ? "max" : std::to_string(limit), path)) {
-        ALOGE("failed to write memory.high (pid=%d uid=%d): %s", pid, uid, strerror(errno));
-        return;
+        // Only report the failure if the error is not path-not-found.  The path will
+        // not be found if the process has already exited or if the process has not been
+        // moved into its cgroup yet.
+        ALOGE_IF(errno != ENOENT, "failed to write memory.high (%s): %s", path.c_str(),
+                 strerror(errno));
     }
 }
 
+// Return the statistics for the memory limiter.  If the limiter is invalid, null is returned.
+jstring getStatistics(JNIEnv* env, jclass, jlong service) {
+    Monitor* m = getMonitor(service);
+    std::string stats = m->getStatistics();
+    return env->NewStringUTF(stats.c_str());
+}
+
 const JNINativeMethod sMethods[] = {
-        {"initLimiter", "(Lcom/android/server/am/MemoryLimiter$Controller;Z)J", (void*)initLimiter},
+        {"initLimiter", "(Lcom/android/server/am/MemoryLimiter$Controller;ZZ)J",
+         (void*)initLimiter},
         {"closeLimiter", "(J)V", (void*)closeLimiter},
         {"onProcessStarted", "(JII)V", (void*)startProcess},
         {"configureLimit", "(JIIJ)V", (void*)configureLimit},
+        {"getStatistics", "(J)Ljava/lang/String;", (void*)getStatistics},
 };
 
 } // namespace

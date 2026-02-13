@@ -51,6 +51,11 @@ import java.util.function.Consumer;
  * Generated hints will be forwarded to understanding components to be analyzed, and to other
  * refiners that may be interested in them.
  *
+ * <p>A refiner receives incoming hints based on the filter specified in
+ * {@link #onInitializeFilter()}. While a refiner only processes a particular {@link ContextHint}
+ * once, it may encounter {@link ContextHint} derived by another refiner from a previously seen
+ * {@link ContextHint} if it matches the filter as well.
+ *
  * <p>The Personal Context service will manage the lifetime of this service, and this service may be
  * stopped if not utilized for some time. Services should start as rapidly as possible to minimize
  * latency in the Personal Context workflow.

@@ -130,6 +130,12 @@ class AppToWebRepositoryImplTests : ShellTestCase() {
             val callbackCaptor = argumentCaptor<LauncherApps.Callback>()
             verify(launcherApps).registerCallback(callbackCaptor.capture())
             launcherAppsCallback = callbackCaptor.firstValue
+            whenever(
+                    mockResources.getStringArray(
+                        R.array.config_appToWebFirstRunPromptExemptPackages
+                    )
+                )
+                .thenReturn(emptyArray<String>())
         }
     }
 
@@ -371,6 +377,32 @@ class AppToWebRepositoryImplTests : ShellTestCase() {
         taskInfoWithCapturedLink.baseActivity = taskInfo.baseActivity
         taskInfoWithCapturedLink.topActivity = ComponentName(browserPackageName, "")
         assertFalse(appToWebRepository.shouldShowFirstRunPrompt(taskInfoWithCapturedLink))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_ENHANCED_APP_TO_WEB_TRANSITION)
+    fun firstRunPrompt_exemptPackage() {
+        val exemptPackageName = "exempt.package"
+        whenever(mockResources.getStringArray(R.array.config_appToWebFirstRunPromptExemptPackages))
+            .thenReturn(arrayOf(exemptPackageName))
+
+        val exemptTaskInfo =
+            createTaskInfo().apply {
+                taskId = taskInfo.taskId + 1
+                baseActivity = ComponentName(exemptPackageName, "")
+                topActivity = baseActivity
+                capturedLink = TEST_CAPTURED_URI
+            }
+        val nonExemptTaskInfo =
+            createTaskInfo().apply {
+                taskId = taskInfo.taskId + 2
+                baseActivity = ComponentName("non.exempt.package", "")
+                topActivity = baseActivity
+                capturedLink = TEST_CAPTURED_URI
+            }
+
+        assertFalse(appToWebRepository.shouldShowFirstRunPrompt(exemptTaskInfo))
+        assertTrue(appToWebRepository.shouldShowFirstRunPrompt(nonExemptTaskInfo))
     }
 
     @Test

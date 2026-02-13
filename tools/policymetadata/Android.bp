@@ -54,3 +54,11 @@ filegroup {
     ],
     visibility: ["//visibility:private"],
 }
+
+genrule {
+    name: "GeneratedPolicyMetadata",
+    tools: ["PolicyMetadataGenerator"],
+    srcs: ["policies.textproto"],
+    cmd: "$(location PolicyMetadataGenerator) $(in) $(out)",
+    out: ["android/app/admin/metadata/Policies.java"],
+}

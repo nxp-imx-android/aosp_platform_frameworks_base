@@ -83,6 +83,8 @@
         <attr name="colorError" format="reference|color" />
         <!-- Default background dim amount when a menu, dialog, or something similar pops up. -->
         <attr name="backgroundDimAmount" format="float" />
+        <!-- Default background dim color when a menu, dialog, or something similar pops up. -->
+        <attr name="backgroundDimColor" format="color" />
         <!-- Control whether dimming behind the window is enabled.  The default
              theme does not set this value, meaning it is based on whether the
              window is floating. -->
@@ -2427,6 +2429,7 @@
         <attr name="textColor" />
         <attr name="backgroundDimEnabled" />
         <attr name="backgroundDimAmount" />
+        <attr name="backgroundDimColor" />
         <attr name="windowBlurBehindEnabled" />
         <attr name="windowBlurBehindRadius" />
         <attr name="windowActionBar" />

@@ -264,7 +264,6 @@ public abstract class Vibrator {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public boolean areVendorEffectsSupported() {
         return getInfo().hasCapability(IVibrator.CAP_PERFORM_VENDOR_EFFECTS);
     }
@@ -278,7 +277,6 @@ public abstract class Vibrator {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public boolean areVendorSessionsSupported() {
         return false;
     }
@@ -952,7 +950,6 @@ public abstract class Vibrator {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     @RequiresPermission(allOf = {
             android.Manifest.permission.VIBRATE,
             android.Manifest.permission.VIBRATE_VENDOR_EFFECTS,

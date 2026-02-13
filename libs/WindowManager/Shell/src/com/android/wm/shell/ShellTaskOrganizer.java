@@ -46,6 +46,7 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.ArrayMap;
 import android.util.Log;
+import android.util.Pair;
 import android.util.SparseArray;
 import android.view.SurfaceControl;
 import android.window.ITaskOrganizerController;
@@ -56,6 +57,7 @@ import android.window.TaskCreationParams;
 import android.window.TaskOrganizer;
 import android.window.TransitionInfo;
 import android.window.TransitionRequestInfo;
+import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 import android.window.WindowContainerTransactionCallback;
 
@@ -110,6 +112,24 @@ public class ShellTaskOrganizer extends TaskOrganizer {
             TASK_LISTENER_TYPE_FREEFORM,
     })
     public @interface TaskListenerType {}
+
+    /**
+     * Specifically for notifying the container hierarchy when root tasks are created.
+     */
+    public interface ContainerHierarchyRootTaskListener {
+        /**
+         * Called when a root task is created via {@link #createTask(TaskCreationParams)}.
+         */
+        default void onRootTaskCreated(@NonNull TaskAppearedInfo appearedInfo,
+                @NonNull String name) {}
+
+        /**
+         * Called when a root task is removed, this includes all root tasks, not only those created
+         * via {@link #createTask(TaskCreationParams)}, as we may have created the root task
+         * in another session (ie. previous instance of SystemUI).
+         */
+        default void onRootTaskRemoved(@NonNull WindowContainerToken token) {}
+    }
 
     /**
      * Callbacks for when the tasks change in the system.
@@ -284,6 +304,9 @@ public class ShellTaskOrganizer extends TaskOrganizer {
     private final CopyOnWriteArrayList<PackageUpdateListener> mPackageUpdateListeners =
             new CopyOnWriteArrayList<>();
 
+    // Listener for when root tasks are created
+    private ContainerHierarchyRootTaskListener mRootTaskListener;
+
     private final Object mLock = new Object();
     private StartingWindowController mStartingWindow;
 
@@ -419,11 +442,34 @@ public class ShellTaskOrganizer extends TaskOrganizer {
     }
 
     /**
+     * Returns the initial set of tasks.
+     * This can be removed once we have a synchronizing transition for the initial state when SysUI
+     * starts up.
+     */
+    @NonNull
+    public List<Pair<RunningTaskInfo, SurfaceControl>> getInitialTasks() {
+        final ArrayList<Pair<RunningTaskInfo, SurfaceControl>> tasks = new ArrayList<>();
+        for (int i = mTasks.size() - 1; i >= 0; --i) {
+            final TaskAppearedInfo task = mTasks.valueAt(i);
+            tasks.add(new Pair<>(task.getTaskInfo(), task.getLeash()));
+        }
+        return tasks;
+    }
+
+    /**
      * Initialize this organizer with required components.
      */
     public void initializeDependencies(Transitions transitions) {
         mTransitions = transitions;
         registerOrganizer();
+    }
+
+    /**
+     * Sets a listener for when root tasks are created. Only to be used by the container hierarchy.
+     */
+    public void setContainerHierarchyCreateRootTaskListener(
+            @NonNull ContainerHierarchyRootTaskListener listener) {
+        mRootTaskListener = listener;
     }
 
     @Override
@@ -455,10 +501,37 @@ public class ShellTaskOrganizer extends TaskOrganizer {
     @Nullable
     public TaskAppearedInfo createTask(@NonNull TaskCreationParams params,
             TaskListener listener) {
-        ProtoLog.v(WM_SHELL_TASK_ORG, "createTask() displayId=%d winMode=%d listener=%s" ,
-                params.getDisplayId(), params.getWindowingMode(), listener.toString());
-        setPendingLaunchCookieListener(params.getLaunchCookie(), listener);
-        return super.createTask(params);
+        if (listener != null) {
+            setPendingLaunchCookieListener(params.getLaunchCookie(), listener);
+        }
+        final TaskAppearedInfo info = createTask(params);
+        ProtoLog.v(WM_SHELL_TASK_ORG,
+                "createTask(): token=%s displayId=%d winMode=%d listener=%s",
+                info != null ? info.getTaskInfo().token : null, params.getDisplayId(),
+                params.getWindowingMode(), listener);
+        return info;
+    }
+
+    @Nullable
+    @Override
+    public TaskAppearedInfo createTask(@NonNull TaskCreationParams params) {
+        final TaskAppearedInfo info = super.createTask(params);
+        if (info != null && mRootTaskListener != null) {
+            final String name = params.getName() != null
+                    ? params.getName()
+                    : "unknown_root_task";
+            mRootTaskListener.onRootTaskCreated(info, name);
+        }
+        return info;
+    }
+
+    @Override
+    public boolean deleteTask(@NonNull WindowContainerToken windowContainerToken) {
+        ProtoLog.v(WM_SHELL_TASK_ORG, "deleteTask(): token=%s", windowContainerToken);
+        if (mRootTaskListener != null) {
+            mRootTaskListener.onRootTaskRemoved(windowContainerToken);
+        }
+        return super.deleteTask(windowContainerToken);
     }
 
     /**

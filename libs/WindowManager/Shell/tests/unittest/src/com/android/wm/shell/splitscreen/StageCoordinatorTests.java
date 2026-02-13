@@ -23,6 +23,7 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_BOUNDS_FOR_CHILDREN;
+import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_WINDOWING_MODE_FOR_CHILDREN;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_LAUNCH_TASK;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_PENDING_INTENT;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_START_SHORTCUT;
@@ -704,7 +705,7 @@ public class StageCoordinatorTests extends ShellTestCase {
     }
 
     @Test
-    public void onRootTaskAppeared_disableChildTaskBounds() {
+    public void onRootTaskAppeared_disableChildTaskBoundsAndWindowingMode() {
         // root tasks for stages are created in setUp, mark them set
         mMainStage.mHasRootTask = true;
         mSideStage.mHasRootTask = true;
@@ -727,6 +728,18 @@ public class StageCoordinatorTests extends ShellTestCase {
         op = disableChildBoundsOps.get(1);
         assertThat(op.getContainer()).isEqualTo(mSideStage.mRootTaskInfo.token.asBinder());
         assertThat(op.getDisallowOverrideBoundsForChildren()).isTrue();
+
+        List<HierarchyOp> disableChildWinModeOps = capturedWct.getHierarchyOps().stream()
+                .filter(op2 -> op2.getType()
+                        == HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_WINDOWING_MODE_FOR_CHILDREN)
+                .toList();
+        assertThat(disableChildWinModeOps).hasSize(2);
+        op = disableChildWinModeOps.getFirst();
+        assertThat(op.getContainer()).isEqualTo(mMainStage.mRootTaskInfo.token.asBinder());
+        assertThat(op.getDisallowOverrideWindowingModeForChildren()).isTrue();
+        op = disableChildWinModeOps.get(1);
+        assertThat(op.getContainer()).isEqualTo(mSideStage.mRootTaskInfo.token.asBinder());
+        assertThat(op.getDisallowOverrideWindowingModeForChildren()).isTrue();
     }
 
     @Test(expected = IllegalStateException.class)
@@ -1352,6 +1365,58 @@ public class StageCoordinatorTests extends ShellTestCase {
 
         // Verify that the visibility change is dispatched to listeners.
         verify(mSplitScreenListener).onSplitVisibilityChanged(eq(false));
+    }
+
+    @Test
+    public void testGetTaskIdAt_horizontalSplit() {
+        when(mStageCoordinator.isSplitScreenVisible()).thenReturn(true);
+        // Horizontal split (Top/Bottom)
+        Rect topBounds = new Rect(0, 0, 1000, 500);
+        Rect bottomBounds = new Rect(0, 500, 1000, 1000);
+
+        doAnswer(invocation -> {
+            Rect topLeft = invocation.getArgument(0);
+            Rect bottomRight = invocation.getArgument(1);
+            topLeft.set(topBounds);
+            bottomRight.set(bottomBounds);
+            return null;
+        }).when(mSplitLayout).getStageBounds(any(), any());
+
+        // Side stage is Top/Left (so Top here)
+        mStageCoordinator.setSideStagePosition(SPLIT_POSITION_TOP_OR_LEFT, null);
+        when(mSideStage.getTopVisibleChildTaskId()).thenReturn(100); // Top task
+        when(mMainStage.getTopVisibleChildTaskId()).thenReturn(200); // Bottom task
+
+        // Tap at x=500. Matches topBounds X-range [0, 1000).
+        // Since getTaskIdAt only checks X, it matches Top first.
+        assertEquals(100, mStageCoordinator.getTaskIdAt(500, DEFAULT_DISPLAY));
+    }
+
+    @Test
+    public void testGetTaskIdAt_verticalSplit() {
+        when(mStageCoordinator.isSplitScreenVisible()).thenReturn(true);
+        // Vertical split (Left/Right)
+        Rect leftBounds = new Rect(0, 0, 500, 1000);
+        Rect rightBounds = new Rect(500, 0, 1000, 1000);
+
+        doAnswer(invocation -> {
+            Rect topLeft = invocation.getArgument(0);
+            Rect bottomRight = invocation.getArgument(1);
+            topLeft.set(leftBounds);
+            bottomRight.set(rightBounds);
+            return null;
+        }).when(mSplitLayout).getStageBounds(any(), any());
+
+        // Side stage is Top/Left (so Left here)
+        mStageCoordinator.setSideStagePosition(SPLIT_POSITION_TOP_OR_LEFT, null);
+        when(mSideStage.getTopVisibleChildTaskId()).thenReturn(100); // Left task
+        when(mMainStage.getTopVisibleChildTaskId()).thenReturn(200); // Right task
+
+        // Tap at x=250. Matches Left [0, 500).
+        assertEquals(100, mStageCoordinator.getTaskIdAt(250, DEFAULT_DISPLAY));
+
+        // Tap at x=750. Matches Right [500, 1000).
+        assertEquals(200, mStageCoordinator.getTaskIdAt(750, DEFAULT_DISPLAY));
     }
 
     private static int getLaunchWindowingMode(Bundle options) {

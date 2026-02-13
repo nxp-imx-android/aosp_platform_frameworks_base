@@ -19,7 +19,6 @@ package com.android.memorylimitertests.apps.memorylimitertestapp;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
 import android.os.Trace;
 import android.util.Log;
 
@@ -34,35 +33,22 @@ public class ClientTestReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Trace.beginSection("ClientTestReceiver.onReceive");
-        int size = getSize(intent);
-        Log.i(TAG, "handling memory size " + size + "MB");
-        mTest.setMemory(size);
-        Trace.endSection();
-    }
-    /**
-     * Fetch the delay from the intent.  A negative delay signifies an error.
-     */
-    static int getSize(Intent intent) {
-        if (!intent.getAction().contains(".MEMORY")) {
-            Log.w(TAG, "unexpected intent: " + intent.toString());
-            return -1;
-        }
-
-        Bundle extras = intent.getExtras();
-        if (extras == null) {
-            Log.i(TAG, "no extras");
-            return 0;
-        }
-        String s = intent.getStringExtra("size");
-        if (s != null) {
-            try {
-                return Integer.valueOf(s);
-            } catch (NumberFormatException e) {
-                return 0;
+        final String action = intent.getAction();
+        if (action.contains(".MEMORY")) {
+            Trace.beginSection("ClientTestReceiver.onReceive");
+            int size = intent.getIntExtra("size", 0);
+            Log.i(TAG, "handling memory size " + size + "MB");
+            if (size > 0) {
+                mTest.setMemory(size);
             }
+            Trace.endSection();
+        } else if (action.contains(".EXIT")) {
+            // Hard exit.  The test program is testing how the memory limiter responds to process
+            // exits.
+            Log.i(TAG, "handling exit request");
+            System.exit(0);
         } else {
-            return 0;
+            Log.w(TAG, "unexpected intent: " + intent.toString());
         }
     }
 }

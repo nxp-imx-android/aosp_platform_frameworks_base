@@ -194,7 +194,8 @@ public class NotificationListenersTest extends UiServiceTestCase {
         doReturn(true).when(mNm).isInteractionVisibleToListener(any(), anyInt());
 
         mListeners = spy(mNm.new NotificationListeners(
-                mContext, new Object(), mock(ManagedServices.UserProfiles.class), miPm));
+                mContext, new Object(), mock(ManagedServices.UserProfiles.class), miPm,
+                new NotificationManagerService.ConfigurableParameters()));
         when(mNm.getBinderService()).thenReturn(mINm);
         mNm.mPackageManager = mock(IPackageManager.class);
         PackageStateInternal psi = mock(PackageStateInternal.class);
@@ -264,7 +265,8 @@ public class NotificationListenersTest extends UiServiceTestCase {
         // setup with headless system user mode
         mListeners = spy(mNm.new NotificationListeners(
                 mContext, new Object(), mock(ManagedServices.UserProfiles.class), miPm,
-                /* isHeadlessSystemUserMode= */ true));
+                /* isHeadlessSystemUserMode= */ true,
+                new NotificationManagerService.ConfigurableParameters()));
         mockDefaultListenerConfigForUninstalledComponent(mUninstalledComponent);
 
         mListeners.loadDefaultsFromConfig();
@@ -278,7 +280,8 @@ public class NotificationListenersTest extends UiServiceTestCase {
         // setup without headless system user mode
         mListeners = spy(mNm.new NotificationListeners(
                 mContext, new Object(), mock(ManagedServices.UserProfiles.class), miPm,
-                /* isHeadlessSystemUserMode= */ false));
+                /* isHeadlessSystemUserMode= */ false,
+                new NotificationManagerService.ConfigurableParameters()));
         mockDefaultListenerConfigForUninstalledComponent(mUninstalledComponent);
 
         mListeners.loadDefaultsFromConfig();

@@ -16,7 +16,7 @@
 
 package com.android.server.contentrestriction
 
-import android.app.contentrestriction.Content
+import android.app.contentrestriction.ClassifiableContent
 import android.app.contentrestriction.IContentRestrictionAppService
 import android.app.contentrestriction.IContentRestrictionCallback
 import android.app.role.OnRoleHoldersChangedListener
@@ -131,13 +131,13 @@ class ContentRestrictionServiceTest {
 
     @Test
     @Throws(RemoteException::class)
-    fun testIsContentAllowed_serviceDisabled_returnsFalse() {
+    fun testRequestClassification_serviceDisabled_returnsFalse() {
         setServiceEnabled(false)
 
         val callback = mock<IContentRestrictionCallback>()
-        val content = Content.Builder(mockLocusId, "text/plain").build()
+        val content = ClassifiableContent.Builder(mockLocusId, "text/plain").build()
 
-        service.isContentAllowed(userId, content, callback)
+        service.requestClassification(userId, content, callback)
 
         verify(callback).onResult(false)
         verify(mockAppBindingService, never())
@@ -147,16 +147,16 @@ class ContentRestrictionServiceTest {
     @Test
     @Throws(RemoteException::class)
     // TODO(b/469111708): Create a helper method `createConnection` for clarity.
-    fun testIsContentAllowed_serviceEnabled_bindsAndCallsApp() {
+    fun testRequestClassification_serviceEnabled_bindsAndCallsApp() {
         setServiceEnabled(true)
 
         val callback = mock<IContentRestrictionCallback>()
-        val content = Content.Builder(mockLocusId, "text/plain").setData(mockData).build()
+        val content = ClassifiableContent.Builder(mockLocusId, "text/plain").setData(mockData).build()
         val connection = mock<AppServiceConnection>()
-        val receivedContent = AtomicReference<Content>()
+        val receivedContent = AtomicReference<ClassifiableContent>()
         val appServiceStub = object : IContentRestrictionAppService.Stub() {
             override fun onClassifyContent(
-                    c: Content, cb: IContentRestrictionCallback) {
+                    c: ClassifiableContent, cb: IContentRestrictionCallback) {
                 receivedContent.set(c)
                 cb.onResult(true)
             }
@@ -165,7 +165,7 @@ class ContentRestrictionServiceTest {
         }
         whenever(connection.getServiceBinder()).thenReturn(appServiceStub)
 
-        service.isContentAllowed(userId, content, callback)
+        service.requestClassification(userId, content, callback)
         verify(mockAppBindingService)
                 .dispatchAppServiceEvent(
                         eq(ContentRestrictionAppServiceFinder::class.java),
@@ -182,16 +182,16 @@ class ContentRestrictionServiceTest {
     @Test
     @Throws(RemoteException::class)
     // TODO(b/469111708): Create a helper method `createConnection` for clarity.
-    fun testIsContentAllowed_remoteException_failsClosed() {
+    fun testRequestClassification_remoteException_failsClosed() {
         setServiceEnabled(true)
 
         val callback = mock<IContentRestrictionCallback>()
-        val content = Content.Builder(mockLocusId, "text/plain").build()
+        val content = ClassifiableContent.Builder(mockLocusId, "text/plain").build()
         val connection = mock<AppServiceConnection>()
         val appServiceStub = object : IContentRestrictionAppService.Stub() {
             @Throws(RemoteException::class)
             override fun onClassifyContent(
-                    c: Content, cb: IContentRestrictionCallback) {
+                    c: ClassifiableContent, cb: IContentRestrictionCallback) {
                 throw RemoteException("Test Exception")
             }
 
@@ -199,7 +199,7 @@ class ContentRestrictionServiceTest {
         }
         whenever(connection.getServiceBinder()).thenReturn(appServiceStub)
 
-        service.isContentAllowed(userId, content, callback)
+        service.requestClassification(userId, content, callback)
         verify(mockAppBindingService)
                 .dispatchAppServiceEvent(
                         eq(ContentRestrictionAppServiceFinder::class.java),
@@ -213,15 +213,15 @@ class ContentRestrictionServiceTest {
 
     @Test
     @Throws(RemoteException::class)
-    fun testIsContentAllowed_serviceEnabled_nullBinder_failsClosed() {
+    fun testRequestClassification_serviceEnabled_nullBinder_failsClosed() {
         setServiceEnabled(true)
 
         val callback = mock<IContentRestrictionCallback>()
-        val content = Content.Builder(mockLocusId, "text/plain").build()
+        val content = ClassifiableContent.Builder(mockLocusId, "text/plain").build()
         val connection = mock<AppServiceConnection>()
 
         whenever(connection.getServiceBinder()).thenReturn(null)
-        service.isContentAllowed(userId, content, callback)
+        service.requestClassification(userId, content, callback)
         verify(mockAppBindingService)
                 .dispatchAppServiceEvent(
                         eq(ContentRestrictionAppServiceFinder::class.java),

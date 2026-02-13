@@ -4861,7 +4861,7 @@ public class ComputerEngine implements Computer {
         ProviderInfo contactsProvider = resolveContentProvider(
                 ContactsContract.AUTHORITY, 0, UserHandle.getUserId(callingUid), callingUid);
         if (contactsProvider == null || contactsProvider.applicationInfo == null
-                || !UserHandle.isSameApp(contactsProvider.applicationInfo.uid, callingUid)) {
+                || !isCallerSameApp(contactsProvider.packageName, callingUid)) {
             throw new SecurityException(
                     callingUid + " is not allow to call grantImplicitAccess");
         }
@@ -5378,7 +5378,7 @@ public class ComputerEngine implements Computer {
                     + ", uid:" + callingUid);
             throw new IllegalArgumentException("Unknown package: " + packageName);
         }
-        if (!UserHandle.isSameApp(callingUid, pkg.getUid())
+        if (!isCallerSameApp(pkg.getPackageName(), callingUid)
                 && Process.SYSTEM_UID != callingUid) {
             throw new SecurityException("May not access signing KeySet of other apps.");
         }
@@ -5544,7 +5544,7 @@ public class ComputerEngine implements Computer {
         final PackageStateInternal installerPackageState = getPackageStateInternal(
                 packageState.getInstallSource().mInstallerPackageName);
         return installerPackageState != null
-                && UserHandle.isSameApp(installerPackageState.getAppId(), callingUid);
+                && isCallerSameApp(installerPackageState.getPackageName(), callingUid);
     }
 
     @PackageManager.InstallReason

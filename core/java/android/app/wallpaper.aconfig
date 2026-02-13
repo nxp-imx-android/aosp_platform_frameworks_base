@@ -36,3 +36,13 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "fix_large_screen_wallpaper_crops_on_restore"
+  namespace: "systemui"
+  description: "Properly adjust the wallpapers crops on restore for large screens. Also improves logic for legacy backups."
+  bug: "441675312"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}

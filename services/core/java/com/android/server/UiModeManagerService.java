@@ -69,6 +69,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.content.pm.UserInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.database.ContentObserver;
@@ -90,6 +91,7 @@ import android.os.ShellCallback;
 import android.os.ShellCommand;
 import android.os.SystemProperties;
 import android.os.UserHandle;
+import android.os.UserManager;
 import android.provider.Settings;
 import android.provider.Settings.Secure;
 import android.service.dreams.DreamManagerInternal;
@@ -1553,10 +1555,12 @@ final class UiModeManagerService extends SystemService {
     @GuardedBy("mLock")
     @ForceInvertType
     private int getForceInvertStateLocked(int userId) {
-        if (mForceInvertStates.indexOfKey(userId) < 0 && mSystemReady) {
+        int resolvedUserId = com.android.server.accessibility.Flags.fixEdtMultiuserManagement()
+                ? resolveUserId(userId) : userId;
+        if (mForceInvertStates.indexOfKey(resolvedUserId) < 0 && mSystemReady) {
             updateForceInvertStateLocked(userId);
         }
-        return mForceInvertStates.get(userId, FORCE_INVERT_TYPE_OFF);
+        return mForceInvertStates.get(resolvedUserId, FORCE_INVERT_TYPE_OFF);
     }
 
     /**
@@ -1565,12 +1569,30 @@ final class UiModeManagerService extends SystemService {
      */
     @GuardedBy("mLock")
     private boolean updateForceInvertStateLocked(int userId) {
-        int forceInvertState = getForceInvertStateInternal(userId);
-        if (mForceInvertStates.get(userId, Integer.MIN_VALUE) != forceInvertState) {
-            mForceInvertStates.put(userId, forceInvertState);
+        int resolvedUserId = com.android.server.accessibility.Flags.fixEdtMultiuserManagement()
+                ? resolveUserId(userId) : userId;
+        int forceInvertState = getForceInvertStateInternal(resolvedUserId);
+        if (mForceInvertStates.get(resolvedUserId, Integer.MIN_VALUE) != forceInvertState) {
+            mForceInvertStates.put(resolvedUserId, forceInvertState);
             return true;
         }
         return false;
+    }
+
+    private int resolveUserId(int userId) {
+        UserManager userManager = getContext().getSystemService(UserManager.class);
+        final long identity = Binder.clearCallingIdentity();
+        try {
+            if (userManager != null && userManager.isManagedProfile(userId)) {
+                UserInfo parent = userManager.getProfileParent(userId);
+                if (parent != null) {
+                    userId = parent.id;
+                }
+            }
+        } finally {
+            Binder.restoreCallingIdentity(identity);
+        }
+        return userId;
     }
 
     /**

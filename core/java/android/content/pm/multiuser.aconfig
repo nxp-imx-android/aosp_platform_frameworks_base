@@ -426,10 +426,24 @@ flag {
 }
 
 flag {
+     name: "user_switching_dialog_entry_exit_animations"
+     namespace: "multiuser"
+     description: "Slight upwards translation when showing/hiding the UserSwitchingDialog"
+     bug: "433910583"
+}
+
+flag {
      name: "credential_capture"
      namespace: "multiuser"
      description: "Perform authentication in the login app on desktop before switching to a user"
      bug: "448603243"
+}
+
+flag {
+     name: "user_switching_dialog_signout_message"
+     namespace: "multiuser"
+     description: "Show a signout message when the user switch is triggered by a logout"
+     bug: "448578631"
 }
 
 flag {

@@ -1630,6 +1630,26 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
         }
     }
 
+    @Test
+    fun testOnTaskResizeAnimationEnd_requestsMaximizeButtonFocus() {
+        // Capture the listener set on DesktopTasksController during initialization.
+        val listenerCaptor = argumentCaptor<OnTaskResizeAnimationListener>()
+        shellInit.init()
+        verify(mockDesktopTasksController).setOnTaskResizeAnimationListener(listenerCaptor.capture())
+        val listener = listenerCaptor.firstValue
+
+        // Create a task with a window decoration.
+        val decor = createOpenTaskDecoration(windowingMode = WINDOWING_MODE_FREEFORM)
+        val taskInfo = decor.taskInfo
+
+        // Simulate the end of a resize animation for the task.
+        listener.onAnimationEnd(taskInfo.taskId)
+
+        // Verify that a request to focus the maximize button is made on the decoration.
+        // This is important for accessibility services like Talkback.
+        verify(decor).requestFocusMaximizeButton()
+    }
+
     private fun createOpenTaskDecoration(
         @WindowingMode windowingMode: Int,
         taskSurface: SurfaceControl = SurfaceControl(),

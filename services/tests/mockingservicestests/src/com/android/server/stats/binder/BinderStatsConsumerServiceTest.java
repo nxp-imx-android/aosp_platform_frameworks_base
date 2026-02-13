@@ -20,16 +20,13 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 
 import android.os.Process;
-import android.os.RemoteException;
 import android.os.binder.BinderCallsStats;
 import android.os.binder.BinderSpamStats;
 import android.os.binder.SingleSecondBinderStats;
 import android.platform.test.annotations.Presubmit;
-import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.util.StatsEvent;
@@ -46,12 +43,14 @@ import com.android.server.signalcollector.SignalCollectorManagerInternal;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.Mock;
 
 import java.util.List;
 
@@ -76,11 +75,19 @@ public class BinderStatsConsumerServiceTest {
             new ExtendedMockitoRule.Builder(this).mockStatic(StatsLog.class).build();
 
     @Captor ArgumentCaptor<StatsEvent> mStatsEventCaptor;
+    @Mock SignalCollectorManagerInternal mSignalCollectorManagerInternal;
 
     @Before
     public void setUp() {
         mService = new BinderStatsConsumerService();
         mStatsEventCaptor = ArgumentCaptor.forClass(StatsEvent.class);
+        LocalServices.addService(SignalCollectorManagerInternal.class,
+                mSignalCollectorManagerInternal);
+    }
+
+    @After
+    public void tearDown() {
+        LocalServices.removeServiceForTest(SignalCollectorManagerInternal.class);
     }
 
     private void flushStats() throws Exception {
@@ -302,7 +309,7 @@ public class BinderStatsConsumerServiceTest {
     }
 
     @Test
-    public void testReportCallStats() throws RemoteException, InvalidProtocolBufferException {
+    public void testReportCallStats() throws InvalidProtocolBufferException {
         BinderCallsStats[] stats = new BinderCallsStats[1];
         stats[0] = new BinderCallsStats();
         stats[0].clientUid = 1000;
@@ -326,32 +333,12 @@ public class BinderStatsConsumerServiceTest {
         AtomsProto.Atom actualAtom =
                 StatsEventTestUtils.convertToAtom(mStatsEventCaptor.getValue());
         assertEquals(expectedAtom, actualAtom);
-    }
 
-    @RequiresFlagsEnabled(android.os.profiling.anomaly.flags.Flags.FLAG_ANOMALY_DETECTOR_CORE)
-    @Test
-    public void testReportSpamStatsToSignalCollector() {
-        SignalCollectorManagerInternal signalCollectorManagerInternal =
-                mock(SignalCollectorManagerInternal.class);
-        LocalServices.addService(
-                SignalCollectorManagerInternal.class, signalCollectorManagerInternal);
-        BinderSpamStats[] stats = new BinderSpamStats[1];
-        stats[0] = new BinderSpamStats();
-        stats[0].clientUid = 1000;
-        stats[0].interfaceDescriptor = "com.example.IFoo";
-        stats[0].aidlMethod = "bar";
-        stats[0].secondsWithAtLeast125Calls = 1;
-
-        mService.reportSpamStats(stats);
-
-        verify(signalCollectorManagerInternal).reportBinderStats(stats);
-
-        LocalServices.removeServiceForTest(SignalCollectorManagerInternal.class);
+        verify(mSignalCollectorManagerInternal).reportBinderStats(stats);
     }
 
     @Test
-    public void testReportSpamStats()
-            throws RemoteException, InvalidProtocolBufferException, Exception {
+    public void testReportSpamStats() throws Exception, InvalidProtocolBufferException {
         BinderSpamStats[] stats = new BinderSpamStats[1];
         stats[0] = new BinderSpamStats();
         stats[0].clientUid = 1000;
@@ -374,8 +361,7 @@ public class BinderStatsConsumerServiceTest {
     }
 
     @Test
-    public void testReportMultipleCallStatsAtoms()
-            throws RemoteException, InvalidProtocolBufferException {
+    public void testReportMultipleCallStatsAtoms() throws InvalidProtocolBufferException {
         BinderCallsStats[] stats = new BinderCallsStats[2];
         stats[0] = new BinderCallsStats();
         stats[0].clientUid = 1000;
@@ -417,37 +403,12 @@ public class BinderStatsConsumerServiceTest {
         AtomsProto.Atom actualAtom2 = StatsEventTestUtils.convertToAtom(actualEvents.get(1));
         assertEquals(expectedAtom1, actualAtom1);
         assertEquals(expectedAtom2, actualAtom2);
-    }
 
-    @RequiresFlagsEnabled(android.os.profiling.anomaly.flags.Flags.FLAG_ANOMALY_DETECTOR_CORE)
-    @Test
-    public void testReportMultipleSpamStatsToSignalCollector() {
-        SignalCollectorManagerInternal signalCollectorManagerInternal =
-                mock(SignalCollectorManagerInternal.class);
-        LocalServices.addService(
-                SignalCollectorManagerInternal.class, signalCollectorManagerInternal);
-        BinderSpamStats[] stats = new BinderSpamStats[2];
-        stats[0] = new BinderSpamStats();
-        stats[0].clientUid = 1000;
-        stats[0].interfaceDescriptor = "com.example.IFoo";
-        stats[0].aidlMethod = "bar";
-        stats[0].secondsWithAtLeast125Calls = 10;
-
-        stats[1] = new BinderSpamStats();
-        stats[1].clientUid = 1001;
-        stats[1].interfaceDescriptor = "com.example.IBar";
-        stats[1].aidlMethod = "foo";
-        stats[1].secondsWithAtLeast125Calls = 20;
-
-        mService.reportSpamStats(stats);
-
-        verify(signalCollectorManagerInternal).reportBinderStats(stats);
-        LocalServices.removeServiceForTest(SignalCollectorManagerInternal.class);
+        verify(mSignalCollectorManagerInternal).reportBinderStats(stats);
     }
 
     @Test
-    public void testReportMultipleSpamStatsAtoms()
-            throws RemoteException, InvalidProtocolBufferException {
+    public void testReportMultipleSpamStatsAtoms() throws InvalidProtocolBufferException {
         BinderSpamStats[] stats = new BinderSpamStats[2];
         stats[0] = new BinderSpamStats();
         stats[0].clientUid = 1000;

@@ -42,16 +42,14 @@ constructor(
 ) : TaskVanishedListener, TaskAppearedListener, TaskInfoChangedListener {
 
     init {
-        if (Flags.appCompatRefactoring()) {
-            shellInit.addInitCallback(
-                {
-                    shellTaskOrganizer.addTaskAppearedListener(this)
-                    shellTaskOrganizer.addTaskVanishedListener(this)
-                    shellTaskOrganizer.addTaskInfoChangedListener(this)
-                },
-                this,
-            )
-        }
+        shellInit.addInitCallback(
+            {
+                shellTaskOrganizer.addTaskAppearedListener(this)
+                shellTaskOrganizer.addTaskVanishedListener(this)
+                shellTaskOrganizer.addTaskInfoChangedListener(this)
+            },
+            this,
+        )
     }
 
     override fun onTaskAppeared(taskInfo: RunningTaskInfo, leash: SurfaceControl) {

@@ -341,3 +341,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "fix_flicker_when_app_bubble_from_overflow"
+    namespace: "multitasking"
+    description: "Fixes a flicker issue that happens when promoting an app bubble from overflow"
+    bug: "472080053"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

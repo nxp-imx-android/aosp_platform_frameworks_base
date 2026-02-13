@@ -46,6 +46,7 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.ServiceThread;
 import com.android.server.am.Flags;
+import com.android.server.am.psc.Constants.OomAdjust;
 import com.android.server.am.psc.Constants.SchedGroup;
 import com.android.server.am.psc.annotation.RequiresEnclosingBatchSession;
 import com.android.server.wm.WindowProcessController;
@@ -222,13 +223,6 @@ public class ProcessStateController {
 
     public void setFollowUpOomadjUpdateWaitDuration(long value) {
         mOomConstants.mFollowUpOomadjUpdateWaitDuration = value;
-    }
-
-    /**
-     * Sets the number of frozen processes.
-     */
-    public void setFrozenProcessCount(int count) {
-        mGlobalState.mFrozenProcessCount = count;
     }
 
     /**
@@ -416,7 +410,6 @@ public class ProcessStateController {
         private static final int NONE_DEBUG_UID = -1;
         private volatile int mDebugUid = NONE_DEBUG_UID;
         private volatile long mLastUserUnlockingUptime = 0;
-        private volatile int mFrozenProcessCount = 0;
 
         private void commitStagedState() {
             mUnlocking = mUnlockingStaged;
@@ -478,10 +471,6 @@ public class ProcessStateController {
 
         public long getLastUserUnlockingUptime() {
             return mLastUserUnlockingUptime;
-        }
-
-        public int getFrozenProcessCount() {
-            return mFrozenProcessCount;
         }
     }
 
@@ -746,7 +735,7 @@ public class ProcessStateController {
      * Set the maximum adj score a process can be assigned.
      */
     @GuardedBy("mLock")
-    public void setMaxAdj(@NonNull ProcessRecordInternal proc, int adj) {
+    public void setMaxAdj(@NonNull ProcessRecordInternal proc, @OomAdjust int adj) {
         proc.setMaxAdj(adj);
     }
 

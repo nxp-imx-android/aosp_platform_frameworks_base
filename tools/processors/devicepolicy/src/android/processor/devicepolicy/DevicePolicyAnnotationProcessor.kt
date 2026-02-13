@@ -16,8 +16,8 @@
 
 package android.processor.devicepolicy
 
-import android.processor.devicepolicy.protos.PolicyMetadataList
 import android.processor.devicepolicy.protos.PolicyMetadata
+import android.processor.devicepolicy.protos.PolicyMetadataList
 import com.google.protobuf.TextFormat
 import java.io.Writer
 import javax.annotation.processing.AbstractProcessor
@@ -32,16 +32,16 @@ import javax.tools.StandardLocation
 /**
  * PolicyProcessor processes all {@link PolicyDefinition} instances:
  * <ol>
- *     <li> Verify that the policies are well formed. </li>
- *     <li> Exports the data for consumption by other tools. </li>
+ * <li> Verify that the policies are well formed. </li>
+ * <li> Exports the data for consumption by other tools. </li>
  * </ol>
  *
  * Currently the data exported contains:
  * <ul>
- *     <li> The name of the field. </li>
- *     <li> The type of the policy. </li>
- *     <li> The JavaDoc for the policy. </li>
- *     <li> For enums: all options and their documentation. </li>
+ * <li> The name of the field. </li>
+ * <li> The type of the policy. </li>
+ * <li> The JavaDoc for the policy. </li>
+ * <li> For enums: all options and their documentation. </li>
  * </ul>
  *
  * Data is exported to `policies.textproto`.
@@ -50,32 +50,36 @@ class DevicePolicyAnnotationProcessor : AbstractProcessor() {
     override fun getSupportedSourceVersion(): SourceVersion = SourceVersion.latest()
 
     // Define what the annotation we care about are for compiler optimization
-    override fun getSupportedAnnotationTypes() = LinkedHashSet<String>().apply {
-        add(BooleanPolicyDefinition::class.java.name)
-        add(EnumPolicyDefinition::class.java.name)
-        add(IntegerPolicyDefinition::class.java.name)
-        add(LongPolicyDefinition::class.java.name)
-        add(StringPolicyDefinition::class.java.name)
-        add(ListOfStringPolicyDefinition::class.java.name)
+    override fun getSupportedAnnotationTypes() =
+        LinkedHashSet<String>().apply {
+            add(BooleanPolicyDefinition::class.java.name)
+            add(EnumPolicyDefinition::class.java.name)
+            add(IntegerPolicyDefinition::class.java.name)
+            add(LongPolicyDefinition::class.java.name)
+            add(StringPolicyDefinition::class.java.name)
+            add(ListOfStringPolicyDefinition::class.java.name)
 
-        // Only processed to report errors.
-        add(PolicyDefinition::class.java.name)
-        add(AllowedDpcTypes::class.java.name)
-    }
+            // Only processed to report errors.
+            add(PolicyDefinition::class.java.name)
+            add(AllowedDpcTypes::class.java.name)
+        }
 
     override fun process(
-        annotations: MutableSet<out TypeElement>, roundEnvironment: RoundEnvironment
+        annotations: MutableSet<out TypeElement>,
+        roundEnvironment: RoundEnvironment,
     ): Boolean {
         reportUnexpectedAnnotations(roundEnvironment)
 
-        val policies = listOf(
-            runProcessor(roundEnvironment, BooleanProcessor(processingEnv)),
-            runProcessor(roundEnvironment, EnumProcessor(processingEnv)),
-            runProcessor(roundEnvironment, IntegerProcessor(processingEnv)),
-            runProcessor(roundEnvironment, LongProcessor(processingEnv)),
-            runProcessor(roundEnvironment, StringProcessor(processingEnv)),
-            runProcessor(roundEnvironment, ListOfStringProcessor(processingEnv)),
-        ).flatten()
+        val policies =
+            listOf(
+                    runProcessor(roundEnvironment, BooleanProcessor(processingEnv)),
+                    runProcessor(roundEnvironment, EnumProcessor(processingEnv)),
+                    runProcessor(roundEnvironment, IntegerProcessor(processingEnv)),
+                    runProcessor(roundEnvironment, LongProcessor(processingEnv)),
+                    runProcessor(roundEnvironment, StringProcessor(processingEnv)),
+                    runProcessor(roundEnvironment, ListOfStringProcessor(processingEnv)),
+                )
+                .flatten()
 
         try {
             writePolicies(policies)
@@ -93,7 +97,10 @@ class DevicePolicyAnnotationProcessor : AbstractProcessor() {
 
     private fun reportUnexpectedAnnotations(roundEnvironment: RoundEnvironment) {
         roundEnvironment.getElementsAnnotatedWith(PolicyDefinition::class.java).forEach {
-            printError(it, "@PolicyDefinition can not be applied to any element, use a type-specific annotation such as @EnumPolicyDefinition instead")
+            printError(
+                it,
+                "@PolicyDefinition can not be applied to any element, use a type-specific annotation such as @EnumPolicyDefinition instead",
+            )
         }
 
         roundEnvironment.getElementsAnnotatedWith(AllowedDpcTypes::class.java).forEach {
@@ -102,7 +109,8 @@ class DevicePolicyAnnotationProcessor : AbstractProcessor() {
     }
 
     private fun <T : Annotation> runProcessor(
-        roundEnvironment: RoundEnvironment, processor: PolicyProcessor<T>
+        roundEnvironment: RoundEnvironment,
+        processor: PolicyProcessor<T>,
     ): List<PolicyMetadata> {
         return roundEnvironment.getElementsAnnotatedWith(processor.annotationClass()).mapNotNull {
             processor.process(it)
@@ -121,20 +129,11 @@ class DevicePolicyAnnotationProcessor : AbstractProcessor() {
     }
 
     fun createResourceWriter(name: String): Writer =
-        processingEnv
-            .filer
-            .createResource(
-                StandardLocation.SOURCE_OUTPUT,
-                "android.processor.devicepolicy",
-                name
-            )
+        processingEnv.filer
+            .createResource(StandardLocation.SOURCE_OUTPUT, "android.processor.devicepolicy", name)
             .openWriter()
 
     private fun printError(element: Element, message: String) {
-        processingEnv.messager.printMessage(
-            Diagnostic.Kind.ERROR,
-            message,
-            element,
-        )
+        processingEnv.messager.printMessage(Diagnostic.Kind.ERROR, message, element)
     }
 }

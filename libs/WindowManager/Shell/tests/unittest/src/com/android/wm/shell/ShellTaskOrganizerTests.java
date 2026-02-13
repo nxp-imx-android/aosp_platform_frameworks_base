@@ -40,9 +40,9 @@ import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.never;
 
 import android.app.ActivityManager.RunningTaskInfo;
 import android.app.TaskInfo;
@@ -58,6 +58,7 @@ import android.view.SurfaceControl;
 import android.window.ITaskOrganizer;
 import android.window.ITaskOrganizerController;
 import android.window.TaskAppearedInfo;
+import android.window.TaskCreationParams;
 import android.window.WindowContainerToken;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -852,6 +853,35 @@ public class ShellTaskOrganizerTests extends ShellTestCase {
         mOrganizer.onTaskAppeared(taskInfo, taskLeash);
         assertNull(mOrganizer.getHomeTaskSurface(/* displayId= */ 0));
         assertEquals(mOrganizer.getHomeTaskSurface(/* displayId= */ 2), taskLeash);
+    }
+
+    @Test
+    public void testTaskOrganizerCreateRootTaskListener() throws Exception {
+        final TaskAppearedInfo appearedInfo = mock(TaskAppearedInfo.class);
+        doReturn(appearedInfo).when(mTaskOrganizerController).createTask(any());
+
+        final ShellTaskOrganizer.ContainerHierarchyRootTaskListener listener =
+                mock(ShellTaskOrganizer.ContainerHierarchyRootTaskListener.class);
+        mOrganizer.setContainerHierarchyCreateRootTaskListener(listener);
+
+        final TaskCreationParams params = new TaskCreationParams.Builder()
+                .setName("test")
+                .build();
+        mOrganizer.createTask(params);
+
+        verify(listener).onRootTaskCreated(appearedInfo, "test");
+    }
+
+    @Test
+    public void testTaskOrganizerRemoveRootTaskListener() throws Exception {
+        final WindowContainerToken token = mock(WindowContainerToken.class);
+        final ShellTaskOrganizer.ContainerHierarchyRootTaskListener listener =
+                mock(ShellTaskOrganizer.ContainerHierarchyRootTaskListener.class);
+        mOrganizer.setContainerHierarchyCreateRootTaskListener(listener);
+
+        mOrganizer.deleteTask(token);
+
+        verify(listener).onRootTaskRemoved(token);
     }
 
     private static ShellTaskOrganizer.TaskVanishedListener getSelfRemovingVanishedListener(

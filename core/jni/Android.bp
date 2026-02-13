@@ -57,6 +57,7 @@ cc_defaults_for_libandroid_runtime {
     cppflags: ["-Wno-conversion-null"],
     header_libs: [
         "libhwui_internal_headers",
+        "libbinder_internal_headers",
     ],
 
     product_variables: {
@@ -312,6 +313,7 @@ cc_defaults_for_libandroid_runtime {
                 "libgenfslabelsversion.ffi",
                 "libgui_window_info_static",
                 "libkernelconfigs",
+                "liblogger",
                 "libnativehelper_lazy",
                 "libseccomp_policy",
                 "libgrallocusage",
@@ -401,6 +403,7 @@ cc_defaults_for_libandroid_runtime {
                 "libmedia_helper",
                 "libmediametrics",
                 "libmeminfo",
+                "libaudiobase",
                 "libaudioclient",
                 "libaudioclient_aidl_conversion",
                 "libaudiofoundation",

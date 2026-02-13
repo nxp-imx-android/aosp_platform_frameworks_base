@@ -42,7 +42,9 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Generated class to load policy metadata
+ * Generated class that contains metadata on all known policies.
+ *
+ * @hide
  */
 public class Policies {
     /**

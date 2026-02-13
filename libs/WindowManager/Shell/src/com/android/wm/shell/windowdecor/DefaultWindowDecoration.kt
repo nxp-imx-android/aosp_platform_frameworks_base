@@ -523,9 +523,7 @@ constructor(
             }
             inputFeatures =
                 inputFeatures or WindowManager.LayoutParams.INPUT_FEATURE_DISPLAY_TOPOLOGY_AWARE
-        } else if (
-            isAppHandle && DesktopExperienceFlags.ENABLE_REMOVE_STATUS_BAR_INPUT_LAYER.isTrue
-        ) {
+        } else if (isAppHandle) {
             // Add input feature spy flag if caption is an app handle so that input is not stolen
             // when motion event exits caption view.
             inputFeatures = inputFeatures or INPUT_FEATURE_SPY

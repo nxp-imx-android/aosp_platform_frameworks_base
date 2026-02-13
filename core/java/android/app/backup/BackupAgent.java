@@ -1253,6 +1253,9 @@ public abstract class BackupAgent extends ContextWrapper {
      * <p>{@link #onRestoreFinished()} is not invoked by the Android Backup Manager after {@link
      * #onDelayedRestore(DelayedRestoreRequest, BackupDataInput, long, ParcelFileDescriptor)}.
      *
+     * <p>Backup destination is not relevant for this method, as the data is already delivered. So,
+     * default backup destination is used as a placeholder.
+     *
      * @param request The {@link DelayedRestoreRequest} request requested by this application, whose
      *     condition has been met.
      * @param data The {@link BackupDataInput} containing the backup data to restore. The
@@ -1295,6 +1298,9 @@ public abstract class BackupAgent extends ContextWrapper {
      *
      * <p>{@link #onRestoreFinished()} is not invoked by the Android Backup Manager after {@link
      * #onDelayedFullRestore(DelayedRestoreRequest)}.
+     *
+     * <p>Backup destination is not relevant for this method, as the data is already delivered. So,
+     * default backup destination is used as a placeholder.
      *
      * @param request The {@link DelayedRestoreRequest} request requested by this application, whose
      *     condition has been met.

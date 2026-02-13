@@ -141,13 +141,19 @@ class AuditModeContext {
                 () -> {
                     try {
                         serializeAndWrite(entry);
-                    } catch (IOException e) {
+                    } catch (IOException | SecurityException e) {
                         Log.e(TAG, "Failed to write to audit log file: " + e);
                     }
                 });
     }
 
-    private void serializeAndWrite(AuditLogEntry entry) throws IOException {
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
+    void serializeAndWrite(AuditLogEntry entry) throws IOException, SecurityException {
+        try {
+            PccBundleSanitizationUtil.sanitizeBundle(entry.getBundle());
+        } catch (IllegalArgumentException e) {
+            throw new SecurityException("Failed to sanitize bundle: " + e.getMessage());
+        }
         byte[] data = entry.toByteArray();
         synchronized (mLock) {
             if (mIsStopping) {

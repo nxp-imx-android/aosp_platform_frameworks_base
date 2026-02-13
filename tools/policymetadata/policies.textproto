@@ -1,0 +1,139 @@
+policy_metadata {
+  identifier {
+    field_name: "SCREEN_CAPTURE"
+    class_name: "PolicyIdentifier"
+    package_name: "android.app.admin"
+  }
+  type {
+    class_name: "Integer"
+    package_name: "java.lang"
+  }
+  documentation: "Policy that controls whether the screen capture is allowed or disallowed. Disallowing screen\ncapture also prevents the content from being shown on display devices that do not have a\nsecure video output. See {@link android.view.Display#FLAG_SECURE} for more details about\nsecure surfaces and secure displays. Throws SecurityException if the caller is not permitted\nto control screen capture policy. If the scope is set to {@link\nDevicePolicyManager#POLICY_SCOPE_DEVICE} and the caller is not a profile owner of an\norganization-owned managed profile or a device owner, a security exception will be thrown."
+  type_specific_metadata {
+    enum_metadata {
+      default_value: 2
+      int_def_name: "android.app.admin.PolicyIdentifier.ScreenCaptureValue"
+      documentation: "Possible values {@link SCREEN_CAPTURE}\n\n@hide"
+      values {
+        field_name {
+          field_name: "SCREEN_CAPTURE_DISALLOWED"
+          class_name: "PolicyIdentifier"
+          package_name: "android.app.admin"
+        }
+        int_value: 1
+        documentation: "Screen capture is disallowed. See {@link android.view.Display#FLAG_SECURE} for more details\non how blocking works."
+      }
+      values {
+        field_name {
+          field_name: "SCREEN_CAPTURE_ALLOWED"
+          class_name: "PolicyIdentifier"
+          package_name: "android.app.admin"
+        }
+        int_value: 2
+        documentation: "Screen capture is allowed. "
+      }
+    }
+  }
+  allowed_scopes: POLICY_SCOPE_USER
+  allowed_scopes: POLICY_SCOPE_DEVICE
+  affected_resource: RESOURCE_PER_USER
+  required_permission: "android.permission.MANAGE_DEVICE_POLICY_SCREEN_CAPTURE"
+  required_cross_user_permission: "android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS"
+  allowed_dpc_types: DPC_TYPE_DEVICE_OWNER
+  allowed_dpc_types: DPC_TYPE_MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE
+  allowed_dpc_types: DPC_TYPE_PROFILE_OWNER_ON_USER0
+  allowed_dpc_types: DPC_TYPE_MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE
+  allowed_dpc_types: DPC_TYPE_UNAFFILIATED_FULL_USER_PROFILE_OWNER
+  allowed_dpc_types: DPC_TYPE_AFFILIATED_FULL_USER_PROFILE_OWNER
+}
+policy_metadata {
+  identifier {
+    field_name: "AUTO_TIME"
+    class_name: "PolicyIdentifier"
+    package_name: "android.app.admin"
+  }
+  type {
+    class_name: "Integer"
+    package_name: "java.lang"
+  }
+  documentation: "Policy that controls whether the time is automatically obtained from the network or not."
+  type_specific_metadata {
+    enum_metadata {
+      int_def_name: "android.app.admin.PolicyIdentifier.AutoTimeValue"
+      documentation: "Possible values {@link AUTO_TIME}\n\n@hide"
+      values {
+        field_name {
+          field_name: "AUTO_TIME_USER_CHOICE"
+          class_name: "PolicyIdentifier"
+          package_name: "android.app.admin"
+        }
+        documentation: "The user can choose whether the time is automatically obtained from the network or not. "
+      }
+      values {
+        field_name {
+          field_name: "AUTO_TIME_DISABLED_UNENFORCED"
+          class_name: "PolicyIdentifier"
+          package_name: "android.app.admin"
+        }
+        int_value: 1
+        documentation: "The admin has disabled the time to be automatically obtained from the network. This is not\nenforced and the user can still enable it. Use {@link UserManager#DISALLOW_CONFIG_DATE_TIME}\nto enforce the policy."
+      }
+      values {
+        field_name {
+          field_name: "AUTO_TIME_ENABLED_UNENFORCED"
+          class_name: "PolicyIdentifier"
+          package_name: "android.app.admin"
+        }
+        int_value: 2
+        documentation: "The admin has enabled the time to be automatically obtained from the network. This is not\nenforced and the user can still disable it. Use {@link UserManager#DISALLOW_CONFIG_DATE_TIME}\nto enforce the policy."
+      }
+      values {
+        field_name {
+          field_name: "AUTO_TIME_DISABLED"
+          class_name: "PolicyIdentifier"
+          package_name: "android.app.admin"
+        }
+        int_value: 3
+        documentation: "The admin has disabled the time to be automatically obtained from the network. This is\nenforced and the user cannot enable it."
+      }
+      values {
+        field_name {
+          field_name: "AUTO_TIME_ENABLED"
+          class_name: "PolicyIdentifier"
+          package_name: "android.app.admin"
+        }
+        int_value: 4
+        documentation: "The admin has enabled the time to be automatically obtained from the network. This is\nenforced and the user cannot disable it."
+      }
+    }
+  }
+  allowed_scopes: POLICY_SCOPE_DEVICE
+  affected_resource: RESOURCE_DEVICE_WIDE
+  required_permission: "android.permission.SET_TIME"
+  required_cross_user_permission: "android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS"
+  allowed_dpc_types: DPC_TYPE_DEVICE_OWNER
+  allowed_dpc_types: DPC_TYPE_MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE
+  allowed_dpc_types: DPC_TYPE_PROFILE_OWNER_ON_USER0
+}
+policy_metadata {
+  identifier {
+    field_name: "LOCKSCREEN_MESSAGE"
+    class_name: "PolicyIdentifier"
+    package_name: "android.app.admin"
+  }
+  type {
+    class_name: "String"
+    package_name: "java.lang"
+  }
+  documentation: "Policy that sets a custom message to be shown on the lock screen. This message is displayed\non the device screen when locked, and is useful for a lost or stolen device.\n<p>\nThe message set using this method overrides any owner information manually set by the user\nand prevents the user from further changing it.\n<p>\nIf the message is {@code null} then the device owner info is cleared and the user\nowner info is shown on the lock screen if it is set.\n<p>\nIf the message contains only whitespaces then the message on the lock screen will be blank\nand the user will not be allowed to change it.\n<p>\nIf the message needs to be localized, it is the responsibility of the\n{@link DeviceAdminReceiver} to listen to the {@link Intent#ACTION_LOCALE_CHANGED} broadcast\nand set a new version of this string accordingly."
+  type_specific_metadata {
+    string_metadata {
+    }
+  }
+  allowed_scopes: POLICY_SCOPE_DEVICE
+  affected_resource: RESOURCE_DEVICE_WIDE
+  required_permission: "android.permission.MANAGE_DEVICE_POLICY_LOCKSCREEN_MESSAGE"
+  required_cross_user_permission: "android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS"
+  allowed_dpc_types: DPC_TYPE_DEVICE_OWNER
+  allowed_dpc_types: DPC_TYPE_MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE
+}

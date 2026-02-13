@@ -95,6 +95,10 @@ public class BinderStatsConsumerService extends IBinderStatsConsumerService.Stub
                             + callStatsArray.length);
             return;
         }
+        if (getSignalCollectorManagerInternal() != null) {
+            getSignalCollectorManagerInternal().reportBinderStats(callStatsArray);
+        }
+
         int callingUid = Binder.getCallingUid();
         for (BinderCallsStats callStats : callStatsArray) {
             if (callStats.interfaceDescriptor.length() > MAX_INCOMING_STRING_LENGTH
@@ -134,9 +138,6 @@ public class BinderStatsConsumerService extends IBinderStatsConsumerService.Stub
                     callingUid, spamStats.interfaceDescriptor, spamStats.aidlMethod,
                     spamStats.secondsWithAtLeast125Calls, spamStats.secondsWithAtLeast250Calls);
         }
-        if (android.os.profiling.anomaly.flags.Flags.anomalyDetectorCore()) {
-            reportToSignalCollector(spamStatsArray);
-        }
     }
 
     @Override
@@ -159,6 +160,10 @@ public class BinderStatsConsumerService extends IBinderStatsConsumerService.Stub
                             + singleSecondStatsArray.length);
             return;
         }
+        if (getSignalCollectorManagerInternal() != null) {
+            getSignalCollectorManagerInternal().reportBinderStats(singleSecondStatsArray);
+        }
+
         int callingUid = Binder.getCallingUid();
 
         for (SingleSecondBinderStats stats : singleSecondStatsArray) {
@@ -254,15 +259,18 @@ public class BinderStatsConsumerService extends IBinderStatsConsumerService.Stub
         }
     }
 
-    private void reportToSignalCollector(BinderSpamStats[] statsArray) {
+    /**
+     * Get the {@link SignalCollectorManagerInternal} local service if it is available. This method
+     * could return null if the local service not published yet, or the service is not enabled at
+     * all.
+     */
+    @Nullable
+    private SignalCollectorManagerInternal getSignalCollectorManagerInternal() {
         if (mSignalCollectorManagerInternal == null) {
             mSignalCollectorManagerInternal =
                     LocalServices.getService(SignalCollectorManagerInternal.class);
         }
-
-        if (mSignalCollectorManagerInternal != null) {
-            mSignalCollectorManagerInternal.reportBinderStats(statsArray);
-        }
+        return mSignalCollectorManagerInternal;
     }
 
     /** Lifecycle and related code */

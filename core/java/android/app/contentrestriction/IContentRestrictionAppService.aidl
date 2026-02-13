@@ -16,7 +16,7 @@
 
 package android.app.contentrestriction;
 
-import android.app.contentrestriction.Content;
+import android.app.contentrestriction.ClassifiableContent;
 import android.app.contentrestriction.IContentRestrictionCallback;
 
 /**
@@ -24,5 +24,5 @@ import android.app.contentrestriction.IContentRestrictionCallback;
  */
 oneway interface IContentRestrictionAppService {
   oneway void onContentRestrictionEnabled(boolean enabled);
-  oneway void onClassifyContent(in Content content, in IContentRestrictionCallback callback);
+  oneway void onClassifyContent(in ClassifiableContent content, in IContentRestrictionCallback callback);
 }

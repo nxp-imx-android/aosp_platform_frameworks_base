@@ -55,7 +55,9 @@ class GeneratorTest {
         $includes
 
         /**
-         * Generated class to load policy metadata
+         * Generated class that contains metadata on all known policies.
+         *
+         * @hide
          */
         public class Policies {
             /**

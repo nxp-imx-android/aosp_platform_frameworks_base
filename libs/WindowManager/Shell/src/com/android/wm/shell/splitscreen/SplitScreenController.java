@@ -366,6 +366,11 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
         return mStageCoordinator.isSplitScreenVisible();
     }
 
+    public boolean isSplitScreenFocused() {
+        return mStageCoordinator.isSplitScreenFocused();
+    }
+
+
     public StageCoordinator getTransitionHandler() {
         return mStageCoordinator;
     }
@@ -614,6 +619,11 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
         if (mStageCoordinator.isSplitActive()) {
             mStageCoordinator.grantFocusToPosition(leftOrTop);
         }
+    }
+
+    /** Returns the taskId of the task at the specified x position, or -1 if none. */
+    public int getTaskInSplitAt(int x, int displayId) {
+        return mStageCoordinator.getTaskIdAt(x, displayId);
     }
 
     /** Move the specified task to fullscreen, regardless of focus state. */

@@ -66,6 +66,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
@@ -494,6 +495,13 @@ public class SerialManagerService extends ISerialManager.Stub implements
             return;
         }
         synchronized (mLock) {
+            if (mBlockedUsbIdsInConfig.length > 0) {
+                pw.println("Blocked USB IDs: " + Arrays.deepToString(mBlockedUsbIdsInConfig));
+            }
+            if (!mIsConnectedToNativeService) {
+                pw.println("Not connected to native service");
+                return;
+            }
             var ports = mSerialDeviceFilter.getAvailablePorts();
             pw.println("Available ports (" + ports.size() + "):");
             for (SerialPortInfo port : ports.values()) {

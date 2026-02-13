@@ -86,6 +86,16 @@ flag {
 }
 
 flag {
+    name: "desktop_minimize_last_task_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Fixes a bug where minimizing the last task on a desk is not animated."
+    bug: "481352259"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
    name: "desktop_overview_rotation_task_resize_bugfix"
     namespace: "lse_desktop_experience"
     description: "Does not resize task due to rotation only display changes when in overview."
@@ -898,16 +908,6 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enable the remembered launch bounds feature."
     bug: "391869747"
-}
-
-flag {
-    name: "enable_remove_status_bar_input_layer"
-    namespace: "lse_desktop_experience"
-    description: "Removes app handle bounds from the status bar's touchable region so that input is sent directly to the app handle."
-    bug: "412444139"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {

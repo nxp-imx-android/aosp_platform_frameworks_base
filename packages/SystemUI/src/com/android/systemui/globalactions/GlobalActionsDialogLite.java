@@ -413,6 +413,8 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
             @NonNull Lazy<DisplayWindowPropertiesRepository> displayWindowPropertiesRepository,
             @NonNull PowerManager powerManager,
             @NonNull BroadcastSender broadcastSender,
+            @ShadeDisplayAware @NonNull EmergencyAffordanceManager emergencyAffordanceManager,
+            @ShadeDisplayAware @NonNull ScreenshotHelper screenshotHelper,
             @NonNull ActionsDialogLiteDelegate.Factory delegateFactory) {
         mContext = context;
         mWindowManagerFuncs = windowManagerFuncs;
@@ -514,8 +516,8 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
             );
         }
 
-        mEmergencyAffordanceManager = new EmergencyAffordanceManager(context);
-        mScreenshotHelper = new ScreenshotHelper(context);
+        mEmergencyAffordanceManager = emergencyAffordanceManager;
+        mScreenshotHelper = screenshotHelper;
 
         mConfigurationController.addCallback(this);
     }
@@ -1760,10 +1762,9 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
             ImageView icon = view.findViewById(R.id.icon);
             TextView messageView = view.findViewById(R.id.message);
             messageView.setSelected(true); // necessary for marquee to work
-            if (Flags.globalActionsEmphasizedFont()) {
-                messageView.setTypeface(
-                        Typeface.create(FontStyles.GSF_LABEL_LARGE_EMPHASIZED, Typeface.NORMAL));
-            }
+            messageView.setTypeface(
+                    Typeface.create(FontStyles.GSF_LABEL_LARGE_EMPHASIZED, Typeface.NORMAL));
+
             icon.setImageDrawable(action.getIcon(mContext));
             icon.setScaleType(ScaleType.CENTER_CROP);
 
@@ -1842,10 +1843,9 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
             } else {
                 textView.setText(action.getMessage());
             }
-            if (Flags.globalActionsEmphasizedFont()) {
-                textView.setTypeface(
-                        Typeface.create(FontStyles.GSF_LABEL_LARGE_EMPHASIZED, Typeface.NORMAL));
-            }
+            textView.setTypeface(
+                    Typeface.create(FontStyles.GSF_LABEL_LARGE_EMPHASIZED, Typeface.NORMAL));
+
             return textView;
         }
 
@@ -2030,10 +2030,8 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
 
             mIconView = v.findViewById(R.id.icon);
             TextView messageView = v.findViewById(R.id.message);
-            if (Flags.globalActionsEmphasizedFont()) {
-                messageView.setTypeface(
-                        Typeface.create(FontStyles.GSF_LABEL_LARGE_EMPHASIZED, Typeface.NORMAL));
-            }
+            messageView.setTypeface(
+                    Typeface.create(FontStyles.GSF_LABEL_LARGE_EMPHASIZED, Typeface.NORMAL));
             messageView.setSelected(true); // necessary for marquee to work
             mIconView.setImageDrawable(getIcon(context));
             mIconView.setScaleType(ScaleType.CENTER_CROP);
@@ -2175,13 +2173,12 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
 
             ImageView icon = v.findViewById(R.id.icon);
             TextView messageView = v.findViewById(R.id.message);
-            if (Flags.globalActionsEmphasizedFont()) {
-                messageView.setTypeface(
-                        Typeface.create(FontStyles.GSF_LABEL_LARGE_EMPHASIZED, Typeface.NORMAL));
-            }
+
             final boolean enabled = isEnabled();
 
             if (messageView != null) {
+                messageView.setTypeface(
+                        Typeface.create(FontStyles.GSF_LABEL_LARGE_EMPHASIZED, Typeface.NORMAL));
                 messageView.setText(getMessageResId());
                 messageView.setEnabled(enabled);
                 messageView.setSelected(true); // necessary for marquee to work

@@ -391,3 +391,20 @@ flag {
     description: "PackageManagerService.extendVerificationTimeout() API allowed to be called by same id multiple times"
     bug: "402455304"
 }
+
+flag {
+    name: "ignore_mac_permissions_package"
+    namespace: "security"
+    description: "Ignore obsolete <package> tag in mac_permissions.xml files"
+    bug: "481080144"
+}
+
+flag {
+    name: "wrap_installer_apis"
+    namespace: "modularization"
+    description: "Take hold of installer lock before calling installer APIs"
+    bug: "477070845"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

@@ -921,15 +921,14 @@ public class PermissionManagerService extends IPermissionManager.Stub {
             int userId = UserHandle.getUserId((callingUid == Process.SYSTEM_UID ? sourceUid
                     : callingUid));
 
-            if (enablePccFrameworkSupport()) {
-                if (!packageManagerInternal.isSameApp(source.getPackageName(),
-                        0, sourceUid, userId)) {
-                    throw new SecurityException(
-                            "Cannot register attribution source for package:"
-                                    + source.getPackageName() + " from uid:" + callingUid);
-                }
-            } else if (packageManagerInternal.getPackageUid(source.getPackageName(), 0, userId)
-                    != sourceUid) {
+            int sourcePackageUid = sourceUid;
+            if (enablePccFrameworkSupport()
+                    && Process.isPrivateComputeCoreUid(sourceUid)) {
+                sourcePackageUid = mContext.getPackageManager()
+                        .getAppUidForPrivateComputeCoreUid(sourceUid);
+            }
+            if (packageManagerInternal.getPackageUid(source.getPackageName(), 0, userId)
+                    != sourcePackageUid) {
                 throw new SecurityException("Cannot register attribution source for package:"
                         + source.getPackageName() + " from uid:" + callingUid);
             }

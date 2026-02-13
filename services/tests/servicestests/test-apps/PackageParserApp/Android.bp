@@ -129,7 +129,7 @@ android_test_helper_app {
     },
     resource_dirs: ["res"],
     aaptflags: [
-        "--feature-flags my.flag1,my.flag2,my.flag3,my.flag4,unknown.flag",
+        "--feature-flags my.flag1=false,my.flag2=false,my.flag3=false,my.flag4=false,unknown.flag=false",
     ],
     manifest: "AndroidManifestApp8.xml",
 }

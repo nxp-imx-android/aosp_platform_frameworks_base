@@ -493,6 +493,13 @@ public class PccSandboxManagerInternalTest {
                     ActivityManagerService.ASSOCIATION_TYPE_SERVICE, new Bundle());
             assertTrue("Association between a PCC UID and a trusted UID should be"
                     + " allowed", allowed);
+
+            int trustedUidUser2 = UserHandle.getUid(USER_ID_2, trustedUid);
+            allowed = mPccSandboxManagerInternal.validateAssociationAllowed(
+                    PCC_UID_1, PCC_PACKAGE_1, trustedUidUser2, REGULAR_PACKAGE,
+                    ActivityManagerService.ASSOCIATION_TYPE_SERVICE, new Bundle());
+            assertTrue("Association between a PCC UID and a trusted UID (user 2) should be"
+                    + " allowed", allowed);
         }
     }
 

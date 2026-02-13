@@ -30,11 +30,13 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 
-object MainTest {
-    const val RESOURCE_ROOT = "test/resources/android/tools/policymetadata/test"
+class MainTest {
+    companion object {
+        const val RESOURCE_ROOT = "test/resources/android/tools/policymetadata/test"
 
-    const val INPUT_METADATA_TEXTPROTO = "$RESOURCE_ROOT/TestPolicyMetadata.textproto"
-    const val EXPECTED_OUTPUT_JAVA = "$RESOURCE_ROOT/ExpectedPolicies.java"
+        const val INPUT_METADATA_TEXTPROTO = "$RESOURCE_ROOT/TestPolicyMetadata.textproto"
+        const val EXPECTED_OUTPUT_JAVA = "$RESOURCE_ROOT/ExpectedPolicies.java"
+    }
 
     @get:Rule val tempFolder = TemporaryFolder()
 

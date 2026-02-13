@@ -32,6 +32,7 @@ import android.util.proto.ProtoUtils;
 import com.android.internal.annotations.CompositeRWLock;
 import com.android.internal.annotations.GuardedBy;
 import com.android.server.am.UidObserverController.ChangeRecord;
+import com.android.server.am.psc.Constants.OomAdjust;
 import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.am.psc.UidRecordInternal;
 
@@ -125,7 +126,7 @@ public final class UidRecord extends UidRecordInternal {
 
     @Override
     @GuardedBy(anyOf = {"mService", "mProcLock"})
-    public int getMinProcAdj() {
+    public @OomAdjust int getMinProcAdj() {
         int minAdj = UNKNOWN_ADJ;
         for (int i = mProcRecords.size() - 1; i >= 0; i--) {
             int adj = mProcRecords.valueAt(i).getSetAdj();

@@ -1,18 +1,18 @@
 /*
-* Copyright (C) 2025 The Android Open Source Project
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright (C) 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package android.processor.devicepolicy
 
@@ -37,39 +37,15 @@ import javax.lang.model.type.TypeMirror
  * as well. Since this processor is not the direct consumer of @IntDef and we want the names for the
  * enum entries, not just values, we will have to use the JDK to walk the AST.
  *
- * We extract:private fun CodeBlock.Builder.addPolicyArguments(policy: PolicyMetadata) : CodeBlock.Builder {
-        add("/* id= */ \$L,\n", policy.name)
-        add(
-            "/* allowedScopes= */ \$L,\n",
-            generateSetBuilder(policy.allowedScopesList.map { it.number })
-        )
-        add("/* affectedResource= */ \$L,\n", policy.affectedResource.number)
-
-        if (policy.requiredPermission.isEmpty()) {
-            add("/* requiredPermission= */ null,\n")
-        } else {
-            add("/* requiredPermission= */ \$S,\n", policy.requiredPermission)
-        }
-
-        if (policy.requiredCrossUserPermission.isEmpty()) {
-            add("/* requiredCrossUserPermission= */ null")
-        } else {
-            add("/* requiredCrossUserPermission= */ \$S", policy.requiredCrossUserPermission)
-        }
-
-        return this
-    }
+ * We extract:
  * <ul>
- *     <li> The default value. </li>
- *     <li> The documentation for the enumeration. </li>
- *     <li> All enumeration entries with value, name and documentation. </li>
+ * <li> The default value. </li>
+ * <li> The documentation for the enumeration. </li>
+ * <li> All enumeration entries with value, name and documentation. </li>
  * </ul>
  *
- * We will use the following example to illustrate what we are doing:
- * {@snippet :
- *      class ExampleClass {
- *          public static final int ENUM_ENTRY_1 = 0;
- *          public static final int ENUM_ENTRY_2 = 1;
+ * We will use the following example to illustrate what we are doing: {@snippet : class ExampleClass
+ * { public static final int ENUM_ENTRY_1 = 0; public static final int ENUM_ENTRY_2 = 1;
  *
  *          @Retention(RetentionPolicy.SOURCE)
  *          @IntDef(prefix = { "ENUM_ENTRY_" }, value = {
@@ -77,7 +53,6 @@ import javax.lang.model.type.TypeMirror
  *                  ENUM_ENTRY_2,
  *          })
  *          public @interface PolicyEnum {}
- *
  *          @PolicyDefinition
  *          @EnumPolicyDefinition(
  *                  defaultValue = ENUM_ENTRY_2,
@@ -86,15 +61,15 @@ import javax.lang.model.type.TypeMirror
  *          public static final PolicyIdentifier<Integer> EXAMPLE_POLICY) =
  *                  new PolicyIdentifier<>("EXAMPLE_POLICY");
  *      }
+ *
  * }
  */
-class EnumProcessor(processingEnv: ProcessingEnvironment) : PolicyProcessor<EnumPolicyDefinition>(processingEnv) {
+class EnumProcessor(processingEnv: ProcessingEnvironment) :
+    PolicyProcessor<EnumPolicyDefinition>(processingEnv) {
     private companion object {
         const val SIMPLE_TYPE_INTEGER = "java.lang.Integer"
 
-        /**
-         * Find the first value matching a predicate on the key.
-         */
+        /** Find the first value matching a predicate on the key. */
         fun <K, V> Map<K, V>.firstValue(filter: (K) -> Boolean): V {
             return entries.first { (key, _) -> filter(key) }.value
         }
@@ -105,18 +80,25 @@ class EnumProcessor(processingEnv: ProcessingEnvironment) : PolicyProcessor<Enum
         processingEnv.elementUtils.getTypeElement(SIMPLE_TYPE_INTEGER).asType()
 
     /**
-     * Process an {@link Element} representing a {@link android.app.admin.PolicyIdentifier} into useful data.
+     * Process an {@link Element} representing a {@link android.app.admin.PolicyIdentifier} into
+     * useful data.
      *
-     * @return null if the element does not have a @EnumPolicyDefinition or on error, {@link EnumPolicyMetadata} otherwise.
+     * @return null if the element does not have a @EnumPolicyDefinition or on error, {@link
+     *   EnumPolicyMetadata} otherwise.
      */
-    override fun processMetadata(element: Element): Pair<TypeSpecificPolicyMetadata, PolicyDefinition>? {
-        val enumPolicyAnnotation = element.getAnnotation(EnumPolicyDefinition::class.java)
-            ?: throw IllegalStateException("Processor should only be called on elements with @EnumPolicyMetadata")
+    override fun processMetadata(
+        element: Element
+    ): Pair<TypeSpecificPolicyMetadata, PolicyDefinition>? {
+        val enumPolicyAnnotation =
+            element.getAnnotation(EnumPolicyDefinition::class.java)
+                ?: throw IllegalStateException(
+                    "Processor should only be called on elements with @EnumPolicyMetadata"
+                )
 
         if (!processingEnv.typeUtils.isSameType(policyType(element), integerType)) {
             printError(
                 element,
-                "@EnumPolicyDefinition can only be applied to policies of type $integerType."
+                "@EnumPolicyDefinition can only be applied to policies of type $integerType.",
             )
         }
 
@@ -127,22 +109,21 @@ class EnumProcessor(processingEnv: ProcessingEnvironment) : PolicyProcessor<Enum
         val intDefClass = processingEnv.elementUtils.getTypeElement("android.annotation.IntDef")
         // In the class-level example above, this is @IntDef annotation on the PolicyEnum.
         val annotationMirror =
-            intDefElement.annotationMirrors.firstOrNull { it.annotationType.asElement() == intDefClass }
+            intDefElement.annotationMirrors.firstOrNull {
+                it.annotationType.asElement() == intDefClass
+            }
 
         if (annotationMirror == null) {
             printError(
-                element, "@EnumPolicyDefinition.intDef must be the interface marked with @IntDef."
+                element,
+                "@EnumPolicyDefinition.intDef must be the interface marked with @IntDef.",
             )
 
             return null
         }
 
         val enumName = intDefElement.qualifiedName.toString()
-        val enumDoc =
-            processingEnv.elementUtils
-                .getDocComment(intDefElement)
-                ?.trimIndent()
-                ?: ""
+        val enumDoc = processingEnv.elementUtils.getDocComment(intDefElement)?.trimIndent() ?: ""
 
         if (enumDoc.trim().isEmpty()) {
             printError(intDefElement, "Missing JavaDoc for IntDef used by $element")
@@ -151,14 +132,17 @@ class EnumProcessor(processingEnv: ProcessingEnvironment) : PolicyProcessor<Enum
         // In the class-level example above, these would be ENUM_ENTRY_1 and ENUM_ENTRY_2.
         val entries = getIntDefIdentifiers(annotationMirror, intDefElement)
 
-        val metadata = TypeSpecificPolicyMetadata.newBuilder().setEnumMetadata(
-            TypeSpecificPolicyMetadata.EnumPolicyMetadata.newBuilder()
-                .setDefaultValue(enumPolicyAnnotation.defaultValue)
-                .setIntDefName(enumName)
-                .setDocumentation(enumDoc)
-                .addAllValues(entries)
+        val metadata =
+            TypeSpecificPolicyMetadata.newBuilder()
+                .setEnumMetadata(
+                    TypeSpecificPolicyMetadata.EnumPolicyMetadata.newBuilder()
+                        .setDefaultValue(enumPolicyAnnotation.defaultValue)
+                        .setIntDefName(enumName)
+                        .setDocumentation(enumDoc)
+                        .addAllValues(entries)
+                        .build()
+                )
                 .build()
-        ).build()
 
         return Pair(metadata, enumPolicyAnnotation.base)
     }
@@ -173,12 +157,11 @@ class EnumProcessor(processingEnv: ProcessingEnvironment) : PolicyProcessor<Enum
      * but we have to use type mirrors.
      */
     private fun getIntDefElement(element: Element): TypeElement {
-        val am = element.annotationMirrors.first {
-            it.annotationType.toString() == EnumPolicyDefinition::class.java.name
-        }
-        val av = am.elementValues.firstValue { key ->
-            key.simpleName.toString() == "intDef"
-        }
+        val am =
+            element.annotationMirrors.first {
+                it.annotationType.toString() == EnumPolicyDefinition::class.java.name
+            }
+        val av = am.elementValues.firstValue { key -> key.simpleName.toString() == "intDef" }
         val mirror = av.value as TypeMirror
         return processingEnv.typeUtils.asElement(mirror) as TypeElement
     }
@@ -186,14 +169,16 @@ class EnumProcessor(processingEnv: ProcessingEnvironment) : PolicyProcessor<Enum
     /**
      * For an @IntDef marked element, get the identifiers used to build up that enum.
      *
-     * In the class-level example above, these would be ENUM_ENTRY_1 and ENUM_ENTRY_2.     *
+     * In the class-level example above, these would be ENUM_ENTRY_1 and ENUM_ENTRY_2. *
      */
     private fun getIntDefIdentifiers(
-        annotationMirror: AnnotationMirror, intDefElement: TypeElement
+        annotationMirror: AnnotationMirror,
+        intDefElement: TypeElement,
     ): List<TypeSpecificPolicyMetadata.EnumPolicyMetadata.EnumValue> {
-        val annotationValue: AnnotationValue = annotationMirror.elementValues.firstValue { key ->
-            key.simpleName.contentEquals("value")
-        }
+        val annotationValue: AnnotationValue =
+            annotationMirror.elementValues.firstValue { key ->
+                key.simpleName.contentEquals("value")
+            }
 
         // Walk the AST as we want the actual identifiers passed to @IntDef.
         val trees = Trees.instance(processingEnv)
@@ -209,21 +194,19 @@ class EnumProcessor(processingEnv: ProcessingEnvironment) : PolicyProcessor<Enum
         val docs = getFieldDocumentations(fields)
 
         // In the class-level example above, these would be {ENUM_ENTRY_1, ENUM_ENTRY_2}.
-        @Suppress("UNCHECKED_CAST") val values =
-            (annotationValue.value as List<AnnotationValue>)
-            .map {
-                it.value as Int
-            }
+        @Suppress("UNCHECKED_CAST")
+        val values = (annotationValue.value as List<AnnotationValue>).map { it.value as Int }
 
         if (values.size < fields.size) {
             // Should never be reached.
             // We walk the same annotation definition and should find the same number of entries.
-            throw IllegalStateException("Annotation value $annotationValue for $intDefElement does not have enough values")
+            throw IllegalStateException(
+                "Annotation value $annotationValue for $intDefElement does not have enough values"
+            )
         }
 
         return fields.mapIndexed { i, field ->
-            TypeSpecificPolicyMetadata.EnumPolicyMetadata.EnumValue
-                .newBuilder()
+            TypeSpecificPolicyMetadata.EnumPolicyMetadata.EnumValue.newBuilder()
                 .setFieldName(names[i])
                 .setIntValue(values[i])
                 .setDocumentation(docs[i])
@@ -233,15 +216,15 @@ class EnumProcessor(processingEnv: ProcessingEnvironment) : PolicyProcessor<Enum
 
     private fun getElementForIdentifier(
         identifiers: List<String>,
-        intDefElement: TypeElement
+        intDefElement: TypeElement,
     ): List<Element> =
-
         identifiers.mapNotNull { identifier ->
             // TODO(b/442973945): Support identifiers outside of same class.
             // Get the element pointing the field, ENUM_ENTRY_1 in our example.
-            val element = intDefElement.enclosingElement.enclosedElements.firstOrNull {
-                it.simpleName.toString() == identifier
-            }
+            val element =
+                intDefElement.enclosingElement.enclosedElements.firstOrNull {
+                    it.simpleName.toString() == identifier
+                }
 
             if (element == null) {
                 // We skip fields if we can't find them.
@@ -256,9 +239,7 @@ class EnumProcessor(processingEnv: ProcessingEnvironment) : PolicyProcessor<Enum
         fields.map { element ->
             // Our example has no javadoc, but this would get ENUM_ENTRY_1's documentation.
             val documentation =
-                processingEnv.elementUtils.getDocComment(element)
-                    ?.trimIndent()
-                    ?: ""
+                processingEnv.elementUtils.getDocComment(element)?.trimIndent() ?: ""
 
             if (documentation.trim().isEmpty()) {
                 printError(element, "Missing JavaDoc")
@@ -282,11 +263,10 @@ class EnumProcessor(processingEnv: ProcessingEnvironment) : PolicyProcessor<Enum
             return null
         }
 
-        /**
-         * Called when the identifier used in IntDef is a member of the class.
-         */
+        /** Called when the identifier used in IntDef is a member of the class. */
         override fun visitMemberSelect(
-            node: MemberSelectTree, identifiers: ArrayList<String>
+            node: MemberSelectTree,
+            identifiers: ArrayList<String>,
         ): Void? {
             identifiers.add(node.identifier.toString())
 
@@ -297,8 +277,8 @@ class EnumProcessor(processingEnv: ProcessingEnvironment) : PolicyProcessor<Enum
          * Called when the identifier in IntDef is an arbitrary identifier pointing outside the
          * current class.
          *
-         * This is not present in the class-level example above, but was added to be consistent
-         * with the original @IntDef processor logic.
+         * This is not present in the class-level example above, but was added to be consistent with
+         * the original @IntDef processor logic.
          */
         override fun visitIdentifier(node: IdentifierTree, identifiers: ArrayList<String>): Void? {
             identifiers.add(node.name.toString())

@@ -58,7 +58,6 @@ import android.view.WindowMetrics;
 import android.view.accessibility.AccessibilityManager;
 import android.view.animation.Animation;
 import android.widget.FrameLayout;
-import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -324,35 +323,32 @@ class MenuViewLayer extends FrameLayout implements
         adapter.setMoreOptionsClickListener(this);
     }
 
-    @VisibleForTesting
-    PopupMenu createPopupMenu(Context context, View anchor) {
-        return new PopupMenu(context, anchor);
-    }
-
     @Override
     public void onMoreOptionsClicked(View anchorView) {
-        PopupMenu popup = createPopupMenu(anchorView.getContext(), anchorView);
-        popup.getMenuInflater().inflate(
-                R.menu.more_options_menu,
-                popup.getMenu());
+        final MoreOptionsPopup popup =
+                createMoreOptionsPopup(
+                        new MoreOptionsPopup.OnItemClickListener() {
+                            @Override
+                            public void onEditClicked() {
+                                gotoEditScreen();
+                            }
 
-        popup.setOnMenuItemClickListener(
-                item -> {
-                    int itemId = item.getItemId();
-                    if (itemId == R.id.action_edit) {
-                        gotoEditScreen();
-                        return true;
-                    } else if (itemId == R.id.action_move) {
-                        mMenuViewModel.cycleMenuPosition();
-                        return true;
-                    } else if (itemId == R.id.action_remove_all) {
-                        mDismissMenuAction.run();
-                        return true;
-                    }
-                    return false;
-                });
+                            @Override
+                            public void onMoveClicked() {
+                                mMenuViewModel.cycleMenuPosition();
+                            }
 
-        popup.show();
+                            @Override
+                            public void onRemoveAllClicked() {
+                                mDismissMenuAction.run();
+                            }
+                        });
+        popup.show(anchorView);
+    }
+
+    @VisibleForTesting
+    MoreOptionsPopup createMoreOptionsPopup(MoreOptionsPopup.OnItemClickListener listener) {
+        return new MoreOptionsPopup(getContext(), listener);
     }
 
     private void onPositionChanged(MenuPosition position) {
@@ -422,9 +418,6 @@ class MenuViewLayer extends FrameLayout implements
         mMenuViewModel.getDockTooltipVisibilityData().observeForever(mDockTooltipObserver);
         mMenuViewModel.getMigrationTooltipVisibilityData().observeForever(
                 mMigrationTooltipObserver);
-        mMenuViewModel
-                .getMigrationTooltipVisibilityData()
-                .observeForever(mMigrationTooltipObserver);
         mMenuViewModel.getPositionData().observeForever(mPositionObserver);
         mMessageView.setUndoListener(view -> undo());
         getContext().registerComponentCallbacks(this);

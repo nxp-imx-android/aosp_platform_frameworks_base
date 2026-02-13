@@ -813,7 +813,7 @@ public final class MediaRoute2Info implements Parcelable {
     /**
      * Gets a string that identifies the manufacturer of the underlying device.
      *
-     * <p>May be empty if the provider has not populated this information.
+     * <p>May be null if the provider has not populated this information.
      *
      * <p>The returned string is intended for machine use, and should remain unlocalized and
      * unmodified when creating copies of this object. For example, if creating a new {@link
@@ -825,7 +825,7 @@ public final class MediaRoute2Info implements Parcelable {
      * @see #getDeviceModel()
      */
     @FlaggedApi(Flags.FLAG_ENABLE_DEVICE_MANUFACTURER_AND_MODEL_INFO)
-    @NonNull
+    @Nullable
     public String getDeviceManufacturer() {
         return mDeviceManufacturer;
     }
@@ -833,7 +833,7 @@ public final class MediaRoute2Info implements Parcelable {
     /**
      * Gets a string that identifies the model of the underlying device.
      *
-     * <p>May be empty if the provider has not populated this information.
+     * <p>May be null if the provider has not populated this information.
      *
      * <p>The returned string is intended for machine use, and should remain unlocalized and
      * unmodified when creating copies of this object. For example, if creating a new {@link
@@ -845,7 +845,7 @@ public final class MediaRoute2Info implements Parcelable {
      * @see #getDeviceManufacturer()
      */
     @FlaggedApi(Flags.FLAG_ENABLE_DEVICE_MANUFACTURER_AND_MODEL_INFO)
-    @NonNull
+    @Nullable
     public String getDeviceModel() {
         return mDeviceModel;
     }
@@ -1436,8 +1436,8 @@ public final class MediaRoute2Info implements Parcelable {
         private boolean mIsSystem;
         private Uri mIconUri;
         private CharSequence mDescription;
-        private String mDeviceManufacturer = "";
-        private String mDeviceModel = "";
+        private String mDeviceManufacturer;
+        private String mDeviceModel;
         @ConnectionState
         private int mConnectionState;
         private String mClientPackageName;
@@ -1652,32 +1652,32 @@ public final class MediaRoute2Info implements Parcelable {
         }
 
         /**
-         * Sets a possibly empty string that identifies the manufacturer of the underlying device.
+         * Sets a string that identifies the manufacturer of the underlying device.
          *
-         * <p>The provided string may be empty if the manufacturer is not available, or if the
+         * <p>The provided string may be null if the manufacturer is not available, or if the
          * provider does not intend to share it.
          *
          * <p>See {@link #getDeviceManufacturer()}.
          */
         @FlaggedApi(Flags.FLAG_ENABLE_DEVICE_MANUFACTURER_AND_MODEL_INFO)
         @NonNull
-        public Builder setDeviceManufacturer(@NonNull String deviceManufacturer) {
-            mDeviceManufacturer = Objects.requireNonNull(deviceManufacturer);
+        public Builder setDeviceManufacturer(@Nullable String deviceManufacturer) {
+            mDeviceManufacturer = deviceManufacturer;
             return this;
         }
 
         /**
-         * Sets a possibly empty string that identifies the model of the underlying device.
+         * Sets a string that identifies the model of the underlying device.
          *
-         * <p>The provided string may be empty if the model is not available, or if the provider
-         * does not intend to share it.
+         * <p>The provided string may be null if the model is not available, or if the provider does
+         * not intend to share it.
          *
          * <p>See {@link #getDeviceModel()}.
          */
         @FlaggedApi(Flags.FLAG_ENABLE_DEVICE_MANUFACTURER_AND_MODEL_INFO)
         @NonNull
-        public Builder setDeviceModel(@NonNull String deviceModel) {
-            mDeviceModel = Objects.requireNonNull(deviceModel);
+        public Builder setDeviceModel(@Nullable String deviceModel) {
+            mDeviceModel = deviceModel;
             return this;
         }
 

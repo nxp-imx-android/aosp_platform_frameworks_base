@@ -28,6 +28,8 @@ import static com.android.wallpaperbackup.WallpaperEventLogger.ERROR_NO_METADATA
 import static com.android.wallpaperbackup.WallpaperEventLogger.ERROR_NO_WALLPAPER;
 import static com.android.wallpaperbackup.WallpaperEventLogger.ERROR_QUOTA_EXCEEDED;
 
+import android.annotation.FlaggedApi;
+import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.AppGlobals;
 import android.app.WallpaperManager;
@@ -36,6 +38,7 @@ import android.app.backup.BackupDataInput;
 import android.app.backup.BackupDataOutput;
 import android.app.backup.BackupManager;
 import android.app.backup.BackupRestoreEventLogger.BackupRestoreError;
+import android.app.backup.DelayedRestoreRequest;
 import android.app.backup.FullBackupDataOutput;
 import android.app.wallpaper.WallpaperDescription;
 import android.content.ComponentName;
@@ -65,6 +68,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.content.PackageMonitor;
 import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
+import com.android.server.backup.Flags;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -74,8 +78,10 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 /**
  * Backs up and restores wallpaper and metadata related to it.
@@ -505,6 +511,8 @@ public class WallpaperBackupAgent extends BackupAgent {
         final File lockImageStage = new File(filesDir, LOCK_WALLPAPER_STAGE);
         final File deviceDimensionsStage = new File(filesDir, WALLPAPER_BACKUP_DEVICE_INFO_STAGE);
         boolean lockImageStageExists = lockImageStage.exists();
+        boolean finishedProcessingLiveWallpaper = true;
+        Set<String> scheduledPackageRestores = new HashSet<>();
 
         try {
             // Parse the device dimensions of the source device
@@ -536,17 +544,28 @@ public class WallpaperBackupAgent extends BackupAgent {
 
             // And reset to the wallpaper service we should be using
             if (mLockHasLiveComponent) {
-                updateWallpaperComponent(kwpService, FLAG_LOCK);
+                finishedProcessingLiveWallpaper &= updateWallpaperComponent(kwpService, FLAG_LOCK,
+                        scheduledPackageRestores);
             }
-            updateWallpaperComponent(wpService, sysWhich);
+            finishedProcessingLiveWallpaper &= updateWallpaperComponent(wpService, sysWhich,
+                    scheduledPackageRestores);
         } catch (Exception e) {
             Slog.e(TAG, "Unable to restore wallpaper: " + e.getMessage());
             mEventLogger.onRestoreException(e);
         } finally {
             Slog.v(TAG, "Restore finished; clearing backup bookkeeping");
-            infoStage.delete();
+            if (Flags.enableDelayedRestoreApi()) {
+                // Only delete the info stage and lock image stage if we've successfully restored
+                // the live wallpaper, otherwise we'll need it for the delayed restore.
+                if (finishedProcessingLiveWallpaper) {
+                    infoStage.delete();
+                    lockImageStage.delete();
+                }
+            } else {
+                infoStage.delete();
+                lockImageStage.delete();
+            }
             imageStage.delete();
-            lockImageStage.delete();
             deviceDimensionsStage.delete();
 
             SharedPreferences prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
@@ -555,6 +574,42 @@ public class WallpaperBackupAgent extends BackupAgent {
                     .putInt(LOCK_GENERATION, -1)
                     .commit();
         }
+    }
+
+    // Returns true if all dependency packages were installed so that we can delete the info stage.
+    private boolean setLiveWallpapers(File infoStage, String dependencyPackageName,
+            boolean lockImageStageExists) throws Exception {
+        Pair<ComponentName, WallpaperDescription> wpService =
+                parseWallpaperComponent(infoStage, "wp");
+        boolean systemHasLiveComponent = wpService.first != null;
+
+        Pair<ComponentName, WallpaperDescription> kwpService =
+                parseWallpaperComponent(infoStage, "kwp");
+        boolean lockHasLiveComponent = kwpService.first != null;
+
+        ComponentName lockComponent = null;
+        if (lockHasLiveComponent) {
+            WallpaperDescription description = kwpService.second;
+            boolean hasDescription = description != null;
+            lockComponent = hasDescription ? description.getComponent() : kwpService.first;
+
+            applyDelayedRestore(lockComponent, FLAG_LOCK, dependencyPackageName);
+        }
+        ComponentName systemComponent = null;
+        if (systemHasLiveComponent) {
+            WallpaperDescription description = wpService.second;
+            boolean hasDescription = description != null;
+            systemComponent =
+                    hasDescription ? description.getComponent() : wpService.first;
+            int which =
+                    lockHasLiveComponent || lockImageStageExists
+                            ? FLAG_SYSTEM
+                            : FLAG_SYSTEM | FLAG_LOCK;
+            applyDelayedRestore(systemComponent, which, dependencyPackageName);
+        }
+
+        return (!systemHasLiveComponent || servicePackageExists(systemComponent))
+                && (!lockHasLiveComponent || servicePackageExists(lockComponent));
     }
 
     /**
@@ -608,7 +663,8 @@ public class WallpaperBackupAgent extends BackupAgent {
     }
 
     @VisibleForTesting
-    void updateWallpaperComponent(Pair<ComponentName, WallpaperDescription> wpService, int which)
+    boolean updateWallpaperComponent(Pair<ComponentName, WallpaperDescription> wpService, int which,
+            Set<String> scheduledPackageRestores)
             throws IOException {
         WallpaperDescription description = wpService.second;
         boolean hasDescription = description != null;
@@ -639,10 +695,45 @@ public class WallpaperBackupAgent extends BackupAgent {
             // in reports from users
             if (component != null) {
                 // TODO(b/268471749): Handle delayed case
-                applyComponentAtInstall(component, description, which);
+                if (Flags.enableDelayedRestoreApi()) {
+                    String packageName = component.getPackageName();
+                    if (!scheduledPackageRestores.contains(packageName)) {
+                        DelayedRestoreRequest request = new DelayedRestoreRequest.Builder(
+                                DelayedRestoreRequest.TYPE_APP_INSTALL)
+                                .setPackageName(packageName)
+                                .build();
+                        mBackupManager.scheduleDelayedRestore(request);
+                        scheduledPackageRestores.add(packageName);
+                    }
+                } else {
+                    applyComponentAtInstall(component, description, which);
+                }
                 Slog.w(TAG, "Wallpaper service " + component + " isn't available. "
                         + " Will try to apply later");
+                return false;
             }
+        }
+        return true;
+    }
+
+    @Override
+    @FlaggedApi(Flags.FLAG_ENABLE_DELAYED_RESTORE_API)
+    public void onDelayedFullRestore(@NonNull DelayedRestoreRequest request) {
+        // App is installed. Apply live wallpaper now
+        final File filesDir = getFilesDir();
+        final File infoStage = new File(filesDir, WALLPAPER_INFO_STAGE);
+        final File lockImageStage = new File(filesDir, LOCK_WALLPAPER_STAGE);
+        try {
+            Slog.d(TAG, "onDelayedFullRestore WallpaperBackupAgent");
+            boolean canDeleteInfoStage =
+                    setLiveWallpapers(infoStage, request.getPackageName(), lockImageStage.exists());
+
+            if (!isDeviceInRestore() || canDeleteInfoStage) {
+                infoStage.delete();
+                lockImageStage.delete();
+            }
+        } catch (Exception e) {
+            Slog.e(TAG, e.toString());
         }
     }
 
@@ -1169,6 +1260,51 @@ public class WallpaperBackupAgent extends BackupAgent {
         PackageMonitor packageMonitor = getWallpaperPackageMonitor(componentName, description,
                 which);
         packageMonitor.register(getBaseContext(), null, true);
+    }
+
+    private void applyDelayedRestore(
+            ComponentName componentName, int which, String dependencyPackageName) {
+        if (!isDeviceInRestore()) {
+            // We don't want to reapply the wallpaper outside a restore.
+            // We have finished restore and not succeeded, so let's log that as an error.
+            WallpaperEventLogger logger = new WallpaperEventLogger(
+                    mBackupManager.getDelayedRestoreLogger());
+            if ((which & FLAG_SYSTEM) != 0) {
+                logger.onSystemLiveWallpaperRestoreFailed(
+                        WallpaperEventLogger.ERROR_LIVE_PACKAGE_NOT_INSTALLED);
+            }
+            if ((which & FLAG_LOCK) != 0) {
+                logger.onLockLiveWallpaperRestoreFailed(
+                        WallpaperEventLogger.ERROR_LIVE_PACKAGE_NOT_INSTALLED);
+            }
+            mBackupManager.reportDelayedRestoreResult(logger.getBackupRestoreLogger());
+            return;
+        }
+        if (componentName.getPackageName().equals(dependencyPackageName)) {
+            Slog.d(TAG, "Applying component " + componentName);
+            boolean success = mWallpaperManager.setWallpaperComponentWithFlags(
+                    componentName, which);
+            WallpaperEventLogger logger = new WallpaperEventLogger(
+                    mBackupManager.getDelayedRestoreLogger());
+            if (success) {
+                if ((which & FLAG_SYSTEM) != 0) {
+                    logger.onSystemLiveWallpaperRestored(componentName);
+                }
+                if ((which & FLAG_LOCK) != 0) {
+                    logger.onLockLiveWallpaperRestored(componentName);
+                }
+            } else {
+                if ((which & FLAG_SYSTEM) != 0) {
+                    logger.onSystemLiveWallpaperRestoreFailed(
+                            WallpaperEventLogger.ERROR_SET_COMPONENT_EXCEPTION);
+                }
+                if ((which & FLAG_LOCK) != 0) {
+                    logger.onLockLiveWallpaperRestoreFailed(
+                            WallpaperEventLogger.ERROR_SET_COMPONENT_EXCEPTION);
+                }
+            }
+            mBackupManager.reportDelayedRestoreResult(logger.getBackupRestoreLogger());
+        }
     }
 
     @VisibleForTesting

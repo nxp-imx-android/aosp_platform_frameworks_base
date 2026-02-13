@@ -27,7 +27,7 @@ import android.annotation.Nullable;
 import android.annotation.PermissionManuallyEnforced;
 import android.annotation.RequiresNoPermission;
 import android.annotation.UserIdInt;
-import android.app.contentrestriction.Content;
+import android.app.contentrestriction.ClassifiableContent;
 import android.app.contentrestriction.IContentRestrictionCallback;
 import android.app.contentrestriction.IContentRestrictionManager;
 import android.app.contentrestriction.IContentRestrictionAppService;
@@ -126,8 +126,9 @@ public class ContentRestrictionService extends IContentRestrictionManager.Stub {
 
     @Override
     @PermissionManuallyEnforced
-    public void isContentAllowed(
-            @UserIdInt int userId, Content content, IContentRestrictionCallback callback) {
+    public void requestClassification(
+            @UserIdInt int userId, ClassifiableContent content,
+            IContentRestrictionCallback callback) {
         if (UserHandle.getUserId(Binder.getCallingUid()) != userId) {
             enforcePermission(INTERACT_ACROSS_USERS);
         }

@@ -21,7 +21,6 @@ import android.animation.ValueAnimator
 import android.app.ActivityManager.RunningTaskInfo
 import android.graphics.Point
 import android.os.Handler
-import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.testing.TestableLooper
@@ -29,7 +28,6 @@ import android.view.View
 import android.view.animation.LinearInterpolator
 import android.widget.ImageButton
 import androidx.test.filters.SmallTest
-import com.android.internal.policy.SystemBarUtils
 import com.android.window.flags.Flags
 import com.android.wm.shell.R
 import com.android.wm.shell.ShellTestCase
@@ -45,8 +43,6 @@ import org.junit.After
 import org.junit.Before
 import org.junit.runner.RunWith
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.spy
-import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 /**
@@ -90,29 +86,6 @@ class AppHandleViewHolderTest : ShellTestCase() {
     @After
     fun tearDown() {
         ValueAnimator.setDurationScale(1f)
-    }
-
-    @Test
-    @DisableFlags(
-        Flags.FLAG_ENABLE_REMOVE_STATUS_BAR_INPUT_LAYER,
-        Flags.FLAG_ENABLE_DRAWING_APP_HANDLE,
-    )
-    fun statusBarInputLayer_disposedWhenCaptionBelowStatusBar() {
-        val appHandleViewHolder: AppHandleViewHolder = spy(createAppHandleViewHolder(mockView))
-        val captionPosition = Point(0, SystemBarUtils.getStatusBarHeight(mContext) + 10)
-
-        appHandleViewHolder.bindData(
-            AppHandleViewHolder.HandleData(
-                taskInfo = mockTaskInfo,
-                position = captionPosition,
-                width = DEFAULT_CAPTION_WIDTH,
-                height = DEFAULT_CAPTION_HEIGHT,
-                showInputLayer = DEFAULT_SHOW_INPUT_LAYER,
-                isCaptionVisible = DEFAULT_IS_CAPTION_VISIBLE,
-            )
-        )
-
-        verify(appHandleViewHolder).disposeStatusBarInputLayer()
     }
 
     @Test

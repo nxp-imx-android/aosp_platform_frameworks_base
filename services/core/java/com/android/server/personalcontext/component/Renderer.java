@@ -16,6 +16,7 @@
 
 package com.android.server.personalcontext.component;
 
+import android.annotation.Nullable;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.insight.ContextInsight;
 
@@ -35,6 +36,11 @@ public interface Renderer extends Component {
 
     /** Mints a RenderToken for this renderer. */
     default RenderToken mintRenderToken() {
-        return new RenderToken(getComponentId());
+        return new RenderToken(getComponentId(), null);
+    }
+
+    /** Mints a RenderToken with given tag for this renderer. */
+    default RenderToken mintRenderToken(@Nullable String tag) {
+        return new RenderToken(getComponentId(), tag);
     }
 }

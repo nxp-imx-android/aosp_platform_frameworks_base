@@ -19,12 +19,12 @@ package com.android.systemui.accessibility.shortcutchooser.ui.startable
 import android.view.accessibility.Flags as AccessibilityFlags
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.app.tracing.coroutines.launchTraced
 import com.android.systemui.CoreStartable
 import com.android.systemui.Flags as SystemUIFlags
 import com.android.systemui.accessibility.shortcutchooser.shared.model.AccessibilityTargetModel
+import com.android.systemui.accessibility.shortcutchooser.ui.composable.NavBarMoreOptionsDialogContent
 import com.android.systemui.accessibility.shortcutchooser.ui.composable.QuickAccessDialogContent
 import com.android.systemui.accessibility.shortcutchooser.ui.composable.ServiceWarningDialogContent
 import com.android.systemui.accessibility.shortcutchooser.ui.composable.ShortcutEditorDialogContent
@@ -171,6 +171,26 @@ constructor(
                                     }
                                 },
                                 targets = allTargets,
+                            )
+                        }
+                        DialogType.NAV_BAR_CHOOSER -> {
+                            val assignedTargets by
+                                remember(shortcutType) {
+                                        viewModel.getAssignedAccessibilityTargets(shortcutType)
+                                    }
+                                    .collectAsStateWithLifecycle(emptyList())
+
+                            NavBarMoreOptionsDialogContent(
+                                targets = assignedTargets,
+                                selectedTarget = viewModel.accessibilityButtonTargetComponent,
+                                onTargetSelected = { target ->
+                                    with(applicationScope) {
+                                        launchTraced {
+                                            viewModel.onNavBarTargetSelected(target.targetName)
+                                        }
+                                    }
+                                },
+                                onDoneClick = { viewModel.dismissDialog() },
                             )
                         }
                         else -> {}

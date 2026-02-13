@@ -44,6 +44,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 
 /**
  * A client object that registers with the personal context engine in order to receive a
@@ -96,8 +97,8 @@ public class InsightSurfaceClient implements AutoCloseable {
         /**
          * The size of the embedded surface has changed. Subclasses can override this method to be
          * informed of the size change.
-         * @param width the new width of the surface
-         * @param height the new height of the surface
+         * @param width the new width of the surface in pixels
+         * @param height the new height of the surface in pixels
          */
         default void onSizeChanged(int width, int height) {
         }
@@ -131,10 +132,11 @@ public class InsightSurfaceClient implements AutoCloseable {
         }
 
         /**
-         * An error has occurred. Subclasses can override this method to be informed of errors.
-         * @param exception an {@link Exception} representing the error
+         * An error has occurred with an {@link InsightSurfaceSession}. Subclasses can override this
+         * method to be informed of errors.
+         * @param exception the {@link InsightSurfaceSessionException} representing the error
          */
-        default void onError(@NonNull Exception exception) {
+        default void onError(@NonNull InsightSurfaceSessionException exception) {
         }
     }
 
@@ -144,13 +146,16 @@ public class InsightSurfaceClient implements AutoCloseable {
     private final Context mContext;
     @NonNull
     private final List<InsightReceiver> mInsightReceivers;
-    @NonNull
-    private final ClientCallback mCallbacks;
-    @NonNull
-    private final Executor mCallbacksExecutor;
+    @Nullable
+    private CallbackWrapper mCallbacks;
     @NonNull
     private final List<ContextHint> mHints;
     private boolean mIsRegistered;
+
+    private record CallbackWrapper(
+            @NonNull Executor executor,
+            @NonNull ClientCallback callbacks) {
+    }
 
     private final IInsightSurfaceClient mClient =
             new IInsightSurfaceClient.Stub() {
@@ -161,14 +166,14 @@ public class InsightSurfaceClient implements AutoCloseable {
                     if (DEBUG) {
                         Log.d(TAG, "onSurfaceCreated [" + surfacePackage + "]");
                     }
-                    mCallbacksExecutor.execute(() -> {
+                    executeWithCallbacks(clientCallback -> {
                         if (mSession != null) {
                             mSession.close();
-                            mCallbacks.onSessionDestroyed(mSession);
+                            clientCallback.onSessionDestroyed(mSession);
                         }
                         mSession = new InsightSurfaceSession(
                                 mContext, InsightSurfaceClient.this, surfacePackage, session);
-                        mCallbacks.onSessionCreated(mSession);
+                        clientCallback.onSessionCreated(mSession);
                     });
                 }
 
@@ -178,11 +183,11 @@ public class InsightSurfaceClient implements AutoCloseable {
                     if (DEBUG) {
                         Log.d(TAG, "onSurfaceReleased [" + surfacePackage + "]");
                     }
-                    mCallbacksExecutor.execute(() -> {
+                    executeWithCallbacks(clientCallback -> {
                         if (mSession != null) {
                             Preconditions.checkState(
                                     mSession.getSurfacePackage() == surfacePackage);
-                            mCallbacks.onSessionDestroyed(mSession);
+                            clientCallback.onSessionDestroyed(mSession);
                             mSession.close();
                             mSession = null;
                         }
@@ -194,10 +199,10 @@ public class InsightSurfaceClient implements AutoCloseable {
                     if (DEBUG) {
                         Log.d(TAG, "onSurfaceUpdated [" + surfacePackage + "]");
                     }
-                    mCallbacksExecutor.execute(() -> {
+                    executeWithCallbacks(clientCallback -> {
                         Preconditions.checkState(
                                 mSession != null && mSession.getSurfacePackage() == surfacePackage);
-                        mCallbacks.onSessionUpdated(mSession);
+                        clientCallback.onSessionUpdated(mSession);
                     });
                 }
 
@@ -207,7 +212,7 @@ public class InsightSurfaceClient implements AutoCloseable {
                     if (DEBUG) {
                         Log.d(TAG, "onInsightReceived [" + insight + "]");
                     }
-                    mCallbacksExecutor.execute(() ->
+                    executeWithCallbacks(clientCallback ->
                             mInsightReceivers.forEach((receiver) -> receiver.onReceive(insight)));
                 }
 
@@ -216,8 +221,8 @@ public class InsightSurfaceClient implements AutoCloseable {
                     if (DEBUG) {
                         Log.d(TAG, "onSizeChanged [width=" + width + ", height=" + height + "]");
                     }
-                    mCallbacksExecutor.execute(() ->
-                            mCallbacks.onSizeChanged(width, height));
+                    executeWithCallbacks(clientCallback ->
+                            clientCallback.onSizeChanged(width, height));
                 }
             };
 
@@ -230,15 +235,10 @@ public class InsightSurfaceClient implements AutoCloseable {
             boolean nestedScrollAxisLocked,
             boolean shouldBlur,
             @Nullable String themeResourceName,
-            @NonNull ClientCallback callbacks,
-            @NonNull Executor callbacksExecutor,
             @NonNull List<ContextHint> hints,
             @NonNull List<InsightReceiver> receivers) {
         mContext = context;
         mHints = List.copyOf(hints);
-
-        mCallbacks = callbacks;
-        mCallbacksExecutor = callbacksExecutor;
         mInsightReceivers = List.copyOf(receivers);
 
         mClientInfo = new InsightSurfaceClientInfo(
@@ -361,9 +361,15 @@ public class InsightSurfaceClient implements AutoCloseable {
 
     /**
      * Register with the personal context engine. Once registered, the client can receive a
-     * {@link SurfaceControlViewHost.SurfacePackage} via {@link ClientCallback}.
+     * {@link SurfaceControlViewHost.SurfacePackage} via {@link ClientCallback}. Calling this
+     * method more than once (without calling {@link #unregister()} is a nop.
+     *
+     * @param callbacksExecutor an optional {@link Executor} with which to execute callback methods
+     * @param callbacks {@link ClientCallback} to be notified of connection events
      */
-    public void register() {
+    public void register(
+            @Nullable Executor callbacksExecutor,
+            @NonNull ClientCallback callbacks) {
         if (DEBUG) {
             Log.d(TAG, "registering client...");
         }
@@ -378,11 +384,17 @@ public class InsightSurfaceClient implements AutoCloseable {
                 mContext.getSystemService(PersonalContextManager.class);
         personalContextManager.registerInsightSurfaceClient(mClientInfo, mHints);
 
+        mCallbacks = new CallbackWrapper(
+                callbacksExecutor != null ? callbacksExecutor : mContext.getMainExecutor(),
+                callbacks);
         mIsRegistered = true;
     }
 
     /**
-     * Unregister from the personal context engine.
+     * Unregister from the personal context engine. If the client has acquired a
+     * {@link SurfaceControlViewHost.SurfacePackage}, then it will be released automatically when
+     * this method is called (it will also be released if the connection to the visualizer is
+     * disconnected for any reason).
      */
     public void unregister() {
         if (DEBUG) {
@@ -399,10 +411,12 @@ public class InsightSurfaceClient implements AutoCloseable {
         personalContextManager.unregisterInsightSurfaceClient(mClientInfo);
 
         if (mSession != null) {
+            // Closing the session releases the SurfacePackage it wraps.
             mSession.close();
             mSession = null;
         }
 
+        mCallbacks = null;
         mIsRegistered = false;
     }
 
@@ -434,11 +448,16 @@ public class InsightSurfaceClient implements AutoCloseable {
         return oldClientInfo;
     }
 
+    private void executeWithCallbacks(Consumer<ClientCallback> action) {
+        if (mCallbacks == null) {
+            return;
+        }
+        mCallbacks.executor().execute(() -> action.accept(mCallbacks.callbacks()));
+    }
+
     /** Builder used to build a new {@link InsightSurfaceClient}. */
     public static final class Builder {
         private final Context mContext;
-        private final ClientCallback mCallbacks;
-        private final Executor mCallbacksExecutor;
         private final List<InsightReceiver> mReceivers = new ArrayList<>();
         private final List<ContextHint> mHints = new ArrayList<>();
         private int mWidthMeasureSpec =
@@ -455,26 +474,9 @@ public class InsightSurfaceClient implements AutoCloseable {
          * Construct a new builder.
          *
          * @param context a {@link Context} used to fetch system services
-         * @param callbacks {@link ClientCallback} to be notified of connection events
          */
-        public Builder(@NonNull Context context, @NonNull ClientCallback callbacks) {
-            this(context, context.getMainExecutor(), callbacks);
-        }
-
-        /**
-         * Construct a new builder.
-         *
-         * @param context a {@link Context} used to fetch system services
-         * @param callbacks {@link ClientCallback} to be notified of connection events
-         * @param callbacksExecutor an {@link Executor} with which to execute callback methods
-         */
-        public Builder(
-                @NonNull Context context,
-                @NonNull Executor callbacksExecutor,
-                @NonNull ClientCallback callbacks) {
+        public Builder(@NonNull Context context) {
             mContext = context;
-            mCallbacksExecutor = callbacksExecutor;
-            mCallbacks = callbacks;
         }
 
         /**
@@ -613,8 +615,6 @@ public class InsightSurfaceClient implements AutoCloseable {
                     mNestedScrollAxisLocked,
                     mShouldBlur,
                     mThemeResourceName,
-                    mCallbacks,
-                    mCallbacksExecutor,
                     mHints,
                     mReceivers);
         }

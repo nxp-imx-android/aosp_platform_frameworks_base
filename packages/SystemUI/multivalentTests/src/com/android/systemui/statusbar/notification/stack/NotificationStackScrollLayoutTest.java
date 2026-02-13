@@ -50,6 +50,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.annotation.DimenRes;
+import android.content.res.Configuration;
 import android.graphics.Insets;
 import android.graphics.Rect;
 import android.graphics.RectF;
@@ -2312,5 +2313,49 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
     private ShadeScrimShape createScrimShape(int left, int top, int right, int bottom) {
         ShadeScrimBounds bounds = new ShadeScrimBounds(left, top, right, bottom);
         return new ShadeScrimShape(bounds, 0, 0);
+    }
+
+    @Test
+    @EnableSceneContainer
+    public void testUpdateSidePadding_useSceneContainerState() {
+        // GIVEN: landscape orientation
+        Configuration configuration = new Configuration();
+        configuration.orientation = Configuration.ORIENTATION_LANDSCAPE;
+        mTestableResources.overrideConfiguration(configuration);
+        final int mMinimumPaddings = px(R.dimen.notification_side_paddings);
+
+        // WHEN: useLargeSidePaddings is true
+        mStackScroller.setUseLargeSidePaddings(true);
+        mStackScroller.updateSidePadding(1000);
+        // THEN: side paddings are greater than minimum
+        assertThat(mStackScroller.getSidePaddings()).isGreaterThan(mMinimumPaddings);
+
+        // WHEN: useLargeSidePaddings is false
+        mStackScroller.setUseLargeSidePaddings(false);
+        mStackScroller.updateSidePadding(1000);
+        // THEN: side paddings are equal to minimum
+        assertThat(mStackScroller.getSidePaddings()).isEqualTo(mMinimumPaddings);
+    }
+
+    @Test
+    @DisableSceneContainer
+    public void testUpdateSidePadding_usesSplitShadeStatus() {
+        // GIVEN: landscape orientation
+        Configuration configuration = new Configuration();
+        configuration.orientation = Configuration.ORIENTATION_LANDSCAPE;
+        mTestableResources.overrideConfiguration(configuration);
+        final int mMinimumPaddings = px(R.dimen.notification_side_paddings);
+
+        // WHEN: split shade is disabled
+        mStackScroller.setSplitShade(false);
+        mStackScroller.updateSidePadding(1000);
+        // THEN: side paddings are greater than minimum
+        assertThat(mStackScroller.getSidePaddings()).isGreaterThan(mMinimumPaddings);
+
+        // WHEN: split shade is enabled
+        mStackScroller.setSplitShade(true);
+        mStackScroller.updateSidePadding(1000);
+        // THEN: side paddings are equal to minimum
+        assertThat(mStackScroller.getSidePaddings()).isEqualTo(mMinimumPaddings);
     }
 }

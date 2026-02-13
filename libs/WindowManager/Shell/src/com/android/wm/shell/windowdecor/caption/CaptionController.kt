@@ -162,14 +162,13 @@ abstract class CaptionController<T>(
 
             logD(
                 "relayout with taskBounds=%s captionSize=%dx%d captionTopPadding=%d " +
-                    "captionX=%d captionY=%d elements=%s customizableCaptionRegion=%s " +
+                    "captionX=%d captionY=$captionY elements=%s customizableCaptionRegion=%s " +
                     "touchableRegion=%s",
                 taskBounds,
                 captionHeight,
                 captionWidth,
                 captionTopPadding,
                 captionX,
-                captionY,
                 elements,
                 customizableCaptionRegion.toReadableString(),
                 touchableRegion,

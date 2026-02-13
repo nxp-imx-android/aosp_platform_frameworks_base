@@ -183,6 +183,7 @@ android_app {
         "android.permission.flags-aconfig",
         "android.companion.flags-aconfig",
         "android.os.flags-aconfig",
+        "android.os.multisensory.flags-aconfig",
         "android.os.vibrator.flags-aconfig",
         "android.media.tv.flags-aconfig",
         "android.security.flags-aconfig",

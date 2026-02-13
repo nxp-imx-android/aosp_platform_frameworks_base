@@ -29,7 +29,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.ServiceManager;
-import android.os.vibrator.Flags;
 import android.os.vibrator.IHapticChannelStream;
 import android.util.IndentingPrintWriter;
 import android.util.LongSparseArray;
@@ -169,9 +168,7 @@ class VintfHalVibratorManager {
             // Reset the hardware to a default state.
             // In case this is a runtime restart instead of a fresh boot.
             cancelSynced();
-            if (Flags.vendorVibrationEffects()) {
-                clearSessions();
-            }
+            clearSessions();
         }
 
         @Override

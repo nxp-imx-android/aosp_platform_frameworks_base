@@ -65,14 +65,11 @@ import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.testing.TestableLooper;
 import android.util.ArraySet;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.view.WindowMetrics;
 import android.view.accessibility.AccessibilityManager;
-import android.widget.PopupMenu;
 
 import androidx.dynamicanimation.animation.DynamicAnimation;
 import androidx.dynamicanimation.animation.SpringAnimation;
@@ -457,69 +454,45 @@ public class MenuViewLayerTest extends SysuiTestCase {
     @Test
     public void onMoreOptionsClicked_edit_dispatchesEditAction() {
         final View mockView = mock(View.class);
-        final PopupMenu mockPopupMenu = mock(PopupMenu.class);
-        final MenuInflater mockMenuInflater = mock(MenuInflater.class);
-        final ArgumentCaptor<PopupMenu.OnMenuItemClickListener> listenerCaptor =
-                ArgumentCaptor.forClass(PopupMenu.OnMenuItemClickListener.class);
-        final MenuItem mockMenuItem = mock(MenuItem.class);
-        when(mockMenuItem.getItemId()).thenReturn(R.id.action_edit);
-        when(mockPopupMenu.getMenu()).thenReturn(mock(android.view.Menu.class));
-        when(mockPopupMenu.getMenuInflater()).thenReturn(mockMenuInflater);
-        doReturn(mockPopupMenu).when(mMenuViewLayer).createPopupMenu(any(), eq(mockView));
+        final MoreOptionsPopup mockPopup = mock(MoreOptionsPopup.class);
+        final ArgumentCaptor<MoreOptionsPopup.OnItemClickListener> listenerCaptor =
+                ArgumentCaptor.forClass(MoreOptionsPopup.OnItemClickListener.class);
+        doReturn(mockPopup).when(mMenuViewLayer).createMoreOptionsPopup(listenerCaptor.capture());
 
         mMenuViewLayer.onMoreOptionsClicked(mockView);
 
-        verify(mockPopupMenu).getMenuInflater();
-        verify(mockMenuInflater).inflate(eq(R.menu.more_options_menu), any());
-        verify(mockPopupMenu).show();
-        verify(mockPopupMenu).setOnMenuItemClickListener(listenerCaptor.capture());
-        listenerCaptor.getValue().onMenuItemClick(mockMenuItem);
+        verify(mockPopup).show(mockView);
+        listenerCaptor.getValue().onEditClicked();
         verify(mMenuViewLayer).gotoEditScreen();
     }
 
     @Test
     public void onMoreOptionsClicked_move_cyclesPosition() {
         final View mockView = mock(View.class);
-        final PopupMenu mockPopupMenu = mock(PopupMenu.class);
-        final MenuInflater mockMenuInflater = mock(MenuInflater.class);
-        final ArgumentCaptor<PopupMenu.OnMenuItemClickListener> listenerCaptor =
-                ArgumentCaptor.forClass(PopupMenu.OnMenuItemClickListener.class);
-        final MenuItem mockMenuItem = mock(MenuItem.class);
-        when(mockMenuItem.getItemId()).thenReturn(R.id.action_move);
-        when(mockPopupMenu.getMenu()).thenReturn(mock(android.view.Menu.class));
-        when(mockPopupMenu.getMenuInflater()).thenReturn(mockMenuInflater);
-        doReturn(mockPopupMenu).when(mMenuViewLayer).createPopupMenu(any(), eq(mockView));
+        final MoreOptionsPopup mockPopup = mock(MoreOptionsPopup.class);
+        final ArgumentCaptor<MoreOptionsPopup.OnItemClickListener> listenerCaptor =
+                ArgumentCaptor.forClass(MoreOptionsPopup.OnItemClickListener.class);
+        doReturn(mockPopup).when(mMenuViewLayer).createMoreOptionsPopup(listenerCaptor.capture());
 
         mMenuViewLayer.onMoreOptionsClicked(mockView);
 
-        verify(mockPopupMenu).getMenuInflater();
-        verify(mockMenuInflater).inflate(eq(R.menu.more_options_menu), any());
-        verify(mockPopupMenu).setOnMenuItemClickListener(listenerCaptor.capture());
-        listenerCaptor.getValue().onMenuItemClick(mockMenuItem);
-        verify(mockPopupMenu).show();
+        verify(mockPopup).show(mockView);
+        listenerCaptor.getValue().onMoveClicked();
         verify(mMenuViewModel).cycleMenuPosition();
     }
 
     @Test
     public void onMoreOptionsClicked_removeAll_dismissesMenu() {
         final View mockView = mock(View.class);
-        final PopupMenu mockPopupMenu = mock(PopupMenu.class);
-        final MenuInflater mockMenuInflater = mock(MenuInflater.class);
-        final ArgumentCaptor<PopupMenu.OnMenuItemClickListener> listenerCaptor =
-                ArgumentCaptor.forClass(PopupMenu.OnMenuItemClickListener.class);
-        final MenuItem mockMenuItem = mock(MenuItem.class);
-        when(mockMenuItem.getItemId()).thenReturn(R.id.action_remove_all);
-        when(mockPopupMenu.getMenu()).thenReturn(mock(android.view.Menu.class));
-        when(mockPopupMenu.getMenuInflater()).thenReturn(mockMenuInflater);
-        doReturn(mockPopupMenu).when(mMenuViewLayer).createPopupMenu(any(), eq(mockView));
+        final MoreOptionsPopup mockPopup = mock(MoreOptionsPopup.class);
+        final ArgumentCaptor<MoreOptionsPopup.OnItemClickListener> listenerCaptor =
+                ArgumentCaptor.forClass(MoreOptionsPopup.OnItemClickListener.class);
+        doReturn(mockPopup).when(mMenuViewLayer).createMoreOptionsPopup(listenerCaptor.capture());
 
         mMenuViewLayer.onMoreOptionsClicked(mockView);
 
-        verify(mockPopupMenu).getMenuInflater();
-        verify(mockMenuInflater).inflate(eq(R.menu.more_options_menu), any());
-        verify(mockPopupMenu).setOnMenuItemClickListener(listenerCaptor.capture());
-        listenerCaptor.getValue().onMenuItemClick(mockMenuItem);
-        verify(mockPopupMenu).show();
+        verify(mockPopup).show(mockView);
+        listenerCaptor.getValue().onRemoveAllClicked();
         verify(mFloatingMenu).hide();
     }
 

@@ -86,7 +86,14 @@ object Generator {
             TypeSpec.classBuilder("Policies")
                 .addModifiers(Modifier.PUBLIC)
                 .addMethod(generateLoadPolicyMetadata(policies))
-                .addJavadoc("Generated class to load policy metadata")
+                .addJavadoc(
+                    """
+                    Generated class that contains metadata on all known policies.
+
+                    @hide
+                    """
+                        .trimIndent()
+                )
                 .build()
 
         val javaFile =

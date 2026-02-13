@@ -408,6 +408,11 @@ public class SystemWindows {
         }
 
         @Override
+        public void dispatchScrollToTop(int x) {
+            // no-op
+        }
+
+        @Override
         public void requestHardwareRendererOutputDisabled(boolean disabled) {}
 
         @Override

@@ -129,7 +129,11 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
         }
     private val mainExecutor = FakeExecutor(FakeSystemClock())
     private val shadeAnimationInteractor =
-        ShadeAnimationInteractorLegacyImpl(ShadeAnimationRepository(), FakeShadeRepository())
+        ShadeAnimationInteractorLegacyImpl(
+            ShadeAnimationRepository(),
+            FakeShadeRepository(),
+            mock(),
+        )
 
     @Before
     fun setUp() {

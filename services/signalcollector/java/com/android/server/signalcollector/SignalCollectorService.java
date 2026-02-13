@@ -27,7 +27,8 @@ import android.app.IActivityManager;
 import android.app.UidObserver;
 import android.content.Context;
 import android.os.RemoteException;
-import android.os.binder.BinderSpamStats;
+import android.os.binder.BinderCallsStats;
+import android.os.binder.SingleSecondBinderStats;
 import android.util.Slog;
 import android.util.SparseIntArray;
 
@@ -131,18 +132,21 @@ public final class SignalCollectorService extends SystemService {
         }
     }
 
-    @VisibleForTesting
-    void reportBinderStatsToCollector(BinderSpamStats[] statsArray) {
-        if (mBinderSpamSignalCollector == null) {
-            return;
-        }
-        mBinderSpamSignalCollector.onBinderSpamDataReported(statsArray);
-    }
-
     private final class SignalCollectorManagerInternalImpl extends SignalCollectorManagerInternal {
         @Override
-        public void reportBinderStats(BinderSpamStats[] statsArray) {
-            reportBinderStatsToCollector(statsArray);
+        public void reportBinderStats(BinderCallsStats[] statsArray) {
+            if (mBinderSpamSignalCollector == null) {
+                return;
+            }
+            mBinderSpamSignalCollector.onBinderStatsReported(statsArray);
+        }
+
+        @Override
+        public void reportBinderStats(SingleSecondBinderStats[] statsArray) {
+            if (mBinderSpamSignalCollector == null) {
+                return;
+            }
+            mBinderSpamSignalCollector.onBinderStatsReported(statsArray);
         }
     }
 

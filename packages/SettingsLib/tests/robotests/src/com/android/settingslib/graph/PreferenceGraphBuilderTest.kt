@@ -17,15 +17,24 @@
 package com.android.settingslib.graph
 
 import android.content.Context
-import android.content.ContextWrapper
-import android.content.pm.PackageManager
+
 import android.provider.Settings
+import androidx.fragment.app.Fragment
 import androidx.test.core.app.ApplicationProvider
 import com.android.settingslib.datastore.Permissions
 import com.android.settingslib.metadata.PersistentPreference
+import com.android.settingslib.metadata.PreferenceHierarchy
+import com.android.settingslib.metadata.PreferenceScreenMetadata
 import com.android.settingslib.metadata.ReadWritePermit
 import com.android.settingslib.metadata.SensitivityLevel
+import com.android.settingslib.metadata.ValidatedKeyParameters
+import com.android.settingslib.metadata.preferencesapi.PreferencesApiScreen
+import com.android.settingslib.metadata.preferencesapi.preconditions.Allowed
+import com.android.settingslib.metadata.preferencesapi.types.AnyInt
+import com.android.settingslib.metadata.preferenceHierarchy
+import com.android.settingslib.metadata.preferencesapi.category.Category
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.CoroutineScope
 import org.junit.After
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -104,6 +113,171 @@ class PreferenceGraphBuilderTest {
         val result = preference.evalWritePermit(context, 0, 0)
 
         assertThat(result).isEqualTo(ReadWritePermit.DISALLOW)
+    }
+
+    private val screenMetadata = object : PreferenceScreenMetadata {
+        override val bindingKey: String = "screen_key"
+        override val key: String = "screen_key"
+        override val purpose: Int = 0
+        override fun fragmentClass(): Class<out Fragment>? = null
+
+        override fun getPreferenceHierarchy(
+            context: Context,
+            coroutineScope: CoroutineScope
+        ): PreferenceHierarchy = preferenceHierarchy(context) {}
+    }
+
+    @Test
+    fun toProto_isApiPreference_includesScreenPreconditions() {
+        val screen = object : PreferencesApiScreen(
+            key = "test_api_screen",
+            topLevelSettingsCategory = Category.SYSTEM,
+            fragment = Fragment::class,
+            purpose = 0,
+        ) {
+            init {
+                preconditions("screen_precondition_desc") { Allowed }
+                preference(
+                    key = "test_api_preference",
+                    type = AnyInt,
+                    purpose = 0,
+                ) {
+                    get { execute { 42 } }
+                }
+            }
+        }
+        val preference = screen.preferences.first()
+        val proto = preference.toProto(context, 0, 0, screenMetadata, false, 0)
+        assertThat(proto.getPreconditionsList).containsExactly("screen_precondition_desc")
+    }
+
+    @Test
+    fun toProto_isApiPreference_includesPreconditions() {
+        val screen = object : PreferencesApiScreen(
+            key = "test_api_screen",
+            topLevelSettingsCategory = Category.SYSTEM,
+            fragment = Fragment::class,
+            purpose = 0,
+        ) {
+            init {
+                preference(
+                    key = "test_api_preference",
+                    type = AnyInt,
+                    purpose = 0,
+                ) {
+                    preconditions("precondition_desc") { Allowed }
+                    get { execute { 42 } }
+                }
+            }
+        }
+        val preference = screen.preferences.first()
+        val proto = preference.toProto(context, 0, 0, screenMetadata, false, 0)
+
+        assertThat(proto.getPreconditionsList).containsExactly("precondition_desc")
+    }
+
+    @Test
+    fun toProto_isApiPreference_includesGetPreconditions() {
+        val screen = object : PreferencesApiScreen(
+            key = "test_api_screen",
+            topLevelSettingsCategory = Category.SYSTEM,
+            fragment = Fragment::class,
+            purpose = 0,
+        ) {
+            init {
+                preference(
+                    key = "test_api_preference",
+                    type = AnyInt,
+                    purpose = 0,
+                ) {
+                    get {
+                        preconditions("get_precondition_desc") { Allowed }
+                        execute { 42 }
+                    }
+                }
+            }
+        }
+        val preference = screen.preferences.first()
+        val proto = preference.toProto(context, 0, 0, screenMetadata, false, 0)
+
+        assertThat(proto.getPreconditionsList).containsExactly("get_precondition_desc")
+    }
+
+    @Test
+    fun toProto_isApiPreference_includesSetPreconditions() {
+        val screen = object : PreferencesApiScreen(
+            key = "test_api_screen",
+            topLevelSettingsCategory = Category.SYSTEM,
+            fragment = Fragment::class,
+            purpose = 0,
+        ) {
+            init {
+                preference(
+                    key = "test_api_preference",
+                    type = AnyInt,
+                    purpose = 0,
+                ) {
+                    get {
+                        execute { 1 }
+                    }
+                    set {
+                        preconditions("set_precondition_desc") { Allowed }
+                        execute {}
+                    }
+                }
+            }
+        }
+        val preference = screen.preferences.first()
+        val proto = preference.toProto(context, 0, 0, screenMetadata, false, 0)
+
+        assertThat(proto.setPreconditionsList).containsExactly("set_precondition_desc")
+    }
+
+    @Test
+    fun toProto_isApiPreference_includesSetValuePreconditions() {
+        val screen = object : PreferencesApiScreen(
+            key = "test_api_screen",
+            topLevelSettingsCategory = Category.SYSTEM,
+            fragment = Fragment::class,
+            purpose = 0,
+        ) {
+            init {
+                preference(
+                    key = "test_api_preference",
+                    type = AnyInt,
+                    purpose = 0,
+                ) {
+                    get {
+                        execute { 1 }
+                    }
+                    set {
+                        valuePreconditions("set_value_precondition_desc") { _ -> Allowed }
+                        execute {}
+                    }
+                }
+            }
+        }
+        val preference = screen.preferences.first()
+        val proto = preference.toProto(context, 0, 0, screenMetadata, false, 0)
+
+        assertThat(proto.setPreconditionsList).containsExactly("set_value_precondition_desc")
+    }
+
+    @Test
+    fun toProto_isPreferencesApiScreen_includesGetPreconditions() {
+        val preference = object : PreferencesApiScreen(
+            key = "test_api_screen",
+            topLevelSettingsCategory = Category.SYSTEM,
+            fragment = Fragment::class,
+            purpose = 0,
+        ) {
+            init {
+                preconditions("get_precondition_desc") { Allowed }
+            }
+        }
+        val proto = preference.toProto(context, 0, 0, screenMetadata, false, 0)
+
+        assertThat(proto.getPreconditionsList).containsExactly("get_precondition_desc")
     }
 
     companion object {

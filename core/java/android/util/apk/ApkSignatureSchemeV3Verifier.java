@@ -16,6 +16,9 @@
 
 package android.util.apk;
 
+import static android.util.apk.ApkSignatureVerifierMetrics.logSignatureVerificationBlockFailure;
+import static android.util.apk.ApkSignatureVerifierMetrics.logSignatureVerificationSignerFailure;
+import static android.util.apk.ApkSignatureVerifierMetrics.logSignatureVerificationSuccess;
 import static android.util.apk.ApkSigningBlockUtils.CONTENT_DIGEST_VERITY_CHUNKED_SHA256;
 import static android.util.apk.ApkSigningBlockUtils.compareSignatureAlgorithm;
 import static android.util.apk.ApkSigningBlockUtils.getContentDigestAlgorithmJcaDigestAlgorithm;
@@ -30,6 +33,7 @@ import static android.util.apk.ApkSigningBlockUtils.verifyProofOfRotationStruct;
 import android.os.Build;
 import android.util.ArrayMap;
 import android.util.Pair;
+import android.util.apk.ApkSignatureVerifierMetrics.VerificationResult;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -224,6 +228,10 @@ public class ApkSignatureSchemeV3Verifier {
         try {
             signers = getLengthPrefixedSlice(signatureInfo.signatureBlock);
         } catch (IOException e) {
+            if (blockId == APK_SIGNATURE_SCHEME_V32_BLOCK_ID) {
+                logSignatureVerificationBlockFailure(blockId,
+                        VerificationResult.VERIFICATION_MALFORMED_BLOCK);
+            }
             throw new SecurityException("Failed to read list of signers", e);
         }
         while (signers.hasRemaining()) {
@@ -232,6 +240,10 @@ public class ApkSignatureSchemeV3Verifier {
                 verifiedSigners.add(verifySigner(signer, certFactory));
                 // No V3 signature scheme supports more than 2 signers.
                 if (verifiedSigners.size() > 2) {
+                    if (blockId == APK_SIGNATURE_SCHEME_V32_BLOCK_ID) {
+                        logSignatureVerificationBlockFailure(blockId,
+                                VerificationResult.VERIFICATION_TOO_MANY_SIGNERS);
+                    }
                     throw new SecurityException(
                             "APK Signature Scheme V3 found at least 3 signers targeting this "
                                     + "release");
@@ -270,6 +282,11 @@ public class ApkSignatureSchemeV3Verifier {
                 }
                 result = verifiedSigners.get(0);
                 if (ApkSigningBlockUtils.isCertificatePqc(result.certs[0])) {
+                    if (android.security.Flags.apkPqcHybridSigning()) {
+                        logSignatureVerificationSignerFailure(mBlockId, result.minSdkVersion,
+                                result.maxSdkVersion, result.algorithmId,
+                                VerificationResult.VERIFICATION_PQC_SINGLE_SIGNER);
+                    }
                     throw new SecurityException(
                             "The platform does not currently support single PQC signers in the v3 "
                                     + "signature blocks");
@@ -284,11 +301,23 @@ public class ApkSignatureSchemeV3Verifier {
         }
 
         if (result.contentDigests.isEmpty()) {
+            if (blockId == APK_SIGNATURE_SCHEME_V32_BLOCK_ID) {
+                logSignatureVerificationBlockFailure(blockId,
+                        VerificationResult.VERIFICATION_NO_CONTENT_DIGESTS);
+            }
             throw new SecurityException("No content digests found");
         }
 
         if (mVerifyIntegrity) {
-            ApkSigningBlockUtils.verifyIntegrity(result.contentDigests, mApk, signatureInfo);
+            try {
+                ApkSigningBlockUtils.verifyIntegrity(result.contentDigests, mApk, signatureInfo);
+            } catch (SecurityException e) {
+                if (blockId == APK_SIGNATURE_SCHEME_V32_BLOCK_ID) {
+                    logSignatureVerificationBlockFailure(blockId,
+                            VerificationResult.VERIFICATION_INTEGRITY_MISMATCH);
+                }
+                throw e;
+            }
         }
 
         byte[] verityRootHash = null;
@@ -300,6 +329,10 @@ public class ApkSignatureSchemeV3Verifier {
 
         result.verityRootHash = verityRootHash;
         result.blockId = blockId;
+        if (blockId == APK_SIGNATURE_SCHEME_V32_BLOCK_ID) {
+            logSignatureVerificationSuccess(blockId, result.minSdkVersion, result.maxSdkVersion,
+                    result.algorithmId);
+        }
         return result;
     }
 
@@ -328,6 +361,9 @@ public class ApkSignatureSchemeV3Verifier {
                     // range.
                     int firstSignerMinSdkVersion = mOptionalHybridMinSdkVersion.getAsInt();
                     if (firstSignerMinSdkVersion != minSdkVersion) {
+                        logSignatureVerificationSignerFailure(mBlockId, minSdkVersion,
+                                maxSdkVersion, 0,
+                                VerificationResult.VERIFICATION_V32_SDK_RANGE_MISMATCH);
                         throw new SecurityException(
                                 "Hybrid signer minimum SDK versions do not match; signer1: "
                                         + firstSignerMinSdkVersion + ", signer2: " + minSdkVersion);
@@ -356,6 +392,10 @@ public class ApkSignatureSchemeV3Verifier {
             try {
                 ByteBuffer signature = getLengthPrefixedSlice(signatures);
                 if (signature.remaining() < 8) {
+                    if (mBlockId == APK_SIGNATURE_SCHEME_V32_BLOCK_ID) {
+                        logSignatureVerificationSignerFailure(mBlockId, minSdkVersion,
+                                maxSdkVersion, 0, VerificationResult.VERIFICATION_MALFORMED_SIGNER);
+                    }
                     throw new SecurityException("Signature record too short");
                 }
                 int sigAlgorithm = signature.getInt();
@@ -369,6 +409,10 @@ public class ApkSignatureSchemeV3Verifier {
                     bestSigAlgorithmSignatureBytes = readLengthPrefixedByteArray(signature);
                 }
             } catch (IOException | BufferUnderflowException e) {
+                if (mBlockId == APK_SIGNATURE_SCHEME_V32_BLOCK_ID) {
+                    logSignatureVerificationSignerFailure(mBlockId, minSdkVersion,
+                            maxSdkVersion, 0, VerificationResult.VERIFICATION_MALFORMED_SIGNER);
+                }
                 throw new SecurityException(
                         "Failed to parse signature record #" + signatureCount,
                         e);
@@ -376,8 +420,16 @@ public class ApkSignatureSchemeV3Verifier {
         }
         if (bestSigAlgorithm == -1) {
             if (signatureCount == 0) {
+                if (mBlockId == APK_SIGNATURE_SCHEME_V32_BLOCK_ID) {
+                    logSignatureVerificationSignerFailure(mBlockId, minSdkVersion, maxSdkVersion, 0,
+                            VerificationResult.VERIFICATION_NO_SIGNATURES);
+                }
                 throw new SecurityException("No signatures found");
             } else {
+                if (mBlockId == APK_SIGNATURE_SCHEME_V32_BLOCK_ID) {
+                    logSignatureVerificationSignerFailure(mBlockId, minSdkVersion, maxSdkVersion, 0,
+                            VerificationResult.VERIFICATION_NO_SUPPORTED_SIGNATURES);
+                }
                 throw new SecurityException("No supported signatures found");
             }
         }
@@ -399,12 +451,31 @@ public class ApkSignatureSchemeV3Verifier {
             }
             sig.update(signedData);
             sigVerified = sig.verify(bestSigAlgorithmSignatureBytes);
-        } catch (NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException
-                | InvalidAlgorithmParameterException | SignatureException e) {
+        } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException e) {
+            // For new signature algorithms, these exceptions should be logged separate to track
+            // scenarios where the platform should support a particular algorithm, but the provider
+            // does not.
+            if (mBlockId == APK_SIGNATURE_SCHEME_V32_BLOCK_ID) {
+                logSignatureVerificationSignerFailure(mBlockId, minSdkVersion, maxSdkVersion,
+                        bestSigAlgorithm,
+                        VerificationResult.VERIFICATION_MISSING_SIGNATURE_ALGORITHM);
+            }
+            throw new SecurityException(
+                    "Failed to verify " + jcaSignatureAlgorithm + " signature", e);
+        } catch (InvalidKeySpecException | InvalidKeyException | SignatureException e) {
+            if (mBlockId == APK_SIGNATURE_SCHEME_V32_BLOCK_ID) {
+                logSignatureVerificationSignerFailure(mBlockId, minSdkVersion, maxSdkVersion,
+                        bestSigAlgorithm, VerificationResult.VERIFICATION_MALFORMED_SIGNATURE);
+            }
             throw new SecurityException(
                     "Failed to verify " + jcaSignatureAlgorithm + " signature", e);
         }
         if (!sigVerified) {
+            if (mBlockId == APK_SIGNATURE_SCHEME_V32_BLOCK_ID) {
+                logSignatureVerificationSignerFailure(mBlockId, minSdkVersion, maxSdkVersion,
+                        bestSigAlgorithm,
+                        VerificationResult.VERIFICATION_SIGNATURE_VERIFICATION_FAILED);
+            }
             throw new SecurityException(jcaSignatureAlgorithm + " signature did not verify");
         }
 
@@ -420,6 +491,11 @@ public class ApkSignatureSchemeV3Verifier {
             try {
                 ByteBuffer digest = getLengthPrefixedSlice(digests);
                 if (digest.remaining() < 8) {
+                    if (mBlockId == APK_SIGNATURE_SCHEME_V32_BLOCK_ID) {
+                        logSignatureVerificationSignerFailure(mBlockId, minSdkVersion,
+                                maxSdkVersion, bestSigAlgorithm,
+                                VerificationResult.VERIFICATION_MALFORMED_SIGNER);
+                    }
                     throw new IOException("Record too short");
                 }
                 int sigAlgorithm = digest.getInt();
@@ -428,23 +504,35 @@ public class ApkSignatureSchemeV3Verifier {
                     contentDigest = readLengthPrefixedByteArray(digest);
                 }
             } catch (IOException | BufferUnderflowException e) {
+                if (mBlockId == APK_SIGNATURE_SCHEME_V32_BLOCK_ID) {
+                    logSignatureVerificationSignerFailure(mBlockId, minSdkVersion,
+                            maxSdkVersion, bestSigAlgorithm,
+                            VerificationResult.VERIFICATION_MALFORMED_SIGNER);
+                }
                 throw new IOException("Failed to parse digest record #" + digestCount, e);
             }
         }
 
         if (!signaturesSigAlgorithms.equals(digestsSigAlgorithms)) {
+            if (mBlockId == APK_SIGNATURE_SCHEME_V32_BLOCK_ID) {
+                logSignatureVerificationSignerFailure(mBlockId, minSdkVersion, maxSdkVersion,
+                        bestSigAlgorithm,
+                        VerificationResult.VERIFICATION_SIGNATURE_ALGORITHM_MISMATCH);
+            }
             throw new SecurityException(
                     "Signature algorithms don't match between digests and signatures records");
         }
-        int digestAlgorithm = getSignatureAlgorithmContentDigestAlgorithm(bestSigAlgorithm);
-        byte[] previousSignerDigest = contentDigests.put(digestAlgorithm, contentDigest);
-        if ((previousSignerDigest != null)
-                && (!MessageDigest.isEqual(previousSignerDigest, contentDigest))) {
+        if (contentDigest == null) {
+            if (mBlockId == APK_SIGNATURE_SCHEME_V32_BLOCK_ID) {
+                logSignatureVerificationSignerFailure(mBlockId, minSdkVersion, maxSdkVersion,
+                        bestSigAlgorithm, VerificationResult.VERIFICATION_NO_CONTENT_DIGESTS);
+            }
             throw new SecurityException(
-                    getContentDigestAlgorithmJcaDigestAlgorithm(digestAlgorithm)
-                            + " contents digest does not match the digest specified by a "
-                            + "preceding signer");
+                    "No content digests found for signer with signature algorithm "
+                            + bestSigAlgorithm);
         }
+        int digestAlgorithm = getSignatureAlgorithmContentDigestAlgorithm(bestSigAlgorithm);
+        contentDigests.put(digestAlgorithm, contentDigest);
 
         ByteBuffer certificates = getLengthPrefixedSlice(signedData);
         List<X509Certificate> certs = new ArrayList<>();
@@ -457,6 +545,11 @@ public class ApkSignatureSchemeV3Verifier {
                 certificate = (X509Certificate)
                         certFactory.generateCertificate(new ByteArrayInputStream(encodedCert));
             } catch (CertificateException e) {
+                if (mBlockId == APK_SIGNATURE_SCHEME_V32_BLOCK_ID) {
+                    logSignatureVerificationSignerFailure(mBlockId, minSdkVersion, maxSdkVersion,
+                            bestSigAlgorithm,
+                            VerificationResult.VERIFICATION_MALFORMED_CERTIFICATE);
+                }
                 throw new SecurityException("Failed to decode certificate #" + certificateCount, e);
             }
             certificate = new VerbatimX509Certificate(certificate, encodedCert);
@@ -464,17 +557,29 @@ public class ApkSignatureSchemeV3Verifier {
         }
 
         if (certs.isEmpty()) {
+            if (mBlockId == APK_SIGNATURE_SCHEME_V32_BLOCK_ID) {
+                logSignatureVerificationSignerFailure(mBlockId, minSdkVersion, maxSdkVersion,
+                        bestSigAlgorithm, VerificationResult.VERIFICATION_NO_CERTIFICATES);
+            }
             throw new SecurityException("No certificates listed");
         }
         X509Certificate mainCertificate = certs.get(0);
         byte[] certificatePublicKeyBytes = mainCertificate.getPublicKey().getEncoded();
         if (!Arrays.equals(publicKeyBytes, certificatePublicKeyBytes)) {
+            if (mBlockId == APK_SIGNATURE_SCHEME_V32_BLOCK_ID) {
+                logSignatureVerificationSignerFailure(mBlockId, minSdkVersion, maxSdkVersion,
+                        bestSigAlgorithm, VerificationResult.VERIFICATION_PUBLIC_KEY_MISMATCH);
+            }
             throw new SecurityException(
                     "Public key mismatch between certificate and signature record");
         }
 
         int signedMinSDK = signedData.getInt();
         if (signedMinSDK != minSdkVersion) {
+            if (mBlockId == APK_SIGNATURE_SCHEME_V32_BLOCK_ID) {
+                logSignatureVerificationSignerFailure(mBlockId, minSdkVersion, maxSdkVersion,
+                        bestSigAlgorithm, VerificationResult.VERIFICATION_SIGNER_SDK_MISMATCH);
+            }
             throw new SecurityException(
                     "minSdkVersion mismatch between signed and unsigned in v3 signer block.");
         }
@@ -482,15 +587,18 @@ public class ApkSignatureSchemeV3Verifier {
 
         int signedMaxSDK = signedData.getInt();
         if (signedMaxSDK != maxSdkVersion) {
+            if (mBlockId == APK_SIGNATURE_SCHEME_V32_BLOCK_ID) {
+                logSignatureVerificationSignerFailure(mBlockId, minSdkVersion, maxSdkVersion,
+                        bestSigAlgorithm, VerificationResult.VERIFICATION_SIGNER_SDK_MISMATCH);
+            }
             throw new SecurityException(
                     "maxSdkVersion mismatch between signed and unsigned in v3 signer block.");
         }
 
         ByteBuffer additionalAttrs = getLengthPrefixedSlice(signedData);
         VerifiedSigner verifiedSigner = verifyAdditionalAttributes(additionalAttrs, certs,
-                certFactory, contentDigests);
-        verifiedSigner.minSdkVersion = signedMinSDK;
-        verifiedSigner.maxSdkVersion = signedMaxSDK;
+                certFactory, contentDigests, signedMinSDK, signedMaxSDK, bestSigAlgorithm);
+        verifiedSigner.algorithmId = bestSigAlgorithm;
         return verifiedSigner;
     }
 
@@ -500,8 +608,8 @@ public class ApkSignatureSchemeV3Verifier {
     private static final int HYBRID_MIN_SDK_VERSION_ATTR_ID = 0xbf940529;
 
     private VerifiedSigner verifyAdditionalAttributes(ByteBuffer attrs, List<X509Certificate> certs,
-            CertificateFactory certFactory, Map<Integer, byte[]> contentDigests)
-            throws IOException, PlatformNotSupportedException {
+            CertificateFactory certFactory, Map<Integer, byte[]> contentDigests, int minSdkVersion,
+            int maxSdkVersion, int algorithmId) throws IOException, PlatformNotSupportedException {
         X509Certificate[] certChain = certs.toArray(new X509Certificate[certs.size()]);
         ApkSigningBlockUtils.VerifiedProofOfRotation por = null;
         boolean isDevTarget = false;
@@ -509,6 +617,10 @@ public class ApkSignatureSchemeV3Verifier {
         while (attrs.hasRemaining()) {
             ByteBuffer attr = getLengthPrefixedSlice(attrs);
             if (attr.remaining() < 4) {
+                if (mBlockId == APK_SIGNATURE_SCHEME_V32_BLOCK_ID) {
+                    logSignatureVerificationSignerFailure(mBlockId, minSdkVersion, maxSdkVersion,
+                            algorithmId, VerificationResult.VERIFICATION_MALFORMED_ATTRIBUTES);
+                }
                 throw new IOException("Remaining buffer too short to contain additional attribute "
                         + "ID. Remaining: " + attr.remaining());
             }
@@ -516,20 +628,51 @@ public class ApkSignatureSchemeV3Verifier {
             switch (id) {
                 case PROOF_OF_ROTATION_ATTR_ID:
                     if (por != null) {
+                        if (mBlockId == APK_SIGNATURE_SCHEME_V32_BLOCK_ID) {
+                            logSignatureVerificationSignerFailure(mBlockId, minSdkVersion,
+                                    maxSdkVersion, algorithmId,
+                                    VerificationResult.VERIFICATION_DUPLICATE_POR);
+                        }
                         throw new SecurityException("Encountered multiple Proof-of-rotation records"
                                 + " when verifying APK Signature Scheme v3 signature");
                     }
-                    por = verifyProofOfRotationStruct(attr, certFactory);
+                    try {
+                        por = verifyProofOfRotationStruct(attr, certFactory);
+                    } catch (IOException e) {
+                        if (mBlockId == APK_SIGNATURE_SCHEME_V32_BLOCK_ID) {
+                            logSignatureVerificationSignerFailure(mBlockId, minSdkVersion,
+                                    maxSdkVersion, algorithmId,
+                                    VerificationResult.VERIFICATION_MALFORMED_POR);
+                        }
+                        throw e;
+                    } catch (SecurityException e) {
+                        if (mBlockId == APK_SIGNATURE_SCHEME_V32_BLOCK_ID) {
+                            logSignatureVerificationSignerFailure(mBlockId, minSdkVersion,
+                                    maxSdkVersion, algorithmId,
+                                    VerificationResult.VERIFICATION_POR_INTEGRITY_FAILURE);
+                        }
+                        throw e;
+                    }
                     // make sure that the last certificate in the Proof-of-rotation record matches
                     // the one used to sign this APK.
                     try {
                         if (por.certs.size() > 0
                                 && !Arrays.equals(por.certs.get(por.certs.size() - 1).getEncoded(),
                                 certChain[0].getEncoded())) {
+                            if (mBlockId == APK_SIGNATURE_SCHEME_V32_BLOCK_ID) {
+                                logSignatureVerificationSignerFailure(mBlockId, minSdkVersion,
+                                        maxSdkVersion, algorithmId,
+                                        VerificationResult.VERIFICATION_POR_CERT_MISMATCH);
+                            }
                             throw new SecurityException("Terminal certificate in Proof-of-rotation"
                                     + " record does not match APK signing certificate");
                         }
                     } catch (CertificateEncodingException e) {
+                        if (mBlockId == APK_SIGNATURE_SCHEME_V32_BLOCK_ID) {
+                            logSignatureVerificationSignerFailure(mBlockId, minSdkVersion,
+                                    maxSdkVersion, algorithmId,
+                                    VerificationResult.VERIFICATION_MALFORMED_CERTIFICATE);
+                        }
                         throw new SecurityException("Failed to encode certificate when comparing"
                                 + " Proof-of-rotation record and signing certificate", e);
                     }
@@ -561,6 +704,11 @@ public class ApkSignatureSchemeV3Verifier {
                 case HYBRID_MIN_SDK_VERSION_ATTR_ID:
                     if (android.security.Flags.apkPqcHybridSigning()) {
                         if (attr.remaining() < 4) {
+                            if (android.security.Flags.apkPqcHybridSigning()) {
+                                logSignatureVerificationSignerFailure(mBlockId, minSdkVersion,
+                                        maxSdkVersion, algorithmId,
+                                        VerificationResult.VERIFICATION_MALFORMED_ATTRIBUTES);
+                            }
                             throw new IOException(
                                     "Remining buffer too short to contain the hybrid minSdkVersion "
                                             + "value. Remaining: "
@@ -568,6 +716,11 @@ public class ApkSignatureSchemeV3Verifier {
                         }
                         int attrHybridMinSdkVersion = attr.getInt();
                         if (!mOptionalHybridMinSdkVersion.isPresent()) {
+                            if (android.security.Flags.apkPqcHybridSigning()) {
+                                logSignatureVerificationSignerFailure(mBlockId, minSdkVersion,
+                                        maxSdkVersion, algorithmId,
+                                        VerificationResult.VERIFICATION_V32_BLOCK_STRIPPED);
+                            }
                             throw new SecurityException(
                                     "Expected a v3.2 signing block targeting SDK version "
                                             + attrHybridMinSdkVersion
@@ -575,6 +728,11 @@ public class ApkSignatureSchemeV3Verifier {
                         }
                         int hybridMinSdkVersion = mOptionalHybridMinSdkVersion.getAsInt();
                         if (hybridMinSdkVersion != attrHybridMinSdkVersion) {
+                            if (android.security.Flags.apkPqcHybridSigning()) {
+                                logSignatureVerificationSignerFailure(mBlockId, minSdkVersion,
+                                        maxSdkVersion, algorithmId,
+                                        VerificationResult.VERIFICATION_V32_SDK_ATTR_MISMATCH);
+                            }
                             throw new SecurityException(
                                     "Expected a v3.2 signing block targeting SDK version "
                                             + attrHybridMinSdkVersion
@@ -615,7 +773,8 @@ public class ApkSignatureSchemeV3Verifier {
                     break;
             }
         }
-        return new VerifiedSigner(certChain, por, contentDigests, isDevTarget);
+        return new VerifiedSigner(certChain, por, contentDigests, minSdkVersion, maxSdkVersion,
+                algorithmId, isDevTarget);
     }
 
     /**
@@ -646,6 +805,11 @@ public class ApkSignatureSchemeV3Verifier {
             result = verifiedSigners.get(0);
         }
         if (ApkSigningBlockUtils.isCertificatePqc(result.certs[0])) {
+            if (android.security.Flags.apkPqcHybridSigning()) {
+                logSignatureVerificationSignerFailure(mBlockId, result.minSdkVersion,
+                        result.maxSdkVersion, result.algorithmId,
+                        VerificationResult.VERIFICATION_PQC_SINGLE_SIGNER);
+            }
             throw new SecurityException(
                     "The platform does not currently support single PQC signers in the v3 "
                             + "signature blocks");
@@ -664,6 +828,18 @@ public class ApkSignatureSchemeV3Verifier {
     public VerifiedSigner verifyV32Signers(List<VerifiedSigner> verifiedSigners) {
         // Verify that there are exactly two signers in the provided list.
         if (verifiedSigners.size() != 2) {
+            // Previous check should have confirmed that there are more than 0 and less than 3
+            // signers, but to be safe, confirm it's a single signer now to report a more specific
+            // error.
+            if (verifiedSigners.size() == 1) {
+                VerifiedSigner verifiedSigner = verifiedSigners.get(0);
+                logSignatureVerificationSignerFailure(mBlockId, verifiedSigner.minSdkVersion,
+                        verifiedSigner.maxSdkVersion, verifiedSigner.algorithmId,
+                        VerificationResult.VERIFICATION_V32_INVALID_SIGNER_COUNT);
+            } else {
+                logSignatureVerificationBlockFailure(mBlockId,
+                        VerificationResult.VERIFICATION_V32_INVALID_SIGNER_COUNT);
+            }
             throw new SecurityException("APK Signature Scheme V3.2 supports exactly two signers; "
                     + verifiedSigners.size() + " found");
         }
@@ -675,6 +851,9 @@ public class ApkSignatureSchemeV3Verifier {
         boolean signer1IsPqc = ApkSigningBlockUtils.isCertificatePqc(signer1.certs[0]);
         boolean signer2IsPqc = ApkSigningBlockUtils.isCertificatePqc(signer2.certs[0]);
         if (signer1IsPqc == signer2IsPqc) {
+            logSignatureVerificationSignerFailure(mBlockId, signer1.minSdkVersion,
+                    signer1.maxSdkVersion, signer1.algorithmId,
+                    VerificationResult.VERIFICATION_V32_ALGO_TYPE_COLLISION);
             String algoType = signer1IsPqc ? "PQC" : "classical";
             throw new SecurityException(
                     "APK Signature Scheme V3.2 requires one classical and one PQC signer; both are "
@@ -686,6 +865,9 @@ public class ApkSignatureSchemeV3Verifier {
         // Verify both signers target the exact same SDK range.
         if (classicalSigner.minSdkVersion != pqcSigner.minSdkVersion
                 || classicalSigner.maxSdkVersion != pqcSigner.maxSdkVersion) {
+            logSignatureVerificationSignerFailure(mBlockId, pqcSigner.minSdkVersion,
+                    pqcSigner.maxSdkVersion, pqcSigner.algorithmId,
+                    VerificationResult.VERIFICATION_V32_SDK_RANGE_MISMATCH);
             throw new SecurityException(
                     "APK Signature Scheme V3.2 requires both signers target the same SDK range; "
                             + "classical: "
@@ -697,6 +879,11 @@ public class ApkSignatureSchemeV3Verifier {
         ApkSigningBlockUtils.VerifiedProofOfRotation pqcPor;
         if (classicalSigner.por != null || pqcSigner.por != null) {
             if (classicalSigner.por == null || pqcSigner.por == null) {
+                VerifiedSigner signerMissingPor =
+                        classicalSigner.por == null ? classicalSigner : pqcSigner;
+                logSignatureVerificationSignerFailure(mBlockId, signerMissingPor.minSdkVersion,
+                        signerMissingPor.maxSdkVersion, signerMissingPor.algorithmId,
+                        VerificationResult.VERIFICATION_V32_POR_MISSING);
                 throw new SecurityException(
                         "APK Signature Scheme V3.2 requires both signers have the same signing "
                                 + "history, but one of the signers is missing its lineage");
@@ -706,6 +893,9 @@ public class ApkSignatureSchemeV3Verifier {
             int classicalLineageSize = classicalSigner.por.certs.size();
             int pqcLineageSize = pqcSigner.por.certs.size();
             if (classicalLineageSize != pqcLineageSize) {
+                logSignatureVerificationSignerFailure(mBlockId, pqcSigner.minSdkVersion,
+                        pqcSigner.maxSdkVersion, pqcSigner.algorithmId,
+                        VerificationResult.VERIFICATION_V32_POR_MISMATCH);
                 throw new SecurityException(
                         "APK Signature Scheme V3.2 requires both signers have the same signing "
                                 + "history, but classical has "
@@ -718,6 +908,9 @@ public class ApkSignatureSchemeV3Verifier {
                     byte[] classicalCertBytes = classicalSigner.por.certs.get(i).getEncoded();
                     byte[] pqcCertBytes = pqcSigner.por.certs.get(i).getEncoded();
                     if (!Arrays.equals(classicalCertBytes, pqcCertBytes)) {
+                        logSignatureVerificationSignerFailure(mBlockId, pqcSigner.minSdkVersion,
+                                pqcSigner.maxSdkVersion, pqcSigner.algorithmId,
+                                VerificationResult.VERIFICATION_V32_POR_MISMATCH);
                         throw new SecurityException(
                                 "APK Signature Scheme V3.2 requires both signers have the same "
                                         + "signing history, but the history diverges at index "
@@ -725,6 +918,9 @@ public class ApkSignatureSchemeV3Verifier {
                     }
                     if (!classicalSigner.por.flagsList.get(i).equals(
                             pqcSigner.por.flagsList.get(i))) {
+                        logSignatureVerificationSignerFailure(mBlockId, pqcSigner.minSdkVersion,
+                                pqcSigner.maxSdkVersion, pqcSigner.algorithmId,
+                                VerificationResult.VERIFICATION_V32_POR_CAPABILITY_MISMATCH);
                         throw new SecurityException(
                                 "APK Signature Scheme V3.2 requires both signers have the same "
                                         + "capabilities granted to the signing history, but the "
@@ -732,6 +928,9 @@ public class ApkSignatureSchemeV3Verifier {
                                         + i);
                     }
                 } catch (CertificateEncodingException e) {
+                    logSignatureVerificationSignerFailure(mBlockId, pqcSigner.minSdkVersion,
+                            pqcSigner.maxSdkVersion, pqcSigner.algorithmId,
+                            VerificationResult.VERIFICATION_MALFORMED_CERTIFICATE);
                     throw new SecurityException(
                             "Failed to encode certificate when comparing signing history between "
                                     + "V3.2 hybrid signers at index "
@@ -765,8 +964,31 @@ public class ApkSignatureSchemeV3Verifier {
             pqcPor = new ApkSigningBlockUtils.VerifiedProofOfRotation(pqcLineage, pqcFlags);
         }
 
+        // Verify / merge the content digests of the two signers to ensure that both attest to the
+        // contents of the APK.
+        for (Map.Entry<Integer, byte[]> classicalEntry :
+                classicalSigner.contentDigests.entrySet()) {
+            int classicalDigestAlgo = classicalEntry.getKey();
+            byte[] classicalDigestValue = classicalEntry.getValue();
+            byte[] pqcDigestValue = pqcSigner.contentDigests.put(classicalDigestAlgo,
+                    classicalDigestValue);
+            // If a value is returned, it indicates that the PQC signer had a value for the same
+            // digest algorithm, ensure that the two are identical.
+            if (pqcDigestValue != null
+                    && !MessageDigest.isEqual(pqcDigestValue, classicalDigestValue)) {
+                logSignatureVerificationSignerFailure(mBlockId, pqcSigner.minSdkVersion,
+                        pqcSigner.maxSdkVersion, pqcSigner.algorithmId,
+                        VerificationResult.VERIFICATION_INCONSISTENT_DIGESTS);
+                throw new SecurityException(
+                        getContentDigestAlgorithmJcaDigestAlgorithm(classicalDigestAlgo)
+                                + " contents digest does not match the digest specified by a "
+                                + "preceding signer");
+            }
+        }
+
         VerifiedSigner result = new VerifiedSigner(pqcSigner.certs, pqcPor,
-                pqcSigner.contentDigests, pqcSigner.isDevTarget);
+                pqcSigner.contentDigests, pqcSigner.minSdkVersion, pqcSigner.maxSdkVersion,
+                pqcSigner.algorithmId, pqcSigner.isDevTarget);
         return result;
     }
 
@@ -806,14 +1028,19 @@ public class ApkSignatureSchemeV3Verifier {
         public int blockId;
         public int minSdkVersion;
         public int maxSdkVersion;
+        public int algorithmId;
         public boolean isDevTarget;
 
         public VerifiedSigner(X509Certificate[] certs,
                 ApkSigningBlockUtils.VerifiedProofOfRotation por,
-                Map<Integer, byte[]> contentDigests, boolean isDevTarget) {
+                Map<Integer, byte[]> contentDigests, int minSdkVersion, int maxSdkVersion,
+                int algorithmId, boolean isDevTarget) {
             this.certs = certs;
             this.por = por;
             this.contentDigests = contentDigests;
+            this.minSdkVersion = minSdkVersion;
+            this.maxSdkVersion = maxSdkVersion;
+            this.algorithmId = algorithmId;
             this.isDevTarget = isDevTarget;
         }
 

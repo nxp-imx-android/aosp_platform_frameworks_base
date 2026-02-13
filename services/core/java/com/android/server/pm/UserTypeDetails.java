@@ -31,6 +31,8 @@ import android.os.UserManager;
 
 import com.android.internal.util.Preconditions;
 import com.android.server.BundleUtils;
+import com.android.server.pm.GenericAllowlist.AllowlistMode;
+import com.android.server.pm.UserActivitiesAllowlist;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -174,6 +176,12 @@ public final class UserTypeDetails {
      */
     private final @ArrayRes int mActivitiesAllowlist;
 
+    /**
+     * The mode of the {@link UserActivitiesAllowlist} associated with the user type (or
+     * {@link UserActivitiesAllowlist#MODE_NONE} when the type doesn't define such allowlist).
+     */
+    private final @AllowlistMode int mActivitiesAllowlistMode;
+
     private UserTypeDetails(@NonNull String name, boolean enabled, int maxAllowed,
             @UserInfoFlag int baseType, @UserInfoFlag int defaultUserInfoPropertyFlags,
             @Nullable int[] labels, int maxAllowedPerParent, boolean profileParentRequired,
@@ -187,7 +195,8 @@ public final class UserTypeDetails {
             @Nullable List<DefaultCrossProfileIntentFilter> defaultCrossProfileIntentFilters,
             @StringRes int accessibilityString,
             @NonNull UserProperties defaultUserProperties,
-            @ArrayRes int activitiesAllowlists) {
+            @ArrayRes int activitiesAllowlists,
+            @AllowlistMode int activitiesAllowlistMode) {
         this.mName = name;
         this.mEnabled = enabled;
         this.mMaxAllowed = maxAllowed;
@@ -210,6 +219,7 @@ public final class UserTypeDetails {
         this.mAccessibilityString = accessibilityString;
         this.mDefaultUserProperties = defaultUserProperties;
         this.mActivitiesAllowlist = activitiesAllowlists;
+        this.mActivitiesAllowlistMode = activitiesAllowlistMode;
     }
 
     /**
@@ -393,6 +403,10 @@ public final class UserTypeDetails {
         return mActivitiesAllowlist;
     }
 
+    @AllowlistMode int getActivitiesAllowlistMode() {
+        return mActivitiesAllowlistMode;
+    }
+
     /** Dumps details of the UserTypeDetails. Do not parse this. */
     public void dump(PrintWriter pw, String prefix) {
         pw.print(prefix); pw.print("mName: "); pw.println(mName);
@@ -423,6 +437,9 @@ public final class UserTypeDetails {
         pw.println(mLabels != null ? mLabels.length : "0(null)");
         pw.print(prefix); pw.print("mActivitiesAllowlist: ");
         pw.println(mActivitiesAllowlist);
+        pw.print(prefix); pw.print("mActivitiesAllowlistMode: ");
+        pw.print(mActivitiesAllowlistMode); pw.print(" (");
+        pw.println(UserActivitiesAllowlist.allowlistModeToString(mActivitiesAllowlistMode) + ")");
     }
 
     /** Builder for a {@link UserTypeDetails}; see that class for documentation. */
@@ -453,6 +470,8 @@ public final class UserTypeDetails {
         // If it isn't set explicitly, {@link UserProperties.Builder#build()} will be used.
         private @Nullable UserProperties mDefaultUserProperties = null;
         private @ArrayRes int mActivitiesAllowlist = Resources.ID_NULL;
+        private @AllowlistMode int mActivitiesAllowlistMode =
+                UserActivitiesAllowlist.ALLOWLIST_MODE_DISABLED;
 
         public Builder setName(String name) {
             mName = name;
@@ -578,6 +597,16 @@ public final class UserTypeDetails {
             return this;
         }
 
+        /**
+         * Sets the mode of the allowlist of activities associated with the user type.
+         *
+         * <p>If not set, the mode will be {@link UserActivitiesAllowlist#ALLOWLIST_MODE_DISABLED}.
+         */
+        public Builder setActivitiesAllowlistMode(@AllowlistMode int activitiesAllowlistMode) {
+            this.mActivitiesAllowlistMode = activitiesAllowlistMode;
+            return this;
+        }
+
         public @NonNull UserProperties getDefaultUserProperties() {
             if (mDefaultUserProperties == null) {
                 mDefaultUserProperties = new UserProperties.Builder().build();
@@ -641,7 +670,8 @@ public final class UserTypeDetails {
                     mDefaultCrossProfileIntentFilters,
                     mAccessibilityString,
                     getDefaultUserProperties(),
-                    mActivitiesAllowlist);
+                    mActivitiesAllowlist,
+                    mActivitiesAllowlistMode);
         }
 
         private boolean hasBadge() {

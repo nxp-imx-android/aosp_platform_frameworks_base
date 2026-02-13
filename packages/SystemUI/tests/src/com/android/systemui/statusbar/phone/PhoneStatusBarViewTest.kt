@@ -22,8 +22,6 @@ import android.graphics.Insets
 import android.graphics.Rect
 import android.graphics.Region
 import android.hardware.display.DisplayManagerGlobal
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.platform.test.annotations.FlakyTest
 import android.testing.TestableLooper.RunWithLooper
 import android.view.Display
@@ -47,7 +45,6 @@ import com.android.systemui.res.R
 import com.android.systemui.statusbar.gesture.StatusBarLongPressGestureDetector
 import com.android.systemui.statusbar.window.StatusBarWindowController
 import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
-import com.android.window.flags.Flags.FLAG_ENABLE_REMOVE_STATUS_BAR_INPUT_LAYER
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -440,7 +437,6 @@ class PhoneStatusBarViewTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_REMOVE_STATUS_BAR_INPUT_LAYER)
     fun onTouchEvent_downEventNotHandledIfOutsideTouchableRegion_whenFlagEnabled() {
         val touchableRegion = Region.obtain().apply { set(0, 0, 200, 200) }
         view.updateTouchableRegion(touchableRegion)
@@ -456,22 +452,6 @@ class PhoneStatusBarViewTest : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(FLAG_ENABLE_REMOVE_STATUS_BAR_INPUT_LAYER)
-    fun onTouchEvent_downEventHandledOutsideTouchableRegion_whenFlagDisabled() {
-        val touchableRegion = Region.obtain().apply { set(0, 0, 200, 200) }
-        view.updateTouchableRegion(touchableRegion)
-        val touchEventHandler = mock(Gefingerpoken::class.java)
-        view.setTouchEventHandler(touchEventHandler)
-
-        val event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 250f, 250f, 0)
-        view.onTouchEvent(event)
-
-        // Assert touch event is consumed by status bar
-        verify(touchEventHandler).onTouchEvent(event)
-    }
-
-    @Test
-    @EnableFlags(FLAG_ENABLE_REMOVE_STATUS_BAR_INPUT_LAYER)
     fun onTouchEvent_moveEventHandledEvenIfOutsideTouchableRegion() {
         val touchableRegion = Region.obtain().apply { set(100, 100, 200, 200) }
         view.updateTouchableRegion(touchableRegion)
@@ -486,7 +466,6 @@ class PhoneStatusBarViewTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_REMOVE_STATUS_BAR_INPUT_LAYER)
     fun onTouchEvent_upEventHandledEvenIfOutsideTouchableRegion() {
         val touchableRegion = Region.obtain().apply { set(100, 100, 200, 200) }
         view.updateTouchableRegion(touchableRegion)

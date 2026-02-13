@@ -900,6 +900,14 @@ static void nativeSetSystemContentPriority(JNIEnv* env, jclass clazz, jlong tran
     transaction->setSystemContentPriority(surfaceControl, priority);
 }
 
+static void nativeSetCompositionFilterFlag(JNIEnv* env, jclass clazz, jlong transactionObj,
+                                           jlong surfaceControlObj, jint compositionFilterFlag) {
+    auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
+    auto surfaceControl = SpFromRawPtr<SurfaceControl>(surfaceControlObj);
+    transaction->setCompositionFilterFlag(surfaceControl,
+                                          static_cast<uint32_t>(compositionFilterFlag));
+}
+
 static void nativeSetCachingHint(JNIEnv* env, jclass clazz, jlong transactionObj,
                                  jlong nativeObject, jint cachingHint) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
@@ -3009,6 +3017,7 @@ static const JNINativeMethod sSurfaceControlMethods[] = {
     {"nativeSetPictureProfileId", "(JJJ)V", (void*)nativeSetPictureProfileId },
     {"nativeSetContentPriority", "(JJI)V", (void*)nativeSetContentPriority },
     {"nativeSetSystemContentPriority", "(JJI)V", (void*)nativeSetSystemContentPriority },
+    {"nativeSetCompositionFilterFlag", "(JJI)V", (void*)nativeSetCompositionFilterFlag },
         // clang-format on
 };
 

@@ -165,6 +165,7 @@ public class SecureSettings {
         Settings.Secure.NOTIFICATION_DISMISS_RTL,
         Settings.Secure.SCREENSAVER_ENABLED,
         Settings.Secure.SCREENSAVER_COMPONENTS,
+        Settings.Secure.SCREENSAVER_ACTIVE_COMPONENT,
         Settings.Secure.SCREENSAVER_ACTIVATE_ON_DOCK,
         Settings.Secure.SCREENSAVER_ACTIVATE_ON_SLEEP,
         Settings.Secure.SCREENSAVER_ACTIVATE_ON_POSTURED,
@@ -343,5 +344,6 @@ public class SecureSettings {
         Settings.Secure.TEXT_SHOW_PASSWORD_TOUCH,
         Settings.Secure.TEXT_SHOW_PASSWORD_PHYSICAL,
         Settings.Secure.PERSONAL_CONTEXT_ENABLED,
+        Settings.Secure.LIGHT_ANIMATION_FAVORITE_CALLS_ENABLED,
     };
 }

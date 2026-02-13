@@ -366,7 +366,7 @@ public abstract class NotificationAssistantService extends NotificationListenerS
      * @param adjustments the adjustments suggested by the system
      */
     @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
-    public void onSystemAdjustmentsRequest(@NonNull List<Adjustment> adjustments) {
+    public void onSystemAdjustmentsReceived(@NonNull List<Adjustment> adjustments) {
     }
 
     /**
@@ -608,10 +608,10 @@ public abstract class NotificationAssistantService extends NotificationListenerS
         }
 
         @Override
-        public void onSystemAdjustmentsRequest(List<Adjustment> adjustments) {
+        public void onSystemAdjustmentsReceived(List<Adjustment> adjustments) {
             SomeArgs args = SomeArgs.obtain();
             args.arg1 = adjustments;
-            mHandler.obtainMessage(MyHandler.MSG_ON_SYSTEM_ADJUSTMENTS_REQUEST, args)
+            mHandler.obtainMessage(MyHandler.MSG_ON_SYSTEM_ADJUSTMENTS_RECEIVED, args)
                     .sendToTarget();
         }
     }
@@ -636,7 +636,7 @@ public abstract class NotificationAssistantService extends NotificationListenerS
         public static final int MSG_ON_NOTIFICATION_VISIBILITY_CHANGED = 11;
         public static final int MSG_ON_NOTIFICATION_CLICKED = 12;
         public static final int MSG_ON_NOTIFICATION_FEEDBACK_RECEIVED = 13;
-        public static final int MSG_ON_SYSTEM_ADJUSTMENTS_REQUEST = 14;
+        public static final int MSG_ON_SYSTEM_ADJUSTMENTS_RECEIVED = 14;
 
         public MyHandler(Looper looper) {
             super(looper, null, false);
@@ -759,14 +759,13 @@ public abstract class NotificationAssistantService extends NotificationListenerS
                     onNotificationFeedbackReceived(key, ranking, feedback);
                     break;
                 }
-                case MSG_ON_SYSTEM_ADJUSTMENTS_REQUEST:
-                    {
-                        SomeArgs args = (SomeArgs) msg.obj;
-                        List<Adjustment> adjustments = (List<Adjustment>) args.arg1;
-                        args.recycle();
-                        onSystemAdjustmentsRequest(adjustments);
-                        break;
-                    }
+                case MSG_ON_SYSTEM_ADJUSTMENTS_RECEIVED: {
+                    SomeArgs args = (SomeArgs) msg.obj;
+                    List<Adjustment> adjustments = (List<Adjustment>) args.arg1;
+                    args.recycle();
+                    onSystemAdjustmentsReceived(adjustments);
+                    break;
+                }
             }
         }
     }

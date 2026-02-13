@@ -99,7 +99,7 @@ option java_package com.android.server
 # when a summary notification is converted to a regular notification because of force autogrouping
 27537 notification_summary_converted (key|3)
 # when the system requests an adjustment from an assistant
-27538 notification_system_adjustments_requested (key|3),(adjustment_keys|3)
+27538 notification_system_adjustments_received (key|3),(adjustment_keys|3)
 
 # ---------------------------
 # Watchdog.java

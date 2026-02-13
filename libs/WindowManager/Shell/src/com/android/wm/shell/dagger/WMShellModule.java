@@ -117,6 +117,7 @@ import com.android.wm.shell.compatui.letterbox.state.LetterboxTaskListenerAdapte
 import com.android.wm.shell.crashhandling.ShellCrashHandler;
 import com.android.wm.shell.dagger.back.ShellBackAnimationModule;
 import com.android.wm.shell.dagger.desktop.DesktopModule;
+import com.android.wm.shell.dagger.hierarchy.HandheldContainersModule;
 import com.android.wm.shell.dagger.pinnedlayer.PinnedLayerModule;
 import com.android.wm.shell.dagger.pip.PipModule;
 import com.android.wm.shell.desktopai.dagger.DesktopAIModule;
@@ -209,6 +210,7 @@ import com.android.wm.shell.pip2.phone.PipScheduler;
 import com.android.wm.shell.pip2.phone.PipTransitionState;
 import com.android.wm.shell.recents.RecentTasksController;
 import com.android.wm.shell.recents.RecentsTransitionHandler;
+import com.android.wm.shell.scrolltotop.ScrollToTopController;
 import com.android.wm.shell.shared.TransactionPool;
 import com.android.wm.shell.shared.annotations.ShellAnimationThread;
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread;
@@ -267,13 +269,13 @@ import dagger.Lazy;
 import dagger.Module;
 import dagger.Provides;
 
-import kotlinx.coroutines.CoroutineScope;
-import kotlinx.coroutines.ExperimentalCoroutinesApi;
-import kotlinx.coroutines.MainCoroutineDispatcher;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import kotlinx.coroutines.CoroutineScope;
+import kotlinx.coroutines.ExperimentalCoroutinesApi;
+import kotlinx.coroutines.MainCoroutineDispatcher;
 
 /**
  * Provides dependencies from {@link com.android.wm.shell}, these dependencies are only accessible
@@ -291,7 +293,8 @@ import java.util.Optional;
                 LetterboxModule.class,
                 PinnedLayerModule.class,
                 DesktopModule.class,
-                DesktopAIModule.class
+                DesktopAIModule.class,
+                HandheldContainersModule.class,
         })
 public abstract class WMShellModule {
 
@@ -767,6 +770,22 @@ public abstract class WMShellModule {
                 mainExecutor,
                 mainHandler);
     }
+
+    //
+    // Scroll To Top
+    //
+
+    @WMSingleton
+    @Provides
+    static ScrollToTopController provideScrollToTopController(
+            @ShellMainThread ShellExecutor mainExecutor,
+            IWindowManager windowManager,
+            Optional<SplitScreenController> splitScreenController) {
+        return new ScrollToTopController(mainExecutor, windowManager,
+                splitScreenController);
+    }
+
+
 
     //
     // Splitscreen
@@ -2366,7 +2385,8 @@ public abstract class WMShellModule {
             Transitions transitions,
             Lazy<DragToBubbleController> dragToBubbleControllerLazy,
             @ShellMainThread ShellExecutor mainExecutor,
-            DesktopState desktopState) {
+            DesktopState desktopState,
+            BubbleFeatureConfig bubbleFeatureConfig) {
         return new DragAndDropController(
                 context,
                 shellInit,
@@ -2380,7 +2400,8 @@ public abstract class WMShellModule {
                 transitions,
                 dragToBubbleControllerLazy,
                 mainExecutor,
-                desktopState);
+                desktopState,
+                bubbleFeatureConfig);
     }
 
     @WMSingleton

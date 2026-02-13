@@ -154,6 +154,7 @@ public class EmbeddedInsightRenderer implements Renderer {
             final InsightSurfaceClientInfo client = clientFromRenderToken(renderToken);
             if (client == null) {
                 logDebug("no client found for insight [" + insight + "]");
+                return;
             }
 
             mVisualizerRegistry.createVisualizationForClient(insight, client, renderToken);

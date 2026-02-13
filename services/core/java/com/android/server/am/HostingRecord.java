@@ -16,6 +16,8 @@
 
 package com.android.server.am;
 
+import static android.os.Process.INVALID_UID;
+
 import static com.android.internal.util.FrameworkStatsLog.PROCESS_START_TIME__HOSTING_TYPE_ID__HOSTING_TYPE_ACTIVITY;
 import static com.android.internal.util.FrameworkStatsLog.PROCESS_START_TIME__HOSTING_TYPE_ID__HOSTING_TYPE_ADDED_APPLICATION;
 import static com.android.internal.util.FrameworkStatsLog.PROCESS_START_TIME__HOSTING_TYPE_ID__HOSTING_TYPE_BACKUP;
@@ -113,12 +115,16 @@ public final class HostingRecord {
     // This field indicates if the process should be spawned from the Native App Zygote. This is
     // enabled only if the flag {@link android.os.Flags#nativeAppZygote} is enabled.
     private final boolean mIsNativeService;
+    private final int mCallerUid;
+    @Nullable private final String mCallerProcessName;
 
     public HostingRecord(@NonNull String hostingType) {
         this(hostingType, null /* hostingName */, REGULAR_ZYGOTE, null /* definingPackageName */,
-                -1 /* mDefiningUid */, false /* isTopApp */, null /* definingProcessName */,
+                INVALID_UID /* mDefiningUid */, false /* isTopApp */,
+                null /* definingProcessName */,
                 null /* action */, TRIGGER_TYPE_UNKNOWN, false /* isPcc */,
-                false /* isNativeService */);
+                false /* isNativeService */, INVALID_UID /* callerUid */,
+                null /* callerProcessName */);
     }
 
     public HostingRecord(@NonNull String hostingType, ComponentName hostingName) {
@@ -133,29 +139,49 @@ public final class HostingRecord {
     public HostingRecord(@NonNull String hostingType, ComponentName hostingName,
             @Nullable String action, @Nullable String triggerType, boolean isPcc) {
         this(hostingType, hostingName.toShortString(), REGULAR_ZYGOTE,
-                null /* definingPackageName */, -1 /* mDefiningUid */, false /* isTopApp */,
+                null /* definingPackageName */, INVALID_UID /* mDefiningUid */,
+                false /* isTopApp */,
                 null /* definingProcessName */, action, triggerType, isPcc,
-                false /* isNativeService */);
+                false /* isNativeService */, INVALID_UID /* callerUid */,
+                null /* callerProcessName */);
+    }
+
+    public HostingRecord(@NonNull String hostingType, ComponentName hostingName,
+            @Nullable String action, @Nullable String triggerType, boolean isPcc,
+            int callerUid, @Nullable String callerProcessName) {
+        this(hostingType, hostingName.toShortString(), REGULAR_ZYGOTE,
+                null /* definingPackageName */, INVALID_UID /* mDefiningUid */,
+                false /* isTopApp */,
+                null /* definingProcessName */, action, triggerType, isPcc,
+                false /* isNativeService */, callerUid, callerProcessName);
     }
 
     public HostingRecord(@NonNull String hostingType, ComponentName hostingName,
             String definingPackageName, int definingUid, String definingProcessName,
-            String triggerType, boolean isPcc) {
+            String triggerType, boolean isPcc, int callerUid, @Nullable String callerProcessName) {
         this(hostingType, hostingName.toShortString(), REGULAR_ZYGOTE, definingPackageName,
                 definingUid, false /* isTopApp */, definingProcessName, null /* action */,
-                triggerType, isPcc /* isPcc */, false /* isNativeService */);
-    }
-
-    public HostingRecord(@NonNull String hostingType, ComponentName hostingName, boolean isTopApp) {
-        this(hostingType, hostingName, isTopApp, false /* isPcc */);
+                triggerType, isPcc /* isPcc */, false /* isNativeService */,
+                callerUid, callerProcessName);
     }
 
     public HostingRecord(@NonNull String hostingType, ComponentName hostingName,
             boolean isTopApp, boolean isPcc) {
         this(hostingType, hostingName.toShortString(), REGULAR_ZYGOTE,
-                null /* definingPackageName */, -1 /* mDefiningUid */, isTopApp /* isTopApp */,
+                null /* definingPackageName */, INVALID_UID /* mDefiningUid */,
+                isTopApp /* isTopApp */,
                 null /* definingProcessName */, null /* action */, TRIGGER_TYPE_UNKNOWN, isPcc,
-                false /* isNativeService */);
+                false /* isNativeService */, INVALID_UID /* callerUid */,
+                null /* callerProcessName */);
+    }
+
+    public HostingRecord(@NonNull String hostingType, ComponentName hostingName,
+            boolean isTopApp, boolean isPcc, int callerUid, @Nullable String callerProcessName) {
+        this(hostingType, hostingName.toShortString(), REGULAR_ZYGOTE,
+                null /* definingPackageName */, INVALID_UID /* mDefiningUid */,
+                isTopApp /* isTopApp */,
+                null /* definingProcessName */, null /* action */, TRIGGER_TYPE_UNKNOWN, isPcc,
+                false /* isNativeService */, callerUid, callerProcessName);
     }
 
     public HostingRecord(@NonNull String hostingType, String hostingName) {
@@ -173,22 +199,27 @@ public final class HostingRecord {
 
     private HostingRecord(@NonNull String hostingType, String hostingName, int hostingZygote) {
         this(hostingType, hostingName, hostingZygote, null /* definingPackageName */,
-                -1 /* mDefiningUid */, false /* isTopApp */, null /* definingProcessName */,
+                INVALID_UID /* mDefiningUid */, false /* isTopApp */,
+                null /* definingProcessName */,
                 null /* action */, TRIGGER_TYPE_UNKNOWN, false /* isPcc */,
-                false /* isNativeService */);
+                false /* isNativeService */, INVALID_UID /* callerUid */,
+                null /* callerProcessName */);
     }
 
     private HostingRecord(@NonNull String hostingType, String hostingName, int hostingZygote,
             boolean isPcc) {
         this(hostingType, hostingName, hostingZygote, null /* definingPackageName */,
-                -1 /* mDefiningUid */, false /* isTopApp */, null /* definingProcessName */,
-                null /* action */, TRIGGER_TYPE_UNKNOWN, isPcc, false /* isNativeService */);
+                INVALID_UID /* mDefiningUid */, false /* isTopApp */,
+                null /* definingProcessName */,
+                null /* action */, TRIGGER_TYPE_UNKNOWN, isPcc, false /* isNativeService */,
+                INVALID_UID /* callerUid */, null /* callerProcessName */);
     }
 
     private HostingRecord(@NonNull String hostingType, String hostingName, int hostingZygote,
             String definingPackageName, int definingUid, boolean isTopApp,
             String definingProcessName, @Nullable String action, String triggerType,
-            boolean isPcc, boolean isNativeService) {
+            boolean isPcc, boolean isNativeService, int callerUid,
+            @Nullable String callerProcessName) {
         mHostingType = hostingType;
         mHostingName = hostingName;
         mHostingZygote = hostingZygote;
@@ -200,6 +231,8 @@ public final class HostingRecord {
         mTriggerType = triggerType;
         mIsPcc = isPcc;
         mIsNativeService = isNativeService;
+        mCallerUid = callerUid;
+        mCallerProcessName = callerProcessName;
     }
 
     public @NonNull String getType() {
@@ -263,16 +296,35 @@ public final class HostingRecord {
     }
 
     /**
+     * Returns the UID of the process that triggered this process start.
+     *
+     * @return the UID of the caller process
+     */
+    public int getCallerUid() {
+        return mCallerUid;
+    }
+
+    /**
+     * Returns the name of the process that triggered this process start.
+     *
+     * @return the name of the caller process
+     */
+    public String getCallerProcessName() {
+        return mCallerProcessName;
+    }
+
+    /**
      * Creates a HostingRecord for a process that must spawn from the webview zygote
      * @param hostingName name of the component to be hosted in this process
      * @return The constructed HostingRecord
      */
     public static HostingRecord byWebviewZygote(ComponentName hostingName,
-            String definingPackageName, int definingUid, String definingProcessName) {
+            String definingPackageName, int definingUid, String definingProcessName,
+            int callerUid, @Nullable String callerProcessName) {
         return new HostingRecord(HostingRecord.HOSTING_TYPE_EMPTY, hostingName.toShortString(),
                 WEBVIEW_ZYGOTE, definingPackageName, definingUid, false /* isTopApp */,
                 definingProcessName, null /* action */, TRIGGER_TYPE_UNKNOWN, false /* isPcc */,
-                false /* isNativeService */);
+                false /* isNativeService */, callerUid, callerProcessName);
     }
 
     /**
@@ -285,11 +337,12 @@ public final class HostingRecord {
      * @return The constructed HostingRecord
      */
     public static HostingRecord byAppZygote(ComponentName hostingName, String definingPackageName,
-            int definingUid, String definingProcessName, boolean isNativeService) {
+            int definingUid, String definingProcessName, boolean isNativeService,
+            int callerUid, @Nullable String callerProcessName) {
         return new HostingRecord(HostingRecord.HOSTING_TYPE_EMPTY, hostingName.toShortString(),
                 APP_ZYGOTE, definingPackageName, definingUid, false /* isTopApp */,
                 definingProcessName, null /* action */, TRIGGER_TYPE_UNKNOWN, false /* isPcc */,
-                isNativeService);
+                isNativeService, callerUid, callerProcessName);
     }
 
     /**

@@ -52,8 +52,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -101,6 +103,7 @@ class MediaOutputComponent @Inject constructor(private val viewModel: MediaOutpu
                     .fillMaxWidth()
                     .height(56.dp)
                     .semantics {
+                        role = Role.Button
                         liveRegion = LiveRegionMode.Polite
                         this.onClick(label = clickLabel) {
                             viewModel.onBarClick(null)

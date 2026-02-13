@@ -1668,11 +1668,10 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
     }
 
     void writeSettings(boolean sync) {
-        final List<UserInfo> activeUsers = Settings.getActiveUsers(mUserManager);
         synchronized (mLock) {
             mHandler.removeMessages(WRITE_SETTINGS);
             mBackgroundHandler.removeMessages(WRITE_DIRTY_PACKAGE_RESTRICTIONS);
-            writeSettingsLPrTEMP(activeUsers, sync);
+            writeSettingsLPrTEMP(sync);
             synchronized (mDirtyUsers) {
                 mDirtyUsers.clear();
             }
@@ -1680,10 +1679,9 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
     }
 
     void writePackageList(int userId) {
-        List<UserInfo> activeUsers = Settings.getActiveUsers(mUserManager);
         synchronized (mLock) {
             mHandler.removeMessages(WRITE_PACKAGE_LIST);
-            mSettings.writePackageListLPr(activeUsers, userId);
+            mSettings.writePackageListLPr(userId);
         }
     }
 
@@ -2485,8 +2483,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
 
             // can downgrade to reader
             t.traceBegin("write settings");
-            final List<UserInfo> activeUsers = Settings.getActiveUsers(mUserManager);
-            writeSettingsLPrTEMP(activeUsers);
+            writeSettingsLPrTEMP();
             t.traceEnd();
             EventLog.writeEvent(EventLogTags.BOOT_PROGRESS_PMS_READY,
                     SystemClock.uptimeMillis());
@@ -3306,11 +3303,9 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             }
         } else {
             // Here only SHELL can suspend across users
-            final int packageUid =
-                    snapshot.getPackageUid(suspender.packageName, 0, targetUserId);
-            final boolean allowedPackageUid = packageUid == callingUid;
-            final boolean allowedShell = callingUid == SHELL_UID
-                    && UserHandle.isSameApp(packageUid, callingUid);
+            final boolean allowedPackageUid = snapshot.isCallerSameApp(suspender.packageName,
+                    callingUid);
+            final boolean allowedShell = callingUid == SHELL_UID && allowedPackageUid;
 
             if (!allowedShell && !allowedPackageUid) {
                 throw new SecurityException("Suspending package " + suspender.packageName
@@ -3941,8 +3936,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
 
         Computer computer = snapshotComputer();
 
-        int componentUid = computer.getPackageUid(componentPkgName, 0, userId);
-        if (!UserHandle.isSameApp(callingUid, componentUid)) {
+        if (!computer.isCallerSameApp(componentPkgName, callingUid)) {
             throw new SecurityException("The calling UID (" + callingUid + ")"
                     + " does not match the target UID");
         }
@@ -3954,9 +3948,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                     + "component's label or icon");
         }
 
-        int allowedCallerUid = computer.getPackageUid(allowedCallerPkg,
-                PackageManager.MATCH_SYSTEM_ONLY, userId);
-        if (allowedCallerUid == -1 || !UserHandle.isSameApp(callingUid, allowedCallerUid)) {
+        if (!computer.isCallerSameApp(allowedCallerPkg, callingUid)) {
             throw new SecurityException("The calling UID (" + callingUid + ")"
                     + " is not allowed to change a component's label or icon");
         }
@@ -4624,14 +4616,13 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
 
     /** Called by UserManagerService */
     void cleanUpUser(UserManagerService userManager, @UserIdInt int userId) {
-        final List<UserInfo> activeUsers = Settings.getActiveUsers(userManager);
         synchronized (mLock) {
             synchronized (mDirtyUsers) {
                 mDirtyUsers.remove(userId);
             }
             mUserNeedsBadging.delete(userId);
             mDeletePackageHelper.removeUnusedPackagesLPw(userManager, userId);
-            mSettings.removeUserLPw(activeUsers, userId);
+            mSettings.removeUserLPw(userId);
             mPendingBroadcasts.remove(userId);
             mAppsFilter.onUserDeleted(snapshotComputer(), userId);
             mPermissionManager.onUserRemoved(userId);
@@ -5355,7 +5346,8 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         @Override
         public byte[] getDomainVerificationBackup(int userId) {
             if (Binder.getCallingUid() != Process.SYSTEM_UID) {
-                throw new SecurityException("Only the system may call getDomainVerificationBackup()");
+                throw new SecurityException(
+                        "Only the system may call getDomainVerificationBackup()");
             }
 
             try {
@@ -5367,7 +5359,10 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                 }
             } catch (Exception e) {
                 if (PackageManagerService.DEBUG_BACKUP) {
-                    Slog.e(PackageManagerService.TAG, "Unable to write domain verification for backup", e);
+                    Slog.e(
+                            PackageManagerService.TAG,
+                            "Unable to write domain verification for backup",
+                            e);
                 }
                 return null;
             }
@@ -5703,9 +5698,8 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         public VerifierDeviceIdentity getVerifierDeviceIdentity() throws RemoteException {
             getVerifierDeviceIdentity_enforcePermission();
 
-            final List<UserInfo> activeUsers = Settings.getActiveUsers(mUserManager);
             synchronized (mLock) {
-                return mSettings.getVerifierDeviceIdentityLPw(mLiveComputer, activeUsers);
+                return mSettings.getVerifierDeviceIdentityLPw(mLiveComputer);
             }
         }
 
@@ -5990,7 +5984,8 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         @Override
         public void restoreDomainVerification(byte[] backup, int userId) {
             if (Binder.getCallingUid() != Process.SYSTEM_UID) {
-                throw new SecurityException("Only the system may call restorePreferredActivities()");
+                throw new SecurityException(
+                        "Only the system may call restorePreferredActivities()");
             }
 
             try {
@@ -6003,7 +5998,9 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                 input.close();
             } catch (Exception e) {
                 if (PackageManagerService.DEBUG_BACKUP) {
-                    Slog.e(PackageManagerService.TAG, "Exception restoring domain verification: " + e.getMessage());
+                    Slog.e(
+                            PackageManagerService.TAG,
+                            "Exception restoring domain verification: " + e.getMessage());
                 }
             }
         }
@@ -6263,16 +6260,24 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                 AndroidPackage pkg = packageState.getPkg();
                 // Cannot block uninstall SDK libs as they are controlled by SDK manager.
                 if (pkg.getSdkLibraryName() != null) {
-                    Slog.w(PackageManagerService.TAG, "Cannot block uninstall of package: " + packageName
-                            + " providing SDK library: " + pkg.getSdkLibraryName());
+                    Slog.w(
+                            PackageManagerService.TAG,
+                            "Cannot block uninstall of package: "
+                                    + packageName
+                                    + " providing SDK library: "
+                                    + pkg.getSdkLibraryName());
                     return false;
                 }
                 // Cannot block uninstall of static shared libs as they are
                 // considered a part of the using app (emulating static linking).
                 // Also static libs are installed always on internal storage.
                 if (pkg.getStaticSharedLibraryName() != null) {
-                    Slog.w(PackageManagerService.TAG, "Cannot block uninstall of package: " + packageName
-                            + " providing static shared library: " + pkg.getStaticSharedLibraryName());
+                    Slog.w(
+                            PackageManagerService.TAG,
+                            "Cannot block uninstall of package: "
+                                    + packageName
+                                    + " providing static shared library: "
+                                    + pkg.getStaticSharedLibraryName());
                     return false;
                 }
             }
@@ -7368,12 +7373,11 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
 
         @Override
         public void writeSettings(boolean async) {
-            final List<UserInfo> activeUsers = Settings.getActiveUsers(mUserManager);
             synchronized (mLock) {
                 if (async) {
                     scheduleWriteSettings();
                 } else {
-                    writeSettingsLPrTEMP(activeUsers, /* sync= */ false);
+                    writeSettingsLPrTEMP();
                 }
             }
         }
@@ -7669,6 +7673,67 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                         new PackageManager.NameNotFoundException(packageName));
             }
             return packageState.getUserStateOrDefault(userId).getPersonalContextMode();
+        }
+
+        @Override
+        public boolean snapshotAppData(
+                String packageName, int userId, int rollbackId, int storageFlags)
+                throws InstallerException {
+            if (!Flags.wrapInstallerApis()) {
+                throw new UnsupportedOperationException();
+            }
+            try (PackageManagerTracedLock installLock = mInstallLock.acquireLock()) {
+                return mInstaller.snapshotAppData(packageName, userId, rollbackId, storageFlags);
+            }
+        }
+
+        @Override
+        public void clearAppData(
+                String volumeUuid,
+                String packageName,
+                int userId,
+                int flags,
+                long ceDataInode,
+                long pccCeDataInode)
+                throws InstallerException {
+            if (!Flags.wrapInstallerApis()) {
+                throw new UnsupportedOperationException();
+            }
+            try (PackageManagerTracedLock installLock = mInstallLock.acquireLock()) {
+                mInstaller.clearAppData(
+                        volumeUuid, packageName, userId, flags, ceDataInode, pccCeDataInode);
+            }
+        }
+
+        @Override
+        public boolean restoreAppDataSnapshot(
+                String packageName,
+                int appId,
+                int pccId,
+                String seInfo,
+                int userId,
+                int rollbackId,
+                int storageFlags)
+                throws InstallerException {
+            if (!Flags.wrapInstallerApis()) {
+                throw new UnsupportedOperationException();
+            }
+            try (PackageManagerTracedLock installLock = mInstallLock.acquireLock()) {
+                return mInstaller.restoreAppDataSnapshot(
+                        packageName, appId, pccId, seInfo, userId, rollbackId, storageFlags);
+            }
+        }
+
+        @Override
+        public void destroyAppDataSnapshot(
+                String packageName, int userId, int rollbackId, int storageFlags)
+                throws InstallerException {
+            if (!Flags.wrapInstallerApis()) {
+                throw new UnsupportedOperationException();
+            }
+            try (PackageManagerTracedLock installLock = mInstallLock.acquireLock()) {
+                mInstaller.destroyAppDataSnapshot(packageName, userId, rollbackId, storageFlags);
+            }
         }
     }
 
@@ -8036,15 +8101,15 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
      * TODO(b/182523293): This should be removed once we finish migration of permission storage.
      */
     @SuppressWarnings("GuardedBy")
-    void writeSettingsLPrTEMP(List<UserInfo> users, boolean sync) {
+    void writeSettingsLPrTEMP(boolean sync) {
         snapshotComputer(false);
         mPermissionManager.writeLegacyPermissionsTEMP(mSettings.mPermissions);
-        mSettings.writeLPr(mLiveComputer, users, sync);
+        mSettings.writeLPr(mLiveComputer, sync);
     }
 
     // Default async version.
-    void writeSettingsLPrTEMP(List<UserInfo> users) {
-        writeSettingsLPrTEMP(users, /*sync=*/false);
+    void writeSettingsLPrTEMP() {
+        writeSettingsLPrTEMP(/*sync=*/false);
     }
 
     @Override

@@ -35,17 +35,20 @@ import static android.view.WindowManager.TransitionFlags;
 import static android.view.WindowManager.TransitionOldType;
 import static android.view.WindowManager.TransitionType;
 
+import static com.android.internal.policy.KeyguardState.INTERACTIVE_STATE_AWAKE;
+import static com.android.internal.policy.KeyguardState.INTERACTIVE_STATE_WAKING;
+import static com.android.internal.policy.KeyguardState.SCREEN_STATE_ON;
+import static com.android.internal.policy.KeyguardState.SCREEN_STATE_TURNING_ON;
+
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.app.Service;
 import android.app.WindowConfiguration;
 import android.content.Intent;
-import android.os.Binder;
 import android.os.Bundle;
-import android.os.Debug;
 import android.os.IBinder;
 import android.os.PowerManager;
-import android.os.Process;
 import android.os.RemoteException;
 import android.os.Trace;
 import android.util.ArrayMap;
@@ -68,6 +71,7 @@ import com.android.internal.policy.IKeyguardDrawnCallback;
 import com.android.internal.policy.IKeyguardExitCallback;
 import com.android.internal.policy.IKeyguardService;
 import com.android.internal.policy.IKeyguardStateCallback;
+import com.android.internal.policy.KeyguardState;
 import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.keyguard.mediator.ScreenOnCoordinator;
 import com.android.systemui.application.SystemUIApplication;
@@ -91,7 +95,6 @@ import com.android.systemui.power.shared.model.ScreenPowerState;
 import com.android.systemui.scene.domain.interactor.SceneInteractor;
 import com.android.systemui.scene.domain.startable.KeyguardStateCallbackStartable;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
-import com.android.systemui.scene.shared.model.Scenes;
 import com.android.systemui.securelockdevice.domain.interactor.SecureLockDeviceInteractor;
 import com.android.systemui.settings.DisplayTracker;
 import com.android.wm.shell.shared.CounterRotator;
@@ -442,13 +445,13 @@ public class KeyguardService extends Service {
         }
 
         @Override // Binder interface
-        public void setOccluded(boolean isOccluded, boolean animate) {
-            trace("setOccluded isOccluded=" + isOccluded + " animate=" + animate);
+        public void setOccluded(boolean isOccluded) {
+            trace("setOccluded isOccluded=" + isOccluded);
             Log.d(TAG, "setOccluded(" + isOccluded + ")");
 
             Trace.beginSection("KeyguardService.mBinder#setOccluded");
             if (!KeyguardWmStateRefactor.isEnabled()) {
-                mKeyguardViewMediator.setOccluded(isOccluded, animate);
+                mKeyguardViewMediator.setOccluded(isOccluded);
             } else {
                 mWmOcclusionManager.onKeyguardServiceSetOccluded(isOccluded);
             }
@@ -712,6 +715,52 @@ public class KeyguardService extends Service {
             trace("onSystemKeyPressed keycode=" + keycode);
             mKeyguardViewMediator.onSystemKeyPressed(keycode);
         }
+
+        @Override // Binder interface
+        public void restoreKeyguardState(@NonNull KeyguardState state,
+                @NonNull IKeyguardStateCallback stateCallback,
+                @NonNull IKeyguardDrawnCallback drawnCallback, boolean timeoutRequested,
+                @Nullable Bundle timeoutOptions) {
+            addStateMonitorCallback(stateCallback);
+
+            if (state.systemReady) {
+                // If the system is ready, it means keyguard crashed and restarted.
+                onSystemReady();
+                setCurrentUser(state.userId);
+                boolean waking = state.interactiveState == INTERACTIVE_STATE_WAKING;
+                boolean awake = state.interactiveState == INTERACTIVE_STATE_AWAKE;
+                // This is used to hide the scrim once keyguard displays.
+                if (awake || waking) {
+                    onStartedWakingUp(PowerManager.WAKE_REASON_UNKNOWN,
+                            false /* powerButtonLaunchGestureTriggered */);
+                }
+                if (awake) {
+                    onFinishedWakingUp();
+                }
+                boolean screenTurningOn = state.screenState == SCREEN_STATE_TURNING_ON;
+                boolean screenOn = state.screenState == SCREEN_STATE_ON;
+                if (screenOn || screenTurningOn) {
+                    onScreenTurningOn(SCREEN_TURNING_ON_REASON_UNKNOWN, drawnCallback);
+                }
+                if (screenOn) {
+                    onScreenTurnedOn();
+                }
+            }
+            if (state.bootCompleted) {
+                onBootCompleted();
+            }
+            if (state.occluded) {
+                setOccluded(true /* isOccluded */);
+            }
+            if (!state.enabled) {
+                setKeyguardEnabled(false /* enabled */);
+            }
+            if (state.dreaming) {
+                onDreamingStarted();
+            }
+            if (timeoutRequested) {
+                doKeyguardTimeout(timeoutOptions);
+            }
+        }
     };
 }
-

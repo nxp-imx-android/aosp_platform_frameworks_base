@@ -771,11 +771,13 @@ private class DelayedOnClickListener(
 private const val TAG = "SmartReplyViewInflater"
 private val DEBUG = Log.isLoggable(TAG, Log.DEBUG)
 
-// convenience function that swaps parameter order so that lambda can be placed at the end
+// Convenience function that swaps parameter order so that lambda can be placed
+// at the end. Execute the dismiss action after the keyguard is gone to ensure the
+// dismissAction has the most updated unlock state of the device.
 private fun KeyguardDismissUtil.executeWhenUnlocked(
     requiresShadeOpen: Boolean,
     onDismissAction: () -> Boolean,
-) = executeWhenUnlocked(onDismissAction, requiresShadeOpen, false)
+) = executeWhenUnlocked(onDismissAction, requiresShadeOpen, /* afterKeyguardGone= */ true)
 
 // convenience function that swaps parameter order so that lambda can be placed at the end
 private fun ActivityStarter.startPendingIntentDismissingKeyguard(

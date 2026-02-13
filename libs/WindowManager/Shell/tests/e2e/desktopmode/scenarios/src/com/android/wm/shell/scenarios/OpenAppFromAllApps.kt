@@ -17,6 +17,7 @@
 package com.android.wm.shell.scenarios
 
 import android.app.Instrumentation
+import android.platform.test.annotations.WithDesktopTest
 import android.tools.Rotation
 import android.tools.device.apphelpers.CalculatorAppHelper
 import android.tools.traces.parsers.WindowManagerStateHelper
@@ -48,6 +49,7 @@ abstract class OpenAppFromAllApps(val rotation: Rotation = Rotation.ROTATION_0) 
     }
 
     @Test
+    @WithDesktopTest
     open fun openApp() {
         tapl.launchedAppState.taskbar
             .openAllApps()

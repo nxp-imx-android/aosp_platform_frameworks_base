@@ -32,6 +32,7 @@ data class ScreenCaptureRecentTask(
     @ColorInt val backgroundColor: Int?,
     val splitBounds: SplitBounds?,
     val baseIntent: Intent?,
+    val isForegroundTask: Boolean,
 ) : TargetModel {
     constructor(
         task: RecentTask
@@ -43,6 +44,7 @@ data class ScreenCaptureRecentTask(
         backgroundColor = task.colorBackground,
         splitBounds = task.splitBounds,
         baseIntent = task.baseIntent,
+        isForegroundTask = task.isForegroundTask,
     )
 
     override val traceTag: String = "RecentTask($taskId)"

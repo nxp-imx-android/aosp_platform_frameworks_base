@@ -215,7 +215,7 @@ class LetterboxConfiguration @Inject constructor(private val context: Context) {
         return letterboxBackgroundWallpaperDarkScrimAlpha
     }
 
-    private enum class LetterboxBackgroundMode(val id: Int, val asString: String) {
+    enum class LetterboxBackgroundMode(val id: Int, val asString: String) {
         OVERRIDE_UNSET(-1, "LETTERBOX_BACKGROUND_UNSET"),
         SOLID_COLOR(0, "LETTERBOX_BACKGROUND_SOLID_COLOR"),
         APP_COLOR_BACKGROUND(1, "LETTERBOX_BACKGROUND_APP_COLOR_BACKGROUND"),
@@ -229,6 +229,12 @@ class LetterboxConfiguration @Inject constructor(private val context: Context) {
             fun fromId(id: Int): LetterboxBackgroundMode {
                 return entries.find { it.id == id } ?: SOLID_COLOR
             }
+
+            /**
+             * @param id The id for background mode
+             * @return [true] if the input is a valid background mode id.
+             */
+            fun validForInput(id: Int): Boolean = id >= SOLID_COLOR.id && id <= WALLPAPER.id
         }
     }
 }

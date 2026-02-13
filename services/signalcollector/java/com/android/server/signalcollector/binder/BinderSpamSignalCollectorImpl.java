@@ -19,43 +19,67 @@ package com.android.server.signalcollector.binder;
 import android.annotation.NonNull;
 import android.os.Binder;
 import android.os.OutcomeReceiver;
-import android.os.SystemClock;
-import android.os.binder.BinderSpamStats;
+import android.os.binder.BinderCallsStats;
+import android.os.binder.SingleSecondBinderStats;
 import android.util.ArrayMap;
 import android.util.ArraySet;
+import android.util.Pair;
 
-import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.annotations.GuardedBy;
 import com.android.os.profiling.anomaly.collector.SubscriptionId;
-import com.android.os.profiling.anomaly.collector.binder.BinderSpamConfig;
 import com.android.os.profiling.anomaly.collector.binder.BinderSpamConfigList;
 import com.android.os.profiling.anomaly.collector.binder.BinderSpamData;
 
 import java.time.Duration;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.LongSupplier;
 
 public class BinderSpamSignalCollectorImpl extends BinderSpamSignalCollector {
-    private final ArrayMap<SubscriptionId, Set<ReceiverKey>> mSubscriptions = new ArrayMap<>();
-    private final ConcurrentHashMap<ReceiverKey, BinderSpamEvaluator>
-            mEvaluators = new ConcurrentHashMap<>();
+    @GuardedBy("mSubscriptions")
+    private final ArrayMap<SubscriptionId,
+            Pair<BinderSpamConfigList, OutcomeReceiver<BinderSpamData, Throwable>>> mSubscriptions =
+            new ArrayMap<>();
+    private volatile ArrayMap<BinderStatsKey, Set<OutcomeReceiver<BinderSpamData, Throwable>>>
+            mReceivers;
 
     @Override
-    public void onBinderSpamDataReported(BinderSpamStats[] statsArray) {
-        for (BinderSpamStats stats : statsArray) {
-            for (SubscriptionId subscriptionId : mSubscriptions.keySet()) {
-                ReceiverKey receiverKey = new ReceiverKey(stats.interfaceDescriptor,
-                        stats.aidlMethod, subscriptionId);
-                var evaluator = mEvaluators.get(receiverKey);
-                if (evaluator != null) {
-                    evaluator.onResult(stats);
-                }
-            }
+    public void onBinderStatsReported(BinderCallsStats[] statsArray) {
+        final int serverUid = Binder.getCallingUid();
+        for (var stats : statsArray) {
+            BinderSpamData data = new BinderSpamData.Builder()
+                    .setInterfaceName(stats.interfaceDescriptor)
+                    .setMethodName(stats.aidlMethod)
+                    .setCallCount((int) stats.callCount)
+                    .setCallingUid(stats.clientUid)
+                    .setServerUid(serverUid)
+                    .setTimespan(Duration.ofSeconds(5))
+                    .build();
+            handleData(data);
         }
     }
 
-    /** This method is not thread-safe. */
+    @Override
+    public void onBinderStatsReported(SingleSecondBinderStats[] statsArray) {
+        final int serverUid = Binder.getCallingUid();
+        for (var stats : statsArray) {
+            BinderSpamData data = new BinderSpamData.Builder()
+                    .setInterfaceName(stats.interfaceDescriptor)
+                    .setMethodName(stats.aidlMethod)
+                    .setCallCount(stats.callCount)
+                    .setCallingUid(stats.clientUid)
+                    .setServerUid(serverUid)
+                    .setTimespan(Duration.ofSeconds(1))
+                    .build();
+            handleData(data);
+        }
+    }
+
+    private void handleData(BinderSpamData data) {
+        BinderStatsKey key = new BinderStatsKey(data.getInterfaceName(), data.getMethodName());
+        mReceivers.getOrDefault(key, Collections.emptySet()).forEach(r -> r.onResult(data));
+    }
+
     @Override
     @NonNull
     public SubscriptionId subscribe(@NonNull BinderSpamConfigList configList,
@@ -63,31 +87,39 @@ public class BinderSpamSignalCollectorImpl extends BinderSpamSignalCollector {
         Objects.requireNonNull(configList);
         Objects.requireNonNull(receiver);
         SubscriptionId id = SubscriptionId.generateNew();
-        ArraySet<ReceiverKey> receiverKeys = new ArraySet<>();
-        for (BinderSpamConfig config : configList.getConfigs()) {
-            ReceiverKey key =
-                    new ReceiverKey(config.getInterfaceName(), config.getMethodName(), id);
-            if (!receiverKeys.add(key)) {
-                throw new IllegalArgumentException("More than one config for same target!");
-            }
-            mEvaluators.put(key, new BinderSpamEvaluator(config, receiver,
-                    SystemClock::elapsedRealtime));
+        synchronized (mSubscriptions) {
+            mSubscriptions.put(id, new Pair<>(configList, receiver));
+            recalculateReceivers();
         }
-        mSubscriptions.put(id, receiverKeys);
         return id;
     }
 
-    /** This method is not thread-safe. */
     @Override
     public void unsubscribe(@NonNull SubscriptionId subscriptionId) {
         Objects.requireNonNull(subscriptionId);
-        var removedKeys = mSubscriptions.remove(subscriptionId);
-        if (removedKeys == null) {
-            throw new IllegalArgumentException("The provided subscription ID can not be found!");
+        synchronized (mSubscriptions) {
+            if (mSubscriptions.remove(subscriptionId) == null) {
+                throw new IllegalArgumentException(
+                        "The provided subscription ID can not be found!");
+            }
+            recalculateReceivers();
         }
-        for (var key : removedKeys) {
-            mEvaluators.remove(key);
+    }
+
+    @GuardedBy("mSubscriptions")
+    private void recalculateReceivers() {
+        ArrayMap<BinderStatsKey, Set<OutcomeReceiver<BinderSpamData, Throwable>>> receivers =
+                new ArrayMap<>();
+        for (var subscription : mSubscriptions.values()) {
+            for (var binderSpamConfig : subscription.first.getConfigs()) {
+                BinderStatsKey key =
+                        new BinderStatsKey(
+                                binderSpamConfig.getInterfaceName(),
+                                binderSpamConfig.getMethodName());
+                receivers.computeIfAbsent(key, k -> new ArraySet<>()).add(subscription.second);
+            }
         }
+        mReceivers = receivers;
     }
 
     @Override
@@ -100,63 +132,6 @@ public class BinderSpamSignalCollectorImpl extends BinderSpamSignalCollector {
         throw new UnsupportedOperationException();
     }
 
-    /** A key object used to look up receivers for a binder method. */
-    private record ReceiverKey(
-            String interfaceName,
-            String methodName,
-            SubscriptionId subscriptionId) {}
-
-    @VisibleForTesting
-    static class BinderSpamEvaluator {
-        private static final long ONE_SECOND_IN_MILLIS = 1000L;
-        private final BinderSpamConfig mConfig;
-        private final OutcomeReceiver<BinderSpamData, Throwable> mReceiver;
-        private final LongSupplier mElapsedRealtimeClock;
-        private long mCurrentWindowStartMillis;
-        private long mCurrentWindowEndMillis;
-        private int mCallCount;
-
-        BinderSpamEvaluator(BinderSpamConfig config,
-                OutcomeReceiver<BinderSpamData, Throwable> receiver,
-                LongSupplier elapsedRealtimeClock) {
-            mConfig = config;
-            mReceiver = receiver;
-            mElapsedRealtimeClock = elapsedRealtimeClock;
-            resetCurrentWindow(mElapsedRealtimeClock.getAsLong());
-        }
-
-        void onResult(BinderSpamStats binderSpamStats) {
-            long currentElapsedTimeMillis = mElapsedRealtimeClock.getAsLong();
-            if (mCurrentWindowEndMillis < currentElapsedTimeMillis) {
-                resetCurrentWindow(currentElapsedTimeMillis);
-                mCallCount = 0;
-            }
-            // TODO(b/448909649): Replace this with total reported count when available.
-            mCallCount += binderSpamStats.peakCallCountPerSecond;
-            if (mCallCount > mConfig.getCallCountThreshold()) {
-                Duration timespan = Duration.ofMillis(currentElapsedTimeMillis
-                                - mCurrentWindowStartMillis);
-                mReceiver.onResult(
-                        // TODO(b/423980577): Add caller importance to data
-                        new BinderSpamData.Builder()
-                                .setInterfaceName(binderSpamStats.interfaceDescriptor)
-                                .setMethodName(binderSpamStats.aidlMethod)
-                                .setCallingUid(binderSpamStats.clientUid)
-                                .setServerUid(Binder.getCallingUid())
-                                .setTimespan(timespan)
-                                .setCallCount(mCallCount)
-                                .build()
-                );
-                resetCurrentWindow(currentElapsedTimeMillis);
-                mCallCount = 0;
-            }
-        }
-
-        private void resetCurrentWindow(long currentElapsedTimeMillis) {
-            // Assume received data is at least one second long.
-            mCurrentWindowStartMillis = currentElapsedTimeMillis - ONE_SECOND_IN_MILLIS;
-            mCurrentWindowEndMillis =
-                    mCurrentWindowStartMillis + mConfig.getWindowSize().toMillis();
-        }
-    }
+    /** A key object used to identify binder stats. */
+    private record BinderStatsKey(String interfaceName, String methodName) {}
 }

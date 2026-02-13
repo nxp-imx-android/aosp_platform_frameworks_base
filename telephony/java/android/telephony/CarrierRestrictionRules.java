@@ -555,7 +555,6 @@ public final class CarrierRestrictionRules implements Parcelable {
          * @param carrierRestrictionStatus device restriction status
          */
         public @NonNull
-        @FlaggedApi(Flags.FLAG_SET_CARRIER_RESTRICTION_STATUS)
         Builder setCarrierRestrictionStatus(
                 @CarrierRestrictionStatus int carrierRestrictionStatus) {
             mRules.mCarrierRestrictionStatus = carrierRestrictionStatus;

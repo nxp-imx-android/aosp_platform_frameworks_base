@@ -15,8 +15,10 @@
  */
 package com.android.systemui.locationbutton.ui.viewmodel
 
+import android.app.permissionui.LocationButtonRequest
 import android.content.res.Configuration
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -25,7 +27,6 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.locationbutton.domain.interactor.locationButtonInteractor
-import com.android.systemui.locationbutton.shared.model.ButtonModel
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -47,18 +48,18 @@ class LocationButtonViewModelTest : SysuiTestCase() {
     @Test
     fun getButtonViewModel_stateExists_returnsViewModel() =
         kosmos.runTest {
-            val buttonModel = createTestButtonModel()
-            interactor.setButtonState(1, buttonModel)
+            val request = createTestRequest()
+            interactor.setButtonState(1, request, 1.0f)
             val result = underTest.getButtonViewModel()
 
             assertThat(result).isNotNull()
-            assertThat(result!!.width).isEqualTo(96.dp)
-            assertThat(result.height).isEqualTo(44.dp)
+            assertThat(result!!.width).isEqualTo(100.dp)
+            assertThat(result.height).isEqualTo(50.dp)
             assertThat(result.paddingLeft).isEqualTo(2.dp)
             assertThat(result.paddingTop).isEqualTo(3.dp)
             assertThat(result.paddingRight).isEqualTo(2.dp)
             assertThat(result.paddingBottom).isEqualTo(3.dp)
-            assertThat(result.backgroundColor).isEqualTo(buttonModel.backgroundColor)
+            assertThat(result.backgroundColor.toArgb()).isEqualTo(request.backgroundColor)
         }
 
     @Test
@@ -68,26 +69,21 @@ class LocationButtonViewModelTest : SysuiTestCase() {
             assertThat(result).isNull()
         }
 
-    private fun createTestButtonModel(): ButtonModel {
+    private fun createTestRequest(): LocationButtonRequest {
         val configuration = Configuration()
-        configuration.densityDpi = 160
-        return ButtonModel(
-            width = 100,
-            height = 50,
-            paddingLeft = 2,
-            paddingTop = 3,
-            paddingRight = 2,
-            paddingBottom = 3,
-            backgroundColor = Color.Black,
-            strokeColor = Color.White,
-            strokeWidth = 2,
-            cornerRadius = 10f,
-            pressedCornerRadius = 8f,
-            iconTint = Color.White,
-            textResId = 12345,
-            textColor = Color.White,
-            configuration = configuration,
-            density = 1.0f,
-        )
+        return LocationButtonRequest.Builder(100, 50, configuration)
+            .setPaddingLeft(2)
+            .setPaddingTop(3)
+            .setPaddingRight(2)
+            .setPaddingBottom(3)
+            .setBackgroundColor(Color.Black.toArgb())
+            .setStrokeColor(Color.White.toArgb())
+            .setStrokeWidth(2)
+            .setCornerRadius(10f)
+            .setPressedCornerRadius(8f)
+            .setIconTint(Color.White.toArgb())
+            .setTextColor(Color.White.toArgb())
+            .setTextType(android.app.permissionui.LocationButtonSession.TEXT_TYPE_PRECISE_LOCATION)
+            .build()
     }
 }

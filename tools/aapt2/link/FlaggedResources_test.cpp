@@ -287,4 +287,15 @@ TEST_F(FlaggedResourcesTest, ReadWriteFlagsOnOverlaySucceeds) {
   test::TestDiagnosticsImpl diag;
   ASSERT_TRUE(Link(link_args, compiled_files_dir, &diag));
 }
+
+TEST_F(FlaggedResourcesTest, RODisabledManifestElementRemoved) {
+  auto apk_path = file::BuildPath({android::base::GetExecutableDirectory(), "resapp.apk"});
+  auto loaded_apk = LoadedApk::LoadApkFromPath(apk_path, &noop_diag);
+
+  std::string output;
+  DumpXmlTreeToString(loaded_apk.get(), "AndroidManifest.xml", &output);
+  SCOPED_TRACE(output);
+  ASSERT_FALSE(output.contains("CAMERA"));
+}
+
 }  // namespace aapt

@@ -45,6 +45,7 @@ import android.util.TimeUtils;
 import com.android.internal.annotations.CompositeRWLock;
 import com.android.internal.annotations.GuardedBy;
 import com.android.server.am.Flags;
+import com.android.server.am.psc.Constants.OomAdjust;
 import com.android.server.am.psc.Constants.SchedGroup;
 import com.android.server.am.psc.PlatformCompatCache.CachedCompatChangeId;
 
@@ -63,14 +64,14 @@ public abstract class ProcessRecordInternal {
          *
          * @param curRawAdj The new mCurRawAdj value.
          */
-        void onCurRawAdjChanged(int curRawAdj);
+        void onCurRawAdjChanged(@OomAdjust int curRawAdj);
 
         /**
          * Called when mCurAdj changes.
          *
          * @param curAdj The new mCurAdj value.
          */
-        void onCurAdjChanged(int curAdj);
+        void onCurAdjChanged(@OomAdjust int curAdj);
 
         /**
          * Called when mCurSchedGroup changes.
@@ -406,37 +407,37 @@ public abstract class ProcessRecordInternal {
      * Maximum OOM adjustment for this process.
      */
     @GuardedBy("mServiceLock")
-    private int mMaxAdj = UNKNOWN_ADJ;
+    private @OomAdjust int mMaxAdj = UNKNOWN_ADJ;
 
     /**
      *  Current OOM unlimited adjustment for this process.
      */
     @CompositeRWLock({"mServiceLock", "mProcLock"})
-    private int mCurRawAdj = INVALID_ADJ;
+    private @OomAdjust int mCurRawAdj = INVALID_ADJ;
 
     /**
      * Last set OOM unlimited adjustment for this process.
      */
     @CompositeRWLock({"mServiceLock", "mProcLock"})
-    private int mSetRawAdj = INVALID_ADJ;
+    private @OomAdjust int mSetRawAdj = INVALID_ADJ;
 
     /**
      * Current OOM adjustment for this process.
      */
     @CompositeRWLock({"mServiceLock", "mProcLock"})
-    private int mCurAdj = INVALID_ADJ;
+    private @OomAdjust int mCurAdj = INVALID_ADJ;
 
     /**
      * Last set OOM adjustment for this process.
      */
     @CompositeRWLock({"mServiceLock", "mProcLock"})
-    private int mSetAdj = INVALID_ADJ;
+    private @OomAdjust int mSetAdj = INVALID_ADJ;
 
     /**
      * The last adjustment that was verified as actually being set.
      */
     @GuardedBy("mServiceLock")
-    private int mVerifiedAdj = INVALID_ADJ;
+    private @OomAdjust int mVerifiedAdj = INVALID_ADJ;
 
     /**
      * The current reasons for granting {@link ActivityManager#PROCESS_CAPABILITY_CPU_TIME} to this
@@ -776,7 +777,7 @@ public abstract class ProcessRecordInternal {
     @GuardedBy("mServiceLock")
     private String mCachedAdjType = null;
     @GuardedBy("mServiceLock")
-    private int mCachedAdj = INVALID_ADJ;
+    private @OomAdjust int mCachedAdj = INVALID_ADJ;
     @GuardedBy("mServiceLock")
     private boolean mCachedForegroundActivities = false;
     @GuardedBy("mServiceLock")
@@ -876,18 +877,18 @@ public abstract class ProcessRecordInternal {
 
 
     @GuardedBy("mServiceLock")
-    void setMaxAdj(int maxAdj) {
+    void setMaxAdj(@OomAdjust int maxAdj) {
         mMaxAdj = maxAdj;
     }
 
     @GuardedBy("mServiceLock")
-    public int getMaxAdj() {
+    public @OomAdjust int getMaxAdj() {
         return mMaxAdj;
     }
 
     /** Sets the current raw OOM adjustment for this process, and notifies the observer. */
     @GuardedBy({"mServiceLock", "mProcLock"})
-    public void setCurRawAdj(int curRawAdj) {
+    public void setCurRawAdj(@OomAdjust int curRawAdj) {
         mCurRawAdj = curRawAdj;
         mObserver.onCurRawAdjChanged(mCurRawAdj);
     }
@@ -902,7 +903,7 @@ public abstract class ProcessRecordInternal {
      * if it was a real run.
      */
     @GuardedBy({"mServiceLock", "mProcLock"})
-    public boolean setCurRawAdj(int curRawAdj, boolean dryRun) {
+    public boolean setCurRawAdj(@OomAdjust int curRawAdj, boolean dryRun) {
         if (dryRun) {
             return mCurRawAdj > curRawAdj;
         }
@@ -911,39 +912,39 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    public int getCurRawAdj() {
+    public @OomAdjust int getCurRawAdj() {
         return mCurRawAdj;
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    public void setSetRawAdj(int setRawAdj) {
+    public void setSetRawAdj(@OomAdjust int setRawAdj) {
         mSetRawAdj = setRawAdj;
     }
 
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    public int getSetRawAdj() {
+    public @OomAdjust int getSetRawAdj() {
         return mSetRawAdj;
     }
 
     /** Sets the current OOM adjustment for this process, and notifies the observer. */
     @GuardedBy({"mServiceLock", "mProcLock"})
-    public void setCurAdj(int curAdj) {
+    public void setCurAdj(@OomAdjust int curAdj) {
         mCurAdj = curAdj;
         mObserver.onCurAdjChanged(mCurAdj);
     }
 
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    public int getCurAdj() {
+    public @OomAdjust int getCurAdj() {
         return mCurAdj;
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    public void setSetAdj(int setAdj) {
+    public void setSetAdj(@OomAdjust int setAdj) {
         mSetAdj = setAdj;
     }
 
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    public int getSetAdj() {
+    public @OomAdjust int getSetAdj() {
         return mSetAdj;
     }
 
@@ -953,7 +954,7 @@ public abstract class ProcessRecordInternal {
      * Otherwise, it returns the normal {@link #getSetAdj()}.
      */
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    public int getSetAdjWithServices() {
+    public @OomAdjust int getSetAdjWithServices() {
         if (mSetAdj >= CACHED_APP_MIN_ADJ) {
             if (mHasStartedServices) {
                 return SERVICE_B_ADJ;
@@ -963,12 +964,12 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy("mServiceLock")
-    public void setVerifiedAdj(int verifiedAdj) {
+    public void setVerifiedAdj(@OomAdjust int verifiedAdj) {
         mVerifiedAdj = verifiedAdj;
     }
 
     @GuardedBy("mServiceLock")
-    public int getVerifiedAdj() {
+    public @OomAdjust int getVerifiedAdj() {
         return mVerifiedAdj;
     }
 
@@ -1457,12 +1458,12 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy("mServiceLock")
-    public int getCachedAdj() {
+    public @OomAdjust int getCachedAdj() {
         return mCachedAdj;
     }
 
     @GuardedBy("mServiceLock")
-    public void setCachedAdj(int cachedAdj) {
+    public void setCachedAdj(@OomAdjust int cachedAdj) {
         mCachedAdj = cachedAdj;
     }
 

@@ -16,6 +16,8 @@
 
 package android.app;
 
+import static android.app.privatecompute.flags.Flags.enablePccFrameworkSupport;
+
 import static dalvik.system.DexFile.OptimizationInfo;
 
 import android.annotation.NonNull;
@@ -452,6 +454,15 @@ public final class LoadedApk {
         if (aInfo.requestsIsolatedSplitLoading() && !ArrayUtils.isEmpty(mSplitNames)) {
             mSplitLoader = new SplitDependencyLoaderImpl(aInfo.splitDependencies);
         }
+
+        // Set the PCC dirs whenever application info is updated so that the information persists
+        // throughout the process
+        if (enablePccFrameworkSupport()
+                && Process.isPrivateComputeCoreUid(myUid)
+                && aInfo.uid == myUid) {
+            setPccStorageDirPaths();
+        }
+
         return true;
     }
 

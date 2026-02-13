@@ -17,9 +17,12 @@ package com.android.systemui.screencapture.domain.interactor
 
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
+import android.view.WindowManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.logging.uiEventLoggerFake
+import com.android.internal.util.ScreenshotRequest
+import com.android.internal.util.mockScreenshotHelper
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
@@ -38,6 +41,10 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mockito.verify
+import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.isNull
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -56,7 +63,7 @@ class ScreenCaptureKeyboardShortcutInteractorTest : SysuiTestCase() {
 
     @Test
     @DisableFlags(Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
-    fun attemptPartialRegionScreenshot_flagDisabled_doesNotShowUi() =
+    fun attemptPartialRegionScreenshot_flagDisabled_takesFullscreenScreenshot() =
         kosmos.runTest {
             val uiState by
                 collectLastValue(screenCaptureUiInteractor.uiState(ScreenCaptureType.RECORD))
@@ -66,8 +73,11 @@ class ScreenCaptureKeyboardShortcutInteractorTest : SysuiTestCase() {
 
             assertThat(uiState).isInstanceOf(ScreenCaptureUiState.Invisible::class.java)
 
-            // Nothing is logged.
-            assertThat(uiEventLoggerFake.numLogs()).isEqualTo(0)
+            val screenshotRequestCaptor = argumentCaptor<ScreenshotRequest>()
+            verify(mockScreenshotHelper)
+                .takeScreenshot(screenshotRequestCaptor.capture(), any(), isNull())
+            val capturedRequest = screenshotRequestCaptor.lastValue
+            assertThat(capturedRequest.type).isEqualTo(WindowManager.TAKE_SCREENSHOT_FULLSCREEN)
         }
 
     @Test
@@ -169,7 +179,7 @@ class ScreenCaptureKeyboardShortcutInteractorTest : SysuiTestCase() {
 
     @Test
     @DisableFlags(Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
-    fun attemptAppWindowScreenshot_umbrellaFlagDisabled_doesNotShowUi() =
+    fun attemptAppWindowScreenshot_umbrellaFlagDisabled_takesFullscreenScreenshot() =
         kosmos.runTest {
             val uiState by
                 collectLastValue(screenCaptureUiInteractor.uiState(ScreenCaptureType.RECORD))
@@ -179,8 +189,11 @@ class ScreenCaptureKeyboardShortcutInteractorTest : SysuiTestCase() {
 
             assertThat(uiState).isInstanceOf(ScreenCaptureUiState.Invisible::class.java)
 
-            // Nothing is logged.
-            assertThat(uiEventLoggerFake.numLogs()).isEqualTo(0)
+            val screenshotRequestCaptor = argumentCaptor<ScreenshotRequest>()
+            verify(mockScreenshotHelper)
+                .takeScreenshot(screenshotRequestCaptor.capture(), any(), isNull())
+            val capturedRequest = screenshotRequestCaptor.lastValue
+            assertThat(capturedRequest.type).isEqualTo(WindowManager.TAKE_SCREENSHOT_FULLSCREEN)
         }
 
     @Test

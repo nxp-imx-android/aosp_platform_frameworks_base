@@ -122,6 +122,16 @@ flag {
 }
 
 flag {
+  name: "one_way_set_task_description"
+  namespace: "windowing_frontend"
+  description: "Reduce blocking calls that are usually called on UI thread"
+  bug: "482936553"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "use_known_display_id_for_base_context"
   namespace: "windowing_frontend"
   description: "Reduce binder calls that query display id using a token"
@@ -499,4 +509,21 @@ flag {
     metadata {
         purpose: PURPOSE_BUGFIX
     }
+}
+
+flag {
+    name: "merge_predictive_back_transaction_together"
+    namespace: "windowing_frontend"
+    description: "Merge the close transition's finish transaction into the back navigation during mergeAnimation"
+    bug: "471522918"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "synced_insets_animation"
+    namespace: "windowing_frontend"
+    description: "Synchronize the applied insets to a view with the ongoing system insets animation."
+    bug: "463899193"
 }

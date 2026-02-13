@@ -15,8 +15,9 @@
  */
 package com.android.systemui.locationbutton.domain.interactor
 
+import android.content.applicationContext
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.locationbutton.data.repository.locationButtonRepository
 
 val Kosmos.locationButtonInteractor by
-    Kosmos.Fixture { LocationButtonInteractor(locationButtonRepository) }
+    Kosmos.Fixture { LocationButtonInteractor(applicationContext, locationButtonRepository) }

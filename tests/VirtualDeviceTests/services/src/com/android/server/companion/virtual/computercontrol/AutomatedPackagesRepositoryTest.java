@@ -294,7 +294,7 @@ public class AutomatedPackagesRepositoryTest {
                 intent.getParcelableExtra(Intent.EXTRA_RESULT_RECEIVER, ResultReceiver.class);
 
         // The user chose to stop the automation.
-        resultReceiver.send(Activity.RESULT_OK, null);
+        resultReceiver.send(ComputerControlSession.RESULT_STOP_AUTOMATION, null);
         processOneHandlerMessage();
 
         // An update is triggered prior to the device closure to inform the repository that nothing
@@ -307,6 +307,7 @@ public class AutomatedPackagesRepositoryTest {
                 .isNull();
 
         // The session is closed.
+        resultReceiver.send(Activity.RESULT_OK, null);
         processOneHandlerMessage();
         verify(mCloseVirtualDeviceMock).accept(DEVICE_ID1);
         assertThat(mTestLooperManager.poll()).isNull();

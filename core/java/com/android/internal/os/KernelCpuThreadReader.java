@@ -53,6 +53,7 @@ import java.util.function.Predicate;
  * big core frequency in ascending order. This assumption might not hold for devices with different
  * kernel implementations of the {@code time_in_state} file generation.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 public class KernelCpuThreadReader {
 
     private static final String TAG = "KernelCpuThreadReader";
@@ -87,6 +88,22 @@ public class KernelCpuThreadReader {
 
     /** Default mount location of the {@code proc} filesystem */
     private static final Path DEFAULT_PROC_PATH = Paths.get("/proc");
+
+    /** Path to time_in_state for the first CPU, used to check if the feature is supported */
+    private static final Path CPU0_TIME_IN_STATE_PATH = Paths.get(
+            "/sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state");
+
+    /**
+     * Check if the time_in_state file exists.
+     */
+    @android.ravenwood.annotation.RavenwoodReplace
+    public static boolean isTimeInStateSupported() {
+        return Files.exists(CPU0_TIME_IN_STATE_PATH);
+    }
+
+    public static boolean isTimeInStateSupported$ravenwood() {
+        return true;
+    }
 
     /** The initial {@code time_in_state} file for {@link ProcTimeInStateReader} */
     private static final Path DEFAULT_INITIAL_TIME_IN_STATE_PATH =
@@ -147,6 +164,12 @@ public class KernelCpuThreadReader {
      */
     @Nullable
     public static KernelCpuThreadReader create(int numBuckets, Predicate<Integer> uidPredicate) {
+        if (!isTimeInStateSupported()) {
+            Slog.w(TAG, "KernelCpuThreadReader not supported: " + CPU0_TIME_IN_STATE_PATH
+                    + " missing");
+            return null;
+        }
+
         try {
             return new KernelCpuThreadReader(
                     numBuckets,

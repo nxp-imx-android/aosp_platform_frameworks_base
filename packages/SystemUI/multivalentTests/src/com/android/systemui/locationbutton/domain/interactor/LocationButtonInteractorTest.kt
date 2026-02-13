@@ -15,15 +15,18 @@
  */
 package com.android.systemui.locationbutton.domain.interactor
 
+import android.app.permissionui.LocationButtonRequest
 import android.content.res.Configuration
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.internal.graphics.ColorUtils
 import com.android.internal.util.ContrastColorUtil
+import com.android.settingslib.Utils
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.locationbutton.data.repository.locationButtonRepository
-import com.android.systemui.locationbutton.shared.model.ButtonModel
+import com.android.systemui.res.R
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
@@ -34,14 +37,81 @@ import org.junit.runner.RunWith
 class LocationButtonInteractorTest : SysuiTestCase() {
     private val kosmos = testKosmos()
     private val underTest = kosmos.locationButtonInteractor
+    private val repository = kosmos.locationButtonRepository
+
+    @Test
+    fun setButtonState_withRequest_usesFallbacks() {
+        val sessionId = 1
+        val request = LocationButtonRequest.Builder(100, 100, Configuration()).build()
+        // No optional properties set
+
+        underTest.setButtonState(sessionId, request, 1.0f)
+
+        val state = underTest.getButtonState(sessionId)!!
+        val density = 1.0f
+        assertThat(state.paddingLeft).isEqualTo(0)
+        assertThat(state.paddingTop).isEqualTo(0)
+        assertThat(state.paddingRight).isEqualTo(0)
+        assertThat(state.paddingBottom).isEqualTo(0)
+        assertThat(state.strokeWidth).isEqualTo(0)
+        assertThat(state.cornerRadius).isNull()
+        assertThat(state.pressedCornerRadius).isNull()
+        assertThat(state.textResId).isNull()
+
+        val defaultBg =
+            Utils.getColorAttrDefaultColor(mContext, com.android.internal.R.attr.colorAccentPrimary)
+        val defaultText =
+            Utils.getColorAttrDefaultColor(mContext, com.android.internal.R.attr.textColorOnAccent)
+
+        val expectedBgColor = Color(ColorUtils.setAlphaComponent(defaultBg, 255))
+        val expectedTextColor =
+            Color(
+                ContrastColorUtil.ensureContrast(
+                    defaultText,
+                    expectedBgColor.toArgb(),
+                    MIN_CONTRAST_RATIO,
+                )
+            )
+
+        assertThat(state.backgroundColor).isEqualTo(expectedBgColor)
+        assertThat(state.textColor).isEqualTo(expectedTextColor)
+        assertThat(state.iconTint).isEqualTo(expectedTextColor)
+        assertThat(state.strokeColor).isEqualTo(expectedBgColor)
+    }
+
+    @Test
+    fun setButtonState_withRequest_usesExplicitValues() {
+        val sessionId = 1
+        val request =
+            LocationButtonRequest.Builder(100, 100, Configuration())
+                .setPaddingLeft(5)
+                .setStrokeWidth(2)
+                .setCornerRadius(15f)
+                .setBackgroundColor(Color.Blue.toArgb())
+                .setTextColor(Color.Yellow.toArgb())
+                .setTextType(
+                    android.app.permissionui.LocationButtonSession.TEXT_TYPE_PRECISE_LOCATION
+                )
+                .build()
+
+        underTest.setButtonState(sessionId, request, 1.0f)
+
+        val state = underTest.getButtonState(sessionId)!!
+        assertThat(state.paddingLeft).isEqualTo(5)
+        assertThat(state.strokeWidth).isEqualTo(2)
+        assertThat(state.cornerRadius).isEqualTo(15f)
+        assertThat(state.backgroundColor.toArgb()).isEqualTo(Color.Blue.toArgb())
+        assertThat(state.textColor.toArgb()).isEqualTo(Color.Yellow.toArgb())
+        assertThat(state.textResId).isEqualTo(R.string.location_button_text_precise_location)
+    }
 
     @Test
     fun setButtonState_validatesDimensionsAndSetsState() {
         // Min 48dp = 48px at 1.0x density
         val sessionId = 1
-        val model = createTestButtonModel(widthPx = 10)
+        val request = LocationButtonRequest.Builder(10, 50, Configuration()).build()
 
-        underTest.setButtonState(sessionId, model)
+        underTest.setButtonState(sessionId, request, 1.0f)
 
         val state = underTest.getButtonState(sessionId)!!
         assertThat(state.width).isEqualTo(48) // Clamped to 48
@@ -50,9 +120,9 @@ class LocationButtonInteractorTest : SysuiTestCase() {
     @Test
     fun setButtonState_widthValid_remainsUnchanged() {
         val sessionId = 1
-        val model = createTestButtonModel(widthPx = 100)
+        val request = LocationButtonRequest.Builder(100, 50, Configuration()).build()
 
-        underTest.setButtonState(sessionId, model)
+        underTest.setButtonState(sessionId, request, 1.0f)
 
         val state = underTest.getButtonState(sessionId)!!
         assertThat(state.width).isEqualTo(100)
@@ -63,9 +133,9 @@ class LocationButtonInteractorTest : SysuiTestCase() {
         // Min 48dp = 96px at 2.0x density
         val sessionId = 1
         // Input 80px is < 96px
-        val model = createTestButtonModel(widthPx = 80, density = 2.0f)
+        val request = LocationButtonRequest.Builder(80, 100, Configuration()).build()
 
-        underTest.setButtonState(sessionId, model)
+        underTest.setButtonState(sessionId, request, 2.0f)
 
         val state = underTest.getButtonState(sessionId)!!
         assertThat(state.width).isEqualTo(96)
@@ -74,9 +144,9 @@ class LocationButtonInteractorTest : SysuiTestCase() {
     @Test
     fun setButtonState_heightTooSmall_clampedToMin() {
         val sessionId = 1
-        val model = createTestButtonModel(heightPx = 10)
+        val request = LocationButtonRequest.Builder(100, 10, Configuration()).build()
 
-        underTest.setButtonState(sessionId, model)
+        underTest.setButtonState(sessionId, request, 1.0f)
 
         val state = underTest.getButtonState(sessionId)!!
         assertThat(state.height).isEqualTo(48)
@@ -86,9 +156,9 @@ class LocationButtonInteractorTest : SysuiTestCase() {
     fun setButtonState_heightTooLarge_clampedToMax() {
         // Max 136dp = 408px at 3.0x density
         val sessionId = 1
-        val model = createTestButtonModel(heightPx = 500, density = 3.0f)
+        val request = LocationButtonRequest.Builder(100, 500, Configuration()).build()
 
-        underTest.setButtonState(sessionId, model)
+        underTest.setButtonState(sessionId, request, 3.0f)
 
         val state = underTest.getButtonState(sessionId)!!
         assertThat(state.height).isEqualTo(408)
@@ -97,7 +167,8 @@ class LocationButtonInteractorTest : SysuiTestCase() {
     @Test
     fun setBackgroundColor_forcesOpaque() {
         val sessionId = 1
-        underTest.setButtonState(sessionId, createTestButtonModel())
+        val request = createTestRequest()
+        underTest.setButtonState(sessionId, request, 1.0f)
         val transparentRed = Color.Red.copy(alpha = 0.5f).toArgb()
 
         underTest.setBackgroundColor(sessionId, transparentRed)
@@ -110,9 +181,9 @@ class LocationButtonInteractorTest : SysuiTestCase() {
     @Test
     fun setButtonState_heightValid_remainsUnchanged() {
         val sessionId = 1
-        val model = createTestButtonModel(heightPx = 100)
+        val request = LocationButtonRequest.Builder(100, 100, Configuration()).build()
 
-        underTest.setButtonState(sessionId, model)
+        underTest.setButtonState(sessionId, request, 1.0f)
 
         val state = underTest.getButtonState(sessionId)!!
         assertThat(state.height).isEqualTo(100)
@@ -124,11 +195,13 @@ class LocationButtonInteractorTest : SysuiTestCase() {
         val sessionId = 1
 
         // Test Min Clamp
-        underTest.setButtonState(sessionId, createTestButtonModel(heightPx = 50, density = 2.0f))
+        val minRequest = LocationButtonRequest.Builder(100, 50, Configuration()).build()
+        underTest.setButtonState(sessionId, minRequest, 2.0f)
         assertThat(underTest.getButtonState(sessionId)!!.height).isEqualTo(96)
 
         // Test Max Clamp
-        underTest.setButtonState(sessionId, createTestButtonModel(heightPx = 300, density = 2.0f))
+        val maxRequest = LocationButtonRequest.Builder(100, 300, Configuration()).build()
+        underTest.setButtonState(sessionId, maxRequest, 2.0f)
         assertThat(underTest.getButtonState(sessionId)!!.height).isEqualTo(272)
     }
 
@@ -136,16 +209,15 @@ class LocationButtonInteractorTest : SysuiTestCase() {
     fun setButtonState_paddingTooLarge_highDensity_clampedToScaledMax() {
         // Max 8dp = 24px at 3.0x density
         val sessionId = 1
-        val model =
-            createTestButtonModel(
-                paddingLeftPx = 100,
-                paddingTopPx = 100,
-                paddingRightPx = 100,
-                paddingBottomPx = 100,
-                density = 3.0f,
-            )
+        val request =
+            LocationButtonRequest.Builder(100, 100, Configuration())
+                .setPaddingLeft(100)
+                .setPaddingTop(100)
+                .setPaddingRight(100)
+                .setPaddingBottom(100)
+                .build()
 
-        underTest.setButtonState(sessionId, model)
+        underTest.setButtonState(sessionId, request, 3.0f)
 
         val state = underTest.getButtonState(sessionId)!!
         assertThat(state.paddingLeft).isEqualTo(24)
@@ -157,9 +229,10 @@ class LocationButtonInteractorTest : SysuiTestCase() {
     @Test
     fun setButtonState_paddingValid_remainsUnchanged() {
         val sessionId = 1
-        val model = createTestButtonModel(paddingLeftPx = 5)
+        val request =
+            LocationButtonRequest.Builder(100, 100, Configuration()).setPaddingLeft(5).build()
 
-        underTest.setButtonState(sessionId, model)
+        underTest.setButtonState(sessionId, request, 1.0f)
 
         assertThat(underTest.getButtonState(sessionId)!!.paddingLeft).isEqualTo(5)
     }
@@ -168,9 +241,10 @@ class LocationButtonInteractorTest : SysuiTestCase() {
     fun setButtonState_paddingHighDensity_clampedToScaledMax() {
         // Max 8dp = 12px at 1.5x density
         val sessionId = 1
-        val model = createTestButtonModel(paddingLeftPx = 20, density = 1.5f)
+        val request =
+            LocationButtonRequest.Builder(100, 100, Configuration()).setPaddingLeft(20).build()
 
-        underTest.setButtonState(sessionId, model)
+        underTest.setButtonState(sessionId, request, 1.5f)
 
         assertThat(underTest.getButtonState(sessionId)!!.paddingLeft).isEqualTo(12)
     }
@@ -179,9 +253,10 @@ class LocationButtonInteractorTest : SysuiTestCase() {
     fun setButtonState_strokeWidthTooLarge_clampedToMax() {
         // Max 3dp = 3px at 1.0x density
         val sessionId = 1
-        val model = createTestButtonModel(strokeWidthPx = 10)
+        val request =
+            LocationButtonRequest.Builder(100, 100, Configuration()).setStrokeWidth(10).build()
 
-        underTest.setButtonState(sessionId, model)
+        underTest.setButtonState(sessionId, request, 1.0f)
 
         val state = underTest.getButtonState(sessionId)!!
         assertThat(state.strokeWidth).isEqualTo(MAX_STROKE_WIDTH_DP)
@@ -190,42 +265,65 @@ class LocationButtonInteractorTest : SysuiTestCase() {
     @Test
     fun setButtonState_strokeWidthValid_remainsUnchanged() {
         val sessionId = 1
-        val model = createTestButtonModel(strokeWidthPx = 2)
+        val request =
+            LocationButtonRequest.Builder(100, 100, Configuration()).setStrokeWidth(2).build()
 
-        underTest.setButtonState(sessionId, model)
+        underTest.setButtonState(sessionId, request, 1.0f)
 
         val state = underTest.getButtonState(sessionId)!!
         assertThat(state.strokeWidth).isEqualTo(2)
     }
 
     @Test
-    fun setStrokeWidth_updatesAndValidates() {
-        // Max 3dp = 6px at 2.0x density
+    fun setButtonState_negativeDimensions_clampedToMin() {
         val sessionId = 1
-        underTest.setButtonState(sessionId, createTestButtonModel(density = 2.0f))
+        val request = LocationButtonRequest.Builder(-10, -10, Configuration()).build()
 
-        // Update to 10px (too large, should clamp to 6)
-        underTest.setStrokeWidth(sessionId, 10)
+        underTest.setButtonState(sessionId, request, 1.0f)
 
         val state = underTest.getButtonState(sessionId)!!
-        assertThat(state.strokeWidth).isEqualTo(6)
+        assertThat(state.width).isEqualTo(48)
+        assertThat(state.height).isEqualTo(48)
     }
 
     @Test
-    fun setConfiguration_updatesState() {
+    fun setButtonState_negativePaddingAndStroke_clampedToZero() {
         val sessionId = 1
-        underTest.setButtonState(sessionId, createTestButtonModel())
+        val request =
+            LocationButtonRequest.Builder(100, 100, Configuration())
+                .setPaddingLeft(-5)
+                .setStrokeWidth(-2)
+                .setCornerRadius(-10f)
+                .build()
 
-        val newConfig = Configuration().apply { densityDpi = 320 }
-        underTest.setConfiguration(sessionId, newConfig, newConfig.densityDpi / 160f)
+        underTest.setButtonState(sessionId, request, 1.0f)
 
-        assertThat(underTest.getButtonState(sessionId)!!.configuration).isEqualTo(newConfig)
+        val state = underTest.getButtonState(sessionId)!!
+        assertThat(state.paddingLeft).isEqualTo(0)
+        assertThat(state.strokeWidth).isEqualTo(0)
+        assertThat(state.cornerRadius).isEqualTo(0f)
+    }
+
+    @Test
+    fun setConfiguration_reValidatesDimensionsAgainstNewDensity() {
+        // High density: Max 8dp = 24px
+        val sessionId = 1
+        val request =
+            LocationButtonRequest.Builder(200, 200, Configuration()).setPaddingLeft(24).build()
+        underTest.setButtonState(sessionId, request, 3.0f)
+        assertThat(underTest.getButtonState(sessionId)!!.paddingLeft).isEqualTo(24)
+
+        // Change to low density: Max 8dp = 8px. The 24px should be clamped.
+        val newConfig = Configuration().apply { densityDpi = 160 }
+        underTest.setConfiguration(sessionId, newConfig, 1.0f)
+
+        assertThat(underTest.getButtonState(sessionId)!!.paddingLeft).isEqualTo(8)
     }
 
     @Test
     fun setSize_validatesAndUpdatesState() {
         val sessionId = 1
-        underTest.setButtonState(sessionId, createTestButtonModel())
+        underTest.setButtonState(sessionId, createTestRequest(), 1.0f)
 
         // Set size too small (10x10) -> Should clamp to 48x48
         underTest.setSize(sessionId, 10, 10)
@@ -238,7 +336,7 @@ class LocationButtonInteractorTest : SysuiTestCase() {
     @Test
     fun removeButtonState_removesState() {
         val sessionId = 1
-        underTest.setButtonState(sessionId, createTestButtonModel())
+        underTest.setButtonState(sessionId, createTestRequest(), 1.0f)
         underTest.removeButtonState(sessionId)
 
         assertThat(underTest.getButtonState(sessionId)).isNull()
@@ -247,7 +345,7 @@ class LocationButtonInteractorTest : SysuiTestCase() {
     @Test
     fun setCornerRadius_updatesState() {
         val sessionId = 1
-        underTest.setButtonState(sessionId, createTestButtonModel())
+        underTest.setButtonState(sessionId, createTestRequest(), 1.0f)
         val newRadius = 25f
         underTest.setCornerRadius(sessionId, newRadius)
 
@@ -257,7 +355,7 @@ class LocationButtonInteractorTest : SysuiTestCase() {
     @Test
     fun setBackgroundColor_updatesState() {
         val sessionId = 1
-        underTest.setButtonState(sessionId, createTestButtonModel())
+        underTest.setButtonState(sessionId, createTestRequest(), 1.0f)
         val newColor = Color.Red.toArgb()
         underTest.setBackgroundColor(sessionId, newColor)
 
@@ -268,7 +366,7 @@ class LocationButtonInteractorTest : SysuiTestCase() {
     @Test
     fun setTextColor_updatesState() {
         val sessionId = 1
-        underTest.setButtonState(sessionId, createTestButtonModel())
+        underTest.setButtonState(sessionId, createTestRequest(), 1.0f)
         val newColor = Color.Cyan.toArgb()
         underTest.setTextColor(sessionId, newColor)
 
@@ -278,7 +376,7 @@ class LocationButtonInteractorTest : SysuiTestCase() {
     @Test
     fun setIconTint_updatesState() {
         val sessionId = 1
-        underTest.setButtonState(sessionId, createTestButtonModel())
+        underTest.setButtonState(sessionId, createTestRequest(), 1.0f)
         val newColor = Color.Green.toArgb()
         underTest.setIconTint(sessionId, newColor)
 
@@ -286,19 +384,20 @@ class LocationButtonInteractorTest : SysuiTestCase() {
     }
 
     @Test
-    fun setTextId_updatesState() {
+    fun setTextType_updatesState() {
         val sessionId = 1
-        underTest.setButtonState(sessionId, createTestButtonModel())
-        val newTextId = 12345
-        underTest.setTextId(sessionId, newTextId)
+        underTest.setButtonState(sessionId, createTestRequest(), 1.0f)
+        val textType = android.app.permissionui.LocationButtonSession.TEXT_TYPE_PRECISE_LOCATION
+        underTest.setTextType(sessionId, textType)
 
-        assertThat(underTest.getButtonState(sessionId)!!.textResId).isEqualTo(newTextId)
+        assertThat(underTest.getButtonState(sessionId)!!.textResId)
+            .isEqualTo(R.string.location_button_text_precise_location)
     }
 
     @Test
     fun setStrokeColor_updatesState() {
         val sessionId = 1
-        underTest.setButtonState(sessionId, createTestButtonModel())
+        underTest.setButtonState(sessionId, createTestRequest(), 1.0f)
         val newColor = Color.Yellow.toArgb()
         underTest.setStrokeColor(sessionId, newColor)
 
@@ -307,8 +406,8 @@ class LocationButtonInteractorTest : SysuiTestCase() {
 
     @Test
     fun clearRepositoryState_clearsState() {
-        underTest.setButtonState(1, createTestButtonModel())
-        underTest.setButtonState(2, createTestButtonModel())
+        underTest.setButtonState(1, createTestRequest(), 1.0f)
+        underTest.setButtonState(2, createTestRequest(), 1.0f)
         underTest.clearRepositoryState()
 
         assertThat(underTest.getButtonState(1)).isNull()
@@ -318,15 +417,15 @@ class LocationButtonInteractorTest : SysuiTestCase() {
     @Test
     fun setButtonState_preservesHighContrastColorsAndUpdatesState() {
         val sessionId = 1
-        val buttonModel =
-            createTestButtonModel(
-                backgroundColor = Color.Black,
-                textColor = Color.White,
-                iconTint = Color.White,
-                strokeColor = Color.White,
-            )
+        val request =
+            LocationButtonRequest.Builder(100, 100, Configuration())
+                .setBackgroundColor(Color.Black.toArgb())
+                .setTextColor(Color.White.toArgb())
+                .setIconTint(Color.White.toArgb())
+                .setStrokeColor(Color.White.toArgb())
+                .build()
 
-        underTest.setButtonState(sessionId, buttonModel)
+        underTest.setButtonState(sessionId, request, 1.0f)
 
         val state = underTest.getButtonState(sessionId)!!
         val backgroundArgb = state.backgroundColor.toArgb()
@@ -343,48 +442,30 @@ class LocationButtonInteractorTest : SysuiTestCase() {
     @Test
     fun setButtonState_adjustsLowContrastIconTintAndTextColorsAndUpdatesState() {
         val sessionId = 1
-        val lowContrastButtonModel =
-            createTestButtonModel(
-                backgroundColor = Color.White,
-                textColor = Color(COLOR_LIGHT_GRAY),
-                iconTint = Color(COLOR_LIGHT_GRAY),
-                strokeColor = Color(COLOR_LIGHT_GRAY),
-            )
+        val request =
+            LocationButtonRequest.Builder(100, 100, Configuration())
+                .setBackgroundColor(Color.White.toArgb())
+                .setTextColor(COLOR_LIGHT_GRAY)
+                .setIconTint(COLOR_LIGHT_GRAY)
+                .setStrokeColor(COLOR_LIGHT_GRAY)
+                .build()
         // Pre-validate that the initial color contrast ratios are insufficient
-        assertThat(
-                ContrastColorUtil.calculateContrast(
-                    lowContrastButtonModel.iconTint.toArgb(),
-                    lowContrastButtonModel.backgroundColor.toArgb(),
-                )
-            )
+        assertThat(ContrastColorUtil.calculateContrast(request.iconTint, request.backgroundColor))
             .isLessThan(MIN_CONTRAST_RATIO)
-        assertThat(
-                ContrastColorUtil.calculateContrast(
-                    lowContrastButtonModel.textColor.toArgb(),
-                    lowContrastButtonModel.backgroundColor.toArgb(),
-                )
-            )
+        assertThat(ContrastColorUtil.calculateContrast(request.textColor, request.backgroundColor))
             .isLessThan(MIN_CONTRAST_RATIO)
 
-        underTest.setButtonState(sessionId, lowContrastButtonModel)
+        underTest.setButtonState(sessionId, request, 1.0f)
 
         val state = underTest.getButtonState(sessionId)!!
         val backgroundArgb = state.backgroundColor.toArgb()
         val expectedIconTint =
-            ContrastColorUtil.ensureContrast(
-                lowContrastButtonModel.iconTint.toArgb(),
-                backgroundArgb,
-                MIN_CONTRAST_RATIO,
-            )
+            ContrastColorUtil.ensureContrast(request.iconTint, backgroundArgb, MIN_CONTRAST_RATIO)
         assertThat(state.iconTint.toArgb()).isEqualTo(expectedIconTint)
         assertThat(ContrastColorUtil.calculateContrast(state.iconTint.toArgb(), backgroundArgb))
             .isAtLeast(MIN_CONTRAST_RATIO)
         val expectedTextColor =
-            ContrastColorUtil.ensureContrast(
-                lowContrastButtonModel.textColor.toArgb(),
-                backgroundArgb,
-                MIN_CONTRAST_RATIO,
-            )
+            ContrastColorUtil.ensureContrast(request.textColor, backgroundArgb, MIN_CONTRAST_RATIO)
         assertThat(state.textColor.toArgb()).isEqualTo(expectedTextColor)
         assertThat(ContrastColorUtil.calculateContrast(state.textColor.toArgb(), backgroundArgb))
             .isAtLeast(MIN_CONTRAST_RATIO)
@@ -394,14 +475,14 @@ class LocationButtonInteractorTest : SysuiTestCase() {
     @Test
     fun setConfiguration_adjustsContrast() {
         val sessionId = 1
-        val lowContrastButtonModel =
-            createTestButtonModel(
-                backgroundColor = Color.White,
-                textColor = Color.White,
-                iconTint = Color.White,
-            )
-        // Inject an invalid contrast ButtonModel into the repository.
-        kosmos.locationButtonRepository.setButtonState(sessionId, lowContrastButtonModel)
+        val request =
+            LocationButtonRequest.Builder(100, 100, Configuration())
+                .setBackgroundColor(Color.White.toArgb())
+                .setTextColor(Color.White.toArgb())
+                .setIconTint(Color.White.toArgb())
+                .build()
+        // Inject an invalid contrast setup into the interactor.
+        underTest.setButtonState(sessionId, request, 1.0f)
 
         val config = Configuration()
         underTest.setConfiguration(sessionId, config, config.densityDpi / 160f)
@@ -424,13 +505,13 @@ class LocationButtonInteractorTest : SysuiTestCase() {
     @Test
     fun setBackgroundColor_adjustsLowContrastIconTintAndTextColorsAndUpdatesState() {
         val sessionId = 1
-        val buttonModel =
-            createTestButtonModel(
-                backgroundColor = Color.Black,
-                textColor = Color.White,
-                iconTint = Color.White,
-            )
-        underTest.setButtonState(sessionId, buttonModel)
+        val request =
+            LocationButtonRequest.Builder(100, 100, Configuration())
+                .setBackgroundColor(Color.Black.toArgb())
+                .setTextColor(Color.White.toArgb())
+                .setIconTint(Color.White.toArgb())
+                .build()
+        underTest.setButtonState(sessionId, request, 1.0f)
         val newLowContrastBackgroundColorArgb = Color.White.toArgb()
 
         underTest.setBackgroundColor(sessionId, newLowContrastBackgroundColorArgb)
@@ -439,20 +520,12 @@ class LocationButtonInteractorTest : SysuiTestCase() {
         val backgroundArgb = state.backgroundColor.toArgb()
         assertThat(backgroundArgb).isEqualTo(newLowContrastBackgroundColorArgb)
         val expectedIconTint =
-            ContrastColorUtil.ensureContrast(
-                buttonModel.iconTint.toArgb(),
-                backgroundArgb,
-                MIN_CONTRAST_RATIO,
-            )
+            ContrastColorUtil.ensureContrast(request.iconTint, backgroundArgb, MIN_CONTRAST_RATIO)
         assertThat(state.iconTint.toArgb()).isEqualTo(expectedIconTint)
         assertThat(ContrastColorUtil.calculateContrast(state.iconTint.toArgb(), backgroundArgb))
             .isAtLeast(MIN_CONTRAST_RATIO)
         val expectedTextColor =
-            ContrastColorUtil.ensureContrast(
-                buttonModel.textColor.toArgb(),
-                backgroundArgb,
-                MIN_CONTRAST_RATIO,
-            )
+            ContrastColorUtil.ensureContrast(request.textColor, backgroundArgb, MIN_CONTRAST_RATIO)
         assertThat(state.textColor.toArgb()).isEqualTo(expectedTextColor)
         assertThat(ContrastColorUtil.calculateContrast(state.textColor.toArgb(), backgroundArgb))
             .isAtLeast(MIN_CONTRAST_RATIO)
@@ -461,9 +534,12 @@ class LocationButtonInteractorTest : SysuiTestCase() {
     @Test
     fun setIconTint_adjustsLowContrastIconTintColorAndUpdatesState() {
         val sessionId = 1
-        val buttonModel =
-            createTestButtonModel(backgroundColor = Color.White, iconTint = Color.Black)
-        underTest.setButtonState(sessionId, buttonModel)
+        val request =
+            LocationButtonRequest.Builder(100, 100, Configuration())
+                .setBackgroundColor(Color.White.toArgb())
+                .setIconTint(Color.Black.toArgb())
+                .build()
+        underTest.setButtonState(sessionId, request, 1.0f)
         val newLowContrastIconTintArgb = Color.White.toArgb()
 
         underTest.setIconTint(sessionId, newLowContrastIconTintArgb)
@@ -484,9 +560,12 @@ class LocationButtonInteractorTest : SysuiTestCase() {
     @Test
     fun setTextColor_adjustsLowContrastTextColorAndUpdatesState() {
         val sessionId = 1
-        val buttonModel =
-            createTestButtonModel(backgroundColor = Color.White, textColor = Color.Black)
-        underTest.setButtonState(sessionId, buttonModel)
+        val request =
+            LocationButtonRequest.Builder(100, 100, Configuration())
+                .setBackgroundColor(Color.White.toArgb())
+                .setTextColor(Color.Black.toArgb())
+                .build()
+        underTest.setButtonState(sessionId, request, 1.0f)
         val newLowContrastTextColor = Color.White
 
         underTest.setTextColor(sessionId, newLowContrastTextColor.toArgb())
@@ -507,7 +586,11 @@ class LocationButtonInteractorTest : SysuiTestCase() {
     @Test
     fun setStrokeColor_setStrokeColorAndUpdatesState() {
         val sessionId = 1
-        underTest.setButtonState(sessionId, createTestButtonModel(backgroundColor = Color.White))
+        val request =
+            LocationButtonRequest.Builder(100, 100, Configuration())
+                .setBackgroundColor(Color.White.toArgb())
+                .build()
+        underTest.setButtonState(sessionId, request, 1.0f)
         val newStrokeColor = COLOR_LIGHT_GRAY
 
         underTest.setStrokeColor(sessionId, newStrokeColor)
@@ -516,45 +599,13 @@ class LocationButtonInteractorTest : SysuiTestCase() {
         assertThat(state.strokeColor.toArgb()).isEqualTo(newStrokeColor)
     }
 
-    private fun createTestButtonModel(
-        widthPx: Int = 100,
-        heightPx: Int = 50,
-        strokeWidthPx: Int = 0,
-        paddingLeftPx: Int = 0,
-        paddingTopPx: Int = 0,
-        paddingRightPx: Int = 0,
-        paddingBottomPx: Int = 0,
-        backgroundColor: Color = Color.Black,
-        textColor: Color = Color.White,
-        iconTint: Color = Color.White,
-        strokeColor: Color = Color.White,
-        config: Configuration? = null,
-        density: Float? = null,
-    ): ButtonModel {
-        val actualConfig =
-            config
-                ?: Configuration().apply {
-                    densityDpi = if (density != null) (density * 160).toInt() else DENSITY_DPI
-                }
-        val actualDensity = density ?: (actualConfig.densityDpi / 160f)
-        return ButtonModel(
-            width = widthPx,
-            height = heightPx,
-            paddingLeft = paddingLeftPx,
-            paddingTop = paddingTopPx,
-            paddingRight = paddingRightPx,
-            paddingBottom = paddingBottomPx,
-            backgroundColor = backgroundColor,
-            strokeColor = strokeColor,
-            strokeWidth = strokeWidthPx,
-            cornerRadius = 10f,
-            pressedCornerRadius = 8f,
-            iconTint = iconTint,
-            textResId = null,
-            textColor = textColor,
-            configuration = actualConfig,
-            density = actualDensity,
-        )
+    private fun createTestRequest(): LocationButtonRequest {
+        return LocationButtonRequest.Builder(100, 100, Configuration())
+            .setBackgroundColor(Color.Black.toArgb())
+            .setTextColor(Color.White.toArgb())
+            .setIconTint(Color.White.toArgb())
+            .setStrokeColor(Color.White.toArgb())
+            .build()
     }
 
     private companion object {

@@ -1137,6 +1137,10 @@ public class BackupManager {
      * <p>Returns {@code false} when the action cannot be scheduled due to the backup service being
      * unavailable or the service rejecting the request.
      *
+     * <p class="note">Note: {@link
+     * android.app.backup.DelayedRestoreRequest#TYPE_MANAGED_PROFILE_PROVISIONED} dependencies are
+     * not supported for delayed restores yet.
+     *
      * @param request The {@link DelayedRestoreRequest} to schedule
      * @return boolean indicating the success of the scheduling request
      * @hide

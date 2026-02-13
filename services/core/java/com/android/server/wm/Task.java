@@ -1313,6 +1313,23 @@ class Task extends TaskFragment {
         mRootWindowContainer.updateUIDsPresentOnDisplay();
     }
 
+    /**
+     * Finds the top visible app window at the given x-coordinate.
+     */
+    @Nullable
+    WindowState getTopVisibleAppWindowAt(int x) {
+        return getWindow(w -> {
+            if (w.mActivityRecord == null) {
+                return false;
+            }
+            if (!w.isVisible()) {
+                return false;
+            }
+            final Rect bounds = w.getBounds();
+            return x >= bounds.left && x < bounds.right;
+        });
+    }
+
     boolean isOverrideBoundsAllowed() {
         Task parentTask = getParent() != null ? getParent().asTask() : null;
         while (parentTask != null) {
@@ -6226,7 +6243,15 @@ class Task extends TaskFragment {
         if (rootActivity == null) {
             return;
         }
-        rootActivity.app.onTaskPackageUpdateHandled(this);
+
+        if (rootActivity.hasProcess()) {
+            rootActivity.app.onTaskPackageUpdateHandled(this);
+        } else {
+            ProtoLog.w(WM_DEBUG_PACKAGE_UPDATE,
+                    "Root Activity %s of task %d has no process.",
+                    rootActivity.mActivityComponent,
+                    mTaskId);
+        }
     }
 
     boolean dump(FileDescriptor fd, PrintWriter pw, boolean dumpAll, boolean dumpClient,

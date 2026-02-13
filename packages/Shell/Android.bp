@@ -36,6 +36,7 @@ android_app {
         "wear_aconfig_declarations",
         "com.android.media.flags.mediasession-aconfig",
         "android.content.flags-aconfig",
+        "com.android.input.flags-aconfig",
     ],
     platform_apis: true,
     certificate: "platform",
@@ -65,5 +66,6 @@ android_library {
         "android.view.contentprotection.flags-aconfig",
         "com.android.media.flags.mediasession-aconfig",
         "android.content.flags-aconfig",
+        "com.android.input.flags-aconfig",
     ],
 }

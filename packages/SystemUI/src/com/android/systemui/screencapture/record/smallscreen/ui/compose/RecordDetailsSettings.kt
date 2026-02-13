@@ -38,6 +38,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -69,6 +70,14 @@ fun RecordDetailsSettings(
     onAppSelectorClicked: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val context = LocalContext.current
+    LaunchedEffect(parametersViewModel.shouldShowHint) {
+        if (parametersViewModel.shouldShowHint) {
+            Toast.makeText(context, R.string.screen_record_selfie_hint, Toast.LENGTH_SHORT).show()
+            parametersViewModel.onCameraHintShown()
+        }
+    }
+
     Surface(
         modifier = modifier,
         color = MaterialTheme.colorScheme.surface,

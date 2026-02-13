@@ -58,6 +58,16 @@ flag {
 }
 
 flag {
+    name: "async_notification_launch_ipc"
+    namespace: "systemui"
+    description: "Makes StatusBarNotificationActivityStarter do binder transactions on background"
+    bug: "462728621"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "av_controls_chip_per_display"
     namespace: "systemui"
     description: "Makes Av Controls Chip related code per display."
@@ -783,16 +793,6 @@ flag {
 }
 
 flag {
-   name: "global_actions_emphasized_font"
-   namespace: "systemui"
-   description: "Use emphasized font for global actions."
-   bug: "393616338"
-   metadata {
-       purpose: PURPOSE_BUGFIX
-   }
-}
-
-flag {
     name: "global_actions_feedback_action"
     namespace: "systemui"
     description: "When enabled at build-time, the feedback global action will be available on "
@@ -995,6 +995,16 @@ flag {
 }
 
 flag {
+  name: "low_light_sensor_while_screen_on"
+  namespace: "systemui"
+  description: "Enables low light sensor listener while screen is on and not dreaming"
+  bug: "467654358"
+  metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
   name: "media_controls_button_media3"
   namespace: "systemui"
   description: "Enable media action buttons updates using media3"
@@ -1092,17 +1102,6 @@ flag {
     namespace: "systemui"
     description: "Switches to the new volume panel (without Slices)."
     bug: "202262476"
-}
-
-flag {
-   name: "no_expansion_on_overscroll"
-   namespace: "systemui"
-   description: "Enable the fix where QS Expansion is set to zero on overscroll. This should"
-        "prevent unnecessary work and remove jank when overscrolling."
-   bug: "414346597"
-  metadata {
-      purpose: PURPOSE_BUGFIX
-  }
 }
 
 flag {
@@ -1263,6 +1262,13 @@ flag {
     namespace: "systemui"
     description: "Enables ongoing activity chips in dream status bar"
     bug: "418243972"
+}
+
+flag {
+    name: "opaque_status_bar"
+    namespace: "systemui"
+    description: "Ensure the status bar applies an opaque background in specific contexts, such as the maximized window state"
+    bug: "479261500"
 }
 
 flag {

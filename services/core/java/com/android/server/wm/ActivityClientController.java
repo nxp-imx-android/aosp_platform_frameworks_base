@@ -1586,6 +1586,12 @@ class ActivityClientController extends IActivityClientController.Stub {
         }
     }
 
+    // TODO(b/482936553): Remove this method when switching the original method to one-way.
+    @Override
+    public void setTaskDescriptionOneWay(IBinder token, ActivityManager.TaskDescription td) {
+        setTaskDescription(token, td);
+    }
+
     @Override
     public boolean showAssistFromActivity(IBinder token, Bundle args) {
         final long ident = Binder.clearCallingIdentity();

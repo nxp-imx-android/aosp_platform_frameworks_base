@@ -43,6 +43,10 @@ class AuditLogEntry {
         mCallingUid = callingUid;
     }
 
+    PersistableBundle getBundle() {
+        return mData;
+    }
+
     /**
      * Serializes this {@link AuditLogEntry} to a byte array.
      *
