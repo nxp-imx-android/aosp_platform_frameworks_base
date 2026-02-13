@@ -357,7 +357,7 @@ public:
     }
 
     bool checkSubclass(const void* subclassID) const override {
-        return subclassID == android::internal::JavaBBinderBase::getSubclassID();
+        return subclassID == android::internal::JavaBBinderBase::getExtSubclassID();
     }
 
     void getFunctionName(uint32_t code,
@@ -1017,7 +1017,7 @@ jobject javaObjectForIBinder(JNIEnv* env, const sp<IBinder>& val)
 
     if (val == NULL) return NULL;
 
-    if (val->checkSubclass(android::internal::JavaBBinderBase::getSubclassID())) {
+    if (val->checkSubclass(android::internal::JavaBBinderBase::getExtSubclassID())) {
         // It's a JavaBBinderExt created by ibinderForJavaObject. Already has Java object.
         jobject object = static_cast<JavaBBinderExt*>(val.get())->object();
         LOG_DEATH_FREEZE("objectForBinder %p: it's our own %p!\n", val.get(), object);
