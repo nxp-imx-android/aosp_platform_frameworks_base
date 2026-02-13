@@ -357,7 +357,6 @@ cc_defaults_for_libandroid_runtime {
                 "android.hardware.common-V2-ndk",
                 "android.hardware.contexthub-V5-ndk",
                 "contexthub_data_flow",
-                "libandroid_net",
                 "libfmq",
                 "libbattery",
                 "libnetdutils",
