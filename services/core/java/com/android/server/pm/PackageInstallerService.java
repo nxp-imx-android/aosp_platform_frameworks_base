@@ -682,6 +682,12 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
         // Increment the number of sessions by this installerUid.
         mHistoricalSessionsByInstaller.put(installerUid,
                 mHistoricalSessionsByInstaller.get(installerUid) + 1);
+
+        int originalInstallerUid = session.getOriginalInstallerUid();
+        if (originalInstallerUid != installerUid) {
+            mHistoricalSessionsByInstaller.put(originalInstallerUid,
+                    mHistoricalSessionsByInstaller.get(originalInstallerUid) + 1);
+        }
     }
 
     private boolean writeSessions() {
@@ -1103,23 +1109,8 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
         final int sessionId;
         final PackageInstallerSession session;
         synchronized (mSessions) {
-            // Check that the installer does not have too many active sessions.
-            final int activeCount = getSessionCount(mSessions, callingUid);
-            if (mContext.checkCallingOrSelfPermission(Manifest.permission.INSTALL_PACKAGES)
-                    == PackageManager.PERMISSION_GRANTED) {
-                if (activeCount >= MAX_ACTIVE_SESSIONS_WITH_PERMISSION) {
-                    throw new IllegalStateException(
-                            "Too many active sessions for UID " + callingUid);
-                }
-            } else if (activeCount >= MAX_ACTIVE_SESSIONS_NO_PERMISSION) {
-                throw new IllegalStateException(
-                        "Too many active sessions for UID " + callingUid);
-            }
-            final int historicalCount = mHistoricalSessionsByInstaller.get(callingUid);
-            if (historicalCount >= MAX_HISTORICAL_SESSIONS) {
-                throw new IllegalStateException(
-                        "Too many historical sessions for UID " + callingUid);
-            }
+            checkSessionQuotaLocked(callingUid);
+
             final int existingDraftSessionId =
                     getExistingDraftSessionId(requestedInstallerPackageUid, params, userId);
 
@@ -1160,7 +1151,8 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
 
         InstallSource installSource = InstallSource.create(installerPackageName,
                 originatingPackageName, requestedInstallerPackageName, requestedInstallerPackageUid,
-                requestedInstallerPackageName, installerAttributionTag, params.packageSource);
+                /* originalInstallerUid= */ callingUid, requestedInstallerPackageName,
+                installerAttributionTag, params.packageSource);
         final int verificationPolicy;
         synchronized (mDeveloperVerificationPolicyPerUser) {
             verificationPolicy = mDeveloperVerificationPolicyPerUser.get(
@@ -1168,7 +1160,8 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
         }
         session = new PackageInstallerSession(mInternalCallback, mContext, mPm, this,
                 mSilentUpdatePolicy, mInstallThread.getLooper(), mStagingManager, sessionId,
-                userId, callingUid, installSource, params, createdMillis, 0L, stageDir, stageCid,
+                userId, /* installerUid= */ callingUid, installSource,
+                params, createdMillis, 0L, stageDir, stageCid,
                 null, null, false, false, false, false, null, SessionInfo.INVALID_ID,
                 false, false, false, PackageManager.INSTALL_UNKNOWN, "", null,
                 mDeveloperVerifierController, verificationPolicy, verificationPolicy,
@@ -1530,6 +1523,7 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
             }
         }
         result.removeIf(info -> shouldFilterSession(snapshot, callingUid, info));
+
         return new ParceledListSlice<>(result);
     }
 
@@ -2223,6 +2217,26 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
         }
     }
 
+    @GuardedBy("mSessions")
+    private void checkSessionQuotaLocked(int installerUid) {
+        final int activeCount = getSessionCount(mSessions, installerUid);
+        if (mContext.checkPermission(Manifest.permission.INSTALL_PACKAGES, -1, installerUid)
+                == PackageManager.PERMISSION_GRANTED) {
+            if (activeCount >= MAX_ACTIVE_SESSIONS_WITH_PERMISSION) {
+                throw new IllegalStateException(
+                        "Too many active sessions for UID " + installerUid);
+            }
+        } else if (activeCount >= MAX_ACTIVE_SESSIONS_NO_PERMISSION) {
+            throw new IllegalStateException(
+                    "Too many active sessions for UID " + installerUid);
+        }
+        final int historicalCount = mHistoricalSessionsByInstaller.get(installerUid);
+        if (historicalCount >= MAX_HISTORICAL_SESSIONS) {
+            throw new IllegalStateException(
+                    "Too many historical sessions for UID " + installerUid);
+        }
+    }
+
     private static int getSessionCount(SparseArray<PackageInstallerSession> sessions,
             int installerUid) {
         int count = 0;
@@ -2234,7 +2248,9 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
                 // can't be abandoned and they will be cleared in the next reboot.
                 continue;
             }
-            if (session.getInstallerUid() == installerUid) {
+            // Check both current and original installer UID to prevent quota bypass via transfer
+            if (session.getInstallerUid() == installerUid
+                    || session.getOriginalInstallerUid() == installerUid) {
                 count++;
             }
         }
@@ -2637,6 +2653,15 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
 
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
     public class InternalCallback {
+        /**
+         * Check if the given UID has exceeded its session quota.
+         */
+        public void checkSessionQuota(int installerUid) {
+            synchronized (mSessions) {
+                PackageInstallerService.this.checkSessionQuotaLocked(installerUid);
+            }
+        }
+
         public void onSessionBadgingChanged(PackageInstallerSession session) {
             mCallbacks.notifySessionBadgingChanged(session.sessionId, session.userId);
             mSettingsWriteRequest.schedule();
