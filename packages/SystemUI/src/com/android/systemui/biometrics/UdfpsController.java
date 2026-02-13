@@ -883,7 +883,10 @@ public class UdfpsController implements DozeReceiver, Dumpable {
                 onFingerUp(mOverlay.getRequestId(), oldView);
             }
             final boolean removed = mOverlay.hide();
-            mKeyguardViewManager.hideAlternateBouncer(true);
+            mKeyguardViewManager.hideAlternateBouncer(
+                    /* updateScrim */ true,
+                    /* clearDismissAction */ false
+            );
             Log.v(TAG, "hideUdfpsOverlay | removing window: " + removed);
         } else {
             Log.v(TAG, "hideUdfpsOverlay | the overlay is already hidden");
