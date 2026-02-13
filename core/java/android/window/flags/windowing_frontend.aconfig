@@ -534,3 +534,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "sync_before_enabling_screen"
+    namespace: "windowing_frontend"
+    description: "Sync storage before enabling screen during boot"
+    bug: "467888558"
+}

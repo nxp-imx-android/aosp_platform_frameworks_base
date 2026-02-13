@@ -50,6 +50,7 @@ import static android.view.WindowManager.LayoutParams.TYPE_TOAST;
 import static android.view.flags.Flags.FLAG_SENSITIVE_CONTENT_APP_PROTECTION;
 import static android.window.DisplayAreaOrganizer.FEATURE_VENDOR_FIRST;
 
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.doAnswer;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doNothing;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession;
@@ -64,6 +65,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
@@ -136,6 +138,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import com.android.compatibility.common.util.AdoptShellPermissionsRule;
 import com.android.internal.os.IResultReceiver;
 import com.android.server.LocalServices;
+import com.android.server.StorageManagerInternal;
 import com.android.server.wm.SensitiveContentPackages.PackageInfo;
 import com.android.server.wm.WindowManagerService.WindowContainerInfo;
 import com.android.window.flags.Flags;
@@ -158,6 +161,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 /**
@@ -2418,6 +2424,50 @@ public class WindowManagerServiceTests extends WindowTestsBase {
                 new ActivityBuilder(mAtm).setCreateTask(true).setUid(uid).build();
         testActivity.mLaunchCookie = launchCookie;
         testActivity.getTask().mRemoteToken = remoteToken;
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SYNC_BEFORE_ENABLING_SCREEN)
+    public void testSyncBeforeEnablingScreen() throws Exception {
+        final StorageManagerInternal smInternal = mock(StorageManagerInternal.class);
+        LocalServices.addService(StorageManagerInternal.class, smInternal);
+
+        final CountDownLatch syncStartedLatch = new CountDownLatch(1);
+        final AtomicReference<Runnable> callbackRef = new AtomicReference<>();
+
+        doAnswer(invocation -> {
+            callbackRef.set(invocation.getArgument(0));
+            syncStartedLatch.countDown();
+            return true;
+        }).doReturn(false).when(smInternal)
+                .waitForCheckpointReady(any(Runnable.class));
+
+        try {
+            mWm.mDisplayEnabled = false;
+            mWm.mSystemBooted = true;
+            mWm.mShowingBootMessages = true;
+            mWm.mForceDisplayEnabled = false;
+            mWm.mBootWaitForWindowsStartTime = -1;
+
+            mWm.enableScreenIfNeeded();
+            waitHandlerIdle(mWm.mH);
+
+            assertTrue("Sync should have started",
+                    syncStartedLatch.await(10, TimeUnit.SECONDS));
+
+            assertEquals("Screen enable should be deferred", -1,
+                    mWm.mBootWaitForWindowsStartTime);
+
+            callbackRef.get().run();
+
+            waitHandlerIdle(mWm.mH);
+
+            assertNotEquals("Screen enable should be proceeded", -1,
+                    mWm.mBootWaitForWindowsStartTime);
+            verify(smInternal, times(2)).waitForCheckpointReady(any(Runnable.class));
+        } finally {
+            LocalServices.removeServiceForTest(StorageManagerInternal.class);
+        }
     }
 
     private boolean setupLetterboxConfigurationWithBackgroundType(
