@@ -15218,7 +15218,8 @@ package android.service.personalcontext.insight.interaction {
     field public static final int EVENT_UNKNOWN = 0; // 0x0
     field public static final int EVENT_USER_ATTRIBUTION_REQUESTED = 6; // 0x6
     field public static final int EVENT_USER_DISMISS = 5; // 0x5
-    field public static final int EVENT_USER_FEEDBACK_INITITATED = 7; // 0x7
+    field public static final int EVENT_USER_FEEDBACK_NEGATIVE = 8; // 0x8
+    field public static final int EVENT_USER_FEEDBACK_POSITIVE = 7; // 0x7
     field public static final int EVENT_USER_LONG_PRESS = 4; // 0x4
     field public static final int EVENT_USER_TAP = 3; // 0x3
   }
