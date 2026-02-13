@@ -16,10 +16,13 @@
 
 package com.android.server.privatecompute;
 
+import static android.app.role.RoleManager.ROLE_ASSISTANT;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresNoPermission;
 import android.annotation.SuppressLint;
+import android.app.AppGlobals;
 import android.app.privatecompute.IPccService;
 import android.app.privatecompute.IResultCallback;
 import android.app.role.OnRoleHoldersChangedListener;
@@ -237,7 +240,24 @@ public final class PccSandboxManagerInternal implements OnRoleHoldersChangedList
                 try {
                     List<String> holders = roleManager.getRoleHoldersAsUser(role, user);
                     if (holders != null) {
-                        rolePackages.addAll(holders);
+                        if (ROLE_ASSISTANT.equals(role)) {
+                            // Assistants must hold MANAGE_HOTWORD_DETECTION permission to be
+                            // allowed to use PCC.
+                            for (String holder : holders) {
+                                int permissionStatus = checkPermission(
+                                        android.Manifest.permission.MANAGE_HOTWORD_DETECTION,
+                                        holder,
+                                        userId);
+                                if (permissionStatus == PackageManager.PERMISSION_GRANTED) {
+                                    rolePackages.add(holder);
+                                } else {
+                                    Slog.d(TAG, "Package " + holder + " is not qualified for"
+                                            + " hotword detection and can't start a PCC Process");
+                                }
+                            }
+                        } else {
+                            rolePackages.addAll(holders);
+                        }
                     }
                 } catch (Exception e) {
                     Slog.e(TAG, "Error fetching role holders for role: " + role + " user: "
@@ -253,6 +273,17 @@ public final class PccSandboxManagerInternal implements OnRoleHoldersChangedList
         synchronized (mLock) {
             mPccAllowedPackages.put(userId, rolePackages);
             Slog.d(TAG, "Updated allowed PCC Packages for user " + userId + ": " + rolePackages);
+        }
+    }
+
+    @VisibleForTesting
+    int checkPermission(String permission, String packageName, int userId) {
+        try {
+            return AppGlobals.getPackageManager().checkPermission(permission, packageName, userId);
+        } catch (RemoteException e) {
+            Slog.d(TAG, "Received RemoteException while validating permission " + permission
+                        + " for package " + packageName + " and user: " + userId);
+            return PackageManager.PERMISSION_DENIED;
         }
     }
 
