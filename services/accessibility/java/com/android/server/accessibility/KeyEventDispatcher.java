@@ -16,6 +16,8 @@
 
 package com.android.server.accessibility;
 
+import static com.android.server.accessibility.Flags.keyEventDispatcherFixFlushRaceCondition;
+
 import android.os.Binder;
 import android.os.Handler;
 import android.os.Message;
@@ -31,7 +33,6 @@ import com.android.server.policy.WindowManagerPolicy;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Dispatcher to send KeyEvents to all accessibility services that are able to process them.
@@ -62,7 +63,7 @@ public class KeyEventDispatcher implements Handler.Callback {
      * the service calls setOnKeyEventResult, or when we time out waiting for the service to
      * respond.
      */
-    private final Map<KeyEventFilter, ArrayList<PendingKeyEvent>> mPendingEventsMap =
+    private final ArrayMap<KeyEventFilter, ArrayList<PendingKeyEvent>> mPendingEventsMap =
             new ArrayMap<>();
 
     private final InputEventConsistencyVerifier mSentEventsVerifier;
@@ -163,9 +164,17 @@ public class KeyEventDispatcher implements Handler.Callback {
      */
     public void setOnKeyEventResult(KeyEventFilter keyEventFilter, boolean handled, int sequence) {
         synchronized (mLock) {
-            PendingKeyEvent pendingEvent =
-                    removeEventFromListLocked(mPendingEventsMap.get(keyEventFilter), sequence);
+            ArrayList<PendingKeyEvent> pendingEventList = mPendingEventsMap.get(keyEventFilter);
+            if (pendingEventList == null) {
+                return;
+            }
+            PendingKeyEvent pendingEvent = removeEventFromListLocked(pendingEventList, sequence);
             if (pendingEvent != null) {
+                if (keyEventDispatcherFixFlushRaceCondition()) {
+                    if (pendingEventList.isEmpty()) {
+                        mPendingEventsMap.remove(keyEventFilter);
+                    }
+                }
                 if (handled && !pendingEvent.handled) {
                     pendingEvent.handled = handled;
                     final long identity = Binder.clearCallingIdentity();
@@ -207,9 +216,16 @@ public class KeyEventDispatcher implements Handler.Callback {
         }
         PendingKeyEvent pendingKeyEvent = (PendingKeyEvent) message.obj;
         synchronized (mLock) {
-            for (ArrayList<PendingKeyEvent> listForService : mPendingEventsMap.values()) {
+            // Iterate in reverse order because elements might be removed from mPendingEventsMap.
+            for (int i = mPendingEventsMap.size() - 1; i >= 0; i--) {
+                ArrayList<PendingKeyEvent> listForService = mPendingEventsMap.valueAt(i);
                 if (listForService.remove(pendingKeyEvent)) {
-                    if(removeReferenceToPendingEventLocked(pendingKeyEvent)) {
+                    if (keyEventDispatcherFixFlushRaceCondition()) {
+                        if (listForService.isEmpty()) {
+                            mPendingEventsMap.removeAt(i);
+                        }
+                    }
+                    if (removeReferenceToPendingEventLocked(pendingKeyEvent)) {
                         break;
                     }
                 }

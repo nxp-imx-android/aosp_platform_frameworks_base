@@ -57,7 +57,11 @@ import android.hardware.display.DisplayManager;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.IPowerManager;
+import android.os.IThermalService;
+import android.os.PowerManager;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.test.FakePermissionEnforcer;
@@ -70,6 +74,7 @@ import android.provider.Settings;
 import android.test.mock.MockContentResolver;
 import android.testing.DexmakerShareClassLoaderRule;
 import android.view.Display;
+import android.view.KeyEvent;
 import android.view.WindowManager;
 
 import com.android.internal.util.test.FakeSettingsProvider;
@@ -252,6 +257,63 @@ public class AccessibilityServiceConnectionTest {
         mConnection.binderDied();
         assertTrue(mConnection.getServiceInfo().crashed);
         verify(mMockKeyEventDispatcher).flush(mConnection);
+    }
+
+    @Test
+    @EnableFlags(
+            com.android.server.accessibility.Flags
+                    .FLAG_KEY_EVENT_DISPATCHER_FIX_FLUSH_RACE_CONDITION)
+    public void unbindLocked_eventuallyFlushesPendingKeysByTimeout() {
+        // 1. Setup a real dispatcher instead of a mock for this test
+        final int msgSendFrameworkKeyEvent = 42;
+        final MessageCapturingHandler inputFilterHandler =
+                new MessageCapturingHandler(mHandler.getLooper(), null);
+        final MessageCapturingHandler timeoutHandler =
+                new MessageCapturingHandler(mHandler.getLooper(), null);
+        // PowerManager is final and cannot be mocked, so we create a real one with mocked services
+        final IPowerManager mockPowerManagerService = mock(IPowerManager.class);
+        final IThermalService mockThermalService = mock(IThermalService.class);
+        final PowerManager powerManager =
+                new PowerManager(
+                        mock(Context.class),
+                        mockPowerManagerService,
+                        mockThermalService,
+                        new Handler(mHandler.getLooper()));
+        final KeyEventDispatcher realDispatcher =
+                new KeyEventDispatcher(
+                        inputFilterHandler,
+                        msgSendFrameworkKeyEvent,
+                        new Object(),
+                        powerManager,
+                        timeoutHandler);
+        when(mMockSystemSupport.getKeyEventDispatcher()).thenReturn(realDispatcher);
+        // Bind service
+        setServiceBinding(COMPONENT_NAME);
+        mConnection.bindLocked();
+        mConnection.onServiceConnected(COMPONENT_NAME, mMockIBinder);
+        // Configure the service to filter key events; otherwise, `pendingKeyEvent` will be null
+        // inside the call of `notifyKeyEventLocked`
+        mServiceInfo.flags |= AccessibilityServiceInfo.FLAG_REQUEST_FILTER_KEY_EVENTS;
+        mConnection.setDynamicallyConfigurableProperties(mServiceInfo);
+        when(mServiceInfo.getCapabilities())
+                .thenReturn(AccessibilityServiceInfo.CAPABILITY_CAN_REQUEST_FILTER_KEY_EVENTS);
+
+        // 2. Send a key event that the service "receives" but doesn't handle yet
+        final KeyEvent event = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_SPACE);
+        boolean accepted =
+                realDispatcher.notifyKeyEventLocked(
+                        event, 0, Collections.singletonList(mConnection));
+        assertTrue(accepted);
+        // 3. Unbind the service (this is where our fix removed the immediate flush)
+        mConnection.unbindLocked();
+        // 4. Verify the key IS NOT flushed immediately (verifies our fix works)
+        assertFalse(inputFilterHandler.hasMessages(msgSendFrameworkKeyEvent));
+        // 5. Simulate the timeout (500ms) by capturing the timeout message and handling it
+        assertThat(timeoutHandler.timedMessages).hasSize(1);
+        realDispatcher.handleMessage(timeoutHandler.timedMessages.get(0).first);
+
+        // 6. Verify the key IS eventually flushed to the input filter by the dispatcher's timeout
+        assertTrue(inputFilterHandler.hasMessages(msgSendFrameworkKeyEvent));
     }
 
     @Test
