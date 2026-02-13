@@ -75,7 +75,6 @@ import android.telephony.TelephonyCallback;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
-import android.view.Display;
 import android.view.GestureDetector;
 import android.view.IWindowManager;
 import android.view.LayoutInflater;
@@ -2878,12 +2877,6 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
             dialog.getOnBackInvokedDispatcher()
                     .unregisterOnBackInvokedCallback(mOnBackInvokedCallback);
             if (DEBUG) Log.d(TAG, "OnBackInvokedCallback handler unregistered");
-        }
-
-        @Deprecated
-        @Override
-        public void onBackPressed(@NonNull SystemUIDialog dialog) {
-            logOnBackInvocation();
         }
 
         private void logOnBackInvocation() {
