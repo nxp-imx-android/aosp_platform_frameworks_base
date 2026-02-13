@@ -50,7 +50,7 @@ abstract class ExitDesktopToFullScreenWithAppHeaderMenu(
 
     @Test
     open fun exitDesktopToFullScreenWithAppHeaderMenu() {
-        testApp.exitDesktopModeToFullScreenWithAppHeader(wmHelper)
+        testApp.exitDesktopModeToFullScreenWithDesktopLayoutMenu(wmHelper, device)
     }
 
     @After
