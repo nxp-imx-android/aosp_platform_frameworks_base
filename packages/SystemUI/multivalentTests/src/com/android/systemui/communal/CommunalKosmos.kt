@@ -16,14 +16,14 @@
 
 package com.android.systemui.communal
 
-import com.android.systemui.communal.data.preconditions.CommonSetupPreconditions
-import com.android.systemui.communal.data.preconditions.fake.FakeCommonSetupPreconditions
 import com.android.systemui.communal.data.repository.ContextualSetupRepository
 import com.android.systemui.communal.data.repository.fake.FakeContextualSetupRepository
 import com.android.systemui.communal.domain.definition.ContextualSetupDefinition
 import com.android.systemui.communal.domain.definition.fake.FakeContextualSetupDefinition
 import com.android.systemui.communal.domain.interactor.UprightChargingInteractor
 import com.android.systemui.communal.domain.interactor.fake.FakeUprightChargingInteractor
+import com.android.systemui.communal.domain.preconditions.CommonSetupPreconditions
+import com.android.systemui.communal.domain.preconditions.fake.FakeCommonSetupPreconditions
 import com.android.systemui.kosmos.Kosmos
 
 val Kosmos.commonSetupPreconditions: CommonSetupPreconditions by
