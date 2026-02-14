@@ -3582,14 +3582,8 @@ package android.service.personalcontext {
 
 package android.service.personalcontext.hint {
 
-  public static interface AutofillInlineRequestHint.AugmentedAutofillProxy {
-    method @NonNull public android.os.IBinder asBinder();
-    method @NonNull public android.app.assist.AssistStructure.ViewNode getFocusedViewNode(@NonNull android.view.autofill.AutofillId);
-    method @NonNull public android.graphics.Rect getViewCoordinates(@NonNull android.view.autofill.AutofillId);
-  }
-
   public static final class AutofillInlineRequestHint.Builder {
-    method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint.Builder setAugmentedAutofillProxy(@NonNull android.service.personalcontext.hint.AutofillInlineRequestHint.AugmentedAutofillProxy);
+    method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint.Builder setAugmentedAutofillProxy(@NonNull android.service.personalcontext.hint.autofill.AugmentedAutofillProxy);
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class ContextHint {
@@ -3623,6 +3617,16 @@ package android.service.personalcontext.hint {
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class HintFilter implements android.os.Parcelable {
     method @NonNull public java.util.Set<android.service.personalcontext.hint.ContextHintWithSignature> getInterestedHintClusters(@NonNull java.util.Set<android.service.personalcontext.hint.ContextHintWithSignature>, @NonNull java.util.Set<java.util.UUID>);
+  }
+
+}
+
+package android.service.personalcontext.hint.autofill {
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public interface AugmentedAutofillProxy {
+    method @NonNull public android.os.IBinder asBinder();
+    method @NonNull public android.app.assist.AssistStructure.ViewNode fetchFocusedViewNode(@NonNull android.view.autofill.AutofillId);
+    method @NonNull public android.graphics.Rect fetchViewCoordinates(@NonNull android.view.autofill.AutofillId);
   }
 
 }

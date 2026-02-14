@@ -172,11 +172,11 @@ public class AutofillInlineRequestHintTest {
 
         // Proxy method calls route to the proper calls.
         AssistStructure.ViewNode viewNode =
-                outputAutofillHint.getAugmentedAutofillProxy().getFocusedViewNode(focusedId);
+                outputAutofillHint.getAugmentedAutofillProxy().fetchFocusedViewNode(focusedId);
         assertThat(viewNode).isEqualTo(mViewNode);
         verify(mAugmentedAutofillManagerClient).getViewNodeParcelable(eq(focusedId));
 
-        Rect rect = outputAutofillHint.getAugmentedAutofillProxy().getViewCoordinates(focusedId);
+        Rect rect = outputAutofillHint.getAugmentedAutofillProxy().fetchViewCoordinates(focusedId);
         assertThat(rect).isEqualTo(VIEW_RECT);
         verify(mAugmentedAutofillManagerClient).getViewCoordinates(eq(focusedId));
     }
