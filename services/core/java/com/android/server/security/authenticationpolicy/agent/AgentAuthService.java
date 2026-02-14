@@ -214,7 +214,7 @@ public class AgentAuthService implements AgentAuthServiceInternal {
             mService = new AgentAuthService(context,
                     new Handler(BackgroundThread.getHandler().getLooper()),
                     SystemClock.elapsedRealtimeClock(),
-                    TimeUnit.MINUTES.toMillis(30));
+                    TimeUnit.MINUTES.toMillis(10));
         }
 
         @Override
