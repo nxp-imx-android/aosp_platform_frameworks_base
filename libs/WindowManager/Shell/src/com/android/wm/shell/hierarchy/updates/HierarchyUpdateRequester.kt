@@ -68,4 +68,15 @@ interface HierarchyUpdateRequester {
     ) {
         throw IllegalStateException("Requesting update before initialization")
     }
+
+    /**
+     * A call to specifically update the displays in the hierarchy, and for modes to be given an
+     * opportunity to update the state of their managed tasks in the new display configuration.
+     */
+    fun updateDisplay(
+        displayId: Int,
+        outWct: WindowContainerTransaction
+    ) {
+        throw IllegalStateException("Requesting update before initialization")
+    }
 }

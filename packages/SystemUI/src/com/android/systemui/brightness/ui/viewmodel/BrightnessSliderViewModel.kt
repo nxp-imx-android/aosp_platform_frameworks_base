@@ -108,6 +108,7 @@ constructor(
             imageLoader
                 .loadDrawable(
                     android.graphics.drawable.Icon.createWithResource(context, resId),
+                    context = context,
                     maxHeight = 200,
                     maxWidth = 200,
                 )

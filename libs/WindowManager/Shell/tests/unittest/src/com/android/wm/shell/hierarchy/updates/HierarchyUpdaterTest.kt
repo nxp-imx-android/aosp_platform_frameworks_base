@@ -21,6 +21,7 @@ import android.graphics.Rect
 import android.os.IBinder
 import android.platform.test.annotations.EnableFlags
 import android.view.Display.DEFAULT_DISPLAY
+import android.view.Surface
 import android.view.SurfaceControl
 import android.view.WindowManager.TRANSIT_CLOSE
 import android.view.WindowManager.TRANSIT_OPEN
@@ -33,11 +34,13 @@ import android.window.TransitionInfo
 import android.window.TransitionInfo.FLAG_IS_DISPLAY
 import android.window.TransitionInfo.FLAG_IS_WALLPAPER
 import android.window.WindowContainerToken
+import android.window.WindowContainerTransaction
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.wm.shell.Flags.FLAG_ENABLE_SHELL_MODES
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
+import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.hierarchy.ContainerHierarchy
 import com.android.wm.shell.hierarchy.containers.Container
 import com.android.wm.shell.hierarchy.containers.StubContainer
@@ -78,6 +81,7 @@ class HierarchyUpdaterTest : ShellTestCase() {
     private val shellInit = mock<ShellInit>()
     private val hierarchy = ContainerHierarchy().apply {
         // Create a hierarchy with two nested container
+        root.mode = StubMode()
         val info1 = ActivityManager.RunningTaskInfo().apply {
             taskId = 1
         }
@@ -547,5 +551,41 @@ class HierarchyUpdaterTest : ShellTestCase() {
         // Verify that the mode is notified of child2 even though it was added mid-update
         assertThat(mode1.attachedRoots).contains(child1)
         assertThat(mode1.attachedContainers).contains(child2)
+    }
+
+    @Test
+    fun testUpdateDisplay() {
+        // Create two displays in the hierarchy with children that have modes
+        val display =
+            Container(
+                WindowContainerToken.createProxy("test"),
+                DisplayContainerProperties(DEFAULT_DISPLAY)
+            )
+        display.parent = hierarchy.root
+        val child1 = StubContainer(WindowContainerToken.createProxy("test"))
+        child1.parent = display
+        child1.mode = StubMode()
+
+        val otherDisplay =
+            Container(
+                WindowContainerToken.createProxy("test"),
+                DisplayContainerProperties(12345)
+            )
+        otherDisplay.parent = hierarchy.root
+        val child2 = StubContainer(WindowContainerToken.createProxy("test"))
+        child2.parent = otherDisplay
+        child2.mode = StubMode()
+
+        // Trigger a default display change
+        val wct = WindowContainerTransaction()
+        val displayLayout = DisplayLayout().apply {
+            rotateTo(mContext.resources, Surface.ROTATION_90)
+        }
+        updater.updateDisplay(DEFAULT_DISPLAY, displayLayout, wct)
+
+        // Verify that the root & default display modes are notified, but not others
+        assertThat((hierarchy.root.mode as StubMode).displayChanges).isNotEmpty()
+        assertThat((child1.mode as StubMode).displayChanges).isNotEmpty()
+        assertThat((child2.mode as StubMode).displayChanges).isEmpty()
     }
 }

@@ -143,6 +143,16 @@ flag {
 }
 
 flag {
+    name: "key_event_dispatcher_fix_flush_race_condition"
+    namespace: "accessibility"
+    description: "Fix the bug that the keyevent not only toggle TalkBack off, but also passed to the rest of system."
+    bug: "475084704"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "manager_lifecycle_user_change"
     namespace: "accessibility"
     description: "Use A11yManagerService's Lifecycle to change users, instead of listening for user changed events."

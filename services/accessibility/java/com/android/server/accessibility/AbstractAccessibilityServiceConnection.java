@@ -35,6 +35,7 @@ import static android.view.accessibility.AccessibilityNodeInfo.ACTION_CLEAR_ACCE
 import static android.view.accessibility.AccessibilityNodeInfo.ACTION_CLICK;
 import static android.view.accessibility.AccessibilityNodeInfo.ACTION_LONG_CLICK;
 
+import static com.android.server.accessibility.Flags.keyEventDispatcherFixFlushRaceCondition;
 import static com.android.server.pm.UserManagerService.enforceCurrentUserIfVisibleBackgroundEnabled;
 import static com.android.window.flags.Flags.scvhSurfaceControlLifetimeFix;
 
@@ -1781,7 +1782,9 @@ abstract class AbstractAccessibilityServiceConnection extends IAccessibilityServ
 
     public void resetLocked() {
         mAccessibilityServiceInfo.resetDynamicallyConfigurableProperties();
-        mSystemSupport.getKeyEventDispatcher().flush(this);
+        if (!keyEventDispatcherFixFlushRaceCondition()) {
+            mSystemSupport.getKeyEventDispatcher().flush(this);
+        }
         try {
             // Clear the proxy in the other process so this
             // IAccessibilityServiceConnection can be garbage collected.

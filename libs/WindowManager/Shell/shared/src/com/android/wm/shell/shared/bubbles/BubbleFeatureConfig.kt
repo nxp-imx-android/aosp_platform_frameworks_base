@@ -19,7 +19,12 @@ package com.android.wm.shell.shared.bubbles
 /** Some features of bubbles aren't available on all devices. This allows easy querying. */
 interface BubbleFeatureConfig {
 
-    /** Returns {@code true} if app bubbles are supported. */
+    /**
+     * Returns {@code true} if the user is permitted to convert any app into a Bubble (the app
+     * bubble feature). This is not permitted on low-ram devices (to preserve memory) or on displays
+     * that support desktop windowing (more effort required for the feature to be supported with
+     * desktop windowing, such as polishing transitions between bubbles and other windowing modes).
+     */
     fun areAppBubblesSupported(): Boolean
 
     /** Returns {@code true} if the scrim can be shown. */

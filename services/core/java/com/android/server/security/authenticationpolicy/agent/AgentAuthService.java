@@ -31,6 +31,8 @@ import android.util.Slog;
 import com.android.internal.os.BackgroundThread;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
+import com.android.server.locksettings.LockSettingsInternal;
+import com.android.server.security.authenticationpolicy.StrongAuthListener;
 
 import java.time.Clock;
 import java.util.Objects;
@@ -45,13 +47,19 @@ import java.util.concurrent.TimeUnit;
  *
  * This service is not meant to be exposed directly to an agent, but is an internal service
  * that higher-level Android services will use as a part of their overall orchestration.
+ *
+ * @hide
  */
+@SuppressLint("MissingPermission")
 public class AgentAuthService implements AgentAuthServiceInternal {
 
     private static final String TAG = "AgentAuthService";
 
     private final Context mContext;
     private final Handler mHandler;
+    private final StrongAuthListener mStrongAuthListener;
+
+    private LockSettingsInternal mLockSettings;
     private BiometricManager mBiometricManager;
     private CompanionDeviceManager mCompanionDeviceManager;
 
@@ -70,6 +78,7 @@ public class AgentAuthService implements AgentAuthServiceInternal {
         mClock = clock;
         mLastAuthTimeIntervalMillis = lastAuthTimeIntervalMillis;
         mAgentSessionList = new AgentSessionMap<>(mContext, ActivityManager.getCurrentUser());
+        mStrongAuthListener = new StrongAuthListener(mHandler, this::onStrongAuthForUser);
     }
 
     @Override
@@ -79,19 +88,30 @@ public class AgentAuthService implements AgentAuthServiceInternal {
     }
 
     /** Start the service start monitoring for connected agents and init for current user. */
-    @SuppressLint("MissingPermission")
-    void start(@NonNull BiometricManager biometricManager,
+    void start(@NonNull LockSettingsInternal lockSettings,
+            @NonNull BiometricManager biometricManager,
             @NonNull CompanionDeviceManager companionDeviceManager) {
+        mLockSettings = lockSettings;
         mBiometricManager = biometricManager;
         mCompanionDeviceManager = companionDeviceManager;
+
+        mHandler.post(() -> {
+            mLockSettings.registerLockSettingsStateListener(
+                    mStrongAuthListener.asLockSettingsStateListener());
+            mBiometricManager.registerAuthenticationStateListener(
+                    mStrongAuthListener.asAuthenticationStateListener());
+        });
 
         initInBackgroundForUser(ActivityManager.getCurrentUser());
     }
 
     /** Refresh data for the given user (call when the foreground user changes). */
     void initInBackgroundForUser(int userId) {
-        Slog.i(TAG, "Refreshing data for user: " + userId);
-        mHandler.post(() -> onUserSwitched(userId));
+        mHandler.post(() -> {
+            Slog.i(TAG, "Refreshing data for user: " + userId);
+
+            onUserSwitched(userId);
+        });
     }
 
     private void onUserSwitched(int userId) {
@@ -145,6 +165,14 @@ public class AgentAuthService implements AgentAuthServiceInternal {
         }
     }
 
+    private void onStrongAuthForUser(int userId) {
+        if (mCurrentUserId != userId) {
+            return;
+        }
+
+        mAgentSessionList.authorizeAll();
+    }
+
     private boolean hasRecentStrongAuth(@IntRange(from = 0) int intervalMillis) {
         try {
             final long now = mClock.millis();
@@ -179,6 +207,8 @@ public class AgentAuthService implements AgentAuthServiceInternal {
             LocalServices.addService(AgentAuthServiceInternal.class, mService);
 
             mService.start(
+                    Objects.requireNonNull(
+                            LocalServices.getService(LockSettingsInternal.class)),
                     Objects.requireNonNull(
                             mService.mContext.getSystemService(BiometricManager.class)),
                     (CompanionDeviceManager) mService.mContext.getSystemService(

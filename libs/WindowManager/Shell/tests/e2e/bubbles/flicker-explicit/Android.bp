@@ -222,6 +222,13 @@ test_module_config {
 }
 
 test_module_config {
+    name: "WMShellExplicitFlickerTestsBubbles-EnterBubbleFromOverviewLiveTileTest",
+    base: "WMShellExplicitFlickerTestsBubbles",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.bubbles.EnterBubbleFromOverviewLiveTileTest"],
+}
+
+test_module_config {
     name: "WMShellExplicitFlickerTestsBubbles-EnterBubbleViaBubbleMenuTest",
     base: "WMShellExplicitFlickerTestsBubbles",
     test_suites: ["device-tests"],

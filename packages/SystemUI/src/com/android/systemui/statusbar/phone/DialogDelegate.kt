@@ -24,7 +24,6 @@ import android.view.MotionEvent
 import android.view.ViewRootImpl
 import com.android.systemui.animation.back.BackAnimationSpec
 import com.android.systemui.animation.back.floatingSystemSurfacesForSysUi
-import kotlin.Deprecated
 
 /**
  * A delegate class that should be implemented in place of subclassing [Dialog].
@@ -61,6 +60,4 @@ interface DialogDelegate<T : Dialog> {
     fun dispatchTouchEvent(dialog: T, motionEvent: MotionEvent): Boolean = false
 
     fun onTouchEvent(dialog: T, motionEvent: MotionEvent): Boolean = false
-
-    @Deprecated("see Dialog.onBackPressed") fun onBackPressed(dialog: T) {}
 }

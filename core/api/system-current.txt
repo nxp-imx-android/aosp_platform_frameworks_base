@@ -15021,13 +15021,14 @@ package android.service.personalcontext.embedded {
     method @NonNull public java.util.List<android.service.personalcontext.embedded.InsightSurfaceClient.InsightReceiver> getReceivers();
     method @Nullable public String getThemeResourceName();
     method public boolean isNestedScrollAxisLocked();
-    method public void register(@Nullable java.util.concurrent.Executor, @NonNull android.service.personalcontext.embedded.InsightSurfaceClient.ClientCallback);
+    method public void register();
     method public boolean shouldBlur();
     method public void unregister();
   }
 
   public static final class InsightSurfaceClient.Builder {
-    ctor public InsightSurfaceClient.Builder(@NonNull android.content.Context);
+    ctor public InsightSurfaceClient.Builder(@NonNull android.content.Context, @NonNull android.service.personalcontext.embedded.InsightSurfaceClient.ClientCallback);
+    ctor public InsightSurfaceClient.Builder(@NonNull android.content.Context, @NonNull java.util.concurrent.Executor, @NonNull android.service.personalcontext.embedded.InsightSurfaceClient.ClientCallback);
     method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClient.Builder addHint(@NonNull android.service.personalcontext.hint.ContextHint);
     method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClient.Builder addReceiver(@NonNull android.service.personalcontext.embedded.InsightSurfaceClient.InsightReceiver);
     method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClient build();
@@ -15218,7 +15219,8 @@ package android.service.personalcontext.insight.interaction {
     field public static final int EVENT_UNKNOWN = 0; // 0x0
     field public static final int EVENT_USER_ATTRIBUTION_REQUESTED = 6; // 0x6
     field public static final int EVENT_USER_DISMISS = 5; // 0x5
-    field public static final int EVENT_USER_FEEDBACK_INITITATED = 7; // 0x7
+    field public static final int EVENT_USER_FEEDBACK_NEGATIVE = 8; // 0x8
+    field public static final int EVENT_USER_FEEDBACK_POSITIVE = 7; // 0x7
     field public static final int EVENT_USER_LONG_PRESS = 4; // 0x4
     field public static final int EVENT_USER_TAP = 3; // 0x3
   }

@@ -15,7 +15,9 @@
  */
 package com.android.wm.shell.hierarchy.modes
 
+import android.window.WindowContainerTransaction
 import com.android.wm.shell.hierarchy.containers.Container
+import com.android.wm.shell.hierarchy.properties.DisplayContainerProperties
 import com.android.wm.shell.hierarchy.updates.HierarchyChangeFlags
 import com.android.wm.shell.hierarchy.updates.HierarchySnapshot
 
@@ -26,6 +28,7 @@ open class StubMode() : Mode {
     val attachedRoots = mutableListOf<Container>()
     val attachedContainers = mutableListOf<Container>()
     val updates = mutableListOf<Pair<Container, HierarchyChangeFlags>>()
+    val displayChanges = mutableListOf<DisplayContainerProperties>()
 
     override fun getId(): String {
         return "TestMode"
@@ -53,5 +56,14 @@ open class StubMode() : Mode {
         snapshot: HierarchySnapshot
     ) {
         updates.add(container to snapshot.getChanges(container))
+    }
+
+    override fun displayChanging(
+        directlyAssignedContainer: Container,
+        curProps: DisplayContainerProperties,
+        newProps: DisplayContainerProperties,
+        wct: WindowContainerTransaction
+    ) {
+        displayChanges.add(newProps)
     }
 }

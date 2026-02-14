@@ -629,6 +629,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 // Automation is happening in the foreground, so enable rendering.
                 mWindowManagerInternal.enableClientRenderingLimitationsOnDisplay(
                         mVirtualDisplayId, /* enable = */false);
+                mWindowManagerInternal.enablePowerOptimizations(
+                        mVirtualDisplayId, /* enable = */false);
                 mWindowManagerInternal.requestHardwareRendererOutputEnabled(mVirtualDisplayId,
                         0 /* timeoutMs */, (success) -> {
                         }, mScheduler);
@@ -696,6 +698,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 // Disable rendering during background automation, where windows will only draw
                 // when the client requests a screenshot.
                 mWindowManagerInternal.enableClientRenderingLimitationsOnDisplay(
+                        mVirtualDisplayId, /* enable = */true);
+                mWindowManagerInternal.enablePowerOptimizations(
                         mVirtualDisplayId, /* enable = */true);
                 synchronized (mWindowDrawLock) {
                     if (!mIsWaitingForWindowDraw) {

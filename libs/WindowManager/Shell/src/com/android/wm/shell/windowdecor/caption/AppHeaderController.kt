@@ -178,7 +178,7 @@ class AppHeaderController(
     private val taskPositionInParent
         get() = taskInfo.positionInParent
 
-    private val closeMaximizeWindowRunnable = Runnable { closeLayoutMenu() }
+    private val closeLayoutMenuRunnable = Runnable { closeLayoutMenu() }
     private val isEducationOrHandleReportingEnabled =
         Flags.enableDesktopWindowingAppHandleEducation() ||
             DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_APP_TO_WEB_EDUCATION_INTEGRATION
@@ -214,7 +214,7 @@ class AppHeaderController(
             // the task has lost focus, explicitly cancel the hover (since we don't get a HOVER_EXIT
             // signal in this case).
             if (!isTaskFocused && isAppHeaderMaximizeButtonHovered) {
-                setAppHeaderMaximizeButtonHovered(hovered = false)
+                setHeaderMaximizeButtonHovered(hovered = false)
                 onLayoutButtonHoverExit()
             }
 
@@ -401,26 +401,26 @@ class AppHeaderController(
                 }
     }
 
-    /** Set whether the app header's maximize button is hovered. */
-    override fun setAppHeaderMaximizeButtonHovered(hovered: Boolean) {
+    /** Set whether the header's maximize button is hovered. */
+    override fun setHeaderMaximizeButtonHovered(hovered: Boolean) {
         isAppHeaderMaximizeButtonHovered = hovered
         onLayoutButtonHoverStateChanged()
     }
 
     /**
-     * Called when either one of the maximize button in the app header or the layout menu has
-     * changed its hover state.
+     * Called when either one of the maximize button in the header or the layout menu has changed
+     * its hover state.
      */
     override fun onLayoutButtonHoverStateChanged() {
         if (!isLayoutMenuHovered && !isAppHeaderMaximizeButtonHovered) {
             // Neither is hovered, close the menu.
             if (isLayoutMenuActive) {
-                mainHandler.postDelayed(closeMaximizeWindowRunnable, CLOSE_MAXIMIZE_MENU_DELAY_MS)
+                mainHandler.postDelayed(closeLayoutMenuRunnable, CLOSE_LAYOUT_MENU_DELAY_MS)
             }
             return
         }
         // At least one of the two is hovered, cancel the close if needed.
-        mainHandler.removeCallbacks(closeMaximizeWindowRunnable)
+        mainHandler.removeCallbacks(closeLayoutMenuRunnable)
     }
 
     /** Close the layout menu window if open. */
@@ -766,6 +766,6 @@ class AppHeaderController(
 
     private companion object {
         private const val TAG = "AppHeaderController"
-        const val CLOSE_MAXIMIZE_MENU_DELAY_MS = 150L
+        private const val CLOSE_LAYOUT_MENU_DELAY_MS = 150L
     }
 }

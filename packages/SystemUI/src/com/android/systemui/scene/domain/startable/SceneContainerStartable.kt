@@ -19,6 +19,8 @@ package com.android.systemui.scene.domain.startable
 import android.app.StatusBarManager
 import android.os.PowerManager
 import android.view.SurfaceControl
+import androidx.annotation.VisibleForTesting
+import androidx.compose.runtime.snapshotFlow
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
@@ -88,6 +90,7 @@ import com.android.systemui.scene.shared.model.isKeyguardScene
 import com.android.systemui.shade.domain.interactor.ShadeDisplaysInteractor
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
+import com.android.systemui.statusbar.NotificationLockscreenUserManager
 import com.android.systemui.statusbar.NotificationShadeWindowController
 import com.android.systemui.statusbar.SysuiStatusBarStateController
 import com.android.systemui.statusbar.VibratorHelper
@@ -119,6 +122,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -134,48 +138,51 @@ import kotlinx.coroutines.launch
 class SceneContainerStartable
 @Inject
 constructor(
+    // go/keep-sorted start by_regex=(?:@\S+)?\s*(?:private|internal|public)?\s*(?:val|var)?\s*(.*)
+    private val activityTransitionAnimator: ActivityTransitionAnimator,
+    private val alternateBouncerInteractor: AlternateBouncerInteractor,
     @Application private val applicationScope: CoroutineScope,
-    private val sceneInteractor: SceneInteractor,
-    private val deviceEntryInteractor: DeviceEntryInteractor,
-    private val deviceEntryHapticsInteractor: DeviceEntryHapticsInteractor,
-    private val deviceUnlockedInteractor: DeviceUnlockedInteractor,
+    private val authenticationInteractor: Lazy<AuthenticationInteractor>,
+    private val bootInteractor: OnBootTransitionInteractor,
     private val bouncerInteractor: BouncerInteractor,
-    private val keyguardInteractor: KeyguardInteractor,
-    private val sceneLogger: SceneLogger,
+    private val centralSurfacesOptLazy: Lazy<Optional<CentralSurfaces>>,
+    private val deviceEntryHapticsInteractor: DeviceEntryHapticsInteractor,
+    private val deviceEntryInteractor: DeviceEntryInteractor,
+    private val deviceProvisioningInteractor: DeviceProvisioningInteractor,
+    private val deviceUnlockedInteractor: DeviceUnlockedInteractor,
+    private val disabledContentInteractor: DisabledContentInteractor,
+    private val dismissCallbackRegistry: DismissCallbackRegistry,
+    private val faceUnlockInteractor: DeviceEntryFaceAuthInteractor,
     @FalsingCollectorActual private val falsingCollector: FalsingCollector,
     private val falsingManager: FalsingManager,
-    private val powerInteractor: PowerInteractor,
-    private val simBouncerInteractor: Lazy<SimBouncerInteractor>,
-    private val authenticationInteractor: Lazy<AuthenticationInteractor>,
-    private val windowController: NotificationShadeWindowController,
-    private val deviceProvisioningInteractor: DeviceProvisioningInteractor,
-    private val centralSurfacesOptLazy: Lazy<Optional<CentralSurfaces>>,
     private val headsUpInteractor: HeadsUpNotificationInteractor,
-    private val occlusionInteractor: KeyguardOcclusionInteractor,
-    private val faceUnlockInteractor: DeviceEntryFaceAuthInteractor,
-    private val shadeInteractor: ShadeInteractor,
-    private val uiEventLogger: UiEventLogger,
-    private val sceneBackInteractor: SceneBackInteractor,
-    private val shadeSessionStorage: SessionStorage,
+    private val keyguardDismissActionInteractor: KeyguardDismissActionInteractor,
     private val keyguardEnabledInteractor: KeyguardEnabledInteractor,
-    private val dismissCallbackRegistry: DismissCallbackRegistry,
-    private val statusBarStateController: SysuiStatusBarStateController,
-    private val alternateBouncerInteractor: AlternateBouncerInteractor,
-    private val vibratorHelper: VibratorHelper,
+    private val keyguardInteractor: KeyguardInteractor,
+    private val keyguardShowWhileAwakeInteractor: KeyguardShowWhileAwakeInteractor,
+    private val lockscreenUserManager: NotificationLockscreenUserManager,
     private val msdlPlayer: MSDLPlayer,
-    private val disabledContentInteractor: DisabledContentInteractor,
-    private val activityTransitionAnimator: ActivityTransitionAnimator,
+    private val occlusionInteractor: KeyguardOcclusionInteractor,
+    private val powerInteractor: PowerInteractor,
+    private val sceneBackInteractor: SceneBackInteractor,
+    private val sceneInteractor: SceneInteractor,
+    private val sceneLogger: SceneLogger,
+    shadeDisplaysInteractor: Lazy<ShadeDisplaysInteractor>,
+    private val shadeInteractor: ShadeInteractor,
     private val shadeModeInteractor: ShadeModeInteractor,
+    private val shadeSessionStorage: SessionStorage,
+    private val simBouncerInteractor: Lazy<SimBouncerInteractor>,
+    private val statusBarStateController: SysuiStatusBarStateController,
+    private val surfaceBehindInteractor: KeyguardSurfaceBehindInteractor,
+    private val sysuiStateInteractor: SysUIStateDisplaysInteractor,
     @SceneFrameworkTableLog private val tableLogBuffer: TableLogBuffer,
     private val trustInteractor: TrustInteractor,
-    private val sysuiStateInteractor: SysUIStateDisplaysInteractor,
-    shadeDisplaysInteractor: Lazy<ShadeDisplaysInteractor>,
-    private val surfaceBehindInteractor: KeyguardSurfaceBehindInteractor,
-    private val keyguardDismissActionInteractor: KeyguardDismissActionInteractor,
+    private val uiEventLogger: UiEventLogger,
+    private val vibratorHelper: VibratorHelper,
     private val wakeDirectlyToGoneInteractor: KeyguardWakeDirectlyToGoneInteractor,
-    private val keyguardShowWhileAwakeInteractor: KeyguardShowWhileAwakeInteractor,
+    private val windowController: NotificationShadeWindowController,
     private val windowManagerLockscreenVisibilityManager: WindowManagerLockscreenVisibilityManager,
-    private val bootInteractor: OnBootTransitionInteractor,
+    // go/keep-sorted end
 ) : CoreStartable {
     private val centralSurfaces: CentralSurfaces?
         get() = centralSurfacesOptLazy.get().getOrNull()
@@ -209,6 +216,7 @@ constructor(
             lockWhenKeyguardShowWhenAwake()
             showDismissibleKeyguardWhenFolded()
             wakeFromDozingOnContentChange()
+            hydrateLockScreenUserManager()
         } else {
             sceneLogger.logFrameworkEnabled(isEnabled = false)
         }
@@ -1350,6 +1358,36 @@ constructor(
             keyguardInteractor.asleepKeyguardState.value
         }
     }
+
+    @VisibleForTesting
+    fun hydrateLockScreenUserManager() {
+        applicationScope.launch {
+            deviceUnlockedInteractor.deviceUnlockStatus
+                .distinctUntilChanged { old, new -> old.isUnlocked == new.isUnlocked }
+                .collectLatest { unlockStatus ->
+                    if (unlockStatus.isUnlocked) {
+                        // If the device has just become unlocked and keyguard will be going away,
+                        // wait for transition to complete before notifying Notifications to avoid
+                        // a flicker during the unlock animation: b/454362854
+                        if (unlockStatus.deviceUnlockSource?.dismissesLockscreen == true) {
+                            snapshotFlow { !onOrLeavingLockscreenScene() || onNotifShadeOverlay() }
+                                .first { it }
+                        }
+                    }
+                    // If the device has just become locked, notify Notifications so they can make
+                    // sure redaction is immediately applied: b/440335509
+                    lockscreenUserManager.updatePublicMode()
+                }
+        }
+    }
+
+    private fun onOrLeavingLockscreenScene() =
+        sceneInteractor.transitionState.isIdle(Scenes.Lockscreen) ||
+            sceneInteractor.transitionState.isTransitioning(from = Scenes.Lockscreen)
+
+    private fun onNotifShadeOverlay() =
+        Overlays.NotificationsShade in sceneInteractor.transitionState.currentOverlays &&
+            !sceneInteractor.transitionState.isTransitioning(from = Overlays.NotificationsShade)
 
     private suspend fun repeatWhen(condition: Flow<Boolean>, block: suspend () -> Unit) {
         condition.distinctUntilChanged().collectLatest { conditionMet ->

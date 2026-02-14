@@ -1761,6 +1761,39 @@ class PreferencesApiScreenTest {
         }
     }
 
+        @Test
+    fun createPreferencesApiScreen_withoutTags_returnsApiFirst() {
+        val screen =
+            object :
+                PreferencesApiScreen(
+                    key = SCREEN_KEY,
+                    topLevelSettingsCategory = Category.SYSTEM,
+                    fragment = PreferenceFragment::class,
+                    purpose = R.string.preference_screen_purpose,
+                ) {
+            }
+
+        assertThat(screen.tags(context)).asList().containsExactly("api-first")
+    }
+
+    @Test
+    fun createPreferencesApiScreen_withTags_returnsTagsWithApiFirst() {
+        val screen =
+            object :
+                PreferencesApiScreen(
+                    key = SCREEN_KEY,
+                    topLevelSettingsCategory = Category.SYSTEM,
+                    fragment = PreferenceFragment::class,
+                    purpose = R.string.preference_screen_purpose,
+                ) {
+                init {
+                    tags("tag1", "tag2")
+                }
+            }
+
+        assertThat(screen.tags(context)).asList().containsExactly("tag1", "tag2", "api-first")
+    }
+
     @Test
     fun dynamicSpaConstructor_withoutParameters_throwsException() {
         assertThrows(IllegalStateException::class.java) {

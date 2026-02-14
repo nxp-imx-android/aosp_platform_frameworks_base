@@ -365,17 +365,7 @@ public class AudioSystem
                 yield BluetoothCodecType.CODEC_ID_LDAC;
             }
             case AUDIO_FORMAT_OPUS -> BluetoothCodecType.CODEC_ID_OPUS;
-            case AUDIO_FORMAT_LHDC -> {
-                if (com.android.bluetooth.flags.Flags.a2dpLhdcApi()) {
-                    yield BluetoothCodecType.CODEC_ID_LHDCV5;
-                }
-                Log.e(
-                        TAG,
-                        "Unknown audio format 0x"
-                                + Integer.toHexString(audioFormat)
-                                + " for conversion to BT codec");
-                yield -1;
-            }
+            case AUDIO_FORMAT_LHDC -> BluetoothCodecType.CODEC_ID_LHDCV5;
             default -> {
                 Log.e(
                         TAG,

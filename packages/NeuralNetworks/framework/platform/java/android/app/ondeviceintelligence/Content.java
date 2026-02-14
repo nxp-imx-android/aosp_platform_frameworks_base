@@ -23,6 +23,7 @@ import android.app.ondeviceintelligence.flags.Flags;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -38,7 +39,7 @@ import java.util.Objects;
  */
 @SystemApi
 @FlaggedApi(Flags.FLAG_ON_DEVICE_INTELLIGENCE_26Q2)
-public final class Content implements Parcelable {
+public final class Content implements Parcelable, AutoCloseable {
     private final List<Part> mParts;
 
     /**
@@ -56,6 +57,13 @@ public final class Content implements Parcelable {
     @NonNull
     public List<Part> getParts() {
         return mParts;
+    }
+
+    @Override
+    public void close() throws IOException {
+        for (Part part : mParts) {
+            part.close();
+        }
     }
 
     @Override

@@ -77,6 +77,7 @@ import com.android.bedstead.permissions.annotations.EnsureHasPermission;
 import com.android.coretests.apps.testapp.LocalIntrusionDetectionEventTransport;
 import com.android.server.ServiceThread;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -117,9 +118,11 @@ public class IntrusionDetectionServiceTest {
     private Looper mLooperOfDataAggregator;
     private FakePermissionEnforcer mPermissionEnforcer;
     private boolean mBoundToLoggingService = false;
-    private static final String TEST_PKG =
-        "com.android.coretests.apps.testapp";
+    private static final String TEST_PKG = "com.android.coretests.apps.testapp";
     private static final String TEST_SERVICE = TEST_PKG + ".TestLoggingService";
+
+    private ServiceConnection mServiceConnectionForTest;
+    private LocalIntrusionDetectionEventTransport mTransportForTest;
 
     DevicePolicyManagerInternal mDevicePolicyManagerInternal;
 
@@ -139,6 +142,15 @@ public class IntrusionDetectionServiceTest {
         mLooperOfDataAggregator = mTestLooperOfDataAggregator.getLooper();
         mIntrusionDetectionService = new IntrusionDetectionService(new MockInjector(mContext));
         mIntrusionDetectionService.onStart();
+        mTransportForTest = new LocalIntrusionDetectionEventTransport(mContext);
+    }
+
+    @After
+    public void tearDown() {
+        if (mServiceConnectionForTest != null) {
+            mContext.unbindService(mServiceConnectionForTest);
+            mServiceConnectionForTest = null;
+        }
     }
 
     @Test
@@ -400,65 +412,134 @@ public class IntrusionDetectionServiceTest {
     @RequireRunOnSystemUser
     @EnsureHasPermission(
             android.Manifest.permission.BIND_INTRUSION_DETECTION_EVENT_TRANSPORT_SERVICE)
-    public void test_StartIntrusionDetectionEventTransportService() {
-        final String TAG = "test_StartIntrusionDetectionEventTransportService";
-        ServiceConnection serviceConnection = null;
-
-        assertEquals(false, mBoundToLoggingService);
-        try {
-            serviceConnection = startTestService();
-            assertEquals(true, mBoundToLoggingService);
-            assertNotNull(serviceConnection);
-        } catch (SecurityException e) {
-            Log.e(TAG, "SecurityException while starting: ", e);
-            fail("Exception thrown while connecting to service");
-        } catch (InterruptedException e) {
-            Log.e(TAG, "InterruptedException while starting: ", e);
-            fail("Interrupted while connecting to service");
-        } finally {
-            mContext.unbindService(serviceConnection);
-        }
+    public void test_serviceConnectionEstablishedSuccessfully() throws InterruptedException {
+        assertFalse(mBoundToLoggingService);
+        mServiceConnectionForTest = startTestService(mTransportForTest);
+        assertNotNull(mServiceConnectionForTest);
+        assertTrue(mBoundToLoggingService);
     }
 
-    private ServiceConnection startTestService() throws SecurityException, InterruptedException {
+    @Test
+    @RequireRunOnSystemUser
+    @EnsureHasPermission(
+            android.Manifest.permission.BIND_INTRUSION_DETECTION_EVENT_TRANSPORT_SERVICE)
+    public void test_transportSuccessfullyProcessesSecurityEvent() throws InterruptedException {
+        assertFalse(mBoundToLoggingService);
+        mServiceConnectionForTest = startTestService(mTransportForTest);
+        assertNotNull(mServiceConnectionForTest);
+        assertTrue(mBoundToLoggingService);
+
+        IntrusionDetectionEvent event =
+                IntrusionDetectionEvent.createForSecurityEvent(
+                        new SecurityEvent(123L, new byte[20]));
+        List<IntrusionDetectionEvent> events = new ArrayList<>();
+        events.add(event);
+
+        assertTrue(mTransportForTest.initialize());
+        assertTrue(mTransportForTest.addData(events));
+        assertTrue(mTransportForTest.release());
+        assertEquals(1, mTransportForTest.getEvents().size());
+        assertEquals(
+                IntrusionDetectionEvent.SECURITY_EVENT,
+                mTransportForTest.getEvents().get(0).getType());
+    }
+
+    @Test
+    @RequireRunOnSystemUser
+    @EnsureHasPermission(
+            android.Manifest.permission.BIND_INTRUSION_DETECTION_EVENT_TRANSPORT_SERVICE)
+    public void test_transportSuccessfullyProcessesDnsEvent() throws InterruptedException {
+        assertFalse(mBoundToLoggingService);
+        mServiceConnectionForTest = startTestService(mTransportForTest);
+        assertNotNull(mServiceConnectionForTest);
+        assertTrue(mBoundToLoggingService);
+
+        DnsEvent dnsEvent = new DnsEvent("google.com", new String[] {"127.0.0.1"}, 1, null, 0);
+        IntrusionDetectionEvent event = IntrusionDetectionEvent.createForDnsEvent(dnsEvent);
+        List<IntrusionDetectionEvent> events = new ArrayList<>();
+        events.add(event);
+
+        assertTrue(mTransportForTest.initialize());
+        assertTrue(mTransportForTest.addData(events));
+        assertTrue(mTransportForTest.release());
+        assertEquals(1, mTransportForTest.getEvents().size());
+        assertEquals(
+                IntrusionDetectionEvent.NETWORK_EVENT_DNS,
+                mTransportForTest.getEvents().get(0).getType());
+    }
+
+    @Test
+    @RequireRunOnSystemUser
+    @EnsureHasPermission(
+            android.Manifest.permission.BIND_INTRUSION_DETECTION_EVENT_TRANSPORT_SERVICE)
+    public void test_transportSuccessfullyProcessesConnectEvent() throws InterruptedException {
+        assertFalse(mBoundToLoggingService);
+        mServiceConnectionForTest = startTestService(mTransportForTest);
+        assertNotNull(mServiceConnectionForTest);
+        assertTrue(mBoundToLoggingService);
+
+        ConnectEvent connectEvent = new ConnectEvent("127.0.0.1", 80, null, 0);
+        IntrusionDetectionEvent event = IntrusionDetectionEvent.createForConnectEvent(connectEvent);
+        List<IntrusionDetectionEvent> events = new ArrayList<>();
+        events.add(event);
+
+        assertTrue(mTransportForTest.initialize());
+        assertTrue(mTransportForTest.addData(events));
+        assertTrue(mTransportForTest.release());
+        assertEquals(1, mTransportForTest.getEvents().size());
+        assertEquals(
+                IntrusionDetectionEvent.NETWORK_EVENT_CONNECT,
+                mTransportForTest.getEvents().get(0).getType());
+    }
+
+    @Test
+    @RequireRunOnSystemUser
+    @EnsureHasPermission(
+            android.Manifest.permission.BIND_INTRUSION_DETECTION_EVENT_TRANSPORT_SERVICE)
+    public void test_transportThrows_WhenEventIsCorrupt() throws InterruptedException {
+        assertFalse(mBoundToLoggingService);
+        mServiceConnectionForTest = startTestService(mTransportForTest);
+        assertNotNull(mServiceConnectionForTest);
+        assertTrue(mBoundToLoggingService);
+
+        // The buffer size it too small, so this throws an exception.
+        IntrusionDetectionEvent event =
+                IntrusionDetectionEvent.createForSecurityEvent(
+                        new SecurityEvent(123L, new byte[0]));
+
+        List<IntrusionDetectionEvent> events = new ArrayList<>();
+        events.add(event);
+        assertTrue(mTransportForTest.initialize());
+        assertThrows(IndexOutOfBoundsException.class, () -> mTransportForTest.addData(events));
+    }
+
+    private ServiceConnection startTestService(LocalIntrusionDetectionEventTransport transport)
+            throws SecurityException, InterruptedException {
         final String TAG = "startTestService";
         final CountDownLatch latch = new CountDownLatch(1);
-        LocalIntrusionDetectionEventTransport transport =
-                new LocalIntrusionDetectionEventTransport(mContext);
 
-        ServiceConnection serviceConnection = new ServiceConnection() {
-            // Called when connection with the service is established.
-            @Override
-            public void onServiceConnected(ComponentName className, IBinder service) {
-                mService = transport.getBinder();
-                mBoundToLoggingService = true;
-                latch.countDown();
-            }
+        ServiceConnection serviceConnection =
+                new ServiceConnection() {
+                    // Called when connection with the service is established.
+                    @Override
+                    public void onServiceConnected(ComponentName className, IBinder service) {
+                        mService = transport.getBinder();
+                        mBoundToLoggingService = true;
+                        latch.countDown();
+                    }
 
-            // Called when the connection with the service disconnects unexpectedly.
-            @Override
-            public void onServiceDisconnected(ComponentName className) {
-                Log.d(TAG, "onServiceDisconnected");
-                mBoundToLoggingService = false;
-            }
-        };
+                    // Called when the connection with the service disconnects unexpectedly.
+                    @Override
+                    public void onServiceDisconnected(ComponentName className) {
+                        Log.d(TAG, "onServiceDisconnected");
+                        mBoundToLoggingService = false;
+                    }
+                };
 
         Intent intent = new Intent();
         intent.setComponent(new ComponentName(TEST_PKG, TEST_SERVICE));
         mContext.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
         latch.await(5, TimeUnit.SECONDS);
-
-        // call the methods on the transport object
-        IntrusionDetectionEvent event =
-                IntrusionDetectionEvent.createForSecurityEvent(
-                        new SecurityEvent(123, new byte[15]));
-        List<IntrusionDetectionEvent> events = new ArrayList<>();
-        events.add(event);
-        assertTrue(transport.initialize());
-        assertTrue(transport.addData(events));
-        assertTrue(transport.release());
-        assertEquals(1, transport.getEvents().size());
-
         return serviceConnection;
     }
 

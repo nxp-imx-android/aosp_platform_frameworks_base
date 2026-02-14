@@ -1352,6 +1352,7 @@ public final class PowerManagerService extends SystemService
 
     private void onFlip(boolean isFaceDown) {
         long millisUntilNormalTimeout = 0;
+        final long currentTime = mClock.uptimeMillis();
         synchronized (mLock) {
             if (!mBootCompleted) {
                 return;
@@ -1360,19 +1361,18 @@ public final class PowerManagerService extends SystemService
             Slog.i(TAG, "onFlip(): Face " + (isFaceDown ? "down." : "up."));
             mIsFaceDown = isFaceDown;
             if (isFaceDown) {
-                final long currentTime = mClock.uptimeMillis();
                 mLastFlipTime = currentTime;
                 final long sleepTimeout = mScreenTimeoutConstants.getSleepTimeoutLocked(-1);
                 final long screenOffTimeout = getScreenOffTimeoutLocked(sleepTimeout, -1L);
                 final PowerGroup powerGroup = mPowerGroups.get(Display.DEFAULT_DISPLAY_GROUP);
                 millisUntilNormalTimeout =
                         powerGroup.getLastUserActivityTimeLocked() + screenOffTimeout - currentTime;
-                userActivityInternal(Display.DEFAULT_DISPLAY, currentTime,
-                        PowerManager.USER_ACTIVITY_EVENT_FACE_DOWN,
-                        PowerManager.USER_ACTIVITY_FLAG_NO_CHANGE_LIGHTS, Process.SYSTEM_UID);
             }
         }
         if (isFaceDown) {
+            userActivityInternal(Display.DEFAULT_DISPLAY, currentTime,
+                    PowerManager.USER_ACTIVITY_EVENT_FACE_DOWN,
+                    PowerManager.USER_ACTIVITY_FLAG_NO_CHANGE_LIGHTS, Process.SYSTEM_UID);
             mFaceDownDetector.setMillisSaved(millisUntilNormalTimeout);
         }
     }
@@ -2221,8 +2221,17 @@ public final class PowerManagerService extends SystemService
         userActivityInternal(displayId, eventTime, event, flags, Process.SYSTEM_UID);
     }
 
+    /**
+     * Notifies user activity without checking permissions.
+     *
+     * This should <b>not</b> be called with {@link #mLock} held.
+     */
     private void userActivityInternal(int displayId, long eventTime,
             @PowerManager.UserActivityEvent int event, int flags, int uid) {
+        final DisplayInfo displayInfo = mDisplayManagerInternal.getDisplayInfo(displayId);
+        final int groupId =
+                (displayInfo != null ? displayInfo.displayGroupId : Display.INVALID_DISPLAY_GROUP);
+
         synchronized (mLock) {
             if (displayId == Display.INVALID_DISPLAY) {
                 if (userActivityNoUpdateLocked(eventTime, event, flags, uid)) {
@@ -2231,16 +2240,9 @@ public final class PowerManagerService extends SystemService
                 return;
             }
 
-            final DisplayInfo displayInfo = mDisplayManagerInternal.getDisplayInfo(displayId);
-            if (displayInfo == null) {
-                return;
+            if (groupId != Display.INVALID_DISPLAY_GROUP) {
+                userActivityGroup(groupId, eventTime, event, flags, uid);
             }
-            final int groupId = displayInfo.displayGroupId;
-            if (groupId == Display.INVALID_DISPLAY_GROUP) {
-                return;
-            }
-
-            userActivityGroup(groupId, eventTime, event, flags, uid);
         }
     }
 
@@ -4342,15 +4344,17 @@ public final class PowerManagerService extends SystemService
             if (!mSystemReady) {
                 return isGloballyInteractiveInternal();
             }
-            DisplayInfo displayInfo = mDisplayManagerInternal.getDisplayInfo(displayId);
-            if (displayInfo == null) {
-                Slog.w(TAG, "Did not find DisplayInfo for displayId " + displayId);
-                return false;
-            }
-            if (!displayInfo.hasAccess(uid)) {
-                throw new SecurityException(
-                        "uid " + uid + " does not have access to display " + displayId);
-            }
+        }
+        final DisplayInfo displayInfo = mDisplayManagerInternal.getDisplayInfo(displayId);
+        if (displayInfo == null) {
+            Slog.w(TAG, "Did not find DisplayInfo for displayId " + displayId);
+            return false;
+        }
+        if (!displayInfo.hasAccess(uid)) {
+            throw new SecurityException(
+                    "uid " + uid + " does not have access to display " + displayId);
+        }
+        synchronized (mLock) {
             PowerGroup powerGroup = mPowerGroups.get(displayInfo.displayGroupId);
             if (powerGroup == null) {
                 Slog.w(TAG, "Did not find PowerGroup for displayId " + displayId);
@@ -8113,15 +8117,16 @@ public final class PowerManagerService extends SystemService
                             Process.SYSTEM_UID);
                 } else {
                     // Nudge user activity on all displays that are default or adjacent, and awake.
+                    userActivityInternal(Display.DEFAULT_DISPLAY, uptime,
+                            PowerManager.USER_ACTIVITY_EVENT_DEVICE_STATE,
+                            /* flags= */ 0, Process.SYSTEM_UID);
+
                     synchronized (mLock) {
                         for (int i = 0; i < mPowerGroups.size(); i++) {
                             PowerGroup pg = mPowerGroups.valueAt(i);
                             final int groupId = pg.getGroupId();
-                            if (groupId == Display.DEFAULT_DISPLAY_GROUP) {
-                                userActivityInternal(Display.DEFAULT_DISPLAY, uptime,
-                                        PowerManager.USER_ACTIVITY_EVENT_DEVICE_STATE,
-                                        /* flags= */ 0, Process.SYSTEM_UID);
-                            } else if (pg.isDefaultGroupAdjacent()
+                            if (groupId != Display.DEFAULT_DISPLAY_GROUP
+                                    && pg.isDefaultGroupAdjacent()
                                     && pg.getWakefulnessLocked() == WAKEFULNESS_AWAKE) {
                                 userActivityGroup(groupId, uptime,
                                         PowerManager.USER_ACTIVITY_EVENT_DEVICE_STATE,

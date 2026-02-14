@@ -36,7 +36,6 @@ import android.os.SystemClock
 import android.os.UserHandle
 import android.os.UserManager
 import android.os.test.TestLooper
-import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.annotations.Presubmit
 import android.platform.test.flag.junit.SetFlagsRule
@@ -348,7 +347,6 @@ class KeyGestureControllerTests {
 
     @Test
     @Parameters(method = "systemGesturesTestArguments")
-    @EnableFlags(com.android.window.flags.Flags.FLAG_TOGGLE_FULLSCREEN_STATE_VIA_FULLSCREEN_KEY)
     fun testKeyGestures(test: KeyGestureData) {
         setupKeyGestureController()
         testKeyGestureProduced(test, PASS_THROUGH_APP)
@@ -367,7 +365,6 @@ class KeyGestureControllerTests {
     }
 
     @Test
-    @EnableFlags(com.android.window.flags.Flags.FLAG_TOGGLE_FULLSCREEN_STATE_VIA_FULLSCREEN_KEY)
     fun testCustomKeyGesturesNotAllowedForSystemGestures() {
         setupKeyGestureController()
         for (systemGesture in systemGesturesTestArguments()) {
@@ -450,7 +447,6 @@ class KeyGestureControllerTests {
 
     @Test
     @Parameters(method = "nonCapturableKeyGestures")
-    @EnableFlags(com.android.window.flags.Flags.FLAG_TOGGLE_FULLSCREEN_STATE_VIA_FULLSCREEN_KEY)
     fun testKeyGestures_withKeyCapture_nonCapturableGestures(test: KeyGestureData) {
         setupKeyGestureController()
         enableKeyCaptureForFocussedWindow()
@@ -1469,22 +1465,6 @@ class KeyGestureControllerTests {
         assertEquals(2, events.size)
         assertEquals(KeyGestureEvent.ACTION_GESTURE_COMPLETE, events[1].action)
         assertTrue(events[1].isCancelled)
-    }
-
-    @Test
-    @DisableFlags(com.android.window.flags.Flags.FLAG_TOGGLE_FULLSCREEN_STATE_VIA_FULLSCREEN_KEY)
-    fun testKeyGestures_fullscreenKey_toggleFullscreenStateFlagDisabled() {
-        val testData =
-            KeyGestureData(
-                "FULLSCREEN -> Turns a task into fullscreen",
-                intArrayOf(KeyEvent.KEYCODE_FULLSCREEN),
-                KeyGestureEvent.KEY_GESTURE_TYPE_MULTI_WINDOW_NAVIGATION,
-                intArrayOf(KeyEvent.KEYCODE_FULLSCREEN),
-                0,
-                intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
-            )
-        setupKeyGestureController()
-        testKeyGestureProduced(testData, PASS_THROUGH_APP)
     }
 
     private fun testKeyGestureProduced(test: KeyGestureData, appDelegate: AppDelegate) {

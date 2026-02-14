@@ -33,6 +33,10 @@ import com.android.systemui.communal.domain.definition.ContextualSetupDefinition
 import com.android.systemui.communal.domain.definition.SetupTarget
 import com.android.systemui.communal.domain.definition.UprightChargingSetupDefinition
 import com.android.systemui.communal.domain.interactor.CommunalSceneTransitionInteractor
+import com.android.systemui.communal.domain.interactor.UprightChargingInteractor
+import com.android.systemui.communal.domain.interactor.UprightChargingInteractorImpl
+import com.android.systemui.communal.domain.preconditions.CommonSetupPreconditions
+import com.android.systemui.communal.domain.preconditions.CommonSetupPreconditionsImpl
 import com.android.systemui.communal.domain.suppression.dagger.CommunalSuppressionModule
 import com.android.systemui.communal.shared.log.CommunalMetricsLogger
 import com.android.systemui.communal.shared.log.CommunalStatsLogProxyImpl
@@ -108,6 +112,14 @@ interface CommunalModule {
     fun bindUprightChargingSetupDefinition(
         impl: UprightChargingSetupDefinition
     ): ContextualSetupDefinition
+
+    @Binds
+    fun bindUprightChargingInteractor(
+        impl: UprightChargingInteractorImpl
+    ): UprightChargingInteractor
+
+    @Binds
+    fun bindCommonSetupPreconditions(impl: CommonSetupPreconditionsImpl): CommonSetupPreconditions
 
     companion object {
         const val LOGGABLE_PREFIXES = "loggable_prefixes"

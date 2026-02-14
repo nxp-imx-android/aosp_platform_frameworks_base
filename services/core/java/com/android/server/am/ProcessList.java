@@ -172,6 +172,7 @@ import com.android.server.AppStateTracker;
 import com.android.server.LocalServices;
 import com.android.server.ServiceThread;
 import com.android.server.StorageManagerInternal;
+import com.android.server.privatecompute.PccSandboxManagerInternal;
 import com.android.server.SystemConfig;
 import com.android.server.Watchdog;
 import com.android.server.am.psc.ActiveUidsInternal;
@@ -825,6 +826,18 @@ public final class ProcessList extends ProcessListInternal
      * A runner to handle the imperceptible killings.
      */
     ImperceptibleKillRunner mImperceptibleKillRunner;
+
+    private PccSandboxManagerInternal mPccSandboxManagerInternal;
+
+    private PccSandboxManagerInternal getPccSandboxManagerInternal() {
+        synchronized (mService) {
+            if (mPccSandboxManagerInternal == null && enablePccFrameworkSupport()) {
+                mPccSandboxManagerInternal = LocalServices.getService(
+                        PccSandboxManagerInternal.class);
+            }
+            return mPccSandboxManagerInternal;
+        }
+    }
 
     ////////////////////  END FIELDS  ////////////////////
 
@@ -2713,6 +2726,21 @@ public final class ProcessList extends ProcessListInternal
         final long startTimeNs = SystemClock.elapsedRealtimeNanos();
         ProcessRecord app;
         final int uid = hostingRecord.isPcc() ? info.pccUid : info.uid;
+        if (enablePccFrameworkSupport() && Process.isPrivateComputeCoreUid(uid)) {
+            PccSandboxManagerInternal pccSandboxManager = getPccSandboxManagerInternal();
+            if (pccSandboxManager == null) {
+                Slog.wtf(TAG, "PccSandboxManagerInternal is null but PCC framework support"
+                        + " is enabled");
+                return null;
+            }
+            if (!pccSandboxManager.isPccAllowedPackage(info.packageName,
+                    UserHandle.getUserId(uid))) {
+                Slog.w(TAG, "Denying process start for " + info.packageName
+                        + " with PCC UID " + uid + " as it is not an allowed package");
+                return null;
+            }
+        }
+
         if (!isolated) {
             app = getProcessRecordLocked(processName, uid);
             checkSlow(startTime, "startProcess: after getProcessRecord");

@@ -22,10 +22,12 @@ import android.window.DisplayAreaOrganizer
 import android.window.TaskAppearedInfo
 import android.window.TransitionInfo
 import android.window.WindowContainerToken
+import android.window.WindowContainerTransaction
 import androidx.annotation.VisibleForTesting
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.Flags
 import com.android.wm.shell.ShellTaskOrganizer
+import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.hierarchy.ContainerHierarchy
 import com.android.wm.shell.hierarchy.containers.Container
 import com.android.wm.shell.hierarchy.modes.FormFactorModes
@@ -374,6 +376,44 @@ class HierarchyUpdater(
                 isTemporaryAnimatingContainer = true
             }
         }
+    }
+
+    /**
+     * Updates the hierarchy from a display change signal to give modes an opportunity to update
+     * their tasks in final state before the display change completes.
+     *
+     * The caller is responsible for verifying that there is a given display container for the
+     * provided displayId.
+     */
+    fun updateDisplay(
+        displayId: Int,
+        displayLayout: DisplayLayout,
+        outWct: WindowContainerTransaction
+    ) {
+        val display = hierarchy.getDisplay(displayId)!!
+        ProtoLog.v(WM_SHELL_MODES, "Updating display: %s", display.name)
+
+        val snapshot = HierarchySnapshot(hierarchy.toContainerList())
+
+        // Apply the display changes to the hierarchy first
+        val newDisplayProps = display.props<DisplayContainerProperties>().copy()
+        newDisplayProps.updateFromDisplayLayout(displayLayout)
+
+        // Notify the modes associated with this display (ancestors & descendants) of the change
+        // FUTURE: This currently assumes the displays exist and are rooted to the hierarchy
+        val containers = listOf(hierarchy.root) + HierarchyUtils.toContainersList(display)
+        for (c in containers) {
+            if (c.mode != null) {
+                c.mode!!.displayChanging(
+                    c,
+                    display.props<DisplayContainerProperties>(),
+                    newDisplayProps,
+                    outWct
+                )
+            }
+        }
+
+        notifyModes(Mode.UpdateContext(), snapshot)
     }
 
     /**

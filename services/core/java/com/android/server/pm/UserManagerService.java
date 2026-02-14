@@ -2348,13 +2348,9 @@ public class UserManagerService extends IUserManager.Stub {
     }
 
     private void stopUserForQuietMode(int userId) throws RemoteException {
-        if (android.multiuser.Flags.enableBiometricsToUnlockPrivateSpace()) {
-            // Allow delayed locking since some profile types want to be able to unlock again via
-            // biometrics.
-            ActivityManager.getService().stopUserWithDelayedLocking(userId, null);
-            return;
-        }
-        ActivityManager.getService().stopUserWithCallback(userId, null);
+        // Allow delayed locking since some profile types want to be able to unlock again via
+        // biometrics.
+        ActivityManager.getService().stopUserWithDelayedLocking(userId, null);
     }
 
     private void logQuietModeEnabled(@UserIdInt int userId, boolean enableQuietMode,

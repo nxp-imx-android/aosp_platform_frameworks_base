@@ -28,7 +28,6 @@ import android.service.personalcontext.Token;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.insight.interaction.AttributionDetails;
-import android.service.personalcontext.insight.interaction.FeedbackRequest;
 import android.service.personalcontext.insight.interaction.ReturnHintReport;
 
 import com.android.internal.util.Preconditions;
@@ -215,20 +214,6 @@ public final class ActionableInsight extends ContextInsight {
         public Builder setOriginatingComponentId(
                 @Nullable ComponentIdProvider originatingComponent) {
             mBaseBuilder.setOriginatingComponentId(originatingComponent);
-            return this;
-        }
-
-        /**
-         * Sets the user feedback request in the resulting {@link ContextInsight}. If feedback
-         * is requested, the originating component id must be set via
-         * {@link #setOriginatingComponentId}, or else an exception will be thrown when calling
-         * {@link #build}.
-         *
-         * @param feedbackRequest the feedback that is being requested
-         */
-        @NonNull
-        public Builder setUserFeedbackRequest(@Nullable FeedbackRequest feedbackRequest) {
-            mBaseBuilder.setUserFeedbackRequest(feedbackRequest);
             return this;
         }
 

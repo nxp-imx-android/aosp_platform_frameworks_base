@@ -20,6 +20,7 @@
 
 #include <android-base/stringprintf.h>
 #include <binder/BpBinder.h>
+#include <binder/Functional.h>
 #include <binder/IInterface.h>
 #include <binder/IPCThreadState.h>
 #include <binder/IServiceManager.h>
@@ -65,6 +66,9 @@
 
 using namespace android;
 using namespace com::android::base::core::jni::flags;
+using android::binder::impl::SmallFunction;
+
+static const char* UNKNOWN_CODE = "#";
 
 // ----------------------------------------------------------------------------
 
@@ -76,6 +80,7 @@ static struct bindernative_offsets_t
     jmethodID mGetInterfaceDescriptor;
     jmethodID mTransactionCallback;
     jmethodID mGetExtension;
+    jmethodID mGetTransactionName;
 
     // Object state.
     jfieldID mObject;
@@ -353,6 +358,22 @@ public:
 
     bool checkSubclass(const void* subclassID) const override {
         return subclassID == android::internal::JavaBBinderBase::getSubclassID();
+    }
+
+    void getFunctionName(uint32_t code,
+                         const SmallFunction<void(const char*)>& callback) const override {
+        JNIEnv* env = javavm_to_jnienv(mVM);
+        jstring functionName =
+                (jstring)env->CallObjectMethod(mObject, gBinderOffsets.mGetTransactionName, code);
+
+        if (functionName == nullptr) {
+            std::string unknown = UNKNOWN_CODE + std::to_string(code);
+            callback(unknown.c_str());
+            return;
+        }
+
+        ScopedUtfChars str(env, functionName);
+        callback(str.c_str());
     }
 
     const String16& getInterfaceDescriptor() const override
@@ -1375,6 +1396,8 @@ static int int_register_android_os_Binder(JNIEnv* env)
     gBinderOffsets.mObject = GetFieldIDOrDie(env, clazz, "mObject", "J");
     gBinderOffsets.mGetExtension = GetMethodIDOrDie(env, clazz, "getExtension",
                                                         "()Landroid/os/IBinder;");
+    gBinderOffsets.mGetTransactionName =
+            GetMethodIDOrDie(env, clazz, "getTransactionName", "(I)Ljava/lang/String;");
 
     return RegisterMethodsOrDie(
         env, kBinderPathName,

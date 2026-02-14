@@ -14,16 +14,9 @@
  * limitations under the License.
  */
 
-package com.android.systemui.communal.data.repository.fake
+package com.android.systemui.statusbar.notification.promoted
 
-import com.android.systemui.communal.data.repository.UprightChargingTriggerRepository
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.android.systemui.kosmos.Kosmos
 
-class FakeUprightChargingTriggerRepository : UprightChargingTriggerRepository {
-    private val _isTriggered = MutableStateFlow(false)
-    override val isTriggered = _isTriggered
-
-    fun setTriggered(value: Boolean) {
-        _isTriggered.value = value
-    }
-}
+var Kosmos.aodLowFrequencyModeDelayMs: AODLowFrequencyModeDelayMs by
+    Kosmos.Fixture { FakeAODLowFrequencyModeDelayMs() }

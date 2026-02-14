@@ -62,6 +62,7 @@ import com.android.launcher3.tapl.LauncherInstrumentation
 import com.android.launcher3.tapl.TestHelpers
 import com.android.settings.flags.Flags as SettingsFlags
 import com.android.window.flags.Flags
+import com.android.wm.shell.flicker.utils.SplitScreenUtils.withSplitScreenComplete
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import java.time.Duration
 import org.junit.After
@@ -362,7 +363,14 @@ class ConnectedDisplayCujSmokeTests {
         waitForSysUiObjectForTheApp(clockApp, DESKTOP_BUTTON_RES_ID).click()
         verifyActivityState(clockApp, WINDOWING_MODE_FREEFORM, externalDisplayId, visible = true)
 
-        // TODO(b/418620952) - Add splitscreen test once it's ready.
+        // Enter split screen via app header.
+        openAppHeaderMenuForTheApp(browserApp)
+        waitForSysUiObjectForTheApp(clockApp, SPLIT_SCREEN_BUTTON_RES_ID).click()
+        launchAppFromTaskbar(externalDisplayId, browserApp)
+        wmHelper
+            .StateSyncBuilder()
+            .withSplitScreenComplete(clockApp, browserApp, externalDisplayId)
+            .waitForAndVerify()
     }
 
     // Extended: All window modes are supported on the connected display, including split screen
@@ -801,6 +809,7 @@ class ConnectedDisplayCujSmokeTests {
         const val STATUS_BAR_CONTAINER_RES_ID = "status_bar_container"
         const val OPEN_MENU_BUTTON_RES_ID = "open_menu_button"
         const val FULLSCREEN_BUTTON_RES_ID = "fullscreen_button"
+        const val SPLIT_SCREEN_BUTTON_RES_ID = "split_screen_button"
         const val DESKTOP_BUTTON_RES_ID = "desktop_button"
         const val TASK_VIEW_SINGLE_RES_ID = "task_view_single"
         const val TASK_VIEW_DESKTOP_RES_ID = "task_view_desktop"
@@ -824,6 +833,7 @@ class ConnectedDisplayCujSmokeTests {
             WindowManagerStateHelper(
                 instrumentation,
                 retryIntervalMs = FLICKER_LIB_RETRY_INTERVAL_MS,
+                ignoreLayersInVirtualDisplay = false,
             )
         val device = UiDevice.getInstance(instrumentation)
 

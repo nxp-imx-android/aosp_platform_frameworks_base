@@ -2250,17 +2250,9 @@ public class UserControllerTest {
                 /* backgroundUserConsideredDispensableTimeSecs= */
                 -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
                 /* hideUserSwitchingUiDuringSetup= */ false);
-        mSetFlagsRule.enableFlags(
-                android.multiuser.Flags.FLAG_ENABLE_BIOMETRICS_TO_UNLOCK_PRIVATE_SPACE);
         setUpAndStartProfileInBackground(TEST_USER_ID1, UserManager.USER_TYPE_PROFILE_PRIVATE);
         assertProfileLockedOrUnlockedAfterStopping(TEST_USER_ID1, /* expectLocking= */ true);
         verifyUserUnassignedFromDisplay(TEST_USER_ID1);
-
-        mSetFlagsRule.disableFlags(
-                android.multiuser.Flags.FLAG_ENABLE_BIOMETRICS_TO_UNLOCK_PRIVATE_SPACE);
-        setUpAndStartProfileInBackground(TEST_USER_ID2, UserManager.USER_TYPE_PROFILE_PRIVATE);
-        assertProfileLockedOrUnlockedAfterStopping(TEST_USER_ID2, /* expectLocking= */ true);
-        verifyUserUnassignedFromDisplay(TEST_USER_ID2);
     }
 
     @Test
@@ -2270,8 +2262,6 @@ public class UserControllerTest {
                 /* backgroundUserConsideredDispensableTimeSecs= */
                 -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
                 /* hideUserSwitchingUiDuringSetup= */ false);
-        mSetFlagsRule.enableFlags(
-                android.multiuser.Flags.FLAG_ENABLE_BIOMETRICS_TO_UNLOCK_PRIVATE_SPACE);
         setUpAndStartProfileInBackground(TEST_USER_ID1, UserManager.USER_TYPE_PROFILE_PRIVATE);
         assertUserLockedOrUnlockedAfterStopping(TEST_USER_ID1, /* allowDelayedLocking= */ true,
                 /* keyEvictedCallback */ null, /* expectLocking= */ false);
@@ -2286,8 +2276,6 @@ public class UserControllerTest {
                 /* backgroundUserConsideredDispensableTimeSecs= */
                 -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
                 /* hideUserSwitchingUiDuringSetup= */ false);
-        mSetFlagsRule.enableFlags(
-                android.multiuser.Flags.FLAG_ENABLE_BIOMETRICS_TO_UNLOCK_PRIVATE_SPACE);
         setUpAndStartProfileInBackground(TEST_USER_ID1, UserManager.USER_TYPE_PROFILE_PRIVATE);
         setUpAndStartProfileInBackground(TEST_USER_ID2, USER_TYPE_PROFILE_MANAGED);
         assertUserLockedOrUnlockedAfterStopping(TEST_USER_ID1, /* allowDelayedLocking= */ true,
@@ -2305,8 +2293,6 @@ public class UserControllerTest {
                 /* backgroundUserConsideredDispensableTimeSecs= */
                 -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
                 /* hideUserSwitchingUiDuringSetup= */ false);
-        mSetFlagsRule.enableFlags(
-                android.multiuser.Flags.FLAG_ENABLE_BIOMETRICS_TO_UNLOCK_PRIVATE_SPACE);
         setUpAndStartProfileInBackground(TEST_USER_ID1, USER_TYPE_PROFILE_MANAGED);
         assertUserLockedOrUnlockedAfterStopping(TEST_USER_ID1, /* allowDelayedLocking= */ true,
                 /* keyEvictedCallback */ null, /* expectLocking= */ true);

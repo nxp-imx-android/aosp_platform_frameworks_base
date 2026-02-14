@@ -35,6 +35,8 @@ import java.util.stream.Collectors;
  * The map is backed by a {@link java.util.concurrent.ConcurrentHashMap} and offers the
  * same read/write behavior for map entries. There are no ordering guarantees about the state of
  * the values exposed via settings.
+ *
+ * @hide
  */
 public class AgentSessionMap<K> {
 
@@ -61,14 +63,20 @@ public class AgentSessionMap<K> {
         return mAgentSessionList.get(key);
     }
 
+    /** Add a new session to the map. */
     public void put(K key, AgentSession value) {
         try {
-            mAgentSessionList.put(key, value);
+            if (value.getUserId() == mUserId) {
+                mAgentSessionList.put(key, value);
+            } else {
+                Slog.e(TAG, "Invalid user id: " + value.getUserId() + ", ignoring session");
+            }
         } finally {
             updateSetting();
         }
     }
 
+    /** Remove an existing session from the map. */
     public AgentSession remove(K key) {
         try {
             return mAgentSessionList.remove(key);
@@ -77,9 +85,34 @@ public class AgentSessionMap<K> {
         }
     }
 
+    /** Clear the map so it is empty.. */
     public void clear() {
         try {
             mAgentSessionList.clear();
+        } finally {
+            updateSetting();
+        }
+    }
+
+    /** Authorize all sessions in this map. */
+    public void authorizeAll() {
+        try {
+            mAgentSessionList.replaceAll((key, session) -> AgentSession.authorized(session));
+        } finally {
+            updateSetting();
+        }
+    }
+
+    /** Authorize a session only if it exists in the map already. */
+    public void authorizeIfPresent(K key) {
+        try {
+            mAgentSessionList.computeIfPresent(key, (k, session) -> {
+                if (!session.isAllowed()) {
+                    return AgentSession.authorized(session);
+                } else {
+                    return session;
+                }
+            });
         } finally {
             updateSetting();
         }

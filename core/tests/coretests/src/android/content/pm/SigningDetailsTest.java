@@ -33,12 +33,16 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import android.platform.test.annotations.Presubmit;
+import android.platform.test.annotations.RequiresFlagsEnabled;
+import android.platform.test.flag.junit.CheckFlagsRule;
+import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.util.ArraySet;
 import android.util.PackageUtils;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -48,6 +52,9 @@ import java.util.Set;
 @RunWith(AndroidJUnit4.class)
 @SmallTest
 public class SigningDetailsTest {
+    @Rule
+    public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
+
     private static final int DEFAULT_CAPABILITIES =
             INSTALLED_DATA | SHARED_USER_ID | PERMISSION | AUTH;
     private static final int CURRENT_SIGNER_CAPABILITIES = DEFAULT_CAPABILITIES | ROLLBACK;
@@ -1216,6 +1223,7 @@ public class SigningDetailsTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(android.security.Flags.FLAG_APK_PQC_HYBRID_SIGNING)
     public void checkCapability_hybridSignedSameHybridRequesting_returnsTrue() throws Exception {
         // If a declaring app is signed with the hybrid scheme, then a requesting app must either
         // be signed with the same hybrid signature, or else a key that is in the declaring app's
@@ -1229,6 +1237,7 @@ public class SigningDetailsTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(android.security.Flags.FLAG_APK_PQC_HYBRID_SIGNING)
     public void checkCapability_hybridSignedMatchingSingleSignedRequesting_returnsFalse()
             throws Exception {
         // If a declaring app is signed with the hybrid scheme, the platform should not grant the
@@ -1243,6 +1252,7 @@ public class SigningDetailsTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(android.security.Flags.FLAG_APK_PQC_HYBRID_SIGNING)
     public void checkCapability_hybridSignedOneMatchingHybridKeyRequesting_returnsFalse()
             throws Exception {
         // If a declaring app is signed with the hybrid scheme, a requesting app should not get
@@ -1258,6 +1268,7 @@ public class SigningDetailsTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(android.security.Flags.FLAG_APK_PQC_HYBRID_SIGNING)
     public void checkCapability_originalSignerToHybridSignerInstalledData_returnsTrue()
             throws Exception {
         // During an update, the platform will check if the go to package has granted the
@@ -1272,6 +1283,7 @@ public class SigningDetailsTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(android.security.Flags.FLAG_APK_PQC_HYBRID_SIGNING)
     public void checkCapability_originalSignerToHybridSignerInstalledDataRevoked_returnsFalse()
             throws Exception {
         // If the hybrid signer has revoked the INSTALLED_CAPABILITY from the original signing key,
@@ -1288,6 +1300,7 @@ public class SigningDetailsTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(android.security.Flags.FLAG_APK_PQC_HYBRID_SIGNING)
     public void checkCapability_hybridSignerToSameHybridSignerInstalledData_returnsTrue()
             throws Exception {
         // The standard update path for a hybrid signed APK is to the same hybrid signing config;
@@ -1302,6 +1315,7 @@ public class SigningDetailsTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(android.security.Flags.FLAG_APK_PQC_HYBRID_SIGNING)
     public void checkCapability_hybridSignerSingleSharedSignerRequestedInstalledData_returnsFalse()
             throws Exception {
         // When an hybrid signed package is installed, an update to a subsequent signer will require
@@ -1318,6 +1332,7 @@ public class SigningDetailsTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(android.security.Flags.FLAG_APK_PQC_HYBRID_SIGNING)
     public void checkCapability_hybridSignerToRotatedSignerInstalledData_returnsTrue()
             throws Exception {
         // When an app is signed with a hybrid scheme, both signers must be in the lineage on an
@@ -1341,6 +1356,7 @@ public class SigningDetailsTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(android.security.Flags.FLAG_APK_PQC_HYBRID_SIGNING)
     public void checkCapability_hybridSignedToRotatedWithOneSharedInLineage_returnsFalse()
             throws Exception {
         // To prevent a compromise of one of the hybrid signing keys from allowing an update to a
@@ -1374,6 +1390,7 @@ public class SigningDetailsTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(android.security.Flags.FLAG_APK_PQC_HYBRID_SIGNING)
     public void checkCapability_hybridSignerToOriginalSignerRollback_returnsTrue()
             throws Exception {
         // When an app is hybrid signed, if a previous signer in the lineage has been granted the

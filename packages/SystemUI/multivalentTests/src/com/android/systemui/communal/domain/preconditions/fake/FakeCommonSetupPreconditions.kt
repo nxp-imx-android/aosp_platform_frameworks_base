@@ -15,9 +15,9 @@
 * limitations under the License.
 */
 
-package com.android.systemui.communal.data.preconditions.fake
+package com.android.systemui.communal.domain.preconditions.fake
 
-import com.android.systemui.communal.data.preconditions.CommonSetupPreconditions
+import com.android.systemui.communal.domain.preconditions.CommonSetupPreconditions
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class FakeCommonSetupPreconditions : CommonSetupPreconditions {

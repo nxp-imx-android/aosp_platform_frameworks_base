@@ -14,23 +14,26 @@
  * limitations under the License.
  */
 
-package com.android.systemui.communal.data.repository
+package com.android.systemui.statusbar.notification.promoted
 
+import android.content.Context
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.res.R
+import com.android.systemui.shade.ShadeDisplayAware
 import javax.inject.Inject
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 
-/** A repository that provides a signal for the "upright and charging" trigger state. */
-interface UprightChargingTriggerRepository {
-    /** Emits `true` when the device is upright and charging. */
-    val isTriggered: Flow<Boolean>
+/**
+ * The delay in milliseconds after which low frequency mode is enabled for notification Chronometers
+ * on AOD.
+ */
+interface AODLowFrequencyModeDelayMs {
+    val value: Long
 }
 
 @SysUISingleton
-class UprightChargingTriggerRepositoryImpl @Inject constructor() : UprightChargingTriggerRepository {
-    /**
-     * For now, this is hardcoded to `true` to unblock UI development.
-     */
-    override val isTriggered: Flow<Boolean> = flowOf(true)
+class AODLowFrequencyModeDelayMsImpl
+@Inject
+constructor(@ShadeDisplayAware private val context: Context) : AODLowFrequencyModeDelayMs {
+    override val value: Long =
+        context.resources.getInteger(R.integer.aod_notification_low_frequency_delay_ms).toLong()
 }

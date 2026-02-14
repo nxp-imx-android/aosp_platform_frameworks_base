@@ -386,7 +386,7 @@ public class DesktopModeTouchEventListener
         final int id = v.getId();
         if (ev.getAction() == ACTION_HOVER_ENTER && id == R.id.maximize_window) {
             if (decoration.getLayoutMenuController() == null) return false;
-            decoration.getLayoutMenuController().setAppHeaderMaximizeButtonHovered(true);
+            decoration.getLayoutMenuController().setHeaderMaximizeButtonHovered(true);
             if (!decoration.getLayoutMenuController().isLayoutMenuActive()) {
                 decoration.getLayoutMenuController().onLayoutButtonHoverEnter();
             }
@@ -394,7 +394,7 @@ public class DesktopModeTouchEventListener
         }
         if (ev.getAction() == ACTION_HOVER_EXIT && id == R.id.maximize_window) {
             if (decoration.getLayoutMenuController() == null) return false;
-            decoration.getLayoutMenuController().setAppHeaderMaximizeButtonHovered(false);
+            decoration.getLayoutMenuController().setHeaderMaximizeButtonHovered(false);
             decoration.getLayoutMenuController().onLayoutButtonHoverStateChanged();
             if (!decoration.getLayoutMenuController().isLayoutMenuActive()) {
                 decoration.getLayoutMenuController().onLayoutButtonHoverExit();

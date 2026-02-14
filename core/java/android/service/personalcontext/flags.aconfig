@@ -22,3 +22,10 @@ flag {
     description: "Enables security checks for Personal Context components and services"
     bug: "450547433"
 }
+
+flag {
+    namespace: "communal"
+    name: "enable_personal_context_service_feature"
+    description: "Enables the personal context service hint processing after extensive non-backwards-compatible API changes"
+    bug: "484019457"
+}

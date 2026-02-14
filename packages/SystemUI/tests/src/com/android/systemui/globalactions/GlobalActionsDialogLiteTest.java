@@ -221,25 +221,6 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
     }
 
     @Test
-    public void testShouldLogClose_backButton() {
-        setMaxShownPowerItems(4);
-        mRepository.setPossibleGlobalActions(List.of(
-                GlobalActionType.EMERGENCY,
-                GlobalActionType.LOCKDOWN,
-                GlobalActionType.POWER,
-                GlobalActionType.RESTART
-        ));
-        setShouldDisplayLockdown(true);
-        GlobalActionsDialogLite globalActionsDialogLite = createGlobalActionsDialogLite();
-
-        GlobalActionsDialogLite.ActionsDialogLiteDelegate delegate =
-                globalActionsDialogLite.createDialogDelegate();
-        assertThat(delegate.mCurrentDialog).isNotNull();
-        delegate.mCurrentDialog.onBackPressed();
-        verifyLogPosted(GlobalActionsEvent.GA_CLOSE_BACK, 0 /* position */);
-    }
-
-    @Test
     public void testPredictiveBackCallbackRegisteredAndUnregistered() throws InterruptedException {
         setMaxShownPowerItems(4);
         mRepository.setPossibleGlobalActions(List.of(
@@ -1331,6 +1312,7 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         assertThat(globalActionsDialogLite.mDelegate).isNull();
     }
 
+    @FlakyTest(bugId = 479814486)
     @Test
     public void testCreateActionItems_tv_actionsFocusableAndClickable()
             throws InterruptedException {

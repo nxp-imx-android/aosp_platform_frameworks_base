@@ -30,10 +30,13 @@ import android.os.Process.SYSTEM_UID
 import android.os.UserHandle
 import android.permission.PermissionGroupUsage
 import android.permission.PermissionManager
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.widget.LinearLayout
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.logging.UiEventLogger
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.appops.AppOpsController
@@ -64,6 +67,7 @@ import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.anyOrNull
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -118,7 +122,7 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
                 list: List<PrivacyDialogV2.PrivacyElement>,
                 manageApp: (String, Int, Intent) -> Unit,
                 closeApp: (String, Int) -> Unit,
-                openPrivacyDashboard: () -> Unit
+                openPrivacyDashboard: () -> Unit,
             ): PrivacyDialogV2 {
                 this.list = list
                 this.manageApp = manageApp
@@ -149,7 +153,7 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
                 appOpsController,
                 uiEventLogger,
                 mDialogTransitionAnimator,
-                dialogProvider
+                dialogProvider,
             )
     }
 
@@ -193,7 +197,8 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
     }
 
     @Test
-    fun testShowDialogShowsDialogWithoutView() {
+    @DisableFlags(Flags.FLAG_ANIMATION_LIBRARY_DYNAMIC_TARGET_RESOLUTION)
+    fun testShowDialogShowsDialogWithoutView_withoutDynamicTargetResolution() {
         val usage = createMockPermGroupUsage()
         `when`(permissionManager.getIndicatorAppOpUsageData(anyBoolean())).thenReturn(listOf(usage))
 
@@ -205,6 +210,37 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ANIMATION_LIBRARY_DYNAMIC_TARGET_RESOLUTION)
+    fun testShowDialogShowsDialogWithoutView_withDynamicTargetResolution() {
+        val usage = createMockPermGroupUsage()
+        `when`(permissionManager.getIndicatorAppOpUsageData(anyBoolean())).thenReturn(listOf(usage))
+
+        controller.showDialog(context)
+        exhaustExecutors()
+
+        verify(mDialogTransitionAnimator, never())
+            .show(any(), anyOrNull(), anyOrNull(), anyBoolean())
+        verify(dialog).show()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ANIMATION_LIBRARY_DYNAMIC_TARGET_RESOLUTION)
+    fun testShowDialogShowsDialogWithView_withDynamicTargetResolution() {
+        val parent = LinearLayout(context)
+        val view = OngoingPrivacyChip(context)
+        parent.addView(view)
+        val usage = createMockPermGroupUsage()
+        `when`(permissionManager.getIndicatorAppOpUsageData(anyBoolean())).thenReturn(listOf(usage))
+
+        controller.showDialog(context, view)
+        exhaustExecutors()
+
+        verify(mDialogTransitionAnimator).show(eq(dialog), any(), anyOrNull(), anyBoolean())
+        verify(dialog, never()).show()
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ANIMATION_LIBRARY_DYNAMIC_TARGET_RESOLUTION)
     fun testShowDialogShowsDialogWithView() {
         val parent = LinearLayout(context)
         val view = OngoingPrivacyChip(context)
@@ -279,7 +315,7 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
                 isActive = true,
                 isPhoneCall = false,
                 attributionTag = null,
-                proxyLabel = TEST_PROXY_LABEL
+                proxyLabel = TEST_PROXY_LABEL,
             )
         `when`(permissionManager.getIndicatorAppOpUsageData(anyBoolean())).thenReturn(listOf(usage))
 
@@ -302,7 +338,7 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
             assertThat(
                     isIntentEqual(
                         list.get(0).navigationIntent!!,
-                        controller.getDefaultManageAppPermissionsIntent(TEST_PACKAGE_NAME, USER_ID)
+                        controller.getDefaultManageAppPermissionsIntent(TEST_PACKAGE_NAME, USER_ID),
                     )
                 )
                 .isTrue()
@@ -322,12 +358,12 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
         val usage_camera =
             createMockPermGroupUsage(
                 packageName = "${TEST_PACKAGE_NAME}_camera",
-                permissionGroupName = PERM_CAMERA
+                permissionGroupName = PERM_CAMERA,
             )
         val usage_microphone =
             createMockPermGroupUsage(
                 packageName = "${TEST_PACKAGE_NAME}_microphone",
-                permissionGroupName = PERM_MICROPHONE
+                permissionGroupName = PERM_MICROPHONE,
             )
         `when`(permissionManager.getIndicatorAppOpUsageData(anyBoolean()))
             .thenReturn(listOf(usage_microphone, usage_camera))
@@ -363,13 +399,13 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
             createMockPermGroupUsage(
                 packageName = "${TEST_PACKAGE_NAME}_active",
                 isActive = true,
-                lastAccessTimeMillis = 0L
+                lastAccessTimeMillis = 0L,
             )
         val usage_active_moreRecent =
             createMockPermGroupUsage(
                 packageName = "${TEST_PACKAGE_NAME}_active_recent",
                 isActive = true,
-                lastAccessTimeMillis = 1L
+                lastAccessTimeMillis = 1L,
             )
         `when`(permissionManager.getIndicatorAppOpUsageData(anyBoolean()))
             .thenReturn(listOf(usage_active, usage_active_moreRecent))
@@ -386,19 +422,19 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
             createMockPermGroupUsage(
                 packageName = "${TEST_PACKAGE_NAME}_recent",
                 isActive = false,
-                lastAccessTimeMillis = 0L
+                lastAccessTimeMillis = 0L,
             )
         val usage_moreRecent =
             createMockPermGroupUsage(
                 packageName = "${TEST_PACKAGE_NAME}_moreRecent",
                 isActive = false,
-                lastAccessTimeMillis = 1L
+                lastAccessTimeMillis = 1L,
             )
         val usage_mostRecent =
             createMockPermGroupUsage(
                 packageName = "${TEST_PACKAGE_NAME}_mostRecent",
                 isActive = false,
-                lastAccessTimeMillis = 2L
+                lastAccessTimeMillis = 2L,
             )
         `when`(permissionManager.getIndicatorAppOpUsageData(anyBoolean()))
             .thenReturn(listOf(usage_recent, usage_mostRecent, usage_moreRecent))
@@ -545,7 +581,7 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
             .log(
                 PrivacyDialogEvent.PRIVACY_DIALOG_ITEM_CLICKED_TO_APP_SETTINGS,
                 USER_ID,
-                TEST_PACKAGE_NAME
+                TEST_PACKAGE_NAME,
             )
     }
 
@@ -561,7 +597,7 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
             .log(
                 PrivacyDialogEvent.PRIVACY_DIALOG_ITEM_CLICKED_TO_CLOSE_APP,
                 USER_ID,
-                TEST_PACKAGE_NAME
+                TEST_PACKAGE_NAME,
             )
     }
 
@@ -604,7 +640,7 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
             assertThat(
                     isIntentEqual(
                         list.get(0).navigationIntent!!,
-                        controller.getDefaultManageAppPermissionsIntent(TEST_PACKAGE_NAME, USER_ID)
+                        controller.getDefaultManageAppPermissionsIntent(TEST_PACKAGE_NAME, USER_ID),
                     )
                 )
                 .isTrue()
@@ -614,10 +650,7 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
 
     @Test
     fun testDefaultIntentOnEnterpriseUser() {
-        val usage =
-            createMockPermGroupUsage(
-                uid = generateUidForUser(ENT_USER_ID),
-            )
+        val usage = createMockPermGroupUsage(uid = generateUidForUser(ENT_USER_ID))
         `when`(permissionManager.getIndicatorAppOpUsageData(anyBoolean())).thenReturn(listOf(usage))
 
         controller.showDialog(context)
@@ -629,8 +662,8 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
                         list.get(0).navigationIntent!!,
                         controller.getDefaultManageAppPermissionsIntent(
                             TEST_PACKAGE_NAME,
-                            ENT_USER_ID
-                        )
+                            ENT_USER_ID,
+                        ),
                     )
                 )
                 .isTrue()
@@ -643,7 +676,7 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
         val usage =
             createMockPermGroupUsage(
                 attributionTag = "INVALID_ATTRIBUTION_TAG",
-                proxyLabel = TEST_PROXY_LABEL
+                proxyLabel = TEST_PROXY_LABEL,
             )
         `when`(permissionManager.getIndicatorAppOpUsageData(anyBoolean())).thenReturn(listOf(usage))
 
@@ -654,7 +687,7 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
             assertThat(
                     isIntentEqual(
                         list.get(0).navigationIntent!!,
-                        controller.getDefaultManageAppPermissionsIntent(TEST_PACKAGE_NAME, USER_ID)
+                        controller.getDefaultManageAppPermissionsIntent(TEST_PACKAGE_NAME, USER_ID),
                     )
                 )
                 .isTrue()
@@ -667,7 +700,7 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
         val usage =
             createMockPermGroupUsage(
                 attributionTag = TEST_ATTRIBUTION_TAG,
-                attributionLabel = "TEST_LABEL"
+                attributionLabel = "TEST_LABEL",
             )
 
         val activityInfo = createMockActivityInfo()
@@ -699,7 +732,7 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
         val usage =
             createMockPermGroupUsage(
                 attributionTag = TEST_ATTRIBUTION_TAG,
-                attributionLabel = "TEST_LABEL"
+                attributionLabel = "TEST_LABEL",
             )
 
         val activityInfo = createMockActivityInfo()
@@ -736,7 +769,7 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
             assertThat(
                     isIntentEqual(
                         list.get(0).navigationIntent!!,
-                        controller.getDefaultManageAppPermissionsIntent(TEST_PACKAGE_NAME, USER_ID)
+                        controller.getDefaultManageAppPermissionsIntent(TEST_PACKAGE_NAME, USER_ID),
                     )
                 )
                 .isTrue()
@@ -761,7 +794,7 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
             assertThat(
                     isIntentEqual(
                         list.get(0).navigationIntent!!,
-                        controller.getDefaultManageAppPermissionsIntent(TEST_PACKAGE_NAME, USER_ID)
+                        controller.getDefaultManageAppPermissionsIntent(TEST_PACKAGE_NAME, USER_ID),
                     )
                 )
                 .isTrue()
@@ -787,7 +820,7 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
             .thenReturn(
                 listOf(
                     UserInfo(USER_ID, "", 0),
-                    UserInfo(ENT_USER_ID, "", UserInfo.FLAG_MANAGED_PROFILE)
+                    UserInfo(ENT_USER_ID, "", UserInfo.FLAG_MANAGED_PROFILE),
                 )
             )
 
@@ -812,7 +845,7 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
 
     private fun createMockActivityInfo(
         permission: String = android.Manifest.permission.START_VIEW_PERMISSION_USAGE,
-        className: String = "TEST_CLASS_NAME"
+        className: String = "TEST_CLASS_NAME",
     ): ActivityInfo {
         val activityInfo = mock(ActivityInfo::class.java)
         activityInfo.permission = permission
@@ -829,7 +862,7 @@ class PrivacyDialogControllerV2Test : SysuiTestCase() {
         isPhoneCall: Boolean = false,
         attributionTag: CharSequence? = null,
         attributionLabel: CharSequence? = null,
-        proxyLabel: CharSequence? = null
+        proxyLabel: CharSequence? = null,
     ): PermissionGroupUsage {
         val usage = mock(PermissionGroupUsage::class.java)
         `when`(usage.packageName).thenReturn(packageName)

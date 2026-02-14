@@ -32,7 +32,20 @@ constructor(
 
     override fun areAppBubblesSupported(): Boolean {
         val am = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        return BubbleFlagHelper.enableCreateAnyBubble() && !am.isLowRamDevice
+
+        // Fail fast if this is a low-ram device.
+        if (am.isLowRamDevice) return false
+
+        // Fail fast if Bubble Anything is disabled.
+        if (!BubbleFlagHelper.enableCreateAnyBubble()) return false
+
+        // Do not allow any app to be bubbled on a display that supports desktop windowing.
+        if (Flags.disableBubbleAnythingDesktopWindowing()) {
+            val desktopSupported =
+                desktopStateRetriever(context).isDesktopModeSupportedOnDisplay(context.displayId)
+            return !desktopSupported && BubbleFlagHelper.enableCreateAnyBubble()
+        }
+        return true
     }
 
     override fun isScrimEnabled(displayId: Int): Boolean {

@@ -25,6 +25,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -138,8 +139,9 @@ public class PccSandboxManagerInternalTest {
         when(mMockUserManager.getUserHandles(anyBoolean())).thenReturn(
                 Arrays.asList(UserHandle.of(USER_ID_1), UserHandle.of(USER_ID_2)));
 
-        mPccSandboxManagerInternal = new PccSandboxManagerInternal(
+        PccSandboxManagerInternal realInstance = new PccSandboxManagerInternal(
                 context, mMockPccSandboxManagerService);
+        mPccSandboxManagerInternal = spy(realInstance);
         mRealBinder = new IPccService.Stub() {
             @Override
             public void sendData(Bundle data, String packageName, IResultCallback callback) {
@@ -615,6 +617,13 @@ public class PccSandboxManagerInternalTest {
         when(mMockRoleManager.getRoleHoldersAsUser(eq(testRole), any(UserHandle.class)))
                 .thenReturn(Collections.singletonList(rolePackage));
 
+        doReturn(android.content.pm.PackageManager.PERMISSION_GRANTED)
+                .when(mPccSandboxManagerInternal)
+                .checkPermission(
+                        eq(android.Manifest.permission.MANAGE_HOTWORD_DETECTION),
+                        eq(rolePackage),
+                        anyInt());
+
         // Call populate
         mPccSandboxManagerInternal.populatePccAllowedPackages();
 
@@ -632,6 +641,13 @@ public class PccSandboxManagerInternalTest {
         String testRole = "android.app.role.ASSISTANT";
         when(mMockRoleManager.getRoleHoldersAsUser(eq(testRole), eq(UserHandle.of(USER_ID_1))))
                 .thenReturn(Collections.singletonList(rolePackage));
+
+        doReturn(android.content.pm.PackageManager.PERMISSION_GRANTED)
+                .when(mPccSandboxManagerInternal)
+                .checkPermission(
+                        eq(android.Manifest.permission.MANAGE_HOTWORD_DETECTION),
+                        anyString(),
+                        anyInt());
 
         // Initial populate
         mPccSandboxManagerInternal.updateAllowedPackagesForUser(USER_ID_1);
@@ -661,6 +677,51 @@ public class PccSandboxManagerInternalTest {
 
         mPccSandboxManagerInternal.removeTestAllowedPackage(testPackage);
         assertFalse(mPccSandboxManagerInternal.isPccAllowedPackage(testPackage, USER_ID_1));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testPopulatePccAllowedPackages_AssistantRole_WithPermission_IsAllowed() {
+        String assistantPackage = "com.example.assistant";
+
+        when(mMockRoleManager.getRoleHoldersAsUser(
+                eq(android.app.role.RoleManager.ROLE_ASSISTANT), any(UserHandle.class)))
+                .thenReturn(Collections.singletonList(assistantPackage));
+
+        doReturn(android.content.pm.PackageManager.PERMISSION_GRANTED)
+                .when(mPccSandboxManagerInternal)
+                .checkPermission(
+                        eq(android.Manifest.permission.MANAGE_HOTWORD_DETECTION),
+                        eq(assistantPackage),
+                        eq(USER_ID_1));
+
+        mPccSandboxManagerInternal.populatePccAllowedPackages();
+
+        assertTrue("Assistant package with permission should be allowed",
+                mPccSandboxManagerInternal.isPccAllowedPackage(assistantPackage, USER_ID_1));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testPopulatePccAllowedPackages_AssistantRole_NoPermission_IsDenied() {
+        String assistantPackage = "com.example.assistant.noperm";
+
+        when(mMockRoleManager.getRoleHoldersAsUser(
+                eq(android.app.role.RoleManager.ROLE_ASSISTANT), any(UserHandle.class)))
+                .thenReturn(Collections.singletonList(assistantPackage));
+
+
+        doReturn(android.content.pm.PackageManager.PERMISSION_DENIED)
+                .when(mPccSandboxManagerInternal)
+                .checkPermission(
+                        eq(android.Manifest.permission.MANAGE_HOTWORD_DETECTION),
+                        eq(assistantPackage),
+                        eq(USER_ID_1));
+
+        mPccSandboxManagerInternal.populatePccAllowedPackages();
+
+        assertFalse("Assistant package without permission should be denied",
+                mPccSandboxManagerInternal.isPccAllowedPackage(assistantPackage, USER_ID_1));
     }
 }
 

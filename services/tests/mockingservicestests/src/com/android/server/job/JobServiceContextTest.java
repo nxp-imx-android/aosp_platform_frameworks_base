@@ -24,6 +24,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mock;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
+import static com.android.server.job.Flags.FLAG_INCLUDE_JOB_NAME_IN_ANR_MESSAGE;
 import static com.android.server.job.Flags.FLAG_USE_PERFETTO_SDK_FOR_TRACING;
 import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_BACK_OFF_POLICY_TYPE;
 import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_DEADLINE_MS;
@@ -46,6 +47,8 @@ import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_
 import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_STANDBY_BUCKET;
 import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_STATE;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -57,6 +60,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.app.ActivityManager;
+import android.app.ActivityManagerInternal;
 import android.app.AppGlobals;
 import android.app.job.IJobService;
 import android.app.job.JobInfo;
@@ -76,6 +80,7 @@ import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 
 import com.android.internal.app.IBatteryStats;
+import com.android.internal.os.TimeoutRecord;
 import com.android.internal.util.FrameworkStatsLog;
 import com.android.server.LocalServices;
 import com.android.server.job.JobServiceContext.JobCallback;
@@ -111,6 +116,8 @@ public class JobServiceContextTest {
     public TestRule compatChangeRule = new PlatformCompatChangeRule();
     @Mock
     private JobSchedulerService mMockJobSchedulerService;
+    @Mock
+    private ActivityManagerInternal mMockActivityManagerInternal;
     @Mock
     private JobConcurrencyManager mMockConcurrencyManager;
     @Mock
@@ -158,6 +165,8 @@ public class JobServiceContextTest {
         doReturn(mMockContext).when(mMockJobSchedulerService).getContext();
         mLock = new Object();
         doReturn(mLock).when(mMockJobSchedulerService).getLock();
+        doReturn(mMockActivityManagerInternal)
+                .when(() -> LocalServices.getService(ActivityManagerInternal.class));
         doReturn(mMockUsageStatsManagerInternal)
                 .when(() -> LocalServices.getService(UsageStatsManagerInternal.class));
         doReturn(ActivityManager.PROCESS_STATE_TOP)
@@ -606,7 +615,49 @@ public class JobServiceContextTest {
         verify(mMockPerfettoTracer).emit();
     }
 
+    @Test
+    @EnableFlags(FLAG_INCLUDE_JOB_NAME_IN_ANR_MESSAGE)
+    @EnableCompatChanges({JobServiceContext.ANR_PRE_UDC_APIS_ON_SLOW_RESPONSES})
+    public void testOnSlowAppResponseLocked_anrMessage_flagEnabled() {
+        mJobServiceContext.mVerb = JobServiceContext.VERB_STOPPING;
+        final JobInfo job = createJobInfo(JOB_ID, mComponentName).build();
+        final JobStatus jobStatus =
+                JobStatus.createFromJobInfo(job, mSourceUid, SOURCE_PACKAGE, 0, TAG, null);
+        jobStatus.serviceProcessName = "some.process";
+        mJobServiceContext.setRunningJobLockedForTest(jobStatus);
 
+        mJobServiceContext.handleOpTimeoutLocked();
+
+        final ArgumentCaptor<TimeoutRecord> timeoutRecordCaptor =
+                ArgumentCaptor.forClass(TimeoutRecord.class);
+        verify(mMockActivityManagerInternal).appNotResponding(
+                eq(jobStatus.serviceProcessName), eq(jobStatus.getUid()),
+                timeoutRecordCaptor.capture());
+        assertThat(timeoutRecordCaptor.getValue().mReason).contains(
+                jobStatus.getBatteryName());
+    }
+
+    @Test
+    @DisableFlags(FLAG_INCLUDE_JOB_NAME_IN_ANR_MESSAGE)
+    @EnableCompatChanges({JobServiceContext.ANR_PRE_UDC_APIS_ON_SLOW_RESPONSES})
+    public void testOnSlowAppResponseLocked_anrMessage_flagDisabled() {
+        mJobServiceContext.mVerb = JobServiceContext.VERB_STOPPING;
+        final JobInfo job = createJobInfo(JOB_ID, mComponentName).build();
+        final JobStatus jobStatus =
+                JobStatus.createFromJobInfo(job, mSourceUid, SOURCE_PACKAGE, 0, TAG, null);
+        jobStatus.serviceProcessName = "some.process";
+        mJobServiceContext.setRunningJobLockedForTest(jobStatus);
+
+        mJobServiceContext.handleOpTimeoutLocked();
+
+        final ArgumentCaptor<TimeoutRecord> timeoutRecordCaptor =
+                ArgumentCaptor.forClass(TimeoutRecord.class);
+        verify(mMockActivityManagerInternal).appNotResponding(
+                eq(jobStatus.serviceProcessName), eq(jobStatus.getUid()),
+                timeoutRecordCaptor.capture());
+        assertThat(timeoutRecordCaptor.getValue().mReason).doesNotContain(
+                jobStatus.getBatteryName());
+    }
 
     private static JobInfo.Builder createJobInfo(int jobId, ComponentName componentName) {
         return new JobInfo.Builder(jobId, componentName);

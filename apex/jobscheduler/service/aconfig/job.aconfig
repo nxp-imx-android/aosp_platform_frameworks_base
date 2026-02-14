@@ -31,3 +31,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "include_job_name_in_anr_message"
+    namespace: "backstage_power"
+    description: "Include the job's component name in the slow app response ANR message."
+    bug: "453757844"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

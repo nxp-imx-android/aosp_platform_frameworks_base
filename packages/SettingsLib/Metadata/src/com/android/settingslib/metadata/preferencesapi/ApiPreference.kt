@@ -576,6 +576,7 @@ class ApiPreferenceConfigBuilder<V : Any>(
     private var flagConfig: FlagConfig? = null
     private var permissionsConfig: Permissions? = null
     private var preconditionsConfig: PreconditionsConfig? = null
+    private var tagsList: List<String>? = null
     private var getConfig: GetConfig<V>? = null
     private var setConfig: SetConfig<V>? = null
 
@@ -587,7 +588,7 @@ class ApiPreferenceConfigBuilder<V : Any>(
             error(getExceptionMessageMultipleDefines("flag"))
         }
 
-        if (permissionsConfig != null || preconditionsConfig != null || getConfig != null || setConfig != null) {
+        if (permissionsConfig != null || preconditionsConfig != null || tagsList != null || getConfig != null || setConfig != null) {
             error(getExceptionMessageWrongOrder("flag"))
         }
 
@@ -597,6 +598,21 @@ class ApiPreferenceConfigBuilder<V : Any>(
             }
             lambda()
         }
+    }
+
+    /**
+     * Sets tags.
+     */
+    fun tags(vararg tags: String) {
+        if (tagsList != null) {
+            error(getExceptionMessageMultipleDefines("tags"))
+        }
+
+        if (getConfig != null || setConfig != null) {
+            error(getExceptionMessageWrongOrder("tags"))
+        }
+
+        tagsList = tags.toList()
     }
 
     /**
@@ -697,6 +713,8 @@ class ApiPreferenceConfigBuilder<V : Any>(
         override val screenPreconditions = this@ApiPreferenceConfigBuilder.screenPreconditions
         override val permissions: Permissions? = permissionsConfig
         override val preconditions: PreconditionsConfig? = preconditionsConfig
+        override fun tags(context: Context): Array<String> =
+            (tagsList?.toTypedArray() ?: emptyArray()) + "api-first"
         override val get: GetConfig<V> = getConfig ?: error("'get' block is required")
         override val set: SetConfig<V>? = setConfig
         override val type: ApiType<V> = this@ApiPreferenceConfigBuilder.type

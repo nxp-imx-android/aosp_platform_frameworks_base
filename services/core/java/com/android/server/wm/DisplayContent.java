@@ -6983,13 +6983,15 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      * need to be reevaluated.
      */
     void notifyKeyguardFlagsChanged() {
-        if (!isKeyguardLocked()) {
-            // If keyguard is not locked, the change of flags won't affect activity visibility.
-            return;
+        if (isKeyguardLocked()) {
+            mRootWindowContainer.ensureActivitiesVisible();
+            // In case there is a visibility change.
+            executeAppTransition();
+        } else {
+            mRootWindowContainer.mTaskSupervisor
+                .getKeyguardController()
+                .updateVisibility();
         }
-        mRootWindowContainer.ensureActivitiesVisible();
-        // In case there is a visibility change.
-        executeAppTransition();
     }
 
     /**

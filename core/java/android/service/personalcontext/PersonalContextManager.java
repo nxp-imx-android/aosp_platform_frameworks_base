@@ -31,7 +31,6 @@ import android.annotation.UserHandleAware;
 import android.app.assist.AssistStructure;
 import android.content.Context;
 import android.graphics.Rect;
-import android.os.Bundle;
 import android.os.ParcelUuid;
 import android.os.RemoteException;
 import android.provider.Settings;
@@ -474,24 +473,5 @@ public final class PersonalContextManager {
     @NonNull
     public Rect getViewCoordinates(@NonNull AutofillInlineRequestHint hint) {
         return hint.getAugmentedAutofillProxy().getViewCoordinates(hint.getFocusedId());
-    }
-
-    /**
-     * Reports that the user wants to provide feedback. A UI may be shown to the user to complete
-     * filling out feedback (using initial user preferences from {@code feedbackPreview}, and the
-     * resulting completed feedback is sent to the understander that generated the {@code insight}.
-     *
-     * @param insight the insight that feedback is being provided for
-     * @param feedbackPreview initial user feedback values provided by the renderer
-     */
-    @RequiresNoPermission
-    public void reportUserFeedback(
-            @NonNull ContextInsight insight, @Nullable Bundle feedbackPreview) {
-        try {
-            mService.reportFeedback(
-                    new ContextInsightWrapper(insight), feedbackPreview, mContext.getUserId());
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
     }
 }
