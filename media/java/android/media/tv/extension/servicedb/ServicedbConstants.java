@@ -25,7 +25,7 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * @hide
  */
-public class ServicedbConstants {
+public final class ServicedbConstants {
     /***************************************Result*************************************************/
     @IntDef({RESULT_SUCCESS, RESULT_ERROR, RESULT_ERROR_LOCKED, RESULT_ERROR_SERVICE_NOT_EXIST})
     @Retention(RetentionPolicy.SOURCE)

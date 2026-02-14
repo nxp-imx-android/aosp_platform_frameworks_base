@@ -27,7 +27,7 @@ import java.lang.annotation.RetentionPolicy;
  *
  * @hide
  */
-final class ScanConstants {
+public final class ScanConstants {
     /*************************************** Broadcast Type****************************************/
     @IntDef({
             TYPE_DVB_T,
