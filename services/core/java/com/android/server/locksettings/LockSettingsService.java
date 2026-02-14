@@ -1351,20 +1351,23 @@ public class LockSettingsService extends ILockSettings.Stub {
         }
     }
 
-    private final void checkWritePermission() {
-        mContext.enforceCallingOrSelfPermission(ACCESS_KEYGUARD_SECURE_STORAGE,
-                "LockSettingsWrite");
+    private void checkWritePermission() {
+        checkAccessSecureStoragePermission("LockSettingsWrite");
     }
 
-    private final void checkPasswordReadPermission() {
-        mContext.enforceCallingOrSelfPermission(ACCESS_KEYGUARD_SECURE_STORAGE, "LockSettingsRead");
+    private void checkReadPermission() {
+        checkAccessSecureStoragePermission("LockSettingsRead");
     }
 
-    private final void checkPasswordHavePermission() {
-        mContext.enforceCallingOrSelfPermission(ACCESS_KEYGUARD_SECURE_STORAGE, "LockSettingsHave");
+    private void checkHavePermission() {
+        checkAccessSecureStoragePermission("LockSettingsHave");
     }
 
-    private final void checkDatabaseReadPermission(String requestedKey, int userId) {
+    private void checkAccessSecureStoragePermission(String message) {
+        mContext.enforceCallingOrSelfPermission(ACCESS_KEYGUARD_SECURE_STORAGE, message);
+    }
+
+    private void checkDatabaseReadPermission(String requestedKey, int userId) {
         if (!hasPermission(ACCESS_KEYGUARD_SECURE_STORAGE)) {
             throw new SecurityException("uid=" + getCallingUid() + " needs permission "
                     + ACCESS_KEYGUARD_SECURE_STORAGE + " to read " + requestedKey
@@ -1372,7 +1375,7 @@ public class LockSettingsService extends ILockSettings.Stub {
         }
     }
 
-    private final void checkBiometricPermission() {
+    private void checkBiometricPermission() {
         mContext.enforceCallingOrSelfPermission(MANAGE_BIOMETRIC, "LockSettingsBiometric");
     }
 
@@ -1537,7 +1540,7 @@ public class LockSettingsService extends ILockSettings.Stub {
      */
     @Override
     public int getPinLength(int userId) {
-        checkPasswordHavePermission();
+        checkHavePermission();
         PasswordMetrics passwordMetrics = getUserPasswordMetrics(userId);
         if (passwordMetrics != null && passwordMetrics.credType == CREDENTIAL_TYPE_PIN) {
             return passwordMetrics.length;
@@ -1559,7 +1562,7 @@ public class LockSettingsService extends ILockSettings.Stub {
      */
     @Override
     public boolean refreshStoredPinLength(int userId) {
-        checkPasswordHavePermission();
+        checkHavePermission();
         synchronized (mSpManager) {
             PasswordMetrics passwordMetrics = getUserPasswordMetrics(userId);
             if (passwordMetrics != null) {
@@ -1579,7 +1582,7 @@ public class LockSettingsService extends ILockSettings.Stub {
      */
     @Override
     public int getCredentialType(int userId) {
-        checkPasswordHavePermission();
+        checkHavePermission();
         return getCredentialTypeInternal(userId);
     }
 
@@ -2089,7 +2092,7 @@ public class LockSettingsService extends ILockSettings.Stub {
                 setDeviceUnlockedForUser(userId);
             }
             notifySeparateProfileChallengeChanged(userId);
-            onPostPasswordChanged(credential, userId);
+            onPostLockCredentialChanged(credential, userId);
             return true;
         } finally {
             Binder.restoreCallingIdentity(identity);
@@ -2194,7 +2197,7 @@ public class LockSettingsService extends ILockSettings.Stub {
         }
     }
 
-    private void onPostPasswordChanged(LockscreenCredential newCredential, int userId) {
+    private void onPostLockCredentialChanged(LockscreenCredential newCredential, int userId) {
         updatePasswordHistory(newCredential, userId);
         mContext.getSystemService(TrustManager.class).reportEnabledTrustAgentsChanged(userId);
         sendMainUserCredentialChangedNotificationIfNeeded(userId);
@@ -2434,7 +2437,7 @@ public class LockSettingsService extends ILockSettings.Stub {
 
     @Override
     public void unlockUserKeyIfUnsecured(@UserIdInt int userId) {
-        checkPasswordReadPermission();
+        checkReadPermission();
         synchronized (mSpManager) {
             if (isCeStorageUnlocked(userId)) {
                 Slogf.d(TAG, "CE storage for user %d is already unlocked", userId);
@@ -2523,7 +2526,7 @@ public class LockSettingsService extends ILockSettings.Stub {
 
     @Override
     public void prepareToVerifyCredential(int userId) {
-        checkPasswordReadPermission();
+        checkReadPermission();
         if (!android.security.Flags.enableWeaverWarmup()) {
             return;
         }
@@ -2541,7 +2544,7 @@ public class LockSettingsService extends ILockSettings.Stub {
     @Override
     public VerifyCredentialResponse checkCredential(LockscreenCredential credential, int userId,
             ICheckCredentialProgressCallback progressCallback) {
-        checkPasswordReadPermission();
+        checkReadPermission();
         final long identity = Binder.clearCallingIdentity();
         try {
             return doVerifyCredential(credential, userId, progressCallback, 0 /* flags */);
@@ -2574,7 +2577,7 @@ public class LockSettingsService extends ILockSettings.Stub {
     public VerifyCredentialResponse verifyGatekeeperPasswordHandle(long gatekeeperPasswordHandle,
             long challenge, int userId) {
 
-        checkPasswordReadPermission();
+        checkReadPermission();
 
         final VerifyCredentialResponse response;
         final byte[] gatekeeperPassword;
@@ -2597,7 +2600,7 @@ public class LockSettingsService extends ILockSettings.Stub {
 
     @Override
     public void removeGatekeeperPasswordHandle(long gatekeeperPasswordHandle) {
-        checkPasswordReadPermission();
+        checkReadPermission();
         synchronized (mGatekeeperPasswords) {
             mGatekeeperPasswords.remove(gatekeeperPasswordHandle);
         }
@@ -2787,7 +2790,7 @@ public class LockSettingsService extends ILockSettings.Stub {
     @Override
     public VerifyCredentialResponse verifyTiedProfileChallenge(
             LockscreenCredential credential, int userId, @LockPatternUtils.VerifyFlag int flags) {
-        checkPasswordReadPermission();
+        checkReadPermission();
         try {
             return doVerifyTiedProfileChallenge(credential, userId, flags);
         } finally {
@@ -2921,13 +2924,13 @@ public class LockSettingsService extends ILockSettings.Stub {
 
     @Override
     public void registerStrongAuthTracker(IStrongAuthTracker tracker) {
-        checkPasswordReadPermission();
+        checkReadPermission();
         mStrongAuth.registerStrongAuthTracker(tracker);
     }
 
     @Override
     public void unregisterStrongAuthTracker(IStrongAuthTracker tracker) {
-        checkPasswordReadPermission();
+        checkReadPermission();
         mStrongAuth.unregisterStrongAuthTracker(tracker);
     }
 
@@ -2957,7 +2960,7 @@ public class LockSettingsService extends ILockSettings.Stub {
 
     @Override
     public int getStrongAuthForUser(int userId) {
-        checkPasswordReadPermission();
+        checkReadPermission();
         return mStrongAuthTracker.getStrongAuthForUser(userId);
     }
 
@@ -3584,7 +3587,7 @@ public class LockSettingsService extends ILockSettings.Stub {
 
     @Override
     public byte[] getHashFactor(LockscreenCredential currentCredential, int userId) {
-        checkPasswordReadPermission();
+        checkReadPermission();
         try {
             return getHashFactorInternal(currentCredential, userId);
         } finally {
@@ -3639,7 +3642,7 @@ public class LockSettingsService extends ILockSettings.Stub {
 
     @Override
     public boolean hasPendingEscrowToken(int userId) {
-        checkPasswordReadPermission();
+        checkReadPermission();
         synchronized (mSpManager) {
             return !mSpManager.getPendingTokensForUser(userId).isEmpty();
         }
@@ -3787,7 +3790,7 @@ public class LockSettingsService extends ILockSettings.Stub {
 
     @Override
     public boolean tryUnlockWithCachedUnifiedChallenge(int userId) {
-        checkPasswordReadPermission();
+        checkReadPermission();
         try (LockscreenCredential cred = mUnifiedProfilePasswordCache.retrievePassword(userId)) {
             if (cred == null) {
                 return false;
@@ -3970,7 +3973,7 @@ public class LockSettingsService extends ILockSettings.Stub {
      */
     @Override
     public ParcelDuration getLockoutEndTime(@UserIdInt int userId) {
-        checkPasswordHavePermission();
+        checkHavePermission();
         final long protectorId = getCurrentLskfBasedProtectorId(userId);
         final Duration lockoutEndTime;
         if (protectorId == SyntheticPasswordManager.NULL_PROTECTOR_ID) {
@@ -4129,7 +4132,7 @@ public class LockSettingsService extends ILockSettings.Stub {
                     credential, tokenHandle, token, userId)) {
                 return false;
             }
-            onPostPasswordChanged(credential, userId);
+            onPostLockCredentialChanged(credential, userId);
             return true;
         }
 

@@ -24,7 +24,6 @@ import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.hierarchy.ContainerHierarchy
 import com.android.wm.shell.hierarchy.containers.Container
 import com.android.wm.shell.hierarchy.modes.Mode
-import com.android.wm.shell.protolog.ShellProtoLogGroup
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_MODES
 import com.android.wm.shell.transition.Transitions
 

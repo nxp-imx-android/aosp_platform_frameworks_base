@@ -143,4 +143,11 @@ open class ContainerProperties(
         return "u$userId vis=$visibleRequested winMode=$windowingMode actType=$activityType " +
                 "bounds=$bounds rot=$rotation hashCode=${System.identityHashCode(this)}"
     }
+
+    /**
+     * A user-friendly type name for debugging purposes.
+     */
+    open fun getTypeName(): String {
+        return "Container"
+    }
 }

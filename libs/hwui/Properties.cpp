@@ -113,6 +113,8 @@ bool Properties::skipTelemetry = false;
 
 int Properties::timeoutMultiplier = 1;
 
+bool Properties::bitmapAshmemLongName = false;
+
 StretchEffectBehavior Properties::stretchEffectBehavior = StretchEffectBehavior::ShaderHWUI;
 
 DrawingEnabled Properties::drawingEnabled = DrawingEnabled::NotInitialized;
@@ -190,6 +192,7 @@ bool Properties::load() {
     skipTelemetry = base::GetBoolProperty(PROPERTY_SKIP_EGLMANAGER_TELEMETRY,
                                           hwui_flags::skip_eglmanager_telemetry());
 
+    bitmapAshmemLongName = base::GetBoolProperty(PROPERTY_BITMAP_ASHMEM_LONG_NAME, false);
     return (prevDebugLayersUpdates != debugLayersUpdates) || (prevDebugOverdraw != debugOverdraw);
 }
 

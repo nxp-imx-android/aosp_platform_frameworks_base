@@ -719,6 +719,16 @@ flag {
 }
 
 flag {
+    name: "fix_nssl_blocking_qs"
+    namespace: "systemui"
+    description: "Fix NSSL blocks the touch event when the QS panel is expanded."
+    bug: "477421025"
+    metadata {
+       purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
   name: "fix_privacy_indicator_both_dot_chip_visible_qs"
   namespace: "systemui"
   description: "Fix privacy indicator both dot and chip visible in QS"

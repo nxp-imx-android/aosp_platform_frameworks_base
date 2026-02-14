@@ -217,3 +217,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+  name: "virtual_camera_stream_close_device_close"
+  namespace: "virtual_devices"
+  description: "Call onStreamClosed when the virtual device or virtual camera is closed"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+  bug: "470486743"
+}

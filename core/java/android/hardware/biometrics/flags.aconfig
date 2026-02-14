@@ -75,6 +75,16 @@ flag {
 }
 
 flag {
+  name: "external_bp"
+  namespace: "biometrics_framework"
+  description: "Bug fix flag for BP on external displays"
+  bug: "463284718"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "move_fm_api_to_bm"
   is_exported: true
   namespace: "biometrics_framework"

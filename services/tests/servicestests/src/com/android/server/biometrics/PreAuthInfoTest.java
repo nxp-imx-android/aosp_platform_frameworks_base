@@ -147,13 +147,19 @@ public class PreAuthInfoTest {
                 mBiometricCameraManager, mUserManager);
         final Pair<Integer, Integer> preAuthenticateStatus = preAuthInfo.getPreAuthenticateStatus();
 
-        //Should return hardware unavailable even if there are eligible sensors
-        assertThat(preAuthInfo.eligibleSensors).hasSize(2);
-        assertThat(preAuthInfo.getCanAuthenticateResult()).isEqualTo(
-                BIOMETRIC_ERROR_HW_UNAVAILABLE);
-        assertThat(preAuthenticateStatus.first).isEqualTo(
-                TYPE_ANY_BIOMETRIC | TYPE_CREDENTIAL);
-        assertThat(preAuthenticateStatus.second).isEqualTo(BIOMETRIC_ERROR_HW_UNAVAILABLE);
+        if (Flags.externalBp()) {
+            assertThat(preAuthInfo.eligibleSensors).hasSize(2);
+            assertThat(preAuthInfo.getCanAuthenticateResult()).isEqualTo(BIOMETRIC_SUCCESS);
+            assertThat(preAuthenticateStatus.second).isEqualTo(BIOMETRIC_SUCCESS);
+        } else {
+            //Should return hardware unavailable even if there are eligible sensors
+            assertThat(preAuthInfo.eligibleSensors).hasSize(2);
+            assertThat(preAuthInfo.getCanAuthenticateResult()).isEqualTo(
+                    BIOMETRIC_ERROR_HW_UNAVAILABLE);
+            assertThat(preAuthenticateStatus.first).isEqualTo(
+                    TYPE_ANY_BIOMETRIC | TYPE_CREDENTIAL);
+            assertThat(preAuthenticateStatus.second).isEqualTo(BIOMETRIC_ERROR_HW_UNAVAILABLE);
+        }
     }
 
     @Test

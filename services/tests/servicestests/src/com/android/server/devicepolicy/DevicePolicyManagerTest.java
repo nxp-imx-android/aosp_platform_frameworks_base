@@ -6240,6 +6240,8 @@ public class DevicePolicyManagerTest extends DpmTestBase {
 
     @Test
     public void testPasswordQualityDoesNotApplyToParentPostS() throws Exception {
+        assumeDeprecatedPasswordApisSupported();
+
         final int managedProfileUserId = CALLER_USER_HANDLE;
         final int managedProfileAdminUid =
                 UserHandle.getUid(managedProfileUserId, DpmMockContext.SYSTEM_UID);
@@ -9182,6 +9184,8 @@ public class DevicePolicyManagerTest extends DpmTestBase {
     @Test
     public void getEnforcingAdminsForPolicy_passwordQuality_returnsManagedProfileAdminForParent()
             throws Exception {
+        assumeDeprecatedPasswordApisSupported();
+
         // Set-up managed profile with parent as system user.
         mContext.callerPermissions.add(permission.BIND_DEVICE_ADMIN);
         final int managedProfileUserId = 78;

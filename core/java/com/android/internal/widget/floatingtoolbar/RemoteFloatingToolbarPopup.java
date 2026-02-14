@@ -344,6 +344,7 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
         Rect contentRect = widgetInfo.contentRect;
         mTouchableRegion.set(widgetInfo.touchableRegion);
         mTouchableRegion.translate(-contentRect.left, -contentRect.top);
+        mPopupWindow.getContentView().invalidate();
     }
 
     private Point getCoordinatesInWindow(int x, int y) {

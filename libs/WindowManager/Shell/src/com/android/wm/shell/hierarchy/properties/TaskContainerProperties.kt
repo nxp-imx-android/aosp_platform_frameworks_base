@@ -48,6 +48,11 @@ class TaskContainerProperties(
 
     /** @see ContainerProperties.propsToString */
     override fun propsToString(): String {
-        return "taskId=$taskId " + super.propsToString()
+        return "#$taskId pkg=${taskInfo.baseIntent?.getPackage()} " + super.propsToString()
+    }
+
+    /** @see ContainerProperties.getTypeName */
+    override fun getTypeName(): String {
+        return "Task"
     }
 }

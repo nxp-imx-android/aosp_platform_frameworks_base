@@ -11135,11 +11135,12 @@ public class AudioService extends IAudioService.Stub
                             // Mirror STREAM_ASSISTANT on A2DP and SCO
                             for (int i = 0; i < mIndexMap.size(); i++) {
                                 int otherDevice = mIndexMap.keyAt(i);
-                                if ((AudioSystem.DEVICE_OUT_ALL_SCO_SET.contains(otherDevice)
-                                        && AudioSystem.DEVICE_OUT_ALL_A2DP_SET.contains(device))
-                                        || (AudioSystem.DEVICE_OUT_ALL_A2DP_SET.contains(
-                                        otherDevice)
-                                        && AudioSystem.DEVICE_OUT_ALL_SCO_SET.contains(device))) {
+                                if (otherDevice != device && (
+                                        AudioSystem.DEVICE_OUT_ALL_SCO_SET.contains(otherDevice)
+                                                || AudioSystem.DEVICE_OUT_ALL_A2DP_SET.contains(
+                                                otherDevice))
+                                        && (AudioSystem.DEVICE_OUT_ALL_SCO_SET.contains(device)
+                                        || AudioSystem.DEVICE_OUT_ALL_A2DP_SET.contains(device))) {
                                     mIndexMap.put(otherDevice, index);
                                     updateAssistantStreamDrivingVolume(otherDevice, index);
                                 }

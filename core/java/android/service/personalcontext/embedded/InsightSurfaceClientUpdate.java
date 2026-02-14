@@ -111,7 +111,7 @@ public final class InsightSurfaceClientUpdate implements Parcelable {
     /**
      * Returns whether the update contains the value with the given key.
      * @param key the update key to be queried
-     * @return true if the update contains a value for the given key
+     * @return {@code true} if the update contains a value for the given key
      */
     public boolean hasUpdate(@NonNull String key) {
         return mUpdateValues.containsKey(key);
@@ -138,8 +138,8 @@ public final class InsightSurfaceClientUpdate implements Parcelable {
     }
 
     /**
-     * Return the background {@link Color} for this update, or null if the update doesn't contain
-     * such a value.
+     * Return the background {@link Color} for this update, or {@code null} if the update doesn't
+     * contain such a value.
      */
     @Nullable
     public Color getBackgroundColor() {
@@ -149,7 +149,7 @@ public final class InsightSurfaceClientUpdate implements Parcelable {
     }
 
     /**
-     * Return the nested scroll axes for this update, or  {@link android.view.View#SCROLL_AXIS_NONE}
+     * Return the nested scroll axes for this update, or {@link android.view.View#SCROLL_AXIS_NONE}
      * if the update doesn't contain such a value.
      */
     public int getNestedScrollAxes() {
@@ -159,8 +159,8 @@ public final class InsightSurfaceClientUpdate implements Parcelable {
     }
 
     /**
-     * Return the lock nested scrolling value for this update, or false if the update doesn't
-     * contain such a value.
+     * Return the lock nested scrolling value for this update, or {@code false} if the update
+     * doesn't contain such a value.
      */
     public boolean isNestedScrollAxisLocked() {
         return hasUpdate(KEY_NESTED_SCROLL_AXIS_LOCKED) && mUpdateValues.getBoolean(
@@ -168,15 +168,15 @@ public final class InsightSurfaceClientUpdate implements Parcelable {
     }
 
     /**
-     * Return the should blur value for this update, or false if the update doesn't
-     * contain such a value.
+     * Return whether the embedded surface should apply a blur. This should be {@code true} when the
+     * client view is blurred so that the embedded surface can also apply a blur to match it.
      */
     public boolean shouldBlur() {
         return hasUpdate(KEY_SHOULD_BLUR) && mUpdateValues.getBoolean(KEY_SHOULD_BLUR);
     }
 
     /**
-     * Return the theme resource name update for this update, or null if the update doesn't
+     * Return the theme resource name update for this update, or {@code null} if the update doesn't
      * contain such a value.
      * @see InsightSurfaceClientInfo#getThemeResourceName()
      */
@@ -188,8 +188,8 @@ public final class InsightSurfaceClientUpdate implements Parcelable {
     }
 
     /**
-     * Return the {@link Configuration} for this update, or null if the update doesn't contain a
-     * configuration.
+     * Return the {@link Configuration} for this update, or {@code null} if the update doesn't
+     * contain a configuration.
      */
     @Nullable
     public Configuration getConfiguration() {
@@ -255,7 +255,7 @@ public final class InsightSurfaceClientUpdate implements Parcelable {
          * Set whether nested scrolling is locked to the nested scroll axes for the update. Note
          * that this value can be set for the update even if the nested scroll axes aren't also
          * updated.
-         * @param isLocked whether nested scrolling is locked
+         * @param isLocked {@code true} if nested scrolling is locked
          */
         @NonNull
         public Builder setNestedScrollAxisLocked(boolean isLocked) {
@@ -264,8 +264,10 @@ public final class InsightSurfaceClientUpdate implements Parcelable {
         }
 
         /**
-         * Set whether the embedded surface should blur to match client blurring.
-         * @param shouldBlur whether the embedded surface should blur
+         * Set whether the embedded surface should apply a blur. Clients would set this to
+         * {@code true} when the client view is blurred so that the embedded surface can also apply
+         * a blur to match it.
+         * @param shouldBlur {@code true} if the embedded surface should apply a blur
          */
         @NonNull
         public Builder setShouldBlur(boolean shouldBlur) {
@@ -276,7 +278,7 @@ public final class InsightSurfaceClientUpdate implements Parcelable {
         /**
          * Set the theme resource name for this update.
          * @see InsightSurfaceClient.Builder#setThemeResourceName(String)
-         * @param themeResourceName the name of the theme resource
+         * @param themeResourceName the name of the theme resource, or {@code null} to clear it
          */
         @NonNull
         public Builder setThemeResourceName(@Nullable String themeResourceName) {

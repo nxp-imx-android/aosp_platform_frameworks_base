@@ -24,6 +24,7 @@ import com.android.compose.animation.scene.ObservableTransitionState.Transition
 import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.TransitionKey
+import com.android.systemui.Flags
 import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.brightness.domain.interactor.brightnessMirrorShowingInteractor
@@ -249,6 +250,31 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
 
             // THEN allowScrimClipping is true
             assertThat(allowScrimClipping).isTrue()
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_FIX_NSSL_BLOCKING_QS)
+    fun interactive_whenOnLockscreenAndQsOverlayIsShowing_isFalse() =
+        kosmos.runTest {
+            val interactive by collectLastValue(underTest.interactive)
+            brightnessMirrorShowingInteractor.setMirrorShowing(false)
+            setBlur(false)
+            setHunIsPinned(false)
+
+            // GIVEN we are on Lockscreen
+            sceneInteractor.changeScene(Scenes.Lockscreen, "setup")
+            sceneInteractor.setTransitionState(
+                MutableStateFlow(ObservableTransitionState.Idle(Scenes.Lockscreen))
+            )
+
+            // AND QS Overlay is showing
+            sceneInteractor.showOverlay(Overlays.QuickSettingsShade, "show")
+            // On desktop dual shade, showing QS overlay implies full expansion
+            setBlur(true)
+            runCurrent()
+
+            // THEN the notification stack is NOT interactive
+            assertThat(interactive).isFalse()
         }
 
     @Test
