@@ -6553,6 +6553,9 @@
   <!-- Whether Airplane Mode sync is supported by this device. -->
   <java-symbol type="bool" name="config_supportAirplaneModeSync"/>
 
+   <!-- The package name of the AllowlistProviderService -->
+   <java-symbol type="string" name="config_allowlistProviderServicePackage"/>
+
   <!-- TV Watchdog configuration -->
   <java-symbol type="integer" name="config_tvWatchdogUidIoUsageSummaryTopCount" />
   <java-symbol type="integer" name="config_tvWatchdogIoUsageSummaryMinSystemTotalWrittenBytes" />

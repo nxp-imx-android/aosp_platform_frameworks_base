@@ -20,9 +20,9 @@ import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SystemApi;
+import android.app.appfunctions.flags.Flags;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.permission.flags.Flags;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -33,7 +33,7 @@ import java.util.Objects;
  * @hide
  */
 @SystemApi
-@FlaggedApi(Flags.FLAG_ALLOWLIST_SERVICE_ENABLED)
+@FlaggedApi(Flags.FLAG_ENABLE_APP_FUNCTION_PERMISSION_V2)
 public final class SignedPackage implements Parcelable {
 
     @NonNull
@@ -41,7 +41,12 @@ public final class SignedPackage implements Parcelable {
     @Nullable
     private final byte[] mCertificateDigest;
 
-    /** @hide */
+    /**
+     * Create a new instance of SignedPackage
+     * @param packageName The name of the package
+     * @param certificateDigest The sha-256 hash of the package's signing certificate, or null if
+     *                          none
+     */
     public SignedPackage(@NonNull String packageName, @Nullable byte[] certificateDigest) {
         mPackageName = packageName;
         mCertificateDigest = certificateDigest;
@@ -90,7 +95,6 @@ public final class SignedPackage implements Parcelable {
     }
 
     /** @return true if this SignedPackage has a certificate attached, false otherwise */
-    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
     public boolean hasCertificateDigest() {
         return mCertificateDigest != null;
     }

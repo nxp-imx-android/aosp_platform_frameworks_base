@@ -8012,4 +8012,7 @@
 
     <!-- Whether to allow content restriction device policy bypassing. -->
     <bool name="config_allowContentRestrictionDevicePolicyBypassing">false</bool>
+
+    <!-- The package name of the allowlist provider service -->
+    <string name="config_allowlistProviderServicePackage" />
 </resources>
