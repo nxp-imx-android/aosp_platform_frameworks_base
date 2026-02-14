@@ -100,15 +100,20 @@ public class TextClassificationHint extends ContextHint {
         return Objects.hash(mTextClassificationRequest, mTextClassificationSessionId);
     }
 
-    /** Get the {@link TextClassification.Request} contained in this hint. */
+    /** Returns the {@link TextClassification.Request} contained in this hint. */
     @NonNull
     public TextClassification.Request getTextClassificationRequest() {
         return mTextClassificationRequest;
     }
 
     /**
-     * Get the TextClassification sessionId. Used to trace back to the session the {@link
-     * TextClassification.Request} originated from.
+     * Returns the TextClassification sessionId. This is used by {@link
+     * TextClassificationManagerService} and {@link PersonalContextManagerService} to trace the session
+     * that the {@link TextClassification.Request} originated from.
+     *
+     * <p>If the session is destroyed by {@link TextClassificationService} before this hint is
+     * processed, {@link TextClassificationManagerService} will ignore any insights generated from
+     * this hint.
      */
     @NonNull
     public String getSessionId() {
