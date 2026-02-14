@@ -91,8 +91,6 @@ import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_
 import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_IS_STOPPING_FINISHING;
 import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_IS_VISIBLE;
 
-import static com.android.media.audio.Flags.hardeningBfgs;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -1861,8 +1859,6 @@ public class MockingOomAdjusterTests {
         setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
         updateOomAdj(client, app);
 
-        assertThatProcess(client).hasCapability(PROCESS_CAPABILITY_BFSL);
-        assertThatProcess(client).hasCapability(PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL);
         assertProcStates(app, PROCESS_STATE_BOUND_FOREGROUND_SERVICE, VISIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
         assertThatProcess(app).hasImplicitCpuTimeCapability().withExactReasons(
@@ -1901,12 +1897,9 @@ public class MockingOomAdjusterTests {
         updateOomAdj(client, app);
         setTopProcess(null);
 
-        assertThatProcess(client).hasCapability(PROCESS_CAPABILITY_BFSL);
-        assertThatProcess(client).hasCapability(PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL);
         assertProcStates(app, PROCESS_STATE_BOUND_TOP, VISIBLE_APP_ADJ, SCHED_GROUP_DEFAULT);
         assertThatProcess(app).hasImplicitCpuTimeCapability().withExactReasons(
                 IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
-        assertThatProcess(app).hasCapability(PROCESS_CAPABILITY_BFSL);
         assertThatProcess(app).hasCapability(PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL);
     }
 
@@ -1925,32 +1918,7 @@ public class MockingOomAdjusterTests {
         assertEquals(PROCESS_STATE_BOUND_FOREGROUND_SERVICE, app.getSetProcState());
         assertEquals(PROCESS_STATE_PERSISTENT, client.getSetProcState());
         assertThatProcess(client).hasCapability(PROCESS_CAPABILITY_BFSL);
-        assertThatProcess(client).hasCapability(PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL);
         assertThatProcess(app).hasCapability(PROCESS_CAPABILITY_BFSL);
-        assertThatProcess(app).hasCapability(PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL);
-    }
-
-    @SuppressWarnings("GuardedBy")
-    @Test
-    public void testUpdateOomAdj_DoOne_Service_BoundByPersistent_NoFlags() {
-        ProcessRecord app = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID, MOCKAPP_PROCESSNAME,
-                MOCKAPP_PACKAGENAME, false);
-        ProcessRecord client = makeDefaultProcessRecord(MOCKAPP2_PID, MOCKAPP2_UID,
-                MOCKAPP2_PROCESSNAME, MOCKAPP2_PACKAGENAME, false);
-
-        bindService(app, client, null, null, 0, mock(IBinder.class));
-        mProcessStateController.setMaxAdj(client, PERSISTENT_PROC_ADJ);
-        setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
-        updateOomAdj(client, app);
-
-        assertEquals(PROCESS_STATE_IMPORTANT_FOREGROUND, app.getSetProcState());
-        assertEquals(PROCESS_STATE_PERSISTENT, client.getSetProcState());
-        assertThatProcess(app).notHasCapability(PROCESS_CAPABILITY_BFSL);
-        if (hardeningBfgs()) {
-            assertThatProcess(app).notHasCapability(PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL);
-        } else {
-            assertThatProcess(app).hasCapability(PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL);
-        }
     }
 
     @SuppressWarnings("GuardedBy")
@@ -1990,11 +1958,6 @@ public class MockingOomAdjusterTests {
 
         assertEquals(PROCESS_STATE_TRANSIENT_BACKGROUND, app.getSetProcState());
         assertThatProcess(app).notHasCapability(PROCESS_CAPABILITY_BFSL);
-        if (hardeningBfgs()) {
-            assertThatProcess(app).notHasCapability(PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL);
-        } else {
-            assertThatProcess(app).hasCapability(PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL);
-        }
     }
 
     @SuppressWarnings("GuardedBy")
@@ -3568,12 +3531,7 @@ public class MockingOomAdjusterTests {
         setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
         updateOomAdj(app, client, client2, client3);
 
-        // The following two capabilities are additionally constrained by the proc state (at least
-        // bfgs, or higher).
-        int expected = PROCESS_CAPABILITY_ALL & ~PROCESS_CAPABILITY_BFSL;
-        if (hardeningBfgs()) {
-            expected = expected & ~PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL;
-        }
+        final int expected = PROCESS_CAPABILITY_ALL & ~PROCESS_CAPABILITY_BFSL;
         assertEquals(expected, client.getSetCapability());
         assertEquals(expected, client2.getSetCapability());
         assertEquals(expected, app.getSetCapability());

@@ -51,7 +51,6 @@ import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA;
 import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION;
 import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
 import static android.media.audio.Flags.roForegroundAudioControl;
-import static com.android.media.audio.Flags.hardeningBfgs;
 
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_BACKUP;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_OOM_ADJ_REASON;
@@ -2163,12 +2162,9 @@ public class OomAdjusterImpl extends OomAdjuster {
 
         capability |= getDefaultCapability(app, procState);
 
-        // Procstates below BFGS should never have these capabilities
+        // Procstates below BFGS should never have this capability.
         if (procState > PROCESS_STATE_BOUND_FOREGROUND_SERVICE) {
             capability &= ~PROCESS_CAPABILITY_BFSL;
-            if (hardeningBfgs()) {
-                capability &= ~PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL;
-            }
         }
         if (!updated) {
             if (adj < prevRawAdj || procState < prevProcState || schedGroup > prevSchedGroup) {
