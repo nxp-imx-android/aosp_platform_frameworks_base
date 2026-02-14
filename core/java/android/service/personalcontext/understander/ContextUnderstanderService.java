@@ -151,7 +151,15 @@ public abstract class ContextUnderstanderService extends Service {
         mPersonalContextManager.publishInsight(List.of(insight));
     }
 
-    /** Override this method to receive logging events for actions taken on the insight. */
+    /**
+     * Override this method to receive logging events for actions taken on the insight.
+     *
+     * <p>Invoked when an event has been reported on a {@link ContextInsight} originally
+     * published by this {@link ContextUnderstanderService}.
+     *
+     * @param packageName the package of the application reporting the event.
+     * @param event The reported {@link InsightEvent}.
+     */
     public void onHandleEvent(@NonNull String packageName, @NonNull InsightEvent event) {
         // Do nothing by default.
     }
