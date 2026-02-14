@@ -56,6 +56,15 @@ public class AgentSession {
         return new AgentSession(userId, false);
     }
 
+    /**
+     * Update an existing session to authorized and return a new copy.
+     *
+     * @param session existing session to copy from
+     */
+    public static AgentSession notAuthorized(@NonNull AgentSession session) {
+        return new AgentSession(session.mUserId, false);
+    }
+
     private AgentSession(int userId, boolean allowAutomation) {
         mUserId = userId;
         mAllowed = allowAutomation;

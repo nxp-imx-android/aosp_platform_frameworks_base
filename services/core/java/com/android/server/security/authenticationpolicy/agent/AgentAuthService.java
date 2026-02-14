@@ -24,6 +24,7 @@ import android.companion.CompanionDeviceManager;
 import android.companion.DeviceId;
 import android.content.Context;
 import android.hardware.biometrics.BiometricManager;
+import android.os.Build;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.os.UserHandle;
@@ -98,6 +99,17 @@ public class AgentAuthService implements AgentAuthServiceInternal {
     public boolean isAgentAuthorizedByAssociationId(int userId, int associationId) {
         final var info = mAgentSessionList.get(associationId);
         return info != null && (info.getUserId() == userId) && info.isAllowed();
+    }
+
+    @Override
+    public boolean setOverride(int userId, int associationId, boolean authorized) {
+        if (Build.IS_DEBUGGABLE) {
+            final AgentSession result = authorized ?
+                mAgentSessionList.authorizeIfPresent(userId, associationId) :
+                    mAgentSessionList.revokeIfPresent(userId, associationId);
+            return result != null && result.isAllowed();
+        }
+        return false;
     }
 
     /** Start the service start monitoring for connected agents and init for current user. */

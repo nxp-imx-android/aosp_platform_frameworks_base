@@ -63,6 +63,8 @@ class AuthenticationPolicyServiceShellCommand extends ShellCommand {
                     return setSecureLockDeviceTestStatus(pw);
                 case "is-agent-authorized":
                     return isAgentAuthorized(pw);
+                case "set-agent-authorized":
+                   return setAgentAuthorized(pw);
             }
         } catch (RemoteException e) {
             pw.println("Remote exception: " + e);
@@ -87,6 +89,7 @@ class AuthenticationPolicyServiceShellCommand extends ShellCommand {
         pw.println("  on-strong-face-auth-success-confirmed");
         pw.println("  set-secure-lock-device-test-status [true/false]");
         pw.println("  is-agent-authorized [association-id]");
+        pw.println("  set-agent-authorized [association-id] [true/false]");
     }
 
     @SuppressLint("AndroidFrameworkRequiresPermission")
@@ -149,6 +152,19 @@ class AuthenticationPolicyServiceShellCommand extends ShellCommand {
             pw.println("authorized: " + result);
         } catch (Exception e) {
             pw.println("invalid id or not enabled");
+        }
+        return 0;
+    }
+
+    private int setAgentAuthorized(@NonNull PrintWriter pw) throws RemoteException {
+        try {
+            final int id = Integer.parseInt(getNextArgRequired());
+            final boolean authorized = Boolean.parseBoolean(getNextArgRequired());
+            final boolean result = mService.setAgentAuthorizedByAssociationId(
+                    mCallingUser, id, authorized);
+            pw.println("authorized: " + result);
+        } catch (Exception e) {
+            pw.println("invalid params or not enabled");
         }
         return 0;
     }

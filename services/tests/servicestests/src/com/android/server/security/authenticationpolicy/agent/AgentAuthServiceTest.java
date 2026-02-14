@@ -224,6 +224,29 @@ public class AgentAuthServiceTest {
         assertThat(mService.isAgentAuthorized(USER_ID, deviceId)).isTrue();
     }
 
+    @Test
+    public void testSetOverride_updatesSession() throws RemoteException {
+        DeviceId deviceId = createDeviceId("123");
+        triggerAgentConnected(123, deviceId);
+        assertThat(mService.isAgentAuthorized(USER_ID, deviceId)).isFalse();
+
+        // Override to true
+        boolean result = mService.setOverride(USER_ID, 123, true);
+        assertThat(result).isTrue();
+        assertThat(mService.isAgentAuthorized(USER_ID, deviceId)).isTrue();
+
+        // Override to false
+        result = mService.setOverride(USER_ID, 123, false);
+        assertThat(result).isFalse();
+        assertThat(mService.isAgentAuthorized(USER_ID, deviceId)).isFalse();
+    }
+
+    @Test
+    public void testSetOverride_nonExistentSession_returnsFalse() {
+        boolean result = mService.setOverride(USER_ID, 999, true);
+        assertThat(result).isFalse();
+    }
+
     private void triggerAgentConnected(int associationId, DeviceId deviceId) throws RemoteException {
         assertThat(mAssocListener).isNotNull();
 

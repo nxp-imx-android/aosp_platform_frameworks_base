@@ -104,11 +104,25 @@ public class AgentSessionMap {
     }
 
     /** Authorize a session only if it exists in the map already. */
-    public void authorizeIfPresent(int associationId) {
+    public AgentSession authorizeIfPresent(int userId, int associationId) {
         try {
-            mAgentSessionList.computeIfPresent(associationId, (k, session) -> {
-                if (!session.isAllowed()) {
+            return mAgentSessionList.computeIfPresent(associationId, (k, session) -> {
+                if (userId == mUserId && !session.isAllowed()) {
                     return AgentSession.authorized(session);
+                } else {
+                    return session;
+                }
+            });
+        } finally {
+            updateSetting();
+        }
+    }
+
+    public AgentSession revokeIfPresent(int userId, int associationId) {
+        try {
+            return mAgentSessionList.computeIfPresent(associationId, (k, session) -> {
+                if (userId == mUserId && session.isAllowed()) {
+                    return AgentSession.notAuthorized(session);
                 } else {
                     return session;
                 }

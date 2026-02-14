@@ -191,11 +191,25 @@ public class AgentSessionMapTest {
         mAgentSessionMap.put(2, AgentSession.notAuthorized(USER_ID));
         assertThat(getSetting()).containsExactly("1", "2");
 
-        mAgentSessionMap.authorizeIfPresent(1);
+        mAgentSessionMap.authorizeIfPresent(USER_ID, 1);
 
         assertThat(mAgentSessionMap.get(1).isAllowed()).isTrue();
         assertThat(mAgentSessionMap.get(2).isAllowed()).isFalse();
         assertThat(getSetting()).containsExactly("2");
+    }
+
+    @Test
+    public void testRevokeIfPresent_updatesSetting() {
+        mAgentSessionMap = new AgentSessionMap(mContext, USER_ID);
+        mAgentSessionMap.put(1, AgentSession.authorized(USER_ID));
+        mAgentSessionMap.put(2, AgentSession.authorized(USER_ID));
+        assertThat(getSetting()).isEmpty();
+
+        mAgentSessionMap.revokeIfPresent(USER_ID, 1);
+
+        assertThat(mAgentSessionMap.get(1).isAllowed()).isFalse();
+        assertThat(mAgentSessionMap.get(2).isAllowed()).isTrue();
+        assertThat(getSetting()).containsExactly("1");
     }
 
     private List<String> getSetting() {

@@ -31,6 +31,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assume.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
@@ -573,6 +574,33 @@ public class AuthenticationPolicyServiceTest {
         } else {
             verifyNotLockDevice(MAX_ALLOWED_FAILED_AUTH_ATTEMPTS, MANAGED_PROFILE_USER_ID);
         }
+    }
+
+    @Test
+    @EnableFlags(android.companion.Flags.FLAG_SUPPORT_AI_AGENT)
+    public void testSetAgentAuthorizedByAssociationId_callsAgentAuthService()
+            throws RemoteException {
+        int associationId = 123;
+        when(mAgentAuthService.setOverride(PRIMARY_USER_ID, associationId, true)).thenReturn(true);
+
+        boolean result = mAuthenticationPolicyService.getBinderService()
+                .setAgentAuthorizedByAssociationId(UserHandle.of(PRIMARY_USER_ID), associationId, true);
+
+        assertThat(result).isTrue();
+        verify(mAgentAuthService).setOverride(PRIMARY_USER_ID, associationId, true);
+    }
+
+    @Test
+    @DisableFlags(android.companion.Flags.FLAG_SUPPORT_AI_AGENT)
+    public void testSetAgentAuthorizedByAssociationId_flagDisabled_returnsFalse()
+            throws RemoteException {
+        int associationId = 123;
+
+        boolean result = mAuthenticationPolicyService.getBinderService()
+                .setAgentAuthorizedByAssociationId(UserHandle.of(PRIMARY_USER_ID), associationId, true);
+
+        assertThat(result).isFalse();
+        verify(mAgentAuthService, never()).setOverride(anyInt(), anyInt(), anyBoolean());
     }
 
     private void verifyNotLockDevice(int expectedCntFailedAttempts, int userId) {

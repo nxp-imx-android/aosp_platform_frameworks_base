@@ -697,6 +697,21 @@ public class AuthenticationPolicyService extends SystemService {
         }
 
         @Override
+        @EnforcePermission(USE_BIOMETRIC_INTERNAL)
+        public boolean setAgentAuthorizedByAssociationId(UserHandle user, int associationId, boolean authorized) {
+            setAgentAuthorizedByAssociationId_enforcePermission();
+
+            if (Build.IS_DEBUGGABLE) {
+                if (android.companion.Flags.supportAiAgent()) {
+                    return mAgentAuthService.setOverride(
+                            user.getIdentifier(), associationId, authorized);
+                }
+            }
+
+            return false;
+        }
+
+        @Override
         public void onShellCommand(FileDescriptor in, FileDescriptor out, FileDescriptor err,
                 @NonNull String[] args, ShellCallback callback,
                 @NonNull ResultReceiver resultReceiver) {
