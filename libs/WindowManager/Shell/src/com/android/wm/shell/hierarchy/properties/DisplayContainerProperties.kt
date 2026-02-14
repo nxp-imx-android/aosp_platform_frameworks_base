@@ -16,7 +16,8 @@
 package com.android.wm.shell.hierarchy.properties
 
 import android.content.Context
-import android.content.res.Configuration
+import android.content.res.Configuration.ORIENTATION_LANDSCAPE
+import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import android.hardware.display.DisplayManager
 import android.view.Display.DEFAULT_DISPLAY
 import com.android.wm.shell.common.DisplayLayout
@@ -56,13 +57,12 @@ class DisplayContainerProperties(
      */
     fun updateFromDisplayLayout(displayLayout: DisplayLayout) {
         // TODO: Fill in more properties
-        config.windowConfiguration.bounds.set(0, 0, displayLayout.width(), displayLayout.height())
+        val width = displayLayout.width()
+        val height = displayLayout.height()
+        config.windowConfiguration.bounds.set(0, 0, width, height)
+        config.windowConfiguration.maxBounds.set(0, 0, width, height)
         config.windowConfiguration.rotation = displayLayout.rotation()
-        config.orientation = if (displayLayout.width() >= displayLayout.height()) {
-            Configuration.ORIENTATION_LANDSCAPE
-        } else {
-            Configuration.ORIENTATION_PORTRAIT
-        }
+        config.orientation = if (width >= height) ORIENTATION_LANDSCAPE else ORIENTATION_PORTRAIT
     }
 
     /** @see ContainerProperties.copy */
