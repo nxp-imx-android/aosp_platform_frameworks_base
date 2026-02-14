@@ -79,6 +79,6 @@ class DisplayContainerProperties(
 
     /** @see ContainerProperties.getTypeName */
     override fun getTypeName(): String {
-        return "Display"
+        return "Display#$displayId"
     }
 }

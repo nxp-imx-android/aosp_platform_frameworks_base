@@ -82,6 +82,7 @@ class HierarchyUpdater(
         updateContext: Mode.UpdateContext,
         snapshot: HierarchySnapshot,
     ) {
+        ProtoLog.v(WM_SHELL_MODES, "Hierarchy updated requested: %s", updateContext.reason)
         updaterTestHook?.onHierarchyUpdated()
 
         val postUpdateContainers = hierarchy.toContainerList()
@@ -210,7 +211,7 @@ class HierarchyUpdater(
                 }
             }
 
-        notifyModes(Mode.UpdateContext(), snapshot)
+        notifyModes(Mode.UpdateContext(reason = "Create root task: $name"), snapshot)
         return createdTask
     }
 
@@ -225,9 +226,14 @@ class HierarchyUpdater(
 
         // Remove the task from the hierarchy
         val container = hierarchy.getContainer(token)
-        container?.parent = null
+        if (container != null) {
+            container.parent = null
 
-        notifyModes(Mode.UpdateContext(), snapshot)
+            notifyModes(
+                Mode.UpdateContext(reason = "Remove root task: ${container.name}"),
+                snapshot
+            )
+        }
     }
 
     fun handleTransition(
@@ -255,7 +261,13 @@ class HierarchyUpdater(
         }
 
         // Notify all the modes
-        notifyModes(Mode.UpdateContext(startTransaction), snapshot)
+        notifyModes(
+            Mode.UpdateContext(
+                reason = "Transition #${info.debugId}",
+                preTransitionTx = startTransaction
+            ),
+            snapshot
+        )
 
         if (HierarchyUtils.hasTemporaryAnimatingContainers(hierarchy.root)) {
             // If there are temporary containers, then schedule them to be cleaned up after all
@@ -263,12 +275,15 @@ class HierarchyUpdater(
             transitions.runOnIdle {
                 ProtoLog.v(
                     WM_SHELL_MODES,
-                    "Cleaning up temporary animating conatiners from transition: %d",
+                    "Cleaning up temporary animating containers from transition: %d",
                     info.debugId
                 )
                 val snapshot = HierarchySnapshot(hierarchy.toContainerList())
                 HierarchyUtils.removeAllTemporaryAnimatingContainers(hierarchy.root)
-                notifyModes(Mode.UpdateContext(), snapshot)
+                notifyModes(
+                    Mode.UpdateContext(reason = "Removing temporary animating containers"),
+                    snapshot
+                )
             }
         }
         return snapshot

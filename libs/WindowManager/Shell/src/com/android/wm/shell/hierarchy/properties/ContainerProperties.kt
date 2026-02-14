@@ -18,6 +18,7 @@ package com.android.wm.shell.hierarchy.properties
 import android.app.WindowConfiguration
 import android.content.res.Configuration
 import android.graphics.RectF
+import android.view.Surface
 import android.window.TransitionInfo
 import androidx.annotation.CallSuper
 import com.android.wm.shell.dagger.hierarchy.WmSyncedProperty
@@ -26,6 +27,8 @@ import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGE
 import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_ROTATION
 import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_VISIBILITY
 import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_WINDOWING_MODE
+import com.android.wm.shell.hierarchy.utils.HierarchyDebugUtils
+import com.android.wm.shell.hierarchy.utils.HierarchyDebugUtils.Companion.capitalize
 import com.android.wm.shell.hierarchy.utils.ImmutableRectF
 import com.android.wm.shell.shared.TransitionUtil
 
@@ -58,6 +61,7 @@ open class ContainerProperties(
         get() = ImmutableRectF(config.windowConfiguration.bounds)
 
     // Convenience property
+    @Surface.Rotation
     val rotation: Int
         get() = config.windowConfiguration.rotation
 
@@ -140,8 +144,13 @@ open class ContainerProperties(
      */
     @CallSuper
     protected open fun propsToString(): String {
-        return "u$userId vis=$visibleRequested winMode=$windowingMode actType=$activityType " +
-                "bounds=$bounds rot=$rotation hashCode=${System.identityHashCode(this)}"
+        val winMode = capitalize(WindowConfiguration.windowingModeToString(windowingMode))
+        val actType = capitalize(WindowConfiguration.activityTypeToString(activityType))
+        val rotDegress = HierarchyDebugUtils.rotationToDegrees(rotation)
+        val rotStr = if (rotation != config.windowConfiguration.displayRotation) "rot=$rotDegress"
+                else ""
+        return "u$userId vis=$visibleRequested winMode=$winMode actType=$actType " +
+                "bounds=${bounds.toShortString()} $rotStr"
     }
 
     /**
