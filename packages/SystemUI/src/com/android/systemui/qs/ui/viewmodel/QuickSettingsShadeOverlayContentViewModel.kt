@@ -23,7 +23,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.settingslib.volume.shared.model.AudioStream
-import com.android.systemui.Flags
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.desktop.domain.interactor.DesktopInteractor
 import com.android.systemui.development.ui.viewmodel.BuildNumberViewModel
@@ -57,7 +56,6 @@ import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -113,15 +111,8 @@ constructor(
     val isTransparencyEnabled: Boolean by
         hydrator.hydratedStateOf(
             traceName = "transparencyEnabled",
-            initialValue =
-                Flags.notificationShadeBlur() &&
-                    windowRootViewBlurInteractor.isBlurCurrentlySupported.value,
-            source =
-                if (Flags.notificationShadeBlur()) {
-                    windowRootViewBlurInteractor.isBlurCurrentlySupported
-                } else {
-                    flowOf(false)
-                },
+            initialValue = windowRootViewBlurInteractor.isBlurCurrentlySupported.value,
+            source = windowRootViewBlurInteractor.isBlurCurrentlySupported,
         )
 
     /**
