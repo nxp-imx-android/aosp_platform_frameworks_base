@@ -15146,18 +15146,24 @@ package android.service.personalcontext.hint {
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class HintFilter implements android.os.Parcelable {
     method public int describeContents();
-    method @NonNull public java.util.Set<java.lang.String> getHintTypes();
+    method @NonNull public java.util.Set<java.lang.String> getBundleHintTypeNames(int);
+    method @NonNull public java.util.Set<java.lang.String> getBundleHintTypeNames();
+    method @NonNull public java.util.Set<java.lang.Class> getHintTypes(int);
+    method @NonNull public java.util.Set<java.lang.Class> getHintTypes();
+    method @NonNull public java.util.Set<java.lang.String> getPackages(int);
     method @NonNull public java.util.Set<java.lang.String> getPackages();
-    method @NonNull public java.util.Set<java.lang.String> getRequiredHintTypes();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.hint.HintFilter> CREATOR;
+    field public static final int FILTER_TYPE_ALLOWED = 1; // 0x1
+    field public static final int FILTER_TYPE_NONE = 0; // 0x0
+    field public static final int FILTER_TYPE_REQUIRED = 2; // 0x2
   }
 
   public static final class HintFilter.Builder {
     ctor public HintFilter.Builder();
-    method @NonNull public android.service.personalcontext.hint.HintFilter.Builder addHintType(@NonNull String, boolean);
-    method @NonNull public android.service.personalcontext.hint.HintFilter.Builder addHintType(@NonNull Class<? extends android.service.personalcontext.hint.ContextHint>, boolean);
-    method @NonNull public android.service.personalcontext.hint.HintFilter.Builder addPackage(@NonNull String);
+    method @NonNull public android.service.personalcontext.hint.HintFilter.Builder addBundleHintTypeName(@NonNull String, int);
+    method @NonNull public android.service.personalcontext.hint.HintFilter.Builder addHintType(@NonNull Class<? extends android.service.personalcontext.hint.ContextHint>, int);
+    method @NonNull public android.service.personalcontext.hint.HintFilter.Builder addPackage(@NonNull String, int);
     method @NonNull public android.service.personalcontext.hint.HintFilter build();
   }
 
