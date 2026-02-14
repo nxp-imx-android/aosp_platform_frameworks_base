@@ -16,6 +16,8 @@
 
 package com.android.server.security.authenticationpolicy.agent;
 
+import android.companion.DeviceId;
+
 /** Internal interface for the AgentAuthService. */
 public interface AgentAuthServiceInternal {
 
@@ -23,8 +25,18 @@ public interface AgentAuthServiceInternal {
      * Checks if the agent can perform automation at this time.
      *
      * @param userId user id
-     * @param associationId CDM association id of the agent connection
+     * @param deviceId CDM device id of the agent connection
      * @return current status
      */
-    boolean isAgentAuthorized(int userId, int associationId);
+    boolean isAgentAuthorized(int userId, DeviceId deviceId);
+
+    /**
+     * Checks if the agent can perform automation at this time using the local
+     * associationId.
+     *
+     * @param userId user id
+     * @param associationId CDM local association id of the agent connection
+     * @return current status
+     */
+    boolean isAgentAuthorizedByAssociationId(int userId, int associationId);
 }

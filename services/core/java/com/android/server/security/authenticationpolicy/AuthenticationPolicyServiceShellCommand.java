@@ -145,10 +145,8 @@ class AuthenticationPolicyServiceShellCommand extends ShellCommand {
     private int isAgentAuthorized(@NonNull PrintWriter pw) throws RemoteException {
         try {
             final int id = Integer.parseInt(getNextArgRequired());
-            if (id >= 0) {
-                final boolean result = mService.isAgentAuthorized(mCallingUser, id);
-                pw.println("authorized: " + result);
-            }
+            final boolean result = mService.isAgentAuthorizedByAssociationId(mCallingUser, id);
+            pw.println("authorized: " + result);
         } catch (Exception e) {
             pw.println("invalid id or not enabled");
         }

@@ -41,6 +41,7 @@ import static org.mockito.Mockito.when;
 
 import android.annotation.SuppressLint;
 import android.app.KeyguardManager;
+import android.companion.DeviceId;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
@@ -624,25 +625,40 @@ public class AuthenticationPolicyServiceTest {
     @Test
     @EnableFlags(android.companion.Flags.FLAG_SUPPORT_AI_AGENT)
     public void testIsAgentAuthorized_callsAgentAuthService() throws RemoteException {
-        int associationId = 123;
-        when(mAgentAuthService.isAgentAuthorized(PRIMARY_USER_ID, associationId)).thenReturn(true);
+        DeviceId deviceId = new DeviceId.Builder().setCustomId("123").build();
+        when(mAgentAuthService.isAgentAuthorized(PRIMARY_USER_ID, deviceId)).thenReturn(true);
 
         boolean result = mAuthenticationPolicyService.getBinderService().isAgentAuthorized(
-                UserHandle.of(PRIMARY_USER_ID), associationId);
+                UserHandle.of(PRIMARY_USER_ID), deviceId);
 
         assertThat(result).isTrue();
-        verify(mAgentAuthService).isAgentAuthorized(PRIMARY_USER_ID, associationId);
+        verify(mAgentAuthService).isAgentAuthorized(PRIMARY_USER_ID, deviceId);
     }
 
     @Test
     @DisableFlags(android.companion.Flags.FLAG_SUPPORT_AI_AGENT)
     public void testIsAgentAuthorized_flagDisabled_returnsFalse() throws RemoteException {
-        int associationId = 123;
+        DeviceId deviceId = new DeviceId.Builder().setCustomId("123").build();
 
         boolean result = mAuthenticationPolicyService.getBinderService().isAgentAuthorized(
-                UserHandle.of(PRIMARY_USER_ID), associationId);
+                UserHandle.of(PRIMARY_USER_ID), deviceId);
 
         assertThat(result).isFalse();
-        verify(mAgentAuthService, never()).isAgentAuthorized(anyInt(), anyInt());
+        verify(mAgentAuthService, never()).isAgentAuthorized(anyInt(), any());
+    }
+
+    @Test
+    @EnableFlags(android.companion.Flags.FLAG_SUPPORT_AI_AGENT)
+    public void testIsAgentAuthorizedByAssociationId_callsAgentAuthService()
+            throws RemoteException {
+        int associationId = 123;
+        when(mAgentAuthService.isAgentAuthorizedByAssociationId(PRIMARY_USER_ID, associationId))
+                .thenReturn(true);
+
+        boolean result = mAuthenticationPolicyService.getBinderService()
+                .isAgentAuthorizedByAssociationId(UserHandle.of(PRIMARY_USER_ID), associationId);
+
+        assertThat(result).isTrue();
+        verify(mAgentAuthService).isAgentAuthorizedByAssociationId(PRIMARY_USER_ID, associationId);
     }
 }

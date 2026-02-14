@@ -38,14 +38,14 @@ import java.util.stream.Collectors;
  *
  * @hide
  */
-public class AgentSessionMap<K> {
+public class AgentSessionMap {
 
     private static final String TAG = "AgentSessionMap";
     public static final String SETTINGS_KEY = "xdev-ai-agent-missing-session";
 
     private final Context mContext;
     private final int mUserId;
-    private final Map<K, AgentSession> mAgentSessionList = new ConcurrentHashMap<>();
+    private final Map<Integer, AgentSession> mAgentSessionList = new ConcurrentHashMap<>();
 
     /**
      * Create a new session map.
@@ -59,15 +59,15 @@ public class AgentSessionMap<K> {
         updateSetting("" /* value */);
     }
 
-    public AgentSession get(K key) {
-        return mAgentSessionList.get(key);
+    public AgentSession get(int associationId) {
+        return mAgentSessionList.get(associationId);
     }
 
     /** Add a new session to the map. */
-    public void put(K key, AgentSession value) {
+    public void put(int associationId, AgentSession value) {
         try {
             if (value.getUserId() == mUserId) {
-                mAgentSessionList.put(key, value);
+                mAgentSessionList.put(associationId, value);
             } else {
                 Slog.e(TAG, "Invalid user id: " + value.getUserId() + ", ignoring session");
             }
@@ -77,9 +77,9 @@ public class AgentSessionMap<K> {
     }
 
     /** Remove an existing session from the map. */
-    public AgentSession remove(K key) {
+    public AgentSession remove(int associationId) {
         try {
-            return mAgentSessionList.remove(key);
+            return mAgentSessionList.remove(associationId);
         } finally {
             updateSetting();
         }
@@ -104,9 +104,9 @@ public class AgentSessionMap<K> {
     }
 
     /** Authorize a session only if it exists in the map already. */
-    public void authorizeIfPresent(K key) {
+    public void authorizeIfPresent(int associationId) {
         try {
-            mAgentSessionList.computeIfPresent(key, (k, session) -> {
+            mAgentSessionList.computeIfPresent(associationId, (k, session) -> {
                 if (!session.isAllowed()) {
                     return AgentSession.authorized(session);
                 } else {
@@ -123,10 +123,13 @@ public class AgentSessionMap<K> {
     }
 
     private void updateSetting(String overrideValue) {
-        final String value = overrideValue != null ? overrideValue : mAgentSessionList.values()
+        final String value = overrideValue != null ? overrideValue : mAgentSessionList.entrySet()
                 .stream()
-                .filter(s -> (s.getUserId() == mUserId) && !s.isAllowed())
-                .map(s -> String.valueOf(s.getId()))
+                .filter(e -> {
+                    final var session = e.getValue();
+                    return (session.getUserId() == mUserId) && !session.isAllowed();
+                })
+                .map(e -> String.valueOf(e.getKey()))
                 .collect(Collectors.joining(","));
         final boolean ok = Settings.Secure.putStringForUser(mContext.getContentResolver(),
                 SETTINGS_KEY, value, mUserId);

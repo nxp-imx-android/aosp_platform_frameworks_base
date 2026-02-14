@@ -31,6 +31,7 @@ import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
 import android.annotation.TestApi;
+import android.companion.DeviceId;
 import android.content.Context;
 import android.os.Binder;
 import android.os.Build;
@@ -563,17 +564,17 @@ public final class AuthenticationPolicyManager {
     /**
      * Checks if a cross device agent is authorized for automation on this device when locked.
      *
-     * @param associationId association id from the CompanionDeviceManager
+     * @param deviceId device id from the CompanionDeviceManager
      * @return true if authorized now
      *
      * @hide
      */
     @RequiresPermission(USE_BIOMETRIC_INTERNAL)
     @FlaggedApi(FLAG_SUPPORT_AI_AGENT)
-    public boolean isConnectedAgentAuthorized(int associationId) {
+    public boolean isConnectedAgentAuthorized(DeviceId deviceId) {
         try {
             return mAuthenticationPolicyService.isAgentAuthorized(
-                    mContext.getUser(), associationId);
+                    mContext.getUser(), deviceId);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
