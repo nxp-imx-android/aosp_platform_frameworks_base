@@ -159,6 +159,17 @@ class AppInteractionServiceImplTest {
             .insertAppInteractionHistory(any(), any(), anyOrNull(), any())
     }
 
+    @Test
+    fun onPackageRemoved_deleteHistory() {
+        val packageName = "com.example.package"
+        val uid = 10001 // User 0, app 1
+
+        service.mPackageMonitor.onPackageRemoved(packageName, uid)
+
+        verify(mockMultiUserHistory, times(1)).asUser(0)
+        verify(mockUserHistory, times(1)).deleteAppInteractionHistories(packageName)
+    }
+
     companion object {
         private val TEST_USER = TargetUser(UserInfo(10, "testUser", 0))
     }
