@@ -51,8 +51,8 @@ public class ContentCaptureConversationHintTest {
     private static final ChatMessageContentCaptureData CHAT_MESSAGE_CONTENT_CAPTURE_DATA =
             new ChatMessageContentCaptureData.Builder()
                     .setAutofillId(AUTOFILL_ID)
-                    .setRawParsedTimeString("12:00 PM")
-                    .setRawParsedDateString("Today")
+                    .setRawTimeString("12:00 PM")
+                    .setRawDateString("Today")
                     .build();
     private static final ChatMessageData CHAT_MESSAGE_DATA =
             new ChatMessageData.Builder()

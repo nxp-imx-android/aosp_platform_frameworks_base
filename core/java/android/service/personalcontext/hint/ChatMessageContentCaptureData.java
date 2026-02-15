@@ -33,43 +33,43 @@ import java.util.Objects;
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public final class ChatMessageContentCaptureData implements Parcelable {
 
-    private final @NonNull String mRawParsedTimeString;
-    private final @NonNull String mRawParsedDateString;
+    private final @NonNull String mRawTimeString;
+    private final @NonNull String mRawDateString;
     private final @NonNull AutofillId mAutofillId;
 
     private ChatMessageContentCaptureData(
-            @NonNull String rawParsedTimeString,
-            @NonNull String rawParsedDateString,
+            @NonNull String rawTimeString,
+            @NonNull String rawDateString,
             @NonNull AutofillId autofillId) {
-        mRawParsedTimeString = rawParsedTimeString;
-        mRawParsedDateString = rawParsedDateString;
+        mRawTimeString = rawTimeString;
+        mRawDateString = rawDateString;
         mAutofillId = autofillId;
     }
 
     private ChatMessageContentCaptureData(Parcel in) {
-        mRawParsedTimeString = in.readString8();
-        mRawParsedDateString = in.readString8();
+        mRawTimeString = in.readString8();
+        mRawDateString = in.readString8();
         mAutofillId = in.readTypedObject(AutofillId.CREATOR);
     }
 
     /**
      * Returns a user-friendly string representing the time of the message (e.g., "10:00 AM").
      *
-     * <p>This string is parsed directly from the message view and returns as-is.
+     * <p>This string is copied directly from the message view and returns as-is.
      */
     @NonNull
-    public String getRawParsedTimeString() {
-        return mRawParsedTimeString;
+    public String getRawTimeString() {
+        return mRawTimeString;
     }
 
     /**
      * Returns a user-friendly string representing the date of the message (e.g., "Today").
      *
-     * <p>This string is parsed directly from the message view and returns as-is.
+     * <p>This string is copied directly from the message view and returns as-is.
      */
     @NonNull
-    public String getRawParsedDateString() {
-        return mRawParsedDateString;
+    public String getRawDateString() {
+        return mRawDateString;
     }
 
     /** Returns the {@link AutofillId} of the view that this message corresponds to. */
@@ -80,8 +80,8 @@ public final class ChatMessageContentCaptureData implements Parcelable {
 
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
-        dest.writeString8(mRawParsedTimeString);
-        dest.writeString8(mRawParsedDateString);
+        dest.writeString8(mRawTimeString);
+        dest.writeString8(mRawDateString);
         dest.writeTypedObject(mAutofillId, flags);
     }
 
@@ -93,24 +93,24 @@ public final class ChatMessageContentCaptureData implements Parcelable {
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof ChatMessageContentCaptureData that)) return false;
-        return Objects.equals(mRawParsedTimeString, that.mRawParsedTimeString)
-                && Objects.equals(mRawParsedDateString, that.mRawParsedDateString)
+        return Objects.equals(mRawTimeString, that.mRawTimeString)
+                && Objects.equals(mRawDateString, that.mRawDateString)
                 && Objects.equals(mAutofillId, that.mAutofillId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(mRawParsedTimeString, mRawParsedDateString, mAutofillId);
+        return Objects.hash(mRawTimeString, mRawDateString, mAutofillId);
     }
 
     @Override
     public String toString() {
         return "ChatMessageContentCaptureData{"
-                + "mRawParsedTimeString='"
-                + mRawParsedTimeString
+                + "mRawTimeString='"
+                + mRawTimeString
                 + "'"
-                + ", mRawParsedDateString='"
-                + mRawParsedDateString
+                + ", mRawDateString='"
+                + mRawDateString
                 + "'"
                 + ", mAutofillId="
                 + mAutofillId
@@ -120,31 +120,31 @@ public final class ChatMessageContentCaptureData implements Parcelable {
     /** Builder for {@link ChatMessageContentCaptureData}. */
     @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
     public static final class Builder {
-        private @NonNull String mRawParsedTimeString;
-        private @NonNull String mRawParsedDateString;
+        private @NonNull String mRawTimeString;
+        private @NonNull String mRawDateString;
         private @NonNull AutofillId mAutofillId;
 
         /**
          * Sets a user-friendly string representing the time of the message (e.g., "10:00 AM").
          *
-         * <p>This is a required builder input and should be a string that is parsed directly from
+         * <p>This is a required builder input and should be a string that is copied directly from
          * the message view and provided as-is.
          */
         @NonNull
-        public Builder setRawParsedTimeString(@NonNull String rawParsedTimeString) {
-            mRawParsedTimeString = requireNonNull(rawParsedTimeString);
+        public Builder setRawTimeString(@NonNull String rawTimeString) {
+            mRawTimeString = requireNonNull(rawTimeString);
             return this;
         }
 
         /**
          * Sets a user-friendly string representing the date of the message (e.g., "Today").
          *
-         * <p>This is a required builder input should be a string that is parsed directly from the
+         * <p>This is a required builder input should be a string that is copied directly from the
          * message view and provided as-is.
          */
         @NonNull
-        public Builder setRawParsedDateString(@NonNull String rawParsedDateString) {
-            mRawParsedDateString = requireNonNull(rawParsedDateString);
+        public Builder setRawDateString(@NonNull String rawDateString) {
+            mRawDateString = requireNonNull(rawDateString);
             return this;
         }
 
@@ -162,14 +162,14 @@ public final class ChatMessageContentCaptureData implements Parcelable {
         /**
          * Builds the {@link ChatMessageContentCaptureData}.
          *
-         * @throws NullPointerException if any of {@link #setRawParsedTimeString(String)}, {@link
-         *     #setRawParsedDateString(String)}, and {@link #setAutofillId(AutofillId)} are not set.
+         * @throws NullPointerException if any of {@link #setRawTimeString(String)}, {@link
+         *     #setRawDateString(String)}, and {@link #setAutofillId(AutofillId)} are not set.
          */
         @NonNull
         public ChatMessageContentCaptureData build() {
             return new ChatMessageContentCaptureData(
-                    requireNonNull(mRawParsedTimeString),
-                    requireNonNull(mRawParsedDateString),
+                    requireNonNull(mRawTimeString),
+                    requireNonNull(mRawDateString),
                     requireNonNull(mAutofillId));
         }
     }
