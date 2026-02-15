@@ -24,6 +24,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.view.View;
 
@@ -44,7 +45,7 @@ public class InsightSurfaceClientUpdateTest {
         final int nestedScrollAxes = SCROLL_AXIS_HORIZONTAL;
         final boolean nestedScrollAxisLocked = true;
         final boolean shouldBlur = true;
-        final String themeResourceName = "theme";
+        final int themeResourceId = 7;
         final Configuration configuration = mock(Configuration.class);
 
         final InsightSurfaceClientUpdate update =
@@ -55,7 +56,7 @@ public class InsightSurfaceClientUpdateTest {
                         .setNestedScrollAxes(nestedScrollAxes)
                         .setNestedScrollAxisLocked(nestedScrollAxisLocked)
                         .setShouldBlur(shouldBlur)
-                        .setThemeResourceName(themeResourceName)
+                        .setThemeResourceId(themeResourceId)
                         .setConfiguration(configuration)
                         .build();
 
@@ -74,7 +75,7 @@ public class InsightSurfaceClientUpdateTest {
         assertThat(update.getNestedScrollAxes()).isEqualTo(nestedScrollAxes);
         assertThat(update.isNestedScrollAxisLocked()).isEqualTo(nestedScrollAxisLocked);
         assertThat(update.shouldBlur()).isEqualTo(shouldBlur);
-        assertThat(update.getThemeResourceName()).isEqualTo(themeResourceName);
+        assertThat(update.getThemeResourceId()).isEqualTo(themeResourceId);
         assertThat(update.getBackgroundColor()).isEqualTo(backgroundColor);
     }
 
@@ -95,7 +96,7 @@ public class InsightSurfaceClientUpdateTest {
         assertThat(update.getNestedScrollAxes()).isEqualTo(SCROLL_AXIS_NONE);
         assertThat(update.isNestedScrollAxisLocked()).isEqualTo(false);
         assertThat(update.shouldBlur()).isEqualTo(false);
-        assertThat(update.getThemeResourceName()).isNull();
+        assertThat(update.getThemeResourceId()).isEqualTo(Resources.ID_NULL);
         assertThat(update.getBackgroundColor()).isNull();
     }
 }

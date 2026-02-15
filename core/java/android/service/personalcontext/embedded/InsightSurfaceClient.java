@@ -19,6 +19,7 @@ package android.service.personalcontext.embedded;
 import static android.annotation.SystemApi.Client.PRIVILEGED_APPS;
 
 import android.annotation.FlaggedApi;
+import android.annotation.StyleRes;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.content.Context;
@@ -232,7 +233,7 @@ public class InsightSurfaceClient implements AutoCloseable {
             int nestedScrollAxes,
             boolean nestedScrollAxisLocked,
             boolean shouldBlur,
-            @Nullable String themeResourceName,
+            @StyleRes int themeResourceId,
             @NonNull List<InsightReceiver> receivers) {
         mContext = context;
         mInsightReceivers = List.copyOf(receivers);
@@ -246,7 +247,7 @@ public class InsightSurfaceClient implements AutoCloseable {
                 nestedScrollAxes,
                 nestedScrollAxisLocked,
                 shouldBlur,
-                themeResourceName,
+                themeResourceId,
                 mContext.getPackageName(),
                 mContext.getResources().getConfiguration(),
                 mClient);
@@ -334,12 +335,12 @@ public class InsightSurfaceClient implements AutoCloseable {
     /**
      * Get the name of a theme resource to be passed to the connected visualizer. A visualizer
      * can use this name to look up the theme, which can then be used when creating an embedded
-     * surface for the client. See {@link InsightSurfaceClientInfo#getThemeResourceName()} for more
+     * surface for the client. See {@link InsightSurfaceClientInfo#getThemeResourceId()} for more
      * information.
      */
-    @Nullable
-    public String getThemeResourceName() {
-        return mClientInfo.getThemeResourceName();
+    @StyleRes
+    public int getThemeResourceId() {
+        return mClientInfo.getThemeResourceId();
     }
 
     /**
@@ -450,7 +451,7 @@ public class InsightSurfaceClient implements AutoCloseable {
         private int mNestedScrollAxes = View.SCROLL_AXIS_NONE;
         private boolean mNestedScrollAxisLocked = false;
         private boolean mShouldBlur = false;
-        private String mThemeResourceName;
+        private int mThemeResourceId;
 
         /**
          * Construct a new builder.
@@ -545,12 +546,12 @@ public class InsightSurfaceClient implements AutoCloseable {
          * &lt;style/>
          * </pre>
          * <p/>
-         * See {@link InsightSurfaceClientInfo#getThemeResourceName()} for
+         * See {@link InsightSurfaceClientInfo#getThemeResourceId()} for
          * more information.
          */
         @NonNull
-        public Builder setThemeResourceName(@Nullable String themeResourceName) {
-            mThemeResourceName = themeResourceName;
+        public Builder setThemeResourceId(@StyleRes int themeResourceId) {
+            mThemeResourceId = themeResourceId;
             return this;
         }
 
@@ -586,7 +587,7 @@ public class InsightSurfaceClient implements AutoCloseable {
                     mNestedScrollAxes,
                     mNestedScrollAxisLocked,
                     mShouldBlur,
-                    mThemeResourceName,
+                    mThemeResourceId,
                     mReceivers);
         }
     }
