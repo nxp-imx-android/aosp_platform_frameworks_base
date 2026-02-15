@@ -336,6 +336,7 @@ package android {
     field @FlaggedApi("com.android.nfc.module.flags.tap_to_x") public static final String PERFORM_GESTURE_EXCHANGE = "android.permission.PERFORM_GESTURE_EXCHANGE";
     field public static final String PERFORM_IMS_SINGLE_REGISTRATION = "android.permission.PERFORM_IMS_SINGLE_REGISTRATION";
     field public static final String PERFORM_SIM_ACTIVATION = "android.permission.PERFORM_SIM_ACTIVATION";
+    field @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final String PERSONAL_CONTEXT_PUBLISH_HINTS = "android.permission.PERSONAL_CONTEXT_PUBLISH_HINTS";
     field @FlaggedApi("android.app.bridged_notifications") public static final String POST_BRIDGED_NOTIFICATIONS = "android.permission.POST_BRIDGED_NOTIFICATIONS";
     field public static final String POWER_SAVER = "android.permission.POWER_SAVER";
     field @FlaggedApi("android.permission.flags.factory_reset_prep_permission_apis") public static final String PREPARE_FACTORY_RESET = "android.permission.PREPARE_FACTORY_RESET";
@@ -15055,7 +15056,7 @@ package android.service.personalcontext {
     method @NonNull public android.service.personalcontext.Token mintToken();
     method public void publishTriggeringHint(@NonNull java.util.List<android.service.personalcontext.hint.ContextHint>, @Nullable java.util.List<android.service.personalcontext.RenderToken>);
     method public void publishTriggeringHint(@NonNull java.util.List<android.service.personalcontext.hint.ContextHint>, @Nullable java.util.List<android.service.personalcontext.RenderToken>, @Nullable java.util.List<android.service.personalcontext.hint.ContextHint>);
-    method public void publishTriggeringHint(@NonNull android.service.personalcontext.insight.interaction.ReturnHintReport, @NonNull java.util.List<android.service.personalcontext.hint.ContextHint>);
+    method @RequiresPermission(android.Manifest.permission.PERSONAL_CONTEXT_PUBLISH_HINTS) public void publishTriggeringHint(@NonNull android.service.personalcontext.insight.interaction.ReturnHintReport, @NonNull java.util.List<android.service.personalcontext.hint.ContextHint>);
     method public void reportInsightEvent(@NonNull android.service.personalcontext.insight.PublishedContextInsight, int, @NonNull android.service.personalcontext.RenderToken);
     method public void setEnabled(boolean);
     method @RequiresPermission(android.Manifest.permission.CHANGE_PERSONAL_CONTEXT_MODE) public void setPersonalContextModeEnabled(@NonNull String, boolean);

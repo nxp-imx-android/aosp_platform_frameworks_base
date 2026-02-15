@@ -33,6 +33,7 @@ import android.service.personalcontext.insight.interaction.InsightEvent;
  * @hide
  */
 interface IPersonalContextManager {
+    @EnforcePermission("PERSONAL_CONTEXT_PUBLISH_HINTS")
     oneway void publishTriggeringHint(
             in List<ContextHintWrapper> hints,
             in List<RenderToken> renderTokens,

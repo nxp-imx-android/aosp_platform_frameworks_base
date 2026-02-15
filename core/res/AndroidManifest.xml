@@ -3112,6 +3112,18 @@
         android:protectionLevel="signature"
         android:featureFlag="android.service.personalcontext.enable_personal_context_service" />
 
+    <!--@SystemApi Allows privileged applications to publish hints to personal context manager.
+        <p>This permission is only granted to system apps.
+        <p>Protection level: signature|privileged
+
+        @hide
+        @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+     -->
+    <permission
+        android:name="android.permission.PERSONAL_CONTEXT_PUBLISH_HINTS"
+        android:protectionLevel="signature|privileged"
+        android:featureFlag="android.service.personalcontext.enable_personal_context_service" />
+
     <!-- ======================================== -->
     <!-- Permissions for factory reset protection -->
     <!-- ======================================== -->

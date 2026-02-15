@@ -252,6 +252,7 @@ public final class PersonalContextManager {
      * @param returnHintReport Routing information from an insight that these hints are related to
      * @param hints raw data to be injected into the context flow
      */
+    @RequiresPermission(Manifest.permission.PERSONAL_CONTEXT_PUBLISH_HINTS)
     @UserHandleAware(
             requiresPermissionIfNotCaller = android.Manifest.permission.INTERACT_ACROSS_USERS)
     public void publishTriggeringHint(

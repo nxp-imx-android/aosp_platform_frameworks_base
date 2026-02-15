@@ -551,13 +551,18 @@ public class PersonalContextManagerService extends SystemService {
                     });
         }
 
-        @PermissionManuallyEnforced
+        // Suppressing warning as enforcement is currently behind a flag
+        @SuppressWarnings("MissingEnforcePermissionHelper")
+        @EnforcePermission(android.Manifest.permission.PERSONAL_CONTEXT_PUBLISH_HINTS)
         @Override
         public void publishTriggeringHint(
                 List<ContextHintWrapper> hints,
                 List<RenderToken> renderTokens,
                 List<ContextHintWrapper> attributionHints,
                 int userId) {
+            if (android.service.personalcontext.Flags.enforcePersonalContextPermissions()) {
+                publishTriggeringHint_enforcePermission();
+            }
             verifyUser(userId);
 
             final int callingPid = Binder.getCallingPid();
