@@ -158,7 +158,7 @@ public class VisualizerRegistryTest {
     public void testCreateVisualizationForClient() {
         final PublishedContextInsight insight =
                 fakePublishInsight(new BundleInsight.Builder().build());
-        final RenderToken renderToken = new RenderToken(UUID.randomUUID());
+        final RenderToken renderToken = new RenderToken(UUID.randomUUID(), null);
 
         final ComponentName componentName =
                 new ComponentName(VISUALIZER_PACKAGE_NAME, VISUALIZER_SERVICE_NAME);

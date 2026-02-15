@@ -96,7 +96,7 @@ class AutofillRendererServiceTest : SysuiTestCase() {
                     )
                     .build()
                     .fakePublish(),
-                RenderToken(UUID.randomUUID()),
+                RenderToken(UUID.randomUUID(), null),
             )
 
             val datasetCaptor = argumentCaptor<MutableList<Dataset>>()
@@ -149,7 +149,7 @@ class AutofillRendererServiceTest : SysuiTestCase() {
                     )
                     .build()
                     .fakePublish(),
-                RenderToken(UUID.randomUUID()),
+                RenderToken(UUID.randomUUID(), null),
             )
 
             val datasetCaptor = argumentCaptor<MutableList<Dataset>>()

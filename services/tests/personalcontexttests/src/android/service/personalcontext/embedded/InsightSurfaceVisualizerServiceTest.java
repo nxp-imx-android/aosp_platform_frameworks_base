@@ -57,7 +57,7 @@ public class InsightSurfaceVisualizerServiceTest {
     private final PublishedContextInsightWrapper mInsight =
             new PublishedContextInsightWrapper(new PublishedContextInsight(
                     new BundleInsight.Builder().build(), UUID.randomUUID()));
-    private final RenderToken mRenderToken = new RenderToken(UUID.randomUUID());
+    private final RenderToken mRenderToken = new RenderToken(UUID.randomUUID(), null);
 
     private final InsightSurfaceVisualizerService.Injector mInjector =
             new InsightSurfaceVisualizerService.Injector() {

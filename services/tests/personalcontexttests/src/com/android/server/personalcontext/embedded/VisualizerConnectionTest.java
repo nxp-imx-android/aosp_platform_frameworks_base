@@ -165,7 +165,7 @@ public class VisualizerConnectionTest {
         final VisualizerConnection connection = new VisualizerConnection(
                 mComponentName, mContext, Runnable::run);
         final ContextInsight insight = new BundleInsight.Builder().build();
-        final RenderToken renderToken = new RenderToken(UUID.randomUUID());
+        final RenderToken renderToken = new RenderToken(UUID.randomUUID(), null);
 
         // Trigger the service binding.
         connection.createVisualizationForClient(
@@ -199,7 +199,7 @@ public class VisualizerConnectionTest {
             InsightSurfaceClientInfo client,
             boolean shouldSucceed) throws RemoteException {
         final ContextInsight insight = new BundleInsight.Builder().build();
-        final RenderToken renderToken = new RenderToken(UUID.randomUUID());
+        final RenderToken renderToken = new RenderToken(UUID.randomUUID(), null);
         ArgumentCaptor<IVisualizationResult> resultCaptor =
                 ArgumentCaptor.forClass(IVisualizationResult.class);
 

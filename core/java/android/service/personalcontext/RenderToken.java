@@ -56,19 +56,6 @@ public final class RenderToken implements Parcelable, Comparable<RenderToken> {
     private final UUID mRendererComponentId;
 
     /**
-     * Creates a new {@link RenderToken} for the renderer with the given ID.
-     *
-     * @param rendererComponentId The {@link UUID} of the renderer as identified by the
-     *                            PersonalContext service.
-     * @see #RenderToken(UUID, String)
-     * @hide
-     */
-    @TestApi
-    public RenderToken(@NonNull UUID rendererComponentId) {
-        this(rendererComponentId, null);
-    }
-
-    /**
      * Creates a new {@link RenderToken} for the renderer with the given ID and tag.
      *
      * @param rendererComponentId The {@link UUID} of the renderer as identified by the
