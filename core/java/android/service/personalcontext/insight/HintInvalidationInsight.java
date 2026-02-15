@@ -16,6 +16,8 @@
 
 package android.service.personalcontext.insight;
 
+import static java.util.Objects.requireNonNull;
+
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.TestApi;
@@ -121,6 +123,7 @@ public final class HintInvalidationInsight extends ContextInsight {
          * @param invalidationHint the hint with information about which hint to invalidate.
          */
         public Builder(@NonNull ContextHintWithSignature invalidationHint) {
+            requireNonNull(invalidationHint);
             if (!(invalidationHint.getContextHint() instanceof HintInvalidationHint)) {
                 throw new IllegalArgumentException(
                         "invalidationHint must contain a HintInvalidationHint");
@@ -136,7 +139,7 @@ public final class HintInvalidationInsight extends ContextInsight {
          */
         @NonNull
         public Builder addToken(@NonNull Token token) {
-            mBaseBuilder.addToken(token);
+            mBaseBuilder.addToken(requireNonNull(token));
             return this;
         }
 

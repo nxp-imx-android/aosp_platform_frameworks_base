@@ -16,6 +16,8 @@
 
 package android.service.personalcontext.insight;
 
+import static java.util.Objects.requireNonNull;
+
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -43,8 +45,8 @@ public final class DisplayInsight extends ContextInsight {
     private DisplayInsight(
             @NonNull ContextInsight.ConstructorParams baseParams,
             @NonNull InsightDisplayDetails displayDetails) {
-        super(baseParams);
-        mDisplayDetails = Objects.requireNonNull(displayDetails);
+        super(requireNonNull(baseParams));
+        mDisplayDetails = requireNonNull(displayDetails);
     }
 
     /**
@@ -52,8 +54,8 @@ public final class DisplayInsight extends ContextInsight {
      */
     DisplayInsight(@NonNull ContextInsight.ConstructorParams baseParams, @NonNull Bundle bundle) {
         this(
-                baseParams,
-                Objects.requireNonNull(
+                requireNonNull(baseParams),
+                requireNonNull(
                         bundle.getParcelable(KEY_DISPLAY_DETAILS, InsightDisplayDetails.class)));
     }
 
@@ -122,7 +124,7 @@ public final class DisplayInsight extends ContextInsight {
          */
         public Builder(
                 @NonNull InsightDisplayDetails displayDetails) {
-            mDisplayDetails = Objects.requireNonNull(displayDetails);
+            mDisplayDetails = requireNonNull(displayDetails);
         }
 
         /**
@@ -135,7 +137,7 @@ public final class DisplayInsight extends ContextInsight {
          */
         @NonNull
         public Builder addOriginHint(@NonNull ContextHintWithSignature hint) {
-            mBaseBuilder.addOriginHint(hint);
+            mBaseBuilder.addOriginHint(requireNonNull(hint));
             return this;
         }
 
@@ -146,7 +148,7 @@ public final class DisplayInsight extends ContextInsight {
          */
         @NonNull
         public Builder addToken(@NonNull Token token) {
-            mBaseBuilder.addToken(token);
+            mBaseBuilder.addToken(requireNonNull(token));
             return this;
         }
 

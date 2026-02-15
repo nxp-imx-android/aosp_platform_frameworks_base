@@ -443,7 +443,7 @@ public abstract class ContextInsight {
              */
             @NonNull
             Builder addOriginHint(@NonNull ContextHintWithSignature hint) {
-                mOriginHints.add(hint);
+                mOriginHints.add(requireNonNull(hint));
                 return this;
             }
 
@@ -454,7 +454,7 @@ public abstract class ContextInsight {
              */
             @NonNull
             Builder addToken(@NonNull Token token) {
-                mTokens.add(token);
+                mTokens.add(requireNonNull(token));
                 return this;
             }
 
