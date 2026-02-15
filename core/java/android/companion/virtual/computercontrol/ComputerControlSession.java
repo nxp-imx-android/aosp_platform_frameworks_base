@@ -189,13 +189,21 @@ public final class ComputerControlSession implements AutoCloseable {
      */
     public static final int BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH = 2;
 
+    /**
+     * Reason indicating that the session was blocked due to a {@link #notifyBlocked()} request from
+     * the caller.
+     */
+    public static final int BLOCK_REASON_CALLER_INITIATED = 3;
+
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(prefix = "BLOCK_REASON_", value = {
             // Keep in sync with computercontrol_extension_atoms.proto
             BLOCK_REASON_UNKNOWN,
             BLOCK_REASON_SECURE_CONTENT,
-            BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH})
+            BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH,
+            BLOCK_REASON_CALLER_INITIATED,
+    })
     @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
     public @interface SessionBlockReason {
     }
@@ -797,6 +805,34 @@ public final class ComputerControlSession implements AutoCloseable {
             throw e.rethrowFromSystemServer();
         }
     }
+
+    /**
+     * Notifies the system that the caller is blocked and unable to perform any further
+     * interactions in the session, and needs user intervention to unblock the session. If the
+     * request is successful, the session will enter the blocked lifecycle state
+     * ({@link LifecycleCallback#onBlocked(int, String)}), with
+     * {@link #BLOCK_REASON_CALLER_INITIATED}.
+     */
+    public void notifyBlocked() {
+        try {
+            mSession.notifyBlocked();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Attempts to exit the blocked state when the session is blocked for any reason. This should
+     * be called when the user explicitly chooses to end their control of the session.
+     */
+    public void requestUnblock() {
+        try {
+            mSession.requestUnblock();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
 
     @Override
     public void close() {

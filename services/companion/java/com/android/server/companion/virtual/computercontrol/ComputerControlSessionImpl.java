@@ -234,6 +234,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             new ComputerControlSession.LifecycleCallback() {
                 @Override
                 public void onActive() {
+                    updatePowerState();
                     mStatsController.onSessionActive();
                 }
 
@@ -241,6 +242,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 public void onBlocked(@ComputerControlSession.SessionBlockReason int reason,
                         @Nullable String blockingPackage) {
                     cancelOngoingInteractions();
+                    updatePowerState();
                     mStatsController.onSessionBlocked(reason);
                 }
 
@@ -268,6 +270,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     // A list of active interactive mirrors. The presence of mirrors indicates foreground
     // automation, which enables touch visualization.
     private final List<InteractiveMirrorImpl> mInteractiveMirrors = new ArrayList<>();
+    @GuardedBy("mInteractiveMirrors")
+    private boolean mIsVirtualDeviceAsleep = false;
 
     @Nullable
     private ScheduledFuture<?> mSwipeFuture;
@@ -622,7 +626,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         final boolean foregroundMirroringStarted;
         synchronized (mInteractiveMirrors) {
             foregroundMirroringStarted = mInteractiveMirrors.isEmpty();
+            mInteractiveMirrors.add(mirror);
             if (foregroundMirroringStarted) {
+                updatePowerState();
                 // Automation is no longer running in the background. Show touches.
                 mInputManagerInternal.setForceShowTouchesOnDisplay(mVirtualDisplayId,
                         true /* enabled */);
@@ -635,7 +641,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                         0 /* timeoutMs */, (success) -> {
                         }, mScheduler);
             }
-            mInteractiveMirrors.add(mirror);
         }
         outMirrorSurface.copyFrom(mirror.getMirrorLeash(),
                 "ComputerControlSessionImpl#createInteractiveMirrorDisplay");
@@ -692,6 +697,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             }
             foregroundMirroringStopped = mInteractiveMirrors.isEmpty();
             if (foregroundMirroringStopped) {
+                updatePowerState();
                 // Automation is fully running in the background. No need to show touches.
                 mInputManagerInternal.setForceShowTouchesOnDisplay(mVirtualDisplayId,
                         false /* enabled */);
@@ -734,6 +740,27 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             // Automation is fully running in the background. No need to show touches.
             mInputManagerInternal.setForceShowTouchesOnDisplay(mVirtualDisplayId,
                     false /* enabled */);
+        }
+    }
+
+    private void updatePowerState() {
+        synchronized (mInteractiveMirrors) {
+            final var state = mLifecycle.getCurrentState();
+            if (state instanceof LifecycleState.Closed) {
+                return;
+            }
+            final boolean shouldSleep =
+                    state instanceof LifecycleState.Blocked && mInteractiveMirrors.isEmpty();
+            if (mIsVirtualDeviceAsleep == shouldSleep) {
+                return;
+            }
+            mIsVirtualDeviceAsleep = shouldSleep;
+            Slog.i(TAG, "updatePowerState: " + (shouldSleep ? "sleeping" : "waking up"));
+            if (shouldSleep) {
+                mVirtualDevice.goToSleep();
+            } else {
+                mVirtualDevice.wakeUp();
+            }
         }
     }
 
@@ -854,6 +881,18 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 Trace.asyncTraceForTrackEnd(mTraceTrack, TRACE_COOKIE_WINDOW_DRAW);
             }
         }
+    }
+
+    @Override
+    public void notifyBlocked() {
+        mLifecycle.updateLifecycleState((config) -> {
+            config.mCallerInitiatedBlock = true;
+        });
+    }
+
+    @Override
+    public void requestUnblock() {
+        mLifecycle.exitBlockedState();
     }
 
     @Override
