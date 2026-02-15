@@ -45,6 +45,7 @@ import com.android.internal.os.BackgroundThread;
 import com.android.internal.util.DumpUtils;
 import com.android.server.SystemService;
 import com.android.server.am.PersistentConnection;
+import com.android.server.appbinding.finders.AllowlistProviderServiceFinder;
 import com.android.server.appbinding.finders.AppServiceFinder;
 import com.android.server.appbinding.finders.CarrierMessagingClientServiceFinder;
 import com.android.server.appbinding.finders.ContentRestrictionAppServiceFinder;
@@ -230,6 +231,9 @@ public class AppBindingService extends Binder {
         if (android.app.contentrestriction.flags.Flags.contentRestrictionApi()) {
             mApps.add(new ContentRestrictionAppServiceFinder(
                     context, this::onAppChanged, mHandler));
+        }
+        if (android.app.appfunctions.flags.Flags.enableAppFunctionPermissionV2()) {
+            mApps.add(new AllowlistProviderServiceFinder(context, this::onAppChanged, mHandler));
         }
 
         // Initialize with the default value to make it non-null.

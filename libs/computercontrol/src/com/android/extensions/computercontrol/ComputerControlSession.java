@@ -180,12 +180,22 @@ public final class ComputerControlSession implements AutoCloseable {
             android.companion.virtual.computercontrol.ComputerControlSession
                     .BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH;
 
+    /**
+     * Reason indicating that the session was blocked due to a {@link #notifyBlocked()} request from
+     * the caller.
+     */
+    public static final int BLOCK_REASON_CALLER_INITIATED =
+            android.companion.virtual.computercontrol.ComputerControlSession
+                    .BLOCK_REASON_CALLER_INITIATED;
+
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(prefix = "BLOCK_REASON_", value = {
             BLOCK_REASON_UNKNOWN,
             BLOCK_REASON_SECURE_CONTENT,
-            BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH})
+            BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH,
+            BLOCK_REASON_CALLER_INITIATED,
+    })
     @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
     public @interface SessionBlockReason {
     }
@@ -574,6 +584,29 @@ public final class ComputerControlSession implements AutoCloseable {
      */
     public void setPreviewIntent(@Nullable PendingIntent previewIntent) {
         mSession.setPreviewIntent(previewIntent);
+    }
+
+    /**
+     * Notifies the system that the caller is blocked and unable to perform any further
+     * interactions in the session, and needs user intervention to unblock the session. If the
+     * request is successful, the session will enter the blocked lifecycle state
+     * ({@link LifecycleCallback#onBlocked(int, String)}), with
+     * {@link #BLOCK_REASON_CALLER_INITIATED}.
+     */
+    public void notifyBlocked() {
+        mSession.notifyBlocked();
+    }
+
+    /**
+     * Attempts to exit the blocked state when the session is blocked for any reason. This should
+     * be called when the user explicitly chooses to end their control of the session.
+     * @hide
+     */
+    // TODO: b/479510954 - Determine if we want to commit this as an API to allow the client to
+    //  exit the Blocked state, or if we want to expose this functionality through platform-driven
+    //  UI in the MirrorView.
+    public void requestUnblock() {
+        mSession.requestUnblock();
     }
 
     /**

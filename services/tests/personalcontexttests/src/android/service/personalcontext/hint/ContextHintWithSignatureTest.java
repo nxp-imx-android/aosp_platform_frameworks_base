@@ -21,7 +21,6 @@ import static com.google.common.truth.Truth.assertThat;
 import android.content.ComponentName;
 import android.os.Parcel;
 import android.service.personalcontext.RenderToken;
-import android.text.TextUtils;
 import android.util.ArraySet;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -41,6 +40,8 @@ import javax.crypto.spec.SecretKeySpec;
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 public class ContextHintWithSignatureTest {
+    private static final String SYSTEM_PACKAGE = "android";
+
     private static void checkPresence(ContextHintWithSignature signedHint,
             List<ContextHint> hints) {
         final ArraySet<ContextHint> remainingHints = new ArraySet<>(hints);
@@ -49,9 +50,8 @@ public class ContextHintWithSignatureTest {
 
         assertThat(remainingHints.size()).isEqualTo(attributionHints.size());
         for (ContextHintWithSignature targetHint : attributionHints) {
-            assertThat(targetHint.getOriginatingPackage()).isNull();
+            assertThat(targetHint.getOriginatingPackage()).isEqualTo(SYSTEM_PACKAGE);
             final ContextHint targetContextHint = targetHint.getContextHint();
-            TextUtils.isEmpty(targetHint.getOriginatingPackage());
             final Optional<ContextHint> foundHint = remainingHints.stream().filter(hint ->
                             targetContextHint.getHintId().equals(hint.getHintId()))
                     .findFirst();
@@ -144,7 +144,7 @@ public class ContextHintWithSignatureTest {
         assertThat(signedHint.isSignatureValid(key)).isTrue();
         assertThat(signedHint.getContextHint().getHintId()).isEqualTo(hint.getHintId());
         assertThat(signedHint.getRenderTokens()).containsExactly(renderToken);
-        assertThat(signedHint.getOriginatingPackage()).isNull();
+        assertThat(signedHint.getOriginatingPackage()).isEqualTo(SYSTEM_PACKAGE);
 
         checkPresence(signedHint, List.of(attributedHint1, attributedHint2));
     }

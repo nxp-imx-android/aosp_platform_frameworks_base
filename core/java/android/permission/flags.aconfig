@@ -699,14 +699,6 @@ flag {
 }
 
 flag {
-    name: "allowlist_service_enabled"
-    is_exported: true
-    namespace: "permissions"
-    description: "This flag controls the enabled state of the AllowlistService"
-    bug: "461828838"
-}
-
-flag {
     name: "new_default_app_confirmation_dialog_enabled"
     is_exported: true
     namespace: "permissions"

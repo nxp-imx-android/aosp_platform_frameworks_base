@@ -22,6 +22,7 @@ import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_ACTIVITY
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_BLOCKED_ACTIVITY;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_DEFAULT_DEVICE_CAMERA_ACCESS;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_RECENTS;
+import static android.companion.virtual.computercontrol.ComputerControlSession.BLOCK_REASON_CALLER_INITIATED;
 import static android.companion.virtual.computercontrol.ComputerControlSession.BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH;
 import static android.companion.virtual.computercontrol.ComputerControlSession.BLOCK_REASON_SECURE_CONTENT;
 import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_CALLER_INITIATED;
@@ -915,7 +916,7 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
-    public void onSecureWindowHidden_exitsBlockedState()
+    public void onSecureWindowHidden_exitsBlockedState_afterRequestUnblock()
             throws RemoteException {
         createComputerControlSession(mDefaultParams);
         verify(mVirtualDevice).addActivityListener(any(),
@@ -926,6 +927,10 @@ public class ComputerControlSessionImplTest {
         clearInvocations(mVirtualDisplay, mLifecycleCallback);
 
         activityListener.onSecureWindowHidden(VIRTUAL_DISPLAY_ID);
+
+        verify(mLifecycleCallback, never()).onActive();
+
+        mSession.requestUnblock();
 
         verify(mLifecycleCallback).onActive();
     }
@@ -997,7 +1002,8 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
-    public void onTopActivityChanged_toAllowedPackage_exitsBlockedState() throws RemoteException {
+    public void onTopActivityChanged_toAllowedPackage_exitsBlockedState_afterRequestUnblock()
+            throws RemoteException {
         createComputerControlSession(mDefaultParams);
         verify(mVirtualDevice).addActivityListener(any(),
                 mActivityListenerArgumentCaptor.capture());
@@ -1009,11 +1015,15 @@ public class ComputerControlSessionImplTest {
 
         activityListener.onTopActivityChanged(VIRTUAL_DISPLAY_ID, TEST_COMPONENT, USER_ID);
 
+        verify(mLifecycleCallback, never()).onActive();
+
+        mSession.requestUnblock();
+
         verify(mLifecycleCallback).onActive();
     }
 
     @Test
-    public void onTopActivityChanged_toDisallowedPackage_doesNotExitBlockedState()
+    public void onTopActivityChanged_toDisallowedPackage_remainsBlocked_afterRequestUnblock()
             throws RemoteException {
         createComputerControlSession(mDefaultParams);
         verify(mVirtualDevice).addActivityListener(any(),
@@ -1027,6 +1037,10 @@ public class ComputerControlSessionImplTest {
         activityListener.onTopActivityChanged(VIRTUAL_DISPLAY_ID, BLOCKED_COMPONENT, USER_ID);
 
         verifyNoInteractions(mLifecycleCallback);
+
+        mSession.requestUnblock();
+
+        verify(mLifecycleCallback, never()).onActive();
     }
 
     @Test
@@ -1042,17 +1056,23 @@ public class ComputerControlSessionImplTest {
         clearInvocations(mLifecycleCallback);
 
         activityListener.onActivityLaunchRequested(VIRTUAL_DISPLAY_ID, BLOCKED_COMPONENT, USER_ID);
-        // onBlocked should be called again with the preferred reason.
+        verifyNoInteractions(mLifecycleCallback);
+        mSession.requestUnblock();
         verify(mLifecycleCallback).onBlocked(BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH,
                 UNDECLARED_TARGET_PACKAGE);
         clearInvocations(mLifecycleCallback);
 
         // Unblock secure window, should remain blocked.
         activityListener.onSecureWindowHidden(VIRTUAL_DISPLAY_ID);
+        mSession.requestUnblock();
         verifyNoInteractions(mLifecycleCallback);
 
-        // Unblock activity, should be active.
+        // Unblock activity, session becomes active on next unblock request.
         activityListener.onTopActivityChanged(VIRTUAL_DISPLAY_ID, TEST_COMPONENT, USER_ID);
+        verify(mLifecycleCallback, never()).onActive();
+
+        mSession.requestUnblock();
+
         verify(mLifecycleCallback).onActive();
     }
 
@@ -1071,18 +1091,54 @@ public class ComputerControlSessionImplTest {
 
         activityListener.onSecureWindowShown(VIRTUAL_DISPLAY_ID, TEST_COMPONENT, mUserHandle);
         // onBlocked should not be called again.
-        verify(mLifecycleCallback, never()).onBlocked(anyInt(), any());
-        clearInvocations(mLifecycleCallback);
+        mSession.requestUnblock();
+        verifyNoInteractions(mLifecycleCallback);
 
-        // Unblock activity, should remain blocked with secure window reason.
+        // Unblock activity, block reason changes after unblock request.
         activityListener.onTopActivityChanged(VIRTUAL_DISPLAY_ID, TEST_COMPONENT, USER_ID);
+        verifyNoInteractions(mLifecycleCallback);
+        mSession.requestUnblock();
         verify(mLifecycleCallback).onBlocked(BLOCK_REASON_SECURE_CONTENT, TARGET_PACKAGE_1);
-        verify(mLifecycleCallback, never()).onActive();
         clearInvocations(mLifecycleCallback);
 
-        // Unblock secure window, should unblock.
+        // Unblock secure window, should remain blocked.
         activityListener.onSecureWindowHidden(VIRTUAL_DISPLAY_ID);
+        verify(mLifecycleCallback, never()).onActive();
+
+        mSession.requestUnblock();
+
         verify(mLifecycleCallback).onActive();
+    }
+
+    @Test
+    public void requestUnblock_whenNotBlocked_doesNothing() throws RemoteException {
+        createComputerControlSession(mDefaultParams);
+        clearInvocations(mLifecycleCallback);
+
+        mSession.requestUnblock();
+
+        verify(mLifecycleCallback, never()).onActive();
+    }
+
+    @Test
+    public void requestUnblock_exitsCallerInitiatedBlock() throws RemoteException {
+        createComputerControlSession(mDefaultParams);
+        mSession.notifyBlocked();
+        verify(mLifecycleCallback).onBlocked(BLOCK_REASON_CALLER_INITIATED, null);
+        clearInvocations(mLifecycleCallback);
+
+        mSession.requestUnblock();
+
+        verify(mLifecycleCallback).onActive();
+    }
+
+    @Test
+    public void notifyBlocked_entersBlockedState() throws RemoteException {
+        createComputerControlSession(mDefaultParams);
+
+        mSession.notifyBlocked();
+
+        verify(mLifecycleCallback).onBlocked(BLOCK_REASON_CALLER_INITIATED, null);
     }
 
     @Test
@@ -1128,11 +1184,6 @@ public class ComputerControlSessionImplTest {
     @Test
     public void activeState_allowsAllInteractions() throws Exception {
         createComputerControlSession(mDefaultParams);
-
-        // Enter and exit the blocked state to ensure interactions are re-enabled when active.
-        try (InBlockedState inBlockedState = new InBlockedState()) {
-            // Do nothing.
-        }
 
         final var interactionDevices = List.of(
                 mVirtualDpad,
@@ -1341,6 +1392,100 @@ public class ComputerControlSessionImplTest {
         verify(mWindowManagerInternal, never()).requestHardwareRendererOutputDisabled(anyInt());
     }
 
+    @Test
+    public void updatePowerState_blockedState_sleepsDevice() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        verify(mVirtualDevice).addActivityListener(any(),
+                mActivityListenerArgumentCaptor.capture());
+        final var activityListener = mActivityListenerArgumentCaptor.getValue();
+        clearInvocations(mVirtualDevice);
+
+        activityListener.onSecureWindowShown(VIRTUAL_DISPLAY_ID, TEST_COMPONENT, mUserHandle);
+
+        verify(mVirtualDevice).goToSleep();
+    }
+
+    @Test
+    public void updatePowerState_activeState_wakesDevice() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        verify(mVirtualDevice).addActivityListener(any(),
+                mActivityListenerArgumentCaptor.capture());
+        final var activityListener = mActivityListenerArgumentCaptor.getValue();
+        // Transition to blocked first to ensure we can wake up.
+        activityListener.onSecureWindowShown(VIRTUAL_DISPLAY_ID, TEST_COMPONENT, mUserHandle);
+        verify(mVirtualDevice).goToSleep();
+        clearInvocations(mVirtualDevice);
+
+        activityListener.onSecureWindowHidden(VIRTUAL_DISPLAY_ID);
+        mSession.requestUnblock();
+
+        verify(mVirtualDevice).wakeUp();
+    }
+
+    @Test
+    public void updatePowerState_blockedState_withMirror_doesNotSleep() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        setupMockMirror();
+        mSession.createInteractiveMirror(new SurfaceControl());
+        verify(mVirtualDevice).addActivityListener(any(),
+                mActivityListenerArgumentCaptor.capture());
+        final var activityListener = mActivityListenerArgumentCaptor.getValue();
+        clearInvocations(mVirtualDevice);
+
+        activityListener.onSecureWindowShown(VIRTUAL_DISPLAY_ID, TEST_COMPONENT, mUserHandle);
+
+        verify(mVirtualDevice, never()).goToSleep();
+    }
+
+    @Test
+    public void updatePowerState_addMirrorWhileBlocked_wakesDevice() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        verify(mVirtualDevice).addActivityListener(any(),
+                mActivityListenerArgumentCaptor.capture());
+        final var activityListener = mActivityListenerArgumentCaptor.getValue();
+        activityListener.onSecureWindowShown(VIRTUAL_DISPLAY_ID, TEST_COMPONENT, mUserHandle);
+        verify(mVirtualDevice).goToSleep();
+        clearInvocations(mVirtualDevice);
+
+        setupMockMirror();
+        mSession.createInteractiveMirror(new SurfaceControl());
+
+        verify(mVirtualDevice).wakeUp();
+    }
+
+    @Test
+    public void updatePowerState_removeMirrorWhileBlocked_sleepsDevice() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        setupMockMirror();
+        IInteractiveMirror mirror = mSession.createInteractiveMirror(new SurfaceControl());
+        verify(mVirtualDevice).addActivityListener(any(),
+                mActivityListenerArgumentCaptor.capture());
+        final var activityListener = mActivityListenerArgumentCaptor.getValue();
+        activityListener.onSecureWindowShown(VIRTUAL_DISPLAY_ID, TEST_COMPONENT, mUserHandle);
+        clearInvocations(mVirtualDevice);
+
+        mirror.close();
+
+        verify(mVirtualDevice).goToSleep();
+    }
+
+    @Test
+    public void updatePowerState_closeSession_doesNotChangePowerState() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        verify(mVirtualDevice).addActivityListener(any(),
+                mActivityListenerArgumentCaptor.capture());
+        final var activityListener = mActivityListenerArgumentCaptor.getValue();
+        // Block to sleep
+        activityListener.onSecureWindowShown(VIRTUAL_DISPLAY_ID, TEST_COMPONENT, mUserHandle);
+        verify(mVirtualDevice).goToSleep();
+        clearInvocations(mVirtualDevice);
+
+        mSession.close();
+
+        verify(mVirtualDevice, never()).wakeUp();
+        verify(mVirtualDevice, never()).goToSleep();
+    }
+
     private void setupMockMirror() {
         WindowManagerInternal.DisplayMirror displayMirror = mockDisplayMirror();
         when(mWindowManagerInternal.createMirrorForDisplayContent(VIRTUAL_DISPLAY_ID))
@@ -1362,7 +1507,6 @@ public class ComputerControlSessionImplTest {
         @Override
         public void close() throws Exception {
             mActivityListenerArgumentCaptor.getValue().onSecureWindowHidden(VIRTUAL_DISPLAY_ID);
-            verify(mLifecycleCallback).onActive();
             clearInvocations(mLifecycleCallback);
         }
     }
