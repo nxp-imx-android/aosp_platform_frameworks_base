@@ -18,6 +18,7 @@ package com.android.wm.shell.desktopmode.data
 
 import android.graphics.Rect
 import android.graphics.RectF
+import android.graphics.Region
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
@@ -38,6 +39,7 @@ import com.android.wm.shell.desktopmode.data.persistence.DesktopPersistentReposi
 import com.android.wm.shell.shared.desktopmode.FakeDesktopConfig
 import com.android.wm.shell.sysui.ShellInit
 import com.google.common.truth.Truth.assertThat
+import java.util.function.Consumer
 import junit.framework.Assert.fail
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -60,9 +62,11 @@ import org.mockito.Mock
 import org.mockito.Mockito.inOrder
 import org.mockito.Mockito.spy
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.clearInvocations
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.isNull
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
@@ -2930,6 +2934,116 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         // THEN nothing happens and persistence is not triggered
         verify(persistentRepository, never())
             .addOrUpdateRepository(any(), any(), any(), any(), any())
+    }
+
+    @Test
+    fun setExclusionRegionListener_notifiesListenerWithCurrentRegion() {
+        // Setup: Add an exclusion region before setting the listener to ensure the listener
+        // is called with the current state upon registration.
+        val taskId = 1
+        val region = Region(10, 10, 100, 100)
+        repo.updateTaskExclusionRegions(taskId, region)
+
+        val mockListener: Consumer<Region> = mock()
+        val executor = TestShellExecutor()
+
+        // Action: Set the listener.
+        repo.setExclusionRegionListener(mockListener, executor)
+        executor.flushAll()
+
+        // Verification: Listener should be notified with the existing region.
+        val regionCaptor = argumentCaptor<Region>()
+        verify(mockListener).accept(regionCaptor.capture())
+        assertThat(regionCaptor.firstValue).isEqualTo(region)
+    }
+
+    @Test
+    fun updateTaskExclusionRegions_notifiesListenerWithUpdatedRegion() {
+        // Setup: Set a listener.
+        val mockListener: Consumer<Region> = mock()
+        val executor = TestShellExecutor()
+        repo.setExclusionRegionListener(mockListener, executor)
+        executor.flushAll() // Initial notification
+        clearInvocations(mockListener)
+
+        // Action: Update task exclusion regions.
+        val taskId = 1
+        val region = Region(10, 10, 100, 100)
+        repo.updateTaskExclusionRegions(taskId, region)
+        executor.flushAll()
+
+        // Verification: Listener should be notified with the new region.
+        val regionCaptor = argumentCaptor<Region>()
+        verify(mockListener).accept(regionCaptor.capture())
+        assertThat(regionCaptor.firstValue).isEqualTo(region)
+    }
+
+    @Test
+    fun updateTaskExclusionRegions_multipleTasks_notifiesWithUnionRegion() {
+        // Setup
+        val mockListener: Consumer<Region> = mock()
+        val executor = TestShellExecutor()
+        repo.setExclusionRegionListener(mockListener, executor)
+        executor.flushAll() // Initial notification with empty region
+        clearInvocations(mockListener)
+
+        // Action: Add region for first task
+        val taskId1 = 1
+        val region1 = Region(10, 10, 100, 100)
+        repo.updateTaskExclusionRegions(taskId1, region1)
+        executor.flushAll()
+
+        // Verification for first task
+        val regionCaptor1 = argumentCaptor<Region>()
+        verify(mockListener).accept(regionCaptor1.capture())
+        assertThat(regionCaptor1.firstValue).isEqualTo(region1)
+        clearInvocations(mockListener)
+
+        // Action: Add region for second task
+        val taskId2 = 2
+        val region2 = Region(150, 150, 200, 200)
+        repo.updateTaskExclusionRegions(taskId2, region2)
+        executor.flushAll()
+
+        // Verification for second task (union of regions)
+        val expectedUnionRegion = Region()
+        expectedUnionRegion.op(region1, Region.Op.UNION)
+        expectedUnionRegion.op(region2, Region.Op.UNION)
+
+        val regionCaptor2 = argumentCaptor<Region>()
+        verify(mockListener).accept(regionCaptor2.capture())
+        assertThat(regionCaptor2.firstValue).isEqualTo(expectedUnionRegion)
+    }
+
+    @Test
+    fun removeExclusionRegion_notifiesListenerWithUpdatedRegion() {
+        // Setup
+        val mockListener: Consumer<Region> = mock()
+        val executor = TestShellExecutor()
+        repo.setExclusionRegionListener(mockListener, executor)
+        val taskId = 1
+        val region = Region(10, 10, 100, 100)
+        repo.updateTaskExclusionRegions(taskId, region)
+        executor.flushAll() // Notifications for set listener and update
+        clearInvocations(mockListener)
+
+        // Action: Remove the exclusion region.
+        repo.removeExclusionRegion(taskId)
+        executor.flushAll()
+
+        // Verification: Listener should be notified with an empty region.
+        val regionCaptor = argumentCaptor<Region>()
+        verify(mockListener).accept(regionCaptor.capture())
+        assertThat(regionCaptor.firstValue.isEmpty).isTrue()
+    }
+
+    @Test
+    fun updateTaskExclusionRegions_noListenerSet_doesNotCrash() {
+        // Action: Update task exclusion regions without a listener set.
+        val taskId = 1
+        val region = Region(10, 10, 100, 100)
+        repo.updateTaskExclusionRegions(taskId, region)
+        // No crash is the verification.
     }
 
     private class TestDeskChangeListener : DesktopRepository.DeskChangeListener {
