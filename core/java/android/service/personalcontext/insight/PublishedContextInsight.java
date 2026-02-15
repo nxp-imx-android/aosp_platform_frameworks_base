@@ -18,6 +18,7 @@ package android.service.personalcontext.insight;
 import static java.util.Objects.requireNonNull;
 
 import android.annotation.FlaggedApi;
+import android.annotation.SystemApi;
 import android.annotation.TestApi;
 import android.content.Context;
 import android.os.Bundle;
@@ -36,7 +37,10 @@ import java.util.UUID;
  * This class captures the details around a published {@link ContextInsight}, including the insight
  * itself and the component that published it to the
  * {@link com.android.server.personalcontext.PersonalContextManagerService}.
+ *
+ * @hide
  */
+@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public final class PublishedContextInsight {
     private static final String KEY_INSIGHT = "key_insight";

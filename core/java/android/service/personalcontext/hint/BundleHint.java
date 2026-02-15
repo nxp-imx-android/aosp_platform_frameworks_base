@@ -21,6 +21,7 @@ import static java.util.Objects.requireNonNull;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SystemApi;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.service.personalcontext.Flags;
@@ -29,7 +30,9 @@ import android.service.personalcontext.Token;
 /**
  * A hint that stores arbitrary data in a {@link Bundle}. Should only be used if there is no
  * appropriate hint type already defined.
+ * @hide
  */
+@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public final class BundleHint extends ContextHint {
     private static final String KEY_DATA = "data";

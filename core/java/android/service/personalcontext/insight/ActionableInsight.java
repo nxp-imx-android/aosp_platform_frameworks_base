@@ -21,6 +21,7 @@ import static java.util.Objects.requireNonNull;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SystemApi;
 import android.content.Intent;
 import android.os.Bundle;
 import android.service.personalcontext.Flags;
@@ -32,7 +33,11 @@ import android.service.personalcontext.insight.interaction.ReturnHintReport;
 
 import java.util.Objects;
 
-/** An insight that contains information about an action and how to invoke it. */
+/**
+ * An insight that contains information about an action and how to invoke it.
+ * @hide
+ */
+@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public final class ActionableInsight extends ContextInsight {
     private static final String KEY_ACTION_DETAILS = "key_action_details";

@@ -21,6 +21,7 @@ import static java.util.Objects.requireNonNull;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SystemApi;
 import android.os.Bundle;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.Token;
@@ -32,7 +33,9 @@ import java.util.Objects;
 
 /**
  * An insight that contains information for display purposes with no particular action associated.
+ * @hide
  */
+@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public final class DisplayInsight extends ContextInsight {
     private static final String KEY_DISPLAY_DETAILS = "key_display_details";

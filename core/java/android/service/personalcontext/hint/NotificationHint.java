@@ -20,6 +20,7 @@ import static java.util.Objects.requireNonNull;
 
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
+import android.annotation.SystemApi;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.service.notification.StatusBarNotification;
@@ -28,7 +29,9 @@ import android.service.personalcontext.Token;
 
 /**
  * A hint that contains a notification-related event.
+ * @hide
  */
+@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public final class NotificationHint extends ContextHint {
     private final NotificationEvent mNotificationEvent;

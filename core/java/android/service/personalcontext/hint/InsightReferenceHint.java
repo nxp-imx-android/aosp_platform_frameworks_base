@@ -18,6 +18,7 @@ package android.service.personalcontext.hint;
 
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
+import android.annotation.SystemApi;
 import android.os.Bundle;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.insight.ActionableInsight;
@@ -33,7 +34,9 @@ import java.util.UUID;
  *
  * @see android.service.personalcontext.insight.interaction.ReturnHintReport
  * @see ActionableInsight#createReturnHintReport()
+ * @hide
  */
+@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public final class InsightReferenceHint extends ContextHint {
     private static final String KEY_INSIGHT_ID = "insight_id";

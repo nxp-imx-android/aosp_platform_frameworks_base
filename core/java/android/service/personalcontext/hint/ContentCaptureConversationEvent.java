@@ -19,6 +19,7 @@ package android.service.personalcontext.hint;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
+import android.annotation.SystemApi;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.service.personalcontext.Flags;
@@ -38,7 +39,10 @@ import java.util.Objects;
  * be sent, for the initial update and any subsequent messages sent or received. When the
  * conversation is exited, a single {@link ConversationExitEvent} will be sent, after which no other
  * events will be sent for that conversation.
+ *
+ * @hide
  */
+@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public abstract class ContentCaptureConversationEvent {
     private static final String TAG = "ContentCaptureConversationEvent";

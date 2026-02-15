@@ -20,6 +20,7 @@ import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SystemApi;
 import android.app.RemoteAction;
 import android.content.Intent;
 import android.os.Parcel;
@@ -33,7 +34,9 @@ import java.util.Objects;
 /**
  * Contains the details of the action to be performed, either as an {@link Intent} or a {@link
  * RemoteAction}.
+ * @hide
  */
+@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public final class InsightActionDetails implements Parcelable {
 

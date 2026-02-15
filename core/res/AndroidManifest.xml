@@ -3095,7 +3095,7 @@
         android:protectionLevel="signature|installer"
         android:featureFlag="android.permission.flags.assist_settings_privacy_improvements_enabled" />
 
-    <!-- Allows an application to change an application's personal context mode setting.
+    <!-- @SystemApi Allows an application to change an application's personal context mode setting.
 
         <p>This permission is needed to enable or disable personal context data for an application
         through the {@link android.service.personalcontext.PersonalContextManager
@@ -3103,6 +3103,7 @@
 
          <p>Protection level: signature
          @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+         @hide
      -->
     <permission
         android:name="android.permission.CHANGE_PERSONAL_CONTEXT_MODE"
@@ -10244,23 +10245,25 @@
         android:protectionLevel="signature"
         android:featureFlag="android.permission.flags.content_restriction_role_enabled" />
 
-    <!-- Must be required by any
+    <!-- @SystemApi Must be required by any
          {@link android.service.personalcontext.refiner.HintRefinerService},
          {@link android.service.personalcontext.undedrstander.ContextUnderstanderService}, or
          {@link android.service.personalcontext.renderer.InsightRendererService} to ensure that
          only the system can bind to it.
          <p>Protection level: signature
          @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+         @hide
     -->
     <permission android:name="android.permission.BIND_CONTEXT_COMPONENT_SERVICE"
         android:protectionLevel="signature"
         android:featureFlag="android.service.personalcontext.enable_personal_context_service" />
 
-    <!-- Must be required by a
+    <!-- @SystemApi Must be required by a
          {@link android.service.personalcontext.renderer.InsightRendererService}, to ensure that
          only the system can bind to it.
          <p>Protection level: signature
          @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+         @hide
     -->
     <permission android:name="android.permission.BIND_INSIGHT_RENDERER_SERVICE"
         android:protectionLevel="signature"

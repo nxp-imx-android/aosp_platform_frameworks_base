@@ -16,15 +16,16 @@
 
 package android.service.personalcontext.hint;
 
+import static java.util.Objects.requireNonNull;
+
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
+import android.annotation.SystemApi;
 import android.graphics.Rect;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.service.personalcontext.Flags;
-
-import static java.util.Objects.requireNonNull;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -36,7 +37,9 @@ import java.util.Objects;
  *
  * <p>This data is collected by the Content Capture framework by observing user interactions with
  * input fields.
+ * @hide
  */
+@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public final class UserInputText implements Parcelable {
 

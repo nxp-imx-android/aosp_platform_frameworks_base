@@ -20,6 +20,7 @@ import static java.util.Objects.requireNonNull;
 
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
+import android.annotation.SystemApi;
 import android.os.Bundle;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.Token;
@@ -37,7 +38,9 @@ import java.util.Objects;
  * <p>Messages should all originate from a single conversation. Mixing messages from multiple
  * conversations may cause insights to be generated that are not relevant to the conversation the
  * user is viewing.
+ * @hide
  */
+@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public final class MessagesHint extends ContextHint {
     private static final String KEY_PACKAGE_NAME = "key_package_name";

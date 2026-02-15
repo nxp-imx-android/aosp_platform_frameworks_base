@@ -42,7 +42,9 @@ import java.util.Objects;
  * such as the app's {@link ComponentName}, the conversation title, the text in the input box, and
  * whether the keyboard is visible. This comprehensive snapshot provides the necessary context for
  * on-device models.
+ * @hide
  */
+@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public final class ConversationData implements Parcelable {
 

@@ -19,6 +19,7 @@ package android.service.personalcontext.hint;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
+import android.annotation.SystemApi;
 import android.app.NotificationChannel;
 import android.os.Bundle;
 import android.service.notification.NotificationAssistantService;
@@ -35,7 +36,9 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * Base class for notification-related events. These events mirror the callbacks in
  * {@link NotificationListenerService}.
+ * @hide
  */
+@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public abstract class NotificationEvent {
     /**

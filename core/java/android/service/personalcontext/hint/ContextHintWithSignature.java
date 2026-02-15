@@ -19,6 +19,7 @@ package android.service.personalcontext.hint;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SystemApi;
 import android.annotation.TestApi;
 import android.os.Parcel;
 import android.service.personalcontext.Flags;
@@ -53,7 +54,9 @@ import javax.crypto.spec.SecretKeySpec;
  * {@link ContextHintWithSignature} instances. The signature is ultimately checked when an
  * {@link ContextInsight} is published with the hint. The insight will not be delivered to the
  * renderers if the signature is invalid.
+ * @hide
  */
+@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public final class ContextHintWithSignature {
     /** @hide */

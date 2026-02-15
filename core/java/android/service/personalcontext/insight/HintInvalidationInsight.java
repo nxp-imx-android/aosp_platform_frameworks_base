@@ -20,6 +20,7 @@ import static java.util.Objects.requireNonNull;
 
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
+import android.annotation.SystemApi;
 import android.annotation.TestApi;
 import android.os.Bundle;
 import android.service.personalcontext.Flags;
@@ -36,7 +37,9 @@ import java.util.UUID;
  * An insight that contains information about a hint that should be invalidated.
  *
  * @see HintInvalidationHint
+ * @hide
  */
+@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public final class HintInvalidationInsight extends ContextInsight {
     private final ContextHintWithSignature mInvalidationHint;
