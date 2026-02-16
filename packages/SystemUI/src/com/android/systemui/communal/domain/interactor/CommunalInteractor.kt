@@ -79,6 +79,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
@@ -181,6 +182,10 @@ constructor(
 
     fun setSelectedKey(key: String?) {
         _selectedKey.value = key
+    }
+
+    fun allocateWidgets() {
+        bgScope.launch { widgetRepository.allocateWidgets() }
     }
 
     /** Whether to show communal when exiting the occluded state. */

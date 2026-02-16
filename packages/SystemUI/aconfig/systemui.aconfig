@@ -234,6 +234,16 @@ flag {
 }
 
 flag {
+    name: "communal_widget_population_optimization"
+    namespace: "systemui"
+    description: "Optimizes communal widget population by checking if the feature is enabled"
+    bug: "469741006"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
   name: "communal_widget_resizing"
   namespace: "systemui"
   description: "Allow resizing of widgets on glanceable hub"

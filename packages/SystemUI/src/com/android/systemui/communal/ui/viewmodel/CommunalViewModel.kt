@@ -328,6 +328,10 @@ constructor(
         setCurrentPopupType(null)
     }
 
+    override fun allocateWidgets() {
+        communalInteractor.allocateWidgets()
+    }
+
     override fun onOpenEnableWidgetDialog() {
         setIsEnableWidgetDialogShowing(true)
     }
