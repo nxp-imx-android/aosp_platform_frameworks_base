@@ -2791,6 +2791,8 @@
     <string name="group_system_access_google_assistant">Open digital assistant</string>
     <!-- User visible title for the keyboard shortcut that opens contextual search. [CHAR LIMIT=70] -->
     <string name="group_system_access_contextual_search">Contextual Search</string>
+    <!-- User visible title for the keyboard shortcut that opens contextual cursor. [CHAR LIMIT=70] -->
+    <string name="group_system_access_contextual_cursor">Contextual Cursor</string>
     <!-- User visible title for the keyboard shortcut that locks screen. [CHAR LIMIT=70] -->
     <string name="group_system_lock_screen">Lock screen</string>
     <!-- User visible title for the keyboard shortcut that pulls up Notes app for quick memo. [CHAR LIMIT=70] -->
