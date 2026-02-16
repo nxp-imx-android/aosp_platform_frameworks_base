@@ -2482,20 +2482,12 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
 
         final var transitionListener = new AppTransitionListener(DEFAULT_DISPLAY) {
-            @Override
-            public void onAppTransitionStartingLocked(long statusBarAnimationStartTime,
-                    long statusBarAnimationDuration) {
-                handleTransitionForKeyguardLw(false /* startKeyguardExitAnimation */,
-                        false /* notifyOccluded */);
-            }
 
             @Override
-            public void onAppTransitionCancelledLocked(boolean keyguardGoingAwayCancelled) {
+            public void onAppTransitionCancelledLocked() {
                 // When KEYGUARD_GOING_AWAY app transition is canceled, we need to trigger relevant
                 // IKeyguardService calls to sync keyguard status in WindowManagerService and SysUI.
-                handleTransitionForKeyguardLw(
-                        keyguardGoingAwayCancelled /* startKeyguardExitAnimation */,
-                        true /* notifyOccluded */);
+                applyKeyguardOcclusionChange();
 
                 synchronized (mLock) {
                     mLockAfterDreamingTransitionFinished = false;
@@ -4020,25 +4012,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 + mPendingKeyguardOccluded);
 
         mKeyguardDelegate.setOccluded(mPendingKeyguardOccluded);
-    }
-
-    /**
-     * Called when keyguard related app transition starts, or cancelled.
-     *
-     * @param startKeyguardExitAnimation Trigger IKeyguardService#startKeyguardExitAnimation to
-     *                                  start keyguard exit animation.
-     * @param notifyOccluded Trigger IKeyguardService#setOccluded binder call to notify whether
-     *                      the top activity can occlude the keyguard or not.
-     */
-    private void handleTransitionForKeyguardLw(boolean startKeyguardExitAnimation,
-            boolean notifyOccluded) {
-        if (notifyOccluded) {
-            applyKeyguardOcclusionChange();
-        }
-        if (startKeyguardExitAnimation) {
-            if (DEBUG_KEYGUARD) Slog.d(TAG, "Starting keyguard exit animation");
-            startKeyguardExitAnimation(mInjector.getUptimeMillis());
-        }
     }
 
     /**

@@ -399,9 +399,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
@@ -1234,10 +1232,6 @@ public class WindowManagerService extends IWindowManager.Stub
     /** Listener to notify activity manager about app transitions. */
     final WindowManagerInternal.AppTransitionListener mActivityManagerAppTransitionNotifier
             = new WindowManagerInternal.AppTransitionListener() {
-
-        @Override
-        public void onAppTransitionCancelledLocked(boolean keyguardGoingAwayCancelled) {
-        }
 
         @Override
         public void onAppTransitionFinishedLocked(IBinder token) {
