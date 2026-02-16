@@ -38,6 +38,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.anyInt;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.anyString;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.atLeast;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.atMost;
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.doNothing;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.eq;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mock;
@@ -63,6 +64,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.database.ContentObserver;
+import android.graphics.Rect;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -81,8 +83,10 @@ import android.view.Display;
 import android.view.DisplayAddress;
 import android.view.IRotationWatcher;
 import android.view.IWindowManager;
+import android.view.InsetsState;
 import android.view.Surface;
 import android.view.WindowManager;
+import android.window.TransitionRequestInfo;
 
 import androidx.annotation.Nullable;
 import androidx.test.filters.SmallTest;
@@ -185,6 +189,11 @@ public class DisplayRotationTests {
         when(wmHandler.getLooper()).thenReturn(sHandler.getLooper());
         WindowTestsBase.setFieldValue(sMockWm, "mRoot", sMockRoot);
         WindowTestsBase.setFieldValue(sMockWm, "mH", wmHandler);
+
+        final ActivityTaskManagerService mockAtms = mock(ActivityTaskManagerService.class);
+        WindowTestsBase.setFieldValue(sMockWm, "mAtmService", mockAtms);
+        mockAtms.mChainTracker = mock(ActionChain.Tracker.class);
+        sMockWm.mDisplayEnabled = true;
     }
 
     @AfterClass
@@ -829,6 +838,54 @@ public class DisplayRotationTests {
 
         freezeRotation(Surface.ROTATION_90);
         assertEquals(Surface.ROTATION_90, mTarget.getUserRotation());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SEND_NEW_INSETS_STATE_WITH_ROTATION)
+    public void testUpdateRotationUnchecked_sendNewInsetsStateWithRotation() throws Exception {
+        mBuilder.build();
+        configureDisplayRotation(SCREEN_ORIENTATION_PORTRAIT, false, false);
+        thawRotation();
+
+        // Enable shell transitions
+        final TransitionController mockTransitionController = mock(TransitionController.class);
+        final Field transitionControllerField = WindowContainer.class
+                .getDeclaredField("mTransitionController");
+        transitionControllerField.setAccessible(true);
+        transitionControllerField.set(mMockDisplayContent, mockTransitionController);
+        when(mockTransitionController.isShellTransitionsEnabled()).thenReturn(true);
+        when(mMockDisplayContent.getLastHasContent()).thenReturn(true);
+        when(mMockDisplayContent.inTransition()).thenReturn(false);
+        when(mMockDisplayPolicy.isScreenOnFully()).thenReturn(true);
+
+        final ActionChain mockChain = mock(ActionChain.class);
+        when(sMockWm.mAtmService.mChainTracker.startTransit(anyString())).thenReturn(mockChain);
+        when(mockChain.isCollecting()).thenReturn(false);
+
+        // Prepare end InsetsState
+        final InsetsState endInsetsState = new InsetsState();
+        endInsetsState.setDisplayFrame(new Rect(0, 0, 100, 100));
+        doReturn(endInsetsState).when(mMockDisplayContent).getInsetsStateForRotation(anyInt());
+        doNothing().when(mMockDisplayContent).requestChangeTransition(anyInt(), any(), any());
+
+        // Set current rotation and target rotation for orientation
+        mTarget.setRotation(Surface.ROTATION_0);
+        spyOn(mTarget);
+        doReturn(Surface.ROTATION_90).when(mTarget).rotationForOrientation(anyInt(), anyInt());
+
+        // Trigger rotation change
+        mTarget.updateOrientation(SCREEN_ORIENTATION_UNSPECIFIED, true /* forceUpdate */);
+        assertTrue(waitForUiHandler());
+
+        // Verify that requestChangeTransition was called with the new InsetsState
+        final ArgumentCaptor<TransitionRequestInfo.DisplayChange> displayChangeCaptor =
+                ArgumentCaptor.forClass(TransitionRequestInfo.DisplayChange.class);
+        verify(mMockDisplayContent).requestChangeTransition(anyInt(), displayChangeCaptor.capture(),
+                any());
+
+        assertNotNull(displayChangeCaptor.getValue().getEndInsetsState());
+        assertEquals(endInsetsState, displayChangeCaptor.getValue().getEndInsetsState());
+        assertEquals(Surface.ROTATION_90, displayChangeCaptor.getValue().getEndRotation());
     }
 
     private boolean waitForUiHandler() {
@@ -1909,6 +1966,14 @@ public class DisplayRotationTests {
                     .getDeclaredField("mFixedRotationTransitionListener");
             field.setAccessible(true);
             field.set(mMockDisplayContent, mock(FixedRotationTransitionListener.class));
+
+            field = WindowContainer.class.getDeclaredField("mTransitionController");
+            field.setAccessible(true);
+            field.set(mMockDisplayContent, mock(TransitionController.class));
+
+            field = DisplayContent.class.getDeclaredField("mRemoteDisplayChangeController");
+            field.setAccessible(true);
+            field.set(mMockDisplayContent, mock(RemoteDisplayChangeController.class));
 
             mMockDisplayPolicy = mock(DisplayPolicy.class);
             mMockStatusBarManagerInternal = mock(StatusBarManagerInternal.class);

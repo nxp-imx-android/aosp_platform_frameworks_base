@@ -512,6 +512,16 @@ flag {
 }
 
 flag {
+    name: "send_new_insets_state_with_rotation"
+    namespace: "windowing_frontend"
+    description: "Send the new InsetsState to the shell when the display rotates"
+    bug: "480967801"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "merge_predictive_back_transaction_together"
     namespace: "windowing_frontend"
     description: "Merge the close transition's finish transaction into the back navigation during mergeAnimation"

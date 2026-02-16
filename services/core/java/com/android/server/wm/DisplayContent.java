@@ -2687,6 +2687,19 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                         .getDisplayCutout();
     }
 
+    InsetsState getInsetsStateForRotation(int rotation) {
+        final DisplayInfo displayInfo = computeScreenConfiguration(mTmpConfiguration, rotation);
+        final DisplayCutout cutout = displayInfo.displayCutout != null
+                ? displayInfo.displayCutout : DisplayCutout.NO_CUTOUT;
+        final DisplayFrames rotatedDisplayFrames = new DisplayFrames(new InsetsState(),
+                displayInfo, cutout,
+                calculateRoundedCornersForRotation(rotation),
+                calculatePrivacyIndicatorBoundsForRotation(rotation),
+                calculateDisplayShapeForRotation(rotation));
+        mDisplayPolicy.simulateLayoutDisplay(rotatedDisplayFrames);
+        return rotatedDisplayFrames.mInsetsState;
+    }
+
     static WmDisplayCutout calculateDisplayCutoutForRotationAndDisplaySizeUncached(
             DisplayCutout cutout, int rotation, int displayWidth, int displayHeight) {
         if (cutout == null || cutout == DisplayCutout.NO_CUTOUT) {

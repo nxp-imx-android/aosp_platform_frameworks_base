@@ -36,6 +36,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.content.res.Configuration;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayTopology;
@@ -47,10 +48,12 @@ import android.view.Display;
 import android.view.DisplayAdjustments;
 import android.view.IDisplayWindowListener;
 import android.view.IWindowManager;
+import android.view.InsetsState;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
+import com.android.window.flags.Flags;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.TestSyncExecutor;
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState;
@@ -283,5 +286,24 @@ public class DisplayControllerTests extends ShellTestCase {
         int displayId = mController.getDisplayIdByUniqueIdBlocking("invalidUniqueId");
 
         assert (displayId == INVALID_DISPLAY);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SEND_NEW_INSETS_STATE_WITH_ROTATION)
+    public void onDisplayChangeRequested_sendNewInsetsStateWithRotation_updatesInsets() {
+        mController.onInit();
+        mController.addDisplayWindowListener(mListener);
+
+        // initially no display frame set
+        assertEquals(new Rect(0, 0, 0, 0),
+                mController.getInsetsState(DISPLAY_ID_0).getDisplayFrame());
+
+        final InsetsState endInsetsState = new InsetsState();
+        endInsetsState.setDisplayFrame(new Rect(0, 0, 100, 100));
+        mController.onDisplayChangeRequested(null, DISPLAY_ID_0, new Rect(0, 0, 100, 200),
+                new Rect(0, 0, 200, 100), 0, 1, endInsetsState);
+
+        assertEquals(new Rect(0, 0, 100, 100),
+                mController.getInsetsState(DISPLAY_ID_0).getDisplayFrame());
     }
 }
