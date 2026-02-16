@@ -366,16 +366,6 @@ flag {
 }
 
 flag {
-    name: "anisotropy_corrected_mode_by_default"
-    namespace: "display_manager"
-    description: "Feature flag for selection anisotropy corrected mode by default for external display"
-    bug: "443033926"
-    metadata {
-         purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "virtual_secondary_displays"
     namespace: "lse_desktop_experience"
     description: "Enable Connected Display features on virtual displays with proper configuration"
