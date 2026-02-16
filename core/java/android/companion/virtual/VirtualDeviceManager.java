@@ -820,7 +820,6 @@ public final class VirtualDeviceManager {
          * @see DisplayManager#VIRTUAL_DISPLAY_FLAG_TRUSTED
          * @see DisplayManager#VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY
          */
-        @FlaggedApi(Flags.FLAG_DEVICE_AWARE_DISPLAY_POWER)
         public void goToSleep() {
             mVirtualDeviceInternal.goToSleep();
         }
@@ -838,7 +837,6 @@ public final class VirtualDeviceManager {
          * @see DisplayManager#VIRTUAL_DISPLAY_FLAG_TRUSTED
          * @see DisplayManager#VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY
          */
-        @FlaggedApi(Flags.FLAG_DEVICE_AWARE_DISPLAY_POWER)
         public void wakeUp() {
             mVirtualDeviceInternal.wakeUp();
         }

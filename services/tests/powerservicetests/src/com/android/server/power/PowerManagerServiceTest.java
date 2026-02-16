@@ -2289,7 +2289,6 @@ public class PowerManagerServiceTest {
         assertThat(mService.getGlobalWakefulnessLocked()).isEqualTo(WAKEFULNESS_AWAKE);
     }
 
-    @EnableFlags(android.companion.virtualdevice.flags.Flags.FLAG_DEVICE_AWARE_DISPLAY_POWER)
     @SuppressWarnings("GuardedBy")
     @Test
     public void testNonDefaultDisplayGroupWithCustomTimeout_afterTimeout_goesToDozing() {
@@ -2342,7 +2341,6 @@ public class PowerManagerServiceTest {
                 .isEqualTo(WAKEFULNESS_ASLEEP);
     }
 
-    @EnableFlags(android.companion.virtualdevice.flags.Flags.FLAG_DEVICE_AWARE_DISPLAY_POWER)
     @Test
     public void getBrightnessConstraint_valuesMatchDisplayInfo() {
         final int displayId = 7;
