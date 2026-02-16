@@ -31,6 +31,7 @@ import java.lang.annotation.Retention;
 @IntDef(flag = true, value = {
         InputMethodNavButtonFlags.IME_DRAWS_IME_NAV_BAR,
         InputMethodNavButtonFlags.SHOW_IME_SWITCHER_BUTTON,
+        InputMethodNavButtonFlags.IME_SWITCHER_BUTTON_ENABLED,
 })
 public @interface InputMethodNavButtonFlags {
 
@@ -41,8 +42,16 @@ public @interface InputMethodNavButtonFlags {
     int IME_DRAWS_IME_NAV_BAR = 1;
 
     /**
-     * When set, the IME Switcher button needs to be shown on the IME navigation bar, when the IME
-     * is visible.
+     * When set, the IME Switcher button needs to be shown somewhere, when the IME is visible.
+     * Depending on the current state, it may be shown either by the IME Navigation Bar, or by
+     * the IME itself, as a custom button.
      */
-    int SHOW_IME_SWITCHER_BUTTON = 2;
+    int SHOW_IME_SWITCHER_BUTTON = 1 << 1;
+
+    /**
+     * When set, the IME Switcher button could be shown on the IME Navigation bar. Otherwise, a
+     * custom IME Switcher button would be shown by the IME. The actual button visibility comes
+     * from {@link #SHOW_IME_SWITCHER_BUTTON}.
+     */
+    int IME_SWITCHER_BUTTON_ENABLED = 1 << 2;
 }
