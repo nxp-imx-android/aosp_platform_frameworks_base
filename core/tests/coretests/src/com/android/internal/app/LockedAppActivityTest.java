@@ -669,6 +669,62 @@ public class LockedAppActivityTest {
 
     @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
     @Test
+    public void onResume_inLockedTaskMode_withoutWindowFocus_doesNotShowPrompt() {
+        mTestInjector.setHasWindowFocus(false);
+        Intent intent = createTestLockedAppActivityIntent(ActivityMode.LOCKED_TASK);
+
+        try (ActivityScenario<LockedAppActivity> scenario = ActivityScenario.launch(intent)) {
+            // Initial launch triggers onResume, but focus is false.
+            verify(mBiometricPrompt, never()).authenticate(any(), any(), any());
+        }
+    }
+
+    @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
+    @Test
+    public void onWindowFocusChanged_inLockedTaskMode_afterResumeWithoutFocus_showsPrompt() {
+        mTestInjector.setHasWindowFocus(false);
+        Intent intent = createTestLockedAppActivityIntent(ActivityMode.LOCKED_TASK);
+
+        try (ActivityScenario<LockedAppActivity> scenario = ActivityScenario.launch(intent)) {
+            // Verify it hasn't shown yet.
+            verify(mBiometricPrompt, never()).authenticate(any(), any(), any());
+
+            // Simulate gaining focus.
+            mTestInjector.setHasWindowFocus(true);
+            scenario.onActivity(activity -> activity.onWindowFocusChanged(true));
+
+            // Now it should show.
+            verify(mBiometricPrompt, times(1)).authenticate(any(), any(), any());
+        }
+    }
+
+    @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
+    @Test
+    public void onWindowFocusChanged_inLockedTaskMode_withoutRecentResume_doesNotShowPrompt() {
+        Intent intent = createTestLockedAppActivityIntent(ActivityMode.LOCKED_TASK);
+
+        try (ActivityScenario<LockedAppActivity> scenario = ActivityScenario.launch(intent)) {
+            // Initial show during launch.
+            verify(mBiometricPrompt, times(1)).authenticate(any(), any(), any());
+
+            // Clear the first prompt.
+            captureAuthenticationCallback().onAuthenticationError(
+                    BiometricPrompt.BIOMETRIC_ERROR_CANCELED, "User canceled");
+
+            // Simulate losing and gaining focus (like a notification shade).
+            // onResume is NOT called during this.
+            scenario.onActivity(activity -> {
+                activity.onWindowFocusChanged(false);
+                activity.onWindowFocusChanged(true);
+            });
+
+            // Should still only have been called once (the initial one).
+            verify(mBiometricPrompt, times(1)).authenticate(any(), any(), any());
+        }
+    }
+
+    @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
+    @Test
     public void onConfigurationChanged_inLockedTaskMode_retainsClickListener() {
         Intent intent = createTestLockedAppActivityIntent(ActivityMode.LOCKED_TASK);
 
@@ -957,6 +1013,7 @@ public class LockedAppActivityTest {
         private int mDisplayId = Display.INVALID_DISPLAY;
         private IntentSender mOriginalIntentSender;
         private boolean mReturnNullForRootView = false;
+        private boolean mHasWindowFocus = true;
 
         @Override
         public void setTheme(Activity activity, int resId) {
@@ -973,6 +1030,11 @@ public class LockedAppActivityTest {
             mContentViewId = layoutResID;
             mSetContentViewCount++;
             activity.setContentView(layoutResID);
+        }
+
+        @Override
+        public boolean hasWindowFocus(Activity activity) {
+            return mHasWindowFocus;
         }
 
         @Override
@@ -1061,6 +1123,10 @@ public class LockedAppActivityTest {
 
         void setReturnNullForRootView(boolean returnNull) {
             mReturnNullForRootView = returnNull;
+        }
+
+        void setHasWindowFocus(boolean hasFocus) {
+            mHasWindowFocus = hasFocus;
         }
     }
 }

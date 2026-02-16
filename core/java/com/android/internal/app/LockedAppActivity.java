@@ -67,12 +67,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *     <li><b>Intercept Mode (target exists):</b> The activity acts as a transparent overlay that
  *         intercepts the launch of a locked app. It immediately shows a {@link BiometricPrompt},
  *         and upon successful authentication, it launches the original target intent. This mode is
- *         identified by {@link #EXTRA_INTENT} being non {@code null}.
+ *         identified by {@link Intent#EXTRA_INTENT} being non {@code null}.
  *     <li><b>Locked Task Mode (target is {@code null}):</b> The activity provides a default UI that
  *         acts as a locked task overlay. It automatically shows a {@link BiometricPrompt} on
  *         creation and when resumed, and allows the user to re-trigger the prompt by tapping the
  *         background. The back button is disabled in this mode. This mode is identified by
- *         {@link #EXTRA_INTENT} being {@code null}.
+ *         {@link Intent#EXTRA_INTENT} being {@code null}.
  *     <li><b>Uninstall Mode:</b> The activity acts as a transparent overlay that intercepts the
  *         uninstallation of an App Lock enabled app. It immediately shows a {@link BiometricPrompt}
  *         and upon successful authentication, it initiates the uninstallation. This mode is
@@ -163,6 +163,12 @@ public final class LockedAppActivity extends Activity {
 
     private boolean mIsPackageUnlocked;
     private boolean mIsBiometricPromptShowing;
+    /**
+     * Tracks whether a request to show the biometric prompt is waiting for window focus. This flag
+     * is set by lifecycle events (e.g., onResume) or user interaction (e.g., clicking the
+     * background) and is cleared once the window gains focus and the prompt is shown.
+     */
+    private boolean mIsPromptPending;
     /**
      * Tracks whether the target intent has already been sent in intercept mode to avoid duplicate
      * launches.
@@ -409,11 +415,10 @@ public final class LockedAppActivity extends Activity {
         }
         rootView.setOnClickListener(v -> {
             if (DEBUG) {
-                Slog.d(TAG, "Root view clicked in locked task mode");
+                Slog.d(TAG, "Root view clicked in locked task mode, requesting to show biometric"
+                        + " prompt if needed");
             }
-            if (!mIsBiometricPromptShowing) {
-                showBiometricPrompt();
-            }
+            requestShowBiometricPromptForLockedTask();
         });
 
         // Set up the external display message.
@@ -445,12 +450,12 @@ public final class LockedAppActivity extends Activity {
         if (DEBUG) {
             Slog.d(TAG, "onResume: " + (isInterceptMode() ? "intercept" : "locked task") + " mode");
         }
-        // Show the biometric prompt when the activity resumes in Locked Task Mode.
-        if (!isInterceptMode() && !mIsBiometricPromptShowing) {
+
+        if (!isInterceptMode() && !mIsUninstall) {
             if (DEBUG) {
-                Slog.d(TAG, "onResume: showing biometric prompt in locked task mode");
+                Slog.d(TAG, "onResume: requesting to show biometric prompt in locked task mode");
             }
-            showBiometricPrompt();
+            requestShowBiometricPromptForLockedTask();
         }
     }
 
@@ -469,6 +474,10 @@ public final class LockedAppActivity extends Activity {
 
         if (!mIsUninstall && finishIfUnlocked(mPackageName, mUserId)) {
             return;
+        }
+
+        if (hasFocus) {
+            maybeShowBiometricPromptForLockedTask();
         }
     }
 
@@ -503,6 +512,62 @@ public final class LockedAppActivity extends Activity {
         }
 
         return false;
+    }
+
+    /**
+     * Sets a pending request to show the biometric prompt for the locked task mode and then
+     * attempts to show it.
+     *
+     * <p>This method is called from lifecycle events (e.g., {@link #onResume()}) or user
+     * interactions (e.g., clicking the background) that should trigger the biometric prompt. It
+     * marks that a prompt is pending and then calls
+     * {@link #maybeShowBiometricPromptForLockedTask()} to check if the conditions are currently met
+     * to show it.
+     */
+    private void requestShowBiometricPromptForLockedTask() {
+        mIsPromptPending = true;
+        maybeShowBiometricPromptForLockedTask();
+    }
+
+    /**
+     * Attempts to show the biometric prompt for the locked task mode if a request is pending and
+     * the activity is in a state where it can reliably interact with the user (resumed and
+     * focused).
+     *
+     * <p>This method acts as a gatekeeper to ensure that the prompt is only presented when the
+     * activity is fully visible and ready for interaction, preventing it from appearing during
+     * transient states like device sleep transitions.
+     */
+    private void maybeShowBiometricPromptForLockedTask() {
+        if (isInterceptMode() || mIsUninstall) {
+            if (DEBUG) {
+                Slog.d(TAG, "maybeShowBiometricPromptForLockedTask: intercept or uninstall mode,"
+                        + " returning");
+            }
+            return;
+        }
+
+        if (!mIsPromptPending || !isResumed() || !mInjector.hasWindowFocus(this)) {
+            if (DEBUG) {
+                Slog.d(TAG, "maybeShowBiometricPromptForLockedTask: not ready for prompt,"
+                        + " returning");
+            }
+            return;
+        }
+
+        mIsPromptPending = false;
+        if (mIsBiometricPromptShowing) {
+            if (DEBUG) {
+                Slog.d(TAG, "maybeShowBiometricPromptForLockedTask: prompt is already shown,"
+                        + " returning");
+            }
+            return;
+        }
+
+        if (DEBUG) {
+            Slog.d(TAG, "maybeShowBiometricPromptForLockedTask: showing biometric prompt");
+        }
+        showBiometricPrompt();
     }
 
     /**
@@ -704,6 +769,16 @@ public final class LockedAppActivity extends Activity {
          */
         public void setContentView(Activity activity, int layoutResId) {
             activity.setContentView(layoutResId);
+        }
+
+        /**
+         * Returns whether the activity's window currently has focus.
+         *
+         * @param activity the activity to check for window focus.
+         * @return {@code true} if the window has focus, {@code false} otherwise.
+         */
+        public boolean hasWindowFocus(Activity activity) {
+            return activity.hasWindowFocus();
         }
 
         /**
