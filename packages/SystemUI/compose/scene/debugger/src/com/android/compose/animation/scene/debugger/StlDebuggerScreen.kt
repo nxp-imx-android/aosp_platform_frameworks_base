@@ -85,6 +85,8 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.android.compose.animation.scene.debug.DebugLabelPosition
 import com.android.compose.animation.scene.debug.StlDebugKeys
@@ -302,12 +304,27 @@ private fun PropertyRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
-            Text(prop.label, fontWeight = FontWeight.Medium)
+        Column(modifier = Modifier.weight(1f).padding(end = 16.dp)) {
+            Row {
+                Text(
+                    prop.label,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.align(Alignment.CenterVertically),
+                )
+                Text(
+                    text = " (${prop.key})",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.LightGray,
+                    modifier = Modifier.align(Alignment.CenterVertically),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
             Text(
-                text = prop.key.removePrefix("debug_stl_"),
+                text = prop.description,
                 style = MaterialTheme.typography.labelSmall,
                 color = Color.Gray,
+                textAlign = TextAlign.Justify,
             )
         }
 
@@ -480,12 +497,13 @@ private fun FilterPropertyEditor(prop: DebugProperty, onChanged: (DebugProperty)
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Column(modifier = Modifier.weight(1f)) {
+            Column(modifier = Modifier.weight(1f).padding(end = 16.dp)) {
                 Text(prop.label, fontWeight = FontWeight.Medium)
                 Text(
-                    text = "Enter keys to filter",
+                    text = prop.description,
                     style = MaterialTheme.typography.labelSmall,
                     color = Color.Gray,
+                    textAlign = TextAlign.Justify,
                 )
             }
 
@@ -577,6 +595,7 @@ private data class DebugProperty(
     val category: Category,
     val label: String,
     val key: String,
+    val description: String,
     val type: PropertyType,
     val enumOptions: List<String> = emptyList(),
 ) {
@@ -602,24 +621,28 @@ private fun getAllDebugProperties(): List<DebugProperty> {
             Category.ELEMENT,
             "Element Key Filter",
             StlDebugKeys.ELEMENT_FILTER.key,
+            "Setting no filter will display all element labels. As soon as you set a filter, only the specified elements will be shown. It affects borders, labels and logs.",
             PropertyType.STRING,
         ),
         DebugProperty(
             Category.ELEMENT,
             "Show Borders",
             StlDebugKeys.SHOW_ELEMENT_BORDERS.key,
+            "Element borders very often overlap. For this reason they are randomly dotted, colored and offset by 0-2px(!) to make them distinguishable.",
             PropertyType.BOOLEAN,
         ),
         DebugProperty(
             Category.ELEMENT,
             "Show Labels",
             StlDebugKeys.SHOW_ELEMENT_LABELS.key,
+            "The label shows \"E:<elementKey>\" and \"In:<contentKey>\" on the second line. This is very useful to understand which content is currently responsible for composing this element (especially during transitions) as this is a common source of bugs and confusion.",
             PropertyType.BOOLEAN,
         ),
         DebugProperty(
             Category.ELEMENT,
             "Label Position",
             StlDebugKeys.POS_ELEMENT_LABEL.key,
+            "Choose a different label position when it collides with other labels.",
             PropertyType.ENUM,
             positions,
         ),
@@ -627,12 +650,14 @@ private fun getAllDebugProperties(): List<DebugProperty> {
             Category.ELEMENT,
             "Log Changes",
             StlDebugKeys.LOG_ELEMENTS.key,
+            "This will show two types of logs. When the transitionState changes it will log a summary of all element states. Only if a element key filter is set it will show a frame-by-frame state summary for selected elements.",
             PropertyType.BOOLEAN,
         ),
         DebugProperty(
             Category.ELEMENT,
             "Log Verbose",
             StlDebugKeys.LOG_ELEMENTS_VERBOSE.key,
+            "Only if a element key filter is set it will log all kinds of verbose events for all of the inner Element.kt composition phases.",
             PropertyType.BOOLEAN,
         ),
 
@@ -641,18 +666,21 @@ private fun getAllDebugProperties(): List<DebugProperty> {
             Category.CONTENT,
             "Show Borders",
             StlDebugKeys.SHOW_CONTENT_BORDERS.key,
+            "Content borders for scenes and overlays.",
             PropertyType.BOOLEAN,
         ),
         DebugProperty(
             Category.CONTENT,
             "Show Labels",
             StlDebugKeys.SHOW_CONTENT_LABELS.key,
+            "The label will show \"S:<key>\" for scenes and \"O:<key>\" for overlays.",
             PropertyType.BOOLEAN,
         ),
         DebugProperty(
             Category.CONTENT,
             "Label Position",
             StlDebugKeys.POS_CONTENT_LABEL.key,
+            "Choose a different label position when it collides with other labels.",
             PropertyType.ENUM,
             positions,
         ),
@@ -662,24 +690,28 @@ private fun getAllDebugProperties(): List<DebugProperty> {
             Category.STL,
             "Exclude STLs",
             StlDebugKeys.EXCLUDE_STLS.key,
+            "Enter STL keys to filter them OUT. Use this when specific STL labels overlap each other or distract you.",
             PropertyType.STRING,
         ),
         DebugProperty(
             Category.STL,
             "Show Borders",
             StlDebugKeys.SHOW_STL_BORDERS.key,
+            "Show borders around each STL. These are drawn behind content borders and element borders.",
             PropertyType.BOOLEAN,
         ),
         DebugProperty(
             Category.STL,
             "Show Labels",
             StlDebugKeys.SHOW_STL_LABELS.key,
+            "STL labels show: <StlName> \\n <TransitionState>. The content names within transitions are truncated to 14 chars. For nested STLs [Nested(<NestingDepth>)] is appended to the name.",
             PropertyType.BOOLEAN,
         ),
         DebugProperty(
             Category.STL,
             "Label Position",
             StlDebugKeys.POS_STL_LABEL.key,
+            "Choose a different label position when it collides with other labels.",
             PropertyType.ENUM,
             positions,
         ),

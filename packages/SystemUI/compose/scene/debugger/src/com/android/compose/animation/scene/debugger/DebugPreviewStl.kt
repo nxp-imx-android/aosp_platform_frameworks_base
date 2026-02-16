@@ -132,7 +132,7 @@ fun DebugPreviewStl(modifier: Modifier = Modifier) {
         val scope = rememberCoroutineScope()
 
         FlowRow(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {

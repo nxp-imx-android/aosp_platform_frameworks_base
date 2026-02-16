@@ -35,16 +35,16 @@ import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastForEach
-import androidx.compose.ui.util.fastForEachReversed
 import com.android.compose.animation.scene.ContentKey
-import com.android.compose.animation.scene.Element
 import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.Key
 import com.android.compose.animation.scene.OverlayKey
+import com.android.compose.animation.scene.Scale
 import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.SceneTransitionLayoutImpl
 import com.android.compose.animation.scene.SceneTransitionLayoutState
@@ -358,13 +358,18 @@ internal class StateLogger {
         previous: TransitionState?,
     ) {
         val sb = StringBuilder()
+
+        sb.appendLine(
+            "\n$================================================================================================================================="
+        )
         if (previous == null) {
-            sb.appendLine("\n========= STL(${layoutImpl.debugName}) ENTERED COMPOSITION =========")
+            sb.appendLine("┌──┤ STL(${layoutImpl.debugName}) ENTERED COMPOSITION")
         } else {
-            sb.appendLine("\n========= STL(${layoutImpl.debugName}) STATE CHANGED =========")
-            sb.appendLine("Before: $previous")
+            sb.appendLine("┌──┤ STL(${layoutImpl.debugName}) STATE CHANGE")
         }
-        sb.appendLine("Now: $current")
+
+        if (previous != null) sb.appendLine("├──< Before: ${previous.debugString()}")
+        sb.appendLine("└──> Now:    ${current.debugString()}")
         val allTransitionStates = getAllNestedTransitionStates(layoutImpl)
         if (allTransitionStates.any { it.any { it != current } }) {
             sb.appendLine("All current transition states: $allTransitionStates")
@@ -377,94 +382,164 @@ internal class StateLogger {
             }
             sb.appendLine()
         }
-        sb.appendLine("==============================================================")
 
-        sb.append("Total Elements: ${layoutImpl.elements.size}")
+        sb.appendLine(
+            "=================================================================================================================================="
+        )
+        sb.append("Total Elements in this STL: ${layoutImpl.elements.size}")
         if (elementFilterList.isNotEmpty()) {
-            sb.appendLine(" - Filtered for Elements containing \"${elementFilterList}\"")
+            sb.append(" - Filtered for Elements containing \"${elementFilterList}\"")
         }
+        sb.appendLine()
+
+        val headerFormat = "| %-23s | %-20s | %-7s | %-6s | %-13s | %-18s | %-5s | %-12s"
+        sb.appendLine(
+            String.format(
+                Locale.ENGLISH,
+                headerFormat,
+                "Element",
+                "Content",
+                "Placed",
+                "State",
+                "Size",
+                "Offset",
+                "Alpha",
+                "Scale",
+            )
+        )
+        sb.appendLine("-" + "-".repeat(128))
 
         layoutImpl.elements.forEach { (key, element) ->
             if (filterOutElement(key)) return@forEach
-            sb.appendLine("Element: $key")
-            val placedInContents = placedInContents[key] ?: emptyList()
 
-            if (placedInContents.isEmpty()) {
-                sb.appendLine("    STATUS: [NOT PLACED IN ANY CONTENT]")
-            } else {
-                sb.appendLine("    PLACED IN CONTENTS:")
-            }
-            placedInContents.forEach {
-                val state = element.stateByContent[it]!!
-                sb.appendLine("  > Placed in: ${getSceneInfo(layoutImpl, it)}")
-                sb.appendIdleValues(state)
-                sb.appendInterpolatedValues(state)
-            }
+            val elementName = key.debugName.truncateText(23)
+            val placedInContents = placedInContents[key] ?: emptySet()
 
-            sb.appendLine("    STATE IN LOCAL CONTENTS OF STL(${layoutImpl.debugName}):")
-            element.stateByContent.forEach { (contentKey, state) ->
+            // Sort by: local content > placed content > alphabetical
+            val allContents =
+                element.stateByContent.keys.sortedWith(
+                    Comparator { a, b ->
+                        val aLocal = layoutImpl.isLocalContent(a)
+                        val bLocal = layoutImpl.isLocalContent(b)
+                        if (aLocal && !bLocal) return@Comparator -1
+                        if (!aLocal && bLocal) return@Comparator 1
+
+                        val aPlaced = placedInContents.contains(a)
+                        val bPlaced = placedInContents.contains(b)
+                        if (aPlaced && !bPlaced) return@Comparator -1
+                        if (!aPlaced && bPlaced) return@Comparator 1
+
+                        return@Comparator a.debugName.compareTo(b.debugName)
+                    }
+                )
+
+            allContents.forEachIndexed { index, contentKey ->
+                val state = element.stateByContent[contentKey]!!
                 val isPlaced = placedInContents.contains(contentKey)
-                if (isPlaced || !layoutImpl.isLocalContent(contentKey)) return@forEach
+                val isLocal = layoutImpl.isLocalContent(contentKey)
 
-                sb.appendLine("  > NOT placed in: ${getSceneInfo(layoutImpl, contentKey)}")
-                sb.appendIdleValues(state)
-                sb.appendInterpolatedValues(state)
+                val prefix = if (index == 0) elementName else ""
+
+                sb.appendRow(
+                    elementName = prefix,
+                    contentName = contentKey.debugName,
+                    icon = if (isPlaced) "✅" else "❌",
+                    placedText = if (isPlaced) "Yes" else "No",
+                    stateLabel = "Idle",
+                    size = state.targetSize,
+                    offset = state.targetOffset,
+                    alpha = 1.0f,
+                    scale = Scale(1f, 1f),
+                )
+
+                val isInterpolatedStateDifferent =
+                    state.lastSize != state.targetSize || state.lastOffset != state.targetOffset
+                if (isInterpolatedStateDifferent) {
+                    sb.appendRow(
+                        elementName = "",
+                        contentName = "",
+                        icon = "🔄",
+                        placedText = "",
+                        stateLabel = "Interp",
+                        size = state.lastSize,
+                        offset = state.lastOffset,
+                        alpha = state.lastAlpha,
+                        scale = state.lastScale,
+                        isEmptyCells = true,
+                    )
+                }
+
+                if (!isLocal) {
+                    val context = getContentInfo(layoutImpl, contentKey)
+                    sb.appendLine(String.format("| %-23s   ↳ %s", "", context))
+                }
             }
-
-            sb.appendLine("    STATE IN OTHER CONTENTS:")
-            element.stateByContent.forEach { (contentKey, state) ->
-                val isPlaced = placedInContents.contains(contentKey)
-                if (isPlaced || layoutImpl.isLocalContent(contentKey)) return@forEach
-
-                sb.appendLine("  > NOT placed in: ${getSceneInfo(layoutImpl, contentKey)}")
-                sb.appendIdleValues(state)
-            }
-            sb.appendLine("--------------------------------------------------------------")
+            sb.appendLine("-" + "-".repeat(128))
         }
 
         Log.i(TAG, sb.toString())
     }
-}
 
-private fun StringBuilder.appendInterpolatedValues(state: Element.State) {
-    appendLine(
-        String.format(
-            Locale.ENGLISH,
-            "      Interp: Size[%4d, %4d], Offset[%6.1f, %6.1f], Scale[%4s, %4s], Alpha[%4s]",
-            state.lastSize.width,
-            state.lastSize.height,
-            state.lastOffset.x,
-            state.lastOffset.y,
-            formatFloat(state.lastScale.scaleX),
-            formatFloat(state.lastScale.scaleY),
-            formatFloat(state.lastAlpha),
-        )
-    )
-}
+    private fun StringBuilder.appendRow(
+        elementName: String,
+        contentName: String,
+        icon: String,
+        placedText: String,
+        stateLabel: String,
+        size: IntSize,
+        offset: Offset,
+        alpha: Float,
+        scale: Scale,
+        isEmptyCells: Boolean = false,
+    ) {
 
-private fun StringBuilder.appendIdleValues(state: Element.State) {
-    appendLine(
-        String.format(
-            Locale.ENGLISH,
-            "      Idle:   Size[%4d, %4d], Offset[%6.1f, %6.1f]",
-            state.targetSize.width,
-            state.targetSize.height,
-            state.targetOffset.x,
-            state.targetOffset.y,
-        )
-    )
-}
+        val placedColWidth = 6
+        val rawString = "$icon $placedText".trim()
+        val adjustment = if (isEmptyCells) 1 else 0
 
-private fun getSceneInfo(layoutImpl: SceneTransitionLayoutImpl, content: ContentKey): String {
-    val sb = StringBuilder("$content")
-    if (layoutImpl.isLocalContent(content)) {
-        layoutImpl.ancestors.fastForEachReversed {
-            sb.append(
-                " > Nested in content ${it.inContent} of parent STL(${it.layoutImpl.debugName})"
+        val paddingNeeded = (placedColWidth - rawString.length + adjustment).coerceAtLeast(0)
+        val placedColStr = rawString + " ".repeat(paddingNeeded)
+
+        val rowFormat = "| %-23s | %-20s | %s | %-6s | %-13s | %-18s | %-5s | %-12s"
+
+        val contentStr = if (isEmptyCells) "" else contentName.truncateText(20)
+
+        val sizeStr = "[${formatInt(size.width)}x${formatInt(size.height)}]"
+        val offsetStr = "(${formatFloat(offset.x)}, ${formatFloat(offset.y)})"
+        val alphaStr = formatFloat(alpha)
+        val scaleStr = "(${formatFloat(scale.scaleX)}, ${formatFloat(scale.scaleY)})"
+
+        appendLine(
+            String.format(
+                Locale.ENGLISH,
+                rowFormat,
+                elementName,
+                contentStr,
+                placedColStr,
+                stateLabel,
+                sizeStr,
+                offsetStr,
+                alphaStr,
+                scaleStr,
             )
+        )
+    }
+
+    private fun getContentInfo(layoutImpl: SceneTransitionLayoutImpl, content: ContentKey): String {
+        val parent = layoutImpl.ancestors.firstOrNull { it.layoutImpl.isLocalContent(content) }
+        return if (parent != null) {
+            "is part of a parent STL(${parent.layoutImpl.debugName})"
+        } else {
+            "Is part of a child or sibling STL"
         }
     }
-    return sb.toString()
+
+    private fun TransitionState.debugString(): String =
+        when (this) {
+            is TransitionState.Idle -> "Idle(${currentScene.debugName})"
+            is TransitionState.Transition ->
+                "Transition(${fromContent.debugName} -> ${toContent.debugName})"
+        }
 }
 
 internal fun Modifier.logElementState(
@@ -510,8 +585,14 @@ internal fun Modifier.logElementState(
     }
 
 private fun formatFloat(value: Float): String {
-    return if (value == Float.MAX_VALUE || value == Float.MIN_VALUE) "Unsp"
-    else String.format(Locale.ENGLISH, "%.2f", value)
+    if (value.isNaN()) return "NaN"
+    if (value == Float.MAX_VALUE || value == Float.MIN_VALUE) return "Unsp"
+    return String.format(Locale.ENGLISH, "%.2f", value)
+}
+
+private fun formatInt(value: Int): String {
+    if (value == Int.MAX_VALUE || value == Int.MIN_VALUE) return "Unsp"
+    return value.toString()
 }
 
 /**
