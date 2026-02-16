@@ -713,7 +713,8 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 newPromotedNotificationContentBuilder("notif").applyToShared {
                     this.shortCriticalText = "Arrived"
                     this.time = When.Time(currentTime + 30.minutes.inWholeMilliseconds)
-                    this.metrics = listOf(Metric.Text(metricValue = "1000m", label = "distance"))
+                    this.metrics =
+                        listOf(Metric.Text(textVariants = listOf("1000m"), label = "distance"))
                 }
             setNotifs(
                 listOf(
@@ -743,7 +744,8 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
             val promotedContentBuilder =
                 newPromotedNotificationContentBuilder("notif").applyToShared {
                     this.time = When.Time(currentTime + 30.minutes.inWholeMilliseconds)
-                    this.metrics = listOf(Metric.Text(metricValue = "Arrived", label = "status"))
+                    this.metrics =
+                        listOf(Metric.Text(textVariants = listOf("Arrived"), label = "status"))
                 }
             setNotifs(
                 listOf(

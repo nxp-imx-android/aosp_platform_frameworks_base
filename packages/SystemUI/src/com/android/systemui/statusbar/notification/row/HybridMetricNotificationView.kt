@@ -76,7 +76,7 @@ constructor(
 
         when (metric) {
             is Metric.Text -> {
-                _metricValue.text = metric.metricValue
+                _metricValue.text = metric.textVariants.first()
                 _metricValue.isVisible = true
                 _metricChronometer.isVisible = false
             }
