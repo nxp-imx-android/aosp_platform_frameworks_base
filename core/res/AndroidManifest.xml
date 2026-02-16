@@ -7758,7 +7758,7 @@
          @FlaggedApi(com.android.server.backup.Flags.FLAG_ENABLE_DELAYED_RESTORE_API)
          @hide -->
     <permission android:name="android.permission.SCHEDULE_DELAYED_RESTORE"
-        android:protectionLevel="signature|privileged"
+        android:protectionLevel="signature|privileged|development"
         android:featureFlag="com.android.server.backup.enable_delayed_restore_api" />
 
     <!-- Must be required by a {@link android.widget.RemoteViewsService},
