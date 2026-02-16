@@ -30,6 +30,7 @@ import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.KeyEvent
+import android.view.accessibility.AccessibilityManager
 import android.window.DisplayAreaInfo
 import androidx.test.filters.SmallTest
 import com.android.dx.mockito.inline.extended.ExtendedMockito.doAnswer
@@ -101,6 +102,7 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
     private val desktopTasksController = mock<DesktopTasksController>()
     private val desktopState = FakeDesktopState()
     private val shellController = mock<ShellController>()
+    private val accessibilityManager = mock<AccessibilityManager>()
 
     private lateinit var desktopModeKeyGestureHandler: DesktopModeKeyGestureHandler
     private lateinit var keyGestureEventHandler: KeyGestureEventHandler
@@ -171,6 +173,7 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
                 testExecutor,
                 displayController,
                 desktopState,
+                accessibilityManager,
             )
     }
 
@@ -354,6 +357,26 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
     }
 
     @Test
+    fun keyGestureMinimizeFreeformWindow_shouldSendA11yEvent() {
+        val task = setUpDesktopTask()
+        task.isFocused = true
+        whenever(accessibilityManager.isEnabled).thenReturn(true)
+        whenever(shellTaskOrganizer.getRunningTasks()).thenReturn(arrayListOf(task))
+        whenever(focusTransitionObserver.hasGlobalFocus(eq(task))).thenReturn(true)
+
+        val event =
+            KeyGestureEvent.Builder()
+                .setKeyGestureType(KeyGestureEvent.KEY_GESTURE_TYPE_MINIMIZE_FREEFORM_WINDOW)
+                .setKeycodes(intArrayOf(KeyEvent.KEYCODE_MINUS))
+                .setModifierState(KeyEvent.META_META_ON)
+                .build()
+        keyGestureEventHandler.handleKeyGestureEvent(event, null)
+        testExecutor.flushAll()
+
+        verify(accessibilityManager).sendAccessibilityEvent(any())
+    }
+
+    @Test
     fun keyGestureQuitFocusedDesktopTask_shouldQuitTask() {
         val task = setUpDesktopTask()
         task.isFocused = true
@@ -370,6 +393,26 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
         testExecutor.flushAll()
 
         verify(desktopModeWindowDecorViewModel).closeTask(task)
+    }
+
+    @Test
+    fun keyGestureQuitFocusedDesktopTask_shouldSendA11yEvent() {
+        val task = setUpDesktopTask()
+        task.isFocused = true
+        whenever(accessibilityManager.isEnabled).thenReturn(true)
+        whenever(shellTaskOrganizer.getRunningTasks()).thenReturn(arrayListOf(task))
+        whenever(focusTransitionObserver.hasGlobalFocus(eq(task))).thenReturn(true)
+
+        val event =
+            KeyGestureEvent.Builder()
+                .setKeyGestureType(KeyGestureEvent.KEY_GESTURE_TYPE_QUIT_FOCUSED_DESKTOP_TASK)
+                .setKeycodes(intArrayOf(KeyEvent.KEYCODE_Q))
+                .setModifierState(KeyEvent.META_META_ON)
+                .build()
+        keyGestureEventHandler.handleKeyGestureEvent(event, null)
+        testExecutor.flushAll()
+
+        verify(accessibilityManager).sendAccessibilityEvent(any())
     }
 
     @Test

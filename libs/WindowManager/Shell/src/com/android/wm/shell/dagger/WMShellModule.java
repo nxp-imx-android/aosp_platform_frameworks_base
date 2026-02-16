@@ -36,6 +36,7 @@ import android.view.Choreographer;
 import android.view.IWindowManager;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
+import android.view.accessibility.AccessibilityManager;
 import android.window.DesktopExperienceFlags;
 import android.window.TaskSnapshotManager;
 
@@ -1468,13 +1469,14 @@ public abstract class WMShellModule {
             FocusTransitionObserver focusTransitionObserver,
             @ShellMainThread ShellExecutor mainExecutor,
             DisplayController displayController,
-            DesktopState desktopState) {
+            DesktopState desktopState,
+            AccessibilityManager accessibilityManager) {
         if (desktopState.canEnterDesktopMode()) {
             return Optional.of(new DesktopModeKeyGestureHandler(context,
                     desktopModeWindowDecorViewModel, desktopTasksController,
-                    desktopUserRepositories,
-                    inputManager, shellTaskOrganizer, focusTransitionObserver,
-                    mainExecutor, displayController, desktopState));
+                    desktopUserRepositories, inputManager, shellTaskOrganizer,
+                    focusTransitionObserver, mainExecutor, displayController, desktopState,
+                    accessibilityManager));
         }
         return Optional.empty();
     }
