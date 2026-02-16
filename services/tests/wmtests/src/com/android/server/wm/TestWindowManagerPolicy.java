@@ -272,14 +272,6 @@ class TestWindowManagerPolicy implements WindowManagerPolicy {
     }
 
     @Override
-    public void keepScreenOnStartedLw() {
-    }
-
-    @Override
-    public void keepScreenOnStoppedLw() {
-    }
-
-    @Override
     public boolean hasNavigationBar() {
         return false;
     }

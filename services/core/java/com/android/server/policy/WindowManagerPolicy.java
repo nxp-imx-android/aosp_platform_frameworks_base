@@ -1083,18 +1083,6 @@ public interface WindowManagerPolicy extends WindowManagerPolicyConstants {
     public void enableScreenAfterBoot();
 
     /**
-     * Called when we have started keeping the screen on because a window
-     * requesting this has become visible.
-     */
-    public void keepScreenOnStartedLw();
-
-    /**
-     * Called when we have stopped keeping the screen on because the last window
-     * requesting this is no longer visible.
-     */
-    public void keepScreenOnStoppedLw();
-
-    /**
      * Called by System UI to notify of changes to the visibility of Recents.
      */
     public void setRecentsVisibilityLw(boolean visible);

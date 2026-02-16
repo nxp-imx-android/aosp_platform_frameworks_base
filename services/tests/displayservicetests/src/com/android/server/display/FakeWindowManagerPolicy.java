@@ -324,16 +324,6 @@ class FakeWindowManagerPolicy implements WindowManagerPolicy {
     }
 
     @Override
-    public void keepScreenOnStartedLw() {
-
-    }
-
-    @Override
-    public void keepScreenOnStoppedLw() {
-
-    }
-
-    @Override
     public void setRecentsVisibilityLw(boolean visible) {
 
     }
