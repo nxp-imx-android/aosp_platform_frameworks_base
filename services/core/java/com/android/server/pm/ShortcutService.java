@@ -1750,8 +1750,7 @@ public class ShortcutService extends IShortcutService.Stub {
         if (systemChooser == null) {
             return false;
         }
-        int uid = injectGetPackageUid(systemChooser.getPackageName(), UserHandle.USER_SYSTEM);
-        return UserHandle.getAppId(uid) == UserHandle.getAppId(callingUid);
+        return injectIsSameApp(systemChooser.getPackageName(), UserHandle.USER_SYSTEM, callingUid);
     }
 
     private void enforceSystemOrShell() {
@@ -1824,7 +1823,7 @@ public class ShortcutService extends IShortcutService.Stub {
         if (UserHandle.getUserId(callingUid) != userId) {
             throw new SecurityException("Invalid userId");
         }
-        if (injectGetPackageUid(packageName, userId) != callingUid) {
+        if (!injectIsSameApp(packageName, userId, callingUid)) {
             throw new SecurityException("Calling package name mismatch");
         }
         Preconditions.checkState(!isEphemeralApp(packageName, userId),
@@ -3970,6 +3969,20 @@ public class ShortcutService extends IShortcutService.Stub {
             // Shouldn't happen.
             Slog.wtf(TAG, "RemoteException", e);
             return -1;
+        } finally {
+            injectRestoreCallingIdentity(token);
+        }
+    }
+
+    boolean injectIsSameApp(@NonNull String packageName, @UserIdInt int userId, int callingUid) {
+        final long token = injectClearCallingIdentity();
+        try {
+            return mPackageManagerInternal.isSameApp(packageName, PACKAGE_MATCH_FLAGS, callingUid,
+                    userId);
+        } catch (Exception e) {
+            // Shouldn't happen.
+            Slog.wtf(TAG, "Exception", e);
+            return false;
         } finally {
             injectRestoreCallingIdentity(token);
         }

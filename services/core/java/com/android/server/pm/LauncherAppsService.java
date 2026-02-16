@@ -621,19 +621,11 @@ public class LauncherAppsService extends SystemService {
 
         @VisibleForTesting // We override it in unit tests
         void verifyCallingPackage(String callingPackage, int callerUid) {
-            int packageUid = -1;
-            try {
-                packageUid = mIPM.getPackageUid(callingPackage,
-                        PackageManager.MATCH_DIRECT_BOOT_AWARE
-                                | PackageManager.MATCH_DIRECT_BOOT_UNAWARE
-                                | PackageManager.MATCH_UNINSTALLED_PACKAGES,
-                        UserHandle.getUserId(callerUid));
-            } catch (RemoteException ignore) {
-            }
-            if (packageUid < 0) {
-                Log.e(TAG, "Package not found: " + callingPackage);
-            }
-            if (packageUid != callerUid) {
+            if (!mPackageManagerInternal.isSameApp(callingPackage,
+                    PackageManager.MATCH_DIRECT_BOOT_AWARE
+                            | PackageManager.MATCH_DIRECT_BOOT_UNAWARE
+                            | PackageManager.MATCH_UNINSTALLED_PACKAGES,
+                    callerUid, UserHandle.getUserId(callerUid))) {
                 throw new SecurityException("Calling package name mismatch");
             }
         }
