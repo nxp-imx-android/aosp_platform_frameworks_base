@@ -60,31 +60,6 @@ public final class ConversationData implements Parcelable {
     private final @NonNull List<ChatMessageData> mChatMessages;
 
     private ConversationData(
-            @NonNull Instant processingStartTimestamp,
-            @NonNull Instant processingEndTimestamp,
-            @NonNull ComponentName componentName,
-            @Nullable AutofillId inputBoxAutofillId,
-            @NonNull String inputBoxText,
-            @NonNull String conversationTitle,
-            boolean isKeyboardShown,
-            boolean isLastMessageFromTheUser,
-            boolean hasNewMessage,
-            @NonNull List<ChatMessageData> chatMessages) {
-        this(
-                null,
-                processingStartTimestamp,
-                processingEndTimestamp,
-                componentName,
-                inputBoxAutofillId,
-                inputBoxText,
-                conversationTitle,
-                isKeyboardShown,
-                isLastMessageFromTheUser,
-                hasNewMessage,
-                chatMessages);
-    }
-
-    private ConversationData(
             @Nullable ActivityId activityId,
             @NonNull Instant processingStartTimestamp,
             @NonNull Instant processingEndTimestamp,
@@ -134,13 +109,16 @@ public final class ConversationData implements Parcelable {
         return mActivityId;
     }
 
-    /** Returns the timestamp when the processing of the conversation started. */
+    /**
+     * Returns the timestamp when Content Capture first saw the message and the processing of the
+     * conversation started.
+     */
     @NonNull
     public Instant getProcessingStartTimestamp() {
         return mProcessingStartTimestamp;
     }
 
-    /** Returns the timestamp when the processing of the conversation ended. */
+    /** Returns the timestamp when Content Capture finished processing the conversation. */
     @NonNull
     public Instant getProcessingEndTimestamp() {
         return mProcessingEndTimestamp;
@@ -170,7 +148,11 @@ public final class ConversationData implements Parcelable {
         return mConversationTitle;
     }
 
-    /** Returns whether the keyboard is shown. */
+    /**
+     * Returns whether the keyboard was shown at the time Content Capture parsed the conversation.
+     *
+     * <p>This can be used by the understander as a signal to decide what models to run.
+     */
     public boolean isKeyboardShown() {
         return mIsKeyboardShown;
     }
@@ -185,7 +167,12 @@ public final class ConversationData implements Parcelable {
         return mHasNewMessage;
     }
 
-    /** Returns the chat messages in the conversation. */
+    /**
+     * Returns the chat messages in the conversation.
+     *
+     * <p>The list will be sorted by order of earliest appearance in the conversation, matching what
+     * the user sees in the UI.
+     */
     @NonNull
     public List<ChatMessageData> getChatMessages() {
         return mChatMessages;
@@ -309,21 +296,37 @@ public final class ConversationData implements Parcelable {
 
         public Builder() {}
 
-        /** Sets whether the keyboard is shown. */
+        /**
+         * Sets whether the keyboard was shown at the time Content Capture parsed the conversation.
+         *
+         * <p>This can be used by the understander as a signal to decide what models to run. Since
+         * this state may have changed since the hint was created, renderers should still check if
+         * the keyboard is showing before showing results.
+         *
+         * <p>This is a required builder input.
+         */
         @NonNull
         public Builder setKeyboardShown(boolean isKeyboardShown) {
             mIsKeyboardShown = isKeyboardShown;
             return this;
         }
 
-        /** Sets whether the last message in the conversation is from the user. */
+        /**
+         * Sets whether the last message in the conversation is from the user.
+         *
+         * <p>This is a required builder input.
+         */
         @NonNull
         public Builder setLastMessageFromTheUser(boolean isLastMessageFromTheUser) {
             mIsLastMessageFromTheUser = isLastMessageFromTheUser;
             return this;
         }
 
-        /** Sets whether there is a new message in view. */
+        /**
+         * Sets whether there is a new message in view.
+         *
+         * <p>This is a required builder input.
+         */
         @NonNull
         public Builder setHasNewMessage(boolean hasNewMessage) {
             mHasNewMessage = hasNewMessage;
@@ -331,7 +334,10 @@ public final class ConversationData implements Parcelable {
         }
 
         /**
-         * @param activityId The id of the activity that contains the conversation.
+         * Sets the id of the activity that contains the conversation.
+         *
+         * <p>This setter is not required to build the {@link ConversationData}.
+         *
          * @hide
          */
         @SystemApi
@@ -341,56 +347,91 @@ public final class ConversationData implements Parcelable {
             return this;
         }
 
-        /** Sets the timestamp when the processing of the conversation started. */
+        /**
+         * Sets the timestamp when Content Capture first saw the message and the processing of the
+         * conversation started.
+         *
+         * <p>This is a required builder input.
+         */
         @NonNull
         public Builder setProcessingStartTimestamp(@NonNull Instant processingStartTimestamp) {
             mProcessingStartTimestamp = processingStartTimestamp;
             return this;
         }
 
-        /** Sets the timestamp when the processing of the conversation ended. */
+        /**
+         * Sets the timestamp when Content Capture finished processing the conversation.
+         *
+         * <p>This is a required builder input.
+         */
         @NonNull
         public Builder setProcessingEndTimestamp(@NonNull Instant processingEndTimestamp) {
             mProcessingEndTimestamp = processingEndTimestamp;
             return this;
         }
 
-        /** Sets the component name of the activity that contains the conversation. */
+        /**
+         * Sets the component name of the activity that contains the conversation.
+         *
+         * <p>This is a required builder input.
+         */
         @NonNull
         public Builder setComponentName(@NonNull ComponentName componentName) {
             mComponentName = componentName;
             return this;
         }
 
-        /** Sets the autofill id of the input box in the conversation. */
+        /**
+         * Sets the autofill id of the input box in the conversation.
+         *
+         * <p>This is a required builder input.
+         */
         @NonNull
         public Builder setInputBoxAutofillId(@Nullable AutofillId inputBoxAutofillId) {
             mInputBoxAutofillId = inputBoxAutofillId;
             return this;
         }
 
-        /** Sets the text in the input box. */
+        /**
+         * Sets the text in the input box.
+         *
+         * <p>This is a required builder input.
+         */
         @NonNull
         public Builder setInputBoxText(@NonNull String inputBoxText) {
             mInputBoxText = inputBoxText;
             return this;
         }
 
-        /** Sets the title of the conversation. */
+        /**
+         * Sets the title of the conversation.
+         *
+         * <p>This is a required builder input.
+         */
         @NonNull
         public Builder setConversationTitle(@NonNull String conversationTitle) {
             mConversationTitle = conversationTitle;
             return this;
         }
 
-        /** Sets the chat messages in the conversation. */
+        /**
+         * Sets the chat messages in the conversation.
+         *
+         * <p>The list should be sorted by order of earliest appearance in the conversation,
+         * matching what the user sees in the UI.
+         *
+         * <p>This is a required builder input.
+         */
         @NonNull
         public Builder setChatMessages(@NonNull List<ChatMessageData> chatMessages) {
             mChatMessages = chatMessages;
             return this;
         }
 
-        /** Builds the {@link ConversationData}. */
+        /**
+         * Builds the {@link ConversationData}. All setters are required other than {@link
+         * #setActivityId(ActivityId)}.
+         */
         @NonNull
         public ConversationData build() {
             return new ConversationData(
