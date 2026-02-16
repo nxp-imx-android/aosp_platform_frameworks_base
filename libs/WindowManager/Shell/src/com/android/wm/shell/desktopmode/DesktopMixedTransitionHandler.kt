@@ -33,6 +33,7 @@ import android.window.WindowContainerTransaction
 import androidx.annotation.VisibleForTesting
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.internal.protolog.ProtoLog
+import com.android.window.flags.Flags
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_TASK_LIMIT_MINIMIZE
 import com.android.wm.shell.desktopmode.clientfullscreenrequest.DesktopFullscreenRequestHandler
@@ -548,8 +549,14 @@ class DesktopMixedTransitionHandler(
             return false
         }
         logV("Animating mixed minimize transition task#%d", minimizeChange.taskInfo?.taskId)
-        if (pending.isLastTask) {
-            // Dispatch close desktop task animation to the default transition handlers.
+        val shouldDispatchAnimation =
+            if (Flags.desktopMinimizeLastTaskBugfix()) {
+                // We never exit Desktop mode by minimizing a task
+                false
+            } else {
+                pending.isLastTask
+            }
+        if (shouldDispatchAnimation) {
             return dispatchToLeftoverHandler(
                 transition,
                 info,

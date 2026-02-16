@@ -66,6 +66,7 @@ import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver
 import com.android.wm.shell.freeform.FreeformTaskTransitionHandler
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
+import com.android.wm.shell.transition.Transitions.TRANSIT_MINIMIZE
 import com.android.wm.shell.transition.Transitions.TransitionFinishCallback
 import com.google.common.truth.Truth.assertThat
 import java.util.Optional
@@ -481,14 +482,12 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
     }
 
     @Test
-    fun startMinimizedModeTransition_exitByMinimizeTransitionFlagsEnabled_notLastTask_callsMinimizationHandler() {
+    fun startMinimizedModeTransition_notLastTask_callsMinimizationHandler() {
         val wct = WindowContainerTransaction()
         val minimizingTask = createTask(WINDOWING_MODE_FREEFORM)
         val minimizingTaskChange = createChange(minimizingTask)
         val transition = Binder()
-        whenever(
-                transitions.startTransition(eq(Transitions.TRANSIT_MINIMIZE), eq(wct), anyOrNull())
-            )
+        whenever(transitions.startTransition(eq(TRANSIT_MINIMIZE), eq(wct), anyOrNull()))
             .thenReturn(transition)
 
         mixedHandler.startMinimizedModeTransition(
@@ -499,11 +498,7 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
         val started =
             mixedHandler.startAnimation(
                 transition = transition,
-                info =
-                    createTransitionInfo(
-                        Transitions.TRANSIT_MINIMIZE,
-                        listOf(minimizingTaskChange),
-                    ),
+                info = createTransitionInfo(TRANSIT_MINIMIZE, listOf(minimizingTaskChange)),
                 startTransaction = mock(),
                 finishTransaction = mock(),
                 finishCallback = {},
@@ -521,14 +516,14 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
     }
 
     @Test
-    fun startMinimizedModeTransition_exitByMinimizeTransitionFlagsEnabled_withMinimizingLastTask_dispatchesTransition() {
+    @DisableFlags(Flags.FLAG_DESKTOP_MINIMIZE_LAST_TASK_BUGFIX)
+    fun startMinimizedModeTransition_lastTaskFlagDisabled_minimizingLastTask_dispatchesTransition() {
         val wct = WindowContainerTransaction()
         val minimizingTask = createTask(WINDOWING_MODE_FREEFORM)
-        val minimizingTaskChange = createChange(minimizingTask)
+        val transitionInfo =
+            createTransitionInfo(TRANSIT_MINIMIZE, listOf(createChange(minimizingTask)))
         val transition = Binder()
-        whenever(
-                transitions.startTransition(eq(Transitions.TRANSIT_MINIMIZE), eq(wct), anyOrNull())
-            )
+        whenever(transitions.startTransition(eq(TRANSIT_MINIMIZE), eq(wct), anyOrNull()))
             .thenReturn(transition)
 
         mixedHandler.startMinimizedModeTransition(
@@ -538,7 +533,7 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
         )
         mixedHandler.startAnimation(
             transition = transition,
-            info = createTransitionInfo(Transitions.TRANSIT_MINIMIZE, listOf(minimizingTaskChange)),
+            info = transitionInfo,
             startTransaction = mock(),
             finishTransaction = mock(),
             finishCallback = {},
@@ -547,12 +542,40 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
         verify(transitions)
             .dispatchTransition(
                 eq(transition),
-                argThat { info -> info.changes.contains(minimizingTaskChange) },
+                eq(transitionInfo),
                 any(),
                 any(),
                 any(),
                 eq(mixedHandler),
             )
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_DESKTOP_MINIMIZE_LAST_TASK_BUGFIX)
+    fun startMinimizedModeTransition_lastTaskFlagEnabled_callsMinimizeHandler() {
+        val wct = WindowContainerTransaction()
+        val minimizingTask = createTask(WINDOWING_MODE_FREEFORM)
+        val transitionInfo =
+            createTransitionInfo(TRANSIT_MINIMIZE, listOf(createChange(minimizingTask)))
+        val transition = Binder()
+        whenever(transitions.startTransition(eq(TRANSIT_MINIMIZE), eq(wct), anyOrNull()))
+            .thenReturn(transition)
+
+        mixedHandler.startMinimizedModeTransition(
+            wct = wct,
+            taskId = minimizingTask.taskId,
+            isLastTask = false,
+        )
+        mixedHandler.startAnimation(
+            transition = transition,
+            info = transitionInfo,
+            startTransaction = mock(),
+            finishTransaction = mock(),
+            finishCallback = {},
+        )
+
+        verify(desktopMinimizationTransitionHandler)
+            .startAnimation(eq(transition), eq(transitionInfo), any(), any(), any())
     }
 
     @Test
@@ -719,7 +742,8 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION)
-    fun startAnimation_withMinimizingLastDesktopTask_dispatchesTransition() {
+    @DisableFlags(Flags.FLAG_DESKTOP_MINIMIZE_LAST_TASK_BUGFIX)
+    fun startAnimation_closingDesktop_dispatchesTransition() {
         val minimizingTask = createTask(WINDOWING_MODE_FREEFORM)
         val transition = Binder()
         whenever(desktopRepository.getExpandedTaskCount(any())).thenReturn(2)
@@ -731,10 +755,14 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
             )
         )
 
-        val minimizingTaskChange = createChange(minimizingTask)
+        val transitionInfo =
+            createTransitionInfo(
+                TRANSIT_TO_BACK,
+                listOf(createChange(minimizingTask), createClosingWallpaperChange()),
+            )
         mixedHandler.startAnimation(
             transition = transition,
-            info = createTransitionInfo(TRANSIT_TO_BACK, listOf(minimizingTaskChange)),
+            info = transitionInfo,
             startTransaction = mock(),
             finishTransaction = mock(),
             finishCallback = {},
@@ -743,7 +771,7 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
         verify(transitions)
             .dispatchTransition(
                 eq(transition),
-                argThat { info -> info.changes.contains(minimizingTaskChange) },
+                eq(transitionInfo),
                 any(),
                 any(),
                 any(),
@@ -870,13 +898,7 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
                 }
             )
             if (withWallpaper) {
-                addChange(
-                    TransitionInfo.Change(/* container= */ mock(), /* leash= */ mock()).apply {
-                        mode = WindowManager.TRANSIT_CLOSE
-                        parent = null
-                        taskInfo = createWallpaperTask()
-                    }
-                )
+                addChange(createClosingWallpaperChange())
             }
         }
 
@@ -902,6 +924,13 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
             .setActivityType(ACTIVITY_TYPE_STANDARD)
             .setWindowingMode(windowingMode)
             .build()
+
+    private fun createClosingWallpaperChange() =
+        TransitionInfo.Change(/* container= */ mock(), /* leash= */ mock()).apply {
+            mode = WindowManager.TRANSIT_CLOSE
+            parent = null
+            taskInfo = createWallpaperTask()
+        }
 
     private fun createWallpaperTask() =
         RunningTaskInfo().apply {
