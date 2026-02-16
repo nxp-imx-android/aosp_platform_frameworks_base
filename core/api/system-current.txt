@@ -15618,9 +15618,9 @@ package android.service.personalcontext.insight {
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class InsightActionDetails implements android.os.Parcelable {
-    method @Nullable public android.content.Intent createActionIntent();
     method public int describeContents();
     method public int getActionTypes();
+    method @Nullable public android.content.Intent getIntent();
     method @Nullable public android.app.RemoteAction getRemoteAction();
     method public boolean hasActionType(int);
     method public void writeToParcel(@NonNull android.os.Parcel, int);
