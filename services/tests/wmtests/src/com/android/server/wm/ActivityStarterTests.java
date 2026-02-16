@@ -112,6 +112,7 @@ import android.window.TaskFragmentOrganizerToken;
 
 import androidx.test.filters.SmallTest;
 
+import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.pm.pkg.AndroidPackage;
 import com.android.server.wm.BackgroundActivityStartController.BalVerdict;
 import com.android.server.wm.LaunchParamsController.LaunchParams;
@@ -222,13 +223,14 @@ public final class ActivityStarterTests extends ActivityStarterTestBase {
         prepareStarter(launchFlags);
         final IApplicationThread caller = mock(IApplicationThread.class);
         final WindowProcessListener listener = mock(WindowProcessListener.class);
+        final ProcessRecordInternal owner = mock(ProcessRecordInternal.class);
 
         final ApplicationInfo ai = new ApplicationInfo();
         ai.packageName = "com.android.test.package";
         final WindowProcessController wpc =
                 containsConditions(preconditions, PRECONDITION_NO_CALLER_APP)
                         ? null
-                        : new WindowProcessController(service, ai, null, 0, -1, null, listener);
+                        : new WindowProcessController(service, ai, null, 0, -1, owner, listener);
         doReturn(wpc).when(service).getProcessController(any());
 
         final Intent intent = new Intent();
@@ -649,12 +651,13 @@ public final class ActivityStarterTests extends ActivityStarterTestBase {
         mAtm.mActiveUids.onUidActive(UNIMPORTANT_UID2, PROCESS_STATE_BOUND_TOP);
         // foreground activities
         final IApplicationThread caller = mock(IApplicationThread.class);
+        final ProcessRecordInternal owner = mock(ProcessRecordInternal.class);
         final WindowProcessListener listener = mock(WindowProcessListener.class);
         final ApplicationInfo ai = new ApplicationInfo();
         ai.uid = UNIMPORTANT_UID;
         ai.packageName = "com.android.test.package";
         final WindowProcessController callerApp = spy(new WindowProcessController(
-                mAtm, ai, null, UNIMPORTANT_UID, -1, null, listener));
+                mAtm, ai, null, UNIMPORTANT_UID, -1, owner, listener));
         doReturn(false).when(callerApp).hasForegroundActivities();
         doReturn(callerApp).when(mAtm).getProcessController(caller);
         // caller is recents
