@@ -40,7 +40,7 @@ constructor(
     override val target: SetupTarget,
 ) : ContextualSetupDefinition {
 
-    override val id = "upright_charging_mode"
+    override val id = FLOW_ID
 
     // Power Optimization:
     // We strictly gate the expensive trigger (accelerometer) behind the cheap preconditions.
@@ -67,5 +67,9 @@ constructor(
         pw.println("  id: $id")
         pw.println("  target: $target")
         flowDumper.dump(pw, args)
+    }
+
+    companion object {
+        const val FLOW_ID = "upright_charging_mode"
     }
 }
