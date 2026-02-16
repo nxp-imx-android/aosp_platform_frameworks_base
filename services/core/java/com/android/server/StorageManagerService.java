@@ -487,6 +487,8 @@ class StorageManagerService extends IStorageManager.Stub
 
     private volatile int mMediaStoreAuthorityAppId = -1;
 
+    private volatile String mMediaStorePackageName;
+
     private volatile int mDownloadsAuthorityAppId = -1;
 
     private volatile int mExternalStorageAuthorityAppId = -1;
@@ -2186,6 +2188,7 @@ class StorageManagerService extends IStorageManager.Stub
         ProviderInfo provider = getProviderInfo(MediaStore.AUTHORITY);
         if (provider != null) {
             mMediaStoreAuthorityAppId = UserHandle.getAppId(provider.getUid());
+            mMediaStorePackageName = provider.packageName;
             sMediaStoreAuthorityProcessName = provider.applicationInfo.processName;
         }
 
@@ -3888,8 +3891,9 @@ class StorageManagerService extends IStorageManager.Stub
         // should never attempt to augment the actual storage volume state,
         // otherwise we risk confusing it with race conditions as users go
         // through various unlocked states
-        final boolean callerIsMediaStore = UserHandle.isSameApp(callingUid,
-                mMediaStoreAuthorityAppId);
+        final boolean callerIsMediaStore = (mMediaStorePackageName != null)
+                && mPmInternal.isSameApp(mMediaStorePackageName, callingUid,
+                        UserHandle.getUserId(callingUid));
 
         // Only Apps with MANAGE_EXTERNAL_STORAGE should call the API with includeSharedProfile
         if (includeSharedProfile) {
