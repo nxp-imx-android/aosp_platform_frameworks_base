@@ -818,7 +818,7 @@ public abstract class ProcessRecordInternal {
      * The node representation of this process in the process graph.
      * This is {@code null} unless {@link Flags#enableCapabilityControllerComputation} is true.
      */
-    private final GraphNode mGraphNode;
+    private final ProcessNode mProcessNode;
     /**
      * The intrinsic edge from the system to this process node in the process graph.
      * This is {@code null} unless {@link Flags#enableCapabilityControllerComputation} is true.
@@ -847,10 +847,10 @@ public abstract class ProcessRecordInternal {
         mProcLock = procLock;
 
         if (Flags.enableCapabilityControllerComputation()) {
-            mGraphNode = new GraphNode(this);
-            mProcessEdge = new ProcessEdge(mGraphNode);
+            mProcessNode = new ProcessNode(this);
+            mProcessEdge = new ProcessEdge(mProcessNode);
         } else {
-            mGraphNode = null;
+            mProcessNode = null;
             mProcessEdge = null;
         }
     }
@@ -1696,8 +1696,8 @@ public abstract class ProcessRecordInternal {
         mIsZramWrittenBack = isZramWrittenBack;
     }
 
-    GraphNode getGraphNode() {
-        return mGraphNode;
+    ProcessNode getProcessNode() {
+        return mProcessNode;
     }
 
     /** Get the intrinsic edge from the system to this process node. */

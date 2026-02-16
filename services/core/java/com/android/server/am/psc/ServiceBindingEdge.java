@@ -35,7 +35,7 @@ class ServiceBindingEdge extends GraphEdge {
      * Source node of this edge. The node represents the client process and remains unchanged
      * during the lifetime of this edge.
      */
-    private final @NonNull GraphNode mSource;
+    private final @NonNull ProcessNode mSource;
     /**
      * Target node of this edge. The node represents the service host process. When
      * {@link ServiceRecordInternal#setHostProcess} is called, the host process record can change
@@ -45,7 +45,7 @@ class ServiceBindingEdge extends GraphEdge {
      * {@link #updateTarget()} updates the target node, and should be called before evaluating this
      * edge in each update.
      */
-    private GraphNode mTarget;
+    private ProcessNode mTarget;
 
     ServiceBindingEdge(@NonNull ConnectionRecordInternal conn) {
         mConn = Objects.requireNonNull(conn);
@@ -65,7 +65,7 @@ class ServiceBindingEdge extends GraphEdge {
         // LINT.ThenChange(OomAdjusterImpl.java:getServiceClient)
 
         // The client must be non-null.
-        mSource = client.getGraphNode();
+        mSource = client.getProcessNode();
     }
 
     @CpuTimeTransmissionType
@@ -75,13 +75,13 @@ class ServiceBindingEdge extends GraphEdge {
 
     @Override
     @NonNull
-    GraphNode getSource() {
+    ProcessNode getSource() {
         return mSource;
     }
 
     @Override
     @Nullable
-    GraphNode getTarget() {
+    ProcessNode getTarget() {
         return mTarget;
     }
 
@@ -100,7 +100,7 @@ class ServiceBindingEdge extends GraphEdge {
                     ? service.getIsolationHostProcess() : service.getHostProcessInternal();
             // LINT.ThenChange(OomAdjusterImpl.java:getServiceHost)
         }
-        mTarget = (host == null) ? null : host.getGraphNode();
+        mTarget = (host == null) ? null : host.getProcessNode();
     }
 
     @Override
