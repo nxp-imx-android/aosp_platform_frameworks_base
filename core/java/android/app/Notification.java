@@ -6605,6 +6605,7 @@ public class Notification implements Parcelable
             // Metrics are considered as second line for MetricStyle.
             final boolean showMetrics = apiMetricStyle()
                     && (resId == getCollapsedMetricLayoutResource()
+                    || resId == getHeadsUpMetricLayoutResource()
                     || resId == getExpandedMetricLayoutResource());
             hasSecondLine |= showMetrics;
             if (p.hasTitle()) {
