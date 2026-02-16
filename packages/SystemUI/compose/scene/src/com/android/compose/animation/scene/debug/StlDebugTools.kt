@@ -331,11 +331,6 @@ internal fun Modifier.logElementsOnTransitionChange(
         val placeable = measurable.measure(constraints)
 
         layout(placeable.width, placeable.height) {
-            if (StlDebugConfig.logElements()) {
-                // Clear placedInContents so we only observe this frame
-                layoutImpl.read { elements.keys.forEach { placedInContents[it]?.clear() } }
-            }
-            // place the root
             placeable.place(0, 0)
 
             if (StlDebugConfig.logElements()) {
@@ -531,7 +526,7 @@ internal fun performLog(elementKey: ElementKey, contentKey: ContentKey? = null, 
 }
 
 private fun getContextString(contentKey: ContentKey?, elementKey: ElementKey): String {
-    val contentStr = contentKey?.toShortDebugString() ?: ""
+    val contentStr = if (contentKey == null) "" else "[${contentKey.toShortDebugString()}]"
     return "[${elementKey.toShortDebugString()}]$contentStr "
 }
 

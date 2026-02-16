@@ -329,6 +329,8 @@ internal class ElementNode(
     override fun onDetach() {
         super.onDetach()
         log { "onDetach()" }
+        trackNotPlaced()
+
         removeNodeFromContentState()
         maybePruneMaps(layoutImpl, element, stateInContent)
 
@@ -456,6 +458,7 @@ internal class ElementNode(
         return layout(placeable.width, placeable.height) {
             /* Do not place */
             log { "doNotPlace()" }
+            trackNotPlaced()
         }
     }
 
@@ -474,7 +477,7 @@ internal class ElementNode(
             }
 
             log { "placeNormally()" }
-            trackPlacement()
+            trackPlaced()
             placeable.place(0, 0)
         }
     }
@@ -495,6 +498,7 @@ internal class ElementNode(
                 log {
                     "place() not placing due to shouldPlaceElement() - elementState $elementState"
                 }
+                trackNotPlaced()
                 return
             }
 
@@ -540,7 +544,6 @@ internal class ElementNode(
                 )
 
             stateInContent.lastOffset = interruptedOffset
-            trackPlacement()
             val offset = (interruptedOffset - currentOffset).round()
             if (
                 isElementOpaqueWithDefaultScale(content, element, transition) &&
@@ -561,6 +564,7 @@ internal class ElementNode(
                 // not animated once b/305195729 is fixed. Test that drawing is not invalidated in
                 // that case.
                 log { "place()" }
+                trackPlaced()
                 placeable.place(offset)
             } else {
                 log { "placeWithLayer()" }
@@ -573,6 +577,7 @@ internal class ElementNode(
                     // old one. See b/343138966 for details.
                     if (_element == null) {
                         log { "placeWithLayer() layerBlock - not placing _element is null" }
+                        trackNotPlaced()
                         return@placeWithLayer
                     }
 
@@ -585,6 +590,7 @@ internal class ElementNode(
                             "placeWithLayer() layerBlock - not placing due to " +
                                 "shouldPlaceElement() - elementState $elementState"
                         }
+                        trackNotPlaced()
                         return@placeWithLayer
                     }
 
@@ -605,6 +611,7 @@ internal class ElementNode(
                             )
                         }
                     log { "placeWithLayer() layerBlock" }
+                    trackPlaced()
                 }
             }
         }
@@ -711,9 +718,17 @@ internal class ElementNode(
         drawContent()
     }
 
-    private fun trackPlacement() {
+    private fun trackPlaced() {
         if (StlDebugConfig.logElements()) {
-            placedInContents.getOrDefault(element.key, mutableSetOf()).add(content.key)
+            log { "trackPlaced()" }
+            placedInContents.getOrPut(element.key) { mutableSetOf() }.add(content.key)
+        }
+    }
+
+    private fun trackNotPlaced() {
+        if (StlDebugConfig.logElements()) {
+            log { "trackNotPlaced()" }
+            placedInContents[element.key]?.remove(content.key)
         }
     }
 
