@@ -368,8 +368,15 @@ abstract class PreferencesApiScreen private constructor(
         return prepareSpaRoute?.invoke(keyParams) ?: spaRoutePrefix
     }
 
-    override fun tags(context: Context): Array<String> =
-        (screenTags?.toTypedArray() ?: emptyArray()) + "api-first"
+    override fun tags(context: Context): Array<String> {
+        val tags = (screenTags ?: emptyList()).toMutableList()
+        tags.add("api-first")
+
+        if (tags.none { it in deviceStateTags }) {
+            tags.add(APP_FUNCTION_UNCATEGORIZED)
+        }
+        return tags.toTypedArray()
+    }
 
     protected fun flag(lambda: () -> Boolean) {
         if (flag != null) {
@@ -540,5 +547,24 @@ abstract class PreferencesApiScreen private constructor(
 
     companion object {
         const val PARTIALLY_MIGRATED_PREFIX = "api_"
+
+        // Matches DeviceStateConfig.DeviceStateAppFunctionType
+        const val APP_FUNCTION_UNCATEGORIZED = "getUncategorizedDeviceState"
+        const val APP_FUNCTION_STORAGE = "getStorageDeviceState"
+        const val APP_FUNCTION_BATTERY = "getBatteryDeviceState"
+        const val APP_FUNCTION_MOBILE_DATA = "getMobileDataUsageDeviceState"
+        const val APP_FUNCTION_NOTIFICATIONS = "getNotificationsDeviceState"
+        const val APP_FUNCTION_APPS = "getAppsDeviceState"
+        const val APP_FUNCTION_NONE = "excludedFromAppFunctions"
+
+        private val deviceStateTags =
+            setOf(
+                APP_FUNCTION_UNCATEGORIZED,
+                APP_FUNCTION_STORAGE,
+                APP_FUNCTION_BATTERY,
+                APP_FUNCTION_MOBILE_DATA,
+                APP_FUNCTION_NOTIFICATIONS,
+                APP_FUNCTION_APPS,
+            )
     }
 }

@@ -1762,7 +1762,7 @@ class PreferencesApiScreenTest {
     }
 
         @Test
-    fun createPreferencesApiScreen_withoutTags_returnsApiFirst() {
+    fun createPreferencesApiScreen_withoutTags_returnsApiFirstAndUncategorizedDeviceState() {
         val screen =
             object :
                 PreferencesApiScreen(
@@ -1773,11 +1773,11 @@ class PreferencesApiScreenTest {
                 ) {
             }
 
-        assertThat(screen.tags(context)).asList().containsExactly("api-first")
+        assertThat(screen.tags(context)).asList().containsExactly("api-first", "getUncategorizedDeviceState")
     }
 
     @Test
-    fun createPreferencesApiScreen_withTags_returnsTagsWithApiFirst() {
+    fun createPreferencesApiScreen_withTags_returnsTagsWithApiFirstAndUncategorizedDeviceState() {
         val screen =
             object :
                 PreferencesApiScreen(
@@ -1791,7 +1791,25 @@ class PreferencesApiScreenTest {
                 }
             }
 
-        assertThat(screen.tags(context)).asList().containsExactly("tag1", "tag2", "api-first")
+        assertThat(screen.tags(context)).asList().containsExactly("tag1", "tag2", "api-first", "getUncategorizedDeviceState")
+    }
+
+        @Test
+    fun createPreferencesApiScreen_withAppFunctionTag_returnsTagsWithApiFirstWithoutUncategorizedDeviceState() {
+        val screen =
+            object :
+                PreferencesApiScreen(
+                    key = SCREEN_KEY,
+                    topLevelSettingsCategory = Category.SYSTEM,
+                    fragment = PreferenceFragment::class,
+                    purpose = R.string.preference_screen_purpose,
+                ) {
+                init {
+                    tags("tag1", "tag2", PreferencesApiScreen.APP_FUNCTION_BATTERY)
+                }
+            }
+
+        assertThat(screen.tags(context)).asList().containsExactly("tag1", "tag2", PreferencesApiScreen.APP_FUNCTION_BATTERY, "api-first")
     }
 
     @Test
