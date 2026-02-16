@@ -403,7 +403,7 @@ class SingleLineViewBinderTest : SysuiTestCase() {
         assertThat(view.metricLabel.isVisible).isFalse()
         assertThat(view.metricChronometer.isVisible).isFalse()
         assertThat(view.metricValue.isVisible).isTrue()
-        assertThat(view.metricValue.text).isEqualTo("1245")
+        assertThat(view.metricValue.text).isEqualTo("1,245")
     }
 
     @Test
@@ -449,7 +449,7 @@ class SingleLineViewBinderTest : SysuiTestCase() {
         assertThat(view.metricLabel.text).isEqualTo("Steps")
         assertThat(view.metricChronometer.isVisible).isFalse()
         assertThat(view.metricValue.isVisible).isTrue()
-        assertThat(view.metricValue.text).isEqualTo("1245")
+        assertThat(view.metricValue.text).isEqualTo("1,245")
     }
 
     @Test
