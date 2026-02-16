@@ -33,3 +33,10 @@ flag {
     description: "This flags the App Interaction Feature."
     bug: "443924426"
 }
+
+flag {
+    name: "enable_request_response_logging"
+    namespace: "app_function"
+    description: "This flag enables logging of app function requests and responses for debugging."
+    bug: "465699882"
+}
