@@ -40,6 +40,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:indeterminate="true"
+            android:importantForAccessibility="no"
             app:wavelength="20dp"
             app:indicatorSize="120dp" />
     </FrameLayout>
@@ -52,5 +53,6 @@
         android:textColor="@color/materialColorOnSurface"
         android:textSize="16sp"
         android:lineSpacingExtra="8sp"
-        android:text="@string/package_update_text" />
+        android:text="@string/package_update_text"
+        android:accessibilityHeading="true" />
 </LinearLayout>

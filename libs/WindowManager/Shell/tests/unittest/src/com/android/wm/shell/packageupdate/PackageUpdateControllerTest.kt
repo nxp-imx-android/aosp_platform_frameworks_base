@@ -20,6 +20,7 @@ import android.app.ActivityManager.RunningTaskInfo
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.content.ComponentName
 import android.content.Intent
+import android.graphics.Bitmap
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.view.Display.DEFAULT_DISPLAY
@@ -53,7 +54,9 @@ import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.ArgumentMatchers.eq
 import org.mockito.ArgumentMatchers.isA
 import org.mockito.Mockito.verify
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.stub
 import org.mockito.kotlin.whenever
 
 /** Tests for [PackageUpdateController] */
@@ -89,6 +92,10 @@ class PackageUpdateControllerTest : ShellTestCase() {
         whenever(userProfileContexts[anyInt()]).thenReturn(context)
         whenever(userProfileContexts.getOrCreate(anyInt())).thenReturn(context)
         whenever(viewModel.hasWindowDecoration(anyInt())).thenReturn(true)
+        taskResourceLoader.stub {
+            onBlocking { getVeilIcon(any()) }.thenReturn(mock<Bitmap>())
+            onBlocking { getNameAndHeaderIcon(any()) }.thenReturn(Pair("appName", mock<Bitmap>()))
+        }
     }
 
     @Test
