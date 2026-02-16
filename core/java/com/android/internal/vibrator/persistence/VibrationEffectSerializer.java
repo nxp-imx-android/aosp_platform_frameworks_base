@@ -34,8 +34,8 @@ import java.util.function.BiConsumer;
 /**
  * Serializer implementation for {@link VibrationEffect}.
  *
- * <p>This serializer does not support effects created with {@link VibrationEffect.WaveformBuilder}
- * nor {@link VibrationEffect.Composition#addEffect(VibrationEffect)}. It only supports vibration
+ * <p>This serializer does not support effects created with
+ * {@link VibrationEffect.Composition#addEffect(VibrationEffect)}. It only supports vibration
  * effects defined as:
  *
  * <ul>
@@ -266,11 +266,6 @@ public class VibrationEffectSerializer {
             BiConsumer<Long, Integer> builder) throws XmlSerializerException {
         XmlValidator.checkSerializerCondition(segment instanceof StepSegment,
                 "Unsupported segment for waveform effect %s", segment);
-
-        XmlValidator.checkSerializerCondition(
-                Float.compare(((StepSegment) segment).getFrequencyHz(), 0) == 0,
-                "Unsupported segment with non-default frequency %f",
-                ((StepSegment) segment).getFrequencyHz());
 
         builder.accept(segment.getDuration(),
                 toAmplitudeInt(((StepSegment) segment).getAmplitude()));

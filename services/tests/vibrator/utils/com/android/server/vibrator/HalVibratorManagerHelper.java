@@ -18,7 +18,6 @@ package com.android.server.vibrator;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.hardware.vibrator.ActivePwle;
 import android.hardware.vibrator.CompositeEffect;
 import android.hardware.vibrator.CompositePwleV2;
 import android.hardware.vibrator.HapticGeneratorConfig;
@@ -26,7 +25,6 @@ import android.hardware.vibrator.IVibrationSession;
 import android.hardware.vibrator.IVibrator;
 import android.hardware.vibrator.IVibratorCallback;
 import android.hardware.vibrator.IVibratorManager;
-import android.hardware.vibrator.PrimitivePwle;
 import android.hardware.vibrator.PwleV2Primitive;
 import android.hardware.vibrator.VibrationEffectContent;
 import android.hardware.vibrator.VibrationSessionConfig;
@@ -38,7 +36,6 @@ import android.os.RemoteException;
 import android.os.VibrationEffect;
 import android.os.vibrator.PrimitiveSegment;
 import android.os.vibrator.PwlePoint;
-import android.os.vibrator.RampSegment;
 
 import com.android.server.vibrator.VintfHalVibratorManager.DefaultHalVibratorManager;
 import com.android.server.vibrator.VintfHalVibratorManager.LegacyHalVibratorManager;
@@ -610,22 +607,6 @@ public class HalVibratorManagerHelper {
             for (int i = 0; i < primitives.length; i++) {
                 primitives[i] = new PrimitiveSegment(effects[i].primitive, effects[i].scale,
                         effects[i].delayMs);
-            }
-            int result = mVibratorHelpers.get(vibratorId).vibrate(primitives);
-            if (result > 0) {
-                scheduleCallback(vibratorId, vibrationId, stepId, result);
-            }
-            return result;
-        }
-
-        @Override
-        public int vibrateWithCallback(int vibratorId, long vibrationId, long stepId,
-                PrimitivePwle[] effects) {
-            RampSegment[] primitives = new RampSegment[effects.length];
-            for (int i = 0; i < primitives.length; i++) {
-                ActivePwle pwle = effects[i].getActive();
-                primitives[i] = new RampSegment(pwle.startAmplitude, pwle.endAmplitude,
-                        pwle.startFrequency, pwle.endFrequency, pwle.duration);
             }
             int result = mVibratorHelpers.get(vibratorId).vibrate(primitives);
             if (result > 0) {

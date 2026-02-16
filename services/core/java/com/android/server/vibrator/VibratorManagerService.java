@@ -21,8 +21,6 @@ import static android.os.VibrationAttributes.USAGE_CLASS_ALARM;
 import static android.os.VibrationAttributes.USAGE_CLASS_FEEDBACK;
 import static android.os.VibrationAttributes.USAGE_CLASS_MASK;
 import static android.os.VibrationAttributes.USAGE_UNKNOWN;
-import static android.os.VibrationEffect.VibrationParameter.targetAmplitude;
-import static android.os.VibrationEffect.VibrationParameter.targetFrequency;
 
 import android.Manifest;
 import android.annotation.NonNull;
@@ -40,7 +38,6 @@ import android.hardware.vibrator.CompositePwleV2;
 import android.hardware.vibrator.HapticGeneratorConfig;
 import android.hardware.vibrator.IVibrator;
 import android.hardware.vibrator.IVibratorManager;
-import android.hardware.vibrator.PrimitivePwle;
 import android.hardware.vibrator.VendorEffect;
 import android.hardware.vibrator.VibrationEffectContent;
 import android.os.BatteryStats;
@@ -109,7 +106,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.lang.ref.WeakReference;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -279,10 +275,6 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
 
     /** Calls {@link IVibrator#compose} with given {@link CompositeEffect} array and callback. */
     private static native int nativeVibratorComposeEffectWithCallback(long nativePtr,
-            int vibratorId, long vibrationId, long stepId, Parcel effect);
-
-    /** Calls {@link IVibrator#composePwle} with given {@link PrimitivePwle} array and callback. */
-    private static native int nativeVibratorComposePwleEffectWithCallback(long nativePtr,
             int vibratorId, long vibrationId, long stepId, Parcel effect);
 
     /** Calls {@link IVibrator#composePwleV2} with callback. */
@@ -2724,24 +2716,6 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
 
         @Override
         public int vibrateWithCallback(int vibratorId, long vibrationId, long stepId,
-                PrimitivePwle[] effects) {
-            Parcel parcel = Parcel.obtain();
-            try {
-                parcel.writeInt(effects.length);
-                for (PrimitivePwle effect : effects) {
-                    effect.writeToParcel(parcel, /* flags= */ 0);
-                }
-                parcel.setDataPosition(0);
-                return nativeVibratorComposePwleEffectWithCallback(mNativePtr, vibratorId,
-                        vibrationId, stepId, parcel);
-            } finally {
-                parcel.recycle();
-                Trace.traceEnd(TRACE_TAG_VIBRATOR);
-            }
-        }
-
-        @Override
-        public int vibrateWithCallback(int vibratorId, long vibrationId, long stepId,
                 CompositePwleV2 composite) {
             Parcel parcel = Parcel.obtain();
             try {
@@ -3507,6 +3481,48 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
             composition.addEffect(VibrationEffect.createOneShot(duration, amplitude));
         }
 
+        private void addWaveformToComposition(VibrationEffect.Composition composition) {
+            boolean hasAmplitudes = false;
+            int repeat = -1;
+
+            getNextArgRequired(); // consume "waveform"
+            String nextOption;
+            while ((nextOption = getNextOption()) != null) {
+                if ("-a".equals(nextOption)) {
+                    hasAmplitudes = true;
+                } else if ("-r".equals(nextOption)) {
+                    repeat = parseInt(getNextArgRequired(), "Expected repeat index after -r");
+                }
+            }
+            List<Long> durations = new ArrayList<>();
+            List<Integer> amplitudes = new ArrayList<>();
+            VibrationEffect waveform;
+
+            String nextArg;
+            while ((nextArg = peekNextArg()) != null) {
+                try {
+                    durations.add(Long.parseLong(nextArg));
+                    getNextArgRequired(); // consume the duration
+                } catch (NumberFormatException e) {
+                    // nextArg is not a duration, finish reading.
+                    break;
+                }
+                if (hasAmplitudes) {
+                    amplitudes.add(parseInt(getNextArgRequired(), "Expected waveform amplitude"));
+                }
+            }
+
+            long[] durationArray = durations.stream().mapToLong(Long::longValue).toArray();
+            if (hasAmplitudes) {
+                int[] amplitudeArray = amplitudes.stream().mapToInt(Integer::intValue).toArray();
+                waveform = VibrationEffect.createWaveform(durationArray, amplitudeArray, repeat);
+            } else {
+                waveform = VibrationEffect.createWaveform(durationArray, repeat);
+            }
+
+            composition.addEffect(waveform);
+        }
+
         private interface EnvelopeBuilder {
             void setInitialSharpness(float sharpness);
             void addControlPoint(float intensity, float sharpness, long duration);
@@ -3622,92 +3638,6 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
             }
 
             composition.addEffect(builder.build());
-        }
-
-        private void addWaveformToComposition(VibrationEffect.Composition composition) {
-            boolean hasAmplitudes = false;
-            boolean hasFrequencies = false;
-            boolean isContinuous = false;
-            int repeat = -1;
-
-            getNextArgRequired(); // consume "waveform"
-            String nextOption;
-            while ((nextOption = getNextOption()) != null) {
-                switch (nextOption) {
-                    case "-a" -> hasAmplitudes = true;
-                    case "-f" -> hasFrequencies = true;
-                    case "-c" -> isContinuous = true;
-                    case "-r" -> repeat = parseInt(getNextArgRequired(),
-                            "Expected repeat index after -r");
-                }
-            }
-            List<Integer> durations = new ArrayList<>();
-            List<Float> amplitudes = new ArrayList<>();
-            List<Float> frequencies = new ArrayList<>();
-
-            float nextAmplitude = 0;
-            String nextArg;
-            while ((nextArg = peekNextArg()) != null) {
-                try {
-                    durations.add(Integer.parseInt(nextArg));
-                    getNextArgRequired(); // consume the duration
-                } catch (NumberFormatException e) {
-                    // nextArg is not a duration, finish reading.
-                    break;
-                }
-                if (hasAmplitudes) {
-                    int amplitude = parseInt(getNextArgRequired(), "Expected waveform amplitude");
-                    amplitudes.add((float) amplitude / VibrationEffect.MAX_AMPLITUDE);
-                } else {
-                    amplitudes.add(nextAmplitude);
-                    nextAmplitude = 1 - nextAmplitude;
-                }
-                if (hasFrequencies) {
-                    frequencies.add(
-                            parseFloat(getNextArgRequired(), "Expected waveform frequency"));
-                }
-            }
-
-            VibrationEffect.WaveformBuilder waveform = VibrationEffect.startWaveform();
-            for (int i = 0; i < durations.size(); i++) {
-                Duration transitionDuration = isContinuous
-                        ? Duration.ofMillis(durations.get(i))
-                        : Duration.ZERO;
-                Duration sustainDuration = isContinuous
-                        ? Duration.ZERO
-                        : Duration.ofMillis(durations.get(i));
-
-                if (hasFrequencies) {
-                    waveform.addTransition(transitionDuration, targetAmplitude(amplitudes.get(i)),
-                            targetFrequency(frequencies.get(i)));
-                } else {
-                    waveform.addTransition(transitionDuration, targetAmplitude(amplitudes.get(i)));
-                }
-                if (!sustainDuration.isZero()) {
-                    // Add sustain only takes positive durations. Skip this since we already
-                    // did a transition to the desired values (even when duration is zero).
-                    waveform.addSustain(sustainDuration);
-                }
-
-                if ((i > 0) && (i == repeat)) {
-                    // Add segment that is not repeated to the composition and reset builder.
-                    composition.addEffect(waveform.build());
-
-                    if (hasFrequencies) {
-                        waveform = VibrationEffect.startWaveform(targetAmplitude(amplitudes.get(i)),
-                                targetFrequency(frequencies.get(i)));
-                    } else {
-                        waveform = VibrationEffect.startWaveform(
-                                targetAmplitude(amplitudes.get(i)));
-                    }
-                }
-            }
-            if (repeat < 0) {
-                composition.addEffect(waveform.build());
-            } else {
-                // The waveform was already split at the repeat index, just repeat what remains.
-                composition.addEffect(VibrationEffect.createRepeatingEffect(waveform.build()));
-            }
         }
 
         private void addPrebakedToComposition(VibrationEffect.Composition composition) {
@@ -3846,20 +3776,14 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
                 pw.println("    Vibrates for duration milliseconds.");
                 pw.println("    If -a is provided, the command accepts a second argument for ");
                 pw.println("    amplitude, in a scale of 1-255.");
-                pw.print("  waveform [-r index] [-a] [-f] [-c] ");
-                pw.println("(<duration> [<amplitude>] [<frequency>])...");
+                pw.print("  waveform [-r index] [-a] ");
+                pw.println("(<duration> [<amplitude>])...");
                 pw.println("    Vibrates for durations and amplitudes in list.");
                 pw.println("    If -r is provided, the waveform loops back to the specified");
                 pw.println("    index (e.g. 0 loops from the beginning).");
                 pw.println("    If -a is provided, the command expects amplitude to follow each");
                 pw.println("    duration; otherwise, it accepts durations only and alternates");
                 pw.println("    off/on.");
-                pw.println("    If -f is provided, the command expects frequency to follow each");
-                pw.println("    amplitude or duration; otherwise, it uses resonant frequency.");
-                pw.println("    If -c is provided, the waveform is continuous and will ramp");
-                pw.println("    between values; otherwise each entry is a fixed step.");
-                pw.println("    Duration is in milliseconds; amplitude is a scale of 1-255;");
-                pw.println("    frequency is an absolute value in hertz.");
                 pw.print("  envelope [-a] [-i initial sharpness] [-r index]  ");
                 pw.println("[<duration1> <intensity1> <sharpness1>]...");
                 pw.println("    Generates a vibration pattern based on a series of duration, ");

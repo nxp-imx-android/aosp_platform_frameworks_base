@@ -18,7 +18,6 @@ package android.os;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.hardware.vibrator.Braking;
 import android.hardware.vibrator.IVibrator;
 import android.os.vibrator.Flags;
 import android.util.IndentingPrintWriter;
@@ -56,13 +55,9 @@ public class VibratorInfo implements Parcelable {
     private final long mCapabilities;
     @Nullable
     private final SparseBooleanArray mSupportedEffects;
-    @Nullable
-    private final SparseBooleanArray mSupportedBraking;
     private final SparseIntArray mSupportedPrimitives;
     private final int mPrimitiveDelayMax;
     private final int mCompositionSizeMax;
-    private final int mPwlePrimitiveDurationMax;
-    private final int mPwleSizeMax;
     private final float mQFactor;
     private final FrequencyProfileLegacy mFrequencyProfileLegacy;
     private final FrequencyProfile mFrequencyProfile;
@@ -74,12 +69,9 @@ public class VibratorInfo implements Parcelable {
         mId = in.readInt();
         mCapabilities = in.readLong();
         mSupportedEffects = in.readSparseBooleanArray();
-        mSupportedBraking = in.readSparseBooleanArray();
         mSupportedPrimitives = in.readSparseIntArray();
         mPrimitiveDelayMax = in.readInt();
         mCompositionSizeMax = in.readInt();
-        mPwlePrimitiveDurationMax = in.readInt();
-        mPwleSizeMax = in.readInt();
         mQFactor = in.readFloat();
         mFrequencyProfileLegacy = FrequencyProfileLegacy.CREATOR.createFromParcel(in);
         mFrequencyProfile = FrequencyProfile.CREATOR.createFromParcel(in);
@@ -90,9 +82,8 @@ public class VibratorInfo implements Parcelable {
 
     public VibratorInfo(int id, @NonNull VibratorInfo baseVibratorInfo) {
         this(id, baseVibratorInfo.mCapabilities, baseVibratorInfo.mSupportedEffects,
-                baseVibratorInfo.mSupportedBraking, baseVibratorInfo.mSupportedPrimitives,
+                baseVibratorInfo.mSupportedPrimitives,
                 baseVibratorInfo.mPrimitiveDelayMax, baseVibratorInfo.mCompositionSizeMax,
-                baseVibratorInfo.mPwlePrimitiveDurationMax, baseVibratorInfo.mPwleSizeMax,
                 baseVibratorInfo.mQFactor, baseVibratorInfo.mFrequencyProfileLegacy,
                 baseVibratorInfo.mFrequencyProfile, baseVibratorInfo.mMaxEnvelopeEffectSize,
                 baseVibratorInfo.mMinEnvelopeEffectControlPointDurationMillis,
@@ -107,17 +98,12 @@ public class VibratorInfo implements Parcelable {
      *                                 IVibrator.CAP_*.
      * @param supportedEffects         All supported predefined effects, enum values from
      *                                 {@link android.hardware.vibrator.Effect}.
-     * @param supportedBraking         All supported braking types, enum values from {@link
-     *                                 Braking}.
      * @param supportedPrimitives      All supported primitive effects, key are enum values from
      *                                 {@link android.hardware.vibrator.CompositePrimitive} and
      *                                 values are estimated durations in milliseconds.
      * @param primitiveDelayMax        The maximum delay that can be set to a composition primitive
      *                                 in milliseconds.
      * @param compositionSizeMax       The maximum number of primitives supported by a composition.
-     * @param pwlePrimitiveDurationMax The maximum duration of a PWLE primitive in milliseconds.
-     * @param pwleSizeMax              The maximum number of primitives supported by a PWLE
-     *                                 composition.
      * @param qFactor                  The vibrator quality factor.
      * @param frequencyProfileLegacy   The description of the vibrator supported frequencies and max
      *                                 amplitude mappings.
@@ -135,10 +121,9 @@ public class VibratorInfo implements Parcelable {
      * @hide
      */
     public VibratorInfo(int id, long capabilities, @Nullable SparseBooleanArray supportedEffects,
-            @Nullable SparseBooleanArray supportedBraking,
             @NonNull SparseIntArray supportedPrimitives, int primitiveDelayMax,
-            int compositionSizeMax, int pwlePrimitiveDurationMax, int pwleSizeMax,
-            float qFactor, @NonNull FrequencyProfileLegacy frequencyProfileLegacy,
+            int compositionSizeMax, float qFactor,
+            @NonNull FrequencyProfileLegacy frequencyProfileLegacy,
             @NonNull FrequencyProfile frequencyProfile, int maxEnvelopeEffectSize,
             int minEnvelopeEffectControlPointDurationMillis,
             int maxEnvelopeEffectControlPointDurationMillis) {
@@ -148,12 +133,9 @@ public class VibratorInfo implements Parcelable {
         mId = id;
         mCapabilities = capabilities;
         mSupportedEffects = supportedEffects == null ? null : supportedEffects.clone();
-        mSupportedBraking = supportedBraking == null ? null : supportedBraking.clone();
         mSupportedPrimitives = supportedPrimitives.clone();
         mPrimitiveDelayMax = primitiveDelayMax;
         mCompositionSizeMax = compositionSizeMax;
-        mPwlePrimitiveDurationMax = pwlePrimitiveDurationMax;
-        mPwleSizeMax = pwleSizeMax;
         mQFactor = qFactor;
         mFrequencyProfileLegacy = frequencyProfileLegacy;
         mFrequencyProfile = frequencyProfile;
@@ -169,12 +151,9 @@ public class VibratorInfo implements Parcelable {
         dest.writeInt(mId);
         dest.writeLong(mCapabilities);
         dest.writeSparseBooleanArray(mSupportedEffects);
-        dest.writeSparseBooleanArray(mSupportedBraking);
         dest.writeSparseIntArray(mSupportedPrimitives);
         dest.writeInt(mPrimitiveDelayMax);
         dest.writeInt(mCompositionSizeMax);
-        dest.writeInt(mPwlePrimitiveDurationMax);
-        dest.writeInt(mPwleSizeMax);
         dest.writeFloat(mQFactor);
         mFrequencyProfileLegacy.writeToParcel(dest, flags);
         mFrequencyProfile.writeToParcel(dest, flags);
@@ -222,10 +201,7 @@ public class VibratorInfo implements Parcelable {
         return mCapabilities == that.mCapabilities
                 && mPrimitiveDelayMax == that.mPrimitiveDelayMax
                 && mCompositionSizeMax == that.mCompositionSizeMax
-                && mPwlePrimitiveDurationMax == that.mPwlePrimitiveDurationMax
-                && mPwleSizeMax == that.mPwleSizeMax
                 && Objects.equals(mSupportedEffects, that.mSupportedEffects)
-                && Objects.equals(mSupportedBraking, that.mSupportedBraking)
                 && Objects.equals(mQFactor, that.mQFactor)
                 && Objects.equals(mFrequencyProfileLegacy, that.mFrequencyProfileLegacy)
                 && Objects.equals(mFrequencyProfile, that.mFrequencyProfile)
@@ -238,7 +214,7 @@ public class VibratorInfo implements Parcelable {
 
     @Override
     public int hashCode() {
-        int hashCode = Objects.hash(mId, mCapabilities, mSupportedEffects, mSupportedBraking,
+        int hashCode = Objects.hash(mId, mCapabilities, mSupportedEffects,
                 mQFactor, mFrequencyProfileLegacy, mFrequencyProfile);
         for (int i = 0; i < mSupportedPrimitives.size(); i++) {
             hashCode = 31 * hashCode + mSupportedPrimitives.keyAt(i);
@@ -254,12 +230,9 @@ public class VibratorInfo implements Parcelable {
                 + ", mCapabilities=" + Arrays.toString(getCapabilitiesNames())
                 + ", mCapabilities flags=" + Long.toBinaryString(mCapabilities)
                 + ", mSupportedEffects=" + Arrays.toString(getSupportedEffectsNames())
-                + ", mSupportedBraking=" + Arrays.toString(getSupportedBrakingNames())
                 + ", mSupportedPrimitives=" + Arrays.toString(getSupportedPrimitivesNames())
                 + ", mPrimitiveDelayMax=" + mPrimitiveDelayMax
                 + ", mCompositionSizeMax=" + mCompositionSizeMax
-                + ", mPwlePrimitiveDurationMax=" + mPwlePrimitiveDurationMax
-                + ", mPwleSizeMax=" + mPwleSizeMax
                 + ", mQFactor=" + mQFactor
                 + ", mFrequencyProfileLegacy=" + mFrequencyProfileLegacy
                 + ", mFrequencyProfile=" + mFrequencyProfile
@@ -280,11 +253,8 @@ public class VibratorInfo implements Parcelable {
         pw.println("capabilitiesFlags = " + Long.toBinaryString(mCapabilities));
         pw.println("supportedEffects = " + Arrays.toString(getSupportedEffectsNames()));
         pw.println("supportedPrimitives = " + Arrays.toString(getSupportedPrimitivesNames()));
-        pw.println("supportedBraking = " + Arrays.toString(getSupportedBrakingNames()));
         pw.println("primitiveDelayMax = " + mPrimitiveDelayMax);
         pw.println("compositionSizeMax = " + mCompositionSizeMax);
-        pw.println("pwlePrimitiveDurationMax = " + mPwlePrimitiveDurationMax);
-        pw.println("pwleSizeMax = " + mPwleSizeMax);
         pw.println("q-factor = " + mQFactor);
         pw.println("frequencyProfileLegacy = " + mFrequencyProfileLegacy);
         pw.println("frequencyProfile = " + mFrequencyProfile);
@@ -317,43 +287,6 @@ public class VibratorInfo implements Parcelable {
      */
     public boolean hasFrequencyControl() {
         return hasCapability(IVibrator.CAP_FREQUENCY_CONTROL);
-    }
-
-    /**
-     * Returns a default value to be applied to composed PWLE effects for braking.
-     *
-     * @return a supported braking value, one of android.hardware.vibrator.Braking.*
-     * @hide
-     */
-    public int getDefaultBraking() {
-        if (mSupportedBraking != null) {
-            int size = mSupportedBraking.size();
-            for (int i = 0; i < size; i++) {
-                if (mSupportedBraking.keyAt(i) != Braking.NONE) {
-                    return mSupportedBraking.keyAt(i);
-                }
-            }
-        }
-        return Braking.NONE;
-    }
-
-    /** @hide */
-    @Nullable
-    public SparseBooleanArray getSupportedBraking() {
-        if (mSupportedBraking == null) {
-            return null;
-        }
-        return mSupportedBraking.clone();
-    }
-
-    /** @hide */
-    public boolean isBrakingSupportKnown() {
-        return mSupportedBraking != null;
-    }
-
-    /** @hide */
-    public boolean hasBrakingSupport(@Braking int braking) {
-        return (mSupportedBraking != null) && mSupportedBraking.get(braking);
     }
 
     /** @hide */
@@ -449,24 +382,6 @@ public class VibratorInfo implements Parcelable {
      */
     public int getCompositionSizeMax() {
         return mCompositionSizeMax;
-    }
-
-    /**
-     * Query the maximum duration supported for a primitive in a PWLE composition.
-     *
-     * @return The max duration in milliseconds, or zero if unlimited.
-     */
-    public int getPwlePrimitiveDurationMax() {
-        return mPwlePrimitiveDurationMax;
-    }
-
-    /**
-     * Query the maximum number of primitives supported in a PWLE composition.
-     *
-     * @return The max number of primitives supported, or zero if unlimited.
-     */
-    public int getPwleSizeMax() {
-        return mPwleSizeMax;
     }
 
     /**
@@ -625,26 +540,6 @@ public class VibratorInfo implements Parcelable {
         String[] names = new String[mSupportedEffects.size()];
         for (int i = 0; i < mSupportedEffects.size(); i++) {
             names[i] = VibrationEffect.effectIdToString(mSupportedEffects.keyAt(i));
-        }
-        return names;
-    }
-
-    private String[] getSupportedBrakingNames() {
-        if (mSupportedBraking == null) {
-            return new String[0];
-        }
-        String[] names = new String[mSupportedBraking.size()];
-        for (int i = 0; i < mSupportedBraking.size(); i++) {
-            switch (mSupportedBraking.keyAt(i)) {
-                case Braking.NONE:
-                    names[i] = "NONE";
-                    break;
-                case Braking.CLAB:
-                    names[i] = "CLAB";
-                    break;
-                default:
-                    names[i] = Integer.toString(mSupportedBraking.keyAt(i));
-            }
         }
         return names;
     }
@@ -1125,12 +1020,9 @@ public class VibratorInfo implements Parcelable {
         private final int mId;
         private long mCapabilities;
         private SparseBooleanArray mSupportedEffects;
-        private SparseBooleanArray mSupportedBraking;
         private SparseIntArray mSupportedPrimitives = new SparseIntArray();
         private int mPrimitiveDelayMax;
         private int mCompositionSizeMax;
-        private int mPwlePrimitiveDurationMax;
-        private int mPwleSizeMax;
         private float mQFactor = Float.NaN;
         private FrequencyProfileLegacy mFrequencyProfileLegacy =
                 new FrequencyProfileLegacy(Float.NaN, Float.NaN, Float.NaN, null);
@@ -1156,27 +1048,6 @@ public class VibratorInfo implements Parcelable {
         @NonNull
         public Builder setSupportedEffects(int... supportedEffects) {
             mSupportedEffects = toSparseBooleanArray(supportedEffects);
-            return this;
-        }
-
-        /** Configure braking supported with {@link android.hardware.vibrator.Braking} values. */
-        @NonNull
-        public Builder setSupportedBraking(int... supportedBraking) {
-            mSupportedBraking = toSparseBooleanArray(supportedBraking);
-            return this;
-        }
-
-        /** Configure maximum duration, in milliseconds, of a PWLE primitive. */
-        @NonNull
-        public Builder setPwlePrimitiveDurationMax(int pwlePrimitiveDurationMax) {
-            mPwlePrimitiveDurationMax = pwlePrimitiveDurationMax;
-            return this;
-        }
-
-        /** Configure maximum number of primitives supported in a single PWLE composed effect. */
-        @NonNull
-        public Builder setPwleSizeMax(int pwleSizeMax) {
-            mPwleSizeMax = pwleSizeMax;
             return this;
         }
 
@@ -1260,10 +1131,9 @@ public class VibratorInfo implements Parcelable {
         /** Build the configured {@link VibratorInfo}. */
         @NonNull
         public VibratorInfo build() {
-            return new VibratorInfo(mId, mCapabilities, mSupportedEffects, mSupportedBraking,
+            return new VibratorInfo(mId, mCapabilities, mSupportedEffects,
                     mSupportedPrimitives, mPrimitiveDelayMax, mCompositionSizeMax,
-                    mPwlePrimitiveDurationMax, mPwleSizeMax, mQFactor, mFrequencyProfileLegacy,
-                    mFrequencyProfile, mMaxEnvelopeEffectSize,
+                    mQFactor, mFrequencyProfileLegacy, mFrequencyProfile, mMaxEnvelopeEffectSize,
                     mMinEnvelopeEffectControlPointDurationMillis,
                     mMaxEnvelopeEffectControlPointDurationMillis);
         }

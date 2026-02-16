@@ -128,13 +128,13 @@ public class BasicToPwleSegmentAdapterTest {
     @EnableFlags(Flags.FLAG_NORMALIZED_PWLE_EFFECTS)
     public void testBasicPwleSegments_withPwleCapability_adaptSegmentsCorrectly() {
         List<VibrationEffectSegment> segments = new ArrayList<>(Arrays.asList(
-                new StepSegment(/* amplitude= */ 1, /* frequencyHz= */ 40f, /* duration= */ 100),
+                new StepSegment(/* amplitude= */ 1, /* duration= */ 100),
                 //  startIntensity, endIntensity, startSharpness, endSharpness, duration
                 new BasicPwleSegment(0.0f, 1.0f, 0.0f, 1.0f, 100, true),
                 new BasicPwleSegment(0.0f, 1.0f, 0.0f, 1.0f, 100, false),
                 new BasicPwleSegment(0.0f, 1.0f, 0.0f, 1.0f, 100, false)));
         List<VibrationEffectSegment> expectedSegments = Arrays.asList(
-                new StepSegment(/* amplitude= */ 1, /* frequencyHz= */ 40f, /* duration= */ 100),
+                new StepSegment(/* amplitude= */ 1, /* duration= */ 100),
                 //  startAmplitude, endAmplitude, startFrequencyHz, endFrequencyHz, duration
                 new PwleSegment(0.0f, 1.0f, 30.0f, 300.0f, 100, true),
                 new PwleSegment(0.0f, 1.0f, 30.0f, 300.0f, 100, false),
@@ -157,7 +157,7 @@ public class BasicToPwleSegmentAdapterTest {
                 // This is not the first segment.
                 new BasicPwleSegment(0.0f, 1.0f, 0.0f, 1.0f, 100, /* isFirstSegment= */ false),
                 // Add a non-basic segment to ensure it's ignored.
-                new StepSegment(1f, 150f, 20)));
+                new StepSegment(1f, 20)));
 
         List<VibrationEffectSegment> expectedSegments = Arrays.asList(
                 // Corresponds to the first BasicPwleSegment.
@@ -165,7 +165,7 @@ public class BasicToPwleSegmentAdapterTest {
                 // Corresponds to the second BasicPwleSegment.
                 new PwleSegment(0.0f, 1.0f, 30.0f, 300.0f, 100, /* isFirstSegment= */ false),
                 // The StepSegment should remain unchanged.
-                new StepSegment(1f, 150f, 20));
+                new StepSegment(1f, 20));
 
         VibratorInfo vibratorInfo =
                 createVibratorInfo(TEST_FREQUENCY_PROFILE, IVibrator.CAP_COMPOSE_PWLE_EFFECTS_V2);
