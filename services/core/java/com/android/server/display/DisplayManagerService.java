@@ -1268,8 +1268,7 @@ public final class DisplayManagerService extends SystemService {
                                 MIRROR_BUILT_IN_DISPLAY), false, this, UserHandle.USER_ALL);
             }
 
-            if (mFlags.isDefaultDisplayInTopologySwitchEnabled()
-                    && !mInjector.isDesktopModeSupportedOnInternalDisplay(mContext)) {
+            if (!mInjector.isDesktopModeSupportedOnInternalDisplay(mContext)) {
                 mContext.getContentResolver().registerContentObserver(
                         Settings.Secure.getUriFor(
                                 Settings.Secure.INCLUDE_DEFAULT_DISPLAY_IN_TOPOLOGY),
@@ -1355,8 +1354,7 @@ public final class DisplayManagerService extends SystemService {
     }
 
     private void handleIncludeDefaultDisplayInTopologySettingChangeLocked() {
-        if (!mFlags.isDefaultDisplayInTopologySwitchEnabled()
-                || mInjector.isDesktopModeSupportedOnInternalDisplay(mContext)) {
+        if (mInjector.isDesktopModeSupportedOnInternalDisplay(mContext)) {
             return;
         }
 

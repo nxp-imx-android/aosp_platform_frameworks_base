@@ -139,11 +139,6 @@ public class DisplayManagerFlags {
             Flags.FLAG_DELAY_IMPLICIT_RR_REGISTRATION_UNTIL_RR_ACCESSED,
             Flags::delayImplicitRrRegistrationUntilRrAccessed
     );
-
-    private final FlagState mEnableDefaultDisplayInTopologySwitch = new FlagState(
-            Flags.FLAG_ENABLE_DEFAULT_DISPLAY_IN_TOPOLOGY_SWITCH,
-            DesktopExperienceFlags.ENABLE_DEFAULT_DISPLAY_IN_TOPOLOGY_SWITCH::isTrue
-    );
     private final FlagState mEnsureColorFadeWhenTurningOn = new FlagState(
             Flags.FLAG_ENSURE_COLOR_FADE_WHEN_TURNING_ON,
             Flags::ensureColorFadeWhenTurningOn
@@ -295,10 +290,6 @@ public class DisplayManagerFlags {
         return mDelayImplicitRrRegistrationUntilRrAccessed.isEnabled();
     }
 
-    public boolean isDefaultDisplayInTopologySwitchEnabled() {
-        return mEnableDefaultDisplayInTopologySwitch.isEnabled();
-    }
-
     /**
      * @return {@code true} if the flag for ensure color fad when turning screen on is enabled
      */
@@ -345,7 +336,6 @@ public class DisplayManagerFlags {
         pw.println(" " + mCommittedStateSeparateEvent);
         pw.println(" " + mSeparateTimeouts);
         pw.println(" " + mDelayImplicitRrRegistrationUntilRrAccessed);
-        pw.println(" " + mEnableDefaultDisplayInTopologySwitch);
         pw.println(" " + mEnsureColorFadeWhenTurningOn);
         pw.println(" " + mIsLoggingForDisplayEventsEnabled);
         pw.println(" " + mIsMinmodeCapBrightnessEnabled);

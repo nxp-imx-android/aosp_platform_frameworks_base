@@ -137,8 +137,7 @@ class DisplayTopologyCoordinator {
 
             // If the default display should not be included in the topology, then when a
             // non-default display is added, remove the default display from the topology.
-            if (mFlags.isDefaultDisplayInTopologySwitchEnabled()
-                    && info.displayId != Display.DEFAULT_DISPLAY
+            if (info.displayId != Display.DEFAULT_DISPLAY
                     && !mShouldIncludeDefaultDisplayInTopology.getAsBoolean()
                     && mTopology.hasMultipleDisplays()) {
                 onDisplayRemoved(Display.DEFAULT_DISPLAY);
@@ -189,8 +188,7 @@ class DisplayTopologyCoordinator {
 
                 // If the default display should not be included in the topology, then when all
                 // non-default displays are removed, add the default display back to the topology.
-                if (mFlags.isDefaultDisplayInTopologySwitchEnabled()
-                        && displayId != Display.DEFAULT_DISPLAY
+                if (displayId != Display.DEFAULT_DISPLAY
                         && !mShouldIncludeDefaultDisplayInTopology.getAsBoolean()
                         && mTopology.isEmpty()) {
                     onDisplayAdded(mDisplayInfoProvider.get(Display.DEFAULT_DISPLAY));

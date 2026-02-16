@@ -16,7 +16,6 @@
 
 package android.window;
 
-import static com.android.server.display.feature.flags.Flags.FLAG_ENABLE_DEFAULT_DISPLAY_IN_TOPOLOGY_SWITCH;
 import static com.android.server.display.feature.flags.Flags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT;
 import static com.android.server.display.feature.flags.Flags.FLAG_ENABLE_DISPLAY_MIRROR_IN_LOCK_TASK_MODE;
 import static com.android.server.display.feature.flags.Flags.enableDisplayContentModeManagement;
@@ -81,9 +80,6 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX),
     ENABLE_DEFAULT_DESK_WITHOUT_WARMUP_MIGRATION(Flags::defaultDeskWithoutWarmupMigration, false,
             Flags.FLAG_DEFAULT_DESK_WITHOUT_WARMUP_MIGRATION),
-    ENABLE_DEFAULT_DISPLAY_IN_TOPOLOGY_SWITCH(
-            com.android.server.display.feature.flags.Flags::enableDefaultDisplayInTopologySwitch,
-            true, FLAG_ENABLE_DEFAULT_DISPLAY_IN_TOPOLOGY_SWITCH),
     ENABLE_DESKTOP_FIRST_BASED_DEFAULT_TO_DESKTOP_BUGFIX(
             Flags::enableDesktopFirstBasedDefaultToDesktopBugfix, true,
             Flags.FLAG_ENABLE_DESKTOP_FIRST_BASED_DEFAULT_TO_DESKTOP_BUGFIX),
