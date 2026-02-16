@@ -341,11 +341,9 @@ public final class PersonalContextManager {
     @UserHandleAware(
             requiresPermissionIfNotCaller = android.Manifest.permission.INTERACT_ACROSS_USERS)
     @Nullable
-    public void registerInsightSurfaceClient(
-            @NonNull InsightSurfaceClientInfo clientInfo, @NonNull List<ContextHint> hints) {
+    public void registerInsightSurfaceClient(@NonNull InsightSurfaceClientInfo clientInfo) {
         try {
-            mService.registerInsightSurfaceClient(
-                    ContextHintWrapper.wrapList(hints), clientInfo, mContext.getUserId());
+            mService.registerInsightSurfaceClient(clientInfo, mContext.getUserId());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

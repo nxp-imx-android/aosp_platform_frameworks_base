@@ -148,8 +148,6 @@ public class InsightSurfaceClient implements AutoCloseable {
     private final List<InsightReceiver> mInsightReceivers;
     @Nullable
     private CallbackWrapper mCallbacks;
-    @NonNull
-    private final List<ContextHint> mHints;
     private boolean mIsRegistered;
 
     private record CallbackWrapper(
@@ -235,10 +233,8 @@ public class InsightSurfaceClient implements AutoCloseable {
             boolean nestedScrollAxisLocked,
             boolean shouldBlur,
             @Nullable String themeResourceName,
-            @NonNull List<ContextHint> hints,
             @NonNull List<InsightReceiver> receivers) {
         mContext = context;
-        mHints = List.copyOf(hints);
         mInsightReceivers = List.copyOf(receivers);
 
         mClientInfo = new InsightSurfaceClientInfo(
@@ -262,26 +258,12 @@ public class InsightSurfaceClient implements AutoCloseable {
      * will cause any resulting {@link ContextInsight} to be delivered to this surface client.
      *
      * @param hints a list of {@link ContextHint}s
-     *
-     * @hide
      */
-    @VisibleForTesting
     public void publishHints(@NonNull Set<ContextHint> hints) {
         Objects.requireNonNull(hints);
         final PersonalContextManager personalContextManager =
                 mContext.getSystemService(PersonalContextManager.class);
         personalContextManager.publishInsightSurfaceHints(hints, mClientInfo);
-    }
-
-    /**
-     * Return the context hints this client was originally created with (using the
-     * {@link Builder#addHint} method).
-     *
-     * @return the {@link ContextHint}s
-     */
-    @NonNull
-    public List<ContextHint> getHints() {
-        return mHints;
     }
 
     /**
@@ -383,7 +365,7 @@ public class InsightSurfaceClient implements AutoCloseable {
 
         final PersonalContextManager personalContextManager =
                 mContext.getSystemService(PersonalContextManager.class);
-        personalContextManager.registerInsightSurfaceClient(mClientInfo, mHints);
+        personalContextManager.registerInsightSurfaceClient(mClientInfo);
 
         mCallbacks = new CallbackWrapper(
                 callbacksExecutor != null ? callbacksExecutor : mContext.getMainExecutor(),
@@ -460,7 +442,6 @@ public class InsightSurfaceClient implements AutoCloseable {
     public static final class Builder {
         private final Context mContext;
         private final List<InsightReceiver> mReceivers = new ArrayList<>();
-        private final List<ContextHint> mHints = new ArrayList<>();
         private int mWidthMeasureSpec =
                 View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
         private int mHeightMeasureSpec =
@@ -489,18 +470,6 @@ public class InsightSurfaceClient implements AutoCloseable {
         @NonNull
         public Builder addReceiver(@NonNull InsightReceiver receiver) {
             mReceivers.add(receiver);
-            return this;
-        }
-
-        /**
-         * Add a context hint to be sent to the context engine from the client app.
-         *
-         * @param hint the {@link ContextHint} to add
-         * @return the {@link Builder}
-         */
-        @NonNull
-        public Builder addHint(@NonNull ContextHint hint) {
-            mHints.add(hint);
             return this;
         }
 
@@ -618,7 +587,6 @@ public class InsightSurfaceClient implements AutoCloseable {
                     mNestedScrollAxisLocked,
                     mShouldBlur,
                     mThemeResourceName,
-                    mHints,
                     mReceivers);
         }
     }

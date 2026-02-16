@@ -45,7 +45,6 @@ interface IPersonalContextManager {
             in List<ContextHintWrapper> attributionHints);
 
     oneway void registerInsightSurfaceClient(
-            in List<ContextHintWrapper> clientHints,
             in InsightSurfaceClientInfo clientInfo,
             int userId);
 
