@@ -3220,10 +3220,21 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             @NonNull SurfaceControl.Transaction startT) {
         // There needs to be a root on each display.
         for (int i = 0; i < sortedTargets.size(); ++i) {
-            final WindowContainer<?> wc = sortedTargets.get(i).mContainer;
+            final ChangeInfo change = sortedTargets.get(i);
+            final WindowContainer<?> wc = change.mContainer;
             final DisplayContent dc = wc.getDisplayContent();
             if (dc == null) continue;
             final int endDisplayId = dc.getDisplayId();
+            final int startDisplayId = change.mDisplayId;
+
+            if (startDisplayId != endDisplayId && outInfo.findRootIndex(startDisplayId) < 0) {
+                final DisplayContent startDc = wc.mTransitionController.mAtm.mRootWindowContainer
+                        .getDisplayContent(startDisplayId);
+                if (startDc != null) {
+                    createAndAddRootLeash(outInfo, startDc, startDc, startDc.getWindowingLayer(),
+                            startT, startDc.getBounds(), startDisplayId);
+                }
+            }
 
             // Check if Root was already created for this display with a higher-Z window
             if (outInfo.findRootIndex(endDisplayId) >= 0) continue;
@@ -3249,17 +3260,31 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
                 // meant to be always-on-top throughout a transition.
                 leashReference = ancestor.getTopChild();
             }
-            final SurfaceControl rootLeash = leashReference.makeAnimationLeash()
-                    .setName("Transition Root: " + leashReference.getName())
-                    .setCallsite("Transition.calculateTransitionRoots").build();
-            rootLeash.setUnreleasedWarningCallSite("Transition.calculateTransitionRoots");
-            // Update layers to start transaction because we prevent assignment during collect, so
-            // the layer of transition root can be correct.
-            assignLayersForStartTransaction(dc, startT);
-            startT.setLayer(rootLeash, leashReference.getLastLayer());
-            outInfo.addRootLeash(endDisplayId, rootLeash,
-                    ancestor.getBounds().left, ancestor.getBounds().top);
+            createAndAddRootLeash(outInfo, leashReference, dc, null /* startWindowingLayer */,
+                    startT, ancestor.getBounds(), endDisplayId);
         }
+    }
+
+    /**
+     * Creates and adds a root leash for a transition.
+     **/
+    private static void createAndAddRootLeash(
+            TransitionInfo outInfo, WindowContainer<?> leashReference,
+            DisplayContent dc, SurfaceControl startWindowingLayer,
+            SurfaceControl.Transaction startT, Rect bounds, int displayId) {
+        final SurfaceControl.Builder rootLeashBuilder = leashReference.makeAnimationLeash();
+        if(startWindowingLayer != null) {
+            rootLeashBuilder.setParent(startWindowingLayer);
+        }
+        final SurfaceControl rootLeash = rootLeashBuilder.setName("Transition Root: " +
+                        leashReference.getName())
+                .setCallsite("Transition.calculateTransitionRoots").build();
+        rootLeash.setUnreleasedWarningCallSite("Transition.calculateTransitionRoots");
+        // Update layers to start transaction because we prevent assignment during collect, so
+        // the layer of transition root can be correct.
+        assignLayersForStartTransaction(dc, startT);
+        startT.setLayer(rootLeash, leashReference.getLastLayer());
+        outInfo.addRootLeash(displayId, rootLeash, bounds.left, bounds.top);
     }
 
     /**
@@ -3601,7 +3626,17 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         // null because all targets are attached.
         for (int i = targets.size() - 1; i >= 0; i--) {
             final ChangeInfo change = targets.get(i);
+            final int startDisplayId = change.mDisplayId;
             final WindowContainer wc = change.mContainer;
+            final int endDisplayId = getDisplayId(wc);
+            if (startDisplayId != endDisplayId) {
+                // There is a display change. If either start or end is on the current
+                // display, then we need to use the display as root.
+                if (startDisplayId == displayId || endDisplayId == displayId) {
+                    return topWc.getDisplayContent();
+                }
+            }
+
             if (getDisplayId(wc) != displayId) {
                 // Skip windows on a different display
                 continue;
