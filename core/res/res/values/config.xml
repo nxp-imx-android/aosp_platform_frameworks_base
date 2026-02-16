@@ -7946,10 +7946,10 @@
     <!-- Whether to force color fade. -->
     <bool name="config_forceColorFade">false</bool>
 
-    <!-- The locale countries that force camera shutter sound-->
-    <string-array name="config_cameraSoundForcedCountry" translatable="false">
-        <item>JP</item>
-        <item>KR</item>
+    <!-- The locale languages that force camera shutter sound-->
+    <string-array name="config_cameraSoundForcedLanguage" translatable="false">
+        <item>ja</item>
+        <item>ko</item>
     </string-array>
 
     <!-- location button service components -->

@@ -13456,11 +13456,11 @@ public class AudioService extends IAudioService.Stub
         if (cameraShutterSound()) {
             if (SystemProperties.getBoolean("audio.camerasound.locale.enabled", false)
                     && !hasActiveSims) {
-                String country = Locale.getDefault().getCountry();
-                String[] countryList = mContext.getResources()
+                String language = Locale.getDefault().getLanguage();
+                String[] languageList = mContext.getResources()
                         .getStringArray(
-                                com.android.internal.R.array.config_cameraSoundForcedCountry);
-                if (Arrays.asList(countryList).contains(country)) {
+                                com.android.internal.R.array.config_cameraSoundForcedLanguage);
+                if (Arrays.asList(languageList).contains(language)) {
                     Log.i(TAG, "force camera sound in case of no SIM");
                     return true;
                 }
