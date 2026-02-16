@@ -31,18 +31,10 @@ import android.os.Parcelable;
 import java.util.Objects;
 
 /**
- * A request to execute an app function.
+ * A request to execute an app function, provided to {@link AppFunctionManager#executeAppFunction}.
  *
- * <p>The {@link ExecuteAppFunctionRequest#getParameters()} contains the parameters for the function
- * to be executed in a GenericDocument. Structured classes defined in the AppFunction SDK can be
- * converted into GenericDocuments.
- *
- * <p>The {@link ExecuteAppFunctionRequest#getExtras()} provides any extra metadata for the request.
- * Structured APIs can be exposed in the SDK by packing and unpacking this Bundle.
- *
- * <p>If {@link AppFunctionMetadata#getScope()} is {@link AppFunctionMetadata#SCOPE_ACTIVITY}, the
- * target activity must be specified using {@link ExecuteAppFunctionRequest.Builder#setActivityId}.
- * If omitted, the request fails with {@link AppFunctionException#ERROR_FUNCTION_NOT_FOUND}.
+ * <p>Use {@link AppFunctionMetadata} to construct a {@link ExecuteAppFunctionRequest} that
+ * correctly targets an app function.
  */
 @FlaggedApi(FLAG_ENABLE_APP_FUNCTION_MANAGER)
 public final class ExecuteAppFunctionRequest implements Parcelable {
@@ -123,24 +115,20 @@ public final class ExecuteAppFunctionRequest implements Parcelable {
         mActivityId = activityId;
     }
 
-    /** Returns the package name of the app that hosts the function. */
+    /**
+     * Returns the package name of the app that hosts the app function.
+     *
+     * <p>See {@link AppFunctionMetadata#getName} for how to determine this value.
+     */
     @NonNull
     public String getTargetPackageName() {
         return mTargetPackageName;
     }
 
     /**
-     * Returns the unique string identifier of the app function to be executed.
+     * Returns the unique identifier of the app function to be executed.
      *
-     * <p>When there is a package change or the device starts up, the metadata of available
-     * functions is indexed by AppSearch. AppSearch stores the indexed information as {@code
-     * AppFunctionStaticMetadata} document.
-     *
-     * <p>The ID can be obtained by querying the {@code AppFunctionStaticMetadata} documents from
-     * AppSearch.
-     *
-     * <p>If the {@code functionId} provided is invalid, the caller will get an invalid argument
-     * response.
+     * <p>See {@link AppFunctionMetadata#getName} for how to determine this value.
      */
     @NonNull
     public String getFunctionIdentifier() {
@@ -148,28 +136,27 @@ public final class ExecuteAppFunctionRequest implements Parcelable {
     }
 
     /**
-     * Returns the function parameters. The key is the parameter name, and the value is the
-     * parameter value.
+     * Returns the function parameters as a key-value {@link GenericDocument}.
      *
      * <p>The {@link GenericDocument} may have missing parameters. Developers are advised to
      * implement defensive handling measures.
-     *
-     * @see AppFunctionManager on how to determine the expected parameters.
      */
     @NonNull
     public GenericDocument getParameters() {
         return mParameters.getValue();
     }
 
-    /** Returns the additional metadata for this function execution request. */
+    /** Returns the additional values for this function execution request. */
     @NonNull
     public Bundle getExtras() {
         return mExtras;
     }
 
     /**
-     * Returns the {@link AppInteractionAttribution} represents attribution information for the
-     * {@link ExecuteAppFunctionRequest}.
+     * Returns the {@link AppInteractionAttribution} for the {@link ExecuteAppFunctionRequest}.
+     *
+     * <p>This information can be used by the privacy setting to provide transparency to the user
+     * about why an app function was invoked.
      */
     @FlaggedApi(Flags.FLAG_ENABLE_APP_INTERACTION_API)
     @Nullable
@@ -203,9 +190,6 @@ public final class ExecuteAppFunctionRequest implements Parcelable {
      *
      * <p>If this returns {@code null}, the request targets an app function that is not {@link
      * AppFunctionMetadata#SCOPE_ACTIVITY}.
-     *
-     * @return The activity identifier, or {@code null} if the request targets an app function that
-     *     is not {@link AppFunctionMetadata#SCOPE_ACTIVITY}.
      */
     @FlaggedApi(Flags.FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
     @Nullable
@@ -258,12 +242,12 @@ public final class ExecuteAppFunctionRequest implements Parcelable {
         @Nullable private AppFunctionActivityId mActivityId = null;
 
         /**
-         * Creates a new instance of this builder class.
+         * Constructs a {@link ExecuteAppFunctionRequest.Builder}.
          *
-         * @param targetPackageName The package name of the target app providing the app function to
-         *     invoke.
-         * @param functionIdentifier The identifier used by the {@link AppFunctionService} from the
-         *     target app to uniquely identify the function to be invoked.
+         * @param targetPackageName The package name of the app that hosts the app function. See
+         *     {@link AppFunctionMetadata#getName} for how to determine this value.
+         * @param functionIdentifier The unique identifier for the app function to be executed. See
+         *     {@link AppFunctionMetadata#getName} for how to determine this value.
          */
         public Builder(@NonNull String targetPackageName, @NonNull String functionIdentifier) {
             mTargetPackageName = Objects.requireNonNull(targetPackageName);
@@ -271,9 +255,10 @@ public final class ExecuteAppFunctionRequest implements Parcelable {
         }
 
         /**
-         * Creates a new instance of this builder class.
+         * Constructs a {@link ExecuteAppFunctionRequest.Builder}.
          *
-         * @param appFunctionName The {@link AppFunctionName} of the target app function.
+         * @param appFunctionName The {@link AppFunctionName} of the target app function. See {@link
+         *     AppFunctionMetadata#getName} for how to determine this value.
          */
         @FlaggedApi(Flags.FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
         public Builder(@NonNull AppFunctionName appFunctionName) {
@@ -282,7 +267,11 @@ public final class ExecuteAppFunctionRequest implements Parcelable {
             mFunctionIdentifier = appFunctionName.getFunctionIdentifier();
         }
 
-        /** Sets the additional metadata for this function execution request. */
+        /**
+         * Sets the additional metadata for this function execution request.
+         *
+         * @param extras The additional metadata for this function execution request.
+         */
         @NonNull
         public Builder setExtras(@NonNull Bundle extras) {
             mExtras = Objects.requireNonNull(extras);
@@ -290,9 +279,9 @@ public final class ExecuteAppFunctionRequest implements Parcelable {
         }
 
         /**
-         * Sets the function parameters.
+         * Sets the function parameters as a key-value {@link GenericDocument}.
          *
-         * @see ExecuteAppFunctionRequest#getParameters()
+         * @param parameters The parameters for this function execution request.
          */
         @NonNull
         public Builder setParameters(@NonNull GenericDocument parameters) {
@@ -304,14 +293,13 @@ public final class ExecuteAppFunctionRequest implements Parcelable {
         /**
          * Sets the {@link AppInteractionAttribution}.
          *
-         * <p>Provides the attribution information for an {@link ExecuteAppFunctionRequest}. This
-         * information can be used by the privacy setting to provide transparency to the user about
-         * why an app function was invoked.
+         * <p>This information can be used by the privacy setting to provide transparency to the
+         * user about why an app function was invoked.
          *
          * <p>This is currently optional, but may become required for apps targeting a future
          * release.
          *
-         * @see AppInteractionAttribution
+         * @param attribution The attribution for this request.
          */
         @FlaggedApi(Flags.FLAG_ENABLE_APP_INTERACTION_API)
         @NonNull
@@ -323,11 +311,11 @@ public final class ExecuteAppFunctionRequest implements Parcelable {
         /**
          * Sets the {@link AppFunctionActivityId}.
          *
-         * <p>If the target app function's {@link AppFunctionMetadata#getScope()} is {@link
-         * AppFunctionMetadata#SCOPE_ACTIVITY}, this field must be set to disambiguate between
-         * instances of the same app function running in different activities.
+         * <p>If the target app function's {@link AppFunctionMetadata#getScope} is {@link
+         * AppFunctionMetadata#SCOPE_ACTIVITY}, this must be set to disambiguate between instances
+         * of the same app function running in different activities.
          *
-         * <p>The field must not be set if the target app function is not {@link
+         * <p>The value must be unset or null if the target app function is not {@link
          * AppFunctionMetadata#SCOPE_ACTIVITY}.
          *
          * <p>The list of valid activity identifiers for a given function name can be obtained by
@@ -335,11 +323,10 @@ public final class ExecuteAppFunctionRequest implements Parcelable {
          * AppFunctionState} objects will contain the associated activity IDs via {@link
          * AppFunctionState#getActivityIds()}.
          *
+         * <p>The list of functions provided by an activity can be obtained by calling {@link
+         * AppFunctionManager#getAppFunctionActivityStates}.
+         *
          * @param activityId The activity identifier to associate with this request.
-         * @return This builder.
-         * @see AppFunctionState#getActivityIds
-         * @see AppFunctionManager#getAppFunctionStates
-         * @see AppFunctionMetadata#getScope
          */
         @FlaggedApi(Flags.FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
         @NonNull

@@ -27,10 +27,10 @@ import android.os.Parcelable;
 import java.util.Objects;
 
 /**
- * Represents a predefined AppFunction schema.
+ * Contains identifying metadata for a predefined schema, which can describe well-known function
+ * signatures.
  *
- * <p>A schema defines a function's input parameters and output. This class holds identifying
- * information about a specific, SDK-provided schema.
+ * <p>Returned from {@link AppFunctionMetadata#getSchemaMetadata}.
  */
 @FlaggedApi(FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
 public final class AppFunctionSchemaMetadata implements Parcelable {
@@ -53,7 +53,7 @@ public final class AppFunctionSchemaMetadata implements Parcelable {
     private final long mVersion;
 
     /**
-     * Construct an {@link AppFunctionSchemaMetadata}.
+     * Constructs an {@link AppFunctionSchemaMetadata}.
      *
      * @param schemaName The unique name of the schema within its category.
      * @param schemaVersion The version of the schema. This is used to track the changes to the
@@ -74,22 +74,36 @@ public final class AppFunctionSchemaMetadata implements Parcelable {
     }
 
     /**
-     * Specifies the category of the schema used by this function. This allows for logical grouping
-     * of schemas. For instance, all schemas related to email functionality would be categorized as
-     * 'email'.
+     * Returns the category of the schema used by this function.
+     *
+     * <p>This allows for logical grouping of schemas. For instance, all schemas related to email
+     * functionality would be categorized as 'email'.
+     *
+     * <p>This is defined by the {@link AppFunctionMetadata#PROPERTY_SCHEMA_CATEGORY} tag in the
+     * XML.
      */
     @NonNull
     public String getCategory() {
         return mCategory;
     }
 
-    /** The unique name of the schema within its category. */
+    /**
+     * Returns the unique name of the schema within its category.
+     *
+     * <p>This is defined by the {@link AppFunctionMetadata#PROPERTY_SCHEMA_NAME} tag in the XML.
+     */
     @NonNull
     public String getName() {
         return mName;
     }
 
-    /** The version of the schema. This is used to track the changes to the schema over time. */
+    /**
+     * Returns the version of the schema.
+     *
+     * <p>This is used to track the changes to the schema over time.
+     *
+     * <p>This is defined by the {@link AppFunctionMetadata#PROPERTY_SCHEMA_VERSION} tag in the XML.
+     */
     public long getVersion() {
         return mVersion;
     }

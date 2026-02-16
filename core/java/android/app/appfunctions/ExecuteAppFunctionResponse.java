@@ -29,14 +29,10 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * The response to an app function execution.
+ * The response to an app function execution, returned by {@link
+ * AppFunctionManager#executeAppFunction}.
  *
- * <p>The {@link ExecuteAppFunctionResponse#getResultDocument()} contains the function's return
- * value as a GenericDocument. This can be converted back into a structured class using the
- * AppFunction SDK.
- *
- * <p>The {@link ExecuteAppFunctionResponse#getExtras()} provides any extra metadata returned by the
- * function. The AppFunction SDK can expose structured APIs by packing and unpacking this Bundle.
+ * <p>Use {@link AppFunctionMetadata} to determine the expected structure of the response.
  */
 @FlaggedApi(Flags.FLAG_ENABLE_APP_FUNCTION_MANAGER)
 public final class ExecuteAppFunctionResponse implements Parcelable {
@@ -69,18 +65,10 @@ public final class ExecuteAppFunctionResponse implements Parcelable {
             };
 
     /**
-     * The name of the property that stores the function return value within the {@code
-     * resultDocument}.
+     * The name of the property that stores the function return value within the {@link
+     * #getResultDocument}.
      *
-     * <p>See {@link GenericDocument#getProperty(String)} for more information.
-     *
-     * <p>If the function returns {@code void} or throws an error, the {@code resultDocument} will
-     * be empty {@link GenericDocument}.
-     *
-     * <p>If the {@code resultDocument} is empty, {@link GenericDocument#getProperty(String)} will
-     * return {@code null}.
-     *
-     * <p>See {@link #getResultDocument} for more information on extracting the return value.
+     * <p>If the function returns {@code void} or throws an error, this property will not be set.
      */
     public static final String PROPERTY_RETURN_VALUE = "androidAppfunctionsReturnValue";
 
@@ -104,15 +92,22 @@ public final class ExecuteAppFunctionResponse implements Parcelable {
     @NonNull private final List<AppFunctionUriGrant> mUriGrants;
 
     /**
-     * @param resultDocument The return value of the executed function.
+     * Constructs an {@link ExecuteAppFunctionResponse}.
+     *
+     * @param resultDocument The return value of the executed function, see {@link
+     *     #getResultDocument}.
      */
     public ExecuteAppFunctionResponse(@NonNull GenericDocument resultDocument) {
         this(resultDocument, Bundle.EMPTY);
     }
 
     /**
-     * @param resultDocument The return value of the executed function.
-     * @param extras The additional metadata for this function execution response.
+     * Constructs an {@link ExecuteAppFunctionResponse} with an additional {@link Bundle}.
+     *
+     * @param resultDocument The return value of the executed function, see {@link
+     *     #getResultDocument}.
+     * @param extras The additional metadata for this function execution response, see {@link
+     *     #getExtras}.
      */
     public ExecuteAppFunctionResponse(
             @NonNull GenericDocument resultDocument, @NonNull Bundle extras) {
@@ -122,12 +117,15 @@ public final class ExecuteAppFunctionResponse implements Parcelable {
     }
 
     /**
-     * @param resultDocument The return value of the executed function.
-     * @param extras The additional metadata for this function execution response.
+     * Constructs an {@link ExecuteAppFunctionResponse} with an additional {@link Bundle} and {@link
+     * AppFunctionUriGrant}s.
+     *
+     * @param resultDocument The return value of the executed function, see {@link
+     *     #getResultDocument}.
+     * @param extras The additional metadata for this function execution response, see {@link
+     *     #getExtras}.
      * @param uriGrants The list of {@link AppFunctionUriGrant} to which the caller of this app
-     *     function execution should have temporary access granted. These grants typically persist
-     *     until the device reboots. Uri owner could consider clearing data associated with these
-     *     URIs after a reboot.
+     *     function execution should have temporary access granted.
      */
     @FlaggedApi(Flags.FLAG_ENABLE_APP_FUNCTION_PERMISSION_V2)
     public ExecuteAppFunctionResponse(
@@ -140,23 +138,22 @@ public final class ExecuteAppFunctionResponse implements Parcelable {
     }
 
     /**
-     * Returns a generic document containing the return value of the executed function.
+     * Returns a {@link GenericDocument} containing the return value of the executed function.
      *
      * <p>The {@link #PROPERTY_RETURN_VALUE} key can be used to obtain the return value.
      *
-     * <p>Sample code for extracting the return value:
+     * <p>Example of extracting the return value:
      *
-     * <pre>
-     *     GenericDocument resultDocument = response.getResultDocument();
-     *     Object returnValue = resultDocument.getProperty(PROPERTY_RETURN_VALUE);
-     *     if (returnValue != null) {
-     *       // Cast returnValue to expected type, or use {@link GenericDocument#getPropertyString},
-     *       // {@link GenericDocument#getPropertyLong} etc.
-     *       // Do something with the returnValue
-     *     }
-     * </pre>
+     * <pre>{@code
+     * GenericDocument resultDocument = response.getResultDocument();
+     * Object returnValue = resultDocument.getProperty(PROPERTY_RETURN_VALUE);
+     * if (returnValue != null) {
+     *   // Cast returnValue to expected type, or use GenericDocument#getPropertyString,
+     *   // GenericDocument#getPropertyLong, etc.
+     * }
+     * }</pre>
      *
-     * @see AppFunctionManager on how to determine the expected function return.
+     * <p>Use {@link AppFunctionMetadata} to determine the expected structure of this document.
      */
     @NonNull
     public GenericDocument getResultDocument() {

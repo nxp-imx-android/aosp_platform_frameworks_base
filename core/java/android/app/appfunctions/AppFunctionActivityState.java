@@ -27,9 +27,13 @@ import android.util.ArraySet;
 import java.util.Objects;
 
 /**
- * Represents the set of app functions registered with a specific activity.
+ * The state of an activity from the perspective of app functions, retrieved using {@link
+ * AppFunctionManager#getAppFunctionActivityStates}.
  *
- * @see AppFunctionManager#getAppFunctionActivityStates
+ * <p>This holds which app functions are registered for a given activity, a property that can change
+ * at runtime during the app's operation.
+ *
+ * @see AppFunctionState
  */
 @FlaggedApi(Flags.FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
 public final class AppFunctionActivityState implements Parcelable {
@@ -78,7 +82,8 @@ public final class AppFunctionActivityState implements Parcelable {
     }
 
     /**
-     * Returns the set of {@link AppFunctionName}s that are registered for the associated activity.
+     * Returns the set of {@link AppFunctionName}s that are registered for the {@link
+     * android.app.Activity} referenced by {@link #getActivityId}.
      */
     @SuppressLint({"ConcreteCollection"})
     @NonNull

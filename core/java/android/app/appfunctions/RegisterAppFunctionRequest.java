@@ -24,17 +24,11 @@ import java.util.Objects;
 import java.util.concurrent.Executor;
 
 /**
- * A request to register a dynamic {@link AppFunction} at runtime.
+ * A request to register an {@link AppFunction} implementation, provided to {@link
+ * AppFunctionManager#registerAppFunctions}.
  *
- * <p>This object encapsulates all the information needed to register a single app function,
- * including its unique identifier, the executor on which it will run, and the function
- * implementation itself.
- *
- * <p>Instances of this class are used with {@link AppFunctionManager#registerAppFunctions} to
- * register one or more functions in a single batch operation.
- *
- * @see AppFunctionManager#registerAppFunctions(java.util.List)
- * @see AppFunctionManager#registerAppFunction(String, Executor, AppFunction)
+ * <p>This encapsulates the information needed to register a single app function, equivalent to the
+ * arguments to {@link AppFunctionManager#registerAppFunction}.
  */
 @FlaggedApi(FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
 public final class RegisterAppFunctionRequest {
@@ -43,14 +37,12 @@ public final class RegisterAppFunctionRequest {
     private final AppFunction mAppFunction;
 
     /**
-     * Creates a new request to register an {@link AppFunction}.
+     * Constructs a {@link RegisterAppFunctionRequest}.
      *
-     * @param functionIdentifier The unique identifier for the function. This must match an
-     *     application-level function declared in the app's manifest resources.
-     * @param executor The {@link Executor} on which the function's {@code onExecute} method will be
-     *     invoked.
-     * @param appFunction The {@link AppFunction} implementation that will be executed when this
-     *     function is called.
+     * @param functionIdentifier The unique identifier for the function.
+     * @param executor The {@link Executor} on which the function will be invoked.
+     * @param appFunction The {@link AppFunction} implementation to be executed when the function is
+     *     triggered.
      */
     public RegisterAppFunctionRequest(
             @NonNull String functionIdentifier,
@@ -61,25 +53,19 @@ public final class RegisterAppFunctionRequest {
         mAppFunction = Objects.requireNonNull(appFunction);
     }
 
-    /**
-     * Returns the unique identifier of the function to be registered.
-     */
+    /** Returns the unique identifier of the function to be registered. */
     @NonNull
     public String getFunctionIdentifier() {
         return mFunctionIdentifier;
     }
 
-    /**
-     * Returns the {@link Executor} on which the function will be invoked.
-     */
+    /** Returns the {@link Executor} on which the function will be invoked. */
     @NonNull
     public Executor getExecutor() {
         return mExecutor;
     }
 
-    /**
-     * Returns the {@link AppFunction} implementation to be registered.
-     */
+    /** Returns the {@link AppFunction} implementation to be registered. */
     @NonNull
     public AppFunction getAppFunction() {
         return mAppFunction;
