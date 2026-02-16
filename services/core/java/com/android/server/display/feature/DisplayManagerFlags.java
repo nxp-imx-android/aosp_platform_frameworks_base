@@ -159,11 +159,6 @@ public class DisplayManagerFlags {
             Flags::minmodeCapBrightnessEnabled
     );
 
-    private final FlagState mIsDisplayMirrorInLockTaskModeEnabled = new FlagState(
-            Flags.FLAG_ENABLE_DISPLAY_MIRROR_IN_LOCK_TASK_MODE,
-            DesktopExperienceFlags.ENABLE_DISPLAY_MIRROR_IN_LOCK_TASK_MODE::isTrue
-    );
-
     /** Returns whether power throttling clamper is enabled on not. */
     public boolean isPowerThrottlingClamperEnabled() {
         return mPowerThrottlingClamperFlagState.isEnabled();
@@ -314,10 +309,6 @@ public class DisplayManagerFlags {
         return mIsMinmodeCapBrightnessEnabled.isEnabled();
     }
 
-    public boolean isDisplayMirrorInLockTaskModeEnabled() {
-        return mIsDisplayMirrorInLockTaskModeEnabled.isEnabled();
-    }
-
     /**
      * dumps all flagstates
      * @param pw printWriter
@@ -349,7 +340,6 @@ public class DisplayManagerFlags {
         pw.println(" " + mEnsureColorFadeWhenTurningOn);
         pw.println(" " + mIsLoggingForDisplayEventsEnabled);
         pw.println(" " + mIsMinmodeCapBrightnessEnabled);
-        pw.println(" " + mIsDisplayMirrorInLockTaskModeEnabled);
     }
 
     private static class FlagState {
