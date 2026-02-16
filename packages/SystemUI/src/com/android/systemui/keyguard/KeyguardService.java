@@ -474,7 +474,6 @@ public class KeyguardService extends Service {
         @Override // Binder interface
         public void onDreamingStarted() {
             trace("onDreamingStarted");
-            mKeyguardWakeDirectlyToGoneInteractor.onDreamingStarted();
             mKeyguardInteractor.setDreaming(true);
             mKeyguardViewMediator.onDreamingStarted();
         }
@@ -482,7 +481,6 @@ public class KeyguardService extends Service {
         @Override // Binder interface
         public void onDreamingStopped() {
             trace("onDreamingStopped");
-            mKeyguardWakeDirectlyToGoneInteractor.onDreamingStopped();
             mKeyguardInteractor.setDreaming(false);
             mKeyguardViewMediator.onDreamingStopped();
         }
