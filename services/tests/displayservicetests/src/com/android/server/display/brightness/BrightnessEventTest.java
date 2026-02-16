@@ -170,7 +170,7 @@ public final class BrightnessEventTest {
     }
 
 
-    private BrightnessReason getReason(int reason, int modifier) {
+    private BrightnessReason getReason(int reason, @BrightnessReason.Modifier int modifier) {
         BrightnessReason brightnessReason = new BrightnessReason();
         brightnessReason.setReason(reason);
         brightnessReason.setModifier(modifier);
