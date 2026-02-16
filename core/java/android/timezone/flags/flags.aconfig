@@ -53,3 +53,10 @@ flag {
     description: "Enable notifications for time zone offset changes."
     bug: "454896139"
 }
+
+flag {
+    name: "enable_home_time_zone_api"
+    namespace: "location"
+    description: "Enable home time zone detection and API."
+    bug: "462709479"
+}
