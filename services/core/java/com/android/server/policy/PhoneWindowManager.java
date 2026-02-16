@@ -2483,9 +2483,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
         final var transitionListener = new AppTransitionListener(DEFAULT_DISPLAY) {
             @Override
-            public int onAppTransitionStartingLocked(long statusBarAnimationStartTime,
+            public void onAppTransitionStartingLocked(long statusBarAnimationStartTime,
                     long statusBarAnimationDuration) {
-                return handleTransitionForKeyguardLw(false /* startKeyguardExitAnimation */,
+                handleTransitionForKeyguardLw(false /* startKeyguardExitAnimation */,
                         false /* notifyOccluded */);
             }
 
@@ -4015,15 +4015,11 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     }
 
     @Override
-    public int applyKeyguardOcclusionChange() {
+    public void applyKeyguardOcclusionChange() {
         if (DEBUG_KEYGUARD) Slog.d(TAG, "transition/occluded commit occluded="
                 + mPendingKeyguardOccluded);
 
-        if (setKeyguardOccludedLw(mPendingKeyguardOccluded)) {
-            return FINISH_LAYOUT_REDO_LAYOUT | FINISH_LAYOUT_REDO_WALLPAPER;
-        } else {
-            return 0;
-        }
+        mKeyguardDelegate.setOccluded(mPendingKeyguardOccluded);
     }
 
     /**
@@ -4033,20 +4029,16 @@ public class PhoneWindowManager implements WindowManagerPolicy {
      *                                  start keyguard exit animation.
      * @param notifyOccluded Trigger IKeyguardService#setOccluded binder call to notify whether
      *                      the top activity can occlude the keyguard or not.
-     *
-     * @return Whether the flags have changed and we have to redo the layout.
      */
-    private int handleTransitionForKeyguardLw(boolean startKeyguardExitAnimation,
+    private void handleTransitionForKeyguardLw(boolean startKeyguardExitAnimation,
             boolean notifyOccluded) {
-        int redoLayout = 0;
         if (notifyOccluded) {
-            redoLayout = applyKeyguardOcclusionChange();
+            applyKeyguardOcclusionChange();
         }
         if (startKeyguardExitAnimation) {
             if (DEBUG_KEYGUARD) Slog.d(TAG, "Starting keyguard exit animation");
             startKeyguardExitAnimation(mInjector.getUptimeMillis());
         }
-        return redoLayout;
     }
 
     /**
@@ -4326,19 +4318,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     @Override
     public void setNavBarVirtualKeyHapticFeedbackEnabledLw(boolean enabled) {
         mNavBarVirtualKeyHapticFeedbackEnabled = enabled;
-    }
-
-    /**
-     * Updates the occluded state of the Keyguard immediately via {@link IKeyguardService}.
-     *
-     * @param isOccluded Whether the Keyguard is occluded by another window.
-     * @return Whether the flags have changed and we have to redo the layout.
-     */
-    private boolean setKeyguardOccludedLw(boolean isOccluded) {
-        if (DEBUG_KEYGUARD) Slog.d(TAG, "setKeyguardOccluded occluded=" + isOccluded);
-        mPendingKeyguardOccluded = isOccluded;
-        mKeyguardDelegate.setOccluded(isOccluded);
-        return mKeyguardDelegate.isShowing();
     }
 
     /** {@inheritDoc} */

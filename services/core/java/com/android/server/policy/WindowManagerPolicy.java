@@ -177,7 +177,7 @@ public interface WindowManagerPolicy extends WindowManagerPolicyConstants {
      * Commit any queued changes to keyguard occlude status that had been deferred during the
      * start of an animation or transition.
      */
-    int applyKeyguardOcclusionChange();
+    void applyKeyguardOcclusionChange();
 
     /**
      * Shows the keyguard immediately if not already shown.

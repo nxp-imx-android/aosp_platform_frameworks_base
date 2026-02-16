@@ -671,7 +671,7 @@ public class DisplayPolicy {
             }
 
             @Override
-            public int onAppTransitionStartingLocked(long statusBarAnimationStartTime,
+            public void onAppTransitionStartingLocked(long statusBarAnimationStartTime,
                     long statusBarAnimationDuration) {
                 mHandler.post(() -> {
                     StatusBarManagerInternal statusBar = getStatusBarManagerInternal();
@@ -680,7 +680,6 @@ public class DisplayPolicy {
                                 statusBarAnimationStartTime, statusBarAnimationDuration);
                     }
                 });
-                return 0;
             }
 
             @Override

@@ -50,8 +50,7 @@ class FakeWindowManagerPolicy implements WindowManagerPolicy {
     }
 
     @Override
-    public int applyKeyguardOcclusionChange() {
-        return 0;
+    public void applyKeyguardOcclusionChange() {
     }
 
     @Override
