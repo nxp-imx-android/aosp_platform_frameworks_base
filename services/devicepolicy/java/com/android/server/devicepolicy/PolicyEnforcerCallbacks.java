@@ -31,6 +31,7 @@ import android.app.admin.IntentFilterPolicyKey;
 import android.app.admin.LockTaskPolicy;
 import android.app.admin.PackagePermissionPolicyKey;
 import android.app.admin.PackagePolicyKey;
+import android.app.admin.PolicyIdentifier;
 import android.app.admin.PolicyKey;
 import android.app.admin.UserRestrictionPolicyKey;
 import android.app.admin.flags.Flags;
@@ -219,7 +220,16 @@ public final class PolicyEnforcerCallbacks {
                     && policy == DevicePolicyManager.AUTO_TIME_NOT_CONTROLLED_BY_POLICY) {
                 return AndroidFuture.completedFuture(false);
             }
-            int enabled = policy != null && policy == DevicePolicyManager.AUTO_TIME_ENABLED ? 1 : 0;
+            int enabled;
+            if(!Flags.policyStreamliningAutoTime()) {
+                enabled =
+                    (policy != null && policy == DevicePolicyManager.AUTO_TIME_ENABLED ? 1 : 0);
+            } else {
+                enabled = policy != null &&
+                        (policy == DevicePolicyManager.AUTO_TIME_ENABLED ||
+                        policy == PolicyIdentifier.AUTO_TIME_ENABLED_UNENFORCED ||
+                        policy == PolicyIdentifier.AUTO_TIME_ENABLED) ? 1 : 0;
+            }
             return AndroidFuture.completedFuture(
                     Settings.Global.putInt(
                             context.getContentResolver(), Settings.Global.AUTO_TIME,  enabled));
