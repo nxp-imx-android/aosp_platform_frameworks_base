@@ -83,7 +83,7 @@ public class AppCompatSandboxingPolicyTest extends WindowTestsBase {
     @EnableFlags(Flags.FLAG_REFACTOR_CAPTION_SANDBOXING_TO_CORE)
     public void testSandboxBoundsIfNeeded_freeform_boundsAreSandboxed() {
         runTestScenario((robot) -> {
-            robot.dw().allowEnterDesktopMode(true);
+            robot.conf().setCanEnterDesktopMode(true);
 
             robot.applyOnActivity((a) -> {
                 a.createActivityWithComponent();
@@ -115,7 +115,7 @@ public class AppCompatSandboxingPolicyTest extends WindowTestsBase {
     @DisableCompatChanges({OVERRIDE_EXCLUDE_CAPTION_INSETS_FROM_APP_BOUNDS})
     public void testSandboxBoundsIfNeeded_compatChangeDisabled_boundsNotSandboxed() {
         runTestScenario((robot) -> {
-            robot.dw().allowEnterDesktopMode(true);
+            robot.conf().setCanEnterDesktopMode(true);
 
             robot.applyOnActivity((a) -> {
                 a.createActivityWithComponent();
@@ -135,7 +135,7 @@ public class AppCompatSandboxingPolicyTest extends WindowTestsBase {
     @EnableCompatChanges({OVERRIDE_EXCLUDE_CAPTION_INSETS_FROM_APP_BOUNDS})
     public void testSandboxBoundsIfNeeded_notResizable_boundsNotSandboxed() {
         runTestScenario((robot) -> {
-            robot.dw().allowEnterDesktopMode(true);
+            robot.conf().setCanEnterDesktopMode(true);
 
             robot.applyOnActivity((a) -> {
                 a.createActivityWithComponent();
@@ -181,7 +181,7 @@ public class AppCompatSandboxingPolicyTest extends WindowTestsBase {
     @EnableCompatChanges({OVERRIDE_EXCLUDE_CAPTION_INSETS_FROM_APP_BOUNDS})
     public void testIsCaptionExcludedFromAppBounds_compatChangeEnabled_desktopMode() {
         runTestScenario((robot) -> {
-            robot.dw().allowEnterDesktopMode(true);
+            robot.conf().setCanEnterDesktopMode(true);
             robot.applyOnActivity(AppCompatActivityRobot::createActivityWithComponent);
 
             robot.checkIsCaptionExcludedFromAppBounds(/* expected */ true, /* isResizeable */
@@ -194,7 +194,7 @@ public class AppCompatSandboxingPolicyTest extends WindowTestsBase {
     @DisableCompatChanges({OVERRIDE_EXCLUDE_CAPTION_INSETS_FROM_APP_BOUNDS})
     public void testIsCaptionExcludedFromAppBounds_compatChangeDisabled_desktopMode() {
         runTestScenario((robot) -> {
-            robot.dw().allowEnterDesktopMode(true);
+            robot.conf().setCanEnterDesktopMode(true);
             robot.applyOnActivity(AppCompatActivityRobot::createActivityWithComponent);
 
             robot.checkIsCaptionExcludedFromAppBounds(/* expected */ false, /* isResizeable */
@@ -207,7 +207,7 @@ public class AppCompatSandboxingPolicyTest extends WindowTestsBase {
     @EnableCompatChanges({OVERRIDE_EXCLUDE_CAPTION_INSETS_FROM_APP_BOUNDS})
     public void testIsCaptionExcludedFromAppBounds_compatChangeEnabled_notDesktopMode() {
         runTestScenario((robot) -> {
-            robot.dw().allowEnterDesktopMode(false);
+            robot.conf().setCanEnterDesktopMode(false);
             robot.applyOnActivity(AppCompatActivityRobot::createActivityWithComponent);
 
             robot.checkIsCaptionExcludedFromAppBounds(/* expected */ false, /* isResizeable */
@@ -221,7 +221,7 @@ public class AppCompatSandboxingPolicyTest extends WindowTestsBase {
             INSETS_DECOUPLED_CONFIGURATION_ENFORCED})
     public void testIsCaptionExcludedFromAppBounds_sdk35_overridden_notDesktopMode() {
         runTestScenario((robot) -> {
-            robot.dw().allowEnterDesktopMode(false);
+            robot.conf().setCanEnterDesktopMode(false);
             robot.applyOnActivity(AppCompatActivityRobot::createActivityWithComponent);
 
             robot.checkIsCaptionExcludedFromAppBounds(/* expected */ false, /* isResizeable */
@@ -235,7 +235,7 @@ public class AppCompatSandboxingPolicyTest extends WindowTestsBase {
             INSETS_DECOUPLED_CONFIGURATION_ENFORCED})
     public void testIsCaptionExcludedFromAppBounds_sdk35_overridden_desktopMode() {
         runTestScenario((robot) -> {
-            robot.dw().allowEnterDesktopMode(true);
+            robot.conf().setCanEnterDesktopMode(true);
             robot.applyOnActivity(AppCompatActivityRobot::createActivityWithComponent);
 
             robot.checkIsCaptionExcludedFromAppBounds(/* expected */ true, /* isResizeable */
@@ -248,7 +248,7 @@ public class AppCompatSandboxingPolicyTest extends WindowTestsBase {
     @DisableCompatChanges({INSETS_DECOUPLED_CONFIGURATION_ENFORCED})
     public void testIsCaptionExcludedFromAppBounds_notResizable_desktopMode() {
         runTestScenario((robot) -> {
-            robot.dw().allowEnterDesktopMode(true);
+            robot.conf().setCanEnterDesktopMode(true);
             robot.applyOnActivity(AppCompatActivityRobot::createActivityWithComponent);
 
             robot.checkIsCaptionExcludedFromAppBounds(/* expected */ true, /* isResizeable */
