@@ -3039,6 +3039,15 @@ package android.os.storage {
 
 }
 
+package android.os.storage.operations {
+
+  @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public final class FileOperationEnqueueResult implements android.os.Parcelable {
+    ctor public FileOperationEnqueueResult(@NonNull String);
+    ctor public FileOperationEnqueueResult(int);
+  }
+
+}
+
 package android.os.vibrator {
 
   @FlaggedApi("android.os.vibrator.normalized_pwle_effects") public final class BasicPwleSegment extends android.os.vibrator.VibrationEffectSegment {

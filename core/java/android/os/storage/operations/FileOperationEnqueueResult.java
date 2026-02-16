@@ -19,6 +19,7 @@ package android.os.storage.operations;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.TestApi;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -35,6 +36,7 @@ public final class FileOperationEnqueueResult implements Parcelable {
      * @param requestId The id that corresponds to the related {@link FileOperationRequest}.
      * @hide
      */
+    @TestApi
     public FileOperationEnqueueResult(@NonNull String requestId) {
         mRequestId = requestId;
         mIsSuccessful = true;
@@ -45,7 +47,9 @@ public final class FileOperationEnqueueResult implements Parcelable {
      * Creates a failure result.
      *
      * @param errorCode The error code explaining why the enqueue failed.
+     * @hide
      */
+    @TestApi
     public FileOperationEnqueueResult(int errorCode) {
         mRequestId = null;
         mIsSuccessful = false;

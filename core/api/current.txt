@@ -36946,7 +36946,6 @@ package android.os.storage {
 package android.os.storage.operations {
 
   @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public final class FileOperationEnqueueResult implements android.os.Parcelable {
-    ctor public FileOperationEnqueueResult(int);
     method public int describeContents();
     method public int getErrorCode();
     method @Nullable public String getRequestId();
@@ -36972,7 +36971,7 @@ package android.os.storage.operations {
     method @NonNull public android.os.storage.operations.FileOperationRequest build();
     method @NonNull public android.os.storage.operations.FileOperationRequest.Builder setRegisterCompletionListener(boolean);
     method @NonNull public android.os.storage.operations.FileOperationRequest.Builder setSource(@NonNull android.os.storage.operations.sources.OperationSource);
-    method @NonNull public android.os.storage.operations.FileOperationRequest.Builder setTarget(@Nullable android.os.storage.operations.targets.OperationTarget);
+    method @NonNull public android.os.storage.operations.FileOperationRequest.Builder setTarget(@NonNull android.os.storage.operations.targets.OperationTarget);
   }
 
   @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public final class FileOperationResult implements android.os.Parcelable {

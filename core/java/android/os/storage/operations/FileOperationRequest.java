@@ -208,7 +208,7 @@ public final class FileOperationRequest implements Parcelable {
          * @return This builder instance.
          */
         @NonNull
-        public Builder setTarget(@Nullable OperationTarget target) {
+        public Builder setTarget(@NonNull OperationTarget target) {
             mTarget = target;
             return this;
         }
