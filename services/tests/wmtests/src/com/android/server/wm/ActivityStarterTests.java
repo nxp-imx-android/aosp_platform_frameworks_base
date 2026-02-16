@@ -1025,10 +1025,7 @@ public final class ActivityStarterTests extends ActivityStarterTestBase {
      * disallowed, and a SecurityException should be thrown.
      */
     @Test
-    @RequiresFlagsEnabled({
-            FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT,
-            Flags.FLAG_ENABLE_MIRROR_DISPLAY_NO_ACTIVITY
-    })
+    @RequiresFlagsEnabled(FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT)
     public void testStartActivityOnDisplayCannotHostTasks() {
         final ActivityStarter starter = prepareStarter(0);
 

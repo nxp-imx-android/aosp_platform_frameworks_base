@@ -781,16 +781,6 @@ flag {
 }
 
 flag {
-    name: "enable_mirror_display_no_activity"
-    namespace: "lse_desktop_experience"
-    description: "Prevent activity being launched on a mirroring display."
-    bug: "417098352"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_multi_display_split"
     namespace: "lse_desktop_experience"
     description: "Enables split screen on multiple displays at the same time"

@@ -370,10 +370,7 @@ public class ActivityTaskSupervisorTests extends WindowTestsBase {
      * cannot be launched on a display that cannot host tasks.
      */
     @Test
-    @RequiresFlagsEnabled({
-            FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT,
-            Flags.FLAG_ENABLE_MIRROR_DISPLAY_NO_ACTIVITY
-    })
+    @RequiresFlagsEnabled(FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT)
     public void testDisplayCanLaunchActivities_canHostTasksDisplay() {
         final Display display = mDisplayContent.mDisplay;
         // An empty info without FLAG_ALLOW_EMBEDDED.
