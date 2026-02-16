@@ -124,6 +124,7 @@ import com.android.server.net.BaseNetworkObserver;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.power.optimization.Flags;
 import com.android.server.power.stats.BatteryExternalStatsWorker;
+import com.android.server.power.stats.BatteryStatsConfig;
 import com.android.server.power.stats.BatteryStatsDumpHelperImpl;
 import com.android.server.power.stats.BatteryStatsImpl;
 import com.android.server.power.stats.BatteryUsageStatsProvider;
@@ -178,7 +179,7 @@ public final class BatteryStatsService extends IBatteryStats.Stub
     private final PowerProfile mPowerProfile;
     private final CpuScalingPolicies mCpuScalingPolicies;
     private final MonotonicClock mMonotonicClock;
-    private final BatteryStatsImpl.BatteryStatsConfig mBatteryStatsConfig;
+    private final BatteryStatsConfig mBatteryStatsConfig;
     final BatteryStatsImpl mStats;
     final CpuWakeupStats mCpuWakeupStats;
     private final PowerStatsStore mPowerStatsStore;
@@ -379,8 +380,8 @@ public final class BatteryStatsService extends IBatteryStats.Stub
                 com.android.internal.R.bool.config_batteryStatsResetOnUnplugAfterSignificantCharge);
         final int batteryHistoryStorageSize = context.getResources().getInteger(
                 com.android.internal.R.integer.config_batteryHistoryStorageSize);
-        BatteryStatsImpl.BatteryStatsConfig.Builder batteryStatsConfigBuilder =
-                new BatteryStatsImpl.BatteryStatsConfig.Builder()
+        BatteryStatsConfig.Builder batteryStatsConfigBuilder =
+                new BatteryStatsConfig.Builder()
                         .setResetOnUnplugHighBatteryLevel(resetOnUnplugHighBatteryLevel)
                         .setHighBatteryLevelAfterCharge(highBatteryLevelAfterCharge)
                         .setResetOnUnplugAfterSignificantCharge(
@@ -431,7 +432,7 @@ public final class BatteryStatsService extends IBatteryStats.Stub
                 mMonotonicClock, () -> mStats.getHistory().getStartTime(), mHandler);
     }
 
-    private void setPowerStatsThrottlePeriods(BatteryStatsImpl.BatteryStatsConfig.Builder builder,
+    private void setPowerStatsThrottlePeriods(BatteryStatsConfig.Builder builder,
             String configString) {
         if (configString == null) {
             return;
