@@ -18,8 +18,6 @@ package com.android.wm.shell.dagger;
 
 import static android.window.DesktopExperienceFlags.ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS;
 
-import static com.android.systemui.Flags.enableViewCaptureTracing;
-
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityTaskManager;
@@ -41,13 +39,9 @@ import android.window.TaskSnapshotManager;
 
 import androidx.annotation.OptIn;
 
-import com.android.app.viewcapture.ViewCaptureAwareWindowManagerFactory;
 import com.android.internal.jank.InteractionJankMonitor;
-import com.android.internal.logging.InstanceIdSequence;
 import com.android.internal.logging.UiEventLogger;
 import com.android.internal.policy.DesktopModeCompatPolicy;
-import com.android.internal.policy.FoldLockSettingsObserver;
-import com.android.internal.statusbar.IStatusBarService;
 import com.android.internal.util.LatencyTracker;
 import com.android.launcher3.icons.IconProvider;
 import com.android.wm.shell.RootDisplayAreaOrganizer;
@@ -62,34 +56,16 @@ import com.android.wm.shell.apptoweb.data.AppToWebDatastoreRepository;
 import com.android.wm.shell.appzoomout.AppZoomOutController;
 import com.android.wm.shell.back.BackAnimationController;
 import com.android.wm.shell.bubbles.BubbleController;
-import com.android.wm.shell.bubbles.BubbleData;
-import com.android.wm.shell.bubbles.BubbleDataRepository;
-import com.android.wm.shell.bubbles.BubbleEducationController;
 import com.android.wm.shell.bubbles.BubbleHelper;
-import com.android.wm.shell.bubbles.BubbleHelperImpl;
-import com.android.wm.shell.bubbles.BubblePositioner;
-import com.android.wm.shell.bubbles.BubbleResizabilityChecker;
 import com.android.wm.shell.bubbles.BubbleRootTask;
 import com.android.wm.shell.bubbles.BubbleTaskUnfoldTransitionMerger;
-import com.android.wm.shell.bubbles.BubbleViewInfoTask;
-import com.android.wm.shell.bubbles.appinfo.BubbleAppInfoProvider;
-import com.android.wm.shell.bubbles.appinfo.PackageManagerBubbleAppInfoProvider;
 import com.android.wm.shell.bubbles.bar.DragToBubbleController;
-import com.android.wm.shell.bubbles.fold.BubblesFoldLockSettingsObserver;
-import com.android.wm.shell.bubbles.fold.BubblesFoldLockSettingsObserverImpl;
-import com.android.wm.shell.bubbles.logging.BubbleLogger;
-import com.android.wm.shell.bubbles.logging.BubbleSessionTracker;
-import com.android.wm.shell.bubbles.logging.BubbleSessionTrackerImpl;
-import com.android.wm.shell.bubbles.storage.BubblePersistentRepository;
 import com.android.wm.shell.bubbles.transitions.BubbleTransitions;
-import com.android.wm.shell.bubbles.user.data.BubbleUserResolver;
-import com.android.wm.shell.bubbles.user.data.UserManagerBubbleUserResolver;
 import com.android.wm.shell.common.ClientFullscreenRequestController;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayImeController;
 import com.android.wm.shell.common.DisplayInsetsController;
 import com.android.wm.shell.common.DisplayLayout;
-import com.android.wm.shell.common.FloatingContentCoordinator;
 import com.android.wm.shell.common.HomeIntentProvider;
 import com.android.wm.shell.common.LaunchAdjacentController;
 import com.android.wm.shell.common.LockTaskChangeListener;
@@ -218,7 +194,6 @@ import com.android.wm.shell.shared.annotations.ShellDesktopThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.annotations.ShellMainThreadImmediate;
 import com.android.wm.shell.shared.bubbles.BubbleFeatureConfig;
-import com.android.wm.shell.shared.bubbles.BubbleFeatureConfigImpl;
 import com.android.wm.shell.shared.desktopmode.DesktopConfig;
 import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.shared.pip.PipFlags;
@@ -226,9 +201,6 @@ import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellController;
 import com.android.wm.shell.sysui.ShellInit;
-import com.android.wm.shell.taskview.TaskViewRepository;
-import com.android.wm.shell.taskview.TaskViewRootTask;
-import com.android.wm.shell.taskview.TaskViewTransitions;
 import com.android.wm.shell.transition.DefaultMixedHandler;
 import com.android.wm.shell.transition.FocusTransitionObserver;
 import com.android.wm.shell.transition.HomeTransitionObserver;
@@ -269,13 +241,13 @@ import dagger.Lazy;
 import dagger.Module;
 import dagger.Provides;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
 import kotlinx.coroutines.CoroutineScope;
 import kotlinx.coroutines.ExperimentalCoroutinesApi;
 import kotlinx.coroutines.MainCoroutineDispatcher;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Provides dependencies from {@link com.android.wm.shell}, these dependencies are only accessible
@@ -295,212 +267,9 @@ import kotlinx.coroutines.MainCoroutineDispatcher;
                 DesktopModule.class,
                 DesktopAIModule.class,
                 HandheldContainersModule.class,
+                BubbleModule.class,
         })
 public abstract class WMShellModule {
-
-    //
-    // Bubbles
-    //
-
-    @WMSingleton
-    @Provides
-    static BubbleFeatureConfig providesBubbleFeatureConfig(Context context) {
-        return new BubbleFeatureConfigImpl(context);
-    }
-
-    @WMSingleton
-    @Provides
-    static BubblePositioner provideBubblePositioner(Context context, WindowManager windowManager) {
-        return new BubblePositioner(context, windowManager);
-    }
-
-    @WMSingleton
-    @Provides
-    static BubbleEducationController provideBubbleEducationProvider(Context context) {
-        return new BubbleEducationController(context);
-    }
-
-    @WMSingleton
-    @Provides
-    static BubbleData provideBubbleData(
-            Context context,
-            BubbleLogger logger,
-            BubblePositioner positioner,
-            BubbleEducationController educationController,
-            BubbleAppInfoProvider appInfoProvider,
-            @ShellMainThread ShellExecutor mainExecutor,
-            @ShellBackgroundThread ShellExecutor bgExecutor) {
-        return new BubbleData(
-                context, logger, positioner, educationController, appInfoProvider, mainExecutor,
-                bgExecutor);
-    }
-
-    @WMSingleton
-    @Provides
-    static Optional<BubbleTaskUnfoldTransitionMerger> provideBubbleTaskUnfoldTransitionMerger(
-            Optional<BubbleController> bubbleController) {
-        return bubbleController.map(controller -> controller);
-    }
-
-    @Binds
-    abstract BubbleAppInfoProvider bindBubbleAppInfoProvider(
-            PackageManagerBubbleAppInfoProvider appInfoProvider);
-
-    @WMSingleton
-    @Provides
-    static BubbleTransitions provideBubbleTransitions(
-            @NonNull Context context,
-            @NonNull Transitions transitions,
-            @NonNull ShellTaskOrganizer organizer,
-            @NonNull TaskViewRepository repository,
-            @NonNull BubbleData bubbleData,
-            @NonNull @Bubbles TaskViewTransitions taskViewTransitions,
-            @NonNull BubbleViewInfoTask.Factory bubbleViewInfoTaskFactory,
-            @NonNull BubbleHelper bubbleHelper
-    ) {
-        return new BubbleTransitions(context, transitions, organizer, repository,
-                bubbleData, taskViewTransitions, bubbleViewInfoTaskFactory, bubbleHelper);
-    }
-
-    @WMSingleton
-    @Provides
-    @Bubbles
-    static TaskViewTransitions provideBubblesTaskViewTransitions(
-            @NonNull Transitions transitions,
-            @NonNull TaskViewRepository repository,
-            @NonNull ShellTaskOrganizer organizer,
-            Optional<BubbleHelper> bubbleHelper,
-            @Bubbles Optional<TaskViewRootTask> taskViewRootTask
-    ) {
-        return new TaskViewTransitions(transitions, repository, organizer, bubbleHelper,
-                taskViewRootTask);
-    }
-
-    @WMSingleton
-    @Provides
-    @Bubbles
-    static FoldLockSettingsObserver provideFoldLockSettingsObserver(
-            Context context,
-            @ShellMainThread Handler mainHandler) {
-        FoldLockSettingsObserver observer = new FoldLockSettingsObserver(mainHandler, context);
-        observer.register();
-        return observer;
-    }
-
-    @WMSingleton
-    @Provides
-    @Bubbles
-    static InstanceIdSequence provideBubbleInstanceIdSequence() {
-        return new InstanceIdSequence(Integer.MAX_VALUE);
-    }
-
-    @Binds
-    abstract BubblesFoldLockSettingsObserver bindBubblesFoldLockSettingsObserver(
-            BubblesFoldLockSettingsObserverImpl impl);
-
-    @Binds
-    abstract BubbleSessionTracker bindBubbleSessionTracker(BubbleSessionTrackerImpl impl);
-
-    @Binds
-    abstract BubbleUserResolver bindUserResolver(UserManagerBubbleUserResolver impl);
-
-    @Provides
-    @Bubbles
-    static Optional<TaskViewRootTask> provideBubblesTaskViewRootTask(
-            BubbleRootTask bubbleRootTask) {
-        return Optional.of(bubbleRootTask);
-    }
-
-    @WMSingleton
-    @Binds
-    abstract BubbleHelper provideBubbleHelper(BubbleHelperImpl impl);
-
-    // Note: Handler needed for LauncherApps.register
-    @WMSingleton
-    @Provides
-    static BubbleController provideBubbleController(
-            Context context,
-            ShellInit shellInit,
-            ShellCommandHandler shellCommandHandler,
-            ShellController shellController,
-            BubbleData data,
-            BubbleTransitions bubbleTransitions,
-            FloatingContentCoordinator floatingContentCoordinator,
-            IStatusBarService statusBarService,
-            WindowManager windowManager,
-            DisplayInsetsController displayInsetsController,
-            DisplayImeController displayImeController,
-            UserManager userManager,
-            LauncherApps launcherApps,
-            TaskStackListenerImpl taskStackListener,
-            BubbleLogger logger,
-            ShellTaskOrganizer organizer,
-            BubblePositioner positioner,
-            DisplayController displayController,
-            @DynamicOverride Optional<OneHandedController> oneHandedOptional,
-            DragAndDropController dragAndDropController,
-            @ShellMainThread ShellExecutor mainExecutor,
-            @ShellMainThread Handler mainHandler,
-            @ShellBackgroundThread ShellExecutor bgExecutor,
-            @Bubbles TaskViewTransitions taskViewTransitions,
-            Transitions transitions,
-            SyncTransactionQueue syncQueue,
-            IWindowManager wmService,
-            HomeIntentProvider homeIntentProvider,
-            Lazy<Optional<SplitScreenController>> splitScreenController,
-            @NonNull Optional<ShellUnfoldProgressProvider> unfoldProgressProvider,
-            BubblesFoldLockSettingsObserver foldLockSettingsObserver,
-            BubbleSessionTracker sessionTracker,
-            BubbleViewInfoTask.Factory bubbleViewInfoTaskFactory,
-            BubbleHelper bubbleHelper,
-            BubbleFeatureConfig featureConfig) {
-        final WindowManager wm = enableViewCaptureTracing()
-                ? ViewCaptureAwareWindowManagerFactory.getInstance(context)
-                : windowManager;
-        return new BubbleController(
-                context,
-                shellInit,
-                shellCommandHandler,
-                shellController,
-                data,
-                null /* synchronizer */,
-                floatingContentCoordinator,
-                new BubbleDataRepository(
-                        launcherApps,
-                        mainExecutor,
-                        bgExecutor,
-                        new BubblePersistentRepository(context)),
-                bubbleTransitions,
-                statusBarService,
-                wm,
-                displayInsetsController,
-                displayImeController,
-                userManager,
-                launcherApps,
-                logger,
-                taskStackListener,
-                organizer,
-                positioner,
-                displayController,
-                oneHandedOptional,
-                dragAndDropController,
-                mainExecutor,
-                mainHandler,
-                bgExecutor,
-                taskViewTransitions,
-                transitions,
-                syncQueue,
-                wmService,
-                new BubbleResizabilityChecker(),
-                homeIntentProvider,
-                splitScreenController,
-                unfoldProgressProvider,
-                foldLockSettingsObserver,
-                sessionTracker,
-                bubbleViewInfoTaskFactory,
-                bubbleHelper,
-                featureConfig);
-    }
 
     //
     // Window decoration
