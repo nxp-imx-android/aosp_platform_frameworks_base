@@ -3297,37 +3297,10 @@ class DesktopTasksController(
             repository.saveBoundsBeforeSnapOrMaximize(taskInfo.taskId, previousBounds)
         }
 
-        if (DesktopExperienceFlags.ENABLE_TILE_RESIZING.isTrue) {
-            val isTiled = snapController.snapToHalfScreen(taskInfo, currentDragBounds, position)
-            if (isTiled) {
-                updateTaskBarAndWallpaperDim(taskInfo.displayId, true)
-            }
-            return
+        val isTiled = snapController.snapToHalfScreen(taskInfo, currentDragBounds, position)
+        if (isTiled) {
+            updateTaskBarAndWallpaperDim(taskInfo.displayId, true)
         }
-
-        if (destinationBounds == taskInfo.configuration.windowConfiguration.bounds) {
-            // Handle the case where we attempt to snap resize when already snap resized: the task
-            // position won't need to change but we want to animate the surface going back to the
-            // snapped position from the "dragged-to-the-edge" position.
-            if (destinationBounds != currentDragBounds && taskSurface != null) {
-                returnToDragStartAnimator.start(
-                    taskInfo.taskId,
-                    taskSurface,
-                    startBounds = currentDragBounds,
-                    endBounds = destinationBounds,
-                )
-            }
-            return
-        }
-
-        updateTaskBarAndWallpaperDim(taskInfo.displayId, true)
-        val wct = WindowContainerTransaction().setBounds(taskInfo.token, destinationBounds)
-
-        toggleResizeDesktopTaskTransitionHandler.startTransition(
-            wct,
-            currentDragBounds,
-            isUserResize = true,
-        )
     }
 
     /**
