@@ -21,12 +21,28 @@ import android.provider.Settings
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.communal.contextualSetupRepository
+import com.android.systemui.communal.data.repository.SetupState
+import com.android.systemui.communal.domain.definition.UprightChargingSetupDefinition
+import com.android.systemui.communal.fake
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.advanceUntilIdle
+import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
+import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.plugins.activityStarter
+import com.android.systemui.res.R
 import com.android.systemui.testKosmos
-import kotlin.test.Test
+import com.google.common.truth.Truth.assertThat
+import kotlin.time.Duration.Companion.days
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.setMain
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.eq
 import org.mockito.ArgumentMatchers.isNull
@@ -35,40 +51,79 @@ import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class DreamSetupViewModelTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val Kosmos.underTest by Kosmos.Fixture { dreamSetupViewModel }
+    private val Kosmos.repository by Kosmos.Fixture { contextualSetupRepository.fake }
+    private val Kosmos.starter by Kosmos.Fixture { activityStarter }
+
+    private val flowId = UprightChargingSetupDefinition.FLOW_ID
+
+    @Before
+    fun setUp() {
+        Dispatchers.setMain(kosmos.testDispatcher)
+        overrideResource(R.integer.config_dream_setup_max_dismiss_count, 2)
+        overrideResource(
+            R.integer.config_dream_setup_snooze_duration_minutes,
+            14.days.inWholeMinutes.toInt(),
+        )
+    }
+
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
+    }
 
     @Test
-    fun onEvent_dismiss_doesNotCrash() =
+    fun onEvent_dismiss_incrementsFailureCount_andDismissesAfterMaxAttempts() =
         kosmos.runTest {
-            // b/475511585 - Implement the business logic for the "Dismiss" event & update this test
-            // accordingly.
-            underTest.onEvent(DreamSetupEvent.Dismiss)
+            val state by collectLastValue(repository.setupState(flowId))
+            assertThat(state).isEqualTo(SetupState.NotStarted)
 
-            verify(activityStarter, never())
-                .postStartActivityDismissingKeyguard(any(), any(), any())
+            underTest.onEvent(DreamSetupEvent.Dismiss)
+            advanceUntilIdle()
+            assertThat(state).isEqualTo(SetupState.NotStarted)
+
+            // 2nd Dismiss - should trigger permanent dismissal (max count is 2)
+            underTest.onEvent(DreamSetupEvent.Dismiss)
+            advanceUntilIdle()
+            assertThat(state).isEqualTo(SetupState.Dismissed)
+
+            verify(starter, never()).postStartActivityDismissingKeyguard(any(), any(), any())
         }
 
     @Test
-    fun onEvent_notNow_doesNotCrash() =
+    fun onEvent_notNow_snoozesForTwoWeeks() =
         kosmos.runTest {
-            // b/475511585 - Implement the business logic for the "Not Now" event & update this test
-            // accordingly.
-            underTest.onEvent(DreamSetupEvent.NotNow)
+            val now = System.currentTimeMillis()
+            val state by collectLastValue(repository.setupState(flowId))
+            assertThat(state).isEqualTo(SetupState.NotStarted)
 
-            verify(activityStarter, never())
-                .postStartActivityDismissingKeyguard(any(), any(), any())
+            underTest.onEvent(DreamSetupEvent.NotNow)
+            advanceUntilIdle()
+
+            assertThat(state).isInstanceOf(SetupState.Snoozed::class.java)
+            val snoozed = state as SetupState.Snoozed
+            val expectedDuration = 14.days.inWholeMilliseconds
+            assertThat(snoozed.expirationTimeMillis).isAtLeast(now + expectedDuration)
+            assertThat(snoozed.expirationTimeMillis).isAtMost(now + expectedDuration + 5000)
+
+            verify(starter, never()).postStartActivityDismissingKeyguard(any(), any(), any())
         }
 
     @Test
     fun onEvent_setUp_startsDreamSettings() =
         kosmos.runTest {
-            underTest.onEvent(DreamSetupEvent.SetUp)
+            val state by collectLastValue(repository.setupState(flowId))
+            assertThat(state).isEqualTo(SetupState.NotStarted)
 
-            verify(activityStarter)
+            underTest.onEvent(DreamSetupEvent.SetUp)
+            advanceUntilIdle()
+
+            verify(starter)
                 .postStartActivityDismissingKeyguard(
                     argThat { intent ->
                         intent?.action == Settings.ACTION_DREAM_SETTINGS &&
