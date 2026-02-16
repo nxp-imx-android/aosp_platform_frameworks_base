@@ -168,7 +168,7 @@ public class AppSearchDataYamlConverter {
      * A minimal YAML generator to avoid a heavy library dependency. This supports Maps, Lists, and
      * primitive types, producing a readable YAML string.
      */
-    private static class MinimalYamlGenerator {
+    public static class MinimalYamlGenerator {
         private static final String INDENT = "  ";
 
         public static String dump(Object data) {

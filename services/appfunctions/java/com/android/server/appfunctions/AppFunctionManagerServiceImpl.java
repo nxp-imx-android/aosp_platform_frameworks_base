@@ -86,7 +86,9 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
 import android.content.pm.SigningInfo;
 import android.os.Binder;
+import android.os.Build;
 import android.os.CancellationSignal;
+import android.os.Environment;
 import android.os.IBinder;
 import android.os.ICancellationSignal;
 import android.os.OutcomeReceiver;
@@ -106,7 +108,9 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.content.PackageMonitor;
 import com.android.internal.infra.AndroidFuture;
+import com.android.internal.os.BackgroundThread;
 import com.android.internal.util.DumpUtils;
+import com.android.server.IoThread;
 import com.android.server.SystemService.TargetUser;
 import com.android.server.appfunctions.MultiUserDynamicAppFunctionRegistry.RegistrationScopeId;
 import com.android.server.appfunctions.allowlist.SystemAppFunctionAllowlistReader;
@@ -114,7 +118,9 @@ import com.android.server.appinteraction.AppInteractionService;
 import com.android.server.uri.UriGrantsManagerInternal;
 import com.android.server.wm.ActivityTaskManagerInternal;
 
+import java.io.File;
 import java.io.FileDescriptor;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -154,6 +160,12 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
 
     private final AppFunctionMetadataReader mAppFunctionMetadataReader;
     private final AppFunctionMetadataObserver mAppFunctionMetadataObserver;
+
+    private final Object mRequestResponseLoggerPerUserLock = new Object();
+
+    @GuardedBy("mRequestResponseLoggerPerUserLock")
+    private final SparseArray<AppFunctionRequestResponseLogger> mRequestResponseLoggerPerUser =
+            new SparseArray<>();
 
     @Nullable private final AppInteractionService mAppInteractionService;
 
@@ -251,6 +263,24 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 AppFunctionPackageMonitor.registerPackageMonitorForUser(mContext, user);
         mPackageMonitors.append(user.getUserIdentifier(), pkgMonitorForUser);
 
+        File appFunctionsLogDir =
+                new File(
+                        Environment.getDataSystemCeDirectory(user.getUserIdentifier()),
+                        "appfunctions");
+        try {
+            synchronized (mRequestResponseLoggerPerUserLock) {
+                mRequestResponseLoggerPerUser.append(
+                        user.getUserIdentifier(),
+                        new AppFunctionRequestResponseLogger(appFunctionsLogDir));
+            }
+        } catch (IOException e) {
+            Slog.e(
+                    TAG,
+                    "Failed to create request/response logger for user "
+                            + user.getUserIdentifier(),
+                    e);
+        }
+
         if (android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()) {
             mDynamicAppFunctionRegistry.onUserUnlocked(mAppFunctionMetadataObserver, user);
         }
@@ -281,6 +311,12 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         if (mPackageMonitors.contains(userIdentifier)) {
             mPackageMonitors.get(userIdentifier).unregister();
             mPackageMonitors.delete(userIdentifier);
+        }
+
+        synchronized (mRequestResponseLoggerPerUserLock) {
+            if (mRequestResponseLoggerPerUser.contains(userIdentifier)) {
+                mRequestResponseLoggerPerUser.delete(userIdentifier);
+            }
         }
 
         if (android.app.appfunctions.flags.Flags.enableAppInteractionApi()) {
@@ -1654,6 +1690,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                     public void finalizeOnSuccess(
                             @NonNull ExecuteAppFunctionResponse result,
                             long executionStartTimeMillis) {
+                        logRequestResponse(requestInternal, result, /* exception= */ null);
                         mLoggerWrapper.logAppFunctionSuccess(
                                 requestInternal,
                                 result,
@@ -1666,6 +1703,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                     @Override
                     public void finalizeOnError(
                             @NonNull AppFunctionException error, long executionStartTimeMillis) {
+                        logRequestResponse(requestInternal, /* response= */ null, error);
                         mLoggerWrapper.logAppFunctionError(
                                 requestInternal,
                                 error.getErrorCode(),
@@ -1675,6 +1713,30 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                         recordAppFunctionInteraction(requestInternal);
                     }
                 });
+    }
+
+    /**
+     * Logs the request and response to disk asynchronously.
+     *
+     * <p>This method is only executed for debuggable builds when the corresponding flag is enabled.
+     */
+    private void logRequestResponse(
+            @NonNull ExecuteAppFunctionAidlRequest request,
+            @Nullable ExecuteAppFunctionResponse response,
+            @Nullable AppFunctionException exception) {
+        if (!Build.isDebuggable()
+                || !android.app.appfunctions.flags.Flags.enableRequestResponseLogging()) {
+            return;
+        }
+
+        final AppFunctionRequestResponseLogger logger;
+        synchronized (mRequestResponseLoggerPerUserLock) {
+            logger = mRequestResponseLoggerPerUser.get(request.getUserHandle().getIdentifier());
+        }
+        if (logger != null) {
+            IoThread.getExecutor()
+                    .execute(() -> logger.log(request.getClientRequest(), response, exception));
+        }
     }
 
     private void recordAppFunctionInteraction(@NonNull ExecuteAppFunctionAidlRequest aidlRequest) {
