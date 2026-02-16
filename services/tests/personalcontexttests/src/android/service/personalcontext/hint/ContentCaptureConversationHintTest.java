@@ -61,7 +61,6 @@ public class ContentCaptureConversationHintTest {
                     .setAuthor("author")
                     .setReferenceTime(REFERENCE_TIME)
                     .setContentCaptureData(CHAT_MESSAGE_CONTENT_CAPTURE_DATA)
-                    .setContentDescription(CONTENT_DESCRIPTION)
                     .build();
 
     @Test
