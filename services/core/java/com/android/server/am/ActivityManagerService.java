@@ -77,6 +77,15 @@ import static android.content.pm.PackageManager.MATCH_UNINSTALLED_PACKAGES;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.content.pm.PackageManager.SIGNATURE_NO_MATCH;
 import static android.crashrecovery.flags.Flags.refactorCrashrecovery;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidTrackEvent.PROCESS_START_EVENT;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessStartEvent.PROCESS_NAME;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessStartEvent.UID;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessStartEvent.PID;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessStartEvent.BIND_APPLICATION_DELAY_MS;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessStartEvent.PROCESS_START_DELAY_MS;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessStartEvent.HOSTING_NAME;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessStartEvent.HOSTING_TYPE;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessStartEvent.TRIGGER_TYPE;
 import static android.net.ConnectivityManager.BLOCKED_REASON_NONE;
 import static android.os.FactoryTest.FACTORY_TEST_OFF;
 import static android.os.IServiceManager.DUMP_FLAG_PRIORITY_CRITICAL;
@@ -85,6 +94,7 @@ import static android.os.IServiceManager.DUMP_FLAG_PRIORITY_NORMAL;
 import static android.os.IServiceManager.DUMP_FLAG_PROTO;
 import static android.os.InputConstants.DEFAULT_DISPATCHING_TIMEOUT_MILLIS;
 import static android.os.PerfettoTrace.BIG_LOCKS_V3;
+import static android.os.PerfettoTrace.PROC_STATE_CATEGORY;
 import static android.os.PowerExemptionManager.REASON_ACTIVITY_VISIBILITY_GRACE_PERIOD;
 import static android.os.PowerExemptionManager.REASON_BACKGROUND_ACTIVITY_PERMISSION;
 import static android.os.PowerExemptionManager.REASON_BOOT_COMPLETED;
@@ -5512,6 +5522,30 @@ public class ActivityManagerService extends IActivityManager.Stub
             }
 
             final HostingRecord hostingRecord = app.getHostingRecord();
+            final long bindApplicationDelay = app.getBindApplicationTime()
+                    - app.getStartUptime();
+            final long startDelay = SystemClock.uptimeMillis() - app.getStartUptime();
+
+            if (android.os.Flags.perfettoSdkTracingV3()) {
+                PerfettoTrace.instant(PROC_STATE_CATEGORY, "process_start")
+                        .beginProto()
+                        .beginNested(PROCESS_START_EVENT)
+                        .addField(UID, app.info.uid)
+                        .addField(PID, pid)
+                        .addField(PROCESS_NAME, app.processName)
+                        .addField(BIND_APPLICATION_DELAY_MS, bindApplicationDelay)
+                        .addField(PROCESS_START_DELAY_MS, startDelay)
+                        .addField(HOSTING_NAME, hostingRecord.getName())
+                        .addField(HOSTING_TYPE,
+                                HostingRecord.getHostingTypeIdStatsd(hostingRecord.getType()))
+                        .addField(TRIGGER_TYPE,
+                                HostingRecord.getTriggerTypeForStatsd(
+                                        hostingRecord.getTriggerType()))
+                        .endNested()
+                        .endProto()
+                        .emit();
+            }
+
             FrameworkStatsLog.write(
                     FrameworkStatsLog.PROCESS_START_TIME,
                     app.info.uid,
@@ -5519,8 +5553,8 @@ public class ActivityManagerService extends IActivityManager.Stub
                     app.processName,
                     FrameworkStatsLog.PROCESS_START_TIME__TYPE__COLD,
                     app.getStartElapsedTime(),
-                    (int) (app.getBindApplicationTime() - app.getStartUptime()),
-                    (int) (SystemClock.uptimeMillis() - app.getStartUptime()),
+                    (int) bindApplicationDelay,
+                    (int) startDelay,
                     hostingRecord.getType(),
                     hostingRecord.getName(),
                     hostingRecord.getAction(),
