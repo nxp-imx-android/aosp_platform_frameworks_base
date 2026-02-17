@@ -15079,7 +15079,7 @@ package android.service.personalcontext.embedded {
     method public int getMeasureSpecWidth();
     method public int getNestedScrollAxes();
     method @NonNull public java.util.List<android.service.personalcontext.embedded.InsightSurfaceClient.InsightReceiver> getReceivers();
-    method @Nullable public String getThemeResourceName();
+    method @StyleRes public int getThemeResourceId();
     method public boolean isNestedScrollAxisLocked();
     method public void publishHints(@NonNull java.util.Set<android.service.personalcontext.hint.ContextHint>);
     method public void register(@Nullable java.util.concurrent.Executor, @NonNull android.service.personalcontext.embedded.InsightSurfaceClient.ClientCallback);
@@ -15096,7 +15096,7 @@ package android.service.personalcontext.embedded {
     method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClient.Builder setNestedScrollAxes(int);
     method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClient.Builder setNestedScrollAxisLocked(boolean);
     method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClient.Builder setShouldBlur(boolean);
-    method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClient.Builder setThemeResourceName(@Nullable String);
+    method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClient.Builder setThemeResourceId(@StyleRes int);
   }
 
   public static interface InsightSurfaceClient.ClientCallback {
@@ -15122,7 +15122,7 @@ package android.service.personalcontext.embedded {
     method public int getNestedScrollAxes();
     method public boolean getNestedScrollAxisLocked();
     method @NonNull public String getPackageName();
-    method @Nullable public String getThemeResourceName();
+    method @StyleRes public int getThemeResourceId();
     method public void onReceiveInsight(@NonNull android.service.personalcontext.insight.ContextInsight);
     method public void onSizeChanged(int, int);
     method public boolean shouldBlur();
@@ -15137,7 +15137,7 @@ package android.service.personalcontext.embedded {
     method public int getMeasureSpecHeight();
     method public int getMeasureSpecWidth();
     method public int getNestedScrollAxes();
-    method @Nullable public String getThemeResourceName();
+    method @StyleRes public int getThemeResourceId();
     method public boolean hasUpdate(@NonNull String);
     method public boolean isNestedScrollAxisLocked();
     method public boolean shouldBlur();
@@ -15163,7 +15163,7 @@ package android.service.personalcontext.embedded {
     method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClientUpdate.Builder setNestedScrollAxes(int);
     method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClientUpdate.Builder setNestedScrollAxisLocked(boolean);
     method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClientUpdate.Builder setShouldBlur(boolean);
-    method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClientUpdate.Builder setThemeResourceName(@Nullable String);
+    method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClientUpdate.Builder setThemeResourceId(@StyleRes int);
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public class InsightSurfaceSession implements java.lang.AutoCloseable {
