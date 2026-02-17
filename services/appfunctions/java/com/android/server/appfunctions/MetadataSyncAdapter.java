@@ -21,6 +21,7 @@ import static android.app.appfunctions.AppFunctionRuntimeMetadata.RUNTIME_SCHEMA
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.WorkerThread;
+import android.app.appfunctions.AppFunctionName;
 import android.app.appfunctions.AppFunctionRuntimeMetadata;
 import android.app.appfunctions.AppFunctionStaticMetadataHelper;
 import android.app.appsearch.AppSearchBatchResult;
@@ -549,6 +550,7 @@ public class MetadataSyncAdapter {
         Objects.requireNonNull(schemaType);
         Objects.requireNonNull(propertyFunctionId);
         Objects.requireNonNull(propertyPackageName);
+
         ArrayMap<String, ArraySet<String>> packageToFunctionIds = new ArrayMap<>();
 
         try (FutureSearchResults futureSearchResults =
@@ -569,8 +571,24 @@ public class MetadataSyncAdapter {
                             searchResult
                                     .getGenericDocument()
                                     .getPropertyString(propertyPackageName);
-                    String functionId =
-                            searchResult.getGenericDocument().getPropertyString(propertyFunctionId);
+
+                    String functionId;
+                    if (android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()) {
+                        try {
+                            functionId =
+                                    AppFunctionName.fromQualifiedId(
+                                                    searchResult.getGenericDocument().getId())
+                                            .getFunctionIdentifier();
+                        } catch (RuntimeException e) {
+                            Slog.d(TAG, "Failed to parse function id", e);
+                            continue;
+                        }
+                    } else {
+                        functionId =
+                                searchResult
+                                        .getGenericDocument()
+                                        .getPropertyString(propertyFunctionId);
+                    }
                     packageToFunctionIds
                             .computeIfAbsent(packageName, k -> new ArraySet<>())
                             .add(functionId);
