@@ -79,6 +79,10 @@ class AppFunctionMetadataReaderTest {
                     override fun getAppFunctionMetadataChangeDebounceMilliseconds(): Int = 0
 
                     override fun getAppFunctionAllowlistCacheSize(): Int = 5
+
+                    override fun getAppFunctionEnabledStateChangeDebounceMilliseconds(): Long = 0
+
+                    override fun getAppFunctionEnabledStateChangeMaxDebounceMilliseconds(): Long = 0
                 },
             )
     }
