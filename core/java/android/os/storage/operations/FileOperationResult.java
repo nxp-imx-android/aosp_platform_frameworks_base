@@ -22,6 +22,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.os.storage.FileManager;
 import android.os.storage.operations.sources.OperationSource;
 import android.os.storage.operations.targets.OperationTarget;
 
@@ -64,41 +65,61 @@ public final class FileOperationResult implements Parcelable {
     @Retention(RetentionPolicy.SOURCE)
     public @interface Status {}
 
-    /** No error or unknown error. */
+    /** Successful operation. */
+    public static final int ERROR_NONE = -1;
+
+    /** An unknown error. */
     public static final int ERROR_UNKNOWN = 0;
 
-    /** The system is too busy to handle the request. */
+    /**
+     * The system is too busy to handle the request.
+     *
+     * <p>This error is <b>transient</b>. Applications should consider retrying the operation after
+     * a short delay, potentially using an exponential backoff strategy.
+     */
     public static final int ERROR_BUSY = 1;
 
-    /** The system cannot fulfill the request as configured. */
+    /**
+     * The system cannot fulfill the request as configured.
+     *
+     * <p>This error is <b>permanent</b> as it indicates a malformed or invalid request.
+     */
     public static final int ERROR_INVALID_REQUEST = 2;
 
-    /** The source of the operation is unsupported or invalid. */
+    /**
+     * The source of the operation is unsupported or invalid.
+     *
+     * <p>This error is <b>permanent</b> as it indicates an issue with the request.
+     */
     public static final int ERROR_UNSUPPORTED_SOURCE = 3;
 
-    /** The target of the operation is unsupported or invalid. */
+    /**
+     * The target of the operation is unsupported or invalid.
+     *
+     * <p>This error is <b>permanent</b> as it indicates an issue with the request.
+     */
     public static final int ERROR_UNSUPPORTED_TARGET = 4;
 
-    /** The operation failed due to missing permissions. */
+    /**
+     * The operation failed due to missing permissions.
+     *
+     * <p>This error is <b>permanent</b> unless the user manually grants the required permissions.
+     */
     public static final int ERROR_PERMISSION_DENIED = 5;
 
-    /** The operation failed because the disk is full. */
-    public static final int ERROR_DISK_FULL = 6;
-
     /**
-     * @return The maximum number of reported failures reported by this class.
+     * The operation failed because the disk is full.
+     *
+     * <p>This error is <b>potentially transient</b> if the user clears enough space on the storage
+     * device.
      */
-    public static int getMaxReportedFailures() {
-        return MAX_REPORTED_FAILURES;
-    }
-
-    /** The maximum number of failures reported by this operation */
-    private static final int MAX_REPORTED_FAILURES = 200;
+    public static final int ERROR_DISK_FULL = 6;
 
     /** @hide */
     @IntDef(
             prefix = {"ERROR_"},
             value = {
+                ERROR_NONE,
                 ERROR_UNKNOWN,
                 ERROR_BUSY,
                 ERROR_INVALID_REQUEST,
@@ -191,8 +212,9 @@ public final class FileOperationResult implements Parcelable {
      * <p>This list is only populated when the operation reaches a terminal state ({@link
      * #STATUS_FINISHED} or {@link #STATUS_FAILED}).
      *
-     * <p>Note: Due to binder transaction limits, this list is capped at 200 entries. If more
-     * failures occurred, only the first {@link #getMaxReportedFailures} are reported.
+     * <p>Note: Due to binder transaction limits, this list can truncate the total number of
+     * reported failures. If failures occurred, only the first {@link
+     * android.os.storage.FileManager#getMaxReportedFailures} are reported.
      */
     @NonNull
     public List<String> getFailedPaths() {
@@ -275,10 +297,10 @@ public final class FileOperationResult implements Parcelable {
         /** @hide */
         @NonNull
         public Builder setFailedPaths(@NonNull List<String> paths) {
-            if (paths.size() > getMaxReportedFailures()) {
+            if (paths.size() > FileManager.getMaxReportedFailures()) {
                 throw new IllegalStateException(
                         "Due to binder transaction limits, setFailedPaths cannot provide more than "
-                                + getMaxReportedFailures()
+                                + FileManager.getMaxReportedFailures()
                                 + "failures to the client.");
             }
             mFailedPaths = paths;

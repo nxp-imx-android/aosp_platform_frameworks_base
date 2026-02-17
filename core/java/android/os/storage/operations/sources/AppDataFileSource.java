@@ -32,12 +32,22 @@ import java.util.regex.Pattern;
  * A source representing a file within the calling application's private app data directory.
  *
  * <p>This source is restricted to files located inside the application's internal data directory
- * (as returned by {@link android.content.Context#getDataDir()}). Attempting to use files from other
- * locations (such as external storage or system directories) will result in the operation being
- * rejected.
+ * (as returned by {@link android.content.Context#getDataDir()}).
  *
- * <p>The provided path must be absolute and should not contain path traversal elements (e.g., "..")
- * or "unsafe" control characters.
+ * <h3>Operation Rejection</h3>
+ *
+ * <p>To ensure system security and integrity, operations using an {@code AppDataFileSource} will
+ * be <b>rejected</b> with {@link
+ * android.os.storage.operations.FileOperationResult#ERROR_UNSUPPORTED_SOURCE} or {@link
+ * android.os.storage.operations.FileOperationResult#ERROR_INVALID_REQUEST} if:
+ *
+ * <ul>
+ *   <li>The provided path is <b>not absolute</b>.
+ *   <li>The path contains <b>path traversal elements</b> (e.g., "..") or redundant segments.
+ *   <li>The path contains <b>unsafe control characters</b> (e.g., null, newline).
+ *   <li>The file is <b>outside</b> the application's internal data directory (CE or DE storage).
+ *       Locations such as external storage or system directories are strictly prohibited.
+ * </ul>
  *
  * <p><b>Example Usage:</b>
  *

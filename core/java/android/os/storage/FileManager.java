@@ -33,9 +33,8 @@ import android.os.storage.operations.FileOperationResult;
  * System service manager for handling privileged, long-running file operations.
  *
  * <p>The {@code FileManager} provides an API for applications to request asynchronous file
- * operations such as moving or copying files. These operations are executed by the
- * system service (`FileService`) on a background thread to ensure application responsiveness and
- * system stability.
+ * operations such as moving or copying files. These operations are executed by the system service
+ * (`FileService`) on a background thread to ensure application responsiveness and system stability.
  *
  * <h3>Usage Overview</h3>
  *
@@ -63,9 +62,10 @@ import android.os.storage.operations.FileOperationResult;
  * case gracefully, potentially by retrying later.
  *
  * <p>Additionally, the system caps the number of individual file failures reported in a {@link
- * android.os.storage.operations.FileOperationResult} to 200. If granular failure reporting is
- * critical for your use case, avoid enqueueing operations that involve more than 200 files in a
- * single request.
+ * android.os.storage.operations.FileOperationResult} to the value returned from {@link
+ * getMaxReportedFailures}. If granular failure reporting is critical for your use case, avoid
+ * enqueueing operations that involve more files than the failure reporting limit in a single
+ * request.
  */
 @SystemService(Context.FILE_SERVICE)
 @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
@@ -109,6 +109,23 @@ public final class FileManager {
      */
     public static final String EXTRA_RESULT = "android.os.storage.extra.RESULT";
 
+    /**
+     * Due to binder transaction limits, the number of reported failures is limited to number
+     * returned by this method. It is recommended that operations that require complete failure
+     * reporting batch their operations to stay below the max reported failures limit.
+     *
+     * @return The maximum number of reported failures reported by File operations.
+     */
+    public static int getMaxReportedFailures() {
+        return MAX_REPORTED_FAILURES;
+    }
+
+    /**
+     * The maximum number of failures reported by file operations. This limit exists to prevent
+     * binder transaction sizes from exceeding the maximum allowed size.
+     */
+    private static final int MAX_REPORTED_FAILURES = 200;
+
     /** @hide */
     public FileManager(Context context, IFileService service) {
         mContext = context;
@@ -137,7 +154,12 @@ public final class FileManager {
     @NonNull
     public FileOperationEnqueueResult enqueueOperation(@NonNull FileOperationRequest request) {
         try {
-            return mService.enqueueOperation(request, mContext.getOpPackageName());
+            FileOperationEnqueueResult result =
+                    mService.enqueueOperation(request, mContext.getOpPackageName());
+            if (result.isSuccessful() && request.shouldRegisterCompletionListener()) {
+                registerCompletionListener(result.getRequestId());
+            }
+            return result;
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

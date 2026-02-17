@@ -20,15 +20,21 @@ import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SuppressLint;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.os.storage.FileManager;
 import android.os.storage.operations.sources.OperationSource;
 import android.os.storage.operations.targets.OperationTarget;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-/** Encapsulates a request to Move, or Copy files. */
+/**
+ * Encapsulates a request to Move, or Copy files.
+ *
+ * @see android.os.storage.FileManager#enqueueOperation(FileOperationRequest)
+ */
 @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
 public final class FileOperationRequest implements Parcelable {
 
@@ -63,17 +69,20 @@ public final class FileOperationRequest implements Parcelable {
     private final int mMode;
     private final OperationSource mSource;
     private final OperationTarget mTarget;
+    private final boolean mShouldRegisterListener;
 
     private FileOperationRequest(Builder builder) {
         mMode = builder.mMode;
         mSource = builder.mSource;
         mTarget = builder.mTarget;
+        mShouldRegisterListener = builder.mShouldRegisterListener;
     }
 
     private FileOperationRequest(Parcel in) {
         mMode = in.readInt();
         mSource = in.readParcelable(OperationSource.class.getClassLoader(), OperationSource.class);
         mTarget = in.readParcelable(OperationTarget.class.getClassLoader(), OperationTarget.class);
+        mShouldRegisterListener = in.readBoolean();
     }
 
     /**
@@ -97,6 +106,13 @@ public final class FileOperationRequest implements Parcelable {
     @Nullable
     public OperationTarget getTarget() {
         return mTarget;
+    }
+
+    /**
+     * Returns true if a completion listener should be automatically registered for this request.
+     */
+    public boolean shouldRegisterCompletionListener() {
+        return mShouldRegisterListener;
     }
 
     @NonNull
@@ -128,6 +144,7 @@ public final class FileOperationRequest implements Parcelable {
         // to correctly handle polymorphic types for OperationSource and OperationTarget.
         dest.writeParcelable(mSource, flags);
         dest.writeParcelable(mTarget, flags);
+        dest.writeBoolean(mShouldRegisterListener);
     }
 
     /**
@@ -160,6 +177,7 @@ public final class FileOperationRequest implements Parcelable {
         private int mMode;
         private OperationSource mSource;
         private OperationTarget mTarget;
+        private boolean mShouldRegisterListener;
 
         /**
          * Creates a new builder for a specific file operation mode.
@@ -190,8 +208,30 @@ public final class FileOperationRequest implements Parcelable {
          * @return This builder instance.
          */
         @NonNull
-        public Builder setTarget(@Nullable OperationTarget target) {
+        public Builder setTarget(@NonNull OperationTarget target) {
             mTarget = target;
+            return this;
+        }
+
+        /**
+         * Sets whether a completion listener should be automatically registered for this request
+         * when it is enqueued.
+         *
+         * <p>If set to {@code true}, the calling application will receive a {@link
+         * FileManager#ACTION_FILE_OPERATION_COMPLETED} broadcast when the operation finishes.
+         *
+         * <p>IMPORTANT: If the operation is rejected or fails to be queued, the listener will not
+         * be registered. Apps should ensure their requests are enqueued successfully via {@link
+         * FileOperationEnqueueResult#isSuccessful}
+         *
+         * @param shouldRegister Whether to register a completion listener.
+         * @return This builder instance.
+         */
+        @NonNull
+
+        @SuppressLint("MissingGetterMatchingBuilder")
+        public Builder setRegisterCompletionListener(boolean shouldRegister) {
+            mShouldRegisterListener = shouldRegister;
             return this;
         }
 
