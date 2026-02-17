@@ -16,8 +16,6 @@
 
 package com.android.server.power.stats;
 
-import static android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT;
-
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -35,7 +33,6 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.PersistableBundle;
 import android.platform.test.annotations.DisabledOnRavenwood;
-import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.power.PowerStatsInternal;
 
 import androidx.test.filters.SmallTest;
@@ -127,16 +124,15 @@ public class PowerStatsCollectorTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
-    public void consumedEnergyRetriever_pcc() throws Exception {
+    public void checkUidStatsConsumedEnergy_singleChildUid() throws Exception {
         int voltageMv = 3500;
         int energyConsumerId = 1;
-        int pccEnergyUWs = 1000;
+        int childUidEnergyUWs = 1000;
         int appUid = 10000;
-        int pccUid = 30000;
+        int childUid = 30000;
 
-        // Establish the mapping from PCC UID to App UID
-        when(mUidResolver.getOwnerUid(pccUid)).thenReturn(appUid);
+        // Establish the mapping from child UID to app UID
+        when(mUidResolver.getOwnerUid(childUid)).thenReturn(appUid);
 
         // Mock Energy Consumers
         PowerStatsInternal powerStatsInternal = mock(PowerStatsInternal.class);
@@ -159,7 +155,7 @@ public class PowerStatsCollectorTest {
                             this.energyUWs = 0;
                             attribution = new EnergyConsumerAttribution[]{
                                     new EnergyConsumerAttribution() {{
-                                        uid = pccUid;
+                                        uid = childUid;
                                         this.energyUWs = 0;
                                     }}
                             };
@@ -168,11 +164,11 @@ public class PowerStatsCollectorTest {
                 .thenReturn(new EnergyConsumerResult[]{
                         new EnergyConsumerResult() {{
                             id = energyConsumerId;
-                            this.energyUWs = pccEnergyUWs;
+                            this.energyUWs = childUidEnergyUWs;
                             attribution = new EnergyConsumerAttribution[]{
                                     new EnergyConsumerAttribution() {{
-                                        uid = pccUid;
-                                        this.energyUWs = pccEnergyUWs;
+                                        uid = childUid;
+                                        this.energyUWs = childUidEnergyUWs;
                                     }}
                             };
                         }}
@@ -195,12 +191,12 @@ public class PowerStatsCollectorTest {
         helper.collectConsumedEnergy(powerStats, layout);
         helper.collectConsumedEnergy(powerStats, layout);
 
-        // Verify that the energy was attributed to the App UID, not the PCC UID
+        // Verify that the energy was attributed to the app UID, not the child UID
         long[] uidStats = powerStats.uidStats.get(appUid);
         assertThat(uidStats).isNotNull();
         assertThat(layout.getUidConsumedEnergy(uidStats, 0))
-                .isEqualTo(PowerStatsCollector.uJtoUc(pccEnergyUWs, voltageMv));
-        assertThat(powerStats.uidStats.get(pccUid)).isNull();
+                .isEqualTo(PowerStatsCollector.uJtoUc(childUidEnergyUWs, voltageMv));
+        assertThat(powerStats.uidStats.get(childUid)).isNull();
     }
 
     @SuppressWarnings("unchecked")
