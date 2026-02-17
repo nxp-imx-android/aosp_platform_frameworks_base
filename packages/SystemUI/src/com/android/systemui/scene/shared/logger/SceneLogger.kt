@@ -24,22 +24,41 @@ import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.internal.logging.UiEvent
 import com.android.internal.logging.UiEventLogger
 import com.android.internal.logging.UiEventLogger.UiEventEnum
+import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.keyguard.shared.model.KeyguardState
+import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.LogLevel
 import com.android.systemui.log.dagger.SceneFrameworkLog
 import com.android.systemui.scene.data.model.SceneStack
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import javax.inject.Inject
+import kotlin.coroutines.CoroutineContext
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.withContext
 
+@SysUISingleton
 class SceneLogger
 @Inject
 constructor(
     @SceneFrameworkLog private val logBuffer: LogBuffer,
     private val uiEventLogger: UiEventLogger,
-) {
+    @Background private val backgroundContext: CoroutineContext,
+) : ExclusiveActivatable() {
 
-    fun logFrameworkEnabled(isEnabled: Boolean) {
+    private val queue = Channel<() -> Unit>(Channel.UNLIMITED)
+
+    override suspend fun onActivated() {
+        withContext(backgroundContext) { queue.receiveAsFlow().collect { runnable -> runnable() } }
+    }
+
+    private fun withQueue(block: () -> Unit) {
+        queue.trySend(block)
+    }
+
+    fun logFrameworkEnabled(isEnabled: Boolean) = withQueue {
         fun asWord(isEnabled: Boolean): String {
             return if (isEnabled) "enabled" else "disabled"
         }
@@ -66,7 +85,7 @@ constructor(
         keyguardState: KeyguardState?,
         reason: String,
         isInstant: Boolean,
-    ) {
+    ) = withQueue {
         logBuffer.log(
             tag = TAG,
             level = LogLevel.INFO,
@@ -89,7 +108,7 @@ constructor(
         )
     }
 
-    fun logSceneChangeCancellation(scene: SceneKey, keyguardState: Any?) {
+    fun logSceneChangeCancellation(scene: SceneKey, keyguardState: Any?) = withQueue {
         logBuffer.log(
             tag = TAG,
             level = LogLevel.INFO,
@@ -105,7 +124,7 @@ constructor(
         from: ContentKey?,
         to: ContentKey?,
         isAllowedByFalsing: Boolean,
-    ) {
+    ) = withQueue {
         logBuffer.log(
             tag = TAG,
             level = LogLevel.DEBUG,
@@ -139,7 +158,7 @@ constructor(
         to: ContentKey?,
         originalChangeReason: String?,
         rejectionReason: String,
-    ) {
+    ) = withQueue {
         logBuffer.log(
             tag = TAG,
             level = LogLevel.INFO,
@@ -168,7 +187,7 @@ constructor(
         )
     }
 
-    fun logSceneTransition(transitionState: ObservableTransitionState) {
+    fun logSceneTransition(transitionState: ObservableTransitionState) = withQueue {
         when (transitionState) {
             is ObservableTransitionState.Transition -> {
                 logBuffer.log(
@@ -199,7 +218,7 @@ constructor(
         from: OverlayKey? = null,
         to: OverlayKey? = null,
         reason: String,
-    ) {
+    ) = withQueue {
         logBuffer.log(
             tag = TAG,
             level = LogLevel.INFO,
@@ -223,7 +242,7 @@ constructor(
         )
     }
 
-    fun logEvent(event: SceneInteractor.Event) {
+    fun logEvent(event: SceneInteractor.Event) = withQueue {
         logBuffer.log(
             tag = TAG,
             level = LogLevel.INFO,
@@ -232,7 +251,7 @@ constructor(
         )
     }
 
-    fun logVisibilityChange(from: Boolean, to: Boolean, reason: String) {
+    fun logVisibilityChange(from: Boolean, to: Boolean, reason: String) = withQueue {
         fun asWord(isVisible: Boolean): String {
             return if (isVisible) "visible" else "invisible"
         }
@@ -249,7 +268,7 @@ constructor(
         )
     }
 
-    fun logVisibilityRejection(to: Boolean, reason: String) {
+    fun logVisibilityRejection(to: Boolean, reason: String) = withQueue {
         fun asWord(isVisible: Boolean): String {
             return if (isVisible) "visible" else "invisible"
         }
@@ -265,7 +284,7 @@ constructor(
         )
     }
 
-    fun logRemoteUserInputStarted(reason: String) {
+    fun logRemoteUserInputStarted(reason: String) = withQueue {
         logBuffer.log(
             tag = TAG,
             level = LogLevel.INFO,
@@ -274,7 +293,7 @@ constructor(
         )
     }
 
-    fun logUserInputFinished(transitionState: TransitionState) {
+    fun logUserInputFinished(transitionState: TransitionState) = withQueue {
         when (transitionState) {
             is TransitionState.Transition -> {
                 logBuffer.log(
@@ -301,7 +320,7 @@ constructor(
         }
     }
 
-    fun logSceneBackStack(backStack: SceneStack, reason: String) {
+    fun logSceneBackStack(backStack: SceneStack, reason: String) = withQueue {
         logBuffer.log(
             tag = TAG,
             level = LogLevel.INFO,
