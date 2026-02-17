@@ -103,7 +103,7 @@ public class ThemeSettingsManagerTests {
         LocalServices.removeServiceForTest(WallpaperManagerInternal.class);
         LocalServices.addService(WallpaperManagerInternal.class, mMockWmi);
 
-        mManager = new ThemeSettingsManager(new ThemeWallpaperManager(), mEnvironment);
+        mManager = new ThemeSettingsManager(new ThemeWallpaperManager(), mEnvironment.getConfig());
 
         Settings.Secure.putStringForUser(mContentResolver,
                 Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, null, mUserId);
@@ -327,7 +327,8 @@ public class ThemeSettingsManagerTests {
     public void createDefaultThemeSettings_noWildcard_throwsException() {
         // Redefine environment for this test to bypass setup
         ThemeEnvironment env = new ThemeEnvironment(mContext, (key, def) -> "");
-        ThemeSettingsManager manager = new ThemeSettingsManager(new ThemeWallpaperManager(), env);
+        ThemeSettingsManager manager = new ThemeSettingsManager(new ThemeWallpaperManager(),
+                env.getConfig());
 
         assertThrows(IllegalStateException.class,
                 () -> manager.createDefaultThemeSettings(mUserId));
@@ -342,7 +343,7 @@ public class ThemeSettingsManagerTests {
         assertThat(defaultSettings.colorSource()).isEqualTo(FieldColorSource.VALUE_PRESET);
         assertThat(defaultSettings.themeStyle()).isEqualTo(ThemeStyle.TONAL_SPOT);
         assertThat(defaultSettings.systemPalette()).isEqualTo(
-                mEnvironment.hardcodedFallback.systemPalette());
+                mEnvironment.getConfig().hardcodedFallback().systemPalette());
     }
 
     @Test

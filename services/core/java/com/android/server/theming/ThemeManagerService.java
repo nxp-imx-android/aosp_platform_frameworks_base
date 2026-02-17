@@ -64,28 +64,30 @@ public class ThemeManagerService extends SystemService {
     private final ThemeEnvironment mEnvironment;
 
     public ThemeManagerService(@NonNull Context context) {
-        this(context, SystemProperties::get, null, null, null);
+        this(context, SystemProperties::get, null, null, null, null);
     }
 
     @VisibleForTesting
     ThemeManagerService(@NonNull Context context,
             @NonNull SystemPropertiesReader systemPropertiesReader,
+            @Nullable ThemeEnvironment themeEnvironment,
             @Nullable ThemeStateManager themeStateManager,
             @Nullable ThemeUserLifecycle userLifecycle,
             @Nullable ThemeEventObserver eventObserver) {
         super(context);
 
-        mEnvironment = new ThemeEnvironment(context, systemPropertiesReader);
+        mEnvironment = themeEnvironment != null ? themeEnvironment
+                : new ThemeEnvironment(context, systemPropertiesReader);
 
         ThemeOverlayHelper overlayHelper = new ThemeOverlayHelper();
         mStateManager = themeStateManager != null ? themeStateManager : new ThemeStateManager(
                 context, mEnvironment);
         mThemeWallpaperManager = new ThemeWallpaperManager();
         ThemeSettingsManager themeSettingsManager = new ThemeSettingsManager(mThemeWallpaperManager,
-                mEnvironment);
+                mEnvironment.getConfig());
 
         mImpl = new ThemeManagerImpl(context, themeSettingsManager, mStateManager, overlayHelper,
-                mEnvironment, mThemeWallpaperManager);
+                mEnvironment, mThemeWallpaperManager, systemPropertiesReader);
         mPublic = new ThemeBinderService(context, mImpl);
 
         mUserLifecycle = userLifecycle != null ? userLifecycle : new ThemeUserLifecycle(context,

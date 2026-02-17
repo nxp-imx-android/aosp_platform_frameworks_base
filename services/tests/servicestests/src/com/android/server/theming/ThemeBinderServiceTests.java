@@ -148,14 +148,15 @@ public class ThemeBinderServiceTests {
         mEnvironment = new ThemeEnvironment(context, systemPropertiesReader);
         mEnvironment.setBootingComplete(mUserLifecycle);
         ThemeSettingsManager themeSettingsManager = new ThemeSettingsManager(themeWallpaperManager,
-                mEnvironment);
+                mEnvironment.getConfig());
         mSchedulerExecutor = new FakeScheduledExecutorService();
         mThemeStateManager = new ThemeStateManager(context, mSchedulerExecutor, mEnvironment);
         mThemeStateManager.onServicesReady();
         mThemeStateManager.onUserStart(UserHandle.of(mUserId), true, Color.BLUE, 0.5f,
                 ThemeStyle.VIBRANT);
         mInternal = new ThemeManagerImpl(context, themeSettingsManager,
-                mThemeStateManager, mOverlayHelper, mEnvironment, themeWallpaperManager) {
+                mThemeStateManager, mOverlayHelper, mEnvironment, themeWallpaperManager,
+                systemPropertiesReader) {
             @Override
             public boolean onBootAnimationDismissing() {
                 return true;
@@ -289,8 +290,8 @@ public class ThemeBinderServiceTests {
         assertThat(returnedValue[0].style).isEqualTo(ThemeStyle.VIBRANT);
         assertThat(returnedValue[0].contrast).isEqualTo(0.5f);
         assertThat(returnedValue[0].specVersion).isEqualTo(
-                mEnvironment.specVersion.name());
-        assertThat(returnedValue[0].platform).isEqualTo(mEnvironment.platform.name());
+                mEnvironment.getConfig().specVersion().name());
+        assertThat(returnedValue[0].platform).isEqualTo(mEnvironment.getConfig().platform().name());
     }
 
     @Test

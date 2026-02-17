@@ -101,10 +101,10 @@ public class ThemeStatePair {
         ThemeState initialState = new ThemeState(userId, isSetup, seedColor, contrast, style,
                 Collections.unmodifiableSet(new HashSet<>()), 0);
 
-        mDarkScheme = new ColorScheme(seedColor, true, style, contrast, environment.specVersion,
-                environment.platform);
-        mLightScheme = new ColorScheme(seedColor, false, style, contrast, environment.specVersion,
-                environment.platform);
+        mDarkScheme = new ColorScheme(seedColor, true, style, contrast,
+                environment.getConfig().specVersion(), environment.getConfig().platform());
+        mLightScheme = new ColorScheme(seedColor, false, style, contrast,
+                environment.getConfig().specVersion(), environment.getConfig().platform());
 
         mPending = initialState;
         mCurrent = initialState;
@@ -306,11 +306,13 @@ public class ThemeStatePair {
         }
 
         ColorScheme newDarkScheme = new ColorScheme(stateToCommit.seedColor(), true,
-                stateToCommit.style(), stateToCommit.contrast(), mEnvironment.specVersion,
-                mEnvironment.platform);
+                stateToCommit.style(), stateToCommit.contrast(),
+                mEnvironment.getConfig().specVersion(),
+                mEnvironment.getConfig().platform());
         ColorScheme newLightScheme = new ColorScheme(stateToCommit.seedColor(), false,
-                stateToCommit.style(), stateToCommit.contrast(), mEnvironment.specVersion,
-                mEnvironment.platform);
+                stateToCommit.style(), stateToCommit.contrast(),
+                mEnvironment.getConfig().specVersion(),
+                mEnvironment.getConfig().platform());
 
         synchronized (mLock) {
             // If the pending state has changed while we were calculating, our calculated schemes

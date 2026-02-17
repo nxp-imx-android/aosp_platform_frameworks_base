@@ -182,6 +182,9 @@ public class ThemeManagerServiceTests {
         ThemeManagerInternal internal = LocalServices.getService(ThemeManagerInternal.class);
         internal.onBootAnimationDismissing();
 
+        // Manual fix: Simulate side effect of Lifecycle initialization (Mock doesn't do this)
+        mEnvironment.setBootingComplete(mThemeUserLifecycle);
+
         // Ensure asynchronous initialization completes
         waitForBackgroundThread();
 
@@ -202,6 +205,9 @@ public class ThemeManagerServiceTests {
         // Dismiss boot animation to initialize
         ThemeManagerInternal internal = LocalServices.getService(ThemeManagerInternal.class);
         internal.onBootAnimationDismissing();
+
+        // Manual fix: Simulate side effect of Lifecycle initialization (Mock doesn't do this)
+        mEnvironment.setBootingComplete(mThemeUserLifecycle);
 
         // Ensure asynchronous initialization completes
         waitForBackgroundThread();
@@ -243,7 +249,7 @@ public class ThemeManagerServiceTests {
     private ThemeManagerService testableServiceStart() {
         // The context used here should match the one used for resource overrides.
         ThemeManagerService service = new ThemeManagerService(mMainContext,
-                mHardwareColorRule.sysPropReader, mThemeStateManager,
+                mHardwareColorRule.sysPropReader, mEnvironment, mThemeStateManager,
                 mThemeUserLifecycle, mThemeEventObserver);
 
         LocalServices.addService(ThemeManagerInternal.class, service.getLocalService());

@@ -420,7 +420,7 @@ public class ThemeStateManager {
 
         // TODO: b/477901630 (Move this color spec to MCU)
         ThemeStatePair.OverlaySnapshot effectiveSnapshot = overlaySnapshot;
-        if (mEnvironment.platform == Platform.WATCH) {
+        if (mEnvironment.getConfig().platform() == Platform.WATCH) {
             effectiveSnapshot = new ThemeStatePair.OverlaySnapshot(
                     overlaySnapshot.userId(),
                     overlaySnapshot.profiles(),
