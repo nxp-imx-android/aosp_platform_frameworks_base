@@ -337,6 +337,7 @@ package android {
     field public static final String PERFORM_IMS_SINGLE_REGISTRATION = "android.permission.PERFORM_IMS_SINGLE_REGISTRATION";
     field public static final String PERFORM_SIM_ACTIVATION = "android.permission.PERFORM_SIM_ACTIVATION";
     field @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final String PERSONAL_CONTEXT_PUBLISH_HINTS = "android.permission.PERSONAL_CONTEXT_PUBLISH_HINTS";
+    field @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final String PERSONAL_CONTEXT_PUBLISH_INSIGHTS = "android.permission.PERSONAL_CONTEXT_PUBLISH_INSIGHTS";
     field @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final String PERSONAL_CONTEXT_RECEIVE_HINTS = "android.permission.PERSONAL_CONTEXT_RECEIVE_HINTS";
     field @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final String PERSONAL_CONTEXT_RECEIVE_INSIGHTS = "android.permission.PERSONAL_CONTEXT_RECEIVE_INSIGHTS";
     field @FlaggedApi("android.app.bridged_notifications") public static final String POST_BRIDGED_NOTIFICATIONS = "android.permission.POST_BRIDGED_NOTIFICATIONS";
@@ -15773,8 +15774,8 @@ package android.service.personalcontext.understander {
     method public void onHandleEvent(@NonNull String, @NonNull android.service.personalcontext.insight.interaction.InsightEvent);
     method public void onHandleUserFeedback(@NonNull android.service.personalcontext.insight.PublishedContextInsight, @NonNull android.os.Bundle);
     method @NonNull public abstract android.service.personalcontext.hint.HintFilter onInitializeFilter();
-    method public abstract void onUnderstand(@NonNull java.util.List<android.service.personalcontext.hint.ContextHintWithSignature>);
-    method public final void understood(@NonNull android.service.personalcontext.insight.ContextInsight);
+    method @RequiresPermission(android.Manifest.permission.PERSONAL_CONTEXT_PUBLISH_INSIGHTS) public abstract void onUnderstand(@NonNull java.util.List<android.service.personalcontext.hint.ContextHintWithSignature>);
+    method @RequiresPermission(android.Manifest.permission.PERSONAL_CONTEXT_PUBLISH_INSIGHTS) public final void understood(@NonNull android.service.personalcontext.insight.ContextInsight);
   }
 
 }

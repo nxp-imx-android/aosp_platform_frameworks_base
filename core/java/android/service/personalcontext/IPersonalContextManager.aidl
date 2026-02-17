@@ -40,6 +40,7 @@ interface IPersonalContextManager {
             in List<ContextHintWrapper> attributionHints,
             int userId);
 
+    @EnforcePermission("PERSONAL_CONTEXT_PUBLISH_INSIGHTS")
     oneway void publishInsight(in List<ContextInsightWrapper> insights, in ParcelUuid componentId,
             int userId);
 

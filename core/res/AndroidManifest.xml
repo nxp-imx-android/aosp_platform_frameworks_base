@@ -3124,6 +3124,21 @@
         android:protectionLevel="signature|privileged"
         android:featureFlag="android.service.personalcontext.enable_personal_context_service" />
 
+    <!--@SystemApi Allows privileged applications to publish insights to personal context manager.
+        <p>This permission is needed for {@link
+        android.service.personalcontext.understander.ContextUnderstanderService} instances to
+        publish insights.
+        <p>This permission is only granted to system apps.
+        <p>Protection level: signature|privileged
+
+        @hide
+        @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+     -->
+    <permission
+        android:name="android.permission.PERSONAL_CONTEXT_PUBLISH_INSIGHTS"
+        android:protectionLevel="signature|privileged"
+        android:featureFlag="android.service.personalcontext.enable_personal_context_service" />
+
     <!--@SystemApi Allows privileged applications to receive hints published to personal context
         manager.
         <p>This permission is needed for {@link

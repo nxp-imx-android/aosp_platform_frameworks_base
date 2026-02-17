@@ -352,7 +352,8 @@ public class PersonalContextManagerService extends SystemService {
         }
     }
 
-    private void startInsightWorkflow(@UserIdInt int userId, UUID componentId,
+    @VisibleForTesting
+    void startInsightWorkflow(@UserIdInt int userId, UUID componentId,
             Set<ContextInsight> insights) {
         final HashSet<PublishedContextInsight> publishedInsights = new HashSet<>();
         for (ContextInsight insight : insights) {
@@ -579,13 +580,17 @@ public class PersonalContextManagerService extends SystemService {
                                             new HashSet<>())));
         }
 
-        @PermissionManuallyEnforced
+        // Suppressing warning as enforcement is currently behind a flag
+        @SuppressWarnings("MissingEnforcePermissionHelper")
+        @EnforcePermission(android.Manifest.permission.PERSONAL_CONTEXT_PUBLISH_INSIGHTS)
         @Override
         public void publishInsight(List<ContextInsightWrapper> insights, ParcelUuid componentId,
                 int userId) {
+            if (android.service.personalcontext.Flags.enforcePersonalContextPermissions()) {
+                publishInsight_enforcePermission();
+            }
             verifyUser(userId);
 
-            // TODO(b/450547433): Add security checks.
             Binder.withCleanCallingIdentity(
                     () ->
                             getService()

@@ -40,6 +40,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
 import android.content.pm.UserInfo;
 import android.database.ContentObserver;
+import android.os.ParcelUuid;
 import android.os.Process;
 import android.os.RemoteException;
 import android.os.UserHandle;
@@ -51,6 +52,8 @@ import android.provider.Settings;
 import android.service.personalcontext.hint.BundleHint;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWrapper;
+import android.service.personalcontext.insight.BundleInsight;
+import android.service.personalcontext.insight.ContextInsightWrapper;
 import android.testing.TestableContext;
 import android.util.ArrayMap;
 
@@ -70,6 +73,7 @@ import org.mockito.MockitoAnnotations;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
@@ -78,6 +82,7 @@ public class PersonalContextManagerServiceTest {
     private static final int USER_ID_2 = 11;
 
     private static final String TEST_PACKAGE_NAME = "test.package";
+    private static final ParcelUuid TEST_COMPONENT_UUID = new ParcelUuid(UUID.randomUUID());
 
     private static final UserInfo USER_INFO_1 = new UserInfo(USER_ID_1, "user1", 0);
     private static final UserInfo USER_INFO_2 = new UserInfo(USER_ID_2, "user2", 0);
@@ -363,6 +368,40 @@ public class PersonalContextManagerServiceTest {
 
         verify(mService)
                 .startRefinerWorkflow(eq(USER_ID_1), anyInt(), eq(Set.of(hint)), any(), any());
+    }
+
+    @Test
+    @EnableFlags(android.service.personalcontext.Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_PERMISSIONS)
+    public void testPublishInsight_permissionDenied_throwsSecurityException() {
+        PersonalContextManagerService.BinderService binderService =
+                new PersonalContextManagerService.BinderService(mService, mPackageManagerInternal);
+
+        mFakePermissionEnforcer.revoke(Manifest.permission.PERSONAL_CONTEXT_PUBLISH_INSIGHTS);
+
+        BundleInsight insight = new BundleInsight.Builder().build();
+        ContextInsightWrapper wrapper = new ContextInsightWrapper(insight);
+        List<ContextInsightWrapper> insights = List.of(wrapper);
+
+        assertThrows(
+                SecurityException.class,
+                () -> binderService.publishInsight(insights, TEST_COMPONENT_UUID, USER_ID_1));
+    }
+
+    @Test
+    @DisableFlags(android.service.personalcontext.Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_PERMISSIONS)
+    public void testPublishInsight() throws RemoteException {
+        PersonalContextManagerService.BinderService binderService =
+                new PersonalContextManagerService.BinderService(mService, mPackageManagerInternal);
+
+        BundleInsight insight = new BundleInsight.Builder().build();
+        ContextInsightWrapper wrapper = new ContextInsightWrapper(insight);
+        List<ContextInsightWrapper> insights = List.of(wrapper);
+
+        binderService.publishInsight(insights, TEST_COMPONENT_UUID, USER_ID_1);
+
+        verify(mService)
+                .startInsightWorkflow(
+                        eq(USER_ID_1), eq(TEST_COMPONENT_UUID.getUuid()), eq(Set.of(insight)));
     }
 
     @Test

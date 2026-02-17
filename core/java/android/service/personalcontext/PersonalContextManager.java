@@ -289,6 +289,7 @@ public final class PersonalContextManager {
      *                    {@link ContextInsight} back to the publisher.
      * @hide
      */
+    @RequiresPermission(Manifest.permission.PERSONAL_CONTEXT_PUBLISH_INSIGHTS)
     @UserHandleAware(
             requiresPermissionIfNotCaller = android.Manifest.permission.INTERACT_ACROSS_USERS)
     public void publishInsight(@NonNull List<ContextInsight> insights, @NonNull UUID componentId) {

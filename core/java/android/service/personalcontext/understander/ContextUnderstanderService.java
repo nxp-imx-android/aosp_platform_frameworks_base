@@ -16,9 +16,11 @@
 
 package android.service.personalcontext.understander;
 
+import android.Manifest;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.app.Service;
 import android.content.Intent;
@@ -119,6 +121,7 @@ public abstract class ContextUnderstanderService extends Service {
      *
      * @param hints new hints that this understander has not seen before
      */
+    @RequiresPermission(Manifest.permission.PERSONAL_CONTEXT_PUBLISH_INSIGHTS)
     public abstract void onUnderstand(@NonNull List<ContextHintWithSignature> hints);
 
     /**
@@ -135,6 +138,7 @@ public abstract class ContextUnderstanderService extends Service {
      * @throws IllegalStateException when called before the system service has started. The call
      * can be re-attempted in a few seconds, once system services have started.
      */
+    @RequiresPermission(Manifest.permission.PERSONAL_CONTEXT_PUBLISH_INSIGHTS)
     public final void understood(@NonNull ContextInsight insight) {
         if (mPersonalContextManager == null) {
             mPersonalContextManager = getSystemService(PersonalContextManager.class);
