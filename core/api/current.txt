@@ -44317,7 +44317,6 @@ package android.service.personalcontext.hint {
     method public int describeContents();
     method @NonNull public String getAuthor();
     method @Nullable public android.service.personalcontext.hint.ChatMessageContentCaptureData getContentCaptureData();
-    method @Nullable public String getContentDescription();
     method @NonNull public java.time.Instant getReferenceTime();
     method @NonNull public String getText();
     method public boolean isOutgoingMessage();
@@ -44330,7 +44329,6 @@ package android.service.personalcontext.hint {
     method @NonNull public android.service.personalcontext.hint.ChatMessageData build();
     method @NonNull public android.service.personalcontext.hint.ChatMessageData.Builder setAuthor(@NonNull String);
     method @NonNull public android.service.personalcontext.hint.ChatMessageData.Builder setContentCaptureData(@NonNull android.service.personalcontext.hint.ChatMessageContentCaptureData);
-    method @NonNull public android.service.personalcontext.hint.ChatMessageData.Builder setContentDescription(@NonNull String);
     method @NonNull public android.service.personalcontext.hint.ChatMessageData.Builder setOutgoingMessage(boolean);
     method @NonNull public android.service.personalcontext.hint.ChatMessageData.Builder setReferenceTime(@NonNull java.time.Instant);
     method @NonNull public android.service.personalcontext.hint.ChatMessageData.Builder setText(@NonNull String);
@@ -44343,12 +44341,12 @@ package android.service.personalcontext.hint {
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class ContentCaptureConversationEvent.ConversationEnterEvent extends android.service.personalcontext.hint.ContentCaptureConversationEvent {
     ctor public ContentCaptureConversationEvent.ConversationEnterEvent(@NonNull String, @NonNull java.time.Instant, @NonNull java.time.Instant);
-    method @NonNull public java.time.Instant getConversationEnterTimestamp();
+    method @NonNull public java.time.Instant getTimestamp();
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class ContentCaptureConversationEvent.ConversationExitEvent extends android.service.personalcontext.hint.ContentCaptureConversationEvent {
     ctor public ContentCaptureConversationEvent.ConversationExitEvent(@NonNull String, @NonNull java.time.Instant, @NonNull java.time.Instant);
-    method @NonNull public java.time.Instant getConversationExitTimestamp();
+    method @NonNull public java.time.Instant getTimestamp();
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class ContentCaptureConversationEvent.ConversationProcessingEvent extends android.service.personalcontext.hint.ContentCaptureConversationEvent {

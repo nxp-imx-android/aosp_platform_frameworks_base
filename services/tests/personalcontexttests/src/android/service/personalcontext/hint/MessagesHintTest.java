@@ -42,7 +42,6 @@ public class MessagesHintTest {
                     .setText("text")
                     .setAuthor("author")
                     .setReferenceTime(REFERENCE_TIME)
-                    .setContentDescription("test content description")
                     .build();
     private static final ChatMessageData CHAT_MESSAGE_DATA_2 =
             new ChatMessageData.Builder()
@@ -50,7 +49,6 @@ public class MessagesHintTest {
                     .setText("text2")
                     .setAuthor("author2")
                     .setReferenceTime(REFERENCE_TIME)
-                    .setContentDescription("test content description 2")
                     .build();
 
     @Test

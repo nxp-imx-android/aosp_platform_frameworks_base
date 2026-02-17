@@ -61,7 +61,6 @@ public class ContentCaptureConversationHintTest {
                     .setAuthor("author")
                     .setReferenceTime(REFERENCE_TIME)
                     .setContentCaptureData(CHAT_MESSAGE_CONTENT_CAPTURE_DATA)
-                    .setContentDescription(CONTENT_DESCRIPTION)
                     .build();
 
     @Test
@@ -82,7 +81,7 @@ public class ContentCaptureConversationHintTest {
 
         final ConversationEnterEvent outputEnterEvent = (ConversationEnterEvent) outputEvent;
         assertThat(outputEnterEvent.getConversationSessionId()).isEqualTo(CONVERSATION_SESSION_ID);
-        assertThat(outputEnterEvent.getConversationEnterTimestamp()).isEqualTo(enterTimestamp);
+        assertThat(outputEnterEvent.getTimestamp()).isEqualTo(enterTimestamp);
         assertThat(outputEnterEvent.getClientEventTimestamp()).isEqualTo(clientEventTimestamp);
     }
 
@@ -104,7 +103,7 @@ public class ContentCaptureConversationHintTest {
 
         final ConversationExitEvent outputExitEvent = (ConversationExitEvent) outputEvent;
         assertThat(outputExitEvent.getConversationSessionId()).isEqualTo(CONVERSATION_SESSION_ID);
-        assertThat(outputExitEvent.getConversationExitTimestamp()).isEqualTo(exitTimestamp);
+        assertThat(outputExitEvent.getTimestamp()).isEqualTo(exitTimestamp);
         assertThat(outputExitEvent.getClientEventTimestamp()).isEqualTo(clientEventTimestamp);
     }
 
