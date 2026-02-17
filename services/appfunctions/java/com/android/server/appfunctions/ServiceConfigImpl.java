@@ -33,7 +33,15 @@ public class ServiceConfigImpl implements ServiceConfig {
 
     static final String DEVICE_CONFIG_PROPERTY_APP_FUNCTION_METADATA_CHANGE_DEBOUNCE_MS =
             "app_function_metadata_change_debounce_ms";
-    static final int DEFAULT_APP_FUNCTION_METADATA_CHANGE_DEBOUNCE_MS = 1000;
+    static final int DEFAULT_APP_FUNCTION_METADATA_CHANGE_DEBOUNCE_MS = 500;
+
+    static final String DEVICE_CONFIG_PROPERTY_ENABLED_STATE_CHANGE_DEBOUNCE_MS =
+            "app_function_enabled_state_change_debounce_ms";
+    static final long DEFAULT_APP_FUNCTION_ENABLED_STATE_CHANGE_DEBOUNCE_MS = 200;
+
+    static final String DEVICE_CONFIG_PROPERTY_ENABLED_STATE_CHANGE_MAX_DEBOUNCE_MS =
+            "app_function_enabled_state_change_max_debounce_ms";
+    static final long DEFAULT_APP_FUNCTION_ENABLED_STATE_CHANGE_MAX_DEBOUNCE_MS = 1000;
 
     static final String DEVICE_CONFIG_PROPERTY_ALLOWLIST_CACHE_SIZE =
             "app_function_allowlist_cache_size";
@@ -80,5 +88,21 @@ public class ServiceConfigImpl implements ServiceConfig {
                 NAMESPACE_APP_FUNCTIONS,
                 DEVICE_CONFIG_PROPERTY_ALLOWLIST_CACHE_SIZE,
                 DEFAULT_APP_FUNCTION_ALLOWLIST_CACHE_SIZE);
+    }
+
+    @Override
+    public long getAppFunctionEnabledStateChangeDebounceMilliseconds() {
+        return DeviceConfig.getLong(
+                NAMESPACE_APP_FUNCTIONS,
+                DEVICE_CONFIG_PROPERTY_ENABLED_STATE_CHANGE_DEBOUNCE_MS,
+                DEFAULT_APP_FUNCTION_ENABLED_STATE_CHANGE_DEBOUNCE_MS);
+    }
+
+    @Override
+    public long getAppFunctionEnabledStateChangeMaxDebounceMilliseconds() {
+        return DeviceConfig.getLong(
+                NAMESPACE_APP_FUNCTIONS,
+                DEVICE_CONFIG_PROPERTY_ENABLED_STATE_CHANGE_MAX_DEBOUNCE_MS,
+                DEFAULT_APP_FUNCTION_ENABLED_STATE_CHANGE_MAX_DEBOUNCE_MS);
     }
 }
