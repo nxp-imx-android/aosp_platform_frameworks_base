@@ -37,12 +37,6 @@
       ]
     },
     {
-      "name": "FunctionalTestsDesktopMode-appcompat-ShowQuickShareDialogFromQuickSettingsTest",
-      "keywords": [
-        "desktop"
-      ]
-    },
-    {
       "name": "FunctionalTestsDesktopMode-apptoweb-AppToWebFirstRunDialogTest",
       "keywords": [
         "desktop"
