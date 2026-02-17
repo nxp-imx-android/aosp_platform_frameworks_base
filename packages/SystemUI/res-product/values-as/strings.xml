@@ -73,4 +73,36 @@
     <string name="dream_setup_description" product="default" msgid="5167691612621831552">"আপোনাৰ ফ’নটো চাৰ্জ হৈ থকাৰ সময়ত এটা ঘড়ী, ফট’ বা বতৰৰ তথ্য দেখুৱাওক"</string>
     <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"আপোনাৰ টেবলেটটো চাৰ্জ হৈ থকাৰ সময়ত এটা ঘড়ী, ফট’ বা বতৰৰ তথ্য দেখুৱাওক"</string>
     <string name="dream_setup_description" product="device" msgid="3098487756905462324">"আপোনাৰ ডিভাইচটো চাৰ্জ হৈ থকাৰ সময়ত এটা ঘড়ী, ফট’ বা বতৰৰ তথ্য দেখুৱাওক"</string>
+    <string name="accessibility_retry_face_auth" product="default" msgid="92100916134164459">"ফে’চ আনলক পুনৰ ব্যৱহাৰ কৰি চাওক"</string>
+    <string name="accessibility_retry_face_auth" product="desktop" msgid="5630058255754932537">"মুখাৱয়বৰ জৰিয়তে পুনৰ আনলক কৰি চাওক"</string>
+    <string name="face_re_enroll_notification_title" product="default" msgid="1533872824718008968">"ফে’চ আনলক পুনৰ ছেট আপ কৰক"</string>
+    <string name="face_re_enroll_notification_title" product="desktop" msgid="5218710819864377084">"মুখাৱয়বৰ জৰিয়তে আনলক কৰাৰ সুবিধাটো পুনৰ ছেট আপ কৰক"</string>
+    <string name="biometric_dialog_tap_confirm_with_face" product="default" msgid="2261934158598458578">"মুখাৱয়বৰ জৰিয়তে আনলক কৰা হৈছে"</string>
+    <string name="biometric_dialog_tap_confirm_with_face" product="desktop" msgid="2066067154465078068">"মুখাৱয়বৰ জৰিয়তে আনলক কৰা হৈছে"</string>
+    <string name="biometric_dialog_tap_confirm_with_face_alt_1" product="default" msgid="1268255053915789297">"মুখাৱয়বৰ জৰিয়তে আনলক কৰা হৈছে। অব্যাহত ৰাখিবলৈ টিপক।"</string>
+    <string name="biometric_dialog_tap_confirm_with_face_alt_1" product="desktop" msgid="1514178179652703156">"মুখাৱয়বৰ জৰিয়তে আনলক কৰা হৈছে। অব্যাহত ৰাখিবলৈ টিপক।"</string>
+    <string name="biometric_dialog_tap_confirm_with_face_sfps" product="default" msgid="2492608775606333432">"মুখাৱয়বৰ জৰিয়তে আনলক কৰা হৈছে। অব্যাহত ৰাখিবলৈ টিপক।"</string>
+    <string name="biometric_dialog_tap_confirm_with_face_sfps" product="desktop" msgid="7918648092655463233">"মুখাৱয়বৰ জৰিয়তে আনলক কৰা হৈছে। অব্যাহত ৰাখিবলৈ টিপক।"</string>
+    <string name="face_re_enroll_notification_name" product="default" msgid="5965443249759045602">"ফে’চ আনলক"</string>
+    <string name="face_re_enroll_notification_name" product="desktop" msgid="3705121888554395242">"মুখাৱয়বৰ জৰিয়তে আনলক কৰা"</string>
+    <string name="face_re_enroll_dialog_title" product="default" msgid="2719988247243428771">"ফে’চ আনলক ছেট আপ কৰক"</string>
+    <string name="face_re_enroll_dialog_title" product="desktop" msgid="4217639465392210803">"মুখাৱয়বৰ জৰিয়তে আনলক কৰাৰ সুবিধা ছেট আপ কৰক"</string>
+    <string name="face_re_enroll_dialog_content" product="default" msgid="7290782487464426692">"ফে’চ আনলক পুনৰ ছেট আপ কৰিবলৈ, আপোনাৰ বৰ্তমানৰ মুখাৱয়বৰ মডেলটো মচা হ’ব।\n\nআপোনাৰ ফ’নটো আনলক কৰিবৰ বাবে আপোনাৰ মুখাৱয়ব ব্যৱহাৰ কৰিবলৈ আপুনি এই সুবিধাটো পুনৰ ছেট আপ কৰিব লাগিব।"</string>
+    <string name="face_re_enroll_dialog_content" product="desktop" msgid="7718739738665960268">"মুখাৱয়বৰ জৰিয়তে আনলক কৰাৰ সুবিধাটো পুনৰ ছেট আপ কৰিবলৈ, আপোনাৰ বৰ্তমানৰ মুখাৱয়বৰ মডেলটো মচা হ’ব।\n\nআপোনাৰ ডিভাইচটো আনলক কৰাৰ বাবে আপোনাৰ মুখাৱয়ব ব্যৱহাৰ কৰিবলৈ আপুনি এই সুবিধাটো পুনৰ ছেট আপ কৰিব লাগিব।"</string>
+    <string name="face_reenroll_failure_dialog_content" product="default" msgid="6318784230085101323">"ফে’চ আনলক ছেট আপ কৰিব পৰা নগ’ল। পুনৰ চেষ্টা কৰিবলৈ ছেটিঙলৈ যাওক।"</string>
+    <string name="face_reenroll_failure_dialog_content" product="desktop" msgid="1206573626798969692">"মুখাৱয়বৰ জৰিয়তে আনলক কৰাৰ সুবিধাটো ছেট আপ কৰিব পৰা নগ’ল। ছেটিঙত পুনৰ চেষ্টা কৰক।"</string>
+    <string name="keyguard_face_unlock_unavailable" product="default" msgid="3188895702987679056">"ফে’চ আনলক সুবিধাটো উপলব্ধ নহয়"</string>
+    <string name="keyguard_face_unlock_unavailable" product="desktop" msgid="7088502865328130614">"মুখাৱয়বৰ জৰিয়তে আনলক কৰাৰ সুবিধাটো উপলব্ধ নহয়"</string>
+    <string name="accesssibility_keyguard_retry" product="default" msgid="5017097587017783548">"ফে’চ আনলক পুনৰ ব্যৱহাৰ কৰি চাবলৈ ওপৰলৈ ছোৱাইপ কৰক"</string>
+    <string name="accesssibility_keyguard_retry" product="desktop" msgid="5084769005671288179">"মুখাৱয়বৰ জৰিয়তে পুনৰ আনলক কৰাৰ চেষ্টা কৰিবলৈ ওপৰলৈ ছোৱাইপ কৰক"</string>
+    <string name="keyguard_face_successful_unlock_swipe" product="default" msgid="1358318947548832086">"মুখাৱয়বৰ জৰিয়তে আনলক কৰা হৈছে। খুলিবলৈ ওপৰলৈ ছোৱাইপ কৰক।"</string>
+    <string name="keyguard_face_successful_unlock_swipe" product="desktop" msgid="4016445068612817741">"মুখাৱয়বৰ জৰিয়তে আনলক কৰা হৈছে। খুলিবলৈ ওপৰলৈ ছোৱাইপ কৰক।"</string>
+    <string name="keyguard_face_successful_unlock_confirm_button" product="default" msgid="4883782574761031564">"মুখাৱয়বৰ জৰিয়তে আনলক কৰা হৈছে। অব্যাহত ৰাখিবলৈ নিশ্চিত কৰকত টিপক।"</string>
+    <string name="keyguard_face_successful_unlock_confirm_button" product="desktop" msgid="7268520979450633978">"মুখাৱয়বৰ জৰিয়তে আনলক কৰা হৈছে। অব্যাহত ৰাখিবলৈ নিশ্চিত কৰকত টিপক।"</string>
+    <string name="keyguard_face_successful_unlock_press" product="default" msgid="7293890116185253825">"মুখাৱয়বৰ জৰিয়তে আনলক কৰা হৈছে। খুলিবলৈ আনলক কৰক চিহ্নটোত টিপক।"</string>
+    <string name="keyguard_face_successful_unlock_press" product="desktop" msgid="6158498006084899116">"মুখাৱয়বৰ জৰিয়তে আনলক কৰা হৈছে। খুলিবলৈ আনলক কৰক চিহ্নটোত টিপক।"</string>
+    <string name="keyguard_face_successful_unlock_press_alt_1" product="default" msgid="6269966346565076951">"মুখাৱয়বৰ জৰিয়তে আনলক কৰা হৈছে। খুলিবলৈ টিপক।"</string>
+    <string name="keyguard_face_successful_unlock_press_alt_1" product="desktop" msgid="1612731733090835687">"মুখাৱয়বৰ জৰিয়তে আনলক কৰা হৈছে। খুলিবলৈ টিপক।"</string>
+    <string name="keyguard_face_successful_unlock" product="default" msgid="5544493091450184889">"মুখাৱয়বৰ জৰিয়তে আনলক কৰা হৈছে"</string>
+    <string name="keyguard_face_successful_unlock" product="desktop" msgid="5348626087316804379">"মুখাৱয়বৰ জৰিয়তে আনলক কৰা হৈছে"</string>
 </resources>

@@ -73,4 +73,36 @@
     <string name="dream_setup_description" product="default" msgid="5167691612621831552">"Tunjukkan jam, foto atau cuaca semasa telefon anda dicas"</string>
     <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"Tunjukkan jam, foto atau cuaca semasa tablet anda dicas"</string>
     <string name="dream_setup_description" product="device" msgid="3098487756905462324">"Tunjukkan jam, foto atau cuaca semasa peranti anda dicas"</string>
+    <string name="accessibility_retry_face_auth" product="default" msgid="92100916134164459">"Cuba Buka Kunci Wajah lagi"</string>
+    <string name="accessibility_retry_face_auth" product="desktop" msgid="5630058255754932537">"Cuba buka kunci dengan wajah sekali lagi"</string>
+    <string name="face_re_enroll_notification_title" product="default" msgid="1533872824718008968">"Sediakan Buka Kunci Wajah sekali lagi"</string>
+    <string name="face_re_enroll_notification_title" product="desktop" msgid="5218710819864377084">"Sediakan buka kunci dengan wajah sekali lagi"</string>
+    <string name="biometric_dialog_tap_confirm_with_face" product="default" msgid="2261934158598458578">"Dibuka kunci dengan wajah"</string>
+    <string name="biometric_dialog_tap_confirm_with_face" product="desktop" msgid="2066067154465078068">"Dibuka kunci dengan wajah"</string>
+    <string name="biometric_dialog_tap_confirm_with_face_alt_1" product="default" msgid="1268255053915789297">"Dibuka kunci dengan wajah. Tekan untuk meneruskan proses."</string>
+    <string name="biometric_dialog_tap_confirm_with_face_alt_1" product="desktop" msgid="1514178179652703156">"Dibuka kunci dengan wajah. Tekan untuk meneruskan proses."</string>
+    <string name="biometric_dialog_tap_confirm_with_face_sfps" product="default" msgid="2492608775606333432">"Dibuka kunci dengan wajah. Ketik untuk meneruskan proses."</string>
+    <string name="biometric_dialog_tap_confirm_with_face_sfps" product="desktop" msgid="7918648092655463233">"Dibuka kunci dengan wajah. Ketik untuk meneruskan proses."</string>
+    <string name="face_re_enroll_notification_name" product="default" msgid="5965443249759045602">"Buka Kunci Wajah"</string>
+    <string name="face_re_enroll_notification_name" product="desktop" msgid="3705121888554395242">"Buka kunci dengan wajah"</string>
+    <string name="face_re_enroll_dialog_title" product="default" msgid="2719988247243428771">"Sediakan Buka Kunci Wajah"</string>
+    <string name="face_re_enroll_dialog_title" product="desktop" msgid="4217639465392210803">"Sediakan buka kunci dengan wajah"</string>
+    <string name="face_re_enroll_dialog_content" product="default" msgid="7290782487464426692">"Untuk menyediakan Buka Kunci Wajah sekali lagi, model wajah semasa anda akan dipadamkan.\n\nAnda perlu menyediakan ciri ini sekali lagi untuk menggunakan wajah anda untuk membuka kunci telefon anda."</string>
+    <string name="face_re_enroll_dialog_content" product="desktop" msgid="7718739738665960268">"Untuk menyediakan buka kunci dengan wajah sekali lagi, model wajah semasa anda akan dipadamkan.\n\nAnda perlu menyediakan ciri ini sekali lagi untuk menggunakan wajah anda untuk membuka kunci peranti anda."</string>
+    <string name="face_reenroll_failure_dialog_content" product="default" msgid="6318784230085101323">"Tidak dapat menyediakan buka kunci wajah. Akses Tetapan untuk mencuba lagi."</string>
+    <string name="face_reenroll_failure_dialog_content" product="desktop" msgid="1206573626798969692">"Tidak dapat menyediakan buka kunci dengan wajah. Cuba lagi dalam Tetapan."</string>
+    <string name="keyguard_face_unlock_unavailable" product="default" msgid="3188895702987679056">"Buka Kunci Wajah tidak tersedia"</string>
+    <string name="keyguard_face_unlock_unavailable" product="desktop" msgid="7088502865328130614">"Buka kunci dengan wajah tidak tersedia"</string>
+    <string name="accesssibility_keyguard_retry" product="default" msgid="5017097587017783548">"Leret ke atas untuk mencuba Buka Kunci Wajah sekali lagi"</string>
+    <string name="accesssibility_keyguard_retry" product="desktop" msgid="5084769005671288179">"Leret ke atas untuk cuba membuka kunci dengan wajah sekali lagi"</string>
+    <string name="keyguard_face_successful_unlock_swipe" product="default" msgid="1358318947548832086">"Dibuka kunci dengan wajah. Leret ke atas untuk buka."</string>
+    <string name="keyguard_face_successful_unlock_swipe" product="desktop" msgid="4016445068612817741">"Dibuka kunci dengan wajah. Leret ke atas untuk buka."</string>
+    <string name="keyguard_face_successful_unlock_confirm_button" product="default" msgid="4883782574761031564">"Dibuka kunci dengan wajah. Sahkan untuk meneruskan proses."</string>
+    <string name="keyguard_face_successful_unlock_confirm_button" product="desktop" msgid="7268520979450633978">"Dibuka kunci dengan wajah. Sahkan untuk meneruskan proses."</string>
+    <string name="keyguard_face_successful_unlock_press" product="default" msgid="7293890116185253825">"Dibuka kunci dengan wajah. Tekan ikon buka kunci untuk buka."</string>
+    <string name="keyguard_face_successful_unlock_press" product="desktop" msgid="6158498006084899116">"Dibuka kunci dengan wajah. Tekan ikon buka kunci untuk buka."</string>
+    <string name="keyguard_face_successful_unlock_press_alt_1" product="default" msgid="6269966346565076951">"Dibuka kunci dengan wajah. Tekan untuk buka."</string>
+    <string name="keyguard_face_successful_unlock_press_alt_1" product="desktop" msgid="1612731733090835687">"Dibuka kunci dengan wajah. Tekan untuk buka."</string>
+    <string name="keyguard_face_successful_unlock" product="default" msgid="5544493091450184889">"Dibuka kunci dengan wajah"</string>
+    <string name="keyguard_face_successful_unlock" product="desktop" msgid="5348626087316804379">"Dibuka kunci dengan wajah"</string>
 </resources>

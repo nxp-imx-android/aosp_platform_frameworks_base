@@ -70,10 +70,39 @@
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"יש לך אפשרות לאתר את הטאבלט הזה בעזרת שירות \"איפה המכשיר שלי\" גם כשהטאבלט כבוי"</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"אפשר לאתר את הטלפון הזה באמצעות השירות \"מרכז המכשירים שלי\" גם כשהוא כבוי"</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"אפשר לאתר את הטאבלט הזה באמצעות השירות \"מרכז המכשירים שלי\" גם כשהוא כבוי"</string>
-    <!-- no translation found for dream_setup_description (5167691612621831552) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (6296793330727926553) -->
-    <skip />
-    <!-- no translation found for dream_setup_description (3098487756905462324) -->
-    <skip />
+    <string name="dream_setup_description" product="default" msgid="5167691612621831552">"הצגה של שעון, תמונות או תחזית מזג האוויר כשהטלפון נטען"</string>
+    <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"הצגה של שעון, תמונות או תחזית מזג האוויר כשהטאבלט נטען"</string>
+    <string name="dream_setup_description" product="device" msgid="3098487756905462324">"הצגה של שעון, תמונות או תחזית מזג האוויר כשהמכשיר נטען"</string>
+    <string name="accessibility_retry_face_auth" product="default" msgid="92100916134164459">"ניסיון חוזר לפתוח בזיהוי פנים"</string>
+    <string name="accessibility_retry_face_auth" product="desktop" msgid="5630058255754932537">"ניסיון חוזר לפתוח בזיהוי פנים"</string>
+    <string name="face_re_enroll_notification_title" product="default" msgid="1533872824718008968">"צריך להגדיר מחדש פתיחה בזיהוי פנים"</string>
+    <string name="face_re_enroll_notification_title" product="desktop" msgid="5218710819864377084">"צריך להגדיר מחדש פתיחה בזיהוי פנים"</string>
+    <string name="biometric_dialog_tap_confirm_with_face" product="default" msgid="2261934158598458578">"הנעילה נפתחה בזיהוי פנים"</string>
+    <string name="biometric_dialog_tap_confirm_with_face" product="desktop" msgid="2066067154465078068">"הנעילה נפתחה בזיהוי פנים"</string>
+    <string name="biometric_dialog_tap_confirm_with_face_alt_1" product="default" msgid="1268255053915789297">"הנעילה נפתחה בזיהוי פנים. כדי להמשיך, צריך ללחוץ כאן."</string>
+    <string name="biometric_dialog_tap_confirm_with_face_alt_1" product="desktop" msgid="1514178179652703156">"הנעילה נפתחה בזיהוי פנים. כדי להמשיך, צריך ללחוץ כאן."</string>
+    <string name="biometric_dialog_tap_confirm_with_face_sfps" product="default" msgid="2492608775606333432">"הנעילה נפתחה בזיהוי פנים. כדי להמשיך, צריך ללחוץ כאן."</string>
+    <string name="biometric_dialog_tap_confirm_with_face_sfps" product="desktop" msgid="7918648092655463233">"הנעילה נפתחה בזיהוי פנים. כדי להמשיך, צריך ללחוץ כאן."</string>
+    <string name="face_re_enroll_notification_name" product="default" msgid="5965443249759045602">"פתיחה בזיהוי פנים"</string>
+    <string name="face_re_enroll_notification_name" product="desktop" msgid="3705121888554395242">"מתבצעת פתיחה בזיהוי פנים"</string>
+    <string name="face_re_enroll_dialog_title" product="default" msgid="2719988247243428771">"הגדרה של פתיחה בזיהוי פנים"</string>
+    <string name="face_re_enroll_dialog_title" product="desktop" msgid="4217639465392210803">"הגדרה של פתיחה בזיהוי פנים"</string>
+    <string name="face_re_enroll_dialog_content" product="default" msgid="7290782487464426692">"כדי להגדיר שוב פתיחה בזיהוי פנים, התבנית הנוכחית לזיהוי פנים תימחק.\n\nאם רוצים להשתמש בזיהוי פנים כדי לפתוח את הטלפון, צריך להגדיר את התכונה הזו שוב."</string>
+    <string name="face_re_enroll_dialog_content" product="desktop" msgid="7718739738665960268">"כדי להגדיר שוב פתיחה בזיהוי פנים, התבנית הנוכחית לזיהוי פנים תימחק.\n\nאם רוצים להשתמש בזיהוי פנים כדי לפתוח את המכשיר, צריך להגדיר את התכונה הזו שוב."</string>
+    <string name="face_reenroll_failure_dialog_content" product="default" msgid="6318784230085101323">"הייתה בעיה ולא הוגדרה פתיחה בזיהוי פנים. כדי לנסות שוב, צריך להיכנס להגדרות."</string>
+    <string name="face_reenroll_failure_dialog_content" product="desktop" msgid="1206573626798969692">"הייתה בעיה ולא הוגדרה פתיחה בזיהוי פנים. אפשר לנסות שוב בהגדרות."</string>
+    <string name="keyguard_face_unlock_unavailable" product="default" msgid="3188895702987679056">"התכונה \"פתיחה בזיהוי פנים\" לא זמינה"</string>
+    <string name="keyguard_face_unlock_unavailable" product="desktop" msgid="7088502865328130614">"התכונה \"פתיחה בזיהוי פנים\" לא זמינה"</string>
+    <string name="accesssibility_keyguard_retry" product="default" msgid="5017097587017783548">"כדי לנסות שוב לפתוח בזיהוי פנים, צריך להחליק למעלה"</string>
+    <string name="accesssibility_keyguard_retry" product="desktop" msgid="5084769005671288179">"כדי לנסות שוב לפתוח בזיהוי פנים, צריך להחליק למעלה"</string>
+    <string name="keyguard_face_successful_unlock_swipe" product="default" msgid="1358318947548832086">"הנעילה נפתחה בזיהוי פנים. כדי לפתוח, צריך להחליק למעלה."</string>
+    <string name="keyguard_face_successful_unlock_swipe" product="desktop" msgid="4016445068612817741">"הנעילה נפתחה בזיהוי פנים. כדי לפתוח, צריך להחליק למעלה."</string>
+    <string name="keyguard_face_successful_unlock_confirm_button" product="default" msgid="4883782574761031564">"הנעילה נפתחה בזיהוי פנים. כדי להמשיך, צריך ללחוץ על \"אישור\"."</string>
+    <string name="keyguard_face_successful_unlock_confirm_button" product="desktop" msgid="7268520979450633978">"הנעילה נפתחה בזיהוי פנים. כדי להמשיך, צריך ללחוץ על \"אישור\"."</string>
+    <string name="keyguard_face_successful_unlock_press" product="default" msgid="7293890116185253825">"הנעילה נפתחה בזיהוי פנים. כדי לפתוח, לוחצים על סמל הפתיחה."</string>
+    <string name="keyguard_face_successful_unlock_press" product="desktop" msgid="6158498006084899116">"הנעילה נפתחה בזיהוי פנים. כדי לפתוח, לוחצים על סמל הפתיחה."</string>
+    <string name="keyguard_face_successful_unlock_press_alt_1" product="default" msgid="6269966346565076951">"הנעילה נפתחה בזיהוי פנים. כדי לפתוח, צריך ללחוץ כאן."</string>
+    <string name="keyguard_face_successful_unlock_press_alt_1" product="desktop" msgid="1612731733090835687">"הנעילה נפתחה בזיהוי פנים. כדי לפתוח, צריך ללחוץ כאן."</string>
+    <string name="keyguard_face_successful_unlock" product="default" msgid="5544493091450184889">"הנעילה נפתחה בזיהוי פנים"</string>
+    <string name="keyguard_face_successful_unlock" product="desktop" msgid="5348626087316804379">"הנעילה נפתחה בזיהוי פנים"</string>
 </resources>

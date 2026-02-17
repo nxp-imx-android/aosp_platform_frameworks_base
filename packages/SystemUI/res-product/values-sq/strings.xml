@@ -73,4 +73,36 @@
     <string name="dream_setup_description" product="default" msgid="5167691612621831552">"Shfaq një orë, fotografitë ose motin kur telefoni të jetë në karikim"</string>
     <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"Shfaq një orë, fotografitë ose motin kur tableti të jetë në karikim"</string>
     <string name="dream_setup_description" product="device" msgid="3098487756905462324">"Shfaq një orë, fotografitë ose motin kur pajisja të jetë në karikim"</string>
+    <string name="accessibility_retry_face_auth" product="default" msgid="92100916134164459">"Riprovo \"Shkyçjen me fytyrë\""</string>
+    <string name="accessibility_retry_face_auth" product="desktop" msgid="5630058255754932537">"Provo të shkyçësh përsëri me fytyrën"</string>
+    <string name="face_re_enroll_notification_title" product="default" msgid="1533872824718008968">"Konfiguro \"Shkyçjen me fytyrë\" përsëri"</string>
+    <string name="face_re_enroll_notification_title" product="desktop" msgid="5218710819864377084">"Konfiguro përsëri shkyçjen me fytyrë"</string>
+    <string name="biometric_dialog_tap_confirm_with_face" product="default" msgid="2261934158598458578">"U shkyç me fytyrë"</string>
+    <string name="biometric_dialog_tap_confirm_with_face" product="desktop" msgid="2066067154465078068">"U shkyç me fytyrë"</string>
+    <string name="biometric_dialog_tap_confirm_with_face_alt_1" product="default" msgid="1268255053915789297">"U shkyç me fytyrë. Shtyp për të vazhduar."</string>
+    <string name="biometric_dialog_tap_confirm_with_face_alt_1" product="desktop" msgid="1514178179652703156">"U shkyç me fytyrë. Shtyp për të vazhduar."</string>
+    <string name="biometric_dialog_tap_confirm_with_face_sfps" product="default" msgid="2492608775606333432">"U shkyç me fytyrë. Trokit për të vazhduar."</string>
+    <string name="biometric_dialog_tap_confirm_with_face_sfps" product="desktop" msgid="7918648092655463233">"U shkyç me fytyrë. Trokit për të vazhduar."</string>
+    <string name="face_re_enroll_notification_name" product="default" msgid="5965443249759045602">"Shkyçja me fytyrë"</string>
+    <string name="face_re_enroll_notification_name" product="desktop" msgid="3705121888554395242">"Shkyçja me fytyrë"</string>
+    <string name="face_re_enroll_dialog_title" product="default" msgid="2719988247243428771">"Konfiguro \"Shkyçjen me fytyrë\""</string>
+    <string name="face_re_enroll_dialog_title" product="desktop" msgid="4217639465392210803">"Konfiguro shkyçjen me fytyrë"</string>
+    <string name="face_re_enroll_dialog_content" product="default" msgid="7290782487464426692">"Për të konfiguruar përsëri \"Shkyçjen me fytyrë\", modeli yt aktual i fytyrës do të fshihet.\n\nDo të duhet ta konfigurosh përsëri këtë veçori që të përdorësh fytyrën tënde për të shkyçur telefonin."</string>
+    <string name="face_re_enroll_dialog_content" product="desktop" msgid="7718739738665960268">"Për të konfiguruar përsëri shkyçjen me fytyrë, modeli yt aktual i fytyrës do të fshihet.\n\nDo të duhet ta konfigurosh përsëri këtë veçori që të përdorësh fytyrën tënde për të shkyçur pajisjen."</string>
+    <string name="face_reenroll_failure_dialog_content" product="default" msgid="6318784230085101323">"Shkyçja me fytyrë nuk mund të konfigurohej. Shko te \"Cilësimet\" për të provuar përsëri."</string>
+    <string name="face_reenroll_failure_dialog_content" product="desktop" msgid="1206573626798969692">"Shkyçja me fytyrë nuk mund të konfigurohej. Provo përsëri te \"Cilësimet\"."</string>
+    <string name="keyguard_face_unlock_unavailable" product="default" msgid="3188895702987679056">"\"Shkyçja me fytyrë\" nuk ofrohet"</string>
+    <string name="keyguard_face_unlock_unavailable" product="desktop" msgid="7088502865328130614">"Shkyçja me fytyrë nuk ofrohet"</string>
+    <string name="accesssibility_keyguard_retry" product="default" msgid="5017097587017783548">"Rrëshqit shpejt lart dhe provo sërish \"Shkyçjen me fytyrë\""</string>
+    <string name="accesssibility_keyguard_retry" product="desktop" msgid="5084769005671288179">"Rrëshqit shpejt lart për të provuar përsëri shkyçjen me fytyrë"</string>
+    <string name="keyguard_face_successful_unlock_swipe" product="default" msgid="1358318947548832086">"U shkyç me fytyrë. Rrëshqit shpejt lart për ta hapur."</string>
+    <string name="keyguard_face_successful_unlock_swipe" product="desktop" msgid="4016445068612817741">"U shkyç me fytyrë. Rrëshqit shpejt lart për ta hapur."</string>
+    <string name="keyguard_face_successful_unlock_confirm_button" product="default" msgid="4883782574761031564">"U shkyç me fytyrë. Shtyp \"Konfirmo\" për të vazhduar."</string>
+    <string name="keyguard_face_successful_unlock_confirm_button" product="desktop" msgid="7268520979450633978">"U shkyç me fytyrë. Shtyp \"Konfirmo\" për të vazhduar."</string>
+    <string name="keyguard_face_successful_unlock_press" product="default" msgid="7293890116185253825">"U shkyç me fytyrë. Shtyp ikonën e shkyçjes për ta hapur."</string>
+    <string name="keyguard_face_successful_unlock_press" product="desktop" msgid="6158498006084899116">"U shkyç me fytyrë. Shtyp ikonën e shkyçjes për ta hapur."</string>
+    <string name="keyguard_face_successful_unlock_press_alt_1" product="default" msgid="6269966346565076951">"U shkyç me fytyrë. Shtyp për ta hapur."</string>
+    <string name="keyguard_face_successful_unlock_press_alt_1" product="desktop" msgid="1612731733090835687">"U shkyç me fytyrë. Shtyp për ta hapur."</string>
+    <string name="keyguard_face_successful_unlock" product="default" msgid="5544493091450184889">"U shkyç me fytyrë"</string>
+    <string name="keyguard_face_successful_unlock" product="desktop" msgid="5348626087316804379">"U shkyç me fytyrë"</string>
 </resources>

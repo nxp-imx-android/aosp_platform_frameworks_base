@@ -73,4 +73,36 @@
     <string name="dream_setup_description" product="default" msgid="5167691612621831552">"Mostre um relógio, fotos ou o tempo quando o telemóvel estiver a carregar"</string>
     <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"Mostre um relógio, fotos ou o tempo quando o tablet estiver a carregar"</string>
     <string name="dream_setup_description" product="device" msgid="3098487756905462324">"Mostre um relógio, fotos ou o tempo quando o dispositivo estiver a carregar"</string>
+    <string name="accessibility_retry_face_auth" product="default" msgid="92100916134164459">"Usar Desbloqueio facial de novo"</string>
+    <string name="accessibility_retry_face_auth" product="desktop" msgid="5630058255754932537">"Experimentar desbloquear com a cara novamente"</string>
+    <string name="face_re_enroll_notification_title" product="default" msgid="1533872824718008968">"Configure o Desbloqueio facial novamente"</string>
+    <string name="face_re_enroll_notification_title" product="desktop" msgid="5218710819864377084">"Configure o desbloqueio com a cara novamente"</string>
+    <string name="biometric_dialog_tap_confirm_with_face" product="default" msgid="2261934158598458578">"Desbloqueado com a cara"</string>
+    <string name="biometric_dialog_tap_confirm_with_face" product="desktop" msgid="2066067154465078068">"Desbloqueado com a cara"</string>
+    <string name="biometric_dialog_tap_confirm_with_face_alt_1" product="default" msgid="1268255053915789297">"Desbloqueado com a cara. Prima para continuar."</string>
+    <string name="biometric_dialog_tap_confirm_with_face_alt_1" product="desktop" msgid="1514178179652703156">"Desbloqueado com a cara. Prima para continuar."</string>
+    <string name="biometric_dialog_tap_confirm_with_face_sfps" product="default" msgid="2492608775606333432">"Desbloqueado com a cara. Toque para continuar."</string>
+    <string name="biometric_dialog_tap_confirm_with_face_sfps" product="desktop" msgid="7918648092655463233">"Desbloqueado com a cara. Toque para continuar."</string>
+    <string name="face_re_enroll_notification_name" product="default" msgid="5965443249759045602">"Desbloqueio facial"</string>
+    <string name="face_re_enroll_notification_name" product="desktop" msgid="3705121888554395242">"A desbloquear com a cara"</string>
+    <string name="face_re_enroll_dialog_title" product="default" msgid="2719988247243428771">"Configure o Desbloqueio facial"</string>
+    <string name="face_re_enroll_dialog_title" product="desktop" msgid="4217639465392210803">"Configure o desbloqueio com a cara"</string>
+    <string name="face_re_enroll_dialog_content" product="default" msgid="7290782487464426692">"Para configurar o Desbloqueio facial novamente, o seu modelo de cara atual vai ser eliminado.\n\nVai ter de configurar novamente esta funcionalidade para desbloquear o telemóvel com a cara."</string>
+    <string name="face_re_enroll_dialog_content" product="desktop" msgid="7718739738665960268">"Para configurar o desbloqueio com a cara novamente, o seu modelo de cara atual vai ser eliminado.\n\nVai ter de configurar novamente esta funcionalidade para desbloquear o dispositivo com a cara."</string>
+    <string name="face_reenroll_failure_dialog_content" product="default" msgid="6318784230085101323">"Não foi possível configurar o Desbloqueio facial. Aceda às Definições para tentar novamente."</string>
+    <string name="face_reenroll_failure_dialog_content" product="desktop" msgid="1206573626798969692">"Não foi possível configurar o desbloqueio com a cara. Tente novamente nas Definições"</string>
+    <string name="keyguard_face_unlock_unavailable" product="default" msgid="3188895702987679056">"Desbloqueio facial indisponível"</string>
+    <string name="keyguard_face_unlock_unavailable" product="desktop" msgid="7088502865328130614">"Desbloqueio com a cara indisponível"</string>
+    <string name="accesssibility_keyguard_retry" product="default" msgid="5017097587017783548">"Deslize para cima para tentar o Desbloqueio facial novamente"</string>
+    <string name="accesssibility_keyguard_retry" product="desktop" msgid="5084769005671288179">"Deslize para cima para tentar desbloquear com a cara novamente"</string>
+    <string name="keyguard_face_successful_unlock_swipe" product="default" msgid="1358318947548832086">"Desbloqueado com a cara. Deslize para cima para abrir."</string>
+    <string name="keyguard_face_successful_unlock_swipe" product="desktop" msgid="4016445068612817741">"Desbloqueado com a cara. Deslize para cima para abrir."</string>
+    <string name="keyguard_face_successful_unlock_confirm_button" product="default" msgid="4883782574761031564">"Desbloqueado com a cara. Prima Confirmar para continuar."</string>
+    <string name="keyguard_face_successful_unlock_confirm_button" product="desktop" msgid="7268520979450633978">"Desbloqueado com a cara. Prima Confirmar para continuar."</string>
+    <string name="keyguard_face_successful_unlock_press" product="default" msgid="7293890116185253825">"Desbloqueado com a cara. Prima ícone de desbloqueio p/ abrir."</string>
+    <string name="keyguard_face_successful_unlock_press" product="desktop" msgid="6158498006084899116">"Desbloqueio com a cara. Prima ícone de desbloqueio p/ abrir."</string>
+    <string name="keyguard_face_successful_unlock_press_alt_1" product="default" msgid="6269966346565076951">"Desbloqueado com a cara. Prima para abrir."</string>
+    <string name="keyguard_face_successful_unlock_press_alt_1" product="desktop" msgid="1612731733090835687">"Desbloqueado com a cara. Prima para abrir."</string>
+    <string name="keyguard_face_successful_unlock" product="default" msgid="5544493091450184889">"Desbloqueado com a cara"</string>
+    <string name="keyguard_face_successful_unlock" product="desktop" msgid="5348626087316804379">"Desbloqueado com a cara"</string>
 </resources>
