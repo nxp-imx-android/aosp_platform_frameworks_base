@@ -16,16 +16,18 @@
 
 package com.android.server.appfunctions;
 
+import android.os.Handler;
 import android.util.Slog;
-
+import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.os.BackgroundThread;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.format.DateTimeFormatter;
+import java.time.LocalDateTime;
 import java.util.Locale;
 
 /**
@@ -47,14 +49,28 @@ public class AppFunctionPersistentLogger {
     private static final String TAG = "AppFunctionPersistentLogger";
 
     // Configuration: 400KB per file, 5 total files (1 active + 4 archived) = 2MB total cap
-    private static final long MAX_FILE_SIZE_BYTES = 400 * 1024;
-    private static final int MAX_FILE_COUNT = 4;
+    static final long MAX_FILE_SIZE_BYTES = 400 * 1024;
+    static final int MAX_FILE_COUNT = 4;
+    // Configuration: 7 days TTL for log files from the last modified time.
+    static final long LOG_TTL_MILLIS = 7 * 24 * 60 * 60 * 1000L;
+    static final long CLEANUP_INTERVAL_MILLIS = 24 * 60 * 60 * 1000L;
 
     private final File mLogDir;
-    private final SimpleDateFormat mDateFormat;
+    private final DateTimeFormatter mDateFormat;
     private final String mBaseLogFileName;
+    private final Handler mBackgroundHandler;
 
     private final Object mLock = new Object();
+
+    private final Runnable mCleanupTask =
+            new Runnable() {
+                @Override
+                public void run() {
+                    pruneOldLogs(LOG_TTL_MILLIS);
+                    // Schedule next run
+                    mBackgroundHandler.postDelayed(this, CLEANUP_INTERVAL_MILLIS);
+                }
+            };
 
     /**
      * @param baseDir The directory to store logs (e.g., /data/system_ce/0/appfunctions)
@@ -62,9 +78,16 @@ public class AppFunctionPersistentLogger {
      *     file will be rotated and archived as log.1, log.2, etc.
      */
     AppFunctionPersistentLogger(File baseDir, String baseLogFileName) throws IOException {
+        this(baseDir, baseLogFileName, BackgroundThread.getHandler());
+    }
+
+    @VisibleForTesting
+    AppFunctionPersistentLogger(File baseDir, String baseLogFileName, Handler backgroundHandler)
+            throws IOException {
         mLogDir = baseDir;
-        mDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.US);
+        mDateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS", Locale.US);
         mBaseLogFileName = baseLogFileName;
+        mBackgroundHandler = backgroundHandler;
 
         // Ensure directory exists
         if (!mLogDir.exists()) {
@@ -72,6 +95,9 @@ public class AppFunctionPersistentLogger {
                 throw new IOException("Failed to create log directory: " + mLogDir);
             }
         }
+
+        // Start the maintenance loop
+        mBackgroundHandler.post(mCleanupTask);
     }
 
     /**
@@ -92,7 +118,7 @@ public class AppFunctionPersistentLogger {
             }
 
             // Prepare the content
-            String timestamp = mDateFormat.format(new Date());
+            String timestamp = LocalDateTime.now().format(mDateFormat);
             String logEntry = timestamp + " : " + message + "\n";
             long entrySize = logEntry.getBytes().length;
 
@@ -186,5 +212,29 @@ public class AppFunctionPersistentLogger {
     /** Returns the File object for an archived log file. */
     private File getArchivedLogFile(int index) {
         return new File(mLogDir, mBaseLogFileName + "." + index);
+    }
+
+    /** Deletes log files older than the specified time-to-live. */
+    private void pruneOldLogs(long ttlMillis) {
+        synchronized (mLock) {
+            File[] files = mLogDir.listFiles();
+            if (files == null) return;
+
+            long now = System.currentTimeMillis();
+            for (File file : files) {
+                if (file.getName().startsWith(mBaseLogFileName)) {
+                    if (now - file.lastModified() > ttlMillis) {
+                        if (!file.delete()) {
+                            Slog.w(TAG, "Failed to delete expired log: " + file.getName());
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /** Stops the periodic log cleanup task. */
+    public void close() {
+        mBackgroundHandler.removeCallbacks(mCleanupTask);
     }
 }
