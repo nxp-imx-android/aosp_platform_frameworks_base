@@ -102,6 +102,8 @@ public abstract class InsightRendererService extends Service {
      * @param tag An optional {@link String} value that can be associated with the token for future
      *            identification.
      *
+     * @throws IllegalStateException if called before {@link #onConnected} has been called.
+     *
      * @return a token that uniquely identifies this renderer
      * @throws IllegalStateException if {@link #onConnected()} has not yet been called
      */
@@ -154,11 +156,11 @@ public abstract class InsightRendererService extends Service {
     public abstract InsightFilter onInitializeFilter();
 
     /**
-     * This method will be called when the given {@link ContextInsight} needs to be rendered
-     * visually to the user.
-     *
-     * For example, a renderer could add adjustments to notifications, provide autofill
-     * suggestions, or supply embedded surfaces to a client application to display to the user.
+     * This method will be called when the given
+     * {@link android.service.personalcontext.insight.PublishedContextInsight} needs to be rendered.
+     * Typically the renderer would use the insight provided to prompt the user with information,
+     * or to interact in some way. For example, a notification renderer might use the insight to
+     * modify an existing notification with actions the user might want to take.
      *
      * @param insight the {@link android.service.personalcontext.insight.PublishedContextInsight}
      *                to render
