@@ -4719,6 +4719,45 @@ public class MockingOomAdjusterTests {
                         eq(app));
     }
 
+    @Test
+    public void testUpdateOomAdj_TopOrBetter_GrantsCpuCapabilityWithReason() {
+        ProcessRecord app = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID,
+                MOCKAPP_PROCESSNAME, MOCKAPP_PACKAGENAME, false);
+        setTopProcessState(PROCESS_STATE_TOP);
+        setTopProcess(app);
+
+        updateOomAdj(app);
+
+        assertThatProcess(app).hasCpuTimeCapability().withExactReasons(CPU_TIME_REASON_OTHER);
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_EXPLICIT_CPU_CAPABILITY_FOR_TOP_PROCESSES)
+    public void testUpdateOomAdj_TopOrBetter_HasImplicitCpuTimeWithReason() {
+        ProcessRecord app = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID,
+                MOCKAPP_PROCESSNAME, MOCKAPP_PACKAGENAME, false);
+        setTopProcessState(PROCESS_STATE_TOP);
+        setTopProcess(app);
+
+        updateOomAdj(app);
+
+        assertThatProcess(app).hasImplicitCpuTimeCapability().withExactReasons(
+                IMPLICIT_CPU_TIME_REASON_OTHER);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_EXPLICIT_CPU_CAPABILITY_FOR_TOP_PROCESSES)
+    public void testUpdateOomAdj_ScoreLessThanFreezerCutOff_HasImplicitCpuTime() {
+        ProcessRecord app = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID,
+                MOCKAPP_PROCESSNAME, MOCKAPP_PACKAGENAME, false);
+        mProcessStateController.setMaxAdj(app, PERCEPTIBLE_APP_ADJ);
+
+        updateOomAdj(app);
+
+        assertThatProcess(app).hasImplicitCpuTimeCapability().withExactReasons(
+                IMPLICIT_CPU_TIME_REASON_OTHER);
+    }
+
     private ProcessRecord makeDefaultProcessRecord(int pid, int uid, String processName,
             String packageName, boolean hasShownUi) {
         final ProcessRecord proc = new ProcessRecordBuilder(pid, uid, processName,

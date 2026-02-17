@@ -39,6 +39,7 @@ import static android.app.ActivityManager.PROCESS_STATE_TOP;
 import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA;
 import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION;
 import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
+import static android.platform.test.flag.junit.SetFlagsRule.DefaultInitValueType.NULL_DEFAULT;
 
 import static com.android.server.am.psc.Constants.FOREGROUND_APP_ADJ;
 import static com.android.server.am.psc.OomAdjuster.ALL_CPU_TIME_CAPABILITIES;
@@ -56,11 +57,15 @@ import static org.junit.Assert.assertEquals;
 import android.annotation.NonNull;
 import android.app.ActivityManager.ProcessCapability;
 import android.app.ActivityManager.ProcessState;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
+import android.platform.test.flag.junit.SetFlagsRule;
 
+import com.android.server.am.Flags;
 import com.android.server.am.psc.TestGraphElements.TestEdge;
 import com.android.server.am.psc.TestGraphElements.TestProcessNode;
 import com.android.server.am.psc.TestGraphElements.TestProviderBindingEdge;
@@ -85,6 +90,9 @@ import java.util.ArrayList;
 public class CapabilityControllerTest {
     @Rule
     public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
+
+    @Rule
+    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule(NULL_DEFAULT);
 
     private CapabilityController mCapabilityController;
 
@@ -253,6 +261,7 @@ public class CapabilityControllerTest {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_EXPLICIT_CPU_CAPABILITY_FOR_TOP_PROCESSES)
     public void testEvaluateProcStatePolicy_TopOrBetter_GrantsAll() {
         // States that are better than or equal to TOP.
         final @ProcessState int[] states = {
@@ -266,9 +275,48 @@ public class CapabilityControllerTest {
                     .build();
             final ProcessEdge edge = new ProcessEdge(node);
 
-            assertEquals(PROCESS_CAPABILITY_ALL, edge.evaluateCapabilityFilter());
-            // No CPU time reason is granted in this case.
-            assertEquals(CPU_TIME_REASON_NONE, edge.getCpuTimeReasons());
+            assertEquals(PROCESS_CAPABILITY_ALL,
+                    edge.evaluateCapabilityFilter());
+            assertEquals(CPU_TIME_REASON_OTHER, edge.getCpuTimeReasons());
+        }
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_EXPLICIT_CPU_CAPABILITY_FOR_TOP_PROCESSES)
+    public void testEvaluateProcStatePolicy_TopOrBetter_HasCpuCapability() {
+        // States that are better than or equal to TOP.
+        final @ProcessState int[] states = {
+                PROCESS_STATE_PERSISTENT,
+                PROCESS_STATE_PERSISTENT_UI,
+                PROCESS_STATE_TOP,
+        };
+        for (final @ProcessState int state : states) {
+            final TestProcessNode node = new TestProcessNode.Builder().withCurProcState(
+                    state).build();
+            final ProcessEdge edge = new ProcessEdge(node);
+
+            FlagAssert.assertThat(edge.evaluateCapabilityFilter()).hasSet(
+                    PROCESS_CAPABILITY_CPU_TIME);
+            assertEquals(CPU_TIME_REASON_OTHER, edge.getCpuTimeReasons());
+        }
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_EXPLICIT_CPU_CAPABILITY_FOR_TOP_PROCESSES)
+    public void testEvaluateProcStatePolicy_TopOrBetter_NotHasImplicitCpuCapability() {
+        // States that are better than or equal to TOP.
+        final @ProcessState int[] states = {
+                PROCESS_STATE_PERSISTENT,
+                PROCESS_STATE_PERSISTENT_UI,
+                PROCESS_STATE_TOP,
+        };
+        for (final @ProcessState int state : states) {
+            final TestProcessNode node = new TestProcessNode.Builder().withCurProcState(
+                    state).build();
+            final ProcessEdge edge = new ProcessEdge(node);
+
+            FlagAssert.assertThat(edge.evaluateCapabilityFilter()).hasNotSet(
+                    PROCESS_CAPABILITY_IMPLICIT_CPU_TIME);
         }
     }
 
