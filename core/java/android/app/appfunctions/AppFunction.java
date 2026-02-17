@@ -24,12 +24,8 @@ import android.os.CancellationSignal;
 import android.os.OutcomeReceiver;
 
 /**
- * An interface for implementing the logic of a dynamically registered app function.
- *
- * <p>Implementations of this interface define the runtime behavior for an app function and must be
- * registered with the system using {@link AppFunctionManager#registerAppFunction}.
- *
- * @see AppFunctionManager#registerAppFunction
+ * An interface for implementing the logic of an app function registered at runtime using {@link
+ * AppFunctionManager#registerAppFunction}.
  */
 @FlaggedApi(FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
 public interface AppFunction {

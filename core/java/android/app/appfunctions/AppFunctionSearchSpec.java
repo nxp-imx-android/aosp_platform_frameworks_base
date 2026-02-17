@@ -36,8 +36,9 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * Specifies the query parameters for finding app functions. A search will be performed using a
- * logical AND operation across all provided criteria.
+ * Filter criteria for {@link AppFunctionManager#searchAppFunctions}.
+ *
+ * <p>A search will be performed using a logical AND operation across all provided criteria.
  */
 @FlaggedApi(FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
 public final class AppFunctionSearchSpec implements Parcelable {
@@ -89,41 +90,55 @@ public final class AppFunctionSearchSpec implements Parcelable {
         mScopes = (ArraySet<Integer>) in.readArraySet(Integer.class.getClassLoader());
     }
 
-    /** Returns the set of package names to filter by. */
+    /** Returns the set of package names to filter by, or null if this filter is skipped. */
     @SuppressLint("NullableCollection")
     @Nullable
     public Set<String> getPackageNames() {
         return mPackageNames;
     }
 
-    /** Returns the set of {@link AppFunctionName} to filter by. */
+    /**
+     * Returns the set of {@link AppFunctionName} to filter by, or null if this filter is skipped.
+     */
     @SuppressLint("NullableCollection")
     @Nullable
     public Set<AppFunctionName> getFunctionNames() {
         return mFunctionNames;
     }
 
-    /** Returns the schema category to filter by. */
+    /**
+     * Returns the schema category to filter by, or null if this filter is skipped.
+     *
+     * @see AppFunctionSchemaMetadata#getCategory
+     */
     @Nullable
     public String getSchemaCategory() {
         return mSchemaCategory;
     }
 
-    /** Returns the schema name to filter by. */
+    /**
+     * Returns the schema name to filter by, or null if this filter is skipped.
+     *
+     * @see AppFunctionSchemaMetadata#getName
+     */
     @Nullable
     public String getSchemaName() {
         return mSchemaName;
     }
 
-    /** Returns the minimum schema category to filter by. */
+    /**
+     * Returns the minimum schema category to filter by, or 0 if this filter is skipped.
+     *
+     * @see AppFunctionSchemaMetadata#getVersion
+     */
     public long getMinSchemaVersion() {
         return mMinSchemaVersion;
     }
 
     /**
-     * Returns the set of scope type to filter by.
+     * Returns the set of scope type to filter by, or null if this filter is skipped.
      *
-     * @see AppFunctionMetadata#getScope() for possible values.
+     * @see AppFunctionMetadata#getScope
      */
     @Nullable
     @SuppressLint("NullableCollection")
@@ -293,7 +308,7 @@ public final class AppFunctionSearchSpec implements Parcelable {
         return String.join(" OR ", quotedElements);
     }
 
-    /** Builder for creating {@link AppFunctionSearchSpec} instances. */
+    /** Builder for constructing {@link AppFunctionSearchSpec}. */
     public static final class Builder {
         @Nullable private Set<String> mPackageNames = null;
         @Nullable private Set<AppFunctionName> mFunctionNames = null;
@@ -302,9 +317,7 @@ public final class AppFunctionSearchSpec implements Parcelable {
         private long mMinSchemaVersion = 0;
         @Nullable @AppFunctionMetadata.Scope private Set<Integer> mScopes = null;
 
-        /**
-         * Creates a new instance of {@link AppFunctionSearchSpec.Builder} with empty properties.
-         */
+        /** Constructs a {@link AppFunctionSearchSpec.Builder}. */
         public Builder() {}
 
         /**
@@ -322,11 +335,7 @@ public final class AppFunctionSearchSpec implements Parcelable {
             this.mScopes = searchSpec.mScopes;
         }
 
-        /**
-         * Constructs the final, immutable {@link AppFunctionSearchSpec} object.
-         *
-         * @return A new AppFunctionSearchSpec instance.
-         */
+        /** Constructs an {@link AppFunctionSearchSpec}. */
         @NonNull
         public AppFunctionSearchSpec build() {
             return new AppFunctionSearchSpec(
@@ -339,10 +348,9 @@ public final class AppFunctionSearchSpec implements Parcelable {
         }
 
         /**
-         * Sets the list of package names to filter by.
+         * Sets the list of package names to filter by, or null to skip this filter.
          *
-         * @param packageNames the list of package names to filter by. A null value will skip this
-         *     filter.
+         * @param packageNames the list of package names to filter by.
          * @throws IllegalArgumentException if {@code packageNames} is an empty list.
          */
         @NonNull
@@ -355,10 +363,9 @@ public final class AppFunctionSearchSpec implements Parcelable {
         }
 
         /**
-         * Sets the list of {@link AppFunctionName} to filter by.
+         * Sets the list of {@link AppFunctionName} to filter by, or null to skip this filter.
          *
-         * @param functionNames the list of {@link AppFunctionName} to filter by. A null value will
-         *     skip this filter.
+         * @param functionNames the list of {@link AppFunctionName} to filter by.
          * @throws IllegalArgumentException if {@code functionNames} is an empty list.
          */
         @NonNull
@@ -371,10 +378,10 @@ public final class AppFunctionSearchSpec implements Parcelable {
         }
 
         /**
-         * Sets the schema category to filter by.
+         * Sets the schema category to filter by, or null to skip this filter.
          *
-         * @param schemaCategory the schema category to filter by. A null value will skip this
-         *     filter.
+         * @param schemaCategory the schema category to filter by.
+         * @see AppFunctionSchemaMetadata#getCategory
          */
         @NonNull
         public Builder setSchemaCategory(@Nullable String schemaCategory) {
@@ -383,9 +390,10 @@ public final class AppFunctionSearchSpec implements Parcelable {
         }
 
         /**
-         * Sets the schema name to filter by.
+         * Sets the schema name to filter by, or null to skip this filter.
          *
-         * @param schemaName the schema name to filter by. A null value will skip this filter.
+         * @param schemaName the schema name to filter by.
+         * @see AppFunctionSchemaMetadata#getName
          */
         @NonNull
         public Builder setSchemaName(@Nullable String schemaName) {
@@ -394,10 +402,10 @@ public final class AppFunctionSearchSpec implements Parcelable {
         }
 
         /**
-         * Sets the minimum schema version to filter by.
+         * Sets the minimum schema version to filter by, or 0 to skip this filter.
          *
-         * @param minSchemaVersion the minimum schema version to filter by. A value of 0 will skip
-         *     this filter.
+         * @param minSchemaVersion the minimum schema version to filter by.
+         * @see AppFunctionSchemaMetadata#getVersion
          */
         @NonNull
         public Builder setMinSchemaVersion(long minSchemaVersion) {
@@ -406,8 +414,9 @@ public final class AppFunctionSearchSpec implements Parcelable {
         }
 
         /**
-         * Sets the scope types to filter by.
+         * Sets the scope types to filter by, or null to skip this filter.
          *
+         * @param scopes the set of scope types to filter by.
          * @see AppFunctionMetadata#getScope()
          */
         @NonNull

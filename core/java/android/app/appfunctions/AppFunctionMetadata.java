@@ -30,152 +30,139 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.Objects;
 
 /**
- * Represents an app function's metadata, providing the essential information for its invocation.
+ * Contains an app function's metadata, essential for its invocation and discovery, retrieved using
+ * {@link AppFunctionManager#searchAppFunctions}.
  *
- * <p>This class provides a representation of the app function's metadata resulting from searching
- * for app functions on the device.
+ * <p>This metadata is defined in an XML asset file and does not change at runtime. The XML file is
+ * referenced from the app's {@code AndroidManifest.xml}. How it's referenced depends on whether the
+ * app function is implemented using {@link AppFunctionService} or {@link
+ * AppFunctionManager#registerAppFunction}.
  *
- * <p>To make functions discoverable:
- *
- * <ol>
- *   <li>Define them in an XML file within the app's {@code assets/} directory.
- *   <li>Reference the XML file in {@code AndroidManifest.xml} as a property of the corresponding
- *       app function service.
- * </ol>
- *
- * <p><b>Example {@code AndroidManifest.xml} declaration:</b>
- *
- * <pre>{@code
- *  <application>
- *      <service android:name=".MyAppFunctionService">
- *          <property
- *              android:name="android.app.appfunctions"
- *              android:value="app_functions.xml" />
- *          <intent-filter>
- *              <action android:name="android.app.appfunctions.AppFunctionService"/>
- *          </intent-filter>
- *      </service>
- * <application>
- * }</pre>
- *
- * <p>The XML schema consists of a root {@code <appfunctions>} element that contains one or more
+ * <p>The XML schema consists of a root {@code <appfunctions>} element that can contain one or more
  * {@code <appfunction>} elements. The XML tags used within the {@code <appfunction>} element
  * directly correspond to the property names defined by the {@code PROPERTY_*} constants in this
- * class.
+ * class. All properties in the XML (including unknown properties) are made available through the
+ * {@link #getMetadataDocument} method.
  *
- * <p><b>Example {@code app_functions.xml} declaration:</b>
+ * <p><b>Example {@code assets/app_functions.xml} declaration:</b>
  *
  * <pre>{@code
  * <appfunctions>
  *     <appfunction>
- *         <id>com.example.notes/createNote</id>
+ *         <id>createNote</id>
  *         <enabledByDefault>true</enabledByDefault>
+ *         <scope>global</scope>
  *         ...
  *     </appfunction>
  * </appfunctions>
  * }</pre>
+ *
+ * <p>See {@link AppFunctionManager#getAppFunctionStates} for details on retrieving the runtime
+ * state of the app functions.
  */
 @FlaggedApi(FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
 public final class AppFunctionMetadata implements AbstractAppFunctionMetadata, Parcelable {
 
     /**
-     * Property name for the app function's ID, which is used in an {@link
-     * ExecuteAppFunctionRequest} to refer to the app function.
-     *
-     * <p>This name identifies the app function's ID property in the XML file that declares app
-     * functions.
+     * Property name for the XML tag that defines the value of {@link
+     * AppFunctionName#getFunctionIdentifier} returned by {@link #getName}.
      */
     public static final String PROPERTY_FUNCTION_ID = "id";
 
     /**
-     * Property name for the app function's schema category.
-     *
-     * <p>This name identifies the app function's schema category property in the XML file that
-     * declares app functions.
+     * Property name for the XML tag that defines the value of {@link
+     * AppFunctionSchemaMetadata#getCategory} returned by {@link #getSchemaMetadata}.
      */
     public static final String PROPERTY_SCHEMA_CATEGORY = "schemaCategory";
 
     /**
-     * Property name for the app function's schema name.
-     *
-     * <p>This name identifies the app function's schema name property in the XML file that declares
-     * app functions.
+     * Property name for the XML tag that defines the value of {@link
+     * AppFunctionSchemaMetadata#getName} returned by {@link #getSchemaMetadata}.
      */
     public static final String PROPERTY_SCHEMA_NAME = "schemaName";
 
     /**
-     * Property name for the app function's schema version.
-     *
-     * <p>This name identifies the app function's schema version property in the XML file that
-     * declares app functions.
+     * Property name for the XML tag that defines the value of {@link
+     * AppFunctionSchemaMetadata#getVersion} returned by {@link #getSchemaMetadata}.
      */
     public static final String PROPERTY_SCHEMA_VERSION = "schemaVersion";
 
     /**
-     * Property name for whether the function is enabled by default.
-     *
-     * <p>This name identifies the enabled-by-default property in the XML file that declares app
-     * functions.
+     * Property name for the XML tag that defines the default value of {@link
+     * AppFunctionState#isEnabled}, before calling {@link AppFunctionManager#setAppFunctionEnabled}.
      */
     public static final String PROPERTY_ENABLED_BY_DEFAULT = "enabledByDefault";
 
     /**
-     * Property name for the scope of this function.
+     * Property name for the XML tag that defines the value of {@link #getScope}.
      *
-     * <p>This name identifies the app function's scope property in the XML file that declares app
-     * functions.
+     * <p>This property is should not be used for XML assets referenced by an {@link
+     * AppFunctionService} declaration in the manifest, which are always {@link #SCOPE_GLOBAL}.
      *
      * @see #getScope()
      */
     public static final String PROPERTY_SCOPE = "scope";
 
-    /**
-     * The value for {@link #PROPERTY_SCOPE} in the XML representing a global scope.
-     *
-     * @see #getScope()
-     * @see #SCOPE_GLOBAL
-     */
+    /** Property value for {@link #PROPERTY_SCOPE} in the XML representing {@link #SCOPE_GLOBAL}. */
     public static final String PROPERTY_VALUE_SCOPE_GLOBAL = "global";
 
     /**
-     * The value for {@link #PROPERTY_SCOPE} in the XML representing an activity scope.
-     *
-     * @see #getScope()
-     * @see #SCOPE_ACTIVITY
+     * Property value for {@link #PROPERTY_SCOPE} in the XML representing {@link #SCOPE_ACTIVITY}.
      */
     public static final String PROPERTY_VALUE_SCOPE_ACTIVITY = "activity";
 
     /**
-     * A value returned from {@link #getScope()} that indicates it is a globally scoped app
-     * function.
+     * A value returned from {@link #getScope} that indicates it is a globally-scoped app function.
      *
-     * <p>There can be at most one function with the same {@link AppFunctionName} available with
-     * this scope.
+     * <p>There can be at most one app function implementation with the same {@link AppFunctionName}
+     * available with this scope. This is useful for functions that are tied to a singleton
+     * component, such as a foreground service.
      *
-     * <p>The function remains registered until it is explicitly unregistered or the process
-     * terminates.
+     * <p>When using {@link AppFunctionManager#registerAppFunction}, the function remains registered
+     * until it is explicitly unregistered or the calling context is destroyed.
+     *
+     * <p>To execute a globally-scoped function, the caller of {@link
+     * AppFunctionManager#executeAppFunction} must not use {@link
+     * ExecuteAppFunctionRequest#setActivityId} (or set it to null), otherwise {@link
+     * AppFunctionException#ERROR_FUNCTION_NOT_FOUND} will be returned.
+     *
+     * <p>This is always the scope for {@link AppFunctionService}-based functions.
+     *
+     * <p><b>IMPORTANT:</b> Functions provided with {@link AppFunctionManager#registerAppFunction}
+     * called from an {@link android.app.Activity} context should prefer {@link #SCOPE_ACTIVITY}.
+     * Only use {@link #SCOPE_GLOBAL} for such functions if you are absolutely sure there can be
+     * only one instance of that activity.
      */
     public static final int SCOPE_GLOBAL = 0;
 
     /**
-     * A value returned from {@link #getScope()} that indicates it is a activity scoped app
-     * function.
+     * A value returned from {@link #getScope} that indicates it is an activity-scoped app function.
      *
-     * <p>Multiple instances of the same function (with the same {@link AppFunctionName}) can
-     * exist simultaneously, each associated with a different activity instance identified by an
-     * {@link AppFunctionActivityId}.
+     * <p>Multiple app function implementations with the same {@link AppFunctionName} can exist
+     * simultaneously, each registered from a different {@link android.app.Activity} instance, which
+     * is identified by an {@link AppFunctionActivityId}.
+     *
+     * <p>Functions with this scope must be registered using {@link
+     * AppFunctionManager#registerAppFunction}, and must be called from an {@link
+     * android.app.Activity} context. Calling it from any other context will result in an {@link
+     * IllegalStateException}.
+     *
+     * <p>To execute an activity-scoped function, the caller of {@link
+     * AppFunctionManager#executeAppFunction} must use {@link
+     * ExecuteAppFunctionRequest#setActivityId}, otherwise {@link
+     * AppFunctionException#ERROR_FUNCTION_NOT_FOUND} will be returned.
      *
      * <p>To discover the specific activities where an activity-scoped function is currently
      * registered, see {@link AppFunctionManager#getAppFunctionStates} and {@link
      * AppFunctionManager#getAppFunctionActivityStates}.
      *
-     * <p>To execute an activity-scoped function, see {@link
-     * ExecuteAppFunctionRequest#setActivityId}.
-     *
      * <p>The function remains registered until it is explicitly unregistered or the activity is
      * destroyed.
      *
-     * @see AppFunctionActivityId
+     * <p><b>IMPORTANT:</b> Functions provided with {@link AppFunctionManager#registerAppFunction}
+     * called from an {@link android.app.Activity} context should prefer {@link #SCOPE_ACTIVITY}.
+     * Only use {@link #SCOPE_GLOBAL} for such functions if you are absolutely sure there can be
+     * only one instance of that activity.
      */
     public static final int SCOPE_ACTIVITY = 1;
 
@@ -185,14 +172,16 @@ public final class AppFunctionMetadata implements AbstractAppFunctionMetadata, P
 
     /**
      * Internal property which stores service name which should be used to execute App Function.
-     * {@link #DYNAMIC_APP_FUNCTIONS_SERVICE_NAME} is set for dynamic app functions.
+     * {@link #DYNAMIC_APP_FUNCTIONS_SERVICE_NAME} is set for app functions implemented using {@link
+     * AppFunctionManager#registerAppFunction}.
      *
      * @hide
      */
     public static final String PROPERTY_SERVICE_NAME = "serviceName";
 
     /**
-     * Expected value for {@link #PROPERTY_SERVICE_NAME} in case AppFunction is dynamic.
+     * Expected value for {@link #PROPERTY_SERVICE_NAME} in case AppFunction is implemented using
+     * {@link AppFunctionManager#registerAppFunction}.
      *
      * @hide
      */
@@ -241,8 +230,10 @@ public final class AppFunctionMetadata implements AbstractAppFunctionMetadata, P
     /**
      * Returns the qualified name of the app function.
      *
-     * <p>The {@link AppFunctionName} is composed of the app's package name and the function's ID.
-     * The ID is specified by the {@link PROPERTY_FUNCTION_ID} tag in the app function XML.
+     * <p>The {@link AppFunctionName} is composed of the app's package name and the function's
+     * identifier.
+     *
+     * <p>This is defined by the {@link #PROPERTY_FUNCTION_ID} tag in the XML.
      */
     @NonNull
     public AppFunctionName getName() {
@@ -250,11 +241,7 @@ public final class AppFunctionMetadata implements AbstractAppFunctionMetadata, P
     }
 
     /**
-     * Returns the identifying info for a pre-defined schema which this app function implements.
-     *
-     * <p>The schema metadata properties are specified by the {@link PROPERTY_SCHEMA_CATEGORY},
-     * {@link PROPERTY_SCHEMA_NAME} and {@link PROPERTY_SCHEMA_VERSION} tags in the app function
-     * XML.
+     * Returns the identifying metadata for a pre-defined schema which this app function implements.
      */
     @Nullable
     public AppFunctionSchemaMetadata getSchemaMetadata() {
@@ -273,6 +260,8 @@ public final class AppFunctionMetadata implements AbstractAppFunctionMetadata, P
      * <p>The scope determines the function's lifecycle and uniqueness rules. Depending on the
      * scope, there could be at most one or multiple functions registered in the system with the
      * same {@link AppFunctionName}.
+     *
+     * <p>See values below for more details on each scope.
      */
     @Scope
     public int getScope() {
@@ -304,7 +293,7 @@ public final class AppFunctionMetadata implements AbstractAppFunctionMetadata, P
      * getters.
      *
      * <p>Properties that are not defined in this class (see {@code PROPERTY_*} constants) are not
-     * guaranteed to be available or consistent across versions.
+     * guaranteed to be available or consistent across devices and versions.
      */
     @Override
     @NonNull

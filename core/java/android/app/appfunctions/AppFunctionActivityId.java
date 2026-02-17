@@ -36,6 +36,10 @@ import java.util.Objects;
  * android.app.Activity} instance they are referencing are the same, even across multiple app
  * functions.
  *
+ * <p>Use {@link android.service.voice.VoiceInteractionSession#getAppFunctionActivityId} to match an
+ * {@link AppFunctionActivityId} with an {@link
+ * android.service.voice.VoiceInteractionSession.ActivityId}.
+ *
  * @see AppFunctionMetadata#SCOPE_ACTIVITY
  */
 @FlaggedApi(FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)

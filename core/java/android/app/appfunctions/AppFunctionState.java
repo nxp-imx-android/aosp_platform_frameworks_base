@@ -29,18 +29,15 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 /**
- * Runtime state of an app function.
+ * Runtime state of an app function, retrieved using {@link
+ * AppFunctionManager#getAppFunctionStates}.
  *
- * <p>This class holds properties of an app function that can change dynamically during the app's
+ * <p>This holds properties of an app function that can change at runtime during the app's
  * operation, such as whether the function is enabled.
  *
- * <p>This is distinct from {@link android.app.appfunctions.AppFunctionMetadata}, which represents
- * the static configuration of a function (such as its schema, name, and package) that remains
- * constant until the providing package is updated. While metadata defines <em>what</em> a function
- * is, the {@link AppFunctionState} defines its current operational status.
- *
- * @see android.app.appfunctions.AppFunctionMetadata
- * @see android.app.appfunctions.AppFunctionManager#getAppFunctionState
+ * <p>This is distinct from {@link AppFunctionMetadata}, which represents the metadata that remains
+ * constant until the providing package is updated. While {@link AppFunctionMetadata} defines
+ * <em>what</em> a function is, the {@link AppFunctionState} defines its current operational status.
  */
 @FlaggedApi(Flags.FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
 public final class AppFunctionState implements Parcelable {
@@ -88,24 +85,39 @@ public final class AppFunctionState implements Parcelable {
                         in.readArraySet(AppFunctionActivityId.class.getClassLoader());
     }
 
-    /** The app function this state is associated with. */
+    /** Returns the {@link AppFunctionName} associated with this state. */
     @NonNull
     public AppFunctionName getFunctionName() {
         return mFunctionName;
     }
 
-    /** Whether this app function can be executed. */
+    /**
+     * Returns whether this app function can be executed.
+     *
+     * <p>This can be false if:
+     *
+     * <ul>
+     *   <li>The app disabled the function with {@link AppFunctionManager#setAppFunctionEnabled}.
+     *   <li>The function is disabled by default using {@link
+     *       AppFunctionMetadata#PROPERTY_ENABLED_BY_DEFAULT} and was never enabled.
+     *   <li>The associated {@link AppFunctionService} is disabled.
+     *   <li>A function without an associated {@link AppFunctionService} has not been registered
+     *       using {@link AppFunctionManager#registerAppFunction}, or has been unregistered.
+     *   <li>The process registering the function using {@link
+     *       AppFunctionManager#registerAppFunction} is frozen, or the {@link
+     *       android.content.Context} used to register it has been destroyed.
+     * </ul>
+     */
     public boolean isEnabled() {
         return mIsEnabled;
     }
 
     /**
-     * The {@link AppFunctionActivityId}s this app function is associated with, or null if none.
+     * Returns {@link AppFunctionActivityId}s this app function is associated with, or null if none.
      *
-     * <p>This will be non-null only when {@link AppFunctionMetadata#getScope} is {@link
-     * AppFunctionMetadata#SCOPE_ACTIVITY}.
-     *
-     * @see AppFunctionMetadata#SCOPE_ACTIVITY
+     * <p>This will only be non-null when {@link AppFunctionMetadata#getScope} is {@link
+     * AppFunctionMetadata#SCOPE_ACTIVITY}. See {@link AppFunctionMetadata#SCOPE_ACTIVITY} for more
+     * details.
      */
     // Performance optimization to avoid creating empty collections for an unbound list of
     // AppFunctionStates (using null instead), and to allow indexed for-loop (using ArraySet).
