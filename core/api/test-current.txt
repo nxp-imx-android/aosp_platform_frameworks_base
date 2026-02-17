@@ -3640,6 +3640,11 @@ package android.service.personalcontext.insight {
     method @NonNull public android.service.personalcontext.insight.HintInvalidationInsight build();
   }
 
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class PublishedContextInsight {
+    method @NonNull public static android.service.personalcontext.insight.PublishedContextInsight createPublishedInsightFromBundle(@Nullable android.os.Bundle);
+    method @NonNull public android.os.Bundle toBundle();
+  }
+
 }
 
 package android.service.quickaccesswallet {

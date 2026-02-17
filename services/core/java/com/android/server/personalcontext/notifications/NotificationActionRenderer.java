@@ -32,6 +32,7 @@ import android.service.personalcontext.insight.ContextInsight;
 import android.service.personalcontext.insight.DisplayInsight;
 import android.service.personalcontext.insight.InsightTraverser;
 import android.service.personalcontext.insight.InsightVisitor;
+import android.service.personalcontext.insight.PublishedContextInsight;
 import android.util.Log;
 import android.util.Slog;
 
@@ -91,11 +92,14 @@ public class NotificationActionRenderer implements Renderer {
     }
 
     @Override
-    public void render(@NonNull ContextInsight insight, RenderToken renderToken) {
+    public void render(@NonNull PublishedContextInsight publishedContextInsight,
+            RenderToken renderToken) {
         if (mNotificationManagerInternal == null) {
             Slog.e(TAG, "NotificationManagerInternal not found.");
             return;
         }
+
+        final ContextInsight insight = publishedContextInsight.getInsight();
 
         final Map<String, AdjustmentInfo> adjustmentsInfo = new LinkedHashMap<>();
         final InsightCollector collector =
@@ -197,7 +201,7 @@ public class NotificationActionRenderer implements Renderer {
     }
 
     @Override
-    public boolean isInterestedInInsight(ContextInsight insight) {
+    public boolean isInterestedInInsight(PublishedContextInsight insight) {
         // Notifications should be rendered due to a RenderToken, which bypasses this filter.
         // We don't want any other random insights.
         return false;

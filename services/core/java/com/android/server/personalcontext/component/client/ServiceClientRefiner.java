@@ -29,7 +29,7 @@ import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.hint.ContextHintWithSignatureWrapper;
 import android.service.personalcontext.hint.ContextHintWrapper;
 import android.service.personalcontext.hint.HintFilter;
-import android.service.personalcontext.insight.ContextInsight;
+import android.service.personalcontext.insight.PublishedContextInsight;
 import android.service.personalcontext.insight.interaction.InsightEvent;
 import android.service.personalcontext.refiner.IGetFilterCallback;
 import android.service.personalcontext.refiner.IRefineCallback;
@@ -133,7 +133,7 @@ public class ServiceClientRefiner extends BaseServiceClientComponent<IRefiner> i
     }
 
     @Override
-    public void handleFeedback(ContextInsight insight, Bundle feedback) {
+    public void handleFeedback(PublishedContextInsight insight, Bundle feedback) {
         throw new IllegalStateException("Refiners do not support feedback");
     }
 }

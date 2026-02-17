@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.systemui.personalcontext
 
-package android.service.personalcontext;
+import android.service.personalcontext.insight.ContextInsight
+import android.service.personalcontext.insight.PublishedContextInsight
+import java.util.UUID
 
-import android.annotation.FlaggedApi;
-
-import java.util.UUID;
-
-/** Provides a component id. */
-@FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
-public interface ComponentIdProvider {
-    /** @hide */
-    UUID getComponentId();
+/**
+ * simulates publishing a context insight and creating the resulting {@link
+ * PublishedContextInsight}.
+ */
+fun ContextInsight.fakePublish(): PublishedContextInsight {
+    return PublishedContextInsight(this, UUID.randomUUID())
 }

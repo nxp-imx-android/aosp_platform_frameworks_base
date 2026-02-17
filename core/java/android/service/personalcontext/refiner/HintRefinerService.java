@@ -31,7 +31,7 @@ import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.hint.ContextHintWithSignatureWrapper;
 import android.service.personalcontext.hint.ContextHintWrapper;
 import android.service.personalcontext.hint.HintFilter;
-import android.service.personalcontext.insight.ContextInsightWrapper;
+import android.service.personalcontext.insight.PublishedContextInsightWrapper;
 import android.service.personalcontext.insight.interaction.InsightEvent;
 import android.util.Log;
 
@@ -174,7 +174,7 @@ public abstract class HintRefinerService extends Service {
         }
 
         @Override
-        public void handleFeedback(ContextInsightWrapper insight, Bundle feedback) {
+        public void handleFeedback(PublishedContextInsightWrapper insight, Bundle feedback) {
             throw new UnsupportedOperationException("Can not handle user feedback in a refiner");
         }
     }

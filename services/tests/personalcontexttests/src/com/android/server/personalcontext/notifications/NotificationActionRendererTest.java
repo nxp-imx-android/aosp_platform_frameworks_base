@@ -18,6 +18,8 @@ package com.android.server.personalcontext.notifications;
 
 import static android.app.NotificationManager.IMPORTANCE_DEFAULT;
 
+import static com.android.server.personalcontext.util.InsightUtils.fakePublishInsight;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -107,7 +109,7 @@ public class NotificationActionRendererTest {
     public void testRender_notActionableInsight_noAction() {
         ContextInsight insight = new BundleInsight.Builder().build();
 
-        mRenderer.render(insight, null);
+        mRenderer.render(fakePublishInsight(insight), null);
 
         verify(mNotificationManagerInternal, never()).requestSystemAdjustments(any());
     }
@@ -121,7 +123,7 @@ public class NotificationActionRendererTest {
         ActionableInsight insight =
                 new ActionableInsight.Builder(actionDetails, displayDetails).build();
 
-        mRenderer.render(insight, null);
+        mRenderer.render(fakePublishInsight(insight), null);
 
         verify(mNotificationManagerInternal, never()).requestSystemAdjustments(any());
     }
@@ -223,7 +225,7 @@ public class NotificationActionRendererTest {
         when(mNotificationActionFactory.createNotificationAction(any(ActionableInsight.class)))
                 .thenReturn(null);
 
-        mRenderer.render(insight, null);
+        mRenderer.render(fakePublishInsight(insight), null);
 
         verify(mNotificationManagerInternal, never()).requestSystemAdjustments(any());
     }
@@ -356,7 +358,7 @@ public class NotificationActionRendererTest {
                 new InsightCollection.Builder()
                         .addInsight(new BundleInsight.Builder().build())
                         .build();
-        mRenderer.render(collection, null);
+        mRenderer.render(fakePublishInsight(collection), null);
         verify(mNotificationManagerInternal, never()).requestSystemAdjustments(any());
     }
 
@@ -474,7 +476,7 @@ public class NotificationActionRendererTest {
     }
 
     private List<Adjustment> renderAndCaptureAdjustments(ContextInsight insight) {
-        mRenderer.render(insight, null);
+        mRenderer.render(fakePublishInsight(insight), null);
 
         ArgumentCaptor<List<Adjustment>> captor = ArgumentCaptor.forClass(List.class);
         verify(mNotificationManagerInternal).requestSystemAdjustments(captor.capture());

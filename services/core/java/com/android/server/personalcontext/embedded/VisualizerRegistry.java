@@ -28,7 +28,7 @@ import android.os.UserHandle;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
 import android.service.personalcontext.embedded.InsightSurfaceVisualizerService;
-import android.service.personalcontext.insight.ContextInsight;
+import android.service.personalcontext.insight.PublishedContextInsight;
 import android.util.Slog;
 
 import androidx.annotation.Nullable;
@@ -208,12 +208,13 @@ public class VisualizerRegistry {
      * a visualizer that can accept the given insights.
      */
     public void createVisualizationForClient(
-            ContextInsight insight,
+            PublishedContextInsight publishedContextInsight,
             InsightSurfaceClientInfo client,
             RenderToken renderToken) {
         mInjector.queueAction(() ->
                 createVisualizationForClient(
-                        insight, client, renderToken, mVisualizers.values().iterator()));
+                        publishedContextInsight, client, renderToken,
+                        mVisualizers.values().iterator()));
     }
 
     private void registerVisualizers(@Nullable String packageName) {
@@ -250,7 +251,7 @@ public class VisualizerRegistry {
     }
 
     private void createVisualizationForClient(
-            ContextInsight insight,
+            PublishedContextInsight publishedInsight,
             InsightSurfaceClientInfo client,
             RenderToken renderToken,
             Iterator<VisualizerConnection> visualizers) {
@@ -260,12 +261,13 @@ public class VisualizerRegistry {
 
         final VisualizerConnection nextVisualizer = visualizers.next();
         nextVisualizer.createVisualizationForClient(
-                insight,
+                publishedInsight,
                 client,
                 renderToken,
                 (success) -> {
                     if (!success) {
-                        createVisualizationForClient(insight, client, renderToken, visualizers);
+                        createVisualizationForClient(publishedInsight, client, renderToken,
+                                visualizers);
                     }
                 });
     }

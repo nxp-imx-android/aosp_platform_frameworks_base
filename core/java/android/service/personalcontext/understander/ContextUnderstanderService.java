@@ -26,7 +26,6 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.ParcelUuid;
 import android.os.RemoteException;
-import android.service.personalcontext.ComponentIdProvider;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.PersonalContextManager;
 import android.service.personalcontext.hint.ContextHint;
@@ -34,7 +33,8 @@ import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.hint.ContextHintWithSignatureWrapper;
 import android.service.personalcontext.hint.HintFilter;
 import android.service.personalcontext.insight.ContextInsight;
-import android.service.personalcontext.insight.ContextInsightWrapper;
+import android.service.personalcontext.insight.PublishedContextInsight;
+import android.service.personalcontext.insight.PublishedContextInsightWrapper;
 import android.service.personalcontext.insight.interaction.InsightEvent;
 import android.service.personalcontext.refiner.IGetFilterCallback;
 import android.service.personalcontext.refiner.IRefineCallback;
@@ -76,20 +76,11 @@ public abstract class ContextUnderstanderService extends Service {
     }
 
     @NonNull
-    public final UUID getComponentId() {
+    private UUID getComponentId() {
         if (mComponentId == null) {
             throw new IllegalStateException("Service has not been configured yet");
         }
         return mComponentId;
-    }
-
-    /** Returns a {@link ComponentIdProvider} for this component. */
-    @NonNull
-    public final ComponentIdProvider getComponentIdProvider() {
-        if (mComponentId == null) {
-            throw new IllegalStateException("Service has not been configured yet");
-        }
-        return () -> mComponentId;
     }
 
     @Override
@@ -148,7 +139,7 @@ public abstract class ContextUnderstanderService extends Service {
         if (mPersonalContextManager == null) {
             throw new IllegalStateException("Personal Context Manager service is not running");
         }
-        mPersonalContextManager.publishInsight(List.of(insight));
+        mPersonalContextManager.publishInsight(List.of(insight), getComponentId());
     }
 
     /**
@@ -172,7 +163,8 @@ public abstract class ContextUnderstanderService extends Service {
      * @param insight {@link ContextInsight} that the user feedback is related to
      * @param feedback information about the requested feedback and user responses
      */
-    public void onHandleUserFeedback(@NonNull ContextInsight insight, @NonNull Bundle feedback) {
+    public void onHandleUserFeedback(@NonNull PublishedContextInsight insight,
+            @NonNull Bundle feedback) {
         // Do nothing by default.
     }
 
@@ -220,10 +212,10 @@ public abstract class ContextUnderstanderService extends Service {
         }
 
         @Override
-        public void handleFeedback(ContextInsightWrapper insight, Bundle feedback)
+        public void handleFeedback(PublishedContextInsightWrapper insight, Bundle feedback)
                 throws RemoteException {
             getServiceOrThrow().onHandleUserFeedback(
-                    insight.getContextInsight(),
+                    insight.getPublishedContextInsight(),
                     feedback);
         }
     }

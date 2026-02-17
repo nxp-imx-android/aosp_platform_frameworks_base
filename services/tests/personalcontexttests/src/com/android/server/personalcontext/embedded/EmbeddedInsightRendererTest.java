@@ -16,6 +16,7 @@
 
 package com.android.server.personalcontext.embedded;
 
+import static com.android.server.personalcontext.util.InsightUtils.fakePublishInsight;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -27,6 +28,7 @@ import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.embedded.IInsightSurfaceClient;
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
 import android.service.personalcontext.insight.BundleInsight;
+import android.service.personalcontext.insight.PublishedContextInsight;
 import android.view.View;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -80,7 +82,8 @@ public class EmbeddedInsightRendererTest {
         when(mClientRegistry.getClientForRenderToken(eq(renderToken))).thenReturn(client);
         when(mVisualizerRegistry.isEmpty()).thenReturn(false);
 
-        final BundleInsight insight = new BundleInsight.Builder().build();
+        final PublishedContextInsight insight =
+                fakePublishInsight(new BundleInsight.Builder().build());
         mEmbeddedInsightRenderer.render(insight, renderToken);
 
         verify(mVisualizerRegistry).createVisualizationForClient(

@@ -21,8 +21,8 @@ import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.hint.HintFilter;
 import android.service.personalcontext.hint.HintInvalidationHint;
-import android.service.personalcontext.insight.ContextInsight;
 import android.service.personalcontext.insight.HintInvalidationInsight;
+import android.service.personalcontext.insight.PublishedContextInsight;
 import android.service.personalcontext.insight.interaction.InsightEvent;
 
 import androidx.annotation.NonNull;
@@ -48,9 +48,18 @@ public class HintInvalidationUnderstander implements Refiner {
             .build();
 
     private final UUID mComponentId = UUID.randomUUID();
-    private final Consumer<? super HintInvalidationInsight> mPublishInsightCallback;
 
-    public HintInvalidationUnderstander(Consumer<ContextInsight> publishInsightCallback) {
+    public interface HintInvalidateInsightConsumer {
+        /**
+         * Invoked to publish a {@link HintInvalidationInsight}
+         * @param insight the insight to publish
+         * @param componentId the publisher's component id.
+         */
+        void consume(HintInvalidationInsight insight, UUID componentId);
+    }
+    private final HintInvalidateInsightConsumer mPublishInsightCallback;
+
+    public HintInvalidationUnderstander(HintInvalidateInsightConsumer publishInsightCallback) {
         mPublishInsightCallback = publishInsightCallback;
     }
 
@@ -68,8 +77,8 @@ public class HintInvalidationUnderstander implements Refiner {
     public void refine(@NonNull Set<ContextHintWithSignature> inputHints,
             @NonNull Consumer<Set<ContextHint>> callback) {
         for (ContextHintWithSignature hint : inputHints) {
-            mPublishInsightCallback.accept(
-                    new HintInvalidationInsight.Builder(hint).build());
+            mPublishInsightCallback.consume(
+                    new HintInvalidationInsight.Builder(hint).build(), getComponentId());
         }
     }
 
@@ -79,7 +88,7 @@ public class HintInvalidationUnderstander implements Refiner {
     }
 
     @Override
-    public void handleFeedback(@NonNull ContextInsight insight, Bundle feedback) {
+    public void handleFeedback(@NonNull PublishedContextInsight insight, Bundle feedback) {
         // Do nothing.
     }
 

@@ -20,7 +20,7 @@ import android.content.Context
 import android.service.personalcontext.RenderToken
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo
 import android.service.personalcontext.embedded.InsightSurfaceVisualizerService
-import android.service.personalcontext.insight.ContextInsight
+import android.service.personalcontext.insight.PublishedContextInsight
 import android.util.Log
 import android.view.View
 import androidx.compose.runtime.CompositionLocalProvider
@@ -62,7 +62,7 @@ constructor(
 
     override fun onCreateEmbeddedView(
         context: Context,
-        insight: ContextInsight,
+        publishedInsight: PublishedContextInsight,
         renderToken: RenderToken?,
         info: InsightSurfaceClientInfo,
     ): View? {
@@ -73,6 +73,7 @@ constructor(
             return null
         }
 
+        val insight = publishedInsight.insight
         val template = templateFactory.createTemplate(insight, info) ?: return null
 
         return composeViewFactory.createComposeView(context).apply {
