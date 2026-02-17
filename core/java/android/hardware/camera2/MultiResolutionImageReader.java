@@ -30,15 +30,19 @@ import android.hardware.HardwareBuffer;
 import android.hardware.HardwareBuffer.Usage;
 import android.hardware.camera2.extension.IOnActiveOutputSurfaceCallback;
 import android.hardware.camera2.params.MultiResolutionStreamInfo;
+import android.hardware.camera2.utils.SurfaceUtils;
 import android.media.Image;
 import android.media.ImageReader;
 import android.os.RemoteException;
+import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
 
 import com.android.internal.camera.flags.Flags;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Executor;
 
@@ -123,12 +127,15 @@ public class MultiResolutionImageReader implements AutoCloseable {
 
         int numImageReaders = streams.size();
         mReaders = new ImageReader[numImageReaders];
+        mUniqueIdReaderMap = new HashMap<>(numImageReaders);
         mStreamInfo = new MultiResolutionStreamInfo[numImageReaders];
         int index = 0;
         for (MultiResolutionStreamInfo streamInfo : streams) {
             mReaders[index] = ImageReader.newInstance(streamInfo.getWidth(),
                     streamInfo.getHeight(), format, maxImages);
             mStreamInfo[index] = streamInfo;
+            mUniqueIdReaderMap.put(SurfaceUtils.getSurfaceUniqueId(mReaders[index].getSurface()),
+                    mReaders[index]);
             index++;
         }
     }
@@ -220,11 +227,14 @@ public class MultiResolutionImageReader implements AutoCloseable {
         int numImageReaders = streams.size();
         mReaders = new ImageReader[numImageReaders];
         mStreamInfo = new MultiResolutionStreamInfo[numImageReaders];
+        mUniqueIdReaderMap = new HashMap<>(numImageReaders);
         int index = 0;
         for (MultiResolutionStreamInfo streamInfo : streams) {
             mReaders[index] = ImageReader.newInstance(streamInfo.getWidth(),
                     streamInfo.getHeight(), format, maxImages, usage);
             mStreamInfo[index] = streamInfo;
+            mUniqueIdReaderMap.put(SurfaceUtils.getSurfaceUniqueId(mReaders[index].getSurface()),
+                    mReaders[index]);
             index++;
         }
     }
@@ -255,12 +265,15 @@ public class MultiResolutionImageReader implements AutoCloseable {
 
         int numImageReaders = streams.size();
         mReaders = new ImageReader[numImageReaders];
+        mUniqueIdReaderMap = new HashMap<>(numImageReaders);
         mStreamInfo = new MultiResolutionStreamInfo[numImageReaders];
         int index = 0;
         for (MultiResolutionStreamInfo streamInfo : streams) {
             mReaders[index] = ImageReader.newInstance(streamInfo.getWidth(),
                     streamInfo.getHeight(), format, maxImages, usage);
             mStreamInfo[index] = streamInfo;
+            mUniqueIdReaderMap.put(SurfaceUtils.getSurfaceUniqueId(mReaders[index].getSurface()),
+                    mReaders[index]);
             index++;
         }
     }
@@ -687,6 +700,8 @@ public class MultiResolutionImageReader implements AutoCloseable {
     private final ImageReader[] mReaders;
     private final MultiResolutionStreamInfo[] mStreamInfo;
 
+    private final HashMap<Long, ImageReader> mUniqueIdReaderMap;
+
     private final int mFormat;
     private final int mMaxImages;
     private final boolean mConcurrencyEnabled;
@@ -697,9 +712,22 @@ public class MultiResolutionImageReader implements AutoCloseable {
     private final IOnActiveOutputSurfaceCallback mIOnActiveOutputSurfaceCallback =
             new IOnActiveOutputSurfaceCallback.Stub() {
         @Override
-        public void onActiveOutputSurfacesCallback(List<Surface> activeOutputSurfaces,
+        public void onActiveOutputSurfacesCallback(long[] activeSurfaceIds,
                 long timestamp, long frameNumber) throws RemoteException {
-            postOnActiveOutputSurfacesCallback(activeOutputSurfaces, timestamp, frameNumber);
+            List<Surface> activeOutputSurfaces = new ArrayList<>(activeSurfaceIds.length);
+            for (long surfaceId : activeSurfaceIds) {
+                ImageReader reader = mUniqueIdReaderMap.get(surfaceId);
+                if (reader != null) {
+                    activeOutputSurfaces.add(reader.getSurface());
+                } else {
+                    Log.e(TAG, "Invalid active surface id: " + surfaceId);
+                    activeOutputSurfaces.clear();
+                    break;
+                }
+            }
+            if (!activeOutputSurfaces.isEmpty()) {
+                postOnActiveOutputSurfacesCallback(activeOutputSurfaces, timestamp, frameNumber);
+            }
         }
     };
 }
