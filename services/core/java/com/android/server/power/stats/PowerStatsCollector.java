@@ -33,6 +33,7 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.Clock;
 import com.android.internal.os.PowerStats;
+import com.android.server.power.optimization.Flags;
 import com.android.server.power.stats.format.PowerStatsLayout;
 
 import java.io.PrintWriter;
@@ -417,6 +418,7 @@ public abstract class PowerStatsCollector {
         private boolean mFirstCollection = true;
         private int[] mEnergyConsumerIds;
         private long[] mLastConsumedEnergyUws;
+        // This is only used when ConsumedEnergyHelper is created for only 1 energy consumer.
         private final SparseLongArray mLastConsumerEnergyPerUid;
         private int mLastVoltageMv;
 
@@ -514,9 +516,15 @@ public abstract class PowerStatsCollector {
             }
 
             for (EnergyConsumerAttribution attribution : perUid) {
-                int uid = mUidResolver.getOwnerUid(attribution.uid);
-                long lastEnergy = mLastConsumerEnergyPerUid.get(uid, ENERGY_UNSPECIFIED);
-                mLastConsumerEnergyPerUid.put(uid, attribution.energyUWs);
+                long lastEnergy = ENERGY_UNSPECIFIED;
+                int ownerUid = mUidResolver.getOwnerUid(attribution.uid);
+                if (Flags.uidParentAttributionPreventOverwrite()) {
+                    lastEnergy = mLastConsumerEnergyPerUid.get(attribution.uid, ENERGY_UNSPECIFIED);
+                    mLastConsumerEnergyPerUid.put(attribution.uid, attribution.energyUWs);
+                } else {
+                    lastEnergy = mLastConsumerEnergyPerUid.get(ownerUid, ENERGY_UNSPECIFIED);
+                    mLastConsumerEnergyPerUid.put(ownerUid, attribution.energyUWs);
+                }
                 if (lastEnergy == ENERGY_UNSPECIFIED) {
                     continue;
                 }
@@ -525,10 +533,10 @@ public abstract class PowerStatsCollector {
                     continue;
                 }
 
-                long[] uidStats = powerStats.uidStats.get(uid);
+                long[] uidStats = powerStats.uidStats.get(ownerUid);
                 if (uidStats == null) {
                     uidStats = new long[layout.getUidStatsArrayLength()];
-                    powerStats.uidStats.put(uid, uidStats);
+                    powerStats.uidStats.put(ownerUid, uidStats);
                 }
 
                 layout.setUidConsumedEnergy(uidStats, energyConsumerIndex,
