@@ -13009,11 +13009,11 @@ package android.os.allowlist {
     method @RequiresPermission(android.Manifest.permission.QUERY_ALLOWLIST) public void removeOnAllowlistChangedListener(@NonNull java.util.function.Consumer<android.os.allowlist.AllowlistRequest>);
     field public static final int ALLOWLIST_ID_APP_FUNCTION = 2; // 0x2
     field public static final int ALLOWLIST_ID_COMPUTER_CONTROL = 3; // 0x3
-    field public static final String REQUEST_DATA_FILTER_PACKAGES = "android.allowlist.request.data.FILTER_PACKAGES";
-    field public static final String REQUEST_DATA_FILTER_TARGETS = "android.allowlist.request.data.FILTER_TARGETS";
-    field public static final String REQUEST_DATA_INSTALLED_PACKAGES_ONLY = "android.allowlist.request.data.INSTALLED_PACKAGES_ONLY";
-    field public static final String RESPONSE_DATA_ALLOWED_PACKAGES = "android.allowlist.response.data.ALLOWED_PACKAGES";
-    field public static final String RESPONSE_DATA_ALLOWED_PACKAGE_MULTI_MAP = "android.allowlist.response.data.ALLOWED_PACKAGE_MULTI_MAP";
+    field public static final String REQUEST_KEY_FILTER_PACKAGES = "android.allowlist.request.key.FILTER_PACKAGES";
+    field public static final String REQUEST_KEY_FILTER_TARGETS = "android.allowlist.request.key.FILTER_TARGETS";
+    field public static final String REQUEST_KEY_INSTALLED_PACKAGES_ONLY = "android.allowlist.request.key.INSTALLED_PACKAGES_ONLY";
+    field public static final String RESPONSE_KEY_ALLOWED_PACKAGES = "android.allowlist.response.key.ALLOWED_PACKAGES";
+    field public static final String RESPONSE_KEY_ALLOWED_PACKAGE_MULTI_MAP = "android.allowlist.response.key.ALLOWED_PACKAGE_MULTI_MAP";
     field public static final int RESPONSE_STATUS_ERROR_INVALID_REQUEST = 3; // 0x3
     field public static final int RESPONSE_STATUS_ERROR_NETWORK = 4; // 0x4
     field public static final int RESPONSE_STATUS_ERROR_PROVIDER = 2; // 0x2

@@ -2927,7 +2927,7 @@ package android.os.allowlist {
     method @RequiresPermission(android.Manifest.permission.QUERY_ALLOWLIST) public void notifyAllowlistChangedListenersForTestProvider(@NonNull java.util.List<android.os.allowlist.AllowlistRequest>);
     method @RequiresPermission(android.Manifest.permission.QUERY_ALLOWLIST) public void setTestProviderEnabled(boolean);
     field public static final int ALLOWLIST_ID_TEST = 1; // 0x1
-    field public static final String REQUEST_DATA_TEST_RESPONSE_STATUS = "android.allowlist.request.data.TEST_RESPONSE_STATUS";
+    field public static final String REQUEST_KEY_TEST_RESPONSE_STATUS = "android.allowlist.request.key.TEST_RESPONSE_STATUS";
   }
 
 }

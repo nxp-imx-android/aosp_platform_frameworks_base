@@ -116,51 +116,51 @@ public final class AllowlistManager {
      * {@link AllowlistRequest} data bundle key. It specifies packages to query for.
      * The value should be a list of {@link SignedPackage}.
      */
-    public static final String REQUEST_DATA_FILTER_PACKAGES =
-            "android.allowlist.request.data.FILTER_PACKAGES";
+    public static final String REQUEST_KEY_FILTER_PACKAGES =
+            "android.allowlist.request.key.FILTER_PACKAGES";
 
     /**
      * {@link AllowlistRequest} data bundle key. Used by {@link #ALLOWLIST_ID_APP_FUNCTION}. It
      * specifies targets apps to query for. The value should be a list of {@link SignedPackage}
      * as target apps.
      */
-    public static final String REQUEST_DATA_FILTER_TARGETS =
-            "android.allowlist.request.data.FILTER_TARGETS";
+    public static final String REQUEST_KEY_FILTER_TARGETS =
+            "android.allowlist.request.key.FILTER_TARGETS";
 
     /**
      * {@link AllowlistRequest} data bundle key. It specifies whether to return allowlist info only
      * for installed packages.
      * The value should be a boolean.
      */
-    public static final String REQUEST_DATA_INSTALLED_PACKAGES_ONLY =
-            "android.allowlist.request.data.INSTALLED_PACKAGES_ONLY";
+    public static final String REQUEST_KEY_INSTALLED_PACKAGES_ONLY =
+            "android.allowlist.request.key.INSTALLED_PACKAGES_ONLY";
 
     /**
-     * Data in the request for the test provider to specify the response status
+     * Key for the data in the request for the test provider to specify the response status
      *
      * @hide
      */
     @TestApi
-    public static final String REQUEST_DATA_TEST_RESPONSE_STATUS =
-            "android.allowlist.request.data.TEST_RESPONSE_STATUS";
+    public static final String REQUEST_KEY_TEST_RESPONSE_STATUS =
+            "android.allowlist.request.key.TEST_RESPONSE_STATUS";
 
     /**
      * {@link AllowlistResponse} data bundle key. When
-     * {@link AllowlistManager#REQUEST_DATA_FILTER_PACKAGES} or
-     * {@link AllowlistManager#REQUEST_DATA_INSTALLED_PACKAGES_ONLY} is provided in the request, the
+     * {@link AllowlistManager#REQUEST_KEY_FILTER_PACKAGES} or
+     * {@link AllowlistManager#REQUEST_KEY_INSTALLED_PACKAGES_ONLY} is provided in the request, the
      * response will contain a list of allowed packages. The value is a list of
      * {@link SignedPackage}
      */
-    public static final String RESPONSE_DATA_ALLOWED_PACKAGES =
-            "android.allowlist.response.data.ALLOWED_PACKAGES";
+    public static final String RESPONSE_KEY_ALLOWED_PACKAGES =
+            "android.allowlist.response.key.ALLOWED_PACKAGES";
 
     /**
      * {@link AllowlistResponse} data bundle key. Used by {@link #ALLOWLIST_ID_APP_FUNCTION}. It
      * specifies allowed targets for each agent. The value is an instance of
      * {@link SignedPackageMultiMap}.
      */
-    public static final String RESPONSE_DATA_ALLOWED_PACKAGE_MULTI_MAP =
-            "android.allowlist.response.data.ALLOWED_PACKAGE_MULTI_MAP";
+    public static final String RESPONSE_KEY_ALLOWED_PACKAGE_MULTI_MAP =
+            "android.allowlist.response.key.ALLOWED_PACKAGE_MULTI_MAP";
 
     /**
      * @hide

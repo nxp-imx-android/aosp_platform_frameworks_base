@@ -49,18 +49,18 @@ public class TestAllowlistProviderService extends AllowlistProviderService {
         }
 
         int status = AllowlistManager.RESPONSE_STATUS_SUCCESS;
-        if (request.getData().containsKey(AllowlistManager.REQUEST_DATA_TEST_RESPONSE_STATUS)) {
-            status = request.getData().getInt(AllowlistManager.REQUEST_DATA_TEST_RESPONSE_STATUS);
+        if (request.getData().containsKey(AllowlistManager.REQUEST_KEY_TEST_RESPONSE_STATUS)) {
+            status = request.getData().getInt(AllowlistManager.REQUEST_KEY_TEST_RESPONSE_STATUS);
         }
 
         Bundle responseData = new Bundle();
 
-        if (request.getData().containsKey(AllowlistManager.REQUEST_DATA_FILTER_TARGETS)
-                && request.getData().containsKey(AllowlistManager.REQUEST_DATA_FILTER_PACKAGES)) {
+        if (request.getData().containsKey(AllowlistManager.REQUEST_KEY_FILTER_TARGETS)
+                && request.getData().containsKey(AllowlistManager.REQUEST_KEY_FILTER_PACKAGES)) {
             ArrayList<SignedPackage> allowedAgents = request.getData().getParcelableArrayList(
-                    AllowlistManager.REQUEST_DATA_FILTER_PACKAGES, SignedPackage.class);
+                    AllowlistManager.REQUEST_KEY_FILTER_PACKAGES, SignedPackage.class);
             ArrayList<SignedPackage> allowedTargets = request.getData().getParcelableArrayList(
-                    AllowlistManager.REQUEST_DATA_FILTER_TARGETS, SignedPackage.class);
+                    AllowlistManager.REQUEST_KEY_FILTER_TARGETS, SignedPackage.class);
             Map<SignedPackage, List<SignedPackage>> allowedAgentsAndTargets = new ArrayMap<>();
 
             if (allowedAgents != null && allowedTargets != null) {
@@ -74,18 +74,18 @@ public class TestAllowlistProviderService extends AllowlistProviderService {
                 }
             }
 
-            responseData.putParcelable(AllowlistManager.RESPONSE_DATA_ALLOWED_PACKAGE_MULTI_MAP,
+            responseData.putParcelable(AllowlistManager.RESPONSE_KEY_ALLOWED_PACKAGE_MULTI_MAP,
                     new SignedPackageMultiMap(allowedAgentsAndTargets));
-        } else if (request.getData().containsKey(AllowlistManager.REQUEST_DATA_FILTER_PACKAGES)) {
+        } else if (request.getData().containsKey(AllowlistManager.REQUEST_KEY_FILTER_PACKAGES)) {
             ArrayList<SignedPackage> allowedPackages = request.getData().getParcelableArrayList(
-                    AllowlistManager.REQUEST_DATA_FILTER_PACKAGES, SignedPackage.class);
+                    AllowlistManager.REQUEST_KEY_FILTER_PACKAGES, SignedPackage.class);
             if (allowedPackages != null) {
-                responseData.putParcelableArrayList(AllowlistManager.RESPONSE_DATA_ALLOWED_PACKAGES,
+                responseData.putParcelableArrayList(AllowlistManager.RESPONSE_KEY_ALLOWED_PACKAGES,
                         allowedPackages);
             }
         } else if (request.getData().containsKey(
-                AllowlistManager.REQUEST_DATA_INSTALLED_PACKAGES_ONLY)) {
-            responseData.putParcelableArrayList(AllowlistManager.RESPONSE_DATA_ALLOWED_PACKAGES,
+                AllowlistManager.REQUEST_KEY_INSTALLED_PACKAGES_ONLY)) {
+            responseData.putParcelableArrayList(AllowlistManager.RESPONSE_KEY_ALLOWED_PACKAGES,
                     new ArrayList<>());
         }
 

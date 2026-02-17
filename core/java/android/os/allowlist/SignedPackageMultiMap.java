@@ -31,7 +31,7 @@ import java.util.Map;
 
 /**
  * A Parcelable that is a map of {@link SignedPackage} to a list of {@link SignedPackage} in
- * allowlist. It can be used in {@link AllowlistManager#RESPONSE_DATA_ALLOWED_PACKAGE_MULTI_MAP}
+ * allowlist. It can be used in {@link AllowlistManager#RESPONSE_KEY_ALLOWED_PACKAGE_MULTI_MAP}
  * response to represent agent to target mapping.
  * @hide
  */
