@@ -39,22 +39,22 @@
     <string name="bubble_not_supported_text" msgid="8843806122229754809">"အက်ပ်သည် ပူဖောင်းကွက်ကို မပံ့ပိုးပါ"</string>
     <string name="accessibility_divider" msgid="6407584574218956849">"မျက်နှာပြင် ခွဲ၍ပြသခြင်း ပိုင်းခြားစနစ်"</string>
     <string name="divider_title" msgid="1963391955593749442">"မျက်နှာပြင် ခွဲ၍ပြသခြင်း ပိုင်းခြားစနစ်"</string>
-    <string name="accessibility_action_divider_left_full" msgid="1857937769498651238">"ဘယ်အက်ပ်ကို ဖန်သားပြင်အပြည့် လုပ်ရန်"</string>
+    <string name="accessibility_action_divider_left_full" msgid="1857937769498651238">"ဘယ်အက်ပ်ကို စခရင်အပြည့် လုပ်ရန်"</string>
     <string name="accessibility_action_divider_left_10" formatted="false" msgid="8237692006159749086">"ဘယ် ၁၀%၊ ညာ ၉၀%"</string>
     <string name="accessibility_action_divider_left_30" formatted="false" msgid="5033298971212011735">"ဘယ် ၃၀%၊ ညာ ၇၀%"</string>
     <string name="accessibility_action_divider_left_50" formatted="false" msgid="170317638773112190">"ဘယ် ၅၀%၊ ညာ ၅၀%"</string>
     <string name="accessibility_action_divider_left_70" formatted="false" msgid="3986621081137830158">"ဘယ် ၇၀%၊ ညာ ၃၀%"</string>
     <string name="accessibility_action_divider_left_90" formatted="false" msgid="3525922058426249817">"ဘယ် ၉၀%၊ ညာ ၁၀%"</string>
-    <string name="accessibility_action_divider_right_full" msgid="4162106720432709858">"ညာဘက်အက်ပ်ကို ဖန်သားပြင်အပြည့် လုပ်ရန်"</string>
+    <string name="accessibility_action_divider_right_full" msgid="4162106720432709858">"ညာဘက်အက်ပ်ကို စခရင်အပြည့် လုပ်ရန်"</string>
     <string name="accessibility_action_divider_swap_vertical" msgid="8673406394251984853">"အပေါ်အက်ပ်နှင့် အောက်အက်ပ်ကို လက်ရှိခွဲထားသည့်အတိုင်း နေရာလဲရန်"</string>
     <string name="accessibility_action_divider_swap_horizontal" msgid="588604748596242580">"ဘယ်အက်ပ်ကို ညာအက်ပ်ဖြင့် လက်ရှိခွဲထားသည့်အတိုင်း နေရာလဲပါ"</string>
-    <string name="accessibility_action_divider_top_full" msgid="3986693999427747701">"အပေါ်အက်ပ်ကို ဖန်သားပြင်အပြည့် လုပ်ရန်"</string>
+    <string name="accessibility_action_divider_top_full" msgid="3986693999427747701">"အပေါ်အက်ပ်ကို စခရင်အပြည့် လုပ်ရန်"</string>
     <string name="accessibility_action_divider_top_10" formatted="false" msgid="6898920573675831044">"အပေါ် ၁၀%၊ အောက် ၉၀%"</string>
     <string name="accessibility_action_divider_top_30" formatted="false" msgid="6515643651303176050">"အပေါ် ၃၀%၊ အောက် ၇၀%"</string>
     <string name="accessibility_action_divider_top_50" formatted="false" msgid="1038204315880066213">"အပေါ် ၅၀%၊ အောက် ၅၀%"</string>
     <string name="accessibility_action_divider_top_70" formatted="false" msgid="5125673390883238862">"အပေါ် ၇၀%၊ အောက် ၃၀%"</string>
     <string name="accessibility_action_divider_top_90" formatted="false" msgid="7662868544020662698">"အပေါ် ၉၀%၊ အောက် ၁၀%"</string>
-    <string name="accessibility_action_divider_bottom_full" msgid="6437134983210745664">"အောက်ရှိအက်ပ်ကို ဖန်သားပြင်အပြည့် လုပ်ရန်"</string>
+    <string name="accessibility_action_divider_bottom_full" msgid="6437134983210745664">"အောက်ရှိအက်ပ်ကို စခရင်အပြည့် လုပ်ရန်"</string>
     <string name="accessibility_split_left" msgid="1713683765575562458">"ဘယ်ဘက်ကို ခွဲရန်"</string>
     <string name="accessibility_split_right" msgid="8441001008181296837">"ညာဘက်ကို ခွဲရန်"</string>
     <string name="accessibility_split_top" msgid="2789329702027147146">"ထိပ်ပိုင်းကို ခွဲရန်"</string>
@@ -120,7 +120,7 @@
     <string name="back_button_text" msgid="1469718707134137085">"နောက်သို့"</string>
     <string name="handle_text" msgid="4419667835599523257">"အက်ပ်သုံးသူအမည်"</string>
     <string name="app_icon_text" msgid="2823268023931811747">"အက်ပ်သင်္ကေတ"</string>
-    <string name="fullscreen_text" msgid="1162316685217676079">"ဖန်သားပြင်အပြည့်"</string>
+    <string name="fullscreen_text" msgid="1162316685217676079">"စခရင်အပြည့်"</string>
     <string name="desktop_text" msgid="9058641752519570266">"ဒက်စ်တော့ဝင်းဒိုးမုဒ်"</string>
     <string name="split_screen_text" msgid="1396336058129570886">"မျက်နှာပြင် ခွဲ၍ပြသရန်"</string>
     <string name="more_button_text" msgid="3655388105592893530">"ပိုပြပါ"</string>
@@ -137,7 +137,8 @@
     <string name="handle_menu_error_icon_text" msgid="7200375184879808684">"အမှားအယွင်း သင်္ကေတ"</string>
     <string name="close_text" msgid="4986518933445178928">"ပိတ်ရန်"</string>
     <string name="collapse_menu_text" msgid="7515008122450342029">"မီနူး ပိတ်ရန်"</string>
-    <string name="desktop_mode_app_header_chip_text" msgid="7617377295944971651">"<xliff:g id="APP_NAME">%1$s</xliff:g> (ဒက်စ်တော့ဝင်းဒိုးမုဒ်)"</string>
+    <!-- no translation found for desktop_mode_header_chip_text (7171700244998923330) -->
+    <skip />
     <string name="desktop_mode_layout_menu_maximize_text" msgid="7086608727256054454">"စခရင် ချဲ့ရန်"</string>
     <string name="desktop_mode_layout_menu_snap_text" msgid="7558194147987254333">"အရွယ်ပြင်ရန်"</string>
     <string name="desktop_mode_non_resizable_snap_text" msgid="3771776422751387878">"အက်ပ်ကို ဤနေရာသို့ ရွှေ့၍မရပါ"</string>
@@ -159,7 +160,10 @@
     <string name="app_handle_menu_accessibility_announce" msgid="7928858564852785398">"<xliff:g id="WINDOWING_MODE">%1$s</xliff:g> ကို ဝင်ရန်"</string>
     <string name="layout_menu_talkback_action_snap_left_text" msgid="8141501620544883986">"ဝင်းဒိုးကို ဘယ်ဘက်သို့ အရွယ်ပြင်ရန်"</string>
     <string name="layout_menu_talkback_action_snap_right_text" msgid="7819760135716721943">"ဝင်းဒိုးကို ညာဘက်သို့ အရွယ်ပြင်ရန်"</string>
-    <string name="layout_menu_talkback_action_maximize_restore_text" msgid="4164150689697006287">"ဝင်းဒိုးအရွယ်အစား ချဲ့ရန် (သို့) ပြန်ပြောင်းရန်"</string>
+    <string name="layout_menu_talkback_action_maximize_restore_text" msgid="132471919764977708">"အက်ပ်ဝင်းဒိုး အရွယ်အစားကို ချဲ့ရန်"</string>
+    <string name="layout_menu_talkback_action_restore_text" msgid="1791365751744400881">"ဝင်းဒိုးအရွယ်အစား ပြန်ပြောင်းရန်"</string>
+    <string name="layout_menu_talkback_action_immersive_enter_text" msgid="1753945477839147586">"မြှုပ်သွင်းမုဒ်သို့ ဝင်ရန်"</string>
+    <string name="layout_menu_talkback_action_immersive_restore_text" msgid="6913341567930893074">"ဝင်းဒိုးအရွယ်အစား ပြန်ပြောင်းရန်"</string>
     <string name="app_header_talkback_action_maximize_button_text" msgid="8776156791095878638">"အက်ပ်ဝင်းဒိုး အရွယ်အစားကို ချဲ့ရန်"</string>
     <string name="app_header_talkback_action_restore_button_text" msgid="2153022340772980863">"ဝင်းဒိုးအရွယ်အစား ပြန်ပြောင်းရန်"</string>
     <string name="app_header_talkback_action_minimize_button_text" msgid="7491054416186901764">"အက်ပ်ဝင်းဒိုးကို ချုံ့ရန်"</string>
