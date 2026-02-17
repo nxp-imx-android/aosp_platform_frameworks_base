@@ -92,6 +92,24 @@ public class WakelockMapperTest {
 
     @Test
     @EnableFlags(Flags.FLAG_REMOVE_CACHED_UIDS_FROM_WAKELOCK)
+    public void testGetWakeLocksForUid_createsDefensiveCopy() {
+        WorkSource workSource = new WorkSource();
+        WorkChain workChain = workSource.createWorkChain();
+        workChain.addNode(1002, "tag");
+
+        mWakeLock2.mWorkSource = workSource;
+        mWakelockMapper.addWakeLock(mWakeLock2);
+
+        Set<PowerManagerService.WakeLock> wakeLocks = mWakelockMapper.getWakeLocksForUid(1002);
+
+        mWakelockMapper.removeWakeLock(mWakeLock2);
+
+        assertEquals(1, wakeLocks.size());
+        assertTrue(wakeLocks.contains(mWakeLock2));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_REMOVE_CACHED_UIDS_FROM_WAKELOCK)
     public void testGetWakeLocksForUid_noWakeLocks() {
         Set<PowerManagerService.WakeLock> wakeLocks = mWakelockMapper.getWakeLocksForUid(1234);
         assertTrue(wakeLocks.isEmpty());

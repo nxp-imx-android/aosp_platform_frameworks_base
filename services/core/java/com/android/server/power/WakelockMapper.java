@@ -159,7 +159,7 @@ public class WakelockMapper {
      */
     public Set<PowerManagerService.WakeLock> getWakeLocksForUid(int uid) {
         synchronized (mLock) {
-            return mUidToWakeLocks.get(uid, Collections.emptySet());
+            return new ArraySet<>(mUidToWakeLocks.get(uid, Collections.emptySet()));
         }
     }
 
