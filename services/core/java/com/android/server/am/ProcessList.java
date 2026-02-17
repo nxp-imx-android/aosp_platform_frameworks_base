@@ -172,7 +172,6 @@ import com.android.server.AppStateTracker;
 import com.android.server.LocalServices;
 import com.android.server.ServiceThread;
 import com.android.server.StorageManagerInternal;
-import com.android.server.privatecompute.PccSandboxManagerInternal;
 import com.android.server.SystemConfig;
 import com.android.server.Watchdog;
 import com.android.server.am.psc.ActiveUidsInternal;
@@ -184,6 +183,7 @@ import com.android.server.am.psc.UidRecordInternal;
 import com.android.server.compat.PlatformCompat;
 import com.android.server.pm.pkg.AndroidPackage;
 import com.android.server.pm.pkg.PackageStateInternal;
+import com.android.server.privatecompute.PccSandboxManagerInternal;
 import com.android.server.wm.ActivityServiceConnectionsHolder;
 import com.android.server.wm.WindowManagerService;
 import com.android.server.wm.WindowProcessController;
@@ -3153,6 +3153,14 @@ public final class ProcessList extends ProcessListInternal
         final PackageManagerInternal pm = mService.getPackageManagerInternal();
         final ArrayList<Pair<ProcessRecord, Boolean>> procs = new ArrayList<>();
 
+        int pccAppId = Process.INVALID_UID;
+        if (enablePccFrameworkSupport() && packageName != null) {
+            final PackageStateInternal ps = pm.getPackageStateInternal(packageName);
+            if (ps != null) {
+                pccAppId = ps.getPccId();
+            }
+        }
+
         // Remove all processes this package may have touched: all with the
         // same UID (except for the system or root user), and all whose name
         // matches the package name.
@@ -3196,13 +3204,18 @@ public final class ProcessList extends ProcessListInternal
 
                 boolean shouldAllowRestart = false;
 
+                final int processAppId = UserHandle.getAppId(app.uid);
+                final boolean isAppIdMatch = (processAppId == appId);
+                final boolean isPccMatch =
+                        (pccAppId != Process.INVALID_UID && processAppId == pccAppId);
+
                 // If no package is specified, we call all processes under the
                 // given user id.
                 if (packageName == null) {
                     if (userId != UserHandle.USER_ALL && app.userId != userId) {
                         continue;
                     }
-                    if (appId >= 0 && UserHandle.getAppId(app.uid) != appId) {
+                    if (appId >= 0 && processAppId != appId) {
                         continue;
                     }
                     // Package has been specified, we want to hit all processes
@@ -3211,7 +3224,7 @@ public final class ProcessList extends ProcessListInternal
                 } else {
                     final boolean isDep = app.getPkgDeps() != null
                             && app.getPkgDeps().contains(packageName);
-                    if (!isDep && UserHandle.getAppId(app.uid) != appId) {
+                    if (!isDep && !isAppIdMatch && !isPccMatch) {
                         continue;
                     }
                     if (userId != UserHandle.USER_ALL && app.userId != userId) {
@@ -3236,14 +3249,17 @@ public final class ProcessList extends ProcessListInternal
                 if (setRemoved) {
                     app.setRemoved(true);
                 }
+
                 procs.add(new Pair<>(app, shouldAllowRestart));
             }
         }
 
         final boolean killingUserApp = appId >= Process.FIRST_APPLICATION_UID
                                     && appId <= Process.LAST_APPLICATION_UID;
+        final boolean killingPccApp = pccAppId >= Process.FIRST_PCC_UID
+                && pccAppId <= Process.LAST_PCC_UID;
 
-        if (killingUserApp) {
+        if (killingUserApp || killingPccApp) {
             procs.sort((o1, o2) -> Integer.compare(o1.first.uid, o2.first.uid));
         }
 
@@ -3251,10 +3267,12 @@ public final class ProcessList extends ProcessListInternal
         while (idx < procs.size()) {
             final List<Pair<ProcessRecord, Boolean>> uidProcs = getUIDSublist(procs, idx);
             final int packageUID = uidProcs.get(0).first.uid;
+            final int packageAppId = UserHandle.getAppId(packageUID);
 
             // Do not freeze for system apps or for dependencies of the targeted package, but
             // make sure to freeze the targeted package for all users if called with USER_ALL.
-            final boolean doFreeze = killingUserApp && UserHandle.getAppId(packageUID) == appId;
+            final boolean doFreeze = (killingUserApp && packageAppId == appId)
+                    || (killingPccApp && packageAppId == pccAppId);
 
             if (doFreeze) freezeBinderAndPackageCgroup(uidProcs, packageUID);
 
