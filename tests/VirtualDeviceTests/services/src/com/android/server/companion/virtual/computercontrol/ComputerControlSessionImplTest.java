@@ -49,6 +49,7 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.timeout;
@@ -192,6 +193,8 @@ public class ComputerControlSessionImplTest {
     @Mock
     private AppOpsManager mAppOpsManager;
     @Mock
+    private WindowManager mWindowManager;
+    @Mock
     private WindowManagerInternal mWindowManagerInternal;
     @Mock
     private UserManagerInternal mUserManagerInternal;
@@ -287,6 +290,11 @@ public class ComputerControlSessionImplTest {
                 .thenReturn(ownerContext);
         when(ownerContext.getPackageManager()).thenReturn(mOwnerPackageManager);
         when(ownerContext.getSystemService(Context.APP_OPS_SERVICE)).thenReturn(mAppOpsManager);
+
+        final Context displayContext = spy(new ContextWrapper(
+                InstrumentationRegistry.getInstrumentation().getTargetContext()));
+        doReturn(displayContext).when(mContext).createDisplayContext(any());
+        doReturn(mWindowManager).when(displayContext).getSystemService(WindowManager.class);
 
         LocalServices.removeAllServicesForTest();
         LocalServices.addService(WindowManagerInternal.class, mWindowManagerInternal);
