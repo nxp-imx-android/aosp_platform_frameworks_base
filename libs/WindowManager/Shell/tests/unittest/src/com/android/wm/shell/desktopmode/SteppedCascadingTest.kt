@@ -112,9 +112,9 @@ class SteppedCascadingTest : ShellTestCase() {
     }
 
     private companion object {
-        private const val DEFAULT_WIDTH = 1600
-        private const val DEFAULT_HEIGHT = 800
-        private val FRAME = Rect(0, 0, 2000, 1000)
+        private const val DEFAULT_WIDTH = 1400
+        private const val DEFAULT_HEIGHT = 600
+        private val FRAME = Rect(100, 100, 2000, 1000)
 
         private fun getDefaultBounds(): Rect {
             return Rect(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT).apply {
