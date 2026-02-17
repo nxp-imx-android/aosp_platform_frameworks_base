@@ -53,6 +53,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyFloat;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -74,7 +75,9 @@ import android.platform.test.annotations.EnableFlags;
 import android.view.SurfaceControl;
 import android.window.DisplayAreaInfo;
 import android.window.IRemoteTransition;
+import android.window.IRemoteTransitionFinishedCallback;
 import android.window.RemoteTransition;
+import android.window.RemoteTransitionStub;
 import android.window.TransitionInfo;
 import android.window.TransitionRequestInfo;
 import android.window.WindowContainerToken;
@@ -358,6 +361,38 @@ public class SplitTransitionTests extends ShellTestCase {
                 mock(SurfaceControl.Transaction.class));
 
         assertTrue(testRemote.isConsumed());
+    }
+
+    @Test
+    @UiThreadTest
+    public void testRemoteTransitionFails() {
+        TransitionInfo info = createEnterPairInfo();
+
+        RemoteTransitionStub testRemote = new RemoteTransitionStub() {
+
+            @Override
+            public void startAnimation(IBinder token, TransitionInfo info,
+                    SurfaceControl.Transaction t,
+                    IRemoteTransitionFinishedCallback finishCallback) throws RemoteException {
+                throw new RemoteException("startAnimation is not implemented!");
+            }
+        };
+
+        IBinder transition = mSplitScreenTransitions.startEnterTransition(
+                TRANSIT_OPEN, new WindowContainerTransaction(),
+                new RemoteTransition(testRemote, "Test"), mStageCoordinator,
+                TRANSIT_SPLIT_SCREEN_PAIR_OPEN, false, SNAP_TO_2_50_50);
+        Transitions.TransitionFinishCallback testFinish =
+                mock(Transitions.TransitionFinishCallback.class);
+        mMainStage.onTaskAppeared(mMainChild, createMockSurface());
+        mSideStage.onTaskAppeared(mSideChild, createMockSurface());
+        mStageCoordinator.startAnimation(transition, info,
+                mock(SurfaceControl.Transaction.class),
+                mock(SurfaceControl.Transaction.class),
+                testFinish);
+        verify(testFinish).onTransitionFinished(isNull());
+
+        assertFalse(mSplitScreenTransitions.hasActiveRemoteHandler());
     }
 
     @Test

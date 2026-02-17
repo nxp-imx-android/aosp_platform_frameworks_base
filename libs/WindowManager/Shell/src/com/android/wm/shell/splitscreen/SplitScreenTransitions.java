@@ -80,8 +80,6 @@ class SplitScreenTransitions {
     private IBinder mAnimatingTransition = null;
     private OneShotRemoteHandler mActiveRemoteHandler = null;
 
-    private final Transitions.TransitionFinishCallback mRemoteFinishCB = this::onFinish;
-
     /** Keeps track of currently running animations */
     private final ArrayList<Animator> mAnimations = new ArrayList<>();
     private final StageCoordinator mStageCoordinator;
@@ -130,10 +128,14 @@ class SplitScreenTransitions {
             }
 
             if (pendingTransition.mRemoteHandler != null) {
-                pendingTransition.mRemoteHandler.startAnimation(transition, info, startTransaction,
-                        finishTransaction, mRemoteFinishCB);
+                // Must be assigned before startAnimation, as the animation could finish instantly.
                 mActiveRemoteHandler = pendingTransition.mRemoteHandler;
-                return;
+                if (pendingTransition.mRemoteHandler.startAnimation(transition, info,
+                        startTransaction, finishTransaction, this::onFinish)) {
+                    return;
+                } else {
+                    mActiveRemoteHandler = null;
+                }
             }
         }
 
@@ -341,6 +343,12 @@ class SplitScreenTransitions {
     boolean isPendingPassThrough(IBinder transition) {
         return mPendingRemotePassthrough != null &&
                 mPendingRemotePassthrough.mTransition == transition;
+    }
+
+    /** Checks whether there is an active one-shot RemoteTransition handler. */
+    @VisibleForTesting
+    boolean hasActiveRemoteHandler() {
+        return mActiveRemoteHandler != null;
     }
 
     @Nullable
