@@ -22,7 +22,6 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.om.OverlayConstraint;
 import android.content.pm.ApplicationInfo;
-import android.content.res.Flags;
 import android.os.UserHandle;
 import android.util.ArrayMap;
 import android.util.ArraySet;
@@ -75,7 +74,7 @@ final class AppCompatResourceOverlayPolicy {
     }
 
     void setDisplayId(int displayId) {
-        if (!Flags.overlayConstraintAwareAssetPathChanges() || mDisplayId == displayId) {
+        if (mDisplayId == displayId) {
             return;
         }
 
@@ -93,10 +92,6 @@ final class AppCompatResourceOverlayPolicy {
     }
 
     boolean doResourceOverlayChangesAffectActivity() {
-        if (!Flags.overlayConstraintAwareAssetPathChanges()) {
-            return true;
-        }
-
         if (mOverlayManagerInternal == null) {
             mOverlayManagerInternal =
                     LocalServices.getService(OverlayManagerInternal.class);
@@ -195,10 +190,6 @@ final class AppCompatResourceOverlayPolicy {
     }
 
     private void initializeReportedOverlayPaths() {
-        if (!Flags.overlayConstraintAwareAssetPathChanges()) {
-            return;
-        }
-
         final String[] overlayPaths = mActivityRecord.info.applicationInfo.overlayPaths;
         if (overlayPaths == null) {
             return;

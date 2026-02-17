@@ -223,16 +223,6 @@ flag {
 }
 
 flag {
-    name: "overlay_constraint_aware_asset_path_changes"
-    namespace: "resource_manager"
-    description: "Consider resource overlay constraints during configuration change based on asset path changes"
-    bug: "447660715"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "generate_external_resource_idmaps"
     namespace: "resource_manager"
     description: "Generate and use idmaps for external resources referenced in APKs"
