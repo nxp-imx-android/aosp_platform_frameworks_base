@@ -36,8 +36,8 @@
     <string name="status_bar_settings_auto_rotation" msgid="8329080442278431708">"ઑટો રોટેટ સ્ક્રીન"</string>
     <string name="usb_device_permission_prompt" msgid="4414719028369181772">"<xliff:g id="USB_DEVICE">%2$s</xliff:g>ના ઍક્સેસ માટે <xliff:g id="APPLICATION">%1$s</xliff:g>ને મંજૂરી આપીએ?"</string>
     <string name="usb_device_permission_prompt_warn" msgid="2309129784984063656">"<xliff:g id="APPLICATION">%1$s</xliff:g>ને <xliff:g id="USB_DEVICE">%2$s</xliff:g> ઍક્સેસ કરવાની મંજૂરી આપીએ?\nઆ ઍપને રેકૉર્ડ કરવાની પરવાનગી આપવામાં આવી નથી પરંતુ તે આ USB ડિવાઇસ મારફત ઑડિયો કૅપ્ચર કરી શકે છે."</string>
-    <string name="usb_audio_device_permission_prompt_title" msgid="4221351137250093451">"<xliff:g id="USB_DEVICE">%2$s</xliff:g>ના ઍક્સેસ માટે <xliff:g id="APPLICATION">%1$s</xliff:g>ને મંજૂરી આપીએ?"</string>
-    <string name="usb_audio_device_confirm_prompt_title" msgid="8828406516732985696">"<xliff:g id="USB_DEVICE">%2$s</xliff:g>ને હૅન્ડલ કરવા માટે <xliff:g id="APPLICATION">%1$s</xliff:g>ને ખોલીએ?"</string>
+    <string name="usb_audio_device_permission_prompt_title" msgid="6812876813400484157">"&lt;b&gt;<xliff:g id="APPLICATION">%1$s</xliff:g>&lt;/b&gt;ને &lt;b&gt;<xliff:g id="USB_DEVICE">%2$s</xliff:g>&lt;/b&gt;ના ઍક્સેસની મંજૂરી આપીએ?"</string>
+    <string name="usb_audio_device_confirm_prompt_title" msgid="7623364019381948073">"&lt;b&gt;<xliff:g id="USB_DEVICE">%2$s</xliff:g>&lt;/b&gt;ને હૅન્ડલ કરવા માટે &lt;b&gt;<xliff:g id="APPLICATION">%1$s</xliff:g>&lt;/b&gt; ખોલીએ?"</string>
     <string name="usb_audio_device_prompt_warn" msgid="2504972133361130335">"આ ઍપને રેકોર્ડ કરવાની પરવાનગી આપવામાં આવી નથી પરંતુ તે આ USB ડિવાઇસ મારફતે ઑડિયો કૅપ્ચર કરી શકે છે. આ ડિવાઇસ સાથે <xliff:g id="APPLICATION">%1$s</xliff:g>નો ઉપયોગ કરવાથી કૉલ, નોટિફિકેશન અને અલાર્મ ન સંભળાય તેમ બની શકે."</string>
     <string name="usb_audio_device_prompt" msgid="7944987408206252949">"આ ડિવાઇસ સાથે <xliff:g id="APPLICATION">%1$s</xliff:g>નો ઉપયોગ કરવાથી કૉલ, નોટિફિકેશન અને અલાર્મ ન સંભળાય તેમ બની શકે."</string>
     <string name="usb_accessory_permission_prompt" msgid="717963550388312123">"<xliff:g id="USB_ACCESSORY">%2$s</xliff:g>ના ઍક્સેસ માટે <xliff:g id="APPLICATION">%1$s</xliff:g>ને મંજૂરી આપીએ?"</string>
@@ -112,10 +112,8 @@
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"વધુ કૅપ્ચર કરો"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"સ્ક્રીનશૉટ છોડી દો"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"ઑફિસની પ્રોફાઇલનો મેસેજ છોડી દો"</string>
-    <!-- no translation found for screenshot_open_in_folder_label (7030308792263959983) -->
-    <skip />
-    <!-- no translation found for screenshot_open_in_folder_description (2181459418652236210) -->
-    <skip />
+    <string name="screenshot_open_in_folder_label" msgid="7030308792263959983">"જુઓ"</string>
+    <string name="screenshot_open_in_folder_description" msgid="2181459418652236210">"Filesમાં સ્ક્રીનશૉટ જોવા માટે બટન"</string>
     <string name="screenshot_preview_description" msgid="7606510140714080474">"સ્ક્રીનશૉટનો પ્રીવ્યૂ"</string>
     <string name="screenshot_top_boundary_pct" msgid="2520148599096479332">"ઉપરની સીમા <xliff:g id="PERCENT">%1$d</xliff:g> ટકા"</string>
     <string name="screenshot_bottom_boundary_pct" msgid="3880821519814946478">"નીચેની સીમા <xliff:g id="PERCENT">%1$d</xliff:g> ટકા"</string>
@@ -187,6 +185,8 @@
     <string name="screen_record_mute" msgid="8111682249858638168">"મ્યૂટ કરો"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"અનમ્યૂટ કરો"</string>
     <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="DURATION">%2$s</xliff:g>માંથી <xliff:g id="ELAPSED_TIME">%1$s</xliff:g>"</string>
+    <!-- no translation found for screen_record_selfie_hint (7176948583444196453) -->
+    <skip />
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"તમારા IT ઍડમિન દ્વારા સ્ક્રીન કૅપ્ચરની સુવિધા બ્લૉક કરવામાં આવી છે"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"સંપૂર્ણ સ્ક્રીનનો સ્ક્રીનશૉટ લો"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"પૂર્ણ સ્ક્રીન રેકોર્ડ કરો"</string>
@@ -199,7 +199,9 @@
     <string name="screen_capture_region_box_bottom_right_handle_description" msgid="5444943380877006881">"સૌથી નીચે જમણી બાજુનું હૅન્ડલ - કદ બદલવા માટે ઍરો કીનો ઉપયોગ કરો"</string>
     <string name="screen_capture_region_box_bottom_left_handle_description" msgid="6095764656409143184">"સૌથી નીચે ડાબી બાજુનું હૅન્ડલ - કદ બદલવા માટે ઍરો કીનો ઉપયોગ કરો"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"શેર કરો"</string>
-    <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"શેર કરવા માટે કોઈ ઍપ પસંદ કરો"</string>
+    <string name="screen_share_no_select_app_thumbnail" msgid="1886183147809224215">"શેર કરવા માટેની ઍપ વિન્ડો પસંદ કરો"</string>
+    <string name="screen_share_no_select_tab_thumbnail" msgid="677801966729809584">"શેર કરવા માટેનું ટૅબ પસંદ કરો"</string>
+    <string name="screen_share_no_select_display_thumbnail" msgid="4351422134286332559">"શેર કરવા માટેનું ડિસ્પ્લે પસંદ કરો"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"ઑડિયો શેર કરો"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"ઍપની વિન્ડો શેર કરો"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"ટૅબ શેર કરો"</string>
@@ -217,11 +219,11 @@
     <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"ડિસ્પ્લે શેર કરવાનું બંધ કર્યું: <xliff:g id="DISPLAY_NAME">%1$s</xliff:g>. સ્ક્રીન કોઈની સાથે શેર કરવામાં આવી નથી."</string>
     <string name="screen_share_a11y_close_button" msgid="8017115316741874857">"\'બંધ કરો\' બટન. શેર કરવા પહેલાંનો સંવાદ બંધ કરવા માટે Enter કી દબાવો."</string>
     <string name="screen_share_a11y_tab_button_unselected" msgid="5363622532939787310">"ટૅબ શેર કરવાનું બટન. પસંદ કર્યું નથી. ટૅબ શેર કરવા માટે Enter કી દબાવો."</string>
-    <string name="screen_share_a11y_tab_button_selected" msgid="4304681826101817704">"શેરિંગ ટૅબ. ઉપલબ્ધ ટૅબ જોવા માટે નૅવિગેટ કરો."</string>
+    <string name="screen_share_a11y_tab_button_selected" msgid="3969246191128243157">"ટૅબ શેર કરી રહ્યાં છીએ. ઉપલબ્ધ ટૅબ ચેક કરવા માટે નૅવિગેટ કરો."</string>
     <string name="screen_share_a11y_app_button_unselected" msgid="4539549394242556282">"ઍપ શેરિંગ બટન. પસંદ કર્યું નથી. ઍપ શેર કરવા માટે Enter કી દબાવો."</string>
-    <string name="screen_share_a11y_app_button_selected" msgid="6049272377472922732">"ઍપ શેર કરી રહ્યાં છીએ. ઉપલબ્ધ ઍપ જોવા માટે નૅવિગેટ કરો."</string>
+    <string name="screen_share_a11y_app_button_selected" msgid="4891977117777987696">"ઍપ શેર કરી રહ્યાં છીએ. ઉપલબ્ધ ઍપ ચેક કરવા માટે નૅવિગેટ કરો."</string>
     <string name="screen_share_a11y_fullscreen_button_unselected" msgid="2492516552817892989">"પૂર્ણસ્ક્રીન બટન. પસંદ કર્યું નથી. પૂર્ણસ્ક્રીન શેર કરવા માટે Enter કી દબાવો."</string>
-    <string name="screen_share_a11y_fullscreen_button_selected" msgid="6706822615908429473">"પૂર્ણસ્ક્રીન શેર કરી રહ્યાં છીએ. ઉપલબ્ધ ડિસ્પ્લે જોવા માટે નૅવિગેટ કરો."</string>
+    <string name="screen_share_a11y_fullscreen_button_selected" msgid="4428416497634907009">"પૂર્ણસ્ક્રીન શેર કરી રહ્યાં છીએ. ઉપલબ્ધ ડિસ્પ્લે ચેક કરવા માટે નૅવિગેટ કરો."</string>
     <string name="screen_share_a11y_share_button_off" msgid="2004866083045967602">"શેર કરો બટન. બંધ છે. શેર કરવા માટે ઍપ, ટૅબ કે ડિસ્પ્લે પસંદ કરો."</string>
     <string name="screen_share_a11y_share_button_on" msgid="1311279200212158833">"શેરિંગ ચાલુ છે. <xliff:g id="ITEM">%1$s</xliff:g> પસંદ કરી. શેરિંગ શરૂ કરવા માટે Enter કી દબાવો."</string>
     <string name="screen_share_a11y_item_unselected" msgid="7479321583507874795">"<xliff:g id="ITEM_NAME">%1$s</xliff:g>. પસંદ કરી નથી. પસંદ કરવા માટે Enter કી દબાવો."</string>
@@ -238,8 +240,7 @@
     <string name="screen_capture_post_recording_shelf_share_button_a11y" msgid="2907313384921655711">"સ્ક્રીન રેકોર્ડિંગ શેર કરો"</string>
     <string name="screen_capture_post_recording_shelf_folder_button_a11y" msgid="4217075254383938093">"ફાઇલ મેનેજરમાં સ્ક્રીન રેકોર્ડિંગ ખોલો"</string>
     <string name="screen_capture_post_recording_shelf_delete_button_a11y" msgid="8519897681775354217">"સ્ક્રીન રેકોર્ડિંગ ડિલીટ કરો"</string>
-    <!-- no translation found for screen_capture_post_recording_shelf_thumbnail_a11y (4764732838982357845) -->
-    <skip />
+    <string name="screen_capture_post_recording_shelf_thumbnail_a11y" msgid="4764732838982357845">"જોવા માટેની ઍપમાં સ્ક્રીન રેકોર્ડિંગ ખોલો"</string>
     <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"ક્લિક અને કી બતાવો"</string>
     <string name="screen_capture_device_audio" msgid="1537290197773737349">"ડિવાઇસનો ઑડિયો"</string>
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"માઇક્રોફોન"</string>
@@ -294,7 +295,6 @@
     <string name="accessibility_unlock_button" msgid="3613812140816244310">"અનલૉક કર્યું છે"</string>
     <string name="accessibility_lock_icon" msgid="661492842417875775">"ડિવાઇસ લૉક કરેલું છે"</string>
     <string name="accessibility_confirm_biometric_auth_to_unlock" msgid="1600162805010332470">"કન્ફર્મ કરીને ડિવાઇસ અનલૉક કરો"</string>
-    <string name="accessibility_retry_face_auth" msgid="3018310877303150273">"ફેસ અનલૉકની સુવિધા ફરી અજમાવો્"</string>
     <string name="accessibility_scanning_face" msgid="3093828357921541387">"ચહેરો સ્કૅન કરવો"</string>
     <string name="accessibility_send_smart_reply" msgid="8885032190442015141">"મોકલો"</string>
     <string name="cancel" msgid="1089011503403416730">"રદ કરો"</string>
@@ -307,11 +307,8 @@
     <string name="biometric_dialog_face_icon_description_authenticated" msgid="2242167416140740920">"ચહેરાનું પ્રમાણીકરણ થયું"</string>
     <string name="biometric_dialog_face_icon_description_confirmed" msgid="7918067993953940778">"પુષ્ટિ કરી"</string>
     <string name="biometric_dialog_tap_confirm" msgid="9166350738859143358">"પરીક્ષણ પૂર્ણ કરવા કન્ફર્મ કરોને ટૅપ કરો"</string>
-    <string name="biometric_dialog_tap_confirm_with_face" msgid="2378151312221818694">"ચહેરા દ્વારા અનલૉક કર્યું"</string>
-    <string name="biometric_dialog_tap_confirm_with_face_alt_1" msgid="439152621640507113">"ચહેરા દ્વારા અનલૉક કર્યું. આગળ વધવા માટે દબાવો."</string>
     <string name="biometric_dialog_tap_confirm_with_face_alt_2" msgid="8586608186457385108">"ચહેરો ઓળખ્યો. આગળ વધવા માટે દબાવો."</string>
     <string name="biometric_dialog_tap_confirm_with_face_alt_3" msgid="2192670471930606539">"ચહેરો ઓળખ્યો. આગળ વધવા \'અનલૉક કરો\' આઇકન દબાવો."</string>
-    <string name="biometric_dialog_tap_confirm_with_face_sfps" msgid="2499213248903257928">"ચહેરા દ્વારા અનલૉક કર્યું. ચાલુ રાખવા માટે ટૅપ કરો."</string>
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"પ્રમાણિત"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"પ્રમાણીકરણ રદ કરો"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"વધુ વિકલ્પો"</string>
@@ -356,11 +353,6 @@
     <string name="fingerprint_re_enroll_dialog_content" msgid="4866561176695984879">"ફિંગરપ્રિન્ટ અનલૉક સુવિધાનું ફરી સેટઅપ કરવા માટે, તમારી ફિંગરપ્રિન્ટની વર્તમાન છબીઓ અને મૉડલ ડિલીટ કરવામાં આવશે.\n\nતે ડિલીટ થયા પછી, તમારા ફોનને અનલૉક કરવા અથવા એ તમે જ છો તેની ચકાસણી કરવા માટે તમારી ફિંગરપ્રિન્ટનો ઉપયોગ કરવા, તમારે ફિંગરપ્રિન્ટ અનલૉક સુવિધાનું ફરી સેટઅપ કરવું જરૂરી રહેશે."</string>
     <string name="fingerprint_re_enroll_dialog_content_singular" msgid="3083663339787381218">"ફિંગરપ્રિન્ટ અનલૉક સુવિધાનું ફરી સેટઅપ કરવા માટે, તમારી ફિંગરપ્રિન્ટની વર્તમાન છબીઓ અને મૉડલ ડિલીટ કરવામાં આવશે.\n\nતે ડિલીટ થયા પછી, તમારા ફોનને અનલૉક કરવા અથવા એ તમે જ છો તેની ચકાસણી કરવા માટે તમારી ફિંગરપ્રિન્ટનો ઉપયોગ કરવા, તમારે ફિંગરપ્રિન્ટ અનલૉક સુવિધાનું ફરી સેટઅપ કરવું જરૂરી રહેશે."</string>
     <string name="fingerprint_reenroll_failure_dialog_content" msgid="4733768492747300666">"ફિંગરપ્રિન્ટ અનલૉક સુવિધાનું સેટઅપ કરી શક્યા નથી. ફરી પ્રયાસ કરવા માટે સેટિંગ પર જાઓ."</string>
-    <string name="face_re_enroll_notification_title" msgid="1850838867718410520">"ફેસ અનલૉક સુવિધાનું ફરી સેટઅપ કરો"</string>
-    <string name="face_re_enroll_notification_name" msgid="7384545252206120659">"ફેસ અનલૉક"</string>
-    <string name="face_re_enroll_dialog_title" msgid="6392173708176069994">"ફેસ અનલૉક સુવિધાનું સેટઅપ કરો"</string>
-    <string name="face_re_enroll_dialog_content" msgid="7353502359464038511">"ફેસ અનલૉક સુવિધાનું ફરી સેટઅપ કરવા માટે, તમારા ચહેરાનું વર્તમાન મૉડલ ડિલીટ કરવામાં આવશે.\n\nતમારો ફોન અનલૉક કરવા તમારા ચહેરાનો ઉપયોગ કરવા માટે, તમારે આ સુવિધાનું ફરી સેટઅપ કરવું જરૂરી રહેશે."</string>
-    <string name="face_reenroll_failure_dialog_content" msgid="7073947334397236935">"ફેસ અનલૉક સુવિધાનું સેટઅપ કરી શક્યા નથી. ફરી પ્રયાસ કરવા માટે સેટિંગ પર જાઓ."</string>
     <string name="fingerprint_dialog_touch_sensor" msgid="2817887108047658975">"ફિંગરપ્રિન્ટના સેન્સરને ટચ કરો"</string>
     <string name="fingerprint_dialog_authenticated_confirmation" msgid="1603899612957562862">"ચાલુ રાખવા \'અનલૉક કરો\' આઇકન દબાવો"</string>
     <string name="fingerprint_dialog_use_fingerprint_instead" msgid="5542430577183894219">"ચહેરો ઓળખાયો નથી. તેને બદલે ફિંગરપ્રિન્ટ વાપરો."</string>
@@ -368,7 +360,6 @@
     <skip />
     <string name="keyguard_face_failed" msgid="2346762871330729634">"ચહેરો ઓળખાયો નથી"</string>
     <string name="keyguard_suggest_fingerprint" msgid="8742015961962702960">"તો ફિંગરપ્રિન્ટ વાપરો"</string>
-    <string name="keyguard_face_unlock_unavailable" msgid="1581949044193418736">"ફેસ અનલૉક સુવિધા ઉપલબ્ધ નથી"</string>
     <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"બ્લૂટૂથ કનેક્ટ થયું."</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"બ્લૂટૂથ ડિવાઇસનું આઇકન"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"ડિવાઇસની વિગત ગોઠવવા માટે ક્લિક કરો"</string>
@@ -544,6 +535,7 @@
     <string name="quick_settings_nfc_off" msgid="3465000058515424663">"NFC અક્ષમ કરેલ છે"</string>
     <string name="quick_settings_nfc_on" msgid="1004976611203202230">"NFC સક્ષમ કરેલ છે"</string>
     <string name="quick_settings_screen_record_label" msgid="8650355346742003694">"સ્ક્રીન રેકોર્ડ"</string>
+    <string name="quick_settings_screen_capture_label" msgid="4400625606618045690">"સ્ક્રીન કૅપ્ચર"</string>
     <string name="quick_settings_screen_record_start" msgid="1574725369331638985">"શરૂ કરો"</string>
     <string name="quick_settings_screen_record_stop" msgid="8087348522976412119">"રોકો"</string>
     <string name="qs_record_issue_label" msgid="8166290137285529059">"સમસ્યા રેકોર્ડ કરો"</string>
@@ -639,16 +631,10 @@
     <string name="tap_again" msgid="1315420114387908655">"ફરીથી ટૅપ કરો"</string>
     <string name="keyguard_unlock" msgid="8031975796351361601">"ખોલવા માટે ઉપરની તરફ સ્વાઇપ કરો"</string>
     <string name="keyguard_unlock_press" msgid="9140109453735019209">"ખોલવા માટે \'અનલૉક કરો\' આઇકન દબાવો"</string>
-    <string name="keyguard_face_successful_unlock_swipe" msgid="6180997591385846073">"ચહેરા દ્વારા અનલૉક કર્યું. ખોલવા માટે ઉપરની તરફ સ્વાઇપ કરો."</string>
-    <string name="keyguard_face_successful_unlock_confirm_button" msgid="3862344771780817393">"ચહેરા દ્વારા અનલૉક કર્યું. ચાલુ રાખવા, \'કન્ફર્મ કરો\' દબાવો."</string>
-    <string name="keyguard_face_successful_unlock_press" msgid="25520941264602588">"ચહેરા દ્વારા અનલૉક કર્યું. ખોલવા \'અનલૉક કરો\' આઇકન દબાવો."</string>
-    <string name="keyguard_face_successful_unlock_press_alt_1" msgid="5715461103913071474">"ચહેરા દ્વારા અનલૉક કર્યું. ખોલવા માટે દબાવો."</string>
     <string name="keyguard_face_successful_unlock_press_alt_2" msgid="8310787946357120406">"ચહેરો ઓળખ્યો. ખોલવા માટે દબાવો."</string>
     <string name="keyguard_face_successful_unlock_press_alt_3" msgid="7219030481255573962">"ચહેરો ઓળખ્યો. ખોલવા માટે \'અનલૉક કરો\' આઇકન દબાવો."</string>
-    <string name="keyguard_face_successful_unlock" msgid="4203999851465708287">"ચહેરા દ્વારા અનલૉક કર્યું"</string>
     <string name="keyguard_face_successful_unlock_alt1" msgid="5853906076353839628">"ચહેરો ઓળખ્યો"</string>
     <string name="keyguard_retry" msgid="886802522584053523">"ફરી પ્રયાસ કરવા માટે ઉપરની તરફ સ્વાઇપ કરો"</string>
-    <string name="accesssibility_keyguard_retry" msgid="8880238862712870676">"ફેસ અનલૉક ફરીથી અજમાવવા માટે ઉપર સ્વાઇપ કરો"</string>
     <string name="require_unlock_for_nfc" msgid="1305686454823018831">"NFCનો ઉપયોગ કરવા માટે અનલૉક કરો"</string>
     <string name="do_disclosure_generic" msgid="4896482821974707167">"આ ડિવાઇસ તમારી સંસ્થાની માલિકીનું છે"</string>
     <string name="do_disclosure_with_name" msgid="2091641464065004091">"આ ડિવાઇસ <xliff:g id="ORGANIZATION_NAME">%s</xliff:g>ની માલિકીનું છે"</string>
@@ -917,7 +903,7 @@
     <string name="volume_panel_hint_muted" msgid="1124844870181285320">"મ્યૂટ કરી છે"</string>
     <string name="volume_panel_hint_vibrate" msgid="4136223145435914132">"વાઇબ્રેટ"</string>
     <string name="media_output_label_title" msgid="872824698593182505">"<xliff:g id="LABEL">%s</xliff:g> વગાડી રહ્યાં છીએ"</string>
-    <string name="media_output_title_without_playing" msgid="3825663683169305013">"ઑડિયો આની પર વાગશે"</string>
+    <string name="media_output_title_without_playing" msgid="3825663683169305013">"ઑડિયો આના પર વાગશે"</string>
     <string name="media_output_title_ongoing_call" msgid="208426888064112006">"કૉલ ચાલુ છે"</string>
     <string name="system_ui_tuner" msgid="1471348823289954729">"સિસ્ટમ UI ટ્યૂનર"</string>
     <string name="status_bar" msgid="4357390266055077437">"સ્ટેટસ બાર"</string>
@@ -1254,10 +1240,16 @@
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"ઍક્સેસિબિલિટી કી"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"ઍક્સેસિબિલિટી સુવિધાઓનો ઉપયોગ કરવાનું શરૂ કરવા માટે, તમે ઍક્સેસિબિલિટી કી દબાવી શકો છો."</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"સુવિધાઓ ઉમેરો"</string>
+    <!-- no translation found for accessibility_shortcutchooser_toprow_editor_dialog_title (1898531469029411168) -->
+    <skip />
     <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"<xliff:g id="ID_1">%1$s</xliff:g>નું સેટઅપ કરો"</string>
     <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"થઈ ગયું"</string>
     <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"સુવિધા પસંદ કરો"</string>
     <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"ફેરફાર કરો"</string>
+    <!-- no translation found for accessibility_nav_bar_more_options_title (2549386798738178479) -->
+    <skip />
+    <!-- no translation found for accessibility_nav_bar_more_options_subtitle (4336832036115080533) -->
+    <skip />
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"ઍક્સેસિબિલિટી"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"લૉક સ્ક્રીન"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"શટ ડાઉન કરી રહ્યાં છીએ…"</string>
@@ -1867,6 +1859,7 @@
     <string name="av_studio_look_effects" msgid="4105109585851068415">"%d ઇફેક્ટ"</string>
     <string name="av_blur" msgid="405131343487260171">"બ્લર કરો"</string>
     <string name="av_live_captions" msgid="7819416886586903077">"લાઇવ કૅપ્શન"</string>
+    <string name="av_drill_in_return_to_main" msgid="5273814393426741827">"પાછળ"</string>
     <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"બૅટરી %s"</string>
     <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"ડાબી બાજુની બૅટરી %1$s    જમણી બાજુની બૅટરી %2$s"</string>
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"ડાબી બાજુની બૅટરી %1$s"</string>

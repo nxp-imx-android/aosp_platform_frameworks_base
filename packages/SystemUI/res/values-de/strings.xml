@@ -36,8 +36,10 @@
     <string name="status_bar_settings_auto_rotation" msgid="8329080442278431708">"Bildschirm automatisch drehen"</string>
     <string name="usb_device_permission_prompt" msgid="4414719028369181772">"<xliff:g id="APPLICATION">%1$s</xliff:g> den Zugriff auf <xliff:g id="USB_DEVICE">%2$s</xliff:g> gewähren?"</string>
     <string name="usb_device_permission_prompt_warn" msgid="2309129784984063656">"<xliff:g id="APPLICATION">%1$s</xliff:g> den Zugriff auf <xliff:g id="USB_DEVICE">%2$s</xliff:g> gewähren?\nDiese App hat noch nicht die Berechtigung zum Aufnehmen erhalten, könnte jedoch Audio über dieses USB-Gerät aufnehmen."</string>
-    <string name="usb_audio_device_permission_prompt_title" msgid="4221351137250093451">"<xliff:g id="APPLICATION">%1$s</xliff:g> Zugriff auf <xliff:g id="USB_DEVICE">%2$s</xliff:g> gewähren?"</string>
-    <string name="usb_audio_device_confirm_prompt_title" msgid="8828406516732985696">"<xliff:g id="APPLICATION">%1$s</xliff:g> öffnen zur Verwendung von <xliff:g id="USB_DEVICE">%2$s</xliff:g>?"</string>
+    <!-- no translation found for usb_audio_device_permission_prompt_title (6812876813400484157) -->
+    <skip />
+    <!-- no translation found for usb_audio_device_confirm_prompt_title (7623364019381948073) -->
+    <skip />
     <string name="usb_audio_device_prompt_warn" msgid="2504972133361130335">"Diese App hat noch keine Berechtigung zum Aufnehmen erhalten, könnte aber Audioaufnahmen über dieses USB-Gerät machen. Wenn du <xliff:g id="APPLICATION">%1$s</xliff:g> mit diesem Gerät verwendest, hörst du möglicherweise keine Anrufe, Benachrichtigungen und Wecker mehr."</string>
     <string name="usb_audio_device_prompt" msgid="7944987408206252949">"Wenn du <xliff:g id="APPLICATION">%1$s</xliff:g> mit diesem Gerät verwendest, hörst du möglicherweise keine Anrufe, Benachrichtigungen und Wecker mehr."</string>
     <string name="usb_accessory_permission_prompt" msgid="717963550388312123">"<xliff:g id="APPLICATION">%1$s</xliff:g> den Zugriff auf <xliff:g id="USB_ACCESSORY">%2$s</xliff:g> gewähren?"</string>
@@ -58,24 +60,15 @@
     <string name="usb_debugging_allow" msgid="1722643858015321328">"Erlauben"</string>
     <string name="usb_debugging_secondary_user_title" msgid="7843050591380107998">"USB-Debugging nicht zulässig"</string>
     <string name="usb_debugging_secondary_user_message" msgid="1888835696965417845">"Der momentan auf diesem Gerät angemeldete Nutzer kann das USB-Debugging nicht aktivieren. Um diese Funktion zu verwenden, muss sich ein Administrator anmelden."</string>
-    <!-- no translation found for usb_authorization_title (3332796080113535331) -->
-    <skip />
-    <!-- no translation found for usb_authorization_title_multi (1966181648363433366) -->
-    <skip />
-    <!-- no translation found for usb_authorization_message (1107567912094941105) -->
-    <skip />
-    <!-- no translation found for usb_authorization_message_multi (4867596373922923637) -->
-    <skip />
-    <!-- no translation found for usb_authorization_message_untrusted (4407977362840907960) -->
-    <skip />
-    <!-- no translation found for usb_authorization_message_multi_untrusted (85055448435495205) -->
-    <skip />
-    <!-- no translation found for usb_authorization_unknown_device (1107933381080189970) -->
-    <skip />
-    <!-- no translation found for usb_authorization_allow (5517449937301874244) -->
-    <skip />
-    <!-- no translation found for usb_authorization_deny (8156333001876101456) -->
-    <skip />
+    <string name="usb_authorization_title" msgid="3332796080113535331">"Verbindung mit USB-Gerät zulassen?"</string>
+    <string name="usb_authorization_title_multi" msgid="1966181648363433366">"Verbindung mit USB-Geräten zulassen?"</string>
+    <string name="usb_authorization_message" msgid="1107567912094941105">"Das folgende Gerät wurde mit deinem Gerät (<xliff:g id="NAME">%1$s</xliff:g>) verbunden:"</string>
+    <string name="usb_authorization_message_multi" msgid="4867596373922923637">"Die folgenden Geräte wurden mit deinem Gerät (<xliff:g id="NAME">%1$s</xliff:g>) verbunden:"</string>
+    <string name="usb_authorization_message_untrusted" msgid="4407977362840907960">"Das folgende Gerät wurde mit deinem Gerät (<xliff:g id="NAME">%1$s</xliff:g>) verbunden. Dieses Gerät wird erst nach der Anmeldung als vertrauenswürdig eingestuft."</string>
+    <string name="usb_authorization_message_multi_untrusted" msgid="85055448435495205">"Die folgenden Geräte wurden mit deinem Gerät (<xliff:g id="NAME">%1$s</xliff:g>) verbunden. Diese Geräte werden erst nach der Anmeldung als vertrauenswürdig eingestuft."</string>
+    <string name="usb_authorization_unknown_device" msgid="1107933381080189970">"Unbekanntes Produkt (<xliff:g id="VENDOR_ID">%1$04X</xliff:g>:<xliff:g id="PRODUCT_ID">%2$04X</xliff:g>)"</string>
+    <string name="usb_authorization_allow" msgid="5517449937301874244">"Zulassen"</string>
+    <string name="usb_authorization_deny" msgid="8156333001876101456">"Nicht zulassen"</string>
     <string name="hdmi_cec_set_menu_language_title" msgid="1259765420091503742">"Möchtest du die Systemsprache in <xliff:g id="LANGUAGE">%1$s</xliff:g> ändern?"</string>
     <string name="hdmi_cec_set_menu_language_description" msgid="8176716678074126619">"Von einem anderen Gerät wurde eine Änderung der Systemsprache angefordert"</string>
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"Sprache ändern"</string>
@@ -121,10 +114,8 @@
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"Mehr aufnehmen"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"Screenshot schließen"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"Arbeitsprofilnachricht schließen"</string>
-    <!-- no translation found for screenshot_open_in_folder_label (7030308792263959983) -->
-    <skip />
-    <!-- no translation found for screenshot_open_in_folder_description (2181459418652236210) -->
-    <skip />
+    <string name="screenshot_open_in_folder_label" msgid="7030308792263959983">"Ansehen"</string>
+    <string name="screenshot_open_in_folder_description" msgid="2181459418652236210">"Button zum Ansehen des Screenshots in Files"</string>
     <string name="screenshot_preview_description" msgid="7606510140714080474">"Screenshotvorschau"</string>
     <string name="screenshot_top_boundary_pct" msgid="2520148599096479332">"Oberer Rand <xliff:g id="PERCENT">%1$d</xliff:g> %%"</string>
     <string name="screenshot_bottom_boundary_pct" msgid="3880821519814946478">"Unterer Rand <xliff:g id="PERCENT">%1$d</xliff:g> %%"</string>
@@ -196,6 +187,8 @@
     <string name="screen_record_mute" msgid="8111682249858638168">"Stummschalten"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"Stummschaltung aufheben"</string>
     <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g> von <xliff:g id="DURATION">%2$s</xliff:g>"</string>
+    <!-- no translation found for screen_record_selfie_hint (7176948583444196453) -->
+    <skip />
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"Bildschirmaufnahmen wurden von deinem IT-Administrator blockiert"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Screenshot des gesamten Bildschirms erstellen"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Gesamten Bildschirm aufnehmen"</string>
@@ -208,7 +201,12 @@
     <string name="screen_capture_region_box_bottom_right_handle_description" msgid="5444943380877006881">"Ziehpunkt unten rechts – mit den Pfeiltasten die Größe ändern"</string>
     <string name="screen_capture_region_box_bottom_left_handle_description" msgid="6095764656409143184">"Ziehpunkt unten links – mit den Pfeiltasten die Größe ändern"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Teilen"</string>
-    <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"App zum Teilen auswählen"</string>
+    <!-- no translation found for screen_share_no_select_app_thumbnail (1886183147809224215) -->
+    <skip />
+    <!-- no translation found for screen_share_no_select_tab_thumbnail (677801966729809584) -->
+    <skip />
+    <!-- no translation found for screen_share_no_select_display_thumbnail (4351422134286332559) -->
+    <skip />
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Audioinhalte freigeben"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"App-Fenster teilen"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Tab teilen"</string>
@@ -226,11 +224,14 @@
     <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"Die Freigabe des Bildschirms „<xliff:g id="DISPLAY_NAME">%1$s</xliff:g>“ wurde beendet. Der Bildschirm wurde mit niemandem geteilt."</string>
     <string name="screen_share_a11y_close_button" msgid="8017115316741874857">"Button „Schließen“. Drücke die Eingabetaste, um das Dialogfeld vor der Freigabe zu schließen."</string>
     <string name="screen_share_a11y_tab_button_unselected" msgid="5363622532939787310">"Button zum Teilen von Tabs. Nicht ausgewählt. Drücke die Eingabetaste, um den Tab zu teilen."</string>
-    <string name="screen_share_a11y_tab_button_selected" msgid="4304681826101817704">"Tab wird geteilt. Rufe die verfügbaren Tabs auf."</string>
+    <!-- no translation found for screen_share_a11y_tab_button_selected (3969246191128243157) -->
+    <skip />
     <string name="screen_share_a11y_app_button_unselected" msgid="4539549394242556282">"Button zum Teilen der App. Nicht ausgewählt. Drücke die Eingabetaste, um die App zu teilen."</string>
-    <string name="screen_share_a11y_app_button_selected" msgid="6049272377472922732">"App wird geteilt. Rufe die verfügbaren Apps auf."</string>
+    <!-- no translation found for screen_share_a11y_app_button_selected (4891977117777987696) -->
+    <skip />
     <string name="screen_share_a11y_fullscreen_button_unselected" msgid="2492516552817892989">"Button „Vollbild“. Nicht ausgewählt. Drücke die Eingabetaste, um im Vollbildmodus zu teilen."</string>
-    <string name="screen_share_a11y_fullscreen_button_selected" msgid="6706822615908429473">"Wird im Vollbildmodus geteilt. Rufe die verfügbaren Displays auf."</string>
+    <!-- no translation found for screen_share_a11y_fullscreen_button_selected (4428416497634907009) -->
+    <skip />
     <string name="screen_share_a11y_share_button_off" msgid="2004866083045967602">"Button „Teilen“. Aus. Wähle eine App, einen Tab oder ein Display zum Teilen aus."</string>
     <string name="screen_share_a11y_share_button_on" msgid="1311279200212158833">"Freigabe aktiviert. <xliff:g id="ITEM">%1$s</xliff:g> ausgewählt. Drücke die Eingabetaste, um die Freigabe zu starten."</string>
     <string name="screen_share_a11y_item_unselected" msgid="7479321583507874795">"<xliff:g id="ITEM_NAME">%1$s</xliff:g>. Nicht ausgewählt. Drücke zum Auswählen die Eingabetaste."</string>
@@ -247,8 +248,7 @@
     <string name="screen_capture_post_recording_shelf_share_button_a11y" msgid="2907313384921655711">"Bildschirmaufzeichnung teilen"</string>
     <string name="screen_capture_post_recording_shelf_folder_button_a11y" msgid="4217075254383938093">"Bildschirmaufzeichnung im Dateimanager öffnen"</string>
     <string name="screen_capture_post_recording_shelf_delete_button_a11y" msgid="8519897681775354217">"Bildschirmaufzeichnung löschen"</string>
-    <!-- no translation found for screen_capture_post_recording_shelf_thumbnail_a11y (4764732838982357845) -->
-    <skip />
+    <string name="screen_capture_post_recording_shelf_thumbnail_a11y" msgid="4764732838982357845">"Bildschirmaufzeichnung in der App zum Ansehen öffnen"</string>
     <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"Klicks und Tasten anzeigen"</string>
     <string name="screen_capture_device_audio" msgid="1537290197773737349">"Audio des Geräts"</string>
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Mikrofon"</string>
@@ -303,7 +303,6 @@
     <string name="accessibility_unlock_button" msgid="3613812140816244310">"Entsperrt"</string>
     <string name="accessibility_lock_icon" msgid="661492842417875775">"Gerät gesperrt"</string>
     <string name="accessibility_confirm_biometric_auth_to_unlock" msgid="1600162805010332470">"Bestätigen &amp; Gerät entsperren"</string>
-    <string name="accessibility_retry_face_auth" msgid="3018310877303150273">"Gesichtsentsperrung wiederh."</string>
     <string name="accessibility_scanning_face" msgid="3093828357921541387">"Gesicht wird gescannt"</string>
     <string name="accessibility_send_smart_reply" msgid="8885032190442015141">"Senden"</string>
     <string name="cancel" msgid="1089011503403416730">"Abbrechen"</string>
@@ -316,11 +315,8 @@
     <string name="biometric_dialog_face_icon_description_authenticated" msgid="2242167416140740920">"Gesicht authentifiziert"</string>
     <string name="biometric_dialog_face_icon_description_confirmed" msgid="7918067993953940778">"Bestätigt"</string>
     <string name="biometric_dialog_tap_confirm" msgid="9166350738859143358">"Zum Abschließen auf \"Bestätigen\" tippen"</string>
-    <string name="biometric_dialog_tap_confirm_with_face" msgid="2378151312221818694">"Per Gesichtserkennung entsperrt."</string>
-    <string name="biometric_dialog_tap_confirm_with_face_alt_1" msgid="439152621640507113">"Per Gesichtserkennung entsperrt. Tippe, um fortzufahren."</string>
     <string name="biometric_dialog_tap_confirm_with_face_alt_2" msgid="8586608186457385108">"Gesicht erkannt. Tippe, um fortzufahren."</string>
     <string name="biometric_dialog_tap_confirm_with_face_alt_3" msgid="2192670471930606539">"Gesicht erkannt. Tippe zum Fortfahren auf das Symbol „Entsperren“."</string>
-    <string name="biometric_dialog_tap_confirm_with_face_sfps" msgid="2499213248903257928">"Per Gesichtserkennung entsperrt. Tippe, um fortzufahren."</string>
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"Authentifiziert"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"Authentifizierung abbrechen"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"Weitere Optionen"</string>
@@ -365,11 +361,6 @@
     <string name="fingerprint_re_enroll_dialog_content" msgid="4866561176695984879">"Wenn du die Entsperrung per Fingerabdruck neu einrichtest, werden die aktuellen Bilder und Modelle deines Fingerabdrucks gelöscht.\n\nNachdem sie gelöscht wurden, musst du die Entsperrung per Fingerabdruck neu einrichten, damit du deinen Fingerabdruck nutzen kannst, um dein Smartphone zu entsperren oder deine Identität zu bestätigen."</string>
     <string name="fingerprint_re_enroll_dialog_content_singular" msgid="3083663339787381218">"Wenn du die Entsperrung per Fingerabdruck neu einrichtest, werden die aktuellen Bilder und das aktuelle Modell deines Fingerabdrucks gelöscht.\n\nNachdem sie gelöscht wurden, musst du die Entsperrung per Fingerabdruck neu einrichten, damit du deinen Fingerabdruck nutzen kannst, um dein Smartphone zu entsperren oder deine Identität zu bestätigen."</string>
     <string name="fingerprint_reenroll_failure_dialog_content" msgid="4733768492747300666">"Die Entsperrung per Fingerabdruck konnte nicht eingerichtet werden. Gehe zu den Einstellungen und versuche es noch einmal."</string>
-    <string name="face_re_enroll_notification_title" msgid="1850838867718410520">"Entsperrung per Gesichtserkennung neu einrichten"</string>
-    <string name="face_re_enroll_notification_name" msgid="7384545252206120659">"Entsperrung per Gesichtserkennung"</string>
-    <string name="face_re_enroll_dialog_title" msgid="6392173708176069994">"Entsperrung per Gesichtserkennung einrichten"</string>
-    <string name="face_re_enroll_dialog_content" msgid="7353502359464038511">"Wenn du die Entsperrung per Gesichtserkennung neu einrichtest, wird dein aktuelles Gesichtsmodell gelöscht.\n\nDu musst diese Funktion neu einrichten, damit du dein Smartphone weiterhin mithilfe der Gesichtserkennung entsperren kannst."</string>
-    <string name="face_reenroll_failure_dialog_content" msgid="7073947334397236935">"Die Entsperrung per Gesichtserkennung konnte nicht eingerichtet werden. Gehe zu den Einstellungen und versuche es noch einmal."</string>
     <string name="fingerprint_dialog_touch_sensor" msgid="2817887108047658975">"Berühre den Fingerabdrucksensor"</string>
     <string name="fingerprint_dialog_authenticated_confirmation" msgid="1603899612957562862">"Tippe zum Fortfahren auf das Symbol „Entsperren“"</string>
     <string name="fingerprint_dialog_use_fingerprint_instead" msgid="5542430577183894219">"Gesicht nicht erkannt. Verwende den Fingerabdruck."</string>
@@ -377,7 +368,6 @@
     <skip />
     <string name="keyguard_face_failed" msgid="2346762871330729634">"Gesicht nicht erkannt"</string>
     <string name="keyguard_suggest_fingerprint" msgid="8742015961962702960">"Fingerabdruck verwenden"</string>
-    <string name="keyguard_face_unlock_unavailable" msgid="1581949044193418736">"Entsperrung per Gesichtserkennung nicht verfügbar"</string>
     <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"Mit Bluetooth verbunden"</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Symbol des Bluetooth-Geräts"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Klicke, um das Gerätedetail zu konfigurieren"</string>
@@ -467,7 +457,7 @@
     <string name="turn_on_bluetooth_auto_info_disabled" msgid="682984290339848844">"Funktionen wie „Quick Share“ und „Mein Gerät finden“ verwenden Bluetooth"</string>
     <string name="turn_on_bluetooth_auto_info_enabled" msgid="7440944034584560279">"Bluetooth wird morgen früh aktiviert"</string>
     <string name="quick_settings_bluetooth_audio_sharing_button" msgid="7545274861795853838">"Audioinhalte freigeben"</string>
-    <string name="quick_settings_bluetooth_audio_sharing_button_sharing" msgid="3069309588231072128">"Audioinhalte werden freigegeben"</string>
+    <string name="quick_settings_bluetooth_audio_sharing_button_sharing" msgid="3069309588231072128">"Audio wird freigegeben"</string>
     <string name="quick_settings_bluetooth_audio_sharing_button_accessibility" msgid="7604615019302091708">"Einstellungen für die Audiofreigabe eingeben"</string>
     <string name="quick_settings_bluetooth_audio_sharing_dialog_message" msgid="4251807313264307426">"Musik und Videos auf diesem Gerät werden auf beiden Kopfhörerpaaren abgespielt"</string>
     <string name="quick_settings_bluetooth_audio_sharing_dialog_title" msgid="4406818346036286793">"Audioinhalte freigeben"</string>
@@ -553,6 +543,7 @@
     <string name="quick_settings_nfc_off" msgid="3465000058515424663">"NFC ist deaktiviert"</string>
     <string name="quick_settings_nfc_on" msgid="1004976611203202230">"NFC ist aktiviert"</string>
     <string name="quick_settings_screen_record_label" msgid="8650355346742003694">"Bildschirmaufzeichnung"</string>
+    <string name="quick_settings_screen_capture_label" msgid="4400625606618045690">"Bildschirmaufnahme"</string>
     <string name="quick_settings_screen_record_start" msgid="1574725369331638985">"Starten"</string>
     <string name="quick_settings_screen_record_stop" msgid="8087348522976412119">"Beenden"</string>
     <string name="qs_record_issue_label" msgid="8166290137285529059">"Problem aufzeichnen"</string>
@@ -648,16 +639,10 @@
     <string name="tap_again" msgid="1315420114387908655">"Noch einmal tippen"</string>
     <string name="keyguard_unlock" msgid="8031975796351361601">"Zum Öffnen nach oben wischen"</string>
     <string name="keyguard_unlock_press" msgid="9140109453735019209">"Tippe zum Öffnen auf das Symbol „Entsperren“"</string>
-    <string name="keyguard_face_successful_unlock_swipe" msgid="6180997591385846073">"Per Gesichtserkennung entsperrt. Zum Öffnen nach oben wischen."</string>
-    <string name="keyguard_face_successful_unlock_confirm_button" msgid="3862344771780817393">"Per Gesichtserkennung entsperrt. Drücke auf „Bestätigen“."</string>
-    <string name="keyguard_face_successful_unlock_press" msgid="25520941264602588">"Per Gesichtserkennung entsperrt. Tippe zum Öffnen auf das Symbol „Entsperren“."</string>
-    <string name="keyguard_face_successful_unlock_press_alt_1" msgid="5715461103913071474">"Per Gesichtserkennung entsperrt. Tippe zum Öffnen."</string>
     <string name="keyguard_face_successful_unlock_press_alt_2" msgid="8310787946357120406">"Gesicht erkannt. Tippe zum Öffnen."</string>
     <string name="keyguard_face_successful_unlock_press_alt_3" msgid="7219030481255573962">"Gesicht erkannt. Tippe zum Öffnen auf das Symbol „Entsperren“."</string>
-    <string name="keyguard_face_successful_unlock" msgid="4203999851465708287">"Per Gesichtserkennung entsperrt"</string>
     <string name="keyguard_face_successful_unlock_alt1" msgid="5853906076353839628">"Gesicht erkannt"</string>
     <string name="keyguard_retry" msgid="886802522584053523">"Zum Wiederholen nach oben wischen"</string>
-    <string name="accesssibility_keyguard_retry" msgid="8880238862712870676">"Nach oben wischen &amp; Gesichtsentsperrung erneut versuchen"</string>
     <string name="require_unlock_for_nfc" msgid="1305686454823018831">"Zur Verwendung von NFC entsperren"</string>
     <string name="do_disclosure_generic" msgid="4896482821974707167">"Dieses Gerät gehört deiner Organisation"</string>
     <string name="do_disclosure_with_name" msgid="2091641464065004091">"Dieses Gerät gehört <xliff:g id="ORGANIZATION_NAME">%s</xliff:g>"</string>
@@ -758,7 +743,7 @@
     <string name="media_projection_entry_app_permission_dialog_single_app_not_supported" msgid="4860247304058870233">"Wird von der App nicht unterstützt"</string>
     <string name="media_projection_entry_share_app_selector_title" msgid="1419515119767501822">"App zum Teilen auswählen"</string>
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"Bildschirm streamen?"</string>
-    <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"Eine App streamen"</string>
+    <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"Einzelne App streamen"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen" msgid="8389508187954155307">"Gesamten Bildschirm streamen"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display" msgid="5524817761472941086">"<xliff:g id="DISPLAY_NAME">%s</xliff:g> übertragen"</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_entire_screen" msgid="4040447861037324017">"Wenn du den gesamten Bildschirm streamst, ist alles auf dem Bildschirm sichtbar. Sei also vorsichtig mit Informationen wie Passwörtern, Zahlungsdetails, Nachrichten, Fotos sowie Audio- und Videoinhalten."</string>
@@ -1263,10 +1248,16 @@
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"Taste für Bedienungshilfen"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"Du kannst die Bedienungshilfen starten, indem du die entsprechende Taste drückst."</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"Funktionen hinzufügen"</string>
+    <!-- no translation found for accessibility_shortcutchooser_toprow_editor_dialog_title (1898531469029411168) -->
+    <skip />
     <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"<xliff:g id="ID_1">%1$s</xliff:g> einrichten"</string>
     <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"Fertig"</string>
     <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"Funktion auswählen"</string>
     <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"Bearbeiten"</string>
+    <!-- no translation found for accessibility_nav_bar_more_options_title (2549386798738178479) -->
+    <skip />
+    <!-- no translation found for accessibility_nav_bar_more_options_subtitle (4336832036115080533) -->
+    <skip />
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Bedienungshilfen"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Sperrbildschirm"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Wird heruntergefahren…"</string>
@@ -1416,7 +1407,7 @@
     <string name="controls_number_of_favorites" msgid="4481806788981836355">"{count,plural, =1{# Steuerelement hinzugefügt.}other{# Steuerelemente hinzugefügt.}}"</string>
     <string name="controls_removed" msgid="3731789252222856959">"Entfernt"</string>
     <string name="controls_panel_authorization_title" msgid="267429338785864842">"<xliff:g id="APPNAME">%s</xliff:g> hinzufügen?"</string>
-    <string name="controls_panel_authorization" msgid="7045551688535104194">"<xliff:g id="APPNAME">%s</xliff:g> darf auswählen, welche Steuerelemente und Inhalte hier angezeigt werden."</string>
+    <string name="controls_panel_authorization" msgid="7045551688535104194">"<xliff:g id="APPNAME">%s</xliff:g> kann bestimmen, welche Steuerelemente und Inhalte hier angezeigt werden."</string>
     <string name="controls_panel_remove_app_authorization" msgid="5920442084735364674">"Steuerelemente für <xliff:g id="APPNAME">%s</xliff:g> entfernen?"</string>
     <string name="accessibility_control_favorite" msgid="8694362691985545985">"Zu Favoriten hinzugefügt"</string>
     <string name="accessibility_control_favorite_position" msgid="54220258048929221">"Zu Favoriten hinzugefügt, Position <xliff:g id="NUMBER">%d</xliff:g>"</string>
@@ -1876,6 +1867,8 @@
     <string name="av_studio_look_effects" msgid="4105109585851068415">"%d Effekte"</string>
     <string name="av_blur" msgid="405131343487260171">"Weichzeichnen"</string>
     <string name="av_live_captions" msgid="7819416886586903077">"Automatische Untertitel"</string>
+    <!-- no translation found for av_drill_in_return_to_main (5273814393426741827) -->
+    <skip />
     <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"Akkustand: %s"</string>
     <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"Akkustand links: %1$s    Akkustand rechts: %2$s"</string>
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"Akkustand links: %1$s"</string>

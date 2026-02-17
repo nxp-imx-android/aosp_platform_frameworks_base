@@ -36,8 +36,8 @@
     <string name="status_bar_settings_auto_rotation" msgid="8329080442278431708">"స్క్రీన్ ఆటో-రొటేట్‌"</string>
     <string name="usb_device_permission_prompt" msgid="4414719028369181772">"<xliff:g id="USB_DEVICE">%2$s</xliff:g>ని యాక్సెస్ చేయడానికి <xliff:g id="APPLICATION">%1$s</xliff:g>ని అనుమతించాలా?"</string>
     <string name="usb_device_permission_prompt_warn" msgid="2309129784984063656">"<xliff:g id="USB_DEVICE">%2$s</xliff:g>యాక్సెస్ చేయడానికి <xliff:g id="APPLICATION">%1$s</xliff:g>ను అనుమతించాలా?\nఈ యాప్‌నకు రికార్డ్ చేసే అనుమతి మంజూరు చేయబడలేదు, కానీ ఈ USB పరికరం ద్వారా ఆడియోను క్యాప్చర్ చేయగలదు."</string>
-    <string name="usb_audio_device_permission_prompt_title" msgid="4221351137250093451">"<xliff:g id="USB_DEVICE">%2$s</xliff:g>‌ను యాక్సెస్ చేయడానికి <xliff:g id="APPLICATION">%1$s</xliff:g>‌ను అనుమతించాలా?"</string>
-    <string name="usb_audio_device_confirm_prompt_title" msgid="8828406516732985696">"<xliff:g id="USB_DEVICE">%2$s</xliff:g>‌ను హ్యాండిల్ చేయడానికి <xliff:g id="APPLICATION">%1$s</xliff:g>‌ను తెరవాలా?"</string>
+    <string name="usb_audio_device_permission_prompt_title" msgid="6812876813400484157">"&lt;b&gt;<xliff:g id="USB_DEVICE">%2$s</xliff:g>&lt;/b&gt;‌ను యాక్సెస్ చేయడానికి &lt;b&gt;<xliff:g id="APPLICATION">%1$s</xliff:g>&lt;/b&gt; యాప్‌ను అనుమతించాలనుకుంటున్నారా?"</string>
+    <string name="usb_audio_device_confirm_prompt_title" msgid="7623364019381948073">"&lt;b&gt;<xliff:g id="USB_DEVICE">%2$s</xliff:g>&lt;/b&gt;ను హ్యాండిల్ చేయడానికి &lt;b&gt;<xliff:g id="APPLICATION">%1$s</xliff:g>&lt;/b&gt;ను తెరవాలా?"</string>
     <string name="usb_audio_device_prompt_warn" msgid="2504972133361130335">"ఈ యాప్‌నకు రికార్డ్ చేసే అనుమతి మంజూరు కాలేదు, అయినా ఈ USB పరికరం ద్వారా ఆడియోను క్యాప్చర్ చేయగలదు. ఈ పరికరంలో <xliff:g id="APPLICATION">%1$s</xliff:g>‌ను ఉపయోగించడం వలన కాల్స్, నోటిఫికేషన్‌లు, అలారాలను వినబడనీయకుండా నివారించవచ్చు."</string>
     <string name="usb_audio_device_prompt" msgid="7944987408206252949">"ఈ పరికరంలో <xliff:g id="APPLICATION">%1$s</xliff:g>‌ను ఉపయోగించడం వలన కాల్స్, నోటిఫికేషన్‌లు, అలారంలను వినబడనీయకుండా నివారించవచ్చు."</string>
     <string name="usb_accessory_permission_prompt" msgid="717963550388312123">"<xliff:g id="USB_ACCESSORY">%2$s</xliff:g>ని యాక్సెస్ చేయడానికి <xliff:g id="APPLICATION">%1$s</xliff:g>ని అనుమతించాలా?"</string>
@@ -112,10 +112,8 @@
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"మరిన్ని క్యాప్చర్ చేయండి"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"స్క్రీన్‌షాట్‌ను విస్మరించు"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"వర్క్ ప్రొఫైల్ మెసేజ్‌ను విస్మరిస్తుంది"</string>
-    <!-- no translation found for screenshot_open_in_folder_label (7030308792263959983) -->
-    <skip />
-    <!-- no translation found for screenshot_open_in_folder_description (2181459418652236210) -->
-    <skip />
+    <string name="screenshot_open_in_folder_label" msgid="7030308792263959983">"చూడండి"</string>
+    <string name="screenshot_open_in_folder_description" msgid="2181459418652236210">"Filesలో స్క్రీన్‌షాట్‌ను చూడండి బటన్"</string>
     <string name="screenshot_preview_description" msgid="7606510140714080474">"స్క్రీన్‌షాట్ ప్రివ్యూ"</string>
     <string name="screenshot_top_boundary_pct" msgid="2520148599096479332">"ఎగువ సరిహద్దు <xliff:g id="PERCENT">%1$d</xliff:g> శాతం"</string>
     <string name="screenshot_bottom_boundary_pct" msgid="3880821519814946478">"దిగువ సరిహద్దు <xliff:g id="PERCENT">%1$d</xliff:g> శాతం"</string>
@@ -187,6 +185,8 @@
     <string name="screen_record_mute" msgid="8111682249858638168">"మ్యూట్ చేయండి"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"అన్‌మ్యూట్ చేయండి"</string>
     <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="DURATION">%2$s</xliff:g>లో <xliff:g id="ELAPSED_TIME">%1$s</xliff:g>"</string>
+    <!-- no translation found for screen_record_selfie_hint (7176948583444196453) -->
+    <skip />
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"మీ IT అడ్మిన్ ద్వారా స్క్రీన్ క్యాప్చర్ బ్లాక్ చేయబడింది"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"ఫుల్-స్క్రీన్ తాలూకు స్క్రీన్‌షాట్ తీయండి"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"ఫుల్ స్క్రీన్‌ను రికార్డ్ చేయండి"</string>
@@ -199,7 +199,9 @@
     <string name="screen_capture_region_box_bottom_right_handle_description" msgid="5444943380877006881">"దిగువ కుడి హ్యాండిల్ - సైజ్ మార్చడానికి బాణం గుర్తు కీలను ఉపయోగించండి"</string>
     <string name="screen_capture_region_box_bottom_left_handle_description" msgid="6095764656409143184">"దిగువ ఎడమ హ్యాండిల్ - సైజ్ మార్చడానికి బాణం గుర్తు కీలను ఉపయోగించండి"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"షేర్ చేయండి"</string>
-    <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">" షేర్ చేయడానికి యాప్‌ను ఎంచుకోండి"</string>
+    <string name="screen_share_no_select_app_thumbnail" msgid="1886183147809224215">"షేర్ చేయడానికి యాప్ విండో ఎంచుకోండి"</string>
+    <string name="screen_share_no_select_tab_thumbnail" msgid="677801966729809584">"షేర్ చేయడానికి ట్యాబ్‌ను ఎంచుకోండి"</string>
+    <string name="screen_share_no_select_display_thumbnail" msgid="4351422134286332559">"షేర్ చేయడానికి డిస్‌ప్లే ఎంచుకోండి"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"ఆడియోను షేర్ చేయండి"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"యాప్ విండోను షేర్ చేయండి"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"ట్యాబ్‌ను షేర్ చేయండి"</string>
@@ -217,11 +219,11 @@
     <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"డిస్‌ప్లేను షేర్ చేయడం ఆగిపోయింది: <xliff:g id="DISPLAY_NAME">%1$s</xliff:g>. స్క్రీన్ ఎవరితోనూ షేర్ కాలేదు."</string>
     <string name="screen_share_a11y_close_button" msgid="8017115316741874857">"\'మూసివేయండి\' బటన్. ప్రీ-షేర్ డైలాగ్‌ను మూసివేయడానికి ఎంటర్ నొక్కండి."</string>
     <string name="screen_share_a11y_tab_button_unselected" msgid="5363622532939787310">"ట్యాబ్ షేరింగ్ బటన్. ఎంచుకోబడలేదు. ట్యాబ్‌ను షేర్ చేయడానికి ఎంటర్ నొక్కండి."</string>
-    <string name="screen_share_a11y_tab_button_selected" msgid="4304681826101817704">"షేరింగ్ ట్యాబ్. అందుబాటులో ఉన్న ట్యాబ్‌లను చూడటానికి నావిగేట్ చేయండి."</string>
+    <string name="screen_share_a11y_tab_button_selected" msgid="3969246191128243157">"షేరింగ్ ట్యాబ్. అందుబాటులో ఉన్న ట్యాబ్‌లను చెక్ చేయడానికి నావిగేట్ చేయండి."</string>
     <string name="screen_share_a11y_app_button_unselected" msgid="4539549394242556282">"యాప్ షేరింగ్ బటన్. ఎంచుకోబడలేదు. యాప్‌ను షేర్ చేయడానికి ఎంటర్ నొక్కండి."</string>
-    <string name="screen_share_a11y_app_button_selected" msgid="6049272377472922732">"యాప్‌ను షేర్ చేస్తోంది. అందుబాటులో ఉన్న యాప్‌లను చూడటానికి నావిగేట్ చేయండి."</string>
+    <string name="screen_share_a11y_app_button_selected" msgid="4891977117777987696">"యాప్‌ను షేర్ చేస్తోంది. అందుబాటులో ఉన్న యాప్‌లను చెక్ చేయడానికి నావిగేట్ చేయండి."</string>
     <string name="screen_share_a11y_fullscreen_button_unselected" msgid="2492516552817892989">"ఫుల్ స్క్రీన్ బటన్ ఎంచుకోబడలేదు. ఫుల్ స్క్రీన్‌ను షేర్ చేయడానికి ఎంటర్ నొక్కండి."</string>
-    <string name="screen_share_a11y_fullscreen_button_selected" msgid="6706822615908429473">"ఫుల్ స్క్రీన్ షేర్ అవుతోంది. అందుబాటులో ఉన్న డిస్‌ప్లేలను చూడటానికి నావిగేట్ చేయండి."</string>
+    <string name="screen_share_a11y_fullscreen_button_selected" msgid="4428416497634907009">"ఫుల్ స్క్రీన్ షేర్ అవుతోంది. అందుబాటులో ఉన్న డిస్‌ప్లేలను చెక్ చేయడానికి నావిగేట్ చేయండి."</string>
     <string name="screen_share_a11y_share_button_off" msgid="2004866083045967602">"షేర్ బటన్. ఆఫ్‌లో ఉంది. షేర్ చేయడానికి యాప్, ట్యాబ్ లేదా డిస్‌ప్లేను ఎంచుకోండి."</string>
     <string name="screen_share_a11y_share_button_on" msgid="1311279200212158833">"షేరింగ్ ఆన్ అయింది. <xliff:g id="ITEM">%1$s</xliff:g> ఎంచుకోబడింది. షేర్ చేయడం ప్రారంభించడానికి ఎంటర్ నొక్కండి."</string>
     <string name="screen_share_a11y_item_unselected" msgid="7479321583507874795">"<xliff:g id="ITEM_NAME">%1$s</xliff:g>. ఎంచుకోబడలేదు. ఎంచుకోవడానికి ఎంటర్ నొక్కండి."</string>
@@ -238,8 +240,7 @@
     <string name="screen_capture_post_recording_shelf_share_button_a11y" msgid="2907313384921655711">"స్క్రీన్ రికార్డింగ్‌ను షేర్ చేయండి"</string>
     <string name="screen_capture_post_recording_shelf_folder_button_a11y" msgid="4217075254383938093">"ఫైల్ మేనేజర్‌లో స్క్రీన్ రికార్డింగ్‌ను తెరవండి"</string>
     <string name="screen_capture_post_recording_shelf_delete_button_a11y" msgid="8519897681775354217">"స్క్రీన్ రికార్డింగ్‌ను తొలగించండి"</string>
-    <!-- no translation found for screen_capture_post_recording_shelf_thumbnail_a11y (4764732838982357845) -->
-    <skip />
+    <string name="screen_capture_post_recording_shelf_thumbnail_a11y" msgid="4764732838982357845">"వీక్షణ యాప్‌లో స్క్రీన్ రికార్డింగ్‌ను తెరవండి"</string>
     <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"క్లిక్‌లు, కీలను చూపండి"</string>
     <string name="screen_capture_device_audio" msgid="1537290197773737349">"డివైజ్ ఆడియో"</string>
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"మైక్రోఫోన్"</string>
@@ -294,7 +295,6 @@
     <string name="accessibility_unlock_button" msgid="3613812140816244310">"అన్‌లాక్ చేయబడింది"</string>
     <string name="accessibility_lock_icon" msgid="661492842417875775">"పరికరం లాక్ చేయబడింది"</string>
     <string name="accessibility_confirm_biometric_auth_to_unlock" msgid="1600162805010332470">"నిర్ధారించాక, డివైజ్ అన్‌లాక్"</string>
-    <string name="accessibility_retry_face_auth" msgid="3018310877303150273">"ఫేస్ అన్‌లాక్ రీట్రై చేయండి"</string>
     <string name="accessibility_scanning_face" msgid="3093828357921541387">"ముఖాన్ని స్కాన్ చేస్తోంది"</string>
     <string name="accessibility_send_smart_reply" msgid="8885032190442015141">"పంపండి"</string>
     <string name="cancel" msgid="1089011503403416730">"రద్దు చేయండి"</string>
@@ -307,11 +307,8 @@
     <string name="biometric_dialog_face_icon_description_authenticated" msgid="2242167416140740920">"ముఖం ప్రామాణీకరించబడింది"</string>
     <string name="biometric_dialog_face_icon_description_confirmed" msgid="7918067993953940778">"నిర్ధారించబడింది"</string>
     <string name="biometric_dialog_tap_confirm" msgid="9166350738859143358">"పూర్తి చేయడానికి \"నిర్ధారించు\" నొక్కండి"</string>
-    <string name="biometric_dialog_tap_confirm_with_face" msgid="2378151312221818694">"ముఖం ద్వారా అన్‌లాక్ చేయబడింది"</string>
-    <string name="biometric_dialog_tap_confirm_with_face_alt_1" msgid="439152621640507113">"ఫేస్‌తో అన్‌లాక్ అయింది. కొనసాగించడానికి నొక్కండి."</string>
     <string name="biometric_dialog_tap_confirm_with_face_alt_2" msgid="8586608186457385108">"ముఖం గుర్తించబడింది. కొనసాగించడానికి నొక్కండి."</string>
     <string name="biometric_dialog_tap_confirm_with_face_alt_3" msgid="2192670471930606539">"ముఖం గుర్తించబడింది. కొనసాగడానికి అన్‌లాక్ చిహ్నం నొక్కండి."</string>
-    <string name="biometric_dialog_tap_confirm_with_face_sfps" msgid="2499213248903257928">"ముఖం ద్వారా అన్‌లాక్ అయింది. కొనసాగడానికి ట్యాప్ చేయండి."</string>
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"ప్రామాణీకరించబడింది"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"ప్రామాణీకరణను రద్దు చేయండి"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"మరిన్ని ఆప్షన్‌లు"</string>
@@ -332,7 +329,7 @@
     <string name="biometric_dialog_recovery_pattern" msgid="382786088892502550">"చాలాసార్లు విఫలమైన ప్రయత్నాల తర్వాత బయోమెట్రిక్ డేటాను రికవర్ చేయడానికి ఆకృతి అవసరం"</string>
     <string name="biometric_dialog_recovery_password" msgid="8288127966207678230">"చాలాసార్లు విఫలమైన ప్రయత్నాల తర్వాత బయోమెట్రిక్ డేటాను రికవర్ చేయడానికి పాస్‌వర్డ్ అవసరం"</string>
     <string name="biometric_dialog_wrong_pin" msgid="1878539073972762803">"PIN తప్పు"</string>
-    <string name="biometric_dialog_wrong_pattern" msgid="8954812279840889029">"ఆకృతి తప్పు"</string>
+    <string name="biometric_dialog_wrong_pattern" msgid="8954812279840889029">"ఆకృతి తప్పు (రాంగ్ ప్యాటర్న్)"</string>
     <string name="biometric_dialog_wrong_password" msgid="69477929306843790">"పాస్‌వర్డ్ తప్పు"</string>
     <string name="biometric_dialog_credential_too_many_attempts" msgid="3083141271737748716">"చాలా ఎక్కువ తప్పు ప్రయత్నాలు చేశారు.\n<xliff:g id="NUMBER">%d</xliff:g> సెకన్ల తర్వాత మళ్లీ ట్రై చేయండి."</string>
     <string name="work_challenge_emergency_button_text" msgid="8946588434515599288">"ఎమర్జెన్సీ"</string>
@@ -356,11 +353,6 @@
     <string name="fingerprint_re_enroll_dialog_content" msgid="4866561176695984879">"వేలిముద్ర అన్‌లాక్‌ను మళ్లీ సెటప్ చేయడానికి, మీ ప్రస్తుత వేలిముద్ర ఇమేజ్‌లను, మోడల్స్‌ను తొలగించడం జరుగుతుంది.\n\nవాటిని తొలగించిన తర్వాత, మీ ఫోన్‌ను అన్‌లాక్ చేయడానికి లేదా అది మీరేనని వెరిఫై చేసేందుకు మీ వేలిముద్రను ఉపయోగించడానికి మీరు ఫింగర్‌ప్రింట్ అన్‌లాక్‌ను మళ్లీ సెటప్ చేయాల్సి ఉంటుంది."</string>
     <string name="fingerprint_re_enroll_dialog_content_singular" msgid="3083663339787381218">"ఫింగర్‌ప్రింట్ అన్‌లాక్‌ను మళ్లీ సెటప్ చేయడానికి, మీ ప్రస్తుత వేలిముద్ర ఇమేజ్‌లను, మోడల్‌ను తొలగించడం జరుగుతుంది.\n\nవాటిని తొలగించిన తర్వాత, మీ ఫోన్‌ను అన్‌లాక్ చేయడానికి లేదా అది మీరేనని వెరిఫై చేసేందుకు మీ వేలిముద్రను ఉపయోగించడానికి మీరు ఫింగర్‌ప్రింట్ అన్‌లాక్‌ను మళ్లీ సెటప్ చేయాల్సి ఉంటుంది."</string>
     <string name="fingerprint_reenroll_failure_dialog_content" msgid="4733768492747300666">"వేలిముద్ర అన్‌లాక్‌ను సెటప్ చేయడం సాధ్యపడలేదు. సెట్టింగ్‌లకు వెళ్లి, ఆపై మళ్లీ ట్రై చేయండి."</string>
-    <string name="face_re_enroll_notification_title" msgid="1850838867718410520">"ఫేస్ అన్‌లాక్‌ను మళ్లీ సెటప్ చేయండి"</string>
-    <string name="face_re_enroll_notification_name" msgid="7384545252206120659">"ఫేస్ అన్‌లాక్"</string>
-    <string name="face_re_enroll_dialog_title" msgid="6392173708176069994">"ఫేస్ అన్‌లాక్‌ను సెటప్ చేయండి"</string>
-    <string name="face_re_enroll_dialog_content" msgid="7353502359464038511">"ఫేస్ అన్‌లాక్‌ను మళ్లీ సెటప్ చేయడానికి, మీ ప్రస్తుత ఫేస్ మోడల్‌ను తొలగించడం జరుగుతుంది.\n\nమీ ఫోన్‌ను అన్‌లాక్ చేసేందుకు మీ ముఖాన్ని ఉపయోగించడానికి మీరు ఈ ఫీచర్‌ను మళ్లీ సెటప్ చేయాల్సి ఉంటుంది."</string>
-    <string name="face_reenroll_failure_dialog_content" msgid="7073947334397236935">"ఫేస్ అన్‌లాక్‌ను సెటప్ చేయడం సాధ్యపడలేదు. సెట్టింగ్‌లకు వెళ్లి, ఆపై మళ్లీ ట్రై చేయండి."</string>
     <string name="fingerprint_dialog_touch_sensor" msgid="2817887108047658975">"వేలిముద్ర (ఫింగర్‌ప్రింట్) సెన్సర్‌ను తాకండి"</string>
     <string name="fingerprint_dialog_authenticated_confirmation" msgid="1603899612957562862">"కొనసాగించడానికి అన్‌లాక్ చిహ్నాన్ని నొక్కండి"</string>
     <string name="fingerprint_dialog_use_fingerprint_instead" msgid="5542430577183894219">"ముఖం గుర్తించలేదు. బదులుగా వేలిముద్ర ఉపయోగించండి."</string>
@@ -368,7 +360,6 @@
     <skip />
     <string name="keyguard_face_failed" msgid="2346762871330729634">"ముఖం గుర్తించబడలేదు"</string>
     <string name="keyguard_suggest_fingerprint" msgid="8742015961962702960">"బదులుగా వేలిముద్రను ఉపయోగించండి"</string>
-    <string name="keyguard_face_unlock_unavailable" msgid="1581949044193418736">"ఫేస్ అన్‌లాక్ అందుబాటులో లేదు"</string>
     <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"బ్లూటూత్ కనెక్ట్ చేయబడింది."</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"బ్లూటూత్ పరికర చిహ్నం"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"పరికర వివరాలను కాన్ఫిగర్ చేయడానికి క్లిక్ చేయండి"</string>
@@ -544,6 +535,7 @@
     <string name="quick_settings_nfc_off" msgid="3465000058515424663">"NFC నిలిపివేయబడింది"</string>
     <string name="quick_settings_nfc_on" msgid="1004976611203202230">"NFC ప్రారంభించబడింది"</string>
     <string name="quick_settings_screen_record_label" msgid="8650355346742003694">"స్క్రీన్ రికార్డ్"</string>
+    <string name="quick_settings_screen_capture_label" msgid="4400625606618045690">"స్క్రీన్ క్యాప్చర్"</string>
     <string name="quick_settings_screen_record_start" msgid="1574725369331638985">"ప్రారంభించండి"</string>
     <string name="quick_settings_screen_record_stop" msgid="8087348522976412119">"ఆపు"</string>
     <string name="qs_record_issue_label" msgid="8166290137285529059">"సమస్యను రికార్డ్ చేయడం"</string>
@@ -639,16 +631,10 @@
     <string name="tap_again" msgid="1315420114387908655">"మళ్లీ ట్యాప్ చేయండి"</string>
     <string name="keyguard_unlock" msgid="8031975796351361601">"తెరవడానికి, పైకి స్వైప్ చేయండి"</string>
     <string name="keyguard_unlock_press" msgid="9140109453735019209">"తెరవడానికి అన్‌లాక్ చిహ్నాన్ని నొక్కండి"</string>
-    <string name="keyguard_face_successful_unlock_swipe" msgid="6180997591385846073">"ముఖం ద్వారా అన్‌లాక్ అయింది. తెరవడానికి, పైకి స్వైప్ చేయండి."</string>
-    <string name="keyguard_face_successful_unlock_confirm_button" msgid="3862344771780817393">"ఫేస్‌తో అన్‌లాకైంది. కొనసాగడానికి \'నిర్ధారించండి\' నొక్కండి."</string>
-    <string name="keyguard_face_successful_unlock_press" msgid="25520941264602588">"ముఖం ద్వారా అన్‌లాక్ చేయబడింది. తెరవడానికి అన్‌లాక్ చిహ్నాన్ని నొక్కండి."</string>
-    <string name="keyguard_face_successful_unlock_press_alt_1" msgid="5715461103913071474">"ముఖం ద్వారా అన్‌లాక్ చేయబడింది. తెరవడానికి నొక్కండి."</string>
     <string name="keyguard_face_successful_unlock_press_alt_2" msgid="8310787946357120406">"ముఖం గుర్తించబడింది. తెరవడానికి నొక్కండి."</string>
     <string name="keyguard_face_successful_unlock_press_alt_3" msgid="7219030481255573962">"ముఖం గుర్తించబడింది. తెరవడానికి అన్‌లాక్ చిహ్నం నొక్కండి."</string>
-    <string name="keyguard_face_successful_unlock" msgid="4203999851465708287">"ముఖం ద్వారా అన్‌లాక్ చేయబడింది"</string>
     <string name="keyguard_face_successful_unlock_alt1" msgid="5853906076353839628">"ముఖం గుర్తించబడింది"</string>
     <string name="keyguard_retry" msgid="886802522584053523">"మళ్ళీ ప్రయత్నించడానికి పైకి స్వైప్ చేయండి"</string>
-    <string name="accesssibility_keyguard_retry" msgid="8880238862712870676">"ఫేస్ అన్‌లాక్‌ను మళ్లీ ట్రై చేయడానికి పైకి స్వైప్ చేయండి"</string>
     <string name="require_unlock_for_nfc" msgid="1305686454823018831">"NFCని ఉపయోగించడానికి అన్‌లాక్ చేయండి"</string>
     <string name="do_disclosure_generic" msgid="4896482821974707167">"ఈ పరికరం మీ సంస్థకు చెందినది"</string>
     <string name="do_disclosure_with_name" msgid="2091641464065004091">"ఈ పరికరం <xliff:g id="ORGANIZATION_NAME">%s</xliff:g>కు చెందినది"</string>
@@ -1254,10 +1240,16 @@
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"యాక్సెసిబిలిటీ కీ"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"యాక్సెసిబిలిటీ ఫీచర్‌లను ఉపయోగించడం ప్రారంభించడానికి మీరు యాక్సెసిబిలిటీ కీని నొక్కవచ్చు."</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"ఫీచర్‌లను జోడించండి"</string>
+    <!-- no translation found for accessibility_shortcutchooser_toprow_editor_dialog_title (1898531469029411168) -->
+    <skip />
     <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"<xliff:g id="ID_1">%1$s</xliff:g>‌ను సెటప్ చేయండి"</string>
     <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"పూర్తయింది"</string>
     <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"ఫీచర్‌ను ఎంచుకోండి"</string>
     <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"ఎడిట్ చేయండి"</string>
+    <!-- no translation found for accessibility_nav_bar_more_options_title (2549386798738178479) -->
+    <skip />
+    <!-- no translation found for accessibility_nav_bar_more_options_subtitle (4336832036115080533) -->
+    <skip />
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"యాక్సెసిబిలిటీ"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"లాక్ స్క్రీన్"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"షట్ డౌన్ చేయబడుతోంది…"</string>
@@ -1867,6 +1859,7 @@
     <string name="av_studio_look_effects" msgid="4105109585851068415">"%d ఎఫెక్ట్‌లు"</string>
     <string name="av_blur" msgid="405131343487260171">"బ్లర్"</string>
     <string name="av_live_captions" msgid="7819416886586903077">"లైవ్ క్యాప్షన్‌లు"</string>
+    <string name="av_drill_in_return_to_main" msgid="5273814393426741827">"వెనుకకు"</string>
     <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"బ్యాటరీ %s"</string>
     <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"ఎడమ వైపు బ్యాటరీ %1$s    కుడి వైపు బ్యాటరీ %2$s"</string>
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"ఎడమ వైపు బ్యాటరీ %1$s"</string>
