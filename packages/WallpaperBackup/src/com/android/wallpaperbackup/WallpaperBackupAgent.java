@@ -140,6 +140,9 @@ public class WallpaperBackupAgent extends BackupAgent {
 
     static final String DEVICE_CONFIG_SECONDARY_HEIGHT = "device_config_secondary_height";
 
+    static final String WALLPAPER_BACKUP_DELAYED_RESTORE_DISABLED =
+            "wallpaper_backup_delayed_restore_disabled";
+
     static final float DEFAULT_ACCEPTABLE_PARALLAX = 0.2f;
 
     // If this file exists, it means we exceeded our quota last time
@@ -554,7 +557,7 @@ public class WallpaperBackupAgent extends BackupAgent {
             mEventLogger.onRestoreException(e);
         } finally {
             Slog.v(TAG, "Restore finished; clearing backup bookkeeping");
-            if (Flags.enableDelayedRestoreApi()) {
+            if (Flags.enableDelayedRestoreApi() && isDelayedRestoreEnabled()) {
                 // Only delete the info stage and lock image stage if we've successfully restored
                 // the live wallpaper, otherwise we'll need it for the delayed restore.
                 if (finishedProcessingLiveWallpaper) {
@@ -695,7 +698,7 @@ public class WallpaperBackupAgent extends BackupAgent {
             // in reports from users
             if (component != null) {
                 // TODO(b/268471749): Handle delayed case
-                if (Flags.enableDelayedRestoreApi()) {
+                if (Flags.enableDelayedRestoreApi() && isDelayedRestoreEnabled()) {
                     String packageName = component.getPackageName();
                     if (!scheduledPackageRestores.contains(packageName)) {
                         DelayedRestoreRequest request = new DelayedRestoreRequest.Builder(
@@ -1494,6 +1497,13 @@ public class WallpaperBackupAgent extends BackupAgent {
             Slog.w(TAG, "Failed to check if the user is in restore: " + e);
             return false;
         }
+    }
+
+    @VisibleForTesting
+    boolean isDelayedRestoreEnabled() {
+        return Settings.Secure.getInt(
+                        getContentResolver(), WALLPAPER_BACKUP_DELAYED_RESTORE_DISABLED, 0)
+                == 0;
     }
 
     @VisibleForTesting

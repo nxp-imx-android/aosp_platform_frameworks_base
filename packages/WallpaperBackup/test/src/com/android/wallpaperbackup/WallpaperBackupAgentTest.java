@@ -1744,6 +1744,34 @@ public class WallpaperBackupAgentTest {
         assertThat(system.getSuccessCount()).isEqualTo(1);
     }
 
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_DELAYED_RESTORE_API)
+    public void testUpdateWallpaperComponent_delayedRestoreDisabled_callsApplyComponentAtInstall()
+            throws Exception {
+        mWallpaperBackupAgent.mIsDeviceInRestore = true;
+        mWallpaperBackupAgent.mIsDelayedRestoreEnabled = false;
+
+        mWallpaperBackupAgent.updateWallpaperComponent(new Pair<>(mWallpaperComponent, null),
+                /* which */ FLAG_SYSTEM, new HashSet<>());
+
+        verify(mBackupManager, never()).scheduleDelayedRestore(any());
+        assertThat(mWallpaperBackupAgent.mGetPackageMonitorCallCount).isEqualTo(1);
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_DELAYED_RESTORE_API)
+    public void testOnRestoreFinished_delayedRestoreDisabled_deletesStageFiles() throws Exception {
+        mWallpaperBackupAgent.mIsDelayedRestoreEnabled = false;
+        mockRestoredLiveWallpaperFileWithComponents(mWallpaperComponent, null);
+
+        mWallpaperBackupAgent.onCreate(USER_HANDLE, BackupAnnotations.BackupDestination.CLOUD,
+                BackupAnnotations.OperationType.RESTORE);
+        mWallpaperBackupAgent.onRestoreFinished();
+
+        assertThat(new File(mContext.getFilesDir(), WALLPAPER_INFO_STAGE).exists()).isFalse();
+        assertThat(new File(mContext.getFilesDir(), LOCK_WALLPAPER_STAGE).exists()).isFalse();
+    }
+
     private void testRestoredCrops(
             Point bitmapDimensions,
             Point sourceDeviceDimensions,
@@ -1965,6 +1993,7 @@ public class WallpaperBackupAgentTest {
         List<File> mBackedUpFiles = new ArrayList<>();
         PackageMonitor mWallpaperPackageMonitor;
         boolean mIsDeviceInRestore = false;
+        boolean mIsDelayedRestoreEnabled = true;
         Set<String> mExistingPackages = new HashSet<>();
         int mGetPackageMonitorCallCount = 0;
 
@@ -1981,6 +2010,11 @@ public class WallpaperBackupAgentTest {
         @Override
         boolean isDeviceInRestore() {
             return mIsDeviceInRestore;
+        }
+
+        @Override
+        boolean isDelayedRestoreEnabled() {
+            return mIsDelayedRestoreEnabled;
         }
 
         @Override
