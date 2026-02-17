@@ -27,9 +27,11 @@ import static android.service.dreams.Flags.cleanupDreamSettingsOnUninstall;
 import static android.service.dreams.Flags.dreamHandlesBeingObscured;
 import static android.service.dreams.Flags.dreamsV2;
 import static android.service.dreams.Flags.systemDreamDeathRecipient;
+import static android.service.dreams.Flags.dreamsSwitcher;
 
 import static com.android.server.wm.ActivityInterceptorCallback.DREAM_MANAGER_ORDERED_ID;
 
+import android.annotation.EnforcePermission;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.UserIdInt;
@@ -60,6 +62,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.os.PermissionEnforcer;
 import android.os.PowerManager;
 import android.os.PowerManagerInternal;
 import android.os.RemoteException;
@@ -73,6 +76,8 @@ import android.provider.Settings;
 import android.service.dreams.DreamManagerInternal;
 import android.service.dreams.DreamService;
 import android.service.dreams.IDreamManager;
+import android.service.dreams.IDreamManagerListener;
+import android.service.dreams.DreamPlaylist;
 import android.text.TextUtils;
 import android.util.Slog;
 import android.util.SparseArray;
@@ -336,7 +341,7 @@ public final class DreamManagerService extends SystemService {
 
     @Override
     public void onStart() {
-        publishBinderService(DreamService.DREAM_SERVICE, new BinderService());
+        publishBinderService(DreamService.DREAM_SERVICE, new BinderService(mContext));
         publishLocalService(DreamManagerInternal.class, new LocalService());
     }
 
@@ -1143,6 +1148,11 @@ public final class DreamManagerService extends SystemService {
     }
 
     private final class BinderService extends IDreamManager.Stub {
+
+        BinderService(Context context) {
+            super(PermissionEnforcer.fromContext(context));
+        }
+
         @Override // Binder call
         protected void dump(FileDescriptor fd, PrintWriter pw, String[] args) {
             if (!DumpUtils.checkDumpPermission(mContext, TAG, pw)) return;
@@ -1500,6 +1510,46 @@ public final class DreamManagerService extends SystemService {
             } finally {
                 Binder.restoreCallingIdentity(ident);
             }
+        }
+
+        @EnforcePermission(android.Manifest.permission.READ_DREAM_STATE)
+        @Override // Binder call
+        public void registerListener(IDreamManagerListener listener, int userId) {
+            registerListener_enforcePermission();
+
+            if (!dreamsSwitcher()) {
+                Slog.e(TAG, "Dreams switcher flag is not enabled, ignoring register request.");
+                return;
+            }
+
+            // TODO(b/483437711): Implement this.
+        }
+
+        @EnforcePermission(android.Manifest.permission.READ_DREAM_STATE)
+        @Override // Binder call
+        public void unregisterListener(IDreamManagerListener listener, int userId) {
+            unregisterListener_enforcePermission();
+
+            if (!dreamsSwitcher()) {
+                Slog.e(TAG, "Dreams switcher flag is not enabled, ignoring unregister request.");
+                return;
+            }
+
+            // TODO(b/483437711): Implement this.
+        }
+
+        @EnforcePermission(android.Manifest.permission.READ_DREAM_STATE)
+        @Override // Binder call
+        public DreamPlaylist getDreamPlaylist(int userId) {
+            getDreamPlaylist_enforcePermission();
+
+            if (!dreamsSwitcher()) {
+                Slog.e(TAG, "Dreams switcher flag is not enabled, ignoring playlist request.");
+                return DreamPlaylist.EMPTY;
+            }
+
+            // TODO(b/483437711): Implement this.
+            return DreamPlaylist.EMPTY;
         }
 
         boolean canLaunchDreamActivity(String dreamPackageName, String packageName,

@@ -1,0 +1,169 @@
+/*
+ * Copyright (C) 2026 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package android.service.dreams;
+
+import static com.google.common.truth.Truth.assertThat;
+
+import android.content.ComponentName;
+import android.os.Parcel;
+import android.platform.test.annotations.Presubmit;
+
+import androidx.test.filters.SmallTest;
+import androidx.test.runner.AndroidJUnit4;
+
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+@SmallTest
+@Presubmit
+@RunWith(AndroidJUnit4.class)
+public class DreamPlaylistTest {
+
+    private static final ComponentName DREAM_1 =
+            ComponentName.unflattenFromString("com.android.dream/.Dream1");
+    private static final ComponentName DREAM_2 =
+            ComponentName.unflattenFromString("com.android.dream/.Dream2");
+    private static final ComponentName DREAM_3 =
+            ComponentName.unflattenFromString("com.android.dream/.Dream3");
+
+    @Test(expected = NullPointerException.class)
+    public void testConstructor_nullElement() {
+        List<ComponentName> dreams = Arrays.asList(DREAM_1, null, DREAM_3);
+        new DreamPlaylist(dreams, 0);
+    }
+
+    @Test
+    public void testEmptyConstant() {
+        assertThat(DreamPlaylist.EMPTY.getDreams()).isEmpty();
+        assertThat(DreamPlaylist.EMPTY.getActiveIndex())
+                .isEqualTo(DreamPlaylist.NO_ACTIVE_DREAM_INDEX);
+        assertThat(DreamPlaylist.EMPTY.getActiveDream()).isNull();
+    }
+
+    @Test
+    public void testGetActiveDream() {
+        List<ComponentName> dreams = Arrays.asList(DREAM_1, DREAM_2, DREAM_3);
+        DreamPlaylist playlist = new DreamPlaylist(dreams, 1);
+        assertThat(playlist.getActiveDream()).isEqualTo(DREAM_2);
+        assertThat(playlist.getActiveIndex()).isEqualTo(1);
+    }
+
+    @Test
+    public void testGetActiveDream_noneActive() {
+        List<ComponentName> dreams = Arrays.asList(DREAM_1, DREAM_2);
+        DreamPlaylist playlist = new DreamPlaylist(dreams, DreamPlaylist.NO_ACTIVE_DREAM_INDEX);
+        assertThat(playlist.getActiveDream()).isNull();
+        assertThat(playlist.getActiveIndex()).isEqualTo(DreamPlaylist.NO_ACTIVE_DREAM_INDEX);
+    }
+
+    @Test
+    public void testGetActiveDream_empty() {
+        DreamPlaylist playlist =
+                new DreamPlaylist(Collections.emptyList(), DreamPlaylist.NO_ACTIVE_DREAM_INDEX);
+        assertThat(playlist.getActiveDream()).isNull();
+        assertThat(playlist.getActiveIndex()).isEqualTo(DreamPlaylist.NO_ACTIVE_DREAM_INDEX);
+    }
+
+    @Test
+    public void testGetNextDream() {
+        List<ComponentName> dreams = Arrays.asList(DREAM_1, DREAM_2, DREAM_3);
+
+        // Active is DREAM_1
+        DreamPlaylist playlist = new DreamPlaylist(dreams, 0);
+        assertThat(playlist.getNextDream()).isEqualTo(DREAM_2);
+
+        // Active is DREAM_2
+        playlist = new DreamPlaylist(dreams, 1);
+        assertThat(playlist.getNextDream()).isEqualTo(DREAM_3);
+
+        // Active is DREAM_3 (last)
+        playlist = new DreamPlaylist(dreams, 2);
+        assertThat(playlist.getNextDream()).isEqualTo(DREAM_1);
+    }
+
+    @Test
+    public void testGetNextDream_empty() {
+        DreamPlaylist playlist =
+                new DreamPlaylist(Collections.emptyList(), DreamPlaylist.NO_ACTIVE_DREAM_INDEX);
+        assertThat(playlist.getNextDream()).isNull();
+    }
+
+    @Test
+    public void testGetPreviousDream() {
+        List<ComponentName> dreams = Arrays.asList(DREAM_1, DREAM_2, DREAM_3);
+
+        // Active is DREAM_1 (first)
+        DreamPlaylist playlist = new DreamPlaylist(dreams, 0);
+        assertThat(playlist.getPreviousDream()).isEqualTo(DREAM_3);
+
+        // Active is DREAM_2
+        playlist = new DreamPlaylist(dreams, 1);
+        assertThat(playlist.getPreviousDream()).isEqualTo(DREAM_1);
+
+        // Active is DREAM_3
+        playlist = new DreamPlaylist(dreams, 2);
+        assertThat(playlist.getPreviousDream()).isEqualTo(DREAM_2);
+    }
+
+    @Test
+    public void testGetPreviousDream_empty() {
+        DreamPlaylist playlist =
+                new DreamPlaylist(Collections.emptyList(), DreamPlaylist.NO_ACTIVE_DREAM_INDEX);
+        assertThat(playlist.getPreviousDream()).isNull();
+    }
+
+    @Test
+    public void testGetNextDream_noneActive() {
+        List<ComponentName> dreams = Arrays.asList(DREAM_1, DREAM_2, DREAM_3);
+        // Active index -1 means no dream is currently active.
+        DreamPlaylist playlist = new DreamPlaylist(dreams, DreamPlaylist.NO_ACTIVE_DREAM_INDEX);
+        // If no dream is active, "next" should start at the beginning.
+        assertThat(playlist.getNextDream()).isEqualTo(DREAM_1);
+    }
+
+    @Test
+    public void testGetPreviousDream_noneActive() {
+        List<ComponentName> dreams = Arrays.asList(DREAM_1, DREAM_2, DREAM_3);
+        // Active index -1 means no dream is currently active.
+        DreamPlaylist playlist = new DreamPlaylist(dreams, DreamPlaylist.NO_ACTIVE_DREAM_INDEX);
+        // If no dream is active, "previous" should wrap to the end.
+        assertThat(playlist.getPreviousDream()).isEqualTo(DREAM_3);
+    }
+
+    @Test
+    public void testParceling() {
+        List<ComponentName> dreams = Arrays.asList(DREAM_1, DREAM_2);
+        DreamPlaylist original = new DreamPlaylist(dreams, 1);
+
+        Parcel parcel = Parcel.obtain();
+        original.writeToParcel(parcel, 0);
+        parcel.setDataPosition(0);
+
+        DreamPlaylist created = DreamPlaylist.CREATOR.createFromParcel(parcel);
+
+        assertThat(created.getDreams()).containsExactly(DREAM_1, DREAM_2).inOrder();
+        assertThat(created.getActiveIndex()).isEqualTo(1);
+        assertThat(created.getActiveDream()).isEqualTo(DREAM_2);
+
+        parcel.recycle();
+    }
+}
