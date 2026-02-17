@@ -21,11 +21,10 @@ import android.content.applicationContext
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import com.android.internal.R as internalR
-import com.android.launcher3.util.UserIconInfo
 import com.android.systemui.kosmos.Kosmos
+import com.android.users.UserType
 
-@UserIconInfo.UserType
-var Kosmos.fakeUserType: Int by Kosmos.Fixture { UserIconInfo.TYPE_MAIN }
+var Kosmos.fakeUserType: UserType by Kosmos.Fixture { UserType.MAIN }
 
 var Kosmos.userProfileBadgeProvider: Notification.UserProfileBadgeProvider? by
     Kosmos.Fixture { null }
@@ -36,23 +35,22 @@ fun Kosmos.setupFakeUserProfileBadgeProvider() {
 
 class FakeUserProfileBadgeProvider(
     private val sysuiContext: Context,
-    @UserIconInfo.UserType private val userType: Int,
+    private val userType: UserType,
 ) : Notification.UserProfileBadgeProvider {
     override fun getProfileBadge(context: Context): Bitmap? {
         val badgeDrawableRes =
             when (userType) {
-                UserIconInfo.TYPE_MAIN -> return null
-                UserIconInfo.TYPE_WORK -> internalR.drawable.ic_corp_badge
-                UserIconInfo.TYPE_CLONED -> internalR.drawable.ic_clone_badge
-                UserIconInfo.TYPE_PRIVATE -> internalR.drawable.ic_private_profile_badge
-                else -> error("Unsupported user type $userType")
+                UserType.MAIN -> return null
+                UserType.WORK -> internalR.drawable.ic_corp_badge
+                UserType.CLONED -> internalR.drawable.ic_clone_badge
+                UserType.PRIVATE -> internalR.drawable.ic_private_profile_badge
             }
         val badgeDrawable =
             sysuiContext.getDrawable(badgeDrawableRes)
                 ?: error("Null drawable for user type $userType")
         val tintColorRes =
             when (userType) {
-                UserIconInfo.TYPE_WORK -> internalR.color.semanticBlueOnSurfaceVariant
+                UserType.WORK -> internalR.color.semanticBlueOnSurfaceVariant
                 else -> internalR.color.materialColorOnSurface
             }
         val tintColor = sysuiContext.getColor(tintColorRes)
@@ -70,9 +68,9 @@ class FakeUserProfileBadgeProvider(
 
     override fun getProfileAccessibilityString(context: Context): String? =
         when (userType) {
-            UserIconInfo.TYPE_WORK -> "Work Profile"
-            UserIconInfo.TYPE_CLONED -> "Cloned Profile"
-            UserIconInfo.TYPE_PRIVATE -> "Private Space"
+            UserType.WORK -> "Work Profile"
+            UserType.CLONED -> "Cloned Profile"
+            UserType.PRIVATE -> "Private Space"
             else -> "Unknown Profile"
         }
 }
