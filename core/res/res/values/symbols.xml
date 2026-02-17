@@ -6525,8 +6525,8 @@
   <!-- Whether to force color fade. -->
   <java-symbol type="bool" name="config_forceColorFade" />
 
-  <!-- The locale countries that force camera shutter sound -->
-  <java-symbol type="array" name="config_cameraSoundForcedCountry" />
+  <!-- The locale lauguages that force camera shutter sound -->
+  <java-symbol type="array" name="config_cameraSoundForcedLanguage" />
 
   <!-- The location button render service component name -->
   <java-symbol type="string" name="config_locationButtonRenderService" />
