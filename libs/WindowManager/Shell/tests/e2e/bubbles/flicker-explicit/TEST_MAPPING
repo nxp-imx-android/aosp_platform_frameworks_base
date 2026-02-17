@@ -73,6 +73,10 @@
       "keywords": ["device"]
     },
     {
+      "name": "WMShellExplicitFlickerTestsBubbles-EnterBubbleFromOverviewSingleAppWithImeTest",
+      "keywords": ["device"]
+    },
+    {
       "name": "WMShellExplicitFlickerTestsBubbles-EnterBubbleFromOverviewLiveTileTest",
       "keywords": ["device"]
     },
