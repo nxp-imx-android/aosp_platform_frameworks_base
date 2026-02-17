@@ -536,4 +536,24 @@ class SceneTransitionLayoutStateTest {
         state.showOverlay(OverlayA, animationScope = this)
         state.hideOverlay(OverlayA, animationScope = this)
     }
+
+    @Test
+    // Regression test for the first part of b/482599730.
+    fun exceptionThrownWhenStartingTransitionIsNotLost() {
+        val errorMessage = "error message"
+        val exception =
+            assertThrows(IllegalStateException::class.java) {
+                val state =
+                    MutableSceneTransitionLayoutStateForTests(
+                        SceneA,
+                        onTransitionStart = { error(errorMessage) },
+                    )
+
+                runTest {
+                    state.startTransitionImmediately(backgroundScope, transition(SceneA, SceneB))
+                }
+            }
+
+        assertThat(exception.message).isEqualTo(errorMessage)
+    }
 }
