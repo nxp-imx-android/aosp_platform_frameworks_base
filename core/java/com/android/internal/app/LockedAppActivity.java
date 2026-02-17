@@ -51,6 +51,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.LocalServices;
 
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * An activity that presents a {@link BiometricPrompt} to the user for authenticating actions
@@ -135,11 +136,7 @@ public final class LockedAppActivity extends Activity {
                     }
                     mAppLockInternal.setAppLockEnabledPackageSuccessfullyAuthenticated(
                             mPackageName, mUserId);
-                    // In intercept mode, send the original target intent after unlocking.
-                    if (isInterceptMode()) {
-                        mInjector.sendTargetIntent(LockedAppActivity.this, mTarget);
-                    }
-                    finish();
+                    completeUnlockAndFinish();
                 }
 
                 @Override
@@ -166,6 +163,11 @@ public final class LockedAppActivity extends Activity {
 
     private boolean mIsPackageUnlocked;
     private boolean mIsBiometricPromptShowing;
+    /**
+     * Tracks whether the target intent has already been sent in intercept mode to avoid duplicate
+     * launches.
+     */
+    private final AtomicBoolean mTargetIntentSent = new AtomicBoolean(false);
 
     // Member variables initialized in onCreate for performance.
     private String mPackageName;
@@ -603,13 +605,26 @@ public final class LockedAppActivity extends Activity {
                 if (mActivity.mCancellationSignal != null) {
                     mActivity.mCancellationSignal.cancel();
                 }
-                // In intercept mode, send the original target intent before finishing.
-                if (mActivity.isInterceptMode()) {
-                    mActivity.mInjector.sendTargetIntent(mActivity, mTarget);
-                }
-                mActivity.finish();
+                mActivity.completeUnlockAndFinish();
             }
         }
+    }
+
+    /**
+     * Finishes the activity and, if in intercept mode, sends the original target intent.
+     * This method ensures that the target intent is sent only once, even if called multiple times
+     * (e.g., from both authentication success and a locked state listener).
+     */
+    private void completeUnlockAndFinish() {
+        if (isInterceptMode()) {
+            // compareAndSet atomically checks if the value is currently 'false' (expected) and, if
+            // so, updates it to 'true' (update). It returns 'true' if the update was successful,
+            // ensuring the intent is sent only once.
+            if (mTargetIntentSent.compareAndSet(/* expectedValue= */ false, /* newValue= */ true)) {
+                mInjector.sendTargetIntent(this, mTarget);
+            }
+        }
+        finish();
     }
 
     /**
@@ -772,6 +787,10 @@ public final class LockedAppActivity extends Activity {
          */
         public void sendTargetIntent(Activity activity, @NonNull IntentSender target) {
             Objects.requireNonNull(target);
+
+            if (DEBUG) {
+                Slog.d(TAG, "Sending target intent: " + target);
+            }
             try {
                 // Use MODE_BACKGROUND_ACTIVITY_START_ALLOW_IF_VISIBLE to allow PendingIntents to
                 // be launched even if the creator app is in the background.
