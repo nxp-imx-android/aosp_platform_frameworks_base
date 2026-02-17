@@ -234,7 +234,7 @@ public class StageCoordinatorTests extends ShellTestCase {
                 Optional.of(mDesktopUserRepositories),
                 mRootTDAOrganizer,
                 mRootDisplayAreaOrganizer, mDesktopState, mIActivityTaskManager, mMSDLPlayer,
-                Optional.of(mBubbleController)));
+                Optional.of(mBubbleController), Optional.empty()));
         mSplitScreenTransitions = spy(mStageCoordinator.getSplitTransitions());
         mSplitScreenListener = mock(SplitScreenListener.class);
         mStageCoordinator.setSplitTransitions(mSplitScreenTransitions);

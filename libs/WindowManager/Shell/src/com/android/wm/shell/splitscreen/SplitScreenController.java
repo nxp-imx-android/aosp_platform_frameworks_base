@@ -103,6 +103,7 @@ import com.android.wm.shell.desktopmode.DesktopTasksController;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.draganddrop.DragAndDropController;
 import com.android.wm.shell.draganddrop.SplitDragPolicy;
+import com.android.wm.shell.packageupdate.PackageUpdateController;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.recents.RecentTasksController;
 import com.android.wm.shell.shared.TransactionPool;
@@ -221,6 +222,7 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
     private final MSDLPlayer mMSDLPlayer;
     private final Optional<BubbleController> mBubbleController;
     private final Optional<ClientFullscreenRequestController> mClientFullscreenRequestController;
+    private final Optional<PackageUpdateController> mPackageUpdateController;
 
     @VisibleForTesting
     StageCoordinator mStageCoordinator;
@@ -261,7 +263,8 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
             IActivityTaskManager activityTaskManager,
             MSDLPlayer msdlPlayer,
             Optional<BubbleController> bubbleController,
-            Optional<ClientFullscreenRequestController> clientFullscreenRequestController) {
+            Optional<ClientFullscreenRequestController> clientFullscreenRequestController,
+            Optional<PackageUpdateController> packageUpdateController) {
         mShellCommandHandler = shellCommandHandler;
         mShellController = shellController;
         mTaskOrganizer = shellTaskOrganizer;
@@ -293,6 +296,7 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
         mMSDLPlayer = msdlPlayer;
         mBubbleController = bubbleController;
         mClientFullscreenRequestController = clientFullscreenRequestController;
+        mPackageUpdateController = packageUpdateController;
         // TODO(b/238217847): Temporarily add this check here until we can remove the dynamic
         //                    override for this controller from the base module
         if (ActivityTaskManager.supportsSplitScreenMultiWindow(context)) {
@@ -345,7 +349,8 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
                 mMainExecutor, mMainHandler, mRecentTasksOptional, mLaunchAdjacentController,
                 mWindowDecorViewModel, mSplitState, mDesktopTasksController,
                 mDesktopUserRepositories, mRootTDAOrganizer, mRootDisplayAreaOrganizer,
-                mDesktopState, mActivityTaskManager, mMSDLPlayer, mBubbleController);
+                mDesktopState, mActivityTaskManager, mMSDLPlayer, mBubbleController,
+                mPackageUpdateController);
     }
 
     @Override
