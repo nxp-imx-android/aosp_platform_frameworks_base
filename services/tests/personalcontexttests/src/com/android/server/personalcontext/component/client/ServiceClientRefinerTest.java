@@ -36,8 +36,8 @@ import android.platform.test.flag.junit.SetFlagsRule;
 import android.service.personalcontext.hint.BundleHint;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintTestUtils;
-import android.service.personalcontext.hint.ContextHintWithSignature;
-import android.service.personalcontext.hint.ContextHintWithSignatureWrapper;
+import android.service.personalcontext.hint.PublishedContextHint;
+import android.service.personalcontext.hint.PublishedContextHintWrapper;
 import android.service.personalcontext.refiner.IRefiner;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -99,11 +99,11 @@ public class ServiceClientRefinerTest {
     @Test
     public void testRefine() throws Exception {
         BundleHint bundleHint = new BundleHint.Builder().build();
-        ContextHintWithSignature hint =
-                new ContextHintWithSignature.Builder(
+        PublishedContextHint hint =
+                new PublishedContextHint.Builder(
                                 bundleHint, ContextHintTestUtils.generateSignedHintKey())
                         .build();
-        final Set<ContextHintWithSignature> signedHints = Set.of(hint);
+        final Set<PublishedContextHint> signedHints = Set.of(hint);
 
         // Submit hints to refine.
         mServiceClientRefiner.refine(signedHints, (hints) -> {},
@@ -114,10 +114,10 @@ public class ServiceClientRefinerTest {
         mFakeExecutor.runAll();
 
         // Hints are sent to the refiner service.
-        ArgumentCaptor<List<ContextHintWithSignatureWrapper>> hintCaptor =
+        ArgumentCaptor<List<PublishedContextHintWrapper>> hintCaptor =
                 ArgumentCaptor.forClass(List.class);
         verify(mIRefiner).refine(any(), hintCaptor.capture(), any(), any());
-        assertThat(hintCaptor.getValue().getFirst().getContextHintWithSignature()).isEqualTo(hint);
+        assertThat(hintCaptor.getValue().getFirst().getPublishedContextHint()).isEqualTo(hint);
     }
 
     @EnableFlags(android.service.personalcontext.Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_PERMISSIONS)
@@ -131,11 +131,11 @@ public class ServiceClientRefinerTest {
                 .thenReturn(PermissionManager.PERMISSION_HARD_DENIED);
 
         BundleHint bundleHint = new BundleHint.Builder().build();
-        ContextHintWithSignature hint =
-                new ContextHintWithSignature.Builder(
+        PublishedContextHint hint =
+                new PublishedContextHint.Builder(
                                 bundleHint, ContextHintTestUtils.generateSignedHintKey())
                         .build();
-        final Set<ContextHintWithSignature> signedHints = Set.of(hint);
+        final Set<PublishedContextHint> signedHints = Set.of(hint);
 
         // Submit hints to refine
         AtomicReference<Set<ContextHint>> refinedHints = new AtomicReference<>();

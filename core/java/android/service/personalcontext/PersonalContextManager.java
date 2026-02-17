@@ -33,8 +33,8 @@ import android.os.ParcelUuid;
 import android.os.RemoteException;
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
 import android.service.personalcontext.hint.ContextHint;
-import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.hint.ContextHintWrapper;
+import android.service.personalcontext.hint.PublishedContextHint;
 import android.service.personalcontext.insight.ContextInsight;
 import android.service.personalcontext.insight.ContextInsightWrapper;
 import android.service.personalcontext.insight.PublishedContextInsight;
@@ -304,23 +304,23 @@ public final class PersonalContextManager {
     }
 
     /**
-     * Takes a {@link ContextHint}, attaches this application's package name, and signs it.
+     * Takes a {@link ContextHint} and converts it to a {@link PublishedContextHint} without
+     * actually publishing it.
      *
-     * <p>This can be used to sign a hint that your application has created, in order to attach it
-     * to a new {@link ContextInsight}. Each hint in {@code hints} will be attributed to each
-     * hint in {@code attributionHints}.
+     * <p>This can be used to attach a new hint to a {@link ContextInsight} without having to
+     * trigger a workflow.
      *
      * @param hint raw data to be signed
      * @param attributionHints optional hints to use as attribution for {@code hint}
-     * @return signed version of hint annotated with caller's package
+     * @return prepared version of hint annotated with caller's package
      */
     @NonNull
-    public ContextHintWithSignature signHint(
+    public PublishedContextHint preparePublishedHint(
             @NonNull ContextHint hint, @Nullable List<ContextHint> attributionHints) {
         try {
             return mService.signHint(
                     new ContextHintWrapper(hint), ContextHintWrapper.wrapList(attributionHints))
-                    .getContextHintWithSignature();
+                    .getPublishedContextHint();
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

@@ -33,7 +33,7 @@ import android.app.RemoteAction;
 import android.content.Intent;
 import android.graphics.drawable.Icon;
 import android.service.personalcontext.hint.ContextHintTestUtils;
-import android.service.personalcontext.hint.ContextHintWithSignature;
+import android.service.personalcontext.hint.PublishedContextHint;
 import android.service.personalcontext.hint.TextClassificationHint;
 import android.service.personalcontext.insight.ActionableInsight;
 import android.service.personalcontext.insight.BundleInsight;
@@ -148,7 +148,7 @@ public class TextClassificationActionRendererTest {
         ActionableInsight insight =
                 new ActionableInsight.Builder(actionDetails, displayDetails)
                         .addOriginHint(
-                                new ContextHintWithSignature.Builder(
+                                new PublishedContextHint.Builder(
                                                 hint, ContextHintTestUtils.generateSignedHintKey())
                                         .build())
                         .build();

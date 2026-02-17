@@ -27,8 +27,8 @@ import android.service.personalcontext.Flags;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.Token;
 import android.service.personalcontext.hint.ContextHint;
-import android.service.personalcontext.hint.ContextHintWithSignature;
-import android.service.personalcontext.hint.ContextHintWithSignatureWrapper;
+import android.service.personalcontext.hint.PublishedContextHint;
+import android.service.personalcontext.hint.PublishedContextHintWrapper;
 import android.service.personalcontext.insight.interaction.AttributionDetails;
 import android.util.Log;
 
@@ -138,7 +138,7 @@ public abstract class ContextInsight {
     };
 
     private final UUID mId;
-    private final Set<ContextHintWithSignature> mOriginHints;
+    private final Set<PublishedContextHint> mOriginHints;
     private final Set<Token> mTokens;
     private final Instant mCreationTime;
     private final AttributionDetails mAttributionDetails;
@@ -206,7 +206,7 @@ public abstract class ContextInsight {
 
     /** Returns the set of {@link ContextHint}s that were used to generate this insight. */
     @NonNull
-    public Set<ContextHintWithSignature> getOriginHints() {
+    public Set<PublishedContextHint> getOriginHints() {
         return mOriginHints;
     }
 
@@ -218,7 +218,7 @@ public abstract class ContextInsight {
     @Nullable
     public Set<RenderToken> getRenderTokens() {
         final Set<RenderToken> allRenderTokens = new HashSet<>();
-        for (ContextHintWithSignature hint : getOriginHints()) {
+        for (PublishedContextHint hint : getOriginHints()) {
             allRenderTokens.addAll(hint.getRenderTokens());
         }
 
@@ -251,7 +251,7 @@ public abstract class ContextInsight {
         b.putString(KEY_INSIGHT_ID, mId.toString());
         b.putParcelableArrayList(
                 KEY_ORIGIN_HINTS, new ArrayList<>(
-                        ContextHintWithSignatureWrapper.wrapList(mOriginHints)));
+                        PublishedContextHintWrapper.wrapList(mOriginHints)));
         b.putParcelableArrayList(KEY_TOKENS, new ArrayList<>(mTokens));
         b.putBundle(KEY_INSIGHT_DATA, toBundleImpl());
         b.putLong(KEY_CREATION_TIME, mCreationTime.toEpochMilli());
@@ -298,9 +298,9 @@ public abstract class ContextInsight {
         final Bundle data = bundle.getBundle(KEY_INSIGHT_DATA);
         final ConstructorParams constructorParams = new ConstructorParams(
                 UUID.fromString(bundle.getString(KEY_INSIGHT_ID)),
-                ContextHintWithSignatureWrapper.unwrapList(
+                PublishedContextHintWrapper.unwrapList(
                         bundle.getParcelableArrayList(
-                                KEY_ORIGIN_HINTS, ContextHintWithSignatureWrapper.class)),
+                                KEY_ORIGIN_HINTS, PublishedContextHintWrapper.class)),
                 bundle.getParcelableArrayList(KEY_TOKENS, Token.class),
                 Instant.ofEpochMilli(bundle.getLong(KEY_CREATION_TIME)),
                 bundle.getParcelable(KEY_ATTRIBUTION, AttributionDetails.class));
@@ -344,13 +344,13 @@ public abstract class ContextInsight {
      */
     static class ConstructorParams {
         private final UUID mId;
-        private final Collection<ContextHintWithSignature> mOriginHints;
+        private final Collection<PublishedContextHint> mOriginHints;
         private final Collection<Token> mTokens;
         private final Instant mCreationTime;
         private final AttributionDetails mAttributionDetails;
 
         private ConstructorParams(
-                Collection<ContextHintWithSignature> originHints,
+                Collection<PublishedContextHint> originHints,
                 Collection<Token> tokens,
                 AttributionDetails attributionDetails) {
             this(
@@ -363,7 +363,7 @@ public abstract class ContextInsight {
 
         private ConstructorParams(
                 UUID id,
-                Collection<ContextHintWithSignature> originHints,
+                Collection<PublishedContextHint> originHints,
                 Collection<Token> tokens,
                 Instant creationTime,
                 AttributionDetails attributionDetails) {
@@ -375,7 +375,7 @@ public abstract class ContextInsight {
         }
 
         static final class Builder {
-            private final Set<ContextHintWithSignature> mOriginHints = new HashSet<>();
+            private final Set<PublishedContextHint> mOriginHints = new HashSet<>();
             private final Set<Token> mTokens = new HashSet<>();
             private AttributionDetails mAttributionDetails;
             private UUID mOriginatingComponentId;
@@ -389,7 +389,7 @@ public abstract class ContextInsight {
              * @param hint the origin {@link ContextHint} to add
              */
             @NonNull
-            Builder addOriginHint(@NonNull ContextHintWithSignature hint) {
+            Builder addOriginHint(@NonNull PublishedContextHint hint) {
                 mOriginHints.add(requireNonNull(hint));
                 return this;
             }

@@ -56,15 +56,15 @@ public final class HintFilter implements Parcelable {
     private static final String TAG = "HintFilter";
 
     /**
-     * An interface for {@link ContextHintWithSignature} filters to implement.
+     * An interface for {@link PublishedContextHint} filters to implement.
      */
     private interface FilterEntry extends Parcelable {
         /**
          * Returns {@code true} if the supplied hint matches this filter.
-         * @param hint The {@link ContextHintWithSignature} to be chcked
+         * @param hint The {@link PublishedContextHint} to be chcked
          * @return {@code true} if matches, {@code false} otherwise.
          */
-        boolean matches(ContextHintWithSignature hint);
+        boolean matches(PublishedContextHint hint);
 
         /**
          * Passes self to visit.
@@ -83,7 +83,7 @@ public final class HintFilter implements Parcelable {
     }
 
     /**
-     * {@link ContextHintWithSignature} filter for package names.
+     * {@link PublishedContextHint} filter for package names.
      */
     private static class PackageEntry implements FilterEntry {
         private final String mPackageName;
@@ -111,7 +111,7 @@ public final class HintFilter implements Parcelable {
         }
 
         @Override
-        public boolean matches(ContextHintWithSignature hint) {
+        public boolean matches(PublishedContextHint hint) {
             return TextUtils.equals(hint.getOriginatingPackage(), mPackageName);
         }
 
@@ -134,7 +134,7 @@ public final class HintFilter implements Parcelable {
     }
 
     /**
-     * {@link ContextHintWithSignature} filter for types specified on {@link BundleHint}.
+     * {@link PublishedContextHint} filter for types specified on {@link BundleHint}.
      */
     private static class BundleHintTypeNameEntry implements FilterEntry {
         private final String mBundleHintTypeName;
@@ -175,7 +175,7 @@ public final class HintFilter implements Parcelable {
                 };
 
         @Override
-        public boolean matches(ContextHintWithSignature hint) {
+        public boolean matches(PublishedContextHint hint) {
             return TextUtils.equals(hint.getContextHint().getHintTypeName(), mBundleHintTypeName);
         }
 
@@ -186,7 +186,7 @@ public final class HintFilter implements Parcelable {
     }
 
     /**
-     * {@link ContextHintWithSignature} filter for {@link ContextHint} subtypes.
+     * {@link PublishedContextHint} filter for {@link ContextHint} subtypes.
      */
     private static class ContextHintTypeEntry implements FilterEntry {
         final String mContextHintClassType;
@@ -204,7 +204,7 @@ public final class HintFilter implements Parcelable {
         }
 
         @Override
-        public boolean matches(ContextHintWithSignature hint) {
+        public boolean matches(PublishedContextHint hint) {
             return TextUtils.equals(hint.getClass().getName(), mContextHintClassType);
         }
 
@@ -458,7 +458,7 @@ public final class HintFilter implements Parcelable {
         return matchingFilters;
     }
 
-    private FilterRecord findFirstMatch(ContextHintWithSignature hintWithSignature,
+    private FilterRecord findFirstMatch(PublishedContextHint hintWithSignature,
             Set<FilterRecord> records) {
         for (FilterRecord record : records) {
             if (record.getEntry().matches(hintWithSignature)) {
@@ -469,7 +469,7 @@ public final class HintFilter implements Parcelable {
         return null;
     }
 
-    private Set<FilterRecord> findAllMatches(ContextHintWithSignature hintWithSignature,
+    private Set<FilterRecord> findAllMatches(PublishedContextHint hintWithSignature,
             Set<FilterRecord> records) {
         final HashSet<FilterRecord> matches = new HashSet<>();
         for (FilterRecord record : records) {
@@ -484,15 +484,15 @@ public final class HintFilter implements Parcelable {
     /** @hide */
     @TestApi
     @NonNull
-    public Set<ContextHintWithSignature> getInterestedHintClusters(
-            @NonNull Set<ContextHintWithSignature> allContextHints,
+    public Set<PublishedContextHint> getInterestedHintClusters(
+            @NonNull Set<PublishedContextHint> allContextHints,
             @NonNull Set<UUID> seenIDs) {
         final ArraySet<FilterRecord> requiredFilters = getFilterRecords(FILTER_TYPE_REQUIRED);
         final ArraySet<FilterRecord> allowedFilters = getFilterRecords(FILTER_TYPE_ALLOWED);
 
-        final Set<ContextHintWithSignature> interestingHints = new HashSet<>();
+        final Set<PublishedContextHint> interestingHints = new HashSet<>();
 
-        for (ContextHintWithSignature hintWithSignature : allContextHints) {
+        for (PublishedContextHint hintWithSignature : allContextHints) {
             final ContextHint hint = hintWithSignature.getContextHint();
             if (seenIDs.contains(hint.getHintId())) {
                 continue;

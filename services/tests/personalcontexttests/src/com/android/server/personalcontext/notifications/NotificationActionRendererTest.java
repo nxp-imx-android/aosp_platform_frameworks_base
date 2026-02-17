@@ -44,9 +44,9 @@ import android.service.notification.Adjustment;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.service.personalcontext.hint.ContextHintTestUtils;
-import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.hint.NotificationEvent.NotificationEnqueuedEvent;
 import android.service.personalcontext.hint.NotificationHint;
+import android.service.personalcontext.hint.PublishedContextHint;
 import android.service.personalcontext.insight.ActionableInsight;
 import android.service.personalcontext.insight.BundleInsight;
 import android.service.personalcontext.insight.ContextInsight;
@@ -434,8 +434,8 @@ public class NotificationActionRendererTest {
                                 new NotificationEnqueuedEvent(
                                         sbn, NOTIFICATION_CHANNEL, RANKING_MAP))
                         .build();
-        ContextHintWithSignature signedHint =
-                new ContextHintWithSignature.Builder(
+        PublishedContextHint signedHint =
+                new PublishedContextHint.Builder(
                                 hint, ContextHintTestUtils.generateSignedHintKey())
                         .build();
         InsightDisplayDetails.Builder displayDetailsBuilder;
@@ -470,8 +470,8 @@ public class NotificationActionRendererTest {
                                 new NotificationEnqueuedEvent(
                                         sbn, NOTIFICATION_CHANNEL, RANKING_MAP))
                         .build();
-        ContextHintWithSignature signedHint =
-                new ContextHintWithSignature.Builder(
+        PublishedContextHint signedHint =
+                new PublishedContextHint.Builder(
                                 hint, ContextHintTestUtils.generateSignedHintKey())
                         .build();
 

@@ -16,7 +16,7 @@
 
 package com.android.server.personalcontext;
 
-import android.service.personalcontext.hint.ContextHintWithSignature;
+import android.service.personalcontext.hint.PublishedContextHint;
 import android.service.personalcontext.insight.ContextInsight;
 
 import com.android.server.personalcontext.component.Component;
@@ -43,7 +43,7 @@ public class ContextLogger
     private final Map<Long, Timeline> mActiveRendererTimelines = new HashMap<>();
 
     /** Called when a workflow is started. */
-    public void onRefinerWorkflowStarted(long flowId, Collection<ContextHintWithSignature> hints) {
+    public void onRefinerWorkflowStarted(long flowId, Collection<PublishedContextHint> hints) {
         final Timeline flowTimeline = new Timeline();
 
         flowTimeline.addStringDetail(
@@ -56,7 +56,7 @@ public class ContextLogger
 
     /** Called when a set of hints is sent to a refiner. */
     public void onHintsSentToRefiner(
-            long flowId, Collection<ContextHintWithSignature> hints, Refiner refiner) {
+            long flowId, Collection<PublishedContextHint> hints, Refiner refiner) {
         Timeline flowTimeline = mActiveRefinerTimelines.get(flowId);
         if (flowTimeline == null) return;
 
@@ -69,7 +69,7 @@ public class ContextLogger
 
     /** Called when a set of hints is received from a refiner. */
     public void onHintsReceivedFromRefiner(
-            long flowId, Collection<ContextHintWithSignature> hints, Refiner refiner) {
+            long flowId, Collection<PublishedContextHint> hints, Refiner refiner) {
         Timeline flowTimeline = mActiveRefinerTimelines.get(flowId);
         if (flowTimeline == null) return;
 
@@ -199,8 +199,8 @@ public class ContextLogger
             mDetails.add(String.format(pattern, args));
         }
 
-        public void addHintListDetail(Collection<ContextHintWithSignature> hints) {
-            for (ContextHintWithSignature hint : hints) {
+        public void addHintListDetail(Collection<PublishedContextHint> hints) {
+            for (PublishedContextHint hint : hints) {
                 addStringDetail(
                         "  Hint: %s - %s",
                         hint.getContextHint().getClass().getSimpleName(),

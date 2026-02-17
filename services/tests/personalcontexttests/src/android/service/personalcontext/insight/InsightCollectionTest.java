@@ -24,7 +24,7 @@ import android.content.Intent;
 import android.service.personalcontext.Token;
 import android.service.personalcontext.hint.BundleHint;
 import android.service.personalcontext.hint.ContextHintTestUtils;
-import android.service.personalcontext.hint.ContextHintWithSignature;
+import android.service.personalcontext.hint.PublishedContextHint;
 
 import androidx.test.InstrumentationRegistry;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -154,8 +154,8 @@ public class InsightCollectionTest {
 
     @Test
     public void testBuilder_aggregatesHintsAndTokens() throws Exception {
-        final ContextHintWithSignature signedHint1 =
-                new ContextHintWithSignature.Builder(
+        final PublishedContextHint signedHint1 =
+                new PublishedContextHint.Builder(
                                 new BundleHint.Builder().build(),
                                 ContextHintTestUtils.generateSignedHintKey())
                         .build();
@@ -170,8 +170,8 @@ public class InsightCollectionTest {
                         .addToken(token1)
                         .build();
 
-        final ContextHintWithSignature signedHint2 =
-                new ContextHintWithSignature.Builder(
+        final PublishedContextHint signedHint2 =
+                new PublishedContextHint.Builder(
                                 new BundleHint.Builder().build(),
                                 ContextHintTestUtils.generateSignedHintKey())
                         .build();

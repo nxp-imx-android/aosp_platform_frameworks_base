@@ -26,7 +26,7 @@ import android.os.Bundle;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.Token;
 import android.service.personalcontext.hint.ContextHint;
-import android.service.personalcontext.hint.ContextHintWithSignature;
+import android.service.personalcontext.hint.PublishedContextHint;
 import android.service.personalcontext.insight.interaction.AttributionDetails;
 
 import java.util.Objects;
@@ -119,7 +119,7 @@ public final class DisplayInsight extends ContextInsight {
 
         /**
          * Creates a new builder for a display insight. By default, no hints are present. They can
-         * be added using {@link #addOriginHint(ContextHintWithSignature)}.
+         * be added using {@link #addOriginHint(PublishedContextHint)}.
          *
          * @param displayDetails the display details of the insight.
          */
@@ -137,7 +137,7 @@ public final class DisplayInsight extends ContextInsight {
          * @param hint the origin {@link ContextHint} to add
          */
         @NonNull
-        public Builder addOriginHint(@NonNull ContextHintWithSignature hint) {
+        public Builder addOriginHint(@NonNull PublishedContextHint hint) {
             mBaseBuilder.addOriginHint(requireNonNull(hint));
             return this;
         }

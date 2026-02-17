@@ -31,7 +31,7 @@ import static java.util.Collections.emptyList;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.hint.BundleHint;
 import android.service.personalcontext.hint.ContextHintTestUtils;
-import android.service.personalcontext.hint.ContextHintWithSignature;
+import android.service.personalcontext.hint.PublishedContextHint;
 import android.service.personalcontext.insight.BundleInsight;
 import android.service.personalcontext.insight.ContextInsight;
 import android.service.personalcontext.insight.PublishedContextInsight;
@@ -74,7 +74,7 @@ public class RendererWorkflowTest {
             throws GeneralSecurityException {
         return new BundleInsight.Builder()
                 .addOriginHint(
-                        new ContextHintWithSignature.Builder(new BundleHint.Builder().build(), key)
+                        new PublishedContextHint.Builder(new BundleHint.Builder().build(), key)
                                 .addRenderTokens(renderTokens)
                                 .build())
                 .build();
@@ -233,11 +233,11 @@ public class RendererWorkflowTest {
                 mock(RendererWorkflow.ComponentProvider.class);
         final ContextInsight insight = new BundleInsight.Builder()
                 .addOriginHint(
-                        new ContextHintWithSignature.Builder(new BundleHint.Builder().build(), key)
+                        new PublishedContextHint.Builder(new BundleHint.Builder().build(), key)
                                 .addRenderTokens(List.of(new RenderToken(UUID.randomUUID(), null)))
                                 .build())
                 .addOriginHint(
-                        new ContextHintWithSignature.Builder(new BundleHint.Builder().build(), key)
+                        new PublishedContextHint.Builder(new BundleHint.Builder().build(), key)
                                 .addRenderTokens(List.of(new RenderToken(UUID.randomUUID(), null)))
                                 .build())
                 .build();

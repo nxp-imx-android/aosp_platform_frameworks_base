@@ -214,8 +214,8 @@ public class ContentCaptureConversationHintTest {
                 new ContentCaptureConversationHint.Builder(updateEvent).build();
 
         final SecretKeySpec key = ContextHintTestUtils.generateSignedHintKey();
-        final ContextHintWithSignature hintWithSignature =
-                new ContextHintWithSignature.Builder(hint, key).build();
+        final PublishedContextHint hintWithSignature =
+                new PublishedContextHint.Builder(hint, key).build();
 
         assertThat(hintWithSignature.getContextHint()).isEqualTo(hint);
     }

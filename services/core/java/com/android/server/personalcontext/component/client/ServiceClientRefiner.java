@@ -27,10 +27,10 @@ import android.os.Looper;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.service.personalcontext.hint.ContextHint;
-import android.service.personalcontext.hint.ContextHintWithSignature;
-import android.service.personalcontext.hint.ContextHintWithSignatureWrapper;
 import android.service.personalcontext.hint.ContextHintWrapper;
 import android.service.personalcontext.hint.HintFilter;
+import android.service.personalcontext.hint.PublishedContextHint;
+import android.service.personalcontext.hint.PublishedContextHintWrapper;
 import android.service.personalcontext.insight.ContextInsightWrapper;
 import android.service.personalcontext.insight.PublishedContextInsight;
 import android.service.personalcontext.insight.interaction.InsightEvent;
@@ -92,12 +92,12 @@ public class ServiceClientRefiner extends BaseServiceClientComponent<IRefiner> i
     }
 
     @Override
-    public Set<Set<ContextHintWithSignature>> getInterestedHintClusters(
-            Set<ContextHintWithSignature> allContextHints, Set<UUID> seenIDs, boolean isFirstRun) {
+    public Set<Set<PublishedContextHint>> getInterestedHintClusters(
+            Set<PublishedContextHint> allContextHints, Set<UUID> seenIDs, boolean isFirstRun) {
         if (mFilter == null) {
             return null;
         } else {
-            final Set<ContextHintWithSignature> hints = mFilter.getInterestedHintClusters(
+            final Set<PublishedContextHint> hints = mFilter.getInterestedHintClusters(
                     allContextHints, seenIDs);
             return hints == null || hints.isEmpty() ? null : Set.of(hints);
         }
@@ -114,7 +114,7 @@ public class ServiceClientRefiner extends BaseServiceClientComponent<IRefiner> i
 
     @Override
     public void refine(
-            @NonNull Set<ContextHintWithSignature> inputHints,
+            @NonNull Set<PublishedContextHint> inputHints,
             @NonNull Consumer<Set<ContextHint>> callback,
             @NonNull RefinerWorkflow.InsightConsumer insightCallback) {
         if (android.service.personalcontext.Flags.enforcePersonalContextPermissions()
@@ -144,8 +144,8 @@ public class ServiceClientRefiner extends BaseServiceClientComponent<IRefiner> i
             }
         };
 
-        final List<ContextHintWithSignatureWrapper> hints =
-                ContextHintWithSignatureWrapper.wrapList(inputHints);
+        final List<PublishedContextHintWrapper> hints =
+                PublishedContextHintWrapper.wrapList(inputHints);
 
         runWithScopedBinder((binder, opCallback) -> {
             try {

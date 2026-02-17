@@ -48,31 +48,32 @@ import javax.crypto.spec.SecretKeySpec;
  *
  * <p>When a {@link ContextHint} is published,
  * {@link com.android.server.personalcontext.PersonalContextManagerService} generates a
- * {@link ContextHintWithSignature}. Using the contents of the hint to create a byte-level
- * signature,  {@link ContextHintWithSignature} guarantees that the content has not been manipulated
+ * {@link PublishedContextHint}. Using the contents of the hint to create a byte-level
+ * signature,  {@link PublishedContextHint} guarantees that the content has not been manipulated
  * when passed between various PersonalContext components, which only work with
- * {@link ContextHintWithSignature} instances. The signature is ultimately checked when an
+ * {@link PublishedContextHint} instances. The signature is ultimately checked when an
  * {@link ContextInsight} is published with the hint. The insight will not be delivered to the
  * renderers if the signature is invalid.
+ *
  * @hide
  */
 @SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
-public final class ContextHintWithSignature {
+public final class PublishedContextHint {
     /** @hide */
     @TestApi
     public static final String HMAC_ALGORITHM = "HmacSHA256";
 
     private final @NonNull byte[] mHash;
     private final @NonNull ContextHintWrapper mContextHintWrapper;
-    private final @NonNull List<ContextHintWithSignature> mAttributionHints;
+    private final @NonNull List<PublishedContextHint> mAttributionHints;
     private final @Nullable String mOriginatingPackageName;
     private final @NonNull Set<RenderToken> mRenderTokens;
 
-    private ContextHintWithSignature(
+    private PublishedContextHint(
             @NonNull byte[] hash,
             @NonNull ContextHintWrapper contextHint,
-            @NonNull List<ContextHintWithSignature> attributionHints,
+            @NonNull List<PublishedContextHint> attributionHints,
             @Nullable String originatingPackageName,
             @Nullable Set<RenderToken> renderTokens) {
         mHash = hash;
@@ -83,19 +84,19 @@ public final class ContextHintWithSignature {
     }
 
     /**
-     * Used by {@link ContextHintWithSignatureWrapper#CREATOR}.
+     * Used by {@link PublishedContextHintWrapper#CREATOR}.
      * @hide
      */
-    public ContextHintWithSignature(Parcel source) {
+    public PublishedContextHint(Parcel source) {
         mHash = Objects.requireNonNull(source.createByteArray());
         mContextHintWrapper = Objects.requireNonNull(
                 source.readParcelable(/* loader= */ null, ContextHintWrapper.class));
 
         mAttributionHints = Collections.unmodifiableList(
-                ContextHintWithSignatureWrapper.unwrapList(source.readParcelableList(
+                PublishedContextHintWrapper.unwrapList(source.readParcelableList(
                         new ArrayList<>(),
                         /* loader= */ null,
-                        ContextHintWithSignatureWrapper.class)));
+                        PublishedContextHintWrapper.class)));
 
         mOriginatingPackageName = source.readString8();
 
@@ -111,9 +112,9 @@ public final class ContextHintWithSignature {
         return mContextHintWrapper.getContextHint();
     }
 
-    /** Returns the {@link ContextHintWithSignature} hints that were used to create this hint. */
+    /** Returns the {@link PublishedContextHint} hints that were used to create this hint. */
     @NonNull
-    public Set<ContextHintWithSignature> getAttributionHints() {
+    public Set<PublishedContextHint> getAttributionHints() {
         // Note that order matters for signing the data. We continue to internally store the
         // attribution hints as a list to guarantee the signature stays intact and instead create
         // a copy to expose it externally as a set.
@@ -163,7 +164,7 @@ public final class ContextHintWithSignature {
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
-        final ContextHintWithSignature that = (ContextHintWithSignature) o;
+        final PublishedContextHint that = (PublishedContextHint) o;
         return Objects.equals(mContextHintWrapper, that.mContextHintWrapper)
                 && Objects.equals(mAttributionHints, that.mAttributionHints)
                 && Objects.equals(mOriginatingPackageName, that.mOriginatingPackageName)
@@ -183,7 +184,7 @@ public final class ContextHintWithSignature {
 
     @Override
     public String toString() {
-        return "ContextHintWithSignature{"
+        return "PublishedContextHint{"
                 + "contextHint=" + mContextHintWrapper.getContextHint()
                 + ", originatingPackageName='" + mOriginatingPackageName + '\''
                 + ", renderTokens=" + mRenderTokens
@@ -191,41 +192,41 @@ public final class ContextHintWithSignature {
     }
 
     /**
-     * Used by {@link ContextHintWithSignatureWrapper#writeToParcel(Parcel, int)}.
+     * Used by {@link PublishedContextHintWrapper#writeToParcel(Parcel, int)}.
      *
      * @hide
      */
     public void writeToParcel(@NonNull Parcel dest, int flags) {
         dest.writeByteArray(mHash);
         dest.writeParcelable(mContextHintWrapper, 0);
-        dest.writeParcelableList(ContextHintWithSignatureWrapper.wrapList(mAttributionHints), 0);
+        dest.writeParcelableList(PublishedContextHintWrapper.wrapList(mAttributionHints), 0);
         dest.writeString8(mOriginatingPackageName);
         dest.writeParcelableList(new ArrayList<>(mRenderTokens), 0);
     }
 
     /**
-     * Utility method to unwrap a collection of {@link ContextHintWithSignature} into a list of
+     * Utility method to unwrap a collection of {@link PublishedContextHint} into a list of
      * {@link ContextHint}.
      *
      * @hide
      */
     @NonNull
     public static List<ContextHint> unwrapList(
-            @NonNull Collection<ContextHintWithSignature> wrappers) {
+            @NonNull Collection<PublishedContextHint> wrappers) {
         return unwrapInto(wrappers, new ArrayList<>());
     }
 
     /**
-     * Utility method to unwrap a collection of {@link ContextHintWithSignature} into a collection
+     * Utility method to unwrap a collection of {@link PublishedContextHint} into a collection
      * of {@link ContextHint}.
      *
      * @hide
      */
     @NonNull
     public static <T extends Collection<ContextHint>> T unwrapInto(
-            @NonNull Collection<ContextHintWithSignature> wrappers,
+            @NonNull Collection<PublishedContextHint> wrappers,
             @NonNull T into) {
-        for (ContextHintWithSignature wrapper : wrappers) {
+        for (PublishedContextHint wrapper : wrappers) {
             into.add(wrapper.getContextHint());
         }
         return into;
@@ -233,7 +234,7 @@ public final class ContextHintWithSignature {
 
     private static byte[] signData(
             @NonNull ContextHintWrapper contextHintWrapper,
-            @NonNull List<ContextHintWithSignature> attributionHints,
+            @NonNull List<PublishedContextHint> attributionHints,
             @Nullable String originatingPackageName,
             @Nullable Set<RenderToken> renderTokens,
             @NonNull SecretKeySpec secretKey) throws GeneralSecurityException {
@@ -241,7 +242,7 @@ public final class ContextHintWithSignature {
         try {
             contextHintWrapper.getContextHint().writeToSignatureParcel(scratch);
             scratch.writeParcelableList(
-                    ContextHintWithSignatureWrapper.wrapList(attributionHints), 0);
+                    PublishedContextHintWrapper.wrapList(attributionHints), 0);
             scratch.writeString(originatingPackageName);
             for (RenderToken renderToken : orderRenderTokens(renderTokens)) {
                 scratch.writeParcelable(renderToken, 0);
@@ -263,13 +264,13 @@ public final class ContextHintWithSignature {
     }
 
     /**
-     * Builder for {@link ContextHintWithSignature}.
+     * Builder for {@link PublishedContextHint}.
      * @hide
      */
     @TestApi
     public static final class Builder {
         private final @NonNull ContextHintWrapper mContextHintWrapper;
-        private final @NonNull List<ContextHintWithSignature> mAttributionHints = new ArrayList<>();
+        private final @NonNull List<PublishedContextHint> mAttributionHints = new ArrayList<>();
         private final @NonNull SecretKeySpec mSecretKey;
         private @Nullable String mOriginatingPackageName;
         private final @Nullable Set<RenderToken> mRenderTokens = new HashSet<>();
@@ -281,7 +282,7 @@ public final class ContextHintWithSignature {
             mSecretKey = secretKey;
         }
 
-        /** Used by CTS tests to create an instance of {@link ContextHintWithSignature}. */
+        /** Used by CTS tests to create an instance of {@link PublishedContextHint}. */
         public Builder(@NonNull ContextHint contextHint, @NonNull SecretKeySpec secretKey) {
             this(new ContextHintWrapper(contextHint), secretKey);
         }
@@ -302,23 +303,23 @@ public final class ContextHintWithSignature {
 
         /** Adds an attribution hint. */
         @NonNull
-        public Builder addAttributionHint(@NonNull ContextHintWithSignature hint) {
+        public Builder addAttributionHint(@NonNull PublishedContextHint hint) {
             mAttributionHints.add(hint);
             return this;
         }
 
         /** Adds multiple attribution hint. */
         @NonNull
-        public Builder addAttributionHints(@NonNull Collection<ContextHintWithSignature> hints) {
+        public Builder addAttributionHints(@NonNull Collection<PublishedContextHint> hints) {
             mAttributionHints.addAll(hints);
             return this;
         }
 
-        /** Signs the data pieces and builds an instance of {@link ContextHintWithSignature}. */
+        /** Signs the data pieces and builds an instance of {@link PublishedContextHint}. */
         @NonNull
-        public ContextHintWithSignature build() throws GeneralSecurityException {
+        public PublishedContextHint build() throws GeneralSecurityException {
             // Build the new instance.
-            return new ContextHintWithSignature(
+            return new PublishedContextHint(
                     signData(
                             mContextHintWrapper,
                             mAttributionHints,
