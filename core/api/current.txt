@@ -44299,8 +44299,8 @@ package android.service.personalcontext.hint {
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ChatMessageContentCaptureData implements android.os.Parcelable {
     method public int describeContents();
     method @NonNull public android.view.autofill.AutofillId getAutofillId();
-    method @NonNull public String getRawParsedDateString();
-    method @NonNull public String getRawParsedTimeString();
+    method @NonNull public String getRawDateString();
+    method @NonNull public String getRawTimeString();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.hint.ChatMessageContentCaptureData> CREATOR;
   }
@@ -44309,8 +44309,8 @@ package android.service.personalcontext.hint {
     ctor public ChatMessageContentCaptureData.Builder();
     method @NonNull public android.service.personalcontext.hint.ChatMessageContentCaptureData build();
     method @NonNull public android.service.personalcontext.hint.ChatMessageContentCaptureData.Builder setAutofillId(@NonNull android.view.autofill.AutofillId);
-    method @NonNull public android.service.personalcontext.hint.ChatMessageContentCaptureData.Builder setRawParsedDateString(@NonNull String);
-    method @NonNull public android.service.personalcontext.hint.ChatMessageContentCaptureData.Builder setRawParsedTimeString(@NonNull String);
+    method @NonNull public android.service.personalcontext.hint.ChatMessageContentCaptureData.Builder setRawDateString(@NonNull String);
+    method @NonNull public android.service.personalcontext.hint.ChatMessageContentCaptureData.Builder setRawTimeString(@NonNull String);
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ChatMessageData implements android.os.Parcelable {
