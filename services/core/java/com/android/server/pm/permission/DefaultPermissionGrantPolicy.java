@@ -919,6 +919,13 @@ final class DefaultPermissionGrantPolicy {
                 FINE_LOCATION_PERMISSIONS, false, userId);
         }
 
+        // WebApp Service
+        String webAppPackage = getDefaultSystemHandlerServicePackage(pm,
+                "com.android.webapp.IWebAppService", userId);
+        if (webAppPackage != null) {
+            grantPermissionsToSystemPackage(pm, webAppPackage, userId, NOTIFICATION_PERMISSIONS);
+        }
+
         // Print Spooler
         grantSystemFixedPermissionsToSystemPackage(pm, PrintManager.PRINT_SPOOLER_PACKAGE_NAME,
                 userId, ALWAYS_LOCATION_PERMISSIONS, NOTIFICATION_PERMISSIONS);
