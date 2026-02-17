@@ -34,10 +34,13 @@ import com.android.systemui.desktop.domain.interactor.disableDesktopStatusBar
 import com.android.systemui.desktop.domain.interactor.enableUsingDesktopStatusBar
 import com.android.systemui.inputmethod.ui.viewmodel.ImeSwitcherMenuViewModel
 import com.android.systemui.inputmethod.ui.viewmodel.imeSwitcherMenuViewModel
+import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
+import com.android.systemui.runOnMainThreadAndWaitForIdleSync
 import com.android.systemui.statusbar.core.StatusBarForDesktop
+import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.statusbar.phone.systemUIDialogFactory
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
@@ -64,10 +67,13 @@ class LargeScreenImeSwitcherMenuDialogDelegateTest : SysuiTestCase() {
 
     private val dialogFactory = kosmos.largeScreenImeSwitcherMenuDialogDelegateFactory
 
+    /** Dialog instance to dismiss at the end of the test, if present. */
+    private var toDismiss: SystemUIDialog? = null
+
     /** Verifies that the default dialog is used when the desktop status bar is disabled. */
     @Test
     fun create_whenDesktopStatusBarDisabled_returnsDefaultDialog() {
-        kosmos.runTest {
+        runTestAndDismiss {
             val useDesktopStatusBar by
                 collectLastValue(kosmos.desktopInteractor.useDesktopStatusBar)
             disableDesktopStatusBar()
@@ -87,7 +93,7 @@ class LargeScreenImeSwitcherMenuDialogDelegateTest : SysuiTestCase() {
     /** Verifies that the large screen dialog is used when the desktop status bar is enabled. */
     @Test
     fun create_whenDesktopStatusBarEnabled_returnsLargeScreenDialog() {
-        kosmos.runTest {
+        runTestAndDismiss {
             val useDesktopStatusBar by
                 collectLastValue(kosmos.desktopInteractor.useDesktopStatusBar)
             enableUsingDesktopStatusBar()
@@ -109,7 +115,7 @@ class LargeScreenImeSwitcherMenuDialogDelegateTest : SysuiTestCase() {
      */
     @Test
     fun dialog_containsLargeScreenContent() {
-        kosmos.runTest {
+        runTestAndDismiss {
             val underTest =
                 LargeScreenImeSwitcherMenuDialogDelegate(
                     context = kosmos.applicationContext,
@@ -120,6 +126,7 @@ class LargeScreenImeSwitcherMenuDialogDelegateTest : SysuiTestCase() {
 
             composeTestRule.runOnUiThread {
                 val dialog = underTest.createDialog()
+                toDismiss = dialog
                 dialog.show()
             }
 
@@ -130,7 +137,7 @@ class LargeScreenImeSwitcherMenuDialogDelegateTest : SysuiTestCase() {
     /** Verifies that the dialog has BOTTOM|END gravity for the default entry point. */
     @Test
     fun dialog_hasBottomEndGravity_forDefaultEntryPoint() {
-        kosmos.runTest {
+        runTestAndDismiss {
             composeTestRule.runOnUiThread {
                 val dialog =
                     LargeScreenImeSwitcherMenuDialogDelegate(
@@ -140,6 +147,7 @@ class LargeScreenImeSwitcherMenuDialogDelegateTest : SysuiTestCase() {
                             sysuiDialogFactory = kosmos.systemUIDialogFactory,
                         )
                         .createDialog()
+                toDismiss = dialog
 
                 val expectedGravity =
                     Gravity.getAbsoluteGravity(
@@ -154,7 +162,7 @@ class LargeScreenImeSwitcherMenuDialogDelegateTest : SysuiTestCase() {
     /** Verifies that the dialog has TOP|END gravity for the status bar chip entry point. */
     @Test
     fun dialog_hasTopEndGravity_forStatusBarChipEntryPoint() {
-        kosmos.runTest {
+        runTestAndDismiss {
             composeTestRule.runOnUiThread {
                 val dialog =
                     LargeScreenImeSwitcherMenuDialogDelegate(
@@ -164,6 +172,7 @@ class LargeScreenImeSwitcherMenuDialogDelegateTest : SysuiTestCase() {
                             sysuiDialogFactory = kosmos.systemUIDialogFactory,
                         )
                         .createDialog()
+                toDismiss = dialog
 
                 val expectedGravity =
                     Gravity.getAbsoluteGravity(
@@ -174,4 +183,15 @@ class LargeScreenImeSwitcherMenuDialogDelegateTest : SysuiTestCase() {
             }
         }
     }
+
+    /** Runs the given test block and dismisses any dialog at the end. */
+    private fun runTestAndDismiss(block: suspend Kosmos.() -> Unit) =
+        kosmos.runTest {
+            try {
+                block()
+            } finally {
+                toDismiss?.let { runOnMainThreadAndWaitForIdleSync { it.dismiss() } }
+                composeTestRule.waitForIdle()
+            }
+        }
 }
