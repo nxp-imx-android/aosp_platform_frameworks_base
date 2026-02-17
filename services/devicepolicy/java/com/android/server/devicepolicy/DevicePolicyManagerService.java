@@ -23568,7 +23568,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
                 @NonNull PolicyValue<T> value) {
             EnforcingAdmin admin = getEnforcingAdmin(caller);
 
-            Slogf.d(LOG_TAG, "Storing policy %s with scope %d in policy engine", key, scope);
+            if (VERBOSE_LOG) {
+                Slogf.d(LOG_TAG, "Storing value %s for policy %s with scope %d in policy engine",
+                        value, key, scope);
+            }
             switch (scope) {
                 case POLICY_SCOPE_DEVICE:
                     mDevicePolicyEngine.setGlobalPolicy(key, admin, value);
@@ -23592,7 +23595,9 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
                 @PolicyScope int scope) {
             EnforcingAdmin admin = getEnforcingAdmin(caller);
 
-            Slogf.d(LOG_TAG, "Removing policy %s with scope %d from policy engine", key, scope);
+            if (VERBOSE_LOG) {
+                Slogf.d(LOG_TAG, "Removing policy %s with scope %d from policy engine", key, scope);
+            }
             switch (scope) {
                 case POLICY_SCOPE_DEVICE:
                     mDevicePolicyEngine.removeGlobalPolicy(key, admin);
@@ -23617,45 +23622,50 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
                 @PolicyScope int scope) {
             EnforcingAdmin admin = getEnforcingAdmin(caller);
 
-            Slogf.d(LOG_TAG, "Retrieving policy %s with scope %d from policy engine", key, scope);
-            switch (scope) {
-                case POLICY_SCOPE_DEVICE:
-                    return mDevicePolicyEngine.getGlobalPolicySetByAdmin(key, admin);
-                case POLICY_SCOPE_USER:
-                    return mDevicePolicyEngine.getLocalPolicySetByAdmin(
-                            key, admin, caller.getUserId());
-                case POLICY_SCOPE_PARENT_USER:
-                    return mDevicePolicyEngine.getLocalPolicySetByAdmin(
-                            key, admin, getProfileParentId(caller.getUserId()));
-                default:
-                    throw new IllegalArgumentException("Invalid scope " + scope);
+            var result =
+                    switch (scope) {
+                        case POLICY_SCOPE_DEVICE ->
+                                mDevicePolicyEngine.getGlobalPolicySetByAdmin(key, admin);
+                        case POLICY_SCOPE_USER ->
+                                mDevicePolicyEngine.getLocalPolicySetByAdmin(
+                                        key, admin, caller.getUserId());
+                        case POLICY_SCOPE_PARENT_USER ->
+                                mDevicePolicyEngine.getLocalPolicySetByAdmin(
+                                        key, admin, getProfileParentId(caller.getUserId()));
+                        default -> throw new IllegalArgumentException("Invalid scope " + scope);
+                    };
+
+            if (VERBOSE_LOG) {
+                Slogf.d(LOG_TAG, "Retrieved value %s of policy %s with scope %d from policy engine",
+                        result, key, scope);
             }
+            return result;
         }
 
         @Override
         @Nullable
         public <T> T getResolvedDeviceWidePolicy(@NonNull PolicyDefinition<T> key) {
-            if (VERBOSE_LOG) {
-                Slogf.d(LOG_TAG, "Retrieving effective policy %s from policy engine", key);
-            }
-
             // TODO(b/455504405): Add real support for device-wide policies.
-            return mDevicePolicyEngine.getResolvedPolicy(key, USER_ALL);
+            var result = mDevicePolicyEngine.getResolvedPolicy(key, USER_ALL);
+
+            if (VERBOSE_LOG) {
+                Slogf.d(LOG_TAG, "Retrieved effective device wide policy value %s of policy %s",
+                        result, key);
+            }
+            return result;
         }
 
         @Override
         @Nullable
         public <T> T getResolvedPerUserPolicy(
                 @UserIdInt int userId, @NonNull PolicyDefinition<T> key) {
-            if (VERBOSE_LOG) {
-                Slogf.d(
-                        LOG_TAG,
-                        "Retrieving effective policy %s from policy engine for user %d",
-                        key,
-                        userId);
-            }
+            var result = mDevicePolicyEngine.getResolvedPolicy(key, userId);
 
-            return mDevicePolicyEngine.getResolvedPolicy(key, userId);
+            if (VERBOSE_LOG) {
+                Slogf.d(LOG_TAG, "Retrieved effective policy value %s of policy %s for user %d",
+                        result, key, userId);
+            }
+            return result;
         }
     }
 
@@ -23704,7 +23714,9 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
 
     private @Nullable PolicyValueTransport getPolicy(CallerIdentity caller, String id, int scope)
     {
-        Slogf.d(LOG_TAG, "Retrieving policy %s with scope %d through generic API", id, scope);
+        if (VERBOSE_LOG) {
+            Slogf.d(LOG_TAG, "Retrieving policy %s with scope %d through generic API", id, scope);
+        }
         requirePolicyScopeIsOneOf(scope, POLICY_SCOPE_USER, POLICY_SCOPE_DEVICE,
                 POLICY_SCOPE_PARENT_USER);
 
