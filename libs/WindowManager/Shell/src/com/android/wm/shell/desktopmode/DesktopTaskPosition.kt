@@ -175,6 +175,12 @@ fun cascadeWindowStepped(
     isRememberedBounds: Boolean,
 ) {
     val offset = res.getDimensionPixelSize(R.dimen.desktop_mode_cascading_offset)
+
+    if (Flags.enableRememberedBounds() && isRememberedBounds) {
+        cascadeWindowSteppedForRememberedBounds(offset, frame, prev, dest)
+        return
+    }
+
     if (haveSameBoundsWithThreshold(offset, prev, dest)) {
         // TODO(b/410787173): Implement multi-step cascading and screen wrapping.
         cascadeOneStep(offset, dest)
@@ -182,6 +188,33 @@ fun cascadeWindowStepped(
         // Default to center
         val centerPos = Center.getTopLeftCoordinates(frame, dest)
         dest.offsetTo(centerPos.x, centerPos.y)
+    }
+}
+
+private fun cascadeWindowSteppedForRememberedBounds(
+    offset: Int,
+    frame: Rect,
+    prev: Rect,
+    dest: Rect,
+) {
+    val candidatePos = frame.getDesktopTaskPosition(dest)
+    if (candidatePos == Maximized || candidatePos == LeftSnapped || candidatePos == RightSnapped) {
+        // No need to cascade if the destination bounds is maximized or snapped.
+        return
+    }
+    if (!haveSameBoundsWithThreshold(offset, prev, dest)) {
+        // If the remembered bounds is different enough from the bounds of the focused window,
+        // we can use the remembered bounds as is.
+        return
+    }
+
+    if (
+        dest.left + offset + dest.width() <= frame.right &&
+            dest.top + offset + dest.height() <= frame.bottom
+    ) {
+        // Successfully resolves collision with one-step cascading preserving general size and
+        // location (no wrapping)
+        cascadeOneStep(offset, dest)
     }
 }
 
