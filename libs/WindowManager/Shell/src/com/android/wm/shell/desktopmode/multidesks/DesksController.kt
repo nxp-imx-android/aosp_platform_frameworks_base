@@ -113,6 +113,44 @@ class DesksController(
     }
 
     /**
+     * Suspending version of [createDesk] that returns the deskId. Returns null if the desk could
+     * not be created.
+     */
+    suspend fun createDeskSuspending(
+        displayId: Int,
+        userId: Int = shellController.currentUserId,
+        enforceDeskLimit: Boolean = true,
+        activateDesk: Boolean = false,
+        enterReason: EnterReason = EnterReason.UNKNOWN_ENTER,
+    ): Int? {
+        logV(
+            "createDeskSuspending displayId=%d, userId=%d enforceDeskLimit=%b",
+            displayId,
+            userId,
+            enforceDeskLimit,
+        )
+        val repository = userRepositories.getProfile(userId)
+        val deskId = createDeskRootSuspending(displayId, userId)
+        if (deskId == null) {
+            logW("Failed to add desk in displayId=%d for userId=%d", displayId, userId)
+        } else {
+            repository.addDesk(
+                displayId = displayId,
+                deskId = deskId,
+                uniqueDisplayId = displayController.getDisplayUniqueId(displayId),
+            )
+            if (activateDesk) {
+                backDependency.activateDesk(
+                    deskId = deskId,
+                    userId = userId,
+                    enterReason = enterReason,
+                )
+            }
+        }
+        return deskId
+    }
+
+    /**
      * Adds a new desk to the given display for the given user and invokes [onResult] once the desk
      * is created, but not necessarily activated.
      */

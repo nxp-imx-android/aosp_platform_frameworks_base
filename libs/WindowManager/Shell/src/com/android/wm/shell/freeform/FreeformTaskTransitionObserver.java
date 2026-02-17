@@ -31,7 +31,9 @@ import android.window.WindowContainerToken;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
+import com.android.window.flags.Flags;
 import com.android.wm.shell.desktopmode.DesktopInOrderTransitionObserver;
+import com.android.wm.shell.desktopmode.FreeformFallbackTransitionObserver;
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer;
 import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.sysui.ShellInit;
@@ -56,6 +58,7 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
     private final Optional<TaskChangeListener> mTaskChangeListener;
     private final DesksOrganizer mDesksOrganizer;
     private final Optional<DesktopInOrderTransitionObserver> mDesktopInOrderTransitionObserver;
+    private final Optional<FreeformFallbackTransitionObserver> mFreeformFallbackTransitionObserver;
 
     private final Map<IBinder, List<ActivityManager.RunningTaskInfo>> mTransitionToTaskInfo =
             new HashMap<>();
@@ -70,12 +73,14 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
             Optional<TaskChangeListener> taskChangeListener,
             DesksOrganizer desksOrganizer,
             DesktopState desktopState,
-            Optional<DesktopInOrderTransitionObserver> desktopInOrderTransitionObserver) {
+            Optional<DesktopInOrderTransitionObserver> desktopInOrderTransitionObserver,
+            Optional<FreeformFallbackTransitionObserver> freeformFallbackTransitionObserver) {
         mTransitions = transitions;
         mWindowDecorViewModel = windowDecorViewModel;
         mTaskChangeListener = taskChangeListener;
         mDesksOrganizer = desksOrganizer;
         mDesktopInOrderTransitionObserver = desktopInOrderTransitionObserver;
+        mFreeformFallbackTransitionObserver = freeformFallbackTransitionObserver;
         if (FreeformComponents.requiresFreeformComponents(desktopState)) {
             shellInit.addInitCallback(this::onInit, this);
         }
@@ -105,6 +110,10 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
 
         for (TransitionInfo.Change change : filteredChanges.reversed()) {
             notifyChange(transition, info, startT, finishT, change, taskInfoList);
+        }
+        if (Flags.enableFreeformFallbackTransitionObserver()) {
+            mFreeformFallbackTransitionObserver.ifPresent(
+                    observer -> observer.onTransitionReady(info));
         }
 
         mTransitionToTaskInfo.put(transition, taskInfoList);
@@ -267,7 +276,6 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
     public void onTransitionFinished(@NonNull IBinder transition, boolean aborted) {
         mDesktopInOrderTransitionObserver.ifPresent(
                 o -> o.onTransitionFinished(transition, aborted));
-
         final List<ActivityManager.RunningTaskInfo> taskInfo =
                 mTransitionToTaskInfo.getOrDefault(transition, Collections.emptyList());
         mTransitionToTaskInfo.remove(transition);
