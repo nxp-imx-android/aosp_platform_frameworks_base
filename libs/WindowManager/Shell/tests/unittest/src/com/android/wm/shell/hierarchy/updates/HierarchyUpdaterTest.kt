@@ -590,4 +590,21 @@ class HierarchyUpdaterTest : ShellTestCase() {
         assertThat((child1.mode as StubMode).displayChanges).isNotEmpty()
         assertThat((child2.mode as StubMode).displayChanges).isEmpty()
     }
+
+    @Test
+    fun testUpdateFromTaskInfoChange() {
+        val child1 = hierarchy.root.children[0]
+
+        // Trigger a task info change
+        val taskInfo = ActivityManager.RunningTaskInfo().apply {
+            token = child1.token
+            taskDescription = ActivityManager.TaskDescription().apply {
+                label = "test"
+            }
+        }
+        updater.handleTaskInfoChanged(taskInfo)
+
+        // Verify that child1 mode is updated
+        assertThat((child1.mode as StubMode).updates).isNotEmpty()
+    }
 }
