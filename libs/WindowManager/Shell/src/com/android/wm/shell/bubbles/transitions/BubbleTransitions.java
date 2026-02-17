@@ -84,8 +84,8 @@ import com.android.wm.shell.bubbles.Bubbles;
 import com.android.wm.shell.bubbles.bar.BubbleBarExpandedView;
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
 import com.android.wm.shell.common.HomeIntentProvider;
-import com.android.wm.shell.shared.bubbles.BubbleFlagHelper;
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper;
 import com.android.wm.shell.shared.bubbles.logging.BubbleLog;
 import com.android.wm.shell.taskview.TaskView;
 import com.android.wm.shell.taskview.TaskViewRepository;
@@ -121,6 +121,7 @@ public class BubbleTransitions {
     @NonNull final Context mContext;
     @NonNull final BubbleViewInfoTask.Factory mBubbleViewInfoTaskFactory;
     @NonNull final BubbleHelper mBubbleHelper;
+    @NonNull final BubbleTransitionsPlanner mBubbleTransitionsPlanner;
 
     @VisibleForTesting
     // Map of a launch cookie (used to start an activity) to the associated transition handler
@@ -149,6 +150,10 @@ public class BubbleTransitions {
         mContext = context;
         mBubbleViewInfoTaskFactory = bubbleViewInfoTaskFactory;
         mBubbleHelper = bubbleHelper;
+        mBubbleTransitionsPlanner = new BubbleTransitionsPlanner(transitions, this);
+        if (BubbleFlagHelper.isBubbleTransitionPlannerEnabled()) {
+            transitions.addPlanner(mBubbleTransitionsPlanner);
+        }
     }
 
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
