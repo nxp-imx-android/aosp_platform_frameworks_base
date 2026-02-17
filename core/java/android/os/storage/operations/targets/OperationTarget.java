@@ -17,16 +17,101 @@
 package android.os.storage.operations.targets;
 
 import android.annotation.FlaggedApi;
+import android.annotation.IntDef;
 import android.annotation.NonNull;
-import android.os.Parcelable;
+import android.annotation.Nullable;
+import android.os.Bundle;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
+import android.util.Log;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /** Abstract base class for the target of a file operation. */
 @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
-@SuppressWarnings({"ParcelCreator", "ParcelNotFinal"})
 @RavenwoodKeepWholeClass
-public abstract class OperationTarget implements Parcelable {
+public abstract class OperationTarget {
+    private static final String TAG = "OperationTarget";
+
+    /** @hide */
+    static final String KEY_TARGET_TYPE = "key_target_type";
+
+    /**
+     * Singleton representing an error in unparceling.
+     *
+     * @hide
+     */
+    static final @NonNull OperationTarget INVALID_TARGET =
+            new OperationTarget() {
+                @Override
+                public int getTargetType() {
+                    return TYPE_INVALID;
+                }
+
+                @Override
+                public String toString() {
+                    return "INVALID_TARGET";
+                }
+
+                @Override
+                public boolean isValid() {
+                    return false;
+                }
+            };
+
+    /** @hide */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({TYPE_INVALID, TYPE_PCC})
+    public @interface TargetType {}
+
+    /**
+     * Type identifier for {@link #getErrorTarget()}.
+     *
+     * @hide
+     */
+    public static final @TargetType int TYPE_INVALID = -1;
+
+    /**
+     * Type identifier of {@link PccTarget}.
+     *
+     * @hide
+     */
+    public static final @TargetType int TYPE_PCC = 1;
+
+    /**
+     * Default constructor.
+     *
+     * @hide
+     */
     OperationTarget() {}
+
+    /**
+     * Reconstructs an {@link OperationTarget} from a Bundle.
+     *
+     * @param b The Bundle containing the target data.
+     * @hide
+     */
+    OperationTarget(@NonNull Bundle b) {}
+
+    /**
+     * Returns the target type associated with this class.
+     *
+     * @hide
+     */
+    public abstract @TargetType int getTargetType();
+
+    /**
+     * Obtain a {@link Bundle} describing this object populated with data.
+     *
+     * @return a {@link Bundle} containing the data that represents this object.
+     * @hide
+     */
+    @NonNull
+    Bundle getDataBundle() {
+        Bundle b = new Bundle();
+        b.putInt(KEY_TARGET_TYPE, getTargetType());
+        return b;
+    }
 
     /**
      * Returns a human-readable representation of this target.
@@ -71,4 +156,45 @@ public abstract class OperationTarget implements Parcelable {
      * @hide
      */
     public abstract boolean isValid();
+
+    /**
+     * Creates an {@link OperationTarget} instance from a {@link Bundle}.
+     *
+     * <p>This method is used during unparceling to reconstruct the appropriate subclass of {@code
+     * OperationTarget} based on the type information stored in the bundle.
+     *
+     * @param bundle The bundle containing the target data.
+     * @return The reconstructed {@link OperationTarget}, or {@link #INVALID_TARGET} if the bundle
+     *     is null or invalid.
+     * @hide
+     */
+    @NonNull
+    public static OperationTarget createTargetFromBundle(@Nullable Bundle bundle) {
+        if (bundle == null) {
+            Log.e(TAG, "Null bundle");
+            return INVALID_TARGET;
+        }
+        int type = bundle.getInt(KEY_TARGET_TYPE, TYPE_INVALID);
+        try {
+            switch (type) {
+                case TYPE_PCC:
+                    return new PccTarget(bundle);
+                case TYPE_INVALID:
+                default:
+                    return INVALID_TARGET;
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error creating target", e);
+            return INVALID_TARGET;
+        }
+    }
+
+    /**
+     * @return a singleton {@link OperationTarget} used for indicating an error in unparceling.
+     * @hide
+     */
+    @NonNull
+    public static OperationTarget getInvalidTarget() {
+        return INVALID_TARGET;
+    }
 }
