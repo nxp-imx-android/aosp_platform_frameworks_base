@@ -104,7 +104,6 @@ import com.android.dx.mockito.inline.extended.ExtendedMockito.never
 import com.android.dx.mockito.inline.extended.StaticMockitoSession
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.internal.policy.DesktopModeCompatPolicy
-import com.android.internal.policy.SystemBarUtils.getDesktopViewAppHeaderHeightPx
 import com.android.testing.wm.util.MockToken
 import com.android.window.flags.Flags
 import com.android.window.flags.Flags.FLAG_CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT
@@ -2162,6 +2161,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_REFACTOR_CAPTION_SANDBOXING_TO_CORE)
     fun addMoveToDeskTaskChanges_excludeCaptionFromAppBounds_nonResizableLandscape() {
         setUpLandscapeDisplay()
         val task =
@@ -2169,15 +2169,15 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 isResizable = false,
                 screenOrientation = SCREEN_ORIENTATION_LANDSCAPE,
             )
-        whenever(desktopModeCompatPolicy.shouldExcludeCaptionFromAppBounds(task)).thenReturn(true)
+        task.appCompatTaskInfo.setIsExcludeCaptionInsets(true)
+        val captionInsets = 60
+        whenever(displayLayout.captionBarHeight()).thenReturn(captionInsets)
         val initialAspectRatio = calculateAspectRatio(task)
+
         val wct = WindowContainerTransaction()
         controller.addMoveToDeskTaskChanges(wct, task, deskId = 0)
 
         val finalBounds = findBoundsChange(wct, task)
-        val displayId = taskRepository.getDisplayForDesk(deskId = 0)
-        val displayContext = displayController.getDisplayContext(displayId) ?: context
-        val captionInsets = getDesktopViewAppHeaderHeightPx(displayContext)
         finalBounds!!.top += captionInsets
         val finalAspectRatio =
             maxOf(finalBounds.height(), finalBounds.width()) /
@@ -2186,6 +2186,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_REFACTOR_CAPTION_SANDBOXING_TO_CORE)
     fun addMoveToDeskTaskChanges_excludeCaptionFromAppBounds_nonResizablePortrait() {
         setUpLandscapeDisplay()
         val task =
@@ -2193,15 +2194,15 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 isResizable = false,
                 screenOrientation = SCREEN_ORIENTATION_PORTRAIT,
             )
-        whenever(desktopModeCompatPolicy.shouldExcludeCaptionFromAppBounds(task)).thenReturn(true)
+        task.appCompatTaskInfo.setIsExcludeCaptionInsets(true)
+        val captionInsets = 60
+        whenever(displayLayout.captionBarHeight()).thenReturn(captionInsets)
         val initialAspectRatio = calculateAspectRatio(task)
+
         val wct = WindowContainerTransaction()
         controller.addMoveToDeskTaskChanges(wct, task, deskId = 0)
 
         val finalBounds = findBoundsChange(wct, task)
-        val displayId = taskRepository.getDisplayForDesk(deskId = 0)
-        val displayContext = displayController.getDisplayContext(displayId) ?: context
-        val captionInsets = getDesktopViewAppHeaderHeightPx(displayContext)
         finalBounds!!.top += captionInsets
         val finalAspectRatio =
             maxOf(finalBounds.height(), finalBounds.width()) /
