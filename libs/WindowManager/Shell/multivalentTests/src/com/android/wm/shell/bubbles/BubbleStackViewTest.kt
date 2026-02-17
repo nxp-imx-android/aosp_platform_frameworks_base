@@ -1498,7 +1498,6 @@ class BubbleStackViewTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FIX_FLICKERS_DURING_SWITCH_FROM_DISMISS)
     fun dismissBubble_multipleBubblesInStack_cleanupDeferred() {
         val bubble1 = createAndInflateChatBubble("key1")
         val bubble2 = createAndInflateChatBubble("key2")
