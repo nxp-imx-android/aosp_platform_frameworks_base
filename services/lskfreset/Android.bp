@@ -20,5 +20,6 @@ java_library_static {
     libs: [
         "bouncycastle-webapp",
         "services.core",
+        "tink-java",
     ],
 }

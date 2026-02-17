@@ -106,10 +106,10 @@ public class LskfResetManagerService extends SystemService {
     public void onStart() {
         if (enableLskfResetManager()) {
             Slog.i(TAG, "Starting LskfResetManagerService");
-            mLskfResetKeyManager = new LskfResetKeyManager(getContext());
             mBinder = new LskfResetManagerImpl();
             Slog.i(TAG, "Registering binder for " + Context.LSKF_RESET_SERVICE);
             try {
+                mLskfResetKeyManager = new LskfResetKeyManager(getContext());
                 publishBinderService(Context.LSKF_RESET_SERVICE, mBinder);
             } catch (Throwable t) {
                 Slog.e(TAG, "Could not start the LskfResetManagerService.", t);
