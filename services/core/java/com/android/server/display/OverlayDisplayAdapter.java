@@ -92,8 +92,6 @@ import java.util.regex.Pattern;
  * <li><code>1280x720/213</code>: make one overlay that is 1280x720 at 213dpi.</li>
  * <li><code>1920x1080/320,secure;1280x720/213</code>: make two overlays, the first at 1080p and
  * secure; the second at 720p.</li>
- * <li><code>1920x1080/320,secure,unique_id=123;1280x720/213</code>: make two overlays,
- * the first at 1080p and secure, with unique_id 123; the second at 720p.</li>
  * <li><code>1920x1080/320|3840x2160/640</code>: make one overlay that is 1920x1080 at
  * 213dpi by default, but can also be upscaled to 3840x2160 at 640dpi by the system if the
  * display device allows.</li>
@@ -103,12 +101,6 @@ import java.util.regex.Pattern;
 final class OverlayDisplayAdapter extends DisplayAdapter {
     static final String TAG = "OverlayDisplayAdapter";
     static final boolean DEBUG = false;
-
-    /**
-     * When this property is set, this will be used as the unique id for the display.
-     * @see android.view.DisplayInfo#uniqueId
-     */
-    private static final String OVERLAY_DISPLAY_FLAG_UNIQUE_ID_PREFIX = "unique_id=";
 
     /**
      * When this flag is set, the overlay display is considered secure.
@@ -167,7 +159,7 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
     private static final String MODE_SPLITTER = "\\|";
     private static final String FLAG_SPLITTER = ",";
 
-    private static final Pattern DISPLAY_PATTERN = Pattern.compile("([^,]+)(,[,_a-z0-9=]+)*");
+    private static final Pattern DISPLAY_PATTERN = Pattern.compile("([^,]+)(,[,_a-z]+)*");
     private static final Pattern MODE_PATTERN =
             Pattern.compile("(\\d+)x(\\d+)/(\\d+)(?:@(\\d+(?:\\.\\d+)?))?");
 
@@ -175,7 +167,8 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
     private static final String UNIQUE_ID_PREFIX = "overlay:";
 
     private final Handler mUiHandler;
-    private final ArrayList<OverlayDisplayHandle> mOverlays = new ArrayList<>();
+    private final ArrayList<OverlayDisplayHandle> mOverlays =
+            new ArrayList<OverlayDisplayHandle>();
     private String mCurrentOverlaySetting = "";
 
     // Called with SyncRoot lock held.
@@ -236,9 +229,11 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
         }
         mCurrentOverlaySetting = value;
 
-        var overlaysToRemove = new ArrayList<>(mOverlays);
-
         if (!mOverlays.isEmpty()) {
+            Slog.i(TAG, "Dismissing all overlay display devices.");
+            for (OverlayDisplayHandle overlay : mOverlays) {
+                overlay.dismissLocked();
+            }
             mOverlays.clear();
         }
 
@@ -287,54 +282,31 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
                             }
                         } catch (NumberFormatException ex) {
                         }
+                    } else if (mode.isEmpty()) {
+                        continue;
                     }
                 }
                 if (!modes.isEmpty()) {
                     int number = ++count;
+                    String name = getContext().getResources().getString(
+                            com.android.internal.R.string.display_manager_overlay_display_name,
+                            number);
                     OverlayFlags flags = OverlayFlags.parseFlags(flagString);
                     int gravity = flags.mGravity;
                     if (flags.mGravity == Gravity.NO_GRAVITY) {
                         gravity = chooseOverlayGravity(number);
                     }
 
-                    var overlayToKeep = findOverlayDisplayHandle(flags.mUniqueId, overlaysToRemove);
+                    Slog.i(TAG, "Showing overlay display device #" + number
+                            + ": name=" + name + ", modes=" + Arrays.toString(modes.toArray())
+                            + ", flags=" + flags);
 
-                    if (overlayToKeep == null) {
-                        String name = getContext().getResources().getString(
-                                com.android.internal.R.string.display_manager_overlay_display_name,
-                                number);
-                        Slog.i(TAG, "Showing overlay display device #" + number
-                                + ": name=" + name + ", modes=" + Arrays.toString(modes.toArray())
-                                + ", flags=" + flags);
-                        mOverlays.add(new OverlayDisplayHandle(name, modes, gravity, flags,
-                                number));
-                    } else {
-                        overlaysToRemove.remove(overlayToKeep);
-                        mOverlays.add(overlayToKeep);
-                    }
+                    mOverlays.add(new OverlayDisplayHandle(name, modes, gravity, flags, number));
                     continue;
                 }
             }
             Slog.w(TAG, "Malformed overlay display devices setting: " + value);
         }
-
-
-        Slog.i(TAG, "Dismissing old overlay display devices.");
-        for (OverlayDisplayHandle overlay : overlaysToRemove) {
-            overlay.dismissLocked();
-        }
-    }
-
-    private static OverlayDisplayHandle findOverlayDisplayHandle(String uniqueId,
-            List<OverlayDisplayHandle> overlayDisplayHandles) {
-        if (uniqueId != null) {
-            for (var o : overlayDisplayHandles) {
-                if (uniqueId.equals(o.mFlags.mUniqueId)) {
-                    return o;
-                }
-            }
-        }
-        return null;
     }
 
     private static int chooseOverlayGravity(int overlayNumber) {
@@ -381,8 +353,7 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
                 List<OverlayMode> modes, int activeMode, int defaultMode,
                 float refreshRate, long presentationDeadlineNanos,
                 OverlayFlags flags, int state, SurfaceTexture surfaceTexture, int number) {
-            super(OverlayDisplayAdapter.this, displayToken,
-                    UNIQUE_ID_PREFIX + (flags.mUniqueId != null ? flags.mUniqueId : number),
+            super(OverlayDisplayAdapter.this, displayToken, UNIQUE_ID_PREFIX + number,
                     getContext());
             mName = name;
             mRefreshRate = refreshRate;
@@ -417,7 +388,7 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
 
         @Override
         public boolean hasStableUniqueId() {
-            return mFlags.mUniqueId != null;
+            return false;
         }
 
         @Override
@@ -770,7 +741,6 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
         final boolean mDisableWindowInteraction;
 
         final int mGravity;
-        final String mUniqueId;
 
         OverlayFlags(
                 boolean secure,
@@ -778,15 +748,13 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
                 boolean shouldShowSystemDecorations,
                 boolean fixedContentMode,
                 boolean disableWindowInteraction,
-                int gravity,
-                String uniqueId) {
+                int gravity) {
             mSecure = secure;
             mOwnContentOnly = ownContentOnly;
             mShouldShowSystemDecorations = shouldShowSystemDecorations;
             mFixedContentMode = fixedContentMode;
             mDisableWindowInteraction = disableWindowInteraction;
             mGravity = gravity;
-            mUniqueId = uniqueId;
         }
 
         static OverlayFlags parseFlags(@Nullable String flagString) {
@@ -797,11 +765,9 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
                         false /* shouldShowSystemDecorations */,
                         false /* fixedContentMode */,
                         false /* disableWindowInteraction */,
-                        Gravity.NO_GRAVITY,
-                        null /* uniqueId */);
+                        Gravity.NO_GRAVITY);
             }
 
-            String uniqueId = null;
             boolean secure = false;
             boolean ownContentOnly = false;
             boolean shouldShowSystemDecorations = false;
@@ -819,14 +785,12 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
                     fixedContentMode = true;
                 } else if (OVERLAY_DISPLAY_FLAG_DISABLE_WINDOW_INTERACTION.equals(flag)) {
                     disableWindowInteraction = true;
-                } else if (flag.startsWith(OVERLAY_DISPLAY_FLAG_UNIQUE_ID_PREFIX)) {
-                    uniqueId = flag.substring(OVERLAY_DISPLAY_FLAG_UNIQUE_ID_PREFIX.length());
                 } else {
                     gravity = parseOverlayGravity(flag);
                 }
             }
             return new OverlayFlags(secure, ownContentOnly, shouldShowSystemDecorations,
-                    fixedContentMode, disableWindowInteraction, gravity, uniqueId);
+                    fixedContentMode, disableWindowInteraction, gravity);
         }
 
         @Override
@@ -837,8 +801,7 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
                     .append(", shouldShowSystemDecorations=").append(mShouldShowSystemDecorations)
                     .append(", fixedContentMode=").append(mFixedContentMode)
                     .append(", disableWindowInteraction=").append(mDisableWindowInteraction)
-                    .append(", gravity=").append(Gravity.toString(mGravity))
-                    .append(", uniqueId=").append(mUniqueId)
+                    .append(", gravity").append(Gravity.toString(mGravity))
                     .append("}")
                     .toString();
         }
