@@ -188,11 +188,22 @@ constructor(
         }
         val result =
             withContext(backgroundDispatcher) {
-                val telephonyManager: TelephonyManager =
+                Log.v(TAG, "call supplyIccLockPin(subid=$subscriptionId)")
+                val telephonyManager: TelephonyManager? =
                     telephonyManager.createForSubscriptionId(subscriptionId)
-                telephonyManager.supplyIccLockPin(input)
+                if (telephonyManager == null) {
+                    Log.w(TAG, "Null telephonyManager, cannot validate SimPin")
+                    null
+                } else {
+                    try {
+                        telephonyManager.supplyIccLockPin(input)
+                    } catch (e: IllegalStateException) {
+                        Log.e(TAG, "Error calling supplyIccLockPin", e)
+                        null
+                    }
+                }
             }
-        when (result.result) {
+        when (result?.result) {
             PinResult.PIN_RESULT_TYPE_SUCCESS -> {
                 keyguardUpdateMonitor.reportSimUnlocked(subscriptionId)
                 _bouncerMessageChanged.emit(null)
