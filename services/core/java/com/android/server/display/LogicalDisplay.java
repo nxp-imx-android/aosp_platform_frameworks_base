@@ -664,8 +664,7 @@ final class LogicalDisplay {
         int userPreferredModeId = deviceInfo.userPreferredModeId;
 
         // external display with no userPreferredMode selected
-        if (Flags.anisotropyCorrectedModeByDefault() && userPreferredModeId == INVALID_MODE_ID
-                && deviceInfo.type == Display.TYPE_EXTERNAL) {
+        if (userPreferredModeId == INVALID_MODE_ID && deviceInfo.type == Display.TYPE_EXTERNAL) {
             // we will try to find corresponding anisotropy corrected mode
             for (Display.Mode mode : modes) {
                 if (selectedModeId == mode.getParentModeId()
