@@ -115,6 +115,7 @@ import android.util.Slog;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
 import android.view.Display;
+import android.view.DisplayInfo;
 import android.view.IWindowManager;
 import android.view.WindowManager;
 import android.view.WindowManagerGlobal;
@@ -1068,7 +1069,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
                 synchronized (mVirtualDeviceLock) {
                     for (int i = 0; i < mVirtualDisplays.size(); i++) {
                         VirtualDisplayWrapper wrapper = mVirtualDisplays.valueAt(i);
-                        if (!wrapper.isTrusted() && !wrapper.isMirror()) {
+                        if (!wrapper.isTrusted()) {
                             throw new SecurityException("All displays must be trusted for "
                                     + "devices with custom clipboard policy.");
                         }
@@ -1203,7 +1204,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
                 mDefaultShowPointerIcon = showPointerIcon;
                 for (int i = 0; i < mVirtualDisplays.size(); i++) {
                     VirtualDisplayWrapper wrapper = mVirtualDisplays.valueAt(i);
-                    if (wrapper.isTrusted() || wrapper.isMirror()) {
+                    if (wrapper.isTrusted()) {
                         mInputController.setShowPointerIcon(
                                 mDefaultShowPointerIcon, mVirtualDisplays.keyAt(i));
                     }
@@ -1234,8 +1235,8 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
         synchronized (mVirtualDeviceLock) {
             checkDisplayOwnedByVirtualDeviceLocked(displayId);
             VirtualDisplayWrapper wrapper = mVirtualDisplays.get(displayId);
-            if (!wrapper.isTrusted() || wrapper.isMirror()) {
-                throw new SecurityException("Cannot set touch mode on untrusted or mirror display");
+            if (!wrapper.isTrusted()) {
+                throw new SecurityException("Cannot set touch mode on untrusted display");
             }
         }
         Binder.withCleanCallingIdentity(
@@ -1254,8 +1255,8 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
         synchronized (mVirtualDeviceLock) {
             checkDisplayOwnedByVirtualDeviceLocked(displayId);
             VirtualDisplayWrapper wrapper = mVirtualDisplays.get(displayId);
-            if (!wrapper.isTrusted() || wrapper.isMirror()) {
-                throw new SecurityException("Cannot set UI mode on untrusted or mirror display");
+            if (!wrapper.isTrusted()) {
+                throw new SecurityException("Cannot set UI mode on untrusted display");
             }
         }
         Binder.withCleanCallingIdentity(
@@ -1638,8 +1639,6 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
      */
     public void onVirtualDisplayCreated(int displayId, IVirtualDisplayCallback callback,
             DisplayWindowPolicyController dwpc) {
-        final boolean isMirrorDisplay =
-                mDisplayManagerInternal.getDisplayIdToMirror(displayId) != Display.INVALID_DISPLAY;
         final int flags = mDisplayManagerInternal.getDisplayInfo(displayId).flags;
         final boolean isTrustedDisplay = (flags & Display.FLAG_TRUSTED) == Display.FLAG_TRUSTED;
         final boolean isSecureDisplay = (flags & Display.FLAG_SECURE) == Display.FLAG_SECURE;
@@ -1655,8 +1654,8 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
                 Slog.wtf(TAG, "Virtual device already has a virtual display with ID " + displayId);
                 return;
             }
-            mVirtualDisplays.put(displayId, new VirtualDisplayWrapper(callback, displayId, gwpc,
-                    isTrustedDisplay, isMirrorDisplay));
+            mVirtualDisplays.put(displayId,
+                    new VirtualDisplayWrapper(callback, displayId, gwpc, isTrustedDisplay));
         }
     }
 
@@ -1697,7 +1696,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
             synchronized (mVirtualDeviceLock) {
                 checkDisplayOwnedByVirtualDeviceLocked(displayId);
                 VirtualDisplayWrapper wrapper = mVirtualDisplays.get(displayId);
-                if (!wrapper.isTrusted() && !wrapper.isMirror()) {
+                if (!wrapper.isTrusted()) {
                     throw new SecurityException(
                             "Cannot create input device associated with an untrusted display");
                 }
@@ -1728,7 +1727,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
         synchronized (mVirtualDeviceLock) {
             for (int i = 0; i < mVirtualDisplays.size(); i++) {
                 VirtualDisplayWrapper wrapper = mVirtualDisplays.valueAt(i);
-                if (!wrapper.isTrusted() || wrapper.isMirror()) {
+                if (!wrapper.isTrusted()) {
                     continue;
                 }
                 int displayId = mVirtualDisplays.keyAt(i);
@@ -1736,7 +1735,10 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
             }
         }
         for (int i = 0; i < displayIds.size(); ++i) {
-            mPowerManager.goToSleep(displayIds.get(i), now, reason, /* flags= */ 0);
+            int displayId = displayIds.get(i);
+            if (isVirtualDeviceDisplayGroup(displayId)) {
+                mPowerManager.goToSleep(displayId, now, reason, /* flags= */ 0);
+            }
         }
     }
 
@@ -1746,7 +1748,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
         synchronized (mVirtualDeviceLock) {
             for (int i = 0; i < mVirtualDisplays.size(); i++) {
                 VirtualDisplayWrapper wrapper = mVirtualDisplays.valueAt(i);
-                if (!wrapper.isTrusted() || wrapper.isMirror()) {
+                if (!wrapper.isTrusted()) {
                     continue;
                 }
                 int displayId = mVirtualDisplays.keyAt(i);
@@ -1754,8 +1756,27 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
             }
         }
         for (int i = 0; i < displayIds.size(); ++i) {
-            mPowerManager.wakeUp(now, reason, details, displayIds.get(i));
+            int displayId = displayIds.get(i);
+            if (isVirtualDeviceDisplayGroup(displayId)) {
+                mPowerManager.wakeUp(now, reason, details, displayId);
+            }
         }
+    }
+
+    /**
+     * Returns whether the given display is in a display group associated with the virtual device.
+     *
+     * <p>This returns false for any mirror displays, as mirror displays created with VDM always
+     * belong to the default display group (the API to mirror non-default display is hidden).</p>
+     *
+     * <p>Technically, we should check whether the display group is associated with this virtual
+     * device instead of relying on the default display group. I.e. all displays that belong to that
+     * group should be owned by this virtual device. However, this is a good enough heuristic for
+     * now.</p>
+     */
+    private boolean isVirtualDeviceDisplayGroup(int displayId) {
+        final DisplayInfo displayInfo = mDisplayManagerInternal.getDisplayInfo(displayId);
+        return displayInfo != null && displayInfo.displayGroupId != Display.DEFAULT_DISPLAY_GROUP;
     }
 
     /**
@@ -1951,16 +1972,13 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
         private final IVirtualDisplayCallback mToken;
         private final GenericWindowPolicyController mWindowPolicyController;
         private final boolean mIsTrusted;
-        private final boolean mIsMirror;
         private final int mDisplayId;
 
         VirtualDisplayWrapper(@NonNull IVirtualDisplayCallback token, int displayId,
-                @NonNull GenericWindowPolicyController windowPolicyController,
-                boolean isTrusted, boolean isMirror) {
+                @NonNull GenericWindowPolicyController windowPolicyController, boolean isTrusted) {
             mToken = Objects.requireNonNull(token);
             mWindowPolicyController = Objects.requireNonNull(windowPolicyController);
             mIsTrusted = isTrusted;
-            mIsMirror = isMirror;
             mDisplayId = displayId;
         }
 
@@ -1970,10 +1988,6 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
 
         boolean isTrusted() {
             return mIsTrusted;
-        }
-
-        boolean isMirror() {
-            return mIsMirror;
         }
 
         IVirtualDisplayCallback getToken() {
