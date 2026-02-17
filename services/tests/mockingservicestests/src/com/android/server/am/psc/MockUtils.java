@@ -137,6 +137,52 @@ public final class MockUtils {
         verify(proc, mode).setSetProcState(state);
     }
 
+    /** Sets the current capability for the given process record. */
+    public static void setCurCapability(ProcessRecordInternal proc, int curCapability) {
+        proc.setCurCapability(curCapability);
+    }
+
+    /** Verifies the current capability was set for the given process record. */
+    public static void verifySetCurCapability(ProcessRecordInternal proc, VerificationMode mode,
+            int curCapability) {
+        verify(proc, mode).setCurCapability(curCapability);
+    }
+
+    /** Sets the last set capability for the given process record. */
+    public static void setSetCapability(ProcessRecordInternal proc, int setCapability) {
+        proc.setSetCapability(setCapability);
+    }
+
+    /** Verifies the last set capability was set for the given process record. */
+    public static void verifySetSetCapability(ProcessRecordInternal proc, VerificationMode mode,
+            int setCapability) {
+        verify(proc, mode).setSetCapability(setCapability);
+    }
+
+    /** Adds the given CPU time reasons to the current set of reasons for the process record. */
+    public static void addCurCpuTimeReasons(ProcessRecordInternal proc,
+            @OomAdjuster.CpuTimeReasons int cpuTimeReasons) {
+        proc.addCurCpuTimeReasons(cpuTimeReasons);
+    }
+
+    /** Verifies the given CPU time reasons were added for the given process record. */
+    public static void verifyAddCurCpuTimeReasons(ProcessRecordInternal proc, VerificationMode mode,
+            @OomAdjuster.CpuTimeReasons int cpuTimeReasons) {
+        verify(proc, mode).addCurCpuTimeReasons(cpuTimeReasons);
+    }
+
+    /** Adds the given implicit CPU time reasons for the process record. */
+    public static void addCurImplicitCpuTimeReasons(ProcessRecordInternal proc,
+            @OomAdjuster.ImplicitCpuTimeReasons int implicitCpuTimeReasons) {
+        proc.addCurImplicitCpuTimeReasons(implicitCpuTimeReasons);
+    }
+
+    /** Verifies the given implicit CPU time reasons were added for the given process record. */
+    public static void verifyAddCurImplicitCpuTimeReasons(ProcessRecordInternal proc,
+            VerificationMode mode, @OomAdjuster.ImplicitCpuTimeReasons int implicitCpuTimeReasons) {
+        verify(proc, mode).addCurImplicitCpuTimeReasons(implicitCpuTimeReasons);
+    }
+
     /** Sets the last set CPU time reasons for the given process record. */
     public static void setSetCpuTimeReasons(ProcessRecordInternal proc,
             @OomAdjuster.CpuTimeReasons int reasons) {
@@ -183,5 +229,49 @@ public final class MockUtils {
     public static void verifySetLastTopTime(ProcessRecordInternal proc, VerificationMode mode,
             long lastTopTime) {
         verify(proc, mode).setLastTopTime(lastTopTime);
+    }
+
+    /** Sets the service B state for the given process record. */
+    public static void setServiceB(ProcessRecordInternal proc, boolean serviceB) {
+        proc.setServiceB(serviceB);
+    }
+
+    /** Verifies the service B state was set for the given process record. */
+    public static void verifySetServiceB(ProcessRecordInternal proc, VerificationMode mode,
+            boolean serviceB) {
+        verify(proc, mode).setServiceB(serviceB);
+    }
+
+    /** Sets whether the given process has shown UI. */
+    public static void setHasShownUi(ProcessRecordInternal proc, boolean hasShownUi) {
+        proc.setHasShownUi(hasShownUi);
+    }
+
+    /** Verifies whether the given process has shown UI was set. */
+    public static void verifySetHasShownUi(ProcessRecordInternal proc, VerificationMode mode,
+            boolean hasShownUi) {
+        verify(proc, mode).setHasShownUi(hasShownUi);
+    }
+
+    /** Sets the system no UI state for the given process record. */
+    public static void setSystemNoUi(ProcessRecordInternal proc, boolean systemNoUi) {
+        proc.setSystemNoUi(systemNoUi);
+    }
+
+    /** Verifies the system no UI state was set for the given process record. */
+    public static void verifySetSystemNoUi(ProcessRecordInternal proc, VerificationMode mode,
+            boolean systemNoUi) {
+        verify(proc, mode).setSystemNoUi(systemNoUi);
+    }
+
+    /** Sets the OOM adjustment type for the given process record. */
+    public static void setAdjType(ProcessRecordInternal proc, String adjType) {
+        proc.setAdjType(adjType);
+    }
+
+    /** Verifies the OOM adjustment type was set for the given process record. */
+    public static void verifySetAdjType(ProcessRecordInternal proc, VerificationMode mode,
+            String adjType) {
+        verify(proc, mode).setAdjType(adjType);
     }
 }

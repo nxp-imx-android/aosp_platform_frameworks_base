@@ -986,7 +986,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    public void setCurCapability(int curCapability) {
+    void setCurCapability(int curCapability) {
         mCurCapability = curCapability;
     }
 
@@ -996,7 +996,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    public void setSetCapability(int setCapability) {
+    void setSetCapability(int setCapability) {
         mSetCapability = setCapability;
     }
 
@@ -1018,13 +1018,13 @@ public abstract class ProcessRecordInternal {
 
     /** Add given reasons to mCurCpuTimeReasons. */
     @GuardedBy({"mServiceLock", "mProcLock"})
-    public void addCurCpuTimeReasons(@OomAdjuster.CpuTimeReasons int cpuTimeReasons) {
+    void addCurCpuTimeReasons(@OomAdjuster.CpuTimeReasons int cpuTimeReasons) {
         mCurCpuTimeReasons |= cpuTimeReasons;
     }
 
     /** Sets mCurCpuTimeReasons to CPU_TIME_REASON_NONE. */
     @GuardedBy({"mServiceLock", "mProcLock"})
-    public void clearCurCpuTimeReasons() {
+    void clearCurCpuTimeReasons() {
         mCurCpuTimeReasons = CPU_TIME_REASON_NONE;
     }
 
@@ -1042,14 +1042,14 @@ public abstract class ProcessRecordInternal {
 
     /** Add given reasons to mCurImplicitCpuTimeReasons. */
     @GuardedBy({"mServiceLock", "mProcLock"})
-    public void addCurImplicitCpuTimeReasons(
+    void addCurImplicitCpuTimeReasons(
             @OomAdjuster.ImplicitCpuTimeReasons int implicitCpuTimeReasons) {
         mCurImplicitCpuTimeReasons |= implicitCpuTimeReasons;
     }
 
     /** Sets mCurImplicitCpuTimeReasons to IMPLICIT_CPU_TIME_REASON_NONE. */
     @GuardedBy({"mServiceLock", "mProcLock"})
-    public void clearCurImplicitCpuTimeReasons() {
+    void clearCurImplicitCpuTimeReasons() {
         mCurImplicitCpuTimeReasons = IMPLICIT_CPU_TIME_REASON_NONE;
     }
 
@@ -1163,7 +1163,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    public void setServiceB(boolean serviceb) {
+    void setServiceB(boolean serviceb) {
         mServiceB = serviceb;
     }
 
@@ -1213,7 +1213,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy("mServiceLock")
-    public void setHasShownUi(boolean hasShownUi) {
+    void setHasShownUi(boolean hasShownUi) {
         mHasShownUi = hasShownUi;
     }
 
@@ -1317,7 +1317,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy("mServiceLock")
-    public void setSystemNoUi(boolean systemNoUi) {
+    void setSystemNoUi(boolean systemNoUi) {
         mSystemNoUi = systemNoUi;
     }
 
@@ -1331,7 +1331,7 @@ public abstract class ProcessRecordInternal {
      * Also traces the OOM adjustment type if tracing is enabled.
      */
     @GuardedBy("mServiceLock")
-    public void setAdjType(String adjType) {
+    void setAdjType(String adjType) {
         if (TRACE_OOM_ADJ) {
             Trace.asyncTraceForTrackEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER, getTrackName(), 0);
             Trace.asyncTraceForTrackBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, getTrackName(),
@@ -1391,7 +1391,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy("mServiceLock")
-    public void setReachable(boolean reachable) {
+    void setReachable(boolean reachable) {
         mReachable = reachable;
     }
 
@@ -1427,7 +1427,7 @@ public abstract class ProcessRecordInternal {
 
     /** Resets all cached information used by the OomAdjuster. */
     @GuardedBy("mServiceLock")
-    public void resetCachedInfo() {
+    void resetCachedInfo() {
         mCachedAdj = INVALID_ADJ;
         mCachedForegroundActivities = false;
         mCachedProcState = ActivityManager.PROCESS_STATE_CACHED_EMPTY;
@@ -1611,7 +1611,7 @@ public abstract class ProcessRecordInternal {
      * @param hasVisibleActivities True if there are visible activities, false otherwise.
      */
     @GuardedBy("mServiceLock")
-    public void updateLastInvisibleTime(boolean hasVisibleActivities) {
+    void updateLastInvisibleTime(boolean hasVisibleActivities) {
         if (hasVisibleActivities) {
             mLastInvisibleTime = Long.MAX_VALUE;
         } else if (mLastInvisibleTime == Long.MAX_VALUE) {

@@ -405,8 +405,8 @@ public class ServiceLifecycleImportanceTest extends BaseServiceTest {
         MockUtils.setCurAdj(proc, PERCEPTIBLE_APP_ADJ);
         MockUtils.setSetAdj(proc, PERCEPTIBLE_APP_ADJ);
 
-        proc.setCurCapability(PROCESS_CAPABILITY_ALL);
-        proc.setSetCapability(PROCESS_CAPABILITY_ALL);
+        MockUtils.setCurCapability(proc, PROCESS_CAPABILITY_ALL);
+        MockUtils.setSetCapability(proc, PROCESS_CAPABILITY_ALL);
     }
 
     // Simple data object for caching the args the app thread receives from service lifecycle events

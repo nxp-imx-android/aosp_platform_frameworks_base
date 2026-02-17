@@ -476,10 +476,10 @@ public final class ServiceBindingOomAdjPolicyTest extends BaseServiceTest {
         MockUtils.setCurRawAdj(app, adj);
         MockUtils.setCurAdj(app, adj);
         MockUtils.setSetAdj(app, adj);
-        app.setCurCapability(cap);
-        app.addCurCpuTimeReasons(defaultCpuTimeReasons(cap));
-        app.addCurImplicitCpuTimeReasons(defaultImplicitCpuTimeReasons(cap));
-        app.setSetCapability(cap);
+        MockUtils.setCurCapability(app, cap);
+        MockUtils.addCurCpuTimeReasons(app, defaultCpuTimeReasons(cap));
+        MockUtils.addCurImplicitCpuTimeReasons(app, defaultImplicitCpuTimeReasons(cap));
+        MockUtils.setSetCapability(app, cap);
         MockUtils.setSetCpuTimeReasons(app, defaultCpuTimeReasons(cap));
         MockUtils.setSetImplicitCpuTimeReasons(app, defaultImplicitCpuTimeReasons(cap));
         return app;

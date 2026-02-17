@@ -251,7 +251,7 @@ public class ApplicationExitInfoTest {
                 app1ProcessName,             // processName
                 app1PackageName,             // packageName
                 isNativeService);
-        app.setHasShownUi(true);
+        MockUtils.setHasShownUi(app, true);
 
         // Case 1: basic System.exit() test
         int exitCode = 5;
