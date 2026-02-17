@@ -470,7 +470,6 @@ LIBANDROID_PLATFORM {
     APerformanceHint_createSessionUsingConfigInternal;
     APerformanceHint_setUseFMQForTesting;
     APerformanceHint_getRateLimiterPropertiesForTesting;
-    APerformanceHint_setUseNewLoadHintBehaviorForTesting;
     APerformanceHint_closeSessionFromJava;
     APerformanceHint_createSessionFromJava;
     APerformanceHint_setReportBatchSizeCapForTesting;
