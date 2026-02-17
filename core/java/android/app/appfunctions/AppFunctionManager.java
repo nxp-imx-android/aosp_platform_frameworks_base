@@ -32,7 +32,6 @@ import android.annotation.CallbackExecutor;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
-import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.annotation.SdkConstant;
 import android.annotation.SystemApi;
@@ -40,6 +39,7 @@ import android.annotation.SystemService;
 import android.annotation.TestApi;
 import android.annotation.UserHandleAware;
 import android.app.Activity;
+import android.app.Service;
 import android.app.appfunctions.AppFunctionManagerHelper.AppFunctionNotFoundException;
 import android.app.appsearch.AppSearchManager;
 import android.content.Context;
@@ -57,7 +57,6 @@ import android.permission.flags.Flags;
 import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.Log;
-import java.util.Set;
 
 import com.android.internal.annotations.GuardedBy;
 
@@ -1328,6 +1327,8 @@ public final class AppFunctionManager {
 
         private final IBinder mActivityToken;
 
+        private final boolean mIsAllowedContext;
+
         @GuardedBy("mLock")
         private final ArrayMap<String, RegistrationRecord> mRegistrations = new ArrayMap<>();
 
@@ -1361,13 +1362,21 @@ public final class AppFunctionManager {
 
         AppFunctionRegistry(Context context) {
             if (context instanceof Activity) {
+                mIsAllowedContext = true;
                 mActivityToken = context.getActivityToken();
             } else {
+                mIsAllowedContext = (context instanceof Service);
                 mActivityToken = null;
             }
         }
 
         AppFunctionRegistration register(List<RegisterAppFunctionRequest> requests) {
+            if (!mIsAllowedContext) {
+                throw new IllegalStateException(
+                        "AppFunction registration is restricted to AppFunctionManager instances "
+                                + "obtained from either an Activity or a Service context.");
+            }
+
             // This lock is held during the IPC call to the system server. This is a deliberate
             // choice to synchronize registration requests from multiple threads within this
             // process. The server-side implementation is also synchronized, preventing deadlocks
