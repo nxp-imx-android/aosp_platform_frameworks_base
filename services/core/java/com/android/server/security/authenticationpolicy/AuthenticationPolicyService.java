@@ -33,6 +33,7 @@ import android.annotation.EnforcePermission;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.KeyguardManager;
+import android.companion.DeviceId;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.biometrics.AuthenticationStateListener;
@@ -672,14 +673,42 @@ public class AuthenticationPolicyService extends SystemService {
 
         @Override
         @EnforcePermission(USE_BIOMETRIC_INTERNAL)
-        public boolean isAgentAuthorized(UserHandle user, int associationId) {
+        public boolean isAgentAuthorized(UserHandle user, DeviceId deviceId) {
             isAgentAuthorized_enforcePermission();
 
             if (android.companion.Flags.supportAiAgent()) {
-                return mAgentAuthService.isAgentAuthorized(user.getIdentifier(), associationId);
+                return mAgentAuthService.isAgentAuthorized(user.getIdentifier(), deviceId);
             } else {
                 return false;
             }
+        }
+
+        @Override
+        @EnforcePermission(USE_BIOMETRIC_INTERNAL)
+        public boolean isAgentAuthorizedByAssociationId(UserHandle user, int associationId) {
+            isAgentAuthorizedByAssociationId_enforcePermission();
+
+            if (android.companion.Flags.supportAiAgent()) {
+                return mAgentAuthService.isAgentAuthorizedByAssociationId(
+                        user.getIdentifier(), associationId);
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        @EnforcePermission(USE_BIOMETRIC_INTERNAL)
+        public boolean setAgentAuthorizedByAssociationId(UserHandle user, int associationId, boolean authorized) {
+            setAgentAuthorizedByAssociationId_enforcePermission();
+
+            if (Build.IS_DEBUGGABLE) {
+                if (android.companion.Flags.supportAiAgent()) {
+                    return mAgentAuthService.setOverride(
+                            user.getIdentifier(), associationId, authorized);
+                }
+            }
+
+            return false;
         }
 
         @Override

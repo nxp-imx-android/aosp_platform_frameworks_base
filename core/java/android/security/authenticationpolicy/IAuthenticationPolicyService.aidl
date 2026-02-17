@@ -17,6 +17,7 @@
 package android.security.authenticationpolicy;
 
 import android.os.UserHandle;
+import android.companion.DeviceId;
 import android.proximity.IProximityResultCallback;
 import android.security.authenticationpolicy.EnableSecureLockDeviceParams;
 import android.security.authenticationpolicy.DisableSecureLockDeviceParams;
@@ -59,5 +60,11 @@ interface IAuthenticationPolicyService {
     void isWatchRangingAvailable(in IProximityResultCallback resultCallback);
 
     @EnforcePermission("USE_BIOMETRIC_INTERNAL")
-    boolean isAgentAuthorized(in UserHandle user, int associationId);
+    boolean isAgentAuthorized(in UserHandle user, in DeviceId deviceId);
+
+    @EnforcePermission("USE_BIOMETRIC_INTERNAL")
+    boolean isAgentAuthorizedByAssociationId(in UserHandle user, in int associationId);
+
+    @EnforcePermission("USE_BIOMETRIC_INTERNAL")
+    boolean setAgentAuthorizedByAssociationId(in UserHandle user, in int associationId, in boolean authorized);
 }
