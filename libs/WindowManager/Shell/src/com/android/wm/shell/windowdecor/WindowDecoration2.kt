@@ -26,6 +26,7 @@ import android.content.res.Resources
 import android.graphics.Color
 import android.graphics.Rect
 import android.graphics.Region
+import android.graphics.drawable.ColorDrawable
 import android.gui.BorderSettings
 import android.gui.BoxShadowSettings
 import android.os.Handler
@@ -43,6 +44,7 @@ import android.view.WindowlessWindowManager
 import android.window.DesktopExperienceFlags
 import android.window.TaskConstants
 import android.window.WindowContainerTransaction
+import androidx.core.content.res.use
 import com.android.app.tracing.traceSection
 import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.protolog.ProtoLog
@@ -352,8 +354,13 @@ abstract class WindowDecoration2<T>(
         }
 
         if (params.shouldSetBackground) {
-            // TODO: b/437011322 - Use taskDescription backgroundColor for free resizing
-            val backgroundColorInt = Color.BLACK
+            val backgroundColorInt =
+                if (DesktopExperienceFlags.ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS.isTrue) {
+                    params.runningTaskInfo.taskDescription?.backgroundColor?.takeIf { it != 0 }
+                        ?: getBackgroundColor(decorWindowContext)
+                } else {
+                    getBackgroundColor(decorWindowContext)
+                }
             val tmpColor =
                 floatArrayOf(
                     Color.red(backgroundColorInt).toFloat() / 255f,
@@ -374,6 +381,24 @@ abstract class WindowDecoration2<T>(
             shadowRadius,
             cornerRadius,
         )
+    }
+
+    private fun getBackgroundColor(context: Context): Int {
+        return context
+            .obtainStyledAttributes(
+                intArrayOf(android.R.attr.windowBackground, android.R.attr.windowBackgroundFallback)
+            )
+            .use { typedArray ->
+                val windowBackground = typedArray.getDrawable(0)
+                val windowBackgroundFallback = typedArray.getDrawable(1)
+                when {
+                    windowBackground is ColorDrawable && windowBackground.color != 0 ->
+                        windowBackground.color
+                    windowBackgroundFallback is ColorDrawable &&
+                        windowBackgroundFallback.color != 0 -> windowBackgroundFallback.color
+                    else -> Color.BLACK
+                }
+            }
     }
 
     private fun updateTaskSurfaceOutline(
