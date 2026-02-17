@@ -98,4 +98,8 @@ public class AppFunctionRequestResponseLogger {
                         /* keepGenericDocumentProperties= */ false)
                 .toString();
     }
+
+    public void close() {
+        mPersistentLogger.close();
+    }
 }

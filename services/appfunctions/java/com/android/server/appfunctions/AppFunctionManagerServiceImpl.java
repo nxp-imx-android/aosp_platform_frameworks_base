@@ -316,7 +316,10 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         }
 
         synchronized (mRequestResponseLoggerPerUserLock) {
-            if (mRequestResponseLoggerPerUser.contains(userIdentifier)) {
+            AppFunctionRequestResponseLogger logger =
+                    mRequestResponseLoggerPerUser.get(userIdentifier);
+            if (logger != null) {
+                logger.close();
                 mRequestResponseLoggerPerUser.delete(userIdentifier);
             }
         }
