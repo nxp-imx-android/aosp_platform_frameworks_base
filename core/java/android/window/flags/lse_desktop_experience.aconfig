@@ -170,6 +170,16 @@ flag {
 }
 
 flag {
+    name: "enable_app_restart_after_update_split_screen"
+    namespace: "lse_desktop_experience"
+    description: "Enables the app restart after update feature for split screen."
+    bug: "484324706"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_auto_recovery_from_self_kill"
     namespace: "lse_desktop_experience"
     description: "Automatically recovers apps from killing themselves on display moves"
