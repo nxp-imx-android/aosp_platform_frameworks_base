@@ -99,12 +99,12 @@ public class ThemeStateManager {
     private KeyguardManager mKeyguardManager;
     private ThemeOverlayHelper mThemeOverlayHelper;
 
-    ThemeStateManager(Context context, Platform platform, SpecVersion specVersion) {
+    public ThemeStateManager(Context context, Platform platform, SpecVersion specVersion) {
         this(context, Executors.newSingleThreadScheduledExecutor(), platform, specVersion);
     }
 
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
-    ThemeStateManager(Context context, ScheduledExecutorService schedulerExecutor,
+    public ThemeStateManager(Context context, ScheduledExecutorService schedulerExecutor,
             Platform platform, SpecVersion specVersion) {
         mSchedulerExecutor = schedulerExecutor;
         mContext = context;
@@ -118,7 +118,7 @@ public class ThemeStateManager {
      * Called when all system services are ready.
      * Initializes the necessary internal components.
      */
-    void onServicesReady() {
+    public void onServicesReady() {
         mUserManager = LocalServices.getService(UserManagerInternal.class);
         mKeyguardManager = mContext.getSystemService(KeyguardManager.class);
         OverlayManagerInternal overlayManager = LocalServices.getService(
@@ -134,7 +134,7 @@ public class ThemeStateManager {
     /**
      * Called when the boot animation is dismissed.
      */
-    void onBootAnimationDismissing() {
+    public void onBootAnimationDismissing() {
         synchronized (mLock) {
             Slog.d(TAG, "Boot animation dismissing, exiting boot phase.");
             mIsBooting = false;
@@ -142,7 +142,7 @@ public class ThemeStateManager {
     }
 
     @VisibleForTesting
-    void setThemeOverlayHelper(ThemeOverlayHelper themeOverlayHelper) {
+    public void setThemeOverlayHelper(ThemeOverlayHelper themeOverlayHelper) {
         mThemeOverlayHelper = themeOverlayHelper;
     }
 
@@ -165,9 +165,11 @@ public class ThemeStateManager {
         if (!isBooting && !fromForegroundApp && mKeyguardManager != null
                 && !mKeyguardManager.isDeviceLocked()) {
             statePair.setDeferUpdatesOnLock(true);
-            Slog.w(TAG, "Wallpaper changed from background app, deferring color change");
+            Slog.w(TAG, "Wallpaper changed from background app, deferring color change #"
+                    + Integer.toHexString(seedColor));
         } else if (statePair.areUpdatesDeferredOnLock()) {
-            Slog.d(TAG, "Foreground app explicitly changed color, clearing deferral.");
+            Slog.d(TAG, "Foreground app explicitly changed color, clearing deferral. #"
+                    + Integer.toHexString(seedColor));
             statePair.setDeferUpdatesOnLock(false);
         }
 
@@ -266,7 +268,7 @@ public class ThemeStateManager {
      * @param contrast  The initial contrast value for the user's theme.
      * @param style     The initial style for the user's theme.
      */
-    void onUserLoad(int userId, boolean isSetup, int seedColor, float contrast,
+    public void onUserLoad(int userId, boolean isSetup, int seedColor, float contrast,
             @ThemeStyle.Type Integer style) {
         synchronized (mLock) {
             Integer parentId = parentOf(userId);
@@ -312,7 +314,7 @@ public class ThemeStateManager {
      * @param contrast   The initial contrast value for the user's theme.
      * @param style      The initial style for the user's theme.
      */
-    void onUserStart(UserHandle userHandle, boolean isSetup, int seedColor, float contrast,
+    public void onUserStart(UserHandle userHandle, boolean isSetup, int seedColor, float contrast,
             @ThemeStyle.Type Integer style) {
         // Ensure state is loaded. This is idempotent.
         onUserLoad(userHandle.getIdentifier(), isSetup, seedColor, contrast, style);
@@ -325,7 +327,7 @@ public class ThemeStateManager {
      * @param from The ID of the previous user, or {@code null} if there was none.
      * @param to   The ID of the new user.
      */
-    void onUserSwitching(@Nullable Integer from, int to) {
+    public void onUserSwitching(@Nullable Integer from, int to) {
         Slog.d(TAG, "User switching from " + from + " to " + to + ". Re-applying theme.");
         synchronized (mLock) {
             mCurrentUserId = to;
@@ -341,11 +343,12 @@ public class ThemeStateManager {
      * @param isPaletteOutdated A boolean indicating the palette version is outdated and should be
      *                          recalculated.
      */
-    void onBootComplete(boolean isPaletteOutdated) {
+    public void onBootComplete(boolean isPaletteOutdated) {
         boolean shouldEvaluateOnBoot = false;
 
         for (ThemeStatePair statePair : getPairsSnapshot()) {
-            if (!statePair.isColorSchemeApplied(mContext) || isPaletteOutdated) {
+            if (!mThemeOverlayHelper.isColorSchemeApplied(mContext, statePair.userId,
+                    statePair.getDarkScheme(), statePair.getLightScheme()) || isPaletteOutdated) {
                 Slog.d(TAG, "Color palette does not match user " + statePair.userId
                         + " settings, requesting update.");
                 statePair.forceUpdate();
@@ -363,7 +366,7 @@ public class ThemeStateManager {
     }
 
     @NonNull
-    ThemeStatePair getState(int userId) {
+    public ThemeStatePair getState(int userId) {
         synchronized (mLock) {
             ThemeStatePair state = mThemeStates.get(userId);
             if (state == null) {
@@ -389,7 +392,7 @@ public class ThemeStateManager {
      * Re-evaluates the current system theme for all users and updates overlays if necessary.
      */
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
-    void reevaluateSystemTheme() {
+    public void reevaluateSystemTheme() {
         boolean isBooting;
         synchronized (mLock) {
             isBooting = mIsBooting;
@@ -439,8 +442,9 @@ public class ThemeStateManager {
                 }
 
                 // Whenever to updated existing (register) overlays or just turn them on.
-                boolean shouldRegister = overlaySnapshot.contentChanged()
-                        || (localIsBooting && !statePair.isColorSchemeApplied(mContext));
+                boolean shouldRegister = effectiveSnapshot.contentChanged()
+                        || (localIsBooting && !mThemeOverlayHelper.isColorSchemeApplied(mContext,
+                        statePair.userId, statePair.getDarkScheme(), statePair.getLightScheme()));
 
                 mThemeOverlayHelper.applyCurrentStateOverlays(
                         /*statePair     */ overlaySnapshot,

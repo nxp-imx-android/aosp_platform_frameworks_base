@@ -83,7 +83,8 @@ public class ThemeSettingsManagerTests {
     public void setup() {
         MockitoAnnotations.initMocks(this);
         mContentResolver = mContext.getContentResolver();
-        mManager = new ThemeSettingsManager(new ThemeWallpaperManager(mMockWmi));
+        mManager = new ThemeSettingsManager(new ThemeWallpaperManager(mMockWmi),
+                mHardwareColorRule.sysPropReader, mHardwareColorRule.options);
 
         Settings.Secure.putStringForUser(mContentResolver,
                 Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, null, mUserId);
@@ -244,8 +245,7 @@ public class ThemeSettingsManagerTests {
             "*|TONAL_SPOT|#00FF00"
     })
     public void createDefaultThemeSettings_matchesHardwareColor() {
-        ThemeSettings defaultSettings = mManager.createDefaultThemeSettings(
-                mContext.getResources(), mHardwareColorRule.sysPropReader, mUserId);
+        ThemeSettings defaultSettings = mManager.createDefaultThemeSettings(mUserId);
 
         assertThat(defaultSettings.colorSource()).isEqualTo(FieldColorSource.VALUE_PRESET);
         assertThat(defaultSettings.themeStyle()).isEqualTo(ThemeStyle.VIBRANT);
@@ -259,8 +259,7 @@ public class ThemeSettingsManagerTests {
             "*|TONAL_SPOT|#00FF00"
     })
     public void createDefaultThemeSettings_usesWildcardFallback_preset() {
-        ThemeSettings defaultSettings = mManager.createDefaultThemeSettings(
-                mContext.getResources(), mHardwareColorRule.sysPropReader, mUserId);
+        ThemeSettings defaultSettings = mManager.createDefaultThemeSettings(mUserId);
 
         assertThat(defaultSettings.colorSource()).isEqualTo(FieldColorSource.VALUE_PRESET);
         assertThat(defaultSettings.themeStyle()).isEqualTo(ThemeStyle.TONAL_SPOT);
@@ -278,8 +277,7 @@ public class ThemeSettingsManagerTests {
         WallpaperColors wallpaperColors = new WallpaperColors(cyan, null, null);
         when(mMockWmi.getWallpaperColors(anyInt(), anyInt())).thenReturn(wallpaperColors);
 
-        ThemeSettings defaultSettings = mManager.createDefaultThemeSettings(
-                mContext.getResources(), mHardwareColorRule.sysPropReader, mUserId);
+        ThemeSettings defaultSettings = mManager.createDefaultThemeSettings(mUserId);
 
         assertThat(defaultSettings.colorSource()).isEqualTo(FieldColorSource.VALUE_HOME_WALLPAPER);
         assertThat(defaultSettings.themeStyle()).isEqualTo(ThemeStyle.EXPRESSIVE);
@@ -295,8 +293,7 @@ public class ThemeSettingsManagerTests {
     public void createDefaultThemeSettings_wallpaperNoColors_usesWildcardFallback() {
         when(mMockWmi.getWallpaperColors(anyInt(), anyInt())).thenReturn(null);
 
-        ThemeSettings defaultSettings = mManager.createDefaultThemeSettings(
-                mContext.getResources(), mHardwareColorRule.sysPropReader, mUserId);
+        ThemeSettings defaultSettings = mManager.createDefaultThemeSettings(mUserId);
 
         // Since the primary source (wallpaper) failed, it should fall back to the wildcard,
         // which is also wallpaper. Since that will also fail, it uses the hardcoded fallback
@@ -313,8 +310,7 @@ public class ThemeSettingsManagerTests {
     })
     public void createDefaultThemeSettings_noWildcard_throwsException() {
         assertThrows(IllegalStateException.class,
-                () -> mManager.createDefaultThemeSettings(
-                        mContext.getResources(), mHardwareColorRule.sysPropReader, mUserId));
+                () -> mManager.createDefaultThemeSettings(mUserId));
     }
 
     @Test
@@ -322,8 +318,7 @@ public class ThemeSettingsManagerTests {
             "*|TONAL_SPOT|invalid-color"
     })
     public void createDefaultThemeSettings_malformedColor_fallsBackToHardcoded() {
-        ThemeSettings defaultSettings = mManager.createDefaultThemeSettings(
-                mContext.getResources(), mHardwareColorRule.sysPropReader, mUserId);
+        ThemeSettings defaultSettings = mManager.createDefaultThemeSettings(mUserId);
         assertThat(defaultSettings.colorSource()).isEqualTo(FieldColorSource.VALUE_PRESET);
         assertThat(defaultSettings.themeStyle()).isEqualTo(ThemeStyle.TONAL_SPOT);
         assertThat(defaultSettings.systemPalette()).isEqualTo(Color.valueOf(0xFF1b6ef3));

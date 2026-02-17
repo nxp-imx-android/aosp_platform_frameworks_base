@@ -22,6 +22,8 @@ import static android.content.theming.FieldColorSource.VALUE_PRESET;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
@@ -83,7 +85,7 @@ public class ThemeBinderServiceTests {
 
     private int mUserId;
     private ThemeBinderService mUnderTest;
-    private ThemeManagerInternal mInternal;
+    private ThemeManagerImpl mInternal;
     private ThemeSettings mDefaultSettings;
     private ThemeStateManager mThemeStateManager;
     private FakeScheduledExecutorService mSchedulerExecutor;
@@ -128,10 +130,13 @@ public class ThemeBinderServiceTests {
         perms.setPermission(android.Manifest.permission.INTERACT_ACROSS_USERS, PERMISSION_GRANTED);
 
         when(mUserManager.getProfileParentId(eq(mUserId))).thenReturn(mUserId);
+        when(mUserManager.getProfileIds(anyInt(), anyBoolean())).thenAnswer(invocation -> {
+            int requestedUserId = invocation.getArgument(0);
+            return new int[]{requestedUserId};
+        });
         when(mActivityManagerInternal.getCurrentUserId()).thenReturn(mUserId);
 
         ThemeWallpaperManager themeWallpaperManager = new ThemeWallpaperManager(mMockWmi);
-        ThemeSettingsManager themeSettingsManager = new ThemeSettingsManager(themeWallpaperManager);
         SystemPropertiesReader systemPropertiesReader = new SystemPropertiesReader() {
             @NonNull
             @Override
@@ -139,16 +144,20 @@ public class ThemeBinderServiceTests {
                 return mHardwareColorRule.color;
             }
         };
+        ThemeSettingsManager themeSettingsManager = new ThemeSettingsManager(themeWallpaperManager,
+                systemPropertiesReader, mHardwareColorRule.options);
         mSchedulerExecutor = new FakeScheduledExecutorService();
         mThemeStateManager = new ThemeStateManager(context, mSchedulerExecutor,
                 Platform.PHONE, SpecVersion.SPEC_2025);
         mThemeStateManager.onServicesReady();
-        mInternal = new ThemeManagerInternal(context, themeSettingsManager,
-                systemPropertiesReader, mThemeStateManager, mOverlayHelper,
-                Platform.PHONE, SpecVersion.SPEC_2025);
+        mInternal = new ThemeManagerImpl(context, themeSettingsManager,
+                mThemeStateManager, mOverlayHelper, Platform.PHONE, SpecVersion.SPEC_2025) {
+            @Override
+            public void onBootAnimationDismissing() {
+            }
+        };
         mUnderTest = new ThemeBinderService(context, mInternal);
-        mDefaultSettings = themeSettingsManager.createDefaultThemeSettings(context.getResources(),
-                systemPropertiesReader, mUserId);
+        mDefaultSettings = themeSettingsManager.createDefaultThemeSettings(mUserId);
     }
 
     @Test

@@ -23,7 +23,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -64,7 +63,7 @@ import org.mockito.MockitoAnnotations;
 
 @RunWith(AndroidJUnit4.class)
 @HardwareColors(color = "", options = {"*|TONAL_SPOT|#00FF00"})
-public class ThemeManagerInternalTests {
+public class ThemeManagerImplTests {
     @Rule
     public final HardwareColorRule mHardwareColorRule = new HardwareColorRule();
 
@@ -81,7 +80,7 @@ public class ThemeManagerInternalTests {
     };
 
     private final int mUserId = 0;
-    private ThemeManagerInternal mUnderTest;
+    private ThemeManagerImpl mUnderTest;
     private TestableContext mContext;
     private ThemeSettingsManager mThemeSettingsManager;
 
@@ -126,7 +125,8 @@ public class ThemeManagerInternalTests {
         Settings.Secure.putStringForUser(mContext.getContentResolver(),
                 Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, null, mUserId);
 
-        when(mUserManager.getProfileParentId(eq(mUserId))).thenReturn(mUserId);
+        when(mUserManager.getProfileParentId(anyInt())).thenAnswer(
+                invocation -> invocation.getArgument(0));
         when(mUserManager.getProfileIds(anyInt(), anyBoolean())).thenAnswer(invocation -> {
             int requestedUserId = invocation.getArgument(0);
             return new int[]{requestedUserId};
@@ -134,13 +134,20 @@ public class ThemeManagerInternalTests {
 
         ThemeWallpaperManager themeWallpaperManager = new ThemeWallpaperManager(
                 mWallpaperManagerInternal);
-        mThemeSettingsManager = new ThemeSettingsManager(themeWallpaperManager);
+        mThemeSettingsManager = new ThemeSettingsManager(themeWallpaperManager,
+                mHardwareColorRule.sysPropReader, mHardwareColorRule.options);
         mSchedulerExecutor = new FakeScheduledExecutorService();
+
+        // Use real objects instead of spies to avoid IllegalAccessError on package-private members
         mStateManager = new ThemeStateManager(mContext, mSchedulerExecutor,
                 Platform.PHONE, SpecVersion.SPEC_2025);
-        mUnderTest = new ThemeManagerInternal(mContext, mThemeSettingsManager,
-                mHardwareColorRule.sysPropReader, mStateManager, mOverlayHelper,
-                Platform.PHONE, SpecVersion.SPEC_2025);
+        mUnderTest = new ThemeManagerImpl(mContext, mThemeSettingsManager,
+                mStateManager, mOverlayHelper, Platform.PHONE, SpecVersion.SPEC_2025) {
+            @Override
+            public void onBootAnimationDismissing() {
+            }
+        };
+
         mStateManager.onServicesReady();
     }
 
@@ -228,7 +235,7 @@ public class ThemeManagerInternalTests {
         final ThemeSettings[] returnedOldSettings = {null};
         final ThemeSettings[] returnedNewSettings = {null};
 
-        // Set an initial theme setting. This also updates the internal cache.
+        // Set an initial theme setting.
         mUnderTest.updateThemeSettings(mUserId, oldPayload);
 
         boolean didRegister = mUnderTest.registerThemeSettingsCallback(mUserId,
@@ -318,8 +325,7 @@ public class ThemeManagerInternalTests {
         when(mWallpaperManagerInternal.getWallpaperColors(anyInt(), anyInt()))
                 .thenReturn(wallpaperColors);
 
-        ThemeSettings expectedDefault = mThemeSettingsManager.createDefaultThemeSettings(
-                mContext.getResources(), mHardwareColorRule.sysPropReader, mUserId);
+        ThemeSettings expectedDefault = mThemeSettingsManager.createDefaultThemeSettings(mUserId);
         ThemeSettings settings = mUnderTest.getThemeSettingsOrDefault(mUserId);
 
         assertThat(settings.themeStyle()).isEqualTo(expectedDefault.themeStyle());
@@ -427,4 +433,6 @@ public class ThemeManagerInternalTests {
 
         assertThat(overlay).isNotNull();
     }
+
+
 }
