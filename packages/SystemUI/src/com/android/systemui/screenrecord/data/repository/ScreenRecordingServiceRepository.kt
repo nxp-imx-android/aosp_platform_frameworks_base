@@ -24,6 +24,7 @@ import android.graphics.drawable.Icon
 import android.media.projection.StopReason
 import android.net.Uri
 import android.os.IBinder
+import android.os.RemoteException
 import android.util.Log
 import android.view.Display
 import androidx.annotation.VisibleForTesting
@@ -71,6 +72,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 
 private val startingStatusUpdateInterval: Duration = 1.seconds
+private const val TAG = "ScreenRecordingServiceRepository"
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @SysUISingleton
@@ -112,7 +114,7 @@ constructor(
                 if (currentIsServiceBound) bindService() else flowOf(null)
             }
             .pairwiseBy { old: IScreenRecordingService?, new: IScreenRecordingService? ->
-                old?.setCallback(null)
+                old?.safeBinderCall { setCallback(null) }
                 if (new == null) {
                     // The service died. Update isServiceBound to match its state
                     isServiceBound.value = false
@@ -124,7 +126,9 @@ constructor(
                         }
                     }
                 } else {
-                    new.setCallback(serviceCallback)
+                    if (!new.safeBinderCall { setCallback(serviceCallback) }) {
+                        isServiceBound.value = false
+                    }
                 }
                 new
             }
@@ -208,7 +212,7 @@ constructor(
                     }
                 }
             }
-            .catch { Log.e("ScreenRecordingServiceInteractor", "Couldn't reach the service", it) }
+            .catch { Log.e(TAG, "Couldn't reach the service", it) }
             .launchInTraced("ScreenRecordingServiceInteractor#_status", coroutineScope)
     }
 
@@ -356,4 +360,21 @@ private fun <T> countDownFlow(
     }
     emit(onTick(0.milliseconds))
     onFinished()
+}
+
+/**
+ * Executes an IPC call safely, catching [RemoteException]. Adding this try-catch to fix
+ * b/483091461.
+ *
+ * @return true if the call succeeded, false if a RemoteException occurred or the object was null.
+ */
+private inline fun <T> T.safeBinderCall(block: T.() -> Unit): Boolean {
+    if (this == null) return false
+    return try {
+        block()
+        true
+    } catch (e: RemoteException) {
+        Log.e(TAG, "Binder process died during call", e)
+        false
+    }
 }
