@@ -53855,6 +53855,7 @@ package android.view {
     field public static final int KEYCODE_CLOSE = 321; // 0x141
     field public static final int KEYCODE_COMMA = 55; // 0x37
     field public static final int KEYCODE_CONTACTS = 207; // 0xcf
+    field @FlaggedApi("com.android.hardware.input.enable_new_26q2_keycodes") public static final int KEYCODE_CONTEXTUAL_SEARCH = 339; // 0x153
     field public static final int KEYCODE_COPY = 278; // 0x116
     field public static final int KEYCODE_CTRL_LEFT = 113; // 0x71
     field public static final int KEYCODE_CTRL_RIGHT = 114; // 0x72

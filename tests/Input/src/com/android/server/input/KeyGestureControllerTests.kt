@@ -509,6 +509,7 @@ class KeyGestureControllerTests {
                 KeyEvent.KEYCODE_LOCK,
                 KeyEvent.KEYCODE_FULLSCREEN,
                 KeyEvent.KEYCODE_ACCESSIBILITY,
+                KeyEvent.KEYCODE_CONTEXTUAL_SEARCH,
             )
 
         var sentToApp = 0

@@ -369,6 +369,14 @@ object KeyGestureTestData {
                 KeyEvent.META_META_ON,
                 intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
             ),
+            KeyGestureData(
+                "CONTEXTUAL_SEARCH -> Contextual Search",
+                intArrayOf(KeyEvent.KEYCODE_CONTEXTUAL_SEARCH),
+                KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH,
+                intArrayOf(KeyEvent.KEYCODE_CONTEXTUAL_SEARCH),
+                0,
+                intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
+            ),
         )
 
     // All Key gestures that can be captured by the focused window (and should not happen in
