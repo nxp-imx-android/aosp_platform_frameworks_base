@@ -2591,11 +2591,11 @@ package android.app.contextualsearch {
     field @NonNull public static final android.os.Parcelable.Creator<android.app.contextualsearch.CallbackToken> CREATOR;
   }
 
-  @FlaggedApi("android.app.contextualsearch.flags.config_parameters") public final class ContextualSearchConfig implements android.os.Parcelable {
+  public final class ContextualSearchConfig implements android.os.Parcelable {
     method public int describeContents();
     method public int getDisplayId();
     method @NonNull public android.os.Bundle getIntentExtras();
-    method @FlaggedApi("android.app.contextualsearch.flags.on_demand_screenshot_and_assist_state") public int getLaunchFlags();
+    method public int getLaunchFlags();
     method @Nullable public android.graphics.Rect getSourceBounds();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.app.contextualsearch.ContextualSearchConfig> CREATOR;
@@ -2607,7 +2607,7 @@ package android.app.contextualsearch {
     method @NonNull public android.app.contextualsearch.ContextualSearchConfig build();
     method @NonNull public android.app.contextualsearch.ContextualSearchConfig.Builder setDisplayId(int);
     method @NonNull public android.app.contextualsearch.ContextualSearchConfig.Builder setIntentExtras(@Nullable android.os.Bundle);
-    method @FlaggedApi("android.app.contextualsearch.flags.on_demand_screenshot_and_assist_state") @NonNull public android.app.contextualsearch.ContextualSearchConfig.Builder setLaunchFlags(int);
+    method @NonNull public android.app.contextualsearch.ContextualSearchConfig.Builder setLaunchFlags(int);
     method @NonNull public android.app.contextualsearch.ContextualSearchConfig.Builder setSourceBounds(@Nullable android.graphics.Rect);
   }
 
@@ -2616,7 +2616,7 @@ package android.app.contextualsearch {
     method @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXTUAL_SEARCH) public void startContextualSearch(int);
     method @FlaggedApi("android.app.contextualsearch.flags.config_parameters") @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXTUAL_SEARCH) public void startContextualSearch(int, @Nullable android.app.contextualsearch.ContextualSearchConfig);
     method @FlaggedApi("android.app.contextualsearch.flags.config_parameters") public void startContextualSearch(@NonNull android.app.Activity, @Nullable android.app.contextualsearch.ContextualSearchConfig);
-    method @FlaggedApi("android.app.contextualsearch.flags.on_demand_screenshot_and_assist_state") public void startContextualSearch(@NonNull android.app.contextualsearch.ContextualSearchConfig);
+    method public void startContextualSearch(@NonNull android.app.contextualsearch.ContextualSearchConfig);
     field public static final String ACTION_LAUNCH_CONTEXTUAL_SEARCH = "android.app.contextualsearch.action.LAUNCH_CONTEXTUAL_SEARCH";
     field @FlaggedApi("com.android.hardware.input.enable_contextual_search_desktop_entrypoints") public static final int ENTRYPOINT_KEYBOARD_SHORTCUT = 11; // 0xb
     field public static final int ENTRYPOINT_LONG_PRESS_HOME = 2; // 0x2
