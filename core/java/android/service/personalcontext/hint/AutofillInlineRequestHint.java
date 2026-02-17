@@ -35,6 +35,8 @@ import android.service.autofill.augmented.FillRequest;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.PersonalContextManager;
 import android.service.personalcontext.Token;
+import android.service.personalcontext.hint.autofill.AugmentedAutofillProxy;
+import android.service.personalcontext.hint.autofill.AutofillInlineRequestHintConsumer;
 import android.view.autofill.AutofillId;
 import android.view.autofill.AutofillValue;
 import android.view.autofill.IAugmentedAutofillManagerClient;
@@ -293,26 +295,6 @@ public class AutofillInlineRequestHint extends ContextHint {
     }
 
     /**
-     * Interface that abstracts the communication with the augmented autofill service.
-     *
-     * @hide
-     */
-    @TestApi
-    public interface AugmentedAutofillProxy {
-        /** Returns the {@link AssistStructure.ViewNode} for the node focused by autofill. */
-        @NonNull
-        AssistStructure.ViewNode getFocusedViewNode(@NonNull AutofillId focusedId);
-
-        /** Returns the coordinates of the input field view focused by autofill. */
-        @NonNull
-        Rect getViewCoordinates(@NonNull AutofillId focusedId);
-
-        /** Returns the binder for the client. */
-        @NonNull
-        IBinder asBinder();
-    }
-
-    /**
      * Proxy for requesting information from the augmented autofill service.
      *
      * <p>This class wraps the {@link IAugmentedAutofillManagerClient} binder, which is provided to
@@ -320,8 +302,8 @@ public class AutofillInlineRequestHint extends ContextHint {
      * sent. This proxy is used by {@link PersonalContextManager} to fetch additional autofill
      * information.
      *
-     * @see PersonalContextManager#getFocusedViewNode(AutofillInlineRequestHint)
-     * @see PersonalContextManager#getViewCoordinates(AutofillInlineRequestHint)
+     * @see AutofillInlineRequestHintConsumer#fetchFocusedViewNode()
+     * @see AutofillInlineRequestHintConsumer#fetchViewCoordinates()
      */
     private static final class AugmentedAutofillProxyImpl implements AugmentedAutofillProxy {
         private final IAugmentedAutofillManagerClient mClient;
@@ -335,11 +317,11 @@ public class AutofillInlineRequestHint extends ContextHint {
         }
 
         /**
-         * @see PersonalContextManager#getFocusedViewNode(AutofillInlineRequestHint)
+         * @see AutofillInlineRequestHintConsumer#fetchFocusedViewNode()
          */
         @NonNull
         @Override
-        public AssistStructure.ViewNode getFocusedViewNode(@NonNull AutofillId focusedId) {
+        public AssistStructure.ViewNode fetchFocusedViewNode(@NonNull AutofillId focusedId) {
             try {
                 final AssistStructure.ViewNodeParcelable viewNodeParcelable =
                         mClient.getViewNodeParcelable(focusedId);
@@ -350,11 +332,11 @@ public class AutofillInlineRequestHint extends ContextHint {
         }
 
         /**
-         * @see PersonalContextManager#getViewCoordinates(AutofillInlineRequestHint)
+         * @see AutofillInlineRequestHintConsumer#fetchViewCoordinates()
          */
         @NonNull
         @Override
-        public Rect getViewCoordinates(@NonNull AutofillId focusedId) {
+        public Rect fetchViewCoordinates(@NonNull AutofillId focusedId) {
             try {
                 return mClient.getViewCoordinates(focusedId);
             } catch (RemoteException e) {
