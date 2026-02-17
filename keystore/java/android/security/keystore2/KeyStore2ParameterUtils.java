@@ -66,10 +66,45 @@ public final class KeyStore2ParameterUtils {
      * @return An instance of {@link KeyParameter}.
      * @hide
      */
-    // TODO(b/462036047): Move logic from KeyStore2MakeEnumTagLatest to this function once KeyMint
-    // v5 is frozen.
     static @NonNull KeyParameter makeEnum(int tag, int v) {
-        return KeyStore2MakeEnumTag.makeEnum(tag, v);
+        KeyParameter kp = new KeyParameter();
+        kp.tag = tag;
+        switch (tag) {
+            case Tag.PURPOSE:
+                kp.value = KeyParameterValue.keyPurpose(v);
+                break;
+            case Tag.ALGORITHM:
+                kp.value = KeyParameterValue.algorithm(v);
+                break;
+            case Tag.BLOCK_MODE:
+                kp.value = KeyParameterValue.blockMode(v);
+                break;
+            case Tag.DIGEST:
+            case Tag.RSA_OAEP_MGF_DIGEST:
+                kp.value = KeyParameterValue.digest(v);
+                break;
+            case Tag.EC_CURVE:
+                kp.value = KeyParameterValue.ecCurve(v);
+                break;
+            case Tag.ORIGIN:
+                kp.value = KeyParameterValue.origin(v);
+                break;
+            case Tag.PADDING:
+                kp.value = KeyParameterValue.paddingMode(v);
+                break;
+            case Tag.USER_AUTH_TYPE:
+                kp.value = KeyParameterValue.hardwareAuthenticatorType(v);
+                break;
+            case Tag.HARDWARE_TYPE:
+                kp.value = KeyParameterValue.securityLevel(v);
+                break;
+            case Tag.ML_DSA_VARIANT:
+                kp.value = KeyParameterValue.mlDsaVariant(v);
+                break;
+            default:
+                throw new IllegalArgumentException("Not an enum or repeatable enum tag: " + tag);
+        }
+        return kp;
     }
 
     /**
