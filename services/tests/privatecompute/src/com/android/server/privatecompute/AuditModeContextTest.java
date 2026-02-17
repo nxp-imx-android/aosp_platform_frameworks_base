@@ -17,8 +17,6 @@
 package com.android.server.privatecompute;
 
 import static android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT;
-import static com.android.server.privatecompute.AuditLogFileManager.MAX_FILES;
-import static com.android.server.privatecompute.AuditLogInMemoryBuffer.MAX_SIZE_BYTES;
 import static com.android.server.privatecompute.AuditModeTestUtils.assertEqualsToTestBundle;
 import static com.android.server.privatecompute.AuditModeTestUtils.getTestBundle;
 import static com.android.server.privatecompute.AuditModeTestUtils.readAuditLogFileFromFile;
@@ -27,10 +25,12 @@ import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.util.concurrent.MoreExecutors.newDirectExecutorService;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
+import static org.mockito.Mockito.when;
 
 import android.os.PersistableBundle;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import androidx.test.runner.AndroidJUnit4;
+import com.android.server.privatecompute.AuditModeContext.Injector;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -56,20 +56,27 @@ import org.mockito.junit.MockitoRule;
 public class AuditModeContextTest {
 
     private static final String TEST_PACKAGE_NAME = "test_package";
+    private static final int MAX_FILES = 3;
+    private static final int MAX_SIZE_KILOBYTES = 1 * 1024; // 1 MB, otherwise the test is slow.
 
     private AuditModeContext mAuditModeContext;
 
-    @Rule public MockitoRule mMockitoRule = MockitoJUnit.rule();
+    @Rule(order = 0) public MockitoRule mMockitoRule = MockitoJUnit.rule();
 
-    @Rule public TemporaryFolder mTemporaryFolder = new TemporaryFolder();
+    @Rule(order = 1) public TemporaryFolder mTemporaryFolder = new TemporaryFolder();
+
+    @Mock private Injector mInjector;
 
     @Before
     public void setUp() {
+        when(mInjector.auditModeLogFileMaxSizeKb()).thenReturn(MAX_SIZE_KILOBYTES);
+        when(mInjector.auditModeMaxLogFiles()).thenReturn(MAX_FILES);
         mAuditModeContext =
                 new AuditModeContext(
                         newDirectExecutorService(),
                         newDirectExecutorService(),
-                        mTemporaryFolder.getRoot());
+                        mTemporaryFolder.getRoot(),
+                        mInjector);
     }
 
     @Test
@@ -93,7 +100,7 @@ public class AuditModeContextTest {
         PersistableBundle testBundle = getTestBundle();
         AuditLogEntry entry = new AuditLogEntry(testBundle, 234L, TEST_PACKAGE_NAME, 123);
         int entrySize = entry.toByteArray().length;
-        int nEntriesToWrite = (int) Math.floor(MAX_SIZE_BYTES / (double) entrySize);
+        int nEntriesToWrite = (int) Math.floor(1024 * MAX_SIZE_KILOBYTES / (double) entrySize);
         for (int i = 0; i < nEntriesToWrite; i++) {
             mAuditModeContext.writeToAuditLog(testBundle, TEST_PACKAGE_NAME);
         }
@@ -111,7 +118,7 @@ public class AuditModeContextTest {
         PersistableBundle testBundle = getTestBundle();
         AuditLogEntry entry = new AuditLogEntry(testBundle, 234L, TEST_PACKAGE_NAME, 123);
         int entrySize = entry.toByteArray().length;
-        int nEntriesToWrite = (int) Math.floor(MAX_SIZE_BYTES / (double) entrySize);
+        int nEntriesToWrite = (int) Math.floor(1024 * MAX_SIZE_KILOBYTES / (double) entrySize);
         for (int i = 0; i < nEntriesToWrite; i++) {
             mAuditModeContext.writeToAuditLog(testBundle, TEST_PACKAGE_NAME);
         }
@@ -130,13 +137,16 @@ public class AuditModeContextTest {
         File newFolder = mTemporaryFolder.newFolder();
         AuditModeContext auditModeContext =
                 new AuditModeContext(
-                        newDirectExecutorService(), newDirectExecutorService(), newFolder);
+                        newDirectExecutorService(),
+                        newDirectExecutorService(),
+                        newFolder,
+                        mInjector);
         PersistableBundle testBundle = getTestBundle();
         File file0 = auditModeContext.getCurrentAuditLogFile();
         // This creates MAX_FILES files.
         AuditLogEntry entry = new AuditLogEntry(testBundle, 234L, TEST_PACKAGE_NAME, 123);
         int entrySize = entry.toByteArray().length;
-        int nEntriesToWrite = (int) Math.floor(MAX_SIZE_BYTES / (double) entrySize);
+        int nEntriesToWrite = (int) Math.floor(1024 * MAX_SIZE_KILOBYTES / (double) entrySize);
         for (int i = 0; i < MAX_FILES * nEntriesToWrite; i++) {
             auditModeContext.writeToAuditLog(testBundle, TEST_PACKAGE_NAME);
         }
@@ -174,7 +184,7 @@ public class AuditModeContextTest {
         PersistableBundle testBundle = getTestBundle();
         AuditLogEntry entry = new AuditLogEntry(testBundle, 234L, TEST_PACKAGE_NAME, 123);
         int entrySize = entry.toByteArray().length;
-        int nEntriesToWrite = (int) Math.floor(MAX_SIZE_BYTES / (double) entrySize);
+        int nEntriesToWrite = (int) Math.floor(1024 * MAX_SIZE_KILOBYTES / (double) entrySize);
         for (int i = 0; i < nEntriesToWrite; i++) {
             mAuditModeContext.writeToAuditLog(testBundle, TEST_PACKAGE_NAME);
         }
@@ -222,7 +232,7 @@ public class AuditModeContextTest {
         mAuditModeContext.stopAuditing(); // flushes 1 log entry to disk
         AuditLogEntry entry = new AuditLogEntry(testBundle, 234L, TEST_PACKAGE_NAME, 123);
         int entrySize = entry.toByteArray().length;
-        int nEntriesToWrite = (int) Math.floor(MAX_SIZE_BYTES / (double) entrySize);
+        int nEntriesToWrite = (int) Math.floor(1024 * MAX_SIZE_KILOBYTES / (double) entrySize);
 
         // nEntriesToWrite writes, would trigger a write if not for the stopAuditing()
         for (int i = 0; i < nEntriesToWrite; i++) {
@@ -243,7 +253,7 @@ public class AuditModeContextTest {
         ExecutorService writerExecutor = AuditModeContext.getDiskWriterExecutorService();
         mAuditModeContext =
                 new AuditModeContext(
-                        serializerExecutor, writerExecutor, mTemporaryFolder.getRoot());
+                        serializerExecutor, writerExecutor, mTemporaryFolder.getRoot(), mInjector);
         mAuditModeContext.writeToAuditLog(getTestBundle(), TEST_PACKAGE_NAME);
         serializerExecutor.awaitTermination(10, TimeUnit.SECONDS); // Wait for the pending tasks.
         writerExecutor.awaitTermination(10, TimeUnit.SECONDS); // Wait for the pending write.
@@ -268,7 +278,7 @@ public class AuditModeContextTest {
         ExecutorService writerExecutor = AuditModeContext.getDiskWriterExecutorService();
         mAuditModeContext =
                 new AuditModeContext(
-                        serializerExecutor, writerExecutor, mTemporaryFolder.getRoot());
+                        serializerExecutor, writerExecutor, mTemporaryFolder.getRoot(), mInjector);
         CountDownLatch slowTaskStarted = new CountDownLatch(1);
         CountDownLatch allowSlowTaskToFinish = new CountDownLatch(1);
         serializerExecutor.execute( // Add a slow task to the serializerExecutor
@@ -285,7 +295,7 @@ public class AuditModeContextTest {
         PersistableBundle testBundle = getTestBundle();
         AuditLogEntry entry = new AuditLogEntry(testBundle, 234L, TEST_PACKAGE_NAME, 123);
         int entrySize = entry.toByteArray().length;
-        int nEntriesToWrite = (int) Math.floor(MAX_SIZE_BYTES / (double) entrySize);
+        int nEntriesToWrite = (int) Math.floor(1024 * MAX_SIZE_KILOBYTES / (double) entrySize);
         for (int i = 0; i < nEntriesToWrite; i++) {
             mAuditModeContext.writeToAuditLog(testBundle, TEST_PACKAGE_NAME);
         }

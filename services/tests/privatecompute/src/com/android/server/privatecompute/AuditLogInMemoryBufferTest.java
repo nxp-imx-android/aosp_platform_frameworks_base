@@ -17,7 +17,6 @@
 package com.android.server.privatecompute;
 
 import static android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT;
-import static com.android.server.privatecompute.AuditLogInMemoryBuffer.MAX_SIZE_BYTES;
 import static com.android.server.privatecompute.AuditModeTestUtils.TEST_PACKAGE_NAME;
 import static com.android.server.privatecompute.AuditModeTestUtils.TEST_TIMESTAMP;
 import static com.android.server.privatecompute.AuditModeTestUtils.TEST_UID;
@@ -26,27 +25,44 @@ import static com.android.server.privatecompute.AuditModeTestUtils.getTestEntry;
 import static com.android.server.privatecompute.AuditModeTestUtils.readAuditLogFileFromFile;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.when;
 
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import androidx.test.runner.AndroidJUnit4;
+import com.android.server.privatecompute.AuditModeContext.Injector;
 import java.io.File;
 import java.util.List;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
 /** Unit tests for {@link AuditLogInMemoryBufferTest}. */
 @RunWith(AndroidJUnit4.class)
 @RequiresFlagsEnabled(FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
 public class AuditLogInMemoryBufferTest {
 
-    @Rule public TemporaryFolder mTemporaryFolder = new TemporaryFolder();
+    private static final int MAX_SIZE_KILOBYTES = 10 * 1024; // 10 MB
+
+    @Rule(order = 0) public final MockitoRule mockito = MockitoJUnit.rule();
+
+    @Rule(order = 1) public TemporaryFolder mTemporaryFolder = new TemporaryFolder();
+
+    @Mock private Injector mInjector;
+
+    @Before
+    public void setUp() {
+        when(mInjector.auditModeLogFileMaxSizeKb()).thenReturn(MAX_SIZE_KILOBYTES);
+    }
 
     @Test
     public void testAuditLogInMemoryBuffer_add_success() throws Exception {
         File file = mTemporaryFolder.newFile();
-        AuditLogInMemoryBuffer buffer = new AuditLogInMemoryBuffer(file);
+        AuditLogInMemoryBuffer buffer = new AuditLogInMemoryBuffer(file, mInjector);
         byte[] entry = getTestEntry().toByteArray();
 
         assertThat(buffer.add(entry)).isTrue();
@@ -57,8 +73,8 @@ public class AuditLogInMemoryBufferTest {
         File file = mTemporaryFolder.newFile();
         byte[] entry = getTestEntry().toByteArray();
         int writtenBytes = 0;
-        AuditLogInMemoryBuffer buffer = new AuditLogInMemoryBuffer(file);
-        while (writtenBytes < MAX_SIZE_BYTES - entry.length) {
+        AuditLogInMemoryBuffer buffer = new AuditLogInMemoryBuffer(file, mInjector);
+        while (writtenBytes < 1024 * MAX_SIZE_KILOBYTES - entry.length) {
             assertThat(buffer.add(entry)).isTrue();
             writtenBytes += entry.length;
         }
@@ -68,7 +84,7 @@ public class AuditLogInMemoryBufferTest {
     @Test
     public void testAuditLogInMemoryBuffer_writeToFile_writes() throws Exception {
         File file = mTemporaryFolder.newFile();
-        AuditLogInMemoryBuffer buffer = new AuditLogInMemoryBuffer(file);
+        AuditLogInMemoryBuffer buffer = new AuditLogInMemoryBuffer(file, mInjector);
         buffer.add(getTestEntry().toByteArray());
 
         buffer.writeToFile();
@@ -87,7 +103,7 @@ public class AuditLogInMemoryBufferTest {
     @Test
     public void testAuditLogInMemoryBuffer_add_cantAddAfterWriteToFile() throws Exception {
         File file = mTemporaryFolder.newFile();
-        AuditLogInMemoryBuffer buffer = new AuditLogInMemoryBuffer(file);
+        AuditLogInMemoryBuffer buffer = new AuditLogInMemoryBuffer(file, mInjector);
         buffer.add(getTestEntry().toByteArray());
         buffer.writeToFile();
 

@@ -16,9 +16,11 @@
 
 package com.android.server.privatecompute;
 
+import android.sysprop.PccProperties;
 import android.util.Log;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.server.privatecompute.AuditModeContext.Injector;
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -34,10 +36,6 @@ import java.util.List;
  */
 @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
 class AuditLogInMemoryBuffer {
-
-    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
-    final static int MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
-
     private final int QUEUE_INITIAL_CAPACITY = 1000; // Pointers to a byte array.
 
     private static final String TAG = "PccSandboxManagerServiceAuditMode.AuditLogInMemoryBuffer";
@@ -46,6 +44,7 @@ class AuditLogInMemoryBuffer {
     final File mAuditLogFile;
 
     private final Object mLock = new Object();
+    private final Injector mInjector;
 
     @GuardedBy("mLock")
     private final List<byte[]> mAuditLogQueue = new ArrayList<>(QUEUE_INITIAL_CAPACITY);
@@ -58,8 +57,9 @@ class AuditLogInMemoryBuffer {
     @GuardedBy("mLock")
     private int mInMemoryBufferSizeBytes = 0;
 
-    AuditLogInMemoryBuffer(File auditLogFile) {
+    AuditLogInMemoryBuffer(File auditLogFile, Injector injector) {
         mAuditLogFile = auditLogFile;
+        mInjector = injector;
     }
 
     /**
@@ -71,7 +71,8 @@ class AuditLogInMemoryBuffer {
             if (mFinalized) {
                 return false;
             }
-            if (mInMemoryBufferSizeBytes + data.length >= MAX_SIZE_BYTES) {
+            if (mInMemoryBufferSizeBytes + data.length
+                    >= this.mInjector.auditModeLogFileMaxSizeKb() * 1024) {
                 return false;
             }
             mInMemoryBufferSizeBytes += data.length;
