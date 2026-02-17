@@ -56,6 +56,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -172,10 +173,12 @@ private fun ExpressiveActionButton(
         // The entire column is made clickable to provide a single semantic node for accessibility.
         // This ensures TalkBack announces the button's state correctly (e.g., "disabled").
         // NOTE: This makes the component clickable even when visually disabled.
-        modifier = modifier.clickable(onClick = actionButton.onClick)
-            .thenIf(!actionButton.enabled) {
-                modifier.contentDescription(disabledContentDescription)
-            }
+        modifier = modifier.clickable(
+            onClick = actionButton.onClick,
+            role = Role.Button,
+        ).thenIf(!actionButton.enabled) {
+            modifier.contentDescription(disabledContentDescription)
+        }
     ) {
         IconButton(actionButton)
         Spacer(Modifier.height(SettingsSpace.extraSmall3))
