@@ -618,7 +618,7 @@
     <string name="zen_mode_starred_contacts_empty_name" msgid="933552939706125937">"(Walang pangalan)"</string>
     <string name="time_unit_just_now" msgid="3006134267292728099">"Ngayon lang"</string>
     <string name="media_transfer_this_device_name" msgid="2357329267148436433">"Ang teleponong ito"</string>
-    <string name="media_transfer_this_device_name_tablet" msgid="2975593806278422086">"Ang tablet na ito"</string>
+    <string name="media_transfer_this_device_name_tablet" msgid="2975593806278422086">"Tablet na ito"</string>
     <string name="media_transfer_this_device_name_desktop" msgid="7912386128141470452">"Sa computer na ito (internal)"</string>
     <string name="media_transfer_this_device_name_tv" msgid="8508713779441163887">"Ang TV na ito"</string>
     <string name="media_transfer_dock_speaker_device_name" msgid="2856219597113881950">"Speaker ng dock"</string>

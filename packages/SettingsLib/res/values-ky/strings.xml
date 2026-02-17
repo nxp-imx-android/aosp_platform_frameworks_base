@@ -146,7 +146,7 @@
     <string name="bluetooth_profile_headset" msgid="5395952236133499331">"Телефон чалуулар"</string>
     <string name="bluetooth_profile_opp" msgid="6692618568149493430">"Файл алмашуу"</string>
     <string name="bluetooth_profile_hid" msgid="2969922922664315866">"Киргизүү түзмөгү"</string>
-    <string name="bluetooth_profile_pan" msgid="1006235139308318188">"Интернетке мүмкүнчүлүк алуу"</string>
+    <string name="bluetooth_profile_pan" msgid="1006235139308318188">"Интернетке чыгуу"</string>
     <string name="bluetooth_profile_pbap" msgid="2103406516858653017">"Байланыштар менен чалуулар таржымалына мүмкүнчүлүк берүү"</string>
     <string name="bluetooth_profile_pbap_summary" msgid="402819589201138227">"Маалымат чалуу билдирмелери жана башкалар үчүн колдонулат"</string>
     <string name="bluetooth_profile_pan_nap" msgid="7871974753822470050">"Интернет байланышын бөлүшүү"</string>

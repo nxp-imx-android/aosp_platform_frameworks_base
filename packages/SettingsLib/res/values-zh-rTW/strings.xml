@@ -368,7 +368,7 @@
     <string name="adb_warning_message" msgid="8145270656419669221">"USB 偵錯是針對應用程式開發而設計的功能，可讓你複製電腦和裝置中的資料、不需經由通知即可在裝置上安裝應用程式，以及讀取記錄資料。"</string>
     <string name="adbwifi_warning_title" msgid="727104571653031865">"要啟用無線偵錯嗎？"</string>
     <string name="adbwifi_warning_message" msgid="8005936574322702388">"無線偵錯是針對應用程式開發而設計的功能，可讓你複製電腦和裝置中的資料、不必經由通知即可在裝置上安裝應用程式，以及讀取記錄資料。"</string>
-    <string name="adb_keys_warning_message" msgid="7827514623080777814">"要對先前授權的所有電腦和網路撤銷 adb 偵錯權限嗎？"</string>
+    <string name="adb_keys_warning_message" msgid="7827514623080777814">"要對先前授權的所有電腦和網路撤銷 ADB 偵錯權限嗎？"</string>
     <string name="dev_settings_warning_title" msgid="8251234890169074553">"允許開發設定？"</string>
     <string name="dev_settings_warning_message" msgid="37741686486073668">"這些設定僅供開發之用，可能導致你的裝置及裝置中的應用程式毀損或運作異常。"</string>
     <string name="verify_apps_over_usb_title" msgid="6031809675604442636">"透過 USB 驗證應用程式"</string>

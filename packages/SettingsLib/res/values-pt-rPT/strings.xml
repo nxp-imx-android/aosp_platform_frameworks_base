@@ -540,7 +540,7 @@
     <string name="battery_info_status_charging_wireless" msgid="8924722966861282197">"A carregar sem fios"</string>
     <string name="battery_info_status_charging_dock" msgid="8573274094093364791">"A carregar"</string>
     <string name="battery_info_status_discharging" msgid="6962689305413556485">"Não está a carregar"</string>
-    <string name="battery_info_status_not_charging" msgid="1103084691314264664">"Ligado, mas não está a carregar"</string>
+    <string name="battery_info_status_not_charging" msgid="1103084691314264664">"Carregador ligado, mas não está a carregar"</string>
     <string name="battery_info_status_full" msgid="1339002294876531312">"Bateria carregada"</string>
     <string name="battery_info_status_full_charged" msgid="3536054261505567948">"Totalmente carregada"</string>
     <string name="battery_info_status_charging_on_hold" msgid="6364355145521694438">"Carregamento em espera"</string>
