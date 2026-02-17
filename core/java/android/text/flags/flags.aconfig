@@ -267,10 +267,13 @@ flag {
 }
 
 flag {
-  name: "lazy_hyphenator_init"
+  name: "lazy_hyphenator_mmap_init"
   namespace: "text"
   description: "Initialize hyphenator lazily"
   bug: "473856914"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
 }
 
 flag {
