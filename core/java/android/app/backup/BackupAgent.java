@@ -1336,6 +1336,10 @@ public abstract class BackupAgent extends ContextWrapper {
          */
         private static final String BACKUP_DATA_CACHE_FILENAME = "backup_data.cache";
 
+        /* This is the name of the directory used to cache backup data for delayed restore.
+         */
+        private static final String BACKUP_DATA_CACHE_DIR = "backup_cache";
+
         @Override
         public void doBackup(
                 ParcelFileDescriptor oldState,
@@ -1788,7 +1792,7 @@ public abstract class BackupAgent extends ContextWrapper {
         }
 
         private FileInputStream fetchCachedDataForDelayedRestore() {
-            File cacheFile = new File(getFilesDir(), BACKUP_DATA_CACHE_FILENAME);
+            File cacheFile = new File(getBackupCacheDir(), BACKUP_DATA_CACHE_FILENAME);
             if (!cacheFile.exists()) {
                 Log.e(
                         TAG,
@@ -1807,7 +1811,10 @@ public abstract class BackupAgent extends ContextWrapper {
         private void cacheDataForDelayedRestoreIfSupported(@NonNull FileDescriptor data) {
             if (isDelayedRestoreSupported()) {
                 Log.v(TAG, "Caching data as package supports delayed restore.");
-                File cacheFile = new File(getFilesDir(), BACKUP_DATA_CACHE_FILENAME);
+                File cacheFile = new File(getBackupCacheDir(), BACKUP_DATA_CACHE_FILENAME);
+                if (cacheFile.exists()) {
+                    cacheFile.delete();
+                }
                 try (FileInputStream in = new FileInputStream(data);
                         FileOutputStream out = new FileOutputStream(cacheFile)) {
                     FileUtils.copy(in, out);
@@ -1832,9 +1839,18 @@ public abstract class BackupAgent extends ContextWrapper {
             }
         }
 
+        /**
+         * Returns true if the backup agent supports delayed restore by checking if the package has
+         * {@link android.Manifest.permission#SCHEDULE_DELAYED_RESTORE} permission granted.
+         *
+         * <p>Note: PackageManager's BackupAgent is treated as a special case, for which delayed
+         * restore is not supported.
+         */
         private boolean isDelayedRestoreSupported() {
-            return this.getClass().getName()
-                            != "com.android.server.backup.PackageManagerBackupAgent"
+            return !BackupAgent.this
+                            .getClass()
+                            .getName()
+                            .equals("com.android.server.backup.PackageManagerBackupAgent")
                     && getPackageManager()
                                     .checkPermission(
                                             android.Manifest.permission.SCHEDULE_DELAYED_RESTORE,
@@ -1845,7 +1861,7 @@ public abstract class BackupAgent extends ContextWrapper {
         @Override
         public void doDelayedRestoreCachedDataExpired(int token, IBackupManager callbackBinder) {
             try {
-                File cacheFile = new File(getFilesDir(), BACKUP_DATA_CACHE_FILENAME);
+                File cacheFile = new File(getBackupCacheDir(), BACKUP_DATA_CACHE_FILENAME);
                 if (cacheFile.exists()) {
                     cacheFile.delete();
                 }
@@ -1864,6 +1880,16 @@ public abstract class BackupAgent extends ContextWrapper {
                     // we'll time out anyway, so we're safe
                 }
             }
+        }
+
+        /**
+         * Returns the directory where the backup cache file is stored, which is in the cache
+         * directory of the app.
+         */
+        private File getBackupCacheDir() {
+            File cacheDir = new File(getCacheDir(), BACKUP_DATA_CACHE_DIR);
+            cacheDir.mkdirs();
+            return cacheDir;
         }
 
         @Override

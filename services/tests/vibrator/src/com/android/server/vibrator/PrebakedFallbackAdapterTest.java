@@ -31,7 +31,6 @@ import android.os.VibratorInfo;
 import android.os.vibrator.Flags;
 import android.os.vibrator.PrebakedSegment;
 import android.os.vibrator.PrimitiveSegment;
-import android.os.vibrator.RampSegment;
 import android.os.vibrator.StepSegment;
 import android.os.vibrator.VibrationEffectSegment;
 import android.platform.test.annotations.DisableFlags;
@@ -75,9 +74,8 @@ public class PrebakedFallbackAdapterTest {
     @EnableFlags(Flags.FLAG_REMOVE_HIDL_SUPPORT)
     public void testNonPrebakedSegments_keepsListUnchanged() {
         List<VibrationEffectSegment> segments = new ArrayList<>(Arrays.asList(
-                new StepSegment(/* amplitude= */ 0, /* frequencyHz= */ 1, /* duration= */ 10),
-                new RampSegment(/* startAmplitude= */ 0.8f, /* endAmplitude= */ 0.2f,
-                        /* startFrequencyHz= */ 100, /* endFrequencyHz= */ 1, /* duration= */ 20),
+                new StepSegment(/* amplitude= */ 0, /* duration= */ 10),
+                new StepSegment(/* amplitude= */ 0.8f, /* duration= */ 20),
                 new PrimitiveSegment(PRIMITIVE_CLICK, 1f, 100, DELAY_TYPE_PAUSE)));
         List<VibrationEffectSegment> originalSegments = new ArrayList<>(segments);
 
@@ -138,7 +136,7 @@ public class PrebakedFallbackAdapterTest {
 
         List<VibrationEffectSegment> expectedSegments = new ArrayList<>(Arrays.asList(
                 new PrebakedSegment(EFFECT_CLICK, true, VibrationEffect.EFFECT_STRENGTH_LIGHT),
-                new StepSegment(DEFAULT_AMPLITUDE, 0, 10),
+                new StepSegment(DEFAULT_AMPLITUDE, 10),
                 new PrebakedSegment(EFFECT_POP, true, VibrationEffect.EFFECT_STRENGTH_STRONG)));
 
         // Repeat index maintained after replacement
@@ -159,10 +157,10 @@ public class PrebakedFallbackAdapterTest {
 
         List<VibrationEffectSegment> expectedSegments = new ArrayList<>(Arrays.asList(
                 new PrebakedSegment(EFFECT_CLICK, true, VibrationEffect.EFFECT_STRENGTH_LIGHT),
-                new StepSegment(0, 0, 10),
-                new StepSegment(DEFAULT_AMPLITUDE, 0, 10),
-                new StepSegment(0, 0, 10),
-                new StepSegment(DEFAULT_AMPLITUDE, 0, 10),
+                new StepSegment(0, 10),
+                new StepSegment(DEFAULT_AMPLITUDE, 10),
+                new StepSegment(0, 10),
+                new StepSegment(DEFAULT_AMPLITUDE, 10),
                 new PrebakedSegment(EFFECT_POP, true, VibrationEffect.EFFECT_STRENGTH_STRONG)));
 
         // Repeat index maintained after replacement

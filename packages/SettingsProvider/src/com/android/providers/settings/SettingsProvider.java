@@ -6988,16 +6988,26 @@ public class SettingsProvider extends ContentProvider {
                             systemSettings.getSettingLocked(Settings.System.TEXT_SHOW_PASSWORD);
 
                     if (!showPasswordSetting.isNull()) {
-                        String value = showPasswordSetting.getValue();
-                        secureSettings.insertSettingOverrideableByRestoreLocked(
-                                Settings.Secure.TEXT_SHOW_PASSWORD_TOUCH,
-                                value,
-                                null,
-                                true,
-                                SettingsState.SYSTEM_PACKAGE_NAME);
-                        // We don't migrate the value for the PHYSICAL setting as this can be
-                        // considered new. Also some vendors may chose to not expose the physical
-                        // setting at all and we don't want the user to be stuck on these devices.
+                        final String lastUpdatedBy = showPasswordSetting.getPackageName();
+                        if (SettingsState.SYSTEM_PACKAGE_NAME.equals(lastUpdatedBy)) {
+                            // Skip migration and clear setting: it was set by the system during the
+                            // version 230 upgrade, not by the user.
+                            systemSettings.deleteSettingLocked(Settings.System.TEXT_SHOW_PASSWORD);
+                        } else {
+                            // Preserve the user's custom preference for TEXT_SHOW_PASSWORD by
+                            // migrating it to TEXT_SHOW_PASSWORD_TOUCH.
+                            String value = showPasswordSetting.getValue();
+                            secureSettings.insertSettingOverrideableByRestoreLocked(
+                                    Settings.Secure.TEXT_SHOW_PASSWORD_TOUCH,
+                                    value,
+                                    null,
+                                    true,
+                                    SettingsState.SYSTEM_PACKAGE_NAME);
+                            // We don't migrate the value for the PHYSICAL setting as this can be
+                            // considered new. Also some vendors may chose to not expose the
+                            // physical setting at all and we don't want the user to be stuck on
+                            // these devices.
+                        }
                     }
                     currentVersion = 236;
                 }

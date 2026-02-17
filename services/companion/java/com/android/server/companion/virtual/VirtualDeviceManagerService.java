@@ -212,7 +212,7 @@ public class VirtualDeviceManagerService extends SystemService {
         mNativeImpl = new VirtualDeviceManagerNativeImpl();
         mLocalService = new LocalService();
         mComputerControlSessionProcessor =
-                new ComputerControlSessionProcessor(context,
+                new ComputerControlSessionProcessor(context, mLocalService,
                         (token, attributionSource, params) ->
                                 new VirtualDeviceManager.VirtualDevice(context,
                                         mImpl.createLocalVirtualDevice(
@@ -297,10 +297,9 @@ public class VirtualDeviceManagerService extends SystemService {
             Slog.e(TAG, "Failed to find CompanionDeviceManager. No CDM association info "
                     + " will be available.");
         }
-        if (android.companion.virtualdevice.flags.Flags.deviceAwareDisplayPower()) {
-            mStrongAuthTracker = new StrongAuthTracker(getContext());
-            new LockPatternUtils(getContext()).registerStrongAuthTracker(mStrongAuthTracker);
-        }
+
+        mStrongAuthTracker = new StrongAuthTracker(getContext());
+        new LockPatternUtils(getContext()).registerStrongAuthTracker(mStrongAuthTracker);
 
         mComputerControlSessionProcessor.initialize();
     }

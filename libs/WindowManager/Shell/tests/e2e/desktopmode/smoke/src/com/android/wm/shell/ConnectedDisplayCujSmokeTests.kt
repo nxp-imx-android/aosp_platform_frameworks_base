@@ -117,9 +117,7 @@ class ConnectedDisplayCujSmokeTests {
     @Before
     fun setup() {
         Assume.assumeTrue(desktopState.canEnterDesktopMode)
-
         Utils.clearAllRememberedDesktopBounds()
-        browserApp.clearStorage()
 
         // Ensure rotation in launcher.
         tapl.setEnableRotation(true)
@@ -172,15 +170,14 @@ class ConnectedDisplayCujSmokeTests {
         } else {
             DeviceHelpers.waitForObj(
                     By.text(CONNECTED_DEVICES_TEXT),
-                    timeout = UIAUTOMATOR_TIMEOUT,
+                    timeout = UIAUTOMATOR_TIMEOUT
                 ) {
                     "Can't find a connected device on setting"
                 }
                 .click()
             DeviceHelpers.waitForObj(
                     By.text(EXTERNAL_DISPLAY_TEXT),
-                    timeout = UIAUTOMATOR_TIMEOUT,
-                ) {
+                    timeout = UIAUTOMATOR_TIMEOUT) {
                     "Can't find an external display on setting"
                 }
                 .click()
@@ -265,7 +262,6 @@ class ConnectedDisplayCujSmokeTests {
         val externalDisplayId = setupTestDisplayAndWaitForTransitions()
 
         launchAppFromTaskbar(externalDisplayId, browserApp)
-        browserApp.closePopupsIfNeeded(device)
         verifyActivityState(browserApp, WINDOWING_MODE_FREEFORM, externalDisplayId, visible = true)
 
         launchAppFromAllApps(externalDisplayId, clockApp)
@@ -281,7 +277,6 @@ class ConnectedDisplayCujSmokeTests {
         val externalDisplayId = setupTestDisplayAndWaitForTransitions()
 
         launchAppFromTaskbar(externalDisplayId, browserApp)
-        browserApp.closePopupsIfNeeded(device)
         verifyActivityState(browserApp, WINDOWING_MODE_FREEFORM, externalDisplayId, visible = true)
 
         launchAppFromAllApps(externalDisplayId, clockApp)
@@ -317,14 +312,12 @@ class ConnectedDisplayCujSmokeTests {
             browserApp.openAppIntent,
             createActivityOptions(DEFAULT_DISPLAY, WINDOWING_MODE_FULLSCREEN),
         )
-        browserApp.closePopupsIfNeeded(device)
         verifyActivityState(browserApp, WINDOWING_MODE_FULLSCREEN, DEFAULT_DISPLAY, visible = true)
         verifyTaskCount(browserApp, expectedCount = 1)
 
         val externalDisplayId = setupTestDisplayAndWaitForTransitions()
 
         launchAppFromTaskbar(externalDisplayId, browserApp)
-        browserApp.closePopupsIfNeeded(device)
         // TODO(b/418620963) - Check the display id of the app window here.
         verifyTaskCount(browserApp, expectedCount = 1)
     }
@@ -336,14 +329,12 @@ class ConnectedDisplayCujSmokeTests {
     @RequiresDevice
     fun cuj5p() {
         launchAppFromAllApps(DEFAULT_DISPLAY, browserApp)
-        browserApp.closePopupsIfNeeded(device)
         verifyActivityState(browserApp, WINDOWING_MODE_FULLSCREEN, DEFAULT_DISPLAY, visible = true)
         verifyTaskCount(browserApp, expectedCount = 1)
 
         val externalDisplayId = setupTestDisplayAndWaitForTransitions()
 
         launchAppFromTaskbar(externalDisplayId, browserApp)
-        browserApp.closePopupsIfNeeded(device)
         verifyActivityState(browserApp, WINDOWING_MODE_FREEFORM, externalDisplayId, visible = true)
         verifyTaskCount(browserApp, expectedCount = 1)
     }
@@ -405,7 +396,6 @@ class ConnectedDisplayCujSmokeTests {
 
         // Start a freeform app.
         launchAppFromTaskbar(DEFAULT_DISPLAY, browserApp)
-        browserApp.closePopupsIfNeeded(device)
         verifyActivityState(browserApp, WINDOWING_MODE_FREEFORM, DEFAULT_DISPLAY, visible = true)
         verifyActivityState(clockApp, WINDOWING_MODE_FULLSCREEN, DEFAULT_DISPLAY, visible = false)
 
@@ -442,7 +432,6 @@ class ConnectedDisplayCujSmokeTests {
             browserApp.openAppIntent,
             createActivityOptions(externalDisplayId, WINDOWING_MODE_FULLSCREEN),
         )
-        browserApp.closePopupsIfNeeded(device)
         verifyActivityState(
             browserApp,
             WINDOWING_MODE_FULLSCREEN,
@@ -516,17 +505,14 @@ class ConnectedDisplayCujSmokeTests {
     @RequiresDevice
     fun cuj9p() {
         browserApp.launchViaIntent()
-        browserApp.closePopupsIfNeeded(device)
         verifyActivityState(browserApp, WINDOWING_MODE_FULLSCREEN, DEFAULT_DISPLAY, visible = true)
 
         val externalDisplayId = setupTestDisplayAndWaitForTransitions()
 
         launchAppFromTaskbar(externalDisplayId, browserApp)
-        browserApp.closePopupsIfNeeded(device)
         verifyActivityState(browserApp, WINDOWING_MODE_FREEFORM, externalDisplayId, visible = true)
 
         launchAppFromAllApps(DEFAULT_DISPLAY, browserApp)
-        browserApp.closePopupsIfNeeded(device)
         verifyActivityState(browserApp, WINDOWING_MODE_FULLSCREEN, DEFAULT_DISPLAY, visible = true)
     }
 
@@ -540,7 +526,6 @@ class ConnectedDisplayCujSmokeTests {
 
         val externalDisplayId = setupTestDisplayAndWaitForTransitions()
         launchAppFromTaskbar(externalDisplayId, browserApp)
-        browserApp.closePopupsIfNeeded(device)
         verifyActivityState(browserApp, WINDOWING_MODE_FREEFORM, externalDisplayId, visible = true)
 
         // Verify disconnecting a display doesn't crash.

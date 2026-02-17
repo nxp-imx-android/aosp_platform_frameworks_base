@@ -16,6 +16,7 @@
 
 package com.android.wallpaperbackup;
 
+import static android.app.Flags.fixLargeScreenWallpaperCropsOnRestore;
 import static android.app.WallpaperManager.FLAG_LOCK;
 import static android.app.WallpaperManager.FLAG_SYSTEM;
 import static android.app.WallpaperManager.ORIENTATION_LANDSCAPE;
@@ -141,6 +142,7 @@ public class WallpaperBackupAgent extends BackupAgent {
     static final String DEVICE_CONFIG_SECONDARY_HEIGHT = "device_config_secondary_height";
 
     static final float DEFAULT_ACCEPTABLE_PARALLAX = 0.2f;
+    private static final float SIGNIFICANT_ASPECT_RATIO_CHANGE_FACTOR = 1.5f;
 
     // If this file exists, it means we exceeded our quota last time
     private File mQuotaFile;
@@ -806,15 +808,25 @@ public class WallpaperBackupAgent extends BackupAgent {
         boolean rtl = TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())
                 == View.LAYOUT_DIRECTION_RTL;
 
+        // No crops is equivalent to an overall crop of the whole bitmap
+        if (fixLargeScreenWallpaperCropsOnRestore() && cropHints.size() == 0) {
+            cropHints = new SparseArray<>();
+            cropHints.put(ORIENTATION_UNKNOWN, new Rect(0, 0, bitmapSize.x, bitmapSize.y));
+        }
+
         // If the map contains ORIENTATION_UNKNOWN, the map is a singleton and only an overall crop
-        // is specified. Adjust this overall crop based on the largest screens of both devices.
+        // is specified. Interpret it as the crop for the largest screen of the source device.
         Rect totalCropHint = cropHints.get(ORIENTATION_UNKNOWN);
         if (totalCropHint != null) {
-            SparseArray<Rect> result = new SparseArray<>();
-            Rect adjustedTotalCropHint = findNewCropfromOldCrop(totalCropHint,
-                    sourceDeviceDimensions.first, getScreenDimensions(), bitmapSize, rtl);
-            result.put(ORIENTATION_UNKNOWN, adjustedTotalCropHint);
-            return result;
+            if (!fixLargeScreenWallpaperCropsOnRestore()) {
+                SparseArray<Rect> result = new SparseArray<>();
+                Rect adjustedTotalCropHint = findNewCropfromOldCrop(totalCropHint,
+                        sourceDeviceDimensions.first, getScreenDimensions(), bitmapSize, rtl);
+                result.put(ORIENTATION_UNKNOWN, adjustedTotalCropHint);
+                return result;
+            }
+            cropHints = new SparseArray<>();
+            cropHints.put(getOrientation(sourceDeviceDimensions.first), totalCropHint);
         }
 
         boolean hasLargeScreen = false;
@@ -828,23 +840,36 @@ public class WallpaperBackupAgent extends BackupAgent {
         }
 
         SparseArray<Point> allSourceDimensions = new SparseArray<>();
+        Rect largestSourceCrop = null;
+        Point largestSourceCropDisplaySize = null;
         for (Point size: List.of(sourceDeviceDimensions.first, sourceDeviceDimensions.second)) {
             if (size == null || size.x == 0 || size.y == 0) {
                 continue;
             }
-            allSourceDimensions.put(getOrientation(size), size);
+            int orientation = getOrientation(size);
+            allSourceDimensions.put(orientation, size);
             Point rotated = new Point(size.y, size.x);
-            allSourceDimensions.put(getOrientation(rotated), rotated);
+            int rotatedOrientation = getOrientation(rotated);
+            allSourceDimensions.put(rotatedOrientation, rotated);
+            if (largestSourceCrop == null) {
+                largestSourceCrop = cropHints.get(orientation);
+                largestSourceCropDisplaySize = size;
+            }
+            if (largestSourceCrop == null) {
+                largestSourceCrop = cropHints.get(rotatedOrientation);
+                largestSourceCropDisplaySize = rotated;
+            }
         }
 
         SparseArray<Rect> adjustedCropHints = new SparseArray<>();
         for (int i = 0; i < cropHints.size(); i++) {
             int orientation = cropHints.keyAt(i);
 
-            // Drop the LANDSCAPE crop hint unless the device has a large screen.
+            // Don't restore the LANDSCAPE crop hint unless the device has a large screen.
             if (!hasLargeScreen && orientation == ORIENTATION_LANDSCAPE) {
                 continue;
             }
+
             Point currentDimensions = allCurrentDimensions.get(orientation);
             Point sourceDimensions = allSourceDimensions.get(orientation);
             if (currentDimensions == null || sourceDimensions == null) {
@@ -860,6 +885,15 @@ public class WallpaperBackupAgent extends BackupAgent {
             Rect newCrop = findNewCropfromOldCrop(oldCrop, sourceDimensions,
                     currentDimensions, bitmapSize, rtl);
             adjustedCropHints.put(orientation, newCrop);
+        }
+
+        // If we didn't manage to restore any crops, use the largest source crop and restore it
+        // on the largest target display size. This is still better than left-aligning the bitmap.
+        if (fixLargeScreenWallpaperCropsOnRestore() && adjustedCropHints.size() == 0) {
+            Point newLargestScreenSize = getScreenDimensions();
+            Rect newLargestCrop = findNewCropfromOldCrop(largestSourceCrop,
+                    largestSourceCropDisplaySize, newLargestScreenSize, bitmapSize, rtl);
+            adjustedCropHints.put(getOrientation(newLargestScreenSize), newLargestCrop);
         }
         return adjustedCropHints;
     }
@@ -973,14 +1007,15 @@ public class WallpaperBackupAgent extends BackupAgent {
     /**
      * This method adjusts a given crop to match the aspect ratio of a new displaySize. The rules
      * are, in order of priority:
-     * <ul>
+     * <ol>
      *   <li> Preserve the same horizontal center: if the crop needs to be enlarged horizontally,
      *   always add the same amount of width on both sides of the crop.</li>
      *   <li> Do not remove content: when possible, adjust by making the crop wider or taller, not
      *   shorter. Only make the crop shorter when it reaches the border of the image.
      *   <li> Preserve the same vertical center: if the crop needs to be enlarged vertically, add
      *   the same amount of height on both sides when possible.
-     * </ul>
+     * </ol>
+     * One exception: if displaySize is much wider (1.5 factor) than crop, prioritize 2 over 1.
      */
     Rect sameCenter(Point displaySize, Point bitmapSize, Rect crop) {
 
@@ -1048,11 +1083,21 @@ public class WallpaperBackupAgent extends BackupAgent {
             // sides to make sure we preserve the center horizontally.
             int widthToAdd = (int) (crop.height() * screenRatio - crop.width());
 
-            // In this case, the available width is twice the width available on the shorter side
-            int availableWidth = 2 * Math.min(crop.left, bitmapSize.x - crop.right);
+            // Unless the new display size is much wider, preserve the horizontal alignment.
+            boolean preserveHorizontalAlignment = !fixLargeScreenWallpaperCropsOnRestore()
+                    || screenRatio / cropRatio < SIGNIFICANT_ASPECT_RATIO_CHANGE_FACTOR;
+            int availableWidth = preserveHorizontalAlignment
+                    ? 2 * Math.min(crop.left, bitmapSize.x - crop.right)
+                    : bitmapSize.x - crop.width();
             int actualWidthToAdd = Math.min(widthToAdd, availableWidth);
             adjustedCrop.left -= actualWidthToAdd / 2 + actualWidthToAdd % 2;
             adjustedCrop.right += actualWidthToAdd / 2;
+
+            if (adjustedCrop.left < 0) {
+                adjustedCrop.offset(-adjustedCrop.left, 0);
+            } else if (adjustedCrop.right > bitmapSize.x) {
+                adjustedCrop.offset(adjustedCrop.right - bitmapSize.x, 0);
+            }
 
             // If we couldn't add enough width to match the new aspect ratio, remove height
             int heightToRemove = (int) (0.5f + crop.height() - adjustedCrop.width() / screenRatio);

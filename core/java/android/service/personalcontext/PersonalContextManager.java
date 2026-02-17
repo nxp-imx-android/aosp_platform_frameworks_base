@@ -405,7 +405,9 @@ public final class PersonalContextManager {
     }
 
     /**
-     * Instructs the understander to show attribution for the provided insight.
+     * Instructs the understander to show attribution for the provided insight. If the insight does
+     * not have attribution, nothing will happen. This can be checked ahead of the call via
+     * {@link ContextInsight#hasAttribution}.
      *
      * @param insight Insight with attribution information that should be shown to the user.
      */

@@ -20,10 +20,12 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Bundle
+import android.provider.Settings
 import android.widget.ImageView
 import androidx.core.net.toUri
 import androidx.fragment.app.FragmentActivity
 import com.android.wm.shell.R
+import com.google.android.material.progressindicator.CircularProgressIndicator
 
 /**
  * Placeholder activity used during package updates. This activity will get launched in a task going
@@ -34,28 +36,53 @@ class PackageUpdateActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.package_update_activity)
+        setupStaticProgressIndicator()
         createIcon(intent)
+        // Set title to none so that talkback doesn't announce it.
+        title = " "
+    }
+
+    private fun setupStaticProgressIndicator() {
+        val animatorScale =
+            Settings.Global.getFloat(contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1.0f)
+
+        if (animatorScale != 0f) return
+
+        val progressIndicator =
+            requireViewById<CircularProgressIndicator>(R.id.circular_progress_indicator)
+        progressIndicator.isIndeterminate = false
+        progressIndicator.progress = 70
     }
 
     private fun createIcon(intent: Intent) {
         val bitmap = intent.getParcelableExtra(ICON, Bitmap::class.java)
+        val updatingAppName = intent.getParcelableExtra(UPDATING_APP, CharSequence::class.java)
         if (bitmap != null) {
-            requireViewById<ImageView>(R.id.veil_application_icon).setImageBitmap(bitmap)
+            val iconView = requireViewById<ImageView>(R.id.veil_application_icon)
+            iconView.setImageBitmap(bitmap)
+            iconView.contentDescription = updatingAppName?.toString() ?: "SystemUI"
         }
-        // TODO(b/468289633) - Add default veil icon in case bitmap is not found
     }
 
     companion object {
         private const val ICON = "icon"
+        private const val UPDATING_APP = "updating app"
 
         /** Creates an intent to launch [PackageUpdateActivity]. */
-        fun createIntent(userContext: Context, userId: Int, taskId: Int, icon: Bitmap?): Intent {
+        fun createIntent(
+            userContext: Context,
+            userId: Int,
+            taskId: Int,
+            icon: Bitmap?,
+            updatingAppName: CharSequence?,
+        ): Intent {
             val intent = Intent(userContext, PackageUpdateActivity::class.java)
 
             // Add a unique data URI to distinguish PendingIntents for different tasks.
             intent.setData("packageupdate://task/$taskId".toUri())
             intent.putExtra(Intent.EXTRA_USER_HANDLE, userId)
             intent.putExtra(ICON, icon)
+            intent.putExtra(UPDATING_APP, updatingAppName)
 
             return intent
         }

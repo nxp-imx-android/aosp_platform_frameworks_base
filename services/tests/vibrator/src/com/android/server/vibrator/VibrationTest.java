@@ -27,19 +27,15 @@ import android.os.vibrator.BasicPwleSegment;
 import android.os.vibrator.PrebakedSegment;
 import android.os.vibrator.PrimitiveSegment;
 import android.os.vibrator.PwleSegment;
-import android.os.vibrator.RampSegment;
 import android.os.vibrator.StepSegment;
 import android.platform.test.annotations.Presubmit;
 import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
 
-import com.android.server.vibrator.VibratorManagerServiceDumpProto;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Presubmit
@@ -57,10 +53,7 @@ public class VibrationTest {
         // float endSharpness, int duration)
         BasicPwleSegment basicPwle = new BasicPwleSegment(0.2f, 0.8f, 0.4f, 0.6f, 60, false);
         // StepSegment(float amplitude, float frequencyHz, int duration)
-        StepSegment step = new StepSegment(0.5f, 150f, 10);
-        // RampSegment(float startAmplitude, float endAmplitude, float startFrequencyHz,
-        // float endFrequencyHz, int duration)
-        RampSegment ramp = new RampSegment(0.2f, 0.8f, 100f, 200f, 20);
+        StepSegment step = new StepSegment(0.5f, 10);
         // PrebakedSegment(int effectId, boolean shouldFallback, int effectStrength)
         PrebakedSegment prebaked =
                 new PrebakedSegment(
@@ -74,7 +67,6 @@ public class VibrationTest {
                         .addEffect(new VibrationEffect.Composed(List.of(pwle), -1))
                         .addEffect(new VibrationEffect.Composed(List.of(basicPwle), -1))
                         .addEffect(new VibrationEffect.Composed(List.of(step), -1))
-                        .addEffect(new VibrationEffect.Composed(List.of(ramp), -1))
                         .addEffect(new VibrationEffect.Composed(List.of(prebaked), -1))
                         .addEffect(new VibrationEffect.Composed(List.of(primitive), -1))
                         .compose();
@@ -107,7 +99,7 @@ public class VibrationTest {
         protoOut.flush();
 
         ProtoInputStream protoIn = new ProtoInputStream(protoOut.getBytes());
-        final boolean[] found = new boolean[6];
+        final boolean[] found = new boolean[5];
         int[] path =
                 new int[] {
                     (int) fieldId,
@@ -137,18 +129,13 @@ public class VibrationTest {
                         long token = proto.start(SegmentProto.STEP);
                         verifyStep(proto, step);
                         proto.end(token);
-                    } else if (fieldNumber == (int) SegmentProto.RAMP) {
-                        found[3] = true;
-                        long token = proto.start(SegmentProto.RAMP);
-                        verifyRamp(proto, ramp);
-                        proto.end(token);
                     } else if (fieldNumber == (int) SegmentProto.PREBAKED) {
-                        found[4] = true;
+                        found[3] = true;
                         long token = proto.start(SegmentProto.PREBAKED);
                         verifyPrebaked(proto, prebaked);
                         proto.end(token);
                     } else if (fieldNumber == (int) SegmentProto.PRIMITIVE) {
-                        found[5] = true;
+                        found[4] = true;
                         long token = proto.start(SegmentProto.PRIMITIVE);
                         verifyPrimitive(proto, primitive);
                         proto.end(token);
@@ -158,9 +145,8 @@ public class VibrationTest {
         assertTrue("PWLE segment not found", found[0]);
         assertTrue("Basic PWLE segment not found", found[1]);
         assertTrue("Step segment not found", found[2]);
-        assertTrue("Ramp segment not found", found[3]);
-        assertTrue("Prebaked segment not found", found[4]);
-        assertTrue("Primitive segment not found", found[5]);
+        assertTrue("Prebaked segment not found", found[3]);
+        assertTrue("Primitive segment not found", found[4]);
     }
 
     private void verifyPwle(ProtoInputStream proto, PwleSegment segment) throws Exception {
@@ -235,40 +221,6 @@ public class VibrationTest {
                 case 2 -> // amplitude
                     assertEquals(
                         segment.getAmplitude(), proto.readFloat(StepSegmentProto.AMPLITUDE), 0.01f);
-                case 3 -> // frequency
-                    assertEquals(
-                        segment.getFrequencyHz(),
-                        proto.readFloat(StepSegmentProto.FREQUENCY),
-                        0.01f);
-            }
-        }
-    }
-
-    private void verifyRamp(ProtoInputStream proto, RampSegment segment) throws Exception {
-        while (proto.nextField() != ProtoInputStream.NO_MORE_FIELDS) {
-            switch (proto.getFieldNumber()) {
-                case 1 -> // duration
-                assertEquals(segment.getDuration(), proto.readInt(RampSegmentProto.DURATION));
-                case 2 -> // startAmplitude
-                assertEquals(
-                        segment.getStartAmplitude(),
-                        proto.readFloat(RampSegmentProto.START_AMPLITUDE),
-                        0.01f);
-                case 3 -> // endAmplitude
-                assertEquals(
-                        segment.getEndAmplitude(),
-                        proto.readFloat(RampSegmentProto.END_AMPLITUDE),
-                        0.01f);
-                case 4 -> // startFrequency
-                assertEquals(
-                        segment.getStartFrequencyHz(),
-                        proto.readFloat(RampSegmentProto.START_FREQUENCY),
-                        0.01f);
-                case 5 -> // endFrequency
-                assertEquals(
-                        segment.getEndFrequencyHz(),
-                        proto.readFloat(RampSegmentProto.END_FREQUENCY),
-                        0.01f);
             }
         }
     }

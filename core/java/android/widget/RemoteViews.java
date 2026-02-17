@@ -149,6 +149,8 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayDeque;
@@ -620,8 +622,9 @@ public class RemoteViews implements Parcelable, Filter {
      * Stores information related to reflection method lookup.
      */
     static class MethodKey {
-        public Class targetClass;
-        public Class paramClass;
+        public Class<?> targetClass;
+        public @Nullable Class<?> paramClass;
+        public @Nullable Class<?> paramTypeArgumentClass;
         public String methodName;
 
         @Override
@@ -632,22 +635,24 @@ public class RemoteViews implements Parcelable, Filter {
             MethodKey p = (MethodKey) o;
             return Objects.equals(p.targetClass, targetClass)
                     && Objects.equals(p.paramClass, paramClass)
+                    && Objects.equals(p.paramTypeArgumentClass, paramTypeArgumentClass)
                     && Objects.equals(p.methodName, methodName);
         }
 
         @Override
         public int hashCode() {
             return Objects.hashCode(targetClass) ^ Objects.hashCode(paramClass)
-                    ^ Objects.hashCode(methodName);
+                    ^ Objects.hashCode(paramTypeArgumentClass) ^ Objects.hashCode(methodName);
         }
 
-        public void set(Class targetClass, Class paramClass, String methodName) {
+        public void set(Class<?> targetClass, @Nullable Class<?> paramClass,
+                @Nullable Class<?> paramTypeArgumentClass, String methodName) {
             this.targetClass = targetClass;
             this.paramClass = paramClass;
+            this.paramTypeArgumentClass = paramTypeArgumentClass;
             this.methodName = methodName;
         }
     }
-
 
     /**
      * Stores information related to reflection method lookup result.
@@ -678,6 +683,12 @@ public class RemoteViews implements Parcelable, Filter {
         public ActionException(String message) {
             super(message);
         }
+
+        /** @hide */
+        public ActionException(String message, Throwable cause) {
+            super(message, cause);
+        }
+
         /**
          * @hide
          */
@@ -2201,34 +2212,62 @@ public class RemoteViews implements Parcelable, Filter {
                 return Instant.class;
             case BaseReflectionAction.DURATION:
                 return Duration.class;
+            case BaseReflectionAction.LIST_CHAR_SEQUENCE:
+                return List.class;
             default:
                 return null;
         }
     }
 
     @Nullable
-    private static MethodHandle getMethod(View view, String methodName, Class<?> paramType,
-            boolean async) {
+    private static Class<?> getParameterTypeArgument(int type) {
+        switch (type) {
+            case BaseReflectionAction.LIST_CHAR_SEQUENCE:
+                return CharSequence.class;
+            default:
+                return null;
+        }
+    }
+
+    @Nullable
+    private static MethodHandle getMethod(View view, String methodName,
+            @Nullable Class<?> paramType, @Nullable Class<?> paramTypeArgument, boolean async) {
         MethodArgs result;
         Class<? extends View> klass = view.getClass();
 
         synchronized (sMethods) {
             // The key is defined by the view class, param class and method name.
-            sLookupKey.set(klass, paramType, methodName);
+            sLookupKey.set(klass, paramType, paramTypeArgument, methodName);
             result = sMethods.get(sLookupKey);
 
             if (result == null) {
                 Method method;
                 try {
-                    if (paramType == null) {
-                        method = klass.getMethod(methodName);
-                    } else {
+                    if (paramType != null && paramTypeArgument != null) {
                         method = klass.getMethod(methodName, paramType);
+                        Type actualParam = method.getGenericParameterTypes()[0];
+                        if (!(actualParam instanceof ParameterizedType)) {
+                            throw new NoSuchMethodException(
+                                    String.format("Found %s but its parameter is %s, not generic",
+                                            method, actualParam));
+                        }
+                        Type actualParamTypeArg =
+                                ((ParameterizedType) actualParam).getActualTypeArguments()[0];
+                        if (!paramTypeArgument.equals(actualParamTypeArg)) {
+                            throw new NoSuchMethodException(
+                                    String.format(
+                                            "Found %s but it accepts %s and I wanted %s<%s>",
+                                            method, actualParam, paramType, paramTypeArgument));
+                        }
+                    } else if (paramType != null) {
+                        method = klass.getMethod(methodName, paramType);
+                    } else {
+                        method = klass.getMethod(methodName);
                     }
                     if (!method.isAnnotationPresent(RemotableViewMethod.class)) {
                         throw new ActionException("view: " + klass.getName()
                                 + " can't use method with RemoteViews: "
-                                + methodName + getParameters(paramType));
+                                + methodName + parametersToString(paramType, paramTypeArgument));
                     }
 
                     result = new MethodArgs();
@@ -2237,11 +2276,11 @@ public class RemoteViews implements Parcelable, Filter {
                             method.getAnnotation(RemotableViewMethod.class).asyncImpl();
                 } catch (NoSuchMethodException | IllegalAccessException ex) {
                     throw new ActionException("view: " + klass.getName() + " doesn't have method: "
-                            + methodName + getParameters(paramType));
+                            + methodName + parametersToString(paramType, paramTypeArgument), ex);
                 }
 
                 MethodKey key = new MethodKey();
-                key.set(klass, paramType, methodName);
+                key.set(klass, paramType, paramTypeArgument, methodName);
                 sMethods.put(key, result);
             }
 
@@ -2270,9 +2309,15 @@ public class RemoteViews implements Parcelable, Filter {
         }
     }
 
-    private static String getParameters(Class<?> paramType) {
-        if (paramType == null) return "()";
-        return "(" + paramType + ")";
+    private static String parametersToString(@Nullable Class<?> paramType,
+            @Nullable Class<?> paramTypeArgument) {
+        if (paramType != null && paramTypeArgument != null) {
+            return "(" + paramType + "<" + paramTypeArgument + ">)";
+        } else if (paramType != null) {
+            return "(" + paramType + ")";
+        } else {
+            return "()";
+        }
     }
 
     /**
@@ -2528,8 +2573,9 @@ public class RemoteViews implements Parcelable, Filter {
             if (view == null) return;
 
             try {
-                getMethod(view,
-                        mNext ? "showNext" : "showPrevious", null, false /* async */).invoke(view);
+                getMethod(view,  mNext
+                        ? "showNext"
+                        : "showPrevious", null, null, /* async= */ false).invoke(view);
             } catch (Throwable ex) {
                 throw new ActionException(ex);
             }
@@ -2767,6 +2813,7 @@ public class RemoteViews implements Parcelable, Filter {
         static final int BLEND_MODE = 17;
         static final int INSTANT = 18;
         static final int DURATION = 19;
+        static final int LIST_CHAR_SEQUENCE = 20;
 
         @UnsupportedAppUsage
         String mMethodName;
@@ -2811,12 +2858,14 @@ public class RemoteViews implements Parcelable, Filter {
             if (view == null) return;
 
             Class<?> param = getParameterType(this.mType);
+            Class<?> paramTypeArgument = getParameterTypeArgument(this.mType);
             if (param == null) {
                 throw new ActionException("bad type: " + this.mType);
             }
             Object value = getParameterValue(view);
             try {
-                getMethod(view, this.mMethodName, param, false /* async */).invoke(view, value);
+                getMethod(view, this.mMethodName, param, paramTypeArgument, /* async= */ false)
+                        .invoke(view, value);
             } catch (Throwable ex) {
                 throw new ActionException(ex);
             }
@@ -2829,13 +2878,15 @@ public class RemoteViews implements Parcelable, Filter {
             if (view == null) return ACTION_NOOP;
 
             Class<?> param = getParameterType(this.mType);
+            Class<?> paramTypeArgument = getParameterTypeArgument(this.mType);
             if (param == null) {
                 throw new ActionException("bad type: " + this.mType);
             }
 
             Object value = getParameterValue(view);
             try {
-                MethodHandle method = getMethod(view, this.mMethodName, param, true /* async */);
+                MethodHandle method = getMethod(view, this.mMethodName, param, paramTypeArgument,
+                        /* async= */ true);
                 // Upload the bitmap to GPU if the parameter is of type Bitmap or Icon.
                 // Since bitmaps in framework are seldomly modified, this is supposed to accelerate
                 // the operations.
@@ -3008,6 +3059,13 @@ public class RemoteViews implements Parcelable, Filter {
                         mValue = null;
                     }
                     break;
+                case LIST_CHAR_SEQUENCE:
+                    if (in.readInt() == 1) {
+                        mValue = in.readCharSequenceList();
+                    } else {
+                        mValue = null;
+                    }
+                    break;
                 default:
                     break;
             }
@@ -3075,6 +3133,16 @@ public class RemoteViews implements Parcelable, Filter {
                         out.writeInt(1);
                         out.writeLong(((Duration) this.mValue).getSeconds());
                         out.writeInt(((Duration) this.mValue).getNano());
+                    } else {
+                        out.writeInt(0);
+                    }
+                    break;
+                case LIST_CHAR_SEQUENCE:
+                    if (mValue != null) {
+                        out.writeInt(1);
+                        @SuppressWarnings("unchecked") List<CharSequence> list =
+                                (List<CharSequence>) mValue;
+                        out.writeCharSequenceList(new ArrayList<>(list));
                     } else {
                         out.writeInt(0);
                     }
@@ -3182,6 +3250,11 @@ public class RemoteViews implements Parcelable, Filter {
                         writeDurationToProto(out, (Duration) this.mValue,
                                 RemoteViewsProto.ReflectionAction.DURATION_VALUE);
                         break;
+                    case LIST_CHAR_SEQUENCE:
+                        // noinspection unchecked
+                        writeCharSequenceListToProto(out, (List<CharSequence>) this.mValue,
+                                RemoteViewsProto.ReflectionAction.CHAR_SEQUENCE_LIST_VALUE);
+                        break;
                     case BUNDLE:
                     case INTENT:
                     default:
@@ -3286,6 +3359,12 @@ public class RemoteViews implements Parcelable, Filter {
                                 createDurationFromProto(in,
                                         RemoteViewsProto.ReflectionAction.DURATION_VALUE));
                         break;
+                    case (int) RemoteViewsProto.ReflectionAction.CHAR_SEQUENCE_LIST_VALUE:
+                        values.put(RemoteViewsProto.ReflectionAction.CHAR_SEQUENCE_LIST_VALUE,
+                                createCharSequenceListFromProto(in,
+                                        RemoteViewsProto.ReflectionAction
+                                                .CHAR_SEQUENCE_LIST_VALUE));
+                        break;
                     default:
                         Log.w(LOG_TAG, "Unhandled field while reading RemoteViews proto!\n"
                                 + ProtoUtils.currentFieldToString(in));
@@ -3371,6 +3450,10 @@ public class RemoteViews implements Parcelable, Filter {
                     case DURATION:
                         value = (Duration) values.get(
                                 RemoteViewsProto.ReflectionAction.DURATION_VALUE);
+                        break;
+                    case LIST_CHAR_SEQUENCE:
+                        value = values.get(
+                                RemoteViewsProto.ReflectionAction.CHAR_SEQUENCE_LIST_VALUE);
                         break;
                     case BUNDLE:
                     case INTENT:
@@ -8161,6 +8244,22 @@ public class RemoteViews implements Parcelable, Filter {
     }
 
     /**
+     * Call a method taking one {@code List<CharSequence>} on a view in the layout for this
+     * RemoteViews.
+     *
+     * @param viewId The id of the view on which to call the method.
+     * @param methodName The name of the method to call.
+     * @param value The value to pass to the method.
+     *
+     * @hide
+     */
+    public void setCharSequenceList(@IdRes int viewId, String methodName,
+            @Nullable List<CharSequence> value) {
+        addAction(new ReflectionAction(viewId, methodName, BaseReflectionAction.LIST_CHAR_SEQUENCE,
+                value));
+    }
+
+    /**
      * Call a method taking one Bundle on a view in the layout for this RemoteViews.
      *
      * @param viewId The id of the view on which to call the method.
@@ -11002,6 +11101,21 @@ public class RemoteViews implements Parcelable, Filter {
         Duration duration = RemoteViewsSerializers.createDurationFromProto(in);
         in.end(token);
         return duration;
+    }
+
+    private static void writeCharSequenceListToProto(ProtoOutputStream out, List<CharSequence> list,
+            long fieldId) {
+        long token = out.start(fieldId);
+        RemoteViewsSerializers.writeCharSequenceListToProto(out, list);
+        out.end(token);
+    }
+
+    private static List<CharSequence> createCharSequenceListFromProto(ProtoInputStream in,
+            long fieldId) throws Exception {
+        long token = in.start(fieldId);
+        List<CharSequence> list = RemoteViewsSerializers.createCharSequenceListFromProto(in);
+        in.end(token);
+        return list;
     }
 
     /**

@@ -67,7 +67,6 @@ public class VibrationConfig {
 
     private final float mHapticChannelMaxVibrationAmplitude;
     private final int mDefaultVibrationAmplitude;
-    private final int mRampStepDurationMs;
     private final int mRampDownDurationMs;
     private final int mRequestVibrationParamsTimeoutMs;
     private final int[] mRequestVibrationParamsForUsages;
@@ -101,7 +100,6 @@ public class VibrationConfig {
         mDefaultVibrationAmplitude = builder.mDefaultVibrationAmplitude;
         mHapticChannelMaxVibrationAmplitude = builder.mHapticChannelMaxVibrationAmplitude;
         mRampDownDurationMs = builder.mRampDownDurationMs;
-        mRampStepDurationMs = builder.mRampStepDurationMs;
         mRequestVibrationParamsTimeoutMs = builder.mRequestVibrationParamsTimeoutMs;
         mRequestVibrationParamsForUsages = builder.mRequestVibrationParamsForUsages;
         mIgnoreVibrationsOnWirelessCharger = builder.mIgnoreVibrationsOnWirelessCharger;
@@ -280,18 +278,6 @@ public class VibrationConfig {
     }
 
     /**
-     * The duration, in milliseconds, that should be applied to convert vibration effect's
-     * {@link android.os.vibrator.RampSegment} to a {@link android.os.vibrator.StepSegment} on
-     * devices without PWLE support.
-     */
-    public int getRampStepDurationMs() {
-        if (mRampStepDurationMs < 0) {
-            return 0;
-        }
-        return mRampStepDurationMs;
-    }
-
-    /**
      * The max duration, in milliseconds, allowed for pipelining vibration requests.
      *
      * <p>If the ongoing vibration duration is shorter than this threshold then it should be allowed
@@ -360,7 +346,6 @@ public class VibrationConfig {
                 + "mIgnoreVibrationsOnWirelessCharger=" + mIgnoreVibrationsOnWirelessCharger
                 + ", mDefaultVibrationAmplitude=" + mDefaultVibrationAmplitude
                 + ", mHapticChannelMaxVibrationAmplitude=" + mHapticChannelMaxVibrationAmplitude
-                + ", mRampStepDurationMs=" + mRampStepDurationMs
                 + ", mRampDownDurationMs=" + mRampDownDurationMs
                 + ", mRequestVibrationParamsForUsages="
                 + Arrays.toString(getRequestVibrationParamsForUsagesNames())
@@ -392,7 +377,6 @@ public class VibrationConfig {
         pw.println("vibrationScaleFactors = " + Arrays.toString(mVibrationScaleFactors));
         pw.println("externalVibrationScaleFactors = "
                 + Arrays.toString(mExternalVibrationScaleFactors));
-        pw.println("rampStepDurationMs = " + mRampStepDurationMs);
         pw.println("rampDownDurationMs = " + mRampDownDurationMs);
         pw.println("requestVibrationParamsForUsages = "
                 + Arrays.toString(getRequestVibrationParamsForUsagesNames()));
@@ -418,7 +402,6 @@ public class VibrationConfig {
     public static final class Builder {
         private float mHapticChannelMaxVibrationAmplitude;
         private int mDefaultVibrationAmplitude;
-        private int mRampStepDurationMs;
         private int mRampDownDurationMs;
         private int mRequestVibrationParamsTimeoutMs;
         private int[] mRequestVibrationParamsForUsages;
@@ -450,8 +433,6 @@ public class VibrationConfig {
                     com.android.internal.R.dimen.config_hapticChannelMaxVibrationAmplitude);
             mRampDownDurationMs = loadInteger(resources,
                     com.android.internal.R.integer.config_vibrationWaveformRampDownDuration);
-            mRampStepDurationMs = loadInteger(resources,
-                    com.android.internal.R.integer.config_vibrationWaveformRampStepDuration);
             mRequestVibrationParamsTimeoutMs = loadInteger(resources,
                     com.android.internal.R.integer.config_requestVibrationParamsTimeout);
             mRequestVibrationParamsForUsages = loadIntArray(resources,
@@ -491,10 +472,6 @@ public class VibrationConfig {
 
         public void setRampDownDurationMs(int durationMs) {
             mRampDownDurationMs = durationMs;
-        }
-
-        public void setRampStepDurationMs(int durationMs) {
-            mRampStepDurationMs = durationMs;
         }
 
         public void setRequestVibrationParamsTimeoutMs(int timeoutMs) {

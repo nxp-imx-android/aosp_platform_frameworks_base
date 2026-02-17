@@ -517,8 +517,7 @@ public class VirtualDisplayAdapter extends DisplayAdapter {
                     mSurfaceControlDisplayFactory.setDisplayPowerMode(token, mode);
                 };
             }
-            if (android.companion.virtualdevice.flags.Flags.deviceAwareDisplayPower()
-                    && mBrightnessListener != null
+            if (mBrightnessListener != null
                     && BrightnessUtils.isValidBrightnessValue(brightnessState)
                     && brightnessState != mCurrentBrightness) {
                 mCurrentBrightness = brightnessState;

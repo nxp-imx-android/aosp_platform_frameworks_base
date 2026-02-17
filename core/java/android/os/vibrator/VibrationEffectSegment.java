@@ -46,9 +46,8 @@ public abstract class VibrationEffectSegment implements Parcelable {
     static final int PARCEL_TOKEN_PREBAKED = 1;
     static final int PARCEL_TOKEN_PRIMITIVE = 2;
     static final int PARCEL_TOKEN_STEP = 3;
-    static final int PARCEL_TOKEN_RAMP = 4;
-    static final int PARCEL_TOKEN_PWLE = 5;
-    static final int PARCEL_TOKEN_BASIC_PWLE = 6;
+    static final int PARCEL_TOKEN_PWLE = 4;
+    static final int PARCEL_TOKEN_BASIC_PWLE = 5;
 
     /** Prevent subclassing from outside of this package */
     VibrationEffectSegment() {
@@ -220,8 +219,6 @@ public abstract class VibrationEffectSegment implements Parcelable {
                     switch (in.readInt()) {
                         case PARCEL_TOKEN_STEP:
                             return new StepSegment(in);
-                        case PARCEL_TOKEN_RAMP:
-                            return new RampSegment(in);
                         case PARCEL_TOKEN_PREBAKED:
                             return new PrebakedSegment(in);
                         case PARCEL_TOKEN_PRIMITIVE:

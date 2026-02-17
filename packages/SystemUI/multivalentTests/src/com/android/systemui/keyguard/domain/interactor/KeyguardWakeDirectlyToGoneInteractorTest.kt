@@ -16,11 +16,7 @@
 
 package com.android.systemui.keyguard.domain.interactor
 
-import android.app.AlarmManager
-import android.app.admin.alarmManager
 import android.app.admin.devicePolicyManager
-import android.content.BroadcastReceiver
-import android.content.Intent
 import android.content.mockedContext
 import android.os.PowerManager
 import android.os.UserHandle
@@ -39,6 +35,7 @@ import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.shared.model.BiometricUnlockMode
 import com.android.systemui.keyguard.shared.model.KeyguardState
+import com.android.systemui.keyguard.shared.model.LockAfterScreenTimeoutTimerState
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAsleepForTest
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAwakeForTest
@@ -50,7 +47,6 @@ import com.android.systemui.scene.shared.model.Scenes.Gone
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.FakeUserRepository
 import com.android.systemui.util.settings.fakeSettings
-import com.android.systemui.util.time.fakeSystemClock
 import junit.framework.Assert.assertEquals
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runCurrent
@@ -58,12 +54,8 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyInt
-import org.mockito.ArgumentMatchers.anyLong
-import org.mockito.kotlin.any
-import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -72,7 +64,6 @@ import org.mockito.kotlin.whenever
 @EnableSceneContainer
 class KeyguardWakeDirectlyToGoneInteractorTest : SysuiTestCase() {
 
-    private var lastRegisteredBroadcastReceiver: BroadcastReceiver? = null
     private val kosmos =
         testKosmos().apply {
             deviceEntryRepository.deviceUnlockStatus.value =
@@ -81,11 +72,6 @@ class KeyguardWakeDirectlyToGoneInteractorTest : SysuiTestCase() {
                     deviceUnlockSource = DeviceUnlockSource.BouncerInput,
                 )
             whenever(mockedContext.user).thenReturn(mock<UserHandle>())
-            doAnswer { invocation ->
-                    lastRegisteredBroadcastReceiver = invocation.arguments[0] as BroadcastReceiver
-                }
-                .whenever(mockedContext)
-                .registerReceiver(any(), any(), any(), any(), any())
             whenever(lockPatternUtils.isSecure(anyInt())).thenReturn(true)
         }
 
@@ -149,6 +135,7 @@ class KeyguardWakeDirectlyToGoneInteractorTest : SysuiTestCase() {
             )
 
             kosmos.powerInteractor.setAsleepForTest()
+            repository.lockAfterScreenTimeoutState.value = LockAfterScreenTimeoutTimerState.RUNNING
             runCurrent()
 
             assertEquals(
@@ -164,6 +151,7 @@ class KeyguardWakeDirectlyToGoneInteractorTest : SysuiTestCase() {
             runCurrent()
 
             kosmos.powerInteractor.setAsleepForTest()
+            repository.lockAfterScreenTimeoutState.value = LockAfterScreenTimeoutTimerState.RUNNING
             runCurrent()
 
             assertEquals(listOf(false, true), canWake)
@@ -284,7 +272,7 @@ class KeyguardWakeDirectlyToGoneInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun testSetsCanIgnoreAuth_andSetsAlarm_whenTimingOut() =
+    fun testSetsCanIgnoreAuth_whenTimingOut() =
         testScope.runTest {
             val userSettingDelay = 12345
             val canWake by collectValues(underTest.canWakeDirectlyToGone)
@@ -317,75 +305,14 @@ class KeyguardWakeDirectlyToGoneInteractorTest : SysuiTestCase() {
             kosmos.powerInteractor.setAsleepForTest(
                 sleepReason = PowerManager.GO_TO_SLEEP_REASON_TIMEOUT
             )
+            repository.lockAfterScreenTimeoutState.value = LockAfterScreenTimeoutTimerState.RUNNING
             runCurrent()
 
             assertEquals(listOf(false, true), canWake)
-
-            verify(kosmos.alarmManager)
-                .setExactAndAllowWhileIdle(
-                    eq(AlarmManager.ELAPSED_REALTIME_WAKEUP),
-                    eq(kosmos.fakeSystemClock.elapsedRealtime() + userSettingDelay),
-                    any(),
-                )
         }
 
     @Test
-    fun testSetsCanIgnoreAuth_andSetsAlarm_ignoredUserTimeout_whenTimingOutWithSwipeSecurity() =
-        testScope.runTest {
-            val userSettingDelay = 12345
-            // Swipe user is not secure
-            whenever(lockPatternUtils.isSecure(anyInt())).thenReturn(false)
-
-            val canWake by collectValues(underTest.canWakeDirectlyToGone)
-            kosmos.setSceneTransition(ObservableTransitionState.Idle(Scenes.Lockscreen))
-
-            assertEquals(
-                listOf(
-                    false // Defaults to false.
-                ),
-                canWake,
-            )
-
-            whenever(kosmos.devicePolicyManager.getMaximumTimeToLock(eq(null), anyInt()))
-                .thenReturn(-1)
-
-            // But the user had previously set a timeout value
-            kosmos.fakeSettings.putIntForUser(
-                Settings.Secure.LOCK_SCREEN_LOCK_AFTER_TIMEOUT,
-                userSettingDelay,
-                FakeUserRepository.DEFAULT_SELECTED_USER,
-            )
-
-            kosmos.sceneInteractor.changeScene(Gone, loggingReason = "for test")
-            runCurrent()
-            transitionRepository.sendTransitionSteps(
-                from = KeyguardState.LOCKSCREEN,
-                to = KeyguardState.GONE,
-                testScope,
-            )
-            runCurrent()
-
-            kosmos.powerInteractor.setAsleepForTest(
-                sleepReason = PowerManager.GO_TO_SLEEP_REASON_TIMEOUT
-            )
-            runCurrent()
-
-            assertEquals(listOf(false, true), canWake)
-
-            // uses the default delay when there is no security
-            verify(kosmos.alarmManager)
-                .setExactAndAllowWhileIdle(
-                    eq(AlarmManager.ELAPSED_REALTIME_WAKEUP),
-                    eq(
-                        kosmos.fakeSystemClock.elapsedRealtime() +
-                            KeyguardWakeDirectlyToGoneInteractor.KEYGUARD_CAN_IGNORE_AUTH_DURATION
-                    ),
-                    any(),
-                )
-        }
-
-    @Test
-    fun testCancelsFirstAlarm_onWake_withSecondAlarmSet() =
+    fun testLockAfterScreenTimeoutTimerElapses() =
         testScope.runTest {
             val canWake by collectValues(underTest.canWakeDirectlyToGone)
             kosmos.sceneInteractor.changeScene(
@@ -418,6 +345,7 @@ class KeyguardWakeDirectlyToGoneInteractorTest : SysuiTestCase() {
                 toScene = Scenes.Lockscreen,
                 loggingReason = "for test",
             )
+            repository.lockAfterScreenTimeoutState.value = LockAfterScreenTimeoutTimerState.RUNNING
             runCurrent()
             transitionRepository.sendTransitionSteps(
                 from = KeyguardState.LOCKSCREEN,
@@ -435,19 +363,13 @@ class KeyguardWakeDirectlyToGoneInteractorTest : SysuiTestCase() {
                 canWake,
             )
 
-            verify(kosmos.alarmManager)
-                .setExactAndAllowWhileIdle(
-                    eq(AlarmManager.ELAPSED_REALTIME_WAKEUP),
-                    anyLong(),
-                    any(),
-                )
-
             kosmos.powerInteractor.setAwakeForTest()
             transitionRepository.sendTransitionSteps(
                 from = KeyguardState.AOD,
                 to = KeyguardState.UNDEFINED,
                 testScope = testScope,
             )
+            repository.lockAfterScreenTimeoutState.value = LockAfterScreenTimeoutTimerState.INACTIVE
             runCurrent()
             kosmos.sceneInteractor.changeScene(toScene = Scenes.Gone, loggingReason = "for test")
             runCurrent()
@@ -466,6 +388,7 @@ class KeyguardWakeDirectlyToGoneInteractorTest : SysuiTestCase() {
             kosmos.powerInteractor.setAsleepForTest(
                 sleepReason = PowerManager.GO_TO_SLEEP_REASON_TIMEOUT
             )
+            repository.lockAfterScreenTimeoutState.value = LockAfterScreenTimeoutTimerState.RUNNING
             runCurrent()
 
             assertEquals(
@@ -479,14 +402,11 @@ class KeyguardWakeDirectlyToGoneInteractorTest : SysuiTestCase() {
                 canWake,
             )
 
-            // Simulate the first sleep's alarm coming in.
-            lastRegisteredBroadcastReceiver?.onReceive(
-                kosmos.mockedContext,
-                Intent("com.android.internal.policy.impl.PhoneWindowManager.DELAYED_KEYGUARD"),
-            )
+            // The "lock after screen timeout" timer expires
+            repository.lockAfterScreenTimeoutState.value = LockAfterScreenTimeoutTimerState.ELAPSED
             runCurrent()
 
-            // It should not have any effect.
-            assertEquals(listOf(false, true, false, true), canWake)
+            // Not possible to go directly back to Gone anymore
+            assertEquals(listOf(false, true, false, true, false), canWake)
         }
 }

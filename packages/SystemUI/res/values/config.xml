@@ -1213,4 +1213,10 @@
     tiles.
     -->
     <bool name="config_useInfiniteGridLayoutAsDefault">false</bool>
+
+    <!-- Maximum number of times the dream setup flow can be dismissed before being permanently suppressed. -->
+    <integer name="config_dream_setup_max_dismiss_count">2</integer>
+
+    <!-- Duration in minutes for the dream setup snooze action. -->
+    <integer name="config_dream_setup_snooze_duration_minutes">20160</integer> <!-- 14 days -->
 </resources>

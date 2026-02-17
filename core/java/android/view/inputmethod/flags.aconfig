@@ -292,3 +292,10 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "ime_switcher_button_in_navbar_setting"
+  namespace: "input_method"
+  description: "Give users the option to decide whether or not to display the IME switcher button in the IME navigation bar"
+  bug: "467625078"
+}

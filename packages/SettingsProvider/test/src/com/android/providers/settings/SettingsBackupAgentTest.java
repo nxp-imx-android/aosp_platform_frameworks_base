@@ -90,7 +90,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
-
 /**
  * Tests for the SettingsHelperTest
  * Usage: atest SettingsProviderTest:SettingsBackupAgentTest
@@ -884,6 +883,152 @@ public class SettingsBackupAgentTest extends BaseSettingsProviderTest {
         assertEquals(loggingResult.getFailCount(), 1);
     }
 
+    @Test
+    @EnableFlags(com.android.text.flags.Flags.FLAG_SPLIT_SHOW_PASSWORDS_TO_TOUCH_AND_PHYSICAL)
+    public void testRestore_onlyLegacyPasswordSetting_migratesToTouch() {
+        mAgentUnderTest.onCreate(UserHandle.SYSTEM, BackupDestination.CLOUD, OperationType.RESTORE);
+        TestSettingsHelper settingsHelper = new TestSettingsHelper(mContext);
+        mAgentUnderTest.mSettingsHelper = settingsHelper;
+
+        byte[] backupData = generateBackupData(Map.of(Settings.System.TEXT_SHOW_PASSWORD, "0"));
+        mAgentUnderTest.restoreSettings(
+                backupData,
+                0,
+                backupData.length,
+                Settings.System.CONTENT_URI,
+                null,
+                null,
+                null,
+                R.array.restore_blocked_system_settings,
+                Collections.emptySet(),
+                Collections.emptySet(),
+                KEY_SYSTEM);
+
+        assertEquals("0", settingsHelper.mWrittenValues.get(Settings.System.TEXT_SHOW_PASSWORD));
+        DeviceSpecificInfoMockContentProvider provider =
+                ((ContextWithMockContentResolver) mContext).mockContentProvider;
+        assertEquals("0", provider.mInsertedValues.get(Settings.Secure.TEXT_SHOW_PASSWORD_TOUCH));
+    }
+
+    @Test
+    @EnableFlags(com.android.text.flags.Flags.FLAG_SPLIT_SHOW_PASSWORDS_TO_TOUCH_AND_PHYSICAL)
+    public void testRestore_onlyTouchPasswordSetting_migratesToLegacy() {
+        mAgentUnderTest.onCreate(UserHandle.SYSTEM, BackupDestination.CLOUD, OperationType.RESTORE);
+        TestSettingsHelper settingsHelper = new TestSettingsHelper(mContext);
+        mAgentUnderTest.mSettingsHelper = settingsHelper;
+
+        byte[] backupData =
+                generateBackupData(Map.of(Settings.Secure.TEXT_SHOW_PASSWORD_TOUCH, "1"));
+        mAgentUnderTest.restoreSettings(
+                backupData,
+                0,
+                backupData.length,
+                Settings.Secure.CONTENT_URI,
+                null,
+                null,
+                null,
+                R.array.restore_blocked_secure_settings,
+                Collections.emptySet(),
+                Collections.emptySet(),
+                KEY_SECURE);
+
+        assertEquals(
+                "1", settingsHelper.mWrittenValues.get(Settings.Secure.TEXT_SHOW_PASSWORD_TOUCH));
+        DeviceSpecificInfoMockContentProvider provider =
+                ((ContextWithMockContentResolver) mContext).mockContentProvider;
+        assertEquals("1", provider.mInsertedValues.get(Settings.System.TEXT_SHOW_PASSWORD));
+    }
+
+    @Test
+    @EnableFlags(com.android.text.flags.Flags.FLAG_SPLIT_SHOW_PASSWORDS_TO_TOUCH_AND_PHYSICAL)
+    public void testRestore_bothPasswordSettings_touchArrivesFirst_prioritizesTouch() {
+        mAgentUnderTest.onCreate(UserHandle.SYSTEM, BackupDestination.CLOUD, OperationType.RESTORE);
+        TestSettingsHelper settingsHelper = new TestSettingsHelper(mContext);
+        mAgentUnderTest.mSettingsHelper = settingsHelper;
+
+        byte[] secureData =
+                generateBackupData(Map.of(Settings.Secure.TEXT_SHOW_PASSWORD_TOUCH, "1"));
+        mAgentUnderTest.restoreSettings(
+                secureData,
+                0,
+                secureData.length,
+                Settings.Secure.CONTENT_URI,
+                null,
+                null,
+                null,
+                R.array.restore_blocked_secure_settings,
+                Collections.emptySet(),
+                Collections.emptySet(),
+                KEY_SECURE);
+
+        byte[] systemData = generateBackupData(Map.of(Settings.System.TEXT_SHOW_PASSWORD, "0"));
+        mAgentUnderTest.restoreSettings(
+                systemData,
+                0,
+                systemData.length,
+                Settings.System.CONTENT_URI,
+                null,
+                null,
+                null,
+                R.array.restore_blocked_system_settings,
+                Collections.emptySet(),
+                Collections.emptySet(),
+                KEY_SYSTEM);
+
+        assertEquals(
+                "1", settingsHelper.mWrittenValues.get(Settings.Secure.TEXT_SHOW_PASSWORD_TOUCH));
+        assertNull(settingsHelper.mWrittenValues.get(Settings.System.TEXT_SHOW_PASSWORD));
+
+        DeviceSpecificInfoMockContentProvider provider =
+                ((ContextWithMockContentResolver) mContext).mockContentProvider;
+        assertEquals("1", provider.mInsertedValues.get(Settings.System.TEXT_SHOW_PASSWORD));
+    }
+
+    @Test
+    @EnableFlags(com.android.text.flags.Flags.FLAG_SPLIT_SHOW_PASSWORDS_TO_TOUCH_AND_PHYSICAL)
+    public void testRestore_bothPasswordSettings_legacyArrivesFirst_prioritizesTouch() {
+        mAgentUnderTest.onCreate(UserHandle.SYSTEM, BackupDestination.CLOUD, OperationType.RESTORE);
+        TestSettingsHelper settingsHelper = new TestSettingsHelper(mContext);
+        mAgentUnderTest.mSettingsHelper = settingsHelper;
+
+        byte[] systemData = generateBackupData(Map.of(Settings.System.TEXT_SHOW_PASSWORD, "0"));
+        mAgentUnderTest.restoreSettings(
+                systemData,
+                0,
+                systemData.length,
+                Settings.System.CONTENT_URI,
+                null,
+                null,
+                null,
+                R.array.restore_blocked_system_settings,
+                Collections.emptySet(),
+                Collections.emptySet(),
+                KEY_SYSTEM);
+
+        byte[] secureData =
+                generateBackupData(Map.of(Settings.Secure.TEXT_SHOW_PASSWORD_TOUCH, "1"));
+        mAgentUnderTest.restoreSettings(
+                secureData,
+                0,
+                secureData.length,
+                Settings.Secure.CONTENT_URI,
+                null,
+                null,
+                null,
+                R.array.restore_blocked_secure_settings,
+                Collections.emptySet(),
+                Collections.emptySet(),
+                KEY_SECURE);
+
+        assertEquals(
+                "1", settingsHelper.mWrittenValues.get(Settings.Secure.TEXT_SHOW_PASSWORD_TOUCH));
+        assertEquals("0", settingsHelper.mWrittenValues.get(Settings.System.TEXT_SHOW_PASSWORD));
+
+        DeviceSpecificInfoMockContentProvider provider =
+                ((ContextWithMockContentResolver) mContext).mockContentProvider;
+        assertEquals("1", provider.mInsertedValues.get(Settings.System.TEXT_SHOW_PASSWORD));
+    }
+
     private byte[] generateBackupData(Map<String, String> keyValueData) {
         int totalBytes = 0;
         for (String key : keyValueData.keySet()) {
@@ -1069,12 +1214,14 @@ public class SettingsBackupAgentTest extends BaseSettingsProviderTest {
     private static class ContextWithMockContentResolver extends ContextWrapper {
         private MockContentResolver mContentResolver;
 
+        public final DeviceSpecificInfoMockContentProvider mockContentProvider;
+
         ContextWithMockContentResolver(Context targetContext) {
             super(targetContext);
 
             mContentResolver = new MockContentResolver();
-            mContentResolver.addProvider(
-                    Settings.AUTHORITY, new DeviceSpecificInfoMockContentProvider());
+            mockContentProvider = new DeviceSpecificInfoMockContentProvider();
+            mContentResolver.addProvider(Settings.AUTHORITY, mockContentProvider);
         }
 
         @Override
@@ -1100,6 +1247,16 @@ public class SettingsBackupAgentTest extends BaseSettingsProviderTest {
         private static final Object[][] RESULT_ROWS = {
             {Settings.Secure.DISPLAY_DENSITY_FORCED, TEST_DISPLAY_DENSITY_FORCED},
         };
+
+        public final Map<String, String> mInsertedValues = new HashMap<>();
+
+        @Override
+        public Uri insert(Uri uri, ContentValues values) {
+            String name = values.getAsString(Settings.NameValueTable.NAME);
+            String value = values.getAsString(Settings.NameValueTable.VALUE);
+            mInsertedValues.put(name, value);
+            return uri;
+        }
 
         @Override
         public Cursor query(

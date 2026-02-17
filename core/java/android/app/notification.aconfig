@@ -29,6 +29,16 @@ flag {
 }
 
 flag {
+  name: "metric_value_alternative_strings"
+  namespace: "notifications"
+  description: "Produce different versions of the string representation of a MetricValue (e.g. 10000 -> 10,000, 10k) and choose the most appropriate for display."
+  bug: "415827681"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "api_notification_action_custom"
   is_exported: true
   namespace: "notifications"

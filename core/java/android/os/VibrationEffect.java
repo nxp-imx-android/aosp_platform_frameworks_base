@@ -36,18 +36,15 @@ import android.os.vibrator.Flags;
 import android.os.vibrator.PrebakedSegment;
 import android.os.vibrator.PrimitiveSegment;
 import android.os.vibrator.PwleSegment;
-import android.os.vibrator.RampSegment;
 import android.os.vibrator.StepSegment;
 import android.os.vibrator.VibrationEffectSegment;
 import android.os.vibrator.VibratorEnvelopeEffectInfo;
-import android.os.vibrator.VibratorFrequencyProfileLegacy;
 import android.util.MathUtils;
 
 import com.android.internal.util.Preconditions;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -294,7 +291,7 @@ public abstract class VibrationEffect implements Parcelable {
         for (int i = 0; i < timings.length; i++) {
             float parsedAmplitude = amplitudes[i] == DEFAULT_AMPLITUDE
                     ? DEFAULT_AMPLITUDE : (float) amplitudes[i] / MAX_AMPLITUDE;
-            segments.add(new StepSegment(parsedAmplitude, /* frequencyHz= */ 0, (int) timings[i]));
+            segments.add(new StepSegment(parsedAmplitude, (int) timings[i]));
         }
         VibrationEffect effect = new Composed(segments, repeat);
         effect.validate();
@@ -459,73 +456,6 @@ public abstract class VibrationEffect implements Parcelable {
     @NonNull
     public static Composition startComposition() {
         return new Composition();
-    }
-
-    /**
-     * Start building a waveform vibration.
-     *
-     * <p>The waveform builder offers more flexibility for creating waveform vibrations, allowing
-     * control over vibration amplitude and frequency via smooth transitions between values.
-     *
-     * <p>The waveform will start the first transition from the vibrator off state, with the
-     * resonant frequency by default. To provide an initial state, use
-     * {@link #startWaveform(VibrationEffect.VibrationParameter)}.
-     *
-     * @see VibrationEffect.WaveformBuilder
-     * @hide
-     */
-    @TestApi
-    @NonNull
-    public static WaveformBuilder startWaveform() {
-        return new WaveformBuilder();
-    }
-
-    /**
-     * Start building a waveform vibration with an initial state specified by a
-     * {@link VibrationEffect.VibrationParameter}.
-     *
-     * <p>The waveform builder offers more flexibility for creating waveform vibrations, allowing
-     * control over vibration amplitude and frequency via smooth transitions between values.
-     *
-     * @param initialParameter The initial {@link VibrationEffect.VibrationParameter} value to be
-     *                         applied at the beginning of the vibration.
-     * @return The {@link VibrationEffect.WaveformBuilder} started with the initial parameters.
-     *
-     * @see VibrationEffect.WaveformBuilder
-     * @hide
-     */
-    @TestApi
-    @NonNull
-    public static WaveformBuilder startWaveform(@NonNull VibrationParameter initialParameter) {
-        WaveformBuilder builder = startWaveform();
-        builder.addTransition(Duration.ZERO, initialParameter);
-        return builder;
-    }
-
-    /**
-     * Start building a waveform vibration with an initial state specified by two
-     * {@link VibrationEffect.VibrationParameter VibrationParameters}.
-     *
-     * <p>The waveform builder offers more flexibility for creating waveform vibrations, allowing
-     * control over vibration amplitude and frequency via smooth transitions between values.
-     *
-     * @param initialParameter1 The initial {@link VibrationEffect.VibrationParameter} value to be
-     *                          applied at the beginning of the vibration.
-     * @param initialParameter2 The initial {@link VibrationEffect.VibrationParameter} value to be
-     *                          applied at the beginning of the vibration, must be a different type
-     *                          of parameter than the one specified by the first argument.
-     * @return The {@link VibrationEffect.WaveformBuilder} started with the initial parameters.
-     *
-     * @see VibrationEffect.WaveformBuilder
-     * @hide
-     */
-    @TestApi
-    @NonNull
-    public static WaveformBuilder startWaveform(@NonNull VibrationParameter initialParameter1,
-            @NonNull VibrationParameter initialParameter2) {
-        WaveformBuilder builder = startWaveform();
-        builder.addTransition(Duration.ZERO, initialParameter1, initialParameter2);
-        return builder;
     }
 
     @Override
@@ -985,8 +915,7 @@ public abstract class VibrationEffect implements Parcelable {
                 ArrayList<VibrationEffectSegment> loopingSegments =
                         new ArrayList<>(mSegments.size() + 1);
                 loopingSegments.addAll(mSegments);
-                loopingSegments.add(
-                        new StepSegment(/* amplitude= */ 0, /* frequencyHz= */ 0, loopDelayMs));
+                loopingSegments.add(new StepSegment(/* amplitude= */ 0, loopDelayMs));
                 return new Composed(loopingSegments, 0);
             }
         }
@@ -1071,9 +1000,6 @@ public abstract class VibrationEffect implements Parcelable {
             }
 
             StepSegment stepSegment = (StepSegment) segment;
-            if (stepSegment.getFrequencyHz() != 0) {
-                return null;
-            }
 
             float amplitude = stepSegment.getAmplitude();
             if (amplitude != 0 && amplitude != DEFAULT_AMPLITUDE) {
@@ -2049,321 +1975,6 @@ public abstract class VibrationEffect implements Parcelable {
             return effect;
         }
 
-    }
-
-    /**
-     * A builder for waveform haptic effects.
-     *
-     * <p>Waveform vibrations constitute of one or more timed transitions to new sets of vibration
-     * parameters. These parameters can be the vibration amplitude, frequency, or both.
-     *
-     * <p>The following example ramps a vibrator turned off to full amplitude at 120Hz, over 100ms
-     * starting at 60Hz, then holds that state for 200ms and ramps back down again over 100ms:
-     *
-     * <pre>
-     * {@code import static android.os.VibrationEffect.VibrationParameter.targetAmplitude;
-     * import static android.os.VibrationEffect.VibrationParameter.targetFrequency;
-     *
-     * VibrationEffect effect = VibrationEffect.startWaveform(targetFrequency(60))
-     *     .addTransition(Duration.ofMillis(100), targetAmplitude(1), targetFrequency(120))
-     *     .addSustain(Duration.ofMillis(200))
-     *     .addTransition(Duration.ofMillis(100), targetAmplitude(0), targetFrequency(60))
-     *     .build();}</pre>
-     *
-     * <p>The initial state of the waveform can be set via
-     * {@link VibrationEffect#startWaveform(VibrationParameter)} or
-     * {@link VibrationEffect#startWaveform(VibrationParameter, VibrationParameter)}. If the initial
-     * parameters are not set then the {@link WaveformBuilder} will start with the vibrator off,
-     * represented by zero amplitude, at the vibrator's resonant frequency.
-     *
-     * <p>Note that physical vibration actuators have different reaction times for changing
-     * amplitude and frequency. Durations specified here represent a timeline for the target
-     * parameters, and quality of effects may be improved if the durations allow time for a
-     * transition to be smoothly applied.
-     *
-     * <p>The following example illustrates both an initial state and a repeating section, using
-     * a {@link VibrationEffect.Composition}. The resulting effect will have a tick followed by a
-     * repeated beating effect with a rise that stretches out and a sharp finish.
-     *
-     * <pre>
-     * {@code VibrationEffect patternToRepeat = VibrationEffect.startWaveform(targetAmplitude(0.2f))
-     *     .addSustain(Duration.ofMillis(10))
-     *     .addTransition(Duration.ofMillis(20), targetAmplitude(0.4f))
-     *     .addSustain(Duration.ofMillis(30))
-     *     .addTransition(Duration.ofMillis(40), targetAmplitude(0.8f))
-     *     .addSustain(Duration.ofMillis(50))
-     *     .addTransition(Duration.ofMillis(60), targetAmplitude(0.2f))
-     *     .build();}</pre>
-     *
-     * <p>The amplitude step waveforms that can be created via
-     * {@link VibrationEffect#createWaveform(long[], int[], int)} can also be created with
-     * {@link WaveformBuilder} by adding zero duration transitions:
-     *
-     * <pre>
-     * {@code // These two effects are the same
-     * VibrationEffect waveform = VibrationEffect.createWaveform(
-     *     new long[] { 10, 20, 30 },  // timings in milliseconds
-     *     new int[] { 51, 102, 204 }, // amplitudes in [0,255]
-     *     -1);                        // repeat index
-     *
-     * VibrationEffect sameWaveform = VibrationEffect.startWaveform(targetAmplitude(0.2f))
-     *     .addSustain(Duration.ofMillis(10))
-     *     .addTransition(Duration.ZERO, targetAmplitude(0.4f))
-     *     .addSustain(Duration.ofMillis(20))
-     *     .addTransition(Duration.ZERO, targetAmplitude(0.8f))
-     *     .addSustain(Duration.ofMillis(30))
-     *     .build();}</pre>
-     *
-     * @see VibrationEffect#startWaveform
-     * @hide
-     */
-    @TestApi
-    public static final class WaveformBuilder {
-        // Epsilon used for float comparison of amplitude and frequency values on transitions.
-        private static final float EPSILON = 1e-5f;
-
-        private ArrayList<VibrationEffectSegment> mSegments = new ArrayList<>();
-        private float mLastAmplitude = 0f;
-        private float mLastFrequencyHz = 0f;
-
-        WaveformBuilder() {}
-
-        /**
-         * Add a transition to new vibration parameter value to the end of this waveform.
-         *
-         * <p>The duration represents how long the vibrator should take to smoothly transition to
-         * the new vibration parameter. If the duration is zero then the vibrator will jump to the
-         * new value as fast as possible.
-         *
-         * <p>Vibration parameter values will be truncated to conform to the device capabilities
-         * according to the {@link VibratorFrequencyProfileLegacy}.
-         *
-         * @param duration        The length of time this transition should take. Value must be
-         *                        non-negative and will be truncated to milliseconds.
-         * @param targetParameter The new target {@link VibrationParameter} value to be reached
-         *                        after the given duration.
-         * @return This {@link WaveformBuilder} object to enable adding multiple transitions in
-         * chain.
-         * @hide
-         */
-        @TestApi
-        @SuppressWarnings("MissingGetterMatchingBuilder") // No getters to segments once created.
-        @NonNull
-        public WaveformBuilder addTransition(@NonNull Duration duration,
-                @NonNull VibrationParameter targetParameter) {
-            Preconditions.checkNotNull(duration, "Duration is null");
-            checkVibrationParameter(targetParameter, "targetParameter");
-            float amplitude = extractTargetAmplitude(targetParameter, /* target2= */ null);
-            float frequencyHz = extractTargetFrequency(targetParameter, /* target2= */ null);
-            addTransitionSegment(duration, amplitude, frequencyHz);
-            return this;
-        }
-
-        /**
-         * Add a transition to new vibration parameters to the end of this waveform.
-         *
-         * <p>The duration represents how long the vibrator should take to smoothly transition to
-         * the new vibration parameters. If the duration is zero then the vibrator will jump to the
-         * new values as fast as possible.
-         *
-         * <p>Vibration parameters values will be truncated to conform to the device capabilities
-         * according to the {@link VibratorFrequencyProfileLegacy}.
-         *
-         * @param duration         The length of time this transition should take. Value must be
-         *                         non-negative and will be truncated to milliseconds.
-         * @param targetParameter1 The first target {@link VibrationParameter} value to be reached
-         *                         after the given duration.
-         * @param targetParameter2 The second target {@link VibrationParameter} value to be reached
-         *                         after the given duration, must be a different type of parameter
-         *                         than the one specified by the first argument.
-         * @return This {@link WaveformBuilder} object to enable adding multiple transitions in
-         * chain.
-         * @hide
-         */
-        @TestApi
-        @SuppressWarnings("MissingGetterMatchingBuilder") // No getters to segments once created.
-        @NonNull
-        public WaveformBuilder addTransition(@NonNull Duration duration,
-                @NonNull VibrationParameter targetParameter1,
-                @NonNull VibrationParameter targetParameter2) {
-            Preconditions.checkNotNull(duration, "Duration is null");
-            checkVibrationParameter(targetParameter1, "targetParameter1");
-            checkVibrationParameter(targetParameter2, "targetParameter2");
-            Preconditions.checkArgument(
-                    !Objects.equals(targetParameter1.getClass(), targetParameter2.getClass()),
-                    "Parameter arguments must specify different parameter types");
-            float amplitude = extractTargetAmplitude(targetParameter1, targetParameter2);
-            float frequencyHz = extractTargetFrequency(targetParameter1, targetParameter2);
-            addTransitionSegment(duration, amplitude, frequencyHz);
-            return this;
-        }
-
-        /**
-         * Add a duration to sustain the last vibration parameters of this waveform.
-         *
-         * <p>The duration represents how long the vibrator should sustain the last set of
-         * parameters provided to this builder.
-         *
-         * @param duration   The length of time the last values should be sustained by the vibrator.
-         *                   Value must be >= 1ms.
-         * @return This {@link WaveformBuilder} object to enable adding multiple transitions in
-         * chain.
-         * @hide
-         */
-        @TestApi
-        @SuppressWarnings("MissingGetterMatchingBuilder") // No getters to segments once created.
-        @NonNull
-        public WaveformBuilder addSustain(@NonNull Duration duration) {
-            int durationMs = (int) duration.toMillis();
-            Preconditions.checkArgument(durationMs >= 1, "Sustain duration must be >= 1ms");
-            mSegments.add(new StepSegment(mLastAmplitude, mLastFrequencyHz, durationMs));
-            return this;
-        }
-
-        /**
-         * Build the waveform as a single {@link VibrationEffect}.
-         *
-         * <p>The {@link WaveformBuilder} object is still valid after this call, so you can
-         * continue adding more primitives to it and generating more {@link VibrationEffect}s by
-         * calling this method again.
-         *
-         * @return The {@link VibrationEffect} resulting from the list of transitions.
-         * @hide
-         */
-        @TestApi
-        @NonNull
-        public VibrationEffect build() {
-            if (mSegments.isEmpty()) {
-                throw new IllegalStateException(
-                        "WaveformBuilder must have at least one transition to build.");
-            }
-            VibrationEffect effect = new Composed(mSegments, /* repeatIndex= */ -1);
-            effect.validate();
-            return effect;
-        }
-
-        private void checkVibrationParameter(@NonNull VibrationParameter vibrationParameter,
-                String paramName) {
-            Preconditions.checkNotNull(vibrationParameter, "%s is null", paramName);
-            Preconditions.checkArgument(
-                    (vibrationParameter instanceof AmplitudeVibrationParameter)
-                            || (vibrationParameter instanceof FrequencyVibrationParameter),
-                    "%s is a unknown parameter", paramName);
-        }
-
-        private float extractTargetAmplitude(@Nullable VibrationParameter target1,
-                @Nullable VibrationParameter target2) {
-            if (target2 instanceof AmplitudeVibrationParameter) {
-                return ((AmplitudeVibrationParameter) target2).amplitude;
-            }
-            if (target1 instanceof AmplitudeVibrationParameter) {
-                return ((AmplitudeVibrationParameter) target1).amplitude;
-            }
-            return mLastAmplitude;
-        }
-
-        private float extractTargetFrequency(@Nullable VibrationParameter target1,
-                @Nullable VibrationParameter target2) {
-            if (target2 instanceof FrequencyVibrationParameter) {
-                return ((FrequencyVibrationParameter) target2).frequencyHz;
-            }
-            if (target1 instanceof FrequencyVibrationParameter) {
-                return ((FrequencyVibrationParameter) target1).frequencyHz;
-            }
-            return mLastFrequencyHz;
-        }
-
-        private void addTransitionSegment(Duration duration, float targetAmplitude,
-                float targetFrequency) {
-            Preconditions.checkNotNull(duration, "Duration is null");
-            Preconditions.checkArgument(!duration.isNegative(),
-                    "Transition duration must be non-negative");
-            int durationMs = (int) duration.toMillis();
-
-            // Ignore transitions with zero duration, but keep values for next additions.
-            if (durationMs > 0) {
-                if ((Math.abs(mLastAmplitude - targetAmplitude) < EPSILON)
-                        && (Math.abs(mLastFrequencyHz - targetFrequency) < EPSILON)) {
-                    // No value is changing, this can be best represented by a step segment.
-                    mSegments.add(new StepSegment(targetAmplitude, targetFrequency, durationMs));
-                } else {
-                    mSegments.add(new RampSegment(mLastAmplitude, targetAmplitude,
-                            mLastFrequencyHz, targetFrequency, durationMs));
-                }
-            }
-
-            mLastAmplitude = targetAmplitude;
-            mLastFrequencyHz = targetFrequency;
-        }
-    }
-
-    /**
-     * A representation of a single vibration parameter.
-     *
-     * <p>This is to describe a waveform haptic effect, which consists of one or more timed
-     * transitions to a new set of {@link VibrationParameter}s.
-     *
-     * <p>Examples of concrete parameters are the vibration amplitude or frequency.
-     *
-     * @see VibrationEffect.WaveformBuilder
-     * @hide
-     */
-    @TestApi
-    @SuppressWarnings("UserHandleName") // This is not a regular set of parameters, no *Params.
-    public static class VibrationParameter {
-        VibrationParameter() {
-        }
-
-        /**
-         * The target vibration amplitude.
-         *
-         * @param amplitude The amplitude value, between 0 and 1, inclusive, where 0 represents the
-         *                  vibrator turned off and 1 represents the maximum amplitude the vibrator
-         *                  can reach across all supported frequencies.
-         * @return The {@link VibrationParameter} instance that represents given amplitude.
-         * @hide
-         */
-        @TestApi
-        @NonNull
-        public static VibrationParameter targetAmplitude(
-                @FloatRange(from = 0, to = 1) float amplitude) {
-            return new AmplitudeVibrationParameter(amplitude);
-        }
-
-        /**
-         * The target vibration frequency.
-         *
-         * @param frequencyHz The frequency value, in hertz.
-         * @return The {@link VibrationParameter} instance that represents given frequency.
-         * @hide
-         */
-        @TestApi
-        @NonNull
-        public static VibrationParameter targetFrequency(@FloatRange(from = 1) float frequencyHz) {
-            return new FrequencyVibrationParameter(frequencyHz);
-        }
-    }
-
-    /** The vibration amplitude, represented by a value in [0,1]. */
-    private static final class AmplitudeVibrationParameter extends VibrationParameter {
-        public final float amplitude;
-
-        AmplitudeVibrationParameter(float amplitude) {
-            Preconditions.checkArgument((amplitude >= 0) && (amplitude <= 1),
-                    "Amplitude must be within [0,1]");
-            this.amplitude = amplitude;
-        }
-    }
-
-    /** The vibration frequency, in hertz, or zero to represent undefined frequency. */
-    private static final class FrequencyVibrationParameter extends VibrationParameter {
-        public final float frequencyHz;
-
-        FrequencyVibrationParameter(float frequencyHz) {
-            Preconditions.checkArgument(frequencyHz >= 1, "Frequency must be >= 1");
-            Preconditions.checkArgument(Float.isFinite(frequencyHz), "Frequency must be finite");
-            this.frequencyHz = frequencyHz;
-        }
     }
 
     @NonNull

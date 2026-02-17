@@ -26,12 +26,11 @@ import static org.junit.Assert.assertEquals;
 import android.hardware.vibrator.IVibrator;
 import android.os.VibrationEffect;
 import android.os.VibratorInfo;
-import android.os.vibrator.Flags;
 import android.os.vibrator.BasicPwleSegment;
+import android.os.vibrator.Flags;
 import android.os.vibrator.PrebakedSegment;
 import android.os.vibrator.PrimitiveSegment;
 import android.os.vibrator.PwleSegment;
-import android.os.vibrator.RampSegment;
 import android.os.vibrator.StepSegment;
 import android.os.vibrator.VibrationEffectSegment;
 import android.platform.test.annotations.DisableFlags;
@@ -65,9 +64,8 @@ public class PrimitiveDelayAdapterTest {
     @Test
     public void testNonPrimitiveSegments_keepsListUnchanged() {
         List<VibrationEffectSegment> segments = new ArrayList<>(Arrays.asList(
-                new StepSegment(/* amplitude= */ 0, /* frequencyHz= */ 1, /* duration= */ 10),
-                new RampSegment(/* startAmplitude= */ 0.8f, /* endAmplitude= */ 0.2f,
-                        /* startFrequencyHz= */ 100, /* endFrequencyHz= */ 1, /* duration= */ 20),
+                new StepSegment(/* amplitude= */ 0, /* duration= */ 10),
+                new StepSegment(/* amplitude= */ 0.8f, /* duration= */ 20),
                 new PrebakedSegment(VibrationEffect.EFFECT_CLICK, false,
                         VibrationEffect.EFFECT_STRENGTH_LIGHT)));
         List<VibrationEffectSegment> originalSegments = new ArrayList<>(segments);
@@ -136,11 +134,11 @@ public class PrimitiveDelayAdapterTest {
     @Test
     public void testPrimitiveWithRelativeDelayAfter_afterStep_usesSegmentStartTimeForDelay() {
         List<VibrationEffectSegment> segments = new ArrayList<>(Arrays.asList(
-                new StepSegment(/* amplitude= */ 0, /* frequencyHz= */ 1, /* duration= */ 10),
+                new StepSegment(/* amplitude= */ 0, /* duration= */ 10),
                 new PrimitiveSegment(PRIMITIVE_CLICK, 1f, 10, DELAY_TYPE_RELATIVE_START_OFFSET)));
 
         List<VibrationEffectSegment> expectedSegments = new ArrayList<>(Arrays.asList(
-                new StepSegment(/* amplitude= */ 0, /* frequencyHz= */ 1, /* duration= */ 10),
+                new StepSegment(/* amplitude= */ 0, /* duration= */ 10),
                 new PrimitiveSegment(PRIMITIVE_CLICK, 1f, 0, DELAY_TYPE_PAUSE)));
 
         assertEquals(-1, mAdapter.adaptToVibrator(BASIC_VIBRATOR_INFO, segments, -1));

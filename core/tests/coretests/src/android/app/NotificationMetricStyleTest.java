@@ -37,6 +37,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
@@ -65,6 +66,7 @@ import java.time.InstantSource;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -94,6 +96,7 @@ public class NotificationMetricStyleTest {
 
     private static final long ELAPSED_REALTIME = 300_000;
 
+    private static final String NBSP = "\u00a0";
     private static final String NNBSP = "\u202f";
 
     private Context mContext;
@@ -293,7 +296,8 @@ public class NotificationMetricStyleTest {
     }
 
     @Test
-    public void valueToString_fixedDateFormats() {
+    @DisableFlags(Flags.FLAG_METRIC_VALUE_ALTERNATIVE_STRINGS)
+    public void valueToString_fixedDateFormats_withoutAlternativeStrings() {
         FixedDate soonAuto = new FixedDate(TOMORROW, FixedDate.FORMAT_AUTOMATIC);
         expect.that(soonAuto.toValueString(mContext)).isEqualTo(new ValueString("5/31"));
 
@@ -335,6 +339,49 @@ public class NotificationMetricStyleTest {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_METRIC_VALUE_ALTERNATIVE_STRINGS)
+    public void valueToString_fixedDateFormats_withAlternativeStrings() {
+        FixedDate soonAuto = new FixedDate(TOMORROW, FixedDate.FORMAT_AUTOMATIC);
+        expect.that(soonAuto.toValueString(mContext)).isEqualTo(new ValueString("5/31"));
+
+        FixedDate soonLong = new FixedDate(TOMORROW, FixedDate.FORMAT_LONG_DATE);
+        expect.that(soonLong.toValueString(mContext)).isEqualTo(
+                new ValueString(List.of("May 31, 2025", "May 31", "5/31"), null));
+
+        FixedDate soonShort = new FixedDate(TOMORROW, FixedDate.FORMAT_SHORT_DATE);
+        expect.that(soonShort.toValueString(mContext)).isEqualTo(
+                new ValueString(List.of("5/31/2025", "5/31"), null));
+
+        withLocale(Locale.FRANCE, () -> {
+            expect.that(soonAuto.toValueString(mContext)).isEqualTo(new ValueString("31/05"));
+            expect.that(soonLong.toValueString(mContext)).isEqualTo(
+                    new ValueString(List.of("31 mai 2025", "31 mai", "31/05"), null));
+            expect.that(soonShort.toValueString(mContext)).isEqualTo(
+                    new ValueString(List.of("31/05/2025", "31/05"), null));
+        });
+
+        FixedDate farAwayAuto = new FixedDate(FAR_AWAY, FixedDate.FORMAT_AUTOMATIC);
+        expect.that(farAwayAuto.toValueString(mContext)).isEqualTo(new ValueString("12/18/2025"));
+
+        FixedDate farAwayLong = new FixedDate(FAR_AWAY, FixedDate.FORMAT_LONG_DATE);
+        expect.that(farAwayLong.toValueString(mContext)).isEqualTo(
+                new ValueString(List.of("Dec 18, 2025", "12/18/2025"), null));
+
+        FixedDate farAwayShort = new FixedDate(FAR_AWAY, FixedDate.FORMAT_SHORT_DATE);
+        expect.that(farAwayShort.toValueString(mContext)).isEqualTo(
+                new ValueString("12/18/2025"));
+
+        withLocale(Locale.FRANCE, () -> {
+            expect.that(farAwayAuto.toValueString(mContext)).isEqualTo(
+                    new ValueString("18/12/2025"));
+            expect.that(farAwayLong.toValueString(mContext)).isEqualTo(
+                    new ValueString(List.of("18 déc. 2025", "18/12/2025"), null));
+            expect.that(farAwayShort.toValueString(mContext)).isEqualTo(
+                    new ValueString("18/12/2025"));
+        });
+    }
+
+    @Test
     public void valueToString_fixedDate_notAffectedByTimeZone() {
         FixedDate today = new FixedDate(TODAY, FixedDate.FORMAT_AUTOMATIC);
 
@@ -368,6 +415,17 @@ public class NotificationMetricStyleTest {
         FixedTime afterMidnight = new FixedTime(LocalTime.of(0, 1));
         expect.that(afterMidnight.toValueString(mContext)).isEqualTo(
                 new ValueString("12:01" + NNBSP + "AM"));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_METRIC_VALUE_ALTERNATIVE_STRINGS)
+    public void valueToString_fixedTime_withAlternativeStrings() {
+        FixedTime time = new FixedTime(LocalTime.of(14, 0));
+        expect.that(time.toValueString(mContext)).isEqualTo(new ValueString(
+                List.of(
+                        "2:00" + NNBSP + "PM",
+                        "2" + NNBSP + "PM"),
+                null));
     }
 
     @Test
@@ -413,32 +471,108 @@ public class NotificationMetricStyleTest {
     @Test
     public void valueToString_fixedInt() {
         FixedInt withUnit = new FixedInt(42, "km");
-        assertThat(withUnit.toValueString(mContext)).isEqualTo(new ValueString("42", "km"));
+        expect.that(withUnit.toValueString(mContext)).isEqualTo(new ValueString("42", "km"));
 
         FixedInt noUnit = new FixedInt(42);
-        assertThat(noUnit.toValueString(mContext)).isEqualTo(new ValueString("42", null));
+        expect.that(noUnit.toValueString(mContext)).isEqualTo(new ValueString("42", null));
     }
 
     @Test
-    public void valueToString_fixedFloat() {
+    @DisableFlags(Flags.FLAG_METRIC_VALUE_ALTERNATIVE_STRINGS)
+    public void valueToString_fixedInt_withoutAlternativeStrings() {
+        FixedInt big = new FixedInt(3_499_451); // Population of Uruguay :)
+        expect.that(big.toValueString(mContext)).isEqualTo(new ValueString("3,499,451", null));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_METRIC_VALUE_ALTERNATIVE_STRINGS)
+    public void valueToString_fixedInt_withAlternativeStrings() {
+        FixedInt big = new FixedInt(3_499_451); // Population of Uruguay :)
+        expect.that(big.toValueString(mContext)).isEqualTo(new ValueString(
+                List.of(
+                        "3,499,451",
+                        "3.5M"
+                ),
+                null));
+
+        withLocale(Locale.of("ro-RO"), () ->
+                expect.that(big.toValueString(mContext)).isEqualTo(new ValueString(
+                        List.of(
+                                "3.499.451",
+                                "3,5" + NBSP + "mil."
+                        ),
+                        null)));
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_METRIC_VALUE_ALTERNATIVE_STRINGS)
+    public void valueToString_fixedFloat_withoutAlternativeStrings() {
         FixedFloat defaultDigits = new FixedFloat(1612.3456789f);
-        assertThat(defaultDigits.toValueString(mContext)).isEqualTo(
+        expect.that(defaultDigits.toValueString(mContext)).isEqualTo(
                 new ValueString("1,612.35", null));
 
         FixedFloat minDigits = new FixedFloat(42, "km", 2, 4);
-        assertThat(minDigits.toValueString(mContext)).isEqualTo(new ValueString("42.00", "km"));
+        expect.that(minDigits.toValueString(mContext)).isEqualTo(new ValueString("42.00", "km"));
 
         FixedFloat maxDigits = new FixedFloat(42.1111111f, "km", 2, 4);
-        assertThat(maxDigits.toValueString(mContext)).isEqualTo(new ValueString("42.1111", "km"));
+        expect.that(maxDigits.toValueString(mContext)).isEqualTo(new ValueString("42.1111", "km"));
+
+        FixedFloat hugeNumber = new FixedFloat(20_511_110_000_000f);
+        expect.that(hugeNumber.toValueString(mContext)).isEqualTo(
+                new ValueString("20,511,109,152,768", null)); // Float is not precise :(
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_METRIC_VALUE_ALTERNATIVE_STRINGS)
+    public void valueToString_fixedFloat_withAlternativeStrings() {
+        FixedFloat defaultDigits = new FixedFloat(1612.3456789f);
+        expect.that(defaultDigits.toValueString(mContext)).isEqualTo(new ValueString(
+                List.of(
+                        "1,612.35", // Default min/max digits
+                        "1.6K" // Compact
+                ),
+                null));
+
+        FixedFloat minDigits = new FixedFloat(42, "km", 2, 4);
+        expect.that(minDigits.toValueString(mContext)).isEqualTo(new ValueString(
+                List.of(
+                        "42.00", // Min 2 fraction digits
+                        "42" // Compact
+                ),
+                "km"));
+
+        FixedFloat maxDigits = new FixedFloat(42.1111111f, "km", 2, 4);
+        expect.that(maxDigits.toValueString(mContext)).isEqualTo(new ValueString(
+                List.of(
+                    "42.1111", // Max 4 fraction digits
+                    "42" // Compact
+                ),
+                "km"));
+
+        FixedFloat hugeNumber = new FixedFloat(20_511_110_000_000f);
+        expect.that(hugeNumber.toValueString(mContext)).isEqualTo(new ValueString(
+                List.of(
+                        "20,511,109,152,768", // Float is not precise :(
+                        "21T" // Compact
+                ),
+                null));
+
+        withLocale(Locale.SIMPLIFIED_CHINESE, () ->
+                expect.that(hugeNumber.toValueString(mContext)).isEqualTo(new ValueString(
+                        List.of(
+                                "20,511,109,152,768",
+                                "21万亿"
+                        ),
+                        null)));
     }
 
     @Test
     public void valueToString_fixedText() {
         FixedText withUnit = new FixedText("120/80", "mmHg");
-        assertThat(withUnit.toValueString(mContext)).isEqualTo(new ValueString("120/80", "mmHg"));
+        expect.that(withUnit.toValueString(mContext)).isEqualTo(new ValueString("120/80", "mmHg"));
 
         FixedText noUnit = new FixedText("Boring");
-        assertThat(noUnit.toValueString(mContext)).isEqualTo(new ValueString("Boring", null));
+        expect.that(noUnit.toValueString(mContext)).isEqualTo(new ValueString("Boring", null));
     }
 
     @Test

@@ -6736,8 +6736,7 @@ public final class PowerManagerService extends SystemService
                     return info != null && isValidBrightnessValue(info.brightnessDefault)
                             ? info.brightnessDefault : mScreenBrightnessDefault;
                 case PowerManager.BRIGHTNESS_CONSTRAINT_TYPE_DIM:
-                    return android.companion.virtualdevice.flags.Flags.deviceAwareDisplayPower()
-                            && info != null && isValidBrightnessValue(info.brightnessDim)
+                    return info != null && isValidBrightnessValue(info.brightnessDim)
                             ? info.brightnessDim : mScreenBrightnessDim;
                 default:
                     return PowerManager.BRIGHTNESS_INVALID_FLOAT;

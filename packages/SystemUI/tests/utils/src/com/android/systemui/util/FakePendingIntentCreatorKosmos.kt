@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package com.android.systemui.dreams.ui.viewmodel
+package com.android.systemui.util
 
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
-import com.android.systemui.plugins.activityStarter
 
-val Kosmos.dreamSetupViewModel by Fixture { DreamSetupViewModel(activityStarter) }
+/**  */
+val Kosmos.fakePendingIntentCreator: FakePendingIntentCreator by
+    Kosmos.Fixture { FakePendingIntentCreator() }

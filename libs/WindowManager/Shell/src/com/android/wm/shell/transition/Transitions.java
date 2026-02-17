@@ -40,7 +40,7 @@ import static android.window.TransitionInfo.FLAG_STARTING_WINDOW_TRANSFER_RECIPI
 import static com.android.window.flags.Flags.unifyShellBinders;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_TRANSITIONS;
 import static com.android.wm.shell.shared.TransitionUtil.FLAG_IS_DESKTOP_WALLPAPER_ACTIVITY;
-import static com.android.wm.shell.shared.TransitionUtil.isOpeningType;
+import static com.android.wm.shell.shared.TransitionUtil.isClosingType;
 import static com.android.wm.shell.shared.TransitionUtil.setUpSurface;
 
 import android.annotation.NonNull;
@@ -59,6 +59,7 @@ import android.provider.Settings;
 import android.util.ArrayMap;
 import android.util.Log;
 import android.util.Pair;
+import android.util.SparseBooleanArray;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
 import android.window.ITransitionPlayer;
@@ -599,9 +600,16 @@ public class Transitions implements RemoteCallable<Transitions>,
      */
     private static void setupStartState(@NonNull TransitionInfo info,
             @NonNull SurfaceControl.Transaction t, @NonNull SurfaceControl.Transaction finishT) {
-        boolean isOpening = isOpeningType(info.getType());
-        for (int i = info.getChanges().size() - 1; i >= 0; --i) {
+        final SparseBooleanArray isRevealingOnDisplay =  new SparseBooleanArray();
+
+        for (int i = 0; i < info.getChanges().size(); ++i) {
             final TransitionInfo.Change change = info.getChanges().get(i);
+            final int mode = change.getMode();
+            // If a window is closing or moving to another display, it reveals the content behind
+            // it.
+            if (isClosingType(mode) || change.getStartDisplayId() != change.getEndDisplayId()) {
+                isRevealingOnDisplay.put(change.getStartDisplayId(), true);
+            }
             if (change.hasFlags(FLAGS_IS_NON_APP_WINDOW & ~FLAG_IS_WALLPAPER)) {
                 // Currently system windows are controlled by WindowState, so don't change their
                 // surfaces. Otherwise their surfaces could be hidden or cropped unexpectedly.
@@ -611,7 +619,6 @@ public class Transitions implements RemoteCallable<Transitions>,
                 continue;
             }
             final SurfaceControl leash = change.getLeash();
-            final int mode = info.getChanges().get(i).getMode();
 
             if (mode == TRANSIT_TO_FRONT) {
                 // When the window is moved to front, make sure the crop is updated to prevent it
@@ -644,6 +651,7 @@ public class Transitions implements RemoteCallable<Transitions>,
                 continue;
             }
 
+            final boolean isOpening = !isRevealingOnDisplay.get(change.getEndDisplayId());
             if (mode == TRANSIT_OPEN || mode == TRANSIT_TO_FRONT) {
                 t.show(leash);
                 t.setMatrix(leash, 1, 0, 0, 1);

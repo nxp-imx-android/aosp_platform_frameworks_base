@@ -346,7 +346,9 @@ public abstract class ContextInsight {
     }
 
     /**
-     * Indicates whether the insight has attribution details that can be shown.
+     * Indicates whether the insight has attribution details that can be shown. This can be
+     * checked before showing a UI to call {@link PersonalContextManager#showAttribution} to see if
+     * attribution is available.
      *
      * @see AttributionDetails
      */
