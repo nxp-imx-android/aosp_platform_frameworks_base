@@ -23,6 +23,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import android.app.WallpaperColors;
@@ -38,6 +39,7 @@ import android.testing.TestableResources;
 import androidx.test.runner.AndroidJUnit4;
 
 import com.android.internal.R;
+import com.android.server.pm.UserManagerInternal;
 import com.android.server.wallpaper.WallpaperManagerInternal;
 import com.android.systemui.monet.ColorScheme;
 
@@ -67,6 +69,7 @@ public class ThemeSettingsManagerTests {
 
     private ContentResolver mContentResolver;
     private ThemeSettingsManager mManager;
+    private ThemeEnvironment mEnvironment;
 
     private static final String UNKNOWN_FIELDS_JSON = """
                     {
@@ -83,14 +86,21 @@ public class ThemeSettingsManagerTests {
     public void setup() {
         MockitoAnnotations.initMocks(this);
         mContentResolver = mContext.getContentResolver();
-        mManager = new ThemeSettingsManager(new ThemeWallpaperManager(mMockWmi),
-                mHardwareColorRule.sysPropReader, mHardwareColorRule.options);
-
-        Settings.Secure.putStringForUser(mContentResolver,
-                Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, null, mUserId);
 
         TestableResources userResources = mContext.getOrCreateTestableResources();
         userResources.addOverride(R.array.theming_defaults, mHardwareColorRule.options);
+
+        UserManagerInternal userManager = mock(UserManagerInternal.class);
+        when(userManager.isHeadlessSystemUserMode()).thenReturn(false);
+
+        mEnvironment = new ThemeEnvironment(mContext, userManager,
+                mHardwareColorRule.sysPropReader);
+
+        mManager = new ThemeSettingsManager(new ThemeWallpaperManager(mMockWmi),
+                mHardwareColorRule.sysPropReader, mEnvironment);
+
+        Settings.Secure.putStringForUser(mContentResolver,
+                Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, null, mUserId);
     }
 
     @Test
@@ -309,8 +319,14 @@ public class ThemeSettingsManagerTests {
             // No wildcard
     })
     public void createDefaultThemeSettings_noWildcard_throwsException() {
+        // Redefine environment for this test to bypass setup
+        UserManagerInternal userManager = mock(UserManagerInternal.class);
+        ThemeEnvironment env = new ThemeEnvironment(mContext, userManager, (key, def) -> "");
+        ThemeSettingsManager manager = new ThemeSettingsManager(new ThemeWallpaperManager(mMockWmi),
+                (key, def) -> "", env);
+
         assertThrows(IllegalStateException.class,
-                () -> mManager.createDefaultThemeSettings(mUserId));
+                () -> manager.createDefaultThemeSettings(mUserId));
     }
 
     @Test
@@ -321,7 +337,8 @@ public class ThemeSettingsManagerTests {
         ThemeSettings defaultSettings = mManager.createDefaultThemeSettings(mUserId);
         assertThat(defaultSettings.colorSource()).isEqualTo(FieldColorSource.VALUE_PRESET);
         assertThat(defaultSettings.themeStyle()).isEqualTo(ThemeStyle.TONAL_SPOT);
-        assertThat(defaultSettings.systemPalette()).isEqualTo(Color.valueOf(0xFF1b6ef3));
+        assertThat(defaultSettings.systemPalette()).isEqualTo(
+                mEnvironment.hardcodedFallback.systemPalette());
     }
 
     @Test

@@ -18,7 +18,6 @@ package com.android.server.theming;
 
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 
-import static com.android.server.theming.ThemeStateManager.DEBOUNCE_MS;
 import static com.android.systemui.monet.ColorScheme.GOOGLE_BLUE;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -48,8 +47,6 @@ import com.android.server.om.OverlayManagerInternal;
 import com.android.server.pm.UserManagerInternal;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.ux.material.libmonet.dynamiccolor.ColorSpec.SpecVersion;
-import com.google.ux.material.libmonet.dynamiccolor.DynamicScheme.Platform;
 
 import org.junit.After;
 import org.junit.Before;
@@ -93,6 +90,7 @@ public class ThemeStateManagerTest {
 
     private ThemeStateManager mThemeStateManager;
     private FakeScheduledExecutorService mSchedulerExecutor;
+    private ThemeEnvironment mEnvironment;
 
     private final HashMap<Integer, Object> mUserResourceOverrides = new HashMap<>(
             new ImmutableMap.Builder<Integer, Object>()
@@ -138,12 +136,13 @@ public class ThemeStateManagerTest {
             return new int[]{requestedUserId};
         });
 
+        mEnvironment = new ThemeEnvironment(mMainContext, mUserManager, (key, def) -> def);
+        mEnvironment.setBootingComplete();
+
         mSchedulerExecutor = new FakeScheduledExecutorService();
-        mThemeStateManager = new ThemeStateManager(mMainContext, mSchedulerExecutor,
-                Platform.PHONE, SpecVersion.SPEC_2025);
+        mThemeStateManager = new ThemeStateManager(mMainContext, mSchedulerExecutor, mEnvironment);
         mThemeStateManager.setThemeOverlayHelper(mThemeOverlayHelper);
         mThemeStateManager.onServicesReady();
-        mThemeStateManager.onBootAnimationDismissing();
     }
 
     @After
@@ -617,7 +616,7 @@ public class ThemeStateManagerTest {
     }
 
     private void waitForThemeUpdate() {
-        mSchedulerExecutor.fastForwardTime(DEBOUNCE_MS + 100L);
+        mSchedulerExecutor.fastForwardTime(ThemeStateManager.DEBOUNCE_MS + 100L);
     }
 
     private ThemeStatePair startProvisionedUser() {

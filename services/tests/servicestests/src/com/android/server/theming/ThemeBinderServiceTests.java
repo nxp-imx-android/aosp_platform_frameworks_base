@@ -52,10 +52,6 @@ import com.android.server.om.OverlayManagerInternal;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.wallpaper.WallpaperManagerInternal;
 
-import com.google.ux.material.libmonet.dynamiccolor.ColorSpec.SpecVersion;
-import com.google.ux.material.libmonet.dynamiccolor.DynamicScheme;
-import com.google.ux.material.libmonet.dynamiccolor.DynamicScheme.Platform;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -89,6 +85,7 @@ public class ThemeBinderServiceTests {
     private ThemeSettings mDefaultSettings;
     private ThemeStateManager mThemeStateManager;
     private FakeScheduledExecutorService mSchedulerExecutor;
+    private ThemeEnvironment mEnvironment;
 
     @Mock
     private WallpaperManagerInternal mMockWmi;
@@ -144,14 +141,15 @@ public class ThemeBinderServiceTests {
                 return mHardwareColorRule.color;
             }
         };
+
+        mEnvironment = new ThemeEnvironment(context, mUserManager, systemPropertiesReader);
         ThemeSettingsManager themeSettingsManager = new ThemeSettingsManager(themeWallpaperManager,
-                systemPropertiesReader, mHardwareColorRule.options);
+                systemPropertiesReader, mEnvironment);
         mSchedulerExecutor = new FakeScheduledExecutorService();
-        mThemeStateManager = new ThemeStateManager(context, mSchedulerExecutor,
-                Platform.PHONE, SpecVersion.SPEC_2025);
+        mThemeStateManager = new ThemeStateManager(context, mSchedulerExecutor, mEnvironment);
         mThemeStateManager.onServicesReady();
         mInternal = new ThemeManagerImpl(context, themeSettingsManager,
-                mThemeStateManager, mOverlayHelper, Platform.PHONE, SpecVersion.SPEC_2025) {
+                mThemeStateManager, mOverlayHelper, mEnvironment) {
             @Override
             public void onBootAnimationDismissing() {
             }
@@ -283,8 +281,8 @@ public class ThemeBinderServiceTests {
         assertThat(returnedValue[0].style).isEqualTo(ThemeStyle.VIBRANT);
         assertThat(returnedValue[0].contrast).isEqualTo(0.5f);
         assertThat(returnedValue[0].specVersion).isEqualTo(
-                DynamicScheme.DEFAULT_SPEC_VERSION.name());
-        assertThat(returnedValue[0].platform).isEqualTo(DynamicScheme.DEFAULT_PLATFORM.name());
+                mEnvironment.specVersion.name());
+        assertThat(returnedValue[0].platform).isEqualTo(mEnvironment.platform.name());
     }
 
     @Test

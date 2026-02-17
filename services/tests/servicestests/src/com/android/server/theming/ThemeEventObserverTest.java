@@ -29,7 +29,6 @@ import static org.mockito.Mockito.when;
 
 import android.app.KeyguardManager;
 import android.app.WallpaperColors;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.theming.ThemeSettings;
@@ -43,6 +42,7 @@ import androidx.test.runner.AndroidJUnit4;
 
 import com.android.server.LocalServices;
 import com.android.server.UiModeManagerInternal;
+import com.android.server.pm.UserManagerInternal;
 import com.android.server.wallpaper.WallpaperManagerInternal;
 
 import org.junit.After;
@@ -78,6 +78,8 @@ public class ThemeEventObserverTest {
     private UiModeManagerInternal mUiModeManagerInternal;
     @Mock
     private KeyguardManager mKeyguardManager;
+    @Mock
+    private UserManagerInternal mUserManagerInternal;
 
     @Mock
     private ThemeManagerImpl mThemeManagerImpl;
@@ -88,13 +90,12 @@ public class ThemeEventObserverTest {
     private ArgumentCaptor<KeyguardManager.KeyguardLockedStateListener> mKeyguardListenerCaptor;
 
     private ThemeEventObserver mThemeEventObserver;
-    private ContentResolver mContentResolver;
     private WallpaperManagerInternal.ColorsChangedCallbackInternal mWallpaperListener;
+    private ThemeEnvironment mEnvironment;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        mContentResolver = mContext.getContentResolver();
 
         LocalServices.removeServiceForTest(UiModeManagerInternal.class);
         LocalServices.addService(UiModeManagerInternal.class, mUiModeManagerInternal);
@@ -106,8 +107,13 @@ public class ThemeEventObserverTest {
             return null;
         }).when(mThemeWallpaperManager).addOnColorsChangedListener(any(), any());
 
+        when(mUserManagerInternal.getProfileParentId(anyInt()))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        mEnvironment = new ThemeEnvironment(mContext, mUserManagerInternal, (key, def) -> def);
+
         mThemeEventObserver = new ThemeEventObserver(mContext, mThemeStateManager,
-                mThemeSettingsManager, mThemeUserLifecycle, mThemeManagerImpl);
+                mThemeSettingsManager, mThemeUserLifecycle, mThemeManagerImpl, mEnvironment);
         mThemeEventObserver.onServicesReady(mThemeWallpaperManager,
                 mUiModeManagerInternal, mKeyguardManager);
         mThemeEventObserver.registerListeners();

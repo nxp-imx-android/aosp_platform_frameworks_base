@@ -20,17 +20,20 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import android.content.Context;
 import android.content.theming.ThemeStyle;
 import android.graphics.Color;
 
+import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
 
+import com.android.server.pm.UserManagerInternal;
 import com.android.systemui.monet.ColorScheme;
 
-import com.google.ux.material.libmonet.dynamiccolor.ColorSpec.SpecVersion;
-import com.google.ux.material.libmonet.dynamiccolor.DynamicScheme.Platform;
-
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -46,8 +49,19 @@ public class ThemeStatePairTests {
 
     private static final int USER_ID = 0;
 
-    private ThemeStatePair mStatePair = new ThemeStatePair(USER_ID, true, SEED_COLOR_VALID,
-            CONTRAST_DEFAULT, STYLE_VALID, SpecVersion.SPEC_2025, Platform.PHONE);
+    private ThemeStatePair mStatePair;
+    private ThemeEnvironment mEnvironment;
+
+    @Before
+    public void setup() {
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        UserManagerInternal userManager = mock(UserManagerInternal.class);
+        when(userManager.isHeadlessSystemUserMode()).thenReturn(false);
+
+        mEnvironment = new ThemeEnvironment(context, userManager, (key, def) -> def);
+        mStatePair = new ThemeStatePair(USER_ID, true, SEED_COLOR_VALID,
+                CONTRAST_DEFAULT, STYLE_VALID, mEnvironment);
+    }
 
     @Test
     public void testShouldUpdateOverlays_noChanges() {
@@ -152,7 +166,7 @@ public class ThemeStatePairTests {
     @Test
     public void testShouldUpdate_userNotSetup_shouldNotUpdate() {
         mStatePair = new ThemeStatePair(USER_ID, false, SEED_COLOR_VALID, CONTRAST_DEFAULT,
-                STYLE_VALID, SpecVersion.SPEC_2025, Platform.PHONE);
+                STYLE_VALID, mEnvironment);
         assertFalse(mStatePair.shouldUpdate(false));
     }
 
@@ -186,7 +200,7 @@ public class ThemeStatePairTests {
     public void testShouldUpdate_booting_shouldUpdateEvenIfNotSetup() {
         mStatePair = new ThemeStatePair(USER_ID, false /* isSetup */, SEED_COLOR_VALID,
                 CONTRAST_DEFAULT,
-                STYLE_VALID, SpecVersion.SPEC_2025, Platform.PHONE);
+                STYLE_VALID, mEnvironment);
         // Apply a change so pending != current, but do NOT use forceUpdate() because
         // that bypasses the setup check.
         mStatePair.applySeedColor(SEED_COLOR_RED);

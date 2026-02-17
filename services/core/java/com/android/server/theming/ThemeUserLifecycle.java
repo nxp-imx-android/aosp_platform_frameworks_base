@@ -50,6 +50,7 @@ public class ThemeUserLifecycle {
     private final Context mContext;
     private final ThemeStateManager mStateManager;
     private final ThemeSettingsManager mThemeSettingsManager;
+    private final ThemeEnvironment mEnvironment;
 
     private ThemeWallpaperManager mWallpaperManager;
     private UserManagerInternal mUserManagerInternal;
@@ -57,10 +58,12 @@ public class ThemeUserLifecycle {
 
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
     public ThemeUserLifecycle(@NonNull Context context, @NonNull ThemeStateManager stateManager,
-            @NonNull ThemeSettingsManager themeSettingsManager) {
+            @NonNull ThemeSettingsManager themeSettingsManager,
+            @NonNull ThemeEnvironment environment) {
         mContext = context;
         mStateManager = stateManager;
         mThemeSettingsManager = themeSettingsManager;
+        mEnvironment = environment;
     }
 
     /**
@@ -105,7 +108,7 @@ public class ThemeUserLifecycle {
     public void onUserStarting(@NonNull SystemService.TargetUser user) {
         int userId = user.getUserHandle().getIdentifier();
 
-        if (shouldIgnoreForHsum(userId, "onUserStarting")) {
+        if (shouldIgnoreUser(userId, "onUserStarting")) {
             return;
         }
 
@@ -134,7 +137,7 @@ public class ThemeUserLifecycle {
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
     public void onUserSwitching(@Nullable SystemService.TargetUser from,
             @NonNull SystemService.TargetUser to) {
-        if (shouldIgnoreForHsum(to.getUserIdentifier(), "onUserSwitching")) {
+        if (shouldIgnoreUser(to.getUserIdentifier(), "onUserSwitching")) {
             return;
         }
         Slog.d(TAG, "User switch from:" + (from != null ? from.getUserIdentifier() : "-") + " to: "
@@ -159,7 +162,7 @@ public class ThemeUserLifecycle {
      */
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
     public boolean loadUserStateAndNotifyStateManager(@UserIdInt int userId) {
-        if (shouldIgnoreForHsum(userId, "loadUserStateAndNotifyStateManager")) {
+        if (shouldIgnoreUser(userId, "loadUserStateAndNotifyStateManager")) {
             return false;
         }
 
@@ -195,19 +198,16 @@ public class ThemeUserLifecycle {
     }
 
     /**
-     * Checks if we should ignore an event because of Headless System User Mode (HSUM).
-     * <p>
-     * In HSUM, the system user (user 0) runs in the background and doesn't need its own theme.
-     * It just uses the theme of the current user.
+     * Checks if we should ignore an event because of Headless System User Mode (HSUM)
+     * or because the user is a profile.
      *
      * @param userId     The user ID to check.
      * @param methodName The name of the method calling this check, for logging.
      * @return {@code true} if we should ignore this event for this user.
      */
-    boolean shouldIgnoreForHsum(int userId, String methodName) {
-        if (mUserManagerInternal != null && mUserManagerInternal.isHeadlessSystemUserMode()
-                && userId == UserHandle.USER_SYSTEM) {
-            Slog.d(TAG, "Ignoring " + methodName + " for system user in HSUM");
+    private boolean shouldIgnoreUser(int userId, String methodName) {
+        if (!mEnvironment.isManagedUser(userId)) {
+            Slog.d(TAG, "Ignoring " + methodName + " for user " + userId + " per system policy.");
             return true;
         }
 

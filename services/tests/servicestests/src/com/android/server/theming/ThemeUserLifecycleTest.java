@@ -36,7 +36,6 @@ import android.content.pm.UserInfo;
 import android.content.theming.ThemeSettings;
 import android.content.theming.ThemeStyle;
 import android.graphics.Color;
-import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.provider.Settings;
 import android.testing.TestableContext;
@@ -50,9 +49,6 @@ import com.android.server.UiModeManagerInternal;
 import com.android.server.om.OverlayManagerInternal;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.wallpaper.WallpaperManagerInternal;
-
-import com.google.ux.material.libmonet.dynamiccolor.ColorSpec.SpecVersion;
-import com.google.ux.material.libmonet.dynamiccolor.DynamicScheme.Platform;
 
 import org.junit.After;
 import org.junit.Before;
@@ -90,6 +86,7 @@ public class ThemeUserLifecycleTest {
 
     private ThemeUserLifecycle mThemeUserLifecycle;
     private ContentResolver mContentResolver;
+    private ThemeEnvironment mEnvironment;
 
     @Before
     public void setUp() {
@@ -116,17 +113,19 @@ public class ThemeUserLifecycleTest {
             return new int[]{requestedUserId};
         });
 
+        mEnvironment = new ThemeEnvironment(mContext, mUserManagerInternal, (key, def) -> def);
+
         mThemeStateManager = new ThemeStateManager(mContext, new FakeScheduledExecutorService(),
-                Platform.PHONE, SpecVersion.SPEC_2025);
+                mEnvironment);
         mThemeStateManager.onServicesReady();
 
         ThemeWallpaperManager themeWallpaperManager = new ThemeWallpaperManager(
                 mWallpaperManagerInternal);
         mThemeSettingsManager = new ThemeSettingsManager(themeWallpaperManager,
-                SystemProperties::get, new String[]{"*|TONAL_SPOT|#1b6ef3"});
+                (key, def) -> def, mEnvironment);
 
         mThemeUserLifecycle = new ThemeUserLifecycle(mContext, mThemeStateManager,
-                mThemeSettingsManager);
+                mThemeSettingsManager, mEnvironment);
         mThemeUserLifecycle.onServicesReady(mUserManagerInternal, mUiModeManagerInternal,
                 themeWallpaperManager);
     }

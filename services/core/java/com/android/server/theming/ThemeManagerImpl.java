@@ -58,8 +58,7 @@ public class ThemeManagerImpl implements ThemeManagerInternal {
     private final ThemeStateManager mStateManager;
     private final ThemeSettingsManager mThemeSettingsManager;
     private final ThemeOverlayHelper mOverlayHelper;
-    private final SpecVersion mSpecVersion;
-    private final Platform mPlatform;
+    private final ThemeEnvironment mEnvironment;
 
     private final Object mLock = new Object();
 
@@ -72,14 +71,13 @@ public class ThemeManagerImpl implements ThemeManagerInternal {
             new SparseArray<>();
 
     public ThemeManagerImpl(Context context, ThemeSettingsManager themeSettingsManager,
-            ThemeStateManager stateManager, ThemeOverlayHelper overlayHelper, Platform platform,
-            SpecVersion specVersion) {
+            ThemeStateManager stateManager, ThemeOverlayHelper overlayHelper,
+            ThemeEnvironment environment) {
         mContext = context;
         mStateManager = stateManager;
         mThemeSettingsManager = themeSettingsManager;
         mOverlayHelper = overlayHelper;
-        mPlatform = platform;
-        mSpecVersion = specVersion;
+        mEnvironment = environment;
     }
 
     /**
@@ -140,8 +138,7 @@ public class ThemeManagerImpl implements ThemeManagerInternal {
                 }
             }
         } catch (IllegalArgumentException e) {
-            // this shouldn't happen.
-            throw new IllegalArgumentException("Invalid Baseline Object");
+            throw new IllegalArgumentException("Invalid Baseline Object", e);
         }
 
         ColorScheme newDarkScheme = new ColorScheme(newSeed, true, newStyle, newContrast,
@@ -149,7 +146,7 @@ public class ThemeManagerImpl implements ThemeManagerInternal {
         ColorScheme newLightScheme = new ColorScheme(newSeed, false, newStyle, newContrast,
                 specVersion, platform);
 
-        if (mPlatform == Platform.WATCH) {
+        if (mEnvironment.platform == Platform.WATCH) {
             newLightScheme = newDarkScheme;
         }
 
@@ -164,7 +161,7 @@ public class ThemeManagerImpl implements ThemeManagerInternal {
     public ThemeInfo getUserThemeInfo(int userId) {
         ThemeState state = mStateManager.getState(userId).getCurrentState();
         return new ThemeInfo(Color.valueOf(state.seedColor()), state.style(), state.contrast(),
-                mSpecVersion.name(), mPlatform.name());
+                mEnvironment.specVersion.name(), mEnvironment.platform.name());
     }
 
     /**
@@ -316,7 +313,7 @@ public class ThemeManagerImpl implements ThemeManagerInternal {
      */
     @Override
     public void onBootAnimationDismissing() {
-        mStateManager.onBootAnimationDismissing();
+        mEnvironment.setBootingComplete();
         mThemeSettingsManager.updateMigratedSettings(mContext.getContentResolver());
     }
 

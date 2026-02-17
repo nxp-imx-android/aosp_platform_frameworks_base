@@ -32,7 +32,6 @@ import com.android.server.LocalServices;
 import com.android.server.om.OverlayManagerInternal;
 import com.android.server.pm.UserManagerInternal;
 
-import com.google.ux.material.libmonet.dynamiccolor.ColorSpec.SpecVersion;
 import com.google.ux.material.libmonet.dynamiccolor.DynamicScheme.Platform;
 
 import java.io.PrintWriter;
@@ -83,33 +82,28 @@ public class ThemeStateManager {
     @GuardedBy("mLock")
     private int mCurrentUserId = UserHandle.USER_NULL;
 
-    @GuardedBy("mLock")
-    private boolean mIsBooting = true;
-
     // We are storing states for users only. Profiles should target their parent users.
     @GuardedBy("mLock")
     private final SparseArray<ThemeStatePair> mThemeStates = new SparseArray<>();
 
     private final Context mContext;
     private final ScheduledExecutorService mSchedulerExecutor;
-    private final SpecVersion mSpecVersion;
-    private final Platform mPlatform;
+    private final ThemeEnvironment mEnvironment;
 
     private UserManagerInternal mUserManager;
     private KeyguardManager mKeyguardManager;
     private ThemeOverlayHelper mThemeOverlayHelper;
 
-    public ThemeStateManager(Context context, Platform platform, SpecVersion specVersion) {
-        this(context, Executors.newSingleThreadScheduledExecutor(), platform, specVersion);
+    public ThemeStateManager(Context context, ThemeEnvironment environment) {
+        this(context, Executors.newSingleThreadScheduledExecutor(), environment);
     }
 
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
     public ThemeStateManager(Context context, ScheduledExecutorService schedulerExecutor,
-            Platform platform, SpecVersion specVersion) {
+            ThemeEnvironment environment) {
         mSchedulerExecutor = schedulerExecutor;
         mContext = context;
-        mPlatform = platform;
-        mSpecVersion = specVersion;
+        mEnvironment = environment;
     }
 
     // HANDLERS
@@ -131,16 +125,6 @@ public class ThemeStateManager {
         mCurrentUserId = LocalServices.getService(ActivityManagerInternal.class).getCurrentUserId();
     }
 
-    /**
-     * Called when the boot animation is dismissed.
-     */
-    public void onBootAnimationDismissing() {
-        synchronized (mLock) {
-            Slog.d(TAG, "Boot animation dismissing, exiting boot phase.");
-            mIsBooting = false;
-        }
-    }
-
     @VisibleForTesting
     public void setThemeOverlayHelper(ThemeOverlayHelper themeOverlayHelper) {
         mThemeOverlayHelper = themeOverlayHelper;
@@ -157,12 +141,7 @@ public class ThemeStateManager {
     public void onSeedColorChange(int userId, int seedColor, boolean fromForegroundApp) {
         ThemeStatePair statePair = getState(userId);
 
-        boolean isBooting;
-        synchronized (mLock) {
-            isBooting = mIsBooting;
-        }
-
-        if (!isBooting && !fromForegroundApp && mKeyguardManager != null
+        if (!mEnvironment.isBooting() && !fromForegroundApp && mKeyguardManager != null
                 && !mKeyguardManager.isDeviceLocked()) {
             statePair.setDeferUpdatesOnLock(true);
             Slog.w(TAG, "Wallpaper changed from background app, deferring color change #"
@@ -290,7 +269,7 @@ public class ThemeStateManager {
             } else {
                 // CASE 3: userId is a new user
                 ThemeStatePair newState = new ThemeStatePair(userId, isSetup, seedColor, contrast,
-                        style, mSpecVersion, mPlatform);
+                        style, mEnvironment);
                 int[] profiles = Objects.requireNonNullElse(
                         mUserManager.getProfileIds(userId, false), new int[0]);
 
@@ -393,10 +372,7 @@ public class ThemeStateManager {
      */
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
     public void reevaluateSystemTheme() {
-        boolean isBooting;
-        synchronized (mLock) {
-            isBooting = mIsBooting;
-        }
+        boolean isBooting = mEnvironment.isBooting();
 
         for (ThemeStatePair statePair : getPairsSnapshot()) {
             if (!statePair.shouldUpdate(isBooting)) {
@@ -424,7 +400,7 @@ public class ThemeStateManager {
 
                 // TODO: b/477901630 (Move this color spec to MCU)
                 ThemeStatePair.OverlaySnapshot effectiveSnapshot = overlaySnapshot;
-                if (mPlatform == Platform.WATCH) {
+                if (mEnvironment.platform == Platform.WATCH) {
                     effectiveSnapshot = new ThemeStatePair.OverlaySnapshot(
                             overlaySnapshot.userId(),
                             overlaySnapshot.profiles(),
@@ -435,16 +411,15 @@ public class ThemeStateManager {
                 }
 
                 int currentUserId;
-                boolean localIsBooting;
                 synchronized (mLock) {
                     currentUserId = mCurrentUserId;
-                    localIsBooting = mIsBooting;
                 }
 
                 // Whenever to updated existing (register) overlays or just turn them on.
-                boolean shouldRegister = effectiveSnapshot.contentChanged()
-                        || (localIsBooting && !mThemeOverlayHelper.isColorSchemeApplied(mContext,
-                        statePair.userId, statePair.getDarkScheme(), statePair.getLightScheme()));
+                boolean shouldRegister = overlaySnapshot.contentChanged()
+                        || (mEnvironment.isBooting() && !mThemeOverlayHelper.isColorSchemeApplied(
+                        mContext, statePair.userId, statePair.getDarkScheme(),
+                        statePair.getLightScheme()));
 
                 mThemeOverlayHelper.applyCurrentStateOverlays(
                         /*statePair     */ overlaySnapshot,
