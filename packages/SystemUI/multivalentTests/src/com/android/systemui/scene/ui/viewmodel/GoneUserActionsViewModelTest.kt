@@ -16,6 +16,7 @@
 
 package com.android.systemui.scene.ui.viewmodel
 
+import android.content.res.mainResources
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper
@@ -35,6 +36,7 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
+import com.android.systemui.res.R
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.shared.model.TransitionKeys.ToSplitShade
@@ -44,7 +46,6 @@ import com.android.systemui.shade.domain.interactor.enableSplitShade
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -56,17 +57,18 @@ class GoneUserActionsViewModelTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val Kosmos.underTest: GoneUserActionsViewModel by
-        Kosmos.Fixture { GoneUserActionsViewModel(shadeModeInteractor = shadeModeInteractor) }
-
-    @Before
-    fun setUp() {
-        with(kosmos) { underTest.activateIn(testScope) }
-    }
+        Kosmos.Fixture {
+            GoneUserActionsViewModel(
+                shadeModeInteractor = shadeModeInteractor,
+                resources = mainResources,
+            )
+        }
 
     @Test
     @DisableFlags(FLAG_DUAL_SHADE)
     fun downTransitionKey_splitShadeEnabled_isGoneToSplitShade() =
         kosmos.runTest {
+            underTest.activateIn(testScope)
             val userActions by collectLastValue(underTest.actions)
             enableSplitShade()
 
@@ -76,6 +78,7 @@ class GoneUserActionsViewModelTest : SysuiTestCase() {
     @Test
     fun downTransitionKey_singleShade_isNull() =
         kosmos.runTest {
+            underTest.activateIn(testScope)
             val userActions by collectLastValue(underTest.actions)
             enableSingleShade()
 
@@ -86,6 +89,7 @@ class GoneUserActionsViewModelTest : SysuiTestCase() {
     @EnableFlags(FLAG_DUAL_SHADE)
     fun downTransitionKey_dualShade_goesToNotificationsShade() =
         kosmos.runTest {
+            underTest.activateIn(testScope)
             val userActions by collectLastValue(underTest.actions)
             enableDualShade(wideLayout = true)
 
@@ -95,6 +99,7 @@ class GoneUserActionsViewModelTest : SysuiTestCase() {
     @Test
     fun swipeDownWithTwoFingers_singleShade_goesToQuickSettings() =
         kosmos.runTest {
+            underTest.activateIn(testScope)
             val userActions by collectLastValue(underTest.actions)
             enableSingleShade()
 
@@ -106,6 +111,7 @@ class GoneUserActionsViewModelTest : SysuiTestCase() {
     @DisableFlags(FLAG_DUAL_SHADE)
     fun swipeDownWithTwoFingers_splitShade_goesToShade() =
         kosmos.runTest {
+            underTest.activateIn(testScope)
             val userActions by collectLastValue(underTest.actions)
             enableSplitShade()
 
@@ -115,13 +121,27 @@ class GoneUserActionsViewModelTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(FLAG_DUAL_SHADE)
-    fun swipeDownWithTwoFingers_dualShadeEnabled_goesToQuickSettings() =
+    fun swipeDownWithTwoFingers_dualShadeEnabled_configEnabled_goesToQuickSettings() =
         kosmos.runTest {
+            overrideResource(R.bool.config_enableTwoFingerSwipeDownShade, true)
+            underTest.activateIn(testScope)
             val userActions by collectLastValue(underTest.actions)
             enableDualShade()
 
             assertThat(userActions?.get(Swipe.Down(pointerCount = 2)))
                 .isEqualTo(ShowOverlay(Overlays.QuickSettingsShade))
+        }
+
+    @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
+    fun swipeDownWithTwoFingers_dualShadeEnabled_configDisabled_isNull() =
+        kosmos.runTest {
+            overrideResource(R.bool.config_enableTwoFingerSwipeDownShade, false)
+            underTest.activateIn(testScope)
+            val userActions by collectLastValue(underTest.actions)
+            enableDualShade()
+
+            assertThat(userActions?.get(Swipe.Down(pointerCount = 2))).isNull()
         }
 
     private fun swipeDownFromTopWithTwoFingers(): UserAction {

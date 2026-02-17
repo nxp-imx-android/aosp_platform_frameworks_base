@@ -16,9 +16,12 @@
 
 package com.android.systemui.dreams.ui.viewmodel
 
+import android.content.res.Resources
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
+import com.android.systemui.res.R
 import com.android.systemui.scene.ui.viewmodel.UserActionsViewModel
+import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.shared.model.ShadeMode
@@ -37,9 +40,12 @@ class DreamUserActionsViewModel
 constructor(
     private val shadeInteractor: ShadeInteractor,
     private val shadeModeInteractor: ShadeModeInteractor,
+    @ShadeDisplayAware private val resources: Resources,
 ) : UserActionsViewModel() {
 
     override suspend fun hydrateActions(setActions: (Map<UserAction, UserActionResult>) -> Unit) {
+        val twoFingerSwipeEnabled =
+            resources.getBoolean(R.bool.config_enableTwoFingerSwipeDownShade)
         shadeInteractor.isShadeTouchable
             .flatMapLatestConflated { isShadeTouchable ->
                 if (!isShadeTouchable) {
@@ -52,7 +58,10 @@ constructor(
                                         ShadeMode.Single ->
                                             singleShadeActions(isDownFromTopEdgeEnabled = false)
                                         ShadeMode.Split -> splitShadeActions()
-                                        ShadeMode.Dual -> dualShadeActions()
+                                        ShadeMode.Dual ->
+                                            dualShadeActions(
+                                                twoFingerSwipeEnabled = twoFingerSwipeEnabled
+                                            )
                                     }
                                 )
                             }

@@ -67,12 +67,20 @@ fun splitShadeActions(): Array<Pair<UserAction, UserActionResult>> {
 }
 
 /** Returns collection of [UserAction] to [UserActionResult] pairs for opening the dual shade. */
-fun dualShadeActions(): Array<Pair<UserAction, UserActionResult>> {
-    return arrayOf(
-        Swipe.Down to Overlays.NotificationsShade,
-        Swipe.Down(pointerCount = 2) to Overlays.QuickSettingsShade,
-        Swipe.Down(fromSource = SceneContainerArea.TopEdgeEndHalf) to Overlays.QuickSettingsShade,
-    )
+fun dualShadeActions(
+    twoFingerSwipeEnabled: Boolean = true
+): Array<Pair<UserAction, UserActionResult>> {
+    return buildList {
+            add(Swipe.Down to Overlays.NotificationsShade)
+            if (twoFingerSwipeEnabled) {
+                add(Swipe.Down(pointerCount = 2) to Overlays.QuickSettingsShade)
+            }
+            add(
+                Swipe.Down(fromSource = SceneContainerArea.TopEdgeEndHalf) to
+                    Overlays.QuickSettingsShade
+            )
+        }
+        .toTypedArray()
 }
 
 private fun swipeDownFromTopEdge(pointerCount: Int = 1): Swipe {
