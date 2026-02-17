@@ -855,7 +855,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
             int closingSplitTaskId = INVALID_TASK_ID;
             final ArrayList<RemoteAnimationTarget> apps = new ArrayList<>();
             final ArrayList<RemoteAnimationTarget> wallpapers = new ArrayList<>();
-            TransitionUtil.LeafTaskFilter leafTaskFilter = new TransitionUtil.LeafTaskFilter();
+            TransitionUtil.LeafTaskFilter leafTaskFilter = new TransitionUtil.LeafTaskFilter(info);
             // About layering: we divide up the "layer space" into 3 regions (each the size of
             // the change count). This lets us categorize things into above/below/between
             // while maintaining their relative ordering.
@@ -1185,7 +1185,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
             boolean foundRecentsClosing = false;
             boolean hasChangingApp = false;
             final TransitionUtil.LeafTaskFilter leafTaskFilter =
-                    new TransitionUtil.LeafTaskFilter();
+                    new TransitionUtil.LeafTaskFilter(info);
             boolean hasTaskChange = false;
             for (int i = 0; i < info.getChanges().size(); ++i) {
                 final TransitionInfo.Change change = info.getChanges().get(i);

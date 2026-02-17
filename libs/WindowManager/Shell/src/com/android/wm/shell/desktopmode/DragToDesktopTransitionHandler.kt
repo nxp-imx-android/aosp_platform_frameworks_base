@@ -474,7 +474,7 @@ sealed class DragToDesktopTransitionHandler(
         logV("startAnimation: state=${state.toSimpleString()}")
 
         val layers = calculateStartDragLayers(info)
-        val leafTaskFilter = TransitionUtil.LeafTaskFilter()
+        val leafTaskFilter = TransitionUtil.LeafTaskFilter(info)
         info.changes.withIndex().forEach { (i, change) ->
             if (TransitionUtil.isWallpaper(change)) {
                 logV("Wallpaper change: change=$change")

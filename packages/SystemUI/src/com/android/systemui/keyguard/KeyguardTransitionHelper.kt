@@ -67,8 +67,9 @@ class KeyguardTransitionHelper : RemoteTransitionHelper {
             }
         }
 
+        val leafTaskFilter = TransitionUtil.LeafTaskFilter(info)
         info.changes.forEach { change ->
-            val isApp = TransitionUtil.LeafTaskFilter().test(change)
+            val isApp = leafTaskFilter.test(change)
             val isWallpaper = TransitionUtil.isWallpaper(change)
 
             // Make sure the wallpaper is rotated correctly.

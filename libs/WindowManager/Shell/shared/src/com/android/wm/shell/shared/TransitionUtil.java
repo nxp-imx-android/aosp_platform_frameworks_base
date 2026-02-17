@@ -51,6 +51,7 @@ import android.view.SurfaceControl;
 import android.view.WindowManager;
 import android.window.TransitionInfo;
 
+import java.util.List;
 import java.util.function.Predicate;
 
 /** Various utility functions for transitions. */
@@ -220,23 +221,34 @@ public class TransitionUtil {
     }
 
     /**
-     * Filter that selects leaf-tasks only. THIS IS ORDER-DEPENDENT! For it to work properly, you
-     * MUST call `test` in the same order that the changes appear in the TransitionInfo.
+     * Filter that selects leaf-tasks only.
      */
     public static class LeafTaskFilter implements Predicate<TransitionInfo.Change> {
-        private final SparseBooleanArray mChildTaskTargets = new SparseBooleanArray();
+        private final SparseBooleanArray mTaskTargetsWithChildren = new SparseBooleanArray();
+
+        /**
+         * Constructs a task filter for leaf task changes in {@code info}.
+         */
+        public LeafTaskFilter(TransitionInfo info) {
+            final List<TransitionInfo.Change> changes = info.getChanges();
+            final int n = changes.size();
+
+            // The special case for cyclic references should never happen in practice, but
+            // does happen in tests sometimes.
+            for (int i = 0; i < n; i++) {
+                final ActivityManager.RunningTaskInfo taskInfo = changes.get(i).getTaskInfo();
+                if (taskInfo != null && taskInfo.hasParentTask()
+                        && taskInfo.parentTaskId != taskInfo.taskId) {
+                    mTaskTargetsWithChildren.put(taskInfo.parentTaskId, true);
+                }
+            }
+        }
 
         @Override
         public boolean test(TransitionInfo.Change change) {
-            final ActivityManager.RunningTaskInfo taskInfo = change.getTaskInfo();
-            if (taskInfo == null) return false;
-            // Children always come before parent since changes are in top-to-bottom z-order.
-            boolean hasChildren = mChildTaskTargets.get(taskInfo.taskId);
-            if (taskInfo.hasParentTask()) {
-                mChildTaskTargets.put(taskInfo.parentTaskId, true);
-            }
             // If it has children, it's not a leaf.
-            return !hasChildren;
+            return change.getTaskInfo() != null
+                    && !mTaskTargetsWithChildren.get(change.getTaskInfo().taskId);
         }
     }
 
