@@ -75,7 +75,7 @@
     <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"アラームとリマインダーを設定"</string>
     <string name="permission_bypass_dnd" msgid="1241123166903040347">"サイレントモード設定を回避"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"電話の発信と管理"</string>
-    <string name="permission_call_logs_summary" msgid="7545243592757693321">"通話履歴の読み取りと書き込み"</string>
+    <string name="permission_call_logs_summary" msgid="7545243592757693321">"通話履歴の読み取りと書⁠き⁠込⁠み"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"SMS メッセージの送信と表示"</string>
     <string name="permission_contacts_summary" msgid="2840800622763086808">"連絡先へのアクセス"</string>
     <string name="permission_calendar_summary" msgid="8430353935747336165">"カレンダーへのアクセス"</string>
