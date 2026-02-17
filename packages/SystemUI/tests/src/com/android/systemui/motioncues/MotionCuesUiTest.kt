@@ -18,6 +18,7 @@ package com.android.systemui.motioncues
 
 import android.app.motioncues.MotionCuesVisualStyle
 import android.app.motioncues.MotionCuesSettings
+import android.content.res.Configuration
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -32,6 +33,7 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.motioncues.nano.MotionBubble
 import com.android.systemui.motioncues.nano.MotionCueState
+import com.android.systemui.statusbar.policy.ConfigurationController
 import com.google.common.truth.Truth.assertThat
 import org.junit.Assert.fail
 import org.junit.Before
@@ -42,6 +44,7 @@ import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mock
 import org.mockito.Mockito.never
+import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when` as whenever
 import org.mockito.MockitoAnnotations
@@ -50,6 +53,8 @@ import org.mockito.MockitoAnnotations
 @RunWith(AndroidJUnit4::class)
 class MotionCuesUiTest : SysuiTestCase() {
 
+    private val PORTRAIT_BOUNDS = Rect(0, 0, 1080, 2340)
+    private val LANDSCAPE_BOUNDS = Rect(0, 0, 2340, 1080)
     private val SETTINGS =
         MotionCuesSettings.Builder()
             .setHorizontalSpacingDp(50)
@@ -63,6 +68,7 @@ class MotionCuesUiTest : SysuiTestCase() {
     @Mock private lateinit var windowMetrics: WindowMetrics
     @Mock private lateinit var clientPackageContext: Context
     @Mock private lateinit var drawable: Drawable
+    @Mock private lateinit var configurationController: ConfigurationController
 
     private lateinit var underTest: MotionCuesUi
 
@@ -70,9 +76,9 @@ class MotionCuesUiTest : SysuiTestCase() {
     fun setUp() {
         MockitoAnnotations.initMocks(this)
         whenever(windowManager.currentWindowMetrics).thenReturn(windowMetrics)
-        whenever(windowMetrics.bounds).thenReturn(Rect(0, 0, 1080, 1920))
+        whenever(windowMetrics.bounds).thenReturn(PORTRAIT_BOUNDS)
 
-        underTest = MotionCuesUi(context, windowManager)
+        underTest = MotionCuesUi(context, windowManager, configurationController)
     }
 
     @Test
@@ -133,7 +139,7 @@ class MotionCuesUiTest : SysuiTestCase() {
         whenever(mockContext.createPackageContextAsUser(anyString(), anyInt(), any(UserHandle::class.java)))
             .thenReturn(clientPackageContext)
         whenever(clientPackageContext.getDrawable(anyInt())).thenReturn(drawable)
-        underTest = MotionCuesUi(mockContext, windowManager)
+        underTest = MotionCuesUi(mockContext, windowManager, configurationController)
         underTest.setIsStarted(true)
         underTest.setClientPackageName("com.example.app")
 
@@ -151,7 +157,7 @@ class MotionCuesUiTest : SysuiTestCase() {
     fun updateMotionCuesVisualStyle_withInvalidPackage_usesDefault() {
         whenever(mockContext.createPackageContextAsUser(anyString(), anyInt(), any(UserHandle::class.java)))
             .thenThrow(PackageManager.NameNotFoundException())
-        underTest = MotionCuesUi(mockContext, windowManager)
+        underTest = MotionCuesUi(mockContext, windowManager, configurationController)
         underTest.setIsStarted(true)
 
         val newColor = Color.RED
@@ -187,4 +193,53 @@ class MotionCuesUiTest : SysuiTestCase() {
         assertThat(state.radiusDp).isEqualTo(settings.radiusDp)
         assertThat(state.motionBubbles).isNotEmpty()
     }
+
+    @Test
+    fun onConfigChanged_orientationChanged_whenStarted_recreatesOverlay() {
+        // Start in Portrait
+        underTest.start(SETTINGS, 0, "com.example.app")
+        verify(windowManager, times(1)).addView(any(), any())
+
+        // Simulate Landscape
+        val newConfig = Configuration()
+        newConfig.orientation = Configuration.ORIENTATION_LANDSCAPE
+        whenever(windowMetrics.bounds).thenReturn(LANDSCAPE_BOUNDS)
+        underTest.onConfigChanged(newConfig)
+
+        // Verify overlay was removed and re-added
+        verify(windowManager, times(1)).removeViewImmediate(any())
+        verify(windowManager, times(2)).addView(any(), any())
+    }
+
+     @Test
+     fun onConfigChanged_orientationChanged_whenStopped_doesNothing() {
+        underTest.start(SETTINGS, 0, "com.example.app")
+        underTest.stop()
+
+        // Simulate Landscape
+        val newConfig = Configuration()
+        newConfig.orientation = Configuration.ORIENTATION_LANDSCAPE
+        whenever(windowMetrics.bounds).thenReturn(LANDSCAPE_BOUNDS)
+        underTest.onConfigChanged(newConfig)
+
+        // Verify no WindowManager interactions
+        verify(windowManager, times(1)).removeViewImmediate(any())
+        verify(windowManager, times(1)).addView(any(), any())
+     }
+
+     @Test
+     fun onConfigChanged_orientationNotChanged_doesNothing() {
+        underTest.start(SETTINGS, 0, "com.example.app")
+        verify(windowManager, times(1)).addView(any(), any())
+
+        // Simulate config change with same orientation
+        val newConfig = Configuration()
+        newConfig.orientation = Configuration.ORIENTATION_PORTRAIT
+        whenever(windowMetrics.bounds).thenReturn(PORTRAIT_BOUNDS)
+        underTest.onConfigChanged(newConfig)
+
+        // Verify no additional remove/add calls
+        verify(windowManager, never()).removeViewImmediate(any())
+        verify(windowManager, times(1)).addView(any(), any()) // Only the initial add
+     }
 }
