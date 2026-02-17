@@ -16,17 +16,22 @@
 
 package com.android.server.dreams;
 
+import static android.service.dreams.Flags.dreamsSwitcher;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.ComponentName;
 import android.content.Context;
 import android.hardware.display.AmbientDisplayConfiguration;
 import android.provider.Settings;
+import android.service.dreams.DreamPlaylist;
 import android.util.Slog;
 
 import com.android.server.pm.UserManagerInternal;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /** Resolves the component to use for dreaming or dozing. */
@@ -72,12 +77,62 @@ final class DreamComponentsResolver {
             return mDreamValidator.validate(dozeComponent, userId) ? dozeComponent : null;
         }
 
+        if (dreamsSwitcher()) {
+            DreamPlaylist playlist = getDreamPlaylist(userId, systemDreamComponent);
+            return playlist.getActiveDream();
+        }
+
         if (systemDreamComponent != null) {
             return systemDreamComponent;
         }
 
         ComponentName[] dreams = getDreamComponentsForUser(userId);
         return dreams != null && dreams.length != 0 ? dreams[0] : null;
+    }
+
+    @NonNull
+    DreamPlaylist getDreamPlaylist(int userId, @Nullable ComponentName systemDreamComponent) {
+        if (systemDreamComponent != null) {
+            return new DreamPlaylist(Collections.singletonList(systemDreamComponent), 0);
+        }
+
+        final List<ComponentName> dreams = getValidatedDreams(userId);
+        final ComponentName activeDream = getValidatedActiveDream(userId, dreams);
+        final int activeIndex =
+                activeDream != null
+                        ? dreams.indexOf(activeDream)
+                        : DreamPlaylist.NO_ACTIVE_DREAM_INDEX;
+        return new DreamPlaylist(dreams, activeIndex);
+    }
+
+    private List<ComponentName> getValidatedDreams(int userId) {
+        final ComponentName[] components = getDreamComponentsForUser(userId);
+        return components != null ? Arrays.asList(components) : Collections.emptyList();
+    }
+
+    @Nullable
+    private ComponentName getValidatedActiveDream(int userId, List<ComponentName> dreams) {
+        if (dreams.isEmpty()) {
+            return null;
+        }
+        // 1. Return the user's "active" dream if it is valid (exists in the list of allowed
+        // dreams).
+        final ComponentName activeDream = getSettingsActiveDream(userId);
+        if (activeDream != null && dreams.contains(activeDream)) {
+            return activeDream;
+        }
+        // 2. Fallback to the first valid "allowed" dream.
+        return dreams.get(0);
+    }
+
+    @Nullable
+    private ComponentName getSettingsActiveDream(int userId) {
+        final String name =
+                Settings.Secure.getStringForUser(
+                        mContext.getContentResolver(),
+                        Settings.Secure.SCREENSAVER_ACTIVE_COMPONENT,
+                        userId);
+        return name != null ? ComponentName.unflattenFromString(name) : null;
     }
 
     /**

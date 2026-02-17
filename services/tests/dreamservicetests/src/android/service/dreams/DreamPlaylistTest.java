@@ -166,4 +166,59 @@ public class DreamPlaylistTest {
 
         parcel.recycle();
     }
+
+    @Test
+    public void testEquals() {
+        List<ComponentName> dreams = Arrays.asList(DREAM_1, DREAM_2);
+        DreamPlaylist playlist1 = new DreamPlaylist(dreams, 1);
+        DreamPlaylist playlist2 = new DreamPlaylist(dreams, 1);
+
+        assertThat(playlist1).isEqualTo(playlist2);
+        assertThat(playlist1.hashCode()).isEqualTo(playlist2.hashCode());
+    }
+
+    @Test
+    public void testNotEquals_differentIndex() {
+        List<ComponentName> dreams = Arrays.asList(DREAM_1, DREAM_2);
+        DreamPlaylist playlist1 = new DreamPlaylist(dreams, 0);
+        DreamPlaylist playlist2 = new DreamPlaylist(dreams, 1);
+
+        assertThat(playlist1).isNotEqualTo(playlist2);
+    }
+
+    @Test
+    public void testNotEquals_differentDreams() {
+        List<ComponentName> dreams1 = Arrays.asList(DREAM_1, DREAM_2);
+        List<ComponentName> dreams2 = Arrays.asList(DREAM_1, DREAM_3);
+        DreamPlaylist playlist1 = new DreamPlaylist(dreams1, 0);
+        DreamPlaylist playlist2 = new DreamPlaylist(dreams2, 0);
+
+        assertThat(playlist1).isNotEqualTo(playlist2);
+    }
+
+    @Test
+    public void testNotEquals_differentOrder() {
+        List<ComponentName> dreams1 = Arrays.asList(DREAM_1, DREAM_2);
+        List<ComponentName> dreams2 = Arrays.asList(DREAM_2, DREAM_1);
+        DreamPlaylist playlist1 = new DreamPlaylist(dreams1, 0);
+        DreamPlaylist playlist2 = new DreamPlaylist(dreams2, 0);
+
+        assertThat(playlist1).isNotEqualTo(playlist2);
+    }
+
+    @Test
+    public void testNotEquals_null() {
+        List<ComponentName> dreams = Arrays.asList(DREAM_1, DREAM_2);
+        DreamPlaylist playlist = new DreamPlaylist(dreams, 0);
+
+        assertThat(playlist).isNotEqualTo(null);
+    }
+
+    @Test
+    public void testNotEquals_differentType() {
+        List<ComponentName> dreams = Arrays.asList(DREAM_1, DREAM_2);
+        DreamPlaylist playlist = new DreamPlaylist(dreams, 0);
+
+        assertThat(playlist).isNotEqualTo("Not a DreamPlaylist object");
+    }
 }

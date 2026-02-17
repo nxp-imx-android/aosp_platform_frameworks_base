@@ -132,6 +132,19 @@ public final class DreamPlaylist implements Parcelable {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof DreamPlaylist)) return false;
+        DreamPlaylist that = (DreamPlaylist) o;
+        return mActiveIndex == that.mActiveIndex && Objects.equals(mDreams, that.mDreams);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mDreams, mActiveIndex);
+    }
+
+    @Override
     public int describeContents() {
         return 0;
     }
