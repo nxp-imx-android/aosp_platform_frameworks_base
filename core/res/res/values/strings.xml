@@ -7277,4 +7277,7 @@
     <string name="supervision_blocked_app_title">Update from your parent</string>
     <string name="supervision_blocked_app_content"><xliff:g id="app_name" example="YouTube">%1$s</xliff:g> was removed for now</string>
     <string name="supervision_unblocked_app_content"><xliff:g id="app_name" example="YouTube">%1$s</xliff:g> is now available</string>
+
+    <!-- The label of cast to others button for Share Cast feature.  [CHAR LIMIT=30] -->
+    <string name="media_route_chooser_share_cast_others">Cast to others</string>
 </resources>

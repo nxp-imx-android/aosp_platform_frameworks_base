@@ -261,6 +261,13 @@ flag {
     is_exported: true
 }
 
+flag {
+    name: "enable_share_cast_in_media_chooser_dialog"
+    namespace: "media_better_together"
+    description: "Feature flag for Share Cast in Media Chooser Dialog"
+    bug: "408003639"
+}
+
 # Removed exported flags below this line.
 # ###############################
 # These are exported flags that:
