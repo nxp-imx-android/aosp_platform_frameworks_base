@@ -103,6 +103,20 @@ public class BinderSpamSignalCollectorImplTest {
     }
 
     @Test
+    public void onBinderStatsReported_binderCalls_noSubscriptions() {
+        mCollector.onBinderStatsReported(createCallsStatsArray());
+
+        verify(mReceiver, never()).onResult(any());
+    }
+
+    @Test
+    public void onBinderStatsReported_singleSecondBinderCalls_noSubscriptions() {
+        mCollector.onBinderStatsReported(createSingleSecondBinderStatsArray());
+
+        verify(mReceiver, never()).onResult(any());
+    }
+
+    @Test
     public void onBinderStatsReported_binderCalls_shouldInvokeSubscribedReceiver() {
         BinderCallsStats[] callsStatsArray = createCallsStatsArray();
 
@@ -114,6 +128,7 @@ public class BinderSpamSignalCollectorImplTest {
                 createBinderSpamData(callsStatsArray[0]),
                 createBinderSpamData(callsStatsArray[1])
         );
+        verify(mReceiver).onError(any());
     }
 
     @Test
@@ -127,6 +142,7 @@ public class BinderSpamSignalCollectorImplTest {
         assertThat(mDataCaptor.getAllValues()).containsExactly(
                 createBinderSpamData(singleSecondBinderStats[0]),
                 createBinderSpamData(singleSecondBinderStats[1]));
+        verify(mReceiver).onError(any());
     }
 
     @Test
@@ -145,6 +161,7 @@ public class BinderSpamSignalCollectorImplTest {
                 createBinderSpamData(callsStatsArray[1])
         );
         verify(anotherReceiver).onResult(createBinderSpamData(callsStatsArray[1]));
+        verify(mReceiver).onError(any());
     }
 
     @Test
@@ -163,6 +180,7 @@ public class BinderSpamSignalCollectorImplTest {
                 createBinderSpamData(singleSecondBinderStats[1])
         );
         verify(anotherReceiver).onResult(createBinderSpamData(singleSecondBinderStats[1]));
+        verify(mReceiver).onError(any());
     }
 
     @Test
@@ -238,7 +256,9 @@ public class BinderSpamSignalCollectorImplTest {
                 createBinderCallsStats(TEST_INTERFACE_2, TEST_METHOD_2, 1001, 201),
                 createBinderCallsStats(
                         NEVER_SUBSCRIBED_INTERFACE,
-                        NEVER_SUBSCRIBED_METHOD, 1002, 202)
+                        NEVER_SUBSCRIBED_METHOD, 1002, 202),
+                // This is an invalid data entry, should be reported as error.
+                createBinderCallsStats(TEST_INTERFACE_1, TEST_METHOD_1, 1000, 0),
         };
     }
 
@@ -261,7 +281,9 @@ public class BinderSpamSignalCollectorImplTest {
                 createSingleSecondBinderStats(TEST_INTERFACE_2, TEST_METHOD_2, 1001, 201),
                 createSingleSecondBinderStats(
                         NEVER_SUBSCRIBED_INTERFACE,
-                        NEVER_SUBSCRIBED_METHOD, 1002, 202)
+                        NEVER_SUBSCRIBED_METHOD, 1002, 202),
+                // This is an invalid data entry. Should report as error.
+                createSingleSecondBinderStats(TEST_INTERFACE_1, TEST_METHOD_1, 1000, 0)
         };
     }
 
