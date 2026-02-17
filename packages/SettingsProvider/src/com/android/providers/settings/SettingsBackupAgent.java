@@ -38,6 +38,7 @@ import android.app.backup.BackupDataInput;
 import android.app.backup.BackupDataOutput;
 import android.app.backup.BackupRestoreEventLogger;
 import android.app.backup.FullBackupDataOutput;
+import android.app.compat.CompatChanges;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -65,6 +66,7 @@ import android.provider.settings.validators.SecureSettingsValidators;
 import android.provider.settings.validators.SystemSettingsValidators;
 import android.provider.settings.validators.Validator;
 import android.telephony.SubscriptionManager;
+import android.text.ShowSecretsSetting;
 import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.BackupUtils;
@@ -1163,7 +1165,9 @@ public class SettingsBackupAgent extends BackupAgentHelper {
                 Log.d(TAG, "Restored text cursor blink from: " + toRestore + " to " + value);
             }
 
-            if (com.android.text.flags.Flags.splitShowPasswordsToTouchAndPhysical()) {
+            if (com.android.text.flags.Flags.splitShowPasswordsToTouchAndPhysical()
+                    && CompatChanges.isChangeEnabled(
+                            ShowSecretsSetting.SPLIT_SHOW_PASSWORDS_TO_TOUCH_AND_PHYSICAL)) {
                 // Synchronize the legacy TEXT_SHOW_PASSWORD setting and the new
                 // TEXT_SHOW_PASSWORD_TOUCH setting.
                 // If both settings exist in the backup, the touch setting's value is applied to

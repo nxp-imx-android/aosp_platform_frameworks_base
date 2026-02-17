@@ -80,6 +80,7 @@ android_test {
         "platform-test-annotations",
         "truth",
         "bedstead-enterprise",
+        "platform-compat-test-rules",
     ],
     libs: [
         "android.test.base.stubs.system",
