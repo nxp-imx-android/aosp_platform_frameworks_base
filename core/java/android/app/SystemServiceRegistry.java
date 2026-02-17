@@ -865,9 +865,9 @@ public final class SystemServiceRegistry {
                     return new TelephonyRegistryManager(ctx);
                 }});
 
-        if (!android.telecom.flags.Flags.telecomMainlineApi()) {
+        if (!TelecomDependencies.isMainlineBuildFlagEnabled()) {
             registerService(Context.TELECOM_SERVICE, TelecomManager.class,
-                new CachedServiceFetcher<TelecomManager>() {
+                new CachedServiceFetcher<>() {
                     @Override
                     public TelecomManager createService(ContextImpl ctx) {
                         return TelecomDependencies.createTelecomManager(ctx);
@@ -2148,7 +2148,7 @@ public final class SystemServiceRegistry {
             VirtualizationFrameworkInitializer.registerServiceWrappers();
             ConnectivityFrameworkInitializerBaklava.registerServiceWrappers();
 
-            if (android.telecom.flags.Flags.telecomMainlineApi()) {
+            if (TelecomDependencies.isMainlineBuildFlagEnabled()) {
                 TelecomDependencies.registerServiceWrapper();
             }
 
