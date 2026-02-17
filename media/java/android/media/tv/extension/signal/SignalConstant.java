@@ -48,21 +48,49 @@ public final class SignalConstant {
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface FrontendSignalInfoKeys {}
-    /** Tuner signal quality percentage, 0 - 100 (Percentage) */
+    /**
+     * Tuner signal quality percentage, 0 - 100 (Percentage), returns the same value as
+     * {@link android.media.tv.tuner.frontend.FrontendStatus#getSignalQuality()}
+     */
     public static final String KEY_TUNER_SIGNAL_QUALITY_IN_PERCENT = "SIGNAL_QUALITY_IN_PERCENT";
-    /** Tuner signal strength percentage, 0 - 100 (Percentage) */
+    /**
+     * Tuner signal strength percentage, 0 - 100 (Percentage), returns the same value as
+     * {@link android.media.tv.tuner.frontend.FrontendStatus#getSignalStrength()}
+     */
     public static final String KEY_TUNER_SIGNAL_STRENGTH_IN_PERCENT = "SIGNAL_STRENGTH_IN_PERCENT";
-    /** Bit Error Rate, int */
+    /**
+     * Bit Error Rate, int, returns the same value as
+     * {@link android.media.tv.tuner.frontend.FrontendStatus#getBer()}
+     */
     public static final String KEY_TUNER_SIGNAL_BER = "BER";
-    /** Uncorrected Error Count, int */
+    /**
+     * Uncorrected Error Count, int, returns the same value as
+     * {@link android.media.tv.tuner.frontend.FrontendStatus#getUec()}
+     */
     public static final String KEY_TUNER_SIGNAL_UEC = "UEC";
-    /** Signal-to-Noise Ratio, db measures in int */
+    /**
+     * Signal-to-Noise Ratio, db measures in int, returns the same value as
+     * {@link android.media.tv.tuner.frontend.FrontendStatus#getSnr()}
+     */
     public static final String KEY_TUNER_SIGNAL_SNR = "SNR";
-    /** Automatic Gain Control, hardware specific gain level in int */
+    /**
+     * Automatic Gain Control, hardware specific gain level in int, returns the same value as
+     * {@link android.media.tv.tuner.frontend.FrontendStatus#getAgc()}
+     */
     public static final String KEY_TUNER_SIGNAL_AGC = "AGC";
-    /** Frequency, int */
+    /**
+     * Bandwidth, please refer to
+     * {@link android.media.tv.tuner.frontend.FrontendStatus.FrontendBandwidth} for available
+     * values. This key should return the same value as
+     * {@link android.media.tv.tuner.frontend.FrontendStatus#getBandwidth()}
+     */
     public static final String KEY_TUNER_SIGNAL_BANDWIDTH = "BANDWIDTH";
-    /** Modulation type, int */
+    /**
+     * Modulation type, please refer to
+     * {@link android.media.tv.tuner.frontend.FrontendStatus.FrontendModulation} for available
+     * values. This key should return the same value as
+     * {@link android.media.tv.tuner.frontend.FrontendStatus#getModulation()}
+     */
     public static final String KEY_TUNER_SIGNAL_MODULATION = "MODULATION";
 
     @StringDef({

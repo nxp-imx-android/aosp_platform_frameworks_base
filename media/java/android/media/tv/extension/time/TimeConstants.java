@@ -23,7 +23,7 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * @hide
  */
-public class TimeConstants {
+public final class TimeConstants {
     @StringDef({
             KEY_LOCAL_TIME_OFFSET,
             KEY_TIME_OF_CHANGE,
