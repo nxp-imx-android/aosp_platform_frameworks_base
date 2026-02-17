@@ -63,4 +63,7 @@ public interface ServiceConfig {
      * function metadata changes.
      */
     int getAppFunctionMetadataChangeDebounceMilliseconds();
+
+    /** Returns the maximum number of agent packages whose allowlists can be cached. */
+    int getAppFunctionAllowlistCacheSize();
 }

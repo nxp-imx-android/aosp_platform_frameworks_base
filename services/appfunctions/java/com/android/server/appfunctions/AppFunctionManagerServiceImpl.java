@@ -113,7 +113,7 @@ import com.android.internal.util.DumpUtils;
 import com.android.server.IoThread;
 import com.android.server.SystemService.TargetUser;
 import com.android.server.appfunctions.MultiUserDynamicAppFunctionRegistry.RegistrationScopeId;
-import com.android.server.appfunctions.allowlist.SystemAppFunctionAllowlistReader;
+import com.android.server.appfunctions.allowlist.AppFunctionAllowlistReader;
 import com.android.server.appinteraction.AppInteractionService;
 import com.android.server.uri.UriGrantsManagerInternal;
 import com.android.server.wm.ActivityTaskManagerInternal;
@@ -183,7 +183,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             @NonNull MultiUserDynamicAppFunctionRegistry dynamicAppFunctionRegistry,
             @Nullable AppInteractionService appInteractionService,
             @NonNull AppFunctionMetadataReader appFunctionMetadataReader,
-            @NonNull ActivityTaskManagerInternal activityTaskManagerInternal) {
+            @NonNull ActivityTaskManagerInternal activityTaskManagerInternal,
+            @NonNull AppFunctionAllowlistReader allowlistReader) {
         this(
                 context,
                 new RemoteServiceCallerImpl<>(
@@ -191,7 +192,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 new CallerValidatorImpl(
                         context,
                         Objects.requireNonNull(context.getSystemService(UserManager.class)),
-                        SystemAppFunctionAllowlistReader.getInstance()),
+                        allowlistReader),
                 new ServiceHelperImpl(context),
                 new ServiceConfigImpl(),
                 loggerWrapper,
