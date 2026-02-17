@@ -3887,8 +3887,8 @@ package android.apphibernation {
 package android.attention {
 
   @FlaggedApi("com.android.input.flags.enable_attention_service_apis") public final class AttentionManager {
-    method @FlaggedApi("com.android.input.flags.enable_attention_service_apis") @RequiresPermission(android.Manifest.permission.ACCESS_ATTENTION_LISTENER) public void registerInteractionListener(int, @NonNull java.time.Duration, @NonNull java.util.concurrent.Executor, @NonNull android.attention.InteractionListener);
-    method @FlaggedApi("com.android.input.flags.enable_attention_service_apis") @RequiresPermission(android.Manifest.permission.ACCESS_ATTENTION_LISTENER) public void unregisterInteractionListener();
+    method @FlaggedApi("com.android.input.flags.enable_attention_service_apis") @RequiresPermission(android.Manifest.permission.ACCESS_ATTENTION_LISTENER) public void clearInteractionListener();
+    method @FlaggedApi("com.android.input.flags.enable_attention_service_apis") @RequiresPermission(android.Manifest.permission.ACCESS_ATTENTION_LISTENER) public void setInteractionListener(int, @NonNull java.time.Duration, @NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<android.attention.InteractionInfo>);
     field @FlaggedApi("com.android.input.flags.enable_attention_service_apis") public static final int INTERACTION_TYPE_ALL = -1; // 0xffffffff
     field @FlaggedApi("com.android.input.flags.enable_attention_service_apis") public static final int INTERACTION_TYPE_GESTURE = 4; // 0x4
     field @FlaggedApi("com.android.input.flags.enable_attention_service_apis") public static final int INTERACTION_TYPE_HOVER = 2; // 0x2
@@ -3899,10 +3899,6 @@ package android.attention {
   @FlaggedApi("com.android.input.flags.enable_attention_service_apis") public final class InteractionInfo {
     method public long getInteractionTimeMillis();
     method public int getInteractionTypes();
-  }
-
-  @FlaggedApi("com.android.input.flags.enable_attention_service_apis") public interface InteractionListener {
-    method @FlaggedApi("com.android.input.flags.enable_attention_service_apis") public void onInteraction(@NonNull android.attention.InteractionInfo);
   }
 
 }

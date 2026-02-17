@@ -35,10 +35,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 
 /**
- * AttentionManager allows privileged system apps or services to register a listener to subscribe
- * to user-activity events.
+ * AttentionManager allows privileged system apps or services to set a listener to subscribe to the
+ * user-activity events.
  * @hide
  */
 @SystemApi
@@ -96,8 +97,8 @@ public final class AttentionManager {
     }
 
     /**
-     * Register a listener that will be called for specified {@link InteractionType}. Only one
-     * listener can be registered per process.
+     * Set a listener that will be called for specified {@link InteractionType}. Only one listener
+     * can be set per process.
      * <p/>
      * The {@code debounceTime} is also the delay after which device will be considered idle for
      * each interaction type. The listener will be called with type {@code INTERACTION_TYPE_NONE}
@@ -109,16 +110,16 @@ public final class AttentionManager {
      * @param debounceTime     used to debounce end-activity notification for every
      *                         {@code INTERACTION_TYPE_*} independently.
      * @param executor         executor to execute the listener on.
-     * @param listener         the listener to be registered.
+     * @param listener         the listener to be set.
      * @throws IllegalArgumentException if called from process with an existing listener.
      * @hide
      */
     @SystemApi
     @FlaggedApi(Flags.FLAG_ENABLE_ATTENTION_SERVICE_APIS)
     @RequiresPermission(android.Manifest.permission.ACCESS_ATTENTION_LISTENER)
-    public void registerInteractionListener(@InteractionType int interactionTypes,
+    public void setInteractionListener(@InteractionType int interactionTypes,
             @NonNull Duration debounceTime, @NonNull @CallbackExecutor Executor executor,
-            @NonNull InteractionListener listener) {
+            @NonNull Consumer<InteractionInfo> listener) {
         Objects.requireNonNull(debounceTime);
         Objects.requireNonNull(executor);
         Objects.requireNonNull(listener);
@@ -126,14 +127,14 @@ public final class AttentionManager {
                 "debounceTime must be >= 500ms");
 
         try {
-            mService.registerListener(interactionTypes, debounceTime.toMillis(),
+            mService.setListener(interactionTypes, debounceTime.toMillis(),
                     new IInteractionListener.Stub() {
                         @Override
                         public void onInteractionStateChanged(InteractionState interactionState) {
                             final long token = Binder.clearCallingIdentity();
                             try {
                                 executor.execute(() ->
-                                        listener.onInteraction(
+                                        listener.accept(
                                                 new InteractionInfo(
                                                         interactionState.interactionTypes,
                                                         interactionState.interactionTimeMillis)));
@@ -148,16 +149,16 @@ public final class AttentionManager {
     }
 
     /**
-     * Unregister the listener that was previously registered.
-     * @throws IllegalArgumentException if no listener was registered.
+     * Clear the listener that was previously set.
+     * @throws IllegalArgumentException if no listener was set.
      * @hide
      */
     @SystemApi
     @FlaggedApi(Flags.FLAG_ENABLE_ATTENTION_SERVICE_APIS)
     @RequiresPermission(android.Manifest.permission.ACCESS_ATTENTION_LISTENER)
-    public void unregisterInteractionListener() {
+    public void clearInteractionListener() {
         try {
-            mService.unregisterListener();
+            mService.clearListener();
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
