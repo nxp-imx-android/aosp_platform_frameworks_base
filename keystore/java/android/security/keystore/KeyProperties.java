@@ -26,6 +26,9 @@ import android.hardware.security.keymint.TagType;
 import android.os.Process;
 import android.security.keymaster.KeymasterDefs;
 import android.security.keystore2.Flags;
+
+import libcore.util.EmptyArray;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -35,7 +38,6 @@ import java.security.spec.ECParameterSpec;
 import java.security.spec.MGF1ParameterSpec;
 import java.util.Collection;
 import java.util.Locale;
-import libcore.util.EmptyArray;
 
 /**
  * Properties of <a href="{@docRoot}training/articles/keystore.html">Android Keystore</a> keys.
@@ -1016,6 +1018,7 @@ public abstract class KeyProperties {
             NAMESPACE_APPLICATION,
             NAMESPACE_WIFI,
             NAMESPACE_LOCKSETTINGS,
+            NAMESPACE_KEYCHAIN,
     })
     public @interface Namespace {}
 
@@ -1042,6 +1045,13 @@ public abstract class KeyProperties {
      * @hide
      */
     public static final int NAMESPACE_LOCKSETTINGS = 103;
+
+    /**
+     * The namespace identifier for the KEYCHAIN Keystore namespace.
+     * This must be kept in sync with system/sepolicy/private/keystore2_key_contexts
+     * @hide
+     */
+    public static final int NAMESPACE_KEYCHAIN = 104;
 
     /**
      * The legacy UID that corresponds to {@link #NAMESPACE_APPLICATION}.
