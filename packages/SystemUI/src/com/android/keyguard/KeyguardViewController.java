@@ -179,14 +179,6 @@ public interface KeyguardViewController {
     /**
      * Stop showing the alternate bouncer, if showing.
      *
-     * <p>Should be like calling {@link #hideAlternateBouncer(boolean, boolean)} with a {@code true}
-     * {@code clearDismissAction} parameter.
-     */
-    void hideAlternateBouncer(boolean updateScrim);
-
-    /**
-     * Stop showing the alternate bouncer, if showing.
-     *
      * @param updateScrim Whether to update the scrim
      * @param clearDismissAction Whether the pending dismiss action should be cleared
      */

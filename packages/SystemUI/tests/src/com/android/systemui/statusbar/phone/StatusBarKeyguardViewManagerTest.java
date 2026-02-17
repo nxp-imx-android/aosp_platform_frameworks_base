@@ -763,7 +763,7 @@ public class StatusBarKeyguardViewManagerTest extends SysuiTestCase {
                 };
 
         // the following call before registering centralSurfaces should NOT throw a NPE:
-        mStatusBarKeyguardViewManager.hideAlternateBouncer(true);
+        mStatusBarKeyguardViewManager.hideAlternateBouncer(true, true);
     }
 
     @Test
@@ -978,7 +978,7 @@ public class StatusBarKeyguardViewManagerTest extends SysuiTestCase {
     public void hideAlternateBouncer_clearsDismissActionByDefault() {
         clearInvocations(mKeyguardDismissActionInteractor);
 
-        mStatusBarKeyguardViewManager.hideAlternateBouncer(/* updateScrim= */ true);
+        mStatusBarKeyguardViewManager.hideAlternateBouncer(/* updateScrim= */ true, true);
 
         verify(mKeyguardDismissActionInteractor).clearDismissAction();
     }

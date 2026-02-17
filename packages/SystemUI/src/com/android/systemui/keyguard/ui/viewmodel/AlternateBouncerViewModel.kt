@@ -96,11 +96,17 @@ constructor(
     }
 
     fun onRemovedFromWindow() {
-        keyguardViewController.hideAlternateBouncer(false)
+        keyguardViewController.hideAlternateBouncer(
+            /* updateScrim */ false,
+            /* clearDismissAction */ false,
+        )
     }
 
     fun onBackRequested() {
-        keyguardViewController.hideAlternateBouncer(false)
+        keyguardViewController.hideAlternateBouncer(
+            /* updateScrim */ false,
+            /* clearDismissAction */ true,
+        )
         dismissCallbackRegistry.notifyDismissCancelled()
         primaryBouncerInteractor.setDismissAction(null, null)
     }
