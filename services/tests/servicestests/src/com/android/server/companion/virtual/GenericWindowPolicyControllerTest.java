@@ -341,19 +341,6 @@ public class GenericWindowPolicyControllerTest {
     }
 
     @Test
-    public void openNonBlockedAppOnMirrorVirtualDisplay_isBlocked() {
-        GenericWindowPolicyController gwpc = createGwpc();
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ true, /* isSecureDisplay= */ false);
-
-        ActivityInfo activityInfo = getActivityInfo(
-                NONBLOCKED_APP_PACKAGE_NAME,
-                NONBLOCKED_APP_PACKAGE_NAME,
-                /* displayOnRemoteDevices */ true,
-                /* targetDisplayCategory */ null);
-        assertNoActivityLaunched(gwpc, DISPLAY_ID, activityInfo);
-    }
-
-    @Test
     public void canActivityBeLaunched_mismatchingUserHandle_isBlocked() {
         GenericWindowPolicyController gwpc = createGwpc();
 
@@ -983,7 +970,7 @@ public class GenericWindowPolicyControllerTest {
                 /* showTasksInHostDeviceRecents= */ true,
                 /* customHomeComponent= */ null,
                 /* localDeviceOnly */ false);
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false, /* isSecureDisplay= */ false);
+        gwpc.setDisplayId(DISPLAY_ID, /* isSecureDisplay= */ false);
         return gwpc;
     }
 
@@ -1001,7 +988,7 @@ public class GenericWindowPolicyControllerTest {
                 /* showTasksInHostDeviceRecents= */ true,
                 /* customHomeComponent= */ null,
                 /* localDeviceOnly */ true);
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false, /* isSecureDisplay= */ false);
+        gwpc.setDisplayId(DISPLAY_ID, /* isSecureDisplay= */ false);
         return gwpc;
     }
 
@@ -1019,7 +1006,7 @@ public class GenericWindowPolicyControllerTest {
                 /* showTasksInHostDeviceRecents= */ true,
                 /* customHomeComponent= */ null,
                 /* localDeviceOnly */ false);
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false, /* isSecureDisplay= */ false);
+        gwpc.setDisplayId(DISPLAY_ID, /* isSecureDisplay= */ false);
         return gwpc;
     }
 
@@ -1038,7 +1025,7 @@ public class GenericWindowPolicyControllerTest {
                 /* showTasksInHostDeviceRecents= */ true,
                 /* customHomeComponent= */ null,
                 /* localDeviceOnly */ false);
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false, /* isSecureDisplay= */ false);
+        gwpc.setDisplayId(DISPLAY_ID, /* isSecureDisplay= */ false);
         return gwpc;
     }
 
@@ -1057,7 +1044,7 @@ public class GenericWindowPolicyControllerTest {
                 /* showTasksInHostDeviceRecents= */ true,
                 /* customHomeComponent= */ homeComponent,
                 /* localDeviceOnly */ false);
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false, /* isSecureDisplay= */ false);
+        gwpc.setDisplayId(DISPLAY_ID, /* isSecureDisplay= */ false);
         return gwpc;
     }
 
@@ -1076,7 +1063,7 @@ public class GenericWindowPolicyControllerTest {
                 /* showTasksInHostDeviceRecents= */ true,
                 /* customHomeComponent= */ null,
                 /* localDeviceOnly */ false);
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false, /* isSecureDisplay= */ false);
+        gwpc.setDisplayId(DISPLAY_ID, /* isSecureDisplay= */ false);
         return gwpc;
     }
 
@@ -1095,7 +1082,7 @@ public class GenericWindowPolicyControllerTest {
                 /* showTasksInHostDeviceRecents= */ true,
                 /* customHomeComponent= */ null,
                 /* localDeviceOnly */ false);
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false, /* isSecureDisplay= */ false);
+        gwpc.setDisplayId(DISPLAY_ID, /* isSecureDisplay= */ false);
         return gwpc;
     }
 
@@ -1114,7 +1101,7 @@ public class GenericWindowPolicyControllerTest {
                 /* showTasksInHostDeviceRecents= */ true,
                 /* customHomeComponent= */ null,
                 /* localDeviceOnly */ false);
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false, /* isSecureDisplay= */ false);
+        gwpc.setDisplayId(DISPLAY_ID, /* isSecureDisplay= */ false);
         return gwpc;
     }
 
@@ -1133,7 +1120,7 @@ public class GenericWindowPolicyControllerTest {
                 /* showTasksInHostDeviceRecents= */ true,
                 /* customHomeComponent= */ null,
                 /* localDeviceOnly */ false);
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false, /* isSecureDisplay= */ false);
+        gwpc.setDisplayId(DISPLAY_ID, /* isSecureDisplay= */ false);
         return gwpc;
     }
 
@@ -1152,7 +1139,7 @@ public class GenericWindowPolicyControllerTest {
                 /* showTasksInHostDeviceRecents= */ true,
                 /* customHomeComponent= */ null,
                 /* localDeviceOnly */ false);
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false, /* isSecureDisplay= */ false);
+        gwpc.setDisplayId(DISPLAY_ID, /* isSecureDisplay= */ false);
         return gwpc;
     }
 
@@ -1189,19 +1176,6 @@ public class GenericWindowPolicyControllerTest {
                 .onActivityLaunchBlocked(fromDisplay, activityInfo, intentSender);
         verify(mActivityListener, after(TIMEOUT_MILLIS).never())
                 .shouldInterceptIntent(any(Intent.class));
-    }
-
-    private void assertNoActivityLaunched(GenericWindowPolicyController gwpc, int fromDisplay,
-            ActivityInfo activityInfo) {
-        IntentSender intentSender = new IntentSender(new Binder());
-        assertThat(gwpc.canActivityBeLaunched(activityInfo, null,
-                WindowConfiguration.WINDOWING_MODE_FULLSCREEN, DISPLAY_ID, /* isNewTask= */false,
-                /* isResultExpected= */ false, () -> intentSender))
-                .isFalse();
-
-        verify(mActivityListener, after(TIMEOUT_MILLIS).never())
-                .onActivityLaunchBlocked(eq(fromDisplay), eq(activityInfo), any());
-        verify(mActivityListener, never()).shouldInterceptIntent(any(Intent.class));
     }
 
     private static Set<UserHandle> getCurrentUserId() {

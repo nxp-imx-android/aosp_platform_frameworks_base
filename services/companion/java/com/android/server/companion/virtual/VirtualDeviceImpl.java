@@ -1649,7 +1649,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
             gwpc.setInterestedWindowFlags(WindowManager.LayoutParams.FLAG_SECURE,
                     WindowManager.LayoutParams.SYSTEM_FLAG_HIDE_NON_SYSTEM_OVERLAY_WINDOWS);
         }
-        gwpc.setDisplayId(displayId, isMirrorDisplay, isSecureDisplay);
+        gwpc.setDisplayId(displayId, isSecureDisplay);
         synchronized (mVirtualDeviceLock) {
             if (mVirtualDisplays.contains(displayId)) {
                 Slog.wtf(TAG, "Virtual device already has a virtual display with ID " + displayId);
