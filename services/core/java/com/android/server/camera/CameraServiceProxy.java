@@ -54,6 +54,7 @@ import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.ICameraDeviceUser.AudioRestriction;
+import android.hardware.camera2.params.OutputConfiguration;
 import android.hardware.devicestate.DeviceStateManager;
 import android.hardware.devicestate.DeviceStateManager.FoldStateListener;
 import android.hardware.display.DisplayManager;
@@ -515,10 +516,39 @@ public class CameraServiceProxy extends SystemService
                     mUsedZoomOverride,
                     mMostRequestedFpsRange.getLower(), mMostRequestedFpsRange.getUpper(),
                     extensionCaptureFormat, /* errorState */ mErrorState,
-                    mSharedMode);
+                    mSharedMode, getMultiResolutionMode());
 
         }
+
+        /**
+         * Get the MultiResolutionImageReader mode based on mStreamStats.
+         */
+        private int getMultiResolutionMode() {
+            if (mStreamStats == null) {
+                return FrameworkStatsLog.CAMERA_ACTION_EVENT__MRIR_TYPE__MRIR_OFF;
+            }
+
+            boolean hasConcurrentMrir = false;
+            boolean hasSingleMrir = false;
+            for (CameraStreamStats streamStats : mStreamStats) {
+                if (streamStats.getMultiResMode() == OutputConfiguration.MULTI_RES_ON) {
+                    hasSingleMrir = true;
+                }
+                if (streamStats.getMultiResMode() == OutputConfiguration.MULTI_RES_ON_CONCURRENT) {
+                    hasConcurrentMrir = true;
+                }
+            }
+
+            if (hasConcurrentMrir) {
+                return FrameworkStatsLog.CAMERA_ACTION_EVENT__MRIR_TYPE__MRIR_CONCURRENT;
+            }
+            if (hasSingleMrir) {
+                return FrameworkStatsLog.CAMERA_ACTION_EVENT__MRIR_TYPE__MRIR_SINGLE;
+            }
+            return FrameworkStatsLog.CAMERA_ACTION_EVENT__MRIR_TYPE__MRIR_OFF;
+        }
     }
+
     /**
      * Structure to track feature combination query
      */
