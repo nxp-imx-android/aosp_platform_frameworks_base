@@ -796,7 +796,12 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         }
 
         mAppFunctionMetadataObserver.registerClientAppCallback(
-                targetUser, filteredSearchSpec, observeAppFunctionsCallback);
+                targetUser,
+                new AppFunctionAidlSearchSpec(
+                        aidlSearchSpec.getCallingPackageName(),
+                        filteredSearchSpec,
+                        aidlSearchSpec.getTargetUserId()),
+                observeAppFunctionsCallback);
     }
 
     @Override

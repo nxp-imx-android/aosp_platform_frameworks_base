@@ -15,6 +15,7 @@
  */
 package com.android.server.appfunctions
 
+import android.app.appfunctions.AppFunctionAidlSearchSpec
 import android.app.appfunctions.AppFunctionName
 import android.app.appfunctions.AppFunctionSearchSpec
 import android.app.appfunctions.AppFunctionStaticMetadataHelper.APP_FUNCTION_STATIC_METADATA_DB
@@ -445,7 +446,14 @@ class InternalObserverCallbackRouterTest {
     private fun InternalObserverCallbackRouter.addCallback(
         callback: IObserveAppFunctionChangesCallback
     ) {
-        addCallback(callback, mock<AppFunctionSearchSpec>())
+        addCallback(
+            callback,
+            AppFunctionAidlSearchSpec(
+                "testPackage",
+                mock<AppFunctionSearchSpec>(),
+                0
+            )
+        )
     }
 
     class TestInternalCallback : IObserveAppFunctionChangesCallback {

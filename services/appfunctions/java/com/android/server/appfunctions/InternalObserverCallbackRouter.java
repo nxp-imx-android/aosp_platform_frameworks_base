@@ -21,6 +21,7 @@ import static java.util.Objects.requireNonNull;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.appfunctions.AppFunctionAidlSearchSpec;
 import android.app.appfunctions.AppFunctionName;
 import android.app.appfunctions.AppFunctionSearchSpec;
 import android.app.appfunctions.IObserveAppFunctionChangesCallback;
@@ -195,7 +196,7 @@ class InternalObserverCallbackRouter {
 
     void addCallback(
             @NonNull IObserveAppFunctionChangesCallback callbackToAdd,
-            @NonNull AppFunctionSearchSpec searchSpec) {
+            @NonNull AppFunctionAidlSearchSpec searchSpec) {
         mInternalCallbacks.register(callbackToAdd, searchSpec);
     }
 
