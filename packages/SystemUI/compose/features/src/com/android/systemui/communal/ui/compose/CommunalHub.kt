@@ -191,6 +191,7 @@ import com.android.systemui.Flags.communalAccessibilityResize
 import com.android.systemui.Flags.communalHubCancelAddWidget
 import com.android.systemui.Flags.communalResponsiveGrid
 import com.android.systemui.Flags.communalTimerFlickerFix
+import com.android.systemui.Flags.communalWidgetPopulationOptimization
 import com.android.systemui.Flags.communalWidgetResizing
 import com.android.systemui.communal.domain.model.CommunalContentModel
 import com.android.systemui.communal.shared.model.CommunalContentSize
@@ -246,6 +247,10 @@ fun CommunalHub(
         rememberLazyGridState(viewModel.savedFirstScrollIndex, viewModel.savedFirstScrollOffset)
 
     LaunchedEffect(Unit) { viewModel.clearPersistedScrollPosition("ui rendered") }
+
+    if (communalWidgetPopulationOptimization()) {
+        LaunchedEffect(Unit) { viewModel.allocateWidgets() }
+    }
 
     val contentListState = rememberContentListState(widgetConfigurator, communalContent, viewModel)
     val reorderingWidgets by viewModel.reorderingWidgets.collectAsStateWithLifecycle()
