@@ -36,6 +36,7 @@ import com.android.systemui.broadcast.BroadcastSender
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.display.data.repository.DisplayRepository
+import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.shared.system.QuickStepContract
 import com.android.systemui.user.data.repository.UserRepository
 import com.android.systemui.user.domain.interactor.HeadlessSystemUserMode
@@ -54,6 +55,7 @@ constructor(
     private val displayRepository: DisplayRepository,
     private val userRepository: UserRepository,
     private val hsum: HeadlessSystemUserMode,
+    private val keyguardInteractor: KeyguardInteractor,
     private val broadcastDispatcher: BroadcastDispatcher,
     private val broadcastSender: BroadcastSender,
 ) {
@@ -86,10 +88,10 @@ constructor(
     fun getAssignedAccessibilityTargets(
         @UserShortcutType shortcutType: Int
     ): Flow<List<AccessibilityTargetModel>> =
-        repository.getSelectedAccessibilityTargets(shortcutType)
+        repository.getSelectedAccessibilityTargets(shortcutType).map { it.filterExcludedTargets() }
 
-    fun getAssignedAccessibilityTargetsCount(@UserShortcutType shortcutType: Int): Int =
-        repository.getSelectedAccessibilityTargetsInfo(shortcutType).size
+    suspend fun getAssignedAccessibilityTargetsCount(@UserShortcutType shortcutType: Int): Int =
+        repository.getSelectedAccessibilityTargetsInfo(shortcutType).filterExcludedTargets().size
 
     /**
      * Returns a [Context] for the given [dialogDisplayId]. If the requested display is not the
@@ -217,10 +219,11 @@ constructor(
      * - Excluded targets when in OOBE.
      */
     private suspend fun List<AccessibilityTargetModel>.filterExcludedTargets() =
-        if (!isCompletedFullUser()) {
-            filterNot { it.targetName in repository.hsuExcludedTargets }
-        } else {
-            this
+        when {
+            !isCompletedFullUser() -> filterNot { it.targetName in repository.hsuExcludedTargets }
+            keyguardInteractor.isKeyguardCurrentlyShowing() ->
+                filterNot { it.targetName in repository.keyguardExcludedTargets }
+            else -> this
         }
 
     companion object {

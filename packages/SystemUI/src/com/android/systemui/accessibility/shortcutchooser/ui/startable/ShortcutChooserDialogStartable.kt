@@ -119,7 +119,13 @@ constructor(
                             ShortcutEditorDialogContent(
                                 shortcutType,
                                 targets = allTargets,
-                                onDoneClick = { viewModel.onEditTargetsDoneClick(shortcutType) },
+                                onDoneClick = {
+                                    with(applicationScope) {
+                                        launchTraced {
+                                            viewModel.onEditTargetsDoneClick(shortcutType)
+                                        }
+                                    }
+                                },
                                 onTargetToggled = { target ->
                                     viewModel.enableShortcutForTarget(
                                         !target.isAssigned,

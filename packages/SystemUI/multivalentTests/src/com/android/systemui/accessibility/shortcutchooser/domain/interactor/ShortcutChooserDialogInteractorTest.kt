@@ -40,6 +40,8 @@ import com.android.systemui.broadcast.broadcastDispatcher
 import com.android.systemui.broadcast.mockBroadcastSender
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.display.data.repository.displayRepository
+import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
+import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
@@ -47,6 +49,7 @@ import com.android.systemui.testKosmosNew
 import com.android.systemui.user.data.repository.userRepository
 import com.android.systemui.user.domain.interactor.fakeHeadlessSystemUserMode
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.flow.flowOf
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyInt
@@ -67,6 +70,7 @@ class ShortcutChooserDialogInteractorTest : SysuiTestCase() {
         const val TALKBACK_TARGET_NAME = "fakeTalkBackTargetName"
         const val MAGNIFICATION_TARGET_NAME = "fakeMagnificationTargetName"
         const val HSU_EXCLUDED_TARGET_NAME = "fakeHsuExcludedTargetName"
+        const val KEYGUARD_EXCLUDED_TARGET_NAME = "fakeKeyguardTargetName"
     }
 
     private val kosmos = testKosmosNew()
@@ -81,6 +85,7 @@ class ShortcutChooserDialogInteractorTest : SysuiTestCase() {
                 displayRepository,
                 userRepository,
                 fakeHeadlessSystemUserMode,
+                keyguardInteractor,
                 broadcastDispatcher,
                 mockBroadcastSender,
             )
@@ -189,6 +194,60 @@ class ShortcutChooserDialogInteractorTest : SysuiTestCase() {
             underTest.getAssignedAccessibilityTargets(shortcutType)
 
             verify(mockRepository).getSelectedAccessibilityTargets(eq(shortcutType))
+        }
+
+    @Test
+    fun getAssignedAccessibilityTargets_onLockScreen_excludesTargets() =
+        kosmos.runTest {
+            setOobeCompleted(true)
+            fakeHeadlessSystemUserMode.setIsHeadlessSystemUser(false)
+            fakeKeyguardRepository.setKeyguardShowing(true)
+            val shortcutType = UserShortcutType.TOP_ROW_KEY
+            val targetName1 = "com.android.test/TestService1"
+            val targetName2 = KEYGUARD_EXCLUDED_TARGET_NAME
+            val targets =
+                listOf(
+                    createTargetModel(shortcutType, targetName1),
+                    createTargetModel(shortcutType, targetName2),
+                )
+            whenever(mockRepository.getSelectedAccessibilityTargets(shortcutType))
+                .thenReturn(flowOf(targets))
+            whenever(mockRepository.keyguardExcludedTargets)
+                .thenReturn(listOf(KEYGUARD_EXCLUDED_TARGET_NAME))
+
+            val assignedTargets by
+                collectLastValue(underTest.getAssignedAccessibilityTargets(shortcutType))
+
+            assertThat(assignedTargets).containsExactly(targets[0])
+        }
+
+    @Test
+    fun getAssignedAccessibilityTargetsCount_lockAndThenUnlock_getCorrectCount() =
+        kosmos.runTest {
+            setOobeCompleted(true)
+            fakeHeadlessSystemUserMode.setIsHeadlessSystemUser(false)
+            val shortcutType = UserShortcutType.TOP_ROW_KEY
+            val targetName1 = "com.android.test/TestService1"
+            val targetName2 = KEYGUARD_EXCLUDED_TARGET_NAME
+            val targets =
+                listOf(
+                    createTargetModel(shortcutType, targetName1),
+                    createTargetModel(shortcutType, targetName2),
+                )
+            whenever(mockRepository.getSelectedAccessibilityTargetsInfo(shortcutType))
+                .thenReturn(targets)
+            whenever(mockRepository.keyguardExcludedTargets)
+                .thenReturn(listOf(KEYGUARD_EXCLUDED_TARGET_NAME))
+
+            // On lock screen
+            fakeKeyguardRepository.setKeyguardShowing(true)
+            assertThat(underTest.getAssignedAccessibilityTargetsCount(shortcutType))
+                .isEqualTo(targets.size - 1)
+
+            // Unlock screen
+            fakeKeyguardRepository.setKeyguardShowing(false)
+            assertThat(underTest.getAssignedAccessibilityTargetsCount(shortcutType))
+                .isEqualTo(targets.size)
         }
 
     @Test

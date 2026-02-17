@@ -129,7 +129,7 @@ constructor(
         _dialogType.value = DialogType.EDIT_TARGETS
     }
 
-    fun onEditTargetsDoneClick(@UserShortcutType shortcutType: Int) {
+    suspend fun onEditTargetsDoneClick(@UserShortcutType shortcutType: Int) {
         val assignedTargetsCount = interactor.getAssignedAccessibilityTargetsCount(shortcutType)
         if (assignedTargetsCount < 2) {
             dismissDialog()
