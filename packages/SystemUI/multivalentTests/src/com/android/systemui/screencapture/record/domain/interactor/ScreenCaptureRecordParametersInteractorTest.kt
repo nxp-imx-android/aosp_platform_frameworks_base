@@ -20,11 +20,13 @@ import android.view.Display
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
 import com.android.systemui.screenrecord.domain.interactor.screenRecordingServiceInteractor
 import com.android.systemui.screenrecord.shared.model.ScreenRecordingParameters
 import com.android.systemui.screenrecord.shared.model.ScreenRecordingParametersFactory.screenRecordingParameters
+import com.android.systemui.screenrecord.shared.model.ScreenRecordingStatus
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
@@ -71,12 +73,16 @@ class ScreenCaptureRecordParametersInteractorTest : SysuiTestCase() {
     @Test
     fun changingShouldShowTaps() =
         kosmos.runTest {
+            screenRecordingServiceInteractor.startRecording(screenRecordingParameters())
             val newShouldShowTaps = true
             assertThat(underTest.shouldShowTaps).isNotEqualTo(newShouldShowTaps)
 
             underTest.shouldShowTaps = newShouldShowTaps
 
             assertThat(underTest.shouldShowTaps).isEqualTo(newShouldShowTaps)
+            val serviceStatus by collectLastValue(screenRecordingServiceInteractor.status)
+            assertThat((serviceStatus as ScreenRecordingStatus.Started).parameters.shouldShowTaps)
+                .isEqualTo(newShouldShowTaps)
         }
 
     @Test
