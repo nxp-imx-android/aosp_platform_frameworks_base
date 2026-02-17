@@ -17,7 +17,6 @@
 package com.android.test.input;
 
 import static com.android.cts.input.inputeventmatchers.InputEventMatchersKt.withMotionAction;
-import static com.android.input.flags.Flags.FLAG_FIX_INPUT_ANR_BY_SEND_MESSAGE_EXCEPTION;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -27,9 +26,6 @@ import static org.mockito.Mockito.doAnswer;
 
 import android.os.HandlerThread;
 import android.os.Looper;
-import android.platform.test.annotations.RequiresFlagsEnabled;
-import android.platform.test.flag.junit.CheckFlagsRule;
-import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.view.BatchedInputEventReceiver;
 import android.view.Choreographer;
 import android.view.InputChannel;
@@ -103,10 +99,6 @@ public class BatchedInputEventReceiverTest {
 
     @Rule
     public MockitoRule mMockitoJUnitRule = MockitoJUnit.rule();
-
-    @Rule
-    public final CheckFlagsRule mCheckFlagsRule =
-            DeviceFlagsValueProvider.createCheckFlagsRule();
 
     private InputChannel[] mChannels;
 
@@ -225,7 +217,6 @@ public class BatchedInputEventReceiverTest {
     // Receiver send buffer, which causes finished events to fail and return WOULD_BLOCK. This is
     // important for testing that these failed events are successfully finished later by the caller,
     // which would otherwise cause an ANR.
-    @RequiresFlagsEnabled(FLAG_FIX_INPUT_ANR_BY_SEND_MESSAGE_EXCEPTION)
     @Test
     public void testCancellationFillsFinishSocket() {
         final int seq = 1;
