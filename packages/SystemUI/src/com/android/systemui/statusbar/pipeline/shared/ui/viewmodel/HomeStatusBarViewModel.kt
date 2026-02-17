@@ -160,6 +160,9 @@ interface HomeStatusBarViewModel : Activatable {
      */
     fun onChipBoundsChanged(key: String, bounds: RectF)
 
+    /** Notifies that there was a long press on the status bar. */
+    fun onStatusBarLongPressed()
+
     /** Notifies that the system icons container was clicked. */
     fun onQuickSettingsChipClicked()
 
@@ -623,6 +626,12 @@ constructor(
 
     override fun onChipBoundsChanged(key: String, bounds: RectF) {
         ongoingActivityChipsViewModel.onChipBoundsChanged(key, bounds)
+    }
+
+    override fun onStatusBarLongPressed() {
+        shadeInteractor.expandQuickSettingsShade(
+            loggingReason = "HomeStatusBarViewModel.onStatusBarLongPressed"
+        )
     }
 
     override fun onQuickSettingsChipClicked() {
