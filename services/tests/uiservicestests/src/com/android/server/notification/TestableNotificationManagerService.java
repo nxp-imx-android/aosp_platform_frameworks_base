@@ -20,9 +20,11 @@ import static android.app.NotificationManager.IMPORTANCE_DEFAULT;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import android.app.ActivityManager;
 import android.app.ActivityManagerInternal;
+import android.app.AlarmManager;
 import android.app.AppOpsManager;
 import android.app.IActivityManager;
 import android.app.IUriGrantsManager;
@@ -35,9 +37,10 @@ import android.content.Context;
 import android.content.pm.IPackageManager;
 import android.content.pm.PackageManager;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.PowerManager;
-import android.os.UserManager;
 import android.permission.PermissionManager;
+import android.service.notification.INotificationListener;
 import android.service.notification.StatusBarNotification;
 import android.telecom.TelecomManager;
 import android.testing.TestableContext;
@@ -47,9 +50,7 @@ import android.util.AtomicFile;
 import androidx.annotation.Nullable;
 import androidx.test.InstrumentationRegistry;
 
-import com.android.internal.config.sysui.SystemUiSystemPropertiesFlags;
 import com.android.internal.config.sysui.TestableFlagResolver;
-import com.android.internal.logging.InstanceIdSequence;
 import com.android.internal.logging.InstanceIdSequenceFake;
 import com.android.internal.logging.UiEventLogger;
 import com.android.server.LocalServices;
@@ -61,6 +62,8 @@ import com.android.server.uri.UriGrantsManagerInternal;
 import com.android.server.utils.quota.MultiRateLimiter;
 import com.android.server.wm.ActivityTaskManagerInternal;
 import com.android.server.wm.WindowManagerInternal;
+
+import org.mockito.Mock;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -74,6 +77,7 @@ public class TestableNotificationManagerService extends NotificationManagerServi
     boolean isSystemAppId = true;
     int countLogSmartSuggestionsVisible = 0;
     Set<Integer> mChannelToastsSent = new HashSet<>();
+    INotificationListener mNas = mock(INotificationListener.class);
 
     AtomicFile mPolicyFile;
     File mFile;
@@ -114,22 +118,30 @@ public class TestableNotificationManagerService extends NotificationManagerServi
         mTestableContext = context;
         mTestableLooper = looper;
     }
-
     void init() throws IOException {
+        init("<notification-policy></notification-policy", null);
+    }
+
+    void init(String policyXml, String rulesXml) throws IOException {
         InstrumentationRegistry.getInstrumentation().getUiAutomation().adoptShellPermissionIdentity(
                 "android.permission.READ_CONTACTS");
-
         // write to a test file; the system file isn't readable from tests
-        mFile = new File(getContext().getCacheDir(), "test.xml");
-        mFile.createNewFile();
-        final String preupgradeXml = "<notification-policy></notification-policy>";
+        mFile = new File(getContext().getCacheDir(), "notification_policy.xml");
         mPolicyFile = new AtomicFile(mFile);
-        FileOutputStream fos = mPolicyFile.startWrite();
-        fos.write(preupgradeXml.getBytes());
-        mPolicyFile.finishWrite(fos);
-        mFile2 = new File(getContext().getCacheDir(), "test2.xml");
-        mFile2.createNewFile();
+        if (policyXml != null) {
+            FileOutputStream fos = mPolicyFile.startWrite();
+            fos.write(policyXml.getBytes());
+            mPolicyFile.finishWrite(fos);
+        }
+        mFile2 = new File(getContext().getCacheDir(), "notification_rules.xml");
         mRulesFile = new AtomicFile(mFile2);
+        if (rulesXml != null) {
+            FileOutputStream fos = mRulesFile.startWrite();
+            fos.write(rulesXml.getBytes());
+            mRulesFile.finishWrite(fos);
+        } else {
+            mRulesFile.delete();
+        }
 
         // apps allowed as convos
         setStringArrayResourceValue("");
@@ -137,15 +149,22 @@ public class TestableNotificationManagerService extends NotificationManagerServi
         LocalServices.removeServiceForTest(WindowManagerInternal.class);
         LocalServices.addService(WindowManagerInternal.class, mock(WindowManagerInternal.class));
         mTestableContext.addMockSystemService(AppOpsManager.class, mock(AppOpsManager.class));
+        mTestableContext.addMockSystemService(Context.ALARM_SERVICE, mock(AlarmManager.class));
 
+        NotificationAssistants assistants = spy(new NotificationAssistants(
+                mTestableContext, mock(IPackageManager.class)));
 
         super.init(new WorkerHandler(mTestableLooper.getLooper()),
                 mock(RankingHandler.class), new Handler(mTestableLooper.getLooper()),
                 mock(IPackageManager.class), mock(PackageManager.class),
                 mock(LightsManager.class),
-                mock(NotificationListeners.class),
-                spy(new NotificationAssistants(mTestableContext, mock(IPackageManager.class))),
-                mock(ConditionProviders.class), mock(ICompanionDeviceManager.class),
+                new NotificationListeners(mTestableContext, new Object(),
+                        mUserProfiles, mock(IPackageManager.class),
+                        new NotificationManagerService.ConfigurableParameters()),
+                assistants,
+                new ConditionProviders(mTestableContext, mUserProfiles,
+                        mock(IPackageManager.class)),
+                mock(ICompanionDeviceManager.class),
                 mock(SnoozeHelper.class), mock(NotificationUsageStats.class),
                 mPolicyFile, mRulesFile, mock(ActivityManager.class),
                 mock(GroupHelper.class), mock(IActivityManager.class),
@@ -165,6 +184,10 @@ public class TestableNotificationManagerService extends NotificationManagerServi
                 mock(UiEventLogger.class),
                 mock(BitmapOffloadInternal.class), new NotificationListenerStats(),
                 new NotificationRecordLoggerFake(), new InstanceIdSequenceFake(1 << 30));
+
+        when(mNas.asBinder()).thenReturn(mock(IBinder.class));
+        mAssistants.registerSystemService(mNas, ComponentName.unflattenFromString("a/b"),
+                ActivityManager.getCurrentUser(), 1000);
     }
 
     RankingHelper getRankingHelper() {

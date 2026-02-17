@@ -182,6 +182,13 @@ public final class NotificationRule implements Parcelable {
     }
 
     /**
+     * @hide
+     */
+    public void setEnabled(boolean enabled) {
+        mEnabled = enabled;
+    }
+
+    /**
      * Returns the id of this rule. These must be unique within a {@link UserHandle}.
      */
     public int getId() {

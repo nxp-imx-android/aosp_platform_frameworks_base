@@ -41,7 +41,6 @@ import static android.service.notification.Adjustment.KEY_LIGHT;
 import static android.service.notification.Adjustment.KEY_MODE_BREAKTHROUGHS;
 import static android.service.notification.Adjustment.KEY_NOTIFICATION_RULES;
 import static android.service.notification.Adjustment.KEY_SOUND;
-import static android.service.notification.Adjustment.KEY_SUMMARIZATION;
 import static android.service.notification.Adjustment.KEY_TYPE;
 import static android.service.notification.Adjustment.TYPE_CONTENT_RECOMMENDATION;
 import static android.service.notification.Adjustment.TYPE_NEWS;
@@ -70,7 +69,6 @@ import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.service.notification.Adjustment;
-import android.util.Log;
 import android.util.Xml;
 
 import androidx.test.filters.SmallTest;
@@ -622,7 +620,7 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
                 .containsExactly(RESERVED_ID_PROMOTED, RESERVED_ID_PRIORITY_CONVERSATIONS,
                         RESERVED_ID_STATIC_BUNDLES, RESERVED_ID_IMPORTANT_NOTIFICATIONS);
 
-        assertThat(underTest.getAllowedClassificationTypes(mUser.id)).asList()
+        assertThat(underTest.getAllowedClassificationTypes(mUser.id))
                 .containsExactlyElementsIn(List.of(TYPE_PROMOTION, TYPE_NEWS));
     }
 
@@ -752,10 +750,9 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
         underTest.setAssistantClassificationTypeState(mUser.id, TYPE_CONTENT_RECOMMENDATION,
                 false);
         assertThat(underTest.getAllowedClassificationTypes(mUser.id)).isEmpty();
-        underTest.disallowClassificationAdjustment(mUser.id);
-        underTest.allowClassificationAdjustment(mUser.id);
-        assertThat(underTest.getAllowedClassificationTypes(mUser.id)).asList()
-                .contains(TYPE_PROMOTION);
+        underTest.setClassificationAdjustmentState(mUser.id, false);
+        underTest.setClassificationAdjustmentState(mUser.id, true);
+        assertThat(underTest.getAllowedClassificationTypes(mUser.id)).contains(TYPE_PROMOTION);
     }
 
     @Test
@@ -767,10 +764,9 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
                 false);
         underTest.setAssistantClassificationTypeState(mUser.id, TYPE_NEWS, true);
         assertThat(underTest.getAllowedClassificationTypes(mUser.id)).isNotEmpty();
-        underTest.disallowClassificationAdjustment(mUser.id);
-        underTest.allowClassificationAdjustment(mUser.id);
-        assertThat(underTest.getAllowedClassificationTypes(mUser.id)).asList()
-                .containsExactly(TYPE_NEWS);
+        underTest.setClassificationAdjustmentState(mUser.id, false);
+        underTest.setClassificationAdjustmentState(mUser.id, true);
+        assertThat(underTest.getAllowedClassificationTypes(mUser.id)).containsExactly(TYPE_NEWS);
     }
 
     @Test
@@ -779,12 +775,12 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
         underTest.setAssistantClassificationTypeState(mUser.id, TYPE_CONTENT_RECOMMENDATION,
                 false);
         assertThat(underTest.getAllowedClassificationTypes(mUser.id))
-                .asList().doesNotContain(TYPE_CONTENT_RECOMMENDATION);
+                .doesNotContain(TYPE_CONTENT_RECOMMENDATION);
 
         underTest.setAssistantClassificationTypeState(mUser.id, TYPE_CONTENT_RECOMMENDATION,
                 true);
 
-        assertThat(underTest.getAllowedClassificationTypes(mUser.id)).asList()
+        assertThat(underTest.getAllowedClassificationTypes(mUser.id))
                 .contains(TYPE_CONTENT_RECOMMENDATION);
     }
 
@@ -793,7 +789,7 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
         underTest.onUserAdded(mUser.id);
         underTest.setAssistantClassificationTypeState(mUser.id, TYPE_PROMOTION, false);
         assertThat(underTest.getAllowedClassificationTypes(mUser.id))
-                .asList().doesNotContain(TYPE_PROMOTION);
+                .doesNotContain(TYPE_PROMOTION);
     }
 
     @Test
@@ -802,7 +798,7 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
         underTest.onUserAdded(mUserProfile.id);
         underTest.setAssistantClassificationTypeState(mUserProfile.id, TYPE_NEWS, false);
         assertThat(underTest.getAllowedClassificationTypes(mUserProfile.id))
-                .asList().doesNotContain(TYPE_NEWS);
+                .doesNotContain(TYPE_NEWS);
 
         underTest.setAssistantClassificationTypeState(mUser.id, TYPE_PROMOTION, false);
         underTest.setAssistantClassificationTypeState(mUser.id, TYPE_SOCIAL_MEDIA, false);
@@ -811,6 +807,6 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
         underTest.setAssistantClassificationTypeState(mUser.id, TYPE_NEWS, true);
 
         assertThat(underTest.getAllowedClassificationTypes(mUserProfile.id))
-                .asList().containsExactly(TYPE_NEWS);
+                .containsExactly(TYPE_NEWS);
     }
 }

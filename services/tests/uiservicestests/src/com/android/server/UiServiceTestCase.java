@@ -31,10 +31,13 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.UserHandle;
 import android.testing.TestableContext;
+import android.util.Slog;
 
 import androidx.test.InstrumentationRegistry;
 
+import com.android.internal.pm.parsing.pkg.PackageImpl;
 import com.android.server.pm.UserManagerInternal;
+import com.android.server.pm.pkg.AndroidPackage;
 import com.android.server.uri.UriGrantsManagerInternal;
 
 import org.junit.After;
@@ -105,6 +108,21 @@ public class UiServiceTestCase {
         when(mPmi.isSameApp(eq(PKG_R), anyLong(), eq(UID_R), eq(mUserId))).thenReturn(true);
         when(mPmi.isSameApp(eq(mContext.getPackageName()), anyLong(), eq(mUid), eq(mUserId)))
                 .thenReturn(true);
+        when(mPmi.getPackageUid(eq(PKG_N_MR1), anyLong(), anyInt())).thenReturn(UID_N_MR1);
+        when(mPmi.getPackageUid(eq(PKG_O), anyLong(),  anyInt())).thenReturn(UID_O);
+        when(mPmi.getPackageUid(eq(PKG_P), anyLong(),  anyInt())).thenReturn(UID_P);
+        when(mPmi.getPackageUid(eq(PKG_R), anyLong(),  anyInt())).thenReturn(UID_R);
+        when(mPmi.getPackageUid(eq(mContext.getPackageName()), anyLong(), eq(mUserId)))
+                .thenReturn(mUid);
+        when(mPmi.getPackage(UID_N_MR1)).thenReturn(
+                (AndroidPackage) PackageImpl.forTesting(PKG_N_MR1, "test"));
+        when(mPmi.getPackage(UID_O)).thenReturn(
+                (AndroidPackage) PackageImpl.forTesting(PKG_O, "test"));
+        when(mPmi.getPackage(UID_P)).thenReturn(
+                (AndroidPackage) PackageImpl.forTesting(PKG_P, "test"));
+        when(mPmi.getPackage(UID_R)).thenReturn(
+                (AndroidPackage) PackageImpl.forTesting(PKG_R, "test"));
+
         LocalServices.removeServiceForTest(UserManagerInternal.class);
         LocalServices.addService(UserManagerInternal.class, mUmi);
         LocalServices.removeServiceForTest(UriGrantsManagerInternal.class);

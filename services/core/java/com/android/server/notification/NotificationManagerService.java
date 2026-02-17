@@ -719,7 +719,9 @@ public class NotificationManagerService extends SystemService {
     private TelecomManager mTelecomManager;
     private PowerManager mPowerManager;
     private PostNotificationTrackerFactory mPostNotificationTrackerFactory;
-    private NotificationRuleManager mNotificationRuleManager;
+    NotificationRuleManager mNotificationRuleManager;
+    private NotificationManagerInternal mInternalService;
+    NotificationManagerPrivate mNotificationManagerPrivate;
 
     private LockPatternUtils mLockUtils;
     // TODO(b/464052878): Make mAppLockInternal @NonNull when App Lock flags are removed.
@@ -835,7 +837,7 @@ public class NotificationManagerService extends SystemService {
     @VisibleForTesting
     PreferencesHelper mPreferencesHelper;
 
-    private final UserProfiles mUserProfiles = new UserProfiles();
+    protected final UserProfiles mUserProfiles = new UserProfiles();
     private NotificationListeners mListeners;
     @VisibleForTesting
     NotificationAssistants mAssistants;
@@ -1394,6 +1396,7 @@ public class NotificationManagerService extends SystemService {
                 for (UserInfo userInfo : mUm.getUsers()) {
                     mNotificationRuleManager.onUserAdded(userInfo.id);
                 }
+                handleSaveRulesFile();
             } catch (IOException | NumberFormatException | XmlPullParserException e) {
                 Log.wtf(TAG, "Unable to read notification rules", e);
             } finally {
@@ -2326,7 +2329,7 @@ public class NotificationManagerService extends SystemService {
         void apply(NotificationRecord r, boolean isPosted);
     }
 
-    NotificationManagerPrivate mNotificationManagerPrivate = new NotificationManagerPrivate() {
+     private class NotificationManagerPrivateImpl implements NotificationManagerPrivate {
         @Nullable
         @Override
         public NotificationRecord getNotificationByKey(String key) {
@@ -3056,6 +3059,7 @@ public class NotificationManagerService extends SystemService {
         mRankingHandler = rankingHandler;
         mConditionProviders = conditionProviders;
         mNotificationListenerStats = notificationListenerStats;
+        mNotificationManagerPrivate = new NotificationManagerPrivateImpl();
         mZenModeHelper = new ZenModeHelper(getContext(), mHandler.getLooper(), Clock.systemUTC(),
                 mConditionProviders, flagResolver, new ZenModeEventLogger(mPackageManagerClient));
         mZenModeHelper.addCallback(new ZenModeHelper.Callback() {
@@ -3156,13 +3160,18 @@ public class NotificationManagerService extends SystemService {
         // Needs to be set before loadPolicyFile
         mAllowedManagedServicePackages = this::canUseManagedServices;
 
-        if (nmContextualDisplayLaunch()) {
-            mRulesFile = rulesFile;
-            loadRulesFile();
-        }
         mPolicyFile = policyFile;
         mSavePolicyFile = new SaveFileRunnable();
         loadPolicyFile();
+
+        mRulesFile = rulesFile;
+        if (nmContextualDisplayLaunch()) {
+            loadRulesFile();
+        } else {
+            mRulesFile.delete();
+        }
+
+
         mStatusBar = getLocalService(StatusBarManagerInternal.class);
         if (mStatusBar != null) {
             mStatusBar.setNotificationDelegate(mNotificationDelegate);
@@ -3275,6 +3284,7 @@ public class NotificationManagerService extends SystemService {
                     new BitmapAccessHandler());
         }
         mService = new Stub();
+        mInternalService = new NotificationManagerInternalImpl();
     }
 
     /**
@@ -4875,20 +4885,25 @@ public class NotificationManagerService extends SystemService {
         @Override
         public void allowAssistantAdjustment(@UserIdInt int userId, String adjustmentType) {
             assertCallerIsSystemOrSystemUiOrShell();
-            mAssistants.allowAdjustmentKey(userId, adjustmentType);
+            if (!nmContextualDisplayLaunch() || !KEY_TYPE.equals(adjustmentType)) {
+                mAssistants.allowAdjustmentKey(userId, adjustmentType);
+            }
             if (KEY_TYPE.equals(adjustmentType)) {
-                mNotificationRuleManager.allowClassificationAdjustment(userId);
+                mNotificationRuleManager.setClassificationAdjustmentState(userId, true);
                 // restore any existing channels if they previously existed, for user & any
                 // associated profiles that are also independently enabled for this type
                 mPreferencesHelper.updateReservedChannels(
                         getEnabledProfileIdsFiltered(userId,
                                 id -> mAssistants.isAdjustmentAllowed(id, adjustmentType)),
-                        mNotificationRuleManager.getAllowedClassificationTypeList(userId), true);
+                        mNotificationRuleManager.getAllowedClassificationTypes(userId), true);
                 if (notificationRegroupOnClassification()) {
                     // Consider reclassifying for all profiles of this user. If the adjustment is
                     // disallowed for that profile, it will be removed at a later stage.
                     applyNotificationUpdateForUserProfiles(userId,
                             NotificationManagerService.this::reclassifyNotificationLocked);
+                }
+                if (nmContextualDisplayLaunch()) {
+                    handleSaveRulesFile();
                 }
             }
             Binder.withCleanCallingIdentity(() -> {
@@ -4904,17 +4919,22 @@ public class NotificationManagerService extends SystemService {
         @Override
         public void disallowAssistantAdjustment(@UserIdInt int userId, String adjustmentType) {
             assertCallerIsSystemOrSystemUiOrShell();
-            mAssistants.disallowAdjustmentKey(userId, adjustmentType);
+            if (!nmContextualDisplayLaunch() || !KEY_TYPE.equals(adjustmentType)) {
+                mAssistants.disallowAdjustmentKey(userId, adjustmentType);
+            }
             if (KEY_TYPE.equals(adjustmentType)) {
-                mNotificationRuleManager.disallowClassificationAdjustment(userId);
+                mNotificationRuleManager.setClassificationAdjustmentState(userId, false);
                 // mark any existing channels for all currently allowed types as deleted,
                 // including all associated profiles for this user
                 mPreferencesHelper.updateReservedChannels(
                         getEnabledProfileIdsFiltered(userId, null),
-                        mNotificationRuleManager.getAllowedClassificationTypeList(userId), false);
+                        mNotificationRuleManager.getAllowedClassificationTypes(userId), false);
                 if (notificationRegroupOnClassification()) {
                     applyNotificationUpdateForUserProfiles(userId,
                             NotificationManagerService.this::unclassifyNotificationLocked);
+                }
+                if (nmContextualDisplayLaunch()) {
+                    handleSaveRulesFile();
                 }
             }
             if (KEY_SUMMARIZATION.equals(adjustmentType)) {
@@ -4971,13 +4991,20 @@ public class NotificationManagerService extends SystemService {
         public @NonNull int[] getAllowedClassificationTypes() {
             assertCallerIsSystemOrSystemUiOrShell();
             return mNotificationRuleManager.getAllowedClassificationTypes(
-                    UserHandle.getCallingUserId());
+                    UserHandle.getCallingUserId()).stream()
+                    .mapToInt(Integer::intValue).toArray();
         }
 
         @Override
         public void setAssistantClassificationTypeState(int type, boolean enabled) {
-            assertCallerIsSystemOrSystemUiOrShell();
             @UserIdInt int userId = UserHandle.getCallingUserId();
+            setAssistantClassificationTypeStateForUser(userId, type, enabled);
+        }
+
+        @Override
+        public void setAssistantClassificationTypeStateForUser(@UserIdInt int userId, int type,
+                boolean enabled) {
+            assertCallerIsSystemOrSystemUiOrShell();
             mNotificationRuleManager.setAssistantClassificationTypeState(userId, type, enabled);
             // This should only be called for full users; adjustments to the full user's
             // settings also change associated profiles.
@@ -4994,6 +5021,9 @@ public class NotificationManagerService extends SystemService {
                 }
             }
             handleSavePolicyFile();
+            if (nmContextualDisplayLaunch()) {
+                handleSaveRulesFile();
+            }
         }
 
         @Override
@@ -5001,7 +5031,8 @@ public class NotificationManagerService extends SystemService {
                 @Adjustment.Keys String key) {
             assertCallerIsSystemOrSystemUiOrShell();
             if (KEY_TYPE.equals(key)) {
-                return mNotificationRuleManager.getClassificationDeniedPackages(userId);
+                return mNotificationRuleManager.getClassificationDeniedPackages(userId)
+                        .toArray(new String[0]);
             }
             return mAssistants.getAdjustmentDeniedPackages(userId, key);
         }
@@ -5030,6 +5061,9 @@ public class NotificationManagerService extends SystemService {
                         applyNotificationUpdateForUid(userId,
                                 pkg, NotificationManagerService.this::unclassifyNotificationLocked);
                     }
+                }
+                if (nmContextualDisplayLaunch()) {
+                    handleSaveRulesFile();
                 }
             } else {
                 mAssistants.setAdjustmentSupportedForPackage(userId, key, pkg, enabled);
@@ -5820,15 +5854,26 @@ public class NotificationManagerService extends SystemService {
                     && !mAssistants.isPackageAllowed(pkg, UserHandle.getCallingUserId())) {
                     throw new SecurityException("Not currently an assistant");
             }
-
-            return new ArrayList<>(
-                    mAssistants.getAllowedAssistantAdjustments(UserHandle.getCallingUserId()));
+            int userId = UserHandle.getCallingUserId();
+            List<String> allowed =
+                    new ArrayList<>(mAssistants.getAllowedAssistantAdjustments(userId));
+            if (nmContextualDisplayLaunch()
+                    && mNotificationRuleManager.isClassificationAdjustmentAllowed(userId)) {
+                allowed.add(KEY_TYPE);
+            }
+            return allowed;
         }
 
         @Override
         public List<String> getAllowedAssistantAdjustmentsForUser(@UserIdInt int userId) {
             checkCallerIsSystemOrSystemUi();
-            return new ArrayList<>(mAssistants.getAllowedAssistantAdjustments(userId));
+            List<String> allowed =
+                    new ArrayList<>(mAssistants.getAllowedAssistantAdjustments(userId));
+            if (nmContextualDisplayLaunch()
+                    && mNotificationRuleManager.isClassificationAdjustmentAllowed(userId)) {
+                allowed.add(KEY_TYPE);
+            }
+            return allowed;
         }
 
         /**
@@ -7995,6 +8040,17 @@ public class NotificationManagerService extends SystemService {
 
             return new ParceledListSlice<>(mNotificationRuleManager.getNotificationRules(userId));
         }
+
+        @Override
+        public NotificationRule getNotificationRule(@UserIdInt int userId, int ruleId) {
+            assertCallerIsSystemOrSystemUiOrShell();
+
+            if (!nmContextualDisplayLaunch()) {
+                return null;
+            }
+
+            return mNotificationRuleManager.getNotificationRule(userId, ruleId);
+        }
     }
 
     private void handleNotificationPermissionChange(String pkg, @UserIdInt int userId) {
@@ -8692,7 +8748,7 @@ public class NotificationManagerService extends SystemService {
     /**
      * The private API only accessible to the system process.
      */
-    private final NotificationManagerInternal mInternalService = new NotificationManagerInternal() {
+    private class NotificationManagerInternalImpl implements NotificationManagerInternal {
 
         public byte[] getBackupPayload(int user, BackupRestoreEventLogger logger) {
             checkCallerIsSystem();
@@ -13100,7 +13156,7 @@ public class NotificationManagerService extends SystemService {
         static final String TAG_ENABLED_NOTIFICATION_ASSISTANTS = "enabled_assistants";
 
         static final String ATT_TYPES = "types";
-        private static final String TAG_DENIED = "denied_adjustment_keys";
+        static final String TAG_DENIED = "denied_adjustment_keys";
         static final String TAG_DENIED_KEY = "adjustment";
         static final String ATT_DENIED_KEY = "key";
         static final String ATT_DENIED_KEY_APPS = "denied_apps";
@@ -13270,7 +13326,7 @@ public class NotificationManagerService extends SystemService {
             for (int userId : mNasUnsupported.keySet()) {
                 pw.println("      " + userId + ": " + mNasUnsupported.get(userId));
             }
-            pw.println("    (user) Denied Adjustment keys: ");
+            pw.println("    (user) Denied Adjustment keys (see rules for KEY_TYPE): ");
             for (int userId : mDeniedAdjustments.keySet()) {
                 pw.println("      user " + userId + ": " + deniedAdjustmentsForUser(userId));
             }
@@ -13315,11 +13371,14 @@ public class NotificationManagerService extends SystemService {
                 if (mDeniedAdjustments.containsKey(parentId)) {
                     denied.addAll(mDeniedAdjustments.get(parentId));
                 }
-                // Managed profiles only: if the setting hasn't been explicitly set for this
-                // profile, then also consider KEY_TYPE (classification) denied.
-                if (getUserProfiles().isManagedProfileUser(userId)
-                        && !mNotificationRuleManager.isClassificationPrefSetByUser(userId)) {
-                    denied.add(KEY_TYPE);
+                if (!nmContextualDisplayLaunch()) {
+                    // Managed profiles only: if the setting hasn't been explicitly set for this
+                    // profile, then also consider KEY_TYPE (classification) denied.
+                    if (getUserProfiles().isManagedProfileUser(userId)
+                            && !mNotificationRuleManager.isClassificationAllowedForManagedProfile(
+                            userId)) {
+                        denied.add(KEY_TYPE);
+                    }
                 }
             }
             return denied;
@@ -13329,12 +13388,21 @@ public class NotificationManagerService extends SystemService {
             synchronized (mLock) {
                 Set<String> types = new HashSet<>(Set.of(DEFAULT_ALLOWED_ADJUSTMENTS));
                 types.removeAll(deniedAdjustmentsForUser(userId));
+                if (nmContextualDisplayLaunch()) {
+                    if (!mNotificationRuleManager.isClassificationAdjustmentAllowed(userId)) {
+                        types.remove(KEY_TYPE);
+                    }
+                }
                 return types;
             }
         }
 
         protected boolean isAdjustmentAllowed(@UserIdInt int userId, String type) {
             synchronized (mLock) {
+                if (nmContextualDisplayLaunch() && KEY_TYPE.equals(type)) {
+                    return List.of(DEFAULT_ALLOWED_ADJUSTMENTS).contains(type)
+                            && mNotificationRuleManager.isClassificationAdjustmentAllowed(userId);
+                }
                 return List.of(DEFAULT_ALLOWED_ADJUSTMENTS).contains(type)
                         && !(deniedAdjustmentsForUser(userId).contains(type));
             }
@@ -13438,8 +13506,6 @@ public class NotificationManagerService extends SystemService {
                 }
                 if (mDynamicBundleMap.get(userId).put(dynamicBundleType, db) == null) {
                     setAdjustmentKeySupportedState(userId, KEY_TYPE, true);
-                    mNotificationRuleManager.setAssistantClassificationTypeState(
-                            userId, dynamicBundleType, true);
                 }
                 return db;
             }
@@ -13860,6 +13926,8 @@ public class NotificationManagerService extends SystemService {
             synchronized (mLock) {
                 if (mDeniedAdjustments.containsKey(userId)) {
                     mDeniedAdjustments.get(userId).remove(key);
+                } else if (KEY_SUMMARIZATION.equals(key)) {
+                    mDeniedAdjustments.put(userId, new ArraySet<>());
                 }
             }
             for (final ManagedServiceInfo info : NotificationAssistants.this.getServices()) {
@@ -13942,10 +14010,16 @@ public class NotificationManagerService extends SystemService {
                 @Nullable BackupRestoreEventLogger logger) throws IOException {
             synchronized (mLock) {
                 for (int user : mDeniedAdjustments.keySet()) {
+                    Set<String> deniedKeys = mDeniedAdjustments.get(user);
+                    if (nmContextualDisplayLaunch()) {
+                        if (!mNotificationRuleManager.isClassificationAdjustmentAllowed(user)) {
+                            deniedKeys.add(KEY_TYPE);
+                        }
+                    }
                     out.startTag(null, TAG_DENIED);
                     out.attributeInt(null, ATT_USER_ID, user);
                     out.attribute(null, ATT_TYPES,
-                            TextUtils.join(",", mDeniedAdjustments.get(user)));
+                            TextUtils.join(",", deniedKeys));
                     out.endTag(null, TAG_DENIED);
                 }
 
@@ -13965,7 +14039,9 @@ public class NotificationManagerService extends SystemService {
                 }
 
                 // TODO(b/438704204): Remove when android.app.Flags.nmContextualDisplayLaunch()
-                //  is removed.
+                //  is removed. Until then, this must only be called after the block that writes
+                // TAG_DENIED so we can properly migrate whether KEY_TYPE is enabled for work
+                // profiles
                 mNotificationRuleManager.writeLegacyBundleStorageTags(out);
 
                 if (android.app.Flags.nmContextualDisplay()) {
@@ -13986,6 +14062,9 @@ public class NotificationManagerService extends SystemService {
         protected void readExtraTag(String tag, TypedXmlPullParser parser,
                 @Nullable BackupRestoreEventLogger logger) throws IOException {
             if (TAG_DENIED.equals(tag)) {
+                if (nmContextualDisplayLaunch()) {
+                    mNotificationRuleManager.readLegacyBundleStorageTag(parser, tag);
+                }
                 // default to current context user if this XML pre-dates user-specific settings.
                 final int user = XmlUtils.readIntAttribute(parser, ATT_USER_ID,
                         mContext.getUserId());
@@ -13996,20 +14075,23 @@ public class NotificationManagerService extends SystemService {
                     userDeniedAdjustments.clear();
                     if (!TextUtils.isEmpty(keys)) {
                         userDeniedAdjustments.addAll(Arrays.asList(keys.split(",")));
+                        if (nmContextualDisplayLaunch()) {
+                            userDeniedAdjustments.remove(KEY_TYPE);
+                        }
                         mDeniedAdjustments.put(user, userDeniedAdjustments);
                     } else {
                         mDeniedAdjustments.put(user, new ArraySet<>());
                     }
                 }
-            } else if (TAG_ENABLED_TYPES.equals(tag)) {
-                mNotificationRuleManager.readAllowedClassificationTypes(parser);
+            } else if (TAG_ENABLED_TYPES.equals(tag) || TAG_SET_BY_USERS.equals(tag)) {
+                mNotificationRuleManager.readLegacyBundleStorageTag(parser, tag);
             } else if (TAG_DENIED_KEY.equals(tag)) {
                 final int user = XmlUtils.readIntAttribute(parser, ATT_USER_ID,
                         mContext.getUserId());
                 final String key = XmlUtils.readStringAttribute(parser, ATT_DENIED_KEY);
 
                 if (KEY_TYPE.equals(key)) {
-                    mNotificationRuleManager.readClassificationDeniedPkgsTag(parser);
+                    mNotificationRuleManager.readLegacyBundleStorageTag(parser, tag);
                 } else {
                     final String pkgs = XmlUtils.readStringAttribute(parser, ATT_DENIED_KEY_APPS);
                     if (!TextUtils.isEmpty(key) && !TextUtils.isEmpty(pkgs)) {
@@ -14020,8 +14102,6 @@ public class NotificationManagerService extends SystemService {
                         mAdjustmentKeyDeniedPackages.put(user, userDeniedPackages);
                     }
                 }
-            } else if (TAG_SET_BY_USERS.equals(tag)) {
-                mNotificationRuleManager.readSetByUsersTag(parser);
             } else if (android.app.Flags.nmContextualDisplay() && TAG_BUNDLE.equals(tag)) {
                 int user = XmlUtils.readIntAttribute(parser, ATT_USER_ID, USER_SYSTEM);
                 int type = XmlUtils.readIntAttribute(parser, ATT_TYPE);
@@ -14066,10 +14146,12 @@ public class NotificationManagerService extends SystemService {
                 }
 
                 if (bundlesSupported) {
-                    boolean bundlesAllowed = isAdjustmentAllowed(userId, KEY_TYPE);
+                    boolean bundlesAllowed = nmContextualDisplayLaunch()
+                            ? mNotificationRuleManager.isClassificationAdjustmentAllowed(userId)
+                            : isAdjustmentAllowed(userId, KEY_TYPE);
                     int[] allowedBundleTypes =
-                            mNotificationRuleManager.getAllowedClassificationTypes(userId);
-
+                            mNotificationRuleManager.getAllowedClassificationTypes(userId).stream()
+                            .mapToInt(Integer::intValue).toArray();
                     events.add(FrameworkStatsLog.buildStatsEvent(
                             NOTIFICATION_ADJUSTMENT_PREFERENCES,
                             /* optional int32 event_id = 1 */
