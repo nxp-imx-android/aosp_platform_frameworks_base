@@ -696,8 +696,7 @@ public class IntentForwarderActivity extends Activity  {
 
     private boolean isPrivateProfile(int userId) {
         UserInfo privateProfile = getPrivateProfile();
-        return android.multiuser.Flags.enablePrivateSpaceIntentRedirection()
-                && privateProfile != null && privateProfile.id == userId;
+        return privateProfile != null && privateProfile.id == userId;
     }
 
     private void setMiniresolverPadding() {
