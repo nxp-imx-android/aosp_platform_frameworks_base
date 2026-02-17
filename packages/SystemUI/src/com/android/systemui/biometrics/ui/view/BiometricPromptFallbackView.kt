@@ -288,7 +288,7 @@ private fun OptionItem(
                 .clickable(onClick = onClick, enabled = enabled)
                 .alpha(if (enabled) 1f else 0.4f),
         shape = shape,
-        color = MaterialTheme.colorScheme.surfaceContainer,
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
