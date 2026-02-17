@@ -578,8 +578,7 @@ public class GraphicsEnvironment {
                     Log.v(TAG, "Skip enabling ANGLE for app " + packageName
                             + " on low ram device");
                 }
-                // TODO(b/434014731): update to 202604 once we finished partner testing
-            } else if (SystemProperties.getInt("ro.vendor.api_level", 0) < 202504) {
+            } else if (SystemProperties.getInt("ro.vendor.api_level", 0) < 202604) {
                 if (DEBUG) {
                     Log.v(TAG,
                             "Skip enabling ANGLE for app " + packageName
