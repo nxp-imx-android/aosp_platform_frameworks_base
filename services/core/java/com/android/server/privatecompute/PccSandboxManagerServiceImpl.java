@@ -24,6 +24,7 @@ import android.app.privatecompute.IDataMigrationToPccService;
 import android.app.privatecompute.IMigrationRequestResultReceiver;
 import android.app.privatecompute.IMigrationRequestResultSender;
 import android.app.privatecompute.IPccSandboxManager;
+import android.app.privatecompute.IPccSandboxManagerNative;
 import android.app.privatecompute.MigrationException;
 import android.app.privatecompute.MigrationRequestResult;
 import android.content.ComponentName;
@@ -77,6 +78,7 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
     private final ExecutorService mExecutorService = Executors.newSingleThreadExecutor();
 
     private PccSandboxManagerInternal mInternal;
+    private final PccSandboxManagerNativeImpl mNativeImpl = new PccSandboxManagerNativeImpl();
 
     public PccSandboxManagerServiceImpl(Context context) {
         this(context, new Injector());
@@ -110,6 +112,10 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
 
     public ExecutorService getExecutorService() {
         return mExecutorService;
+    }
+
+    public IBinder getNativeBinder() {
+        return mNativeImpl;
     }
 
     @Override
@@ -195,6 +201,15 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
             mAuditModeContext.writeToAuditLog(bundle, packageName);
         }
         return true;
+    }
+
+    private class PccSandboxManagerNativeImpl extends IPccSandboxManagerNative.Stub {
+        @Override
+        @RequiresNoPermission
+        public void writeToAuditLog(@NonNull PersistableBundle bundle) {
+            String packageName = mContext.getPackageManager().getNameForUid(Binder.getCallingUid());
+            writeToAuditLogInternal(bundle, packageName);
+        }
     }
 
     @Override

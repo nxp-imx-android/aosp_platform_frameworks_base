@@ -330,6 +330,15 @@ aidl_interface {
     unstable: true,
 }
 
+filegroup {
+    name: "pcc_sandbox_manager_native_aidl",
+    srcs: ["android/app/privatecompute/IPccSandboxManagerNative.aidl"],
+    visibility: [
+        "//frameworks/native/libs/binder",
+        "//cts/tests/privatecompute/native",
+    ],
+}
+
 aidl_interface {
     name: "process_info_service_aidl",
     srcs: [
