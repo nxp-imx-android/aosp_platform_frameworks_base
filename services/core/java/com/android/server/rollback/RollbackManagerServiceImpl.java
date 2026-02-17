@@ -96,6 +96,8 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
@@ -1253,9 +1255,23 @@ class RollbackManagerServiceImpl extends IRollbackManager.Stub implements Rollba
             // After enabling and committing any rollback, observe packages and
             // prepare to rollback if packages crashes too frequently.
             // call it asynchronously to avoid holding the lock
-            mExecutor.execute(() -> mPackageWatchdog.startExplicitHealthCheck(
-                    rollback.getPackageNames(), mRollbackLifetimeDurationInMillis,
-                    mPackageHealthObserver));
+            final List<String> rollbackPackages = rollback.getPackageNames();
+            final int rollbackId = rollback.info.getRollbackId();
+            // Create a new single thread executor for each health check to avoid deadlocks.
+            // mExecutor shares the same handler thread as RollbackManagerService,
+            // which can lead to deadlocks if any crash happens while starting the health check.
+            ExecutorService healthCheckExecutor = Executors.newSingleThreadExecutor(
+                    r -> new Thread(r, "RollbackHealthCheck-" + rollbackId));
+            healthCheckExecutor.execute(() -> {
+                try {
+                    Slog.i(TAG, "Starting explicit health check for rollback " + rollbackId);
+                    mPackageWatchdog.startExplicitHealthCheck(
+                            rollbackPackages, mRollbackLifetimeDurationInMillis,
+                            mPackageHealthObserver);
+                } finally {
+                    healthCheckExecutor.shutdown();
+                }
+            });
         }
         runExpiration();
     }
