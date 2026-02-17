@@ -29,7 +29,7 @@ interface IScanInterface {
      *
      * @param broadcastType @ScanConstants.BroadcastType broadcast type, such as ATSC.
      * @param countryCode countryCode based on ISO 3166-1 alpha-3.
-     * @param operator @ScanConstants.OperatorType satellite, cable and IP-based operator type.
+     * @param operator values based on @TvExtensionContract.TunerOperators.OperatorType.
      * @param listener ScanListener listens for updates.
      * @param optionalParams @ScanConstants.ScanBundleKey other optional scan parameters.
      * @return IBinder of IScanSession.
@@ -41,7 +41,7 @@ interface IScanInterface {
      *
      * @param broadcastType @ScanConstants.BroadcastType broadcast type, such as ATSC.
      * @param countryCode countryCode based on ISO 3166-1 alpha-3.
-     * @param operator @ScanConstants.OperatorType satellite, cable and IP-based operator type.
+     * @param operator values based on @TvExtensionContract.TunerOperators.OperatorType.
      * @param listener ScanListener listens for updates.
      * @param params @ScanConstants.ScanBundleKey specify the type of parameters to be acquired.
      * @return Bundle with keys the same as params.
