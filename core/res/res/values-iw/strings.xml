@@ -759,33 +759,63 @@
     <string name="fingerprint_icon_content_description" msgid="4741068463175388817">"סמל טביעת אצבע"</string>
     <string name="device_unlock_notification_name" msgid="2632928999862915709">"פתיחת הנעילה של המכשיר"</string>
     <string name="alternative_unlock_setup_notification_title" msgid="6241508547901933544">"כדאי לנסות דרך אחרת לביטול הנעילה"</string>
-    <string name="alternative_face_setup_notification_content" msgid="3384959224091897331">"אפשר להשתמש בפתיחה ע\"י זיהוי הפנים כשטביעת האצבע שלך לא מזוהה, למשל כשהאצבעות שלך רטובות"</string>
+    <string name="alternative_face_setup_notification_content" product="default" msgid="3384959224091897331">"אפשר להשתמש בפתיחה ע\"י זיהוי הפנים כשטביעת האצבע שלך לא מזוהה, למשל כשהאצבעות שלך רטובות"</string>
+    <!-- no translation found for alternative_face_setup_notification_content (8589631194028810041) -->
+    <skip />
     <string name="alternative_fp_setup_notification_content" msgid="7454096947415721639">"אפשר להשתמש בביטול הנעילה בטביעת אצבע כשהפנים שלך לא מזוהות, למשל כשאין מספיק אור"</string>
-    <string name="face_recalibrate_notification_name" msgid="7311163114750748686">"פתיחה בזיהוי פנים"</string>
-    <string name="face_recalibrate_notification_title" msgid="2524791952735579082">"בעיה בפתיחה ע\"י זיהוי הפנים"</string>
+    <string name="face_recalibrate_notification_name" product="default" msgid="7311163114750748686">"פתיחה בזיהוי פנים"</string>
+    <!-- no translation found for face_recalibrate_notification_name (6343244778393495390) -->
+    <skip />
+    <string name="face_recalibrate_notification_title" product="default" msgid="2524791952735579082">"בעיה בפתיחה ע\"י זיהוי הפנים"</string>
+    <!-- no translation found for face_recalibrate_notification_title (7502893130398903561) -->
+    <skip />
     <string name="face_recalibrate_notification_content" msgid="3064513770251355594">"יש ללחוץ כדי למחוק את התבנית לזיהוי הפנים, ואז להוסיף תבנית חדשה לזיהוי הפנים"</string>
-    <string name="face_sensor_privacy_enabled" msgid="7407126963510598508">"‏כדי להשתמש בתכונה \'פתיחה ע\"י זיהוי הפנים\', יש להפעיל את ה"<b>"גישה למצלמה"</b>" בהגדרות &gt; פרטיות"</string>
+    <string name="face_sensor_privacy_enabled" product="default" msgid="7407126963510598508">"‏כדי להשתמש בתכונה \'פתיחה ע\"י זיהוי הפנים\', יש להפעיל את ה"<b>"גישה למצלמה"</b>" בהגדרות &gt; פרטיות"</string>
+    <!-- no translation found for face_sensor_privacy_enabled (7690221855638766930) -->
+    <skip />
     <string name="fingerprint_recalibrate_notification_name" msgid="1414578431898579354">"פתיחה בטביעת אצבע"</string>
     <string name="fingerprint_recalibrate_notification_title" msgid="2406561052064558497">"לא ניתן להשתמש בחיישן טביעות האצבע"</string>
     <string name="fingerprint_recalibrate_notification_content" msgid="8519935717822194943">"צריך ליצור קשר עם ספק תיקונים."</string>
     <string name="face_acquired_insufficient" msgid="6889245852748492218">"לא ניתן ליצור את התבנית לזיהוי הפנים. יש לנסות שוב."</string>
     <string name="face_acquired_too_bright" msgid="8070756048978079164">"בהירה מדי. צריך תאורה עדינה יותר."</string>
     <string name="face_acquired_too_dark" msgid="8539853432479385326">"אין מספיק אור"</string>
-    <string name="face_acquired_too_close" msgid="4453646176196302462">"צריך להרחיק את הטלפון"</string>
-    <string name="face_acquired_too_far" msgid="2922278214231064859">"צריך לקרב את הטלפון"</string>
-    <string name="face_acquired_too_high" msgid="8278815780046368576">"צריך להגביה את הטלפון"</string>
-    <string name="face_acquired_too_low" msgid="4075391872960840081">"צריך להזיז את הטלפון כלפי מטה"</string>
-    <string name="face_acquired_too_right" msgid="6245286514593540859">"צריך להזיז את הטלפון שמאלה"</string>
-    <string name="face_acquired_too_left" msgid="9201762240918405486">"צריך להזיז את הטלפון ימינה"</string>
+    <string name="face_acquired_too_close" product="default" msgid="4453646176196302462">"צריך להרחיק את הטלפון"</string>
+    <!-- no translation found for face_acquired_too_close (7189579448504853047) -->
+    <skip />
+    <string name="face_acquired_too_far" product="default" msgid="2922278214231064859">"צריך לקרב את הטלפון"</string>
+    <!-- no translation found for face_acquired_too_far (6590730829823321223) -->
+    <skip />
+    <string name="face_acquired_too_high" product="default" msgid="8278815780046368576">"צריך להגביה את הטלפון"</string>
+    <!-- no translation found for face_acquired_too_high (717393614154504299) -->
+    <skip />
+    <string name="face_acquired_too_low" product="default" msgid="4075391872960840081">"צריך להזיז את הטלפון כלפי מטה"</string>
+    <!-- no translation found for face_acquired_too_low (7695733281069538045) -->
+    <skip />
+    <string name="face_acquired_too_right" product="default" msgid="6245286514593540859">"צריך להזיז את הטלפון שמאלה"</string>
+    <!-- no translation found for face_acquired_too_right (4058756237538843740) -->
+    <skip />
+    <string name="face_acquired_too_left" product="default" msgid="9201762240918405486">"צריך להזיז את הטלפון ימינה"</string>
+    <!-- no translation found for face_acquired_too_left (5804819007366973778) -->
+    <skip />
     <string name="face_acquired_poor_gaze" msgid="6746437451436776485">"צריך להביט ישירות במצלמה"</string>
-    <string name="face_acquired_not_detected" msgid="1057966913397548150">"לא רואים את הפנים שלך. יש להחזיק את הטלפון בגובה העיניים."</string>
-    <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"יותר מדי תנועה. יש להחזיק את הטלפון בצורה יציבה."</string>
+    <string name="face_acquired_not_detected" product="default" msgid="1057966913397548150">"לא רואים את הפנים שלך. יש להחזיק את הטלפון בגובה העיניים."</string>
+    <!-- no translation found for face_acquired_not_detected (1047701586390904260) -->
+    <skip />
+    <string name="face_acquired_too_much_motion" product="default" msgid="8199691445085189528">"יותר מדי תנועה. יש להחזיק את הטלפון בצורה יציבה."</string>
+    <!-- no translation found for face_acquired_too_much_motion (7135563968992659161) -->
+    <skip />
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"יש לסרוק שוב את הפנים."</string>
     <string name="face_acquired_too_different" msgid="4505278456634706967">"הפנים לא זוהו. אפשר לנסות שוב."</string>
     <string name="face_acquired_too_similar" msgid="8882920552674125694">"צריך לשנות מעט את תנוחת הראש"</string>
-    <string name="face_acquired_pan_too_extreme" msgid="5417928604710621088">"צריך להביט ישירות בטלפון"</string>
-    <string name="face_acquired_tilt_too_extreme" msgid="5715715666540716620">"צריך להביט ישירות בטלפון"</string>
-    <string name="face_acquired_roll_too_extreme" msgid="8261939882838881194">"צריך להביט ישירות בטלפון"</string>
+    <string name="face_acquired_pan_too_extreme" product="default" msgid="5417928604710621088">"צריך להביט ישירות בטלפון"</string>
+    <!-- no translation found for face_acquired_pan_too_extreme (821456302944137576) -->
+    <skip />
+    <string name="face_acquired_tilt_too_extreme" product="default" msgid="5715715666540716620">"צריך להביט ישירות בטלפון"</string>
+    <!-- no translation found for face_acquired_tilt_too_extreme (1119243364774233108) -->
+    <skip />
+    <string name="face_acquired_roll_too_extreme" product="default" msgid="8261939882838881194">"צריך להביט ישירות בטלפון"</string>
+    <!-- no translation found for face_acquired_roll_too_extreme (3665467581072397682) -->
+    <skip />
     <string name="face_acquired_obscured" msgid="4917643294953326639">"יש להסיר כל דבר שמסתיר את הפנים."</string>
     <string name="face_acquired_sensor_dirty" msgid="8968391891086721678">"צריך לנקות את החלק העליון של המסך, כולל הסרגל השחור"</string>
     <!-- no translation found for face_acquired_dark_glasses_detected (5643703296620631986) -->
@@ -798,19 +828,31 @@
   <string-array name="face_acquired_vendor">
   </string-array>
     <string name="face_error_hw_not_available" msgid="5085202213036026288">"לא ניתן לאמת את הפנים. החומרה לא זמינה."</string>
-    <string name="face_error_timeout" msgid="2598544068593889762">"יש לנסות שוב את הפתיחה ע\"י זיהוי הפנים"</string>
+    <string name="face_error_timeout" product="default" msgid="2598544068593889762">"יש לנסות שוב את הפתיחה ע\"י זיהוי הפנים"</string>
+    <!-- no translation found for face_error_timeout (8136501408214657840) -->
+    <skip />
     <string name="face_error_no_space" msgid="5649264057026021723">"לא ניתן לאחסן נתוני פנים חדשים. תחילה יש למחוק את הנתונים הישנים."</string>
     <string name="face_error_canceled" msgid="2164434737103802131">"הפעולה לאימות הפנים בוטלה."</string>
-    <string name="face_error_user_canceled" msgid="5766472033202928373">"הפתיחה ע\"י זיהוי הפנים בוטלה על ידי המשתמש"</string>
+    <string name="face_error_user_canceled" product="default" msgid="5766472033202928373">"הפתיחה ע\"י זיהוי הפנים בוטלה על ידי המשתמש"</string>
+    <!-- no translation found for face_error_user_canceled (8903551031462609651) -->
+    <skip />
     <string name="face_error_lockout" msgid="7864408714994529437">"יותר מדי ניסיונות. יש לנסות שוב מאוחר יותר."</string>
-    <string name="face_error_lockout_permanent" msgid="8533257333130473422">"בוצעו יותר מדי ניסיונות. אי אפשר לפתוח בזיהוי פנים."</string>
+    <string name="face_error_lockout_permanent" product="default" msgid="8533257333130473422">"בוצעו יותר מדי ניסיונות. אי אפשר לפתוח בזיהוי פנים."</string>
+    <!-- no translation found for face_error_lockout_permanent (1885291877517229762) -->
+    <skip />
     <string name="face_error_lockout_screen_lock" msgid="5062609811636860928">"בוצעו יותר מדי ניסיונות. יש להשתמש בנעילת המסך במקום."</string>
     <string name="face_error_unable_to_process" msgid="5723292697366130070">"לא ניתן לאמת את הפנים. יש לנסות שוב."</string>
-    <string name="face_error_not_enrolled" msgid="1134739108536328412">"לא הגדרת פתיחה ע\"י זיהוי הפנים"</string>
-    <string name="face_error_hw_not_present" msgid="7940978724978763011">"המכשיר הזה לא תומך בפתיחה ע\"י זיהוי הפנים"</string>
+    <string name="face_error_not_enrolled" product="default" msgid="1134739108536328412">"לא הגדרת פתיחה ע\"י זיהוי הפנים"</string>
+    <!-- no translation found for face_error_not_enrolled (7350396330456504527) -->
+    <skip />
+    <string name="face_error_hw_not_present" product="default" msgid="7940978724978763011">"המכשיר הזה לא תומך בפתיחה ע\"י זיהוי הפנים"</string>
+    <!-- no translation found for face_error_hw_not_present (4947323392112708365) -->
+    <skip />
     <string name="face_error_security_update_required" msgid="5076017208528750161">"החיישן מושבת באופן זמני."</string>
     <string name="face_name_template" msgid="3877037340223318119">"פנים <xliff:g id="FACEID">%d</xliff:g>"</string>
-    <string name="face_app_setting_name" msgid="5854024256907828015">"פתיחה ע\"י זיהוי הפנים"</string>
+    <string name="face_app_setting_name" product="default" msgid="5854024256907828015">"פתיחה ע\"י זיהוי הפנים"</string>
+    <!-- no translation found for face_app_setting_name (8226850671242901114) -->
+    <skip />
     <string name="face_or_screen_lock_app_setting_name" msgid="1603149075605709106">"שימוש בזיהוי פנים או בנעילת מסך"</string>
     <string name="face_dialog_default_subtitle" msgid="6620492813371195429">"יש להשתמש באימות פנים כדי להמשיך"</string>
     <string name="face_or_screen_lock_dialog_default_subtitle" msgid="5006381531158341844">"יש להשתמש בזיהוי הפנים או בנעילת המסך כדי להמשיך"</string>
@@ -1070,7 +1112,9 @@
     <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"צריך ללחוץ כדי לפתוח את הנעילה"</string>
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"צריך ללחוץ על מקש כלשהו כדי לפתוח את הנעילה"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"צריך לבטל את הנעילה כדי שכל התכונות והנתונים יהיו זמינים"</string>
-    <string name="faceunlock_multiple_failures" msgid="681991538434031708">"חרגת ממספר הניסיונות המרבי לפתיחה ע\"י זיהוי הפנים"</string>
+    <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"חרגת ממספר הניסיונות המרבי לפתיחה ע\"י זיהוי הפנים"</string>
+    <!-- no translation found for faceunlock_multiple_failures (5388142244463490793) -->
+    <skip />
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"‏אין כרטיס SIM"</string>
     <string name="lockscreen_missing_sim_message" product="tablet" msgid="3986843848305639161">"‏אין כרטיס SIM בטאבלט."</string>
     <string name="lockscreen_missing_sim_message" product="tv" msgid="3903140876952198273">"‏אין כרטיס SIM במכשיר ה-Android TV."</string>
@@ -1141,7 +1185,9 @@
     <string name="keyguard_accessibility_expand_lock_area" msgid="4215280881346033434">"הרחבה של אזור ביטול הנעילה."</string>
     <string name="keyguard_accessibility_slide_unlock" msgid="2968195219692413046">"ביטול נעילה באמצעות הסטה."</string>
     <string name="keyguard_accessibility_pattern_unlock" msgid="8669128146589233293">"ביטול נעילה על ידי שרטוט קו."</string>
-    <string name="keyguard_accessibility_face_unlock" msgid="4533832120787386728">"פתיחה בזיהוי פנים"</string>
+    <string name="keyguard_accessibility_face_unlock" product="default" msgid="4533832120787386728">"פתיחה בזיהוי פנים"</string>
+    <!-- no translation found for keyguard_accessibility_face_unlock (6739732585954513653) -->
+    <skip />
     <string name="keyguard_accessibility_pin_unlock" msgid="4020864007967340068">"ביטול נעילה באמצעות קוד אימות."</string>
     <string name="keyguard_accessibility_sim_pin_unlock" msgid="4895939120871890557">"‏ביטול הנעילה של קוד האימות ל-SIM."</string>
     <string name="keyguard_accessibility_sim_puk_unlock" msgid="3459003464041899101">"‏ביטול נעילה של PUK ל-SIM."</string>
@@ -1500,22 +1546,14 @@
     <string name="usb_contaminant_detected_message" msgid="7346100585390795743">"‏יציאת ה-USB הושבתה באופן אוטומטי. יש ללחוץ לקבלת מידע נוסף."</string>
     <string name="usb_contaminant_not_detected_title" msgid="2651167729563264053">"‏ניתן להשתמש ביציאת ה-USB"</string>
     <string name="usb_contaminant_not_detected_message" msgid="892863190942660462">"הטלפון לא מזהה יותר נוזלים וחלקיקים."</string>
-    <!-- no translation found for usb_authorization_notify_on_screenlock_title (4219670768084927681) -->
-    <skip />
-    <!-- no translation found for usb_authorization_notify_on_screenlock_message (3391658768099414499) -->
-    <skip />
-    <!-- no translation found for usb_authorization_notify_on_screenlock_message_multiple (1722575755931059980) -->
-    <skip />
-    <!-- no translation found for usb_authorization_notify_finish_logging_in_title (3417036506115006412) -->
-    <skip />
-    <!-- no translation found for usb_authorization_notify_finish_logging_in_message (7996802340128367690) -->
-    <skip />
-    <!-- no translation found for usb_authorization_notify_finish_logging_in_title_multiple (3184839817149193434) -->
-    <skip />
-    <!-- no translation found for usb_authorization_notify_finish_logging_in_message_multiple (6745916608298736853) -->
-    <skip />
-    <!-- no translation found for notification_channel_usb_authorization (7567851967410736399) -->
-    <skip />
+    <string name="usb_authorization_notify_on_screenlock_title" msgid="4219670768084927681">"‏התקן USB חדש התחבר"</string>
+    <string name="usb_authorization_notify_on_screenlock_message" msgid="3391658768099414499">"‏כדי להגדיר את התקן ה-USB הזה כמהימן ולהתחיל להשתמש בו, צריך להיכנס לחשבון."</string>
+    <string name="usb_authorization_notify_on_screenlock_message_multiple" msgid="1722575755931059980">"‏כדי להגדיר את התקני ה-USB האלה כמהימנים ולהתחיל להשתמש בהם, צריך להיכנס לחשבון."</string>
+    <string name="usb_authorization_notify_finish_logging_in_title" msgid="3417036506115006412">"‏התקן USB חדש התחבר"</string>
+    <string name="usb_authorization_notify_finish_logging_in_message" msgid="7996802340128367690">"‏כדי לסמן את התקן ה-USB הזה כמהימן באופן מלא, צריך להיכנס תוך <xliff:g id="NUM_SECONDS">%1$d</xliff:g> שניות. אחרת, צריך יהיה לנתק ולחבר אותו מחדש."</string>
+    <string name="usb_authorization_notify_finish_logging_in_title_multiple" msgid="3184839817149193434">"‏התקני USB חדשים התחברו"</string>
+    <string name="usb_authorization_notify_finish_logging_in_message_multiple" msgid="6745916608298736853">"‏כדי להגדיר את התקני ה-USB האלה כמהימנים באופן מלא, צריך להיכנס תוך <xliff:g id="NUM_SECONDS">%1$d</xliff:g> שניות. אחרת, צריך יהיה לנתק ולחבר אותם מחדש."</string>
+    <string name="notification_channel_usb_authorization" msgid="7567851967410736399">"‏הרשאה להתקן USB"</string>
     <string name="taking_remote_bugreport_notification_title" msgid="1582531382166919850">"עיבוד דוח על באג..."</string>
     <string name="share_remote_bugreport_notification_title" msgid="6708897723753334999">"האם לשתף דוח על באג?"</string>
     <string name="sharing_remote_bugreport_notification_title" msgid="3077385149217638550">"שיתוף דוח על באג…"</string>
@@ -1886,7 +1924,8 @@
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"החלפה"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"הגדרות"</string>
     <string name="user_switching_message" msgid="1912993630661332336">"מעבר אל <xliff:g id="NAME">%1$s</xliff:g>…"</string>
-    <string name="user_logging_out_message" msgid="7216437629179710359">"מתבצע ניתוק של <xliff:g id="NAME">%1$s</xliff:g>…"</string>
+    <!-- no translation found for user_logging_out_message (2968888364742643174) -->
+    <skip />
     <string name="owner_name" msgid="8713560351570795743">"בעלים"</string>
     <string name="guest_name" msgid="8502103277839834324">"אורח"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"משתמש המערכת"</string>
@@ -2135,28 +2174,33 @@
     <string name="app_lock_add_screen_lock_title" msgid="6905612843620128689">"קודם צריך להוסיף שיטה לפתיחת הנעילה"</string>
     <string name="enable_app_lock_success_toast_message" msgid="3339622779190529987">"האפליקציה <xliff:g id="APP_NAME">%1$s</xliff:g> נעולה"</string>
     <string name="enable_app_lock_failure_toast_message" msgid="1055838896510445566">"אי אפשר לנעול את <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
-    <string name="disable_app_lock_success_toast_message" msgid="70733620589071266">"נעילת אפליקציות הוסרה מ-<xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
-    <!-- no translation found for locked_app_biometric_prompt_description (5892653396104581919) -->
-    <skip />
+    <string name="disable_app_lock_success_toast_message" msgid="360172251656799346">"נעילת האפליקציה הוסרה"</string>
+    <string name="enable_app_lock_biometric_prompt_subtitle" msgid="8215241065630017088">"נעילת אפליקציה תתווסף אל <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+    <string name="disable_app_lock_biometric_prompt_subtitle" msgid="3963064765974508170">"נעילת האפליקציה <xliff:g id="APP_NAME">%1$s</xliff:g> תוסר"</string>
+    <string name="locked_app_biometric_prompt_description" msgid="5892653396104581919">"האפליקציה הזו מוגנת באמצעות נעילת אפליקציה"</string>
     <string name="locked_app_external_display_message" msgid="5483884799685545338">"כדי לגשת לאפליקציה במסך הזה, קודם עליך לאמת את הזהות שלך במכשיר השני"</string>
     <string name="app_lock_edu_dialog_enable_app_lock_title" msgid="283314042336592322">"להוסיף נעילת אפליקציות אל <xliff:g id="APP_NAME">%1$s</xliff:g>?"</string>
-    <string name="app_lock_edu_dialog_description" msgid="8176807243219769518">"מטעמי אבטחה, רק לך יש גישה לאפליקציה הזו באמצעות פתיחה בטביעת אצבע ובזיהוי פנים או באמצעות קוד האימות"</string>
     <string name="app_lock_edu_dialog_description_template" msgid="8563718120753342530">"‏מטעמי אבטחה, רק לך יש גישה לאפליקציה הזו באמצעות %1$s או %2$s"</string>
     <string name="app_lock_edu_dialog_description_template_no_biometrics" msgid="7122017109150633691">"‏מטעמי אבטחה, רק לך יש גישה לאפליקציה הזו באמצעות %1$s"</string>
     <string name="app_lock_edu_dialog_info_header" msgid="5876120209204270990">"כשנעילת אפליקציות מופעלת"</string>
     <string name="app_lock_edu_dialog_info_notifications" msgid="1124438392204873305">"תוכן ההתראות יוסתר"</string>
     <string name="app_lock_edu_dialog_info_widgets" msgid="8809009414650740872">"הווידג\'טים וקיצורי הדרך יוסרו"</string>
-    <!-- no translation found for app_lock_edu_dialog_info_ai_disclaimer (5623615653703542050) -->
-    <skip />
+    <string name="app_lock_edu_dialog_info_ai_disclaimer" msgid="5623615653703542050">"‏סוכני AI ושירותי AI שנתת להם הרשאת גישה ל-%1$s עדיין יוכלו לגשת לנתוני האפליקציה"</string>
     <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"הוספה של נעילת אפליקציות"</string>
-    <string name="app_lock_edu_dialog_biometric_description_has_face" msgid="1348151645996748654">"פתיחה בזיהוי פנים"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_face" product="default" msgid="1348151645996748654">"פתיחה בזיהוי פנים"</string>
+    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_face (380233309639495358) -->
+    <skip />
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"פתיחה בטביעת אצבע"</string>
-    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" msgid="7895807411323811641">"פתיחה בטביעת אצבע או בזיהוי פנים"</string>
-    <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="8487096457702445059">"סיסמה"</string>
-    <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="991436996281983547">"קו פתיחת נעילה"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" product="default" msgid="6551410616110497401">"פתיחה בטביעת אצבע, פתיחה בזיהוי פנים"</string>
+    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint_and_face (4797005135507921547) -->
+    <skip />
+    <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="6019284267033007445">"סיסמה"</string>
+    <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="2370939002644936965">"קו פתיחת נעילה"</string>
     <string name="app_lock_edu_dialog_lockscreen_pin_name" msgid="6458607126966304795">"קוד אימות"</string>
-    <string name="app_lock_permission_review_dialog_title" msgid="5030286398974840579">"יכול להיות שהתמונות שלך עדיין יופיעו באפליקציות אחרות"</string>
-    <string name="app_lock_permission_review_dialog_sub_title" msgid="310758587817184145">"אפליקציות עם גישה לתמונות שלך"</string>
+    <string name="app_lock_permission_review_dialog_title_photos" msgid="6193222920123912729">"התמונות שלך עדיין יכולות להופיע באפליקציות אחרות"</string>
+    <string name="app_lock_permission_review_dialog_subtitle_photos" msgid="1854948251386976703">"אפליקציות עם הרשאת גישה לתמונות שלך"</string>
+    <string name="app_lock_permission_review_dialog_title_files" msgid="8820759644609198515">"הקבצים שלך עדיין יכולים להופיע באפליקציות אחרות"</string>
+    <string name="app_lock_permission_review_dialog_subtitle_files" msgid="2999447193189851364">"אפליקציות עם הרשאת גישה לקבצים שלך"</string>
     <string name="app_lock_permission_review_expand_app_list_button" msgid="3214809707125223273">"הצגת הכול"</string>
     <string name="app_lock_permission_review_continue_button" msgid="4045066724173414043">"המשך"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"להפעיל את האפליקציות לעבודה?"</string>
@@ -2639,15 +2683,18 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"‏כדי להעביר הודעות באמצעות לוויין, צריך להגדיר את Google Messages כאפליקציית ברירת המחדל להודעות"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"התכונה \"העברת הודעות באמצעות לוויין\" לא זמינה"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"כדי לבדוק אם התכונה \"העברת הודעות באמצעות לוויין\" זמינה במדינה או באזור שלך, צריך להפעיל את הגדרות המיקום"</string>
-    <!-- no translation found for satellite_indicator (6846063647532086110) -->
-    <skip />
+    <string name="satellite_indicator" msgid="6846063647532086110">"SAT"</string>
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"הגדרה חוזרת של \'ביטול הנעילה בטביעת אצבע\'"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"כבר לא ניתן לזהות את <xliff:g id="FINGERPRINT">%s</xliff:g>."</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"כבר לא ניתן לזהות את <xliff:g id="FINGERPRINT_0">%1$s</xliff:g> ואת <xliff:g id="FINGERPRINT_1">%2$s</xliff:g>."</string>
     <string name="fingerprint_dangling_notification_msg_all_deleted_1" msgid="1824812666549916586">"כבר לא ניתן לזהות את <xliff:g id="FINGERPRINT">%s</xliff:g>. הגדרה חוזרת של \'פתיחה בטביעת אצבע\'."</string>
     <string name="fingerprint_dangling_notification_msg_all_deleted_2" msgid="5974657382960155099">"כבר לא ניתן לזהות את <xliff:g id="FINGERPRINT_0">%1$s</xliff:g> ואת <xliff:g id="FINGERPRINT_1">%2$s</xliff:g>. הגדרה חוזרת של \'פתיחה בטביעת אצבע\'."</string>
-    <string name="face_dangling_notification_title" msgid="947852541060975473">"הגדרה חוזרת של \'פתיחה ע\"י זיהוי הפנים\'"</string>
-    <string name="face_dangling_notification_msg" msgid="746235263598985384">"כבר לא ניתן לזהות את התבנית לזיהוי הפנים. הגדרה חוזרת של \'פתיחה בזיהוי פנים\'."</string>
+    <string name="face_dangling_notification_title" product="default" msgid="947852541060975473">"הגדרה חוזרת של \'פתיחה ע\"י זיהוי הפנים\'"</string>
+    <!-- no translation found for face_dangling_notification_title (4632690536207343589) -->
+    <skip />
+    <string name="face_dangling_notification_msg" product="default" msgid="746235263598985384">"כבר לא ניתן לזהות את התבנית לזיהוי הפנים. הגדרה חוזרת של \'פתיחה בזיהוי פנים\'."</string>
+    <!-- no translation found for face_dangling_notification_msg (5982979430103820891) -->
+    <skip />
     <string name="biometric_dangling_notification_action_set_up" msgid="8246885009807817961">"הגדרה"</string>
     <string name="biometric_dangling_notification_action_not_now" msgid="8095249216864443491">"לא עכשיו"</string>
     <string name="bg_user_sound_notification_title_alarm" msgid="5251678483393143527">"שעון מעורר של <xliff:g id="USER_NAME">%s</xliff:g>"</string>

@@ -758,33 +758,63 @@
     <string name="fingerprint_icon_content_description" msgid="4741068463175388817">"ਫਿੰਗਰਪ੍ਰਿੰਟ ਪ੍ਰਤੀਕ"</string>
     <string name="device_unlock_notification_name" msgid="2632928999862915709">"ਡੀਵਾਈਸ ਅਣਲਾਕ"</string>
     <string name="alternative_unlock_setup_notification_title" msgid="6241508547901933544">"ਅਣਲਾਕ ਕਰਨ ਦਾ ਕੋਈ ਹੋਰ ਤਰੀਕਾ ਅਜ਼ਮਾਓ"</string>
-    <string name="alternative_face_setup_notification_content" msgid="3384959224091897331">"ਤੁਹਾਡੇ ਫਿੰਗਰਪ੍ਰਿੰਟ ਦੀ ਪਛਾਣ ਨਾ ਹੋਣ \'ਤੇ ਫ਼ੇਸ ਅਣਲਾਕ ਦੀ ਵਰਤੋਂ ਕਰੋ, ਜਿਵੇਂ ਕਿ ਤੁਹਾਡੀਆਂ ਉਂਗਲਾਂ ਗਿੱਲੀਆਂ ਹੋਣ \'ਤੇ"</string>
+    <string name="alternative_face_setup_notification_content" product="default" msgid="3384959224091897331">"ਤੁਹਾਡੇ ਫਿੰਗਰਪ੍ਰਿੰਟ ਦੀ ਪਛਾਣ ਨਾ ਹੋਣ \'ਤੇ ਫ਼ੇਸ ਅਣਲਾਕ ਦੀ ਵਰਤੋਂ ਕਰੋ, ਜਿਵੇਂ ਕਿ ਤੁਹਾਡੀਆਂ ਉਂਗਲਾਂ ਗਿੱਲੀਆਂ ਹੋਣ \'ਤੇ"</string>
+    <!-- no translation found for alternative_face_setup_notification_content (8589631194028810041) -->
+    <skip />
     <string name="alternative_fp_setup_notification_content" msgid="7454096947415721639">"ਤੁਹਾਡੇ ਚਿਹਰੇ ਦੀ ਪਛਾਣ ਨਾ ਹੋਣ \'ਤੇ ਫਿੰਗਰਪ੍ਰਿੰਟ ਅਣਲਾਕ ਦੀ ਵਰਤੋਂ ਕਰੋ, ਜਿਵੇਂ ਕਿ ਘੱਟ ਰੋਸ਼ਨੀ ਹੋਣ \'ਤੇ"</string>
-    <string name="face_recalibrate_notification_name" msgid="7311163114750748686">"ਫ਼ੇਸ ਅਣਲਾਕ"</string>
-    <string name="face_recalibrate_notification_title" msgid="2524791952735579082">"ਫ਼ੇਸ ਅਣਲਾਕ ਨਾਲ ਸਮੱਸਿਆ"</string>
+    <string name="face_recalibrate_notification_name" product="default" msgid="7311163114750748686">"ਫ਼ੇਸ ਅਣਲਾਕ"</string>
+    <!-- no translation found for face_recalibrate_notification_name (6343244778393495390) -->
+    <skip />
+    <string name="face_recalibrate_notification_title" product="default" msgid="2524791952735579082">"ਫ਼ੇਸ ਅਣਲਾਕ ਨਾਲ ਸਮੱਸਿਆ"</string>
+    <!-- no translation found for face_recalibrate_notification_title (7502893130398903561) -->
+    <skip />
     <string name="face_recalibrate_notification_content" msgid="3064513770251355594">"ਆਪਣੇ ਚਿਹਰੇ ਦਾ ਮਾਡਲ ਮਿਟਾਉਣ ਲਈ ਟੈਪ ਕਰੋ, ਫਿਰ ਆਪਣਾ ਚਿਹਰਾ ਦੁਬਾਰਾ ਸ਼ਾਮਲ ਕਰੋ"</string>
-    <string name="face_sensor_privacy_enabled" msgid="7407126963510598508">"ਫ਼ੇਸ ਅਣਲਾਕ ਨੂੰ ਵਰਤਣ ਲਈ, ਸੈਟਿੰਗਾਂ &gt; ਪਰਦੇਦਾਰੀ ਵਿੱਚ ਜਾ ਕੇ "<b>"ਕੈਮਰਾ ਪਹੁੰਚ"</b>" ਨੂੰ ਚਾਲੂ ਕਰੋ"</string>
+    <string name="face_sensor_privacy_enabled" product="default" msgid="7407126963510598508">"ਫ਼ੇਸ ਅਣਲਾਕ ਨੂੰ ਵਰਤਣ ਲਈ, ਸੈਟਿੰਗਾਂ &gt; ਪਰਦੇਦਾਰੀ ਵਿੱਚ ਜਾ ਕੇ "<b>"ਕੈਮਰਾ ਪਹੁੰਚ"</b>" ਨੂੰ ਚਾਲੂ ਕਰੋ"</string>
+    <!-- no translation found for face_sensor_privacy_enabled (7690221855638766930) -->
+    <skip />
     <string name="fingerprint_recalibrate_notification_name" msgid="1414578431898579354">"ਫਿੰਗਰਪ੍ਰਿੰਟ ਅਣਲਾਕ"</string>
     <string name="fingerprint_recalibrate_notification_title" msgid="2406561052064558497">"ਫਿੰਗਰਪ੍ਰਿੰਟ ਸੈਂਸਰ ਦੀ ਵਰਤੋਂ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕਦੀ"</string>
     <string name="fingerprint_recalibrate_notification_content" msgid="8519935717822194943">"ਮੁਰੰਮਤ ਪ੍ਰਦਾਨਕ \'ਤੇ ਜਾਓ।"</string>
     <string name="face_acquired_insufficient" msgid="6889245852748492218">"ਤੁਹਾਡੇ ਚਿਹਰੇ ਦਾ ਮਾਡਲ ਨਹੀਂ ਬਣਿਆ। ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।"</string>
     <string name="face_acquired_too_bright" msgid="8070756048978079164">"ਬਹੁਤ ਜ਼ਿਆਦਾ ਚਮਕ। ਹਲਕੀ ਚਮਕ ਵਰਤ ਕੇ ਦੇਖੋ।"</string>
     <string name="face_acquired_too_dark" msgid="8539853432479385326">"ਲੋੜੀਂਦੀ ਰੋਸ਼ਨੀ ਨਹੀਂ ਹੈ"</string>
-    <string name="face_acquired_too_close" msgid="4453646176196302462">"ਫ਼ੋਨ ਨੂੰ ਦੂਰ ਲਿਜਾਓ"</string>
-    <string name="face_acquired_too_far" msgid="2922278214231064859">"ਫ਼ੋਨ ਨੇੜੇ ਲਿਜਾਓ"</string>
-    <string name="face_acquired_too_high" msgid="8278815780046368576">"ਫ਼ੋਨ ਨੂੰ ਥੋੜ੍ਹਾ ਉੱਤੇ ਲਿਜਾਓ"</string>
-    <string name="face_acquired_too_low" msgid="4075391872960840081">"ਫ਼ੋਨ ਨੂੰ ਥੋੜ੍ਹਾ ਹੇਠਾਂ ਲਿਜਾਓ"</string>
-    <string name="face_acquired_too_right" msgid="6245286514593540859">"ਫ਼ੋਨ ਨੂੰ ਆਪਣੇ ਖੱਬੇ ਪਾਸੇ ਲਿਜਾਓ"</string>
-    <string name="face_acquired_too_left" msgid="9201762240918405486">"ਫ਼ੋਨ ਨੂੰ ਆਪਣੇ ਸੱਜੇ ਪਾਸੇ ਲਿਜਾਓ"</string>
+    <string name="face_acquired_too_close" product="default" msgid="4453646176196302462">"ਫ਼ੋਨ ਨੂੰ ਦੂਰ ਲਿਜਾਓ"</string>
+    <!-- no translation found for face_acquired_too_close (7189579448504853047) -->
+    <skip />
+    <string name="face_acquired_too_far" product="default" msgid="2922278214231064859">"ਫ਼ੋਨ ਨੇੜੇ ਲਿਜਾਓ"</string>
+    <!-- no translation found for face_acquired_too_far (6590730829823321223) -->
+    <skip />
+    <string name="face_acquired_too_high" product="default" msgid="8278815780046368576">"ਫ਼ੋਨ ਨੂੰ ਥੋੜ੍ਹਾ ਉੱਤੇ ਲਿਜਾਓ"</string>
+    <!-- no translation found for face_acquired_too_high (717393614154504299) -->
+    <skip />
+    <string name="face_acquired_too_low" product="default" msgid="4075391872960840081">"ਫ਼ੋਨ ਨੂੰ ਥੋੜ੍ਹਾ ਹੇਠਾਂ ਲਿਜਾਓ"</string>
+    <!-- no translation found for face_acquired_too_low (7695733281069538045) -->
+    <skip />
+    <string name="face_acquired_too_right" product="default" msgid="6245286514593540859">"ਫ਼ੋਨ ਨੂੰ ਆਪਣੇ ਖੱਬੇ ਪਾਸੇ ਲਿਜਾਓ"</string>
+    <!-- no translation found for face_acquired_too_right (4058756237538843740) -->
+    <skip />
+    <string name="face_acquired_too_left" product="default" msgid="9201762240918405486">"ਫ਼ੋਨ ਨੂੰ ਆਪਣੇ ਸੱਜੇ ਪਾਸੇ ਲਿਜਾਓ"</string>
+    <!-- no translation found for face_acquired_too_left (5804819007366973778) -->
+    <skip />
     <string name="face_acquired_poor_gaze" msgid="6746437451436776485">"ਸਿੱਧਾ ਆਪਣੇ ਕੈਮਰੇ ਵੱਲ ਦੇਖੋ"</string>
-    <string name="face_acquired_not_detected" msgid="1057966913397548150">"ਤੁਹਾਡਾ ਚਿਹਰਾ ਨਹੀਂ ਦਿਖ ਰਿਹਾ। ਆਪਣੇ ਫ਼ੋਨ ਨੂੰ ਅੱਖਾਂ ਦੀ ਸੇਧ ਵਿੱਚ ਰੱਖੋ।"</string>
-    <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"ਬਹੁਤ ਜ਼ਿਆਦਾ ਹਿਲਜੁਲ। ਫ਼ੋਨ ਨੂੰ ਸਥਿਰ ਰੱਖੋ।"</string>
+    <string name="face_acquired_not_detected" product="default" msgid="1057966913397548150">"ਤੁਹਾਡਾ ਚਿਹਰਾ ਨਹੀਂ ਦਿਖ ਰਿਹਾ। ਆਪਣੇ ਫ਼ੋਨ ਨੂੰ ਅੱਖਾਂ ਦੀ ਸੇਧ ਵਿੱਚ ਰੱਖੋ।"</string>
+    <!-- no translation found for face_acquired_not_detected (1047701586390904260) -->
+    <skip />
+    <string name="face_acquired_too_much_motion" product="default" msgid="8199691445085189528">"ਬਹੁਤ ਜ਼ਿਆਦਾ ਹਿਲਜੁਲ। ਫ਼ੋਨ ਨੂੰ ਸਥਿਰ ਰੱਖੋ।"</string>
+    <!-- no translation found for face_acquired_too_much_motion (7135563968992659161) -->
+    <skip />
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"ਕਿਰਪਾ ਕਰਕੇ ਆਪਣਾ ਚਿਹਰਾ ਦੁਬਾਰਾ ਦਰਜ ਕਰੋ।"</string>
     <string name="face_acquired_too_different" msgid="4505278456634706967">"ਚਿਹਰੇ ਦੀ ਪਛਾਣ ਨਹੀਂ ਹੋਈ। ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।"</string>
     <string name="face_acquired_too_similar" msgid="8882920552674125694">"ਆਪਣੇ ਸਿਰ ਨੂੰ ਥੋੜ੍ਹਾ ਹਿਲਾਓ"</string>
-    <string name="face_acquired_pan_too_extreme" msgid="5417928604710621088">"ਸਿੱਧਾ ਆਪਣੇ ਫ਼ੋਨ ਵੱਲ ਦੇਖੋ"</string>
-    <string name="face_acquired_tilt_too_extreme" msgid="5715715666540716620">"ਸਿੱਧਾ ਆਪਣੇ ਫ਼ੋਨ ਵੱਲ ਦੇਖੋ"</string>
-    <string name="face_acquired_roll_too_extreme" msgid="8261939882838881194">"ਸਿੱਧਾ ਆਪਣੇ ਫ਼ੋਨ ਵੱਲ ਦੇਖੋ"</string>
+    <string name="face_acquired_pan_too_extreme" product="default" msgid="5417928604710621088">"ਸਿੱਧਾ ਆਪਣੇ ਫ਼ੋਨ ਵੱਲ ਦੇਖੋ"</string>
+    <!-- no translation found for face_acquired_pan_too_extreme (821456302944137576) -->
+    <skip />
+    <string name="face_acquired_tilt_too_extreme" product="default" msgid="5715715666540716620">"ਸਿੱਧਾ ਆਪਣੇ ਫ਼ੋਨ ਵੱਲ ਦੇਖੋ"</string>
+    <!-- no translation found for face_acquired_tilt_too_extreme (1119243364774233108) -->
+    <skip />
+    <string name="face_acquired_roll_too_extreme" product="default" msgid="8261939882838881194">"ਸਿੱਧਾ ਆਪਣੇ ਫ਼ੋਨ ਵੱਲ ਦੇਖੋ"</string>
+    <!-- no translation found for face_acquired_roll_too_extreme (3665467581072397682) -->
+    <skip />
     <string name="face_acquired_obscured" msgid="4917643294953326639">"ਤੁਹਾਡਾ ਚਿਹਰਾ ਲੁਕਾਉਣ ਵਾਲੀ ਕੋਈ ਵੀ ਚੀਜ਼ ਹਟਾਓ।"</string>
     <string name="face_acquired_sensor_dirty" msgid="8968391891086721678">"ਕਾਲੀ ਪੱਟੀ ਸਮੇਤ, ਆਪਣੀ ਸਕ੍ਰੀਨ ਦੇ ਸਿਖਰ ਨੂੰ ਸਾਫ਼ ਕਰੋ"</string>
     <!-- no translation found for face_acquired_dark_glasses_detected (5643703296620631986) -->
@@ -797,19 +827,31 @@
   <string-array name="face_acquired_vendor">
   </string-array>
     <string name="face_error_hw_not_available" msgid="5085202213036026288">"ਚਿਹਰੇ ਦੀ ਪੁਸ਼ਟੀ ਨਹੀਂ ਹੋ ਸਕੀ। ਹਾਰਡਵੇਅਰ ਉਪਲਬਧ ਨਹੀਂ।"</string>
-    <string name="face_error_timeout" msgid="2598544068593889762">"ਫ਼ੇਸ ਅਣਲਾਕ ਦੁਬਾਰਾ ਵਰਤ ਕੇ ਦੇਖੋ"</string>
+    <string name="face_error_timeout" product="default" msgid="2598544068593889762">"ਫ਼ੇਸ ਅਣਲਾਕ ਦੁਬਾਰਾ ਵਰਤ ਕੇ ਦੇਖੋ"</string>
+    <!-- no translation found for face_error_timeout (8136501408214657840) -->
+    <skip />
     <string name="face_error_no_space" msgid="5649264057026021723">"ਨਵਾਂ ਚਿਹਰਾ ਡਾਟਾ ਸਟੋਰ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ। ਪਹਿਲਾਂ ਪੁਰਾਣਾ ਹਟਾਓ।"</string>
     <string name="face_error_canceled" msgid="2164434737103802131">"ਚਿਹਰਾ ਪਛਾਣਨ ਦੀ ਪ੍ਰਕਿਰਿਆ ਰੱਦ ਕੀਤੀ ਗਈ।"</string>
-    <string name="face_error_user_canceled" msgid="5766472033202928373">"ਵਰਤੋਂਕਾਰ ਨੇ ਫ਼ੇਸ ਅਣਲਾਕ ਰੱਦ ਕੀਤਾ"</string>
+    <string name="face_error_user_canceled" product="default" msgid="5766472033202928373">"ਵਰਤੋਂਕਾਰ ਨੇ ਫ਼ੇਸ ਅਣਲਾਕ ਰੱਦ ਕੀਤਾ"</string>
+    <!-- no translation found for face_error_user_canceled (8903551031462609651) -->
+    <skip />
     <string name="face_error_lockout" msgid="7864408714994529437">"ਹੱਦੋਂ ਵੱਧ ਕੋਸ਼ਿਸ਼ਾਂ। ਬਾਅਦ ਵਿੱਚ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।"</string>
-    <string name="face_error_lockout_permanent" msgid="8533257333130473422">"ਬਹੁਤ ਸਾਰੀਆਂ ਕੋਸ਼ਿਸ਼ਾਂ। ਫ਼ੇਸ ਅਣਲਾਕ ਉਪਲਬਧ ਨਹੀਂ ਹੈ।"</string>
+    <string name="face_error_lockout_permanent" product="default" msgid="8533257333130473422">"ਬਹੁਤ ਸਾਰੀਆਂ ਕੋਸ਼ਿਸ਼ਾਂ। ਫ਼ੇਸ ਅਣਲਾਕ ਉਪਲਬਧ ਨਹੀਂ ਹੈ।"</string>
+    <!-- no translation found for face_error_lockout_permanent (1885291877517229762) -->
+    <skip />
     <string name="face_error_lockout_screen_lock" msgid="5062609811636860928">"ਬਹੁਤ ਸਾਰੀਆਂ ਕੋਸ਼ਿਸ਼ਾਂ। ਇਸਦੀ ਬਜਾਏ ਸਕ੍ਰੀਨ ਲਾਕ ਦਾਖਲ ਕਰੋ।"</string>
     <string name="face_error_unable_to_process" msgid="5723292697366130070">"ਚਿਹਰੇ ਦੀ ਪੁਸ਼ਟੀ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕੀ। ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।"</string>
-    <string name="face_error_not_enrolled" msgid="1134739108536328412">"ਤੁਸੀਂ ਫ਼ੇਸ ਅਣਲਾਕ ਦਾ ਸੈੱਟਅੱਪ ਨਹੀਂ ਕੀਤਾ ਹੈ।"</string>
-    <string name="face_error_hw_not_present" msgid="7940978724978763011">"ਫ਼ੇਸ ਅਣਲਾਕ ਇਸ ਡੀਵਾਈਸ \'ਤੇ ਸਮਰਥਿਤ ਨਹੀਂ ਹੈ"</string>
+    <string name="face_error_not_enrolled" product="default" msgid="1134739108536328412">"ਤੁਸੀਂ ਫ਼ੇਸ ਅਣਲਾਕ ਦਾ ਸੈੱਟਅੱਪ ਨਹੀਂ ਕੀਤਾ ਹੈ।"</string>
+    <!-- no translation found for face_error_not_enrolled (7350396330456504527) -->
+    <skip />
+    <string name="face_error_hw_not_present" product="default" msgid="7940978724978763011">"ਫ਼ੇਸ ਅਣਲਾਕ ਇਸ ਡੀਵਾਈਸ \'ਤੇ ਸਮਰਥਿਤ ਨਹੀਂ ਹੈ"</string>
+    <!-- no translation found for face_error_hw_not_present (4947323392112708365) -->
+    <skip />
     <string name="face_error_security_update_required" msgid="5076017208528750161">"ਸੈਂਸਰ ਅਸਥਾਈ ਤੌਰ \'ਤੇ ਬੰਦ ਕੀਤਾ ਗਿਆ।"</string>
     <string name="face_name_template" msgid="3877037340223318119">"ਚਿਹਰਾ <xliff:g id="FACEID">%d</xliff:g>"</string>
-    <string name="face_app_setting_name" msgid="5854024256907828015">"ਫ਼ੇਸ ਅਣਲਾਕ ਦੀ ਵਰਤੋਂ ਕਰੋ"</string>
+    <string name="face_app_setting_name" product="default" msgid="5854024256907828015">"ਫ਼ੇਸ ਅਣਲਾਕ ਦੀ ਵਰਤੋਂ ਕਰੋ"</string>
+    <!-- no translation found for face_app_setting_name (8226850671242901114) -->
+    <skip />
     <string name="face_or_screen_lock_app_setting_name" msgid="1603149075605709106">"ਫ਼ੇਸ ਜਾਂ ਸਕ੍ਰੀਨ ਲਾਕ ਦੀ ਵਰਤੋਂ ਕਰੋ"</string>
     <string name="face_dialog_default_subtitle" msgid="6620492813371195429">"ਜਾਰੀ ਰੱਖਣ ਲਈ ਆਪਣੇ ਚਿਹਰੇ ਦੀ ਵਰਤੋਂ ਕਰੋ"</string>
     <string name="face_or_screen_lock_dialog_default_subtitle" msgid="5006381531158341844">"ਜਾਰੀ ਰੱਖਣ ਲਈ ਆਪਣਾ ਚਿਹਰਾ ਜਾਂ ਸਕ੍ਰੀਨ ਲਾਕ ਵਰਤੋ"</string>
@@ -1069,7 +1111,9 @@
     <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"ਅਣਲਾਕ ਕਰਨ ਲਈ ਕਲਿੱਕ ਕਰੋ"</string>
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"ਅਣਲਾਕ ਕਰਨ ਲਈ ਕੋਈ ਵੀ ਕੁੰਜੀ ਦਬਾਓ"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"ਸਾਰੀਆਂ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਅਤੇ ਡਾਟੇ ਲਈ ਅਣਲਾਕ ਕਰੋ"</string>
-    <string name="faceunlock_multiple_failures" msgid="681991538434031708">"ਫ਼ੇਸ ਅਣਲਾਕ ਦੀਆਂ ਕੋਸ਼ਿਸ਼ਾਂ ਸੀਮਾ ਤੋਂ ਪਾਰ ਹੋ ਗਈਆਂ"</string>
+    <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"ਫ਼ੇਸ ਅਣਲਾਕ ਦੀਆਂ ਕੋਸ਼ਿਸ਼ਾਂ ਸੀਮਾ ਤੋਂ ਪਾਰ ਹੋ ਗਈਆਂ"</string>
+    <!-- no translation found for faceunlock_multiple_failures (5388142244463490793) -->
+    <skip />
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"ਕੋਈ ਸਿਮ ਨਹੀਂ ਹੈ"</string>
     <string name="lockscreen_missing_sim_message" product="tablet" msgid="3986843848305639161">"ਟੈਬਲੈੱਟ ਵਿੱਚ ਕੋਈ ਸਿਮ ਮੌਜੂਦ ਨਹੀਂ ਹੈ।"</string>
     <string name="lockscreen_missing_sim_message" product="tv" msgid="3903140876952198273">"ਤੁਹਾਡੇ Android TV ਡੀਵਾਈਸ ਵਿੱਚ ਕੋਈ ਸਿਮ ਮੌਜੂਦ ਨਹੀਂ ਹੈ।"</string>
@@ -1140,7 +1184,9 @@
     <string name="keyguard_accessibility_expand_lock_area" msgid="4215280881346033434">"ਅਣਲਾਕ ਖੇਤਰ ਦਾ ਵਿਸਤਾਰ ਕਰੋ।"</string>
     <string name="keyguard_accessibility_slide_unlock" msgid="2968195219692413046">"ਅਣਲਾਕ ਸਲਾਈਡ ਕਰੋ।"</string>
     <string name="keyguard_accessibility_pattern_unlock" msgid="8669128146589233293">"ਪੈਟਰਨ ਅਣਲਾਕ।"</string>
-    <string name="keyguard_accessibility_face_unlock" msgid="4533832120787386728">"ਫ਼ੇਸ ਅਣਲਾਕ।"</string>
+    <string name="keyguard_accessibility_face_unlock" product="default" msgid="4533832120787386728">"ਫ਼ੇਸ ਅਣਲਾਕ।"</string>
+    <!-- no translation found for keyguard_accessibility_face_unlock (6739732585954513653) -->
+    <skip />
     <string name="keyguard_accessibility_pin_unlock" msgid="4020864007967340068">"ਪਿੰਨ ਅਣਲਾਕ।"</string>
     <string name="keyguard_accessibility_sim_pin_unlock" msgid="4895939120871890557">"ਸਿਮ ਪਿੰਨ ਅਣਲਾਕ।"</string>
     <string name="keyguard_accessibility_sim_puk_unlock" msgid="3459003464041899101">"ਸਿਮ Puk ਅਣਲਾਕ।"</string>
@@ -1499,22 +1545,14 @@
     <string name="usb_contaminant_detected_message" msgid="7346100585390795743">"USB ਪੋਰਟ ਸਵੈਚਲਿਤ ਤੌਰ \'ਤੇ ਬੰਦ ਕੀਤਾ ਗਿਆ। ਹੋਰ ਜਾਣਨ ਲਈ ਟੈਪ ਕਰੋ।"</string>
     <string name="usb_contaminant_not_detected_title" msgid="2651167729563264053">"USB ਪੋਰਟ ਵਰਤਣ ਲਈ ਠੀਕ ਹੈ"</string>
     <string name="usb_contaminant_not_detected_message" msgid="892863190942660462">"ਫ਼ੋਨ ਹੁਣ ਪਾਣੀ ਜਾਂ ਧੂੜ-ਮਿੱਟੀ ਦਾ ਪਤਾ ਨਹੀਂ ਲਗਾਉਂਦਾ ਹੈ।"</string>
-    <!-- no translation found for usb_authorization_notify_on_screenlock_title (4219670768084927681) -->
-    <skip />
-    <!-- no translation found for usb_authorization_notify_on_screenlock_message (3391658768099414499) -->
-    <skip />
-    <!-- no translation found for usb_authorization_notify_on_screenlock_message_multiple (1722575755931059980) -->
-    <skip />
-    <!-- no translation found for usb_authorization_notify_finish_logging_in_title (3417036506115006412) -->
-    <skip />
-    <!-- no translation found for usb_authorization_notify_finish_logging_in_message (7996802340128367690) -->
-    <skip />
-    <!-- no translation found for usb_authorization_notify_finish_logging_in_title_multiple (3184839817149193434) -->
-    <skip />
-    <!-- no translation found for usb_authorization_notify_finish_logging_in_message_multiple (6745916608298736853) -->
-    <skip />
-    <!-- no translation found for notification_channel_usb_authorization (7567851967410736399) -->
-    <skip />
+    <string name="usb_authorization_notify_on_screenlock_title" msgid="4219670768084927681">"ਨਵਾਂ USB ਡੀਵਾਈਸ ਕਨੈਕਟ ਕੀਤਾ ਗਿਆ"</string>
+    <string name="usb_authorization_notify_on_screenlock_message" msgid="3391658768099414499">"ਇਸ USB ਡੀਵਾਈਸ \'ਤੇ ਭਰੋਸਾ ਕਰਨ ਅਤੇ ਇਸਦੀ ਵਰਤੋਂ ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਸਾਈਨ-ਇਨ ਕਰੋ।"</string>
+    <string name="usb_authorization_notify_on_screenlock_message_multiple" msgid="1722575755931059980">"ਇਨ੍ਹਾਂ USB ਡੀਵਾਈਸਾਂ \'ਤੇ ਭਰੋਸਾ ਕਰਨ ਅਤੇ ਉਨ੍ਹਾਂ ਦੀ ਵਰਤੋਂ ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਸਾਈਨ-ਇਨ ਕਰੋ।"</string>
+    <string name="usb_authorization_notify_finish_logging_in_title" msgid="3417036506115006412">"ਨਵਾਂ USB ਡੀਵਾਈਸ ਕਨੈਕਟ ਕੀਤਾ ਗਿਆ"</string>
+    <string name="usb_authorization_notify_finish_logging_in_message" msgid="7996802340128367690">"ਇਸ USB ਡੀਵਾਈਸ \'ਤੇ ਪੂਰਾ ਭਰੋਸਾ ਕਰਨ ਲਈ <xliff:g id="NUM_SECONDS">%1$d</xliff:g> ਸਕਿੰਟਾਂ ਦੇ ਅੰਦਰ ਸਾਈਨ-ਇਨ ਕਰੋ। ਜੇ ਤੁਸੀਂ ਅਜਿਹਾ ਨਹੀਂ ਕਰਦੇ, ਤਾਂ ਤੁਹਾਨੂੰ ਇਸਨੂੰ ਡਿਸਕਨੈਕਟ ਕਰ ਕੇ ਮੁੜ-ਕਨੈਕਟ ਕਰਨਾ ਪਵੇਗਾ।"</string>
+    <string name="usb_authorization_notify_finish_logging_in_title_multiple" msgid="3184839817149193434">"ਨਵੇਂ USB ਡੀਵਾਈਸ ਕਨੈਕਟ ਕੀਤੇ ਗਏ"</string>
+    <string name="usb_authorization_notify_finish_logging_in_message_multiple" msgid="6745916608298736853">"ਇਨ੍ਹਾਂ USB ਡੀਵਾਈਸਾਂ \'ਤੇ ਪੂਰੀ ਤਰ੍ਹਾਂ ਭਰੋਸਾ ਕਰਨ ਲਈ <xliff:g id="NUM_SECONDS">%1$d</xliff:g> ਸਕਿੰਟਾਂ ਦੇ ਅੰਦਰ ਸਾਈਨ-ਇਨ ਕਰੋ। ਜੇ ਤੁਸੀਂ ਅਜਿਹਾ ਨਹੀਂ ਕਰਦੇ, ਤਾਂ ਤੁਹਾਨੂੰ ਉਨ੍ਹਾਂ ਨੂੰ ਡਿਸਕਨੈਕਟ ਕਰ ਕੇ ਮੁੜ-ਕਨੈਕਟ ਕਰਨਾ ਪਵੇਗਾ।"</string>
+    <string name="notification_channel_usb_authorization" msgid="7567851967410736399">"USB ਡੀਵਾਈਸ ਇਖਤਿਆਰੀਕਰਨ"</string>
     <string name="taking_remote_bugreport_notification_title" msgid="1582531382166919850">"ਬੱਗ ਰਿਪਰੋਟ ਪ੍ਰਾਪਤ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ..."</string>
     <string name="share_remote_bugreport_notification_title" msgid="6708897723753334999">"ਕੀ ਬੱਗ ਰਿਪੋਰਟ ਸਾਂਝੀ ਕਰਨੀ ਹੈ?"</string>
     <string name="sharing_remote_bugreport_notification_title" msgid="3077385149217638550">"ਬੱਗ ਰਿਪੋਰਟ ਸਾਂਝੀ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ…"</string>
@@ -1885,7 +1923,8 @@
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"ਸਵਿੱਚ ਕਰੋ"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"ਸੈਟਿੰਗਾਂ"</string>
     <string name="user_switching_message" msgid="1912993630661332336">"<xliff:g id="NAME">%1$s</xliff:g> \'ਤੇ ਸਵਿੱਚ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ…"</string>
-    <string name="user_logging_out_message" msgid="7216437629179710359">"<xliff:g id="NAME">%1$s</xliff:g> ਨੂੰ ਲਾਗ-ਆਉਟ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ …"</string>
+    <!-- no translation found for user_logging_out_message (2968888364742643174) -->
+    <skip />
     <string name="owner_name" msgid="8713560351570795743">"ਮਾਲਕ"</string>
     <string name="guest_name" msgid="8502103277839834324">"ਮਹਿਮਾਨ"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"ਸਿਸਟਮ ਯੂਜ਼ਰ"</string>
@@ -2134,28 +2173,37 @@
     <string name="app_lock_add_screen_lock_title" msgid="6905612843620128689">"ਪਹਿਲਾਂ, ਸਕ੍ਰੀਨ ਲਾਕ ਸ਼ਾਮਲ ਕਰੋ"</string>
     <string name="enable_app_lock_success_toast_message" msgid="3339622779190529987">"<xliff:g id="APP_NAME">%1$s</xliff:g> ਲਾਕ ਹੈ"</string>
     <string name="enable_app_lock_failure_toast_message" msgid="1055838896510445566">"<xliff:g id="APP_NAME">%1$s</xliff:g> ਨੂੰ ਲਾਕ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ"</string>
-    <string name="disable_app_lock_success_toast_message" msgid="70733620589071266">"ਐਪ ਲਾਕ ਨੂੰ <xliff:g id="APP_NAME">%1$s</xliff:g> ਤੋਂ ਹਟਾ ਦਿੱਤਾ ਗਿਆ ਹੈ"</string>
-    <!-- no translation found for locked_app_biometric_prompt_description (5892653396104581919) -->
-    <skip />
+    <string name="disable_app_lock_success_toast_message" msgid="360172251656799346">"ਐਪ ਲਾਕ ਹਟਾਇਆ ਗਿਆ"</string>
+    <string name="enable_app_lock_biometric_prompt_subtitle" msgid="8215241065630017088">"ਐਪ ਲਾਕ ਨੂੰ <xliff:g id="APP_NAME">%1$s</xliff:g> ਵਿੱਚ ਸ਼ਾਮਲ ਕੀਤਾ ਜਾਵੇਗਾ"</string>
+    <string name="disable_app_lock_biometric_prompt_subtitle" msgid="3963064765974508170">"ਐਪ ਲਾਕ ਨੂੰ <xliff:g id="APP_NAME">%1$s</xliff:g> ਤੋਂ ਹਟਾ ਦਿੱਤਾ ਜਾਵੇਗਾ"</string>
+    <string name="locked_app_biometric_prompt_description" msgid="5892653396104581919">"ਇਸ ਐਪ ਨੂੰ ਐਪ ਲਾਕ ਨਾਲ ਸੁਰੱਖਿਅਤ ਕੀਤਾ ਗਿਆ ਹੈ"</string>
     <string name="locked_app_external_display_message" msgid="5483884799685545338">"ਇਸ ਡਿਸਪਲੇ \'ਤੇ ਐਪ ਤੱਕ ਪਹੁੰਚ ਕਰਨ ਲਈ, ਪਹਿਲਾਂ ਆਪਣੇ ਦੂਜੇ ਡੀਵਾਈਸ \'ਤੇ ਆਪਣੀ ਪਛਾਣ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ"</string>
     <string name="app_lock_edu_dialog_enable_app_lock_title" msgid="283314042336592322">"ਕੀ <xliff:g id="APP_NAME">%1$s</xliff:g> ਵਿੱਚ ਐਪ ਲਾਕ ਸ਼ਾਮਲ ਕਰਨਾ ਹੈ?"</string>
-    <string name="app_lock_edu_dialog_description" msgid="8176807243219769518">"ਤੁਹਾਡੀ ਸੁਰੱਖਿਆ ਲਈ, ਸਿਰਫ਼ ਤੁਸੀਂ ਹੀ ਫਿੰਗਰਪ੍ਰਿੰਟ ਅਤੇ ਫ਼ੇਸ ਅਣਲਾਕ ਜਾਂ ਆਪਣੇ ਪਿੰਨ ਨਾਲ ਇਸ ਐਪ ਤੱਕ ਪਹੁੰਚ ਕਰ ਸਕਦੇ ਹੋ"</string>
     <string name="app_lock_edu_dialog_description_template" msgid="8563718120753342530">"ਤੁਹਾਡੀ ਸੁਰੱਖਿਆ ਲਈ, ਸਿਰਫ਼ ਤੁਸੀਂ ਹੀ %1$s ਜਾਂ ਆਪਣੇ %2$s ਨਾਲ ਇਸ ਐਪ ਤੱਕ ਪਹੁੰਚ ਕਰ ਸਕਦੇ ਹੋ"</string>
     <string name="app_lock_edu_dialog_description_template_no_biometrics" msgid="7122017109150633691">"ਤੁਹਾਡੀ ਸੁਰੱਖਿਆ ਲਈ, ਸਿਰਫ਼ ਤੁਸੀਂ ਹੀ ਆਪਣੇ %1$s ਨਾਲ ਇਸ ਐਪ ਤੱਕ ਪਹੁੰਚ ਕਰ ਸਕਦੇ ਹੋ"</string>
     <string name="app_lock_edu_dialog_info_header" msgid="5876120209204270990">"ਐਪ ਲਾਕ ਨਾਲ"</string>
     <string name="app_lock_edu_dialog_info_notifications" msgid="1124438392204873305">"ਸੂਚਨਾ ਸਮੱਗਰੀ ਲੁਕੀ ਹੋਈ ਹੋਵੇਗੀ"</string>
     <string name="app_lock_edu_dialog_info_widgets" msgid="8809009414650740872">"ਵਿਜੇਟਾਂ ਅਤੇ ਸ਼ਾਰਟਕੱਟਾਂ ਨੂੰ ਹਟਾ ਦਿੱਤਾ ਜਾਵੇਗਾ"</string>
-    <!-- no translation found for app_lock_edu_dialog_info_ai_disclaimer (5623615653703542050) -->
-    <skip />
+    <string name="app_lock_edu_dialog_info_ai_disclaimer" msgid="5623615653703542050">"ਜਿਨ੍ਹਾਂ AI ਏਜੰਟਾਂ ਅਤੇ ਸੇਵਾਵਾਂ ਨੂੰ ਤੁਸੀਂ %1$s ਤੱਕ ਪਹੁੰਚ ਕਰਨ ਦੀ ਆਗਿਆ ਦਿੱਤੀ ਹੈ, ਉਹ ਹਾਲੇ ਵੀ ਇਸਦੇ ਡਾਟੇ ਤੱਕ ਪਹੁੰਚ ਕਰ ਸਕਣਗੇ"</string>
     <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"ਐਪ ਲਾਕ ਸ਼ਾਮਲ ਕਰੋ"</string>
-    <string name="app_lock_edu_dialog_biometric_description_has_face" msgid="1348151645996748654">"ਫ਼ੇਸ ਅਣਲਾਕ"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_face" product="default" msgid="1348151645996748654">"ਫ਼ੇਸ ਅਣਲਾਕ"</string>
+    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_face (380233309639495358) -->
+    <skip />
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"ਫਿੰਗਰਪ੍ਰਿੰਟ ਅਣਲਾਕ"</string>
-    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" msgid="7895807411323811641">"ਫਿੰਗਰਪ੍ਰਿੰਟ ਜਾਂ ਫ਼ੇਸ ਅਣਲਾਕ"</string>
-    <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="8487096457702445059">"ਪਾਸਵਰਡ"</string>
-    <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="991436996281983547">"ਪੈਟਰਨ"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" product="default" msgid="6551410616110497401">"ਫਿੰਗਰਪ੍ਰਿੰਟ ਅਣਲਾਕ, ਫ਼ੇਸ ਅਣਲਾਕ"</string>
+    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint_and_face (4797005135507921547) -->
+    <skip />
+    <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="6019284267033007445">"ਪਾਸਵਰਡ"</string>
+    <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="2370939002644936965">"ਪੈਟਰਨ"</string>
     <string name="app_lock_edu_dialog_lockscreen_pin_name" msgid="6458607126966304795">"ਪਿੰਨ"</string>
-    <string name="app_lock_permission_review_dialog_title" msgid="5030286398974840579">"ਤੁਹਾਡੀਆਂ ਫ਼ੋਟੋਆਂ ਹਾਲੇ ਵੀ ਹੋਰ ਐਪਾਂ ਵਿੱਚ ਦਿਖਾਈ ਦੇ ਸਕਦੀਆਂ ਹਨ"</string>
-    <string name="app_lock_permission_review_dialog_sub_title" msgid="310758587817184145">"ਤੁਹਾਡੀਆਂ ਫ਼ੋਟੋਆਂ ਤੱਕ ਪਹੁੰਚ ਵਾਲੀਆਂ ਐਪਾਂ"</string>
+    <!-- no translation found for app_lock_permission_review_dialog_title_photos (6193222920123912729) -->
+    <skip />
+    <!-- no translation found for app_lock_permission_review_dialog_subtitle_photos (1854948251386976703) -->
+    <skip />
+    <!-- no translation found for app_lock_permission_review_dialog_title_files (8820759644609198515) -->
+    <skip />
+    <!-- no translation found for app_lock_permission_review_dialog_subtitle_files (2999447193189851364) -->
+    <skip />
     <string name="app_lock_permission_review_expand_app_list_button" msgid="3214809707125223273">"ਸਭ ਦੇਖੋ"</string>
     <string name="app_lock_permission_review_continue_button" msgid="4045066724173414043">"ਜਾਰੀ ਰੱਖੋ"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"ਕੰਮ ਸੰਬੰਧੀ ਐਪਾਂ ਤੋਂ ਰੋਕ ਹਟਾਈਏ?"</string>
@@ -2644,8 +2692,12 @@
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> ਅਤੇ <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> ਦੀ ਹੁਣ ਪਛਾਣ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕਦੀ।"</string>
     <string name="fingerprint_dangling_notification_msg_all_deleted_1" msgid="1824812666549916586">"<xliff:g id="FINGERPRINT">%s</xliff:g> ਦੀ ਹੁਣ ਪਛਾਣ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕਦੀ। ਫਿੰਗਰਪ੍ਰਿੰਟ ਅਣਲਾਕ ਦਾ ਦੁਬਾਰਾ ਸੈੱਟਅੱਪ ਕਰੋ।"</string>
     <string name="fingerprint_dangling_notification_msg_all_deleted_2" msgid="5974657382960155099">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> ਅਤੇ <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> ਦੀ ਹੁਣ ਪਛਾਣ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕਦੀ। ਫਿੰਗਰਪ੍ਰਿੰਟ ਅਣਲਾਕ ਦਾ ਦੁਬਾਰਾ ਸੈੱਟਅੱਪ ਕਰੋ।"</string>
-    <string name="face_dangling_notification_title" msgid="947852541060975473">"ਫ਼ੇਸ ਅਣਲਾਕ ਦਾ ਦੁਬਾਰਾ ਸੈੱਟਅੱਪ ਕਰੋ"</string>
-    <string name="face_dangling_notification_msg" msgid="746235263598985384">"ਤੁਹਾਡੇ ਚਿਹਰੇ ਦੇ ਮਾਡਲ ਦੀ ਹੁਣ ਪਛਾਣ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕਦੀ। ਫ਼ੇਸ ਅਣਲਾਕ ਦਾ ਦੁਬਾਰਾ ਸੈੱਟਅੱਪ ਕਰੋ।"</string>
+    <string name="face_dangling_notification_title" product="default" msgid="947852541060975473">"ਫ਼ੇਸ ਅਣਲਾਕ ਦਾ ਦੁਬਾਰਾ ਸੈੱਟਅੱਪ ਕਰੋ"</string>
+    <!-- no translation found for face_dangling_notification_title (4632690536207343589) -->
+    <skip />
+    <string name="face_dangling_notification_msg" product="default" msgid="746235263598985384">"ਤੁਹਾਡੇ ਚਿਹਰੇ ਦੇ ਮਾਡਲ ਦੀ ਹੁਣ ਪਛਾਣ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕਦੀ। ਫ਼ੇਸ ਅਣਲਾਕ ਦਾ ਦੁਬਾਰਾ ਸੈੱਟਅੱਪ ਕਰੋ।"</string>
+    <!-- no translation found for face_dangling_notification_msg (5982979430103820891) -->
+    <skip />
     <string name="biometric_dangling_notification_action_set_up" msgid="8246885009807817961">"ਸੈੱਟਅੱਪ ਕਰੋ"</string>
     <string name="biometric_dangling_notification_action_not_now" msgid="8095249216864443491">"ਹੁਣੇ ਨਹੀਂ"</string>
     <string name="bg_user_sound_notification_title_alarm" msgid="5251678483393143527">"<xliff:g id="USER_NAME">%s</xliff:g> ਲਈ ਅਲਾਰਮ"</string>

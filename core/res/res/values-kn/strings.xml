@@ -758,33 +758,63 @@
     <string name="fingerprint_icon_content_description" msgid="4741068463175388817">"ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಐಕಾನ್"</string>
     <string name="device_unlock_notification_name" msgid="2632928999862915709">"ಸಾಧನದ ಅನ್‌ಲಾಕ್"</string>
     <string name="alternative_unlock_setup_notification_title" msgid="6241508547901933544">"ಅನ್‌ಲಾಕ್ ಮಾಡಲು ಮತ್ತೊಂದು ವಿಧಾನವನ್ನು ಬಳಸಿ"</string>
-    <string name="alternative_face_setup_notification_content" msgid="3384959224091897331">"ನಿಮ್ಮ ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಅನ್ನು ಗುರುತಿಸದಿದ್ದಾಗ ಫೇಸ್ ಅನ್‌ಲಾಕ್ ಅನ್ನು ಬಳಸಿ, ಉದಾಹರಣೆಗೆ, ನಿಮ್ಮ ಬೆರಳುಗಳು ಒದ್ದೆಯಾಗಿದ್ದಾಗ"</string>
+    <string name="alternative_face_setup_notification_content" product="default" msgid="3384959224091897331">"ನಿಮ್ಮ ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಅನ್ನು ಗುರುತಿಸದಿದ್ದಾಗ ಫೇಸ್ ಅನ್‌ಲಾಕ್ ಅನ್ನು ಬಳಸಿ, ಉದಾಹರಣೆಗೆ, ನಿಮ್ಮ ಬೆರಳುಗಳು ಒದ್ದೆಯಾಗಿದ್ದಾಗ"</string>
+    <!-- no translation found for alternative_face_setup_notification_content (8589631194028810041) -->
+    <skip />
     <string name="alternative_fp_setup_notification_content" msgid="7454096947415721639">"ನಿಮ್ಮ ಮುಖವನ್ನು ಗುರುತಿಸದಿದ್ದಾಗ ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಅನ್‌ಲಾಕ್ ಅನ್ನು ಬಳಸಿ, ಉದಾಹರಣೆಗೆ, ಸಾಕಷ್ಟು ಬೆಳಕು ಇಲ್ಲದಿದ್ದಾಗ"</string>
-    <string name="face_recalibrate_notification_name" msgid="7311163114750748686">"ಫೇಸ್ ಅನ್‌ಲಾಕ್"</string>
-    <string name="face_recalibrate_notification_title" msgid="2524791952735579082">"ಫೇಸ್ ಅನ್‌ಲಾಕ್ ಕುರಿತು ಸಮಸ್ಯೆ ಇದೆ"</string>
+    <string name="face_recalibrate_notification_name" product="default" msgid="7311163114750748686">"ಫೇಸ್ ಅನ್‌ಲಾಕ್"</string>
+    <!-- no translation found for face_recalibrate_notification_name (6343244778393495390) -->
+    <skip />
+    <string name="face_recalibrate_notification_title" product="default" msgid="2524791952735579082">"ಫೇಸ್ ಅನ್‌ಲಾಕ್ ಕುರಿತು ಸಮಸ್ಯೆ ಇದೆ"</string>
+    <!-- no translation found for face_recalibrate_notification_title (7502893130398903561) -->
+    <skip />
     <string name="face_recalibrate_notification_content" msgid="3064513770251355594">"ನಿಮ್ಮ ಫೇಸ್ ಮಾಡೆಲ್ ಅನ್ನು ಅಳಿಸಲು ಟ್ಯಾಪ್ ಮಾಡಿ, ನಂತರ ನಿಮ್ಮ ಫೇಸ್ ಮಾಡೆಲ್ ಅನ್ನು ಪುನಃ ಸೇರಿಸಿ"</string>
-    <string name="face_sensor_privacy_enabled" msgid="7407126963510598508">"ಫೇಸ್ ಅನ್‌ಲಾಕ್ ಬಳಸಲು, ಸೆಟ್ಟಿಂಗ್‌ಗಳು &gt; ಗೌಪ್ಯತೆ ಎಂಬಲ್ಲಿ "<b>"ಕ್ಯಾಮರಾ ಪ್ರವೇಶವನ್ನು"</b>" ಆನ್ ಮಾಡಿ"</string>
+    <string name="face_sensor_privacy_enabled" product="default" msgid="7407126963510598508">"ಫೇಸ್ ಅನ್‌ಲಾಕ್ ಬಳಸಲು, ಸೆಟ್ಟಿಂಗ್‌ಗಳು &gt; ಗೌಪ್ಯತೆ ಎಂಬಲ್ಲಿ "<b>"ಕ್ಯಾಮರಾ ಪ್ರವೇಶವನ್ನು"</b>" ಆನ್ ಮಾಡಿ"</string>
+    <!-- no translation found for face_sensor_privacy_enabled (7690221855638766930) -->
+    <skip />
     <string name="fingerprint_recalibrate_notification_name" msgid="1414578431898579354">"ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಅನ್‌ಲಾಕ್"</string>
     <string name="fingerprint_recalibrate_notification_title" msgid="2406561052064558497">"ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಸೆನ್ಸರ್ ಅನ್ನು ಬಳಸಲು ಸಾಧ್ಯವಿಲ್ಲ"</string>
     <string name="fingerprint_recalibrate_notification_content" msgid="8519935717822194943">"ರಿಪೇರಿ ಮಾಡುವವರನ್ನು ಸಂಪರ್ಕಿಸಿ."</string>
     <string name="face_acquired_insufficient" msgid="6889245852748492218">"ಫೇಸ್ ಮಾಡೆಲ್ ರಚಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ. ಪುನಃ ಪ್ರಯತ್ನಿಸಿ."</string>
     <string name="face_acquired_too_bright" msgid="8070756048978079164">"ತುಂಬಾ ಪ್ರಕಾಶಮಾನವಾಗಿದೆ ಮಂದ ಪ್ರಕಾಶಮಾನವಿರುವ ಲೈಟ್ ಬಳಸಿ"</string>
     <string name="face_acquired_too_dark" msgid="8539853432479385326">"ಸಾಕಷ್ಟು ಬೆಳಕು ಇಲ್ಲ"</string>
-    <string name="face_acquired_too_close" msgid="4453646176196302462">"ಫೋನ್ ಅನ್ನು ದೂರಕ್ಕೆ ಸರಿಸಿ"</string>
-    <string name="face_acquired_too_far" msgid="2922278214231064859">"ಫೋನ್ ಅನ್ನು ಸಮೀಪಕ್ಕೆ ತನ್ನಿ"</string>
-    <string name="face_acquired_too_high" msgid="8278815780046368576">"ಫೋನ್ ಅನ್ನು ಮೇಲಕ್ಕೆ ಎತ್ತಿ ಹಿಡಿಯಿರಿ."</string>
-    <string name="face_acquired_too_low" msgid="4075391872960840081">"ಫೋನ್ ಅನ್ನು ಕೆಳಗೆ ಸರಿಸಿ"</string>
-    <string name="face_acquired_too_right" msgid="6245286514593540859">"ಫೋನ್ ಅನ್ನು ನಿಮ್ಮ ಎಡಕ್ಕೆ ಸರಿಸಿ"</string>
-    <string name="face_acquired_too_left" msgid="9201762240918405486">"ಫೋನ್ ಅನ್ನು ನಿಮ್ಮ ಬಲಕ್ಕೆ ಸರಿಸಿ"</string>
+    <string name="face_acquired_too_close" product="default" msgid="4453646176196302462">"ಫೋನ್ ಅನ್ನು ದೂರಕ್ಕೆ ಸರಿಸಿ"</string>
+    <!-- no translation found for face_acquired_too_close (7189579448504853047) -->
+    <skip />
+    <string name="face_acquired_too_far" product="default" msgid="2922278214231064859">"ಫೋನ್ ಅನ್ನು ಸಮೀಪಕ್ಕೆ ತನ್ನಿ"</string>
+    <!-- no translation found for face_acquired_too_far (6590730829823321223) -->
+    <skip />
+    <string name="face_acquired_too_high" product="default" msgid="8278815780046368576">"ಫೋನ್ ಅನ್ನು ಮೇಲಕ್ಕೆ ಎತ್ತಿ ಹಿಡಿಯಿರಿ."</string>
+    <!-- no translation found for face_acquired_too_high (717393614154504299) -->
+    <skip />
+    <string name="face_acquired_too_low" product="default" msgid="4075391872960840081">"ಫೋನ್ ಅನ್ನು ಕೆಳಗೆ ಸರಿಸಿ"</string>
+    <!-- no translation found for face_acquired_too_low (7695733281069538045) -->
+    <skip />
+    <string name="face_acquired_too_right" product="default" msgid="6245286514593540859">"ಫೋನ್ ಅನ್ನು ನಿಮ್ಮ ಎಡಕ್ಕೆ ಸರಿಸಿ"</string>
+    <!-- no translation found for face_acquired_too_right (4058756237538843740) -->
+    <skip />
+    <string name="face_acquired_too_left" product="default" msgid="9201762240918405486">"ಫೋನ್ ಅನ್ನು ನಿಮ್ಮ ಬಲಕ್ಕೆ ಸರಿಸಿ"</string>
+    <!-- no translation found for face_acquired_too_left (5804819007366973778) -->
+    <skip />
     <string name="face_acquired_poor_gaze" msgid="6746437451436776485">"ನಿಮ್ಮ ಕ್ಯಾಮರಾವನ್ನು ಹೆಚ್ಚು ನೇರವಾಗಿ ನೋಡಿ"</string>
-    <string name="face_acquired_not_detected" msgid="1057966913397548150">"ನಿಮ್ಮ ಮುಖ ಕಾಣಿಸುತ್ತಿಲ್ಲ. ನಿಮ್ಮ ಫೋನ್ ಅನ್ನು ಕಣ್ಣಿನ ನೇರಕ್ಕೆ ಹಿಡಿದುಕೊಳ್ಳಿ."</string>
-    <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"ತುಂಬಾ ಅಲುಗಾಡುತ್ತಿದೆ ಫೋನ್ ಅನ್ನು ಸ್ಥಿರವಾಗಿ ಹಿಡಿಯಿರಿ."</string>
+    <string name="face_acquired_not_detected" product="default" msgid="1057966913397548150">"ನಿಮ್ಮ ಮುಖ ಕಾಣಿಸುತ್ತಿಲ್ಲ. ನಿಮ್ಮ ಫೋನ್ ಅನ್ನು ಕಣ್ಣಿನ ನೇರಕ್ಕೆ ಹಿಡಿದುಕೊಳ್ಳಿ."</string>
+    <!-- no translation found for face_acquired_not_detected (1047701586390904260) -->
+    <skip />
+    <string name="face_acquired_too_much_motion" product="default" msgid="8199691445085189528">"ತುಂಬಾ ಅಲುಗಾಡುತ್ತಿದೆ ಫೋನ್ ಅನ್ನು ಸ್ಥಿರವಾಗಿ ಹಿಡಿಯಿರಿ."</string>
+    <!-- no translation found for face_acquired_too_much_motion (7135563968992659161) -->
+    <skip />
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"ನಿಮ್ಮ ಮುಖವನ್ನು ಮರುನೋಂದಣಿ ಮಾಡಿ."</string>
     <string name="face_acquired_too_different" msgid="4505278456634706967">"ಮುಖ ಗುರುತಿಸಲಾಗಿಲ್ಲ. ಪುನಃ ಪ್ರಯತ್ನಿಸಿ."</string>
     <string name="face_acquired_too_similar" msgid="8882920552674125694">"ನಿಮ್ಮ ತಲೆಯ ಸ್ಥಾನವನ್ನು ಸ್ವಲ್ಪ ಬದಲಾಯಿಸಿ"</string>
-    <string name="face_acquired_pan_too_extreme" msgid="5417928604710621088">"ನಿಮ್ಮ ಫೋನ್ ಅನ್ನು ನೇರವಾಗಿ ನೋಡಿ"</string>
-    <string name="face_acquired_tilt_too_extreme" msgid="5715715666540716620">"ನಿಮ್ಮ ಫೋನ್ ಅನ್ನು ನೇರವಾಗಿ ನೋಡಿ"</string>
-    <string name="face_acquired_roll_too_extreme" msgid="8261939882838881194">"ನಿಮ್ಮ ಫೋನ್ ಅನ್ನು ನೇರವಾಗಿ ನೋಡಿ"</string>
+    <string name="face_acquired_pan_too_extreme" product="default" msgid="5417928604710621088">"ನಿಮ್ಮ ಫೋನ್ ಅನ್ನು ನೇರವಾಗಿ ನೋಡಿ"</string>
+    <!-- no translation found for face_acquired_pan_too_extreme (821456302944137576) -->
+    <skip />
+    <string name="face_acquired_tilt_too_extreme" product="default" msgid="5715715666540716620">"ನಿಮ್ಮ ಫೋನ್ ಅನ್ನು ನೇರವಾಗಿ ನೋಡಿ"</string>
+    <!-- no translation found for face_acquired_tilt_too_extreme (1119243364774233108) -->
+    <skip />
+    <string name="face_acquired_roll_too_extreme" product="default" msgid="8261939882838881194">"ನಿಮ್ಮ ಫೋನ್ ಅನ್ನು ನೇರವಾಗಿ ನೋಡಿ"</string>
+    <!-- no translation found for face_acquired_roll_too_extreme (3665467581072397682) -->
+    <skip />
     <string name="face_acquired_obscured" msgid="4917643294953326639">"ಮುಖವನ್ನು ಮರೆ ಮಾಡುವ ವಸ್ತುಗಳನ್ನು ತೆಗೆದುಹಾಕಿ."</string>
     <string name="face_acquired_sensor_dirty" msgid="8968391891086721678">"ಬ್ಲ್ಯಾಕ್ ಬಾರ್ ಸೇರಿದಂತೆ ನಿಮ್ಮ ಸ್ಕ್ರೀನ್‌ನ ಮೇಲ್ಭಾಗವನ್ನು ತೆರವುಗೊಳಿಸಿ"</string>
     <!-- no translation found for face_acquired_dark_glasses_detected (5643703296620631986) -->
@@ -797,19 +827,31 @@
   <string-array name="face_acquired_vendor">
   </string-array>
     <string name="face_error_hw_not_available" msgid="5085202213036026288">"ಮುಖ ದೃಢೀಕರಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ. ಹಾರ್ಡ್‌ವೇರ್ ಲಭ್ಯವಿಲ್ಲ."</string>
-    <string name="face_error_timeout" msgid="2598544068593889762">"ಫೇಸ್ ಅನ್‌ಲಾಕ್ ಅನ್ನು ಪುನಃ ಪ್ರಯತ್ನಿಸಿ"</string>
+    <string name="face_error_timeout" product="default" msgid="2598544068593889762">"ಫೇಸ್ ಅನ್‌ಲಾಕ್ ಅನ್ನು ಪುನಃ ಪ್ರಯತ್ನಿಸಿ"</string>
+    <!-- no translation found for face_error_timeout (8136501408214657840) -->
+    <skip />
     <string name="face_error_no_space" msgid="5649264057026021723">"ಹೊಸ ಮುಖ ಡೇಟಾ ಸಂಗ್ರಹಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ. ಮೊದಲು ಹಳೆಯದನ್ನು ಅಳಿಸಿ"</string>
     <string name="face_error_canceled" msgid="2164434737103802131">"ಮುಖದ ಕಾರ್ಯಚರಣೆಯನ್ನು ರದ್ದುಗೊಳಿಸಲಾಗಿದೆ."</string>
-    <string name="face_error_user_canceled" msgid="5766472033202928373">"ಫೇಸ್ ಅನ್‌ಲಾಕ್ ಅನ್ನು ಬಳಕೆದಾರರು ರದ್ದುಗೊಳಿಸಿದ್ದಾರೆ"</string>
+    <string name="face_error_user_canceled" product="default" msgid="5766472033202928373">"ಫೇಸ್ ಅನ್‌ಲಾಕ್ ಅನ್ನು ಬಳಕೆದಾರರು ರದ್ದುಗೊಳಿಸಿದ್ದಾರೆ"</string>
+    <!-- no translation found for face_error_user_canceled (8903551031462609651) -->
+    <skip />
     <string name="face_error_lockout" msgid="7864408714994529437">"ಹಲವು ಬಾರಿ ಪ್ರಯತ್ನಿಸಿದ್ದೀರಿ. ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ."</string>
-    <string name="face_error_lockout_permanent" msgid="8533257333130473422">"ಹಲವು ಬಾರಿ ಪ್ರಯತ್ನಿಸಿದ್ದೀರಿ. ಫೇಸ್ ಅನ್‌ಲಾಕ್ ಲಭ್ಯವಿಲ್ಲ."</string>
+    <string name="face_error_lockout_permanent" product="default" msgid="8533257333130473422">"ಹಲವು ಬಾರಿ ಪ್ರಯತ್ನಿಸಿದ್ದೀರಿ. ಫೇಸ್ ಅನ್‌ಲಾಕ್ ಲಭ್ಯವಿಲ್ಲ."</string>
+    <!-- no translation found for face_error_lockout_permanent (1885291877517229762) -->
+    <skip />
     <string name="face_error_lockout_screen_lock" msgid="5062609811636860928">"ಹಲವು ಬಾರಿ ಪ್ರಯತ್ನಿಸಿದ್ದೀರಿ. ಬದಲಾಗಿ ಸ್ಕ್ರೀನ್ ಲಾಕ್ ಅನ್ನು ನಮೂದಿಸಿ."</string>
     <string name="face_error_unable_to_process" msgid="5723292697366130070">"ಮುಖವನ್ನು ದೃಢೀಕರಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ ಪುನಃ ಪ್ರಯತ್ನಿಸಿ."</string>
-    <string name="face_error_not_enrolled" msgid="1134739108536328412">"ನೀವು ಫೇಸ್ ಅನ್‌ಲಾಕ್ ಅನ್ನು ಸೆಟಪ್ ಮಾಡಿಲ್ಲ"</string>
-    <string name="face_error_hw_not_present" msgid="7940978724978763011">"ಈ ಸಾಧನದಲ್ಲಿ ಫೇಸ್ ಅನ್‌ಲಾಕ್ ಬೆಂಬಲಿಸುವುದಿಲ್ಲ"</string>
+    <string name="face_error_not_enrolled" product="default" msgid="1134739108536328412">"ನೀವು ಫೇಸ್ ಅನ್‌ಲಾಕ್ ಅನ್ನು ಸೆಟಪ್ ಮಾಡಿಲ್ಲ"</string>
+    <!-- no translation found for face_error_not_enrolled (7350396330456504527) -->
+    <skip />
+    <string name="face_error_hw_not_present" product="default" msgid="7940978724978763011">"ಈ ಸಾಧನದಲ್ಲಿ ಫೇಸ್ ಅನ್‌ಲಾಕ್ ಬೆಂಬಲಿಸುವುದಿಲ್ಲ"</string>
+    <!-- no translation found for face_error_hw_not_present (4947323392112708365) -->
+    <skip />
     <string name="face_error_security_update_required" msgid="5076017208528750161">"ಸೆನ್ಸಾರ್ ಅನ್ನು ತಾತ್ಕಾಲಿಕವಾಗಿ ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ."</string>
     <string name="face_name_template" msgid="3877037340223318119">"ಮುಖದ <xliff:g id="FACEID">%d</xliff:g>"</string>
-    <string name="face_app_setting_name" msgid="5854024256907828015">"ಫೇಸ್ ಅನ್‌ಲಾಕ್ ಅನ್ನು ಬಳಸಿ‌‌"</string>
+    <string name="face_app_setting_name" product="default" msgid="5854024256907828015">"ಫೇಸ್ ಅನ್‌ಲಾಕ್ ಅನ್ನು ಬಳಸಿ‌‌"</string>
+    <!-- no translation found for face_app_setting_name (8226850671242901114) -->
+    <skip />
     <string name="face_or_screen_lock_app_setting_name" msgid="1603149075605709106">"ಫೇಸ್ ಅಥವಾ ಸ್ಕ್ರೀನ್ ಲಾಕ್ ಅನ್ನು ಬಳಸಿ"</string>
     <string name="face_dialog_default_subtitle" msgid="6620492813371195429">"ಮುಂದುವರಿಸಲು ನಿಮ್ಮ ಮುಖವನ್ನು ಬಳಸಿ"</string>
     <string name="face_or_screen_lock_dialog_default_subtitle" msgid="5006381531158341844">"ಮುಂದುವರಿಸಲು ನಿಮ್ಮ ಮುಖ ಅಥವಾ ಸ್ಕ್ರೀನ್ ಲಾಕ್ ಅನ್ನು ಬಳಸಿ"</string>
@@ -1069,7 +1111,9 @@
     <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"ಅನ್‌ಲಾಕ್ ಮಾಡಲು ಕ್ಲಿಕ್ ಮಾಡಿ"</string>
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"ಅನ್‌ಲಾಕ್ ಮಾಡಲು ಯಾವುದೇ ಕೀಯನ್ನು ಒತ್ತಿರಿ"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"ಎಲ್ಲ ಫೀಚರ್‌ಗಳು ಮತ್ತು ಡೇಟಾಗೆ ಅನ್‌ಲಾಕ್ ಮಾಡಿ"</string>
-    <string name="faceunlock_multiple_failures" msgid="681991538434031708">"ಗರಿಷ್ಠ ಫೇಸ್ ಅನ್‍ಲಾಕ್ ಪ್ರಯತ್ನಗಳು ಮೀರಿವೆ"</string>
+    <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"ಗರಿಷ್ಠ ಫೇಸ್ ಅನ್‍ಲಾಕ್ ಪ್ರಯತ್ನಗಳು ಮೀರಿವೆ"</string>
+    <!-- no translation found for faceunlock_multiple_failures (5388142244463490793) -->
+    <skip />
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"SIM ಇಲ್ಲ"</string>
     <string name="lockscreen_missing_sim_message" product="tablet" msgid="3986843848305639161">"ಟ್ಯಾಬ್ಲೆಟ್‌ನಲ್ಲಿ SIM ಇಲ್ಲ."</string>
     <string name="lockscreen_missing_sim_message" product="tv" msgid="3903140876952198273">"ನಿಮ್ಮ Android TV ಸಾಧನದಲ್ಲಿ SIM ಇಲ್ಲ."</string>
@@ -1140,7 +1184,9 @@
     <string name="keyguard_accessibility_expand_lock_area" msgid="4215280881346033434">"ಅನ್‌ಲಾಕ್ ಪ್ರದೇಶವನ್ನು ವಿಸ್ತರಿಸು."</string>
     <string name="keyguard_accessibility_slide_unlock" msgid="2968195219692413046">"ಸ್ಲೈಡ್ ಅನ್‌ಲಾಕ್."</string>
     <string name="keyguard_accessibility_pattern_unlock" msgid="8669128146589233293">"ಪ್ಯಾಟರ್ನ್ ಅನ್‌ಲಾಕ್."</string>
-    <string name="keyguard_accessibility_face_unlock" msgid="4533832120787386728">"ಫೇಸ್ ಅನ್‌ಲಾಕ್."</string>
+    <string name="keyguard_accessibility_face_unlock" product="default" msgid="4533832120787386728">"ಫೇಸ್ ಅನ್‌ಲಾಕ್."</string>
+    <!-- no translation found for keyguard_accessibility_face_unlock (6739732585954513653) -->
+    <skip />
     <string name="keyguard_accessibility_pin_unlock" msgid="4020864007967340068">"ಪಿನ್ ಅನ್‌ಲಾಕ್."</string>
     <string name="keyguard_accessibility_sim_pin_unlock" msgid="4895939120871890557">"ಸಿಮ್‌ ಪಿನ್‌ ಅನ್‌ಲಾಕ್ ಮಾಡಿ."</string>
     <string name="keyguard_accessibility_sim_puk_unlock" msgid="3459003464041899101">"ಸಿಮ್‌ PUK ಅನ್‌ಲಾಕ್ ಮಾಡಿ."</string>
@@ -1877,7 +1923,8 @@
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"ಬದಲಿಸಿ"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"ಸೆಟ್ಟಿಂಗ್‌ಗಳು"</string>
     <string name="user_switching_message" msgid="1912993630661332336">"<xliff:g id="NAME">%1$s</xliff:g>ಗೆ ಬದಲಾಯಿಸಲಾಗುತ್ತಿದೆ…"</string>
-    <string name="user_logging_out_message" msgid="7216437629179710359">"<xliff:g id="NAME">%1$s</xliff:g> ಅವರನ್ನು ಲಾಗ್‌ ಔಟ್‌ ಮಾಡಲಾಗುತ್ತಿದೆ…"</string>
+    <!-- no translation found for user_logging_out_message (2968888364742643174) -->
+    <skip />
     <string name="owner_name" msgid="8713560351570795743">"ಮಾಲೀಕರು"</string>
     <string name="guest_name" msgid="8502103277839834324">"ಅತಿಥಿ"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"ಸಿಸ್ಟಂ ಬಳಕೆದಾರರು"</string>
@@ -2126,28 +2173,33 @@
     <string name="app_lock_add_screen_lock_title" msgid="6905612843620128689">"ಮೊದಲು, ಸ್ಕ್ರೀನ್ ಲಾಕ್ ಅನ್ನು ಸೇರಿಸಿ"</string>
     <string name="enable_app_lock_success_toast_message" msgid="3339622779190529987">"<xliff:g id="APP_NAME">%1$s</xliff:g> ಅನ್ನು ಲಾಕ್ ಮಾಡಲಾಗಿದೆ"</string>
     <string name="enable_app_lock_failure_toast_message" msgid="1055838896510445566">"<xliff:g id="APP_NAME">%1$s</xliff:g> ಅನ್ನು ಲಾಕ್ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ"</string>
-    <string name="disable_app_lock_success_toast_message" msgid="70733620589071266">"ಆ್ಯಪ್ ಲಾಕ್ ಅನ್ನು <xliff:g id="APP_NAME">%1$s</xliff:g> ನಿಂದ ತೆಗೆದುಹಾಕಲಾಗಿದೆ"</string>
-    <!-- no translation found for locked_app_biometric_prompt_description (5892653396104581919) -->
-    <skip />
+    <string name="disable_app_lock_success_toast_message" msgid="360172251656799346">"ಆ್ಯಪ್ ಲಾಕ್ ಅನ್ನು ತೆಗೆದುಹಾಕಲಾಗಿದೆ"</string>
+    <string name="enable_app_lock_biometric_prompt_subtitle" msgid="8215241065630017088">"ಆ್ಯಪ್ ಲಾಕ್ ಅನ್ನು <xliff:g id="APP_NAME">%1$s</xliff:g> ಗೆ ಸೇರಿಸಲಾಗುತ್ತದೆ"</string>
+    <string name="disable_app_lock_biometric_prompt_subtitle" msgid="3963064765974508170">"ಆ್ಯಪ್ ಲಾಕ್ ಅನ್ನು <xliff:g id="APP_NAME">%1$s</xliff:g> ನಿಂದ ತೆಗೆದುಹಾಕಲಾಗುತ್ತದೆ"</string>
+    <string name="locked_app_biometric_prompt_description" msgid="5892653396104581919">"ಈ ಆ್ಯಪ್‌ ಅನ್ನು ಆ್ಯಪ್‌ ಲಾಕ್‌ನೊಂದಿಗೆ ರಕ್ಷಿಸಲಾಗಿದೆ"</string>
     <string name="locked_app_external_display_message" msgid="5483884799685545338">"ಈ ಡಿಸ್‌ಪ್ಲೇಯಲ್ಲಿ ಆ್ಯಪ್ ಅನ್ನು ಆ್ಯಕ್ಸೆಸ್ ಮಾಡಲು, ಮೊದಲು ನಿಮ್ಮ ಇತರ ಸಾಧನದಲ್ಲಿ ಅದು ನೀವೇ ಎಂದು ದೃಢೀಕರಿಸಿ"</string>
     <string name="app_lock_edu_dialog_enable_app_lock_title" msgid="283314042336592322">"<xliff:g id="APP_NAME">%1$s</xliff:g> ಗೆ ಆ್ಯಪ್ ಲಾಕ್ ಅನ್ನು ಸೇರಿಸಬೇಕೇ?"</string>
-    <string name="app_lock_edu_dialog_description" msgid="8176807243219769518">"ನಿಮ್ಮ ಭದ್ರತೆಗಾಗಿ, ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಮತ್ತು ಫೇಸ್ ಅನ್‌ಲಾಕ್ ಅಥವಾ ನಿಮ್ಮ ಪಿನ್ ಮೂಲಕ ಮಾತ್ರ ನೀವು ಈ ಆ್ಯಪ್ ಅನ್ನು ಆ್ಯಕ್ಸೆಸ್ ಮಾಡಬಹುದು"</string>
     <string name="app_lock_edu_dialog_description_template" msgid="8563718120753342530">"ನಿಮ್ಮ ಭದ್ರತೆಗಾಗಿ, %1$s ಅಥವಾ ನಿಮ್ಮ %2$s ಮೂಲಕ ನೀವು ಮಾತ್ರ ಈ ಆ್ಯಪ್ ಅನ್ನು ಆ್ಯಕ್ಸೆಸ್ ಮಾಡಬಹುದು"</string>
     <string name="app_lock_edu_dialog_description_template_no_biometrics" msgid="7122017109150633691">"ನಿಮ್ಮ ಭದ್ರತೆಗಾಗಿ, ನಿಮ್ಮ %1$s ಮೂಲಕ ನೀವು ಮಾತ್ರ ಈ ಆ್ಯಪ್ ಅನ್ನು ಆ್ಯಕ್ಸೆಸ್ ಮಾಡಬಹುದು"</string>
     <string name="app_lock_edu_dialog_info_header" msgid="5876120209204270990">"ಆ್ಯಪ್ ಲಾಕ್ ಮೂಲಕ"</string>
     <string name="app_lock_edu_dialog_info_notifications" msgid="1124438392204873305">"ನೋಟಿಫಿಕೇಶನ್ ಕಂಟೆಂಟ್ ಅನ್ನು ಮರೆಮಾಡಲಾಗುತ್ತದೆ"</string>
     <string name="app_lock_edu_dialog_info_widgets" msgid="8809009414650740872">"ವಿಜೆಟ್‌ಗಳು ಮತ್ತು ಶಾರ್ಟ್‌ಕಟ್‌ಗಳನ್ನು ತೆಗೆದುಹಾಕಲಾಗುತ್ತದೆ"</string>
-    <!-- no translation found for app_lock_edu_dialog_info_ai_disclaimer (5623615653703542050) -->
-    <skip />
+    <string name="app_lock_edu_dialog_info_ai_disclaimer" msgid="5623615653703542050">"ನೀವು %1$s ಅನ್ನು ಆ್ಯಕ್ಸೆಸ್‌ ಮಾಡಲು ಅನುಮತಿಸಿದ AI ಏಜೆಂಟ್‌ಗಳು ಮತ್ತು ಸೇವೆಗಳು ಇನ್ನೂ ಅದರ ಡೇಟಾವನ್ನು ಆ್ಯಕ್ಸೆಸ್‌ ಮಾಡಲು ಸಾಧ್ಯವಾಗುತ್ತದೆ"</string>
     <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"ಆ್ಯಪ್ ಲಾಕ್ ಸೇರಿಸಿ"</string>
-    <string name="app_lock_edu_dialog_biometric_description_has_face" msgid="1348151645996748654">"ಫೇಸ್ ಅನ್‌ಲಾಕ್"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_face" product="default" msgid="1348151645996748654">"ಫೇಸ್ ಅನ್‌ಲಾಕ್"</string>
+    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_face (380233309639495358) -->
+    <skip />
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಅನ್‌ಲಾಕ್"</string>
-    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" msgid="7895807411323811641">"ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಅಥವಾ ಫೇಸ್ ಅನ್‌ಲಾಕ್"</string>
-    <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="8487096457702445059">"ಪಾಸ್‌ವರ್ಡ್"</string>
-    <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="991436996281983547">"ಪ್ಯಾಟರ್ನ್"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" product="default" msgid="6551410616110497401">"ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಅನ್‌ಲಾಕ್, ಫೇಸ್ ಅನ್‌ಲಾಕ್"</string>
+    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint_and_face (4797005135507921547) -->
+    <skip />
+    <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="6019284267033007445">"ಪಾಸ್‌ವರ್ಡ್"</string>
+    <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="2370939002644936965">"ಪ್ಯಾಟರ್ನ್"</string>
     <string name="app_lock_edu_dialog_lockscreen_pin_name" msgid="6458607126966304795">"ಪಿನ್"</string>
-    <string name="app_lock_permission_review_dialog_title" msgid="5030286398974840579">"ನಿಮ್ಮ ಫೋಟೋಗಳು ಇತರ ಆ್ಯಪ್‌ಗಳಲ್ಲಿ ಈಗಲೂ ಕಾಣಿಸಬಹುದು"</string>
-    <string name="app_lock_permission_review_dialog_sub_title" msgid="310758587817184145">"ನಿಮ್ಮ ಫೋಟೋಗಳಿಗೆ ಆ್ಯಕ್ಸೆಸ್ ಇರುವ ಆ್ಯಪ್‌ಗಳು"</string>
+    <string name="app_lock_permission_review_dialog_title_photos" msgid="6193222920123912729">"ನಿಮ್ಮ ಫೋಟೋಗಳು ಇತರ ಆ್ಯಪ್‌ಗಳಲ್ಲಿ ಈಗಲೂ ಕಾಣಿಸಬಹುದು"</string>
+    <string name="app_lock_permission_review_dialog_subtitle_photos" msgid="1854948251386976703">"ನಿಮ್ಮ ಫೋಟೋಗಳಿಗೆ ಆ್ಯಕ್ಸೆಸ್‌ ಇರುವ ಆ್ಯಪ್‌ಗಳು"</string>
+    <string name="app_lock_permission_review_dialog_title_files" msgid="8820759644609198515">"ನಿಮ್ಮ ಫೈಲ್‌ಗಳು ಇತರ ಆ್ಯಪ್‌ಗಳಲ್ಲಿ ಈಗಲೂ ಕಾಣಿಸಬಹುದು"</string>
+    <string name="app_lock_permission_review_dialog_subtitle_files" msgid="2999447193189851364">"ನಿಮ್ಮ ಫೈಲ್‌ಗಳಿಗೆ ಆ್ಯಕ್ಸೆಸ್‌ ಇರುವ ಆ್ಯಪ್‌ಗಳು"</string>
     <string name="app_lock_permission_review_expand_app_list_button" msgid="3214809707125223273">"ಎಲ್ಲವನ್ನೂ ವೀಕ್ಷಿಸಿ"</string>
     <string name="app_lock_permission_review_continue_button" msgid="4045066724173414043">"ಮುಂದುವರಿಸಿ"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"ಕೆಲಸದ ಆ್ಯಪ್ ವಿರಾಮ ರದ್ದುಮಾಡಬೇಕೇ"</string>
@@ -2636,8 +2688,12 @@
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> ಮತ್ತು <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> ಅನ್ನು ಇನ್ನು ಮುಂದೆ ಗುರುತಿಸಲಾಗುವುದಿಲ್ಲ."</string>
     <string name="fingerprint_dangling_notification_msg_all_deleted_1" msgid="1824812666549916586">"<xliff:g id="FINGERPRINT">%s</xliff:g> ಅನ್ನು ಇನ್ನು ಮುಂದೆ ಗುರುತಿಸಲಾಗುವುದಿಲ್ಲ. ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಅನ್‌ಲಾಕ್ ಅನ್ನು ಮತ್ತೊಮ್ಮೆ ಸೆಟಪ್ ಮಾಡಿ."</string>
     <string name="fingerprint_dangling_notification_msg_all_deleted_2" msgid="5974657382960155099">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> ಮತ್ತು <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> ಅನ್ನು ಇನ್ನು ಮುಂದೆ ಗುರುತಿಸಲಾಗುವುದಿಲ್ಲ. ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಅನ್‌ಲಾಕ್ ಅನ್ನು ಮತ್ತೊಮ್ಮೆ ಸೆಟಪ್ ಮಾಡಿ."</string>
-    <string name="face_dangling_notification_title" msgid="947852541060975473">"ಫೇಸ್ ಅನ್‌ಲಾಕ್ ಅನ್ನು ಮತ್ತೊಮ್ಮೆ ಸೆಟಪ್ ಮಾಡಿ"</string>
-    <string name="face_dangling_notification_msg" msgid="746235263598985384">"ನಿಮ್ಮ ಫೇಸ್ ಮಾಡೆಲ್ ಅನ್ನು ಇನ್ನು ಮುಂದೆ ಗುರುತಿಸಲಾಗುವುದಿಲ್ಲ. ಫೇಸ್ ಅನ್‌ಲಾಕ್ ಅನ್ನು ಮತ್ತೊಮ್ಮೆ ಸೆಟಪ್ ಮಾಡಿ."</string>
+    <string name="face_dangling_notification_title" product="default" msgid="947852541060975473">"ಫೇಸ್ ಅನ್‌ಲಾಕ್ ಅನ್ನು ಮತ್ತೊಮ್ಮೆ ಸೆಟಪ್ ಮಾಡಿ"</string>
+    <!-- no translation found for face_dangling_notification_title (4632690536207343589) -->
+    <skip />
+    <string name="face_dangling_notification_msg" product="default" msgid="746235263598985384">"ನಿಮ್ಮ ಫೇಸ್ ಮಾಡೆಲ್ ಅನ್ನು ಇನ್ನು ಮುಂದೆ ಗುರುತಿಸಲಾಗುವುದಿಲ್ಲ. ಫೇಸ್ ಅನ್‌ಲಾಕ್ ಅನ್ನು ಮತ್ತೊಮ್ಮೆ ಸೆಟಪ್ ಮಾಡಿ."</string>
+    <!-- no translation found for face_dangling_notification_msg (5982979430103820891) -->
+    <skip />
     <string name="biometric_dangling_notification_action_set_up" msgid="8246885009807817961">"ಸೆಟಪ್ ಮಾಡಿ"</string>
     <string name="biometric_dangling_notification_action_not_now" msgid="8095249216864443491">"ಈಗ ಬೇಡ"</string>
     <string name="bg_user_sound_notification_title_alarm" msgid="5251678483393143527">"<xliff:g id="USER_NAME">%s</xliff:g> ಗಾಗಿ ಅಲಾರಾಂ"</string>

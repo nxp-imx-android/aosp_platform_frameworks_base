@@ -758,33 +758,63 @@
     <string name="fingerprint_icon_content_description" msgid="4741068463175388817">"Icona de impresión dixital"</string>
     <string name="device_unlock_notification_name" msgid="2632928999862915709">"Desbloqueo do dispositivo"</string>
     <string name="alternative_unlock_setup_notification_title" msgid="6241508547901933544">"Proba outro método de desbloqueo"</string>
-    <string name="alternative_face_setup_notification_content" msgid="3384959224091897331">"Usa a o desbloqueo facial cando non se dea recoñecido a túa impresión dixital (por exemplo, cando teñas os dedos húmidos)"</string>
+    <string name="alternative_face_setup_notification_content" product="default" msgid="3384959224091897331">"Usa a o desbloqueo facial cando non se dea recoñecido a túa impresión dixital (por exemplo, cando teñas os dedos húmidos)"</string>
+    <!-- no translation found for alternative_face_setup_notification_content (8589631194028810041) -->
+    <skip />
     <string name="alternative_fp_setup_notification_content" msgid="7454096947415721639">"Usa o desbloqueo dactilar cando non se dea recoñecido a túa cara (por exemplo, cando non haxa moita luz)"</string>
-    <string name="face_recalibrate_notification_name" msgid="7311163114750748686">"Desbloqueo facial"</string>
-    <string name="face_recalibrate_notification_title" msgid="2524791952735579082">"Produciuse un problema co desbloqueo facial"</string>
+    <string name="face_recalibrate_notification_name" product="default" msgid="7311163114750748686">"Desbloqueo facial"</string>
+    <!-- no translation found for face_recalibrate_notification_name (6343244778393495390) -->
+    <skip />
+    <string name="face_recalibrate_notification_title" product="default" msgid="2524791952735579082">"Produciuse un problema co desbloqueo facial"</string>
+    <!-- no translation found for face_recalibrate_notification_title (7502893130398903561) -->
+    <skip />
     <string name="face_recalibrate_notification_content" msgid="3064513770251355594">"Toca para eliminar o teu modelo facial e despois engade de novo a cara"</string>
-    <string name="face_sensor_privacy_enabled" msgid="7407126963510598508">"Para usar o desbloqueo facial, activa "<b>"Acceso á cámara"</b>" en Configuración &gt; Privacidade"</string>
+    <string name="face_sensor_privacy_enabled" product="default" msgid="7407126963510598508">"Para usar o desbloqueo facial, activa "<b>"Acceso á cámara"</b>" en Configuración &gt; Privacidade"</string>
+    <!-- no translation found for face_sensor_privacy_enabled (7690221855638766930) -->
+    <skip />
     <string name="fingerprint_recalibrate_notification_name" msgid="1414578431898579354">"Desbloqueo dactilar"</string>
     <string name="fingerprint_recalibrate_notification_title" msgid="2406561052064558497">"Non se puido usar o sensor de impresión dixital"</string>
     <string name="fingerprint_recalibrate_notification_content" msgid="8519935717822194943">"Visita un provedor de reparacións."</string>
     <string name="face_acquired_insufficient" msgid="6889245852748492218">"Non se puido crear o modelo facial. Téntao de novo."</string>
     <string name="face_acquired_too_bright" msgid="8070756048978079164">"Hai demasiada iluminación. Proba cunha máis suave."</string>
     <string name="face_acquired_too_dark" msgid="8539853432479385326">"Non hai luz suficiente"</string>
-    <string name="face_acquired_too_close" msgid="4453646176196302462">"Afasta o teléfono"</string>
-    <string name="face_acquired_too_far" msgid="2922278214231064859">"Achega o teléfono"</string>
-    <string name="face_acquired_too_high" msgid="8278815780046368576">"Sube o teléfono"</string>
-    <string name="face_acquired_too_low" msgid="4075391872960840081">"Baixa o teléfono"</string>
-    <string name="face_acquired_too_right" msgid="6245286514593540859">"Move o teléfono cara á esquerda"</string>
-    <string name="face_acquired_too_left" msgid="9201762240918405486">"Move o teléfono cara á dereita"</string>
+    <string name="face_acquired_too_close" product="default" msgid="4453646176196302462">"Afasta o teléfono"</string>
+    <!-- no translation found for face_acquired_too_close (7189579448504853047) -->
+    <skip />
+    <string name="face_acquired_too_far" product="default" msgid="2922278214231064859">"Achega o teléfono"</string>
+    <!-- no translation found for face_acquired_too_far (6590730829823321223) -->
+    <skip />
+    <string name="face_acquired_too_high" product="default" msgid="8278815780046368576">"Sube o teléfono"</string>
+    <!-- no translation found for face_acquired_too_high (717393614154504299) -->
+    <skip />
+    <string name="face_acquired_too_low" product="default" msgid="4075391872960840081">"Baixa o teléfono"</string>
+    <!-- no translation found for face_acquired_too_low (7695733281069538045) -->
+    <skip />
+    <string name="face_acquired_too_right" product="default" msgid="6245286514593540859">"Move o teléfono cara á esquerda"</string>
+    <!-- no translation found for face_acquired_too_right (4058756237538843740) -->
+    <skip />
+    <string name="face_acquired_too_left" product="default" msgid="9201762240918405486">"Move o teléfono cara á dereita"</string>
+    <!-- no translation found for face_acquired_too_left (5804819007366973778) -->
+    <skip />
     <string name="face_acquired_poor_gaze" msgid="6746437451436776485">"Mira máis directamente a cámara"</string>
-    <string name="face_acquired_not_detected" msgid="1057966913397548150">"Non se che ve a cara. Pon o teléfono diante dos ollos"</string>
-    <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"Demasiado movemento. Non movas o teléfono."</string>
+    <string name="face_acquired_not_detected" product="default" msgid="1057966913397548150">"Non se che ve a cara. Pon o teléfono diante dos ollos"</string>
+    <!-- no translation found for face_acquired_not_detected (1047701586390904260) -->
+    <skip />
+    <string name="face_acquired_too_much_motion" product="default" msgid="8199691445085189528">"Demasiado movemento. Non movas o teléfono."</string>
+    <!-- no translation found for face_acquired_too_much_motion (7135563968992659161) -->
+    <skip />
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"Volve rexistrar a túa cara."</string>
     <string name="face_acquired_too_different" msgid="4505278456634706967">"Non se recoñeceu a cara. Téntao de novo."</string>
     <string name="face_acquired_too_similar" msgid="8882920552674125694">"Cambia lixeiramente a posición da cabeza"</string>
-    <string name="face_acquired_pan_too_extreme" msgid="5417928604710621088">"Mira o teléfono de forma máis directa"</string>
-    <string name="face_acquired_tilt_too_extreme" msgid="5715715666540716620">"Mira o teléfono de forma máis directa"</string>
-    <string name="face_acquired_roll_too_extreme" msgid="8261939882838881194">"Mira o teléfono de forma máis directa"</string>
+    <string name="face_acquired_pan_too_extreme" product="default" msgid="5417928604710621088">"Mira o teléfono de forma máis directa"</string>
+    <!-- no translation found for face_acquired_pan_too_extreme (821456302944137576) -->
+    <skip />
+    <string name="face_acquired_tilt_too_extreme" product="default" msgid="5715715666540716620">"Mira o teléfono de forma máis directa"</string>
+    <!-- no translation found for face_acquired_tilt_too_extreme (1119243364774233108) -->
+    <skip />
+    <string name="face_acquired_roll_too_extreme" product="default" msgid="8261939882838881194">"Mira o teléfono de forma máis directa"</string>
+    <!-- no translation found for face_acquired_roll_too_extreme (3665467581072397682) -->
+    <skip />
     <string name="face_acquired_obscured" msgid="4917643294953326639">"Quita todo o que oculte a túa cara"</string>
     <string name="face_acquired_sensor_dirty" msgid="8968391891086721678">"Limpa a parte superior da pantalla, incluída a barra de cor negra"</string>
     <!-- no translation found for face_acquired_dark_glasses_detected (5643703296620631986) -->
@@ -797,19 +827,31 @@
   <string-array name="face_acquired_vendor">
   </string-array>
     <string name="face_error_hw_not_available" msgid="5085202213036026288">"Sen verificar a cara. Hardware non dispoñible."</string>
-    <string name="face_error_timeout" msgid="2598544068593889762">"Tenta utilizar o desbloqueo facial de novo"</string>
+    <string name="face_error_timeout" product="default" msgid="2598544068593889762">"Tenta utilizar o desbloqueo facial de novo"</string>
+    <!-- no translation found for face_error_timeout (8136501408214657840) -->
+    <skip />
     <string name="face_error_no_space" msgid="5649264057026021723">"Para gardar novos datos faciais, elimina os antigos."</string>
     <string name="face_error_canceled" msgid="2164434737103802131">"Cancelouse a operación relacionada coa cara"</string>
-    <string name="face_error_user_canceled" msgid="5766472033202928373">"O usuario cancelou o desbloqueo facial"</string>
+    <string name="face_error_user_canceled" product="default" msgid="5766472033202928373">"O usuario cancelou o desbloqueo facial"</string>
+    <!-- no translation found for face_error_user_canceled (8903551031462609651) -->
+    <skip />
     <string name="face_error_lockout" msgid="7864408714994529437">"Demasiados intentos. Téntao de novo máis tarde."</string>
-    <string name="face_error_lockout_permanent" msgid="8533257333130473422">"Houbo demasiados intentos. O desbloqueo facial non está dispoñible."</string>
+    <string name="face_error_lockout_permanent" product="default" msgid="8533257333130473422">"Houbo demasiados intentos. O desbloqueo facial non está dispoñible."</string>
+    <!-- no translation found for face_error_lockout_permanent (1885291877517229762) -->
+    <skip />
     <string name="face_error_lockout_screen_lock" msgid="5062609811636860928">"Realizaches demasiados intentos. Mellor usa o bloqueo de pantalla."</string>
     <string name="face_error_unable_to_process" msgid="5723292697366130070">"Non se puido verificar a cara. Téntao de novo."</string>
-    <string name="face_error_not_enrolled" msgid="1134739108536328412">"Non configuraches o desbloqueo facial"</string>
-    <string name="face_error_hw_not_present" msgid="7940978724978763011">"Este dispositivo non é compatible co desbloqueo facial"</string>
+    <string name="face_error_not_enrolled" product="default" msgid="1134739108536328412">"Non configuraches o desbloqueo facial"</string>
+    <!-- no translation found for face_error_not_enrolled (7350396330456504527) -->
+    <skip />
+    <string name="face_error_hw_not_present" product="default" msgid="7940978724978763011">"Este dispositivo non é compatible co desbloqueo facial"</string>
+    <!-- no translation found for face_error_hw_not_present (4947323392112708365) -->
+    <skip />
     <string name="face_error_security_update_required" msgid="5076017208528750161">"Desactivouse o sensor temporalmente."</string>
     <string name="face_name_template" msgid="3877037340223318119">"Cara <xliff:g id="FACEID">%d</xliff:g>"</string>
-    <string name="face_app_setting_name" msgid="5854024256907828015">"Utilizar desbloqueo facial"</string>
+    <string name="face_app_setting_name" product="default" msgid="5854024256907828015">"Utilizar desbloqueo facial"</string>
+    <!-- no translation found for face_app_setting_name (8226850671242901114) -->
+    <skip />
     <string name="face_or_screen_lock_app_setting_name" msgid="1603149075605709106">"Utilizar desbloqueo facial ou credencial do dispositivo"</string>
     <string name="face_dialog_default_subtitle" msgid="6620492813371195429">"Usa a cara para continuar"</string>
     <string name="face_or_screen_lock_dialog_default_subtitle" msgid="5006381531158341844">"Para continuar, utiliza o desbloqueo facial ou a credencial do dispositivo"</string>
@@ -1069,7 +1111,9 @@
     <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"Facer clic para desbloquear"</string>
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"Premer calquera tecla para desbloquear"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Desbloquear para gozar de todas as funcións e datos"</string>
-    <string name="faceunlock_multiple_failures" msgid="681991538434031708">"Superouse o número máximo de intentos de desbloqueo facial"</string>
+    <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"Superouse o número máximo de intentos de desbloqueo facial"</string>
+    <!-- no translation found for faceunlock_multiple_failures (5388142244463490793) -->
+    <skip />
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"Non hai SIM"</string>
     <string name="lockscreen_missing_sim_message" product="tablet" msgid="3986843848305639161">"Non hai ningunha SIM na tableta."</string>
     <string name="lockscreen_missing_sim_message" product="tv" msgid="3903140876952198273">"Non hai ningunha SIM no dispositivo Android TV."</string>
@@ -1140,7 +1184,9 @@
     <string name="keyguard_accessibility_expand_lock_area" msgid="4215280881346033434">"Ampliar zona de desbloqueo."</string>
     <string name="keyguard_accessibility_slide_unlock" msgid="2968195219692413046">"Desbloqueo pasando o dedo."</string>
     <string name="keyguard_accessibility_pattern_unlock" msgid="8669128146589233293">"Desbloqueo mediante padrón"</string>
-    <string name="keyguard_accessibility_face_unlock" msgid="4533832120787386728">"Desbloqueo facial."</string>
+    <string name="keyguard_accessibility_face_unlock" product="default" msgid="4533832120787386728">"Desbloqueo facial."</string>
+    <!-- no translation found for keyguard_accessibility_face_unlock (6739732585954513653) -->
+    <skip />
     <string name="keyguard_accessibility_pin_unlock" msgid="4020864007967340068">"Desbloqueo mediante PIN"</string>
     <string name="keyguard_accessibility_sim_pin_unlock" msgid="4895939120871890557">"Desbloqueo da SIM co PIN."</string>
     <string name="keyguard_accessibility_sim_puk_unlock" msgid="3459003464041899101">"Desbloqueo da SIM co PUK."</string>
@@ -1877,7 +1923,8 @@
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"Cambiar"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"Configuración"</string>
     <string name="user_switching_message" msgid="1912993630661332336">"Cambiando a <xliff:g id="NAME">%1$s</xliff:g>…"</string>
-    <string name="user_logging_out_message" msgid="7216437629179710359">"Pechando sesión de <xliff:g id="NAME">%1$s</xliff:g>…"</string>
+    <!-- no translation found for user_logging_out_message (2968888364742643174) -->
+    <skip />
     <string name="owner_name" msgid="8713560351570795743">"Propietario"</string>
     <string name="guest_name" msgid="8502103277839834324">"Convidado"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"Usuario do sistema"</string>
@@ -2126,28 +2173,33 @@
     <string name="app_lock_add_screen_lock_title" msgid="6905612843620128689">"Primeiro, engade un bloqueo de pantalla"</string>
     <string name="enable_app_lock_success_toast_message" msgid="3339622779190529987">"A aplicación <xliff:g id="APP_NAME">%1$s</xliff:g> está pechada"</string>
     <string name="enable_app_lock_failure_toast_message" msgid="1055838896510445566">"Non se puido bloquear <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
-    <string name="disable_app_lock_success_toast_message" msgid="70733620589071266">"Quitouse o bloqueo de aplicacións de <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
-    <!-- no translation found for locked_app_biometric_prompt_description (5892653396104581919) -->
-    <skip />
+    <string name="disable_app_lock_success_toast_message" msgid="360172251656799346">"Quitouse o bloqueo de aplicacións"</string>
+    <string name="enable_app_lock_biometric_prompt_subtitle" msgid="8215241065630017088">"Engadirase o bloqueo de aplicacións a <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+    <string name="disable_app_lock_biometric_prompt_subtitle" msgid="3963064765974508170">"Quitarase o bloqueo de aplicacións de <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+    <string name="locked_app_biometric_prompt_description" msgid="5892653396104581919">"Esta aplicación está protexida co bloqueo de aplicacións"</string>
     <string name="locked_app_external_display_message" msgid="5483884799685545338">"Para acceder á aplicación nesta pantalla, primeiro verifica a túa identidade no outro dispositivo"</string>
     <string name="app_lock_edu_dialog_enable_app_lock_title" msgid="283314042336592322">"Queres engadir o bloqueo de aplicacións a <xliff:g id="APP_NAME">%1$s</xliff:g>?"</string>
-    <string name="app_lock_edu_dialog_description" msgid="8176807243219769518">"Por seguranza, só ti podes acceder a esta aplicación co desbloqueo facial e dactilar ou co teu PIN"</string>
     <string name="app_lock_edu_dialog_description_template" msgid="8563718120753342530">"Por seguranza, só ti podes acceder a esta aplicación co %1$s ou co teu %2$s"</string>
     <string name="app_lock_edu_dialog_description_template_no_biometrics" msgid="7122017109150633691">"Por seguranza, só ti podes acceder a esta aplicación co teu %1$s"</string>
     <string name="app_lock_edu_dialog_info_header" msgid="5876120209204270990">"Con bloqueo de aplicacións"</string>
     <string name="app_lock_edu_dialog_info_notifications" msgid="1124438392204873305">"Ocultarase o contido das notificacións"</string>
     <string name="app_lock_edu_dialog_info_widgets" msgid="8809009414650740872">"Quitaranse os widgets e os atallos"</string>
-    <!-- no translation found for app_lock_edu_dialog_info_ai_disclaimer (5623615653703542050) -->
-    <skip />
+    <string name="app_lock_edu_dialog_info_ai_disclaimer" msgid="5623615653703542050">"Os axentes e servizos de IA aos que lles permitises acceder a %1$s seguirán tendo acceso aos seus datos"</string>
     <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"Engadir bloqueo de aplicacións"</string>
-    <string name="app_lock_edu_dialog_biometric_description_has_face" msgid="1348151645996748654">"Desbloqueo facial"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_face" product="default" msgid="1348151645996748654">"Desbloqueo facial"</string>
+    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_face (380233309639495358) -->
+    <skip />
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"Desbloqueo dactilar"</string>
-    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" msgid="7895807411323811641">"Desbloqueo facial ou dactilar"</string>
-    <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="8487096457702445059">"Contrasinal"</string>
-    <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="991436996281983547">"Padrón"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" product="default" msgid="6551410616110497401">"Desbloqueo dactilar, desbloqueo facial"</string>
+    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint_and_face (4797005135507921547) -->
+    <skip />
+    <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="6019284267033007445">"contrasinal"</string>
+    <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="2370939002644936965">"padrón"</string>
     <string name="app_lock_edu_dialog_lockscreen_pin_name" msgid="6458607126966304795">"PIN"</string>
-    <string name="app_lock_permission_review_dialog_title" msgid="5030286398974840579">"As túas fotos poden seguir mostrándose noutras aplicacións"</string>
-    <string name="app_lock_permission_review_dialog_sub_title" msgid="310758587817184145">"Aplicacións con acceso ás túas fotos"</string>
+    <string name="app_lock_permission_review_dialog_title_photos" msgid="6193222920123912729">"As túas fotos poden seguir mostrándose noutras aplicacións"</string>
+    <string name="app_lock_permission_review_dialog_subtitle_photos" msgid="1854948251386976703">"Aplicacións con acceso ás túas fotos"</string>
+    <string name="app_lock_permission_review_dialog_title_files" msgid="8820759644609198515">"Os teus ficheiros poden seguir mostrándose noutras apps"</string>
+    <string name="app_lock_permission_review_dialog_subtitle_files" msgid="2999447193189851364">"Apps con acceso aos teus ficheiros"</string>
     <string name="app_lock_permission_review_expand_app_list_button" msgid="3214809707125223273">"Ver todo"</string>
     <string name="app_lock_permission_review_continue_button" msgid="4045066724173414043">"Continuar"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"Reactivar apps do traballo?"</string>
@@ -2636,8 +2688,12 @@
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> e <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> xa non se recoñecen."</string>
     <string name="fingerprint_dangling_notification_msg_all_deleted_1" msgid="1824812666549916586">"<xliff:g id="FINGERPRINT">%s</xliff:g> xa non se recoñece. Configura de novo o desbloqueo dactilar."</string>
     <string name="fingerprint_dangling_notification_msg_all_deleted_2" msgid="5974657382960155099">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> e <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> xa non se recoñecen. Configura de novo o desbloqueo dactilar."</string>
-    <string name="face_dangling_notification_title" msgid="947852541060975473">"Configura de novo o desbloqueo facial"</string>
-    <string name="face_dangling_notification_msg" msgid="746235263598985384">"Xa non se recoñece o teu modelo facial. Configura de novo o desbloqueo facial."</string>
+    <string name="face_dangling_notification_title" product="default" msgid="947852541060975473">"Configura de novo o desbloqueo facial"</string>
+    <!-- no translation found for face_dangling_notification_title (4632690536207343589) -->
+    <skip />
+    <string name="face_dangling_notification_msg" product="default" msgid="746235263598985384">"Xa non se recoñece o teu modelo facial. Configura de novo o desbloqueo facial."</string>
+    <!-- no translation found for face_dangling_notification_msg (5982979430103820891) -->
+    <skip />
     <string name="biometric_dangling_notification_action_set_up" msgid="8246885009807817961">"Configurar"</string>
     <string name="biometric_dangling_notification_action_not_now" msgid="8095249216864443491">"Agora non"</string>
     <string name="bg_user_sound_notification_title_alarm" msgid="5251678483393143527">"Alarma para: <xliff:g id="USER_NAME">%s</xliff:g>"</string>
