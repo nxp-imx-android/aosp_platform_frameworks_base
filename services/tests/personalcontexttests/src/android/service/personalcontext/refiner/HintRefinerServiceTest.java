@@ -42,7 +42,6 @@ import org.mockito.ArgumentCaptor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Consumer;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
@@ -57,13 +56,13 @@ public class HintRefinerServiceTest {
             @NonNull
             @Override
             public HintFilter onInitializeFilter() {
-                return null;
+                return new HintFilter.Builder().build();
             }
 
             @Override
-            public void onRefine(@NonNull List<ContextHint> inputHints,
-                    @NonNull Consumer<List<ContextHint>> callback) {
+            public List<ContextHint> onRefine(@NonNull List<ContextHint> inputHints) {
                 assertThat(getComponentId()).isEqualTo(componentId);
+                return new ArrayList();
             }
         };
 
@@ -93,14 +92,13 @@ public class HintRefinerServiceTest {
             @NonNull
             @Override
             public HintFilter onInitializeFilter() {
-                return null;
+                return new HintFilter.Builder().build();
             }
 
             @Override
-            public void onRefine(@NonNull List<ContextHint> inputHints,
-                    @NonNull Consumer<List<ContextHint>> callback) {
+            public List<ContextHint> onRefine(@NonNull List<ContextHint> inputHints) {
                 assertThat(inputHints).containsExactlyElementsIn(inHints);
-                callback.accept(outputHints);
+                return outputHints;
             }
         };
 

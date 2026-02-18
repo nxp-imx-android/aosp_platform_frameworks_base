@@ -342,7 +342,9 @@ public class PersonalContextManagerService extends SystemService {
                         renderTokens,
                         HINT_SIGNING_KEY,
                         mLogger,
-                        mExecutor);
+                        mExecutor,
+                        (componentId, insights)
+                                -> startInsightWorkflow(userId, componentId, insights));
             } else {
                 Log.w(TAG, "Hint processing disabled by "
                         + "enable_personal_context_service_breaking_bug_fixes flag");

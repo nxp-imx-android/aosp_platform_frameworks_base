@@ -41,11 +41,9 @@ import android.service.personalcontext.util.BinderRequestProcessor;
 
 import androidx.annotation.NonNull;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executor;
-import java.util.function.Consumer;
 
 /**
  * This is the base class for refiner services to implement, handling service details.
@@ -100,7 +98,10 @@ public abstract class HintRefinerService extends Service {
         }
     }
 
-    /** Called when the refiner has been configured and is ready to receive hints. */
+    /**
+     * Called when the refiner has been configured and is ready to receive insights.
+     * Any actions related to this method should complete before returning.
+     */
     public void onConnected() {
         // Default implementation does nothing.
     }
@@ -142,10 +143,11 @@ public abstract class HintRefinerService extends Service {
      *
      * @param inputHints set of hints that this refiner may want to use to derive new hints
      * @param callback provides new hints back to the system
+     * @return a list of hints produced from this {@link HintRefinerService} processing the input
+     *         hints.
      */
-    public abstract void onRefine(
-            @NonNull List<ContextHint> inputHints,
-            @NonNull Consumer<List<ContextHint>> callback);
+    @NonNull
+    public abstract List<ContextHint> onRefine(@NonNull List<ContextHint> inputHints);
 
     private static final class Binder extends IRefiner.Stub {
 
@@ -165,15 +167,9 @@ public abstract class HintRefinerService extends Service {
             mRequestProcessor.execute(
                     new BinderRequestProcessor.ExecutionParams.Builder<HintRefinerService>(
                             opCallback, serviceInstance -> {
-                        final ArrayList<ContextHint> hints = new ArrayList<>();
-                        serviceInstance.onRefine(ContextHintWithSignature.unwrapList(
-                                        ContextHintWithSignatureWrapper.unwrapList(inputHints)),
-                                contextHints -> {
-                                    if (contextHints != null) {
-                                        hints.addAll(contextHints);
-                                    }
-                                });
-                        callback.onHintsRefined(ContextHintWrapper.wrapList(hints));
+                        callback.onHintsRefined(ContextHintWrapper.wrapList(
+                                serviceInstance.onRefine(ContextHintWithSignature.unwrapList(
+                                        ContextHintWithSignatureWrapper.unwrapList(inputHints)))));
                     }).setComponentId(componentId)
                             .build());
 

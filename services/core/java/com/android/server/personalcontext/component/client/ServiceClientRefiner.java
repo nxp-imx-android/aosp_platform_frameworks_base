@@ -31,6 +31,7 @@ import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.hint.ContextHintWithSignatureWrapper;
 import android.service.personalcontext.hint.ContextHintWrapper;
 import android.service.personalcontext.hint.HintFilter;
+import android.service.personalcontext.insight.ContextInsightWrapper;
 import android.service.personalcontext.insight.PublishedContextInsight;
 import android.service.personalcontext.insight.interaction.InsightEvent;
 import android.service.personalcontext.refiner.IGetFilterCallback;
@@ -40,6 +41,7 @@ import android.util.Slog;
 
 import androidx.annotation.NonNull;
 
+import com.android.server.personalcontext.RefinerWorkflow;
 import com.android.server.personalcontext.component.Refiner;
 
 import java.util.Collections;
@@ -113,7 +115,8 @@ public class ServiceClientRefiner extends BaseServiceClientComponent<IRefiner> i
     @Override
     public void refine(
             @NonNull Set<ContextHintWithSignature> inputHints,
-            @NonNull Consumer<Set<ContextHint>> callback) {
+            @NonNull Consumer<Set<ContextHint>> callback,
+            @NonNull RefinerWorkflow.InsightConsumer insightCallback) {
         if (android.service.personalcontext.Flags.enforcePersonalContextPermissions()
                 && !checkPermission(Manifest.permission.PERSONAL_CONTEXT_RECEIVE_HINTS)) {
             Slog.e(
@@ -126,11 +129,18 @@ public class ServiceClientRefiner extends BaseServiceClientComponent<IRefiner> i
             return;
         }
 
-        final IRefineCallback.Stub binderCallback = new IRefineCallback.Stub() {
+        final IRefineCallback.Stub refinerCallback = new IRefineCallback.Stub() {
             @PermissionManuallyEnforced
             @Override
             public void onHintsRefined(List<ContextHintWrapper> hints) {
                 callback.accept(ContextHintWrapper.unwrapInto(hints, new HashSet<>()));
+            }
+
+            @PermissionManuallyEnforced
+            @Override
+            public void onUnderstood(List<ContextInsightWrapper> insights) {
+                insightCallback.accept(getComponentId(),
+                        ContextInsightWrapper.unwrapInto(insights, new HashSet<>()));
             }
         };
 
@@ -139,7 +149,7 @@ public class ServiceClientRefiner extends BaseServiceClientComponent<IRefiner> i
 
         runWithScopedBinder((binder, opCallback) -> {
             try {
-                binder.refine(getParcelComponentId(), hints, binderCallback, opCallback);
+                binder.refine(getParcelComponentId(), hints, refinerCallback, opCallback);
             } catch (RemoteException e) {
                 Slog.w(TAG, this + " refine() failed", e);
                 callback.accept(Collections.emptySet());
