@@ -34,9 +34,11 @@ import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW
 import android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED
 import android.app.WindowConfiguration.WindowingMode
+import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.LauncherApps
 import android.content.pm.PackageManager
 import android.content.res.Configuration
@@ -296,6 +298,22 @@ class DesktopTasksController(
             userRepositories,
             shellController,
         )
+
+    private val wallpaperTouchReceiver =
+        object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if (intent?.action == DesktopWallpaperActivity.ACTION_WALLPAPER_TOUCH) {
+                    val displayId =
+                        intent.getIntExtra(
+                            DesktopWallpaperActivity.WALLPAPER_TOUCH_EXTRA_DISPLAY_ID,
+                            INVALID_DISPLAY,
+                        )
+                    if (displayId != INVALID_DISPLAY) {
+                        onWallpaperTouch(displayId)
+                    }
+                }
+            }
+        }
     private val latencyTracker: LatencyTracker
 
     private val mOnAnimationFinishedCallback = { releaseVisualIndicator() }
@@ -399,6 +417,13 @@ class DesktopTasksController(
         shellCommandHandler.addDumpCallback(this::dump, this)
         shellCommandHandler.addCommandCallback("desktopmode", desktopModeShellCommandHandler, this)
         shellController.addUserChangeListener(this)
+        if (Flags.changeDisplayFocusOnWallpaperTouch()) {
+            context.registerReceiver(
+                wallpaperTouchReceiver,
+                IntentFilter(DesktopWallpaperActivity.ACTION_WALLPAPER_TOUCH),
+                Context.RECEIVER_EXPORTED,
+            )
+        }
         // Update the current user id again because it might be updated between init and onInit().
         updateCurrentUser(ActivityManager.getCurrentUser())
         desktopFullscreenRequestHandler.desktopTasksController = this
@@ -6712,6 +6737,27 @@ class DesktopTasksController(
         t.apply()
         transactionPool.release(t)
         return true
+    }
+
+    private fun onWallpaperTouch(displayId: Int) {
+        logD("onWallpaperTouch: displayId=%d", displayId)
+        // Moving a focused app or a wallpaper window on the touched display to forward to make
+        // the display focused. (b/440655802)
+        mainScopeImmediate.launch {
+            val focusedTaskId = focusTransitionObserver.getFocusedTaskIdOnDisplay(displayId)
+            if (focusedTaskId != INVALID_TASK_ID) {
+                val taskInfo = shellTaskOrganizer.getRunningTaskInfo(focusedTaskId)
+                if (taskInfo != null) {
+                    logV(
+                        "onWallpaperTouch: reordering focused task to front, displayId=%d",
+                        displayId,
+                    )
+                    val wct = WindowContainerTransaction()
+                    wct.reorder(taskInfo.token, true /* onTop */, true /* includingParents */)
+                    transitions.startTransition(TRANSIT_TO_FRONT, wct, null)
+                }
+            }
+        }
     }
 
     // TODO(b/366397912): Support full multi-user mode in Windowing.

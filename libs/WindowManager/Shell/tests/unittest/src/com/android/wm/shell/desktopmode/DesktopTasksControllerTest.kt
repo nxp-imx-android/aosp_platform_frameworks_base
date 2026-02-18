@@ -33,6 +33,7 @@ import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW
 import android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED
+import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -546,7 +547,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     private fun createController() =
         DesktopTasksController(
-            context,
+            spyContext,
             desktopAnimationConfiguration,
             shellInit,
             shellCommandHandler,
@@ -4989,8 +4990,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val handler = mock(TransitionHandler::class.java)
         whenever(transitions.dispatchRequest(any(), any(), anyOrNull()))
             .thenReturn(Pair(handler, WindowContainerTransaction()))
-        mContext.addMockSystemService(Context.APP_OPS_SERVICE, mockAppOpsManager)
-        mContext.setMockPackageManager(packageManager)
+        spyContext.addMockSystemService(Context.APP_OPS_SERVICE, mockAppOpsManager)
 
         whenever(
                 mockAppOpsManager.checkOpNoThrow(
@@ -11972,6 +11972,54 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val transition = mock(IBinder::class.java)
         controller.onDragResizeTransitionStarted(transition)
         verify(desktopTasksTransitionObserver).addPendingUserBoundsChangeTransition(transition)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_CHANGE_DISPLAY_FOCUS_ON_WALLPAPER_TOUCH)
+    fun onWallpaperTouch_focusedTaskExists_reordersTask() {
+        val task = createFreeformTask(displayId = DEFAULT_DISPLAY)
+        whenever(focusTransitionObserver.getFocusedTaskIdOnDisplay(DEFAULT_DISPLAY))
+            .thenReturn(task.taskId)
+        whenever(shellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(task)
+
+        val intent = Intent(DesktopWallpaperActivity.ACTION_WALLPAPER_TOUCH)
+        intent.putExtra(DesktopWallpaperActivity.WALLPAPER_TOUCH_EXTRA_DISPLAY_ID, DEFAULT_DISPLAY)
+
+        val receiver = argumentCaptor<BroadcastReceiver>()
+        verify(spyContext).registerReceiver(receiver.capture(), any(), anyInt())
+        receiver.firstValue.onReceive(spyContext, intent)
+        testScopeImmediate.runCurrent()
+
+        val wct = argumentCaptor<WindowContainerTransaction>()
+        verify(transitions).startTransition(eq(TRANSIT_TO_FRONT), wct.capture(), anyOrNull())
+
+        assertThat(wct.firstValue.hierarchyOps).hasSize(1)
+        assertThat(wct.firstValue.hierarchyOps[0].type).isEqualTo(HIERARCHY_OP_TYPE_REORDER)
+        assertThat(wct.firstValue.hierarchyOps[0].container).isEqualTo(task.token.asBinder())
+        assertThat(wct.firstValue.hierarchyOps[0].toTop).isTrue()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_CHANGE_DISPLAY_FOCUS_ON_WALLPAPER_TOUCH)
+    fun onWallpaperTouch_noFocusedTask_doNothing() {
+        whenever(focusTransitionObserver.getFocusedTaskIdOnDisplay(DEFAULT_DISPLAY))
+            .thenReturn(INVALID_TASK_ID)
+        val wallpaperToken = Binder()
+        whenever(desktopWallpaperActivityTokenProvider.getToken(DEFAULT_DISPLAY))
+            .thenReturn(
+                WindowContainerToken(IWindowContainerToken.Stub.asInterface(wallpaperToken))
+            )
+
+        val intent = Intent(DesktopWallpaperActivity.ACTION_WALLPAPER_TOUCH)
+        intent.putExtra(DesktopWallpaperActivity.WALLPAPER_TOUCH_EXTRA_DISPLAY_ID, DEFAULT_DISPLAY)
+
+        val receiver = argumentCaptor<BroadcastReceiver>()
+        verify(spyContext).registerReceiver(receiver.capture(), any(), anyInt())
+        receiver.firstValue.onReceive(spyContext, intent)
+        testScopeImmediate.runCurrent()
+
+        val wct = argumentCaptor<WindowContainerTransaction>()
+        verify(transitions, never()).startTransition(any(), any(), anyOrNull())
     }
 
     private class RunOnStartTransitionCallback : ((IBinder) -> Unit) {
