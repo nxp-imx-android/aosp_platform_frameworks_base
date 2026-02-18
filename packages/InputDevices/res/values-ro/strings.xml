@@ -58,12 +58,8 @@
     <string name="keyboard_layout_montenegrin_cyrillic" msgid="2391253952894077421">"Muntenegreană (Chirilică)"</string>
     <string name="keyboard_layout_romanian" msgid="8698989892731726903">"Română"</string>
     <string name="keyboard_layout_english_india" msgid="7962353311188603367">"Engleză (India)"</string>
-    <!-- no translation found for default_game_controller_down_button (230251187173899352) -->
-    <skip />
-    <!-- no translation found for default_game_controller_left_button (230625759940755272) -->
-    <skip />
-    <!-- no translation found for default_game_controller_right_button (6973117058284059868) -->
-    <skip />
-    <!-- no translation found for default_game_controller_up_button (793659885012306267) -->
-    <skip />
+    <string name="default_game_controller_down_button" msgid="230251187173899352">"Butonul jos"</string>
+    <string name="default_game_controller_left_button" msgid="230625759940755272">"Butonul stânga"</string>
+    <string name="default_game_controller_right_button" msgid="6973117058284059868">"Butonul dreapta"</string>
+    <string name="default_game_controller_up_button" msgid="793659885012306267">"Butonul sus"</string>
 </resources>
