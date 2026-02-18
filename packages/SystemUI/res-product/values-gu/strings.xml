@@ -73,4 +73,36 @@
     <string name="dream_setup_description" product="default" msgid="5167691612621831552">"તમારો ફોન ચાર્જ થઈ રહ્યો હોય ત્યારે ઘડિયાળ, ફોટા અથવા હવામાન બતાવો"</string>
     <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"તમારું ટૅબ્લેટ ચાર્જ થઈ રહ્યું હોય ત્યારે ઘડિયાળ, ફોટા અથવા હવામાન બતાવો"</string>
     <string name="dream_setup_description" product="device" msgid="3098487756905462324">"તમારું ડિવાઇસ ચાર્જ થઈ રહ્યું હોય ત્યારે ઘડિયાળ, ફોટા અથવા હવામાન બતાવો"</string>
+    <string name="accessibility_retry_face_auth" product="default" msgid="92100916134164459">"ફેસ અનલૉકની સુવિધા ફરીથી અજમાવો્"</string>
+    <string name="accessibility_retry_face_auth" product="desktop" msgid="5630058255754932537">"ચહેરા વડે ફરીથી અનલૉક કરવાનો પ્રયાસ કરી જુઓ"</string>
+    <string name="face_re_enroll_notification_title" product="default" msgid="1533872824718008968">"ફેસ અનલૉક સુવિધાનું ફરીથી સેટઅપ કરો"</string>
+    <string name="face_re_enroll_notification_title" product="desktop" msgid="5218710819864377084">"ચહેરા વડે અનલૉક કરવાનું ફરીથી સેટઅપ કરો"</string>
+    <string name="biometric_dialog_tap_confirm_with_face" product="default" msgid="2261934158598458578">"ચહેરા દ્વારા અનલૉક કર્યું"</string>
+    <string name="biometric_dialog_tap_confirm_with_face" product="desktop" msgid="2066067154465078068">"ચહેરા વડે અનલૉક કર્યું"</string>
+    <string name="biometric_dialog_tap_confirm_with_face_alt_1" product="default" msgid="1268255053915789297">"ચહેરા દ્વારા અનલૉક કર્યું. ચાલુ રાાખવા માટે દબાવો."</string>
+    <string name="biometric_dialog_tap_confirm_with_face_alt_1" product="desktop" msgid="1514178179652703156">"ચહેરા વડે અનલૉક કર્યું. ચાલુ રાાખવા માટે દબાવો."</string>
+    <string name="biometric_dialog_tap_confirm_with_face_sfps" product="default" msgid="2492608775606333432">"ચહેરા દ્વારા અનલૉક કર્યું. ચાલુ રાખવા માટે ટૅપ કરો."</string>
+    <string name="biometric_dialog_tap_confirm_with_face_sfps" product="desktop" msgid="7918648092655463233">"ચહેરા વડે અનલૉક કર્યું. ચાલુ રાખવા માટે ટૅપ કરો."</string>
+    <string name="face_re_enroll_notification_name" product="default" msgid="5965443249759045602">"ફેસ અનલૉક"</string>
+    <string name="face_re_enroll_notification_name" product="desktop" msgid="3705121888554395242">"ચહેરા વડે અનલૉક કરવું"</string>
+    <string name="face_re_enroll_dialog_title" product="default" msgid="2719988247243428771">"ફેસ અનલૉક સુવિધાનું સેટઅપ કરો"</string>
+    <string name="face_re_enroll_dialog_title" product="desktop" msgid="4217639465392210803">"ચહેરા વડે અનલૉક કરવાનું સેટઅપ કરો"</string>
+    <string name="face_re_enroll_dialog_content" product="default" msgid="7290782487464426692">"ફેસ અનલૉક સુવિધાનું ફરીથી સેટઅપ કરવા માટે, તમારા ચહેરાનું વર્તમાન મૉડલ ડિલીટ કરવામાં આવશે.\n\nતમારો ફોન અનલૉક કરવા તમારા ચહેરાનો ઉપયોગ કરવા માટે, તમારે આ સુવિધાનું ફરીથી સેટઅપ કરવું જરૂરી રહેશે."</string>
+    <string name="face_re_enroll_dialog_content" product="desktop" msgid="7718739738665960268">"ચહેરા વડે અનલૉક કરવાની સુવિધાનું ફરીથી સેટઅપ કરવા માટે, તમારા ચહેરાનું વર્તમાન મૉડલ ડિલીટ કરવામાં આવશે.\n\nતમારું ડિવાઇસ અનલૉક કરવા તમારા ચહેરાનો ઉપયોગ કરવા માટે, તમારે આ સુવિધાનું ફરીથી સેટઅપ કરવું જરૂરી રહેશે."</string>
+    <string name="face_reenroll_failure_dialog_content" product="default" msgid="6318784230085101323">"ફેસ અનલૉક સુવિધાનું સેટઅપ કરી શક્યા નથી. ફરીથી પ્રયાસ કરવા માટે સેટિંગ પર જાઓ."</string>
+    <string name="face_reenroll_failure_dialog_content" product="desktop" msgid="1206573626798969692">"ચહેરા વડે અનલૉક કરવાની સુવિધાનું સેટઅપ કરી શક્યા નથી. સેટિંગમાં ફરીથી પ્રયાસ કરો."</string>
+    <string name="keyguard_face_unlock_unavailable" product="default" msgid="3188895702987679056">"ફેસ અનલૉક સુવિધા ઉપલબ્ધ નથી"</string>
+    <string name="keyguard_face_unlock_unavailable" product="desktop" msgid="7088502865328130614">"ચહેરા વડે અનલૉક કરવાની સુવિધા ઉપલબ્ધ નથી"</string>
+    <string name="accesssibility_keyguard_retry" product="default" msgid="5017097587017783548">"ફેસ અનલૉકની સુવિધા ફરીથી અજમાવવા માટે ઉપર સ્વાઇપ કરો"</string>
+    <string name="accesssibility_keyguard_retry" product="desktop" msgid="5084769005671288179">"ચહેરા વડે અનલૉક કરવાનો ફરીથી પ્રયાસ કરવા માટે ઉપરની તરફ સ્વાઇપ કરો"</string>
+    <string name="keyguard_face_successful_unlock_swipe" product="default" msgid="1358318947548832086">"ચહેરા દ્વારા અનલૉક કર્યું. ખોલવા માટે ઉપરની તરફ સ્વાઇપ કરો."</string>
+    <string name="keyguard_face_successful_unlock_swipe" product="desktop" msgid="4016445068612817741">"ચહેરા વડે અનલૉક કર્યું. ખોલવા માટે ઉપરની તરફ સ્વાઇપ કરો."</string>
+    <string name="keyguard_face_successful_unlock_confirm_button" product="default" msgid="4883782574761031564">"ચહેરા દ્વારા અનલૉક કર્યું. ચાલુ રાખવા, \'કન્ફર્મ કરો\' દબાવો."</string>
+    <string name="keyguard_face_successful_unlock_confirm_button" product="desktop" msgid="7268520979450633978">"ચહેરા વડે અનલૉક કર્યું. ચાલુ રાખવા, \'કન્ફર્મ કરો\' દબાવો."</string>
+    <string name="keyguard_face_successful_unlock_press" product="default" msgid="7293890116185253825">"ચહેરા દ્વારા અનલૉક કર્યું. ખોલવા માટે \'અનલૉક કરો\' આઇકન દબાવો."</string>
+    <string name="keyguard_face_successful_unlock_press" product="desktop" msgid="6158498006084899116">"ચહેરા વડે અનલૉક કર્યું. ખોલવા માટે \'અનલૉક કરો\' આઇકન દબાવો."</string>
+    <string name="keyguard_face_successful_unlock_press_alt_1" product="default" msgid="6269966346565076951">"ચહેરા દ્વારા અનલૉક કર્યું. ખોલવા માટે દબાવો."</string>
+    <string name="keyguard_face_successful_unlock_press_alt_1" product="desktop" msgid="1612731733090835687">"ચહેરા વડે અનલૉક કર્યું. ખોલવા માટે દબાવો."</string>
+    <string name="keyguard_face_successful_unlock" product="default" msgid="5544493091450184889">"ચહેરા દ્વારા અનલૉક કર્યું"</string>
+    <string name="keyguard_face_successful_unlock" product="desktop" msgid="5348626087316804379">"ચહેરા વડે અનલૉક કર્યું"</string>
 </resources>

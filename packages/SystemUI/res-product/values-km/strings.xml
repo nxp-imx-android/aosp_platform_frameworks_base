@@ -73,4 +73,36 @@
     <string name="dream_setup_description" product="default" msgid="5167691612621831552">"បង្ហាញនាឡិកា រូបថត ឬអាកាសធាតុ នៅពេលទូរសព្ទរបស់អ្នកកំពុងសាកថ្ម"</string>
     <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"បង្ហាញនាឡិកា រូបថត ឬអាកាសធាតុ នៅពេលថេប្លេតរបស់អ្នកកំពុងសាកថ្ម"</string>
     <string name="dream_setup_description" product="device" msgid="3098487756905462324">"បង្ហាញនាឡិកា រូបថត ឬអាកាសធាតុ នៅពេលឧបករណ៍របស់អ្នកកំពុងសាកថ្ម"</string>
+    <string name="accessibility_retry_face_auth" product="default" msgid="92100916134164459">"សាកការដោះសោដោយស្កេនមុខម្ដងទៀត"</string>
+    <string name="accessibility_retry_face_auth" product="desktop" msgid="5630058255754932537">"សាកដោះសោដោយប្រើមុខម្ដងទៀត"</string>
+    <string name="face_re_enroll_notification_title" product="default" msgid="1533872824718008968">"រៀបចំ​ការដោះ​សោ​ដោយស្កេន​មុខ​ម្ដងទៀត"</string>
+    <string name="face_re_enroll_notification_title" product="desktop" msgid="5218710819864377084">"រៀបចំការដោះសោដោយប្រើមុខម្ដងទៀត"</string>
+    <string name="biometric_dialog_tap_confirm_with_face" product="default" msgid="2261934158598458578">"បានដោះសោដោយប្រើមុខ"</string>
+    <string name="biometric_dialog_tap_confirm_with_face" product="desktop" msgid="2066067154465078068">"បានដោះសោដោយប្រើមុខ"</string>
+    <string name="biometric_dialog_tap_confirm_with_face_alt_1" product="default" msgid="1268255053915789297">"បានដោះសោដោយប្រើមុខ។ សូមចុច ដើម្បីបន្ត។"</string>
+    <string name="biometric_dialog_tap_confirm_with_face_alt_1" product="desktop" msgid="1514178179652703156">"បានដោះសោដោយប្រើមុខ។ សូមចុច ដើម្បីបន្ត។"</string>
+    <string name="biometric_dialog_tap_confirm_with_face_sfps" product="default" msgid="2492608775606333432">"បានដោះសោដោយប្រើមុខ។ សូមចុច ដើម្បីបន្ត។"</string>
+    <string name="biometric_dialog_tap_confirm_with_face_sfps" product="desktop" msgid="7918648092655463233">"បានដោះសោដោយប្រើមុខ។ សូមចុច ដើម្បីបន្ត។"</string>
+    <string name="face_re_enroll_notification_name" product="default" msgid="5965443249759045602">"ការដោះ​សោ​ដោយស្កេន​មុខ"</string>
+    <string name="face_re_enroll_notification_name" product="desktop" msgid="3705121888554395242">"ការដោះសោដោយប្រើមុខ"</string>
+    <string name="face_re_enroll_dialog_title" product="default" msgid="2719988247243428771">"រៀបចំ​ការដោះ​សោ​ដោយស្កេន​មុខ"</string>
+    <string name="face_re_enroll_dialog_title" product="desktop" msgid="4217639465392210803">"រៀបចំការដោះសោដោយប្រើមុខ"</string>
+    <string name="face_re_enroll_dialog_content" product="default" msgid="7290782487464426692">"ដើម្បីរៀបចំ​ការដោះ​សោ​ដោយស្កេន​មុខ​ម្ដងទៀត គំរូមុខបច្ចុប្បន្ន​របស់អ្នក​នឹងត្រូវបានលុប។\n\nអ្នកនឹងត្រូវ​រៀបចំមុខងារនេះ​ម្ដងទៀត ដើម្បីប្រើមុខរបស់អ្នក​សម្រាប់ដោះសោទូរសព្ទរបស់អ្នក។"</string>
+    <string name="face_re_enroll_dialog_content" product="desktop" msgid="7718739738665960268">"ដើម្បីរៀបចំការដោះសោដោយប្រើមុខម្ដងទៀត គំរូមុខបច្ចុប្បន្នរបស់អ្នកនឹងត្រូវបានលុប។\n\nអ្នកនឹងត្រូវរៀបចំមុខងារនេះម្ដងទៀត ដើម្បីប្រើមុខរបស់អ្នកសម្រាប់ដោះសោឧបករណ៍របស់អ្នក។"</string>
+    <string name="face_reenroll_failure_dialog_content" product="default" msgid="6318784230085101323">"មិនអាច​រៀបចំ​ការដោះ​សោ​ដោយស្កេន​មុខបានទេ។ សូមចូលទៅកាន់ \"ការកំណត់\" ដើម្បីព្យាយាមម្ដងទៀត។"</string>
+    <string name="face_reenroll_failure_dialog_content" product="desktop" msgid="1206573626798969692">"មិនអាចរៀបចំការដោះសោដោយប្រើមុខបានទេ។ សូម​ព្យាយាម​ម្ដងទៀត​នៅក្នុង \"ការកំណត់\"។"</string>
+    <string name="keyguard_face_unlock_unavailable" product="default" msgid="3188895702987679056">"មិនអាចប្រើការដោះ​សោ​ដោយស្កេន​មុខបានទេ"</string>
+    <string name="keyguard_face_unlock_unavailable" product="desktop" msgid="7088502865328130614">"មិនអាចដោះសោដោយប្រើមុខបានទេ"</string>
+    <string name="accesssibility_keyguard_retry" product="default" msgid="5017097587017783548">"អូសឡើងលើ ដើម្បីសាកប្រើការដោះ​សោ​ដោយស្កេន​មុខម្ដងទៀត"</string>
+    <string name="accesssibility_keyguard_retry" product="desktop" msgid="5084769005671288179">"អូសឡើងលើ ដើម្បីសាកដោះសោដោយប្រើមុខម្ដងទៀត"</string>
+    <string name="keyguard_face_successful_unlock_swipe" product="default" msgid="1358318947548832086">"បានដោះសោដោយប្រើមុខ។ សូមអូសឡើងលើ ដើម្បីបើក។"</string>
+    <string name="keyguard_face_successful_unlock_swipe" product="desktop" msgid="4016445068612817741">"បានដោះសោដោយប្រើមុខ។ សូមអូសឡើងលើ ដើម្បីបើក។"</string>
+    <string name="keyguard_face_successful_unlock_confirm_button" product="default" msgid="4883782574761031564">"បានដោះសោដោយប្រើមុខ។ សូមចុច \"បញ្ជាក់\" ដើម្បីបន្ត។"</string>
+    <string name="keyguard_face_successful_unlock_confirm_button" product="desktop" msgid="7268520979450633978">"បានដោះសោដោយប្រើមុខ។ សូមចុច \"បញ្ជាក់\" ដើម្បីបន្ត។"</string>
+    <string name="keyguard_face_successful_unlock_press" product="default" msgid="7293890116185253825">"បានដោះសោដោយប្រើមុខ។ សូមចុចរូបដោះសោ ដើម្បីបើក។"</string>
+    <string name="keyguard_face_successful_unlock_press" product="desktop" msgid="6158498006084899116">"បានដោះសោដោយប្រើមុខ។ សូមចុចរូបដោះសោ ដើម្បីបើក។"</string>
+    <string name="keyguard_face_successful_unlock_press_alt_1" product="default" msgid="6269966346565076951">"បានដោះសោដោយប្រើមុខ។ សូមចុច ដើម្បីបើក។"</string>
+    <string name="keyguard_face_successful_unlock_press_alt_1" product="desktop" msgid="1612731733090835687">"បានដោះសោដោយប្រើមុខ។ សូមចុច ដើម្បីបើក។"</string>
+    <string name="keyguard_face_successful_unlock" product="default" msgid="5544493091450184889">"បានដោះសោដោយប្រើមុខ"</string>
+    <string name="keyguard_face_successful_unlock" product="desktop" msgid="5348626087316804379">"បានដោះសោដោយប្រើមុខ"</string>
 </resources>

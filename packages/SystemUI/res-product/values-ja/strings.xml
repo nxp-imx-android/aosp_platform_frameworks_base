@@ -73,4 +73,36 @@
     <string name="dream_setup_description" product="default" msgid="5167691612621831552">"スマートフォンの充電中に時計、写真、天気を表示できます"</string>
     <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"タブレットの充電中に時計、写真、天気を表示できます"</string>
     <string name="dream_setup_description" product="device" msgid="3098487756905462324">"デバイスの充電中に時計、写真、天気を表示できます"</string>
+    <string name="accessibility_retry_face_auth" product="default" msgid="92100916134164459">"顔認証をもう一度お試しください"</string>
+    <string name="accessibility_retry_face_auth" product="desktop" msgid="5630058255754932537">"顔認証によるロック解除をもう一度お試しください"</string>
+    <string name="face_re_enroll_notification_title" product="default" msgid="1533872824718008968">"顔認証をもう一度設定してください"</string>
+    <string name="face_re_enroll_notification_title" product="desktop" msgid="5218710819864377084">"顔認証によるロック解除をもう一度設定してください"</string>
+    <string name="biometric_dialog_tap_confirm_with_face" product="default" msgid="2261934158598458578">"顔でロック解除しました"</string>
+    <string name="biometric_dialog_tap_confirm_with_face" product="desktop" msgid="2066067154465078068">"顔認証でロック解除しました"</string>
+    <string name="biometric_dialog_tap_confirm_with_face_alt_1" product="default" msgid="1268255053915789297">"顔でロック解除しました。押して続行してください。"</string>
+    <string name="biometric_dialog_tap_confirm_with_face_alt_1" product="desktop" msgid="1514178179652703156">"顔認証でロック解除しました。押して続行してください。"</string>
+    <string name="biometric_dialog_tap_confirm_with_face_sfps" product="default" msgid="2492608775606333432">"顔でロック解除しました。タップして続行してください。"</string>
+    <string name="biometric_dialog_tap_confirm_with_face_sfps" product="desktop" msgid="7918648092655463233">"顔認証でロック解除しました。タップして続行してください。"</string>
+    <string name="face_re_enroll_notification_name" product="default" msgid="5965443249759045602">"顔認証"</string>
+    <string name="face_re_enroll_notification_name" product="desktop" msgid="3705121888554395242">"顔認証によるロック解除"</string>
+    <string name="face_re_enroll_dialog_title" product="default" msgid="2719988247243428771">"顔認証の設定"</string>
+    <string name="face_re_enroll_dialog_title" product="desktop" msgid="4217639465392210803">"顔認証によるロック解除の設定"</string>
+    <string name="face_re_enroll_dialog_content" product="default" msgid="7290782487464426692">"顔認証をもう一度設定するために、現在の顔モデルが削除されます。\n\nスマートフォンのロック解除に顔認証を使用するには、この機能をもう一度設定する必要があります。"</string>
+    <string name="face_re_enroll_dialog_content" product="desktop" msgid="7718739738665960268">"顔認証によるロック解除をもう一度設定するために、現在の顔モデルが削除されます。\n\nデバイスのロック解除に顔認証を使用するには、この機能をもう一度設定する必要があります。"</string>
+    <string name="face_reenroll_failure_dialog_content" product="default" msgid="6318784230085101323">"顔認証を設定できませんでした。[設定] に移動してもう一度お試しください。"</string>
+    <string name="face_reenroll_failure_dialog_content" product="desktop" msgid="1206573626798969692">"顔認証によるロック解除を設定できませんでした。[設定] でもう一度お試しください。"</string>
+    <string name="keyguard_face_unlock_unavailable" product="default" msgid="3188895702987679056">"顔認証を利用できません"</string>
+    <string name="keyguard_face_unlock_unavailable" product="desktop" msgid="7088502865328130614">"顔認証によるロック解除を利用できません"</string>
+    <string name="accesssibility_keyguard_retry" product="default" msgid="5017097587017783548">"上にスワイプして、顔認証をもう一度お試しください"</string>
+    <string name="accesssibility_keyguard_retry" product="desktop" msgid="5084769005671288179">"上にスワイプして、顔認証によるロック解除をもう一度お試しください"</string>
+    <string name="keyguard_face_successful_unlock_swipe" product="default" msgid="1358318947548832086">"顔でロック解除しました。上にスワイプすると開きます。"</string>
+    <string name="keyguard_face_successful_unlock_swipe" product="desktop" msgid="4016445068612817741">"顔認証でロック解除しました。上にスワイプすると開きます。"</string>
+    <string name="keyguard_face_successful_unlock_confirm_button" product="default" msgid="4883782574761031564">"顔でロック解除しました。確認ボタンを押して続行してください。"</string>
+    <string name="keyguard_face_successful_unlock_confirm_button" product="desktop" msgid="7268520979450633978">"顔認証でロック解除しました。確認ボタンを押して続行してください。"</string>
+    <string name="keyguard_face_successful_unlock_press" product="default" msgid="7293890116185253825">"顔でロック解除しました。ロック解除アイコンを押して開きます。"</string>
+    <string name="keyguard_face_successful_unlock_press" product="desktop" msgid="6158498006084899116">"顔でロック解除しました。ロック解除アイコンを押して開きます。"</string>
+    <string name="keyguard_face_successful_unlock_press_alt_1" product="default" msgid="6269966346565076951">"顔でロック解除しました。押すと開きます。"</string>
+    <string name="keyguard_face_successful_unlock_press_alt_1" product="desktop" msgid="1612731733090835687">"顔認証でロック解除しました。押すと開きます。"</string>
+    <string name="keyguard_face_successful_unlock" product="default" msgid="5544493091450184889">"顔でロック解除しました"</string>
+    <string name="keyguard_face_successful_unlock" product="desktop" msgid="5348626087316804379">"顔認証でロック解除しました"</string>
 </resources>

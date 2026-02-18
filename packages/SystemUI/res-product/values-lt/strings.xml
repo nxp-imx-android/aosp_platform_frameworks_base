@@ -73,4 +73,36 @@
     <string name="dream_setup_description" product="default" msgid="5167691612621831552">"Rodyti laikrodį, nuotraukas ar orų prognozę, kai telefonas kraunamas"</string>
     <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"Rodyti laikrodį, nuotraukas ar orų prognozę, kai planšetinis kompiuteris kraunamas"</string>
     <string name="dream_setup_description" product="device" msgid="3098487756905462324">"Rodyti laikrodį, nuotraukas ar orų prognozę, kai įrenginys kraunamas"</string>
+    <string name="accessibility_retry_face_auth" product="default" msgid="92100916134164459">"Bandykite dar kartą naudoti atrakinimą pagal veidą"</string>
+    <string name="accessibility_retry_face_auth" product="desktop" msgid="5630058255754932537">"Bandykite dar kartą atrakinti pagal veidą"</string>
+    <string name="face_re_enroll_notification_title" product="default" msgid="1533872824718008968">"Atrakinimo pagal veidą nustatymas iš naujo"</string>
+    <string name="face_re_enroll_notification_title" product="desktop" msgid="5218710819864377084">"Atrakinimo pagal veidą nustatymas iš naujo"</string>
+    <string name="biometric_dialog_tap_confirm_with_face" product="default" msgid="2261934158598458578">"Atrakinta pagal veidą"</string>
+    <string name="biometric_dialog_tap_confirm_with_face" product="desktop" msgid="2066067154465078068">"Atrakinta pagal veidą"</string>
+    <string name="biometric_dialog_tap_confirm_with_face_alt_1" product="default" msgid="1268255053915789297">"Atrakinta pagal veidą. Paspauskite, jei norite tęsti."</string>
+    <string name="biometric_dialog_tap_confirm_with_face_alt_1" product="desktop" msgid="1514178179652703156">"Atrakinta pagal veidą. Paspauskite, jei norite tęsti."</string>
+    <string name="biometric_dialog_tap_confirm_with_face_sfps" product="default" msgid="2492608775606333432">"Atrakinta pagal veidą. Palieskite ir tęskite."</string>
+    <string name="biometric_dialog_tap_confirm_with_face_sfps" product="desktop" msgid="7918648092655463233">"Atrakinta pagal veidą. Palieskite ir tęskite."</string>
+    <string name="face_re_enroll_notification_name" product="default" msgid="5965443249759045602">"Atrakinimas pagal veidą"</string>
+    <string name="face_re_enroll_notification_name" product="desktop" msgid="3705121888554395242">"Atrakinimas pagal veidą"</string>
+    <string name="face_re_enroll_dialog_title" product="default" msgid="2719988247243428771">"Atrakinimo pagal veidą nustatymas"</string>
+    <string name="face_re_enroll_dialog_title" product="desktop" msgid="4217639465392210803">"Atrakinimo pagal veidą nustatymas"</string>
+    <string name="face_re_enroll_dialog_content" product="default" msgid="7290782487464426692">"Norint dar kartą nustatyti atrakinimą pagal veidą, dabartinis veido modelis bus ištrintas.\n\nTurite dar kartą nustatyti šią funkciją, kad galėtumėte atrakinti telefoną pagal veidą."</string>
+    <string name="face_re_enroll_dialog_content" product="desktop" msgid="7718739738665960268">"Norint dar kartą nustatyti atrakinimą pagal veidą, dabartinis veido modelis bus ištrintas.\n\nTurite dar kartą nustatyti šią funkciją, kad galėtumėte atrakinti įrenginį pagal veidą."</string>
+    <string name="face_reenroll_failure_dialog_content" product="default" msgid="6318784230085101323">"Nepavyko nustatyti atrakinimo pagal veidą. Eikite į skiltį „Nustatymai“ ir bandykite dar kartą."</string>
+    <string name="face_reenroll_failure_dialog_content" product="desktop" msgid="1206573626798969692">"Nepavyko nustatyti atrakinimo pagal veidą. Bandykite dar kartą skiltyje „Nustatymai“."</string>
+    <string name="keyguard_face_unlock_unavailable" product="default" msgid="3188895702987679056">"Atrakinimo pagal veidą funkcija nepasiekiama"</string>
+    <string name="keyguard_face_unlock_unavailable" product="desktop" msgid="7088502865328130614">"Atrakinimo pagal veidą funkcija nepasiekiama"</string>
+    <string name="accesssibility_keyguard_retry" product="default" msgid="5017097587017783548">"Perbr. aukštyn, kad dar k. paband. naud. atraki. pagal veidą"</string>
+    <string name="accesssibility_keyguard_retry" product="desktop" msgid="5084769005671288179">"Perbraukite aukštyn, kad dar kartą pabandytumėte atrakinti pagal veidą"</string>
+    <string name="keyguard_face_successful_unlock_swipe" product="default" msgid="1358318947548832086">"Atrakinta pagal veidą. Atidarykite perbraukę aukštyn."</string>
+    <string name="keyguard_face_successful_unlock_swipe" product="desktop" msgid="4016445068612817741">"Atrakinta pagal veidą. Atidarykite perbraukę aukštyn."</string>
+    <string name="keyguard_face_successful_unlock_confirm_button" product="default" msgid="4883782574761031564">"Atrakinta pagal veidą. Jei norite tęsti, paspauskite „Patvirtinti“."</string>
+    <string name="keyguard_face_successful_unlock_confirm_button" product="desktop" msgid="7268520979450633978">"Atrakinta pagal veidą. Jei norite tęsti, paspauskite „Patvirtinti“."</string>
+    <string name="keyguard_face_successful_unlock_press" product="default" msgid="7293890116185253825">"Atrakinta pagal veidą. Pasp. atr. pikt., kad atidarytumėte."</string>
+    <string name="keyguard_face_successful_unlock_press" product="desktop" msgid="6158498006084899116">"Atrakinta pagal veidą. Pasp. atr. pikt., kad atidarytumėte."</string>
+    <string name="keyguard_face_successful_unlock_press_alt_1" product="default" msgid="6269966346565076951">"Atrakinta pagal veidą. Paspauskite, kad atidarytumėte."</string>
+    <string name="keyguard_face_successful_unlock_press_alt_1" product="desktop" msgid="1612731733090835687">"Atrakinta pagal veidą. Paspauskite, kad atidarytumėte."</string>
+    <string name="keyguard_face_successful_unlock" product="default" msgid="5544493091450184889">"Atrakinta pagal veidą"</string>
+    <string name="keyguard_face_successful_unlock" product="desktop" msgid="5348626087316804379">"Atrakinta pagal veidą"</string>
 </resources>

@@ -73,4 +73,68 @@
     <string name="dream_setup_description" product="default" msgid="5167691612621831552">"휴대전화가 충전 중일 때 시계, 사진 또는 날씨를 표시합니다."</string>
     <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"태블릿이 충전 중일 때 시계, 사진 또는 날씨를 표시합니다."</string>
     <string name="dream_setup_description" product="device" msgid="3098487756905462324">"기기가 충전 중일 때 시계, 사진 또는 날씨를 표시합니다."</string>
+    <!-- no translation found for accessibility_retry_face_auth (92100916134164459) -->
+    <skip />
+    <!-- no translation found for accessibility_retry_face_auth (5630058255754932537) -->
+    <skip />
+    <!-- no translation found for face_re_enroll_notification_title (1533872824718008968) -->
+    <skip />
+    <!-- no translation found for face_re_enroll_notification_title (5218710819864377084) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_tap_confirm_with_face (2261934158598458578) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_tap_confirm_with_face (2066067154465078068) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_tap_confirm_with_face_alt_1 (1268255053915789297) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_tap_confirm_with_face_alt_1 (1514178179652703156) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_tap_confirm_with_face_sfps (2492608775606333432) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_tap_confirm_with_face_sfps (7918648092655463233) -->
+    <skip />
+    <!-- no translation found for face_re_enroll_notification_name (5965443249759045602) -->
+    <skip />
+    <!-- no translation found for face_re_enroll_notification_name (3705121888554395242) -->
+    <skip />
+    <!-- no translation found for face_re_enroll_dialog_title (2719988247243428771) -->
+    <skip />
+    <!-- no translation found for face_re_enroll_dialog_title (4217639465392210803) -->
+    <skip />
+    <!-- no translation found for face_re_enroll_dialog_content (7290782487464426692) -->
+    <skip />
+    <!-- no translation found for face_re_enroll_dialog_content (7718739738665960268) -->
+    <skip />
+    <!-- no translation found for face_reenroll_failure_dialog_content (6318784230085101323) -->
+    <skip />
+    <!-- no translation found for face_reenroll_failure_dialog_content (1206573626798969692) -->
+    <skip />
+    <!-- no translation found for keyguard_face_unlock_unavailable (3188895702987679056) -->
+    <skip />
+    <!-- no translation found for keyguard_face_unlock_unavailable (7088502865328130614) -->
+    <skip />
+    <!-- no translation found for accesssibility_keyguard_retry (5017097587017783548) -->
+    <skip />
+    <!-- no translation found for accesssibility_keyguard_retry (5084769005671288179) -->
+    <skip />
+    <!-- no translation found for keyguard_face_successful_unlock_swipe (1358318947548832086) -->
+    <skip />
+    <!-- no translation found for keyguard_face_successful_unlock_swipe (4016445068612817741) -->
+    <skip />
+    <!-- no translation found for keyguard_face_successful_unlock_confirm_button (4883782574761031564) -->
+    <skip />
+    <!-- no translation found for keyguard_face_successful_unlock_confirm_button (7268520979450633978) -->
+    <skip />
+    <!-- no translation found for keyguard_face_successful_unlock_press (7293890116185253825) -->
+    <skip />
+    <!-- no translation found for keyguard_face_successful_unlock_press (6158498006084899116) -->
+    <skip />
+    <!-- no translation found for keyguard_face_successful_unlock_press_alt_1 (6269966346565076951) -->
+    <skip />
+    <!-- no translation found for keyguard_face_successful_unlock_press_alt_1 (1612731733090835687) -->
+    <skip />
+    <!-- no translation found for keyguard_face_successful_unlock (5544493091450184889) -->
+    <skip />
+    <!-- no translation found for keyguard_face_successful_unlock (5348626087316804379) -->
+    <skip />
 </resources>
