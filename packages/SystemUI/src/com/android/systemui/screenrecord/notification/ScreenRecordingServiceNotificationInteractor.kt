@@ -50,7 +50,6 @@ class ScreenRecordingServiceNotificationInteractor(
     private val notificationManager: NotificationManager,
     private val strings: RecordingServiceStrings,
     private val channelId: String,
-    private val tag: String,
     private val serviceClass: Class<out Service>,
     private val screenCaptureRecordFeaturesInteractor: ScreenCaptureRecordFeaturesInteractor,
 ) : NotificationInteractor {
@@ -74,7 +73,7 @@ class ScreenRecordingServiceNotificationInteractor(
                         putString(Notification.EXTRA_SUBSTITUTE_APP_NAME, strings.title)
                     }
                 )
-        notificationManager.notify(tag, notificationId, builder.build())
+        notificationManager.notify(null, notificationId, builder.build())
     }
 
     override fun createRecordingNotification(
@@ -190,7 +189,7 @@ class ScreenRecordingServiceNotificationInteractor(
                     .showBigPictureWhenCollapsed(true)
             builder.setStyle(pictureStyle)
         }
-        notificationManager.notify(tag, notificationId, builder.build())
+        notificationManager.notify(null, notificationId, builder.build())
     }
 
     override fun notifyErrorSaving(notificationId: Int) {
@@ -204,7 +203,7 @@ class ScreenRecordingServiceNotificationInteractor(
                 notificationContentTitle = strings.saveError,
                 groupKey = GROUP_KEY_ERROR_SAVING,
             )
-        notificationManager.notify(tag, notificationId, notification)
+        notificationManager.notify(null, notificationId, notification)
     }
 
     override fun notifyErrorStarting(notificationId: Int) {
@@ -214,7 +213,7 @@ class ScreenRecordingServiceNotificationInteractor(
             notificationIdForGroup = NOTIF_GROUP_ID_ERROR_STARTING,
         )
         val notification = createErrorNotification(strings.startError, GROUP_KEY_ERROR_STARTING)
-        notificationManager.notify(tag, notificationId, notification)
+        notificationManager.notify(null, notificationId, notification)
     }
 
     private fun createErrorNotification(
@@ -254,6 +253,6 @@ class ScreenRecordingServiceNotificationInteractor(
                         putString(Notification.EXTRA_SUBSTITUTE_APP_NAME, strings.title)
                     }
                 )
-        notificationManager.notify(tag, notificationIdForGroup, builder.build())
+        notificationManager.notify(null, notificationIdForGroup, builder.build())
     }
 }
