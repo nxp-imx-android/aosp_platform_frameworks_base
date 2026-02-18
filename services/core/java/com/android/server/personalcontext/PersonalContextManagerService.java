@@ -365,14 +365,12 @@ public class PersonalContextManagerService extends SystemService {
     private void startPublishedInsightWorkflow(@UserIdInt int userId, UUID componentId,
             Set<PublishedContextInsight> insights) {
         final ContextComponentManager componentManager = getComponentManagerForUser(userId);
-        final HashSet<PublishedContextInsight> publishedInsights = new HashSet<>();
-
         if (componentManager == null) {
             Slog.w(TAG, "Cannot start renderer workflow, no component manager for user " + userId);
             return;
         }
 
-        RendererWorkflow.start(componentManager, publishedInsights, HINT_SIGNING_KEY, mLogger,
+        RendererWorkflow.start(componentManager, insights, HINT_SIGNING_KEY, mLogger,
                 mExecutor);
     }
 
