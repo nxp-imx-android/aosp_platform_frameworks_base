@@ -40,11 +40,17 @@ import android.apex.ApexSessionParams;
 import android.apex.IApexService;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.Flags;
 import android.os.Build;
 import android.os.Environment;
 import android.os.RemoteException;
 import android.os.ServiceSpecificException;
 import android.platform.test.annotations.Presubmit;
+import android.platform.test.annotations.RequiresFlagsDisabled;
+import android.platform.test.annotations.RequiresFlagsEnabled;
+import android.platform.test.flag.junit.CheckFlagsRule;
+import android.platform.test.flag.junit.DeviceFlagsValueProvider;
+import android.provider.DeviceConfig;
 import android.util.ArraySet;
 
 import androidx.test.filters.SmallTest;
@@ -67,7 +73,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.List;
+import com.android.server.pm.ApexManager.ApexManagerImpl;
+
 import java.util.Objects;
 import java.util.Set;
 
@@ -79,6 +89,9 @@ public class ApexManagerTest {
 
     @Rule
     public final MockSystemRule mMockSystem = new MockSystemRule();
+
+    @Rule
+    public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
 
     private static final String TEST_APEX_PKG = "com.android.apex.test";
     private static final String TEST_APEX_FILE_NAME = "apex.test.apex";
@@ -511,6 +524,58 @@ public class ApexManagerTest {
         final ApexManager.ActiveApexInfo activeApex = mApexManager.getActiveApexInfos().get(0);
         assertThat(activeApex.apexModuleName).isEqualTo("com.apex1");
         assertThat(activeApex.activeApexChanged).isTrue();
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_DUMP_APK_IN_APEX_MANAGER)
+    public void testDumpApksInApex_flagOn() throws Exception {
+            when(mApexService.getSessions()).thenReturn(new ApexSessionInfo[0]);
+            when(mApexService.getActivePackages()).thenReturn(createApexInfoForTestPkg(true, true));
+            mApexManager.getActiveApexInfos();
+            ApexInfo[] apexInfo = createApexInfoForTestPkg(true, true);
+            List<ApexManager.ScanResult> scanResults = scanApexInfos(apexInfo);
+            mApexManager.notifyScanResult(scanResults);
+
+            AndroidPackage fakeApkInApex = mock(AndroidPackage.class);
+            when(fakeApkInApex.getPackageName()).thenReturn("com.android.apex.test.app");
+            when(fakeApkInApex.getBaseApkPath()).thenReturn(
+                    "/apex/" + TEST_APEX_PKG + "/app/" + "test.apk");
+            mApexManager.registerApkInApex(fakeApkInApex);
+
+            final StringWriter sw = new StringWriter();
+            final PrintWriter pw = new PrintWriter(sw);
+            mApexManager.dump(pw);
+            pw.flush();
+            String dump = sw.toString();
+
+            assertThat(dump).contains("APEX packages containing apks");
+            assertThat(dump).contains(TEST_APEX_PKG);
+            assertThat(dump).contains("com.android.apex.test.app");
+    }
+
+    @Test
+    @RequiresFlagsDisabled(Flags.FLAG_DUMP_APK_IN_APEX_MANAGER)
+    public void testDumpApksInApex_flagOff() throws Exception {
+            when(mApexService.getSessions()).thenReturn(new ApexSessionInfo[0]);
+            when(mApexService.getActivePackages()).thenReturn(createApexInfoForTestPkg(true, true));
+            mApexManager.getActiveApexInfos();
+            ApexInfo[] apexInfo = createApexInfoForTestPkg(true, true);
+            List<ApexManager.ScanResult> scanResults = scanApexInfos(apexInfo);
+            mApexManager.notifyScanResult(scanResults);
+
+            AndroidPackage fakeApkInApex = mock(AndroidPackage.class);
+            when(fakeApkInApex.getPackageName()).thenReturn("com.android.apex.test.app");
+            when(fakeApkInApex.getBaseApkPath()).thenReturn(
+                    "/apex/" + TEST_APEX_PKG + "/app/" + "test.apk");
+            mApexManager.registerApkInApex(fakeApkInApex);
+
+            final StringWriter sw = new StringWriter();
+            final PrintWriter pw = new PrintWriter(sw);
+            mApexManager.dump(pw);
+            pw.flush();
+            String dump = sw.toString();
+
+            assertThat(dump).doesNotContain("APEX packages containing apks");
     }
 
     private ApexInfo createApexInfoForTestPkg(boolean isActive, boolean isFactory, int version) {

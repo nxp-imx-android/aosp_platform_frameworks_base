@@ -16,6 +16,8 @@
 
 package com.android.server.pm;
 
+import static android.content.pm.Flags.dumpApkInApexManager;
+
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -966,6 +968,24 @@ public abstract class ApexManager {
                 ipw.println();
             } catch (RemoteException e) {
                 ipw.println("Couldn't communicate with apexd.");
+            }
+
+            if (dumpApkInApexManager()) {
+                synchronized (mLock) {
+                    ipw.println();
+                    ipw.println("APEX packages containing apks:");
+                    ipw.increaseIndent();
+                    if (mApksInApex.isEmpty()) {
+                        ipw.println("none");
+                    } else {
+                        for (int i = 0; i < mApksInApex.size(); i++) {
+                            ipw.print(mApksInApex.keyAt(i));
+                            ipw.print(": ");
+                            ipw.println(TextUtils.join(", ", mApksInApex.valueAt(i)));
+                        }
+                    }
+                    ipw.decreaseIndent();
+                }
             }
         }
     }
