@@ -141,7 +141,15 @@ class PinnedLayerController(
         return WindowContainerTransaction().apply {
             val transitions = activeTransitions.getOrPut(transition) { mutableSetOf() }
             transitions += ActiveTransition.Pin(task, remoteCallback)
-            val bounds = presentationController.getPinEntryDestinationBounds(task)
+            val bounds =
+                if (!isPinned(task.taskId)) {
+                    presentationController.getPinEntryDestinationBounds(task)
+                } else {
+                    presentationController.clampToDisplay(
+                        task,
+                        task.configuration.windowConfiguration.bounds,
+                    )
+                }
             merge(getLayerPinnedWct(task.token, bounds), /* transfer= */ true)
 
             val pinnedTask = getCurrentPinnedTask()
