@@ -31,4 +31,6 @@ interface DreamServiceDelegate {
     fun setScreenBrightness(brightness: Float)
 
     fun onWakeUp()
+
+    fun finish()
 }

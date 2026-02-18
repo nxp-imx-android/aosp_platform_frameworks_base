@@ -52,4 +52,8 @@ class DreamServiceDelegateImpl(
     override fun onWakeUp() {
         dreamService.onWakeUp()
     }
+
+    override fun finish() {
+        dreamService.finish()
+    }
 }
