@@ -21,8 +21,10 @@ import static android.service.messaging.AlternativeMessageTransportService.UPGRA
 import android.Manifest;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
@@ -34,6 +36,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.telephony.SmsApplication;
 
 import java.util.List;
 import java.util.Objects;
@@ -64,12 +67,30 @@ public final class MessageUpgradeController {
     private final AlternativeMessageTransportServiceWrapper mServiceWrapper =
             new AlternativeMessageTransportServiceWrapper();
 
+    private final BroadcastReceiver mDefaultSmsAppChangedReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (SmsApplication.ACTION_DEFAULT_SMS_PACKAGE_CHANGED_INTERNAL.equals(
+                    intent.getAction())) {
+                String currentDefaultSmsPackage = Telephony.Sms.getDefaultSmsPackage(mContext);
+                if (!Objects.equals(mCachedDefaultSmsPackage, currentDefaultSmsPackage)) {
+                    Log.d(TAG, "Default sms app changed. old:" + mCachedDefaultSmsPackage
+                            + " new:" + currentDefaultSmsPackage);
+                    mCachedDefaultSmsPackage = currentDefaultSmsPackage;
+                }
+            }
+        }
+    };
+
     @GuardedBy("mLock")
     @Nullable private ScheduledFuture<?> mServiceCloseFuture;
+
+    private volatile String mCachedDefaultSmsPackage;
 
     /** @hide */
     public MessageUpgradeController(@NonNull Context context) {
         mContext = Objects.requireNonNull(context);
+        registerOnSmsAppChangedReceiver();
     }
 
     /**
@@ -179,6 +200,16 @@ public final class MessageUpgradeController {
     }
 
     /**
+     * Clean up resources held by this controller instance. This should be called when the
+     * corresponding user or profile is removed.
+     */
+    public void close() {
+        Log.i(TAG, "Closing MessageUpgradeController for user " + mContext.getUserId());
+        mContext.unregisterReceiver(mDefaultSmsAppChangedReceiver);
+        disposeServiceConnection();
+    }
+
+    /**
      * Disposes the service connection to the AlternativeMessageTransportService.
      */
     private void disposeServiceConnection() {
@@ -189,10 +220,12 @@ public final class MessageUpgradeController {
         }
     }
 
-    // TODO(b/473718205): cache default sms package and update on sms app change
     @Nullable
     private String getDefaultSmsAppPackage() {
-        return Telephony.Sms.getDefaultSmsPackage(mContext);
+        if (mCachedDefaultSmsPackage == null) {
+            mCachedDefaultSmsPackage = Telephony.Sms.getDefaultSmsPackage(mContext);
+        }
+        return mCachedDefaultSmsPackage;
     }
 
     private void onServiceReady(
@@ -206,6 +239,12 @@ public final class MessageUpgradeController {
             Log.e(TAG, "Exception while upgrading message.", e);
             controllerCallback.onUpgradeStatusAvailable(UPGRADE_STATUS_REJECTED);
         }
+    }
+
+    private void registerOnSmsAppChangedReceiver() {
+        IntentFilter smsAppChangedFilter = new IntentFilter(
+                SmsApplication.ACTION_DEFAULT_SMS_PACKAGE_CHANGED_INTERNAL);
+        mContext.registerReceiver(mDefaultSmsAppChangedReceiver, smsAppChangedFilter);
     }
 
     /**
