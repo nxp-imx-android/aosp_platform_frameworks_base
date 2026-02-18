@@ -411,7 +411,8 @@ constructor(
     }
 
     private fun handleDeviceUnlockStatus() {
-        deviceEntryInteractor.handleDeviceUnlockStatus(switchToScene = this::switchToScene)
+        deviceEntryInteractor.handleDeviceUnlockStatusChange()
+        deviceEntryInteractor.handleDeviceEntryMetricsLogging()
     }
 
     private fun handlePowerState() {
