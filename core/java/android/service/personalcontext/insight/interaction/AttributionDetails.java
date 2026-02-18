@@ -18,6 +18,7 @@ package android.service.personalcontext.insight.interaction;
 
 import android.annotation.FlaggedApi;
 import android.annotation.Nullable;
+import android.annotation.SystemApi;
 import android.graphics.drawable.Icon;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -55,7 +56,10 @@ import java.util.List;
  * Each line item must have at least an icon or a title, but may also have a subtitle and a
  * description explaining where the information came from or why it was included. Each of these
  * fields is free-form text, and should be suitable to show to the user.
+ *
+ * @hide
  */
+@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public final class AttributionDetails implements Parcelable {
     private final List<AttributionLine> mLines;

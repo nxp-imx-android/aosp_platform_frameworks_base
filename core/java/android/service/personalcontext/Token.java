@@ -17,6 +17,7 @@
 package android.service.personalcontext;
 
 import android.annotation.FlaggedApi;
+import android.annotation.SystemApi;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.service.personalcontext.hint.ContextHint;
@@ -31,7 +32,10 @@ import java.util.concurrent.atomic.AtomicLong;
  * included in a hint, indicates that insights generated from the hint should only go to the
  * specific renderer associated with this token. If included in an insight, indicates the insight
  * should only be sent to the specific renderer associated with this token.
+ *
+ * @hide
  */
+@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public final class Token implements Parcelable {
     private static final AtomicLong ID_SEQUENCE = new AtomicLong(0);

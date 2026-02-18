@@ -19,6 +19,7 @@ package android.service.personalcontext.insight;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SystemApi;
 import android.os.Bundle;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.Token;
@@ -42,7 +43,9 @@ import java.util.Set;
  * Therefore, child elements should not contain hints with conflicting render tokens. If
  * conflicting render tokens are present, an {@link IllegalStateException} will be thrown when the
  * render token is accessed. This may result in the system dropping the entire collection.
+ * @hide
  */
+@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public final class InsightCollection extends ContextInsight implements Iterable<ContextInsight> {
     private static final String KEY_INSIGHTS = "key_insights";

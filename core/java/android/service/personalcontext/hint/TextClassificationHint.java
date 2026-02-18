@@ -18,6 +18,7 @@ package android.service.personalcontext.hint;
 import static java.util.Objects.requireNonNull;
 
 import android.annotation.FlaggedApi;
+import android.annotation.SystemApi;
 import android.os.Bundle;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.Token;
@@ -28,7 +29,11 @@ import androidx.annotation.NonNull;
 
 import java.util.Objects;
 
-/** A hint that contains a text classification request from selected text */
+/**
+ * A hint that contains a text classification request from selected text.
+ * @hide
+ */
+@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public class TextClassificationHint extends ContextHint {
     @NonNull private final TextClassification.Request mTextClassificationRequest;

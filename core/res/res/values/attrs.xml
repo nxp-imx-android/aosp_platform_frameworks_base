@@ -10777,17 +10777,17 @@
         <attr name="inlineSuggestion" format="reference" />
     </declare-styleable>
 
-    <!-- Styleable resource for an inline suggestion embedded view. -->
+    <!-- Styleable resource for an inline suggestion embedded view. @hide @SystemApi -->
     <declare-styleable name="InlineSuggestion">
-        <!-- Color used for strokes and outlines. -->
+        <!-- Color used for strokes and outlines. @hide @SystemApi -->
         <attr name="strokeColor" />
-        <!-- Color used for text. -->
+        <!-- Color used for text. @hide @SystemApi -->
         <attr name="textColor" />
-        <!-- Color used for icons. -->
+        <!-- Color used for icons. @hide @SystemApi -->
         <attr name="iconColor" format="reference|color" />
-        <!-- Suggestion background color. -->
+        <!-- Suggestion background color. @hide @SystemApi -->
         <attr name="suggestionBackgroundColor" format="reference|color" />
-        <!-- Suggestion corner radius. -->
+        <!-- Suggestion corner radius. @hide @SystemApi -->
         <attr name="suggestionCornerRadius" format="integer" />
     </declare-styleable>
 </resources>

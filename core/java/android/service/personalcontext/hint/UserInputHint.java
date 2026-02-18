@@ -20,6 +20,7 @@ import static java.util.Objects.requireNonNull;
 
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
+import android.annotation.SystemApi;
 import android.content.ComponentName;
 import android.os.Bundle;
 import android.service.personalcontext.Flags;
@@ -33,7 +34,9 @@ import java.util.Objects;
  *
  * <p>This data is collected by the Content Capture framework by observing user interactions with
  * input fields.
+ * @hide
  */
+@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public final class UserInputHint extends ContextHint {
     private static final String KEY_USER_INPUT_TEXT = "key_user_input_text";

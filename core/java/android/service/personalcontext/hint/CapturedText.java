@@ -16,15 +16,16 @@
 
 package android.service.personalcontext.hint;
 
+import static java.util.Objects.requireNonNull;
+
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SystemApi;
 import android.graphics.Rect;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.service.personalcontext.Flags;
-
-import static java.util.Objects.requireNonNull;
 
 import java.time.Instant;
 import java.util.Objects;
@@ -33,7 +34,9 @@ import java.util.Objects;
  * Represents text content captured from a single UI element (a "view node") on the user's screen.
  *
  * <p>This data originates from the Android Content Capture framework.
+ * @hide
  */
+@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public final class CapturedText implements Parcelable {
     private final @NonNull String mViewNodeText;

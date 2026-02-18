@@ -21,6 +21,7 @@ import static java.util.Objects.requireNonNull;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
+import android.annotation.SystemApi;
 import android.app.Person;
 import android.os.Bundle;
 import android.service.personalcontext.Flags;
@@ -37,7 +38,9 @@ import java.util.Set;
 
 /**
  * A hint that contains call related information (e.g. "phone call", "video call", etc.).
+ * @hide
  */
+@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public final class CallHint extends ContextHint {
     private static final String TAG = "CallHint";

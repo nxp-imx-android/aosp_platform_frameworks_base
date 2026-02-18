@@ -21,6 +21,7 @@ import static java.util.Objects.requireNonNull;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SystemApi;
 import android.os.Bundle;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.Token;
@@ -31,7 +32,9 @@ import android.service.personalcontext.insight.interaction.AttributionDetails;
 /**
  * An insight that stores arbitrary data in a {@link Bundle}. Should only be used if there is no
  * appropriate insight type already defined.
+ * @hide
  */
+@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public final class BundleInsight extends ContextInsight {
     private static final String KEY_DATA = "data";

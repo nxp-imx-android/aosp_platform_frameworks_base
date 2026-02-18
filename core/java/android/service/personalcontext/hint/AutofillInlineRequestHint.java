@@ -20,6 +20,7 @@ import static java.util.Objects.requireNonNull;
 
 import android.annotation.FlaggedApi;
 import android.annotation.Nullable;
+import android.annotation.SystemApi;
 import android.annotation.TestApi;
 import android.app.assist.AssistStructure;
 import android.content.ComponentName;
@@ -54,7 +55,9 @@ import java.util.Objects;
  * registered {@link AugmentedAutofillService} both receive requests in parallel. This hint provides
  * the same information as the request to {@link AugmentedAutofillService#handleOnFillRequest} so
  * that personal context can also generate suggestions.
+ * @hide
  */
+@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public class AutofillInlineRequestHint extends ContextHint {
     private static final String KEY_SESSION_ID = "session_id";
