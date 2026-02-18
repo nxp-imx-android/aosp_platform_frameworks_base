@@ -137,6 +137,8 @@ message PreferenceProto {
   repeated string get_preconditions = 22;
   // Preconditions of the preference when setting values.
   repeated string set_preconditions = 23;
+  // True if the preference supports setting values in any circumstances.
+  optional bool writable = 24;
 }
 
 // Proto of permissions

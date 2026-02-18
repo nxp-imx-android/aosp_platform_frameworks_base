@@ -34,6 +34,7 @@ import com.android.settingslib.metadata.preferencesapi.types.AnyInt
 import com.android.settingslib.metadata.preferenceHierarchy
 import com.android.settingslib.metadata.preferencesapi.category.Category
 import com.google.common.truth.Truth.assertThat
+import com.android.settingslib.graph.PreferenceGetterFlags
 import kotlinx.coroutines.CoroutineScope
 import org.junit.After
 import org.junit.Test
@@ -278,6 +279,76 @@ class PreferenceGraphBuilderTest {
         val proto = preference.toProto(context, 0, 0, screenMetadata, false, 0)
 
         assertThat(proto.getPreconditionsList).containsExactly("get_precondition_desc")
+    }
+
+    @Test
+    fun toProto_apiPreferenceWithSetter_isWritable() {
+        val screen = object : PreferencesApiScreen(
+            key = "test_api_screen",
+            topLevelSettingsCategory = Category.SYSTEM,
+            fragment = Fragment::class,
+            purpose = 0,
+        ) {
+            init {
+                preference(
+                    key = "test_api_preference",
+                    type = AnyInt,
+                    purpose = 0,
+                ) {
+                    get { execute { 42 } }
+                    set { execute { } }
+                }
+            }
+        }
+        val preference = screen.preferences.first()
+        val proto = preference.toProto(context, 0, 0, screenMetadata, false, PreferenceGetterFlags.METADATA)
+
+        assertThat(proto.writable).isTrue()
+    }
+
+    @Test
+    fun toProto_apiPreferenceWithoutSetter_isNotWritable() {
+        val screen = object : PreferencesApiScreen(
+            key = "test_api_screen",
+            topLevelSettingsCategory = Category.SYSTEM,
+            fragment = Fragment::class,
+            purpose = 0,
+        ) {
+            init {
+                preference(
+                    key = "test_api_preference",
+                    type = AnyInt,
+                    purpose = 0,
+                ) {
+                    get { execute { 42 } }
+                }
+            }
+        }
+        val preference = screen.preferences.first()
+        val proto = preference.toProto(context, 0, 0, screenMetadata, false, PreferenceGetterFlags.METADATA)
+
+        assertThat(proto.writable).isFalse()
+    }
+
+    @Test
+    fun toProto_preferencesApiScreen_isNotWritable() {
+        val screen = object : PreferencesApiScreen(
+            key = "test_api_screen",
+            topLevelSettingsCategory = Category.SYSTEM,
+            fragment = Fragment::class,
+            purpose = 0,
+        ) {}
+        val proto = screen.toProto(context, 0, 0, screenMetadata, false, PreferenceGetterFlags.METADATA)
+
+        assertThat(proto.writable).isFalse()
+    }
+
+    @Test
+    fun toProto_legacyPreference_isNotWritable() {
+        val preference = TestPreference(SensitivityLevel.NO_SENSITIVITY)
+        val proto = preference.toProto(context, 0, 0, screenMetadata, false, PreferenceGetterFlags.METADATA)
+
+        assertThat(proto.writable).isFalse()
     }
 
     companion object {
