@@ -270,8 +270,8 @@ public class ColumnLayout extends LayoutManager {
     }
 
     @Override
-    public float minIntrinsicHeight(@Nullable RemoteContext context) {
-        float height = computeModifierDefinedHeight(context);
+    public float minIntrinsicHeight(@NonNull RemoteContext context) {
+        float height = computeModifierDefinedHeight(context, true);
         float componentHeights = 0f;
         for (Component c : mChildrenComponents) {
             componentHeights += c.minIntrinsicHeight(context);
@@ -585,6 +585,16 @@ public class ColumnLayout extends LayoutManager {
                 .possibleValues("SPACE_EVENLY", SPACE_EVENLY)
                 .possibleValues("SPACE_AROUND", SPACE_AROUND)
                 .field(FLOAT, "spacedBy", "Horizontal spacing between components");
+    }
+
+    @Override
+    public float maxIntrinsicHeight(@Nullable RemoteContext context) {
+        float height = computeModifierDefinedHeight(context);
+        float childrenHeight = 0f;
+        for (Component c : mChildrenComponents) {
+            childrenHeight += c.maxIntrinsicHeight(context);
+        }
+        return Math.max(height, childrenHeight);
     }
 
     @Override

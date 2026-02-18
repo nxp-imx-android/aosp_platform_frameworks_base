@@ -574,4 +574,12 @@ public abstract class PaintContext {
         return mMeasureVersion;
     }
 
+    /**
+     * Return true if the provided feature is enabled in the document
+     * @param feature feature id
+     * @return
+     */
+    public boolean useFeature(short feature) {
+        return mContext.useFeature(feature);
+    }
 }

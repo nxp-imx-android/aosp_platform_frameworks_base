@@ -150,6 +150,8 @@ public class RootLayoutComponent extends Component {
         context.mLastComponent = this;
         setWidth(context.mWidth);
         setHeight(context.mHeight);
+        context.mViewportWidth = context.mWidth;
+        context.mViewportHeight = context.mHeight;
 
         // TODO: reuse MeasurePass
         MeasurePass measurePass = new MeasurePass();
@@ -174,6 +176,8 @@ public class RootLayoutComponent extends Component {
         context.mLastComponent = this;
         setWidth(context.mWidth);
         setHeight(context.mHeight);
+        context.mViewportWidth = context.mWidth;
+        context.mViewportHeight = context.mHeight;
 
         // TODO: reuse MeasurePass
         MeasurePass measurePass = new MeasurePass();
