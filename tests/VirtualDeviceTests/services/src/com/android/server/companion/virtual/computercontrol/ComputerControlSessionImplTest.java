@@ -653,16 +653,13 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
-    public void launchApplication_doesNotAddExemption() throws Exception {
+    public void launchApplication_doesNotLaunchUndeclaredTargetPackage() throws Exception {
         createComputerControlSession(mDefaultParams);
         when(mOwnerPackageManager.queryIntentActivities(any(), any()))
                 .thenReturn(List.of(new ResolveInfo()));
 
-        mSession.launchApplication(UNDECLARED_TARGET_PACKAGE, TARGET_CLASS);
-
-        verify(mVirtualDevice, never()).addActivityPolicyExemption(
-                any(ActivityPolicyExemption.class));
-        assertLaunchedApplication(UNDECLARED_TARGET_PACKAGE);
+        assertThrows(IllegalArgumentException.class,
+                () -> mSession.launchApplication(UNDECLARED_TARGET_PACKAGE, TARGET_CLASS));
     }
 
     @Test
