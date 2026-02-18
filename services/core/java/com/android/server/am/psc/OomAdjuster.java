@@ -142,6 +142,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.app.ActivityManager;
+import android.app.ActivityManager.ProcessState;
 import android.app.ActivityManagerInternal.OomAdjReason;
 import android.app.ApplicationExitInfo;
 import android.content.Context;
@@ -442,8 +443,20 @@ public abstract class OomAdjuster {
         void onProcessFreezabilityChanged(ProcessRecordInternal app, boolean freezePolicy,
                 @OomAdjReason int oomAdjReason, boolean immediate, @OomAdjust int oldOomAdj);
 
-        /** Notifies the client component when a process's process state is updated. */
-        void onProcStateUpdated(ProcessRecordInternal app, long now, long nowElapsed,
+        /**
+         * Notifies the client component when a process's process state is updated.
+         *
+         * @param app The process that was updated.
+         * @param oldProcState The process's state before the update.
+         * @param newProcState The process's state after the update.
+         * @param now Current uptime.
+         * @param nowElapsed Current elapsed time.
+         * @param forceUpdatePssTime Whether to force a PSS update.
+         * @param doingAll Whether this is part of a full update.
+         * @param reportDebugMsgs Whether to report debug messages.
+         */
+        void onProcStateUpdated(ProcessRecordInternal app, @ProcessState int oldProcState,
+                @ProcessState int newProcState, long now, long nowElapsed,
                 boolean forceUpdatePssTime, boolean doingAll, boolean reportDebugMsgs);
 
         /** Notifies when the process group for an application process has been updated. */
@@ -737,7 +750,7 @@ public abstract class OomAdjuster {
         boolean isLastMemoryLevelNormal();
 
         /** The ProcessState to assign to the Top process. */
-        @ActivityManager.ProcessState int getTopProcessState();
+        @ProcessState int getTopProcessState();
 
         /** Keyguard is in the process of unlocking. */
         boolean isUnlocking();
@@ -2458,8 +2471,8 @@ public abstract class OomAdjuster {
                         + (state.getNextPssTime() - now) + ": " + state);
             }
         }
-        mCallback.onProcStateUpdated(state, now, nowElapsed, forceUpdatePssTime, doingAll,
-                reportDebugMsgs);
+        mCallback.onProcStateUpdated(state, state.getSetProcState(), state.getCurProcState(),
+                now, nowElapsed, forceUpdatePssTime, doingAll, reportDebugMsgs);
 
         int oldProcState = state.getSetProcState();
         if (state.getSetProcState() != state.getCurProcState()) {

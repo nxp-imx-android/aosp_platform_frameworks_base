@@ -16095,6 +16095,7 @@ public class ActivityManagerService extends IActivityManager.Stub
     @GuardedBy(anyOf = {"this", "mProcLock"})
     final void setProcessTrackerStateLOSP(ProcessRecord proc, int memFactor) {
         if (proc.getThread() != null) {
+            // TODO: b/488960938 - Switch to use newProcState from the onProcStateUpdated().
             proc.mProfile.setProcessTrackerState(proc.getReportedProcState(), memFactor);
         }
     }
@@ -20246,36 +20247,39 @@ public class ActivityManagerService extends IActivityManager.Stub
         }
 
         @Override
-        public void onProcStateUpdated(ProcessRecordInternal appInternal, long now, long nowElapsed,
-                boolean forceUpdatePssTime, boolean doingAll, boolean reportDebugMsgs) {
+        public void onProcStateUpdated(ProcessRecordInternal appInternal,
+                @ActivityManager.ProcessState int oldProcState,
+                @ActivityManager.ProcessState int newProcState,
+                long now, long nowElapsed, boolean forceUpdatePssTime, boolean doingAll,
+                boolean reportDebugMsgs) {
             final ProcessRecord app = (ProcessRecord) appInternal;
 
             synchronized (mAppProfiler.mProfilerLock) {
-                app.mProfile.updateProcState(app);
-                mAppProfiler.updateNextPssTimeLPf(app.getCurProcState(), app.mProfile, now,
+                app.mProfile.updateProcState(app, newProcState);
+                mAppProfiler.updateNextPssTimeLPf(newProcState, app.mProfile, now,
                         forceUpdatePssTime);
             }
 
-            if (!doingAll && app.getSetProcState() != app.getCurProcState()) {
+            if (!doingAll && oldProcState != newProcState) {
                 synchronized (mProcessStats.mLock) {
                     setProcessTrackerStateLOSP(app, mProcessStats.getMemFactorLocked());
                 }
             }
 
-            if (app.getSetProcState() != app.getCurProcState()) {
+            if (oldProcState != newProcState) {
                 if (reportDebugMsgs) {
                     String msg = "Proc state change of " + app.processName
-                            + " to " + ProcessList.makeProcStateString(app.getCurProcState())
-                            + " (" + app.getCurProcState() + ")" + ": " + app.getAdjType();
+                            + " to " + ProcessList.makeProcStateString(newProcState)
+                            + " (" + newProcState + ")" + ": " + app.getAdjType();
                     Slog.d(TAG_OOM_ADJ, msg);
                     reportOomAdjMessageLocked(msg);
                 }
 
-                app.onProcStateUpdated();
+                app.onProcStateUpdated(newProcState);
 
-                final boolean setImportant = app.getSetProcState() < PROCESS_STATE_SERVICE;
-                final boolean curImportant = app.getCurProcState() < PROCESS_STATE_SERVICE;
-                if (setImportant && !curImportant) {
+                final boolean oldImportant = oldProcState < PROCESS_STATE_SERVICE;
+                final boolean newImportant = newProcState < PROCESS_STATE_SERVICE;
+                if (oldImportant && !newImportant) {
                     // This app is no longer something we consider important enough to allow to use
                     // arbitrary amounts of battery power. Note its current CPU time to later know
                     // to kill it if it is not behaving well.
@@ -20285,7 +20289,7 @@ public class ActivityManagerService extends IActivityManager.Stub
 
                 // Inform UsageStats of important process state change
                 // Must be called before updating setProcState
-                maybeUpdateUsageStatsLSP(app, nowElapsed);
+                maybeUpdateUsageStatsLSP(app, oldProcState, newProcState, nowElapsed);
             } else {
                 final boolean fgsInteractionChangeEnabled = app.getCachedCompatChange(
                         CACHED_COMPAT_CHANGE_USE_SHORT_FGS_USAGE_INTERACTION_TIME);
@@ -20296,13 +20300,13 @@ public class ActivityManagerService extends IActivityManager.Stub
                     // For apps that sit around for a long time in the interactive state, we need
                     // to report this at least once a day so they don't go idle.
                     if ((nowElapsed - app.getInteractionEventTime()) > interactionThreshold) {
-                        maybeUpdateUsageStatsLSP(app, nowElapsed);
+                        maybeUpdateUsageStatsLSP(app, oldProcState, newProcState, nowElapsed);
                     }
                 } else {
                     // For foreground services that sit around for a long time but are not
                     // interacted with.
                     if ((nowElapsed - app.getFgInteractionTime()) > interactionThreshold) {
-                        maybeUpdateUsageStatsLSP(app, nowElapsed);
+                        maybeUpdateUsageStatsLSP(app, oldProcState, newProcState, nowElapsed);
                     }
                 }
             }
@@ -20479,13 +20483,21 @@ public class ActivityManagerService extends IActivityManager.Stub
         }
     }
 
+    /**
+     * Updates usage stats for the given process. This is called when the process state changes.
+     *
+     * @param app The process to update usage stats for.
+     * @param oldProcState The previous process state.
+     * @param newProcState The new process state.
+     * @param nowElapsed The current elapsed time.
+     */
     @VisibleForTesting
     @GuardedBy({"this", "mProcLock"})
-    void maybeUpdateUsageStatsLSP(ProcessRecord app, long nowElapsed) {
+    void maybeUpdateUsageStatsLSP(ProcessRecord app, @ActivityManager.ProcessState int oldProcState,
+            @ActivityManager.ProcessState int newProcState, long nowElapsed) {
         if (DEBUG_USAGE_STATS) {
             Slog.d(TAG, "Checking proc [" + Arrays.toString(app.getProcessPackageNames())
-                    + "] state changes: old = " + app.getSetProcState() + ", new = "
-                    + app.getCurProcState());
+                    + "] state changes: old = " + oldProcState + ", new = " + newProcState);
         }
         if (mUsageStatsService == null) {
             return;
@@ -20496,10 +20508,10 @@ public class ActivityManagerService extends IActivityManager.Stub
         // To avoid some abuse patterns, we are going to be careful about what we consider
         // to be an app interaction.  Being the top activity doesn't count while the display
         // is sleeping, nor do short foreground services.
-        if (ActivityManager.isProcStateConsideredInteraction(app.getCurProcState())) {
+        if (ActivityManager.isProcStateConsideredInteraction(newProcState)) {
             isInteraction = true;
             app.setFgInteractionTime(0);
-        } else if (app.getCurProcState() <= PROCESS_STATE_FOREGROUND_SERVICE) {
+        } else if (newProcState <= PROCESS_STATE_FOREGROUND_SERVICE) {
             if (app.getFgInteractionTime() == 0) {
                 app.setFgInteractionTime(nowElapsed);
                 isInteraction = false;
@@ -20510,7 +20522,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                 isInteraction = nowElapsed > app.getFgInteractionTime() + interactionTime;
             }
         } else {
-            isInteraction = app.getCurProcState() <= PROCESS_STATE_IMPORTANT_FOREGROUND;
+            isInteraction = newProcState <= PROCESS_STATE_IMPORTANT_FOREGROUND;
             app.setFgInteractionTime(0);
         }
         final long interactionThreshold = fgsInteractionChangeEnabled
