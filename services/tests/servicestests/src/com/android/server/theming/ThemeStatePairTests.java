@@ -162,9 +162,12 @@ public class ThemeStatePairTests {
         // Commit and get snapshot
         ThemeStatePair.OverlaySnapshot snapshot = mStatePair.commitAndGetOverlayData();
 
-        // Verify snapshot contains same schemes
-        assertEquals(initialDark, snapshot.darkScheme());
-        assertEquals(initialLight, snapshot.lightScheme());
+        // Verify snapshot contains equivalent schemes (same properties)
+        // Note: We cannot assert object equality because new instances are created on commit,
+        // and ColorScheme does not implement equals().
+        assertTrue(initialDark.hasSameProperties(snapshot.darkScheme()));
+        assertTrue(initialLight.hasSameProperties(snapshot.lightScheme()));
+        assertEquals(initialDark.toString(), snapshot.darkScheme().toString());
     }
 
     @Test

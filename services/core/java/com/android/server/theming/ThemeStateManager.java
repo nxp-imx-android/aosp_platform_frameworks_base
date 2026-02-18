@@ -334,15 +334,21 @@ public class ThemeStateManager {
      * @param isPaletteOutdated A boolean indicating the palette version is outdated and should be
      *                          recalculated.
      * @param isSynchronous     Whether to perform the update synchronously.
+     * @return {@code true} if an update was requested for at least one user; {@code false}
+     * otherwise.
      */
-    void evaluateAllUsers(boolean isPaletteOutdated, boolean isSynchronous) {
+    boolean evaluateAllUsers(boolean isPaletteOutdated, boolean isSynchronous) {
         boolean shouldEvaluate = false;
 
         for (ThemeStatePair statePair : getPairsSnapshot()) {
-            if (!mThemeOverlayHelper.isColorSchemeApplied(mContext, statePair.userId,
-                    statePair.getDarkScheme(), statePair.getLightScheme()) || isPaletteOutdated) {
+            boolean colorsMatch = mThemeOverlayHelper.isColorSchemeApplied(mContext,
+                    statePair.userId, statePair.getDarkScheme(), statePair.getLightScheme());
+            boolean overlayEnabled = mThemeOverlayHelper.isOverlayEnabled(statePair.userId);
+
+            if (!colorsMatch || !overlayEnabled || isPaletteOutdated) {
                 Slog.d(TAG, "Color palette does not match user " + statePair.userId
-                        + " settings, requesting update.");
+                        + " settings (match=" + colorsMatch + ", enabled=" + overlayEnabled
+                        + ", outdated=" + isPaletteOutdated + "), requesting update.");
                 statePair.forceUpdate();
                 shouldEvaluate = true;
             } else {
@@ -355,6 +361,7 @@ public class ThemeStateManager {
             Slog.d(TAG, "One or more users have outdated color palettes; update requested.");
             reevaluateSystemTheme(isSynchronous);
         }
+        return shouldEvaluate;
     }
 
     @NonNull
@@ -450,12 +457,14 @@ public class ThemeStateManager {
             currentUserId = mCurrentUserId;
         }
 
-        // Whenever to updated existing (register) overlays or just turn them on.
+        // Whether to update existing (register) overlays or just turn them on.
+        // We use contentChanged (which now includes forced updates) to drive registration.
+        // We also check if colors are already applied heuristic-wise as a fallback registration
+        // trigger.
         boolean shouldRegister = overlaySnapshot.contentChanged()
                 || !mThemeOverlayHelper.isOverlayRegistered(statePair.userId)
-                || (mEnvironment.isBooting() && !mThemeOverlayHelper.isColorSchemeApplied(
-                mContext, statePair.userId, statePair.getDarkScheme(),
-                statePair.getLightScheme()));
+                || !mThemeOverlayHelper.isColorSchemeApplied(mContext, statePair.userId,
+                statePair.getDarkScheme(), statePair.getLightScheme());
 
         mThemeOverlayHelper.applyCurrentStateOverlays(
                 /*statePair     */ effectiveSnapshot,

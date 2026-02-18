@@ -101,6 +101,8 @@ public class ThemeBinderServiceTests {
     private ThemeOverlayHelper mOverlayHelper;
     @Mock
     private ThemeUserLifecycle mUserLifecycle;
+    @Mock
+    private ThemeEventObserver mEventObserver;
 
     @Before
     public void setup() {
@@ -158,13 +160,7 @@ public class ThemeBinderServiceTests {
                 ThemeStyle.VIBRANT);
         mInternal = new ThemeManagerImpl(context, themeSettingsManager,
                 mThemeStateManager, mOverlayHelper, mEnvironment, themeWallpaperManager,
-                systemPropertiesReader) {
-            @Override
-            public boolean onBootAnimationDismissing() {
-                return true;
-            }
-        };
-        // mInternal.setup() is not called here in the provided snippet.
+                systemPropertiesReader, mUserLifecycle, mEventObserver);
         mUnderTest = new ThemeBinderService(context, mInternal);
         mDefaultSettings = themeSettingsManager.createDefaultThemeSettings(mUserId);
     }

@@ -369,7 +369,6 @@ import com.android.server.pm.UserManagerInternal;
 import com.android.server.policy.WindowManagerPolicy;
 import com.android.server.policy.WindowManagerPolicy.ScreenOffListener;
 import com.android.server.power.ShutdownThread;
-import com.android.server.theming.ThemeManagerInternal;
 import com.android.server.utils.PriorityDump;
 import com.android.window.flags.Flags;
 
@@ -712,6 +711,7 @@ public class WindowManagerService extends IWindowManager.Stub
     boolean mSystemReady = false;
     boolean mBootAnimationStopped = false;
     long mBootWaitForWindowsStartTime = -1;
+    boolean mThemeReady = true;
 
     // Cache whether to Magnify the IME.
     private boolean mMagnifyIme = false;
@@ -4331,14 +4331,6 @@ public class WindowManagerService extends IWindowManager.Stub
 
             if (!mBootAnimationStopped) {
                 Trace.asyncTraceBegin(TRACE_TAG_WINDOW_MANAGER, "Stop bootanim", 0);
-
-                // Notifies ThemeManagerService that the boot animation is being dismissed.
-                // No more color palette updates at boot.
-                ThemeManagerInternal themeService = LocalServices.getService(
-                        ThemeManagerInternal.class);
-                if (themeService != null) {
-                    themeService.onBootAnimationDismissing();
-                }
 
                 // stop boot animation
                 // formerly we would just kill the process, but we now ask it to exit so it
@@ -8918,6 +8910,16 @@ public class WindowManagerService extends IWindowManager.Stub
                     return;
                 }
                 mDisplayWindowSettings.setCanStealTopFocus(dc, canStealTopFocus);
+            }
+        }
+
+        @Override
+        public void setThemeReady(boolean ready) {
+            synchronized (mGlobalLock) {
+                mThemeReady = ready;
+                if (mThemeReady) {
+                    WindowManagerService.this.enableScreenIfNeededLocked();
+                }
             }
         }
 

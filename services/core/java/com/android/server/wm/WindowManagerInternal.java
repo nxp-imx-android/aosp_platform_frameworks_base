@@ -1365,4 +1365,15 @@ public abstract class WindowManagerInternal {
      * @param canStealTopFocus The override value, or {@code null} to clear the override.
      */
     public abstract void setCanStealTopFocusForDisplay(int displayId, boolean canStealTopFocus);
+
+    /**
+     * Sets whether the system theme is ready.
+     *
+     * <p>When false, the screen is blocked from turning on during boot. When true, WindowManager
+     * will attempt to turn on the screen if all other conditions (like wallpaper and lockscreen
+     * being drawn) are met.
+     *
+     * @param ready True if the theme is ready, false otherwise.
+     */
+    public abstract void setThemeReady(boolean ready);
 }

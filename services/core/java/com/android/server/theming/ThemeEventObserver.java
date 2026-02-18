@@ -60,19 +60,22 @@ public class ThemeEventObserver {
     private static final String TAG = "ThemeEventObserver";
 
     private final Context mContext;
-    private final ThemeManagerImpl mThemeManagerImpl;
     private final ThemeEnvironment mEnvironment;
+    private ThemeEventDispatcher mDispatcher;
 
     private ThemeWallpaperManager mWallpaperManager;
     private UiModeManagerInternal mUiModeManagerInternal;
     private KeyguardManager mKeyguardManager;
 
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
-    ThemeEventObserver(Context context, ThemeManagerImpl themeManagerImpl,
-            ThemeEnvironment environment) {
+    ThemeEventObserver(Context context, ThemeEnvironment environment) {
         mContext = context;
-        mThemeManagerImpl = themeManagerImpl;
         mEnvironment = environment;
+    }
+
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
+    void setDispatcher(ThemeEventDispatcher delegate) {
+        mDispatcher = delegate;
     }
 
     /**
@@ -149,14 +152,13 @@ public class ThemeEventObserver {
             }
 
             Slog.i(TAG, "Theme overlays successfully applied for user " + userId);
-            mThemeManagerImpl.notifyThemeChanged(userId);
+            mDispatcher.notifyThemeChanged(userId);
         }
     }
+
     @RequiresPermission(Manifest.permission.SUBSCRIBE_TO_KEYGUARD_LOCKED_STATE)
     private void handleWallpaperColorsChanged(WallpaperColors wallpaperColors, int userId,
             boolean fromForegroundApp) {
-        mThemeManagerImpl.initializeThemingSystem("WallpaperChange");
-
         if (mEnvironment.shouldIgnoreEventForUser(userId, "onColorsChanged")) {
             return;
         }
@@ -168,20 +170,20 @@ public class ThemeEventObserver {
         }
 
         Slog.d(TAG, "User: " + userId + " changed wallpaper");
-        mThemeManagerImpl.onWallpaperColorsChanged(userId, wallpaperColors, fromForegroundApp);
+        mDispatcher.onWallpaperColorsChanged(userId, wallpaperColors, fromForegroundApp);
     }
 
     private void handleContrastChanged(int userId, float contrast) {
         if (mEnvironment.shouldIgnoreEventForUser(userId, "onContrastChange")) {
             return;
         }
-        mThemeManagerImpl.onContrastChanged(userId, contrast);
+        mDispatcher.onContrastChanged(userId, contrast);
     }
 
     private void handleKeyguardLockedStateChanged(boolean isKeyguardLocked) {
         if (isKeyguardLocked) {
             Slog.d(TAG, "Keyguard locked");
-            mThemeManagerImpl.onDeviceLocked();
+            mDispatcher.onDeviceLocked();
         }
     }
 
@@ -198,7 +200,7 @@ public class ThemeEventObserver {
             return;
         }
         Slog.d(TAG, "User: " + userId + " setup complete");
-        mThemeManagerImpl.onUserStart(userId);
+        mDispatcher.onUserStart(userId);
     }
 
     final ContentObserver mThemeSettingsObserver = new ContentObserver(
@@ -216,6 +218,6 @@ public class ThemeEventObserver {
         }
 
         Slog.d(TAG, "User: " + userId + " updated Secure Setting directly");
-        mThemeManagerImpl.onThemeSettingsChanged(userId);
+        mDispatcher.onThemeSettingsChanged(userId);
     }
 }

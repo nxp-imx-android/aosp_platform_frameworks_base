@@ -144,11 +144,6 @@ public interface ThemeManagerInternal {
     ThemeSettings getThemeSettingsOrDefault(@UserIdInt int userId);
 
     /**
-     * Called when the boot animation is dismissed.
-     */
-    boolean onBootAnimationDismissing();
-
-    /**
      * Dumps the current state of the ThemeManager service.
      *
      * @param pw The PrintWriter to dump the state to.

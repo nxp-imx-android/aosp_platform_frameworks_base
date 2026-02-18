@@ -21,6 +21,7 @@ import static android.util.TypedValue.TYPE_INT_COLOR_ARGB8;
 import android.content.Context;
 import android.content.om.FabricatedOverlay;
 import android.content.om.OverlayIdentifier;
+import android.content.om.OverlayInfo;
 import android.content.om.OverlayManagerTransaction;
 import android.content.res.Resources;
 import android.os.UserHandle;
@@ -91,6 +92,24 @@ public class ThemeOverlayHelper {
         }
 
         return false;
+    }
+
+    /**
+     * Checks if the dynamic overlay for the given user is correctly enabled in OMS.
+     *
+     * @param userId The user ID to check.
+     * @return {@code true} if the overlay is registered and enabled for the user.
+     */
+    public boolean isOverlayEnabled(int userId) {
+        final OverlayIdentifier identifier = new OverlayIdentifier(ANDROID_PACKAGE,
+                OVERLAY_NAME_DYNAMIC + "_" + userId);
+        try {
+            OverlayInfo info = mOverlayManager.getOverlayInfo(identifier, UserHandle.of(userId));
+            return info != null && info.isEnabled();
+        } catch (Exception e) {
+            Slog.w(TAG, "Failed to check if overlay is enabled: " + identifier, e);
+            return false;
+        }
     }
 
     /**
