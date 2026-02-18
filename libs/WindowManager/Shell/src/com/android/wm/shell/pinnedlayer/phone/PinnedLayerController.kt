@@ -64,6 +64,7 @@ class PinnedLayerController(
     private val presentationController: PinnedLayerPresentationController,
     private val windowDragTransitionHandler: WindowDragTransitionHandler,
     private val windowRepositionAnimationHandler: PinnedWindowRepositionAnimationHandler,
+    private val windowRepositionAnimator: PinnedWindowRepositionAnimator,
     private val transactionPool: TransactionPool,
     private val multiDisplayDragMoveIndicatorController: MultiDisplayDragMoveIndicatorController,
 ) : Transitions.TransitionObserver {
@@ -371,15 +372,20 @@ class PinnedLayerController(
             presentationController.clampToDisplay(taskInfo, dragEndBounds) ?: dragStartBounds
         val isTargetDisplayAvailable =
             taskDisplayAreaOrganizer.getDisplayAreaInfo(displayId) != null
-        val isOriginalTaskBounds =
-            destinationBounds == dragStartBounds && destinationBounds == dragEndBounds
-        if (!isTargetDisplayAvailable || isOriginalTaskBounds) {
+        if (!isTargetDisplayAvailable || destinationBounds == dragStartBounds) {
             // The task was dragged back to original position or there's no longer a valid display
             // to drag to, so calculating final bounds in case display is not available.
-            val t = transactionPool.acquire()
-            t.setPosition(leash, dragStartBounds.left.toFloat(), dragStartBounds.top.toFloat())
-            t.apply()
-            transactionPool.release(t)
+            if (destinationBounds != dragEndBounds) {
+                // No transition needed because the task is moved back to the start position, but
+                // the user moved the surface, and we should animate it.
+                windowRepositionAnimator.start(leash, dragEndBounds, destinationBounds)
+            } else {
+                // Make the surface visible just in case it was moved off-screen.
+                val t = transactionPool.acquire()
+                t.setPosition(leash, dragStartBounds.left.toFloat(), dragStartBounds.top.toFloat())
+                t.apply()
+                transactionPool.release(t)
+            }
             return true
         }
 

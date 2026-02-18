@@ -37,6 +37,7 @@ import com.android.wm.shell.pinnedlayer.phone.PinnedLayerPermissionObserver
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerPresentationController
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerUiState
 import com.android.wm.shell.pinnedlayer.phone.PinnedWindowRepositionAnimationHandler
+import com.android.wm.shell.pinnedlayer.phone.PinnedWindowRepositionAnimator
 import com.android.wm.shell.shared.TransactionPool
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.sysui.ShellInit
@@ -89,6 +90,7 @@ object PinnedLayerModule {
         desktopState: ShellDesktopState,
         windowDragTransitionHandler: WindowDragTransitionHandler,
         windowRepositionAnimationHandler: PinnedWindowRepositionAnimationHandler,
+        windowRepositionAnimator: PinnedWindowRepositionAnimator,
         transactionPool: TransactionPool,
         rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer,
         multiDisplayDragMoveIndicatorController: MultiDisplayDragMoveIndicatorController,
@@ -104,6 +106,7 @@ object PinnedLayerModule {
                         PinnedLayerPresentationController(context, displayController, desktopState),
                     windowDragTransitionHandler = windowDragTransitionHandler,
                     windowRepositionAnimationHandler = windowRepositionAnimationHandler,
+                    windowRepositionAnimator = windowRepositionAnimator,
                     transactionPool = transactionPool,
                     desktopState = desktopState,
                     multiDisplayDragMoveIndicatorController =
@@ -141,11 +144,18 @@ object PinnedLayerModule {
     @WMSingleton
     @Provides
     fun providePinnedWindowRepositionAnimationHandler(
-        transitions: Transitions
+        transitions: Transitions,
+        windowRepositionAnimator: PinnedWindowRepositionAnimator,
     ): PinnedWindowRepositionAnimationHandler {
         return PinnedWindowRepositionAnimationHandler(
             transitions = transitions,
-            transactionFactory = { SurfaceControl.Transaction() },
+            windowRepositionAnimator = windowRepositionAnimator,
         )
+    }
+
+    @WMSingleton
+    @Provides
+    fun providePinnedWindowRepositionAnimator(): PinnedWindowRepositionAnimator {
+        return PinnedWindowRepositionAnimator { SurfaceControl.Transaction() }
     }
 }

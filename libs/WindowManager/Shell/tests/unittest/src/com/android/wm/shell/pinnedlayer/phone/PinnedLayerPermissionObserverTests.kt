@@ -96,6 +96,8 @@ class PinnedLayerPermissionObserverTests : ShellTestCase() {
     private lateinit var desktopState: FakeDesktopState
     private lateinit var shellDesktopState: FakeShellDesktopState
 
+    private val windowRepositionAnimator = mock<PinnedWindowRepositionAnimator>()
+
     @Before
     fun setup() {
         appOpsManager = context.getSystemService(AppOpsManager::class.java)
@@ -115,6 +117,7 @@ class PinnedLayerPermissionObserverTests : ShellTestCase() {
                 presentationController,
                 windowDragTransitionHandler,
                 pinnedWindowRepositionAnimationHandler,
+                windowRepositionAnimator,
                 transactionPool,
                 multiDisplayDragMoveIndicatorController,
             )
