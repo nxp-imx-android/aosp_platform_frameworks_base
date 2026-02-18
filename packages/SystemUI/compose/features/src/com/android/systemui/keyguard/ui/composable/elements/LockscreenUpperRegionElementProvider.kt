@@ -211,7 +211,9 @@ constructor(
                     }
                 }
 
-            val narrowPadding = dimensionResource(R.dimen.upper_region_narrow_horizontal_padding)
+            val narrowPadding =
+                dimensionResource(R.dimen.notification_side_paddings) +
+                    dimensionResource(R.dimen.notification_panel_margin_horizontal)
 
             NestedScenes(
                 sceneKey =
