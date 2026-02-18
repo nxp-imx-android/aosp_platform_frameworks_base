@@ -18,6 +18,7 @@ package com.android.systemui.statusbar.notification.stack;
 
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
+import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_FOREGROUND_SERVICE;
 import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_HEADS_UP;
 import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_SILENT;
 
@@ -103,7 +104,7 @@ public class NotificationSectionsManagerTest extends SysuiTestCase {
         when(mStatusBarStateController.getState()).thenReturn(StatusBarState.SHADE);
     }
 
-    @Test(expected =  IllegalStateException.class)
+    @Test(expected = IllegalStateException.class)
     public void testDuplicateInitializeThrows() {
         mSectionsManager.initialize(mNssl);
     }
@@ -287,4 +288,61 @@ public class NotificationSectionsManagerTest extends SysuiTestCase {
                 NotificationSectionsManager.Companion.getBUNDLE());
     }
 
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_RICH_ONGOING_IMPROVEMENTS)
+    public void hasRoundedCorners_groupingDisabledChildInGroup_returnsFalse() {
+        // GIVEN - Notification is in FGS section
+        final ExpandableNotificationRow fgs = mKosmos.createRow(
+                mKosmos.buildNotificationEntry(builder -> {
+                    builder.setBucket(BUCKET_FOREGROUND_SERVICE);
+                    return builder.done();
+                }));
+
+        // WHEN - NSSL updates sections rounding
+        mSectionsManager.updateFirstAndLastViewsForAllSections(List.of(fgs));
+
+        // THEN - FGS notification is rounded.
+        assertThat(fgs.hasRoundedTopCorners()).isTrue();
+        assertThat(fgs.hasRoundedBottomCorners()).isTrue();
+
+        // GIVEN - FGS Notification is grouped.
+        final ExpandableNotificationRow group = mKosmos.createRowGroup();
+        group.addChildNotification(fgs, 2);
+
+        // WHEN - NSSL updates sections rounding
+        mSectionsManager.updateFirstAndLastViewsForAllSections(List.of(group));
+
+        // THEN - FGS notification is not rounded.
+        assertThat(fgs.hasRoundedTopCorners()).isFalse();
+        assertThat(fgs.hasRoundedBottomCorners()).isFalse();
+    }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_RICH_ONGOING_IMPROVEMENTS)
+    public void isGroupingDisabled_for_fgs_returnsTrue() {
+        ExpandableNotificationRow fgsRow = mKosmos.createRow(
+                mKosmos.buildNotificationEntry(builder -> {
+                    builder.setBucket(BUCKET_FOREGROUND_SERVICE);
+                    return builder.done();
+                }));
+        assertThat(mSectionsManager.isGroupingDisabled(fgsRow)).isTrue();
+    }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_RICH_ONGOING_IMPROVEMENTS)
+    public void isGroupingDisabled_for_non_fgs_returnsFalse() {
+        for (int bucket : PriorityBucket.Companion.getAllInOrder()) {
+            if (bucket == BUCKET_FOREGROUND_SERVICE) {
+                continue;
+            }
+
+            ExpandableNotificationRow nonFgsNotif = mKosmos.createRow(
+                    mKosmos.buildNotificationEntry(builder -> {
+                        builder.setBucket(bucket);
+                        return builder.done();
+                    }));
+
+            assertThat(mSectionsManager.isGroupingDisabled(nonFgsNotif)).isFalse();
+        }
+    }
 }

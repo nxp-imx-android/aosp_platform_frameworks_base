@@ -1726,6 +1726,10 @@ public class NotificationChildrenContainer extends ViewGroup
             if (child.getVisibility() == View.GONE) {
                 continue;
             }
+            if (android.app.Flags.richOngoingImprovements()) {
+                child.requestRoundnessReset(
+                        NotificationSectionsManager.Companion.getGROUPING_DISABLED_SECTION());
+            }
             child.requestRoundness(
                     /* top = */ 0f,
                     /* bottom = */ last ? getBottomRoundness() : 0f,
