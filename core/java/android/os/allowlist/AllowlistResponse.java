@@ -36,8 +36,8 @@ import java.util.Objects;
  * {@link AllowlistRequest}.</li>
  * </ul>
  * For example, the App Function allowlist can take a list of signed packages as the value of
- * {@link AllowlistManager#REQUEST_DATA_FILTER_TARGETS} in the request, the returned targets after
- * filtering will be the value of {@link AllowlistManager#RESPONSE_DATA_ALLOWED_PACKAGE_MULTI_MAP}
+ * {@link AllowlistManager#REQUEST_KEY_FILTER_TARGETS} in the request, the returned targets after
+ * filtering will be the value of {@link AllowlistManager#RESPONSE_KEY_ALLOWED_PACKAGE_MULTI_MAP}
  *
  * @hide
  */
