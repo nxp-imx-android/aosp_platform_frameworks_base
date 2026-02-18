@@ -44,8 +44,6 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import javax.inject.Named
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 
 /**
@@ -88,21 +86,6 @@ constructor(
             v("Applying blur requested by shade", it.radius, it.scale)
             applyBlur(it)
         }
-
-        combine(
-                windowRootViewBlurInteractor.isBlurCurrentlySupported,
-                deviceEntryInteractor.isDeviceEntered,
-                shadeInteractor.isUserInteracting,
-                shadeInteractor.isAnyExpanded,
-            ) { blurSupported, isDeviceEntered, userDraggingShade, anyExpanded ->
-                if (blurSupported) {
-                    !isDeviceEntered || userDraggingShade || anyExpanded
-                } else {
-                    false
-                }
-            }
-            .distinctUntilChanged()
-            .collect { blurChoreographer.setPersistentEarlyWakeup(it) }
     }
 
     override suspend fun onDeactivated() {
@@ -123,6 +106,23 @@ constructor(
                 is TransitionState.Transition.ShowOrHideOverlay ->
                     transitionState.toBlurRadius(transitionProgress)
             }
+        if (windowRootViewBlurInteractor.isBlurCurrentlySupported.value) {
+            val isTransitioningToShadeOrQuickSettings =
+                transitionState.isTransitioning(to = Scenes.Shade) ||
+                    transitionState.isTransitioning(to = Scenes.QuickSettings)
+            if (
+                !deviceEntryInteractor.isDeviceEntered.value ||
+                    isTransitioningToShadeOrQuickSettings
+            ) {
+                blurChoreographer.setPersistentEarlyWakeup(true)
+            } else if (
+                transitionState is TransitionState.Idle &&
+                    transitionState.currentScene == Scenes.Gone &&
+                    transitionState.currentOverlays.isEmpty()
+            ) {
+                blurChoreographer.setPersistentEarlyWakeup(false)
+            }
+        }
         blurRadius?.let {
             val scale = computeBackgroundBlurScale(transitionState)
             v("Applying blur for TransitionState change", blurRadius, scale)
