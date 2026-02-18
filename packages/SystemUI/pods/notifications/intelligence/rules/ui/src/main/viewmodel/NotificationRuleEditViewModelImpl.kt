@@ -26,12 +26,15 @@ import com.android.systemui.notifications.intelligence.rules.domain.interactor.I
 import com.android.systemui.notifications.intelligence.rules.shared.NmContextualDisplayLaunch
 import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel
+import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 
 class NotificationRuleEditViewModelImpl
 @AssistedInject
 constructor(
+    @Assisted override val rule: DraftRuleModel,
     private val contactsInteractor: ContactsInteractor,
     private val installedAppsInteractor: InstalledAppsInteractor,
 ) : NotificationRuleEditViewModel {
@@ -60,6 +63,6 @@ constructor(
 
     @AssistedFactory
     interface Factory : NotificationRuleEditViewModel.Factory {
-        override fun create(): NotificationRuleEditViewModelImpl
+        override fun create(rule: DraftRuleModel): NotificationRuleEditViewModelImpl
     }
 }

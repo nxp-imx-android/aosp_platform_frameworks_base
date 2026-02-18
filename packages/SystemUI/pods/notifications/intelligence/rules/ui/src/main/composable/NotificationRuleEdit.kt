@@ -16,8 +16,14 @@
 
 package com.android.systemui.notifications.intelligence.rules.ui.composable
 
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,7 +40,6 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
-import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ContactsModel
@@ -51,11 +56,11 @@ import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.Notifi
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun NotificationRuleEdit(
-    viewModelFactory: NotificationRuleEditViewModel.Factory,
-    rule: DraftRuleModel,
+    viewModel: NotificationRuleEditViewModel,
+    dismissEditScreen: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val viewModel = rememberViewModel("NotificationRuleEditViewModel") { viewModelFactory.create() }
+    val rule = viewModel.rule
 
     var shownDialogType: EditDialogType by remember(rule) { mutableStateOf(EditDialogType.None) }
     var selectedAction by remember(rule) { mutableStateOf(rule.action) }
@@ -75,7 +80,17 @@ fun NotificationRuleEdit(
             )
         }
 
-    Column(modifier = modifier) {
+    BackHandler(enabled = true, onBack = dismissEditScreen)
+    Column(modifier = modifier.background(MaterialTheme.colorScheme.background)) {
+        Button(onClick = dismissEditScreen) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                // TODO: b/478225883 - Translate content description (requires moving
+                // resources to pods)
+                contentDescription = "Back",
+            )
+        }
+
         Text(text = text, style = MaterialTheme.typography.titleLargeEmphasized)
 
         when (val dialogShowing = shownDialogType) {

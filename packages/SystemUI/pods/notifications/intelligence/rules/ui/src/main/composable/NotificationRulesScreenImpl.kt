@@ -16,10 +16,12 @@
 
 package com.android.systemui.notifications.intelligence.rules.ui.composable
 
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRulesScreenViewModel
+import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.RulesScreenViewState
 import javax.inject.Inject
 
 class NotificationRulesScreenImpl @Inject constructor() : NotificationRulesScreen {
@@ -29,11 +31,26 @@ class NotificationRulesScreenImpl @Inject constructor() : NotificationRulesScree
         dismissRulesScreen: () -> Unit,
         modifier: Modifier,
     ) {
-        val viewModel = rememberViewModel("NotificationRulesScreen") { viewModelFactory.create() }
-        CurrentRulesScreen(
-            viewModel = viewModel,
-            dismissRulesScreen = dismissRulesScreen,
-            modifier = modifier,
-        )
+        val screenViewModel =
+            rememberViewModel("NotificationRulesScreen") { viewModelFactory.create() }
+
+        when (val viewState = screenViewModel.viewState) {
+            is RulesScreenViewState.CurrentRules -> {
+                CurrentRulesScreen(
+                    viewModel = screenViewModel,
+                    dismissRulesScreen = dismissRulesScreen,
+                    modifier = modifier,
+                )
+            }
+            is RulesScreenViewState.RuleEdit -> {
+                NotificationRuleEdit(
+                    viewModel = viewState.editViewModel,
+                    dismissEditScreen = {
+                        screenViewModel.viewState = RulesScreenViewState.CurrentRules
+                    },
+                    modifier = modifier.fillMaxSize(),
+                )
+            }
+        }
     }
 }

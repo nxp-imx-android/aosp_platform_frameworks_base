@@ -18,6 +18,8 @@ package com.android.systemui.notifications.intelligence.rules.ui
 
 import com.android.systemui.notifications.intelligence.rules.ui.composable.NotificationRulesScreen
 import com.android.systemui.notifications.intelligence.rules.ui.composable.NotificationRulesScreenImpl
+import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRuleEditViewModel
+import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRuleEditViewModelImpl
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRulesScreenViewModel
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRulesScreenViewModelImpl
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRulesShadeStateViewModel
@@ -36,6 +38,11 @@ interface NotificationRulesUiModule {
     public fun bindCurrentRulesViewModelFactory(
         impl: NotificationRulesScreenViewModelImpl.Factory
     ): NotificationRulesScreenViewModel.Factory
+
+    @Binds
+    public fun bindEditViewModelFactory(
+        impl: NotificationRuleEditViewModelImpl.Factory
+    ): NotificationRuleEditViewModel.Factory
 
     @Binds
     public fun bindNotificationRulesScreen(
