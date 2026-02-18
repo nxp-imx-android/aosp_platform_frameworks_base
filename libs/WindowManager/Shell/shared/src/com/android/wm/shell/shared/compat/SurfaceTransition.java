@@ -315,7 +315,7 @@ public class SurfaceTransition {
             this.finishedCallbackShell = finishedCallbackShell;
 
             if (info != null) {
-                TransitionUtil.LeafTaskFilter filter = new TransitionUtil.LeafTaskFilter();
+                TransitionUtil.LeafTaskFilter filter = new TransitionUtil.LeafTaskFilter(info);
                 this.mApps = info.getChanges().stream().filter(filter).map(AnimatedSurface::from)
                         .toArray(AnimatedSurface[]::new);
 
