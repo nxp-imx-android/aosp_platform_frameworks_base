@@ -605,9 +605,12 @@ public class DisplayRotation {
             final ActionChain chain = mService.mAtmService.mChainTracker.startTransit("updateRot");
             if (!chain.isCollecting()) {
                 if (mDisplayContent.getLastHasContent()) {
+                    final var endRotationInsetsState =
+                            com.android.window.flags.Flags.sendNewInsetsStateWithRotation()
+                                    ? mDisplayContent.getInsetsStateForRotation(mRotation) : null;
                     final TransitionRequestInfo.DisplayChange change =
                             new TransitionRequestInfo.DisplayChange(mDisplayContent.getDisplayId(),
-                                    oldRotation, mRotation);
+                                    oldRotation, mRotation, endRotationInsetsState);
                     mDisplayContent.requestChangeTransition(
                             ActivityInfo.CONFIG_WINDOW_CONFIGURATION, change, chain);
                 }

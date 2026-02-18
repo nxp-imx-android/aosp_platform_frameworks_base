@@ -297,12 +297,16 @@ public class DisplayController {
 
     /** Called when a display rotate requested. */
     public void onDisplayChangeRequested(WindowContainerTransaction wct, int displayId,
-            Rect startAbsBounds, Rect endAbsBounds, int fromRotation, int toRotation) {
+            Rect startAbsBounds, Rect endAbsBounds, int fromRotation, int toRotation,
+            @Nullable InsetsState endInsetsState) {
         synchronized (mDisplays) {
-            final DisplayLayout dl = getDisplayLayout(displayId);
-            if (dl == null) {
+            final DisplayRecord dr = mDisplays.get(displayId);
+            if (dr == null) {
                 Slog.w(TAG, "Skipping Display rotate on non-added display.");
                 return;
+            }
+            if (endInsetsState != null) {
+                dr.setInsets(endInsetsState);
             }
             updateDisplayLayout(displayId, startAbsBounds, endAbsBounds, fromRotation, toRotation);
 

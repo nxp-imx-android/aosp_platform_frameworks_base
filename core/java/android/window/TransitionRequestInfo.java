@@ -27,6 +27,7 @@ import android.app.WindowConfiguration;
 import android.graphics.Rect;
 import android.os.IRemoteCallback;
 import android.os.Parcelable;
+import android.view.InsetsState;
 import android.view.WindowManager;
 
 import com.android.internal.util.DataClass;
@@ -178,16 +179,20 @@ public final class TransitionRequestInfo implements Parcelable {
         /** The display to reparent to on disconnect; if invalid, this isn't a disconnect change. */
         private int mDisconnectReparentDisplay = INVALID_DISPLAY;
 
+        @Nullable private InsetsState mEndInsetsState = null;
+
         /** Create empty display-change. */
         public DisplayChange(int displayId) {
             mDisplayId = displayId;
         }
 
         /** Create a display-change representing a rotation. */
-        public DisplayChange(int displayId, int startRotation, int endRotation) {
+        public DisplayChange(int displayId, int startRotation, int endRotation,
+                @Nullable InsetsState endInsetsState) {
             mDisplayId = displayId;
             mStartRotation = startRotation;
             mEndRotation = endRotation;
+            mEndInsetsState = endInsetsState;
         }
 
 
@@ -246,6 +251,11 @@ public final class TransitionRequestInfo implements Parcelable {
             return mDisconnectReparentDisplay;
         }
 
+        @DataClass.Generated.Member
+        public @Nullable InsetsState getEndInsetsState() {
+            return mEndInsetsState;
+        }
+
         /**
          * If non-null, these bounds changes should ignore any potential rotation changes.
          */
@@ -288,6 +298,12 @@ public final class TransitionRequestInfo implements Parcelable {
             return this;
         }
 
+        @DataClass.Generated.Member
+        public @android.annotation.NonNull DisplayChange setEndInsetsState(@android.annotation.NonNull InsetsState value) {
+            mEndInsetsState = value;
+            return this;
+        }
+
         @Override
         @DataClass.Generated.Member
         public String toString() {
@@ -301,7 +317,8 @@ public final class TransitionRequestInfo implements Parcelable {
                     "startRotation = " + mStartRotation + ", " +
                     "endRotation = " + mEndRotation + ", " +
                     "physicalDisplayChanged = " + mPhysicalDisplayChanged + ", " +
-                    "disconnectReparentDisplay = " + mDisconnectReparentDisplay +
+                    "disconnectReparentDisplay = " + mDisconnectReparentDisplay + ", " +
+                    "endInsetsState = " + mEndInsetsState +
             " }";
         }
 
@@ -311,17 +328,19 @@ public final class TransitionRequestInfo implements Parcelable {
             // You can override field parcelling by defining methods like:
             // void parcelFieldName(Parcel dest, int flags) { ... }
 
-            byte flg = 0;
+            int flg = 0;
             if (mPhysicalDisplayChanged) flg |= 0x20;
             if (mStartAbsBounds != null) flg |= 0x2;
             if (mEndAbsBounds != null) flg |= 0x4;
-            dest.writeByte(flg);
+            if (mEndInsetsState != null) flg |= 0x80;
+            dest.writeInt(flg);
             dest.writeInt(mDisplayId);
             if (mStartAbsBounds != null) dest.writeTypedObject(mStartAbsBounds, flags);
             if (mEndAbsBounds != null) dest.writeTypedObject(mEndAbsBounds, flags);
             dest.writeInt(mStartRotation);
             dest.writeInt(mEndRotation);
             dest.writeInt(mDisconnectReparentDisplay);
+            if (mEndInsetsState != null) dest.writeTypedObject(mEndInsetsState, flags);
         }
 
         @Override
@@ -335,7 +354,7 @@ public final class TransitionRequestInfo implements Parcelable {
             // You can override field unparcelling by defining methods like:
             // static FieldType unparcelFieldName(Parcel in) { ... }
 
-            byte flg = in.readByte();
+            int flg = in.readInt();
             boolean physicalDisplayChanged = (flg & 0x20) != 0;
             int displayId = in.readInt();
             Rect startAbsBounds = (flg & 0x2) == 0 ? null : (Rect) in.readTypedObject(Rect.CREATOR);
@@ -343,6 +362,7 @@ public final class TransitionRequestInfo implements Parcelable {
             int startRotation = in.readInt();
             int endRotation = in.readInt();
             int disconnectReparentDisplay = in.readInt();
+            InsetsState endInsetsState = (flg & 0x80) == 0 ? null : (InsetsState) in.readTypedObject(InsetsState.CREATOR);
 
             this.mDisplayId = displayId;
             this.mStartAbsBounds = startAbsBounds;
@@ -351,6 +371,7 @@ public final class TransitionRequestInfo implements Parcelable {
             this.mEndRotation = endRotation;
             this.mPhysicalDisplayChanged = physicalDisplayChanged;
             this.mDisconnectReparentDisplay = disconnectReparentDisplay;
+            this.mEndInsetsState = endInsetsState;
 
             // onConstructed(); // You can define this method to get a callback
         }
@@ -370,10 +391,10 @@ public final class TransitionRequestInfo implements Parcelable {
         };
 
         @DataClass.Generated(
-                time = 1769081030214L,
+                time = 1771341341597L,
                 codegenVersion = "1.0.23",
                 sourceFile = "frameworks/base/core/java/android/window/TransitionRequestInfo.java",
-                inputSignatures = "private final  int mDisplayId\nprivate @android.annotation.Nullable android.graphics.Rect mStartAbsBounds\nprivate @android.annotation.Nullable android.graphics.Rect mEndAbsBounds\nprivate  int mStartRotation\nprivate  int mEndRotation\nprivate  boolean mPhysicalDisplayChanged\nprivate  int mDisconnectReparentDisplay\nclass DisplayChange extends java.lang.Object implements [android.os.Parcelable]\n@com.android.internal.util.DataClass(genToString=true, genSetters=true, genBuilder=false, genConstructor=false)")
+                inputSignatures = "private final  int mDisplayId\nprivate @android.annotation.Nullable android.graphics.Rect mStartAbsBounds\nprivate @android.annotation.Nullable android.graphics.Rect mEndAbsBounds\nprivate  int mStartRotation\nprivate  int mEndRotation\nprivate  boolean mPhysicalDisplayChanged\nprivate  int mDisconnectReparentDisplay\nprivate @android.annotation.Nullable android.view.InsetsState mEndInsetsState\nclass DisplayChange extends java.lang.Object implements [android.os.Parcelable]\n@com.android.internal.util.DataClass(genToString=true, genSetters=true, genBuilder=false, genConstructor=false)")
         @Deprecated
         private void __metadata() {}
 
@@ -507,7 +528,7 @@ public final class TransitionRequestInfo implements Parcelable {
         };
 
         @DataClass.Generated(
-                time = 1769081030234L,
+                time = 1771341341652L,
                 codegenVersion = "1.0.23",
                 sourceFile = "frameworks/base/core/java/android/window/TransitionRequestInfo.java",
                 inputSignatures = "private @android.annotation.NonNull android.window.WindowContainerToken mTaskFragmentToken\nprivate @android.annotation.NonNull android.app.ActivityManager.RunningTaskInfo mTaskInfo\nclass PipChange extends java.lang.Object implements [android.os.Parcelable]\n@com.android.internal.util.DataClass(genToString=true, genSetters=true, genBuilder=false, genConstructor=false)")
@@ -628,7 +649,7 @@ public final class TransitionRequestInfo implements Parcelable {
         };
 
         @DataClass.Generated(
-                time = 1769081030241L,
+                time = 1771341341669L,
                 codegenVersion = "1.0.23",
                 sourceFile = "frameworks/base/core/java/android/window/TransitionRequestInfo.java",
                 inputSignatures = "private  int mDisplayId\nprivate @android.annotation.NonNull android.graphics.Rect mBounds\nclass RequestedLocation extends java.lang.Object implements [android.os.Parcelable]\n@com.android.internal.util.DataClass(genToString=true, genSetters=true, genBuilder=false, genConstructor=false)")
@@ -733,7 +754,7 @@ public final class TransitionRequestInfo implements Parcelable {
         };
 
         @DataClass.Generated(
-                time = 1769081030246L,
+                time = 1771341341679L,
                 codegenVersion = "1.0.23",
                 sourceFile = "frameworks/base/core/java/android/window/TransitionRequestInfo.java",
                 inputSignatures = "private final  int mPreviousUserId\nprivate final  int mNewUserId\nclass UserChange extends java.lang.Object implements [android.os.Parcelable]\n@com.android.internal.util.DataClass(genToString=true, genSetters=true, genBuilder=false, genConstructor=false)")
@@ -844,7 +865,7 @@ public final class TransitionRequestInfo implements Parcelable {
         };
 
         @DataClass.Generated(
-                time = 1769081030251L,
+                time = 1771341341706L,
                 codegenVersion = "1.0.23",
                 sourceFile = "frameworks/base/core/java/android/window/TransitionRequestInfo.java",
                 inputSignatures = "private final @android.app.ActivityManager.AppTask.WindowingLayer int mWindowingLayer\nprivate final @android.annotation.Nullable android.os.IRemoteCallback mRemoteCallback\nclass WindowingLayerChange extends java.lang.Object implements [android.os.Parcelable]\n@com.android.internal.util.DataClass(genToString=true, genSetters=true, genBuilder=false, genConstructor=false)")
@@ -976,7 +997,7 @@ public final class TransitionRequestInfo implements Parcelable {
         };
 
         @DataClass.Generated(
-                time = 1770633455533L,
+                time = 1771341341720L,
                 codegenVersion = "1.0.23",
                 sourceFile = "frameworks/base/core/java/android/window/TransitionRequestInfo.java",
                 inputSignatures = "private final @android.annotation.NonNull android.window.IRemoteTransition mRemoteTransition\nprivate final @android.annotation.Nullable java.lang.String mDebugName\nprivate final @android.annotation.Nullable android.window.TransitionFilter mFilter\nclass RemoteTransitionInfo extends java.lang.Object implements [android.os.Parcelable]\n@com.android.internal.util.DataClass(genToString=true, genConstructor=false)")
@@ -1088,7 +1109,7 @@ public final class TransitionRequestInfo implements Parcelable {
         };
 
         @DataClass.Generated(
-                time = 1769081030260L,
+                time = 1771341341732L,
                 codegenVersion = "1.0.23",
                 sourceFile = "frameworks/base/core/java/android/window/TransitionRequestInfo.java",
                 inputSignatures = "private final @android.app.Activity.FullscreenModeRequest int mModeRequest\nprivate final @android.annotation.Nullable android.os.IRemoteCallback mRemoteCallback\nclass FullscreenRequestChange extends java.lang.Object implements [android.os.Parcelable]\n@com.android.internal.util.DataClass(genToString=true, genSetters=true, genBuilder=false, genConstructor=false)")
@@ -1453,7 +1474,7 @@ public final class TransitionRequestInfo implements Parcelable {
     };
 
     @DataClass.Generated(
-            time = 1769081030285L,
+            time = 1771341341818L,
             codegenVersion = "1.0.23",
             sourceFile = "frameworks/base/core/java/android/window/TransitionRequestInfo.java",
             inputSignatures = "private final @android.view.WindowManager.TransitionType int mType\nprivate @android.annotation.Nullable android.app.ActivityManager.RunningTaskInfo mTriggerTask\nprivate @android.annotation.Nullable android.window.TransitionRequestInfo.PipChange mPipChange\nprivate @android.annotation.Nullable android.window.TransitionRequestInfo.RemoteTransitionInfo mRemoteTransitionInfo\nprivate @android.annotation.Nullable android.window.TransitionRequestInfo.DisplayChange mDisplayChange\nprivate @android.annotation.Nullable android.window.TransitionRequestInfo.RequestedLocation mRequestedLocation\nprivate @android.annotation.Nullable android.window.TransitionRequestInfo.UserChange mUserChange\nprivate @android.annotation.Nullable android.window.TransitionRequestInfo.WindowingLayerChange mWindowingLayerChange\nprivate @android.annotation.Nullable android.window.TransitionRequestInfo.FullscreenRequestChange mFullscreenRequestChange\nprivate final  int mFlags\nprivate final  int mDebugId\n  java.lang.String typeToString()\npublic  android.window.RemoteTransition getRemoteTransition()\npublic  void setRemoteTransition(android.window.RemoteTransition)\nclass TransitionRequestInfo extends java.lang.Object implements [android.os.Parcelable]\n@com.android.internal.util.DataClass(genToString=true, genSetters=true, genAidl=true)")

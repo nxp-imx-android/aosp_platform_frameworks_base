@@ -359,6 +359,9 @@ class DeferredDisplayUpdater {
         displayChange.setEndAbsBounds(endBounds);
         displayChange.setStartRotation(fromRotation);
         displayChange.setEndRotation(toRotation);
+        if (com.android.window.flags.Flags.sendNewInsetsStateWithRotation()) {
+            displayChange.setEndInsetsState(mDisplayContent.getInsetsStateForRotation(toRotation));
+        }
         return displayChange;
     }
 
