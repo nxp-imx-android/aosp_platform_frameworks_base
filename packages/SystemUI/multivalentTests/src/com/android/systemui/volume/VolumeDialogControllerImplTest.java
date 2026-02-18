@@ -63,6 +63,8 @@ import com.android.systemui.util.concurrency.FakeExecutor;
 import com.android.systemui.util.concurrency.FakeThreadFactory;
 import com.android.systemui.util.concurrency.ThreadFactory;
 import com.android.systemui.util.kotlin.JavaAdapter;
+import com.android.systemui.util.settings.GlobalSettings;
+import com.android.systemui.util.settings.SecureSettings;
 import com.android.systemui.util.time.FakeSystemClock;
 import com.android.systemui.volume.domain.interactor.AudioSharingInteractor;
 import com.android.systemui.volume.domain.interactor.FakeAudioSharingInteractor;
@@ -126,6 +128,10 @@ public class VolumeDialogControllerImplTest extends SysuiTestCase {
     private DumpManager mDumpManager;
     @Mock
     private VolumeLogger mVolumeLogger;
+    @Mock
+    private SecureSettings mSecureSettings;
+    @Mock
+    private GlobalSettings mGlobalSettings;
 
 
     @Before
@@ -160,6 +166,8 @@ public class VolumeDialogControllerImplTest extends SysuiTestCase {
                         mWakefullnessLifcycle,
                         mKeyguardManager,
                         mActivityManager,
+                        mGlobalSettings,
+                        mSecureSettings,
                         mUserTracker,
                         mDumpManager,
                         mCallback,
@@ -343,6 +351,8 @@ public class VolumeDialogControllerImplTest extends SysuiTestCase {
                 WakefulnessLifecycle wakefulnessLifecycle,
                 KeyguardManager keyguardManager,
                 ActivityManager activityManager,
+                GlobalSettings globalSettings,
+                SecureSettings secureSettings,
                 UserTracker userTracker,
                 DumpManager dumpManager,
                 C callback,
@@ -364,6 +374,8 @@ public class VolumeDialogControllerImplTest extends SysuiTestCase {
                     wakefulnessLifecycle,
                     keyguardManager,
                     activityManager,
+                    globalSettings,
+                    secureSettings,
                     userTracker,
                     dumpManager,
                     audioSharingInteractor,
