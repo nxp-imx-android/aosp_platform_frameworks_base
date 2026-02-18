@@ -70,6 +70,7 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
     private var collapseDismissedKey: String? = null
     private var collapseDismissedTitle: String? = null
     private var collapseDismissedIcon: Drawable? = null
+    private var isAnimating = false
 
     var visiblePreferencesWhenCollapsedCount: Int = DEFAULT_VISIBLE_PREFERENCES_WHEN_COLLAPSED
         set(value) {
@@ -229,11 +230,20 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
                 child.animateDismiss()
             }
         }
+
+        if (!isAnimating) {
+            activeSection.expandPref?.isVisible =
+                !activeSection.isExpanded && collapsiblePreferenceCount > 0
+            activeSection.collapsePref?.isVisible =
+                activeSection.isExpanded && collapsiblePreferenceCount > 0
+        }
     }
 
     private fun toggleExpansion(anchorView: View?) {
         handler.removeCallbacksAndMessages(null)
         val areAnimsEnabled = areAnimationsEnabled()
+
+        isAnimating = true
 
         if (!activeSection.isExpanded) {
             activeSection.isExpanded = true
@@ -244,6 +254,7 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
                 child.isVisible = true
             }
 
+            isAnimating = false
             activeSection.list.forEach { child ->
                 if (areAnimsEnabled) child.signalExpand()
             }
@@ -308,6 +319,8 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
                                             p.isVisible = false
                                         }
                                     }
+
+                                    isAnimating = false
                                 }
                             } else {
                                 child.signalCollapse(false, null)
