@@ -1101,11 +1101,10 @@ public class UsageStatsService extends SystemService implements
     }
 
     /**
-     * Assuming the event's timestamp is measured in milliseconds since boot,
-     * convert it to a system wall time. System and real time snapshots are updated before
-     * conversion.
+     * Assuming the given timestamp is measured in milliseconds since boot, convert it to a system
+     * wall time. System and real time snapshots are updated before conversion.
      */
-    private void convertToSystemTimeLocked(Event event) {
+    private long convertToSystemTimeLocked(long timeStamp) {
         final long actualSystemTime = System.currentTimeMillis();
         if (ENABLE_TIME_CHANGE_CORRECTION) {
             final long actualRealtime = SystemClock.elapsedRealtime();
@@ -1119,7 +1118,7 @@ public class UsageStatsService extends SystemService implements
                 mSystemTimeSnapshot = actualSystemTime;
             }
         }
-        event.mTimeStamp = Math.max(0, event.mTimeStamp - mRealTimeSnapshot) + mSystemTimeSnapshot;
+        return Math.max(0, timeStamp - mRealTimeSnapshot) + mSystemTimeSnapshot;
     }
 
     /**
@@ -1265,8 +1264,8 @@ public class UsageStatsService extends SystemService implements
                     logAppUsageEventReportedAtomLocked(Event.USER_INTERACTION, uid, event.mPackage);
                     // Fall through.
                 case Event.APP_COMPONENT_USED:
-                    convertToSystemTimeLocked(event);
-                    mLastTimeComponentUsedGlobal.put(event.mPackage, event.mTimeStamp);
+                    mLastTimeComponentUsedGlobal.put(
+                            event.mPackage, convertToSystemTimeLocked(event.mTimeStamp));
                     break;
                 case Event.SHORTCUT_INVOCATION:
                 case Event.CHOOSER_ACTION:
