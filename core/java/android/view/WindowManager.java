@@ -4814,7 +4814,6 @@ public interface WindowManager extends ViewManager {
          *
          * @hide
          */
-        @FlaggedApi(android.companion.virtualdevice.flags.Flags.FLAG_STATUS_BAR_AND_INSETS)
         @SystemApi
         public void setInsetsParams(@NonNull List<InsetsParams> insetsParams) {
             if (insetsParams.isEmpty()) {
@@ -6351,7 +6350,6 @@ public interface WindowManager extends ViewManager {
      *
      * @hide
      */
-    @FlaggedApi(android.companion.virtualdevice.flags.Flags.FLAG_STATUS_BAR_AND_INSETS)
     @SystemApi
     public static class InsetsParams {
 

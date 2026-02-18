@@ -11173,9 +11173,6 @@ public class WindowManagerService extends IWindowManager.Stub
      */
     @Override
     public boolean isCallerVirtualDeviceOwner(int displayId, int callingUid) {
-        if (!android.companion.virtualdevice.flags.Flags.statusBarAndInsets()) {
-            return false;
-        }
         final long identity = Binder.clearCallingIdentity();
         try {
             return mAtmService.mTaskSupervisor.isDeviceOwnerUid(displayId, callingUid);
