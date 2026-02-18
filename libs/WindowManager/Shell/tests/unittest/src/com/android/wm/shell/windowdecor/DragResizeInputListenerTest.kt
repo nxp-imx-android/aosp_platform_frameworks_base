@@ -15,7 +15,6 @@
  */
 package com.android.wm.shell.windowdecor
 
-import android.app.ActivityManager
 import android.content.Context
 import android.graphics.Region
 import android.os.Handler
@@ -313,7 +312,6 @@ class DragResizeInputListenerTest : ShellTestCase() {
     ) : DragResizeInputListener.TaskResizeInputEventReceiverFactory {
         override fun create(
             context: Context,
-            taskInfo: ActivityManager.RunningTaskInfo,
             inputChannel: InputChannel,
             callback: DragPositioningCallback,
             handler: Handler,
