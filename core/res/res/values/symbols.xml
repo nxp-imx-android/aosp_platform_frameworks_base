@@ -6303,6 +6303,7 @@
   <java-symbol type="bool" name="config_useAutoSuspend" />
 
   <java-symbol type="array" name="config_computerControlKnownSuperAgents" />
+  <java-symbol type="string" name="config_computerControlReferenceDisplayPhysicalAddress" />
 
   <!-- Biometric dangling notification strings -->
   <java-symbol type="string" name="fingerprint_dangling_notification_title" />

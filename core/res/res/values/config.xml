@@ -7557,6 +7557,14 @@
     <string-array name="config_computerControlKnownSuperAgents" translatable="false">
     </string-array>
 
+    <!-- Physical address of the display that will be used as reference for display size for running
+         computer control automations.
+         Primarily to be used for devices with multiple displays (like foldables) where you would
+         want to configure the size of the virtual display where the automation will be executed.
+         In absence of this config, we will default to the current active display for the user when
+         the session is created -->
+    <string name="config_computerControlReferenceDisplayPhysicalAddress" translatable="false"></string>
+
     <!-- Certificate digests for trusted apps that will be allowed to obtain the knownSigner
          permission for staging HealthConnect's remote data. The digest should be computed over the
          DER encoding of the trusted certificate using the SHA-256 digest algorithm. -->

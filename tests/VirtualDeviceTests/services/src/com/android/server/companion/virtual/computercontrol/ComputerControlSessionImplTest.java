@@ -107,6 +107,7 @@ import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.view.Display;
+import android.view.DisplayAddress;
 import android.view.DisplayInfo;
 import android.view.KeyEvent;
 import android.view.Surface;
@@ -443,6 +444,32 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
+    public void createSession_usesConfiguredDisplayDimensions() throws Exception {
+        // Setup: Define a secondary display with a specific physical address and dimensions
+        final long physicalAddress = 123456789L;
+        final int secondaryDisplayId = 55;
+        final int secondaryWidth = 1234;
+        final int secondaryHeight = 5678;
+        DisplayInfo secondaryInfo = new DisplayInfo();
+        secondaryInfo.logicalWidth = secondaryWidth;
+        secondaryInfo.logicalHeight = secondaryHeight;
+        secondaryInfo.logicalDensityDpi = DISPLAY_DPI;
+        secondaryInfo.address = DisplayAddress.fromPhysicalDisplayId(physicalAddress);
+        when(mDisplayManager.getDisplayIds(true)).thenReturn(
+                new int[]{MAIN_DISPLAY_ID, secondaryDisplayId});
+        when(mDisplayManager.getDisplayInfo(secondaryDisplayId)).thenReturn(secondaryInfo);
+
+        createComputerControlSession(mDefaultParams, GLOBAL_TIMEOUT_MILLIS,
+                String.valueOf(physicalAddress));
+
+        verify(mVirtualDevice).createVirtualDisplay(
+                mVirtualDisplayConfigArgumentCaptor.capture(), any(), any());
+        VirtualDisplayConfig config = mVirtualDisplayConfigArgumentCaptor.getValue();
+        assertThat(config.getWidth()).isEqualTo(secondaryWidth);
+        assertThat(config.getHeight()).isEqualTo(secondaryHeight);
+    }
+
+    @Test
     public void createSession_doesNotSetAllowedUsers() throws Exception {
         createComputerControlSession(mDefaultParams);
 
@@ -463,7 +490,8 @@ public class ComputerControlSessionImplTest {
 
     @Test
     public void createSession_canCloseSessionBeforeInitializing() throws Exception {
-        createComputerControlSessionWithoutInitializing(mDefaultParams, GLOBAL_TIMEOUT_MILLIS);
+        createComputerControlSessionWithoutInitializing(mDefaultParams,
+                GLOBAL_TIMEOUT_MILLIS, /* referenceDisplayAddress= */ null);
         mSession.close();
 
         verify(mOnClosedListener).accept(eq(mSession));
@@ -484,7 +512,8 @@ public class ComputerControlSessionImplTest {
         // ensuring that creation failures are propagated to the caller.
         final RuntimeException thrown = assertThrows(RuntimeException.class,
                 () -> createComputerControlSessionWithoutInitializing(
-                        mDefaultParams, GLOBAL_TIMEOUT_MILLIS));
+                        mDefaultParams, GLOBAL_TIMEOUT_MILLIS,
+                        /* referenceDisplayAddress= */ null));
         assertThat(thrown).isEqualTo(expectedException);
     }
 
@@ -1249,9 +1278,9 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
-    public void notifyActivityListener_beforeInitialization_doesNotSetSurface()
-            throws RemoteException {
-        createComputerControlSessionWithoutInitializing(mDefaultParams, GLOBAL_TIMEOUT_MILLIS);
+    public void notifyActivityListener_beforeInitialization_doesNotSetSurface() {
+        createComputerControlSessionWithoutInitializing(mDefaultParams, GLOBAL_TIMEOUT_MILLIS,
+                /* referenceDisplayAddress= */ null);
         verify(mVirtualDevice).addActivityListener(any(),
                 mActivityListenerArgumentCaptor.capture());
 
@@ -1607,12 +1636,21 @@ public class ComputerControlSessionImplTest {
 
     private void createComputerControlSession(
             ComputerControlSessionParams params, long globalSessionTimeoutDurationMs) {
-        createComputerControlSessionWithoutInitializing(params, globalSessionTimeoutDurationMs);
+        createComputerControlSession(params,
+                globalSessionTimeoutDurationMs, /* referenceDisplayAddress = */ null);
+    }
+
+    private void createComputerControlSession(
+            ComputerControlSessionParams params, long globalSessionTimeoutDurationMs,
+            String referenceDisplayAddress) {
+        createComputerControlSessionWithoutInitializing(params, globalSessionTimeoutDurationMs,
+                referenceDisplayAddress);
         mSession.initialize(mLifecycleCallback, mClientSurface);
     }
 
     private void createComputerControlSessionWithoutInitializing(
-            ComputerControlSessionParams params, long globalSessionTimeoutDurationMs) {
+            ComputerControlSessionParams params, long globalSessionTimeoutDurationMs,
+            String referenceDisplayAddress) {
         DisplayManagerGlobal displayManagerGlobal = new DisplayManagerGlobal(mDisplayManager);
         displayManagerGlobal.disableLocalDisplayInfoCaches();
         mSession = new ComputerControlSessionImpl(
@@ -1620,7 +1658,7 @@ public class ComputerControlSessionImplTest {
                 globalSessionTimeoutDurationMs, () -> mTransaction, mAppToken, params, mAppThread,
                 new AttributionSource(UserHandle.getUid(USER_ID, 0), AGENT_PACKAGE,
                         ATTRIBUTION_TAG),
-                mVirtualDeviceFactory, mOnClosedListener, Runnable::run);
+                mVirtualDeviceFactory, mOnClosedListener, Runnable::run, referenceDisplayAddress);
     }
 
     private void assertActionCancelsOngoingSwipe(Interactor action) throws Exception {
