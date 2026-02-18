@@ -17,13 +17,12 @@
 package com.android.systemui.statusbar.quickactions.assistant.data.repository
 
 import android.content.ComponentName
-import android.content.Context
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class FakeAssistantRepository : AssistantRepository {
-    override fun startAssistant(context: Context) {}
+    override fun startAssistant() {}
 
     private val _assistInfoFlow = MutableStateFlow<ComponentName?>(null)
     override val assistInfo: StateFlow<ComponentName?> = _assistInfoFlow.asStateFlow()

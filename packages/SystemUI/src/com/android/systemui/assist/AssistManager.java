@@ -305,17 +305,6 @@ public class AssistManager {
     }
 
     public void startAssist(Bundle args) {
-        startAssist(mContext, args);
-    }
-
-    /**
-     * Same as {@link #startAssist(Bundle)}, but with an option to pass a specific {@link Context}
-     * to be used when launching Assistant.
-     *
-     * <p>An example usage could be a display specific {@link Context}, to that Assistant is
-     * launched on that specific display.
-     */
-    public void startAssist(Context context, Bundle args) {
         if (mActivityManager.getLockTaskModeState() != ActivityManager.LOCK_TASK_MODE_NONE) {
             return;
         }
@@ -354,7 +343,7 @@ public class AssistManager {
                 legacyDeviceState);
         logStartAssistLegacy(legacyInvocationType, legacyDeviceState);
         mInteractor.onAssistantStarted(legacyInvocationType);
-        startAssistInternal(context, args, assistComponent, isService);
+        startAssistInternal(args, assistComponent, isService);
     }
 
     private boolean shouldOverrideAssist(Bundle args) {
@@ -418,20 +407,16 @@ public class AssistManager {
         mVisualQueryAttentionListeners.remove(listener);
     }
 
-    private void startAssistInternal(
-            Context context,
-            Bundle args,
-            @NonNull ComponentName assistComponent,
+    private void startAssistInternal(Bundle args, @NonNull ComponentName assistComponent,
             boolean isService) {
         if (isService) {
-            startVoiceInteractor(context, args);
+            startVoiceInteractor(args);
         } else {
-            startAssistActivity(context, args, assistComponent);
+            startAssistActivity(args, assistComponent);
         }
     }
 
-    private void startAssistActivity(
-            Context context, Bundle args, @NonNull ComponentName assistComponent) {
+    private void startAssistActivity(Bundle args, @NonNull ComponentName assistComponent) {
         if (!mDeviceProvisionedController.isDeviceProvisioned()) {
             return;
         }
@@ -445,7 +430,7 @@ public class AssistManager {
                 Settings.Secure.ASSIST_STRUCTURE_ENABLED, 1, UserHandle.USER_CURRENT) != 0;
 
         final SearchManager searchManager =
-                (SearchManager) context.getSystemService(Context.SEARCH_SERVICE);
+                (SearchManager) mContext.getSystemService(Context.SEARCH_SERVICE);
         if (searchManager == null) {
             return;
         }
@@ -457,20 +442,18 @@ public class AssistManager {
         intent.putExtras(args);
 
         if (!android.permission.flags.Flags.assistSettingsPrivacyImprovementsEnabled()
-                && structureEnabled && AssistUtils.isDisclosureEnabled(context)) {
+                && structureEnabled && AssistUtils.isDisclosureEnabled(mContext)) {
             showDisclosure();
         }
 
         try {
-            final ActivityOptions opts = ActivityOptions.makeCustomAnimation(context,
+            final ActivityOptions opts = ActivityOptions.makeCustomAnimation(mContext,
                     R.anim.search_launch_enter, R.anim.search_launch_exit);
-            opts.setLaunchDisplayId(context.getDisplayId());
-
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             AsyncTask.execute(new Runnable() {
                 @Override
                 public void run() {
-                    context.startActivityAsUser(intent, opts.toBundle(),
+                    mContext.startActivityAsUser(intent, opts.toBundle(),
                             mUserTracker.getUserHandle());
                 }
             });
@@ -479,12 +462,11 @@ public class AssistManager {
         }
     }
 
-    private void startVoiceInteractor(Context context, Bundle args) {
-        args.putInt(Intent.EXTRA_ASSIST_DISPLAY_ID, context.getDisplayId());
+    private void startVoiceInteractor(Bundle args) {
         // Use background thread to prevent the binder call from blocking the UI thread
         mBgHandler.post(() -> mAssistUtils.showSessionForActiveService(args,
                 VoiceInteractionSession.SHOW_SOURCE_ASSIST_GESTURE,
-                context.getAttributionTag(), null, null));
+                mContext.getAttributionTag(), null, null));
     }
 
     private void registerVisualQueryRecognitionStatusListener() {

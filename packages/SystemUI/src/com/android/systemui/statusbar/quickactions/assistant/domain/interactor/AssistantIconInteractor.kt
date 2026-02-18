@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.quickactions.assistant.domain.interactor
 
-import android.content.Context
 import android.content.res.Resources
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
@@ -50,7 +49,7 @@ interface AssistantIconInteractor {
     val assistantIconSharedModel: StateFlow<AssistantIconSharedModel>
 
     /** This invokes the assistant app. */
-    fun startAssistant(context: Context)
+    fun startAssistant()
 }
 
 @SysUISingleton
@@ -98,8 +97,8 @@ constructor(
                 initialValue = defaultSharedModel,
             )
 
-    override fun startAssistant(context: Context) {
-        assistantRepository.startAssistant(context)
+    override fun startAssistant() {
+        assistantRepository.startAssistant()
     }
 
     private companion object {

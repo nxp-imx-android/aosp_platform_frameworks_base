@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.quickactions.ui.viewmodel
 
-import android.content.Context
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.statusbar.quickactions.popups.ui.viewmodel.StatusBarPopupViewModel
@@ -74,7 +73,7 @@ sealed class QuickActionChipUiState {
         /** Determines the colors used for the chip. Defaults to system themed colors. */
         val colors: ChipColors = ChipColors.SystemTheme,
         val isPopupShown: Boolean = false,
-        val showPopup: (Context) -> Unit = {},
+        val showPopup: () -> Unit = {},
         val hidePopup: () -> Unit = {},
         val contentDescription: ContentDescription? = null,
         val popupViewModelFactory: StatusBarPopupViewModel.Factory? = null,
