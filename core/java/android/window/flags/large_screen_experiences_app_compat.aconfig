@@ -100,16 +100,6 @@ flag {
 }
 
 flag {
-  name: "app_compat_refactoring_fix_multiwindow_task_hierarchy"
-  namespace: "large_screen_experiences_app_compat"
-  description: "Whether Task id detection for split screen should be enabled."
-  bug: "432244895"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "app_compat_refactoring_force_change_for_letterbox_transitions"
   namespace: "large_screen_experiences_app_compat"
   description: "Whether a Change should always sent for Letterbox transition."
