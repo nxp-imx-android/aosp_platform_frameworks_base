@@ -94,7 +94,7 @@ public class ContextActionResolver {
     @Nullable
     public ResolutionResult resolveActionIntent(
             @NonNull ActionableInsight insight, boolean needsComponentInfo) {
-        final Intent actionIntent = insight.getActionDetails().createActionIntent();
+        final Intent actionIntent = insight.getActionDetails().getIntent();
         final RemoteAction remoteAction = insight.getActionDetails().getRemoteAction();
 
         // Strategy 1: RemoteAction

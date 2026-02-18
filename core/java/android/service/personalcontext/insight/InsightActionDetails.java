@@ -20,6 +20,7 @@ import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.app.RemoteAction;
 import android.content.Intent;
@@ -27,13 +28,17 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.service.personalcontext.Flags;
 
+import com.android.internal.util.Preconditions;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Objects;
 
 /**
- * Contains the details of the action to be performed, either as an {@link Intent} or a {@link
- * RemoteAction}.
+ * Contains the details of an action to be performed, either as an {@link Intent} or a {@link
+ * RemoteAction}. Note that multiple actions can be specified, in which case it is up to the
+ * receiver to decide which action to perform. Use {@link #hasActionType} to determine if a
+ * particular action type has been specified. It is an error for no action type to be specified.
  * @hide
  */
 @SystemApi
@@ -42,6 +47,7 @@ public final class InsightActionDetails implements Parcelable {
 
     /** @hide */
     @IntDef(
+            flag = true,
             prefix = {"ACTION_TYPE_"},
             value = {ACTION_TYPE_INTENT, ACTION_TYPE_REMOTE_ACTION})
     @Retention(RetentionPolicy.SOURCE)
@@ -79,6 +85,7 @@ public final class InsightActionDetails implements Parcelable {
     }
 
     /** Returns the valid action types contained in this action details. */
+    @ActionType
     public int getActionTypes() {
         return mActionTypes;
     }
@@ -91,15 +98,16 @@ public final class InsightActionDetails implements Parcelable {
     }
 
     /**
-     * Returns the intent to be invoked when the insight triggers.
+     * Returns the {@link Intent} these details contain, or null if there is no intent.
      */
+    @SuppressLint("IntentBuilderName")
     @Nullable
-    public Intent createActionIntent() {
-        return mActionIntent != null ? new Intent(mActionIntent) : null;
+    public Intent getIntent() {
+        return mActionIntent;
     }
 
     /**
-     * Returns the remote action to be invoked when the insight triggers.
+     * Returns the {@link RemoteAction} these details contain, or null if there is no remote action.
      */
     @Nullable
     public RemoteAction getRemoteAction() {
@@ -177,7 +185,6 @@ public final class InsightActionDetails implements Parcelable {
          * @param intent the {@link Intent} to set
          */
         @NonNull
-        @SuppressWarnings("MissingGetterMatchingBuilder") // getter is createActionIntent
         public Builder setIntent(@NonNull Intent intent) {
             Objects.requireNonNull(intent, "intent is null");
             mActionIntent = intent;
@@ -203,6 +210,8 @@ public final class InsightActionDetails implements Parcelable {
          */
         @NonNull
         public InsightActionDetails build() {
+            Preconditions.checkState(mActionIntent != null || mRemoteAction != null,
+                    "Neither action intent nor remote action have been set.");
             return new InsightActionDetails(mActionIntent, mRemoteAction);
         }
     }

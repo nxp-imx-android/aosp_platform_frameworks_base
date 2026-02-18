@@ -17,9 +17,9 @@
 package com.android.server.personalcontext.notifications;
 
 import static com.google.common.truth.Truth.assertThat;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -37,12 +37,12 @@ import android.graphics.drawable.Icon;
 import android.service.personalcontext.insight.ActionableInsight;
 import android.service.personalcontext.insight.InsightActionDetails;
 import android.service.personalcontext.insight.InsightDisplayDetails;
-import com.android.server.personalcontext.notifications.ContextActionResolver.ActionType;
-import com.android.server.personalcontext.notifications.ContextActionResolver.ResolutionResult;
-import com.android.server.personalcontext.notifications.PendingIntentFactory;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
+
+import com.android.server.personalcontext.notifications.ContextActionResolver.ActionType;
+import com.android.server.personalcontext.notifications.ContextActionResolver.ResolutionResult;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -233,16 +233,6 @@ public class ContextActionResolverTest {
     public void resolveActionIntent_rawIntentHasNoResolvers_returnsNull() {
         setUpRawIntent();
         mockPackageManagerResolvers(null, null, null);
-
-        ResolutionResult result = mUnderTest.resolveActionIntent(mActionableInsight, true);
-
-        assertThat(result).isNull();
-    }
-
-    @Test
-    public void resolveActionIntent_noRemoteActionAndNullIntent_returnsNull() {
-        InsightActionDetails actionDetails = new InsightActionDetails.Builder().build();
-        mActionableInsight = new ActionableInsight.Builder(actionDetails, mDisplayDetails).build();
 
         ResolutionResult result = mUnderTest.resolveActionIntent(mActionableInsight, true);
 
