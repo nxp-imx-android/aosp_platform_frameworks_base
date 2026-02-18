@@ -184,6 +184,11 @@ class ActivityMetricsLogger {
     /** SparseArray : Package UID => {@link PackageCompatStateInfo} */
     private final SparseArray<PackageCompatStateInfo> mPackageUidToCompatStateInfo =
             new SparseArray<>(0);
+    /**
+     * Snapshot of the process state before it is updated for the launch, ensuring consistent
+     * logging even if the state changes asynchronously.
+     */
+    private final LaunchingProcessState mCurrentLaunchingProcessState = new LaunchingProcessState();
 
     private ArtManagerInternal mArtManagerInternal;
     private final StringBuilder mStringBuilder = new StringBuilder();
@@ -622,6 +627,12 @@ class ActivityMetricsLogger {
         @Nullable ActivityRecord mLastLoggedActivity;
     }
 
+    private static final class LaunchingProcessState {
+        int mPid = -1;
+        int mProcState;
+        int mOomAdj;
+    }
+
     private static final class CrossPackageLaunchTracker {
         // Hardcode the max package size to 50.
         private static final int PACKAGE_MAX_SIZE = 50;
@@ -804,12 +815,18 @@ class ActivityMetricsLogger {
         final int processState;
         final @OomAdjust int processOomAdj;
         if (processRunning) {
-            processState = processRecord.getCurrentProcState();
-            processOomAdj = processRecord.getCurrentAdj();
+            if (mCurrentLaunchingProcessState.mPid == processRecord.getPid()) {
+                processState = mCurrentLaunchingProcessState.mProcState;
+                processOomAdj = mCurrentLaunchingProcessState.mOomAdj;
+            } else {
+                processState = processRecord.getCurrentProcState();
+                processOomAdj = processRecord.getCurrentAdj();
+            }
         } else {
             processState = PROCESS_STATE_NONEXISTENT;
             processOomAdj = INVALID_ADJ;
         }
+        mCurrentLaunchingProcessState.mPid = -1;
 
         final TransitionInfo info = launchingState.mAssociatedTransitionInfo;
         if (DEBUG_METRICS) {
@@ -897,6 +914,12 @@ class ActivityMetricsLogger {
                 scheduleCheckActivityToBeDrawn(prevInfo.mLastLaunchedActivity, 0 /* delay */);
             }
         }
+    }
+
+    void setLastLaunchingProcessState(int pid, int procState, int oomAdj) {
+        mCurrentLaunchingProcessState.mPid = pid;
+        mCurrentLaunchingProcessState.mProcState = procState;
+        mCurrentLaunchingProcessState.mOomAdj = oomAdj;
     }
 
     String getDestinationPackage(String originalPackageName) {
@@ -1246,6 +1269,7 @@ class ActivityMetricsLogger {
             }
         }
         mTransitionInfoList.remove(info);
+        mCurrentLaunchingProcessState.mPid = -1;
     }
 
     private void logAppTransitionCancel(TransitionInfo info) {
