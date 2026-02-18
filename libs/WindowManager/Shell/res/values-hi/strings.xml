@@ -137,7 +137,8 @@
     <string name="handle_menu_error_icon_text" msgid="7200375184879808684">"गड़बड़ी का आइकॉन"</string>
     <string name="close_text" msgid="4986518933445178928">"बंद करें"</string>
     <string name="collapse_menu_text" msgid="7515008122450342029">"मेन्यू बंद करें"</string>
-    <string name="desktop_mode_app_header_chip_text" msgid="7617377295944971651">"<xliff:g id="APP_NAME">%1$s</xliff:g> (डेस्कटॉप विंडोविंग)"</string>
+    <!-- no translation found for desktop_mode_header_chip_text (7171700244998923330) -->
+    <skip />
     <string name="desktop_mode_layout_menu_maximize_text" msgid="7086608727256054454">"स्क्रीन को बड़ा करें"</string>
     <string name="desktop_mode_layout_menu_snap_text" msgid="7558194147987254333">"साइज़ बदलें"</string>
     <string name="desktop_mode_non_resizable_snap_text" msgid="3771776422751387878">"ऐप्लिकेशन को यहां मूव नहीं किया जा सकता"</string>
@@ -159,7 +160,10 @@
     <string name="app_handle_menu_accessibility_announce" msgid="7928858564852785398">"<xliff:g id="WINDOWING_MODE">%1$s</xliff:g> में जाएं"</string>
     <string name="layout_menu_talkback_action_snap_left_text" msgid="8141501620544883986">"विंडो का साइज़ बाईं ओर से बदलें"</string>
     <string name="layout_menu_talkback_action_snap_right_text" msgid="7819760135716721943">"विंडो का साइज़ दाईं ओर से बदलें"</string>
-    <string name="layout_menu_talkback_action_maximize_restore_text" msgid="4164150689697006287">"विंडो को बड़ा करें या उसका साइज़ पहले जैसा करें"</string>
+    <string name="layout_menu_talkback_action_maximize_restore_text" msgid="132471919764977708">"ऐप्लिकेशन की विंडो का साइज़ बड़ा करें"</string>
+    <string name="layout_menu_talkback_action_restore_text" msgid="1791365751744400881">"विंडो का साइज़ पहले जैसा करें"</string>
+    <string name="layout_menu_talkback_action_immersive_enter_text" msgid="1753945477839147586">"इमर्सिव मोड चालू करें"</string>
+    <string name="layout_menu_talkback_action_immersive_restore_text" msgid="6913341567930893074">"विंडो का साइज़ पहले जैसा करें"</string>
     <string name="app_header_talkback_action_maximize_button_text" msgid="8776156791095878638">"ऐप्लिकेशन की विंडो का साइज़ बड़ा करें"</string>
     <string name="app_header_talkback_action_restore_button_text" msgid="2153022340772980863">"विंडो का साइज़ पहले जैसा करें"</string>
     <string name="app_header_talkback_action_minimize_button_text" msgid="7491054416186901764">"ऐप्लिकेशन की विंडो को छोटा करें"</string>
