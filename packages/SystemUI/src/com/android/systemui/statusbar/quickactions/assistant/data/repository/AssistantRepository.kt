@@ -17,7 +17,6 @@
 package com.android.systemui.statusbar.quickactions.assistant.data.repository
 
 import android.content.ComponentName
-import android.content.Context
 import android.content.pm.UserInfo
 import android.os.Bundle
 import android.os.UserHandle
@@ -45,7 +44,7 @@ import kotlinx.coroutines.flow.stateIn
 /** Repository responsible for observing the user assistant settings. */
 interface AssistantRepository {
     /** This invokes the assistant UI. */
-    fun startAssistant(context: Context)
+    fun startAssistant()
 
     /** The component name of the primary assistant app for the current user. */
     val assistInfo: StateFlow<ComponentName?>
@@ -61,15 +60,14 @@ constructor(
     private val userRepository: UserRepository,
     private val secureSettings: SecureSettings,
 ) : AssistantRepository {
-    override fun startAssistant(context: Context) {
+    override fun startAssistant() {
         assistManager.startAssist(
-            context,
             Bundle().apply {
                 putInt(
                     AssistManager.INVOCATION_TYPE_KEY,
                     AssistManager.INVOCATION_TYPE_STATUS_BAR_ICON,
                 )
-            },
+            }
         )
     }
 

@@ -21,7 +21,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.statusbar.quickactions.popups.ui.compose.StatusBarPopup
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
@@ -32,7 +31,7 @@ fun QuickActionChipsContainer(
     chips: List<QuickActionChipUiState.PopupChip>,
     modifier: Modifier = Modifier,
 ) {
-    val context = LocalContext.current
+
     //    TODO(b/385353140): Add padding and spacing for this container according to UX specs.
     Box {
         Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
@@ -43,7 +42,7 @@ fun QuickActionChipsContainer(
                     chipContent = chip.chipContent,
                     colors = chip.colors,
                     contentDescription = chip.contentDescription,
-                    onClick = { chip.showPopup(context) },
+                    onClick = { chip.showPopup() },
                 )
                 if (chip.isPopupShown) {
                     if (chip.popupViewModelFactory != null) {

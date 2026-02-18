@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.quickactions.assistant.domain.interactor
 
-import android.content.Context
 import com.android.systemui.statusbar.quickactions.assistant.shared.model.AssistantIconSharedModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,7 +27,7 @@ class FakeAssistantIconInteractor : AssistantIconInteractor {
     override val assistantIconSharedModel: StateFlow<AssistantIconSharedModel> =
         _assistantIconSharedModelFlow.asStateFlow()
 
-    override fun startAssistant(context: Context) {}
+    override fun startAssistant() {}
 
     fun setAssistantIconSharedModel(assistantIconSharedModel: AssistantIconSharedModel) {
         _assistantIconSharedModelFlow.value = assistantIconSharedModel
