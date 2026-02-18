@@ -15056,6 +15056,7 @@ package android.service.personalcontext {
     method public void publishTriggeringHint(@NonNull java.util.List<android.service.personalcontext.hint.ContextHint>, @Nullable java.util.List<android.service.personalcontext.RenderToken>);
     method public void publishTriggeringHint(@NonNull java.util.List<android.service.personalcontext.hint.ContextHint>, @Nullable java.util.List<android.service.personalcontext.RenderToken>, @Nullable java.util.List<android.service.personalcontext.hint.ContextHint>);
     method public void publishTriggeringHint(@NonNull android.service.personalcontext.insight.interaction.ReturnHintReport, @NonNull java.util.List<android.service.personalcontext.hint.ContextHint>);
+    method public void reportInsightEvent(@NonNull android.service.personalcontext.insight.PublishedContextInsight, int, @NonNull android.service.personalcontext.RenderToken);
     method public void setEnabled(boolean);
     method @RequiresPermission(android.Manifest.permission.CHANGE_PERSONAL_CONTEXT_MODE) public void setPersonalContextModeEnabled(@NonNull String, boolean);
     method public void showAttribution(@NonNull android.service.personalcontext.insight.ContextInsight);
@@ -15681,7 +15682,6 @@ package android.service.personalcontext.insight {
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class PublishedContextInsight {
     method @NonNull public android.service.personalcontext.insight.ContextInsight getInsight();
     method @NonNull public java.util.UUID getPublisherComponentId();
-    method public void reportEvent(@NonNull android.content.Context, int, @NonNull android.service.personalcontext.RenderToken, @Nullable android.os.Bundle);
   }
 
 }
@@ -15710,7 +15710,6 @@ package android.service.personalcontext.insight.interaction {
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class InsightEvent implements android.os.Parcelable {
     method public int describeContents();
     method public int getEventType();
-    method @NonNull public android.os.Bundle getExtras();
     method @NonNull public android.service.personalcontext.insight.PublishedContextInsight getInsight();
     method @NonNull public android.service.personalcontext.RenderToken getRenderToken();
     method public long getTimestamp();

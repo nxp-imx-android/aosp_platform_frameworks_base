@@ -18,9 +18,7 @@ package android.service.personalcontext.insight.interaction;
 
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
-import android.annotation.Nullable;
 import android.annotation.SystemApi;
-import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.service.personalcontext.Flags;
@@ -97,22 +95,16 @@ public final class InsightEvent implements Parcelable {
     @NonNull
     private final RenderToken mRenderToken;
 
-    @NonNull
-    private final Bundle mExtras;
-
     /** @hide */
     public InsightEvent(
             @EventType int eventType,
             @NonNull PublishedContextInsight publishedInsight,
             long timestamp,
-            @NonNull RenderToken renderToken,
-            @Nullable Bundle extras) {
+            @NonNull RenderToken renderToken) {
         mEventType = eventType;
         mPublishedContextInsight = publishedInsight;
         mTimestamp = timestamp;
         mRenderToken = renderToken;
-        mExtras = new Bundle();
-        mExtras.putAll(extras);
     }
 
     private InsightEvent(Parcel in) {
@@ -122,7 +114,6 @@ public final class InsightEvent implements Parcelable {
                 .getPublishedContextInsight();
         mTimestamp = in.readLong();
         mRenderToken = in.readParcelable(null, RenderToken.class);
-        mExtras = in.readBundle();
     }
 
     /** Gets the type of event that occurred. */
@@ -145,12 +136,6 @@ public final class InsightEvent implements Parcelable {
     @NonNull
     public RenderToken getRenderToken() {
         return mRenderToken;
-    }
-
-    /** Gets the extras provided at the time of event creation. */
-    @NonNull
-    public Bundle getExtras() {
-        return mExtras.deepCopy();
     }
 
     @NonNull
@@ -177,6 +162,5 @@ public final class InsightEvent implements Parcelable {
         dest.writeParcelable(new PublishedContextInsightWrapper(mPublishedContextInsight), 0);
         dest.writeLong(mTimestamp);
         dest.writeParcelable(mRenderToken, flags);
-        dest.writeBundle(mExtras);
     }
 }
