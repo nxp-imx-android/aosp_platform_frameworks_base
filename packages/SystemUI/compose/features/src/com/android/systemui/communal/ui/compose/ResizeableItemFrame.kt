@@ -592,7 +592,7 @@ fun ResizableItemFrame(
     // the accessibility resize controls.
     LaunchedEffect(enabled) {
         if (!enabled) {
-            viewModel.clearAccessibilityResizeHandle()
+            viewModel.reset()
         }
     }
 
@@ -610,7 +610,9 @@ fun ResizableItemFrame(
 
     LaunchedEffect(isDragging) {
         if (isDragging && communalAccessibilityResize()) {
-            viewModel.clearAccessibilityResizeHandle()
+            viewModel.visibleAccessibilityResizeHandle.value?.let {
+                viewModel.toggleAccessibilityResizeHandle(it)
+            }
         }
     }
 
