@@ -3,6 +3,16 @@ container: "system"
 
 # go/keep-sorted start block=yes newline_separated=yes by_regex=name:\s*"([^"]+)"
 flag {
+    name: "accessibility_menu_inputs_for_hiding"
+    namespace: "accessibility"
+    bug: "470300647"
+    description: "allows escape key and Back system action to close A11y menu."
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "bouncer_accessibility_button_for_desktop"
     namespace: "accessibility"
     description: "Adds an accessibility button on the bouncer screen for desktop for accessing accessibility services."
