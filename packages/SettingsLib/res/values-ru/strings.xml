@@ -56,7 +56,7 @@
     <string name="wifi_disabled_password_failure" msgid="6892387079613226738">"Ошибка аутентификации"</string>
     <string name="wifi_cant_connect" msgid="5718417542623056783">"Ошибка подключения"</string>
     <string name="wifi_cant_connect_to_ap" msgid="3099667989279700135">"Не удалось подключиться к сети \"<xliff:g id="AP_NAME">%1$s</xliff:g>\""</string>
-    <string name="wifi_check_password_try_again" msgid="8817789642851605628">"Возможно, вы указали неверный пароль. Повторите попытку."</string>
+    <string name="wifi_check_password_try_again" msgid="8817789642851605628">"Проверьте пароль и повторите попытку"</string>
     <string name="wifi_not_in_range" msgid="1541760821805777772">"Недоступна"</string>
     <string name="wifi_no_internet_no_reconnect" msgid="821591791066497347">"Подключение не будет выполняться автоматически"</string>
     <string name="wifi_no_internet" msgid="1774198889176926299">"Без доступа к интернету"</string>

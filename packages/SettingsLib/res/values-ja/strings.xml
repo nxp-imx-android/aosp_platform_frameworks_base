@@ -151,7 +151,7 @@
     <string name="bluetooth_profile_pbap_summary" msgid="402819589201138227">"情報は着信の通知などに使用されます"</string>
     <string name="bluetooth_profile_pan_nap" msgid="7871974753822470050">"インターネット接続の共有"</string>
     <string name="bluetooth_profile_map" msgid="8907204701162107271">"テキスト メッセージ"</string>
-    <string name="bluetooth_profile_sap" msgid="8304170950447934386">"SIMアクセス"</string>
+    <string name="bluetooth_profile_sap" msgid="8304170950447934386">"SIM アクセス"</string>
     <string name="bluetooth_profile_a2dp_high_quality" msgid="4739440941324792775">"HD オーディオ: <xliff:g id="CODEC_NAME">%1$s</xliff:g>"</string>
     <string name="bluetooth_profile_a2dp_high_quality_unknown_codec" msgid="2477639096903834374">"HD オーディオ"</string>
     <string name="bluetooth_profile_hearing_aid" msgid="2607867572569689732">"補聴器"</string>
@@ -222,7 +222,7 @@
     <string name="tts_default_pitch_title" msgid="6988592215554485479">"音の高さ"</string>
     <string name="tts_default_pitch_summary" msgid="9132719475281551884">"合成音声のトーンに影響します"</string>
     <string name="tts_default_lang_title" msgid="4698933575028098940">"言語"</string>
-    <string name="tts_lang_use_system" msgid="6312945299804012406">"システムの言語を使用"</string>
+    <string name="tts_lang_use_system" msgid="6312945299804012406">"システムの言語を使⁠用"</string>
     <string name="tts_lang_not_selected" msgid="7927823081096056147">"言語が選択されていません"</string>
     <string name="tts_default_lang_summary" msgid="9042620014800063470">"テキスト読み上げに使用する言語固有の音声を設定する"</string>
     <string name="tts_play_example_title" msgid="1599468547216481684">"サンプルを再生"</string>
@@ -541,7 +541,7 @@
     <string name="battery_info_status_charging_dock" msgid="8573274094093364791">"充電中"</string>
     <string name="battery_info_status_discharging" msgid="6962689305413556485">"充電していません"</string>
     <string name="battery_info_status_not_charging" msgid="1103084691314264664">"接続済み（充電していません）"</string>
-    <string name="battery_info_status_full" msgid="1339002294876531312">"充電が完了しました"</string>
+    <string name="battery_info_status_full" msgid="1339002294876531312">"充電完了"</string>
     <string name="battery_info_status_full_charged" msgid="3536054261505567948">"充電完了"</string>
     <string name="battery_info_status_charging_on_hold" msgid="6364355145521694438">"充電を一時停止しています"</string>
     <string name="battery_info_status_charging_v2" msgid="6118522107222245505">"充電中"</string>

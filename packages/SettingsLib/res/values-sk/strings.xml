@@ -268,7 +268,7 @@
     <string name="apn_settings_not_available" msgid="1147111671403342300">"Nastavenia názvu prístupového bodu (APN) nie sú dostupné pre tohto používateľa"</string>
     <string name="enable_adb" msgid="8072776357237289039">"Ladenie cez USB"</string>
     <string name="enable_adb_summary" msgid="3711526030096574316">"Povoliť režim ladenia s pripojeným zariadením USB"</string>
-    <string name="clear_adb_keys" msgid="2696065439790970581">"Odvolať autorizácie na ladenie cez ADB"</string>
+    <string name="clear_adb_keys" msgid="2696065439790970581">"Odobrať autorizácie na ladenie cez adb"</string>
     <string name="enable_adb_wireless" msgid="6973226350963971018">"Bezdrôtové ladenie"</string>
     <string name="enable_adb_wireless_summary" msgid="7344391423657093011">"Režim ladenia pri zapnutej sieti Wi-Fi"</string>
     <string name="adb_wireless_error" msgid="721958772149779856">"Chyba"</string>
@@ -368,7 +368,7 @@
     <string name="adb_warning_message" msgid="8145270656419669221">"Ladenie cez USB je určené iba na účely vývoja. Možno ho použiť na kopírovanie dát medzi počítačom a zariadením, inštaláciu aplikácií do zariadenia bez upozornenia a čítanie dát denníka."</string>
     <string name="adbwifi_warning_title" msgid="727104571653031865">"Chcete povoliť bezdrôtové ladenie?"</string>
     <string name="adbwifi_warning_message" msgid="8005936574322702388">"Bezdrôtové ladenie je určené iba na účely vývoja. Môžete pomocou neho kopírovať dáta medzi počítačom a zariadením, inštalovať bez upozornenia aplikácie do zariadenia a čítať dáta denníkov."</string>
-    <string name="adb_keys_warning_message" msgid="7827514623080777814">"Chcete všetkým v minulosti autorizovaným počítačom a sieťam odvolať prístup k ladeniu cez adb?"</string>
+    <string name="adb_keys_warning_message" msgid="7827514623080777814">"Chcete všetkým v minulosti autorizovaným počítačom a sieťam odobrať prístup k ladeniu cez adb?"</string>
     <string name="dev_settings_warning_title" msgid="8251234890169074553">"Povoliť nastavenia pre vývojárov?"</string>
     <string name="dev_settings_warning_message" msgid="37741686486073668">"Tieto nastavenia sú určené len pre vývojárov. Môžu spôsobiť poruchu alebo nesprávne fungovanie zariadenia a nainštalovaných aplikácií."</string>
     <string name="verify_apps_over_usb_title" msgid="6031809675604442636">"Overovať aplikácie z USB"</string>
