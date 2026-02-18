@@ -196,16 +196,6 @@ flag {
 }
 
 flag {
-    name: "fix_flickers_during_switch_from_dismiss"
-    namespace: "multitasking"
-    description: "Fixes flickers while switching bubbles as a result of dismissing a bubble."
-    bug: "452305969"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "fix_bubble_swipe_up_gesture"
     namespace: "multitasking"
     description: "Fixes the swipe up gesture getting broken due to bubbles."
