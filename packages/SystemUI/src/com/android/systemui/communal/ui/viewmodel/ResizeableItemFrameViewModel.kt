@@ -100,7 +100,7 @@ constructor(
     }
 
     /** Hides the accessibility resize handle. */
-    fun clearAccessibilityResizeHandle() {
+    private fun clearAccessibilityResizeHandle() {
         _visibleAccessibilityResizeHandle.value?.let {
             uiEventLogger.log(
                 CommunalUiEvent.COMMUNAL_HUB_WIDGET_HIDE_ACCESSIBILITY_RESIZE_BUTTONS,
@@ -109,6 +109,13 @@ constructor(
             )
         }
         _visibleAccessibilityResizeHandle.value = null
+    }
+
+    /** Resets the state of the view model, including the resize handle and drag state. */
+    suspend fun reset() {
+        clearAccessibilityResizeHandle()
+        topDragState.snapTo(0)
+        bottomDragState.snapTo(0)
     }
 
     data class GridLayoutInfo(

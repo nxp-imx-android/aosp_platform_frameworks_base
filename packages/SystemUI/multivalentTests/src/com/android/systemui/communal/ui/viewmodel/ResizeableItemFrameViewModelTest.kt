@@ -639,16 +639,6 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(FLAG_COMMUNAL_ACCESSIBILITY_RESIZE)
-    fun clearAccessibilityResizeHandle_clearsState() {
-        underTest.toggleAccessibilityResizeHandle(ResizeHandle.TOP)
-        assertThat(underTest.visibleAccessibilityResizeHandle.value).isEqualTo(ResizeHandle.TOP)
-
-        underTest.clearAccessibilityResizeHandle()
-        assertThat(underTest.visibleAccessibilityResizeHandle.value).isNull()
-    }
-
-    @Test
-    @EnableFlags(FLAG_COMMUNAL_ACCESSIBILITY_RESIZE)
     fun toggleAccessibilityResizeHandle_logsShowAndHide() {
         val componentName = ComponentName("pkg", "cls")
 
@@ -667,21 +657,39 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
         assertThat(uiEventLogger.logs[1].packageName).isEqualTo(componentName.packageName)
     }
 
+
+
     @Test
+    @OptIn(ExperimentalCoroutinesApi::class)
     @EnableFlags(FLAG_COMMUNAL_ACCESSIBILITY_RESIZE)
-    fun clearAccessibilityResizeHandle_logsHide() {
-        val componentName = ComponentName("pkg", "cls")
-        underTest.toggleAccessibilityResizeHandle(ResizeHandle.BOTTOM) // make it visible
+    fun reset_clearsStateAndResetsDragState() =
+        testScope.runTestWithSnapshots {
+            // Set up some state
+            underTest.toggleAccessibilityResizeHandle(ResizeHandle.BOTTOM)
 
-        // The toggle above logs one event.
-        assertThat(uiEventLogger.numLogs()).isEqualTo(1)
+            // Simulate drag state (cannot easily simulate drag without anchors, but we can verify it calls snapTo(0))
+            // Actually, we can update anchors and drag to simulate non-zero state.
+            updateGridLayout(singleSpanGrid.copy(totalSpans = 2))
+            underTest.bottomDragState.anchoredDrag { dragTo(45f) }
+            runCurrent()
 
-        underTest.clearAccessibilityResizeHandle()
-        assertThat(uiEventLogger.numLogs()).isEqualTo(2)
-        assertThat(uiEventLogger.eventId(1))
-            .isEqualTo(CommunalUiEvent.COMMUNAL_HUB_WIDGET_HIDE_ACCESSIBILITY_RESIZE_BUTTONS.id)
-        assertThat(uiEventLogger.logs[1].packageName).isEqualTo(componentName.packageName)
-    }
+            assertThat(underTest.visibleAccessibilityResizeHandle.value).isNotNull()
+            assertThat(underTest.bottomDragState.currentValue).isNotEqualTo(0)
+
+            underTest.reset()
+            runCurrent()
+
+            assertThat(underTest.visibleAccessibilityResizeHandle.value).isNull()
+            assertThat(underTest.bottomDragState.currentValue).isEqualTo(0)
+            assertThat(underTest.topDragState.currentValue).isEqualTo(0)
+
+            // Verify logging
+            val componentName = ComponentName("pkg", "cls")
+            assertThat(uiEventLogger.numLogs()).isEqualTo(2)
+            assertThat(uiEventLogger.eventId(1))
+                .isEqualTo(CommunalUiEvent.COMMUNAL_HUB_WIDGET_HIDE_ACCESSIBILITY_RESIZE_BUTTONS.id)
+            assertThat(uiEventLogger.logs[1].packageName).isEqualTo(componentName.packageName)
+        }
 
     @Test
     fun expand_logsExpandEvent() =
