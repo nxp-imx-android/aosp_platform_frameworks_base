@@ -81,9 +81,9 @@ public class InteractionProviderServiceInternal extends InteractionProviderInter
     }
 
     /**
-     * Internal implementation for the interaction listener register API.
+     * Internal implementation for the set interaction listener API.
      */
-    public void registerListener(int callingPid,
+    public void setListener(int callingPid,
             @AttentionManager.InteractionType int interactionTypes,
             @DurationMillisLong long debounceTimeMillis,
             IInteractionListener listener) {
@@ -111,9 +111,9 @@ public class InteractionProviderServiceInternal extends InteractionProviderInter
     }
 
     /**
-     * Internal implementation for the interaction listener unregister API.
+     * Internal implementation for the clear interaction listener API.
      */
-    public void unregisterListener(int callingPid) {
+    public void clearListener(int callingPid) {
         boolean shouldPauseService = false;
         synchronized (mPidToInteractionListeners) {
             if (!mPidToInteractionListeners.contains(callingPid)) {
