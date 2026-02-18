@@ -554,6 +554,11 @@ public final class DreamManagerService extends SystemService {
                     + ComponentName.flattenToShortString(mDreamOverlayServiceName));
             pw.println();
 
+            if (dreamsSwitcher()) {
+                mDreamPlaylistUpdater.dump(pw);
+                mDreamComponentsResolver.dump(pw, mInjector.getCurrentUser());
+            }
+
             DumpUtils.dumpAsync(mHandler, (pw1, prefix) -> mController.dump(pw1), pw, "", 200);
         }
     }

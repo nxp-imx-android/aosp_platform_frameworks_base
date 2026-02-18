@@ -145,6 +145,21 @@ public final class DreamPlaylist implements Parcelable {
     }
 
     @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("DreamPlaylist{");
+        sb.append("dreams=[");
+        for (int i = 0; i < mDreams.size(); i++) {
+            if (i > 0) {
+                sb.append(", ");
+            }
+            sb.append(mDreams.get(i).flattenToString());
+        }
+        sb.append("], activeIndex=").append(mActiveIndex);
+        sb.append("}");
+        return sb.toString();
+    }
+
+    @Override
     public int describeContents() {
         return 0;
     }
