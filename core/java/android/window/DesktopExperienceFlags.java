@@ -140,8 +140,6 @@ public enum DesktopExperienceFlags {
     ENABLE_NESTED_TASKS_WITH_INDEPENDENT_BOUNDS_BUGFIX(
             Flags::nestedTasksWithIndependentBoundsBugfix, true,
             Flags.FLAG_NESTED_TASKS_WITH_INDEPENDENT_BOUNDS_BUGFIX),
-    ENABLE_NON_DEFAULT_DISPLAY_SPLIT(Flags::enableNonDefaultDisplaySplit, true,
-            Flags.FLAG_ENABLE_NON_DEFAULT_DISPLAY_SPLIT),
     ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX(Flags::enableNonDefaultDisplaySplitBugfix, false,
             Flags.FLAG_ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX),
     ENABLE_NO_WINDOW_DECORATION_FOR_DESKS(Flags::enableNoWindowDecorationForDesks, true,
