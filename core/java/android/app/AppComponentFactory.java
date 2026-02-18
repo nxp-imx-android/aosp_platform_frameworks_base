@@ -169,7 +169,7 @@ public class AppComponentFactory {
      * @param cl        The default classloader to use for instantiation.
      * @param className The class to be instantiated.
      */
-    @FlaggedApi(Flags.FLAG_CUSTOM_BACKUPAGENT_INSTANTIATION)
+    @FlaggedApi(Flags.FLAG_CUSTOM_BACKUPAGENT_CREATION)
     public @NonNull BackupAgent instantiateBackupAgent(@NonNull ClassLoader cl,
             @NonNull String className)
             throws InstantiationException, IllegalAccessException, ClassNotFoundException {
