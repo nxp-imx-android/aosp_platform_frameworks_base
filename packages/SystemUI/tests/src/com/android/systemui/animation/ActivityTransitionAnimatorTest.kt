@@ -2,6 +2,7 @@ package com.android.systemui.animation
 
 import android.app.ActivityManager
 import android.app.ActivityManager.RunningTaskInfo
+import android.app.ActivityTaskManager.INVALID_TASK_ID
 import android.app.WindowConfiguration
 import android.content.ComponentName
 import android.content.pm.ActivityInfo
@@ -1289,7 +1290,10 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
                     TRANSIT_CLOSE
                 }
 
-            taskInfo = RunningTaskInfo().apply { launchCookies = arrayListOf(cookie) }
+            taskInfo = RunningTaskInfo().apply {
+                launchCookies = arrayListOf(cookie)
+                parentTaskId = INVALID_TASK_ID
+            }
             backgroundColor = Color.Green.value.toInt()
             setEndAbsBounds(Rect(0, 0, 200, 200))
         }
