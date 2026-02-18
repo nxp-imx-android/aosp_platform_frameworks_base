@@ -33,15 +33,13 @@ private fun trimLines(string: String) =
 class GeneratorTest {
     private fun fillInFile(
         code: String,
-        includes: String =
-            """
-            import java.util.ArrayList;
-            import java.util.List;
-            import java.util.Set;
-        """,
+        includes: List<String> = listOf(),
         staticImports: List<String> = listOf(),
-    ) =
-        trimLines(
+    ): String {
+        var allIncludes =
+            includes + listOf("java.util.ArrayList", "java.util.List", "java.util.Set")
+
+        return trimLines(
             """
         package android.app.admin.metadata;
 
@@ -52,7 +50,13 @@ class GeneratorTest {
                 postfix = ";",
             )
         }
-        $includes
+        ${
+            allIncludes.sorted().joinToString(
+                separator = ";\nimport ",
+                prefix = "import ",
+                postfix = ";",
+            )
+        }
 
         /**
          * Generated class that contains metadata on all known policies.
@@ -71,6 +75,7 @@ class GeneratorTest {
         }
         """
         )
+    }
 
     private fun javaFileToString(file: JavaFile): String {
         val writer = CharArrayWriter()
@@ -298,7 +303,11 @@ class GeneratorTest {
             )
     }
 
-    private fun longTestPolicy(name: String, minValue: Long? = null, maxValue: Long? = null): PolicyMetadata.Builder {
+    private fun longTestPolicy(
+        name: String,
+        minValue: Long? = null,
+        maxValue: Long? = null,
+    ): PolicyMetadata.Builder {
         val longMetadata = TypeSpecificPolicyMetadata.LongPolicyMetadata.newBuilder()
         if (minValue != null) {
             longMetadata.setMinValue(minValue)
@@ -310,8 +319,7 @@ class GeneratorTest {
         return PolicyMetadata.newBuilder()
             .setIdentifier(simpleNameToFieldName(name))
             .setTypeSpecificMetadata(
-                TypeSpecificPolicyMetadata.newBuilder()
-                    .setLongMetadata(longMetadata)
+                TypeSpecificPolicyMetadata.newBuilder().setLongMetadata(longMetadata)
             )
     }
 
@@ -356,9 +364,11 @@ class GeneratorTest {
         val policyList =
             PolicyMetadataList.newBuilder()
                 .addPolicyMetadata(
-                    longTestPolicy("test.package.PolicyContainer.SIMPLE_LONG_POLICY_WITH_RANGE",
-                        minValue = 10,
-                        maxValue = 100)
+                    longTestPolicy(
+                            "test.package.PolicyContainer.SIMPLE_LONG_POLICY_WITH_RANGE",
+                            minValue = 10,
+                            maxValue = 100,
+                        )
                         .addAllAllowedScopes(listOf(PolicyMetadata.PolicyScope.POLICY_SCOPE_DEVICE))
                         .setAffectedResource(PolicyMetadata.ResourceType.RESOURCE_DEVICE_WIDE)
                 )
@@ -369,7 +379,8 @@ class GeneratorTest {
         assertThat(javaFileToString(javaFile))
             .isEqualTo(
                 fillInFile(
-                    staticImports = listOf("test.package.PolicyContainer.SIMPLE_LONG_POLICY_WITH_RANGE"),
+                    staticImports =
+                        listOf("test.package.PolicyContainer.SIMPLE_LONG_POLICY_WITH_RANGE"),
                     code =
                         """
                 policies.add(new LongPolicyMetadata(
@@ -523,14 +534,7 @@ class GeneratorTest {
         assertThat(javaFileToString(javaFile))
             .isEqualTo(
                 fillInFile(
-                    includes =
-                        """
-                import android.app.admin.PolicyIdentifier;
-                import java.lang.String;
-                import java.util.ArrayList;
-                import java.util.List;
-                import java.util.Set;
-                """,
+                    includes = listOf("android.app.admin.PolicyIdentifier", "java.lang.String"),
                     staticImports =
                         listOf("test.package.PolicyContainer.MY_TEST_STRING_LIST_POLICY"),
                     code =
@@ -591,14 +595,7 @@ class GeneratorTest {
         assertThat(javaFileToString(javaFile))
             .isEqualTo(
                 fillInFile(
-                    includes =
-                        """
-                import android.app.admin.PolicyIdentifier;
-                import java.lang.Integer;
-                import java.util.ArrayList;
-                import java.util.List;
-                import java.util.Set;
-                """,
+                    includes = listOf("android.app.admin.PolicyIdentifier", "java.lang.Integer"),
                     staticImports =
                         listOf("test.package.PolicyContainer.MY_TEST_INTEGER_LIST_POLICY"),
                     code =
@@ -664,14 +661,7 @@ class GeneratorTest {
         assertThat(javaFileToString(javaFile))
             .isEqualTo(
                 fillInFile(
-                    includes =
-                        """
-                import android.app.admin.PolicyIdentifier;
-                import java.lang.Integer;
-                import java.util.ArrayList;
-                import java.util.List;
-                import java.util.Set;
-                """,
+                    includes = listOf("android.app.admin.PolicyIdentifier", "java.lang.Integer"),
                     staticImports = listOf("test.package.PolicyContainer.MY_TEST_ENUM_LIST_POLICY"),
                     code =
                         """
