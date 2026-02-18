@@ -116,12 +116,11 @@ public class PolicyDefinitionFactory {
     }
 
     @Nullable
-    public static <T> PolicyDefinition<T> build(
-            @NonNull PolicyIdentifier<T> identifier, @NonNull PolicyMetadata<T> metadata) {
-        var builder = createPrePopulatedBuilder(identifier, metadata);
+    public static <T> PolicyDefinition<T> build(@NonNull PolicyMetadata<T> metadata) {
+        var builder = createPrePopulatedBuilder(metadata);
 
-        if (FACTORIES.containsKey(identifier)) {
-            return FACTORIES.get(identifier).build(builder);
+        if (FACTORIES.containsKey(metadata.getId())) {
+            return FACTORIES.get(metadata.getId()).build(builder);
         }
 
         return builder.build();
@@ -133,10 +132,10 @@ public class PolicyDefinitionFactory {
 
     @VisibleForTesting
     public static <T> PolicyDefinition.Builder<T> createPrePopulatedBuilder(
-            @NonNull PolicyIdentifier<T> identifier, @NonNull PolicyMetadata<T> metadata) {
+            @NonNull PolicyMetadata<T> metadata) {
         var builder =
                 PolicyDefinition.<T>builder()
-                        .setKey(new NoArgsPolicyKey(identifier.getId()))
+                        .setKey(new NoArgsPolicyKey(metadata.getId().getId()))
                         .setEnforcerCallback(PolicyEnforcerCallbacks::noOp)
                         .setSerializer(getSerializer(metadata));
 

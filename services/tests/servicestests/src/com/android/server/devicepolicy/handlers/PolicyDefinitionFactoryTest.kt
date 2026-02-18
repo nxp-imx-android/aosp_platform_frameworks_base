@@ -70,8 +70,8 @@ open class PolicyDefinitionFactoryTest {
             source.isEmptyStringAllowed,
         )
 
-    fun createPolicyDefinition(key: PolicyIdentifier<String>, metadata: PolicyMetadata<String>) =
-        PolicyDefinitionFactory.createPrePopulatedBuilder(key, metadata)
+    fun createPolicyDefinition(metadata: PolicyMetadata<String>) =
+        PolicyDefinitionFactory.createPrePopulatedBuilder(metadata)
             // At the time of writing resolution mechanism can not be modelled in the annotations.
             .setResolutionMechanism(MostRecent<String>())
             .build()
@@ -99,7 +99,7 @@ open class PolicyDefinitionFactoryTest {
     ) {
         val metadata = copyOf(Policy.metadata, allowedScopes = testCase.allowedScopes)
 
-        val policyDefinition = createPolicyDefinition(Policy.key, metadata)
+        val policyDefinition = createPolicyDefinition(metadata)
 
         assertThat(policyDefinition.isGlobalOnlyPolicy()).isEqualTo(testCase.expectedValue)
     }
@@ -132,16 +132,18 @@ open class PolicyDefinitionFactoryTest {
     ) {
         val metadata = copyOf(Policy.metadata, allowedScopes = testCase.allowedScopes)
 
-        val policyDefinition = createPolicyDefinition(Policy.key, metadata)
+        val policyDefinition = createPolicyDefinition(metadata)
 
         assertThat(policyDefinition.isLocalOnlyPolicy()).isEqualTo(testCase.expectedValue)
     }
 
     @Test
     fun getPolicyDefinition_key() {
-        val key = PolicyIdentifier<String>("THE_POLICY_NAME")
 
-        val policyDefinition = createPolicyDefinition(key, Policy.metadata)
+        val policyDefinition =
+            createPolicyDefinition(
+                copyOf(Policy.metadata, id = PolicyIdentifier<String>("THE_POLICY_NAME"))
+            )
 
         assertThat(policyDefinition.getPolicyKey().getIdentifier()).isEqualTo("THE_POLICY_NAME")
     }
