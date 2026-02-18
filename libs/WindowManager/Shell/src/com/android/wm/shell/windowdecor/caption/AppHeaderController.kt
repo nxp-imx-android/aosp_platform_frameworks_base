@@ -705,14 +705,6 @@ class AppHeaderController(
     override val occludingElements: List<OccludingElement>
         get() = viewHolder.getOccludingElements()
 
-    /**
-     * Announces that the app window is now being focused for accessibility. This is used after a
-     * window is minimized/closed, and a new app window gains focus.
-     */
-    fun a11yAnnounceFocused() {
-        viewHolder.a11yAnnounceFocused()
-    }
-
     override fun close(wct: WindowContainerTransaction, t: SurfaceControl.Transaction): Boolean {
         loadAppInfoJob?.cancel()
         closeHandleMenu()

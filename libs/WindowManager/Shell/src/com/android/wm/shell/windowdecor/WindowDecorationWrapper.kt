@@ -691,14 +691,6 @@ private constructor(
             else -> error("Expected Non-null window decoration")
         }
 
-    /** Announces that the app window is now being focused for accessibility. */
-    fun a11yAnnounceNewFocusedWindow() =
-        when {
-            defaultWindowDecor != null -> requireDefaultWindowDecor().a11yAnnounceNewFocusedWindow()
-            desktopWindowDecor != null -> requireDesktopWindowDecor().a11yAnnounceNewFocusedWindow()
-            else -> error("Expected Non-null default or desktop window decoration")
-        }
-
     /**
      * Updates last App-to-Web education request timestamp. Returns true if new request to show
      * education has been received.
