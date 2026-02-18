@@ -36,7 +36,8 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 import androidx.compose.foundation.ComposeFoundationFlags;
-import androidx.compose.ui.ComposeUiFlags;
+import androidx.compose.ui.platform.ComposeView;
+import androidx.compose.ui.platform.ComposeView_androidKt;
 
 import com.android.internal.protolog.ProtoLog;
 import com.android.systemui.BootCompleteCacheImpl;
@@ -140,7 +141,7 @@ public class SystemUIApplicationImpl extends SystemUIApplication implements
         // This allows us to see Handler callbacks on traces.
         rootComponent.getMainLooper().setTraceTag(Trace.TRACE_TAG_APP);
         mProcessWrapper = rootComponent.getProcessWrapper();
-        ComposeUiFlags.areWindowInsetsRulersEnabled = false;
+        ComposeView_androidKt.disableWindowInsetsRulers(ComposeView.Companion);
 
         // TODO(b/458193632): Re-enable once the crash is fixed in Compose.
         ComposeFoundationFlags.isCacheWindowForPagerEnabled = false;
