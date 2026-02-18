@@ -280,7 +280,7 @@ public class AndroidKeyStoreProvider extends Provider {
                 || KeyProperties.KEY_ALGORITHM_ML_DSA_65.equalsIgnoreCase(jcaKeyAlgorithm)
                 || KeyProperties.KEY_ALGORITHM_ML_DSA_87.equalsIgnoreCase(jcaKeyAlgorithm)) {
             return new AndroidKeyStoreMlDsaPublicKey(
-                    descriptor, metadata, iSecurityLevel, parsedX509Certificate);
+                    descriptor, metadata, iSecurityLevel, publicKey.getEncoded());
         } else {
             throw new ProviderException("Unsupported Android Keystore public key algorithm: "
                     + jcaKeyAlgorithm);
