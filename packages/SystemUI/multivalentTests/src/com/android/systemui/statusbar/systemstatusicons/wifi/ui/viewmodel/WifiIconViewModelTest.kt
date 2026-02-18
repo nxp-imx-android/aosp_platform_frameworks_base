@@ -130,8 +130,7 @@ class WifiIconViewModelTest : SysuiTestCase() {
     fun icon_visible_isCorrect() =
         kosmos.runTest {
             fakeWifiRepository.setIsWifiEnabled(true)
-            val testNetwork =
-                WifiNetworkModel.Active.of(isValidated = true, level = 4, ssid = "TestWifi")
+            val testNetwork = WifiNetworkModel.Active.of(level = 4, ssid = "TestWifi")
             fakeWifiRepository.setWifiNetwork(testNetwork)
             connectivityRepository.fake.setWifiConnected()
 
