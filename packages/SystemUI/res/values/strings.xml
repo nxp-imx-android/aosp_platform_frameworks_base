@@ -2661,6 +2661,11 @@
     <!-- Notification: Promoted Ongoing specific long click [CHAR LIMIT=NONE] -->
     <string name="notification_promoted_ongoing_long_click">to open demotion menu</string>
 
+    <!-- Notification rules strings -->
+
+    <!-- Title for a page where users can edit rules for how their notifications are displayed. [CHAR LIMIT=NONE]-->
+    <string name="notification_rules_activity_title">Notification rules</string>
+
     <!-- Summary of battery saver not available [CHAR LIMIT=NONE] -->
 
     <!-- Title of switch for battery saver [CHAR LIMIT=NONE] -->

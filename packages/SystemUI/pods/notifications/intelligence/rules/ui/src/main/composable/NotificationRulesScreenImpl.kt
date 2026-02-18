@@ -16,7 +16,6 @@
 
 package com.android.systemui.notifications.intelligence.rules.ui.composable
 
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.android.systemui.lifecycle.rememberViewModel
@@ -48,7 +47,7 @@ class NotificationRulesScreenImpl @Inject constructor() : NotificationRulesScree
                     dismissEditScreen = {
                         screenViewModel.viewState = RulesScreenViewState.CurrentRules
                     },
-                    modifier = modifier.fillMaxSize(),
+                    modifier = modifier,
                 )
             }
         }

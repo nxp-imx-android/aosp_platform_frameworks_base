@@ -17,7 +17,6 @@
 package com.android.systemui.notifications.intelligence.rules.ui.composable
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -81,7 +80,7 @@ fun NotificationRuleEdit(
         }
 
     BackHandler(enabled = true, onBack = dismissEditScreen)
-    Column(modifier = modifier.background(MaterialTheme.colorScheme.background)) {
+    Column(modifier = modifier) {
         Button(onClick = dismissEditScreen) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,

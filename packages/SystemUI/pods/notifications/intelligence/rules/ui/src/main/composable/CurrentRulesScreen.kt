@@ -65,7 +65,7 @@ fun CurrentRulesScreen(
 
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(8.dp, alignment = Alignment.Top),
-        modifier = modifier.background(MaterialTheme.colorScheme.background).padding(16.dp),
+        modifier = modifier,
     ) {
         item("Title") {
             Row(

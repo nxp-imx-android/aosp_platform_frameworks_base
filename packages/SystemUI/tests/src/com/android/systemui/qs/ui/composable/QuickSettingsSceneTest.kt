@@ -32,7 +32,7 @@ import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.jank.interactionJankMonitor
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
-import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.notificationRulesShadeStateViewModelFactory
+import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.notificationRulesParentViewModelFactory
 import com.android.systemui.qs.composefragment.dagger.usingMediaInComposeFragment
 import com.android.systemui.qs.pipeline.domain.interactor.currentTilesInteractor
 import com.android.systemui.qs.pipeline.shared.TileSpec
@@ -93,8 +93,8 @@ class QuickSettingsSceneTest : SysuiTestCase() {
                         notificationsPlaceholderViewModelFactory,
                     actionsViewModelFactory = quickSettingsUserActionsViewModelFactory,
                     contentViewModelFactory = quickSettingsSceneContentViewModelFactory,
-                    notificationRulesShadeStateViewModelFactory =
-                        kosmos.notificationRulesShadeStateViewModelFactory,
+                    notificationRulesParentViewModelFactory =
+                        kosmos.notificationRulesParentViewModelFactory,
                     jankMonitor = interactionJankMonitor,
                 )
 

@@ -49,7 +49,7 @@ import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.media.remedia.ui.compose.Media
 import com.android.systemui.media.remedia.ui.compose.MediaPresentationStyle
 import com.android.systemui.notifications.intelligence.rules.shared.NmContextualDisplayLaunch
-import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRulesShadeStateViewModel
+import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRulesParentViewModel
 import com.android.systemui.notifications.ui.viewmodel.NotificationsShadeOverlayActionsViewModel
 import com.android.systemui.notifications.ui.viewmodel.NotificationsShadeOverlayContentViewModel
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
@@ -72,8 +72,7 @@ class NotificationsShadeOverlay
 constructor(
     private val actionsViewModelFactory: NotificationsShadeOverlayActionsViewModel.Factory,
     private val contentViewModelFactory: NotificationsShadeOverlayContentViewModel.Factory,
-    private val notificationRulesShadeStateViewModelFactory:
-        NotificationRulesShadeStateViewModel.Factory,
+    private val notificationRulesParentViewModelFactory: NotificationRulesParentViewModel.Factory,
     private val lockscreenElements: LockscreenElements,
     private val shadeSession: SaveableSession,
     private val stackScrollView: Lazy<NotificationScrollView>,
@@ -107,10 +106,10 @@ constructor(
                     Overlays.NotificationsShade
                 )
             }
-        val notificationRulesShadeStateViewModel =
+        val notificationRulesParentViewModel =
             if (NmContextualDisplayLaunch.isEnabled) {
-                rememberViewModel("NotificationsShadeOverlay-notifRulesShateStateViewModel") {
-                    notificationRulesShadeStateViewModelFactory.create()
+                rememberViewModel("NotificationsShadeOverlay-notifRulesParentViewModel") {
+                    notificationRulesParentViewModelFactory.create()
                 }
             } else {
                 null
@@ -205,7 +204,7 @@ constructor(
                     shadeSession = shadeSession,
                     stackScrollView = stackScrollView,
                     viewModel = placeholderViewModel,
-                    notificationRulesShadeStateViewModel = notificationRulesShadeStateViewModel,
+                    notificationRulesParentViewModel = notificationRulesParentViewModel,
                     jankMonitor = jankMonitor,
                     shouldPunchHoleBehindScrim = false,
                     isTransparencyEnabled = viewModel.isTransparencyEnabled,
