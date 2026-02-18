@@ -527,6 +527,13 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                     "Trying to launch " + packageName + " which is not allowlisted");
         }
 
+        if (!mAllowlistedPackages.contains(packageName)) {
+            throw new IllegalArgumentException(
+                    "Trying to launch "
+                            + packageName
+                            + " which is not a target package for the current session");
+        }
+
         // TODO(b/444600407): Remove this once the consent model is per-target app. While the
         // consent is general, the caller can extend the list of target packages dynamically.
         if (!(mLifecycle.getCurrentState() instanceof LifecycleState.Active)) {
@@ -534,9 +541,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             return;
         }
         cancelOngoingInteractions();
-        synchronized (mAllowlistedPackages) {
-            mAllowlistedPackages.add(packageName);
-        }
         // If we block input and screenshots in the blocked state, we simply allow all
         // activities to launch. We detect blocked state automatically when an activity
         // launch request comes in for a package that's not allowed to launch.
