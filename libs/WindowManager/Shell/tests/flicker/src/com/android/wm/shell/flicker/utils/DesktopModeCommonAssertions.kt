@@ -18,25 +18,47 @@
 
 package com.android.wm.shell.flicker.utils
 
+import android.graphics.Point
+import android.tools.PlatformConsts.DESKTOP_MODE_CASCADING_OFFSET_DP
 import android.tools.flicker.FlickerTest
 import android.tools.helpers.WindowUtils
 import android.tools.traces.component.IComponentMatcher
 import android.tools.traces.wm.WindowManagerState
+import com.android.window.flags.Flags
 
 // Common assertions for Desktop mode features.
 
-fun FlickerTest.cascadingEffectAppliedAtEnd(component: IComponentMatcher) {
+fun FlickerTest.cascadingEffectAppliedAtEnd(
+    newComponent: IComponentMatcher,
+    prevComponent: IComponentMatcher,
+) {
     assertWmEnd {
-        val displayAppBounds = WindowUtils.getInsetDisplayBounds(scenario.startRotation)
-        val windowBounds = visibleRegion(component).region.bounds
+        if (!Flags.enableSteppedCascading() || prevComponent == null) {
+            val displayAppBounds = WindowUtils.getInsetDisplayBounds(scenario.startRotation)
+            val windowBounds = visibleRegion(newComponent).region.bounds
 
-        val onRightSide = windowBounds.right == displayAppBounds.right
-        val onLeftSide = windowBounds.left == displayAppBounds.left
-        val onTopSide = windowBounds.top == displayAppBounds.top
-        val onBottomSide = windowBounds.bottom == displayAppBounds.bottom
-        val alignedOnCorners = onRightSide.xor(onLeftSide) and onTopSide.xor(onBottomSide)
+            val onRightSide = windowBounds.right == displayAppBounds.right
+            val onLeftSide = windowBounds.left == displayAppBounds.left
+            val onTopSide = windowBounds.top == displayAppBounds.top
+            val onBottomSide = windowBounds.bottom == displayAppBounds.bottom
+            val alignedOnCorners = onRightSide.xor(onLeftSide) and onTopSide.xor(onBottomSide)
 
-        check { "window corner must meet display corner" }.that(alignedOnCorners).isEqual(true)
+            check { "window corner must meet display corner" }.that(alignedOnCorners).isEqual(true)
+        } else {
+            val offset =
+                WindowManagerState.dpToPx(
+                    DESKTOP_MODE_CASCADING_OFFSET_DP.toFloat(),
+                    WindowUtils.defaultDisplayDpi,
+                )
+            val newBounds = visibleRegion(newComponent).region.bounds
+            val newPosition = Point(newBounds.left, newBounds.top)
+            val prevBounds = visibleRegion(prevComponent).region.bounds
+            val cascadedPrevPosition = Point(prevBounds.left + offset, prevBounds.top + offset)
+
+            check { "new window must cascade from previous" }
+                .that(newPosition)
+                .isEqual(cascadedPrevPosition)
+        }
     }
 }
 

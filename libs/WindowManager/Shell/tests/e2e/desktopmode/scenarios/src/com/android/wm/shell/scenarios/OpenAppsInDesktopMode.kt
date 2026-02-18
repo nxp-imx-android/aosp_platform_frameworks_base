@@ -42,7 +42,7 @@ abstract class OpenAppsInDesktopMode(val rotation: Rotation = Rotation.ROTATION_
     private val firstApp = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
     private val secondApp = DesktopModeAppHelper(MailAppHelper(instrumentation))
     private val thirdApp = DesktopModeAppHelper(NewTasksAppHelper(instrumentation))
-    private val fourthApp = DesktopModeAppHelper(ImeAppHelper(instrumentation))
+    val fourthApp = DesktopModeAppHelper(ImeAppHelper(instrumentation))
     val fifthApp = DesktopModeAppHelper(NonResizeableAppHelper(instrumentation))
 
     val appInDesktop: ArrayList<DesktopModeAppHelper> = ArrayList()

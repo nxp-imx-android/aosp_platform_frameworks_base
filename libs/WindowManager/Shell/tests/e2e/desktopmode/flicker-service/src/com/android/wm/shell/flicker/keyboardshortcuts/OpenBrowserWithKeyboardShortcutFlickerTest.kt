@@ -55,6 +55,7 @@ class OpenBrowserWithKeyboardShortcutFlickerTest(flicker: FlickerTest) :
     val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, flicker.scenario.startRotation)
     val scenario = OpenBrowserWithKeyboardShortcutScenario()
 
+    private val testApp = scenario.testApp
     private val browserAppHelper = scenario.browserAppHelper
 
     override val transition: FlickerBuilder.() -> Unit
@@ -72,7 +73,9 @@ class OpenBrowserWithKeyboardShortcutFlickerTest(flicker: FlickerTest) :
 
     @Test fun layerBecomesVisible() = flicker.layerBecomesVisible(browserAppHelper)
 
-    @Test fun cascadingEffectAppliedAtEnd() = flicker.cascadingEffectAppliedAtEnd(browserAppHelper)
+    @Test
+    fun cascadingEffectAppliedAtEnd() =
+        flicker.cascadingEffectAppliedAtEnd(browserAppHelper, testApp)
 
     companion object {
         @Parameterized.Parameters(name = "{0}")

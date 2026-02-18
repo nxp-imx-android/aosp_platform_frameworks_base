@@ -41,7 +41,7 @@ abstract class OpenAppFromAllAppsUsingKeyboard(val rotation: Rotation = Rotation
     private val wmHelper = WindowManagerStateHelper(instrumentation)
     private val keyEventHelper = KeyEventHelper(instrumentation)
     private val device = UiDevice.getInstance(instrumentation)
-    private val testApp = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
+    val testApp = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
     val calculatorApp = CalculatorAppHelper(instrumentation)
 
     @Before
