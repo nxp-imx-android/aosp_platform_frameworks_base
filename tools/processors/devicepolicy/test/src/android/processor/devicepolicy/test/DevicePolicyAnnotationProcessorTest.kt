@@ -97,6 +97,7 @@ class DevicePolicyAnnotationProcessorTest {
                 import android.processor.devicepolicy.AllowedDpcTypes;
                 import android.processor.devicepolicy.BooleanPolicyDefinition;
                 import android.processor.devicepolicy.EnumPolicyDefinition;
+                import android.processor.devicepolicy.EnumResolutionMechanism;
                 import android.processor.devicepolicy.IntegerPolicyDefinition;
                 import android.processor.devicepolicy.ListOfStringPolicyDefinition;
                 import android.processor.devicepolicy.LongPolicyDefinition;
@@ -520,7 +521,7 @@ class DevicePolicyAnnotationProcessorTest {
             buildPolicyIdentifier(
                 """
             /**
-             * Initializer and keys must match .
+             * Initializer and keys must match.
              */
             @BooleanPolicyDefinition(
                     base = @PolicyDefinition(
@@ -541,5 +542,248 @@ class DevicePolicyAnnotationProcessorTest {
         assertThat(compilation).failed()
         assertThat(compilation)
             .hadErrorContaining("the argument to the constructor should be \"INVALID_KEY_POLICY\"")
+    }
+
+    @Test
+    fun test_enum_missingResolutionMechanism_failsToCompile() {
+        val policyIdentifier =
+            buildPolicyIdentifier(
+                """
+            // The intdef used for the policy values.
+            /** First entry */
+            public static final int ENUM_ENTRY_1 = 0;
+            /** Second entry */
+            public static final int ENUM_ENTRY_2 = 1;
+            /** Intdef for an enum. */
+            @Retention(RetentionPolicy.SOURCE)
+            @IntDef(
+                    prefix = {"ENUM_ENTRY_"},
+                    value = {ENUM_ENTRY_1, ENUM_ENTRY_2})
+            public @interface EnumIntDef {}
+
+            /**
+             * ResolutionMechanism can not be empty.
+             */
+            @EnumPolicyDefinition(
+                    base = @PolicyDefinition(
+                            allowedScopes = { POLICY_SCOPE_USER },
+                            affectedResource = RESOURCE_DEVICE_WIDE,
+                            $ALLOWED_DPC_TYPES_SNIPPET
+                    ),
+                    defaultValue = ENUM_ENTRY_2,
+                    intDef = EnumIntDef.class,
+                    resolutionMechanism = @EnumResolutionMechanism()
+            )
+            public static final PolicyIdentifier<Integer> POLICY_KEY =
+                new PolicyIdentifier<>("POLICY_KEY");
+            """
+                    .trimIndent()
+            )
+
+        val compilation: Compilation = mCompiler.compile(policyIdentifier)
+
+        assertThat(mCompilerWithoutProcessor.compile(policyIdentifier)).succeeded()
+        assertThat(compilation).failed()
+        assertThat(compilation)
+            .hadErrorContaining(
+                "In @EnumResolutionMechanism, either `custom` or `mostRestrictive` must be set"
+            )
+    }
+
+    @Test
+    fun test_enum_twoResolutionMechanisms_failsToCompile() {
+        val policyIdentifier =
+            buildPolicyIdentifier(
+                """
+            // The intdef used for the policy values.
+            /** First entry */
+            public static final int ENUM_ENTRY_1 = 0;
+            /** Second entry */
+            public static final int ENUM_ENTRY_2 = 1;
+            /** Intdef for an enum. */
+            @Retention(RetentionPolicy.SOURCE)
+            @IntDef(
+                    prefix = {"ENUM_ENTRY_"},
+                    value = {ENUM_ENTRY_1, ENUM_ENTRY_2})
+            public @interface EnumIntDef {}
+
+            /**
+             * ResolutionMechanism can not be empty.
+             */
+            @EnumPolicyDefinition(
+                    base = @PolicyDefinition(
+                            allowedScopes = { POLICY_SCOPE_USER },
+                            affectedResource = RESOURCE_DEVICE_WIDE,
+                            $ALLOWED_DPC_TYPES_SNIPPET
+                    ),
+                    defaultValue = ENUM_ENTRY_2,
+                    intDef = EnumIntDef.class,
+                    resolutionMechanism = @EnumResolutionMechanism(
+                       custom=true,
+                        mostRestrictive={
+                            ENUM_ENTRY_1,
+                            ENUM_ENTRY_2,
+                        }
+                    )
+            )
+            public static final PolicyIdentifier<Integer> POLICY_KEY =
+                new PolicyIdentifier<>("POLICY_KEY");
+            """
+                    .trimIndent()
+            )
+
+        val compilation: Compilation = mCompiler.compile(policyIdentifier)
+
+        assertThat(mCompilerWithoutProcessor.compile(policyIdentifier)).succeeded()
+        assertThat(compilation).failed()
+        assertThat(compilation)
+            .hadErrorContaining(
+                "In @EnumResolutionMechanism, `custom` and `mostRestrictive` " +
+                    "can not be set together."
+            )
+    }
+
+    @Test
+    fun test_enum_mostRestrictiveResolutionMechanism_duplicates_failsToCompile() {
+        val policyIdentifier =
+            buildPolicyIdentifier(
+                """
+            // The intdef used for the policy values.
+            /** First entry */
+            public static final int ENUM_ENTRY_FIRST = 0;
+            /** Second entry */
+            public static final int ENUM_ENTRY_LAST = 1;
+            /** Intdef for an enum. */
+            @Retention(RetentionPolicy.SOURCE)
+            @IntDef(
+                    prefix = {"ENUM_ENTRY_"},
+                    value = {ENUM_ENTRY_FIRST, ENUM_ENTRY_LAST})
+            public @interface EnumIntDef {}
+
+            /**
+             * MostRestrictive ResolutionMechanism can not contain duplicates.
+             */
+            @EnumPolicyDefinition(
+                    base = @PolicyDefinition(
+                            allowedScopes = { POLICY_SCOPE_USER },
+                            affectedResource = RESOURCE_DEVICE_WIDE,
+                            $ALLOWED_DPC_TYPES_SNIPPET
+                    ),
+                    defaultValue = ENUM_ENTRY_FIRST,
+                    intDef = EnumIntDef.class,
+                    resolutionMechanism = @EnumResolutionMechanism(mostRestrictive={
+                        ENUM_ENTRY_FIRST,
+                        ENUM_ENTRY_FIRST,
+                        ENUM_ENTRY_FIRST,
+                        ENUM_ENTRY_LAST,
+                    })
+            )
+            public static final PolicyIdentifier<Integer> POLICY_KEY =
+                new PolicyIdentifier<>("POLICY_KEY");
+            """
+                    .trimIndent()
+            )
+
+        val compilation: Compilation = mCompiler.compile(policyIdentifier)
+
+        assertThat(mCompilerWithoutProcessor.compile(policyIdentifier)).succeeded()
+        assertThat(compilation).failed()
+        assertThat(compilation)
+            .hadErrorContaining("mostRestrictive contains duplicate values: ENUM_ENTRY_FIRST")
+    }
+
+    @Test
+    fun test_enum_mostRestrictiveResolutionMechanism_unexpectedValues_failsToCompile() {
+        val policyIdentifier =
+            buildPolicyIdentifier(
+                """
+            // The intdef used for the policy values.
+            /** First entry */
+            public static final int ENUM_ENTRY_FIRST = 0;
+            /** Second entry */
+            public static final int ENUM_ENTRY_LAST = 1;
+            /** Intdef for an enum. */
+            @Retention(RetentionPolicy.SOURCE)
+            @IntDef(
+                    prefix = {"ENUM_ENTRY_"},
+                    value = {ENUM_ENTRY_FIRST, ENUM_ENTRY_LAST})
+            public @interface EnumIntDef {}
+
+            /**
+             * MostRestrictive ResolutionMechanism must contain all values.
+             */
+            @EnumPolicyDefinition(
+                    base = @PolicyDefinition(
+                            allowedScopes = { POLICY_SCOPE_USER },
+                            affectedResource = RESOURCE_DEVICE_WIDE,
+                            $ALLOWED_DPC_TYPES_SNIPPET
+                    ),
+                    defaultValue = ENUM_ENTRY_FIRST,
+                    intDef = EnumIntDef.class,
+                    resolutionMechanism = @EnumResolutionMechanism(mostRestrictive={
+                        ENUM_ENTRY_FIRST,
+                        5,
+                        ENUM_ENTRY_LAST,
+                        9,
+                    })
+            )
+            public static final PolicyIdentifier<Integer> POLICY_KEY =
+                new PolicyIdentifier<>("POLICY_KEY");
+            """
+                    .trimIndent()
+            )
+
+        val compilation: Compilation = mCompiler.compile(policyIdentifier)
+
+        assertThat(mCompilerWithoutProcessor.compile(policyIdentifier)).succeeded()
+        assertThat(compilation).failed()
+        assertThat(compilation)
+            .hadErrorContaining("mostRestrictive contains unexpected values: 5,9")
+    }
+
+    @Test
+    fun test_enum_mostRestrictiveResolutionMechanism_missingValues_failsToCompile() {
+        val policyIdentifier =
+            buildPolicyIdentifier(
+                """
+            // The intdef used for the policy values.
+            /** First entry */
+            public static final int ENUM_ENTRY_FIRST = 0;
+            /** Second entry */
+            public static final int ENUM_ENTRY_LAST = 1;
+            /** Intdef for an enum. */
+            @Retention(RetentionPolicy.SOURCE)
+            @IntDef(
+                    prefix = {"ENUM_ENTRY_"},
+                    value = {ENUM_ENTRY_FIRST, ENUM_ENTRY_LAST})
+            public @interface EnumIntDef {}
+
+            /**
+             * MostRestrictive ResolutionMechanism must contain all values.
+             */
+            @EnumPolicyDefinition(
+                    base = @PolicyDefinition(
+                            allowedScopes = { POLICY_SCOPE_USER },
+                            affectedResource = RESOURCE_DEVICE_WIDE,
+                            $ALLOWED_DPC_TYPES_SNIPPET
+                    ),
+                    defaultValue = ENUM_ENTRY_FIRST,
+                    intDef = EnumIntDef.class,
+                    resolutionMechanism = @EnumResolutionMechanism(mostRestrictive={
+                        ENUM_ENTRY_FIRST,
+                    })
+            )
+            public static final PolicyIdentifier<Integer> POLICY_KEY =
+                new PolicyIdentifier<>("POLICY_KEY");
+            """
+                    .trimIndent()
+            )
+
+        val compilation: Compilation = mCompiler.compile(policyIdentifier)
+
+        assertThat(mCompilerWithoutProcessor.compile(policyIdentifier)).succeeded()
+        assertThat(compilation).failed()
+        assertThat(compilation)
+            .hadErrorContaining("mostRestrictive must also contain: ENUM_ENTRY_LAST")
     }
 }
