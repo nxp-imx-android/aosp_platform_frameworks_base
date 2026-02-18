@@ -8855,6 +8855,20 @@ public class WindowManagerService extends IWindowManager.Stub
         }
 
         @Override
+        public void setCanStealTopFocusForDisplay(int displayId, boolean canStealTopFocus) {
+            synchronized (mGlobalLock) {
+                final DisplayContent dc = mRoot.getDisplayContent(displayId);
+                if (dc == null) {
+                    Slog.e(TAG, "Failed to change can-steal-top-focus override"
+                            + " for display: " + displayId
+                            + " - DisplayContent not found.");
+                    return;
+                }
+                mDisplayWindowSettings.setCanStealTopFocus(dc, canStealTopFocus);
+            }
+        }
+
+        @Override
         @ImeClientFocusResult
         public int hasInputMethodClientFocus(IBinder windowToken, int uid, int pid, int displayId) {
             if (displayId == Display.INVALID_DISPLAY) {
