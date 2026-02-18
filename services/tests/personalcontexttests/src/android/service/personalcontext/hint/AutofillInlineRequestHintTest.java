@@ -106,15 +106,14 @@ public class AutofillInlineRequestHintTest {
         final FillEventHistory fillEventHistory = getFillEventHistory(focusedId, sessionId);
 
         final AutofillInlineRequestHint hint =
-                new AutofillInlineRequestHint.Builder()
-                        .setSessionId(sessionId)
-                        .setTaskId(taskId)
-                        .setRequestTimestamp(requestTimestamp)
-                        .setActivityComponent(activityComponent)
-                        .setFocusedId(focusedId)
-                        .setAutofillValue(autofillValue)
-                        .setInlineSuggestionsRequest(inlineSuggestionsRequest)
-                        .setAugmentedAutofillManagerClient(mFakeBinder)
+                new AutofillInlineRequestHint.Builder(sessionId,
+                        taskId,
+                        requestTimestamp,
+                        activityComponent,
+                        focusedId,
+                        autofillValue,
+                        inlineSuggestionsRequest,
+                        mFakeBinder)
                         .setFillEventHistory(fillEventHistory)
                         .build();
 
@@ -153,15 +152,14 @@ public class AutofillInlineRequestHintTest {
         final FillEventHistory fillEventHistory = getFillEventHistory(focusedId, sessionId);
 
         final AutofillInlineRequestHint hint =
-                new AutofillInlineRequestHint.Builder()
-                        .setSessionId(sessionId)
-                        .setTaskId(taskId)
-                        .setRequestTimestamp(requestTimestamp)
-                        .setActivityComponent(activityComponent)
-                        .setFocusedId(focusedId)
-                        .setAutofillValue(autofillValue)
-                        .setInlineSuggestionsRequest(inlineSuggestionsRequest)
-                        .setAugmentedAutofillManagerClient(mFakeBinder)
+                new AutofillInlineRequestHint.Builder(sessionId,
+                        taskId,
+                        requestTimestamp,
+                        activityComponent,
+                        focusedId,
+                        autofillValue,
+                        inlineSuggestionsRequest,
+                        mFakeBinder)
                         .setFillEventHistory(fillEventHistory)
                         .build();
 

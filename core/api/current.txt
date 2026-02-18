@@ -44231,18 +44231,10 @@ package android.service.personalcontext.hint {
   }
 
   public static final class AutofillInlineRequestHint.Builder {
-    ctor public AutofillInlineRequestHint.Builder();
+    ctor public AutofillInlineRequestHint.Builder(int, int, @NonNull java.time.Instant, @NonNull android.content.ComponentName, @NonNull android.view.autofill.AutofillId, @NonNull android.view.autofill.AutofillValue, @NonNull android.view.inputmethod.InlineSuggestionsRequest, @NonNull android.os.IBinder);
     method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint.Builder addToken(@NonNull android.service.personalcontext.Token);
     method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint build();
-    method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint.Builder setActivityComponent(@NonNull android.content.ComponentName);
-    method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint.Builder setAugmentedAutofillManagerClient(@NonNull android.os.IBinder);
-    method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint.Builder setAutofillValue(@NonNull android.view.autofill.AutofillValue);
     method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint.Builder setFillEventHistory(@Nullable android.service.autofill.FillEventHistory);
-    method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint.Builder setFocusedId(@NonNull android.view.autofill.AutofillId);
-    method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint.Builder setInlineSuggestionsRequest(@NonNull android.view.inputmethod.InlineSuggestionsRequest);
-    method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint.Builder setRequestTimestamp(@NonNull java.time.Instant);
-    method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint.Builder setSessionId(int);
-    method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint.Builder setTaskId(int);
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class BundleHint extends android.service.personalcontext.hint.ContextHint {

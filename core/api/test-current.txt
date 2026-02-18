@@ -3582,7 +3582,7 @@ package android.service.personalcontext {
 package android.service.personalcontext.hint {
 
   public static final class AutofillInlineRequestHint.Builder {
-    method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint.Builder setAugmentedAutofillProxy(@NonNull android.service.personalcontext.hint.autofill.AugmentedAutofillProxy);
+    ctor public AutofillInlineRequestHint.Builder(int, int, @NonNull java.time.Instant, @NonNull android.content.ComponentName, @NonNull android.view.autofill.AutofillId, @NonNull android.view.autofill.AutofillValue, @NonNull android.view.inputmethod.InlineSuggestionsRequest, @NonNull android.service.personalcontext.hint.autofill.AugmentedAutofillProxy);
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class ContextHint {

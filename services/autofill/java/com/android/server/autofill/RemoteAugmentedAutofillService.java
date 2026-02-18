@@ -456,17 +456,17 @@ final class RemoteAugmentedAutofillService {
             return future;
         }
         Slog.d(TAG, "Triggering personal context manager with autofill inline request hint");
+        // TODO(b/475318851): attach a real binder
         AutofillInlineRequestHint hint =
-                new AutofillInlineRequestHint.Builder()
-                        .setSessionId(sessionId)
-                        .setTaskId(taskId)
-                        .setRequestTimestamp(Instant.now())
-                        .setActivityComponent(activityComponent)
-                        .setFocusedId(focusedId)
-                        .setAutofillValue(focusedValue)
-                        .setInlineSuggestionsRequest(inlineSuggestionsRequest)
-                        // TODO(b/475318851): attach a real binder
-                        .setAugmentedAutofillManagerClient(new Binder())
+                new AutofillInlineRequestHint.Builder(
+                        sessionId,
+                        taskId,
+                        Instant.now(),
+                        activityComponent,
+                        focusedId,
+                        focusedValue,
+                        inlineSuggestionsRequest,
+                        new Binder())
                         .build();
         mAutofillHint = hint;
         mPersonalContextManagerInternal.publishTriggeringHint(
