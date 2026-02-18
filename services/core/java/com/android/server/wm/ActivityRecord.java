@@ -8902,6 +8902,13 @@ final class ActivityRecord extends WindowToken {
         mTaskSupervisor.mStoppingActivities.remove(this);
     }
 
+    void resetCompatConfiguration() {
+        // Reset the existing override configuration so it can be updated according to the latest
+        // configuration.
+        mAppCompatController.getSizeCompatModePolicy().clearSizeCompatMode();
+        mAppCompatController.getDisplayCompatPolicy().onProcessRestarted();
+    }
+
     /**
      * Request the process of the activity to restart with its saved state (from
      * {@link android.app.Activity#onSaveInstanceState}) if possible. It also forces to recompute
@@ -8912,10 +8919,7 @@ final class ActivityRecord extends WindowToken {
         if (finishing) return;
         Slog.i(TAG, "Request to restart process of " + this);
 
-        // Reset the existing override configuration so it can be updated according to the latest
-        // configuration.
-        mAppCompatController.getSizeCompatModePolicy().clearSizeCompatMode();
-        mAppCompatController.getDisplayCompatPolicy().onProcessRestarted();
+        resetCompatConfiguration();
 
         if (!attachedToProcess()) {
             return;

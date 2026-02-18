@@ -479,6 +479,31 @@ public class SizeCompatTests extends WindowTestsBase {
     }
 
     @Test
+    public void testRestartTaskProcessIfVisible() {
+        setUpDisplaySizeWithApp(1000, 2000);
+        doNothing().when(mSupervisor).scheduleRestartTimeout(mActivity);
+        mActivity.setState(RESUMED, "testRestart");
+        prepareUnresizable(mActivity, -1.f, SCREEN_ORIENTATION_PORTRAIT);
+
+        final ActivityRecord activity2 = new ActivityBuilder(mAtm).setTask(mTask).build();
+        activity2.setState(RESUMED, "testRestart");
+        prepareUnresizable(activity2, -1.f, SCREEN_ORIENTATION_PORTRAIT);
+
+        // Resize the display so that the activity exercises size-compat mode.
+        resizeDisplay(mTask.mDisplayContent, 1000, 2500);
+
+        assertTrue(mActivity.inSizeCompatMode());
+        assertTrue(activity2.inSizeCompatMode());
+
+        mAtm.mTaskOrganizerController.restartTaskProcessIfVisible(
+                mTask.mRemoteToken.toWindowContainerToken());
+
+        assertFalse(mActivity.inSizeCompatMode());
+        assertFalse(activity2.inSizeCompatMode());
+        assertEquals(RESTARTING_PROCESS, activity2.getState());
+    }
+
+    @Test
     @DisableCompatChanges({ActivityInfo.INSETS_DECOUPLED_CONFIGURATION_ENFORCED})
     public void testFixedAspectRatioBoundsWithDecorInSquareDisplay() {
         final float aspectRatio = 1.2f;
