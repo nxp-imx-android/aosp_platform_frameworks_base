@@ -20,10 +20,13 @@ import static com.android.server.personalcontext.util.InsightUtils.fakePublishIn
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.junit.Assert.assertThrows;
+
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import android.content.Intent;
+import android.os.IBinder;
 import android.os.ParcelUuid;
 import android.os.RemoteException;
 import android.service.personalcontext.IOpCallback;
@@ -40,6 +43,7 @@ import androidx.test.runner.AndroidJUnit4;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Answers;
 
 import java.util.UUID;
 
@@ -105,5 +109,29 @@ public class InsightRendererServiceTest {
                 callback);
         mFakeExecutor.runAll();
         verify(callback).signalCompletion();
+    }
+
+    @Test
+    public void mintRenderToken_beforeConfigured_throwsIllegalStateException() {
+        // This test verifies that calling mintRenderToken before the service is configured
+        // (i.e., before onConnected is called) results in an IllegalStateException.
+        // The service is instantiated in setUp() but not configured.
+
+        final InsightRendererService service =
+                mock(InsightRendererService.class, Answers.CALLS_REAL_METHODS);
+        final IBinder binder = service.onBind(new Intent(InsightRendererService.SERVICE_INTERFACE));
+        final IInsightRenderer renderer = IInsightRenderer.Stub.asInterface(binder);
+
+        // Assert that the expected exception is thrown.
+        assertThrows(
+                "mintRenderToken should throw IllegalStateException if called before configure",
+                IllegalStateException.class,
+                () -> service.mintRenderToken("some_tag"));
+
+        // Also test the overload without a tag.
+        assertThrows(
+                "mintRenderToken should throw IllegalStateException if called before configure",
+                IllegalStateException.class,
+                service::mintRenderToken);
     }
 }
