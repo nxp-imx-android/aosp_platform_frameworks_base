@@ -266,6 +266,8 @@ public final class AllowlistManager {
      * <p>Note: If a listener has been added with multiple allowlist requests, removing it will stop
      * listening for changes represented by all those allowlist requests.
      *
+     * <p>If a listener has not been added, this method will be a no-op.
+     *
      * @param listener The listener to remove
      */
     @RequiresPermission(QUERY_ALLOWLIST)
@@ -274,6 +276,9 @@ public final class AllowlistManager {
 
         synchronized (mRemoteListeners) {
             IOnAllowlistChangedListener remoteListener = mRemoteListeners.remove(listener);
+            if (remoteListener == null) {
+                return;
+            }
             try {
                 mService.removeOnAllowlistChangedListener(remoteListener);
             } catch (RemoteException e) {
