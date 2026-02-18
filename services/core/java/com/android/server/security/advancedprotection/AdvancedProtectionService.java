@@ -72,6 +72,7 @@ import com.android.server.security.advancedprotection.features.DisallowCellular2
 import com.android.server.security.advancedprotection.features.DisallowInstallUnknownSourcesAdvancedProtectionHook;
 import com.android.server.security.advancedprotection.features.MemoryTaggingExtensionHook;
 import com.android.server.security.advancedprotection.features.UsbDataAdvancedProtectionHook;
+import com.android.server.security.advancedprotection.features.WifiManagerFeatureProvider;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
@@ -165,6 +166,14 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
                 mHooks.add(new UsbDataAdvancedProtectionHook(mContext, enabled, this));
             } catch (Exception e) {
                 Slog.e(TAG, "Failed to add hook for UsbDataAdvancedProtectionHook", e);
+            }
+        }
+
+        if (android.security.Flags.aapmFeatureDisableInsecureWifiAutojoin()) {
+            try {
+                mProviders.add(new WifiManagerFeatureProvider());
+            } catch (Exception e) {
+                Slog.e(TAG, "Failed to initialize WifiManagerFeatureProvider", e);
             }
         }
 
