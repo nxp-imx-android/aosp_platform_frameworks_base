@@ -214,4 +214,11 @@ to pre-existing users, but cannot uninstall pre-existing system packages from pr
         <install-in user-type="FULL" />
         <install-in user-type="PROFILE" />
     </install-in-user-type>
+
+    <!--  Shell app (Shell) -->
+    <install-in-user-type package="com.android.shell">
+        <install-in user-type="SYSTEM" />
+        <install-in user-type="FULL" />
+        <install-in user-type="PROFILE" />
+    </install-in-user-type>
 </config>
