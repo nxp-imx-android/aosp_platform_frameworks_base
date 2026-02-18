@@ -371,11 +371,7 @@ constructor(
             }
         DisposableEffect(window, windowTitle) {
             if (window != null) {
-                window.addFlags(
-                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                        WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
-                        WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
-                )
+                window.addFlags(WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH)
                 window.setTitle(windowTitle)
             }
             onDispose { /* do nothing */ }
