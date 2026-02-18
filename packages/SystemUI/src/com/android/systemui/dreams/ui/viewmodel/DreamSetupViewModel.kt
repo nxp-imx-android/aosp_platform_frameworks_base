@@ -25,7 +25,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.android.internal.logging.UiEventLogger
 import com.android.systemui.communal.data.repository.ContextualSetupRepository
-import com.android.systemui.communal.data.repository.SetupState
 import com.android.systemui.communal.domain.definition.UprightChargingSetupDefinition
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.dreams.ui.metrics.DreamSetupUiEvent
@@ -96,10 +95,7 @@ class DreamSetupViewModel(
                     UprightChargingSetupDefinition.FLOW_ID
                 )
             if (count >= maxDismissCount) {
-                contextualSetupRepository.updateState(
-                    UprightChargingSetupDefinition.FLOW_ID,
-                    SetupState.Dismissed,
-                )
+                contextualSetupRepository.dismiss(UprightChargingSetupDefinition.FLOW_ID)
             }
         }
     }
@@ -108,11 +104,7 @@ class DreamSetupViewModel(
         Log.d(TAG, "User clicked 'Not now'.")
         uiEventLogger.log(DreamSetupUiEvent.DREAM_SETUP_SNOOZED)
         viewModelScope.launch {
-            val expirationTime = System.currentTimeMillis() + snoozeDuration.inWholeMilliseconds
-            contextualSetupRepository.updateState(
-                UprightChargingSetupDefinition.FLOW_ID,
-                SetupState.Snoozed(expirationTime),
-            )
+            contextualSetupRepository.snooze(UprightChargingSetupDefinition.FLOW_ID, snoozeDuration)
         }
     }
 

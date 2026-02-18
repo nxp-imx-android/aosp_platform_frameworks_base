@@ -27,9 +27,13 @@ import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.testKosmos
+import com.android.systemui.util.time.systemClock
 import com.google.common.truth.Truth.assertThat
+import java.time.Instant
+import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -61,16 +65,50 @@ class ContextualSetupRepositoryImplTest : SysuiTestCase() {
         }
 
     @Test
-    fun updateState_persistsAndEmitsNewState() =
+    fun snooze_persistsAndEmitsSnoozedState() =
+        testScope.runTest {
+            val setupState by collectLastValue(underTest.setupState("id"))
+            assertThat(setupState).isEqualTo(SetupState.NotStarted)
+
+            testScope.advanceTimeBy(1000)
+            underTest.snooze("id", 10.minutes)
+
+            val expectedExpiration = Instant.ofEpochMilli(1000 + 10.minutes.inWholeMilliseconds)
+            assertThat(setupState).isEqualTo(SetupState.Snoozed(expectedExpiration))
+        }
+
+    @Test
+    fun snooze_restoresToNotStarted_afterExpiration() =
         testScope.runTest {
             val setupState by collectLastValue(underTest.setupState("id"))
 
+            // Snooze for 10 minutes
+            testScope.advanceTimeBy(1000)
+            underTest.snooze("id", 10.minutes)
+            val expectedExpiration = Instant.ofEpochMilli(1000 + 10.minutes.inWholeMilliseconds)
+            assertThat(setupState).isEqualTo(SetupState.Snoozed(expectedExpiration))
+
+            // Advance time past expiration
+            testScope.advanceTimeBy(10.minutes.inWholeMilliseconds + 1)
+
+            // Since setupState is a hot flow backed by SharedPreferences, it won't automatically
+            // re-emit
+            // just because time passed. We need to trigger a read or simulate a re-subscription
+            // to verify the logic. However, in a real scenario, the Interactor would likely
+            // re-collect or the conditions would change.
+            // For this unit test, we can force a re-collection by calling setupState again.
+            val refreshedState by collectLastValue(underTest.setupState("id"))
+            assertThat(refreshedState).isEqualTo(SetupState.NotStarted)
+        }
+
+    @Test
+    fun dismiss_persistsAndEmitsDismissedState() =
+        testScope.runTest {
+            val setupState by collectLastValue(underTest.setupState("id"))
             assertThat(setupState).isEqualTo(SetupState.NotStarted)
 
-            val snoozed = SetupState.Snoozed(expirationTimeMillis = 123L)
-            underTest.updateState("id", snoozed)
-
-            assertThat(setupState).isEqualTo(snoozed)
+            underTest.dismiss("id")
+            assertThat(setupState).isEqualTo(SetupState.Dismissed)
         }
 
     @Test
@@ -84,10 +122,33 @@ class ContextualSetupRepositoryImplTest : SysuiTestCase() {
                 ContextualSetupRepositoryImpl(
                     sharedPreferencesInteractor = kosmos.sharedPreferencesInteractor,
                     backgroundDispatcher = kosmos.testDispatcher,
+                    systemClock = kosmos.systemClock,
                 )
             val count2 = newInstance.incrementFailureCount("id")
 
             assertThat(count2).isEqualTo(2)
+        }
+
+    @Test
+    fun complete_persistsAndEmitsCompletedState() =
+        testScope.runTest {
+            val setupState by collectLastValue(underTest.setupState("id"))
+            assertThat(setupState).isEqualTo(SetupState.NotStarted)
+
+            underTest.complete("id")
+            assertThat(setupState).isEqualTo(SetupState.Completed)
+        }
+
+    @Test
+    fun reset_persistsAndEmitsNotStartedState() =
+        testScope.runTest {
+            val setupState by collectLastValue(underTest.setupState("id"))
+
+            underTest.dismiss("id")
+            assertThat(setupState).isEqualTo(SetupState.Dismissed)
+
+            underTest.reset("id")
+            assertThat(setupState).isEqualTo(SetupState.NotStarted)
         }
 
     @Test
@@ -96,17 +157,18 @@ class ContextualSetupRepositoryImplTest : SysuiTestCase() {
             val setupState by collectLastValue(underTest.setupState("id"))
             assertThat(setupState).isEqualTo(SetupState.NotStarted)
 
-            val snoozed = SetupState.Snoozed(expirationTimeMillis = 123L)
-            underTest.updateState("id", snoozed)
-            assertThat(setupState).isEqualTo(snoozed)
+            testScope.advanceTimeBy(1000)
+            underTest.snooze("id", 10.minutes)
+            val expectedExpiration = Instant.ofEpochMilli(1000 + 10.minutes.inWholeMilliseconds)
+            assertThat(setupState).isEqualTo(SetupState.Snoozed(expectedExpiration))
 
-            underTest.updateState("id", SetupState.Completed)
+            underTest.complete("id")
             assertThat(setupState).isEqualTo(SetupState.Completed)
 
-            underTest.updateState("id", SetupState.Dismissed)
+            underTest.dismiss("id")
             assertThat(setupState).isEqualTo(SetupState.Dismissed)
 
-            underTest.updateState("id", SetupState.NotStarted)
+            underTest.reset("id")
             assertThat(setupState).isEqualTo(SetupState.NotStarted)
         }
 
@@ -116,10 +178,9 @@ class ContextualSetupRepositoryImplTest : SysuiTestCase() {
             val setupState1 by collectLastValue(underTest.setupState("id1"))
             val setupState2 by collectLastValue(underTest.setupState("id2"))
 
-            val snoozed1 = SetupState.Snoozed(expirationTimeMillis = 123L)
-            underTest.updateState("id1", snoozed1)
+            underTest.dismiss("id1")
 
-            assertThat(setupState1).isEqualTo(snoozed1)
+            assertThat(setupState1).isEqualTo(SetupState.Dismissed)
             assertThat(setupState2).isEqualTo(SetupState.NotStarted)
         }
 

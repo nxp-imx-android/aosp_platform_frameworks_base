@@ -124,8 +124,9 @@ class DreamSetupViewModelTest : SysuiTestCase() {
             assertThat(state).isInstanceOf(SetupState.Snoozed::class.java)
             val snoozed = state as SetupState.Snoozed
             val expectedDuration = 14.days.inWholeMilliseconds
-            assertThat(snoozed.expirationTimeMillis).isAtLeast(now + expectedDuration)
-            assertThat(snoozed.expirationTimeMillis).isAtMost(now + expectedDuration + 5000)
+            assertThat(snoozed.expirationTime.toEpochMilli()).isAtLeast(now + expectedDuration)
+            assertThat(snoozed.expirationTime.toEpochMilli())
+                .isAtMost(now + expectedDuration + 5000)
 
             assertThat(fakeUiEventLogger.eventId(0))
                 .isEqualTo(DreamSetupUiEvent.DREAM_SETUP_SNOOZED.id)
