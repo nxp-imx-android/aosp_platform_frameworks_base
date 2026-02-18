@@ -52,7 +52,6 @@ import static com.android.server.locksettings.SyntheticPasswordManager.TOKEN_TYP
 import static com.android.server.locksettings.SyntheticPasswordManager.TOKEN_TYPE_WEAK;
 import static com.android.server.locksettings.UnifiedProfilePasswordCrypto.decryptProfilePassword;
 import static com.android.server.locksettings.UnifiedProfilePasswordCrypto.decryptProfilePasswordLegacy;
-import static com.android.server.locksettings.UnifiedProfilePasswordCrypto.encryptProfilePasswordLegacy;
 import static com.android.server.locksettings.UnifiedProfilePasswordCrypto.profilePasswordDecryptLegacyAlias;
 import static com.android.server.locksettings.UnifiedProfilePasswordCrypto.profilePasswordEncryptLegacyAlias;
 import static com.android.server.locksettings.UnifiedProfilePasswordCrypto.removeKeystoreProfileKeyLegacy;
@@ -464,15 +463,7 @@ public class LockSettingsService extends ILockSettings.Stub {
         // as its parent.
         if (!isUserSecure(parent.id) && !profileUserPassword.isNone()) {
             Slogf.i(TAG, "Clearing password for profile user %d to match parent", profileUserId);
-            if (android.security.Flags.enableAtomicChildProfileLskf()) {
-                clearUnifiedProfilePassword(profileUserPassword, profileUserId);
-            } else {
-                setLockCredentialInternal(
-                        LockscreenCredential.createNone(),
-                        profileUserPassword,
-                        profileUserId,
-                        /* isLockTiedToParent= */ true);
-            }
+            clearUnifiedProfilePassword(profileUserPassword, profileUserId);
             return;
         }
         final long parentSid;
@@ -494,9 +485,6 @@ public class LockSettingsService extends ILockSettings.Stub {
                     profileUserPassword,
                     profileUserId,
                     /* isLockTiedToParent= */ true);
-            if (!android.security.Flags.enableAtomicChildProfileLskf()) {
-                tieProfilePasswordToParent(profileUserId, parent.id, unifiedProfilePassword);
-            }
             mUnifiedProfilePasswordCache.storePassword(
                     profileUserId, unifiedProfilePassword, parentSid);
         }
@@ -1380,8 +1368,7 @@ public class LockSettingsService extends ILockSettings.Stub {
 
     /** Answers whether the profile user is configured to use the same lock as the parent. */
     private boolean isUseOneLockSettingEnabledInternal(int userId) {
-        if (android.security.Flags.enableAtomicChildProfileLskf()
-                && getCredentialTypeInternal(userId) != CREDENTIAL_TYPE_NONE) {
+        if (getCredentialTypeInternal(userId) != CREDENTIAL_TYPE_NONE) {
             return hasUnifiedProfilePassword(userId);
         }
         return !getSeparateProfileChallengeEnabledInternal(userId);
@@ -1649,7 +1636,7 @@ public class LockSettingsService extends ILockSettings.Stub {
                 throw new FileNotFoundException("Child profile lock file not found");
             }
             credential = decryptProfilePasswordLegacy(mKeyStore, userId, storedData);
-            migrate = android.security.Flags.enableAtomicChildProfileLskf();
+            migrate = true;
         } else {
             credential = decryptProfilePassword(mKeyStore, userId, protectorId, storedData);
             migrate = false;
@@ -2350,29 +2337,6 @@ public class LockSettingsService extends ILockSettings.Stub {
         }
     }
 
-    /**
-     * Sets up an encrypted password protected by a new encryption key bound to the parent sid. The
-     * credential must be a PASSWORD, rather than NONE.
-     */
-    @VisibleForTesting
-    void tieProfilePasswordToParent(
-            int profileUserId, int parentUserId, LockscreenCredential password) {
-        Slogf.i(
-                TAG,
-                "Tying password for profile user %d to parent user %d",
-                profileUserId,
-                parentUserId);
-        final long parentSid;
-        try {
-            parentSid = getGateKeeperService().getSecureUserId(parentUserId);
-        } catch (RemoteException e) {
-            throw new IllegalStateException("Failed to talk to GateKeeper service", e);
-        }
-        byte[] encryptedPasswordData = encryptProfilePasswordLegacy(mKeyStore, profileUserId,
-                parentSid, password);
-        mStorage.writeChildProfileLock(profileUserId, encryptedPasswordData);
-    }
-
     private void setCeStorageProtection(@UserIdInt int userId, SyntheticPassword sp) {
         final byte[] secret = sp.deriveFileBasedEncryptionKey();
         try {
@@ -2483,19 +2447,15 @@ public class LockSettingsService extends ILockSettings.Stub {
                 int piUserId = profileUserIds.get(i);
                 LockscreenCredential piUserDecryptedPassword = profileUserDecryptedPasswords.get(i);
                 if (piUserId != USER_ALL && piUserDecryptedPassword != null) {
-                    if (android.security.Flags.enableAtomicChildProfileLskf()) {
-                        long protectorId = getCurrentLskfBasedProtectorId(piUserId);
-                        if (protectorId != SyntheticPasswordManager.NULL_PROTECTOR_ID) {
-                            mSpManager.tieProtectorToParent(
-                                    mGateKeeperService,
-                                    piUserId,
-                                    protectorId,
-                                    userId,
-                                    piUserDecryptedPassword);
-                            mStorage.syncSyntheticPasswordState(piUserId);
-                        }
-                    } else {
-                        tieProfilePasswordToParent(piUserId, userId, piUserDecryptedPassword);
+                    long protectorId = getCurrentLskfBasedProtectorId(piUserId);
+                    if (protectorId != SyntheticPasswordManager.NULL_PROTECTOR_ID) {
+                        mSpManager.tieProtectorToParent(
+                                mGateKeeperService,
+                                piUserId,
+                                protectorId,
+                                userId,
+                                piUserDecryptedPassword);
+                        mStorage.syncSyntheticPasswordState(piUserId);
                     }
                 }
                 if (piUserDecryptedPassword != null) {

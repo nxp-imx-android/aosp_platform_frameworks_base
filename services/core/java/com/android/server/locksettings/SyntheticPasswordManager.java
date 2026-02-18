@@ -833,14 +833,9 @@ class SyntheticPasswordManager {
     }
 
     public void removeUser(IGateKeeperService gatekeeper, int userId) {
-        for (long protectorId : mStorage.listSyntheticPasswordProtectorsForUser(SP_BLOB_NAME,
-                    userId)) {
-            if (android.security.Flags.enableAtomicChildProfileLskf()) {
-                destroyLskfBasedProtector(protectorId, userId);
-            } else {
-                destroyWeaverSlot(protectorId, userId);
-                destroyProtectorKey(getProtectorKeyAlias(protectorId));
-            }
+        for (long protectorId :
+                mStorage.listSyntheticPasswordProtectorsForUser(SP_BLOB_NAME, userId)) {
+            destroyLskfBasedProtector(protectorId, userId);
         }
         // Remove potential persistent state (in RPMB), to prevent them from accumulating and
         // causing problems.
@@ -1165,8 +1160,7 @@ class SyntheticPasswordManager {
         }
         createSyntheticPasswordBlob(
                 protectorId, PROTECTOR_TYPE_LSKF_BASED, sp, protectorSecret, sid, userId);
-        if (android.security.Flags.enableAtomicChildProfileLskf()
-                && credential.isUnifiedProfilePassword()) {
+        if (credential.isUnifiedProfilePassword()) {
             final UserInfo parent = mUserManager.getProfileParent(userId);
             if (parent == null) {
                 throw new IllegalStateException("User has no parent user");
