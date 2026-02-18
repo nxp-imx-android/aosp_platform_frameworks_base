@@ -19,10 +19,8 @@ package android.os.storage.operations.targets;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.annotation.SuppressLint;
+import android.os.Bundle;
 import android.os.Environment;
-import android.os.Parcel;
-import android.os.Parcelable;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 
 import java.io.File;
@@ -59,9 +57,10 @@ import java.util.regex.Pattern;
  * </ul>
  */
 @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
-@SuppressLint("ParcelNotFinal")
 @RavenwoodKeepWholeClass
 public final class PccTarget extends OperationTarget {
+    private static final String KEY_PATH_PREFIX = "key_path_prefix";
+
     /**
      * Pattern to detect "suspicious" characters in file paths. Matches Unicode categories: - \p{C}:
      * Other/Control characters (null, newline, surrogates, unassigned, etc.) - \p{Cf}: Format
@@ -85,7 +84,41 @@ public final class PccTarget extends OperationTarget {
         mPathPrefix = pathPrefix;
     }
 
+    /**
+     * Reconstructs a {@link PccTarget} from a Bundle.
+     *
+     * @param b The Bundle containing the target data.
+     * @hide
+     */
+    PccTarget(@NonNull Bundle b) {
+        super(b);
+        mPathPrefix = b.getString(KEY_PATH_PREFIX);
+    }
+
     /** @hide */
+    @Override
+    public int getTargetType() {
+        return TYPE_PCC;
+    }
+
+    /** @hide */
+    @Override
+    @NonNull
+    Bundle getDataBundle() {
+        Bundle b = super.getDataBundle();
+        b.putString(KEY_PATH_PREFIX, mPathPrefix);
+        return b;
+    }
+
+    /**
+     * Checks if the target prefix is valid and safe.
+     *
+     * <p>This performs a syntactic check to ensure the prefix is relative, does not contain path
+     * traversal elements, and does not contain unsafe characters.
+     *
+     * @return {@code true} if the prefix is valid; {@code false} otherwise.
+     * @hide
+     */
     @Override
     public boolean isValid() {
         if (mPathPrefix == null) {
@@ -122,7 +155,17 @@ public final class PccTarget extends OperationTarget {
         return true;
     }
 
-    /** @hide */
+    /**
+     * Resolves the full target path for a given user and package.
+     *
+     * @param volumeUuid The volume UUID (null for internal storage).
+     * @param isDeviceEncrypted Whether to use Device Encrypted (DE) or Credential Encrypted (CE)
+     *     storage.
+     * @param userId The user ID.
+     * @param packageName The package name.
+     * @return The resolved target directory.
+     * @hide
+     */
     public @NonNull File getTargetPath(
             @Nullable String volumeUuid,
             boolean isDeviceEncrypted,
@@ -142,30 +185,11 @@ public final class PccTarget extends OperationTarget {
         }
     }
 
-    /** implemented for Parcelable */
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    /** implemented for Parcelable */
-    @Override
-    public void writeToParcel(@NonNull Parcel dest, int flags) {
-        dest.writeString8(mPathPrefix);
-    }
-
-    @NonNull
-    public static final Parcelable.Creator<PccTarget> CREATOR =
-            new Parcelable.Creator<PccTarget>() {
-                public PccTarget createFromParcel(Parcel in) {
-                    return new PccTarget(in.readString8());
-                }
-
-                public PccTarget[] newArray(int size) {
-                    return new PccTarget[size];
-                }
-            };
-
+    /**
+     * Returns a string representation of this target for debugging.
+     *
+     * @return A string containing the target type and prefix.
+     */
     @Override
     @NonNull
     public String toString() {

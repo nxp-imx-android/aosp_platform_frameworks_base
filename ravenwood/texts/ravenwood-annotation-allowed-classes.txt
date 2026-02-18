@@ -355,7 +355,9 @@ android.os.connectivity.WifiActivityEnergyInfo
 android.os.connectivity.WifiBatteryStats
 android.os.storage.operations.sources.AppDataFileSource
 android.os.storage.operations.sources.OperationSource
+android.os.storage.operations.sources.OperationSourceWrapper
 android.os.storage.operations.targets.OperationTarget
+android.os.storage.operations.targets.OperationTargetWrapper
 android.os.storage.operations.targets.PccTarget
 android.os.vibrator.BasicPwleSegment
 android.os.vibrator.HapticFeedbackRequest

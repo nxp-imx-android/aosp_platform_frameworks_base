@@ -19,6 +19,7 @@ package android.os.storage;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.os.storage.operations.sources.AppDataFileSource;
+import android.os.storage.operations.sources.OperationSourceWrapper;
 import android.platform.test.annotations.Presubmit;
 
 import androidx.test.runner.AndroidJUnit4;
@@ -31,6 +32,24 @@ import java.io.File;
 @Presubmit
 @RunWith(AndroidJUnit4.class)
 public class AppDataFileSourceTest {
+
+    @Test
+    public void testParceling() {
+        File file = new File("/data/user/0/com.example/files/test.txt");
+        AppDataFileSource source = new AppDataFileSource(file);
+
+        OperationSourceWrapper wrapper = new OperationSourceWrapper(source);
+        android.os.Parcel parcel = android.os.Parcel.obtain();
+        wrapper.writeToParcel(parcel, 0);
+        parcel.setDataPosition(0);
+
+        OperationSourceWrapper unparceledWrapper =
+                OperationSourceWrapper.CREATOR.createFromParcel(parcel);
+        AppDataFileSource unparceledSource =
+                (AppDataFileSource) unparceledWrapper.getWrappedSource();
+
+        assertThat(unparceledSource.getFile().getAbsolutePath()).isEqualTo(file.getAbsolutePath());
+    }
 
     @Test
     public void testIsValid_validPaths() {

@@ -36999,14 +36999,11 @@ package android.os.storage.operations.sources {
 
   @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public final class AppDataFileSource extends android.os.storage.operations.sources.OperationSource {
     ctor public AppDataFileSource(@NonNull java.io.File);
-    method public int describeContents();
     method @NonNull public java.io.File getFile();
     method @NonNull public String toString();
-    method public void writeToParcel(@NonNull android.os.Parcel, int);
-    field @NonNull public static final android.os.Parcelable.Creator<android.os.storage.operations.sources.AppDataFileSource> CREATOR;
   }
 
-  @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public abstract class OperationSource implements android.os.Parcelable {
+  @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public abstract class OperationSource {
     method @NonNull public abstract String toString();
   }
 
@@ -37014,17 +37011,14 @@ package android.os.storage.operations.sources {
 
 package android.os.storage.operations.targets {
 
-  @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public abstract class OperationTarget implements android.os.Parcelable {
+  @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public abstract class OperationTarget {
     method @NonNull public abstract String toString();
   }
 
   @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public final class PccTarget extends android.os.storage.operations.targets.OperationTarget {
     ctor public PccTarget();
     ctor public PccTarget(@NonNull String);
-    method public int describeContents();
     method @NonNull public String toString();
-    method public void writeToParcel(@NonNull android.os.Parcel, int);
-    field @NonNull public static final android.os.Parcelable.Creator<android.os.storage.operations.targets.PccTarget> CREATOR;
   }
 
 }

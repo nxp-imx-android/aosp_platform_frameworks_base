@@ -24,7 +24,9 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.storage.FileManager;
 import android.os.storage.operations.sources.OperationSource;
+import android.os.storage.operations.sources.OperationSourceWrapper;
 import android.os.storage.operations.targets.OperationTarget;
+import android.os.storage.operations.targets.OperationTargetWrapper;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -151,11 +153,22 @@ public final class FileOperationResult implements Parcelable {
 
     private FileOperationResult(Parcel in) {
         mRequestId = Objects.requireNonNull(in.readString8());
+        OperationSourceWrapper sourceWrapper =
+                in.readParcelable(
+                        OperationSourceWrapper.class.getClassLoader(),
+                        OperationSourceWrapper.class);
         mSource =
-                Objects.requireNonNull(
-                        in.readParcelable(
-                                OperationSource.class.getClassLoader(), OperationSource.class));
-        mTarget = in.readParcelable(OperationTarget.class.getClassLoader(), OperationTarget.class);
+                sourceWrapper != null
+                        ? sourceWrapper.getWrappedSource()
+                        : OperationSource.getInvalidSource();
+        OperationTargetWrapper targetWrapper =
+                in.readParcelable(
+                        OperationTargetWrapper.class.getClassLoader(),
+                        OperationTargetWrapper.class);
+        mTarget =
+                targetWrapper != null
+                        ? targetWrapper.getWrappedTarget()
+                        : OperationTarget.getInvalidTarget();
         mStatus = in.readInt();
         mErrorCode = in.readInt();
         mErrorMessage = in.readString8();
@@ -230,10 +243,12 @@ public final class FileOperationResult implements Parcelable {
     @SuppressWarnings("AndroidFrameworkEfficientParcelable")
     public void writeToParcel(@NonNull Parcel dest, int flags) {
         dest.writeString8(mRequestId);
-        // We use writeParcelable (which includes the class name) rather than writeTypedObject
-        // to correctly handle polymorphic types for OperationSource and OperationTarget.
-        dest.writeParcelable(mSource, flags);
-        dest.writeParcelable(mTarget, flags);
+        dest.writeParcelable(new OperationSourceWrapper(mSource), flags);
+        if (mTarget != null) {
+            dest.writeParcelable(new OperationTargetWrapper(mTarget), flags);
+        } else {
+            dest.writeParcelable(null, flags);
+        }
         dest.writeInt(mStatus);
         dest.writeInt(mErrorCode);
         dest.writeString8(mErrorMessage);

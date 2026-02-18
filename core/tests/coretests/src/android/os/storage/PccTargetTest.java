@@ -19,6 +19,7 @@ package android.os.storage;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.os.Environment;
+import android.os.storage.operations.targets.OperationTargetWrapper;
 import android.os.storage.operations.targets.PccTarget;
 import android.platform.test.annotations.Presubmit;
 
@@ -32,6 +33,22 @@ import java.io.File;
 @Presubmit
 @RunWith(AndroidJUnit4.class)
 public class PccTargetTest {
+
+    @Test
+    public void testParceling() {
+        PccTarget target = new PccTarget("subdir/logs");
+
+        OperationTargetWrapper wrapper = new OperationTargetWrapper(target);
+        android.os.Parcel parcel = android.os.Parcel.obtain();
+        wrapper.writeToParcel(parcel, 0);
+        parcel.setDataPosition(0);
+
+        OperationTargetWrapper unparceledWrapper =
+                OperationTargetWrapper.CREATOR.createFromParcel(parcel);
+        PccTarget unparceledTarget = (PccTarget) unparceledWrapper.getWrappedTarget();
+
+        assertThat(unparceledTarget.toString()).isEqualTo(target.toString());
+    }
 
     @Test
     public void testIsValid_validPrefixes() {
@@ -86,17 +103,29 @@ public class PccTargetTest {
 
         // CE on internal
         assertThat(target.getTargetPath(null, false, userId, pkg).getAbsolutePath())
-                .isEqualTo(new File(Environment.getPccDataUserCePackageDirectory(null, userId, pkg),
-                        "subdir").getAbsolutePath());
+                .isEqualTo(
+                        new File(
+                                        Environment.getPccDataUserCePackageDirectory(
+                                                null, userId, pkg),
+                                        "subdir")
+                                .getAbsolutePath());
 
         // DE on internal
         assertThat(target.getTargetPath(null, true, userId, pkg).getAbsolutePath())
-                .isEqualTo(new File(Environment.getPccDataUserDePackageDirectory(null, userId, pkg),
-                        "subdir").getAbsolutePath());
+                .isEqualTo(
+                        new File(
+                                        Environment.getPccDataUserDePackageDirectory(
+                                                null, userId, pkg),
+                                        "subdir")
+                                .getAbsolutePath());
 
         // CE on external volume
         assertThat(target.getTargetPath("vol1", false, userId, pkg).getAbsolutePath())
-                .isEqualTo(new File(Environment.getPccDataUserCePackageDirectory(
-                        "vol1", userId, pkg), "subdir").getAbsolutePath());
+                .isEqualTo(
+                        new File(
+                                        Environment.getPccDataUserCePackageDirectory(
+                                                "vol1", userId, pkg),
+                                        "subdir")
+                                .getAbsolutePath());
     }
 }
