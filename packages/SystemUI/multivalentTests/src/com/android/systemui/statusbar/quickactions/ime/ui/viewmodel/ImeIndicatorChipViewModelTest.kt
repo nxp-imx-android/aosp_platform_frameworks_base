@@ -214,7 +214,7 @@ class ImeIndicatorChipViewModelTest : SysuiTestCase() {
             assertThat(chip).isInstanceOf(QuickActionChipUiState.PopupChip::class.java)
             val shownChip = chip as QuickActionChipUiState.PopupChip
 
-            shownChip.showPopup()
+            shownChip.showPopup(context)
             testScope.runCurrent()
 
             assertThat(fakeInputMethodRepository.inputMethodPickerShownDisplayId)
