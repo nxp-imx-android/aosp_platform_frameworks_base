@@ -115,7 +115,7 @@ class AppFunctionExecutorProxyControllerTest : SysuiTestCase() {
                     .thenReturn(
                         Bundle().apply {
                             putParcelable(
-                                ExecuteAppFunctionResponse.PROPERTY_RETURN_VALUE,
+                                "property/" + ExecuteAppFunctionResponse.PROPERTY_RETURN_VALUE,
                                 mockPendingIntent,
                             )
                         }
@@ -131,7 +131,7 @@ class AppFunctionExecutorProxyControllerTest : SysuiTestCase() {
         )
 
         verify(mockAppFunctionManager, times(1)).executeAppFunction(any(), any(), any(), any())
-        verify(mockPendingIntent, times(1)).send()
+        verify(mockPendingIntent, times(1)).send(any<Bundle>())
     }
 
     @Test
@@ -156,7 +156,7 @@ class AppFunctionExecutorProxyControllerTest : SysuiTestCase() {
                     .thenReturn(
                         Bundle().apply {
                             putParcelable(
-                                ExecuteAppFunctionResponse.PROPERTY_RETURN_VALUE,
+                                "property/" + ExecuteAppFunctionResponse.PROPERTY_RETURN_VALUE,
                                 mockPendingIntent,
                             )
                         }
@@ -171,6 +171,6 @@ class AppFunctionExecutorProxyControllerTest : SysuiTestCase() {
         )
 
         verify(mockAppFunctionManager, times(1)).executeAppFunction(any(), any(), any(), any())
-        verify(mockPendingIntent, never()).send()
+        verify(mockPendingIntent, never()).send(any<Bundle>())
     }
 }

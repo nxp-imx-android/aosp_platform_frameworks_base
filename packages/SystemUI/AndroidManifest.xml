@@ -423,6 +423,9 @@
     <!-- To be able to start location button consent dialog activity in PermissionController. -->
     <uses-permission android:name="android.permission.REQUEST_LOCATION_BUTTON_PERMISSIONS"/>
 
+    <!-- To be able to execute AppFunction for Android Context Engine use cases -->
+    <uses-permission android:name="android.permission.EXECUTE_APP_FUNCTIONS_SYSTEM"/>
+
     <protected-broadcast android:name="com.android.settingslib.action.REGISTER_SLICE_RECEIVER" />
     <protected-broadcast android:name="com.android.settingslib.action.UNREGISTER_SLICE_RECEIVER" />
     <protected-broadcast android:name="com.android.settings.flashlight.action.FLASHLIGHT_CHANGED" />
