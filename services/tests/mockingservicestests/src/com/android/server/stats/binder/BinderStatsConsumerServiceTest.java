@@ -108,6 +108,8 @@ public class BinderStatsConsumerServiceTest {
         builder.writeLong(stat.cpuTimeCount);
         builder.writeLong(stat.cpuTimeSumMicros);
         builder.writeLong(stat.cpuTimeSumSquaredMicros);
+        builder.writeLong(/* secondsWithAtLeast125Calls= */ 0);
+        builder.writeLong(/* secondsWithAtLeast250Calls= */ 0);
         return builder.usePooledBuffer().build();
     }
 
@@ -137,6 +139,8 @@ public class BinderStatsConsumerServiceTest {
         builder.writeLong(stat.cpuTimeCount * ((long) aggregationCount));
         builder.writeLong(stat.cpuTimeMicrosSum * ((long) aggregationCount));
         builder.writeLong(stat.cpuTimeMicrosSquaredSum * ((long) aggregationCount));
+        builder.writeLong(stat.callCount >= 125 ? aggregationCount : 0);
+        builder.writeLong(stat.callCount >= 250 ? aggregationCount : 0);
         return builder.usePooledBuffer().build();
     }
 
