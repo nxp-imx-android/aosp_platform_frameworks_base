@@ -24,6 +24,8 @@ import android.view.ViewGroup
 import android.view.WindowInsets
 import android.view.accessibility.AccessibilityEvent
 import androidx.compose.ui.util.lerp
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
 import androidx.dynamicanimation.animation.DynamicAnimation
 import androidx.dynamicanimation.animation.FloatValueHolder
@@ -97,6 +99,16 @@ constructor(
         )
     }
 
+    private val mainSliderWidth: Int by lazy {
+        context.resources.getDimensionPixelSize(R.dimen.volume_dialog_horizontal_slider_width)
+    }
+
+    private val mainSliderWidthWithCaptions: Int by lazy {
+        context.resources.getDimensionPixelSize(
+            R.dimen.volume_dialog_horizontal_slider_width_with_captions
+        )
+    }
+
     fun CoroutineScope.bind(dialog: Dialog, isVolumeDialogVertical: Boolean = true) {
         // Root view of the Volume Dialog.
         val root: ViewGroup = dialog.requireViewById(R.id.volume_dialog)
@@ -157,6 +169,9 @@ constructor(
                             left = getSliderHorizontalMargin() - view.paddingLeft,
                             right = getSliderHorizontalMargin() - view.paddingRight,
                         )
+                        mainSliderContainer?.updateLayoutParams<ConstraintLayout.LayoutParams> {
+                            matchConstraintMaxWidth = getSliderWidth()
+                        }
                     }
                     WindowInsets.CONSUMED
                 }
@@ -243,6 +258,13 @@ constructor(
             mainSliderWithCaptionsToggleHorizontalMargin
         } else {
             mainSliderHorizontalMargin
+        }
+
+    private fun getSliderWidth(): Int =
+        if (Flags.captionsToggleInVolumeDialogV1() && captionsButtonViewModel.isVisible.value) {
+            mainSliderWidthWithCaptions
+        } else {
+            mainSliderWidth
         }
 
     private class Accessibility(private val viewModel: VolumeDialogViewModel) :
