@@ -49,6 +49,20 @@ import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
 
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 
+import static com.android.server.am.HostingRecord.HOSTING_TYPE_ACTIVITY;
+import static com.android.server.am.HostingRecord.HOSTING_TYPE_ADDED_APPLICATION;
+import static com.android.server.am.HostingRecord.HOSTING_TYPE_BACKUP;
+import static com.android.server.am.HostingRecord.HOSTING_TYPE_BROADCAST;
+import static com.android.server.am.HostingRecord.HOSTING_TYPE_CONTENT_PROVIDER;
+import static com.android.server.am.HostingRecord.HOSTING_TYPE_EMPTY;
+import static com.android.server.am.HostingRecord.HOSTING_TYPE_LINK_FAIL;
+import static com.android.server.am.HostingRecord.HOSTING_TYPE_NEXT_ACTIVITY;
+import static com.android.server.am.HostingRecord.HOSTING_TYPE_NEXT_TOP_ACTIVITY;
+import static com.android.server.am.HostingRecord.HOSTING_TYPE_ON_HOLD;
+import static com.android.server.am.HostingRecord.HOSTING_TYPE_RESTART;
+import static com.android.server.am.HostingRecord.HOSTING_TYPE_SERVICE;
+import static com.android.server.am.HostingRecord.HOSTING_TYPE_SYSTEM;
+import static com.android.server.am.HostingRecord.HOSTING_TYPE_TOP_ACTIVITY;
 import static com.android.server.am.MockingOomAdjusterTests.ProcessStateAssert.assertThatProcess;
 import static com.android.server.am.psc.Constants.BACKUP_APP_ADJ;
 import static com.android.server.am.psc.Constants.CACHED_APP_IMPORTANCE_LEVELS;
@@ -333,6 +347,7 @@ public class MockingOomAdjusterTests {
                 mCallback, stateGetter)
                 .setProcessLruUpdater(lruUpdater)
                 .setOomAdjusterInjector(mInjector)
+                .setHostingTypeProvider(mService)
                 .build();
         mOomConstants = mProcessStateController.getOomConstants();
         mActivityStateAsyncUpdater = mProcessStateController.createActivityStateAsyncUpdater(
@@ -5178,5 +5193,145 @@ public class MockingOomAdjusterTests {
         public void setThreadPriority(int tid, int priority) {
             // do nothing
         }
+    }
+
+    @SuppressWarnings("GuardedBy")
+    @Test
+    @EnableFlags(Flags.FLAG_SET_INITIAL_OOM_SCORE_ADJ)
+    public void testSetAttachingProcessStates_InitialOomScore_TopActivity() {
+        testInitialOomScore(HOSTING_TYPE_TOP_ACTIVITY, FOREGROUND_APP_ADJ);
+    }
+
+    @SuppressWarnings("GuardedBy")
+    @Test
+    @EnableFlags(Flags.FLAG_SET_INITIAL_OOM_SCORE_ADJ)
+    public void testSetAttachingProcessStates_InitialOomScore_NextTopActivity() {
+        testInitialOomScore(HOSTING_TYPE_NEXT_TOP_ACTIVITY, FOREGROUND_APP_ADJ);
+    }
+
+    @SuppressWarnings("GuardedBy")
+    @Test
+    @EnableFlags(Flags.FLAG_SET_INITIAL_OOM_SCORE_ADJ)
+    public void testSetAttachingProcessStates_InitialOomScore_Activity() {
+        testInitialOomScore(HOSTING_TYPE_ACTIVITY, FOREGROUND_APP_ADJ);
+    }
+
+    @SuppressWarnings("GuardedBy")
+    @Test
+    @EnableFlags(Flags.FLAG_SET_INITIAL_OOM_SCORE_ADJ)
+    public void testSetAttachingProcessStates_InitialOomScore_NextActivity() {
+        testInitialOomScore(HOSTING_TYPE_NEXT_ACTIVITY, FOREGROUND_APP_ADJ);
+    }
+
+    @SuppressWarnings("GuardedBy")
+    @Test
+    @EnableFlags({Flags.FLAG_SET_INITIAL_OOM_SCORE_ADJ,
+            Flags.FLAG_SET_INITIAL_OOM_SCORE_ADJ_FOR_TYPE_BROADCAST})
+    public void testSetAttachingProcessStates_InitialOomScore_Broadcast() {
+        testInitialOomScore(HOSTING_TYPE_BROADCAST, PERCEPTIBLE_APP_ADJ);
+    }
+
+    @SuppressWarnings("GuardedBy")
+    @Test
+    @EnableFlags(Flags.FLAG_SET_INITIAL_OOM_SCORE_ADJ)
+    public void testSetAttachingProcessStates_InitialOomScore_ContentProvider() {
+        testInitialOomScore(HOSTING_TYPE_CONTENT_PROVIDER, FOREGROUND_APP_ADJ);
+    }
+
+    @SuppressWarnings("GuardedBy")
+    @Test
+    @EnableFlags(Flags.FLAG_SET_INITIAL_OOM_SCORE_ADJ)
+    public void testSetAttachingProcessStates_InitialOomScore_Backup() {
+        testInitialOomScore(HOSTING_TYPE_BACKUP, BACKUP_APP_ADJ);
+    }
+
+    @SuppressWarnings("GuardedBy")
+    @Test
+    @EnableFlags(Flags.FLAG_SET_INITIAL_OOM_SCORE_ADJ)
+    public void testSetAttachingProcessStates_InitialOomScore_Service() {
+        testInitialOomScore(HOSTING_TYPE_SERVICE, FOREGROUND_APP_ADJ);
+    }
+
+    @SuppressWarnings("GuardedBy")
+    @Test
+    @EnableFlags({Flags.FLAG_SET_INITIAL_OOM_SCORE_ADJ,
+            Flags.FLAG_SET_INITIAL_OOM_SCORE_ADJ_FOR_TYPE_ADDED_APPLICATION})
+    public void testSetAttachingProcessStates_InitialOomScore_AddedApplication() {
+        testInitialOomScore(HOSTING_TYPE_ADDED_APPLICATION, PREVIOUS_APP_ADJ);
+    }
+
+    @SuppressWarnings("GuardedBy")
+    @Test
+    @EnableFlags({Flags.FLAG_SET_INITIAL_OOM_SCORE_ADJ,
+            Flags.FLAG_SET_INITIAL_OOM_SCORE_ADJ_FOR_TYPE_LINK_FAILED})
+    public void testSetAttachingProcessStates_InitialOomScore_LinkFail() {
+        testInitialOomScore(HOSTING_TYPE_LINK_FAIL, CACHED_APP_MIN_ADJ);
+    }
+
+    @SuppressWarnings("GuardedBy")
+    @Test
+    @EnableFlags({Flags.FLAG_SET_INITIAL_OOM_SCORE_ADJ,
+            Flags.FLAG_SET_INITIAL_OOM_SCORE_ADJ_FOR_TYPE_ON_HOLD})
+    public void testSetAttachingProcessStates_InitialOomScore_OnHold() {
+        testInitialOomScore(HOSTING_TYPE_ON_HOLD, CACHED_APP_MIN_ADJ);
+    }
+
+    @SuppressWarnings("GuardedBy")
+    @Test
+    @EnableFlags(Flags.FLAG_SET_INITIAL_OOM_SCORE_ADJ)
+    public void testSetAttachingProcessStates_InitialOomScore_System() {
+        testInitialOomScore(HOSTING_TYPE_SYSTEM, SYSTEM_ADJ);
+    }
+
+    @SuppressWarnings("GuardedBy")
+    @Test
+    @EnableFlags(Flags.FLAG_SET_INITIAL_OOM_SCORE_ADJ)
+    public void testSetAttachingProcessStates_InitialOomScore_Empty() {
+        testInitialOomScore(HOSTING_TYPE_EMPTY, FOREGROUND_APP_ADJ);
+    }
+
+    @SuppressWarnings("GuardedBy")
+    @Test
+    @EnableFlags(Flags.FLAG_SET_INITIAL_OOM_SCORE_ADJ)
+    public void testSetAttachingProcessStates_InitialOomScore_Unknown() {
+        testInitialOomScore("unknown type" /* unknown type */, FOREGROUND_APP_ADJ);
+    }
+
+    @SuppressWarnings("GuardedBy")
+    @Test
+    @EnableFlags(Flags.FLAG_SET_INITIAL_OOM_SCORE_ADJ)
+    public void testSetAttachingProcessStates_InitialOomScore_Restart() {
+        testInitialOomScore(HOSTING_TYPE_RESTART, SERVICE_ADJ, SERVICE_ADJ);
+    }
+
+    @SuppressWarnings("GuardedBy")
+    @Test
+    @DisableFlags(Flags.FLAG_SET_INITIAL_OOM_SCORE_ADJ)
+    public void testSetAttachingProcessStates_InitialOomScore_FlagDisabled() {
+        // With flag disabled, it should always be FOREGROUND_APP_ADJ, regardless of hosting type.
+        testInitialOomScore(HOSTING_TYPE_BROADCAST, FOREGROUND_APP_ADJ);
+    }
+
+    private void testInitialOomScore(String hostingType, int expectedAdj) {
+        testInitialOomScore(hostingType, expectedAdj, INVALID_ADJ);
+    }
+
+    private void testInitialOomScore(String hostingType, int expectedAdj, int prevAdj) {
+        ProcessRecord app = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID, MOCKAPP_PROCESSNAME,
+                MOCKAPP_PACKAGENAME, false);
+        mProcessStateController.setPendingFinishAttach(app, true);
+
+        if (prevAdj != INVALID_ADJ) {
+            setFieldValue(ProcessRecordInternal.class, app, "mPrevSetRawAdj", prevAdj);
+        }
+
+        doReturn(hostingType).when(mService).getHostingType(app);
+
+        mProcessStateController.setAttachingProcessStatesLSP(app);
+
+        assertEquals("Unexpected initial oom adj for hosting type " + hostingType,
+                expectedAdj, app.getCurAdj());
+        assertEquals("Unexpected initial oom raw adj for hosting type " + hostingType,
+                expectedAdj, app.getCurRawAdj());
     }
 }

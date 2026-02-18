@@ -600,10 +600,19 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 public class ActivityManagerService extends IActivityManager.Stub
-        implements Watchdog.Monitor, BatteryStatsImpl.BatteryCallback, ActivityManagerGlobalLock {
+        implements Watchdog.Monitor, BatteryStatsImpl.BatteryCallback, ActivityManagerGlobalLock,
+        OomAdjuster.HostingTypeProvider {
 
     private static final String SYSTEM_PROPERTY_DEVICE_PROVISIONED =
             "persist.sys.device_provisioned";
+
+    @Override
+    public String getHostingType(ProcessRecordInternal app) {
+        // All ProcessRecordInternal objects handled by ActivityManagerService are concrete
+        // ProcessRecord instances, so this cast is safe.
+        return ((ProcessRecord) app).getHostingRecord().getType();
+    }
+
 
     static final String TAG = TAG_WITH_CLASS_NAME ? "ActivityManagerService" : TAG_AM;
     public static final String TAG_BACKUP = TAG + POSTFIX_BACKUP;
@@ -2582,6 +2591,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                 .Builder(mProcessList, activeUids, oomConstants, new OomAdjusterCallback(),
                          new OomAdjusterStateGetter())
                 .setHandlerThread(handlerThread)
+                .setHostingTypeProvider(this)
                 .build();
         mOomAdjuster = mProcessStateController.getOomAdjuster();
 
@@ -2660,6 +2670,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                 .setProcLockObject(this.mProcLock)
                 .setTopProcessChangeCallback(this::updateTopAppListeners)
                 .setProcessLruUpdater(mProcessList)
+                .setHostingTypeProvider(this)
                 .build();
         mOomAdjuster = mProcessStateController.getOomAdjuster();
 

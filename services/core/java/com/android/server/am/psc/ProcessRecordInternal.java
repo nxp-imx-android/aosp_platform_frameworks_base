@@ -440,6 +440,13 @@ public abstract class ProcessRecordInternal {
     private @OomAdjust int mVerifiedAdj = INVALID_ADJ;
 
     /**
+     * The previously set raw OOM adjustment for this process.
+     * This is only meaningful for a restarted process.
+     */
+    @GuardedBy("mServiceLock")
+    private int mPrevSetRawAdj = INVALID_ADJ;
+
+    /**
      * The current reasons for granting {@link ActivityManager#PROCESS_CAPABILITY_CPU_TIME} to this
      * process.
      */
@@ -971,6 +978,11 @@ public abstract class ProcessRecordInternal {
     @GuardedBy("mServiceLock")
     public @OomAdjust int getVerifiedAdj() {
         return mVerifiedAdj;
+    }
+
+    @GuardedBy("mServiceLock")
+    public int getPrevSetRawAdj() {
+        return mPrevSetRawAdj;
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
@@ -1549,6 +1561,7 @@ public abstract class ProcessRecordInternal {
         setHasForegroundActivities(false);
         mHasShownUi = false;
         mForcingToImportant = null;
+        mPrevSetRawAdj = mSetRawAdj;
         mCurRawAdj = mSetRawAdj = mCurAdj = mSetAdj = mVerifiedAdj = INVALID_ADJ;
         mCurCapability = mSetCapability = PROCESS_CAPABILITY_NONE;
         mCurSchedGroup = mSetSchedGroup = SCHED_GROUP_BACKGROUND;
