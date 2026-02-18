@@ -26,8 +26,13 @@ import android.hardware.input.InputManager.KeyGestureEventHandler
 import android.hardware.input.KeyGestureEvent
 import android.os.IBinder
 import android.view.Display.DEFAULT_DISPLAY
+import android.view.accessibility.AccessibilityEvent
+import android.view.accessibility.AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED
+import android.view.accessibility.AccessibilityManager
+import android.widget.Toast
 import android.window.DesktopExperienceFlags
 import com.android.internal.protolog.ProtoLog
+import com.android.wm.shell.R
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.ShellExecutor
@@ -54,7 +59,12 @@ class DesktopModeKeyGestureHandler(
     @ShellMainThread private val mainExecutor: ShellExecutor,
     private val displayController: DisplayController,
     private val desktopState: DesktopState,
+    private val accessibilityManager: AccessibilityManager,
 ) : KeyGestureEventHandler {
+    private val a11yAnnounceTextMinimizing: String =
+        context.getString(R.string.desktop_mode_talkback_state_minimizing)
+    private val a11yAnnounceTextClosing: String =
+        context.getString(R.string.desktop_mode_talkback_state_closing)
 
     init {
         if (desktopTasksController.isPresent && desktopModeWindowDecorViewModel.isPresent) {
@@ -172,6 +182,7 @@ class DesktopModeKeyGestureHandler(
                 logV("Key gesture MINIMIZE_FREEFORM_WINDOW is handled")
                 getGloballyFocusedDesktopTask()?.let {
                     mainExecutor.execute {
+                        handleA11y(a11yAnnounceTextMinimizing)
                         desktopTasksController.get().minimizeTask(it, MinimizeReason.KEY_GESTURE)
                     }
                 }
@@ -197,6 +208,7 @@ class DesktopModeKeyGestureHandler(
                         }
                     } ?: return
                 mainExecutor.execute {
+                    handleA11y(a11yAnnounceTextClosing)
                     // TODO(b/448484440): Call DesktopTasksController#closeTask instead.
                     desktopModeWindowDecorViewModel.get().closeTask(focusedTask)
                 }
@@ -349,6 +361,21 @@ class DesktopModeKeyGestureHandler(
                 null
             }
         }
+    }
+
+    // TODO(b/485012341): extract this into its own utility class,
+    // TODO(b/485012341): refactor handling of announcements in AppHeaderViewHolder
+    private fun handleA11y(eventText: String) {
+        // Send an a11y event as if a toast was shown
+        if (!accessibilityManager.isEnabled) return
+
+        val event =
+            AccessibilityEvent(TYPE_NOTIFICATION_STATE_CHANGED).apply {
+                className = Toast::class.java.name
+                packageName = context.opPackageName
+                text.add(eventText)
+            }
+        accessibilityManager.sendAccessibilityEvent(event)
     }
 
     // TODO(b/478792808): Remove suppression
