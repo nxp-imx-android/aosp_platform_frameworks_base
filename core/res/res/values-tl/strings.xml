@@ -758,33 +758,63 @@
     <string name="fingerprint_icon_content_description" msgid="4741068463175388817">"Icon ng fingerprint"</string>
     <string name="device_unlock_notification_name" msgid="2632928999862915709">"Pag-unlock ng device"</string>
     <string name="alternative_unlock_setup_notification_title" msgid="6241508547901933544">"Sumubok ng ibang paraan ng pag-unlock."</string>
-    <string name="alternative_face_setup_notification_content" msgid="3384959224091897331">"Gamitin ang Pag-unlock Gamit ang Mukha kapag hindi nakikilala ang iyong fingerprint, tulad kapag basa ang iyong mga daliri"</string>
+    <string name="alternative_face_setup_notification_content" product="default" msgid="3384959224091897331">"Gamitin ang Pag-unlock Gamit ang Mukha kapag hindi nakikilala ang iyong fingerprint, tulad kapag basa ang iyong mga daliri"</string>
+    <!-- no translation found for alternative_face_setup_notification_content (8589631194028810041) -->
+    <skip />
     <string name="alternative_fp_setup_notification_content" msgid="7454096947415721639">"Gamitin ang Pag-unlock Gamit ang Fingerprint kapag hindi nakikilala ang iyong mukha, tulad kapag madilim"</string>
-    <string name="face_recalibrate_notification_name" msgid="7311163114750748686">"Pag-unlock Gamit ang Mukha"</string>
-    <string name="face_recalibrate_notification_title" msgid="2524791952735579082">"Isyu sa Pag-unlock Gamit ang Mukha"</string>
+    <string name="face_recalibrate_notification_name" product="default" msgid="7311163114750748686">"Pag-unlock Gamit ang Mukha"</string>
+    <!-- no translation found for face_recalibrate_notification_name (6343244778393495390) -->
+    <skip />
+    <string name="face_recalibrate_notification_title" product="default" msgid="2524791952735579082">"Isyu sa Pag-unlock Gamit ang Mukha"</string>
+    <!-- no translation found for face_recalibrate_notification_title (7502893130398903561) -->
+    <skip />
     <string name="face_recalibrate_notification_content" msgid="3064513770251355594">"I-tap para i-delete ang iyong face model, pagkatapos ay idagdag ulit ang mukha mo"</string>
-    <string name="face_sensor_privacy_enabled" msgid="7407126963510598508">"Para magamit ang Pag-unlock Gamit ang Mukha, i-on ang "<b>"Access sa camera"</b>" sa Mga Setting &gt; Privacy"</string>
+    <string name="face_sensor_privacy_enabled" product="default" msgid="7407126963510598508">"Para magamit ang Pag-unlock Gamit ang Mukha, i-on ang "<b>"Access sa camera"</b>" sa Mga Setting &gt; Privacy"</string>
+    <!-- no translation found for face_sensor_privacy_enabled (7690221855638766930) -->
+    <skip />
     <string name="fingerprint_recalibrate_notification_name" msgid="1414578431898579354">"Pag-unlock Gamit ang Fingerprint"</string>
     <string name="fingerprint_recalibrate_notification_title" msgid="2406561052064558497">"Hindi magamit ang sensor para sa fingerprint"</string>
     <string name="fingerprint_recalibrate_notification_content" msgid="8519935717822194943">"Bumisita sa provider ng pag-aayos."</string>
     <string name="face_acquired_insufficient" msgid="6889245852748492218">"Hindi magawa ang iyong face model. Subukan ulit."</string>
     <string name="face_acquired_too_bright" msgid="8070756048978079164">"Masyadong maliwanag. Subukang bawasan ang liwanag."</string>
     <string name="face_acquired_too_dark" msgid="8539853432479385326">"Hindi sapat ang liwanag"</string>
-    <string name="face_acquired_too_close" msgid="4453646176196302462">"Ilayo pa ang telepono"</string>
-    <string name="face_acquired_too_far" msgid="2922278214231064859">"Ilapit pa ang telepono"</string>
-    <string name="face_acquired_too_high" msgid="8278815780046368576">"Itaas pa ang telepono"</string>
-    <string name="face_acquired_too_low" msgid="4075391872960840081">"Ibaba pa ang telepono"</string>
-    <string name="face_acquired_too_right" msgid="6245286514593540859">"Iusog pakaliwa ang telepono mo"</string>
-    <string name="face_acquired_too_left" msgid="9201762240918405486">"Iusog pakanan ang telepono mo"</string>
+    <string name="face_acquired_too_close" product="default" msgid="4453646176196302462">"Ilayo pa ang telepono"</string>
+    <!-- no translation found for face_acquired_too_close (7189579448504853047) -->
+    <skip />
+    <string name="face_acquired_too_far" product="default" msgid="2922278214231064859">"Ilapit pa ang telepono"</string>
+    <!-- no translation found for face_acquired_too_far (6590730829823321223) -->
+    <skip />
+    <string name="face_acquired_too_high" product="default" msgid="8278815780046368576">"Itaas pa ang telepono"</string>
+    <!-- no translation found for face_acquired_too_high (717393614154504299) -->
+    <skip />
+    <string name="face_acquired_too_low" product="default" msgid="4075391872960840081">"Ibaba pa ang telepono"</string>
+    <!-- no translation found for face_acquired_too_low (7695733281069538045) -->
+    <skip />
+    <string name="face_acquired_too_right" product="default" msgid="6245286514593540859">"Iusog pakaliwa ang telepono mo"</string>
+    <!-- no translation found for face_acquired_too_right (4058756237538843740) -->
+    <skip />
+    <string name="face_acquired_too_left" product="default" msgid="9201762240918405486">"Iusog pakanan ang telepono mo"</string>
+    <!-- no translation found for face_acquired_too_left (5804819007366973778) -->
+    <skip />
     <string name="face_acquired_poor_gaze" msgid="6746437451436776485">"Tumingin nang mas direkta sa iyong camera"</string>
-    <string name="face_acquired_not_detected" msgid="1057966913397548150">"Hindi makita ang mukha mo. Ipantay ang telepono sa mata."</string>
-    <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"Masyadong magalaw. Hawakang mabuti ang telepono."</string>
+    <string name="face_acquired_not_detected" product="default" msgid="1057966913397548150">"Hindi makita ang mukha mo. Ipantay ang telepono sa mata."</string>
+    <!-- no translation found for face_acquired_not_detected (1047701586390904260) -->
+    <skip />
+    <string name="face_acquired_too_much_motion" product="default" msgid="8199691445085189528">"Masyadong magalaw. Hawakang mabuti ang telepono."</string>
+    <!-- no translation found for face_acquired_too_much_motion (7135563968992659161) -->
+    <skip />
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"Paki-enroll muli ang iyong mukha."</string>
     <string name="face_acquired_too_different" msgid="4505278456634706967">"Hindi nakilala ang mukha. Subukan ulit."</string>
     <string name="face_acquired_too_similar" msgid="8882920552674125694">"Bahagyang baguhin ang posisyon ng iyong ulo"</string>
-    <string name="face_acquired_pan_too_extreme" msgid="5417928604710621088">"Tumingin nang mas direkta sa iyong telepono"</string>
-    <string name="face_acquired_tilt_too_extreme" msgid="5715715666540716620">"Tumingin nang mas direkta sa iyong telepono"</string>
-    <string name="face_acquired_roll_too_extreme" msgid="8261939882838881194">"Tumingin nang mas direkta sa iyong telepono"</string>
+    <string name="face_acquired_pan_too_extreme" product="default" msgid="5417928604710621088">"Tumingin nang mas direkta sa iyong telepono"</string>
+    <!-- no translation found for face_acquired_pan_too_extreme (821456302944137576) -->
+    <skip />
+    <string name="face_acquired_tilt_too_extreme" product="default" msgid="5715715666540716620">"Tumingin nang mas direkta sa iyong telepono"</string>
+    <!-- no translation found for face_acquired_tilt_too_extreme (1119243364774233108) -->
+    <skip />
+    <string name="face_acquired_roll_too_extreme" product="default" msgid="8261939882838881194">"Tumingin nang mas direkta sa iyong telepono"</string>
+    <!-- no translation found for face_acquired_roll_too_extreme (3665467581072397682) -->
+    <skip />
     <string name="face_acquired_obscured" msgid="4917643294953326639">"Alisin ang anumang humaharang sa iyong mukha."</string>
     <string name="face_acquired_sensor_dirty" msgid="8968391891086721678">"Linisin ang itaas ng iyong screen, kasama ang itim na bar"</string>
     <!-- no translation found for face_acquired_dark_glasses_detected (5643703296620631986) -->
@@ -797,19 +827,31 @@
   <string-array name="face_acquired_vendor">
   </string-array>
     <string name="face_error_hw_not_available" msgid="5085202213036026288">"Di ma-verify ang mukha. Di available ang hardware."</string>
-    <string name="face_error_timeout" msgid="2598544068593889762">"Subukan ulit ang Pag-unlock Gamit ang Mukha"</string>
+    <string name="face_error_timeout" product="default" msgid="2598544068593889762">"Subukan ulit ang Pag-unlock Gamit ang Mukha"</string>
+    <!-- no translation found for face_error_timeout (8136501408214657840) -->
+    <skip />
     <string name="face_error_no_space" msgid="5649264057026021723">"Hindi ma-store ang data ng mukha. Mag-delete muna ng iba."</string>
     <string name="face_error_canceled" msgid="2164434737103802131">"Nakansela ang operation kaugnay ng mukha."</string>
-    <string name="face_error_user_canceled" msgid="5766472033202928373">"Kinansela ng user ang Pag-unlock Gamit ang Mukha"</string>
+    <string name="face_error_user_canceled" product="default" msgid="5766472033202928373">"Kinansela ng user ang Pag-unlock Gamit ang Mukha"</string>
+    <!-- no translation found for face_error_user_canceled (8903551031462609651) -->
+    <skip />
     <string name="face_error_lockout" msgid="7864408714994529437">"Masyadong maraming pagsubok. Subukang muli mamaya."</string>
-    <string name="face_error_lockout_permanent" msgid="8533257333130473422">"Masyadong maraming pagsubok. Hindi available ang Face Unlock."</string>
+    <string name="face_error_lockout_permanent" product="default" msgid="8533257333130473422">"Masyadong maraming pagsubok. Hindi available ang Face Unlock."</string>
+    <!-- no translation found for face_error_lockout_permanent (1885291877517229762) -->
+    <skip />
     <string name="face_error_lockout_screen_lock" msgid="5062609811636860928">"Masyado nang maraming beses sinubukan. Ilagay na lang ang lock ng screen."</string>
     <string name="face_error_unable_to_process" msgid="5723292697366130070">"Hindi ma-verify ang mukha. Subukang muli."</string>
-    <string name="face_error_not_enrolled" msgid="1134739108536328412">"Hindi mo pa nase-set up ang Pag-unlock Gamit ang Mukha"</string>
-    <string name="face_error_hw_not_present" msgid="7940978724978763011">"Hindi sinusuportahan ang Pag-unlock Gamit ang Mukha sa device na ito"</string>
+    <string name="face_error_not_enrolled" product="default" msgid="1134739108536328412">"Hindi mo pa nase-set up ang Pag-unlock Gamit ang Mukha"</string>
+    <!-- no translation found for face_error_not_enrolled (7350396330456504527) -->
+    <skip />
+    <string name="face_error_hw_not_present" product="default" msgid="7940978724978763011">"Hindi sinusuportahan ang Pag-unlock Gamit ang Mukha sa device na ito"</string>
+    <!-- no translation found for face_error_hw_not_present (4947323392112708365) -->
+    <skip />
     <string name="face_error_security_update_required" msgid="5076017208528750161">"Pansamantalang na-disable ang sensor."</string>
     <string name="face_name_template" msgid="3877037340223318119">"Mukha <xliff:g id="FACEID">%d</xliff:g>"</string>
-    <string name="face_app_setting_name" msgid="5854024256907828015">"Gumamit ng Pag-unlock Gamit ang Mukha"</string>
+    <string name="face_app_setting_name" product="default" msgid="5854024256907828015">"Gumamit ng Pag-unlock Gamit ang Mukha"</string>
+    <!-- no translation found for face_app_setting_name (8226850671242901114) -->
+    <skip />
     <string name="face_or_screen_lock_app_setting_name" msgid="1603149075605709106">"Gumamit ng mukha o lock ng screen"</string>
     <string name="face_dialog_default_subtitle" msgid="6620492813371195429">"Gamitin ang iyong mukha para magpatuloy"</string>
     <string name="face_or_screen_lock_dialog_default_subtitle" msgid="5006381531158341844">"Gamitin ang iyong mukha o lock ng screen para magpatuloy"</string>
@@ -1069,7 +1111,9 @@
     <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"I-click para i-unlock"</string>
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"Pumindot ng anumang key para I-unlock"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"I-unlock para sa lahat ng feature at data"</string>
-    <string name="faceunlock_multiple_failures" msgid="681991538434031708">"Nalagpasan na ang maximum na mga pagtatangka sa Pag-unlock Gamit ang Mukha"</string>
+    <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"Nalagpasan na ang maximum na mga pagtatangka sa Pag-unlock Gamit ang Mukha"</string>
+    <!-- no translation found for faceunlock_multiple_failures (5388142244463490793) -->
+    <skip />
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"Walang SIM"</string>
     <string name="lockscreen_missing_sim_message" product="tablet" msgid="3986843848305639161">"Walang SIM sa tablet."</string>
     <string name="lockscreen_missing_sim_message" product="tv" msgid="3903140876952198273">"Walang SIM sa iyong Android TV device."</string>
@@ -1140,7 +1184,9 @@
     <string name="keyguard_accessibility_expand_lock_area" msgid="4215280881346033434">"Palakihin ang bahagi ng pag-unlock."</string>
     <string name="keyguard_accessibility_slide_unlock" msgid="2968195219692413046">"Pag-unlock ng slide."</string>
     <string name="keyguard_accessibility_pattern_unlock" msgid="8669128146589233293">"Pag-unlock ng pattern."</string>
-    <string name="keyguard_accessibility_face_unlock" msgid="4533832120787386728">"Pag-unlock Gamit ang Mukha."</string>
+    <string name="keyguard_accessibility_face_unlock" product="default" msgid="4533832120787386728">"Pag-unlock Gamit ang Mukha."</string>
+    <!-- no translation found for keyguard_accessibility_face_unlock (6739732585954513653) -->
+    <skip />
     <string name="keyguard_accessibility_pin_unlock" msgid="4020864007967340068">"Pag-unlock ng pin."</string>
     <string name="keyguard_accessibility_sim_pin_unlock" msgid="4895939120871890557">"Pag-unlock ng Pin ng Sim."</string>
     <string name="keyguard_accessibility_sim_puk_unlock" msgid="3459003464041899101">"Pag-unlock ng Puk ng Sim."</string>
@@ -1877,7 +1923,8 @@
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"Lumipat"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"Mga Setting"</string>
     <string name="user_switching_message" msgid="1912993630661332336">"Lumilipat kay <xliff:g id="NAME">%1$s</xliff:g>…"</string>
-    <string name="user_logging_out_message" msgid="7216437629179710359">"Nila-log out si <xliff:g id="NAME">%1$s</xliff:g>..."</string>
+    <!-- no translation found for user_logging_out_message (2968888364742643174) -->
+    <skip />
     <string name="owner_name" msgid="8713560351570795743">"May-ari"</string>
     <string name="guest_name" msgid="8502103277839834324">"Bisita"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"User ng System"</string>
@@ -2126,28 +2173,37 @@
     <string name="app_lock_add_screen_lock_title" msgid="6905612843620128689">"Una, magdagdag ng screen lock"</string>
     <string name="enable_app_lock_success_toast_message" msgid="3339622779190529987">"Naka-lock ang <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="enable_app_lock_failure_toast_message" msgid="1055838896510445566">"Hindi ma-lock ang <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
-    <string name="disable_app_lock_success_toast_message" msgid="70733620589071266">"Inalis ang Lock ng App sa <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
-    <!-- no translation found for locked_app_biometric_prompt_description (5892653396104581919) -->
-    <skip />
+    <string name="disable_app_lock_success_toast_message" msgid="360172251656799346">"Inalis ang App Lock"</string>
+    <string name="enable_app_lock_biometric_prompt_subtitle" msgid="8215241065630017088">"Idaragdag ang app lock sa <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+    <string name="disable_app_lock_biometric_prompt_subtitle" msgid="3963064765974508170">"Aalisin ang app lock sa <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+    <string name="locked_app_biometric_prompt_description" msgid="5892653396104581919">"Pinoprotektahan ng app lock ang app na ito"</string>
     <string name="locked_app_external_display_message" msgid="5483884799685545338">"Para ma-access ang app sa display na ito, i-verify muna na ikaw ito sa isa mo pang device"</string>
     <string name="app_lock_edu_dialog_enable_app_lock_title" msgid="283314042336592322">"Magdagdag ng lock ng app sa <xliff:g id="APP_NAME">%1$s</xliff:g>?"</string>
-    <string name="app_lock_edu_dialog_description" msgid="8176807243219769518">"Para sa iyong seguridad, ikaw lang ang makaka-access sa app na ito gamit ang Pag-unlock Gamit ang Fingerprint at Mukha o ang PIN mo"</string>
     <string name="app_lock_edu_dialog_description_template" msgid="8563718120753342530">"Para sa iyong seguridad, ikaw lang ang puwedeng mag-access sa app na ito gamit ang %1$s o ang %2$s mo"</string>
     <string name="app_lock_edu_dialog_description_template_no_biometrics" msgid="7122017109150633691">"Para sa iyong seguridad, ikaw lang ang makaka-access sa app na ito gamit ang %1$s mo"</string>
     <string name="app_lock_edu_dialog_info_header" msgid="5876120209204270990">"Gumagamit ng lock ng app"</string>
     <string name="app_lock_edu_dialog_info_notifications" msgid="1124438392204873305">"Itatago ang content ng notification"</string>
     <string name="app_lock_edu_dialog_info_widgets" msgid="8809009414650740872">"Aalisin ang mga widget at shortcut"</string>
-    <!-- no translation found for app_lock_edu_dialog_info_ai_disclaimer (5623615653703542050) -->
-    <skip />
+    <string name="app_lock_edu_dialog_info_ai_disclaimer" msgid="5623615653703542050">"Maa-access pa rin ng mga AI agent at serbisyong pinayagan mong i-access ang %1$s ang data nito"</string>
     <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"Idagdag ang app lock"</string>
-    <string name="app_lock_edu_dialog_biometric_description_has_face" msgid="1348151645996748654">"Pag-unlock Gamit ang Mukha"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_face" product="default" msgid="1348151645996748654">"Pag-unlock Gamit ang Mukha"</string>
+    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_face (380233309639495358) -->
+    <skip />
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"Pag-unlock Gamit ang Fingerprint"</string>
-    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" msgid="7895807411323811641">"Pag-unlock Gamit ang Fingerprint o Mukha"</string>
-    <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="8487096457702445059">"Password"</string>
-    <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="991436996281983547">"Pattern"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" product="default" msgid="6551410616110497401">"Fingerprint Unlock, Face Unlock"</string>
+    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint_and_face (4797005135507921547) -->
+    <skip />
+    <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="6019284267033007445">"password"</string>
+    <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="2370939002644936965">"pattern"</string>
     <string name="app_lock_edu_dialog_lockscreen_pin_name" msgid="6458607126966304795">"PIN"</string>
-    <string name="app_lock_permission_review_dialog_title" msgid="5030286398974840579">"Posibleng lumabas pa rin ang mga larawan mo sa iba pang app"</string>
-    <string name="app_lock_permission_review_dialog_sub_title" msgid="310758587817184145">"Mga app na may access sa mga larawan mo"</string>
+    <!-- no translation found for app_lock_permission_review_dialog_title_photos (6193222920123912729) -->
+    <skip />
+    <!-- no translation found for app_lock_permission_review_dialog_subtitle_photos (1854948251386976703) -->
+    <skip />
+    <!-- no translation found for app_lock_permission_review_dialog_title_files (8820759644609198515) -->
+    <skip />
+    <!-- no translation found for app_lock_permission_review_dialog_subtitle_files (2999447193189851364) -->
+    <skip />
     <string name="app_lock_permission_review_expand_app_list_button" msgid="3214809707125223273">"Tingnan lahat"</string>
     <string name="app_lock_permission_review_continue_button" msgid="4045066724173414043">"Magpatuloy"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"I-unpause ang mga work app?"</string>
@@ -2636,8 +2692,12 @@
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"Hindi na makilala ang <xliff:g id="FINGERPRINT_0">%1$s</xliff:g> at <xliff:g id="FINGERPRINT_1">%2$s</xliff:g>."</string>
     <string name="fingerprint_dangling_notification_msg_all_deleted_1" msgid="1824812666549916586">"Hindi na makilala ang <xliff:g id="FINGERPRINT">%s</xliff:g>. I-set up ulit ang Pag-unlock Gamit ang Fingerprint."</string>
     <string name="fingerprint_dangling_notification_msg_all_deleted_2" msgid="5974657382960155099">"Hindi na makilala ang <xliff:g id="FINGERPRINT_0">%1$s</xliff:g> at <xliff:g id="FINGERPRINT_1">%2$s</xliff:g>. I-set up ulit ang Pag-unlock Gamit ang Fingerprint."</string>
-    <string name="face_dangling_notification_title" msgid="947852541060975473">"I-set up ulit ang Pag-unlock Gamit ang Mukha"</string>
-    <string name="face_dangling_notification_msg" msgid="746235263598985384">"Hindi na makilala ang iyong face model. I-set up ulit ang Pag-unlock Gamit ang Mukha."</string>
+    <string name="face_dangling_notification_title" product="default" msgid="947852541060975473">"I-set up ulit ang Pag-unlock Gamit ang Mukha"</string>
+    <!-- no translation found for face_dangling_notification_title (4632690536207343589) -->
+    <skip />
+    <string name="face_dangling_notification_msg" product="default" msgid="746235263598985384">"Hindi na makilala ang iyong face model. I-set up ulit ang Pag-unlock Gamit ang Mukha."</string>
+    <!-- no translation found for face_dangling_notification_msg (5982979430103820891) -->
+    <skip />
     <string name="biometric_dangling_notification_action_set_up" msgid="8246885009807817961">"I-set up"</string>
     <string name="biometric_dangling_notification_action_not_now" msgid="8095249216864443491">"Huwag muna"</string>
     <string name="bg_user_sound_notification_title_alarm" msgid="5251678483393143527">"Alarm para kay <xliff:g id="USER_NAME">%s</xliff:g>"</string>

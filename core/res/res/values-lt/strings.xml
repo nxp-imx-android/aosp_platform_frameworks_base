@@ -760,33 +760,63 @@
     <string name="fingerprint_icon_content_description" msgid="4741068463175388817">"Piršto antspaudo piktograma"</string>
     <string name="device_unlock_notification_name" msgid="2632928999862915709">"Įrenginio atrakinimo funkcija"</string>
     <string name="alternative_unlock_setup_notification_title" msgid="6241508547901933544">"Išbandykite kitą atrakinimo metodą"</string>
-    <string name="alternative_face_setup_notification_content" msgid="3384959224091897331">"Naudokite atrakinimą pagal veidą, kai nepavyksta atpažinti piršto atspaudo, pvz., kai pirštai drėgni"</string>
+    <string name="alternative_face_setup_notification_content" product="default" msgid="3384959224091897331">"Naudokite atrakinimą pagal veidą, kai nepavyksta atpažinti piršto atspaudo, pvz., kai pirštai drėgni"</string>
+    <!-- no translation found for alternative_face_setup_notification_content (8589631194028810041) -->
+    <skip />
     <string name="alternative_fp_setup_notification_content" msgid="7454096947415721639">"Naudokite atrakinimą piršto atspaudu, kai nepavyksta atpažinti veido, pvz., kai netinkamas apšvietimas"</string>
-    <string name="face_recalibrate_notification_name" msgid="7311163114750748686">"Atrakinimas pagal veidą"</string>
-    <string name="face_recalibrate_notification_title" msgid="2524791952735579082">"Su atrakinimu pagal veidą susijusi problema"</string>
+    <string name="face_recalibrate_notification_name" product="default" msgid="7311163114750748686">"Atrakinimas pagal veidą"</string>
+    <!-- no translation found for face_recalibrate_notification_name (6343244778393495390) -->
+    <skip />
+    <string name="face_recalibrate_notification_title" product="default" msgid="2524791952735579082">"Su atrakinimu pagal veidą susijusi problema"</string>
+    <!-- no translation found for face_recalibrate_notification_title (7502893130398903561) -->
+    <skip />
     <string name="face_recalibrate_notification_content" msgid="3064513770251355594">"Palieskite, kad ištrintumėte veido modelį, tada iš naujo pridėkite veidą"</string>
-    <string name="face_sensor_privacy_enabled" msgid="7407126963510598508">"Jei norite naudoti atrakinimą pagal veidą, įjunkite parinktį "<b>"Prieiga prie fotoaparato"</b>" skiltyje „Nustatymai“ &gt; „Privatumas“"</string>
+    <string name="face_sensor_privacy_enabled" product="default" msgid="7407126963510598508">"Jei norite naudoti atrakinimą pagal veidą, įjunkite parinktį "<b>"Prieiga prie fotoaparato"</b>" skiltyje „Nustatymai“ &gt; „Privatumas“"</string>
+    <!-- no translation found for face_sensor_privacy_enabled (7690221855638766930) -->
+    <skip />
     <string name="fingerprint_recalibrate_notification_name" msgid="1414578431898579354">"Atrakinimas piršto atspaudu"</string>
     <string name="fingerprint_recalibrate_notification_title" msgid="2406561052064558497">"Negalima naudoti kontrolinio kodo jutiklio"</string>
     <string name="fingerprint_recalibrate_notification_content" msgid="8519935717822194943">"Apsilankykite pas taisymo paslaugos teikėją."</string>
     <string name="face_acquired_insufficient" msgid="6889245852748492218">"Nepavyko sukurti veido modelio. Band. dar kartą."</string>
     <string name="face_acquired_too_bright" msgid="8070756048978079164">"Per šviesu. Išbandykite mažesnį apšvietimą."</string>
     <string name="face_acquired_too_dark" msgid="8539853432479385326">"Per tamsu"</string>
-    <string name="face_acquired_too_close" msgid="4453646176196302462">"Laikykite telefoną toliau"</string>
-    <string name="face_acquired_too_far" msgid="2922278214231064859">"Laikykite telefoną arčiau"</string>
-    <string name="face_acquired_too_high" msgid="8278815780046368576">"Laikykite telefoną aukščiau"</string>
-    <string name="face_acquired_too_low" msgid="4075391872960840081">"Laikykite telefoną žemiau"</string>
-    <string name="face_acquired_too_right" msgid="6245286514593540859">"Laikykite telefoną kairiau"</string>
-    <string name="face_acquired_too_left" msgid="9201762240918405486">"Laikykite telefoną dešiniau"</string>
+    <string name="face_acquired_too_close" product="default" msgid="4453646176196302462">"Laikykite telefoną toliau"</string>
+    <!-- no translation found for face_acquired_too_close (7189579448504853047) -->
+    <skip />
+    <string name="face_acquired_too_far" product="default" msgid="2922278214231064859">"Laikykite telefoną arčiau"</string>
+    <!-- no translation found for face_acquired_too_far (6590730829823321223) -->
+    <skip />
+    <string name="face_acquired_too_high" product="default" msgid="8278815780046368576">"Laikykite telefoną aukščiau"</string>
+    <!-- no translation found for face_acquired_too_high (717393614154504299) -->
+    <skip />
+    <string name="face_acquired_too_low" product="default" msgid="4075391872960840081">"Laikykite telefoną žemiau"</string>
+    <!-- no translation found for face_acquired_too_low (7695733281069538045) -->
+    <skip />
+    <string name="face_acquired_too_right" product="default" msgid="6245286514593540859">"Laikykite telefoną kairiau"</string>
+    <!-- no translation found for face_acquired_too_right (4058756237538843740) -->
+    <skip />
+    <string name="face_acquired_too_left" product="default" msgid="9201762240918405486">"Laikykite telefoną dešiniau"</string>
+    <!-- no translation found for face_acquired_too_left (5804819007366973778) -->
+    <skip />
     <string name="face_acquired_poor_gaze" msgid="6746437451436776485">"Žiūrėkite tiesiai į fotoaparatą"</string>
-    <string name="face_acquired_not_detected" msgid="1057966913397548150">"Nepavyko pamatyti jūsų veido. Laikykite telefoną akių lygyje."</string>
-    <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"Įrenginys per daug judinamas. Nejudink. telefono."</string>
+    <string name="face_acquired_not_detected" product="default" msgid="1057966913397548150">"Nepavyko pamatyti jūsų veido. Laikykite telefoną akių lygyje."</string>
+    <!-- no translation found for face_acquired_not_detected (1047701586390904260) -->
+    <skip />
+    <string name="face_acquired_too_much_motion" product="default" msgid="8199691445085189528">"Įrenginys per daug judinamas. Nejudink. telefono."</string>
+    <!-- no translation found for face_acquired_too_much_motion (7135563968992659161) -->
+    <skip />
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"Užregistruokite veidą iš naujo."</string>
     <string name="face_acquired_too_different" msgid="4505278456634706967">"Veidas neatpažintas. Bandykite dar kartą."</string>
     <string name="face_acquired_too_similar" msgid="8882920552674125694">"Kaskart šiek tiek pakeiskite galvos poziciją"</string>
-    <string name="face_acquired_pan_too_extreme" msgid="5417928604710621088">"Žiūrėkite tiesiai į telefoną"</string>
-    <string name="face_acquired_tilt_too_extreme" msgid="5715715666540716620">"Žiūrėkite tiesiai į telefoną"</string>
-    <string name="face_acquired_roll_too_extreme" msgid="8261939882838881194">"Žiūrėkite tiesiai į telefoną"</string>
+    <string name="face_acquired_pan_too_extreme" product="default" msgid="5417928604710621088">"Žiūrėkite tiesiai į telefoną"</string>
+    <!-- no translation found for face_acquired_pan_too_extreme (821456302944137576) -->
+    <skip />
+    <string name="face_acquired_tilt_too_extreme" product="default" msgid="5715715666540716620">"Žiūrėkite tiesiai į telefoną"</string>
+    <!-- no translation found for face_acquired_tilt_too_extreme (1119243364774233108) -->
+    <skip />
+    <string name="face_acquired_roll_too_extreme" product="default" msgid="8261939882838881194">"Žiūrėkite tiesiai į telefoną"</string>
+    <!-- no translation found for face_acquired_roll_too_extreme (3665467581072397682) -->
+    <skip />
     <string name="face_acquired_obscured" msgid="4917643294953326639">"Patraukite viską, kas užstoja jūsų veidą."</string>
     <string name="face_acquired_sensor_dirty" msgid="8968391891086721678">"Išvalykite ekrano viršų, įskaitant juodą juostą"</string>
     <!-- no translation found for face_acquired_dark_glasses_detected (5643703296620631986) -->
@@ -799,19 +829,31 @@
   <string-array name="face_acquired_vendor">
   </string-array>
     <string name="face_error_hw_not_available" msgid="5085202213036026288">"Nepavyko patv. veido. Aparatinė įranga negalima."</string>
-    <string name="face_error_timeout" msgid="2598544068593889762">"Bandykite dar kartą naudoti atrakinimą pagal veidą"</string>
+    <string name="face_error_timeout" product="default" msgid="2598544068593889762">"Bandykite dar kartą naudoti atrakinimą pagal veidą"</string>
+    <!-- no translation found for face_error_timeout (8136501408214657840) -->
+    <skip />
     <string name="face_error_no_space" msgid="5649264057026021723">"Nepavyko išs. naujų veido duomenų. Pirm. ištrinkite senus."</string>
     <string name="face_error_canceled" msgid="2164434737103802131">"Veido atpažinimo operacija atšaukta."</string>
-    <string name="face_error_user_canceled" msgid="5766472033202928373">"Atrakinimą pagal veidą atšaukė naudotojas"</string>
+    <string name="face_error_user_canceled" product="default" msgid="5766472033202928373">"Atrakinimą pagal veidą atšaukė naudotojas"</string>
+    <!-- no translation found for face_error_user_canceled (8903551031462609651) -->
+    <skip />
     <string name="face_error_lockout" msgid="7864408714994529437">"Per daug bandymų. Vėliau bandykite dar kartą."</string>
-    <string name="face_error_lockout_permanent" msgid="8533257333130473422">"Per daug bandymų. Atrakinimo pagal veidą funkcija nepasiekiama."</string>
+    <string name="face_error_lockout_permanent" product="default" msgid="8533257333130473422">"Per daug bandymų. Atrakinimo pagal veidą funkcija nepasiekiama."</string>
+    <!-- no translation found for face_error_lockout_permanent (1885291877517229762) -->
+    <skip />
     <string name="face_error_lockout_screen_lock" msgid="5062609811636860928">"Per daug bandymų. Geriau naudokite ekrano užraktą."</string>
     <string name="face_error_unable_to_process" msgid="5723292697366130070">"Nepavyko patvirtinti veido. Bandykite dar kartą."</string>
-    <string name="face_error_not_enrolled" msgid="1134739108536328412">"Nenustatėte atrakinimo pagal veidą"</string>
-    <string name="face_error_hw_not_present" msgid="7940978724978763011">"Šiame įrenginyje atrakinimas pagal veidą nepalaikomas"</string>
+    <string name="face_error_not_enrolled" product="default" msgid="1134739108536328412">"Nenustatėte atrakinimo pagal veidą"</string>
+    <!-- no translation found for face_error_not_enrolled (7350396330456504527) -->
+    <skip />
+    <string name="face_error_hw_not_present" product="default" msgid="7940978724978763011">"Šiame įrenginyje atrakinimas pagal veidą nepalaikomas"</string>
+    <!-- no translation found for face_error_hw_not_present (4947323392112708365) -->
+    <skip />
     <string name="face_error_security_update_required" msgid="5076017208528750161">"Jutiklis laikinai išjungtas."</string>
     <string name="face_name_template" msgid="3877037340223318119">"<xliff:g id="FACEID">%d</xliff:g> veidas"</string>
-    <string name="face_app_setting_name" msgid="5854024256907828015">"Naudoti atrakinimą pagal veidą"</string>
+    <string name="face_app_setting_name" product="default" msgid="5854024256907828015">"Naudoti atrakinimą pagal veidą"</string>
+    <!-- no translation found for face_app_setting_name (8226850671242901114) -->
+    <skip />
     <string name="face_or_screen_lock_app_setting_name" msgid="1603149075605709106">"Naudoti atrakinimą pagal veidą arba ekrano užraktą"</string>
     <string name="face_dialog_default_subtitle" msgid="6620492813371195429">"Jei norite tęsti, naudokite atpažinimą pagal veidą"</string>
     <string name="face_or_screen_lock_dialog_default_subtitle" msgid="5006381531158341844">"Jei norite tęsti, naudokite veido atpažinimo funkciją arba ekrano užraktą"</string>
@@ -1071,7 +1113,9 @@
     <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"Atrakinti spustelėjus"</string>
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"Paspauskite bet kurį klavišą, kad atrakintumėte"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Atrakinę pasieksite visas funkcijas ir duomenis"</string>
-    <string name="faceunlock_multiple_failures" msgid="681991538434031708">"Viršijote maksimalų atrakinimo pagal veidą bandymų skaičių"</string>
+    <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"Viršijote maksimalų atrakinimo pagal veidą bandymų skaičių"</string>
+    <!-- no translation found for faceunlock_multiple_failures (5388142244463490793) -->
+    <skip />
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"Nėra SIM kortelės"</string>
     <string name="lockscreen_missing_sim_message" product="tablet" msgid="3986843848305639161">"Planšetiniame kompiuteryje nėra SIM kortelės."</string>
     <string name="lockscreen_missing_sim_message" product="tv" msgid="3903140876952198273">"„Android TV“ įrenginyje nėra SIM kortelės."</string>
@@ -1142,7 +1186,9 @@
     <string name="keyguard_accessibility_expand_lock_area" msgid="4215280881346033434">"Išplėsti atrakinimo sritį."</string>
     <string name="keyguard_accessibility_slide_unlock" msgid="2968195219692413046">"Atrakinimas slystant."</string>
     <string name="keyguard_accessibility_pattern_unlock" msgid="8669128146589233293">"Atrakinimas pagal piešinį."</string>
-    <string name="keyguard_accessibility_face_unlock" msgid="4533832120787386728">"Atrakinimas pagal veidą"</string>
+    <string name="keyguard_accessibility_face_unlock" product="default" msgid="4533832120787386728">"Atrakinimas pagal veidą"</string>
+    <!-- no translation found for keyguard_accessibility_face_unlock (6739732585954513653) -->
+    <skip />
     <string name="keyguard_accessibility_pin_unlock" msgid="4020864007967340068">"Atrakinimas įvedus PIN kodą."</string>
     <string name="keyguard_accessibility_sim_pin_unlock" msgid="4895939120871890557">"SIM kortelės PIN kodo atrakinimas."</string>
     <string name="keyguard_accessibility_sim_puk_unlock" msgid="3459003464041899101">"SIM kortelės PUK kodo atrakinimas."</string>
@@ -1879,7 +1925,8 @@
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"Perjungti"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"Nustatymai"</string>
     <string name="user_switching_message" msgid="1912993630661332336">"Perjungiama į <xliff:g id="NAME">%1$s</xliff:g>…"</string>
-    <string name="user_logging_out_message" msgid="7216437629179710359">"Atsijungiama (<xliff:g id="NAME">%1$s</xliff:g>)…"</string>
+    <!-- no translation found for user_logging_out_message (2968888364742643174) -->
+    <skip />
     <string name="owner_name" msgid="8713560351570795743">"Savininkas"</string>
     <string name="guest_name" msgid="8502103277839834324">"Svečias"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"Sistemos naudotojas"</string>
@@ -2128,28 +2175,33 @@
     <string name="app_lock_add_screen_lock_title" msgid="6905612843620128689">"Pirmiausia pridėkite ekrano užraktą"</string>
     <string name="enable_app_lock_success_toast_message" msgid="3339622779190529987">"„<xliff:g id="APP_NAME">%1$s</xliff:g>“ yra užrakinta"</string>
     <string name="enable_app_lock_failure_toast_message" msgid="1055838896510445566">"Nepavyko užrakinti „<xliff:g id="APP_NAME">%1$s</xliff:g>“"</string>
-    <string name="disable_app_lock_success_toast_message" msgid="70733620589071266">"Programos užraktas pašalintas iš „<xliff:g id="APP_NAME">%1$s</xliff:g>“"</string>
-    <!-- no translation found for locked_app_biometric_prompt_description (5892653396104581919) -->
-    <skip />
+    <string name="disable_app_lock_success_toast_message" msgid="360172251656799346">"Programos užraktas pašalintas"</string>
+    <string name="enable_app_lock_biometric_prompt_subtitle" msgid="8215241065630017088">"Programos užraktas bus pridėtas prie „<xliff:g id="APP_NAME">%1$s</xliff:g>“"</string>
+    <string name="disable_app_lock_biometric_prompt_subtitle" msgid="3963064765974508170">"Programos užraktas bus pašalintas iš „<xliff:g id="APP_NAME">%1$s</xliff:g>“"</string>
+    <string name="locked_app_biometric_prompt_description" msgid="5892653396104581919">"Ši programa apsaugota programos užraktu"</string>
     <string name="locked_app_external_display_message" msgid="5483884799685545338">"Jei norite pasiekti programą šiame ekrane, pirmiausia patvirtinkite savo tapatybę kitame įrenginyje"</string>
     <string name="app_lock_edu_dialog_enable_app_lock_title" msgid="283314042336592322">"Pridėti programos užraktą prie „<xliff:g id="APP_NAME">%1$s</xliff:g>“?"</string>
-    <string name="app_lock_edu_dialog_description" msgid="8176807243219769518">"Saugumo sumetimais tik jūs galite pasiekti šią programą naudodami atrakinimą piršto atspaudu, PIN kodu ir pagal veidą."</string>
     <string name="app_lock_edu_dialog_description_template" msgid="8563718120753342530">"Saugumo sumetimais tik jūs galite pasiekti šią programą naudodami %1$s arba %2$s"</string>
     <string name="app_lock_edu_dialog_description_template_no_biometrics" msgid="7122017109150633691">"Saugumo sumetimais tik jūs galite pasiekti šią programą naudodami %1$s"</string>
     <string name="app_lock_edu_dialog_info_header" msgid="5876120209204270990">"Su programos užraktu"</string>
     <string name="app_lock_edu_dialog_info_notifications" msgid="1124438392204873305">"Pranešimo turinys bus paslėptas"</string>
     <string name="app_lock_edu_dialog_info_widgets" msgid="8809009414650740872">"Valdikliai ir spartieji klavišai bus pašalinti"</string>
-    <!-- no translation found for app_lock_edu_dialog_info_ai_disclaimer (5623615653703542050) -->
-    <skip />
+    <string name="app_lock_edu_dialog_info_ai_disclaimer" msgid="5623615653703542050">"DI tarpininkai ir paslaugos, kuriems leidote pasiekti „%1$s“, vis tiek galės pasiekti duomenis"</string>
     <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"Pridėti programos užraktą"</string>
-    <string name="app_lock_edu_dialog_biometric_description_has_face" msgid="1348151645996748654">"Atrakinimas pagal veidą"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_face" product="default" msgid="1348151645996748654">"Atrakinimas pagal veidą"</string>
+    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_face (380233309639495358) -->
+    <skip />
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"Atrakinimas piršto atspaudu"</string>
-    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" msgid="7895807411323811641">"Atrakinimas piršto atspaudu arba pagal veidą"</string>
-    <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="8487096457702445059">"Slaptažodis"</string>
-    <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="991436996281983547">"Atrakinimo piešinys"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" product="default" msgid="6551410616110497401">"Atrakinimas piršto atspaudu, atrakinimas pagal veidą"</string>
+    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint_and_face (4797005135507921547) -->
+    <skip />
+    <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="6019284267033007445">"slaptažodis"</string>
+    <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="2370939002644936965">"atrakinimo piešinys"</string>
     <string name="app_lock_edu_dialog_lockscreen_pin_name" msgid="6458607126966304795">"PIN kodas"</string>
-    <string name="app_lock_permission_review_dialog_title" msgid="5030286398974840579">"Nuotraukos vis tiek gali būti rodomos kitose programose"</string>
-    <string name="app_lock_permission_review_dialog_sub_title" msgid="310758587817184145">"Programos, turinčios prieigą prie jūsų nuotraukų"</string>
+    <string name="app_lock_permission_review_dialog_title_photos" msgid="6193222920123912729">"Nuotraukos vis tiek gali būti rodomos kitose programose"</string>
+    <string name="app_lock_permission_review_dialog_subtitle_photos" msgid="1854948251386976703">"Programos, turinčios prieigą prie jūsų nuotraukų"</string>
+    <string name="app_lock_permission_review_dialog_title_files" msgid="8820759644609198515">"Failai vis tiek gali būti rodomi kitose programose"</string>
+    <string name="app_lock_permission_review_dialog_subtitle_files" msgid="2999447193189851364">"Programos, turinčios prieigą prie jūsų failų"</string>
     <string name="app_lock_permission_review_expand_app_list_button" msgid="3214809707125223273">"Žr. viską"</string>
     <string name="app_lock_permission_review_continue_button" msgid="4045066724173414043">"Tęsti"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"Atš. darbo progr. pristabd.?"</string>
@@ -2638,8 +2690,12 @@
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> ir <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> nebegalima atpažinti."</string>
     <string name="fingerprint_dangling_notification_msg_all_deleted_1" msgid="1824812666549916586">"<xliff:g id="FINGERPRINT">%s</xliff:g> nebegalima atpažinti. Dar kartą nustatykite atrakinimą piršto atspaudu."</string>
     <string name="fingerprint_dangling_notification_msg_all_deleted_2" msgid="5974657382960155099">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> ir <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> nebegalima atpažinti. Dar kartą nustatykite atrakinimą piršto atspaudu."</string>
-    <string name="face_dangling_notification_title" msgid="947852541060975473">"Atrakinimo pagal veidą nustatymas iš naujo"</string>
-    <string name="face_dangling_notification_msg" msgid="746235263598985384">"Jūsų veido modelio nebegalima atpažinti. Iš naujo nustatykite atrakinimą pagal veidą."</string>
+    <string name="face_dangling_notification_title" product="default" msgid="947852541060975473">"Atrakinimo pagal veidą nustatymas iš naujo"</string>
+    <!-- no translation found for face_dangling_notification_title (4632690536207343589) -->
+    <skip />
+    <string name="face_dangling_notification_msg" product="default" msgid="746235263598985384">"Jūsų veido modelio nebegalima atpažinti. Iš naujo nustatykite atrakinimą pagal veidą."</string>
+    <!-- no translation found for face_dangling_notification_msg (5982979430103820891) -->
+    <skip />
     <string name="biometric_dangling_notification_action_set_up" msgid="8246885009807817961">"Nustatyti"</string>
     <string name="biometric_dangling_notification_action_not_now" msgid="8095249216864443491">"Ne dabar"</string>
     <string name="bg_user_sound_notification_title_alarm" msgid="5251678483393143527">"Signalas: <xliff:g id="USER_NAME">%s</xliff:g>"</string>
