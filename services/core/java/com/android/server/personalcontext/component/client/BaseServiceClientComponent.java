@@ -21,6 +21,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.content.pm.ServiceInfo;
 import android.os.Handler;
 import android.os.IBinder;
@@ -28,6 +29,7 @@ import android.os.Looper;
 import android.os.ParcelUuid;
 import android.os.RemoteException;
 import android.os.UserHandle;
+import android.permission.PermissionManager;
 import android.service.personalcontext.IOpCallback;
 import android.text.TextUtils;
 import android.util.Log;
@@ -189,6 +191,17 @@ public abstract class BaseServiceClientComponent<C> implements Component {
                 getClass().getSimpleName(),
                 mComponentId,
                 mComponentName.flattenToShortString());
+    }
+
+    /** Returns true if this service client has the given permission. */
+    protected boolean checkPermission(String permission) {
+        return mContext.getSystemService(PermissionManager.class)
+                        .checkPackageNamePermission(
+                                permission,
+                                getComponentName().getPackageName(),
+                                Context.DEVICE_ID_DEFAULT,
+                                mUserHandle.getIdentifier())
+                == PackageManager.PERMISSION_GRANTED;
     }
 
     protected void runWithScopedBinder(RunWithScopedBinderCallback<C> callback) {
