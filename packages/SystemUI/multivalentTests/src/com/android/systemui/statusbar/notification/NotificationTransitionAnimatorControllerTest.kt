@@ -1,11 +1,9 @@
 package com.android.systemui.statusbar.notification
 
 import android.app.Notification.GROUP_ALERT_SUMMARY
-import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper.RunWithLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.jank.interactionJankMonitor
@@ -217,7 +215,6 @@ class NotificationTransitionAnimatorControllerTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FIX_CANCELED_NOTIFICATION_LAUNCH_ANIMATION)
     fun testAnimationIsCancelledBeforeOnIntentStarted() {
         kosmos.runTest {
             controller.onTransitionAnimationCancelled()
