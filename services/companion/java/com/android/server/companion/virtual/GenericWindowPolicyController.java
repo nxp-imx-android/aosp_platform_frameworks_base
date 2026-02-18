@@ -142,10 +142,8 @@ final class GenericWindowPolicyController extends DisplayWindowPolicyController 
     @NonNull
     private final Object mGenericWindowPolicyControllerLock = new Object();
 
-    // Do not access mDisplayId and mIsMirrorDisplay directly, instead use waitAndGetDisplayId()
-    // and waitAndGetIsMirrorDisplay()
+    // Do not access mDisplayId directly, instead use waitAndGetDisplayId()
     private int mDisplayId = Display.INVALID_DISPLAY;
-    private boolean mIsMirrorDisplay = false;
     private boolean mIsSecureDisplay = false;
     private final CountDownLatch mDisplayIdSetLatch = new CountDownLatch(1);
 
@@ -222,9 +220,8 @@ final class GenericWindowPolicyController extends DisplayWindowPolicyController 
     /**
      * Expected to be called once this object is associated with a newly created display.
      */
-    void setDisplayId(int displayId, boolean isMirrorDisplay, boolean isSecureDisplay) {
+    void setDisplayId(int displayId, boolean isSecureDisplay) {
         mDisplayId = displayId;
-        mIsMirrorDisplay = isMirrorDisplay;
         mIsSecureDisplay = isSecureDisplay;
         mDisplayIdSetLatch.countDown();
     }
@@ -240,19 +237,6 @@ final class GenericWindowPolicyController extends DisplayWindowPolicyController 
             return INVALID_DISPLAY;
         }
         return mDisplayId;
-    }
-
-    private boolean waitAndGetIsMirrorDisplay() {
-        try {
-            if (!mDisplayIdSetLatch.await(10, TimeUnit.SECONDS)) {
-                Slog.e(TAG, "Timed out while waiting for GWPC isMirrorDisplay to be set.");
-                return false;
-            }
-        } catch (InterruptedException e) {
-            Slog.e(TAG, "Interrupted while waiting for GWPC isMirrorDisplay to be set.");
-            return false;
-        }
-        return mIsMirrorDisplay;
     }
 
     /**
@@ -332,11 +316,6 @@ final class GenericWindowPolicyController extends DisplayWindowPolicyController 
     public boolean canContainActivity(@NonNull ActivityInfo activityInfo,
             @WindowConfiguration.WindowingMode int windowingMode, int launchingFromDisplayId,
             boolean isNewTask) {
-        // Mirror displays cannot contain activities.
-        if (waitAndGetIsMirrorDisplay()) {
-            logActivityLaunchBlocked("Mirror virtual displays cannot contain activities.");
-            return false;
-        }
         if (!mIsSecureDisplay && (activityInfo.flags & FLAG_CAN_DISPLAY_ON_REMOTE_DEVICES) == 0
                 && !mLocalDeviceOnly) {
             logActivityLaunchBlocked("Display requires android:canDisplayOnRemoteDevices=true");
@@ -489,9 +468,7 @@ final class GenericWindowPolicyController extends DisplayWindowPolicyController 
     private void notifyActivityBlocked(
             @NonNull ActivityInfo activityInfo, @Nullable Supplier<IntentSender> intentSender) {
         int displayId = waitAndGetDisplayId();
-        // Don't trigger activity blocked callback for mirror displays, because we can't show
-        // any activity or presentation on it anyway.
-        if (!waitAndGetIsMirrorDisplay() && displayId != INVALID_DISPLAY) {
+        if (displayId != INVALID_DISPLAY) {
             mActivityListener.onActivityLaunchBlocked(displayId, activityInfo,
                     intentSender == null ? null : intentSender.get());
         }
