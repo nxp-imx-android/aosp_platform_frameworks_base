@@ -297,10 +297,8 @@ class AppHeaderViewHolder(
                     when (action) {
                         AccessibilityAction.ACTION_CLICK.id -> {
                             // clear focus before clicking so that focus can be captured by resize
-                            // veil
-                            // necessary due to a race condition bug where after clicking maximize,
-                            // a11y
-                            // focus wouldn't go back to maximize button
+                            // veil, which is necessary due to a race condition bug where after
+                            // clicking maximize, a11y focus wouldn't go back to maximize button
                             host.clearFocus()
                             host.clearAccessibilityFocus()
                             host.requestFocus()
@@ -308,7 +306,6 @@ class AppHeaderViewHolder(
                                 currentTaskInfo,
                                 A11Y_APP_WINDOW_MAXIMIZE_RESTORE_BUTTON,
                             )
-                            host.performClick()
                         }
                         R.id.action_snap_left -> {
                             desktopModeUiEventLogger.log(currentTaskInfo, A11Y_ACTION_RESIZE_LEFT)
