@@ -57,10 +57,31 @@ import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
 /**
- * The base class for insight surface visualizer implementations. Implementations should subclass
- * this class and override the createVisualizationForClient() method to return a {@link View} to be
- * installed in the client surface. Subclasses will be notified that a client has connected or
- * disconnected via the {@link #onClientConnected} and {@link #onClientDisconnected} methods.
+ * An InsightSurfaceVisualizerService is a personal context system component that is responsible
+ * for generating embeddable {@link View}s from {@link ContextInsight}s produced by the
+ * personal context engine. Implementations should subclass this class and override the
+ * {@link #onCreateEmbeddedView} method to return a {@link View} to be installed in a connected
+ * client surface. Subclasses will be notified that a client has connected or disconnected via the
+ * {@link #onClientConnected} and {@link #onClientDisconnected} methods. The
+ * {@link #onClientConnected} callback will be called after {@link #onCreateEmbeddedView} returns a
+ * non-null {@link View}. A connected client will remain connected until it explicitly disconnects,
+ * at which point the {@link #onClientDisconnected} callback will be called.
+ *
+ * <p>Visualizer subclasses are expected to create a {@link View} that will be embedded in a
+ * connected client surface based on the {@link ContextInsight} they receive in
+ * {@link #onCreateEmbeddedView}. Client apps publish {@link ContextHint}s to the personal context
+ * engine, which can then produce insights that will arrive at a visualizer to be turned into
+ * a {@link View}. For example, a messaging application might publish hints about the current
+ * conversation that turn into an insight to display a time to meet or a phone number to call. A
+ * visualizer can then use that insight to create a suitable {@link View} that would be embedded in
+ * the client application.
+ *
+ * <p>Client properties (such as configuration and dimensions) are passed to visualizers in
+ * an {@link InsightSurfaceClientInfo} object, which visualizers receive in
+ * {@link #onClientConnected}. Updates to client properties will be reported to visualizer
+ * subclasses by calls to {@link #onClientUpdated}, which will receive both old and updated
+ * {@link InsightSurfaceClientInfo} objects. See {@link InsightSurfaceClientInfo} for more
+ * information about the properties that a client can report to a visualizer.
  *
  * <p>You must declare the service in the AndroidManifest of the app hosting the service with the
  * {@link Manifest.permission#BIND_INSIGHT_SURFACE_VISUALIZER_SERVICE} permission,
