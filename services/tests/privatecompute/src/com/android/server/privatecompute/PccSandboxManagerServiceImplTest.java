@@ -56,6 +56,8 @@ import androidx.test.runner.AndroidJUnit4;
 import com.android.server.LocalServices;
 import com.android.server.privatecompute.PccSandboxManagerServiceImpl.Injector;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -186,12 +188,13 @@ public class PccSandboxManagerServiceImplTest {
         when(mPackageManagerInternal.isSameApp(
                         ANOTHER_PACKAGE_NAME, testUid, UserHandle.getUserId(testUid)))
                 .thenReturn(false);
+        List<PersistableBundle> data = new ArrayList<>(1);
+        data.add(new PersistableBundle());
 
         assertThrows(
                 SecurityException.class,
                 () ->
-                        mService.writeToAuditLogInternal(
-                                new PersistableBundle(), ANOTHER_PACKAGE_NAME));
+                        mService.writeToAuditLogInternal(data, ANOTHER_PACKAGE_NAME));
     }
 
     @Test
@@ -203,8 +206,10 @@ public class PccSandboxManagerServiceImplTest {
         when(mPackageManagerInternal.isSameApp(
                         ANOTHER_PACKAGE_NAME, testUid, UserHandle.getUserId(testUid)))
                 .thenReturn(false);
+        List<PersistableBundle> data = new ArrayList<>(1);
+        data.add(new PersistableBundle());
 
-        mService.writeToAuditLogInternal(new PersistableBundle(), TEST_PACKAGE_NAME);
+        mService.writeToAuditLogInternal(data, TEST_PACKAGE_NAME);
 
         // No exception thrown.
     }
@@ -216,8 +221,10 @@ public class PccSandboxManagerServiceImplTest {
         when(mPackageManagerInternal.isSameApp(
                         TEST_PACKAGE_NAME, testUid, UserHandle.getUserId(testUid)))
                 .thenReturn(true);
+        List<PersistableBundle> data = new ArrayList<>(1);
+        data.add(new PersistableBundle());
 
-        assertFalse(mService.writeToAuditLogInternal(new PersistableBundle(), TEST_PACKAGE_NAME));
+        assertFalse(mService.writeToAuditLogInternal(data, TEST_PACKAGE_NAME));
     }
 
     @Test
@@ -227,8 +234,10 @@ public class PccSandboxManagerServiceImplTest {
         when(mPackageManagerInternal.isSameApp(
                         TEST_PACKAGE_NAME, testUid, UserHandle.getUserId(testUid)))
                 .thenReturn(true);
+        List<PersistableBundle> data = new ArrayList<>(1);
+        data.add(new PersistableBundle());
 
-        assertTrue(mService.writeToAuditLogInternal(new PersistableBundle(), TEST_PACKAGE_NAME));
+        assertTrue(mService.writeToAuditLogInternal(data, TEST_PACKAGE_NAME));
     }
 
     @Test
