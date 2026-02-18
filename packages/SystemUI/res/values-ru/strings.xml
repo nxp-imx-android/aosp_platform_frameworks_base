@@ -36,8 +36,8 @@
     <string name="status_bar_settings_auto_rotation" msgid="8329080442278431708">"Автоповорот экрана"</string>
     <string name="usb_device_permission_prompt" msgid="4414719028369181772">"Предоставить приложению \"<xliff:g id="APPLICATION">%1$s</xliff:g>\" доступ к устройству \"<xliff:g id="USB_DEVICE">%2$s</xliff:g>\"?"</string>
     <string name="usb_device_permission_prompt_warn" msgid="2309129784984063656">"Предоставить приложению \"<xliff:g id="APPLICATION">%1$s</xliff:g>\" доступ к устройству \"<xliff:g id="USB_DEVICE">%2$s</xliff:g>\"?\nПриложению не разрешено вести запись, однако с помощью этого USB-устройства оно может записывать звук."</string>
-    <string name="usb_audio_device_permission_prompt_title" msgid="4221351137250093451">"Разрешить приложению \"<xliff:g id="APPLICATION">%1$s</xliff:g>\" доступ к устройству \"<xliff:g id="USB_DEVICE">%2$s</xliff:g>\"?"</string>
-    <string name="usb_audio_device_confirm_prompt_title" msgid="8828406516732985696">"Открыть приложение \"<xliff:g id="APPLICATION">%1$s</xliff:g>\" для управления устройством \"<xliff:g id="USB_DEVICE">%2$s</xliff:g>\"?"</string>
+    <string name="usb_audio_device_permission_prompt_title" msgid="6812876813400484157">"Разрешить приложению &lt;b&gt;<xliff:g id="APPLICATION">%1$s</xliff:g>&lt;/b&gt; доступ к устройству &lt;b&gt;<xliff:g id="USB_DEVICE">%2$s</xliff:g>&lt;/b&gt;?"</string>
+    <string name="usb_audio_device_confirm_prompt_title" msgid="7623364019381948073">"Открыть приложение &lt;b&gt;<xliff:g id="APPLICATION">%1$s</xliff:g>&lt;/b&gt; для работы с устройством &lt;b&gt;<xliff:g id="USB_DEVICE">%2$s</xliff:g>&lt;/b&gt;?"</string>
     <string name="usb_audio_device_prompt_warn" msgid="2504972133361130335">"Приложению не разрешено вести запись, однако оно может записывать аудио с помощью этого USB-устройства. Во время использования приложения \"<xliff:g id="APPLICATION">%1$s</xliff:g>\" с этим устройством вы можете не услышать звуков уведомлений, звонков и будильников."</string>
     <string name="usb_audio_device_prompt" msgid="7944987408206252949">"Во время использования приложения \"<xliff:g id="APPLICATION">%1$s</xliff:g>\" с этим устройством вы можете не услышать звуков уведомлений, звонков и будильников."</string>
     <string name="usb_accessory_permission_prompt" msgid="717963550388312123">"Предоставить приложению \"<xliff:g id="APPLICATION">%1$s</xliff:g>\" доступ к устройству \"<xliff:g id="USB_ACCESSORY">%2$s</xliff:g>\"?"</string>
@@ -58,24 +58,15 @@
     <string name="usb_debugging_allow" msgid="1722643858015321328">"Разрешить"</string>
     <string name="usb_debugging_secondary_user_title" msgid="7843050591380107998">"Отладка по USB запрещена"</string>
     <string name="usb_debugging_secondary_user_message" msgid="1888835696965417845">"В этом аккаунте нельзя включить отладку по USB. Перейдите в аккаунт администратора."</string>
-    <!-- no translation found for usb_authorization_title (3332796080113535331) -->
-    <skip />
-    <!-- no translation found for usb_authorization_title_multi (1966181648363433366) -->
-    <skip />
-    <!-- no translation found for usb_authorization_message (1107567912094941105) -->
-    <skip />
-    <!-- no translation found for usb_authorization_message_multi (4867596373922923637) -->
-    <skip />
-    <!-- no translation found for usb_authorization_message_untrusted (4407977362840907960) -->
-    <skip />
-    <!-- no translation found for usb_authorization_message_multi_untrusted (85055448435495205) -->
-    <skip />
-    <!-- no translation found for usb_authorization_unknown_device (1107933381080189970) -->
-    <skip />
-    <!-- no translation found for usb_authorization_allow (5517449937301874244) -->
-    <skip />
-    <!-- no translation found for usb_authorization_deny (8156333001876101456) -->
-    <skip />
+    <string name="usb_authorization_title" msgid="3332796080113535331">"Разрешить подключение USB-устройства?"</string>
+    <string name="usb_authorization_title_multi" msgid="1966181648363433366">"Разрешить подключение USB-устройств?"</string>
+    <string name="usb_authorization_message" msgid="1107567912094941105">"К вашему устройству \"<xliff:g id="NAME">%1$s</xliff:g>\" было подключено следующее устройство:"</string>
+    <string name="usb_authorization_message_multi" msgid="4867596373922923637">"К вашему устройству \"<xliff:g id="NAME">%1$s</xliff:g>\" были подключены следующие устройства:"</string>
+    <string name="usb_authorization_message_untrusted" msgid="4407977362840907960">"Ниже указано устройство, подключенное к вашему устройству \"<xliff:g id="NAME">%1$s</xliff:g>\". Подключенное устройство будет считаться надежным только после того, как вы войдете в аккаунт."</string>
+    <string name="usb_authorization_message_multi_untrusted" msgid="85055448435495205">"Ниже приведен список устройств, подключенных к вашему устройству \"<xliff:g id="NAME">%1$s</xliff:g>\". Эти устройства будут считаться надежными только после того, как вы войдете в аккаунт."</string>
+    <string name="usb_authorization_unknown_device" msgid="1107933381080189970">"Неизвестный продукт (<xliff:g id="VENDOR_ID">%1$04X</xliff:g>:<xliff:g id="PRODUCT_ID">%2$04X</xliff:g>)"</string>
+    <string name="usb_authorization_allow" msgid="5517449937301874244">"Разрешить"</string>
+    <string name="usb_authorization_deny" msgid="8156333001876101456">"Запретить"</string>
     <string name="hdmi_cec_set_menu_language_title" msgid="1259765420091503742">"Изменить системный язык на <xliff:g id="LANGUAGE">%1$s</xliff:g>?"</string>
     <string name="hdmi_cec_set_menu_language_description" msgid="8176716678074126619">"Получен запрос на изменение системного языка от другого устройства."</string>
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"Изменить язык"</string>
@@ -121,10 +112,8 @@
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"Увеличить площадь скриншота"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"Закрыть скриншот"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"Закрыть сообщение рабочего профиля"</string>
-    <!-- no translation found for screenshot_open_in_folder_label (7030308792263959983) -->
-    <skip />
-    <!-- no translation found for screenshot_open_in_folder_description (2181459418652236210) -->
-    <skip />
+    <string name="screenshot_open_in_folder_label" msgid="7030308792263959983">"Посмотреть"</string>
+    <string name="screenshot_open_in_folder_description" msgid="2181459418652236210">"Кнопка \"Посмотреть скриншот в приложении Files\""</string>
     <string name="screenshot_preview_description" msgid="7606510140714080474">"Предварительный просмотр скриншота"</string>
     <string name="screenshot_top_boundary_pct" msgid="2520148599096479332">"Граница сверху: <xliff:g id="PERCENT">%1$d</xliff:g> %%"</string>
     <string name="screenshot_bottom_boundary_pct" msgid="3880821519814946478">"Граница снизу: <xliff:g id="PERCENT">%1$d</xliff:g> %%"</string>
@@ -196,6 +185,8 @@
     <string name="screen_record_mute" msgid="8111682249858638168">"Отключить звук"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"Включить звук"</string>
     <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g> из <xliff:g id="DURATION">%2$s</xliff:g>"</string>
+    <!-- no translation found for screen_record_selfie_hint (7176948583444196453) -->
+    <skip />
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"Запись экрана заблокирована администратором."</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Сделать скриншот всего экрана"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Записать видео всего экрана"</string>
@@ -208,7 +199,9 @@
     <string name="screen_capture_region_box_bottom_right_handle_description" msgid="5444943380877006881">"Маркер в правом нижнем углу. Чтобы изменить размер, используйте клавиши со стрелками."</string>
     <string name="screen_capture_region_box_bottom_left_handle_description" msgid="6095764656409143184">"Маркер в левом нижнем углу. Чтобы изменить размер, используйте клавиши со стрелками."</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Поделиться"</string>
-    <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Выберите, какое приложение показать"</string>
+    <string name="screen_share_no_select_app_thumbnail" msgid="1886183147809224215">"Выберите, какое окно показывать"</string>
+    <string name="screen_share_no_select_tab_thumbnail" msgid="677801966729809584">"Выберите, какую вкладку показывать"</string>
+    <string name="screen_share_no_select_display_thumbnail" msgid="4351422134286332559">"Выберите, какой экран показывать"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Доступ к аудио"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Показ окна приложения"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Поделиться вкладкой"</string>
@@ -226,11 +219,11 @@
     <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"Демонстрация экрана \"<xliff:g id="DISPLAY_NAME">%1$s</xliff:g>\" остановлена. Его никто не видит."</string>
     <string name="screen_share_a11y_close_button" msgid="8017115316741874857">"Кнопка \"Закрыть\". Чтобы закрыть диалоговое окно, которое появляется перед показом контента, нажмите Ввод."</string>
     <string name="screen_share_a11y_tab_button_unselected" msgid="5363622532939787310">"Кнопка для показа вкладки. Не нажата. Чтобы начать показ, нажмите Ввод."</string>
-    <string name="screen_share_a11y_tab_button_selected" msgid="4304681826101817704">"Показ вкладки. Нажмите эту кнопку, чтобы посмотреть доступные вкладки."</string>
+    <string name="screen_share_a11y_tab_button_selected" msgid="3969246191128243157">"Показ вкладки. Нажмите эту кнопку, чтобы посмотреть доступные вкладки."</string>
     <string name="screen_share_a11y_app_button_unselected" msgid="4539549394242556282">"Кнопка, которая позволяет показать экран приложения. Не нажата. Для начала показа нажмите Ввод."</string>
-    <string name="screen_share_a11y_app_button_selected" msgid="6049272377472922732">"Показ приложения. Нажмите эту кнопку, чтобы посмотреть доступные приложения."</string>
+    <string name="screen_share_a11y_app_button_selected" msgid="4891977117777987696">"Показ приложения. Нажмите эту кнопку, чтобы посмотреть доступные приложения."</string>
     <string name="screen_share_a11y_fullscreen_button_unselected" msgid="2492516552817892989">"Кнопка полноэкранного режима. Не нажата. Чтобы показать весь экран, нажмите Ввод."</string>
-    <string name="screen_share_a11y_fullscreen_button_selected" msgid="6706822615908429473">"Показ в полноэкранном режиме. Нажмите эту кнопку, чтобы посмотреть доступные экраны."</string>
+    <string name="screen_share_a11y_fullscreen_button_selected" msgid="4428416497634907009">"Показ в полноэкранном режиме. Нажмите эту кнопку, чтобы посмотреть доступные экраны."</string>
     <string name="screen_share_a11y_share_button_off" msgid="2004866083045967602">"Кнопка для показа контента. Отключена. Выберите приложение, вкладку или экран, которые хотите показать."</string>
     <string name="screen_share_a11y_share_button_on" msgid="1311279200212158833">"Показ контента включен. Выбрано: <xliff:g id="ITEM">%1$s</xliff:g>. Чтобы начать показ, нажмите Ввод."</string>
     <string name="screen_share_a11y_item_unselected" msgid="7479321583507874795">"<xliff:g id="ITEM_NAME">%1$s</xliff:g>. Не выбрано. Чтобы выбрать, нажмите Ввод."</string>
@@ -247,8 +240,7 @@
     <string name="screen_capture_post_recording_shelf_share_button_a11y" msgid="2907313384921655711">"Поделиться записью видео с экрана"</string>
     <string name="screen_capture_post_recording_shelf_folder_button_a11y" msgid="4217075254383938093">"Открыть запись видео с экрана в файловом менеджере"</string>
     <string name="screen_capture_post_recording_shelf_delete_button_a11y" msgid="8519897681775354217">"Удалить запись видео с экрана"</string>
-    <!-- no translation found for screen_capture_post_recording_shelf_thumbnail_a11y (4764732838982357845) -->
-    <skip />
+    <string name="screen_capture_post_recording_shelf_thumbnail_a11y" msgid="4764732838982357845">"Открыть запись видео с экрана в приложении для просмотра"</string>
     <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"Показывать щелчки мышью и нажатия клавиш"</string>
     <string name="screen_capture_device_audio" msgid="1537290197773737349">"Звук с устройства"</string>
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Микрофон"</string>
@@ -303,7 +295,6 @@
     <string name="accessibility_unlock_button" msgid="3613812140816244310">"Разблокировано"</string>
     <string name="accessibility_lock_icon" msgid="661492842417875775">"Устройство заблокировано"</string>
     <string name="accessibility_confirm_biometric_auth_to_unlock" msgid="1600162805010332470">"Подтвердить и разблокировать"</string>
-    <string name="accessibility_retry_face_auth" msgid="3018310877303150273">"Используйте фейсконтроль снова"</string>
     <string name="accessibility_scanning_face" msgid="3093828357921541387">"Сканирование лица"</string>
     <string name="accessibility_send_smart_reply" msgid="8885032190442015141">"Отправить"</string>
     <string name="cancel" msgid="1089011503403416730">"Отмена"</string>
@@ -316,11 +307,8 @@
     <string name="biometric_dialog_face_icon_description_authenticated" msgid="2242167416140740920">"Лицо распознано"</string>
     <string name="biometric_dialog_face_icon_description_confirmed" msgid="7918067993953940778">"Подтверждено"</string>
     <string name="biometric_dialog_tap_confirm" msgid="9166350738859143358">"Нажмите \"Подтвердить\""</string>
-    <string name="biometric_dialog_tap_confirm_with_face" msgid="2378151312221818694">"Разблокировано сканированием лица"</string>
-    <string name="biometric_dialog_tap_confirm_with_face_alt_1" msgid="439152621640507113">"Разблокировано сканированием лица. Нажмите, чтобы продолжить."</string>
     <string name="biometric_dialog_tap_confirm_with_face_alt_2" msgid="8586608186457385108">"Лицо распознано. Нажмите, чтобы продолжить."</string>
     <string name="biometric_dialog_tap_confirm_with_face_alt_3" msgid="2192670471930606539">"Лицо распознано. Нажмите на значок разблокировки."</string>
-    <string name="biometric_dialog_tap_confirm_with_face_sfps" msgid="2499213248903257928">"Сканирование лица выполнено. Нажмите, чтобы продолжить."</string>
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"Аутентификация выполнена"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"Отмена распознавания лица"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"Ещё"</string>
@@ -365,11 +353,6 @@
     <string name="fingerprint_re_enroll_dialog_content" msgid="4866561176695984879">"Для повторной настройки разблокировки по отпечатку пальца существующие изображения и модели отпечатков будут удалены с устройства.\n\nЧтобы разблокировать телефон по отпечатку пальца, вам потребуется настроить эту функцию заново."</string>
     <string name="fingerprint_re_enroll_dialog_content_singular" msgid="3083663339787381218">"Для повторной настройки разблокировки по отпечатку пальца существующие изображения и модель отпечатков будут удалены с устройства.\n\nЧтобы разблокировать телефон по отпечатку пальца, вам потребуется настроить эту функцию заново."</string>
     <string name="fingerprint_reenroll_failure_dialog_content" msgid="4733768492747300666">"Не удается настроить разблокировку по отпечатку пальца. Перейдите в настройки и повторите попытку."</string>
-    <string name="face_re_enroll_notification_title" msgid="1850838867718410520">"Настройте фейсконтроль заново"</string>
-    <string name="face_re_enroll_notification_name" msgid="7384545252206120659">"Фейсконтроль"</string>
-    <string name="face_re_enroll_dialog_title" msgid="6392173708176069994">"Настройка фейсконтроля"</string>
-    <string name="face_re_enroll_dialog_content" msgid="7353502359464038511">"Для повторной настройки фейсконтроля существующая модель лица будет удалена с устройства.\n\nЧтобы разблокировать телефон с помощью фейсконтроля, вам потребуется настроить эту функцию заново."</string>
-    <string name="face_reenroll_failure_dialog_content" msgid="7073947334397236935">"Не удалось настроить фейсконтроль. Перейдите в настройки и повторите попытку."</string>
     <string name="fingerprint_dialog_touch_sensor" msgid="2817887108047658975">"Прикоснитесь к сканеру отпечатков пальцев."</string>
     <string name="fingerprint_dialog_authenticated_confirmation" msgid="1603899612957562862">"Нажмите на значок разблокировки."</string>
     <string name="fingerprint_dialog_use_fingerprint_instead" msgid="5542430577183894219">"Лицо не распознано. Сканируйте отпечаток пальца."</string>
@@ -377,7 +360,6 @@
     <skip />
     <string name="keyguard_face_failed" msgid="2346762871330729634">"Лицо не распознано."</string>
     <string name="keyguard_suggest_fingerprint" msgid="8742015961962702960">"Используйте отпечаток."</string>
-    <string name="keyguard_face_unlock_unavailable" msgid="1581949044193418736">"Фейсконтроль недоступен"</string>
     <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"Bluetooth-соединение установлено."</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Значок устройства Bluetooth"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Нажмите, чтобы изменить информацию об устройстве"</string>
@@ -553,6 +535,7 @@
     <string name="quick_settings_nfc_off" msgid="3465000058515424663">"Модуль NFC отключен"</string>
     <string name="quick_settings_nfc_on" msgid="1004976611203202230">"NFC включен"</string>
     <string name="quick_settings_screen_record_label" msgid="8650355346742003694">"Запись видео с экрана"</string>
+    <string name="quick_settings_screen_capture_label" msgid="4400625606618045690">"Запись экрана"</string>
     <string name="quick_settings_screen_record_start" msgid="1574725369331638985">"Начать"</string>
     <string name="quick_settings_screen_record_stop" msgid="8087348522976412119">"Остановить"</string>
     <string name="qs_record_issue_label" msgid="8166290137285529059">"Запись неполадки"</string>
@@ -648,16 +631,10 @@
     <string name="tap_again" msgid="1315420114387908655">"Нажмите ещё раз"</string>
     <string name="keyguard_unlock" msgid="8031975796351361601">"Проведите вверх, чтобы открыть."</string>
     <string name="keyguard_unlock_press" msgid="9140109453735019209">"Нажмите на значок разблокировки."</string>
-    <string name="keyguard_face_successful_unlock_swipe" msgid="6180997591385846073">"Сканирование выполнено. Чтобы открыть, проведите вверх."</string>
-    <string name="keyguard_face_successful_unlock_confirm_button" msgid="3862344771780817393">"Разблокировано сканированием лица. Нажмите \"Подтвердить\"."</string>
-    <string name="keyguard_face_successful_unlock_press" msgid="25520941264602588">"Сканирование выполнено. Нажмите на значок разблокировки."</string>
-    <string name="keyguard_face_successful_unlock_press_alt_1" msgid="5715461103913071474">"Разблокировано сканированием лица. Нажмите, чтобы открыть."</string>
     <string name="keyguard_face_successful_unlock_press_alt_2" msgid="8310787946357120406">"Лицо распознано. Нажмите, чтобы открыть."</string>
     <string name="keyguard_face_successful_unlock_press_alt_3" msgid="7219030481255573962">"Лицо распознано. Нажмите на значок разблокировки."</string>
-    <string name="keyguard_face_successful_unlock" msgid="4203999851465708287">"Разблокировано сканированием лица"</string>
     <string name="keyguard_face_successful_unlock_alt1" msgid="5853906076353839628">"Лицо распознано"</string>
     <string name="keyguard_retry" msgid="886802522584053523">"Чтобы повторить попытку, проведите вверх"</string>
-    <string name="accesssibility_keyguard_retry" msgid="8880238862712870676">"Проведите вверх, чтобы повторить распознавание лица."</string>
     <string name="require_unlock_for_nfc" msgid="1305686454823018831">"Чтобы использовать NFC, разблокируйте устройство."</string>
     <string name="do_disclosure_generic" msgid="4896482821974707167">"Это устройство принадлежит вашей организации"</string>
     <string name="do_disclosure_with_name" msgid="2091641464065004091">"Этим устройством владеет организация \"<xliff:g id="ORGANIZATION_NAME">%s</xliff:g>\""</string>
@@ -758,8 +735,8 @@
     <string name="media_projection_entry_app_permission_dialog_single_app_not_supported" msgid="4860247304058870233">"Приложение не поддерживает эту функцию"</string>
     <string name="media_projection_entry_share_app_selector_title" msgid="1419515119767501822">"Выбор приложения для демонстрации"</string>
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"Начать трансляцию экрана?"</string>
-    <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"Транслировать одно приложение"</string>
-    <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen" msgid="8389508187954155307">"Транслировать весь экран"</string>
+    <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"Одно приложение"</string>
+    <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen" msgid="8389508187954155307">"Весь экран"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display" msgid="5524817761472941086">"Транслировать экран \"<xliff:g id="DISPLAY_NAME">%s</xliff:g>\""</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_entire_screen" msgid="4040447861037324017">"Во время трансляции будет видно все, что происходит на экране. Поэтому будьте осторожны с паролями, сведениями о способах оплаты, сообщениями, фотографиями, аудио- и видеозаписями."</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"Во время трансляции будет видно все, что происходит в выбранном приложении. Поэтому будьте осторожны с паролями, сведениями о способах оплаты, сообщениями, фотографиями, аудио- и видеозаписями."</string>
@@ -1021,8 +998,8 @@
     <string name="notification_channel_summary_automatic_demoted" msgid="1831303964660807700">"&lt;b&gt;Статус:&lt;/b&gt; уровень важности понижен"</string>
     <string name="notification_channel_summary_priority_baseline" msgid="46674690072551234">"Вверху списка уведомлений о разговорах и в виде фото профиля на заблокированном экране"</string>
     <string name="notification_channel_summary_priority_bubble" msgid="1275413109619074576">"Появляется в верхней части уведомлений о сообщениях, в виде всплывающего чата, а также в качестве фото профиля на заблокированном экране."</string>
-    <string name="notification_channel_summary_priority_dnd" msgid="6665395023264154361">"Появляется в верхней части уведомлений о сообщениях, а также в виде фото профиля на заблокированном экране, прерывает режим \"Не беспокоить\"."</string>
-    <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"Появляется в верхней части уведомлений о сообщениях, в виде всплывающего чата, а также в качестве фото профиля на заблокированном экране, прерывает режим \"Не беспокоить\"."</string>
+    <string name="notification_channel_summary_priority_dnd" msgid="6665395023264154361">"Появляется вверху уведомлений о сообщениях и в виде фото профиля на заблокированном экране, прерывает режим \"Не беспокоить\""</string>
+    <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"Появляется вверху уведомлений о сообщениях и в виде фото профиля на заблокированном экране, прерывает режим \"Не беспокоить\""</string>
     <string name="notification_priority_title" msgid="2079708866333537093">"Приоритет"</string>
     <string name="no_shortcut" msgid="8257177117568230126">"Приложение \"<xliff:g id="APP_NAME">%1$s</xliff:g>\" не поддерживает функции разговоров."</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Оставить отзыв"</string>
@@ -1263,10 +1240,16 @@
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"Клавиша специальных возможностей"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"Чтобы включить функции, которые упрощают управление устройством, нажмите клавишу специальных возможностей."</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"Добавить функции"</string>
+    <!-- no translation found for accessibility_shortcutchooser_toprow_editor_dialog_title (1898531469029411168) -->
+    <skip />
     <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"Настройка: <xliff:g id="ID_1">%1$s</xliff:g>"</string>
     <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"Готово"</string>
     <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"Выберите функцию"</string>
     <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"Изменить"</string>
+    <!-- no translation found for accessibility_nav_bar_more_options_title (2549386798738178479) -->
+    <skip />
+    <!-- no translation found for accessibility_nav_bar_more_options_subtitle (4336832036115080533) -->
+    <skip />
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Специальные возможности"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Заблокированный экран"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Выключение…"</string>
@@ -1412,11 +1395,11 @@
     <string name="accessibility_floating_button_action_double_tap_to_toggle" msgid="7976492639670692037">"включить или отключить"</string>
     <string name="accessibility_floating_button_action_edit" msgid="1688227814600463987">"Изменить"</string>
     <string name="quick_controls_title" msgid="6839108006171302273">"Управление устройствами"</string>
-    <string name="controls_providers_title" msgid="6879775889857085056">"Чтобы добавить виджеты управления, выберите приложение"</string>
+    <string name="controls_providers_title" msgid="6879775889857085056">"Чтобы добавить виджеты, выберите приложение"</string>
     <string name="controls_number_of_favorites" msgid="4481806788981836355">"{count,plural, =1{Добавлен # элемент управления.}one{Добавлен # элемент управления.}few{Добавлено # элемента управления.}many{Добавлено # элементов управления.}other{Добавлено # элемента управления.}}"</string>
     <string name="controls_removed" msgid="3731789252222856959">"Удалено"</string>
     <string name="controls_panel_authorization_title" msgid="267429338785864842">"Добавить приложение \"<xliff:g id="APPNAME">%s</xliff:g>\"?"</string>
-    <string name="controls_panel_authorization" msgid="7045551688535104194">"Приложение \"<xliff:g id="APPNAME">%s</xliff:g>\" может выбирать, какой контент и настройки будут здесь показываться."</string>
+    <string name="controls_panel_authorization" msgid="7045551688535104194">"Приложение \"<xliff:g id="APPNAME">%s</xliff:g>\" сможет выбирать, что здесь показывать."</string>
     <string name="controls_panel_remove_app_authorization" msgid="5920442084735364674">"Удалить приложение \"<xliff:g id="APPNAME">%s</xliff:g>\" с панели управления устройствами?"</string>
     <string name="accessibility_control_favorite" msgid="8694362691985545985">"Добавлено в избранное"</string>
     <string name="accessibility_control_favorite_position" msgid="54220258048929221">"Добавлено в избранное на позицию <xliff:g id="NUMBER">%d</xliff:g>"</string>
@@ -1821,7 +1804,7 @@
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"Экран"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Неизвестно"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Сбросить все параметры?"</string>
-    <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Для всех параметров быстрых настроек будут восстановлены значения по умолчанию."</string>
+    <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"В быстрых настройках будет восстановлен исходный набор плиток."</string>
     <string name="ambientcue_first_time_edu_title" msgid="4786708463521594957">"Получайте подсказки"</string>
     <string name="ambientcue_first_time_edu_text" msgid="7541905631076606020">"Мы используем ИИ, чтобы сообщать вам информацию и предлагать действия на основе того, что вы делаете на экране."</string>
     <string name="ambientcue_first_time_edu_icon_description" msgid="1776865320146246305">"Значок"</string>
@@ -1876,6 +1859,7 @@
     <string name="av_studio_look_effects" msgid="4105109585851068415">"Количество эффектов: %d"</string>
     <string name="av_blur" msgid="405131343487260171">"Размытие"</string>
     <string name="av_live_captions" msgid="7819416886586903077">"Автоматические субтитры"</string>
+    <string name="av_drill_in_return_to_main" msgid="5273814393426741827">"Назад"</string>
     <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"Батарея: %s"</string>
     <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"Заряд левого наушника: %1$s    Заряд правого наушника: %2$s"</string>
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"Заряд левого наушника: %1$s"</string>

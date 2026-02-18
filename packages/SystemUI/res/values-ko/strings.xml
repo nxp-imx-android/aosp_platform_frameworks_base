@@ -36,8 +36,10 @@
     <string name="status_bar_settings_auto_rotation" msgid="8329080442278431708">"화면 자동 회전"</string>
     <string name="usb_device_permission_prompt" msgid="4414719028369181772">"<xliff:g id="APPLICATION">%1$s</xliff:g> 앱이 <xliff:g id="USB_DEVICE">%2$s</xliff:g>에 액세스하도록 허용하시겠습니까?"</string>
     <string name="usb_device_permission_prompt_warn" msgid="2309129784984063656">"<xliff:g id="APPLICATION">%1$s</xliff:g>에서 <xliff:g id="USB_DEVICE">%2$s</xliff:g>에 액세스하도록 허용하시겠습니까?\n이 앱에는 녹음 권한이 부여되지 않았지만, 이 USB 기기를 통해 오디오를 녹음할 수 있습니다."</string>
-    <string name="usb_audio_device_permission_prompt_title" msgid="4221351137250093451">"<xliff:g id="APPLICATION">%1$s</xliff:g> 앱이 <xliff:g id="USB_DEVICE">%2$s</xliff:g>에 액세스하도록 허용하시겠습니까?"</string>
-    <string name="usb_audio_device_confirm_prompt_title" msgid="8828406516732985696">"<xliff:g id="APPLICATION">%1$s</xliff:g> 앱을 열어 <xliff:g id="USB_DEVICE">%2$s</xliff:g>을(를) 처리하시겠습니까?"</string>
+    <!-- no translation found for usb_audio_device_permission_prompt_title (6812876813400484157) -->
+    <skip />
+    <!-- no translation found for usb_audio_device_confirm_prompt_title (7623364019381948073) -->
+    <skip />
     <string name="usb_audio_device_prompt_warn" msgid="2504972133361130335">"이 앱에는 녹음 권한이 부여되지 않았지만, 이 USB 기기를 통해 오디오를 녹음할 수 있습니다. 이 기기와 함께 <xliff:g id="APPLICATION">%1$s</xliff:g> 앱을 사용하면 전화, 알림, 알람 소리가 들리지 않을 수 있습니다."</string>
     <string name="usb_audio_device_prompt" msgid="7944987408206252949">"이 기기와 함께 <xliff:g id="APPLICATION">%1$s</xliff:g> 앱을 사용하면 전화, 알림, 알람 소리가 들리지 않을 수 있습니다."</string>
     <string name="usb_accessory_permission_prompt" msgid="717963550388312123">"<xliff:g id="APPLICATION">%1$s</xliff:g> 앱이 <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>에 액세스하도록 허용하시겠습니까?"</string>
@@ -58,24 +60,15 @@
     <string name="usb_debugging_allow" msgid="1722643858015321328">"허용"</string>
     <string name="usb_debugging_secondary_user_title" msgid="7843050591380107998">"USB 디버깅이 허용되지 않음"</string>
     <string name="usb_debugging_secondary_user_message" msgid="1888835696965417845">"현재 이 기기에 로그인한 사용자는 USB 디버깅을 사용 설정할 수 없습니다. 이 기능을 사용하려면 관리자로 전환하세요."</string>
-    <!-- no translation found for usb_authorization_title (3332796080113535331) -->
-    <skip />
-    <!-- no translation found for usb_authorization_title_multi (1966181648363433366) -->
-    <skip />
-    <!-- no translation found for usb_authorization_message (1107567912094941105) -->
-    <skip />
-    <!-- no translation found for usb_authorization_message_multi (4867596373922923637) -->
-    <skip />
-    <!-- no translation found for usb_authorization_message_untrusted (4407977362840907960) -->
-    <skip />
-    <!-- no translation found for usb_authorization_message_multi_untrusted (85055448435495205) -->
-    <skip />
-    <!-- no translation found for usb_authorization_unknown_device (1107933381080189970) -->
-    <skip />
-    <!-- no translation found for usb_authorization_allow (5517449937301874244) -->
-    <skip />
-    <!-- no translation found for usb_authorization_deny (8156333001876101456) -->
-    <skip />
+    <string name="usb_authorization_title" msgid="3332796080113535331">"USB 기기의 연결을 허용하시겠습니까?"</string>
+    <string name="usb_authorization_title_multi" msgid="1966181648363433366">"USB 기기의 연결을 허용하시겠습니까?"</string>
+    <string name="usb_authorization_message" msgid="1107567912094941105">"다음 기기가 <xliff:g id="NAME">%1$s</xliff:g>에 연결되었습니다."</string>
+    <string name="usb_authorization_message_multi" msgid="4867596373922923637">"다음 기기가 <xliff:g id="NAME">%1$s</xliff:g>에 연결되었습니다."</string>
+    <string name="usb_authorization_message_untrusted" msgid="4407977362840907960">"다음 기기가 <xliff:g id="NAME">%1$s</xliff:g>에 연결되었습니다. 이 기기는 로그인 후에만 신뢰할 수 있습니다."</string>
+    <string name="usb_authorization_message_multi_untrusted" msgid="85055448435495205">"다음 기기가 <xliff:g id="NAME">%1$s</xliff:g>에 연결되었습니다. 이러한 기기는 로그인 후에만 신뢰할 수 있습니다."</string>
+    <string name="usb_authorization_unknown_device" msgid="1107933381080189970">"알 수 없는 제품(<xliff:g id="VENDOR_ID">%1$04X</xliff:g>:<xliff:g id="PRODUCT_ID">%2$04X</xliff:g>)"</string>
+    <string name="usb_authorization_allow" msgid="5517449937301874244">"허용"</string>
+    <string name="usb_authorization_deny" msgid="8156333001876101456">"허용 안함"</string>
     <string name="hdmi_cec_set_menu_language_title" msgid="1259765420091503742">"시스템 언어를 <xliff:g id="LANGUAGE">%1$s</xliff:g>로 변경하시겠습니까?"</string>
     <string name="hdmi_cec_set_menu_language_description" msgid="8176716678074126619">"다른 기기에서 시스템 언어 변경을 요청함"</string>
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"언어 변경"</string>
@@ -121,10 +114,8 @@
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"더 캡처하기"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"스크린샷 닫기"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"직장 프로필 메시지 닫기"</string>
-    <!-- no translation found for screenshot_open_in_folder_label (7030308792263959983) -->
-    <skip />
-    <!-- no translation found for screenshot_open_in_folder_description (2181459418652236210) -->
-    <skip />
+    <string name="screenshot_open_in_folder_label" msgid="7030308792263959983">"보기"</string>
+    <string name="screenshot_open_in_folder_description" msgid="2181459418652236210">"Files에서 스크린샷 보기 버튼"</string>
     <string name="screenshot_preview_description" msgid="7606510140714080474">"스크린샷 미리보기"</string>
     <string name="screenshot_top_boundary_pct" msgid="2520148599096479332">"상단 가장자리 <xliff:g id="PERCENT">%1$d</xliff:g>%%"</string>
     <string name="screenshot_bottom_boundary_pct" msgid="3880821519814946478">"하단 가장자리 <xliff:g id="PERCENT">%1$d</xliff:g>%%"</string>
@@ -196,6 +187,8 @@
     <string name="screen_record_mute" msgid="8111682249858638168">"음소거"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"음소거 해제"</string>
     <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g>/<xliff:g id="DURATION">%2$s</xliff:g>"</string>
+    <!-- no translation found for screen_record_selfie_hint (7176948583444196453) -->
+    <skip />
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"IT 관리자가 화면 캡처를 차단했습니다."</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"전체 화면 스크린샷 찍기"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"전체 화면 녹화"</string>
@@ -208,7 +201,12 @@
     <string name="screen_capture_region_box_bottom_right_handle_description" msgid="5444943380877006881">"오른쪽 하단 핸들 - 화살표 키를 사용하여 크기 조절"</string>
     <string name="screen_capture_region_box_bottom_left_handle_description" msgid="6095764656409143184">"왼쪽 하단 핸들 - 화살표 키를 사용하여 크기 조절"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"공유"</string>
-    <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"공유할 앱 선택"</string>
+    <!-- no translation found for screen_share_no_select_app_thumbnail (1886183147809224215) -->
+    <skip />
+    <!-- no translation found for screen_share_no_select_tab_thumbnail (677801966729809584) -->
+    <skip />
+    <!-- no translation found for screen_share_no_select_display_thumbnail (4351422134286332559) -->
+    <skip />
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"오디오 공유"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"앱 창 공유"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"탭 공유"</string>
@@ -226,11 +224,14 @@
     <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"<xliff:g id="DISPLAY_NAME">%1$s</xliff:g> 디스플레이 공유가 중지되었습니다. 화면이 누구와도 공유되지 않습니다."</string>
     <string name="screen_share_a11y_close_button" msgid="8017115316741874857">"닫기 버튼입니다. 공유 전 대화상자를 닫으려면 Enter 키를 누르세요."</string>
     <string name="screen_share_a11y_tab_button_unselected" msgid="5363622532939787310">"탭 공유 버튼입니다. 선택되지 않았습니다. 탭을 공유하려면 Enter 키를 누르세요."</string>
-    <string name="screen_share_a11y_tab_button_selected" msgid="4304681826101817704">"공유 탭입니다. 사용 가능한 탭을 확인하려면 이동하세요."</string>
+    <!-- no translation found for screen_share_a11y_tab_button_selected (3969246191128243157) -->
+    <skip />
     <string name="screen_share_a11y_app_button_unselected" msgid="4539549394242556282">"앱 공유 버튼입니다. 선택되지 않았습니다. 앱을 공유하려면 Enter 키를 누르세요."</string>
-    <string name="screen_share_a11y_app_button_selected" msgid="6049272377472922732">"앱 공유 중입니다. 사용 가능한 앱을 확인하려면 이동하세요."</string>
+    <!-- no translation found for screen_share_a11y_app_button_selected (4891977117777987696) -->
+    <skip />
     <string name="screen_share_a11y_fullscreen_button_unselected" msgid="2492516552817892989">"전체 화면 버튼입니다. 선택되지 않았습니다. 전체 화면을 공유하려면 Enter 키를 누르세요."</string>
-    <string name="screen_share_a11y_fullscreen_button_selected" msgid="6706822615908429473">"전체 화면을 공유 중입니다. 사용 가능한 디스플레이를 확인하려면 이동하세요."</string>
+    <!-- no translation found for screen_share_a11y_fullscreen_button_selected (4428416497634907009) -->
+    <skip />
     <string name="screen_share_a11y_share_button_off" msgid="2004866083045967602">"공유 버튼입니다. 사용 중지되어 있습니다. 공유할 앱, 탭 또는 디스플레이를 선택하세요."</string>
     <string name="screen_share_a11y_share_button_on" msgid="1311279200212158833">"공유가 사용 설정되어 있습니다. <xliff:g id="ITEM">%1$s</xliff:g> 항목이 선택되었습니다. 공유를 시작하려면 Enter 키를 누르세요."</string>
     <string name="screen_share_a11y_item_unselected" msgid="7479321583507874795">"<xliff:g id="ITEM_NAME">%1$s</xliff:g> 항목입니다. 선택되지 않았습니다. 선택하려면 Enter 키를 누르세요."</string>
@@ -247,8 +248,7 @@
     <string name="screen_capture_post_recording_shelf_share_button_a11y" msgid="2907313384921655711">"화면 녹화 공유하기"</string>
     <string name="screen_capture_post_recording_shelf_folder_button_a11y" msgid="4217075254383938093">"파일 관리자에서 화면 녹화 열기"</string>
     <string name="screen_capture_post_recording_shelf_delete_button_a11y" msgid="8519897681775354217">"화면 녹화 삭제하기"</string>
-    <!-- no translation found for screen_capture_post_recording_shelf_thumbnail_a11y (4764732838982357845) -->
-    <skip />
+    <string name="screen_capture_post_recording_shelf_thumbnail_a11y" msgid="4764732838982357845">"보기 앱에서 화면 녹화 열기"</string>
     <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"클릭 및 키 표시"</string>
     <string name="screen_capture_device_audio" msgid="1537290197773737349">"기기 오디오"</string>
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"마이크"</string>
@@ -303,7 +303,6 @@
     <string name="accessibility_unlock_button" msgid="3613812140816244310">"잠금 해제됨"</string>
     <string name="accessibility_lock_icon" msgid="661492842417875775">"기기 잠김"</string>
     <string name="accessibility_confirm_biometric_auth_to_unlock" msgid="1600162805010332470">"확인 및 기기 잠금을 해제합니다."</string>
-    <string name="accessibility_retry_face_auth" msgid="3018310877303150273">"얼굴 인식 잠금 해제를 다시 시도해 주세요."</string>
     <string name="accessibility_scanning_face" msgid="3093828357921541387">"얼굴 스캔 중"</string>
     <string name="accessibility_send_smart_reply" msgid="8885032190442015141">"보내기"</string>
     <string name="cancel" msgid="1089011503403416730">"취소"</string>
@@ -316,11 +315,8 @@
     <string name="biometric_dialog_face_icon_description_authenticated" msgid="2242167416140740920">"얼굴이 인증되었습니다."</string>
     <string name="biometric_dialog_face_icon_description_confirmed" msgid="7918067993953940778">"확인함"</string>
     <string name="biometric_dialog_tap_confirm" msgid="9166350738859143358">"완료하려면 확인을 탭하세요."</string>
-    <string name="biometric_dialog_tap_confirm_with_face" msgid="2378151312221818694">"얼굴 인식으로 잠금 해제되었습니다."</string>
-    <string name="biometric_dialog_tap_confirm_with_face_alt_1" msgid="439152621640507113">"얼굴 인식으로 잠금 해제되었습니다. 계속하려면 누르세요."</string>
     <string name="biometric_dialog_tap_confirm_with_face_alt_2" msgid="8586608186457385108">"얼굴이 인식되었습니다. 계속하려면 누르세요."</string>
     <string name="biometric_dialog_tap_confirm_with_face_alt_3" msgid="2192670471930606539">"얼굴이 인식되었습니다. 계속하려면 아이콘을 누르세요."</string>
-    <string name="biometric_dialog_tap_confirm_with_face_sfps" msgid="2499213248903257928">"얼굴 인식으로 잠금 해제되었습니다. 계속하려면 탭하세요."</string>
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"인증됨"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"인증 취소"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"옵션 더보기"</string>
@@ -365,11 +361,6 @@
     <string name="fingerprint_re_enroll_dialog_content" msgid="4866561176695984879">"지문 잠금 해제를 다시 설정하기 위해 현재 지문 이미지와 모델이 삭제됩니다.\n\n삭제된 후 지문을 사용하여 휴대전화 잠금을 해제하거나 본인을 확인하려면 지문 잠금 해제를 다시 설정해야 합니다."</string>
     <string name="fingerprint_re_enroll_dialog_content_singular" msgid="3083663339787381218">"지문 잠금 해제를 다시 설정하기 위해 현재 지문 이미지와 모델이 삭제됩니다.\n\n삭제된 후 지문을 사용하여 휴대전화 잠금을 해제하거나 본인을 확인하려면 지문 잠금 해제를 다시 설정해야 합니다."</string>
     <string name="fingerprint_reenroll_failure_dialog_content" msgid="4733768492747300666">"지문 잠금 해제를 설정할 수 없습니다. 설정으로 이동하여 다시 시도해 보세요."</string>
-    <string name="face_re_enroll_notification_title" msgid="1850838867718410520">"얼굴 인식 잠금 해제 다시 설정"</string>
-    <string name="face_re_enroll_notification_name" msgid="7384545252206120659">"얼굴 인식 잠금 해제"</string>
-    <string name="face_re_enroll_dialog_title" msgid="6392173708176069994">"얼굴 인식 잠금 해제 설정하기"</string>
-    <string name="face_re_enroll_dialog_content" msgid="7353502359464038511">"얼굴 인식 잠금 해제를 다시 설정하기 위해 현재 얼굴 모델이 삭제됩니다.\n\n얼굴을 사용하여 휴대전화 잠금을 해제하려면 이 기능을 다시 설정해야 합니다."</string>
-    <string name="face_reenroll_failure_dialog_content" msgid="7073947334397236935">"얼굴 인식 잠금 해제를 설정할 수 없습니다. 설정으로 이동하여 다시 시도해 보세요."</string>
     <string name="fingerprint_dialog_touch_sensor" msgid="2817887108047658975">"지문 센서를 터치하세요."</string>
     <string name="fingerprint_dialog_authenticated_confirmation" msgid="1603899612957562862">"계속하려면 잠금 해제 아이콘을 누르세요."</string>
     <string name="fingerprint_dialog_use_fingerprint_instead" msgid="5542430577183894219">"얼굴을 인식할 수 없습니다. 대신 지문을 사용하세요."</string>
@@ -377,7 +368,6 @@
     <skip />
     <string name="keyguard_face_failed" msgid="2346762871330729634">"얼굴을 인식할 수 없습니다."</string>
     <string name="keyguard_suggest_fingerprint" msgid="8742015961962702960">"대신 지문을 사용하세요."</string>
-    <string name="keyguard_face_unlock_unavailable" msgid="1581949044193418736">"얼굴 인식 잠금 해제를 사용할 수 없습니다."</string>
     <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"블루투스가 연결되었습니다."</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"블루투스 기기 아이콘"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"기기 세부정보를 구성하려면 클릭하세요."</string>
@@ -553,6 +543,7 @@
     <string name="quick_settings_nfc_off" msgid="3465000058515424663">"NFC 사용 중지됨"</string>
     <string name="quick_settings_nfc_on" msgid="1004976611203202230">"NFC 사용 설정됨"</string>
     <string name="quick_settings_screen_record_label" msgid="8650355346742003694">"화면 녹화"</string>
+    <string name="quick_settings_screen_capture_label" msgid="4400625606618045690">"화면 캡처"</string>
     <string name="quick_settings_screen_record_start" msgid="1574725369331638985">"시작"</string>
     <string name="quick_settings_screen_record_stop" msgid="8087348522976412119">"중지"</string>
     <string name="qs_record_issue_label" msgid="8166290137285529059">"문제 기록"</string>
@@ -648,16 +639,10 @@
     <string name="tap_again" msgid="1315420114387908655">"다시 탭하세요."</string>
     <string name="keyguard_unlock" msgid="8031975796351361601">"위로 스와이프하여 열기"</string>
     <string name="keyguard_unlock_press" msgid="9140109453735019209">"기기를 열려면 잠금 해제 아이콘을 누르세요."</string>
-    <string name="keyguard_face_successful_unlock_swipe" msgid="6180997591385846073">"얼굴 인식으로 잠금 해제되었습니다. 위로 스와이프하여 여세요."</string>
-    <string name="keyguard_face_successful_unlock_confirm_button" msgid="3862344771780817393">"얼굴 인식으로 잠금 해제되었습니다. 계속하려면 확인을 누르세요."</string>
-    <string name="keyguard_face_successful_unlock_press" msgid="25520941264602588">"얼굴 인식으로 잠금 해제되었습니다. 기기를 열려면 잠금 해제 아이콘을 누르세요."</string>
-    <string name="keyguard_face_successful_unlock_press_alt_1" msgid="5715461103913071474">"얼굴 인식으로 잠금 해제되었습니다. 열려면 누르세요."</string>
     <string name="keyguard_face_successful_unlock_press_alt_2" msgid="8310787946357120406">"얼굴이 인식되었습니다. 열려면 누르세요."</string>
     <string name="keyguard_face_successful_unlock_press_alt_3" msgid="7219030481255573962">"얼굴이 인식되었습니다. 열려면 잠금 해제 아이콘을 누르세요."</string>
-    <string name="keyguard_face_successful_unlock" msgid="4203999851465708287">"얼굴 인식으로 잠금 해제되었습니다."</string>
     <string name="keyguard_face_successful_unlock_alt1" msgid="5853906076353839628">"얼굴이 인식되었습니다."</string>
     <string name="keyguard_retry" msgid="886802522584053523">"위로 스와이프하여 다시 시도해 주세요"</string>
-    <string name="accesssibility_keyguard_retry" msgid="8880238862712870676">"얼굴 인식 잠금 해제를 다시 시도하려면 위로 스와이프하세요."</string>
     <string name="require_unlock_for_nfc" msgid="1305686454823018831">"잠금 해제하여 NFC 사용"</string>
     <string name="do_disclosure_generic" msgid="4896482821974707167">"내 조직에 속한 기기입니다."</string>
     <string name="do_disclosure_with_name" msgid="2091641464065004091">"<xliff:g id="ORGANIZATION_NAME">%s</xliff:g>에 속한 기기입니다."</string>
@@ -761,8 +746,8 @@
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"앱 1개 전송"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen" msgid="8389508187954155307">"전체 화면 전송"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display" msgid="5524817761472941086">"<xliff:g id="DISPLAY_NAME">%s</xliff:g> 전송"</string>
-    <string name="media_projection_entry_cast_permission_dialog_warning_entire_screen" msgid="4040447861037324017">"전체 화면을 전송하면 화면에 있는 모든 항목을 볼 수 있게 됩니다. 따라서 비밀번호, 결제 세부정보, 메시지, 사진, 오디오 및 동영상 등이 노출되지 않도록 주의하세요."</string>
-    <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"앱을 전송하면 해당 앱에 표시되거나 재생되는 모든 항목을 볼 수 있게 됩니다. 비밀번호, 결제 세부정보, 메시지, 사진, 오디오 및 동영상 등이 노출되지 않도록 주의하세요."</string>
+    <string name="media_projection_entry_cast_permission_dialog_warning_entire_screen" msgid="4040447861037324017">"전체 화면을 전송하면 화면에 있는 모든 항목을 볼 수 있게 됩니다. 비밀번호, 결제 세부정보, 메시지, 사진, 오디오 및 동영상 등이 노출되지 않도록 주의하세요."</string>
+    <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"앱을 전송하면 해당 앱에 표시되거나 앱에서 재생되는 모든 항목을 볼 수 있게 됩니다. 비밀번호, 결제 세부정보, 메시지, 사진, 오디오 및 동영상 등이 노출되지 않도록 주의하세요."</string>
     <string name="media_projection_entry_cast_permission_dialog_continue_entire_screen" msgid="3261124185304676483">"화면 전송"</string>
     <string name="media_projection_entry_cast_app_selector_title" msgid="6323062146661922387">"전송할 앱 선택"</string>
     <string name="media_projection_entry_generic_permission_dialog_title" msgid="4519802931547483628">"공유를 시작하시겠습니까?"</string>
@@ -1263,10 +1248,16 @@
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"접근성 키"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"접근성 키를 눌러 접근성 기능을 사용할 수 있습니다."</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"기능 추가"</string>
+    <!-- no translation found for accessibility_shortcutchooser_toprow_editor_dialog_title (1898531469029411168) -->
+    <skip />
     <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"<xliff:g id="ID_1">%1$s</xliff:g> 설정"</string>
     <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"완료"</string>
     <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"기능 선택"</string>
     <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"수정"</string>
+    <!-- no translation found for accessibility_nav_bar_more_options_title (2549386798738178479) -->
+    <skip />
+    <!-- no translation found for accessibility_nav_bar_more_options_subtitle (4336832036115080533) -->
+    <skip />
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"접근성"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"잠금 화면"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"종료 중…"</string>
@@ -1876,6 +1867,8 @@
     <string name="av_studio_look_effects" msgid="4105109585851068415">"효과 %d개"</string>
     <string name="av_blur" msgid="405131343487260171">"흐리게 처리"</string>
     <string name="av_live_captions" msgid="7819416886586903077">"실시간 자막"</string>
+    <!-- no translation found for av_drill_in_return_to_main (5273814393426741827) -->
+    <skip />
     <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"배터리 %s"</string>
     <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"왼쪽 배터리 %1$s    오른쪽 배터리 %2$s"</string>
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"왼쪽 배터리 %1$s"</string>

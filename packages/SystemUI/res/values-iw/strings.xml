@@ -36,8 +36,8 @@
     <string name="status_bar_settings_auto_rotation" msgid="8329080442278431708">"סיבוב אוטומטי של המסך"</string>
     <string name="usb_device_permission_prompt" msgid="4414719028369181772">"לתת לאפליקציה <xliff:g id="APPLICATION">%1$s</xliff:g> גישה אל <xliff:g id="USB_DEVICE">%2$s</xliff:g>?"</string>
     <string name="usb_device_permission_prompt_warn" msgid="2309129784984063656">"‏האם לאפשר לאפליקציה <xliff:g id="APPLICATION">%1$s</xliff:g> גישה אל <xliff:g id="USB_DEVICE">%2$s</xliff:g>?\nאפליקציה זו לא קיבלה הרשאה להקליט אך יכולה לתעד אודיו באמצעות מכשיר USB זה."</string>
-    <string name="usb_audio_device_permission_prompt_title" msgid="4221351137250093451">"האם לתת לאפליקציה <xliff:g id="APPLICATION">%1$s</xliff:g> גישה אל <xliff:g id="USB_DEVICE">%2$s</xliff:g>?"</string>
-    <string name="usb_audio_device_confirm_prompt_title" msgid="8828406516732985696">"האם לפתוח את <xliff:g id="APPLICATION">%1$s</xliff:g> כדי לעבוד עם <xliff:g id="USB_DEVICE">%2$s</xliff:g>?"</string>
+    <string name="usb_audio_device_permission_prompt_title" msgid="6812876813400484157">"‏לתת לאפליקציה &lt;b&gt;<xliff:g id="APPLICATION">%1$s</xliff:g>&lt;/b&gt; הרשאת גישה אל &lt;b&gt;<xliff:g id="USB_DEVICE">%2$s</xliff:g>&lt;/b&gt;?"</string>
+    <string name="usb_audio_device_confirm_prompt_title" msgid="7623364019381948073">"‏לפתוח את &lt;b&gt;<xliff:g id="APPLICATION">%1$s</xliff:g>&lt;/b&gt; כדי לטפל במכשיר &lt;b&gt;<xliff:g id="USB_DEVICE">%2$s</xliff:g>&lt;/b&gt;?"</string>
     <string name="usb_audio_device_prompt_warn" msgid="2504972133361130335">"‏לאפליקציה הזו אין הרשאת הקלטה, אבל אפשר להקליט אודיו באמצעות מכשיר ה-USB הזה. השימוש באפליקציה <xliff:g id="APPLICATION">%1$s</xliff:g> עם המכשיר הזה יכול למנוע ממך לשמוע שיחות, התראות או שעונים מעוררים."</string>
     <string name="usb_audio_device_prompt" msgid="7944987408206252949">"השימוש באפליקציה <xliff:g id="APPLICATION">%1$s</xliff:g> עם המכשיר הזה יכול למנוע ממך לשמוע שיחות, התראות או שעונים מעוררים."</string>
     <string name="usb_accessory_permission_prompt" msgid="717963550388312123">"האם לתת לאפליקציה <xliff:g id="APPLICATION">%1$s</xliff:g> גישה אל <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>?"</string>
@@ -46,8 +46,7 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"לפתוח את <xliff:g id="APPLICATION">%1$s</xliff:g> כדי לעבוד עם <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>?"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"‏אין אפליקציות מותקנות הפועלות עם אביזר ה-USB. למידע נוסף על האביזר הזה: <xliff:g id="URL">%1$s</xliff:g>"</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"‏אביזר USB"</string>
-    <!-- no translation found for usb_device_dialog_always_allow_button (7426535342650638393) -->
-    <skip />
+    <string name="usb_device_dialog_always_allow_button" msgid="7426535342650638393">"אישור לתמיד"</string>
     <string name="usb_device_dialog_allow_only_this_time_button" msgid="3653881633944232491">"רק הפעם"</string>
     <string name="usb_device_dialog_cancel_button" msgid="9050554648474787233">"ביטול"</string>
     <string name="label_view" msgid="6815442985276363364">"הצגה"</string>
@@ -59,24 +58,15 @@
     <string name="usb_debugging_allow" msgid="1722643858015321328">"יש אישור"</string>
     <string name="usb_debugging_secondary_user_title" msgid="7843050591380107998">"‏לא ניתן לבצע ניפוי באגים ב-USB"</string>
     <string name="usb_debugging_secondary_user_message" msgid="1888835696965417845">"‏למשתמש המחובר לחשבון במכשיר הזה אין אפשרות להפעיל ניפוי באגים ב-USB. כדי להשתמש בתכונה הזו יש לעבור אל משתמש עם הרשאת אדמין."</string>
-    <!-- no translation found for usb_authorization_title (3332796080113535331) -->
-    <skip />
-    <!-- no translation found for usb_authorization_title_multi (1966181648363433366) -->
-    <skip />
-    <!-- no translation found for usb_authorization_message (1107567912094941105) -->
-    <skip />
-    <!-- no translation found for usb_authorization_message_multi (4867596373922923637) -->
-    <skip />
-    <!-- no translation found for usb_authorization_message_untrusted (4407977362840907960) -->
-    <skip />
-    <!-- no translation found for usb_authorization_message_multi_untrusted (85055448435495205) -->
-    <skip />
-    <!-- no translation found for usb_authorization_unknown_device (1107933381080189970) -->
-    <skip />
-    <!-- no translation found for usb_authorization_allow (5517449937301874244) -->
-    <skip />
-    <!-- no translation found for usb_authorization_deny (8156333001876101456) -->
-    <skip />
+    <string name="usb_authorization_title" msgid="3332796080113535331">"‏לאפשר להתקן ה-USB להתחבר?"</string>
+    <string name="usb_authorization_title_multi" msgid="1966181648363433366">"‏לאפשר להתקני ה-USB להתחבר?"</string>
+    <string name="usb_authorization_message" msgid="1107567912094941105">"ההתקן הבא חובר למכשיר <xliff:g id="NAME">%1$s</xliff:g> שלך:"</string>
+    <string name="usb_authorization_message_multi" msgid="4867596373922923637">"ההתקנים הבאים חוברו למכשיר <xliff:g id="NAME">%1$s</xliff:g> שלך:"</string>
+    <string name="usb_authorization_message_untrusted" msgid="4407977362840907960">"ההתקן הבא חובר למכשיר <xliff:g id="NAME">%1$s</xliff:g> שלך. הוא ייחשב למהימן רק אחרי שתתבצע כניסה לחשבון."</string>
+    <string name="usb_authorization_message_multi_untrusted" msgid="85055448435495205">"ההתקנים הבאים חוברו למכשיר <xliff:g id="NAME">%1$s</xliff:g> שלך. הם ייחשבו למהימנים רק אחרי שתתבצע כניסה לחשבון."</string>
+    <string name="usb_authorization_unknown_device" msgid="1107933381080189970">"מוצר לא ידוע (<xliff:g id="VENDOR_ID">%1$04X</xliff:g>:‏<xliff:g id="PRODUCT_ID">%2$04X</xliff:g>)"</string>
+    <string name="usb_authorization_allow" msgid="5517449937301874244">"אישור"</string>
+    <string name="usb_authorization_deny" msgid="8156333001876101456">"דחייה"</string>
     <string name="hdmi_cec_set_menu_language_title" msgid="1259765420091503742">"רוצה לשנות את שפת המערכת ל<xliff:g id="LANGUAGE">%1$s</xliff:g>?"</string>
     <string name="hdmi_cec_set_menu_language_description" msgid="8176716678074126619">"התקבלה בקשה ממכשיר אחר לשינוי שפת המערכת"</string>
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"שינוי שפה"</string>
@@ -122,10 +112,8 @@
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"צילום תוכן נוסף"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"סגירת צילום מסך"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"סגירת ההודעה של פרופיל העבודה"</string>
-    <!-- no translation found for screenshot_open_in_folder_label (7030308792263959983) -->
-    <skip />
-    <!-- no translation found for screenshot_open_in_folder_description (2181459418652236210) -->
-    <skip />
+    <string name="screenshot_open_in_folder_label" msgid="7030308792263959983">"צפייה"</string>
+    <string name="screenshot_open_in_folder_description" msgid="2181459418652236210">"‏כפתור לצפייה בצילום המסך ב-Files"</string>
     <string name="screenshot_preview_description" msgid="7606510140714080474">"תצוגה מקדימה של צילום מסך"</string>
     <string name="screenshot_top_boundary_pct" msgid="2520148599096479332">"<xliff:g id="PERCENT">%1$d</xliff:g> אחוז מהשוליים העליונים"</string>
     <string name="screenshot_bottom_boundary_pct" msgid="3880821519814946478">"<xliff:g id="PERCENT">%1$d</xliff:g> אחוז מהשוליים התחתונים"</string>
@@ -197,6 +185,8 @@
     <string name="screen_record_mute" msgid="8111682249858638168">"השתקה"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"ביטול ההשתקה"</string>
     <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"‫<xliff:g id="ELAPSED_TIME">%1$s</xliff:g> מתוך <xliff:g id="DURATION">%2$s</xliff:g>"</string>
+    <!-- no translation found for screen_record_selfie_hint (7176948583444196453) -->
+    <skip />
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"‏צילום המסך חסום על ידי האדמין ממחלקת IT"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"צילום מסך של כל המסך"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"הקלטה של כל המסך"</string>
@@ -209,7 +199,9 @@
     <string name="screen_capture_region_box_bottom_right_handle_description" msgid="5444943380877006881">"נקודת האחיזה הימנית התחתונה – אפשר להשתמש במקשי החיצים כדי לשנות את הגודל"</string>
     <string name="screen_capture_region_box_bottom_left_handle_description" msgid="6095764656409143184">"נקודת האחיזה השמאלית התחתונה – אפשר להשתמש במקשי החיצים כדי לשנות את הגודל"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"שיתוף"</string>
-    <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"בחירת אפליקציה לשיתוף"</string>
+    <string name="screen_share_no_select_app_thumbnail" msgid="1886183147809224215">"צריך לבחור חלון אפליקציה לשיתוף"</string>
+    <string name="screen_share_no_select_tab_thumbnail" msgid="677801966729809584">"צריך לבחור כרטיסייה לשיתוף"</string>
+    <string name="screen_share_no_select_display_thumbnail" msgid="4351422134286332559">"צריך לבחור מסך לשיתוף"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"שיתוף האודיו"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"שיתוף החלון של האפליקציה"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"שיתוף הכרטיסייה"</string>
@@ -225,32 +217,19 @@
     <string name="screen_share_a11y_stopped_sharing_app" msgid="6928492106881188404">"הופסק השיתוף של האפליקציה: <xliff:g id="APP_NAME">%1$s</xliff:g>. תוכן המסך לא משותף עם אף אחד."</string>
     <string name="screen_share_a11y_stopped_sharing_tab" msgid="5929089339684027985">"הופסק השיתוף של הכרטיסייה: <xliff:g id="TAB_TITLE">%1$s</xliff:g>. תוכן המסך לא משותף עם אף אחד."</string>
     <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"הופסק השיתוף של המסך: <xliff:g id="DISPLAY_NAME">%1$s</xliff:g>. תוכן המסך לא משותף עם אף אחד."</string>
-    <!-- no translation found for screen_share_a11y_close_button (8017115316741874857) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_button_unselected (5363622532939787310) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_button_selected (4304681826101817704) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_app_button_unselected (4539549394242556282) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_app_button_selected (6049272377472922732) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_fullscreen_button_unselected (2492516552817892989) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_fullscreen_button_selected (6706822615908429473) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_share_button_off (2004866083045967602) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_share_button_on (1311279200212158833) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_item_unselected (7479321583507874795) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_item_selected (2538971376128528640) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_audio_on (7240792268381508075) -->
-    <skip />
-    <!-- no translation found for screen_share_a11y_tab_audio_off (8545238601433952854) -->
-    <skip />
+    <string name="screen_share_a11y_close_button" msgid="8017115316741874857">"‏כפתור סגירה. כדי לסגור את תיבת הדו-שיח שלפני השיתוף, צריך להקיש על Enter."</string>
+    <string name="screen_share_a11y_tab_button_unselected" msgid="5363622532939787310">"‏כפתור לשיתוף הכרטיסייה. לא נבחר. כדי לשתף את הכרטיסייה, צריך להקיש על Enter."</string>
+    <string name="screen_share_a11y_tab_button_selected" msgid="3969246191128243157">"שיתוף כרטיסייה. אפשר לנווט בין הכרטיסיות הזמינות."</string>
+    <string name="screen_share_a11y_app_button_unselected" msgid="4539549394242556282">"‏כפתור לשיתוף האפליקציה. לא נבחר. כדי לשתף את האפליקציה, צריך להקיש על Enter."</string>
+    <string name="screen_share_a11y_app_button_selected" msgid="4891977117777987696">"שיתוף אפליקציה. אפשר לנווט בין האפליקציות הזמינות."</string>
+    <string name="screen_share_a11y_fullscreen_button_unselected" msgid="2492516552817892989">"‏כפתור של מסך מלא. לא נבחר. כדי לשתף את המסך המלא, צריך להקיש על Enter."</string>
+    <string name="screen_share_a11y_fullscreen_button_selected" msgid="4428416497634907009">"שיתוף מסך מלא. אפשר לנווט בין המסכים הזמינים."</string>
+    <string name="screen_share_a11y_share_button_off" msgid="2004866083045967602">"כפתור שיתוף. מושבת. צריך לבחור אפליקציה, כרטיסייה או מסך לשיתוף."</string>
+    <string name="screen_share_a11y_share_button_on" msgid="1311279200212158833">"‏השיתוף מופעל. הפריט <xliff:g id="ITEM">%1$s</xliff:g> נבחר. כדי להתחיל לשתף, צריך להקיש על Enter."</string>
+    <string name="screen_share_a11y_item_unselected" msgid="7479321583507874795">"‏הפריט <xliff:g id="ITEM_NAME">%1$s</xliff:g> לא נבחר. כדי לבחור אותו, צריך להקיש על Enter."</string>
+    <string name="screen_share_a11y_item_selected" msgid="2538971376128528640">"הפריט <xliff:g id="ITEM_NAME">%1$s</xliff:g> נבחר. כדי להתחיל לשתף, צריך לעבור לכפתור השיתוף."</string>
+    <string name="screen_share_a11y_tab_audio_on" msgid="7240792268381508075">"האודיו בכרטיסייה מופעל"</string>
+    <string name="screen_share_a11y_tab_audio_off" msgid="8545238601433952854">"האודיו בכרטיסייה מושבת"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"צילום מסך של החלון"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"חלון ההקלטה"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"צילום מסך של האזור שנבחר"</string>
@@ -261,8 +240,7 @@
     <string name="screen_capture_post_recording_shelf_share_button_a11y" msgid="2907313384921655711">"שיתוף של הקלטת המסך"</string>
     <string name="screen_capture_post_recording_shelf_folder_button_a11y" msgid="4217075254383938093">"פתיחה של הקלטת המסך במנהל הקבצים"</string>
     <string name="screen_capture_post_recording_shelf_delete_button_a11y" msgid="8519897681775354217">"מחיקה של הקלטת המסך"</string>
-    <!-- no translation found for screen_capture_post_recording_shelf_thumbnail_a11y (4764732838982357845) -->
-    <skip />
+    <string name="screen_capture_post_recording_shelf_thumbnail_a11y" msgid="4764732838982357845">"פתיחה של הקלטת המסך באפליקציית הצפייה"</string>
     <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"הצגת קליקים וקיצורי מקשים"</string>
     <string name="screen_capture_device_audio" msgid="1537290197773737349">"אודיו מהמכשיר"</string>
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"מיקרופון"</string>
@@ -317,7 +295,6 @@
     <string name="accessibility_unlock_button" msgid="3613812140816244310">"הנעילה מבוטלת"</string>
     <string name="accessibility_lock_icon" msgid="661492842417875775">"המכשיר נעול"</string>
     <string name="accessibility_confirm_biometric_auth_to_unlock" msgid="1600162805010332470">"אישור ופתיחת הנעילה של המכשיר"</string>
-    <string name="accessibility_retry_face_auth" msgid="3018310877303150273">"צריך לנסות שוב לפתוח באמצעות זיהוי הפנים"</string>
     <string name="accessibility_scanning_face" msgid="3093828357921541387">"סורק פנים"</string>
     <string name="accessibility_send_smart_reply" msgid="8885032190442015141">"שליחה"</string>
     <string name="cancel" msgid="1089011503403416730">"ביטול"</string>
@@ -330,11 +307,8 @@
     <string name="biometric_dialog_face_icon_description_authenticated" msgid="2242167416140740920">"זיהוי הפנים בוצע"</string>
     <string name="biometric_dialog_face_icon_description_confirmed" msgid="7918067993953940778">"יש אישור"</string>
     <string name="biometric_dialog_tap_confirm" msgid="9166350738859143358">"יש ללחוץ על \'אישור\' לסיום התהליך"</string>
-    <string name="biometric_dialog_tap_confirm_with_face" msgid="2378151312221818694">"הנעילה בוטלה באמצעות זיהוי הפנים"</string>
-    <string name="biometric_dialog_tap_confirm_with_face_alt_1" msgid="439152621640507113">"הנעילה בוטלה באמצעות זיהוי הפנים. יש ללחוץ כדי להמשיך."</string>
     <string name="biometric_dialog_tap_confirm_with_face_alt_2" msgid="8586608186457385108">"הפנים זוהו. יש ללחוץ כדי להמשיך."</string>
     <string name="biometric_dialog_tap_confirm_with_face_alt_3" msgid="2192670471930606539">"הפנים זוהו. להמשך יש ללחוץ על סמל ביטול הנעילה."</string>
-    <string name="biometric_dialog_tap_confirm_with_face_sfps" msgid="2499213248903257928">"הנעילה בוטלה באמצעות זיהוי הפנים. צריך ללחוץ כדי להמשיך."</string>
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"מאומת"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"ביטול האימות"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"אפשרויות נוספות"</string>
@@ -379,11 +353,6 @@
     <string name="fingerprint_re_enroll_dialog_content" msgid="4866561176695984879">"כדי להגדיר שוב את התכונה \'ביטול הנעילה בטביעת אצבע\', עליך למחוק את התבניות והמודלים הנוכחיים של טביעת האצבע.\n\nאחרי המחיקה יהיה צורך להגדיר שוב את \'ביטול הנעילה בטביעת אצבע\' כדי להשתמש בטביעת האצבע לביטול הנעילה של הטלפון ולאמת את זהותך."</string>
     <string name="fingerprint_re_enroll_dialog_content_singular" msgid="3083663339787381218">"כדי להגדיר שוב את התכונה \'ביטול הנעילה בטביעת אצבע\', עליך למחוק את התבניות והמודל הנוכחיים של טביעת האצבע.\n\nאחרי המחיקה יהיה צורך להגדיר שוב את \'ביטול הנעילה בטביעת אצבע\' כדי להשתמש בטביעת האצבע לביטול הנעילה של הטלפון ולאמת את זהותך."</string>
     <string name="fingerprint_reenroll_failure_dialog_content" msgid="4733768492747300666">"לא ניתן להגדיר ביטול נעילה בטביעת אצבע. יש לעבור להגדרות כדי לנסות שוב."</string>
-    <string name="face_re_enroll_notification_title" msgid="1850838867718410520">"הגדרה חוזרת של \'פתיחה ע\"י זיהוי הפנים\'"</string>
-    <string name="face_re_enroll_notification_name" msgid="7384545252206120659">"פתיחה בזיהוי פנים"</string>
-    <string name="face_re_enroll_dialog_title" msgid="6392173708176069994">"הגדרת \"פתיחה בזיהוי פנים\""</string>
-    <string name="face_re_enroll_dialog_content" msgid="7353502359464038511">"כדי להגדיר שוב את התכונה \'פתיחה ע\"י זיהוי הפנים\', עליך למחוק את התבנית הנוכחית לזיהוי הפנים.\n\nיהיה צורך להגדיר את התכונה הזו שוב כדי להשתמש בזיהוי הפנים לביטול הנעילה של הטלפון."</string>
-    <string name="face_reenroll_failure_dialog_content" msgid="7073947334397236935">"לא ניתן להגדיר פתיחה ע\"י זיהוי הפנים. צריך לעבור להגדרות כדי לנסות שוב."</string>
     <string name="fingerprint_dialog_touch_sensor" msgid="2817887108047658975">"צריך לגעת בחיישן טביעות האצבע"</string>
     <string name="fingerprint_dialog_authenticated_confirmation" msgid="1603899612957562862">"להמשך יש ללחוץ על סמל ביטול הנעילה"</string>
     <string name="fingerprint_dialog_use_fingerprint_instead" msgid="5542430577183894219">"הפנים לא זוהו. צריך להשתמש בטביעת אצבע במקום."</string>
@@ -391,7 +360,6 @@
     <skip />
     <string name="keyguard_face_failed" msgid="2346762871330729634">"הפנים לא זוהו"</string>
     <string name="keyguard_suggest_fingerprint" msgid="8742015961962702960">"שימוש בטביעת אצבע במקום זאת"</string>
-    <string name="keyguard_face_unlock_unavailable" msgid="1581949044193418736">"אי אפשר לפתוח בזיהוי פנים"</string>
     <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"‏Bluetooth מחובר."</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"‏סמל של מכשיר Bluetooth"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"יש ללחוץ כדי להגדיר את פרטי המכשיר"</string>
@@ -455,8 +423,7 @@
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"התראות"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistant"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"מקלדת"</string>
-    <!-- no translation found for input_method_switcher_title_large_screen (8490419050265486980) -->
-    <skip />
+    <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"מקלדת"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{עוד התראה אחת (#) בקבוצה.}one{עוד # התראות בקבוצה.}two{עוד # התראות בקבוצה.}other{עוד # התראות בקבוצה.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"המסך נעול עכשיו לרוחב."</string>
@@ -568,6 +535,7 @@
     <string name="quick_settings_nfc_off" msgid="3465000058515424663">"‏NFC מושבת"</string>
     <string name="quick_settings_nfc_on" msgid="1004976611203202230">"‏NFC מופעל"</string>
     <string name="quick_settings_screen_record_label" msgid="8650355346742003694">"הקלטת המסך"</string>
+    <string name="quick_settings_screen_capture_label" msgid="4400625606618045690">"צילום מסך"</string>
     <string name="quick_settings_screen_record_start" msgid="1574725369331638985">"התחלה"</string>
     <string name="quick_settings_screen_record_stop" msgid="8087348522976412119">"עצירה"</string>
     <string name="qs_record_issue_label" msgid="8166290137285529059">"תיעוד בעיה"</string>
@@ -663,16 +631,10 @@
     <string name="tap_again" msgid="1315420114387908655">"צריך ללחוץ פעם נוספת"</string>
     <string name="keyguard_unlock" msgid="8031975796351361601">"אפשר להחליק למעלה כדי לפתוח"</string>
     <string name="keyguard_unlock_press" msgid="9140109453735019209">"לפתיחה, לוחצים על סמל ביטול הנעילה"</string>
-    <string name="keyguard_face_successful_unlock_swipe" msgid="6180997591385846073">"הנעילה בוטלה באמצעות זיהוי הפנים. צריך להחליק כדי לפתוח."</string>
-    <string name="keyguard_face_successful_unlock_confirm_button" msgid="3862344771780817393">"הנעילה נפתחה באמצעות זיהוי הפנים. כדי להמשיך, צריך ללחוץ על \"אישור\"."</string>
-    <string name="keyguard_face_successful_unlock_press" msgid="25520941264602588">"הנעילה בוטלה בזיהוי פנים. פותחים בלחיצה על סמל ביטול הנעילה."</string>
-    <string name="keyguard_face_successful_unlock_press_alt_1" msgid="5715461103913071474">"הנעילה בוטלה באמצעות זיהוי הפנים. יש ללחוץ כדי לפתוח."</string>
     <string name="keyguard_face_successful_unlock_press_alt_2" msgid="8310787946357120406">"הפנים זוהו. יש ללחוץ כדי לפתוח."</string>
     <string name="keyguard_face_successful_unlock_press_alt_3" msgid="7219030481255573962">"הפנים זוהו. יש ללחוץ על סמל ביטול הנעילה כדי לפתוח."</string>
-    <string name="keyguard_face_successful_unlock" msgid="4203999851465708287">"הנעילה בוטלה באמצעות זיהוי הפנים"</string>
     <string name="keyguard_face_successful_unlock_alt1" msgid="5853906076353839628">"הפנים זוהו"</string>
     <string name="keyguard_retry" msgid="886802522584053523">"יש להחליק למעלה כדי לנסות שוב"</string>
-    <string name="accesssibility_keyguard_retry" msgid="8880238862712870676">"אפשר להחליק למעלה כדי לנסות שוב לפתוח ע\"י זיהוי הפנים"</string>
     <string name="require_unlock_for_nfc" msgid="1305686454823018831">"‏יש לבטל את הנעילה כדי להשתמש ב-NFC"</string>
     <string name="do_disclosure_generic" msgid="4896482821974707167">"המכשיר הזה שייך לארגון שלך"</string>
     <string name="do_disclosure_with_name" msgid="2091641464065004091">"המכשיר הזה שייך לארגון <xliff:g id="ORGANIZATION_NAME">%s</xliff:g>"</string>
@@ -1278,10 +1240,16 @@
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"מקש הנגישות"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"כדי להתחיל להשתמש בתכונות הנגישות, אפשר ללחוץ על מקש הנגישות."</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"הוספת תכונות"</string>
+    <!-- no translation found for accessibility_shortcutchooser_toprow_editor_dialog_title (1898531469029411168) -->
+    <skip />
     <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"הגדרת <xliff:g id="ID_1">%1$s</xliff:g>"</string>
     <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"סיום"</string>
     <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"בחירת תכונה"</string>
     <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"עריכה"</string>
+    <!-- no translation found for accessibility_nav_bar_more_options_title (2549386798738178479) -->
+    <skip />
+    <!-- no translation found for accessibility_nav_bar_more_options_subtitle (4336832036115080533) -->
+    <skip />
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"נגישות"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"מסך נעילה"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"בתהליך כיבוי…"</string>
@@ -1891,23 +1859,17 @@
     <string name="av_studio_look_effects" msgid="4105109585851068415">"‏‫%d אפקטים"</string>
     <string name="av_blur" msgid="405131343487260171">"טשטוש"</string>
     <string name="av_live_captions" msgid="7819416886586903077">"כתוביות מיידיות"</string>
+    <string name="av_drill_in_return_to_main" msgid="5273814393426741827">"חזרה"</string>
     <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"‏סוללה %s"</string>
     <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"‏סוללה בצד שמאל %1$s    סוללה בצד ימין %2$s"</string>
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"‏סוללה בצד שמאל: %1$s"</string>
     <string name="accessibility_hearing_device_right_battery_level" msgid="7598843215226414563">"‏סוללה בצד ימין %1$s"</string>
     <string name="accessibility_hearing_device_notification_channel_name" msgid="7365020777623709400">"סטטוס מכשיר השמיעה"</string>
-    <!-- no translation found for more_options_edit (6337988646114341329) -->
-    <skip />
-    <!-- no translation found for more_options_move (2226159413422979066) -->
-    <skip />
-    <!-- no translation found for more_options_remove_all (194855000797536179) -->
-    <skip />
-    <!-- no translation found for floating_menu_more_options_label (7859269790323628599) -->
-    <skip />
-    <!-- no translation found for dream_setup_title (7996530071414508238) -->
-    <skip />
-    <!-- no translation found for dream_setup_button_not_now (8028385323668620805) -->
-    <skip />
-    <!-- no translation found for dream_setup_button_setup (4755361016017554826) -->
-    <skip />
+    <string name="more_options_edit" msgid="6337988646114341329">"עריכה"</string>
+    <string name="more_options_move" msgid="2226159413422979066">"הזזה"</string>
+    <string name="more_options_remove_all" msgid="194855000797536179">"הסרת הכול"</string>
+    <string name="floating_menu_more_options_label" msgid="7859269790323628599">"אפשרויות נוספות"</string>
+    <string name="dream_setup_title" msgid="7996530071414508238">"הגדרת שומר מסך"</string>
+    <string name="dream_setup_button_not_now" msgid="8028385323668620805">"לא עכשיו"</string>
+    <string name="dream_setup_button_setup" msgid="4755361016017554826">"הגדרה"</string>
 </resources>

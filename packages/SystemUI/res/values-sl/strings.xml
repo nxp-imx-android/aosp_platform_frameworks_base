@@ -36,8 +36,8 @@
     <string name="status_bar_settings_auto_rotation" msgid="8329080442278431708">"Samodejno zasukaj zaslon"</string>
     <string name="usb_device_permission_prompt" msgid="4414719028369181772">"Ali aplikaciji <xliff:g id="APPLICATION">%1$s</xliff:g> dovolite dostop do dodatka USB <xliff:g id="USB_DEVICE">%2$s</xliff:g>?"</string>
     <string name="usb_device_permission_prompt_warn" msgid="2309129784984063656">"Ali aplikaciji <xliff:g id="APPLICATION">%1$s</xliff:g> dovolite dostop do naprave <xliff:g id="USB_DEVICE">%2$s</xliff:g>?\nTa aplikacija sicer nima dovoljenja za snemanje, vendar bi lahko zajemala zvok prek te naprave USB."</string>
-    <string name="usb_audio_device_permission_prompt_title" msgid="4221351137250093451">"Dovolite aplikaciji <xliff:g id="APPLICATION">%1$s</xliff:g> dostop do naprave <xliff:g id="USB_DEVICE">%2$s</xliff:g>?"</string>
-    <string name="usb_audio_device_confirm_prompt_title" msgid="8828406516732985696">"Želite odpreti <xliff:g id="APPLICATION">%1$s</xliff:g> za upravljanje naprave <xliff:g id="USB_DEVICE">%2$s</xliff:g>?"</string>
+    <string name="usb_audio_device_permission_prompt_title" msgid="6812876813400484157">"Želite aplikaciji &lt;b&gt;<xliff:g id="APPLICATION">%1$s</xliff:g>&lt;/b&gt; dovoliti dostop do naprave &lt;b&gt;<xliff:g id="USB_DEVICE">%2$s</xliff:g>&lt;/b&gt;?"</string>
+    <string name="usb_audio_device_confirm_prompt_title" msgid="7623364019381948073">"Želite odpreti aplikacijo &lt;b&gt;<xliff:g id="APPLICATION">%1$s</xliff:g>&lt;/b&gt; za upravljanje naprave &lt;b&gt;<xliff:g id="USB_DEVICE">%2$s</xliff:g>&lt;/b&gt;?"</string>
     <string name="usb_audio_device_prompt_warn" msgid="2504972133361130335">"Ta aplikacija sicer nima dovoljenja za snemanje, vendar bi lahko zajemala zvok prek te naprave USB. Uporaba aplikacije <xliff:g id="APPLICATION">%1$s</xliff:g> s to napravo lahko povzroči, da boste preslišali klice, obvestila in alarme."</string>
     <string name="usb_audio_device_prompt" msgid="7944987408206252949">"Uporaba aplikacije <xliff:g id="APPLICATION">%1$s</xliff:g> s to napravo lahko povzroči, da boste preslišali klice, obvestila in alarme."</string>
     <string name="usb_accessory_permission_prompt" msgid="717963550388312123">"Ali aplikaciji <xliff:g id="APPLICATION">%1$s</xliff:g> dovolite dostop do dodatka USB <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>?"</string>
@@ -112,10 +112,8 @@
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"Zajemi več"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"Opusti posnetek zaslona"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"Opustitev sporočila o delovnem profilu"</string>
-    <!-- no translation found for screenshot_open_in_folder_label (7030308792263959983) -->
-    <skip />
-    <!-- no translation found for screenshot_open_in_folder_description (2181459418652236210) -->
-    <skip />
+    <string name="screenshot_open_in_folder_label" msgid="7030308792263959983">"Ogled"</string>
+    <string name="screenshot_open_in_folder_description" msgid="2181459418652236210">"Gumb za ogled posnetka zaslona v aplikaciji Files"</string>
     <string name="screenshot_preview_description" msgid="7606510140714080474">"Predogled posnetka zaslona"</string>
     <string name="screenshot_top_boundary_pct" msgid="2520148599096479332">"Meja zgoraj <xliff:g id="PERCENT">%1$d</xliff:g> odstotkov"</string>
     <string name="screenshot_bottom_boundary_pct" msgid="3880821519814946478">"Meja spodaj <xliff:g id="PERCENT">%1$d</xliff:g> odstotkov"</string>
@@ -187,6 +185,8 @@
     <string name="screen_record_mute" msgid="8111682249858638168">"Izklopi zvok"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"Vklopi zvok"</string>
     <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g> od <xliff:g id="DURATION">%2$s</xliff:g>"</string>
+    <!-- no translation found for screen_record_selfie_hint (7176948583444196453) -->
+    <skip />
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"Skrbnik za IT je onemogočil zajem zaslonske slike"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Ustvari posnetek celotnega zaslona"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Snemanje celotnega zaslona"</string>
@@ -199,7 +199,9 @@
     <string name="screen_capture_region_box_bottom_right_handle_description" msgid="5444943380877006881">"Spodnja desna ročica – spreminjanje velikosti s puščičnimi tipkami"</string>
     <string name="screen_capture_region_box_bottom_left_handle_description" msgid="6095764656409143184">"Spodnja leva ročica – spreminjanje velikosti s puščičnimi tipkami"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Deli"</string>
-    <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Izberite aplikacijo, ki jo želite deliti"</string>
+    <string name="screen_share_no_select_app_thumbnail" msgid="1886183147809224215">"Izberite okno aplikacije za deljenje"</string>
+    <string name="screen_share_no_select_tab_thumbnail" msgid="677801966729809584">"Izberite zavihek za deljenje"</string>
+    <string name="screen_share_no_select_display_thumbnail" msgid="4351422134286332559">"Izberite zaslon za deljenje"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Deljenje zvoka"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Deljenje okna aplikacije"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Deljenje zavihka"</string>
@@ -217,11 +219,11 @@
     <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"Deljenje zaslona je ustavljeno: <xliff:g id="DISPLAY_NAME">%1$s</xliff:g>. Zaslon ni deljen z nikomer."</string>
     <string name="screen_share_a11y_close_button" msgid="8017115316741874857">"Gumb za zapiranje. Pritisnite Enter, če želite zapreti pogovorno okno pred deljenjem."</string>
     <string name="screen_share_a11y_tab_button_unselected" msgid="5363622532939787310">"Gumb za deljenje zavihka. Ni izbrano. Pritisnite Enter, če želite deliti zavihek."</string>
-    <string name="screen_share_a11y_tab_button_selected" msgid="4304681826101817704">"Deljenje zavihka. Pomaknite se, če si želite ogledati razpoložljive zavihke."</string>
+    <string name="screen_share_a11y_tab_button_selected" msgid="3969246191128243157">"Deljenje zavihka. Pomaknite se, če si želite ogledati razpoložljive zavihke."</string>
     <string name="screen_share_a11y_app_button_unselected" msgid="4539549394242556282">"Gumb za deljenje aplikacije. Ni izbrano. Pritisnite Enter, če želite deliti aplikacijo."</string>
-    <string name="screen_share_a11y_app_button_selected" msgid="6049272377472922732">"Deljenje aplikacije. Pomaknite se, če si želite ogledati razpoložljive aplikacije."</string>
+    <string name="screen_share_a11y_app_button_selected" msgid="4891977117777987696">"Deljenje aplikacije. Pomaknite se, če si želite ogledati razpoložljive aplikacije."</string>
     <string name="screen_share_a11y_fullscreen_button_unselected" msgid="2492516552817892989">"Ikona celozaslonskega načina. Ni izbrano. Pritisnite Enter, če želite deliti v celozaslonskem načinu."</string>
-    <string name="screen_share_a11y_fullscreen_button_selected" msgid="6706822615908429473">"Deljenje v celozaslonskem načinu. Pomaknite se, če si želite ogledati razpoložljive zaslone."</string>
+    <string name="screen_share_a11y_fullscreen_button_selected" msgid="4428416497634907009">"Deljenje v celozaslonskem načinu. Pomaknite se, če si želite ogledati razpoložljive zaslone."</string>
     <string name="screen_share_a11y_share_button_off" msgid="2004866083045967602">"Gumb za deljenje. Izklopljeno. Izberite aplikacijo, zavihek ali zaslon, ki ga želite deliti."</string>
     <string name="screen_share_a11y_share_button_on" msgid="1311279200212158833">"Deljenje je vklopljeno. Izbrano: <xliff:g id="ITEM">%1$s</xliff:g>. Pritisnite Enter, če želite začeti deliti."</string>
     <string name="screen_share_a11y_item_unselected" msgid="7479321583507874795">"<xliff:g id="ITEM_NAME">%1$s</xliff:g>. Ni izbrano. Pritisnite Enter, če želite izbrati."</string>
@@ -238,8 +240,7 @@
     <string name="screen_capture_post_recording_shelf_share_button_a11y" msgid="2907313384921655711">"Deli videoposnetek zaslona"</string>
     <string name="screen_capture_post_recording_shelf_folder_button_a11y" msgid="4217075254383938093">"Odpri videoposnetek zaslona v upravitelju datotek"</string>
     <string name="screen_capture_post_recording_shelf_delete_button_a11y" msgid="8519897681775354217">"Izbriši videoposnetek zaslona"</string>
-    <!-- no translation found for screen_capture_post_recording_shelf_thumbnail_a11y (4764732838982357845) -->
-    <skip />
+    <string name="screen_capture_post_recording_shelf_thumbnail_a11y" msgid="4764732838982357845">"Odpiranje snemanja zaslona v aplikaciji za ogled"</string>
     <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"Prikaz klikov in tipk"</string>
     <string name="screen_capture_device_audio" msgid="1537290197773737349">"Zvok v napravi"</string>
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Mikrofon"</string>
@@ -294,7 +295,6 @@
     <string name="accessibility_unlock_button" msgid="3613812140816244310">"Odklenjeno"</string>
     <string name="accessibility_lock_icon" msgid="661492842417875775">"Naprava je zaklenjena."</string>
     <string name="accessibility_confirm_biometric_auth_to_unlock" msgid="1600162805010332470">"Potrdite, da odklenete napravo"</string>
-    <string name="accessibility_retry_face_auth" msgid="3018310877303150273">"Znova izvedite odklepanje z obrazom"</string>
     <string name="accessibility_scanning_face" msgid="3093828357921541387">"Optično branje obraza"</string>
     <string name="accessibility_send_smart_reply" msgid="8885032190442015141">"Pošlji"</string>
     <string name="cancel" msgid="1089011503403416730">"Prekliči"</string>
@@ -307,11 +307,8 @@
     <string name="biometric_dialog_face_icon_description_authenticated" msgid="2242167416140740920">"Pristnost obraza je potrjena"</string>
     <string name="biometric_dialog_face_icon_description_confirmed" msgid="7918067993953940778">"Potrjeno"</string>
     <string name="biometric_dialog_tap_confirm" msgid="9166350738859143358">"Za dokončanje se dotaknite »Potrdite«"</string>
-    <string name="biometric_dialog_tap_confirm_with_face" msgid="2378151312221818694">"Odklenjeno z obrazom"</string>
-    <string name="biometric_dialog_tap_confirm_with_face_alt_1" msgid="439152621640507113">"Odklenjeno z obrazom. Pritisnite za nadaljevanje."</string>
     <string name="biometric_dialog_tap_confirm_with_face_alt_2" msgid="8586608186457385108">"Obraz je prepoznan. Pritisnite za nadaljevanje."</string>
     <string name="biometric_dialog_tap_confirm_with_face_alt_3" msgid="2192670471930606539">"Obraz je prepoznan. Za nadaljevanje pritisnite ikono za odklepanje."</string>
-    <string name="biometric_dialog_tap_confirm_with_face_sfps" msgid="2499213248903257928">"Odklenjeno z obrazom. Dotaknite se, če želite nadaljevati."</string>
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"Preverjena pristnost"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"Prekliči preverjanje pristnosti"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"Več možnosti"</string>
@@ -356,11 +353,6 @@
     <string name="fingerprint_re_enroll_dialog_content" msgid="4866561176695984879">"Če želite znova nastaviti odklepanje s prstnim odtisom, bodo trenutne slike in modeli prstnih odtisov izbrisani.\n\nPo izbrisu boste morali znova nastaviti odklepanje s prstnim odtisom, da boste telefon lahko odklenili s prstnim odtisom ali potrdili svojo identiteto."</string>
     <string name="fingerprint_re_enroll_dialog_content_singular" msgid="3083663339787381218">"Če želite znova nastaviti odklepanje s prstnim odtisom, bodo trenutne slike in model prstnih odtisov izbrisani.\n\nPo izbrisu boste morali znova nastaviti odklepanje s prstnim odtisom, da boste telefon lahko odklenili s prstnim odtisom ali potrdili svojo identiteto."</string>
     <string name="fingerprint_reenroll_failure_dialog_content" msgid="4733768492747300666">"Odklepanja s prstnim odtisom ni bilo mogoče nastaviti. Odprite nastavitve in poskusite znova."</string>
-    <string name="face_re_enroll_notification_title" msgid="1850838867718410520">"Vnovična nastavitev odklepanja z obrazom"</string>
-    <string name="face_re_enroll_notification_name" msgid="7384545252206120659">"Odklepanje z obrazom"</string>
-    <string name="face_re_enroll_dialog_title" msgid="6392173708176069994">"Nastavitev odklepanja z obrazom"</string>
-    <string name="face_re_enroll_dialog_content" msgid="7353502359464038511">"Če želite znova nastaviti odklepanje z obrazom, bo trenutni model obraza izbrisan.\n\nZa odklepanje telefona z obrazom boste morali znova nastaviti to funkcijo."</string>
-    <string name="face_reenroll_failure_dialog_content" msgid="7073947334397236935">"Odklepanja z obrazom ni bilo mogoče nastaviti. Odprite nastavitve in poskusite znova."</string>
     <string name="fingerprint_dialog_touch_sensor" msgid="2817887108047658975">"Dotaknite se tipala prstnih odtisov"</string>
     <string name="fingerprint_dialog_authenticated_confirmation" msgid="1603899612957562862">"Za nadaljevanje pritisnite ikono za odklepanje"</string>
     <string name="fingerprint_dialog_use_fingerprint_instead" msgid="5542430577183894219">"Obraz ni prepoznan. Uporabite prstni odtis."</string>
@@ -368,7 +360,6 @@
     <skip />
     <string name="keyguard_face_failed" msgid="2346762871330729634">"Obraz ni prepoznan"</string>
     <string name="keyguard_suggest_fingerprint" msgid="8742015961962702960">"Uporabite prstni odtis."</string>
-    <string name="keyguard_face_unlock_unavailable" msgid="1581949044193418736">"Odklepanje z obrazom ni na voljo."</string>
     <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"Povezava Bluetooth vzpostavljena."</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Ikona naprave Bluetooth"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Kliknite za konfiguriranje podrobnosti o napravi"</string>
@@ -544,6 +535,7 @@
     <string name="quick_settings_nfc_off" msgid="3465000058515424663">"Tehnologija NFC je onemogočena"</string>
     <string name="quick_settings_nfc_on" msgid="1004976611203202230">"Tehnologija NFC je omogočena"</string>
     <string name="quick_settings_screen_record_label" msgid="8650355346742003694">"Snemanje zaslona"</string>
+    <string name="quick_settings_screen_capture_label" msgid="4400625606618045690">"Zajemanje zaslonske slike"</string>
     <string name="quick_settings_screen_record_start" msgid="1574725369331638985">"Začni"</string>
     <string name="quick_settings_screen_record_stop" msgid="8087348522976412119">"Ustavi"</string>
     <string name="qs_record_issue_label" msgid="8166290137285529059">"Snemanje težave"</string>
@@ -639,16 +631,10 @@
     <string name="tap_again" msgid="1315420114387908655">"Znova se dotaknite možnosti"</string>
     <string name="keyguard_unlock" msgid="8031975796351361601">"Povlecite navzgor, da odprete"</string>
     <string name="keyguard_unlock_press" msgid="9140109453735019209">"Za odpiranje pritisnite ikono za odklepanje."</string>
-    <string name="keyguard_face_successful_unlock_swipe" msgid="6180997591385846073">"Odklenjeno z obrazom. Povlecite navzgor, da odprete."</string>
-    <string name="keyguard_face_successful_unlock_confirm_button" msgid="3862344771780817393">"Odklenjeno z obrazom. Za nadaljevanje pritisnite »Potrdite«."</string>
-    <string name="keyguard_face_successful_unlock_press" msgid="25520941264602588">"Odklenjeno z obrazom. Za odpiranje pritisnite ikono za odklepanje."</string>
-    <string name="keyguard_face_successful_unlock_press_alt_1" msgid="5715461103913071474">"Odklenjeno z obrazom. Pritisnite za odpiranje."</string>
     <string name="keyguard_face_successful_unlock_press_alt_2" msgid="8310787946357120406">"Obraz je prepoznan. Pritisnite za odpiranje."</string>
     <string name="keyguard_face_successful_unlock_press_alt_3" msgid="7219030481255573962">"Obraz je prepoznan. Za odpiranje pritisnite ikono za odklepanje."</string>
-    <string name="keyguard_face_successful_unlock" msgid="4203999851465708287">"Odklenjeno z obrazom"</string>
     <string name="keyguard_face_successful_unlock_alt1" msgid="5853906076353839628">"Obraz je prepoznan"</string>
     <string name="keyguard_retry" msgid="886802522584053523">"Povlecite navzgor za vnovičen poskus"</string>
-    <string name="accesssibility_keyguard_retry" msgid="8880238862712870676">"Povlecite navzgor za vnovičen poskus odklepanja z obrazom"</string>
     <string name="require_unlock_for_nfc" msgid="1305686454823018831">"Odklenite napravo, če želite uporabljati NFC."</string>
     <string name="do_disclosure_generic" msgid="4896482821974707167">"Ta naprava pripada vaši organizaciji"</string>
     <string name="do_disclosure_with_name" msgid="2091641464065004091">"Ta naprava pripada organizaciji <xliff:g id="ORGANIZATION_NAME">%s</xliff:g>"</string>
@@ -1254,10 +1240,16 @@
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"Tipka za dostopnost"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"Če želite začeti uporabljati funkcije dostopnosti, lahko pritisnete tipko za dostopnost."</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"Dodaj funkcije"</string>
+    <!-- no translation found for accessibility_shortcutchooser_toprow_editor_dialog_title (1898531469029411168) -->
+    <skip />
     <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"Nastavitev <xliff:g id="ID_1">%1$s</xliff:g>"</string>
     <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"Končano"</string>
     <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"Izbiranje funkcije"</string>
     <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"Uredi"</string>
+    <!-- no translation found for accessibility_nav_bar_more_options_title (2549386798738178479) -->
+    <skip />
+    <!-- no translation found for accessibility_nav_bar_more_options_subtitle (4336832036115080533) -->
+    <skip />
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Dostopnost"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Zaklenjen zaslon"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Zaustavljanje …"</string>
@@ -1781,7 +1773,7 @@
     <string name="keyboard_backlight_dialog_title" msgid="8273102932345564724">"Osvetlitev tipkovnice"</string>
     <string name="keyboard_backlight_value" msgid="7336398765584393538">"Stopnja %1$d od %2$d"</string>
     <string name="home_controls_dream_label" msgid="6567105701292324257">"Kontrolniki za dom"</string>
-    <string name="home_controls_dream_description" msgid="4644150952104035789">"Hiter dostop do kontrolnikov za dom"</string>
+    <string name="home_controls_dream_description" msgid="4644150952104035789">"Hitro dostopajte do kontrolnikov za dom."</string>
     <string name="volume_undo_action" msgid="5815519725211877114">"Razveljavi"</string>
     <string name="back_edu_toast_content" msgid="4530314597378982956">"Za pomik nazaj povlecite s tremi prsti levo ali desno po sledilni ploščici"</string>
     <string name="home_edu_toast_content" msgid="3381071147871955415">"Za pomik na začetni zaslon povlecite s tremi prsti navzgor po sledilni ploščici"</string>
@@ -1867,6 +1859,7 @@
     <string name="av_studio_look_effects" msgid="4105109585851068415">"Učinki (%d)"</string>
     <string name="av_blur" msgid="405131343487260171">"Zameglitev"</string>
     <string name="av_live_captions" msgid="7819416886586903077">"Samodejni podnapisi"</string>
+    <string name="av_drill_in_return_to_main" msgid="5273814393426741827">"Nazaj"</string>
     <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"Baterija %s"</string>
     <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"Baterija L %1$s    Baterija D %2$s"</string>
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"Baterija L %1$s"</string>
