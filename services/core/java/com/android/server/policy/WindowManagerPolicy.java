@@ -177,7 +177,7 @@ public interface WindowManagerPolicy extends WindowManagerPolicyConstants {
      * Commit any queued changes to keyguard occlude status that had been deferred during the
      * start of an animation or transition.
      */
-    int applyKeyguardOcclusionChange();
+    void applyKeyguardOcclusionChange();
 
     /**
      * Shows the keyguard immediately if not already shown.
@@ -1081,18 +1081,6 @@ public interface WindowManagerPolicy extends WindowManagerPolicyConstants {
      * this point the display is active.
      */
     public void enableScreenAfterBoot();
-
-    /**
-     * Called when we have started keeping the screen on because a window
-     * requesting this has become visible.
-     */
-    public void keepScreenOnStartedLw();
-
-    /**
-     * Called when we have stopped keeping the screen on because the last window
-     * requesting this is no longer visible.
-     */
-    public void keepScreenOnStoppedLw();
 
     /**
      * Called by System UI to notify of changes to the visibility of Recents.
