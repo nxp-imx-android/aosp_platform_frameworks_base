@@ -20,15 +20,18 @@ import android.os.ParcelUuid;
 import android.service.personalcontext.insight.PublishedContextInsightWrapper;
 import android.service.personalcontext.renderer.IGetFilterCallback;
 import android.service.personalcontext.RenderToken;
+import android.service.personalcontext.IOpCallback;
 
 /** @hide */
 oneway interface IInsightRenderer {
     /** Called with the published insight to render. The associated RenderToken is provided. */
-    void render(in PublishedContextInsightWrapper publishedInsight, in RenderToken renderToken);
+    void render(in ParcelUuid componentId, in PublishedContextInsightWrapper publishedInsight,
+    in RenderToken renderToken, in IOpCallback opCallback);
 
     /** Provides configuration information to the renderer. */
     void configure(in ParcelUuid componentId);
 
     /** Gets a filter to be used when deciding whether to send an insight to this renderer. */
-    void getFilter(in IGetFilterCallback callback);
+    void getFilter(in ParcelUuid componentId, in IGetFilterCallback callback,
+    in IOpCallback opCallback);
 }

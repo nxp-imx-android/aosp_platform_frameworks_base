@@ -23,6 +23,7 @@ import static org.mockito.Mockito.verify;
 
 import android.os.ParcelUuid;
 import android.os.RemoteException;
+import android.service.personalcontext.IOpCallback;
 import android.service.personalcontext.hint.BundleHint;
 import android.service.personalcontext.hint.ContextHintTestUtils;
 import android.service.personalcontext.hint.ContextHintWithSignature;
@@ -56,7 +57,6 @@ public class ContextUnderstanderServiceTest {
         mComponentId = UUID.randomUUID();
         mService = mock(ContextUnderstanderService.class, Answers.CALLS_REAL_METHODS);
         mBinder = (IRefiner) mService.onBind(null);
-        mBinder.configure(new ParcelUuid(mComponentId));
     }
 
     @Test
@@ -75,10 +75,14 @@ public class ContextUnderstanderServiceTest {
         final List<ContextHintWithSignature> hints = Arrays.asList(hint1, hint2);
         IRefineCallback callback = mock(IRefineCallback.Stub.class);
 
-        mBinder.refine(ContextHintWithSignatureWrapper.wrapList(hints), callback);
+        final IOpCallback opCallback = mock(IOpCallback.Stub.class);
+
+        mBinder.refine(new ParcelUuid(mComponentId),
+                ContextHintWithSignatureWrapper.wrapList(hints), callback, opCallback);
 
         ArgumentCaptor<List> hintCaptor = ArgumentCaptor.forClass(List.class);
         verify(mService).onUnderstand(hintCaptor.capture());
+        verify(opCallback).signalCompletion();
 
         assertThat(hintCaptor.getValue()).containsExactlyElementsIn(hints);
     }

@@ -27,6 +27,7 @@ import android.os.IBinder;
 import android.os.ParcelUuid;
 import android.os.RemoteException;
 import android.service.personalcontext.Flags;
+import android.service.personalcontext.IOpCallback;
 import android.service.personalcontext.PersonalContextManager;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWithSignature;
@@ -71,8 +72,10 @@ public abstract class ContextUnderstanderService extends Service {
     }
 
     private void configure(UUID componentId) {
-        mComponentId = componentId;
-        onConnected();
+        if (mComponentId == null) {
+            mComponentId = componentId;
+            onConnected();
+        }
     }
 
     @NonNull
@@ -185,38 +188,64 @@ public abstract class ContextUnderstanderService extends Service {
             }
         }
 
-        @Override
-        public void configure(ParcelUuid componentId) throws RemoteException {
+        private void configure(ParcelUuid componentId) throws RemoteException {
             getServiceOrThrow().configure(componentId.getUuid());
         }
 
         @Override
         public void refine(
-                List<ContextHintWithSignatureWrapper> inputHints, IRefineCallback callback)
+                ParcelUuid componentId,
+                List<ContextHintWithSignatureWrapper> inputHints, IRefineCallback callback,
+                IOpCallback opCallback)
                 throws RemoteException {
-            // Report that hints were refined right away so that the core doesn't wait around.
-            callback.onHintsRefined(Collections.emptyList());
+            try {
+                configure(componentId);
+                // Report that hints were refined right away so that the core doesn't wait around.
+                callback.onHintsRefined(Collections.emptyList());
 
-            getServiceOrThrow().onUnderstand(
-                    ContextHintWithSignatureWrapper.unwrapList(inputHints));
+                getServiceOrThrow().onUnderstand(
+                        ContextHintWithSignatureWrapper.unwrapList(inputHints));
+            } finally {
+                opCallback.signalCompletion();
+            }
         }
 
         @Override
-        public void getFilter(IGetFilterCallback callback) throws RemoteException {
-            callback.updateFilter(getServiceOrThrow().onInitializeFilter());
-        }
-
-        @Override
-        public void handleEvent(String packageName, InsightEvent event) throws RemoteException {
-            getServiceOrThrow().onHandleEvent(packageName, event);
-        }
-
-        @Override
-        public void handleFeedback(PublishedContextInsightWrapper insight, Bundle feedback)
+        public void getFilter(
+                ParcelUuid componentId, IGetFilterCallback callback, IOpCallback opCallback)
                 throws RemoteException {
-            getServiceOrThrow().onHandleUserFeedback(
-                    insight.getPublishedContextInsight(),
-                    feedback);
+            try {
+                configure(componentId);
+                callback.updateFilter(getServiceOrThrow().onInitializeFilter());
+            } finally {
+                opCallback.signalCompletion();
+            }
+        }
+
+        @Override
+        public void handleEvent(ParcelUuid componentId, String packageName, InsightEvent event,
+                IOpCallback opCallback)
+                throws RemoteException {
+            try {
+                configure(componentId);
+                getServiceOrThrow().onHandleEvent(packageName, event);
+            } finally {
+                opCallback.signalCompletion();
+            }
+        }
+
+        @Override
+        public void handleFeedback(ParcelUuid componentId, PublishedContextInsightWrapper insight,
+                Bundle feedback, IOpCallback opCallback)
+                throws RemoteException {
+            try {
+                configure(componentId);
+                getServiceOrThrow().onHandleUserFeedback(
+                        insight.getPublishedContextInsight(),
+                        feedback);
+            } finally {
+                opCallback.signalCompletion();
+            }
         }
     }
 }

@@ -21,7 +21,6 @@ import android.content.Context;
 import android.content.pm.ServiceInfo;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.ParcelUuid;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.service.personalcontext.hint.ContextHint;
@@ -59,15 +58,15 @@ public class ServiceClientRefiner extends BaseServiceClientComponent<IRefiner> i
             UserHandle userHandle) {
         super(context, componentId, serviceInfo, userHandle);
 
-        runWithBinder(binder -> {
+        runWithScopedBinder((binder, opCallback) -> {
             try {
-                binder.getFilter(new IGetFilterCallback.Stub() {
+                binder.getFilter(getParcelComponentId(), new IGetFilterCallback.Stub() {
                     @PermissionManuallyEnforced
                     @Override
                     public void updateFilter(HintFilter filter) {
                         mFilter = filter;
                     }
-                });
+                }, opCallback);
             } catch (RemoteException e) {
                 Slog.e(TAG, "Failed to get renderer filter", e);
             }
@@ -92,8 +91,7 @@ public class ServiceClientRefiner extends BaseServiceClientComponent<IRefiner> i
     }
 
     @Override
-    protected void initializeClient(IRefiner client) throws RemoteException {
-        client.configure(new ParcelUuid(getComponentId()));
+    protected void initializeClient(IRefiner client) {
     }
 
     @Override
@@ -111,9 +109,9 @@ public class ServiceClientRefiner extends BaseServiceClientComponent<IRefiner> i
         final List<ContextHintWithSignatureWrapper> hints =
                 ContextHintWithSignatureWrapper.wrapList(inputHints);
 
-        runWithBinder(binder -> {
+        runWithScopedBinder((binder, opCallback) -> {
             try {
-                binder.refine(hints, binderCallback);
+                binder.refine(getParcelComponentId(), hints, binderCallback, opCallback);
             } catch (RemoteException e) {
                 Slog.w(TAG, this + " refine() failed", e);
                 callback.accept(Collections.emptySet());
@@ -123,9 +121,9 @@ public class ServiceClientRefiner extends BaseServiceClientComponent<IRefiner> i
 
     @Override
     public void handleEvent(@NonNull String packageName, @NonNull InsightEvent event) {
-        runWithBinder(binder -> {
+        runWithScopedBinder((binder, opCallback) -> {
             try {
-                binder.handleEvent(packageName, event);
+                binder.handleEvent(getParcelComponentId(), packageName, event, opCallback);
             } catch (RemoteException e) {
                 Slog.w(TAG, this + " handleEvent() failed", e);
             }

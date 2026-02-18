@@ -18,6 +18,7 @@ package android.service.personalcontext.refiner;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.eq;
@@ -25,7 +26,6 @@ import static org.mockito.Mockito.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import android.os.ParcelUuid;
 import android.os.RemoteException;
 import android.service.personalcontext.hint.BundleHint;
 import android.service.personalcontext.hint.ContextHint;
@@ -55,12 +55,12 @@ public class HintRefinerServiceTest {
         mComponentId = UUID.randomUUID();
         mService = mock(HintRefinerService.class, Answers.CALLS_REAL_METHODS);
         mBinder = (IRefiner) mService.onBind(null);
-        mBinder.configure(new ParcelUuid(mComponentId));
     }
 
     @Test
     public void testComponentId() {
-        assertThat(mService.getComponentId()).isEqualTo(mComponentId);
+        // Cannot access component id before other calls have occurred.
+        assertThrows(Exception.class, () -> mService.getComponentId());
     }
 
     @Test

@@ -20,7 +20,6 @@ import android.annotation.PermissionManuallyEnforced;
 import android.content.Context;
 import android.content.pm.ServiceInfo;
 import android.os.IBinder;
-import android.os.ParcelUuid;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.service.personalcontext.RenderToken;
@@ -50,15 +49,15 @@ public class ServiceClientRenderer
             UserHandle userHandle) {
         super(context, componentId, serviceInfo, userHandle);
 
-        runWithBinder(binder -> {
+        runWithScopedBinder((binder, callback) -> {
             try {
-                binder.getFilter(new IGetFilterCallback.Stub() {
+                binder.getFilter(getParcelComponentId(), new IGetFilterCallback.Stub() {
                     @PermissionManuallyEnforced
                     @Override
                     public void updateFilter(InsightFilter filter) {
                         mFilter = filter;
                     }
-                });
+                }, callback);
             } catch (RemoteException e) {
                 Slog.e(TAG, "Failed to get renderer filter", e);
             }
@@ -71,8 +70,7 @@ public class ServiceClientRenderer
     }
 
     @Override
-    protected void initializeClient(IInsightRenderer client) throws RemoteException {
-        client.configure(new ParcelUuid(getComponentId()));
+    protected void initializeClient(IInsightRenderer client) {
     }
 
     @Override
@@ -83,10 +81,12 @@ public class ServiceClientRenderer
     @Override
     public void render(@NonNull PublishedContextInsight publishedContextInsight,
             RenderToken renderToken) {
-        runWithBinder(binder -> {
+        runWithScopedBinder((binder, opCallback) -> {
             try {
-                binder.render(new PublishedContextInsightWrapper(publishedContextInsight),
-                        renderToken);
+                binder.render(getParcelComponentId(),
+                        new PublishedContextInsightWrapper(publishedContextInsight),
+                        renderToken,
+                        opCallback);
             } catch (RemoteException e) {
                 Slog.e(TAG, "Failed to render insight", e);
             }
