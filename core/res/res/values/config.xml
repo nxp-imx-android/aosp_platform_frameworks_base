@@ -8018,4 +8018,7 @@
     <!-- Packages allowed to publish insights to PersonalContextManagerService -->
     <string-array translatable="false" name="config_allowlistPersonalContextInsightReceiving">
     </string-array>
+
+    <!-- Whether the Wear-specific charging experience is enabled -->
+    <bool name="config_wearChargingExperienceEnabled">false</bool>
 </resources>

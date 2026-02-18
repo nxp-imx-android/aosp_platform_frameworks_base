@@ -98,6 +98,7 @@ import android.companion.virtual.IVirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceManager;
 import android.compat.testing.PlatformCompatChangeRule;
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
@@ -6240,5 +6241,41 @@ public class DisplayManagerServiceTest {
 
         // Verify: onDisplayEvent was NOT called at all
         verify(mockCallback, never()).onDisplayEvent(anyInt(), anyInt());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_CHARGING_EXPERIENCE_BY_DEFAULT)
+    public void testWearChargingExperienceEnabled_hasExpectedDefaultValue() {
+        mDisplayManager = new DisplayManagerService(mContext, mShortMockedInjector);
+        ContentResolver contentResolver = mContext.getContentResolver();
+        // Simulate that WEAR_CHARGING_EXPERIENCE_ENABLED was not set
+        Settings.Global.putString(contentResolver,
+                Settings.Global.Wearable.WEAR_CHARGING_EXPERIENCE_ENABLED, null);
+
+        mDisplayManager.onBootPhase(SystemService.PHASE_SYSTEM_SERVICES_READY);
+
+        int expectedValue = mContext.getResources().getBoolean(
+                R.bool.config_wearChargingExperienceEnabled) ? 1 : 0;
+        // Verify that the WEAR_CHARGING_EXPERIENCE_ENABLED value is the default one
+        assertThat(Settings.Global.getInt(contentResolver,
+                Settings.Global.Wearable.WEAR_CHARGING_EXPERIENCE_ENABLED, -1)).isEqualTo(
+                expectedValue);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_CHARGING_EXPERIENCE_BY_DEFAULT)
+    public void testWearChargingExperienceEnabled_preservesExistingUserValue() {
+        mDisplayManager = new DisplayManagerService(mContext, mShortMockedInjector);
+        ContentResolver contentResolver = mContext.getContentResolver();
+        int existingUserValue = 0;
+        Settings.Global.putInt(contentResolver,
+                Settings.Global.Wearable.WEAR_CHARGING_EXPERIENCE_ENABLED, existingUserValue);
+
+        mDisplayManager.onBootPhase(SystemService.PHASE_SYSTEM_SERVICES_READY);
+
+        // Verify that the WEAR_CHARGING_EXPERIENCE_ENABLED value was NOT overwritten by the default
+        assertThat(Settings.Global.getInt(contentResolver,
+                Settings.Global.Wearable.WEAR_CHARGING_EXPERIENCE_ENABLED, -1))
+                .isEqualTo(existingUserValue);
     }
 }

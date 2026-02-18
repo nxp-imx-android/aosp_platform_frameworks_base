@@ -809,6 +809,18 @@ public final class DisplayManagerService extends SystemService {
                     }
                 }
             }
+        } else if (phase == PHASE_SYSTEM_SERVICES_READY &&
+                Flags.enableChargingExperienceByDefault()) {
+            ContentResolver contentResolver = mContext.getContentResolver();
+            if (Settings.Global.getInt(contentResolver,
+                    Settings.Global.Wearable.WEAR_CHARGING_EXPERIENCE_ENABLED, -1) == -1) {
+                Settings.Global.putInt(contentResolver,
+                        Settings.Global.Wearable.WEAR_CHARGING_EXPERIENCE_ENABLED,
+                        mContext.getResources().getBoolean(
+                                com.android.internal.R.bool.config_wearChargingExperienceEnabled)
+                                ? 1 : 0
+                );
+            }
         } else if (phase == PHASE_BOOT_COMPLETED) {
             synchronized (mSyncRoot) {
                 mBootCompleted = true;
