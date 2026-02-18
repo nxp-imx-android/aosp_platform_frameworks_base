@@ -22,6 +22,7 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.view.flags.Flags as ViewFlags
 import android.widget.LinearLayout
 import androidx.annotation.VisibleForTesting
 import androidx.compose.foundation.gestures.awaitEachGesture
@@ -70,6 +71,7 @@ import com.android.systemui.clock.ClockModernization
 import com.android.systemui.clock.ui.composable.Clock
 import com.android.systemui.clock.ui.viewmodel.AmPmStyle
 import com.android.systemui.clock.ui.viewmodel.ClockViewModel
+import com.android.systemui.common.ui.compose.gestures.detectTapGesturesStrict
 import com.android.systemui.communal.ui.compose.extensions.detectLongPressGesture
 import com.android.systemui.compose.modifiers.sysUiResTagContainer
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
@@ -328,14 +330,22 @@ fun StatusBarRoot(
             modifier =
                 modifier.thenIf(StatusBarEventForwardingModernization.isEnabled) {
                     Modifier.pointerInput(Unit) {
-                            detectLongPressGesture { statusBarViewModel.onStatusBarLongPressed() }
+                            if (ViewFlags.scrollToTop()) {
+                                detectTapGesturesStrict(
+                                    onTap = { statusBarViewModel.onStatusBarTap(it.x) },
+                                    onLongPress = { statusBarViewModel.onStatusBarLongPressed() },
+                                )
+                            } else {
+                                detectLongPressGesture {
+                                    statusBarViewModel.onStatusBarLongPressed()
+                                }
+                            }
                         }
                         .forwardDragAndSwipeToShadeRootView(shadeWindowRootView, touchSlop) {
                             position,
                             size ->
                             // This call is needed to make sure the shade is preemptively moved to
-                            // the
-                            // display that the user is currently interacting with.
+                            // the display that the user is currently interacting with.
                             statusBarViewModel.onShadeExpansionIntent(position.x, size.width)
                         }
                 },

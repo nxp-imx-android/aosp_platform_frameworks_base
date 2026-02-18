@@ -34,6 +34,7 @@ import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.statusbar.chips.sharetoapp.ui.viewmodel.shareToAppChipViewModel
 import com.android.systemui.statusbar.chips.ui.viewmodel.ongoingActivityChipsViewModel
 import com.android.systemui.statusbar.chips.uievents.statusBarChipsUiEventLogger
+import com.android.systemui.statusbar.domain.interactor.scrollToTopInteractor
 import com.android.systemui.statusbar.events.domain.interactor.systemStatusEventAnimationInteractor
 import com.android.systemui.statusbar.layout.ui.viewmodel.appHandlesViewModelFactory
 import com.android.systemui.statusbar.layout.ui.viewmodel.statusBarBoundsViewModelFactory
@@ -105,6 +106,7 @@ var Kosmos.homeStatusBarViewModelFactory: (Int) -> HomeStatusBarViewModel by
                 uiEventLogger = statusBarChipsUiEventLogger,
                 deviceProvisioningInteractor = deviceProvisioningInteractor,
                 userLogoutInteractor = userLogoutInteractor,
+                scrollToTopInteractor = scrollToTopInteractor,
             )
         }
     }
