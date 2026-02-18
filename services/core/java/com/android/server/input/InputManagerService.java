@@ -3174,12 +3174,6 @@ public class InputManagerService extends IInputManager.Stub
 
     // Native callback.
     @SuppressWarnings("unused")
-    private int getPointerLayer() {
-        return mWindowManagerCallbacks.getPointerLayer();
-    }
-
-    // Native callback.
-    @SuppressWarnings("unused")
     private @NonNull PointerIcon getLoadedPointerIcon(int displayId, int type) {
         return mPointerIconCache.getLoadedPointerIcon(displayId, type);
     }
@@ -3652,8 +3646,6 @@ public class InputManagerService extends IInputManager.Stub
          * Intercept unhandled key
          */
         boolean interceptUnhandledKey(KeyEvent event, IBinder token);
-
-        int getPointerLayer();
 
         int getPointerDisplayId();
 

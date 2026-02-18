@@ -142,7 +142,6 @@ static struct {
     jmethodID getDeviceConfigurationOverrides;
     jmethodID getKeyboardLayoutAssociations;
     jmethodID getVirtualDevicePorts;
-    jmethodID getPointerLayer;
     jmethodID getLoadedPointerIcon;
     jmethodID getKeyboardLayoutOverlay;
     jmethodID getDeviceAlias;
@@ -1081,16 +1080,11 @@ void NativeInputManager::ensureSpriteControllerLocked() REQUIRES(mLock) {
     if (mLocked.spriteController) {
         return;
     }
-    JNIEnv* env = jniEnv();
-    jint layer = env->CallIntMethod(mServiceObj, gServiceClassInfo.getPointerLayer);
-    if (checkAndClearExceptionFromCallback(env, "getPointerLayer")) {
-        layer = -1;
-    }
+
     mLocked.spriteController =
-            std::make_shared<SpriteController>(mLooper, layer,
-                                               [this](ui::LogicalDisplayId displayId) {
-                                                   return getParentSurfaceForPointers(displayId);
-                                               });
+            std::make_shared<SpriteController>(mLooper, [this](ui::LogicalDisplayId displayId) {
+                return getParentSurfaceForPointers(displayId);
+            });
     // The SpriteController needs to be shared pointer because the handler callback needs to hold
     // a weak reference so that we can avoid racy conditions when the controller is being destroyed.
     mLocked.spriteController->setHandlerController(mLocked.spriteController);
@@ -3869,9 +3863,6 @@ int register_android_server_InputManager(JNIEnv* env) {
 
     GET_METHOD_ID(gServiceClassInfo.getVirtualDevicePorts, clazz, "getVirtualDevicePorts",
                   "()[Ljava/lang/String;");
-
-    GET_METHOD_ID(gServiceClassInfo.getPointerLayer, clazz,
-            "getPointerLayer", "()I");
 
     GET_METHOD_ID(gServiceClassInfo.getLoadedPointerIcon, clazz, "getLoadedPointerIcon",
                   "(II)Landroid/view/PointerIcon;");
