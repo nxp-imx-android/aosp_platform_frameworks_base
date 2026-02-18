@@ -40,7 +40,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
-import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ContactsModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.IncludedAppsModel
@@ -59,16 +58,25 @@ fun NotificationRuleEdit(
     dismissEditScreen: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val rule = viewModel.rule
+    var shownDialogType: EditDialogType by
+        remember(viewModel) { mutableStateOf(EditDialogType.None) }
 
-    var shownDialogType: EditDialogType by remember(rule) { mutableStateOf(EditDialogType.None) }
-    var selectedAction by remember(rule) { mutableStateOf(rule.action) }
-    var selectedContacts by remember(rule) { mutableStateOf(rule.contacts) }
-    val selectedIncludedApps = remember(rule) { rule.includedApps }
+    // When the user edits a particular field, [draftRule] will be updated with the new value.
+    var draftRule: DraftRuleModel by remember(viewModel) { mutableStateOf(viewModel.rule) }
+    val selectedAction = draftRule.action
+    val selectedContacts = draftRule.contacts
+    val selectedIncludedApps = draftRule.includedApps
+    val addFieldOptions: List<EditDialogType> = buildAddFieldOptions(draftRule)
 
     val textStyles = rememberTextStyles()
     val text =
-        remember(selectedAction, selectedContacts, selectedIncludedApps, shownDialogType) {
+        remember(
+            selectedAction,
+            selectedContacts,
+            selectedIncludedApps,
+            shownDialogType,
+            textStyles,
+        ) {
             buildAnnotatedText(
                 selectedAction = selectedAction,
                 selectedContacts = selectedContacts,
@@ -92,11 +100,17 @@ fun NotificationRuleEdit(
 
         Text(text = text, style = MaterialTheme.typography.titleLargeEmphasized)
 
+        AddButton(
+            addFieldOptions = addFieldOptions,
+            currentEditDialogShowing = shownDialogType,
+            changeEditDialog = { shownDialogType = it },
+        )
+
         when (val dialogShowing = shownDialogType) {
             is EditDialogType.Action -> {
                 ActionChoiceDialog(
                     onDismissRequest = { shownDialogType = EditDialogType.None },
-                    onActionSelected = { action -> selectedAction = action },
+                    onActionSelected = { action -> draftRule = draftRule.copy(action = action) },
                 )
             }
             is EditDialogType.Contact -> {
@@ -104,14 +118,17 @@ fun NotificationRuleEdit(
                     initialSearchQuery = dialogShowing.initialQuery,
                     initialSelection = dialogShowing.initialSelectedContacts,
                     onContactsSaved = { newContacts ->
-                        selectedContacts =
-                            if (newContacts.isNotEmpty()) {
-                                RuleValue.Specified(ContactsModel(newContacts))
-                            } else {
-                                // Saving with no selected contacts is effectively removing
-                                // contacts from the filter.
-                                null
-                            }
+                        draftRule =
+                            draftRule.copy(
+                                contacts =
+                                    if (newContacts.isNotEmpty()) {
+                                        RuleValue.Specified(ContactsModel(newContacts))
+                                    } else {
+                                        // Saving with no selected contacts is effectively removing
+                                        // contacts from the filter.
+                                        null
+                                    }
+                            )
                         shownDialogType = EditDialogType.None
                     },
                     viewModel = viewModel,
@@ -119,6 +136,13 @@ fun NotificationRuleEdit(
             }
             is EditDialogType.IncludedApps -> {
                 AppChoiceDialog(viewModel = viewModel)
+            }
+            is EditDialogType.AddField -> {
+                AddFieldDialog(
+                    options = dialogShowing.addFieldOptions,
+                    onDismissRequest = { shownDialogType = EditDialogType.None },
+                    onOptionSelected = { shownDialogType = it },
+                )
             }
             is EditDialogType.None -> {}
         }
@@ -180,6 +204,46 @@ private fun buildAnnotatedText(
     }
 }
 
+/** Renders a '+' button letting users add additional fields to the rule. */
+@Composable
+private fun AddButton(
+    addFieldOptions: List<EditDialogType>,
+    currentEditDialogShowing: EditDialogType,
+    changeEditDialog: (EditDialogType) -> Unit,
+) {
+    if (addFieldOptions.isEmpty()) {
+        return
+    }
+
+    Button(
+        onClick = {
+            toggleEditDialogShown(
+                desiredType = EditDialogType.AddField(addFieldOptions),
+                currentEditDialogShowing = currentEditDialogShowing,
+                changeEditDialog = changeEditDialog,
+            )
+        }
+    ) {
+        Text("+ Add")
+    }
+}
+
+/**
+ * Builds a list of filter and condition fields that can be added to the rule. Only includes types
+ * that *aren't* present in the rule yet. (Types that *are* present can be edited by clicking their
+ * text.)
+ */
+private fun buildAddFieldOptions(draftRule: DraftRuleModel): List<EditDialogType> {
+    return mutableListOf<EditDialogType>().apply {
+        if (draftRule.contacts == null) {
+            add(EditDialogType.Contact(initialSelectedContacts = emptyList()))
+        }
+        if (draftRule.includedApps == null) {
+            add(EditDialogType.IncludedApps)
+        }
+    }
+}
+
 /** Shows/hides the [desiredType] edit dialog, depending on whether it's currently open or not. */
 private fun toggleEditDialogShown(
     desiredType: EditDialogType,
@@ -191,29 +255,6 @@ private fun toggleEditDialogShown(
     } else {
         changeEditDialog.invoke(desiredType)
     }
-}
-
-/** The type of value being edited in the edit dialog. */
-private sealed interface EditDialogType {
-    /** No edit dialog is showing. */
-    data object None : EditDialogType
-
-    /** The action is being edited. See [DraftRuleModel.action]. */
-    data object Action : EditDialogType
-
-    /**
-     * The contact list is being edited. See [DraftRuleModel.contacts].
-     *
-     * @param initialQuery the text to use as the beginning contact search query.
-     * @param initialSelectedContacts the contacts currently selected as part of the rule.
-     */
-    data class Contact(
-        val initialQuery: String = "",
-        val initialSelectedContacts: List<ContactModel>,
-    ) : EditDialogType
-
-    data object IncludedApps : EditDialogType
-    // TODO: b/478225883 - Add more edit types.
 }
 
 /** Creates annotated text for the included apps filter field. */
