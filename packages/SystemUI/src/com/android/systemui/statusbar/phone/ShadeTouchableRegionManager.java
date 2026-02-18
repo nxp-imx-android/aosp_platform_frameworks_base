@@ -78,6 +78,7 @@ public final class ShadeTouchableRegionManager implements Dumpable {
     private final NotificationShadeWindowController mNotificationShadeWindowController;
     private final UnlockedScreenOffAnimationController mUnlockedScreenOffAnimationController;
     private final ShadeInteractor mShadeInteractor;
+    private SceneInteractor mSceneInteractor = null;
     private final PrimaryBouncerInteractor mPrimaryBouncerInteractor;
     private final AlternateBouncerInteractor mAlternateBouncerInteractor;
     private final Provider<ShadeModeInteractor> mShadeModeInteractorProvider;
@@ -170,11 +171,12 @@ public final class ShadeTouchableRegionManager implements Dumpable {
         mUnlockedScreenOffAnimationController = unlockedScreenOffAnimationController;
 
         if (SceneContainerFlag.isEnabled()) {
+            mSceneInteractor = sceneInteractor.get();
             javaAdapter.alwaysCollectFlow(
-                    sceneInteractor.get().getTransitionStateFlow(),
+                    mSceneInteractor.getTransitionStateFlow(),
                     this::onSceneContainerTransition);
             javaAdapter.alwaysCollectFlow(
-                    sceneInteractor.get().isRemoteUserInteractionOngoing(),
+                    mSceneInteractor.isRemoteUserInteractionOngoing(),
                     this::onRemoteUserInteractionOngoingChanged);
             if (StatusBarForDesktop.isEnabled()) {
                 javaAdapter.alwaysCollectFlow(shadeModeInteractor.get().getShadeMode(),
@@ -447,7 +449,9 @@ public final class ShadeTouchableRegionManager implements Dumpable {
         // underneath.
         return mIsAnyShadeExpanded
                 || (SceneContainerFlag.isEnabled()
-                && (!mIsSceneContainerUiEmpty || mIsRemoteUserInteractionOngoing))
+                    && (!mIsSceneContainerUiEmpty || mIsRemoteUserInteractionOngoing)
+                    // Allow touch events to fall through to the underlying Activities
+                    && !mSceneInteractor.getCurrentSceneAsState().equals(Scenes.Occluded))
                 || mPrimaryBouncerInteractor.isShowing().getValue()
                 || mAlternateBouncerInteractor.isVisibleState()
                 // The glanceable hub is a full-screen UI within the notification shade window. When
