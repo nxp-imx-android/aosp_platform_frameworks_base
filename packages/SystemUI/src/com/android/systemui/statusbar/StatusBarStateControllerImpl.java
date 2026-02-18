@@ -265,13 +265,16 @@ public class StatusBarStateControllerImpl implements
                     + "the upcoming state could be applied.");
         }
 
-        // Record the to-be mState and mLastState
-        recordHistoricalState(state /* newState */, mState /* lastState */, false);
-
-        // b/139259891
         if (mState == StatusBarState.SHADE && state == StatusBarState.SHADE_LOCKED) {
+            if (SceneContainerFlag.isEnabled()) {
+                Log.d(TAG, "Ignoring invalid state transition: SHADE -> SHADE_LOCKED");
+                return;
+            }
             Log.e(TAG, "Invalid state transition: SHADE -> SHADE_LOCKED", new Throwable());
         }
+
+        // Record the to-be mState and mLastState
+        recordHistoricalState(state /* newState */, mState /* lastState */, false);
 
         synchronized (mListeners) {
             String tag = getClass().getSimpleName() + "#setState(" + state + ")";
