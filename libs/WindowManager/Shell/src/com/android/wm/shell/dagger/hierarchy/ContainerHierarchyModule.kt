@@ -20,6 +20,7 @@ import com.android.wm.shell.RootDisplayAreaOrganizer
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.DisplayController
+import com.android.wm.shell.common.DisplayInsetsController
 import com.android.wm.shell.dagger.WMShellConcurrencyModule
 import com.android.wm.shell.dagger.WMShellCoroutinesModule
 import com.android.wm.shell.dagger.WMSingleton
@@ -99,6 +100,7 @@ abstract class ContainerHierarchyModule {
         fun provideHierarchyUpdater(
             shellTaskOrganizer: ShellTaskOrganizer,
             transitions: Transitions,
+            displayInsetsController: DisplayInsetsController,
             hierarchy: ContainerHierarchy,
             formFactorModes: FormFactorModes,
             shellInit: ShellInit,
@@ -106,6 +108,7 @@ abstract class ContainerHierarchyModule {
             return HierarchyUpdater(
                 shellTaskOrganizer,
                 transitions,
+                displayInsetsController,
                 hierarchy,
                 formFactorModes,
                 shellInit

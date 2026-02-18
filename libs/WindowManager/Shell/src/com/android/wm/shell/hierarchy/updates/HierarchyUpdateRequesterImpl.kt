@@ -62,7 +62,10 @@ class HierarchyUpdateRequesterImpl(
             task.mode = mode
 
             updater.notifyModes(
-                Mode.UpdateContext(reason = "Set root task=${task.name} to mode=${mode.getId()}"),
+                Mode.UpdateContext(
+                    reason = "Set root task=${task.name} to mode=${mode.getId()}",
+                    dumpOnlyContainer = task
+                ),
                 snapshot
             )
         }
