@@ -836,6 +836,63 @@ public final class DreamManagerService extends SystemService {
         stopDreamInternal(false, "stopping dream from shell");
     }
 
+    void requestGetDreamPlaylistFromShell(PrintWriter pw) {
+        if (!dreamsSwitcher()) {
+            pw.println("Dream switcher feature not enabled");
+            return;
+        }
+        final int userId = mInjector.getCurrentUser();
+        final DreamPlaylist playlist = getDreamPlaylistInternal(userId);
+        pw.println("Dream Playlist for user " + userId + ":");
+        pw.println(playlist);
+    }
+
+    void requestNextDreamFromShell(PrintWriter pw) {
+        if (!dreamsSwitcher()) {
+            pw.println("Dream switcher feature not enabled");
+            return;
+        }
+        final int userId = mInjector.getCurrentUser();
+        final DreamPlaylist playlist = getDreamPlaylistInternal(userId);
+        if (playlist == null || playlist.getDreams().isEmpty()) {
+            pw.println("No dreams in playlist");
+            return;
+        }
+        final ComponentName nextDream = playlist.getNextDream();
+        if (nextDream == null) {
+            pw.println("No next dream");
+            return;
+        }
+        if (setActiveDreamInternal(nextDream, userId)) {
+            pw.println("Set active dream to: " + nextDream.flattenToShortString());
+        } else {
+            pw.println("Failed to set active dream to: " + nextDream.flattenToShortString());
+        }
+    }
+
+    void requestPreviousDreamFromShell(PrintWriter pw) {
+        if (!dreamsSwitcher()) {
+            pw.println("Dream switcher feature not enabled");
+            return;
+        }
+        final int userId = mInjector.getCurrentUser();
+        final DreamPlaylist playlist = getDreamPlaylistInternal(userId);
+        if (playlist == null || playlist.getDreams().isEmpty()) {
+            pw.println("No dreams in playlist");
+            return;
+        }
+        final ComponentName prevDream = playlist.getPreviousDream();
+        if (prevDream == null) {
+            pw.println("No previous dream");
+            return;
+        }
+        if (setActiveDreamInternal(prevDream, userId)) {
+            pw.println("Set active dream to: " + prevDream.flattenToShortString());
+        } else {
+            pw.println("Failed to set active dream to: " + prevDream.flattenToShortString());
+        }
+    }
+
     @VisibleForTesting
     void stopDreamInternal(boolean immediate, String reason) {
         synchronized (mLock) {
