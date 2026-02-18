@@ -39,13 +39,15 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.List;
+
 @RunWith(AndroidJUnit4.class)
 public class ThemeStatePairTests {
     private static final float CONTRAST_DEFAULT = 0.0f;
     private static final float CONTRAST_MEDIUM = 0.5f;
 
-    private static final int SEED_COLOR_VALID = Color.BLUE;
-    private static final int SEED_COLOR_RED = Color.RED;
+    private static final List<Integer> SEED_COLORS_VALID = List.of(Color.BLUE, Color.CYAN);
+    private static final List<Integer> SEED_COLORS_RED = List.of(Color.RED);
 
     private static final int STYLE_VALID = ThemeStyle.TONAL_SPOT;
 
@@ -72,7 +74,7 @@ public class ThemeStatePairTests {
         // Here we just need the environment instance.
         mEnvironment = new ThemeEnvironment(context, (key, def) -> def);
         mEnvironment.setBootingComplete(mThemeUserLifecycle); // Ensure not booting by default
-        mStatePair = new ThemeStatePair(USER_ID, true, SEED_COLOR_VALID,
+        mStatePair = new ThemeStatePair(USER_ID, true, SEED_COLORS_VALID,
                 CONTRAST_DEFAULT, STYLE_VALID, mEnvironment);
     }
 
@@ -89,7 +91,7 @@ public class ThemeStatePairTests {
 
     @Test
     public void testShouldUpdateOverlays_seedColorChanges() {
-        mStatePair.applySeedColor(SEED_COLOR_RED);
+        mStatePair.applySeedColors(SEED_COLORS_RED);
         assertTrue(mStatePair.shouldUpdateOverlays());
     }
 
@@ -109,7 +111,7 @@ public class ThemeStatePairTests {
     public void testShouldUpdateOverlays_everythingChanges() {
         mStatePair.applyStyle(ThemeStyle.EXPRESSIVE);
         mStatePair.applyContrast(CONTRAST_MEDIUM);
-        mStatePair.applySeedColor(SEED_COLOR_RED);
+        mStatePair.applySeedColors(SEED_COLORS_RED);
 
         assertTrue(mStatePair.shouldUpdateOverlays());
     }
@@ -130,21 +132,21 @@ public class ThemeStatePairTests {
         ColorScheme initialLight = mStatePair.getLightScheme();
 
         // Apply changes
-        mStatePair.applySeedColor(SEED_COLOR_RED);
+        mStatePair.applySeedColors(SEED_COLORS_RED);
         assertTrue(mStatePair.shouldUpdateOverlays());
 
         // Commit and get snapshot
         ThemeStatePair.OverlaySnapshot snapshot = mStatePair.commitAndGetOverlayData();
 
         // Verify state is updated
-        assertEquals(SEED_COLOR_RED, mStatePair.getCurrentState().seedColor());
+        assertEquals(SEED_COLORS_RED, mStatePair.getCurrentState().seedColors());
         assertFalse(mStatePair.shouldUpdateOverlays());
 
         // Verify snapshot contains new schemes
         assertNotEquals(initialDark, snapshot.darkScheme());
         assertNotEquals(initialLight, snapshot.lightScheme());
-        assertEquals(SEED_COLOR_RED, snapshot.darkScheme().getSeed());
-        assertEquals(SEED_COLOR_RED, snapshot.lightScheme().getSeed());
+        assertEquals((int) SEED_COLORS_RED.get(0), snapshot.darkScheme().getSeed());
+        assertEquals((int) SEED_COLORS_RED.get(0), snapshot.lightScheme().getSeed());
     }
 
     @Test
@@ -178,7 +180,7 @@ public class ThemeStatePairTests {
 
     @Test
     public void testShouldUpdate_userNotSetup_shouldNotUpdate() {
-        mStatePair = new ThemeStatePair(USER_ID, false, SEED_COLOR_VALID, CONTRAST_DEFAULT,
+        mStatePair = new ThemeStatePair(USER_ID, false, SEED_COLORS_VALID, CONTRAST_DEFAULT,
                 STYLE_VALID, mEnvironment);
         assertFalse(mStatePair.shouldUpdate());
     }
@@ -186,7 +188,7 @@ public class ThemeStatePairTests {
     @Test
     public void testShouldUpdate_backgroundChangesDeferred_shouldNotUpdate() {
         mStatePair.setDeferUpdatesOnLock(true);
-        mStatePair.applySeedColor(SEED_COLOR_RED);
+        mStatePair.applySeedColors(SEED_COLORS_RED);
         assertFalse(mStatePair.shouldUpdate());
     }
 
@@ -199,7 +201,7 @@ public class ThemeStatePairTests {
 
     @Test
     public void testShouldUpdate_overlaysShouldUpdate_shouldUpdate() {
-        mStatePair.applySeedColor(SEED_COLOR_RED);
+        mStatePair.applySeedColors(SEED_COLORS_RED);
         assertTrue(mStatePair.shouldUpdate());
     }
 
@@ -216,12 +218,12 @@ public class ThemeStatePairTests {
                 InstrumentationRegistry.getInstrumentation().getTargetContext(),
                 (key, def) -> def);
 
-        mStatePair = new ThemeStatePair(USER_ID, false /* isSetup */, SEED_COLOR_VALID,
+        mStatePair = new ThemeStatePair(USER_ID, false /* isSetup */, SEED_COLORS_VALID,
                 CONTRAST_DEFAULT,
                 STYLE_VALID, bootingEnv);
         // Apply a change so pending != current, but do NOT use forceUpdate() because
         // that bypasses the setup check.
-        mStatePair.applySeedColor(SEED_COLOR_RED);
+        mStatePair.applySeedColors(SEED_COLORS_RED);
 
         // User not setup, normally returns false.
         // But if booting, should return true.

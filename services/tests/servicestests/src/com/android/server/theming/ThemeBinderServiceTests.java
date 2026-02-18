@@ -59,6 +59,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.List;
+
 @HardwareColors(color = "", options = {
         "*|TONAL_SPOT|#00FF00"
 })
@@ -152,7 +154,7 @@ public class ThemeBinderServiceTests {
         mSchedulerExecutor = new FakeScheduledExecutorService();
         mThemeStateManager = new ThemeStateManager(context, mSchedulerExecutor, mEnvironment);
         mThemeStateManager.onServicesReady();
-        mThemeStateManager.onUserStart(UserHandle.of(mUserId), true, Color.BLUE, 0.5f,
+        mThemeStateManager.onUserStart(UserHandle.of(mUserId), true, List.of(Color.BLUE), 0.5f,
                 ThemeStyle.VIBRANT);
         mInternal = new ThemeManagerImpl(context, themeSettingsManager,
                 mThemeStateManager, mOverlayHelper, mEnvironment, themeWallpaperManager,
@@ -199,7 +201,7 @@ public class ThemeBinderServiceTests {
         final ThemeSettings newPayload = new ThemeSettings.Builder()
                 .setThemeStyle(ThemeStyle.VIBRANT)
                 .setColorSource(VALUE_PRESET)
-                .setSystemPalette(testColor)
+                .setSeedColors(testColor)
                 .build();
         final ThemeSettings[] returnedOldSettings = {null};
         final ThemeSettings[] returnedNewSettings = {null};
@@ -224,14 +226,14 @@ public class ThemeBinderServiceTests {
         final ThemeSettings oldPayload = new ThemeSettings.Builder()
                 .setThemeStyle(ThemeStyle.TONAL_SPOT)
                 .setColorSource(VALUE_PRESET)
-                .setSystemPalette(oldColor)
+                .setSeedColors(oldColor)
                 .build();
 
         final Color newColor = Color.valueOf(Color.RED);
         final ThemeSettings newPayload = new ThemeSettings.Builder()
                 .setThemeStyle(ThemeStyle.VIBRANT)
                 .setColorSource(VALUE_PRESET)
-                .setSystemPalette(newColor)
+                .setSeedColors(newColor)
                 .build();
 
         final ThemeSettings[] returnedOldSettings = {null};
@@ -260,7 +262,7 @@ public class ThemeBinderServiceTests {
         assertThat(returnedOldPreset.timeStamp().toEpochMilli()).isEqualTo(
                 oldPayload.timeStamp().toEpochMilli());
         assertThat(returnedOldPreset.themeStyle()).isEqualTo(oldPayload.themeStyle());
-        assertThat(returnedOldPreset.systemPalette()).isEqualTo(oldPayload.systemPalette());
+        assertThat(returnedOldPreset.seedColors()).isEqualTo(oldPayload.seedColors());
     }
 
     @Test
@@ -271,7 +273,7 @@ public class ThemeBinderServiceTests {
 
     @Test
     public void testThemeChangedCallback_receivesNewValue() {
-        mThemeStateManager.onUserStart(UserHandle.of(mUserId), true, Color.BLUE, 0.5f,
+        mThemeStateManager.onUserStart(UserHandle.of(mUserId), true, List.of(Color.BLUE), 0.5f,
                 ThemeStyle.VIBRANT);
         mSchedulerExecutor.fastForwardTime(ThemeStateManager.DEBOUNCE_MS + 100L);
 
@@ -286,7 +288,7 @@ public class ThemeBinderServiceTests {
         mInternal.notifyThemeChanged(mUserId);
 
         assertThat(returnedValue[0]).isNotNull();
-        assertThat(returnedValue[0].seedColor.toArgb()).isEqualTo(Color.BLUE);
+        assertThat(returnedValue[0].seedColors.getFirst().toArgb()).isEqualTo(Color.BLUE);
         assertThat(returnedValue[0].style).isEqualTo(ThemeStyle.VIBRANT);
         assertThat(returnedValue[0].contrast).isEqualTo(0.5f);
         assertThat(returnedValue[0].specVersion).isEqualTo(
@@ -306,7 +308,7 @@ public class ThemeBinderServiceTests {
         final ThemeSettings storedSettings = new ThemeSettings.Builder()
                 .setThemeStyle(ThemeStyle.VIBRANT)
                 .setColorSource(VALUE_PRESET)
-                .setSystemPalette(testColor)
+                .setSeedColors(testColor)
                 .build();
         mInternal.updateThemeSettings(mUserId, storedSettings);
 
@@ -318,7 +320,7 @@ public class ThemeBinderServiceTests {
         assertThat(returnedPreset.timeStamp().toEpochMilli()).isEqualTo(
                 storedSettings.timeStamp().toEpochMilli());
         assertThat(returnedPreset.themeStyle()).isEqualTo(storedSettings.themeStyle());
-        assertThat(returnedPreset.systemPalette()).isEqualTo(storedSettings.systemPalette());
+        assertThat(returnedPreset.seedColors()).isEqualTo(storedSettings.seedColors());
     }
 
     @Test
@@ -326,7 +328,7 @@ public class ThemeBinderServiceTests {
         ThemeSettings settings = mUnderTest.getThemeSettingsOrDefault();
         assertThat(settings.themeStyle()).isEqualTo(mDefaultSettings.themeStyle());
         assertThat(settings.colorSource()).isEqualTo(mDefaultSettings.colorSource());
-        assertThat(settings.systemPalette()).isEqualTo(mDefaultSettings.systemPalette());
+        assertThat(settings.seedColors()).isEqualTo(mDefaultSettings.seedColors());
         assertThat(settings.timeStamp().toEpochMilli()).isAtLeast(
                 mDefaultSettings.timeStamp().toEpochMilli());
     }
@@ -337,7 +339,7 @@ public class ThemeBinderServiceTests {
         final ThemeSettings storedSettings = new ThemeSettings.Builder()
                 .setThemeStyle(ThemeStyle.VIBRANT)
                 .setColorSource(VALUE_PRESET)
-                .setSystemPalette(testColor)
+                .setSeedColors(testColor)
                 .build();
         mInternal.updateThemeSettings(mUserId, storedSettings);
 
@@ -349,6 +351,6 @@ public class ThemeBinderServiceTests {
         assertThat(returnedPreset.timeStamp().toEpochMilli()).isEqualTo(
                 storedSettings.timeStamp().toEpochMilli());
         assertThat(returnedPreset.themeStyle()).isEqualTo(storedSettings.themeStyle());
-        assertThat(returnedPreset.systemPalette()).isEqualTo(storedSettings.systemPalette());
+        assertThat(returnedPreset.seedColors()).isEqualTo(storedSettings.seedColors());
     }
 }

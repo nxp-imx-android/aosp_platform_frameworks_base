@@ -23,8 +23,10 @@ import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
+import android.app.WallpaperManager;
 import android.content.ContentResolver;
 import android.content.theming.FieldColor;
+import android.content.theming.FieldColorList;
 import android.content.theming.FieldColorSource;
 import android.content.theming.FieldThemeStyle;
 import android.content.theming.ThemeSettings;
@@ -45,8 +47,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -65,6 +69,7 @@ public class ThemeSettingsManager {
     private static final String KEY_PREFIX = "android.theme.customization.";
     static final String OVERLAY_CATEGORY_ACCENT_COLOR = KEY_PREFIX + "accent_color";
     static final String OVERLAY_CATEGORY_SYSTEM_PALETTE = KEY_PREFIX + "system_palette";
+    static final String OVERLAY_SEED_COLOR_LIST = KEY_PREFIX + "seed_color_list";
     static final String OVERLAY_CATEGORY_THEME_STYLE = KEY_PREFIX + "theme_style";
     static final String OVERLAY_COLOR_SOURCE = KEY_PREFIX + "color_source";
 
@@ -76,6 +81,7 @@ public class ThemeSettingsManager {
     static final Map<String, ThemeSettingsField<?, ?>> ALL_FIELDS = Map.ofEntries(
             Map.entry(OVERLAY_CATEGORY_SYSTEM_PALETTE, new FieldColor()),
             Map.entry(OVERLAY_CATEGORY_ACCENT_COLOR, new FieldColor()),
+            Map.entry(OVERLAY_SEED_COLOR_LIST, new FieldColorList()),
             Map.entry(OVERLAY_COLOR_SOURCE, new FieldColorSource()),
             Map.entry(OVERLAY_CATEGORY_THEME_STYLE, new FieldThemeStyle()));
 
@@ -235,16 +241,20 @@ public class ThemeSettingsManager {
 
         // If the device default is "home_wallpaper", we MUST resolve the seed for this specific
         // user.
-        Integer wallpaperSeed = mWallpaperManager.getSeedColor(userId);
-        if (wallpaperSeed == null) {
+        List<Integer> wallpaperSeeds = mWallpaperManager.getSeedColors(
+                mWallpaperManager.getWallpaperColors(WallpaperManager.FLAG_SYSTEM, userId), true);
+
+        if (wallpaperSeeds.isEmpty()) {
             // If wallpaper isn't ready, use the "stored" version (which uses hardcoded fallback)
             return mDeviceDefaultSettings;
         }
 
+        List<Color> paletteList = wallpaperSeeds.stream().map(Color::valueOf).toList();
+
         return new ThemeSettings.Builder()
                 .setThemeStyle(mDeviceDefaultSettings.themeStyle())
                 .setColorSource(VALUE_HOME_WALLPAPER)
-                .setSystemPalette(Color.valueOf(wallpaperSeed))
+                .setSeedColors(paletteList)
                 .build();
     }
 
@@ -299,28 +309,35 @@ public class ThemeSettingsManager {
             @UserIdInt int userId) {
         @ThemeStyle.Type int style = config.first;
         String colorSourceString = config.second;
-        Color seedColor;
+        List<Color> seedColors = new ArrayList<>();
         String colorSource;
 
         if (colorSourceString.equals(VALUE_HOME_WALLPAPER)) {
-            Integer wallpaperSeed = mWallpaperManager.getSeedColor(userId);
-            if (wallpaperSeed == null) {
+            List<Integer> wallpaperSeeds = mWallpaperManager.getSeedColors(
+                    mWallpaperManager.getWallpaperColors(WallpaperManager.FLAG_SYSTEM, userId),
+                    true);
+            if (wallpaperSeeds.isEmpty()) {
                 Slog.i(TAG, "User's " + userId + " Wallpaper colors not yet available. "
                         + "Using fallback palette for HOME_WALLPAPER source.");
-                seedColor = mConfig.hardcodedFallback().systemPalette();
+                seedColors.addAll(mConfig.hardcodedFallback().seedColors());
             } else {
-                seedColor = Color.valueOf(wallpaperSeed);
+                for (int seed : wallpaperSeeds) {
+                    seedColors.add(Color.valueOf(seed));
+                }
             }
             colorSource = VALUE_HOME_WALLPAPER;
         } else {
-            seedColor = Color.valueOf(Color.parseColor(colorSourceString));
+            String[] colorStrings = colorSourceString.split(",");
+            for (String colorStr : colorStrings) {
+                seedColors.add(Color.valueOf(Color.parseColor(colorStr.trim())));
+            }
             colorSource = VALUE_PRESET;
         }
 
         return new ThemeSettings.Builder()
                 .setThemeStyle(style)
                 .setColorSource(colorSource)
-                .setSystemPalette(seedColor)
+                .setSeedColors(seedColors)
                 .build();
     }
 
@@ -340,7 +357,7 @@ public class ThemeSettingsManager {
         // Cast to J, the expected JSON primitive type for the handler.
         T parsedValue = handler.parse((J) primitive);
 
-        if (parsedValue == null || !handler.validate(parsedValue)) {
+        if (parsedValue != null && !handler.validate(parsedValue)) {
             throw new IllegalArgumentException("Invalid value for key '" + key + "': " + primitive);
         }
 
@@ -368,26 +385,71 @@ public class ThemeSettingsManager {
                 ThemeStyle.TONAL_SPOT);
         String colorSource = parseAndValidate(json, OVERLAY_COLOR_SOURCE, VALUE_HOME_WALLPAPER);
 
-        Color systemPalette = parseAndValidate(json, OVERLAY_CATEGORY_SYSTEM_PALETTE, null);
+        List<Color> seedColors = parseAndValidate(json, OVERLAY_SEED_COLOR_LIST, null);
+        Color legacyPrimary = parseAndValidate(json, OVERLAY_CATEGORY_SYSTEM_PALETTE, null);
+        Color legacySecondary = parseAndValidate(json, OVERLAY_CATEGORY_ACCENT_COLOR, null);
+
         boolean migrated = false;
 
-        if (systemPalette == null && VALUE_HOME_WALLPAPER.equals(colorSource)) {
-            Integer seed = mWallpaperManager.getSeedColor(userId);
-            if (seed != null) {
-                systemPalette = Color.valueOf(seed);
-            } else {
-                systemPalette = mConfig.hardcodedFallback().systemPalette();
-                Slog.d(TAG, "Legacy settings for user " + userId + " missing palette. "
-                        + "Wallpaper color missing, using fallback.");
-            }
+        // We don't have a list, we are migrating previous json format
+        if (seedColors == null) {
             migrated = true;
+
+            seedColors = new ArrayList<>();
+            // Repair logic: if one legacy color is missing, use the other.
+            if (legacyPrimary == null && legacySecondary != null) {
+                legacyPrimary = legacySecondary;
+            } else if (legacySecondary == null && legacyPrimary != null) {
+                legacySecondary = legacyPrimary;
+            }
+
+            if (legacyPrimary == null && VALUE_HOME_WALLPAPER.equals(colorSource)) {
+                List<Integer> seeds = mWallpaperManager.getSeedColors(
+                        mWallpaperManager.getWallpaperColors(WallpaperManager.FLAG_SYSTEM, userId),
+                        true);
+                if (!seeds.isEmpty()) {
+                    for (int seed : seeds) {
+                        seedColors.add(Color.valueOf(seed));
+                    }
+                } else {
+                    legacyPrimary = mConfig.hardcodedFallback().seedColors().getFirst();
+                    Slog.d(TAG, "Legacy settings for user " + userId + " missing palette. "
+                            + "Wallpaper color missing, using fallback.");
+                }
+            }
+
+            if (seedColors.isEmpty() && legacyPrimary != null) {
+                seedColors.add(legacyPrimary);
+                if (legacySecondary != null && !legacySecondary.equals(legacyPrimary)) {
+                    seedColors.add(legacySecondary);
+                }
+            }
+        } else {
+            // We do have a list, but let's check if its values are outdated comparing with legacy
+            // Check if legacy keys were updated externally and need to override the list.
+            if (legacyPrimary != null && !legacyPrimary.equals(seedColors.get(0))) {
+                seedColors.set(0, legacyPrimary);
+                migrated = true;
+            }
+            if (legacySecondary != null) {
+                Color expectedAccent = seedColors.size() > 1 ? seedColors.get(1)
+                        : seedColors.get(0);
+                if (!legacySecondary.equals(expectedAccent)) {
+                    if (seedColors.size() > 1) {
+                        seedColors.set(1, legacySecondary);
+                    } else {
+                        seedColors.add(1, legacySecondary);
+                    }
+                    migrated = true;
+                }
+            }
         }
 
         ThemeSettings settings = new ThemeSettings.Builder()
                 .setAppliedTimestamp(timestamp)
                 .setThemeStyle(themeStyle)
                 .setColorSource(colorSource)
-                .setSystemPalette(systemPalette)
+                .setSeedColors(seedColors)
                 .build();
 
         return new Pair<>(settings, migrated);
@@ -410,9 +472,19 @@ public class ThemeSettingsManager {
             json.put(TIMESTAMP, settings.timeStamp().toEpochMilli());
             putSetting(json, OVERLAY_CATEGORY_THEME_STYLE, settings.themeStyle());
             putSetting(json, OVERLAY_COLOR_SOURCE, settings.colorSource());
-            putSetting(json, OVERLAY_CATEGORY_SYSTEM_PALETTE, settings.systemPalette());
-            // For backward compatibility, always write accent_color as well.
-            putSetting(json, OVERLAY_CATEGORY_ACCENT_COLOR, settings.systemPalette());
+
+            List<Color> palettes = settings.seedColors();
+            putSetting(json, OVERLAY_SEED_COLOR_LIST, palettes);
+
+            Color primary = palettes.get(0);
+            putSetting(json, OVERLAY_CATEGORY_SYSTEM_PALETTE, primary);
+
+            // For backward compatibility, write accent_color as well if color source is preset,
+            if (settings.colorSource().equals(VALUE_PRESET)) {
+                // If we have a second seed, it goes to accent_color. Otherwise, primary.
+                Color secondary = palettes.size() > 1 ? palettes.get(1) : primary;
+                putSetting(json, OVERLAY_CATEGORY_ACCENT_COLOR, secondary);
+            }
 
             return json.toString();
         } catch (JSONException e) {

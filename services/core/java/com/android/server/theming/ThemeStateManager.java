@@ -39,6 +39,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * This class manages the application of theme overlays across the system for all users.
@@ -133,19 +134,33 @@ public class ThemeStateManager {
      */
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
     public void onSeedColorChange(int userId, int seedColor, boolean fromForegroundApp) {
+        onSeedColorChange(userId, List.of(seedColor), fromForegroundApp);
+    }
+
+    /**
+     * Called when the wallpaper colors change or user chooses a preset.
+     *
+     * @param userId            The ID of the user updating the theme.
+     * @param seedColors        Seed colors to generate palettes.
+     * @param fromForegroundApp Boolean indicating if the event came from a foreground app.
+     */
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
+    public void onSeedColorChange(int userId, List<Integer> seedColors, boolean fromForegroundApp) {
         ThemeStatePair statePair = getState(userId);
 
         if (!fromForegroundApp && !mEnvironment.isDeviceLocked()) {
             statePair.setDeferUpdatesOnLock(true);
-            Slog.w(TAG, "Wallpaper changed from background app, deferring color change #"
-                    + Integer.toHexString(seedColor));
+            Slog.w(TAG, "Wallpaper changed from background app, deferring color change ["
+                    + seedColors.stream().map(Integer::toHexString).collect(
+                    Collectors.joining(", ")) + "]");
         } else if (statePair.areUpdatesDeferredOnLock()) {
-            Slog.d(TAG, "Foreground app explicitly changed color, clearing deferral. #"
-                    + Integer.toHexString(seedColor));
+            Slog.d(TAG, "Foreground app explicitly changed color, clearing deferral. ["
+                    + seedColors.stream().map(Integer::toHexString).collect(
+                    Collectors.joining(", ")) + "]");
             statePair.setDeferUpdatesOnLock(false);
         }
 
-        statePair.applySeedColor(seedColor);
+        statePair.applySeedColors(seedColors);
         reevaluateSystemTheme();
     }
 
@@ -235,14 +250,14 @@ public class ThemeStateManager {
     /**
      * Called when a user is loaded (e.g. at boot or when created).
      *
-     * @param userId    The ID of the user loading.
-     * @param isSetup   {@code true} if the user has completed setup, {@code false} otherwise.
-     * @param seedColor The initial seed color for the user's theme.
-     * @param contrast  The initial contrast value for the user's theme.
-     * @param style     The initial style for the user's theme.
+     * @param userId     The ID of the user loading.
+     * @param isSetup    {@code true} if the user has completed setup, {@code false} otherwise.
+     * @param seedColors The initial seed colors for the user's theme.
+     * @param contrast   The initial contrast value for the user's theme.
+     * @param style      The initial style for the user's theme.
      */
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
-    public void onUserLoad(int userId, boolean isSetup, int seedColor, float contrast,
+    public void onUserLoad(int userId, boolean isSetup, List<Integer> seedColors, float contrast,
             @ThemeStyle.Type Integer style) {
         synchronized (mLock) {
             Integer parentId = mEnvironment.parentOf(userId);
@@ -263,7 +278,7 @@ public class ThemeStateManager {
                 Slog.w(TAG, "ThemeStatePair already exists for user " + userId);
             } else {
                 // CASE 3: userId is a new user
-                ThemeStatePair newState = new ThemeStatePair(userId, isSetup, seedColor, contrast,
+                ThemeStatePair newState = new ThemeStatePair(userId, isSetup, seedColors, contrast,
                         style, mEnvironment);
                 int[] profiles = Objects.requireNonNullElse(
                         mUserManager.getProfileIds(userId, false), new int[0]);
@@ -284,15 +299,15 @@ public class ThemeStateManager {
      *
      * @param userHandle The {@link UserHandle} of the user starting.
      * @param isSetup    {@code true} if the user has completed setup, {@code false} otherwise.
-     * @param seedColor  The initial seed color for the user's theme.
+     * @param seedColors The initial seed colors for the user's theme.
      * @param contrast   The initial contrast value for the user's theme.
      * @param style      The initial style for the user's theme.
      */
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
-    public void onUserStart(UserHandle userHandle, boolean isSetup, int seedColor, float contrast,
-            @ThemeStyle.Type Integer style) {
+    public void onUserStart(UserHandle userHandle, boolean isSetup, List<Integer> seedColors,
+            float contrast, @ThemeStyle.Type Integer style) {
         // Ensure state is loaded. This is idempotent.
-        onUserLoad(userHandle.getIdentifier(), isSetup, seedColor, contrast, style);
+        onUserLoad(userHandle.getIdentifier(), isSetup, seedColors, contrast, style);
         reevaluateSystemTheme();
     }
 

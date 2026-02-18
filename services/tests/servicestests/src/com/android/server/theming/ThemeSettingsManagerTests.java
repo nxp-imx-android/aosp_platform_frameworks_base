@@ -27,6 +27,7 @@ import static org.mockito.Mockito.when;
 
 import android.app.ActivityManagerInternal;
 import android.app.WallpaperColors;
+import android.app.WallpaperManager;
 import android.content.ContentResolver;
 import android.content.theming.FieldColorSource;
 import android.content.theming.ThemeSettings;
@@ -44,6 +45,7 @@ import com.android.server.pm.UserManagerInternal;
 import com.android.server.wallpaper.WallpaperManagerInternal;
 import com.android.systemui.monet.ColorScheme;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Rule;
@@ -140,7 +142,7 @@ public class ThemeSettingsManagerTests {
         ThemeSettings presetSettings = new ThemeSettings.Builder()
                 .setThemeStyle(ThemeStyle.MONOCHROMATIC)
                 .setColorSource(FieldColorSource.VALUE_PRESET)
-                .setSystemPalette(Color.valueOf(0xFF112233))
+                .setSeedColors(Color.valueOf(0xFF112233))
                 .build();
 
         boolean success = mManager.setSettings(mUserId, mContentResolver, presetSettings);
@@ -163,7 +165,35 @@ public class ThemeSettingsManagerTests {
         assertThat(settingsJson.getString(ThemeSettingsManager.OVERLAY_CATEGORY_THEME_STYLE))
                 .isEqualTo(ThemeStyle.toString(ThemeStyle.MONOCHROMATIC));
 
-        assertThat(settingsJson.length()).isEqualTo(5);
+        // Now has seed_color_list
+        assertThat(settingsJson.has(ThemeSettingsManager.OVERLAY_SEED_COLOR_LIST)).isTrue();
+        assertThat(settingsJson.length()).isEqualTo(6);
+    }
+
+    @Test
+    public void setSettings_writesMultiSeedToProvider() throws Exception {
+        ThemeSettings multiSeedSettings = new ThemeSettings.Builder()
+                .setThemeStyle(ThemeStyle.VIBRANT)
+                .setColorSource(FieldColorSource.VALUE_PRESET)
+                .setSeedColors(Color.valueOf(Color.RED), Color.valueOf(Color.BLUE))
+                .build();
+
+        boolean success = mManager.setSettings(mUserId, mContentResolver, multiSeedSettings);
+        assertThat(success).isTrue();
+
+        String settingsString = Settings.Secure.getStringForUser(mContentResolver,
+                Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, mUserId);
+        JSONObject settingsJson = new JSONObject(settingsString);
+
+        assertThat(settingsJson.getString(ThemeSettingsManager.OVERLAY_CATEGORY_SYSTEM_PALETTE))
+                .isEqualTo("FFFF0000");
+        assertThat(settingsJson.getString(ThemeSettingsManager.OVERLAY_CATEGORY_ACCENT_COLOR))
+                .isEqualTo("FF0000FF");
+
+        JSONArray list = settingsJson.getJSONArray(ThemeSettingsManager.OVERLAY_SEED_COLOR_LIST);
+        assertThat(list.length()).isEqualTo(2);
+        assertThat(list.getString(0)).isEqualTo("FFFF0000");
+        assertThat(list.getString(1)).isEqualTo("FF0000FF");
     }
 
     @Test
@@ -171,7 +201,7 @@ public class ThemeSettingsManagerTests {
         ThemeSettings wallpaperSettings = new ThemeSettings.Builder()
                 .setThemeStyle(ThemeStyle.VIBRANT)
                 .setColorSource(FieldColorSource.VALUE_HOME_WALLPAPER)
-                .setSystemPalette(Color.valueOf(Color.BLUE))
+                .setSeedColors(Color.valueOf(Color.BLUE))
                 .build();
 
         boolean success = mManager.setSettings(mUserId, mContentResolver, wallpaperSettings);
@@ -191,7 +221,7 @@ public class ThemeSettingsManagerTests {
                 ThemeStyle.toString(ThemeStyle.VIBRANT));
 
         assertThat(settingsJson.has(ThemeSettingsManager.OVERLAY_CATEGORY_SYSTEM_PALETTE)).isTrue();
-        assertThat(settingsJson.has(ThemeSettingsManager.OVERLAY_CATEGORY_ACCENT_COLOR)).isTrue();
+        assertThat(settingsJson.has(ThemeSettingsManager.OVERLAY_CATEGORY_ACCENT_COLOR)).isFalse();
         assertThat(settingsJson.length()).isEqualTo(5);
     }
 
@@ -201,7 +231,7 @@ public class ThemeSettingsManagerTests {
         ThemeSettings originalWallpaper = new ThemeSettings.Builder()
                 .setThemeStyle(ThemeStyle.EXPRESSIVE)
                 .setColorSource(FieldColorSource.VALUE_HOME_WALLPAPER)
-                .setSystemPalette(Color.valueOf(Color.RED))
+                .setSeedColors(Color.valueOf(Color.RED))
                 .build();
 
         mManager.setSettings(mUserId, mContentResolver, originalWallpaper);
@@ -212,24 +242,24 @@ public class ThemeSettingsManagerTests {
                 originalWallpaper.timeStamp().toEpochMilli());
         assertThat(loadedWallpaper.themeStyle()).isEqualTo(originalWallpaper.themeStyle());
         assertThat(loadedWallpaper.colorSource()).isEqualTo(originalWallpaper.colorSource());
-        assertThat(loadedWallpaper.systemPalette()).isEqualTo(originalWallpaper.systemPalette());
+        assertThat(loadedWallpaper.seedColors()).isEqualTo(originalWallpaper.seedColors());
 
-        // Test Preset case
-        ThemeSettings originalPreset = new ThemeSettings.Builder()
+        // Test Multi-Seed case
+        ThemeSettings originalMulti = new ThemeSettings.Builder()
                 .setThemeStyle(ThemeStyle.SPRITZ)
                 .setColorSource(FieldColorSource.VALUE_PRESET)
-                .setSystemPalette(Color.valueOf(Color.GREEN))
+                .setSeedColors(Color.valueOf(Color.GREEN), Color.valueOf(Color.BLUE),
+                        Color.valueOf(Color.RED))
                 .build();
 
-        mManager.setSettings(mUserId, mContentResolver, originalPreset);
-        ThemeSettings loadedPreset = mManager.getSettings(mUserId, mContentResolver);
+        mManager.setSettings(mUserId, mContentResolver, originalMulti);
+        ThemeSettings loadedMulti = mManager.getSettings(mUserId, mContentResolver);
 
-        assertThat(loadedPreset).isNotNull();
-        assertThat(loadedPreset.timeStamp().toEpochMilli()).isEqualTo(
-                originalPreset.timeStamp().toEpochMilli());
-        assertThat(loadedPreset.themeStyle()).isEqualTo(originalPreset.themeStyle());
-        assertThat(loadedPreset.colorSource()).isEqualTo(originalPreset.colorSource());
-        assertThat(loadedPreset.systemPalette()).isEqualTo(originalPreset.systemPalette());
+        assertThat(loadedMulti).isNotNull();
+        assertThat(loadedMulti.seedColors()).hasSize(3);
+        assertThat(loadedMulti.seedColors().get(0)).isEqualTo(Color.valueOf(Color.GREEN));
+        assertThat(loadedMulti.seedColors().get(1)).isEqualTo(Color.valueOf(Color.BLUE));
+        assertThat(loadedMulti.seedColors().get(2)).isEqualTo(Color.valueOf(Color.RED));
     }
 
     @Test
@@ -265,8 +295,23 @@ public class ThemeSettingsManagerTests {
 
         assertThat(defaultSettings.colorSource()).isEqualTo(FieldColorSource.VALUE_PRESET);
         assertThat(defaultSettings.themeStyle()).isEqualTo(ThemeStyle.VIBRANT);
-        assertThat(defaultSettings.systemPalette().toArgb()).isEqualTo(
+        assertThat(defaultSettings.seedColors().getFirst().toArgb()).isEqualTo(
                 Color.parseColor("#FFFF0000"));
+    }
+
+    @Test
+    @HardwareColors(color = "MULTI_DEV", options = {
+            "MULTI_DEV|EXPRESSIVE|#FF0000,#0000FF",
+            "*|TONAL_SPOT|#00FF00"
+    })
+    public void createDefaultThemeSettings_multiSeedPreset() {
+        ThemeSettings defaultSettings = mManager.createDefaultThemeSettings(mUserId);
+
+        assertThat(defaultSettings.colorSource()).isEqualTo(FieldColorSource.VALUE_PRESET);
+        assertThat(defaultSettings.themeStyle()).isEqualTo(ThemeStyle.EXPRESSIVE);
+        assertThat(defaultSettings.seedColors()).hasSize(2);
+        assertThat(defaultSettings.seedColors().get(0)).isEqualTo(Color.valueOf(Color.RED));
+        assertThat(defaultSettings.seedColors().get(1)).isEqualTo(Color.valueOf(Color.BLUE));
     }
 
     @Test
@@ -279,7 +324,7 @@ public class ThemeSettingsManagerTests {
 
         assertThat(defaultSettings.colorSource()).isEqualTo(FieldColorSource.VALUE_PRESET);
         assertThat(defaultSettings.themeStyle()).isEqualTo(ThemeStyle.TONAL_SPOT);
-        assertThat(defaultSettings.systemPalette().toArgb()).isEqualTo(
+        assertThat(defaultSettings.seedColors().getFirst().toArgb()).isEqualTo(
                 Color.parseColor("#FF00FF00"));
     }
 
@@ -291,13 +336,14 @@ public class ThemeSettingsManagerTests {
     public void createDefaultThemeSettings_usesWildcardFallback_wallpaper() {
         Color cyan = Color.valueOf(Color.CYAN);
         WallpaperColors wallpaperColors = new WallpaperColors(cyan, null, null);
-        when(mMockWmi.getWallpaperColors(anyInt(), anyInt())).thenReturn(wallpaperColors);
+        when(mMockWmi.getWallpaperColors(eq(WallpaperManager.FLAG_SYSTEM), anyInt()))
+                .thenReturn(wallpaperColors);
 
         ThemeSettings defaultSettings = mManager.createDefaultThemeSettings(mUserId);
 
         assertThat(defaultSettings.colorSource()).isEqualTo(FieldColorSource.VALUE_HOME_WALLPAPER);
         assertThat(defaultSettings.themeStyle()).isEqualTo(ThemeStyle.EXPRESSIVE);
-        assertThat(defaultSettings.systemPalette()).isEqualTo(
+        assertThat(defaultSettings.seedColors().getFirst()).isEqualTo(
                 Color.valueOf(ColorScheme.getSeedColor(wallpaperColors)));
     }
 
@@ -316,7 +362,7 @@ public class ThemeSettingsManagerTests {
         // palette but keeps the source as HOME_WALLPAPER.
         assertThat(defaultSettings.colorSource()).isEqualTo(FieldColorSource.VALUE_HOME_WALLPAPER);
         assertThat(defaultSettings.themeStyle()).isEqualTo(ThemeStyle.EXPRESSIVE);
-        assertThat(defaultSettings.systemPalette()).isEqualTo(Color.valueOf(0xFF1b6ef3));
+        assertThat(defaultSettings.seedColors().getFirst()).isEqualTo(Color.valueOf(0xFF1b6ef3));
     }
 
     @Test
@@ -342,8 +388,8 @@ public class ThemeSettingsManagerTests {
         ThemeSettings defaultSettings = mManager.createDefaultThemeSettings(mUserId);
         assertThat(defaultSettings.colorSource()).isEqualTo(FieldColorSource.VALUE_PRESET);
         assertThat(defaultSettings.themeStyle()).isEqualTo(ThemeStyle.TONAL_SPOT);
-        assertThat(defaultSettings.systemPalette()).isEqualTo(
-                mEnvironment.getConfig().hardcodedFallback().systemPalette());
+        assertThat(defaultSettings.seedColors().getFirst()).isEqualTo(
+                mEnvironment.getConfig().hardcodedFallback().seedColors().getFirst());
     }
 
     @Test
@@ -371,7 +417,7 @@ public class ThemeSettingsManagerTests {
         ThemeSettings initialSettings = new ThemeSettings.Builder()
                 .setThemeStyle(ThemeStyle.VIBRANT)
                 .setColorSource(FieldColorSource.VALUE_PRESET)
-                .setSystemPalette(Color.valueOf(Color.RED))
+                .setSeedColors(Color.valueOf(Color.RED))
                 .build();
         mManager.setSettings(mUserId, mContentResolver, initialSettings);
 
@@ -395,7 +441,7 @@ public class ThemeSettingsManagerTests {
         ThemeSettings initialSettings = new ThemeSettings.Builder()
                 .setThemeStyle(ThemeStyle.TONAL_SPOT)
                 .setColorSource(FieldColorSource.VALUE_PRESET)
-                .setSystemPalette(Color.valueOf(Color.BLUE))
+                .setSeedColors(Color.valueOf(Color.BLUE))
                 .build();
         mManager.setSettings(mUserId, mContentResolver, initialSettings);
 
@@ -409,7 +455,7 @@ public class ThemeSettingsManagerTests {
         ThemeSettings newSettings = new ThemeSettings.Builder()
                 .setThemeStyle(ThemeStyle.EXPRESSIVE)
                 .setColorSource(FieldColorSource.VALUE_PRESET)
-                .setSystemPalette(Color.valueOf(Color.GREEN))
+                .setSeedColors(Color.valueOf(Color.GREEN))
                 .build();
         mManager.setSettings(mUserId, mContentResolver, newSettings);
 
@@ -431,7 +477,8 @@ public class ThemeSettingsManagerTests {
         // Mock wallpaper color
         Color wallpaperColor = Color.valueOf(Color.MAGENTA);
         WallpaperColors colors = new WallpaperColors(wallpaperColor, null, null);
-        when(mMockWmi.getWallpaperColors(anyInt(), eq(mUserId))).thenReturn(colors);
+        when(mMockWmi.getWallpaperColors(eq(WallpaperManager.FLAG_SYSTEM), eq(mUserId)))
+                .thenReturn(colors);
 
         ThemeSettings settings = mManager.getSettings(mUserId, mContentResolver);
 
@@ -439,6 +486,92 @@ public class ThemeSettingsManagerTests {
         assertThat(settings.themeStyle()).isEqualTo(ThemeStyle.EXPRESSIVE);
         assertThat(settings.colorSource()).isEqualTo(FieldColorSource.VALUE_HOME_WALLPAPER);
         // Should have picked up MAGENTA from wallpaper
-        assertThat(settings.systemPalette()).isEqualTo(wallpaperColor);
+        assertThat(settings.seedColors().getFirst()).isEqualTo(wallpaperColor);
+    }
+
+    @Test
+    public void getSettings_externalUpdate_detectsAccentColorChange() throws Exception {
+        // Setup initial JSON with same colors
+        String initialJson = """
+                {
+                  "android.theme.customization.color_source": "preset",
+                  "android.theme.customization.system_palette": "FF00FF00",
+                  "android.theme.customization.accent_color": "FF00FF00"
+                }
+                """;
+        Settings.Secure.putStringForUser(mContentResolver,
+                Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, initialJson, mUserId);
+
+        ThemeSettings initialSettings = mManager.getSettings(mUserId, mContentResolver);
+        assertThat(initialSettings.seedColors()).hasSize(1);
+
+        // Invalidate cache to simulate external process change
+        mManager.invalidateCache(mUserId);
+
+        // Update accent_color externally
+        String updatedJson = """
+                {
+                  "android.theme.customization.color_source": "preset",
+                  "android.theme.customization.system_palette": "FF00FF00",
+                  "android.theme.customization.accent_color": "FFFF0000"
+                }
+                """;
+        Settings.Secure.putStringForUser(mContentResolver,
+                Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, updatedJson, mUserId);
+
+        ThemeSettings updatedSettings = mManager.getSettings(mUserId, mContentResolver);
+        assertThat(updatedSettings.seedColors()).hasSize(2);
+        assertThat(updatedSettings.seedColors().get(0)).isEqualTo(Color.valueOf(Color.GREEN));
+        assertThat(updatedSettings.seedColors().get(1)).isEqualTo(Color.valueOf(Color.RED));
+    }
+
+    @Test
+    public void getSettings_repairsLegacyUpdate_systemPaletteChanged() throws Exception {
+        // Initial state: list of 2 colors
+        ThemeSettings initial = new ThemeSettings.Builder()
+                .setThemeStyle(ThemeStyle.TONAL_SPOT)
+                .setColorSource(FieldColorSource.VALUE_PRESET)
+                .setSeedColors(Color.valueOf(Color.RED), Color.valueOf(Color.BLUE))
+                .build();
+        mManager.setSettings(mUserId, mContentResolver, initial);
+        mManager.invalidateCache(mUserId);
+
+        // Update system_palette externally (e.g. by legacy app)
+        String json = Settings.Secure.getStringForUser(mContentResolver,
+                Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, mUserId);
+        JSONObject obj = new JSONObject(json);
+        obj.put(ThemeSettingsManager.OVERLAY_CATEGORY_SYSTEM_PALETTE, "FF00FF00"); // GREEN
+        Settings.Secure.putStringForUser(mContentResolver,
+                Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, obj.toString(), mUserId);
+
+        // Read back: List should have GREEN as first element
+        ThemeSettings repaired = mManager.getSettings(mUserId, mContentResolver);
+        assertThat(repaired.seedColors().get(0)).isEqualTo(Color.valueOf(Color.GREEN));
+        assertThat(repaired.seedColors().get(1)).isEqualTo(Color.valueOf(Color.BLUE));
+    }
+
+    @Test
+    public void getSettings_repairsLegacyUpdate_accentColorChanged() throws Exception {
+        // Initial state: list of 2 colors
+        ThemeSettings initial = new ThemeSettings.Builder()
+                .setThemeStyle(ThemeStyle.TONAL_SPOT)
+                .setColorSource(FieldColorSource.VALUE_PRESET)
+                .setSeedColors(Color.valueOf(Color.RED), Color.valueOf(Color.BLUE))
+                .build();
+        mManager.setSettings(mUserId, mContentResolver, initial);
+        mManager.invalidateCache(mUserId);
+
+        // Update accent_color externally (e.g. by legacy app)
+        String json = Settings.Secure.getStringForUser(mContentResolver,
+                Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, mUserId);
+        JSONObject obj = new JSONObject(json);
+        obj.put(ThemeSettingsManager.OVERLAY_CATEGORY_ACCENT_COLOR, "FFFFFF00"); // YELLOW
+        Settings.Secure.putStringForUser(mContentResolver,
+                Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, obj.toString(), mUserId);
+
+        // Read back: List should have YELLOW as second element
+        ThemeSettings repaired = mManager.getSettings(mUserId, mContentResolver);
+        assertThat(repaired.seedColors().get(0)).isEqualTo(Color.valueOf(Color.RED));
+        assertThat(repaired.seedColors().get(1)).isEqualTo(Color.valueOf(Color.YELLOW));
     }
 }

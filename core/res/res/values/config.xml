@@ -2722,11 +2722,11 @@
          overridden device-specific resources. A wildcard (fallback) must be supplied.
          Name   - Read from `ro.boot.hardware.color` sysprop. Fallback (*) required.
          Styles - frameworks/libs/systemui/monet/src/com/android/systemui/monet/Style.java
-         Color  - `home_wallpaper` (for color extraction) or a hexadecimal int (#FFcc99) -->
+         Color  - `home_wallpaper` (for color extraction) or a comma-separated list of
+                  hexadecimal int (#FFcc99,#aabbcc). -->
     <string-array name="theming_defaults">
         <item>*|TONAL_SPOT|home_wallpaper</item>
     </string-array>
-
     <!-- A list of legacy theme overlays that ThemeManagerService removes during the boot process.
          Previously, these overlays were managed SystemUI but, because their ownership has moved to
          the Android System, cleaning previous overlays up is necessary to prevent duplicate or

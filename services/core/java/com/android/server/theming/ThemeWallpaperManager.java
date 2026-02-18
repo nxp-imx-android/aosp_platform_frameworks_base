@@ -27,6 +27,9 @@ import com.android.server.LocalServices;
 import com.android.server.wallpaper.WallpaperManagerInternal;
 import com.android.systemui.monet.ColorScheme;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * A safe wrapper for WallpaperManagerInternal.
  * <p>
@@ -90,6 +93,34 @@ public class ThemeWallpaperManager implements WallpaperColorsReader {
             return null;
         }
         return ColorScheme.getSeedColor(colors);
+    }
+
+    /**
+     * Retrieves the prioritized seed colors from the current system wallpaper.
+     *
+     * @param userId The user ID to get the wallpaper colors for.
+     * @return A list of seed colors, or an empty list if none are available.
+     */
+    @NonNull
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
+    public List<Integer> getSeedColors(int userId) {
+        WallpaperColors colors = getWallpaperColors(WallpaperManager.FLAG_SYSTEM, userId);
+        if (colors == null) {
+            return Collections.emptyList();
+        }
+        return ColorScheme.getSeedColors(colors);
+    }
+
+    /**
+     * Retrieves prioritized seed colors from the provided WallpaperColors.
+     */
+    @NonNull
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
+    public List<Integer> getSeedColors(@Nullable WallpaperColors colors, boolean filter) {
+        if (colors == null) {
+            return Collections.emptyList();
+        }
+        return ColorScheme.getSeedColors(colors, filter);
     }
 
     /**

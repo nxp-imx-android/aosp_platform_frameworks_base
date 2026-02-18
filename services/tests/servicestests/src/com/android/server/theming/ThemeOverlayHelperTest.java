@@ -54,6 +54,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -117,8 +118,8 @@ public class ThemeOverlayHelperTest {
     @Test
     public void applyCurrentStateOverlays_foregroundUser_enablesForSelfAndSystemAndProfiles() {
         // Setup: A primary user with an associated profile.
-        ThemeStatePair statePair = new ThemeStatePair(PRIMARY_USER_ID, true, SEED_COLOR_VALID,
-                CONTRAST_DEFAULT, STYLE_VALID, mEnvironment);
+        ThemeStatePair statePair = new ThemeStatePair(PRIMARY_USER_ID, true,
+                List.of(SEED_COLOR_VALID), CONTRAST_DEFAULT, STYLE_VALID, mEnvironment);
         statePair.addProfile(PROFILE_USER_ID);
         ThemeStatePair.OverlaySnapshot snapshot = statePair.commitAndGetOverlayData();
 
@@ -140,8 +141,8 @@ public class ThemeOverlayHelperTest {
     @Test
     public void applyCurrentStateOverlays_backgroundUser_doesNotEnableForSystem() {
         // Setup: A background user (simulated by passing false to the helper)
-        ThemeStatePair statePair = new ThemeStatePair(PRIMARY_USER_ID, true, SEED_COLOR_VALID,
-                CONTRAST_DEFAULT, STYLE_VALID, mEnvironment);
+        ThemeStatePair statePair = new ThemeStatePair(PRIMARY_USER_ID, true,
+                List.of(SEED_COLOR_VALID), CONTRAST_DEFAULT, STYLE_VALID, mEnvironment);
         ThemeStatePair.OverlaySnapshot snapshot = statePair.commitAndGetOverlayData();
 
         // Action: Pass false because this is simulating a Background User
@@ -161,8 +162,8 @@ public class ThemeOverlayHelperTest {
     @Test
     public void applyCurrentStateOverlays_whenUserIsSystem_enablesOnce() {
         // Setup: The user is the system user.
-        ThemeStatePair statePair = new ThemeStatePair(SYSTEM_USER_ID, true, SEED_COLOR_VALID,
-                CONTRAST_DEFAULT, STYLE_VALID, mEnvironment);
+        ThemeStatePair statePair = new ThemeStatePair(SYSTEM_USER_ID, true,
+                List.of(SEED_COLOR_VALID), CONTRAST_DEFAULT, STYLE_VALID, mEnvironment);
         ThemeStatePair.OverlaySnapshot snapshot = statePair.commitAndGetOverlayData();
 
         // Is does not matter if we pass true/false here.
@@ -184,8 +185,8 @@ public class ThemeOverlayHelperTest {
     @Test
     public void applyCurrentStateOverlays_skipRegistration_enablesWithoutRegistering() {
         // Setup: A primary user.
-        ThemeStatePair statePair = new ThemeStatePair(PRIMARY_USER_ID, true, SEED_COLOR_VALID,
-                CONTRAST_DEFAULT, STYLE_VALID, mEnvironment);
+        ThemeStatePair statePair = new ThemeStatePair(PRIMARY_USER_ID, true,
+                List.of(SEED_COLOR_VALID), CONTRAST_DEFAULT, STYLE_VALID, mEnvironment);
         ThemeStatePair.OverlaySnapshot snapshot = statePair.commitAndGetOverlayData();
 
         // Setup: Simulate overlays exist so we don't fallback to register
@@ -215,8 +216,8 @@ public class ThemeOverlayHelperTest {
     public void applyCurrentStateOverlays_handlesCommitExceptionGracefully() {
         // Setup a commit failure
         doThrow(new SecurityException("Test Exception")).when(mOverlayManager).commit(any());
-        ThemeStatePair statePair = new ThemeStatePair(PRIMARY_USER_ID, true, SEED_COLOR_VALID,
-                CONTRAST_DEFAULT, STYLE_VALID, mEnvironment);
+        ThemeStatePair statePair = new ThemeStatePair(PRIMARY_USER_ID, true,
+                List.of(SEED_COLOR_VALID), CONTRAST_DEFAULT, STYLE_VALID, mEnvironment);
         ThemeStatePair.OverlaySnapshot snapshot = statePair.commitAndGetOverlayData();
 
         // Action & Verification (should not crash)
@@ -229,8 +230,8 @@ public class ThemeOverlayHelperTest {
     @Test
     public void applyCurrentStateOverlays_missingOverlay_recreatesOverlays() {
         // Setup: A primary user.
-        ThemeStatePair statePair = new ThemeStatePair(PRIMARY_USER_ID, true, SEED_COLOR_VALID,
-                CONTRAST_DEFAULT, STYLE_VALID, mEnvironment);
+        ThemeStatePair statePair = new ThemeStatePair(PRIMARY_USER_ID, true,
+                List.of(SEED_COLOR_VALID), CONTRAST_DEFAULT, STYLE_VALID, mEnvironment);
         ThemeStatePair.OverlaySnapshot snapshot = statePair.commitAndGetOverlayData();
 
         // Setup: Simulate missing overlay by returning null from getOverlayInfo
@@ -281,8 +282,8 @@ public class ThemeOverlayHelperTest {
 
     @Test
     public void createDynamicOverlay_containsNeutralAndAccentColors() {
-        ThemeStatePair statePair = new ThemeStatePair(PRIMARY_USER_ID, true, SEED_COLOR_VALID,
-                CONTRAST_DEFAULT, STYLE_VALID, mEnvironment);
+        ThemeStatePair statePair = new ThemeStatePair(PRIMARY_USER_ID, true,
+                List.of(SEED_COLOR_VALID), CONTRAST_DEFAULT, STYLE_VALID, mEnvironment);
 
         FabricatedOverlay overlay = mThemeOverlayHelper.createDynamicOverlay(
                 statePair.getLightScheme(), statePair.getDarkScheme(), PRIMARY_USER_ID);
