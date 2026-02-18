@@ -23,16 +23,6 @@ package {
 }
 
 // Begin ProtoLog
-java_library {
-    name: "wm_shell_protolog-groups",
-    srcs: [
-        "src/com/android/wm/shell/protolog/ShellProtoLogGroup.java",
-    ],
-    static_libs: [
-        "protolog-common-lib",
-    ],
-}
-
 filegroup {
     name: "wm_shell-sources",
     srcs: [
@@ -81,33 +71,6 @@ java_genrule {
         "--output-srcjar $(out) " +
         "$(locations :wm_shell-sources)",
     out: ["wm_shell_protolog.srcjar"],
-}
-
-java_genrule {
-    name: "gen-wmshell.protolog.pb",
-    srcs: [
-        ":wm_shell-sources",
-        ":wm_shell_protolog-groups",
-    ],
-    tools: [
-        "protologtool",
-        "soong_javac_wrapper",
-    ],
-    cmd: "$(location protologtool) generate-viewer-config " +
-        "--protolog-class com.android.internal.protolog.ProtoLog " +
-        "--loggroups-class com.android.wm.shell.protolog.ShellProtoLogGroup " +
-        "--loggroups-jar $(location :wm_shell_protolog-groups) " +
-        "--javac-wrapper-path $(location soong_javac_wrapper) " +
-        "--viewer-config $(out) " +
-        "$(locations :wm_shell-sources)",
-    out: ["wmshell.protolog.pb"],
-}
-
-prebuilt_etc {
-    name: "wmshell.protolog.pb",
-    system_ext_specific: true,
-    src: ":gen-wmshell.protolog.pb",
-    filename_from_src: true,
 }
 
 // End ProtoLog
@@ -160,6 +123,8 @@ android_library {
         "WindowManager-Shell-proto",
         "WindowManager-Shell-shared",
         "WindowManager-Shell-aidls",
+        "WindowManager-Shell-Pip",
+        "wm_shell_protolog-groups",
         "am_flags_lib",
         "androidx-constraintlayout_constraintlayout",
         "androidx.appcompat_appcompat",
