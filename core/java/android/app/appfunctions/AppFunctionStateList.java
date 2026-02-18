@@ -18,8 +18,8 @@ package android.app.appfunctions;
 
 import android.annotation.NonNull;
 import android.content.pm.ParceledListSlice;
-import android.os.DedupBinderHelper;
 import android.os.Parcel;
+import android.os.ParcelDedupHelper;
 import android.os.Parcel.ReadWriteHelper;
 import android.os.Parcelable.Creator;
 import java.util.List;
@@ -43,7 +43,7 @@ public final class AppFunctionStateList extends ParceledListSlice<AppFunctionSta
 
     @Override
     protected ReadWriteHelper createReadWriteHelper() {
-        return new DedupBinderHelper();
+        return new ParcelDedupHelper.Builder().dedupBinders(true).dedupString8(true).build();
     }
 
     @NonNull
