@@ -16,9 +16,11 @@
 
 package com.android.server.privatecompute;
 
+import android.sysprop.PccProperties;
 import android.util.Log;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.server.privatecompute.AuditModeContext.Injector;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -27,7 +29,8 @@ import java.util.Comparator;
  * Manages file names for audit log files. Exposes a single method {@link #getNextAuditLogFileName}
  * which returns the File that should be used for the next audit log. Produces files
  * audit_log.<counter>.bin. When instantiated, counter is always 0. Handles deleting old files to
- * make sure we don't have more than MAX_FILES. This class is thread-safe.
+ * make sure we don't have more than {@link Injector#auditModeMaxLogFiles} files. This class is
+ * thread-safe.
  */
 @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
 class AuditLogFileManager {
@@ -36,32 +39,27 @@ class AuditLogFileManager {
     private static final String AUDIT_LOG_FILE_PREFIX = "audit_log";
     private static final String AUDIT_LOG_FILE_SUFFIX = ".bin";
 
-    /**
-     * The maximum number of audit log files to keep on disk. Each contains {@link
-     * AuditLogInMemoryBuffer#AUDIT_LOG_QUEUE_CAPACITY} {@link PersistableBundle}s.
-     */
-    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
-    static final int MAX_FILES = 10;
-
     private final File mFolder;
     private final Object mLock = new Object();
+    private final Injector mInjector;
 
     @GuardedBy("mLock")
     private int mFileCounter = 0;
 
-    AuditLogFileManager(File folder) {
+    AuditLogFileManager(File folder, Injector injector) {
         mFolder = folder;
+        mInjector = injector;
     }
 
     /**
-     * Returns the next audit log file name, and increments the counter. After MAX_FILES, loops back
-     * to 0, overwriting old files.
+     * Returns the next audit log file name, and increments the counter. After {@link
+     * Injector#auditModeMaxLogFiles}, loops back to 0, overwriting old files.
      */
     public File rotateAndReturnNewFile() {
         synchronized (mLock) {
             String fileName = AUDIT_LOG_FILE_PREFIX + "." + mFileCounter + AUDIT_LOG_FILE_SUFFIX;
             File file = new File(mFolder, fileName);
-            mFileCounter = (mFileCounter + 1) % MAX_FILES;
+            mFileCounter = (mFileCounter + 1) % this.mInjector.auditModeMaxLogFiles();
             return file;
         }
     }

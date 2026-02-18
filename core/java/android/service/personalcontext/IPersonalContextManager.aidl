@@ -24,6 +24,7 @@ import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
 import android.service.personalcontext.hint.ContextHintWithSignatureWrapper;
 import android.service.personalcontext.hint.ContextHintWrapper;
 import android.service.personalcontext.insight.ContextInsightWrapper;
+import android.service.personalcontext.insight.PublishedContextInsightWrapper;
 import android.service.personalcontext.insight.interaction.InsightEvent;
 
 /**
@@ -38,14 +39,14 @@ interface IPersonalContextManager {
             in List<ContextHintWrapper> attributionHints,
             int userId);
 
-    oneway void publishInsight(in List<ContextInsightWrapper> insights, int userId);
+    oneway void publishInsight(in List<ContextInsightWrapper> insights, in ParcelUuid componentId,
+            int userId);
 
     ContextHintWithSignatureWrapper signHint(
             in ContextHintWrapper hint,
             in List<ContextHintWrapper> attributionHints);
 
     oneway void registerInsightSurfaceClient(
-            in List<ContextHintWrapper> clientHints,
             in InsightSurfaceClientInfo clientInfo,
             int userId);
 

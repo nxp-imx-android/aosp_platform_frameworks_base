@@ -49,6 +49,7 @@ import android.app.appfunctions.AppFunctionSearchSpec;
 import android.app.appfunctions.AppFunctionStateList;
 import android.app.appfunctions.AppFunctionStaticMetadataHelper;
 import android.app.appfunctions.AppFunctionUriGrant;
+import android.app.appfunctions.ExecuteAppFunctionRequest;
 import android.app.appfunctions.ExecuteAppFunctionAidlRequest;
 import android.app.appfunctions.ExecuteAppFunctionResponse;
 import android.app.appfunctions.IAppFunctionExecutor;
@@ -86,7 +87,9 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
 import android.content.pm.SigningInfo;
 import android.os.Binder;
+import android.os.Build;
 import android.os.CancellationSignal;
+import android.os.Environment;
 import android.os.IBinder;
 import android.os.ICancellationSignal;
 import android.os.OutcomeReceiver;
@@ -106,15 +109,19 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.content.PackageMonitor;
 import com.android.internal.infra.AndroidFuture;
+import com.android.internal.os.BackgroundThread;
 import com.android.internal.util.DumpUtils;
+import com.android.server.IoThread;
 import com.android.server.SystemService.TargetUser;
 import com.android.server.appfunctions.MultiUserDynamicAppFunctionRegistry.RegistrationScopeId;
-import com.android.server.appfunctions.allowlist.SystemAppFunctionAllowlistReader;
+import com.android.server.appfunctions.allowlist.AppFunctionAllowlistReader;
 import com.android.server.appinteraction.AppInteractionService;
 import com.android.server.uri.UriGrantsManagerInternal;
 import com.android.server.wm.ActivityTaskManagerInternal;
 
+import java.io.File;
 import java.io.FileDescriptor;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -155,6 +162,12 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     private final AppFunctionMetadataReader mAppFunctionMetadataReader;
     private final AppFunctionMetadataObserver mAppFunctionMetadataObserver;
 
+    private final Object mRequestResponseLoggerPerUserLock = new Object();
+
+    @GuardedBy("mRequestResponseLoggerPerUserLock")
+    private final SparseArray<AppFunctionRequestResponseLogger> mRequestResponseLoggerPerUser =
+            new SparseArray<>();
+
     @Nullable private final AppInteractionService mAppInteractionService;
 
     private final VisibilityHelper mVisibilityHelper;
@@ -171,7 +184,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             @NonNull MultiUserDynamicAppFunctionRegistry dynamicAppFunctionRegistry,
             @Nullable AppInteractionService appInteractionService,
             @NonNull AppFunctionMetadataReader appFunctionMetadataReader,
-            @NonNull ActivityTaskManagerInternal activityTaskManagerInternal) {
+            @NonNull ActivityTaskManagerInternal activityTaskManagerInternal,
+            @NonNull AppFunctionAllowlistReader allowlistReader) {
         this(
                 context,
                 new RemoteServiceCallerImpl<>(
@@ -179,7 +193,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 new CallerValidatorImpl(
                         context,
                         Objects.requireNonNull(context.getSystemService(UserManager.class)),
-                        SystemAppFunctionAllowlistReader.getInstance()),
+                        allowlistReader),
                 new ServiceHelperImpl(context),
                 new ServiceConfigImpl(),
                 loggerWrapper,
@@ -251,6 +265,24 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 AppFunctionPackageMonitor.registerPackageMonitorForUser(mContext, user);
         mPackageMonitors.append(user.getUserIdentifier(), pkgMonitorForUser);
 
+        File appFunctionsLogDir =
+                new File(
+                        Environment.getDataSystemCeDirectory(user.getUserIdentifier()),
+                        "appfunctions");
+        try {
+            synchronized (mRequestResponseLoggerPerUserLock) {
+                mRequestResponseLoggerPerUser.append(
+                        user.getUserIdentifier(),
+                        new AppFunctionRequestResponseLogger(appFunctionsLogDir));
+            }
+        } catch (IOException e) {
+            Slog.e(
+                    TAG,
+                    "Failed to create request/response logger for user "
+                            + user.getUserIdentifier(),
+                    e);
+        }
+
         if (android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()) {
             mDynamicAppFunctionRegistry.onUserUnlocked(mAppFunctionMetadataObserver, user);
         }
@@ -281,6 +313,15 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         if (mPackageMonitors.contains(userIdentifier)) {
             mPackageMonitors.get(userIdentifier).unregister();
             mPackageMonitors.delete(userIdentifier);
+        }
+
+        synchronized (mRequestResponseLoggerPerUserLock) {
+            AppFunctionRequestResponseLogger logger =
+                    mRequestResponseLoggerPerUser.get(userIdentifier);
+            if (logger != null) {
+                logger.close();
+                mRequestResponseLoggerPerUser.delete(userIdentifier);
+            }
         }
 
         if (android.app.appfunctions.flags.Flags.enableAppInteractionApi()) {
@@ -395,6 +436,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                             "Target package name cannot be empty."));
             return;
         }
+
         mCallerValidator
                 .verifyCallerCanExecuteAppFunction(
                         callingUid,
@@ -411,6 +453,19 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                                                 "Caller does not have permission to execute the"
                                                         + " appfunction"));
                             }
+
+                            if (android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()) {
+                                try {
+                                    validateExecuteAppFunctionRequestTargetScope(
+                                            requestInternal.getClientRequest(),
+                                            targetPackageName,
+                                            targetUser
+                                    );
+                                } catch (AppFunctionNotFoundException e) {
+                                    return AndroidFuture.failedFuture(e);
+                                }
+                            }
+
                             return isAppFunctionEnabledInternal(
                                             requestInternal
                                                     .getClientRequest()
@@ -466,6 +521,59 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                                     mapExceptionToExecuteAppFunctionResponse(ex));
                             return null;
                         });
+    }
+
+    /**
+     * Validates the target scope of the execute app function request. If the function is a
+     * SCOPE_GLOBAL function, the request must not have an AppFunctionActivityId. If the function
+     * is a SCOPE_ACTIVITY function, the request must have an AppFunctionActivityId and the
+     * function must be registered for the given AppFunctionActivityId.
+     *
+     * @param executeRequest The execute app function request.
+     * @param targetPackageName The target package name of the app function.
+     * @param targetUser The target user of the app function.
+     * @throws AppFunctionNotFoundException If the target scope is not valid.
+     */
+    private void validateExecuteAppFunctionRequestTargetScope(
+            @NonNull ExecuteAppFunctionRequest executeRequest,
+            @NonNull String targetPackageName,
+            @NonNull UserHandle targetUser)
+            throws AppFunctionNotFoundException {
+        final String functionIdentifier = executeRequest.getFunctionIdentifier();
+        final AppFunctionActivityId activityId = executeRequest.getActivityId();
+        final boolean isDynamic =
+                mAppFunctionMetadataReader.isDynamicFunction(
+                        targetPackageName, functionIdentifier, targetUser);
+
+        if (!isDynamic) {
+            if (activityId != null) {
+                throw new AppFunctionNotFoundException(
+                        "SCOPE_GLOBAL functions cannot have an AppFunctionActivityId.");
+            }
+        } else {
+            final boolean isActivityScoped =
+                    mAppFunctionMetadataReader.isActivityScopedDynamicFunction(
+                            targetPackageName, functionIdentifier, targetUser);
+
+            if (isActivityScoped) {
+                if (activityId == null) {
+                    throw new AppFunctionNotFoundException(
+                            "SCOPE_ACTIVITY functions must be targeted with an"
+                                    + " AppFunctionActivityId");
+                }
+                final RegistrationScopeId scopeId = new RegistrationScopeId(activityId);
+                if (!mDynamicAppFunctionRegistry.isRegistered(
+                        targetPackageName, functionIdentifier, targetUser, scopeId)) {
+                    throw new AppFunctionNotFoundException(
+                            "Function is not registered for the given AppFunctionActivityId.");
+                }
+            } else { // Global-scoped dynamic function
+                if (activityId != null) {
+                    throw new AppFunctionNotFoundException(
+                            "SCOPE_GLOBAL functions cannot have an AppFunctionActivityId.");
+                }
+            }
+        }
     }
 
     private void executeServiceAppFunctionInternal(
@@ -1654,6 +1762,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                     public void finalizeOnSuccess(
                             @NonNull ExecuteAppFunctionResponse result,
                             long executionStartTimeMillis) {
+                        logRequestResponse(requestInternal, result, /* exception= */ null);
                         mLoggerWrapper.logAppFunctionSuccess(
                                 requestInternal,
                                 result,
@@ -1666,6 +1775,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                     @Override
                     public void finalizeOnError(
                             @NonNull AppFunctionException error, long executionStartTimeMillis) {
+                        logRequestResponse(requestInternal, /* response= */ null, error);
                         mLoggerWrapper.logAppFunctionError(
                                 requestInternal,
                                 error.getErrorCode(),
@@ -1675,6 +1785,30 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                         recordAppFunctionInteraction(requestInternal);
                     }
                 });
+    }
+
+    /**
+     * Logs the request and response to disk asynchronously.
+     *
+     * <p>This method is only executed for debuggable builds when the corresponding flag is enabled.
+     */
+    private void logRequestResponse(
+            @NonNull ExecuteAppFunctionAidlRequest request,
+            @Nullable ExecuteAppFunctionResponse response,
+            @Nullable AppFunctionException exception) {
+        if (!Build.isDebuggable()
+                || !android.app.appfunctions.flags.Flags.enableRequestResponseLogging()) {
+            return;
+        }
+
+        final AppFunctionRequestResponseLogger logger;
+        synchronized (mRequestResponseLoggerPerUserLock) {
+            logger = mRequestResponseLoggerPerUser.get(request.getUserHandle().getIdentifier());
+        }
+        if (logger != null) {
+            IoThread.getExecutor()
+                    .execute(() -> logger.log(request.getClientRequest(), response, exception));
+        }
     }
 
     private void recordAppFunctionInteraction(@NonNull ExecuteAppFunctionAidlRequest aidlRequest) {

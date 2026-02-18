@@ -36861,6 +36861,7 @@ package android.os.storage {
   @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public final class FileManager {
     method @NonNull public android.os.storage.operations.FileOperationEnqueueResult enqueueOperation(@NonNull android.os.storage.operations.FileOperationRequest);
     method @Nullable public android.os.storage.operations.FileOperationResult fetchResult(@NonNull String);
+    method public static int getMaxReportedFailures();
     method public void registerCompletionListener(@NonNull String);
     method public void unregisterCompletionListener(@NonNull String);
     field public static final String ACTION_FILE_OPERATION_COMPLETED = "android.os.storage.action.FILE_OPERATION_COMPLETED";
@@ -36945,7 +36946,6 @@ package android.os.storage {
 package android.os.storage.operations {
 
   @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public final class FileOperationEnqueueResult implements android.os.Parcelable {
-    ctor public FileOperationEnqueueResult(int);
     method public int describeContents();
     method public int getErrorCode();
     method @Nullable public String getRequestId();
@@ -36959,6 +36959,7 @@ package android.os.storage.operations {
     method public int getMode();
     method @NonNull public android.os.storage.operations.sources.OperationSource getSource();
     method @Nullable public android.os.storage.operations.targets.OperationTarget getTarget();
+    method public boolean shouldRegisterCompletionListener();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.os.storage.operations.FileOperationRequest> CREATOR;
     field public static final int OPERATION_COPY = 2; // 0x2
@@ -36968,8 +36969,9 @@ package android.os.storage.operations {
   public static final class FileOperationRequest.Builder {
     ctor public FileOperationRequest.Builder(int);
     method @NonNull public android.os.storage.operations.FileOperationRequest build();
+    method @NonNull public android.os.storage.operations.FileOperationRequest.Builder setRegisterCompletionListener(boolean);
     method @NonNull public android.os.storage.operations.FileOperationRequest.Builder setSource(@NonNull android.os.storage.operations.sources.OperationSource);
-    method @NonNull public android.os.storage.operations.FileOperationRequest.Builder setTarget(@Nullable android.os.storage.operations.targets.OperationTarget);
+    method @NonNull public android.os.storage.operations.FileOperationRequest.Builder setTarget(@NonNull android.os.storage.operations.targets.OperationTarget);
   }
 
   @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public final class FileOperationResult implements android.os.Parcelable {
@@ -36977,7 +36979,6 @@ package android.os.storage.operations {
     method public int getErrorCode();
     method @Nullable public String getErrorMessage();
     method @NonNull public java.util.List<java.lang.String> getFailedPaths();
-    method public static int getMaxReportedFailures();
     method @NonNull public String getRequestId();
     method @NonNull public android.os.storage.operations.sources.OperationSource getSource();
     method public int getStatus();
@@ -36987,6 +36988,7 @@ package android.os.storage.operations {
     field public static final int ERROR_BUSY = 1; // 0x1
     field public static final int ERROR_DISK_FULL = 6; // 0x6
     field public static final int ERROR_INVALID_REQUEST = 2; // 0x2
+    field public static final int ERROR_NONE = -1; // 0xffffffff
     field public static final int ERROR_PERMISSION_DENIED = 5; // 0x5
     field public static final int ERROR_UNKNOWN = 0; // 0x0
     field public static final int ERROR_UNSUPPORTED_SOURCE = 3; // 0x3
@@ -44189,9 +44191,6 @@ package android.service.persistentdata {
 
 package android.service.personalcontext {
 
-  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public interface ComponentIdProvider {
-  }
-
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class PersonalContextManager {
     method @RequiresPermission(android.Manifest.permission.QUERY_ALL_PACKAGES) public boolean isPersonalContextModeEnabled(@NonNull String);
     method public void publishTriggeringHint(@NonNull android.service.personalcontext.insight.interaction.ReturnHintReport, @NonNull java.util.List<android.service.personalcontext.hint.ContextHint>);
@@ -44575,7 +44574,6 @@ package android.service.personalcontext.insight {
     method @NonNull public java.util.Set<android.service.personalcontext.hint.ContextHintWithSignature> getOriginHints();
     method @NonNull public java.util.Set<android.service.personalcontext.Token> getTokens();
     method public boolean hasAttribution();
-    method public void reportEvent(@NonNull android.content.Context, int, @NonNull android.service.personalcontext.RenderToken, @Nullable android.os.Bundle);
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class DisplayInsight extends android.service.personalcontext.insight.ContextInsight {
@@ -44642,6 +44640,12 @@ package android.service.personalcontext.insight {
     method @NonNull public android.service.personalcontext.insight.InsightDisplayDetails build();
     method @NonNull public android.service.personalcontext.insight.InsightDisplayDetails.Builder setContentDescription(@Nullable CharSequence);
     method @NonNull public android.service.personalcontext.insight.InsightDisplayDetails.Builder setSubtitle(@Nullable CharSequence);
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class PublishedContextInsight {
+    method @NonNull public android.service.personalcontext.insight.ContextInsight getInsight();
+    method @NonNull public java.util.UUID getPublisherComponentId();
+    method public void reportEvent(@NonNull android.content.Context, int, @NonNull android.service.personalcontext.RenderToken, @Nullable android.os.Bundle);
   }
 
 }

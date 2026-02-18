@@ -16,6 +16,8 @@
 
 package android.service.personalcontext.insight;
 
+import static com.android.server.personalcontext.util.InsightUtils.fakePublishInsight;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.Mockito.eq;
@@ -26,7 +28,6 @@ import static org.mockito.Mockito.when;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Parcel;
-import android.service.personalcontext.ComponentIdProvider;
 import android.service.personalcontext.PersonalContextManager;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.hint.BundleHint;
@@ -48,17 +49,13 @@ public class ContextInsightTest {
 
     @Test
     public void testContextInsightWrapperParcelUnparcel() {
-        final UUID componentId = UUID.randomUUID();
-
-        final ComponentIdProvider understanderIdProvider = mock(ComponentIdProvider.class);
-        when(understanderIdProvider.getComponentId()).thenReturn(componentId);
-
         final int inputValue = 1234;
         final String dataKey = "test-key";
         final BundleHint hint = new BundleHint.Builder().build();
         hint.getDataBundle().putInt(dataKey, inputValue);
 
-        final BundleInsight insight = new BundleInsight.Builder().build();
+        final BundleInsight insight = new BundleInsight.Builder()
+                .build();
 
         ContextInsight outputInsight = assertParcelUnparcel(insight);
         assertThat(insight.getInsightId()).isEqualTo(outputInsight.getInsightId());
@@ -86,24 +83,21 @@ public class ContextInsightTest {
 
     @Test
     public void testLoggingEvent() {
-        final UUID understanderId = UUID.randomUUID();
         final RenderToken renderToken = new RenderToken(UUID.randomUUID());
         final Bundle extras = new Bundle();
 
         extras.putString("hello", "world");
 
-        final ComponentIdProvider understanderIdProvider = mock(ComponentIdProvider.class);
         final PersonalContextManager pcm = mock(PersonalContextManager.class);
         final Context context = mock(Context.class);
 
-        when(understanderIdProvider.getComponentId()).thenReturn(understanderId);
         when(context.getSystemService(eq(PersonalContextManager.class))).thenReturn(pcm);
 
         final BundleInsight insight = new BundleInsight.Builder()
-                .setOriginatingComponentId(understanderIdProvider)
                 .build();
 
-        insight.reportEvent(context, InsightEvent.EVENT_SHOW, renderToken, extras);
+        fakePublishInsight(insight).reportEvent(context, InsightEvent.EVENT_SHOW, renderToken,
+                extras);
 
         final ArgumentCaptor<InsightEvent> eventCaptor =
                 ArgumentCaptor.forClass(InsightEvent.class);
@@ -113,7 +107,6 @@ public class ContextInsightTest {
         final InsightEvent event = eventCaptor.getValue();
 
         assertThat(event.getEventType()).isEqualTo(InsightEvent.EVENT_SHOW);
-        assertThat(event.getInsight().getOriginatingComponentId()).isEqualTo(understanderId);
         assertThat(event.getTimestamp()).isNotEqualTo(0);
         assertThat(event.getRenderToken()).isEqualTo(renderToken);
         assertThat(event.getExtras().getString("hello")).isEqualTo("world");

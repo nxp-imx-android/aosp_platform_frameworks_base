@@ -53,15 +53,6 @@ public interface OnDeviceModel {
     /** Model is available for use. */
     public static final int MODEL_STATUS_AVAILABLE = 3;
 
-    /**
-     * Model is deprecated and will be removed in a future version.
-     * <p>
-     * This status indicates that the model has a newer version available and is set to be removed
-     * in a short time span. Any dependencies on the deprecated model should move to using the
-     * alternative AVAILABLE models.
-     */
-    public static final int MODEL_STATUS_DEPRECATED = 4;
-
     /** @hide */
     @IntDef(
             value = {
@@ -69,7 +60,6 @@ public interface OnDeviceModel {
                 MODEL_STATUS_DOWNLOADABLE,
                 MODEL_STATUS_DOWNLOADING,
                 MODEL_STATUS_AVAILABLE,
-                MODEL_STATUS_DEPRECATED
             })
     @Retention(RetentionPolicy.SOURCE)
     @Target({ElementType.TYPE_USE, ElementType.METHOD, ElementType.PARAMETER, ElementType.FIELD})

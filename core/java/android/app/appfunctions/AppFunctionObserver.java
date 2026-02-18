@@ -24,8 +24,8 @@ import android.annotation.SuppressLint;
 import java.util.Set;
 
 /**
- * An observer used to notify about changes to app functions that match the criteria specified in
- * {@link AppFunctionManager#observeAppFunctions}.
+ * Interface for observing changes to app functions provided to {@link
+ * AppFunctionManager#observeAppFunctions}.
  */
 @FlaggedApi(FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
 @SuppressLint("CallbackName")
@@ -37,16 +37,22 @@ public interface AppFunctionObserver {
      * <p>This includes changes such as:
      *
      * <ul>
-     *   <li>The definition of the function metadata exposed by the package has changed (e.g, new
-     *       properties or fields are now available for all functions in the package).
+     *   <li>The definition of a function metadata exposed by the package has changed (e.g, the
+     *       parameters of the function have changed).
      *   <li>All functions within the package are added or removed due to the package being
      *       installed or uninstalled.
      *   <li>The package's {@link AppFunctionPackageMetadata} has been updated.
      * </ul>
      *
      * <p>Upon receiving this notification, clients can call {@link
-     * AppFunctionManager#searchAppFunctions} using the provided {@code changedPackageNames} to
-     * retrieve the updated {@link AppFunctionMetadata} for affected functions.
+     * AppFunctionManager#searchAppFunctions} with {@link
+     * AppFunctionSearchSpec.Builder#setPackageNames} to retrieve the updated {@link
+     * AppFunctionMetadata} for affected functions.
+     *
+     * <p>If the runtime state of app functions also changed in the same event (e.g. when new
+     * functions are added, or their {@link AppFunctionMetadata#PROPERTY_ENABLED_BY_DEFAULT}
+     * changes), {@link #onAppFunctionStatesChanged} is guaranteed to be called synchronously after
+     * this callback returns.
      *
      * @param changedPackageNames The names of the updated packages.
      */
@@ -56,13 +62,11 @@ public interface AppFunctionObserver {
      * Called when the runtime state of one or more app functions changes.
      *
      * <p>Upon receiving this notification, clients can call {@link
-     * AppFunctionManager#getAppFunctionStates} using the provided {@code changedFunctionNames} to
-     * retrieve the updated {@link AppFunctionState} for the affected functions.
+     * AppFunctionManager#getAppFunctionStates} to retrieve the updated {@link AppFunctionState} for
+     * the affected functions.
      *
      * @param changedFunctionNames The list of {@link AppFunctionName}s for the functions whose
      *     state has changed.
-     * @see AppFunctionState
-     * @see AppFunctionManager#getAppFunctionStates
      */
     void onAppFunctionStatesChanged(@NonNull Set<AppFunctionName> changedFunctionNames);
 }

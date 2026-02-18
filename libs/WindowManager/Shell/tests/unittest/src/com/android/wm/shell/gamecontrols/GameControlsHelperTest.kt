@@ -17,6 +17,7 @@
 package com.android.wm.shell.gamecontrols
 
 import android.app.TaskInfo
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
@@ -65,7 +66,10 @@ class GameControlsHelperTest : ShellTestCase() {
     fun setUp() {
         whenever(mockContext.packageManager).thenReturn(mockPackageManager)
         whenever(mockContext.resources).thenReturn(mockResources)
+        whenever(mockPackageManager.getApplicationInfo(any<String>(), any<Int>()))
+            .thenReturn(mockApplicationInfo)
         mockTaskInfo.topActivityInfo = mockActivityInfo
+        mockTaskInfo.baseActivity = ComponentName("com.test.package", "com.test.activity")
         mockActivityInfo.applicationInfo = mockApplicationInfo
 
         mockApplicationInfo.category = ApplicationInfo.CATEGORY_GAME

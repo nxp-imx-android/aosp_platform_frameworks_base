@@ -17,14 +17,14 @@
 package android.service.personalcontext.renderer;
 
 import android.os.ParcelUuid;
-import android.service.personalcontext.insight.ContextInsightWrapper;
+import android.service.personalcontext.insight.PublishedContextInsightWrapper;
 import android.service.personalcontext.renderer.IGetFilterCallback;
 import android.service.personalcontext.RenderToken;
 
 /** @hide */
 oneway interface IInsightRenderer {
-    /** Called with the insight to render. The associated RenderToken is provided. */
-    void render(in ContextInsightWrapper insight, in RenderToken renderToken);
+    /** Called with the published insight to render. The associated RenderToken is provided. */
+    void render(in PublishedContextInsightWrapper publishedInsight, in RenderToken renderToken);
 
     /** Provides configuration information to the renderer. */
     void configure(in ParcelUuid componentId);

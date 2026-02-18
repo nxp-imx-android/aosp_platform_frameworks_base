@@ -926,6 +926,19 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
     @EnabledSince(targetSdkVersion = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     static final long ENABLE_COEXISTENCE_CHANGE = 260560985L;
 
+    /**
+     * Extends {@link #isDeviceManaged()} to include COPE and MUM devices.
+     *
+     * <p>For apps targeting {@link android.os.Build.VERSION_CODES#CINNAMON_BUN} and above,
+     * this change includes COPE and MUM as managed states. Apps targeting older SDKs
+     * will only consider DO as managed.
+     *
+     * @hide
+     */
+    @ChangeId
+    @EnabledSince(targetSdkVersion = Build.VERSION_CODES.CINNAMON_BUN)
+    public static final long EXPAND_DEVICE_MANAGED_SCOPE = 451607072L;
+
     final Context mContext;
     final Injector mInjector;
     final PermissionChecker mPermissions;
@@ -9035,6 +9048,9 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
 
             mDeviceAdmins.getOwners().setDeviceOwner(admin, userId);
             mDeviceAdmins.getOwners().writeDeviceOwner();
+            if (Flags.managedDeviceDefinitionExtended()) {
+                invalidateBinderCaches();
+            }
 
             //TODO(b/180371154): when provisionFullyManagedDevice is used in tests, remove this
             // hard-coded default value setting.
@@ -9134,21 +9150,50 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         return mDeviceAdmins.hasDeviceOwner();
     }
 
+    /**
+     * This API is cached: invalidate with invalidateBinderCaches().
+     */
     @Override
-    public boolean isDeviceManaged() {
-        final CallerIdentity caller = getCallerIdentity();
+    public boolean isDeviceManaged(String callerPackage) {
+        final CallerIdentity caller = Flags.managedDeviceDefinitionExtended()
+                ? getCallerIdentity(callerPackage)
+                : getCallerIdentity();
+        boolean isDeviceManagedScopeExpanded = false;
+
+        if (Flags.managedDeviceDefinitionExtended()) {
+            isDeviceManagedScopeExpanded =  mInjector.isChangeEnabled(
+                    EXPAND_DEVICE_MANAGED_SCOPE,
+                    caller.getPackageName(),
+                    caller.getUserId()
+            );
+        }
+
         Preconditions.checkCallAuthorization(
                 mDeviceAdmins.isDefaultDeviceOwner(caller)
+                || mDeviceAdmins.isProfileOwner(caller)
                 || canManageUsers(caller)
                 || mDeviceAdmins.isFinancedDeviceOwner(caller)
                 || hasCallingOrSelfPermission(MANAGE_PROFILE_AND_DEVICE_OWNERS));
-        return isDeviceManagedUnchecked();
+
+        return isDeviceManagedUnchecked(isDeviceManagedScopeExpanded);
     }
 
     private boolean isDeviceManagedUnchecked() {
-        return Flags.multiUserManagementDeviceProvisioning()
-                ? mStateCache.isDeviceManaged() || mDeviceAdmins.hasDeviceOwner()
-                : mDeviceAdmins.hasDeviceOwner();
+        // By default, treat DO, COPE and MUM devices as all managed.
+        return isDeviceManagedUnchecked(true);
+    }
+
+    private boolean isDeviceManagedUnchecked(boolean isDeviceManagedScopeExpanded) {
+        boolean isDeviceManaged = mDeviceAdmins.hasDeviceOwner();
+
+        if (isDeviceManagedScopeExpanded) {
+            isDeviceManaged = isDeviceManaged || isOrganizationOwnedDeviceWithManagedProfile();
+            if (Flags.multiUserManagementDeviceProvisioning()) {
+                isDeviceManaged = isDeviceManaged || mStateCache.isDeviceManaged();
+            }
+        }
+
+        return isDeviceManaged;
     }
 
     @Override
@@ -9165,6 +9210,9 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         synchronized (getLockObject()) {
             mDeviceAdmins.getOwners().setDeviceManaged(false);
             mDeviceAdmins.getOwners().writeDeviceOwner();
+            if (Flags.managedDeviceDefinitionExtended()) {
+                invalidateBinderCaches();
+            }
             forceRemoveActiveAdminUnchecked(adminReceiver, UserHandle.USER_SYSTEM);
         }
     }
@@ -17499,6 +17547,9 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         // data, no need to do it manually.
         mDeviceAdmins.getOwners().setProfileOwnerOfOrganizationOwnedDevice(userId,
                 isProfileOwnerOnOrganizationOwnedDevice);
+        if (Flags.managedDeviceDefinitionExtended()) {
+            invalidateBinderCaches();
+        }
     }
 
     private boolean isBootToUser0Enabled() {
@@ -21782,6 +21833,9 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
 
             mDeviceAdmins.getOwners().setDeviceManaged(true);
             mDeviceAdmins.getOwners().writeDeviceOwner();
+            if (Flags.managedDeviceDefinitionExtended()) {
+                invalidateBinderCaches();
+            }
 
             onProvisionMultiuserManagedDeviceCompleted(provisioningParams);
         } catch (Exception e) {
@@ -23514,7 +23568,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
                 @NonNull PolicyValue<T> value) {
             EnforcingAdmin admin = getEnforcingAdmin(caller);
 
-            Slogf.d(LOG_TAG, "Storing policy %s with scope %d in policy engine", key, scope);
+            if (VERBOSE_LOG) {
+                Slogf.d(LOG_TAG, "Storing value %s for policy %s with scope %d in policy engine",
+                        value, key, scope);
+            }
             switch (scope) {
                 case POLICY_SCOPE_DEVICE:
                     mDevicePolicyEngine.setGlobalPolicy(key, admin, value);
@@ -23538,7 +23595,9 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
                 @PolicyScope int scope) {
             EnforcingAdmin admin = getEnforcingAdmin(caller);
 
-            Slogf.d(LOG_TAG, "Removing policy %s with scope %d from policy engine", key, scope);
+            if (VERBOSE_LOG) {
+                Slogf.d(LOG_TAG, "Removing policy %s with scope %d from policy engine", key, scope);
+            }
             switch (scope) {
                 case POLICY_SCOPE_DEVICE:
                     mDevicePolicyEngine.removeGlobalPolicy(key, admin);
@@ -23563,45 +23622,50 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
                 @PolicyScope int scope) {
             EnforcingAdmin admin = getEnforcingAdmin(caller);
 
-            Slogf.d(LOG_TAG, "Retrieving policy %s with scope %d from policy engine", key, scope);
-            switch (scope) {
-                case POLICY_SCOPE_DEVICE:
-                    return mDevicePolicyEngine.getGlobalPolicySetByAdmin(key, admin);
-                case POLICY_SCOPE_USER:
-                    return mDevicePolicyEngine.getLocalPolicySetByAdmin(
-                            key, admin, caller.getUserId());
-                case POLICY_SCOPE_PARENT_USER:
-                    return mDevicePolicyEngine.getLocalPolicySetByAdmin(
-                            key, admin, getProfileParentId(caller.getUserId()));
-                default:
-                    throw new IllegalArgumentException("Invalid scope " + scope);
+            var result =
+                    switch (scope) {
+                        case POLICY_SCOPE_DEVICE ->
+                                mDevicePolicyEngine.getGlobalPolicySetByAdmin(key, admin);
+                        case POLICY_SCOPE_USER ->
+                                mDevicePolicyEngine.getLocalPolicySetByAdmin(
+                                        key, admin, caller.getUserId());
+                        case POLICY_SCOPE_PARENT_USER ->
+                                mDevicePolicyEngine.getLocalPolicySetByAdmin(
+                                        key, admin, getProfileParentId(caller.getUserId()));
+                        default -> throw new IllegalArgumentException("Invalid scope " + scope);
+                    };
+
+            if (VERBOSE_LOG) {
+                Slogf.d(LOG_TAG, "Retrieved value %s of policy %s with scope %d from policy engine",
+                        result, key, scope);
             }
+            return result;
         }
 
         @Override
         @Nullable
         public <T> T getResolvedDeviceWidePolicy(@NonNull PolicyDefinition<T> key) {
-            if (VERBOSE_LOG) {
-                Slogf.d(LOG_TAG, "Retrieving effective policy %s from policy engine", key);
-            }
-
             // TODO(b/455504405): Add real support for device-wide policies.
-            return mDevicePolicyEngine.getResolvedPolicy(key, USER_ALL);
+            var result = mDevicePolicyEngine.getResolvedPolicy(key, USER_ALL);
+
+            if (VERBOSE_LOG) {
+                Slogf.d(LOG_TAG, "Retrieved effective device wide policy value %s of policy %s",
+                        result, key);
+            }
+            return result;
         }
 
         @Override
         @Nullable
         public <T> T getResolvedPerUserPolicy(
                 @UserIdInt int userId, @NonNull PolicyDefinition<T> key) {
-            if (VERBOSE_LOG) {
-                Slogf.d(
-                        LOG_TAG,
-                        "Retrieving effective policy %s from policy engine for user %d",
-                        key,
-                        userId);
-            }
+            var result = mDevicePolicyEngine.getResolvedPolicy(key, userId);
 
-            return mDevicePolicyEngine.getResolvedPolicy(key, userId);
+            if (VERBOSE_LOG) {
+                Slogf.d(LOG_TAG, "Retrieved effective policy value %s of policy %s for user %d",
+                        result, key, userId);
+            }
+            return result;
         }
     }
 
@@ -23650,7 +23714,9 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
 
     private @Nullable PolicyValueTransport getPolicy(CallerIdentity caller, String id, int scope)
     {
-        Slogf.d(LOG_TAG, "Retrieving policy %s with scope %d through generic API", id, scope);
+        if (VERBOSE_LOG) {
+            Slogf.d(LOG_TAG, "Retrieving policy %s with scope %d through generic API", id, scope);
+        }
         requirePolicyScopeIsOneOf(scope, POLICY_SCOPE_USER, POLICY_SCOPE_DEVICE,
                 POLICY_SCOPE_PARENT_USER);
 

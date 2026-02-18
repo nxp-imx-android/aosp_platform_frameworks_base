@@ -30,7 +30,7 @@ import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.RemoteException;
 import android.service.personalcontext.PersonalContextManager;
-import android.service.personalcontext.hint.BundleHint;
+import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.insight.ContextInsightWrapper;
 import android.view.Display;
 import android.view.SurfaceControlViewHost.SurfacePackage;
@@ -46,7 +46,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Executor;
 
 @SmallTest
@@ -61,7 +61,6 @@ public class InsightSurfaceClientTest {
     @Mock private InsightSurfaceClient.ClientCallback mClientCallbacks;
     @Mock private IInsightSurfaceSession mSession;
     private final Executor mExecutor = Runnable::run;
-    private final BundleHint mHint = new BundleHint.Builder().build();
     private InsightSurfaceClient mClient;
 
     @Before
@@ -77,7 +76,6 @@ public class InsightSurfaceClientTest {
 
         mClient =
                 new InsightSurfaceClient.Builder(mContext)
-                        .addHint(mHint)
                         .build();
     }
 
@@ -87,7 +85,7 @@ public class InsightSurfaceClientTest {
         final ArgumentCaptor<InsightSurfaceClientInfo> clientInfoCaptor =
                 ArgumentCaptor.forClass(InsightSurfaceClientInfo.class);
         verify(mPersonalContextManager).registerInsightSurfaceClient(
-                clientInfoCaptor.capture(), eq(List.of(mHint)));
+                clientInfoCaptor.capture());
 
         final IInsightSurfaceClient client = clientInfoCaptor.getValue().getClient();
         client.onSurfaceCreated(mSurfacePackage, mSession);
@@ -99,8 +97,7 @@ public class InsightSurfaceClientTest {
         mClient.register(mExecutor, mClientCallbacks);
         final ArgumentCaptor<InsightSurfaceClientInfo> clientInfoCaptor =
                 ArgumentCaptor.forClass(InsightSurfaceClientInfo.class);
-        verify(mPersonalContextManager).registerInsightSurfaceClient(
-                clientInfoCaptor.capture(), eq(List.of(mHint)));
+        verify(mPersonalContextManager).registerInsightSurfaceClient(clientInfoCaptor.capture());
 
         final IInsightSurfaceClient client = clientInfoCaptor.getValue().getClient();
         client.onSurfaceCreated(mSurfacePackage, mSession);
@@ -122,7 +119,6 @@ public class InsightSurfaceClientTest {
         final InsightSurfaceClient client =
                 new InsightSurfaceClient.Builder(mContext).build();
 
-        assertThat(client.getHints()).isEmpty();
         assertThat(client.getReceivers()).isEmpty();
     }
 
@@ -201,25 +197,14 @@ public class InsightSurfaceClientTest {
     }
 
     @Test
-    public void testInsightSurfaceClientCreation_withThemeResourceName() {
-        final String themeResourceName = "theme";
+    public void testInsightSurfaceClientCreation_withThemeResourceId() {
+        final int themeResourceId = 7;
         final InsightSurfaceClient client =
                 new InsightSurfaceClient.Builder(mContext)
-                        .setThemeResourceName(themeResourceName)
+                        .setThemeResourceId(themeResourceId)
                         .build();
 
-        assertThat(client.getThemeResourceName()).isEqualTo(themeResourceName);
-    }
-
-    @Test
-    public void testInsightSurfaceClientCreation_withHint() {
-        final BundleHint hint = new BundleHint.Builder().build();
-
-        final InsightSurfaceClient client =
-                new InsightSurfaceClient.Builder(mContext)
-                        .addHint(hint).build();
-
-        assertThat(client.getHints()).containsExactly(hint);
+        assertThat(client.getThemeResourceId()).isEqualTo(themeResourceId);
     }
 
     @Test
@@ -259,5 +244,17 @@ public class InsightSurfaceClientTest {
         mClient.register(null, mClientCallbacks);
         mClient.getClientInfo().getClient().onSizeChanged(0, 0);
         assertThat(executorCalled[0]).isTrue();
+    }
+
+    @Test
+    public void testPublishHints() {
+        final InsightSurfaceClient client = new InsightSurfaceClient.Builder(mContext).build();
+        final Set<ContextHint> hints = Set.of(mock(ContextHint.class));
+
+        client.register(null, mClientCallbacks);
+        client.publishHints(hints);
+
+        verify(mPersonalContextManager).publishInsightSurfaceHints(
+                eq(hints), any(InsightSurfaceClientInfo.class));
     }
 }

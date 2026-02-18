@@ -19,6 +19,7 @@ package android.service.personalcontext.embedded;
 import static android.annotation.SystemApi.Client.PRIVILEGED_APPS;
 
 import android.annotation.FlaggedApi;
+import android.annotation.StyleRes;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.content.Context;
@@ -148,8 +149,6 @@ public class InsightSurfaceClient implements AutoCloseable {
     private final List<InsightReceiver> mInsightReceivers;
     @Nullable
     private CallbackWrapper mCallbacks;
-    @NonNull
-    private final List<ContextHint> mHints;
     private boolean mIsRegistered;
 
     private record CallbackWrapper(
@@ -234,11 +233,9 @@ public class InsightSurfaceClient implements AutoCloseable {
             int nestedScrollAxes,
             boolean nestedScrollAxisLocked,
             boolean shouldBlur,
-            @Nullable String themeResourceName,
-            @NonNull List<ContextHint> hints,
+            @StyleRes int themeResourceId,
             @NonNull List<InsightReceiver> receivers) {
         mContext = context;
-        mHints = List.copyOf(hints);
         mInsightReceivers = List.copyOf(receivers);
 
         mClientInfo = new InsightSurfaceClientInfo(
@@ -250,7 +247,7 @@ public class InsightSurfaceClient implements AutoCloseable {
                 nestedScrollAxes,
                 nestedScrollAxisLocked,
                 shouldBlur,
-                themeResourceName,
+                themeResourceId,
                 mContext.getPackageName(),
                 mContext.getResources().getConfiguration(),
                 mClient);
@@ -262,26 +259,12 @@ public class InsightSurfaceClient implements AutoCloseable {
      * will cause any resulting {@link ContextInsight} to be delivered to this surface client.
      *
      * @param hints a list of {@link ContextHint}s
-     *
-     * @hide
      */
-    @VisibleForTesting
     public void publishHints(@NonNull Set<ContextHint> hints) {
         Objects.requireNonNull(hints);
         final PersonalContextManager personalContextManager =
                 mContext.getSystemService(PersonalContextManager.class);
         personalContextManager.publishInsightSurfaceHints(hints, mClientInfo);
-    }
-
-    /**
-     * Return the context hints this client was originally created with (using the
-     * {@link Builder#addHint} method).
-     *
-     * @return the {@link ContextHint}s
-     */
-    @NonNull
-    public List<ContextHint> getHints() {
-        return mHints;
     }
 
     /**
@@ -352,12 +335,12 @@ public class InsightSurfaceClient implements AutoCloseable {
     /**
      * Get the name of a theme resource to be passed to the connected visualizer. A visualizer
      * can use this name to look up the theme, which can then be used when creating an embedded
-     * surface for the client. See {@link InsightSurfaceClientInfo#getThemeResourceName()} for more
+     * surface for the client. See {@link InsightSurfaceClientInfo#getThemeResourceId()} for more
      * information.
      */
-    @Nullable
-    public String getThemeResourceName() {
-        return mClientInfo.getThemeResourceName();
+    @StyleRes
+    public int getThemeResourceId() {
+        return mClientInfo.getThemeResourceId();
     }
 
     /**
@@ -383,7 +366,7 @@ public class InsightSurfaceClient implements AutoCloseable {
 
         final PersonalContextManager personalContextManager =
                 mContext.getSystemService(PersonalContextManager.class);
-        personalContextManager.registerInsightSurfaceClient(mClientInfo, mHints);
+        personalContextManager.registerInsightSurfaceClient(mClientInfo);
 
         mCallbacks = new CallbackWrapper(
                 callbacksExecutor != null ? callbacksExecutor : mContext.getMainExecutor(),
@@ -460,7 +443,6 @@ public class InsightSurfaceClient implements AutoCloseable {
     public static final class Builder {
         private final Context mContext;
         private final List<InsightReceiver> mReceivers = new ArrayList<>();
-        private final List<ContextHint> mHints = new ArrayList<>();
         private int mWidthMeasureSpec =
                 View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
         private int mHeightMeasureSpec =
@@ -469,7 +451,7 @@ public class InsightSurfaceClient implements AutoCloseable {
         private int mNestedScrollAxes = View.SCROLL_AXIS_NONE;
         private boolean mNestedScrollAxisLocked = false;
         private boolean mShouldBlur = false;
-        private String mThemeResourceName;
+        private int mThemeResourceId;
 
         /**
          * Construct a new builder.
@@ -489,18 +471,6 @@ public class InsightSurfaceClient implements AutoCloseable {
         @NonNull
         public Builder addReceiver(@NonNull InsightReceiver receiver) {
             mReceivers.add(receiver);
-            return this;
-        }
-
-        /**
-         * Add a context hint to be sent to the context engine from the client app.
-         *
-         * @param hint the {@link ContextHint} to add
-         * @return the {@link Builder}
-         */
-        @NonNull
-        public Builder addHint(@NonNull ContextHint hint) {
-            mHints.add(hint);
             return this;
         }
 
@@ -576,12 +546,12 @@ public class InsightSurfaceClient implements AutoCloseable {
          * &lt;style/>
          * </pre>
          * <p/>
-         * See {@link InsightSurfaceClientInfo#getThemeResourceName()} for
+         * See {@link InsightSurfaceClientInfo#getThemeResourceId()} for
          * more information.
          */
         @NonNull
-        public Builder setThemeResourceName(@Nullable String themeResourceName) {
-            mThemeResourceName = themeResourceName;
+        public Builder setThemeResourceId(@StyleRes int themeResourceId) {
+            mThemeResourceId = themeResourceId;
             return this;
         }
 
@@ -617,8 +587,7 @@ public class InsightSurfaceClient implements AutoCloseable {
                     mNestedScrollAxes,
                     mNestedScrollAxisLocked,
                     mShouldBlur,
-                    mThemeResourceName,
-                    mHints,
+                    mThemeResourceId,
                     mReceivers);
         }
     }

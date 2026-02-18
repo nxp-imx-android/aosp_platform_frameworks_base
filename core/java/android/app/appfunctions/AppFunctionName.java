@@ -28,8 +28,10 @@ import android.text.TextUtils;
 import java.util.Objects;
 
 /**
- * Identifier for a specific app function. Both the package name and function ID are required to
- * identify a unique app function.
+ * Globally unique identifier for an app function.
+ *
+ * <p>See {@link AppFunctionMetadata#getName} for how to define and retrieve the identifier for a
+ * given app function.
  */
 @FlaggedApi(FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
 public final class AppFunctionName implements Parcelable {
@@ -51,11 +53,10 @@ public final class AppFunctionName implements Parcelable {
     @NonNull private final String mFunctionId;
 
     /**
-     * Constructs an {@link AppFunctionName} object which identifies a specific app function.
+     * Constructs an {@link AppFunctionName}.
      *
      * @param packageName The package name of the Android app which contains the app function.
-     * @param functionIdentifier The ID used in an {@link ExecuteAppFunctionRequest} to refer to
-     *     this app function.
+     * @param functionIdentifier The identifier of the app function within the {@code packageName}.
      */
     public AppFunctionName(@NonNull String packageName, @NonNull String functionIdentifier) {
         mPackageName = requireNonNull(packageName);
@@ -95,13 +96,13 @@ public final class AppFunctionName implements Parcelable {
         return TextUtils.formatSimple("%s/%s", mPackageName, mFunctionId);
     }
 
-    /** The package name of the Android app which contains the app function. */
+    /** Returns the package name of the Android app which contains the app function. */
     @NonNull
     public String getPackageName() {
         return mPackageName;
     }
 
-    /** The ID used in an {@link ExecuteAppFunctionRequest} to refer to this app function. */
+    /** Returns the identifier of the app function within the {@code #getPackageName}. */
     @NonNull
     public String getFunctionIdentifier() {
         return mFunctionId;

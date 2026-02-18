@@ -16,18 +16,20 @@
 
 package com.android.server.personalcontext.embedded;
 
-import static com.google.common.truth.Truth.assertThat;
+import static com.android.server.personalcontext.util.InsightUtils.fakePublishInsight;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.embedded.IInsightSurfaceClient;
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
 import android.service.personalcontext.insight.BundleInsight;
+import android.service.personalcontext.insight.PublishedContextInsight;
 import android.view.View;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -40,7 +42,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
@@ -61,11 +62,7 @@ public class EmbeddedInsightRendererTest {
     @Test
     public void testRegisterInsightSurfaceClient() {
         final InsightSurfaceClientInfo client = createClient();
-        AtomicReference<RenderToken> renderToken = new AtomicReference<>();
-        mEmbeddedInsightRenderer.registerInsightSurfaceClient(client, renderToken::set);
-        assertThat(renderToken).isNotNull();
-        verify(mClientRegistry).addClient(client, renderToken.get());
-        assertThat(renderToken.get()).isNotNull();
+        mEmbeddedInsightRenderer.registerInsightSurfaceClient(client);
     }
 
     @Test
@@ -73,8 +70,7 @@ public class EmbeddedInsightRendererTest {
         final InsightSurfaceClientInfo client = createClient();
         when(mClientRegistry.removeClient(client.getId())).thenReturn(client);
 
-        AtomicReference<RenderToken> renderToken = new AtomicReference<>();
-        mEmbeddedInsightRenderer.registerInsightSurfaceClient(client, renderToken::set);
+        mEmbeddedInsightRenderer.registerInsightSurfaceClient(client);
         mEmbeddedInsightRenderer.unregisterInsightSurfaceClient(client.getId());
         verify(mClientRegistry).removeClient(client.getId());
     }
@@ -87,7 +83,8 @@ public class EmbeddedInsightRendererTest {
         when(mClientRegistry.getClientForRenderToken(eq(renderToken))).thenReturn(client);
         when(mVisualizerRegistry.isEmpty()).thenReturn(false);
 
-        final BundleInsight insight = new BundleInsight.Builder().build();
+        final PublishedContextInsight insight =
+                fakePublishInsight(new BundleInsight.Builder().build());
         mEmbeddedInsightRenderer.render(insight, renderToken);
 
         verify(mVisualizerRegistry).createVisualizationForClient(
@@ -106,7 +103,7 @@ public class EmbeddedInsightRendererTest {
                 View.SCROLL_AXIS_NONE,
                 false,
                 false,
-                null,
+                Resources.ID_NULL,
                 "package.name",
                 new Configuration(),
                 client);

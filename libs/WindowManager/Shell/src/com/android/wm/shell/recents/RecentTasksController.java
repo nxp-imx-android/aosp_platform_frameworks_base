@@ -23,6 +23,7 @@ import static android.view.Display.INVALID_DISPLAY;
 
 import static com.android.wm.shell.Flags.enableShellTopTaskTracking;
 import static com.android.wm.shell.desktopmode.DesktopWallpaperActivity.isWallpaperTask;
+import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_RECENT_TASKS;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_TASK_OBSERVER;
 
 import android.Manifest;
@@ -381,7 +382,7 @@ public class RecentTasksController implements TaskStackListenerCallback,
 
     @VisibleForTesting
     void notifyRecentTasksChanged() {
-        ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENT_TASKS, "Notify recent tasks changed");
+        ProtoLog.v(WM_SHELL_RECENT_TASKS, "Notify recent tasks changed");
         if (mListener == null) {
             return;
         }
@@ -663,11 +664,13 @@ public class RecentTasksController implements TaskStackListenerCallback,
 
             if (!mTmpRemaining.containsKey(taskInfo.taskId)) {
                 // Skip if we've already processed it
+                ProtoLog.v(WM_SHELL_RECENT_TASKS, "Skipping already processed task: %d", taskId);
                 continue;
             }
 
             if (excludeTaskFromGeneratedList(taskInfo)) {
                 // Skip and update the list if we are excluding this task
+                ProtoLog.v(WM_SHELL_RECENT_TASKS, "Excluding task: %d", taskId);
                 mTmpRemaining.remove(taskId);
                 continue;
             }
@@ -679,15 +682,24 @@ public class RecentTasksController implements TaskStackListenerCallback,
                 if (mDesktopUserRepositories.get().getCurrent().isActiveTask(taskId)) {
                     deskId = mDesktopUserRepositories.get().getCurrent().getDeskIdForTask(
                             taskId);
+                    ProtoLog.v(WM_SHELL_RECENT_TASKS,
+                            "Task %d is an active desktop task on desk %d", taskId, deskId);
                 } else {
                     if (mDesktopModeCompatPolicy.isTransparentOverlay(taskInfo)) {
                         deskId = mDesktopUserRepositories.get().getCurrent().getActiveDeskId(
                                 taskInfo.displayId);
+                        ProtoLog.v(WM_SHELL_RECENT_TASKS,
+                                "Task %d is a transparent overlay on active desk %d", taskId,
+                                deskId);
                     } else {
                         deskId = null;
+                        ProtoLog.v(WM_SHELL_RECENT_TASKS,
+                                "Task %d is not an active desktop task", taskId);
                     }
                 }
                 if (deskId != null) {
+                    ProtoLog.v(WM_SHELL_RECENT_TASKS, "Adding task %d to desk %d", taskId,
+                            deskId);
                     // If task has their app bounds set to null which happens after reboot, set the
                     // app bounds to persisted lastFullscreenBounds. Also set the position in parent
                     // to the top left of the bounds.
@@ -730,6 +742,7 @@ public class RecentTasksController implements TaskStackListenerCallback,
                 }
 
                 // Fullscreen tasks
+                ProtoLog.v(WM_SHELL_RECENT_TASKS, "Added fullscreen task: %d", taskId);
                 groupedTasks.add(GroupedTaskInfo.forFullscreenTasks(taskInfo));
             }
         }
@@ -785,6 +798,13 @@ public class RecentTasksController implements TaskStackListenerCallback,
         } else {
             // Add the desktop tasks at the end of the list
             for (var desk : mTmpDesks.values()) {
+                if (desk.hasTasks()) {
+                    ProtoLog.v(WM_SHELL_RECENT_TASKS, "Adding desk %d with tasks to grouped tasks",
+                            desk.mDeskId);
+                } else {
+                    ProtoLog.v(WM_SHELL_RECENT_TASKS, "Adding empty desk %d to grouped tasks",
+                            desk.mDeskId);
+                }
                 groupedTasks.add(desk.createDeskTaskInfo());
             }
         }
@@ -813,6 +833,8 @@ public class RecentTasksController implements TaskStackListenerCallback,
         remainingTasks.remove(pairedTaskId);
         tasksOut.add(GroupedTaskInfo.forSplitTasks(taskInfo, pairedTaskInfo,
                 mTaskSplitBoundsMap.get(pairedTaskId)));
+        ProtoLog.v(
+                WM_SHELL_RECENT_TASKS, "Added split tasks: %d, %d", taskInfo.taskId, pairedTaskId);
         return true;
     }
 

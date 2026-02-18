@@ -20,7 +20,7 @@ import android.content.Context;
 import android.os.RemoteException;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
-import android.service.personalcontext.insight.ContextInsight;
+import android.service.personalcontext.insight.PublishedContextInsight;
 import android.util.Log;
 import android.util.Slog;
 
@@ -32,7 +32,6 @@ import com.android.server.personalcontext.component.Renderer;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executor;
-import java.util.function.Consumer;
 
 /** @hide */
 public class EmbeddedInsightRenderer implements Renderer {
@@ -75,9 +74,7 @@ public class EmbeddedInsightRenderer implements Renderer {
      * Register an insight surface client and return the {@link RenderToken} associated with that
      * client via the onRegistered callback.
      */
-    public void registerInsightSurfaceClient(
-            InsightSurfaceClientInfo clientInfo,
-            Consumer<RenderToken> onRegistered) {
+    public void registerInsightSurfaceClient(InsightSurfaceClientInfo clientInfo) {
         mExecutor.execute(() -> {
             logDebug("registering insight surface client, id=" + clientInfo.getId());
 
@@ -94,8 +91,6 @@ public class EmbeddedInsightRenderer implements Renderer {
             } catch (RemoteException e) {
                 throw e.rethrowFromSystemServer();
             }
-
-            onRegistered.accept(clientRenderToken);
         });
     }
 
@@ -132,14 +127,15 @@ public class EmbeddedInsightRenderer implements Renderer {
     }
 
     @Override
-    public boolean isInterestedInInsight(ContextInsight insight) {
+    public boolean isInterestedInInsight(PublishedContextInsight insight) {
         // Embedded insights should be rendered due to a RenderToken, which bypasses this filter.
         // We don't want any other random insights.
         return false;
     }
 
     @Override
-    public void render(@NonNull ContextInsight insight, RenderToken renderToken) {
+    public void render(@NonNull PublishedContextInsight publishedContextInsight,
+            RenderToken renderToken) {
         mExecutor.execute(() -> {
             if (mClientRegistry.isEmpty()) {
                 logDebug("NO embedded surface clients!");
@@ -153,11 +149,13 @@ public class EmbeddedInsightRenderer implements Renderer {
 
             final InsightSurfaceClientInfo client = clientFromRenderToken(renderToken);
             if (client == null) {
-                logDebug("no client found for insight [" + insight + "]");
+                logDebug("no client found for insight ["
+                        + publishedContextInsight.getInsight() + "]");
                 return;
             }
 
-            mVisualizerRegistry.createVisualizationForClient(insight, client, renderToken);
+            mVisualizerRegistry.createVisualizationForClient(publishedContextInsight, client,
+                    renderToken);
         });
     }
 

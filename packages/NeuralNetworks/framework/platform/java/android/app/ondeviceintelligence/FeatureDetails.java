@@ -58,16 +58,6 @@ public final class FeatureDetails implements Parcelable {
     public static final int FEATURE_STATUS_SERVICE_UNAVAILABLE = 4;
 
     /**
-     * The feature has been deprecated and will be removed in a future version.
-     * <p>
-     * This status indicates that the model has a newer version available and is set to be removed
-     * in a short time span. Any dependencies on the deprecated model should move to using the
-     * alternative AVAILABLE models.
-     */
-    @FlaggedApi(Flags.FLAG_ON_DEVICE_INTELLIGENCE_26Q2)
-    public static final int FEATURE_STATUS_DEPRECATED = 5;
-
-    /**
      * @hide
      */
     @IntDef(value = {
@@ -76,7 +66,6 @@ public final class FeatureDetails implements Parcelable {
             FEATURE_STATUS_DOWNLOADING,
             FEATURE_STATUS_AVAILABLE,
             FEATURE_STATUS_SERVICE_UNAVAILABLE,
-            FEATURE_STATUS_DEPRECATED
     })
     @Target({ElementType.TYPE_USE, ElementType.METHOD, ElementType.PARAMETER, ElementType.FIELD})
     @Retention(RetentionPolicy.SOURCE)

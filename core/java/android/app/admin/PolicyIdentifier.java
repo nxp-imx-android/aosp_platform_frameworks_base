@@ -106,6 +106,8 @@ public final class PolicyIdentifier<T> {
         return mId;
     }
 
+    // LINT.IfChange
+
     /**
      * Screen capture is disallowed. See {@link android.view.Display#FLAG_SECURE} for more details
      * on how blocking works.
@@ -271,4 +273,6 @@ public final class PolicyIdentifier<T> {
             emptyStringAllowed = false)
     public static final PolicyIdentifier<String> LOCKSCREEN_MESSAGE =
             new PolicyIdentifier<>("LOCKSCREEN_MESSAGE");
+
+    // LINT.ThenChange(/tools/policymetadata/policies.textproto)
 }

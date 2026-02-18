@@ -50,6 +50,7 @@ import android.service.personalcontext.hint.NotificationHint;
 import android.service.personalcontext.hint.TextClassificationHint;
 import android.service.personalcontext.insight.ContextInsight;
 import android.service.personalcontext.insight.ContextInsightWrapper;
+import android.service.personalcontext.insight.PublishedContextInsight;
 import android.service.personalcontext.insight.interaction.AttributionDetails;
 import android.service.personalcontext.insight.interaction.InsightEvent;
 import android.util.Log;
@@ -194,7 +195,8 @@ public class PersonalContextManagerService extends SystemService {
             final ContextComponentMonitor monitor = new ContextComponentMonitor(componentManager);
             final HintInvalidationUnderstander hintInvalidationUnderstander =
                     new HintInvalidationUnderstander(
-                            insight -> startInsightWorkflow(userId, Set.of(insight)));
+                            (insight, componentId) ->
+                                    startInsightWorkflow(userId, componentId, Set.of(insight)));
             final SettingObserver observer = new SettingObserver(userContext, mExecutor, 0);
             final NotificationActionRenderer notificationActionRenderer =
                     new NotificationActionRenderer(
@@ -350,14 +352,28 @@ public class PersonalContextManagerService extends SystemService {
         }
     }
 
-    private void startInsightWorkflow(@UserIdInt int userId, Set<ContextInsight> insights) {
+    private void startInsightWorkflow(@UserIdInt int userId, UUID componentId,
+            Set<ContextInsight> insights) {
+        final HashSet<PublishedContextInsight> publishedInsights = new HashSet<>();
+        for (ContextInsight insight : insights) {
+            publishedInsights.add(new PublishedContextInsight(insight, componentId));
+        }
+
+        startPublishedInsightWorkflow(userId, componentId, publishedInsights);
+    }
+
+    private void startPublishedInsightWorkflow(@UserIdInt int userId, UUID componentId,
+            Set<PublishedContextInsight> insights) {
         final ContextComponentManager componentManager = getComponentManagerForUser(userId);
+        final HashSet<PublishedContextInsight> publishedInsights = new HashSet<>();
+
         if (componentManager == null) {
             Slog.w(TAG, "Cannot start renderer workflow, no component manager for user " + userId);
             return;
         }
 
-        RendererWorkflow.start(componentManager, insights, HINT_SIGNING_KEY, mLogger, mExecutor);
+        RendererWorkflow.start(componentManager, publishedInsights, HINT_SIGNING_KEY, mLogger,
+                mExecutor);
     }
 
     /** Returns the component manager for the given user, for testing purposes. */
@@ -371,22 +387,13 @@ public class PersonalContextManagerService extends SystemService {
     private void registerInsightSurfaceClient(
             int userId,
             int processId,
-            Set<ContextHint> clientHints,
             InsightSurfaceClientInfo clientInfo) {
         final UserState userState = getUserStateSynchronized(userId);
         if (userState == null) {
             return;
         }
 
-        userState.embeddedInsightRenderer.registerInsightSurfaceClient(
-                clientInfo, renderToken -> {
-                    if (renderToken == null) {
-                        Slog.e(TAG, "No render token for client " + clientInfo.getId());
-                        return;
-                    }
-                    startRefinerWorkflow(
-                            userId, processId, clientHints, Set.of(renderToken), emptySet());
-                });
+        userState.embeddedInsightRenderer.registerInsightSurfaceClient(clientInfo);
     }
 
     private void unregisterInsightSurfaceClient(int userId, UUID id) {
@@ -427,7 +434,8 @@ public class PersonalContextManagerService extends SystemService {
             return;
         }
 
-        final UUID componentId = event.getInsight().getOriginatingComponentId();
+        final UUID componentId = event.getInsight().getPublisherComponentId();
+
         final Refiner refiner = userState.componentManager.getRefinerById(componentId);
         if (refiner == null) {
             Slog.e(
@@ -568,7 +576,8 @@ public class PersonalContextManagerService extends SystemService {
 
         @PermissionManuallyEnforced
         @Override
-        public void publishInsight(List<ContextInsightWrapper> insights, int userId) {
+        public void publishInsight(List<ContextInsightWrapper> insights, ParcelUuid componentId,
+                int userId) {
             verifyUser(userId);
 
             // TODO(b/450547433): Add security checks.
@@ -577,6 +586,7 @@ public class PersonalContextManagerService extends SystemService {
                             getService()
                                     .startInsightWorkflow(
                                             userId,
+                                            componentId.getUuid(),
                                             ContextInsightWrapper.unwrapInto(
                                                     insights, new HashSet<>())));
         }
@@ -612,7 +622,6 @@ public class PersonalContextManagerService extends SystemService {
         @PermissionManuallyEnforced
         @Override
         public void registerInsightSurfaceClient(
-                List<ContextHintWrapper> clientHints,
                 InsightSurfaceClientInfo clientInfo,
                 int userId) {
             verifyUser(userId);
@@ -626,8 +635,6 @@ public class PersonalContextManagerService extends SystemService {
                                     .registerInsightSurfaceClient(
                                             userId,
                                             callingPid,
-                                            ContextHintWrapper.unwrapInto(
-                                                    clientHints, new HashSet<>()),
                                             clientInfo));
         }
 

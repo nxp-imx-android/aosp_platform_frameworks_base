@@ -27,8 +27,8 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.insight.BundleInsight;
-import android.service.personalcontext.insight.ContextInsight;
-import android.service.personalcontext.insight.ContextInsightWrapper;
+import android.service.personalcontext.insight.PublishedContextInsight;
+import android.service.personalcontext.insight.PublishedContextInsightWrapper;
 import android.view.Display;
 import android.view.SurfaceControlViewHost;
 import android.view.View;
@@ -54,8 +54,9 @@ public class InsightSurfaceVisualizerServiceTest {
     @Mock private IVisualizationResult mResult;
     @Mock private Context mContext;
     @Mock private Display mDisplay;
-    private final ContextInsightWrapper mInsight =
-            new ContextInsightWrapper(new BundleInsight.Builder().build());
+    private final PublishedContextInsightWrapper mInsight =
+            new PublishedContextInsightWrapper(new PublishedContextInsight(
+                    new BundleInsight.Builder().build(), UUID.randomUUID()));
     private final RenderToken mRenderToken = new RenderToken(UUID.randomUUID());
 
     private final InsightSurfaceVisualizerService.Injector mInjector =
@@ -117,7 +118,7 @@ public class InsightSurfaceVisualizerServiceTest {
         @Override
         public View onCreateEmbeddedView(
                 @NonNull Context context,
-                @NonNull ContextInsight insights,
+                @NonNull PublishedContextInsight insights,
                 @NonNull RenderToken renderToken,
                 @NonNull InsightSurfaceClientInfo client) {
             mMonitor.onCreateEmbeddedView(client);

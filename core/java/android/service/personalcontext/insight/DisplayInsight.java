@@ -21,9 +21,7 @@ import static java.util.Objects.requireNonNull;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.annotation.SystemApi;
 import android.os.Bundle;
-import android.service.personalcontext.ComponentIdProvider;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.Token;
 import android.service.personalcontext.hint.ContextHint;
@@ -161,22 +159,6 @@ public final class DisplayInsight extends ContextInsight {
         @NonNull
         Builder setAttributionDetails(@Nullable AttributionDetails attributionDetails) {
             mBaseBuilder.setAttributionDetails(attributionDetails);
-            return this;
-        }
-
-        /**
-         * Sets the originating component in the resulting {@link ContextInsight}, allowing events
-         * to be routed back to the understander that created this {@link ContextInsight}.
-         *
-         * @param originatingComponent the component that is creating this insight
-         *
-         * @hide
-         */
-        @SystemApi
-        @NonNull
-        public Builder setOriginatingComponentId(
-                @Nullable ComponentIdProvider originatingComponent) {
-            mBaseBuilder.setOriginatingComponentId(originatingComponent);
             return this;
         }
 

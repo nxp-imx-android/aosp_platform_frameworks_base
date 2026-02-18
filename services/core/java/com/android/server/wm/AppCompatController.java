@@ -79,7 +79,8 @@ class AppCompatController {
                 mAppCompatOverrides, mTransparentPolicy, wmService.mAppCompatConfiguration);
         mSizeCompatModePolicy = new AppCompatSizeCompatModePolicy(activityRecord,
                 mAppCompatOverrides);
-        mSandboxingPolicy = new AppCompatSandboxingPolicy(activityRecord);
+        mSandboxingPolicy = new AppCompatSandboxingPolicy(activityRecord,
+                wmService.mAppCompatConfiguration);
         mDisplayCompatPolicy = new AppCompatDisplayCompatPolicy(activityRecord);
         mResourceOverlayPolicy = new AppCompatResourceOverlayPolicy(activityRecord);
         mRecreateOnConfigChangePolicy = new AppCompatRecreateOnConfigChangePolicy(activityRecord);

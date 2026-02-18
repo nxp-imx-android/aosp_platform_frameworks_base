@@ -201,8 +201,9 @@ public class ActivityStartController {
             mHomeLaunchingTaskDisplayAreas.remove(taskDisplayArea);
         }
         mLastHomeActivityStartRecord = tmpOutRecord[0];
+        final Task rootHomeTask = taskDisplayArea.getRootHomeTask();
         if (isStartResultSuccessful(mLastHomeActivityStartResult)
-                && taskDisplayArea.getRootHomeTask().mInResumeTopActivity) {
+                && rootHomeTask != null && rootHomeTask.mInResumeTopActivity) {
             // If we are in resume section already, home activity will be initialized, but not
             // resumed (to avoid recursive resume) and will stay that way until something pokes it
             // again. We need to schedule another resume.

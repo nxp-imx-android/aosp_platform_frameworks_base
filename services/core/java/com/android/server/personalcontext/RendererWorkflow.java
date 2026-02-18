@@ -21,6 +21,7 @@ import android.annotation.Nullable;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.insight.ContextInsight;
+import android.service.personalcontext.insight.PublishedContextInsight;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Slog;
@@ -49,41 +50,41 @@ public final class RendererWorkflow {
     /** Starts a new pass of the renderer workflow with an insight. */
     public static void start(
             ComponentProvider provider,
-            Collection<ContextInsight> insights,
+            Collection<PublishedContextInsight> publishedContextInsights,
             SecretKeySpec secretKey,
             EventListener eventListener,
             ScheduledExecutorService executor) {
-        for (ContextInsight insight : insights) {
-            start(provider, insight, secretKey, eventListener, executor);
+        for (PublishedContextInsight publishedInsight : publishedContextInsights) {
+            start(provider, publishedInsight, secretKey, eventListener, executor);
         }
     }
 
     /** Starts a new pass of the renderer workflow with an insight. */
     public static void start(
             ComponentProvider provider,
-            ContextInsight insight,
+            PublishedContextInsight publishedInight,
             SecretKeySpec secretKey,
             EventListener eventListener,
             ScheduledExecutorService executor) {
         // Build a new workflow instance and start it.
-        new RendererWorkflow(provider, insight, secretKey, eventListener, executor).start();
+        new RendererWorkflow(provider, publishedInight, secretKey, eventListener, executor).start();
     }
 
     private final long mFlowId = FLOW_COUNTER.incrementAndGet();
     private final ComponentProvider mProvider;
-    private final ContextInsight mInsight;
+    private final PublishedContextInsight mPublishedContextInsight;
     private final SecretKeySpec mSecretKey;
     private final EventListener mEventListener;
     private final ScheduledExecutorService mExecutor;
 
     private RendererWorkflow(
             ComponentProvider provider,
-            ContextInsight insight,
+            PublishedContextInsight publishedContextInsight,
             SecretKeySpec secretKey,
             EventListener eventListener,
             ScheduledExecutorService executor) {
         mProvider = provider;
-        mInsight = insight;
+        mPublishedContextInsight = publishedContextInsight;
         mSecretKey = secretKey;
         mEventListener = eventListener != null ? eventListener : new EventListener() {};
         mExecutor = executor;
@@ -93,8 +94,10 @@ public final class RendererWorkflow {
         }
     }
 
-    private static boolean isInsightValid(ContextInsight insight, SecretKeySpec secretKey)
+    private static boolean isInsightValid(PublishedContextInsight publishedContextInsight,
+            SecretKeySpec secretKey)
             throws GeneralSecurityException {
+        final ContextInsight insight = publishedContextInsight.getInsight();
         if (Log.isLoggable(TAG, Log.DEBUG)) {
             Slog.d(TAG, "Validating insight " + insight);
         }
@@ -119,16 +122,18 @@ public final class RendererWorkflow {
     private void start() {
         mExecutor.execute(() -> {
             try {
-                mEventListener.onRendererWorkflowStarted(mFlowId, mInsight);
+                mEventListener.onRendererWorkflowStarted(mFlowId, mPublishedContextInsight);
 
                 // Validate the insight.
-                if (!isInsightValid(mInsight, mSecretKey)) {
+                if (!isInsightValid(mPublishedContextInsight, mSecretKey)) {
                     throw new IllegalStateException(
-                            TextUtils.formatSimple("Insight %s has invalid hint(s)", mInsight));
+                            TextUtils.formatSimple("Insight %s has invalid hint(s)",
+                                    mPublishedContextInsight));
                 }
 
                 // Extract the RenderToken from the insight if there is one.
-                final Set<RenderToken> renderTokens = mInsight.getRenderTokens();
+                final Set<RenderToken> renderTokens =
+                        mPublishedContextInsight.getInsight().getRenderTokens();
 
                 if (!renderTokens.isEmpty()) {
                     // If we have RenderTokens, then only send the insight to those renderers.
@@ -137,17 +142,19 @@ public final class RendererWorkflow {
                                 mProvider.getRendererById(renderToken.getRendererComponentId());
                         if (renderer == null) throw new IllegalStateException("Renderer not found");
 
-                        mEventListener.onInsightSentToRenderer(mFlowId, mInsight, renderer);
-                        renderer.render(mInsight, renderToken);
+                        mEventListener.onInsightSentToRenderer(mFlowId, mPublishedContextInsight,
+                                renderer);
+                        renderer.render(mPublishedContextInsight, renderToken);
                     }
                 } else {
                     // If we don't have a RenderToken, then send the insight to all renderers...
                     // TODO: Figure out what to do when we have multiple catch-all renderers.
                     for (Renderer renderer : mProvider.getRenderers()) {
                         // ... but only if the renderer actually wants it.
-                        if (renderer.isInterestedInInsight(mInsight)) {
-                            mEventListener.onInsightSentToRenderer(mFlowId, mInsight, renderer);
-                            renderer.render(mInsight, renderer.mintRenderToken());
+                        if (renderer.isInterestedInInsight(mPublishedContextInsight)) {
+                            mEventListener.onInsightSentToRenderer(mFlowId,
+                                    mPublishedContextInsight, renderer);
+                            renderer.render(mPublishedContextInsight, renderer.mintRenderToken());
                         }
                     }
                 }
@@ -180,11 +187,12 @@ public final class RendererWorkflow {
      */
     public interface EventListener {
         /** Called when a workflow is started. */
-        default void onRendererWorkflowStarted(long flowId, ContextInsight insight) { }
+        default void onRendererWorkflowStarted(long flowId,
+                PublishedContextInsight publishedContextInsight) { }
 
         /** Called when an insight is sent to a renderer. */
         default void onInsightSentToRenderer(
-                long flowId, ContextInsight insight, Renderer renderer) { }
+                long flowId, PublishedContextInsight publishedContextInsight, Renderer renderer) { }
 
         /** Called when a workflow stops. */
         default void onRendererWorkflowFinished(long flowId) { }

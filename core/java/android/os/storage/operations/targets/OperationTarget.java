@@ -28,6 +28,15 @@ import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 public abstract class OperationTarget implements Parcelable {
     OperationTarget() {}
 
+    /**
+     * Returns a human-readable representation of this target.
+     *
+     * <p>Concrete implementations should return a string that describes the target in a way that is
+     * useful for debugging and logging (e.g., including key paths or identifiers).
+     *
+     * <p><b>Note:</b> This string is intended for diagnostic purposes only and should not be parsed
+     * or relied upon as a stable identifier for the files or the target configuration.
+     */
     @Override
     @NonNull
     public abstract String toString();

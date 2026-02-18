@@ -3039,6 +3039,15 @@ package android.os.storage {
 
 }
 
+package android.os.storage.operations {
+
+  @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public final class FileOperationEnqueueResult implements android.os.Parcelable {
+    ctor public FileOperationEnqueueResult(@NonNull String);
+    ctor public FileOperationEnqueueResult(int);
+  }
+
+}
+
 package android.os.vibrator {
 
   @FlaggedApi("android.os.vibrator.normalized_pwle_effects") public final class BasicPwleSegment extends android.os.vibrator.VibrationEffectSegment {
@@ -3573,14 +3582,8 @@ package android.service.personalcontext {
 
 package android.service.personalcontext.hint {
 
-  public static interface AutofillInlineRequestHint.AugmentedAutofillProxy {
-    method @NonNull public android.os.IBinder asBinder();
-    method @NonNull public android.app.assist.AssistStructure.ViewNode getFocusedViewNode(@NonNull android.view.autofill.AutofillId);
-    method @NonNull public android.graphics.Rect getViewCoordinates(@NonNull android.view.autofill.AutofillId);
-  }
-
   public static final class AutofillInlineRequestHint.Builder {
-    method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint.Builder setAugmentedAutofillProxy(@NonNull android.service.personalcontext.hint.AutofillInlineRequestHint.AugmentedAutofillProxy);
+    method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint.Builder setAugmentedAutofillProxy(@NonNull android.service.personalcontext.hint.autofill.AugmentedAutofillProxy);
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class ContextHint {
@@ -3618,6 +3621,16 @@ package android.service.personalcontext.hint {
 
 }
 
+package android.service.personalcontext.hint.autofill {
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public interface AugmentedAutofillProxy {
+    method @NonNull public android.os.IBinder asBinder();
+    method @NonNull public android.app.assist.AssistStructure.ViewNode fetchFocusedViewNode(@NonNull android.view.autofill.AutofillId);
+    method @NonNull public android.graphics.Rect fetchViewCoordinates(@NonNull android.view.autofill.AutofillId);
+  }
+
+}
+
 package android.service.personalcontext.insight {
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class ContextInsight {
@@ -3629,6 +3642,11 @@ package android.service.personalcontext.insight {
     ctor public HintInvalidationInsight.Builder(@NonNull android.service.personalcontext.hint.ContextHintWithSignature);
     method @NonNull public android.service.personalcontext.insight.HintInvalidationInsight.Builder addToken(@NonNull android.service.personalcontext.Token);
     method @NonNull public android.service.personalcontext.insight.HintInvalidationInsight build();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class PublishedContextInsight {
+    method @NonNull public static android.service.personalcontext.insight.PublishedContextInsight createPublishedInsightFromBundle(@Nullable android.os.Bundle);
+    method @NonNull public android.os.Bundle toBundle();
   }
 
 }

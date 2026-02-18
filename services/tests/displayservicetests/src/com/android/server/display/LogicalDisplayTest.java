@@ -35,8 +35,6 @@ import android.app.PropertyInvalidatedCache;
 import android.content.Context;
 import android.graphics.Point;
 import android.os.IBinder;
-import android.platform.test.annotations.EnableFlags;
-import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.CopyOnWriteSparseArray;
 import android.util.SparseArray;
 import android.view.Display;
@@ -46,7 +44,6 @@ import android.view.SurfaceControl;
 
 import androidx.test.filters.SmallTest;
 
-import com.android.server.display.feature.flags.Flags;
 import com.android.server.display.layout.Layout;
 
 import org.junit.Before;
@@ -66,9 +63,6 @@ public class LogicalDisplayTest {
     private static final int DISPLAY_HEIGHT = 200;
     private static final int MODE_ID = 1;
     private static final int OTHER_MODE_ID = 2;
-
-    @Rule
-    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     private LogicalDisplay mLogicalDisplay;
     private DisplayDevice mDisplayDevice;
@@ -765,8 +759,7 @@ public class LogicalDisplayTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ANISOTROPY_CORRECTED_MODE_BY_DEFAULT)
-    public void testAnisotropyCorrectedMode_selected() {
+    public void testAnisotropyCorrectedMode_parentModeSelected_appliesCorrectedMode() {
         mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice, false,
                 mDisplayInfoCacheMocked);
         Display.Mode anisotropicMode = new Display.Mode(MODE_ID, -1, -1, 0,
@@ -797,14 +790,14 @@ public class LogicalDisplayTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ANISOTROPY_CORRECTED_MODE_BY_DEFAULT)
-    public void testAnisotropyCorrectedMode_notSelectedNoMatchingMode() {
+    public void testAnisotropyCorrectedMode_parentModeNotSelected_doesNotApplyCorrectedMode() {
+        int mismatchedModeId = 1000;
         mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice, false,
                 mDisplayInfoCacheMocked);
         Display.Mode anisotropicMode = new Display.Mode(MODE_ID, -1, -1, 0,
                 1000, 1000, 60f, 60f, new float[]{}, new int[]{});
-        Display.Mode anisotropyCorrectedMode = new Display.Mode(OTHER_MODE_ID, 1000, -1,
-                Display.Mode.FLAG_ANISOTROPY_CORRECTION, 2000, 2000, 60f, 60f,
+        Display.Mode anisotropyCorrectedMode = new Display.Mode(OTHER_MODE_ID, mismatchedModeId,
+                -1, Display.Mode.FLAG_ANISOTROPY_CORRECTION, 2000, 2000, 60f, 60f,
                 new float[]{}, new int[]{});
 
         mDisplayDeviceInfo.type = Display.TYPE_EXTERNAL;
@@ -829,8 +822,7 @@ public class LogicalDisplayTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ANISOTROPY_CORRECTED_MODE_BY_DEFAULT)
-    public void testAnisotropyCorrectedMode_notSelectedIntenalDisplay() {
+    public void testAnisotropyCorrectedMode_internalDisplay_doesNotApplyCorrectedMode() {
         mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice, false,
                 mDisplayInfoCacheMocked);
         Display.Mode anisotropicMode = new Display.Mode(MODE_ID, -1, -1, 0,
@@ -861,8 +853,7 @@ public class LogicalDisplayTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ANISOTROPY_CORRECTED_MODE_BY_DEFAULT)
-    public void testAnisotropyCorrectedMode_notSelectedUserPreferredModeSetAndSelected() {
+    public void testAnisotropyCorrectedMode_userPreferredModeSelected_doesNotApplyCorrectedMode() {
         mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice, false,
                 mDisplayInfoCacheMocked);
         Display.Mode anisotropicMode = new Display.Mode(MODE_ID, -1, -1, 0,

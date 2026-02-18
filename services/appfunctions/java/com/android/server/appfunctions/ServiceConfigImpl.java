@@ -35,6 +35,10 @@ public class ServiceConfigImpl implements ServiceConfig {
             "app_function_metadata_change_debounce_ms";
     static final int DEFAULT_APP_FUNCTION_METADATA_CHANGE_DEBOUNCE_MS = 1000;
 
+    static final String DEVICE_CONFIG_PROPERTY_ALLOWLIST_CACHE_SIZE =
+            "app_function_allowlist_cache_size";
+    static final int DEFAULT_APP_FUNCTION_ALLOWLIST_CACHE_SIZE = 5;
+
     @Override
     public long getExecuteAppFunctionCancellationTimeoutMillis() {
         return DeviceConfig.getLong(
@@ -68,5 +72,13 @@ public class ServiceConfigImpl implements ServiceConfig {
                 NAMESPACE_APP_FUNCTIONS,
                 DEVICE_CONFIG_PROPERTY_APP_FUNCTION_METADATA_CHANGE_DEBOUNCE_MS,
                 DEFAULT_APP_FUNCTION_METADATA_CHANGE_DEBOUNCE_MS);
+    }
+
+    @Override
+    public int getAppFunctionAllowlistCacheSize() {
+        return DeviceConfig.getInt(
+                NAMESPACE_APP_FUNCTIONS,
+                DEVICE_CONFIG_PROPERTY_ALLOWLIST_CACHE_SIZE,
+                DEFAULT_APP_FUNCTION_ALLOWLIST_CACHE_SIZE);
     }
 }

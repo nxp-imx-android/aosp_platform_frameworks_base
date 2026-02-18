@@ -28,8 +28,8 @@ import android.service.personalcontext.embedded.IInsightSurfaceVisualizer;
 import android.service.personalcontext.embedded.IVisualizationResult;
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
 import android.service.personalcontext.embedded.InsightSurfaceVisualizerService;
-import android.service.personalcontext.insight.ContextInsight;
-import android.service.personalcontext.insight.ContextInsightWrapper;
+import android.service.personalcontext.insight.PublishedContextInsight;
+import android.service.personalcontext.insight.PublishedContextInsightWrapper;
 import android.util.Log;
 import android.util.Slog;
 
@@ -164,7 +164,7 @@ public class VisualizerConnection {
 
     /** Create a visualization for the given client using the given insights. */
     public void createVisualizationForClient(
-            ContextInsight insight,
+            PublishedContextInsight publishedContextInsight,
             InsightSurfaceClientInfo client,
             RenderToken renderToken,
             Consumer<Boolean> callback) {
@@ -177,7 +177,7 @@ public class VisualizerConnection {
             }
             try {
                 mVisualizer.createVisualizationForClient(
-                        new ContextInsightWrapper(insight),
+                        new PublishedContextInsightWrapper(publishedContextInsight),
                         client,
                         renderToken,
                         new IVisualizationResult.Stub() {

@@ -168,7 +168,7 @@ final class AppFunctionMetadataReader {
                         targetAppFunction.getPackageName(),
                         targetAppFunction.getFunctionIdentifier(),
                         UserHandle.of(userId))
-                && !mMultiUserDynamicAppFunctionRegistry.isAppFunctionRegistered(
+                && !mMultiUserDynamicAppFunctionRegistry.hasRegistrations(
                         targetAppFunction.getPackageName(),
                         targetAppFunction.getFunctionIdentifier(),
                         UserHandle.of(userId))) {
@@ -456,7 +456,7 @@ final class AppFunctionMetadataReader {
 
         if (mCache.isDynamicFunction(packageName, functionId, UserHandle.of(userId))) {
             return isRuntimeEnabled
-                    && mMultiUserDynamicAppFunctionRegistry.isAppFunctionRegistered(
+                    && mMultiUserDynamicAppFunctionRegistry.hasRegistrations(
                             packageName, functionId, UserHandle.of(userId));
         } else {
             // TODO(b/467317154): Take into account AppFunctionService availability for static

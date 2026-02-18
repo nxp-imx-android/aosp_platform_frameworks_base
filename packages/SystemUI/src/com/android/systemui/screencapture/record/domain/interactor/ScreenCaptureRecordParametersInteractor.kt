@@ -48,7 +48,7 @@ constructor(
 
     var shouldShowTaps: Boolean
         set(value) {
-            serviceInteractor.updateShouldShowTaps(shouldShowTaps)
+            serviceInteractor.updateShouldShowTaps(value)
             repository.shouldShowTaps = value
         }
         get() = repository.shouldShowTaps

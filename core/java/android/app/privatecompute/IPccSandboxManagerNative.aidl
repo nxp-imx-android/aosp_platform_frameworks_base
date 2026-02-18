@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-package android.service.personalcontext;
+package android.app.privatecompute;
 
-import android.annotation.FlaggedApi;
+import android.os.PersistableBundle;
 
-import java.util.UUID;
-
-/** Provides a component id. */
-@FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
-public interface ComponentIdProvider {
-    /** @hide */
-    UUID getComponentId();
+/**
+ * @hide
+ */
+interface IPccSandboxManagerNative {
+    oneway void writeToAuditLog(in PersistableBundle data);
 }

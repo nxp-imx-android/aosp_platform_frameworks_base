@@ -21,12 +21,11 @@ import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_DYNAMIC_APP_FUNCT
 import android.annotation.FlaggedApi;
 
 /**
- * Represents a registered {@link AppFunction}.
+ * Result of {@link AppFunctionManager#registerAppFunction}.
  *
- * <p>This object is returned from {@link AppFunctionManager#registerAppFunction(String, Executor,
- * AppFunction)}. The caller should retain a reference to this object and call {@link #unregister()}
- * when the app function is no longer needed, typically when the component's lifecycle ends (e.g.,
- * in {@code onStop()} or {@code onDestroy()}).
+ * <p>The caller should retain a reference to this object and call {@link #unregister} when the app
+ * function is no longer relevant (e.g., in {@link android.app.Activity#onStop} or before {@link
+ * android.app.Service#stopForeground}).
  *
  * <p>Failing to unregister the app function can lead to memory leaks and unexpected behavior, as
  * the system will continue to hold a reference to the {@link AppFunction} object.
@@ -34,8 +33,10 @@ import android.annotation.FlaggedApi;
 @FlaggedApi(FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
 public interface AppFunctionRegistration {
     /**
-     * Removes the associated {@link AppFunction} from the system. If the app function was already
-     * unregistered, this method is a no-op.
+     * Unregisters the app function previously registered with {@link
+     * AppFunctionManager#registerAppFunction}.
+     *
+     * <p>If the app function was already unregistered, this method has no effect.
      */
     void unregister();
 }

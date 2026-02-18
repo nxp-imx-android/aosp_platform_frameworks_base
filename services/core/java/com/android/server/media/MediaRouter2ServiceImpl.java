@@ -2073,6 +2073,22 @@ class MediaRouter2ServiceImpl {
                         died));
 
         userRecord.mManagerRecords.remove(managerRecord);
+        RouterRecord suggestedRouter =
+                userRecord.findRouterRecordLocked(managerRecord.mTargetPackageName);
+        if (suggestedRouter != null
+                && suggestedRouter
+                        .getDeviceSuggestionsLocked()
+                        .containsKey(managerRecord.mOwnerPackageName)) {
+            suggestedRouter.putDeviceSuggestionsLocked(
+                    managerRecord.mOwnerPackageName, /* deviceSuggestions= */ null);
+            userRecord.mHandler.sendMessage(
+                    obtainMessage(
+                            UserHandler::notifyDeviceSuggestionsUpdatedOnHandler,
+                            userRecord.mHandler,
+                            suggestedRouter.mPackageName,
+                            managerRecord.mOwnerPackageName,
+                            /* suggesteddeviceSuggestions */ null));
+        }
         managerRecord.dispose();
         disposeUserIfNeededLocked(userRecord); // since manager removed from user
     }

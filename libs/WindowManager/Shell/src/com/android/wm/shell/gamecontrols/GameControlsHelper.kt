@@ -20,6 +20,7 @@ import android.app.TaskInfo
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
 import android.os.UserHandle
 import android.window.DesktopExperienceFlags
 import com.android.internal.protolog.ProtoLog
@@ -134,13 +135,17 @@ object GameControlsHelper {
     private fun hasGameControlsOptOutTag(context: Context, taskInfo: TaskInfo): Boolean {
         // The opt-out is set in Android manifest file meta-data tag.
 
-        val appInfo = taskInfo.topActivityInfo?.applicationInfo ?: return false
-
         val gameControlsOptOutMetadataKey =
             context.resources.getString(R.string.config_gameControlsOptOutMetadataKey)
         if (gameControlsOptOutMetadataKey.isEmpty()) {
             return false
         }
+
+        val packageName = taskInfo.baseActivity?.packageName ?: return false
+        val appInfo = context.packageManager.getApplicationInfo(
+            packageName,
+            PackageManager.GET_META_DATA,
+        )
 
         return appInfo.metaData?.getBoolean(gameControlsOptOutMetadataKey) ?: false
     }

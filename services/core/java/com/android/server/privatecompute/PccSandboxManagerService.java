@@ -27,6 +27,7 @@ import com.android.server.SystemService;
  * (PCC) sandbox.
  */
 public class PccSandboxManagerService extends SystemService {
+    private static final String NATIVE_SERVICE_NAME = "pcc_sandbox_native";
     private final PccSandboxManagerServiceImpl mServiceImpl;
     private final PccSandboxManagerInternal mInternal;
     private final Context mContext;
@@ -44,6 +45,7 @@ public class PccSandboxManagerService extends SystemService {
     public void onStart() {
         if (enablePccFrameworkSupport()) {
             publishBinderService(Context.PCC_SANDBOX_SERVICE, mServiceImpl);
+            publishBinderService(NATIVE_SERVICE_NAME, mServiceImpl.getNativeBinder());
             LocalServices.addService(PccSandboxManagerInternal.class, mInternal);
         }
     }

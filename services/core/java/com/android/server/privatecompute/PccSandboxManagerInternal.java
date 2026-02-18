@@ -34,6 +34,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
 import android.content.pm.ProviderInfo;
+import android.content.pm.ResolveInfo;
 import android.os.BadParcelableException;
 import android.os.Binder;
 import android.os.Bundle;
@@ -153,6 +154,15 @@ public final class PccSandboxManagerInternal implements OnRoleHoldersChangedList
                 com.android.internal.R.string.config_systemSettingsIntelligence);
         String systemUiPackage = mContext.getString(
                 com.android.internal.R.string.config_systemUi);
+        String recentsUiComponent = mContext.getString(
+                com.android.internal.R.string.config_recentsComponentName);
+        String recentsUiPackage = null;
+        if (recentsUiComponent != null && !recentsUiComponent.isEmpty()) {
+            ComponentName cn = ComponentName.unflattenFromString(recentsUiComponent);
+            if (cn != null) {
+                recentsUiPackage = cn.getPackageName();
+            }
+        }
 
         String mediaStorePackage = resolveProviderPackageName(
                 android.provider.MediaStore.AUTHORITY);
@@ -170,6 +180,13 @@ public final class PccSandboxManagerInternal implements OnRoleHoldersChangedList
         String blockedNumberPackage = resolveProviderPackageName(
                 android.provider.BlockedNumberContract.AUTHORITY);
 
+        Intent setupWizardIntent = new Intent(Intent.ACTION_MAIN);
+        setupWizardIntent.addCategory(Intent.CATEGORY_SETUP_WIZARD);
+        List<ResolveInfo> setupMatches = mContext.getPackageManager().queryIntentActivities(
+                setupWizardIntent,
+                PackageManager.MATCH_SYSTEM_ONLY | PackageManager.MATCH_DIRECT_BOOT_AWARE
+                        | PackageManager.MATCH_DIRECT_BOOT_UNAWARE);
+
         synchronized (mLock) {
             if (settingsIntelligencePackage != null && !settingsIntelligencePackage.isEmpty()) {
                 mPccTrustedPackages.add(settingsIntelligencePackage);
@@ -178,6 +195,11 @@ public final class PccSandboxManagerInternal implements OnRoleHoldersChangedList
             if (systemUiPackage != null && !systemUiPackage.isEmpty()) {
                 mPccTrustedPackages.add(systemUiPackage);
             }
+
+            if (recentsUiPackage != null && !recentsUiPackage.isEmpty()) {
+                mPccTrustedPackages.add(recentsUiPackage);
+            }
+
             if (mediaStorePackage != null) {
                 mPccTrustedPackages.add(mediaStorePackage);
             }
@@ -202,6 +224,12 @@ public final class PccSandboxManagerInternal implements OnRoleHoldersChangedList
             if (blockedNumberPackage != null) {
                 mPccTrustedPackages.add(blockedNumberPackage);
             }
+            for (ResolveInfo info : setupMatches) {
+                if (info.activityInfo != null && info.activityInfo.packageName != null) {
+                    mPccTrustedPackages.add(info.activityInfo.packageName);
+                }
+            }
+
             Slog.d(TAG, "Trusted PCC Packages: " + mPccTrustedPackages);
         }
     }

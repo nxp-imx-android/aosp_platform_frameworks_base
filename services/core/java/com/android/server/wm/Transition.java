@@ -279,6 +279,9 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
      */
     private ArrayList<Task> mTransientHideTasks;
 
+    /** The tasks that maybe changing their lifecycle state. */
+    private ArraySet<WindowContainer> mLifecycleChangingContainers;
+
     private static final Duration TRANSACTION_PRESENTED_TIMEOUT = Duration.ofSeconds(1);
 
     private ObservedRemoteCallback mPendingFullscreenRequest;
@@ -929,6 +932,22 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
      */
     void recordTaskOrder(WindowContainer from) {
         recordDisplay(from.getDisplayContent());
+    }
+
+    /**
+     * Record the information about the {@link WindowContainer} that <b>could</b> change its
+     * lifecycle state. <b>This doesn't collect anything, but just keeps track of containers.</b>
+     * If lifecycle change do occur later, the container will be collected.
+     *
+     * @param wc a {@link WindowContainer} which lifecycle is tracked by this {@link Transition}.
+     */
+    void recordLifecycle(@NonNull WindowContainer<?> wc) {
+        if (mLifecycleChangingContainers == null) {
+            mLifecycleChangingContainers = new ArraySet<>();
+        }
+
+        mLifecycleChangingContainers.add(wc);
+        snapshotStartState(wc);
     }
 
     /** Adds the top visible non-alwaysOnTop tasks within `task` to `out`. */
@@ -2027,6 +2046,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         collectOrderChanges(mController.mWaitingTransitions.isEmpty());
         // focus change is not necessarily an order change
         collectFocusChanges();
+        collectLifecycleChanges();
 
         if (mPriorVisibilityMightBeDirty) {
             updatePriorVisibility();
@@ -2553,6 +2573,37 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
 
             if (focusedTask != null && (topDisplayChanged || taskChanged)) {
                 addFocusChange(focusedTask);
+            }
+        }
+    }
+
+    /** Collects lifecycle changes from candidates if there's a change. */
+    private void collectLifecycleChanges() {
+        if (!Flags.allowDragAndDropWhenInteractiveBugfix()) {
+            return;
+        }
+
+        if (mLifecycleChangingContainers == null || mLifecycleChangingContainers.isEmpty()) {
+            return;
+        }
+
+        for (int i = mLifecycleChangingContainers.size() - 1; i >= 0; --i) {
+            final Task task = mLifecycleChangingContainers.valueAt(i).asTask();
+            // Reporting only tasks because there's no need to report other containers for now.
+            // Also ignore if task is already a participant because the change will be recorded
+            // anyway.
+            if (task == null || mParticipants.contains(task)) continue;
+
+            final ChangeInfo change = mChanges.get(task);
+            if (change == null) {
+                throw new NullPointerException(
+                        "The task=" + task + " is a candidate to lifecycle change, but "
+                                + "there's no ChangeInfo. Did you forget to snapshot it?"
+                );
+            }
+            if (change.mIsInteractive != task.isInteractive()) {
+                // We're past collecting stage, so add to participants manually.
+                mParticipants.add(task);
             }
         }
     }
@@ -4012,6 +4063,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         int mDisplayId = -1;
         @ActivityInfo.Config int mKnownConfigChanges;
         boolean mIsAlwaysOnTop;
+        boolean mIsInteractive;
 
         /** Extra information about this change. */
         @ChangeInfoFlag int mFlags = FLAG_NONE;
@@ -4038,6 +4090,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             mStartParent = origState.getParent();
             mDisplayId = getDisplayId(origState);
             mIsAlwaysOnTop = origState.isAlwaysOnTop();
+            mIsInteractive = isInteractive();
         }
 
         @VisibleForTesting
@@ -4068,6 +4121,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
                     || (mFlags & ChangeInfo.FLAG_BELOW_BACK_GESTURE_ANIMATION) != 0) {
                 return true;
             }
+
             // If it's invisible and hasn't changed visibility, always return false since even if
             // something changed, it wouldn't be a visible change.
             if (currVisible == mVisible && !mVisible) return false;
@@ -4088,7 +4142,8 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
                     // Always-on-top (AoT) tasks are excluded from order changes traversal, so it's
                     // required to send such changes separately. Notifying about exiting AoT is not
                     // necessary, because AoT will stay on top and order changes will catch up.
-                    || mIsAlwaysOnTop != mContainer.isAlwaysOnTop() && !mIsAlwaysOnTop;
+                    || mIsAlwaysOnTop != mContainer.isAlwaysOnTop() && !mIsAlwaysOnTop
+                    || mIsInteractive != isInteractive();
         }
 
         @TransitionInfo.TransitionMode
@@ -4233,6 +4288,13 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
                     || (taskWidth == endBounds.width() && taskHeight == endBounds.height());
             return isInvisibleOrFillingTaskBeforeTransition
                     && isInVisibleOrFillingTaskAfterTransition;
+        }
+
+        /** @see Task#isInteractive */
+        private boolean isInteractive() {
+            final Task task = mContainer.asTask();
+            return Flags.allowDragAndDropWhenInteractiveBugfix()
+                    && task != null && task.isInteractive();
         }
     }
 

@@ -18,60 +18,59 @@ package com.android.settingslib.widget
 
 import android.content.Context
 import android.graphics.drawable.Drawable
+import android.os.Handler
+import android.os.Looper
 import android.util.AttributeSet
 import android.view.View
+import android.view.animation.PathInterpolator
 import androidx.preference.Preference
-import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceGroup
+import androidx.preference.PreferenceGroupAdapter
 import androidx.preference.PreferenceViewHolder
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.LinearSmoothScroller
+import androidx.recyclerview.widget.RecyclerView
 import com.android.settingslib.widget.preference.banner.R
 import kotlin.math.max
+import kotlin.math.min
 
 /**
  * Custom PreferenceGroup that allows expanding and collapsing child [BannerMessagePreference]s.
- *
- * This group will always display the first BannerMessagePreference added to it. If more than one
- * banners are added, the remaining preferences will be hidden and a collapse button will show,
- * displaying the number of collapsed preferences. When expanded, a configurable collapse button
- * will be shown.
- *
- * This group can also have a simple subsection added, which is a titled preference category that
- * also contains banner preferences. This subsection will be shown and collapsed along with the
- * remaining banner preferences added directly to the group.
  */
 class BannerMessagePreferenceGroup @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,
     defStyleRes: Int = 0
-) : PreferenceGroup(context, attrs, defStyleAttr, defStyleRes), GroupSectionDividerMixin {
+) : PreferenceGroup(context, attrs, defStyleAttr, defStyleRes), GroupSectionDividerMixin, CustomAnimated {
 
-    private var isExpanded = false
-    private var expandPreference: NumberButtonPreference? = null
-    private var collapsePreference: SectionButtonPreference? = null
-    private var subsectionCategory: PreferenceCategory? = null
-    private val childPreferences = mutableListOf<BannerMessagePreference>()
+    private class GroupSection(
+        val list: MutableList<BannerMessagePreference> = mutableListOf(),
+        var isExpanded: Boolean = false,
+        var expandPref: NumberButtonPreference? = null,
+        var collapsePref: SectionButtonPreference? = null
+    )
+
+    private val activeSection = GroupSection()
+    private val dismissedSection = GroupSection()
+
+    private var parentRecyclerView: RecyclerView? = null
+
+    private val handler = Handler(Looper.getMainLooper())
     private var expandKey: String? = null
     private var expandTitle: CharSequence? = null
     private var collapseKey: String? = null
     private var collapseTitle: CharSequence? = null
     private var collapseIcon: Drawable? = null
-    // Add dismissed preferences
+
     private var showDismissedPreferences = false
-    private var isDismissedExpanded = false
-    private var dismissedPreferences = mutableListOf<BannerMessagePreference>()
-    private var expandDismissedPreference: NumberButtonPreference? = null
-    private var collapseDismissedPreference: SectionButtonPreference? = null
+
     private var expandDismissedKey: String? = null
     private var expandDismissedTitle: String? = null
     private var collapseDismissedKey: String? = null
     private var collapseDismissedTitle: String? = null
     private var collapseDismissedIcon: Drawable? = null
 
-    /**
-     * Number of preferences to always show at the top, even when collapsed.
-     * Defaults to [DEFAULT_VISIBLE_PREFERENCES_WHEN_COLLAPSED].
-     */
     var visiblePreferencesWhenCollapsedCount: Int = DEFAULT_VISIBLE_PREFERENCES_WHEN_COLLAPSED
         set(value) {
             field = max(1, value)
@@ -80,46 +79,45 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
         }
 
     private val collapsiblePreferenceCount
-        get() =
-            max(childPreferences.size - visiblePreferencesWhenCollapsedCount, 0) +
-                subsectionPreferenceCount
-
-    private val subsectionPreferenceCount
-        get() = subsectionCategory?.preferenceCount ?: 0
+        get() = max(activeSection.list.size - visiblePreferencesWhenCollapsedCount, 0)
 
     var expandContentDescription: Int = 0
         set(value) {
             field = value
-            expandPreference?.btnContentDescription = expandContentDescription
+            activeSection.expandPref?.btnContentDescription = expandContentDescription
         }
 
     var expandDismissedContentDescription: Int = 0
         set(value) {
             field = value
-            expandDismissedPreference?.btnContentDescription = expandDismissedContentDescription
+            dismissedSection.expandPref?.btnContentDescription = expandDismissedContentDescription
         }
 
     init {
-        isPersistent = false // This group doesn't store data
+        isPersistent = false
         layoutResource = R.layout.settingslib_banner_message_preference_group
-
         initAttributes(context, attrs, defStyleAttr)
     }
 
-    // Add preference to the group. If showDismissedPreferences is true and isDismissed is true, add
-    // the preference to the dismissedPreferences list.
     fun addPreference(preference: Preference, isDismissed: Boolean): Boolean {
         if (preference !is BannerMessagePreference) {
             return false
         }
-        var result: Boolean
-        if (showDismissedPreferences && isDismissed) {
-            addDismissedPreference(preference)
-            result = super.addPreference(preference)
-        } else {
-            result = addPreference(preference)
+
+        // CASE 1: Standard Active Banner
+        if (!isDismissed) {
+            return addPreference(preference)
         }
-        return result
+
+        // CASE 2: Dismissed Banner
+        if (showDismissedPreferences) {
+            addDismissedPreference(preference)
+            super.addPreference(preference)
+            return true
+        }
+
+        // CASE 3: Dismissed, but dismissed section is disabled
+        return false
     }
 
     override fun addPreference(preference: Preference): Boolean {
@@ -127,193 +125,309 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
             return false
         }
 
-        if (childPreferences.contains(preference)) return true
+        if (activeSection.list.size >= MAX_BANNERS_COUNT) {
+            return false
+        }
 
-        val wasAdded = super.addPreference(preference)
+        if (activeSection.list.contains(preference)) {
+            return true
+        }
+
+        val shouldBeVisible = activeSection.isExpanded ||
+                activeSection.list.size < visiblePreferencesWhenCollapsedCount
+
+        preference.isVisible = shouldBeVisible
+
+        if (shouldBeVisible) {
+            preference.signalExpand()
+        }
+
+        var wasAdded = false
+
+        wasAdded = super.addPreference(preference)
+
         if (wasAdded) {
-            childPreferences.add(preference)
+            activeSection.list.add(preference)
             maybeCreateExpandCollapsePreference()
             updateCollapsedItemCount()
-            updateVisibilities()
         }
         return wasAdded
     }
 
     override fun removePreference(preference: Preference): Boolean {
+        return removePreference(preference, moveToDismissed = true)
+    }
+
+    fun removePreference(preference: Preference, moveToDismissed: Boolean): Boolean {
         if (preference !is BannerMessagePreference) {
             return false
         }
 
-        val wasRemoved = super.removePreference(preference)
-        if (wasRemoved) {
-            childPreferences.remove(preference)
-            updateCollapsedItemCount()
-            updateVisibilities()
-            if (showDismissedPreferences) {
-                addDismissedPreference(preference)
-                return super.addPreference(preference)
+        // Scenario 1: Removing an ACTIVE preference
+        if (activeSection.list.contains(preference)) {
+            var wasRemoved = false
+            wasRemoved = super.removePreference(preference)
+            if (wasRemoved) {
+                activeSection.list.remove(preference)
+                updateCollapsedItemCount()
+                updateVisibilities()
+
+                if (showDismissedPreferences && moveToDismissed) {
+                    addDismissedPreference(preference)
+                    super.addPreference(preference)
+                }
             }
-            return true
+            return wasRemoved
         }
 
-        if (subsectionCategory?.removePreference(preference) == true) {
-            updateCollapsedItemCount()
-            updateVisibilities()
-            if (showDismissedPreferences) {
-                addDismissedPreference(preference)
-                return super.addPreference(preference)
+        // Scenario 2: Removing a DISMISSED preference
+        if (dismissedSection.list.contains(preference)) {
+            var wasRemoved = false
+            wasRemoved = super.removePreference(preference)
+
+            if (wasRemoved) {
+                dismissedSection.list.remove(preference)
+                dismissedSection.expandPref?.let { it.count = dismissedSection.list.size }
+                updateDismissedChildrenVisibility()
             }
-            return true
+            return wasRemoved
         }
 
         return false
     }
 
     override fun removeAll() {
-        subsectionCategory?.removeAll()
-        childPreferences.forEach { child ->
-            super.removePreference(child)
+        activeSection.list.forEach {
+            super.removePreference(it)
         }
-        childPreferences.clear()
+        activeSection.list.clear()
         updateCollapsedItemCount()
         updateVisibilities()
         if (showDismissedPreferences) {
-            for (i in 0..<dismissedPreferences.size) {
-                val child = dismissedPreferences[i]
+            for (i in 0..<dismissedSection.list.size) {
+                val child = dismissedSection.list[i]
                 super.removePreference(child)
             }
-            dismissedPreferences.clear()
-            expandDismissedPreference?.let { it.count = dismissedPreferences.size }
+            dismissedSection.list.clear()
+            dismissedSection.expandPref?.let { it.count = dismissedSection.list.size }
             updateDismissedChildrenVisibility()
         }
     }
 
-    /** Sets the title of the expand button shown when this group is collapsed. */
+    private fun updateVisibilities() {
+        activeSection.list.sortBy { it.order }
+
+        var visibleCount = 0
+        activeSection.list.forEach { child ->
+            val shouldShow =
+                activeSection.isExpanded || visibleCount < visiblePreferencesWhenCollapsedCount
+
+            if (shouldShow) {
+                child.signalExpand()
+                visibleCount++
+            } else {
+                child.animateDismiss()
+            }
+        }
+    }
+
+    private fun toggleExpansion(anchorView: View?) {
+        handler.removeCallbacksAndMessages(null)
+        val areAnimsEnabled = areAnimationsEnabled()
+
+        if (!activeSection.isExpanded) {
+            activeSection.isExpanded = true
+            activeSection.expandPref?.isVisible = false
+            activeSection.collapsePref?.isVisible = true
+
+            activeSection.list.forEach { child ->
+                child.isVisible = true
+            }
+
+            activeSection.list.forEach { child ->
+                if (areAnimsEnabled) child.signalExpand()
+            }
+        } else {
+            val recyclerView = getParentRecyclerView(anchorView)
+            activeSection.list.sortBy { it.order }
+
+            val keepCount = visiblePreferencesWhenCollapsedCount
+            var isFenceVisible = false
+
+            if (collapsiblePreferenceCount > 0) {
+                activeSection.collapsePref?.isVisible = false
+                activeSection.expandPref?.isVisible = true
+            }
+
+            if (recyclerView != null && activeSection.list.isNotEmpty()) {
+                val adapter = recyclerView.adapter as? PreferenceGroupAdapter
+                val layoutManager = recyclerView.layoutManager as? LinearLayoutManager
+
+                if (adapter != null && layoutManager != null) {
+                    val lastKeeperIndex = min(keepCount, activeSection.list.size) - 1
+
+                    if (lastKeeperIndex >= 0) {
+                        val lastKeeperItem = activeSection.list[lastKeeperIndex]
+                        val fencePos = adapter.getPreferenceAdapterPosition(lastKeeperItem)
+
+                        if (fencePos != RecyclerView.NO_POSITION) {
+                            isFenceVisible = layoutManager.findViewByPosition(fencePos) != null
+
+                            if (!isFenceVisible) {
+                                val firstItem = activeSection.list.firstOrNull()
+                                if (firstItem != null) {
+                                    val startPos = adapter.getPreferenceAdapterPosition(firstItem)
+                                    val scroller = ForcedStartSmoothScroller(context)
+                                    scroller.targetPosition = startPos
+                                    layoutManager.startSmoothScroll(scroller)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            val totalVictims = activeSection.list.size - keepCount
+            val lastAnimatedIndex = keepCount + totalVictims - 1
+
+            val startDelay =
+                if (!isFenceVisible && areAnimsEnabled) 20L else 0L
+
+            handler.postDelayed({
+                activeSection.list.forEachIndexed { index, child ->
+                    val bannerDelay = if (areAnimationsEnabled()) index * 75L else 0L
+
+                    if (index >= keepCount) {
+                        handler.postDelayed({
+                            if (index == lastAnimatedIndex) {
+                                child.signalCollapse(false) {
+                                    activeSection.isExpanded = false
+
+                                    activeSection.list.forEachIndexed { i, p ->
+                                        if (i >= keepCount) {
+                                            p.isVisible = false
+                                        }
+                                    }
+                                }
+                            } else {
+                                child.signalCollapse(false, null)
+                            }
+                        }, bannerDelay)
+                    }
+                }
+            }, startDelay)
+        }
+    }
+
+    private fun getParentRecyclerView(view: View?): RecyclerView? {
+        if (this.parentRecyclerView != null && this.parentRecyclerView!!.isAttachedToWindow) {
+            return this.parentRecyclerView
+        }
+
+        var parent = view?.parent
+        while (parent != null) {
+            if (parent is RecyclerView) {
+                return parent
+            }
+            parent = parent.parent
+        }
+        return null
+    }
+
     override fun setTitle(title: CharSequence?) {
         expandTitle = title
     }
 
-    /** Sets the title of the collapse button shown when this group is expanded. */
     fun setCollapseTitle(title: CharSequence?) {
         collapseTitle = title
     }
 
-    /**
-     * Adds a titled subsection to this group.
-     *
-     * The subsection displays beneath any directly added BannerMessagePreferences (via
-     * [addPreference]. It may only contain [BannerMessagePreference]s. When the group is expanded,
-     * the subsection and its contents are shown. They're hidden when the group is collapsed.
-     * Only one subsection can be added. Subsequent calls will be no-ops.
-     */
-    fun addSubsection(subsectionTitle: CharSequence) {
-        if (subsectionCategory == null) {
-            subsectionCategory = PreferenceCategory(context).apply {
-                key = SUBSECTION_KEY
-                title = subsectionTitle
-                order = SUBSECTION_ORDER
-                super.addPreference(this)
-            }
-        }
-    }
-
-    /** Sets the title of the subsection, if one has been added. */
-    fun setSubsectionTitle(subsectionTitle: CharSequence?) {
-        subsectionCategory?.title = subsectionTitle
-    }
-
-    /** Removes the subsection, if one has been added. */
-    fun removeSubsection() {
-      subsectionCategory?.let {
-        super.removePreference(it)
-        subsectionCategory = null
-      }
-      updateCollapsedItemCount()
-      updateVisibilities()
-    }
-
-    /**
-     * Adds a preference to this group's subsection. No-ops if the subsection hasn't been created
-     * previously.
-     *
-     * The preference can be removed by calling [removePreference] or [removePreferenceRecursively].
-     */
-    fun addSubsectionPreference(preference: BannerMessagePreference) {
-        if (subsectionCategory?.addPreference(preference) == true) {
-            maybeCreateExpandCollapsePreference()
-            updateCollapsedItemCount()
-            updateVisibilities()
-        }
+    fun removePreferenceRecursively(key: CharSequence, moveToDismissed: Boolean): Boolean {
+        val preference = findPreference<Preference>(key) ?: return false
+        return removePreference(preference, moveToDismissed)
     }
 
     override fun removePreferenceRecursively(key: CharSequence): Boolean {
         val preference = findPreference<Preference>(key) ?: return false
-
-        if (preference !is BannerMessagePreference) {
-            return false
-        }
-
-        var wasRemoved = super.removePreferenceRecursively(key)
-        if (wasRemoved) {
-            childPreferences.remove(preference)
-            updateCollapsedItemCount()
-            updateVisibilities()
-            if (showDismissedPreferences) {
-                addDismissedPreference(preference)
-                wasRemoved = super.addPreference(preference)
-            }
-        }
-        return wasRemoved
+        return removePreference(preference, true)
     }
 
     override fun onBindViewHolder(holder: PreferenceViewHolder) {
         super.onBindViewHolder(holder)
 
+        if (parentRecyclerView == null) {
+            parentRecyclerView = getParentRecyclerView(holder.itemView)
+        }
+
         maybeCreateExpandCollapsePreference()
         updateVisibilities()
 
-        // Add dismissed preferences
         if (showDismissedPreferences) {
             maybeCreateExpandCollapseDismissedPreference()
             updateDismissedChildrenVisibility()
         }
     }
 
-    /** Add dismissed preferences if showDismissedPreferences is true. */
     private fun addDismissedPreference(preference: BannerMessagePreference) {
         if (!showDismissedPreferences) {
             return
         }
-        preference.order = EXPAND_DISMISSED_ORDER + dismissedPreferences.size
-        dismissedPreferences.add(preference)
+
+        if (dismissedSection.list.contains(preference)) {
+            val index = dismissedSection.list.indexOf(preference)
+            preference.order = EXPAND_DISMISSED_ORDER + index
+            return
+        }
+
+        // LIMIT CHECK: FIFO (Remove oldest if full)
+        if (dismissedSection.list.size >= MAX_BANNERS_COUNT) {
+            val oldestPreference = dismissedSection.list[0]
+            dismissedSection.list.removeAt(0)
+
+            if (dismissedSection.isExpanded) {
+                oldestPreference.signalCollapse(false) {
+                    handler.post { super.removePreference(oldestPreference) }
+                }
+            } else {
+                super.removePreference(oldestPreference)
+            }
+        }
+
+        dismissedSection.list.add(preference)
+        dismissedSection.list.forEachIndexed { index, pref ->
+            pref.order = EXPAND_DISMISSED_ORDER + index
+        }
         maybeCreateExpandCollapseDismissedPreference()
-        expandDismissedPreference?.let { it.count = dismissedPreferences.size }
+        dismissedSection.expandPref?.let { it.count = dismissedSection.list.size }
+        preference.isVisible = dismissedSection.isExpanded
+        if (dismissedSection.isExpanded) {
+            preference.signalExpand()
+        }
         updateDismissedChildrenVisibility()
     }
 
     private fun maybeCreateExpandCollapsePreference() {
         if (collapsiblePreferenceCount > 0) {
-            if (expandPreference == null) {
-                expandPreference = NumberButtonPreference(context).apply {
+            if (activeSection.expandPref == null) {
+                activeSection.expandPref = NumberButtonPreference(context).apply {
                     key = expandKey
                     title = expandTitle
                     count = collapsiblePreferenceCount
                     btnContentDescription = expandContentDescription
                     order = EXPAND_ORDER
-                    clickListener = View.OnClickListener {
-                        toggleExpansion()
-                    }
-                    isVisible = true
+                    clickListener = View.OnClickListener { v -> toggleExpansion(v) }
+                    isVisible = !activeSection.isExpanded
                     super.addPreference(this)
                 }
             }
-            if (collapsePreference == null) {
-                collapsePreference = SectionButtonPreference(context).apply {
+            if (activeSection.collapsePref == null) {
+                activeSection.collapsePref = SectionButtonPreference(context).apply {
                     key = collapseKey
                     title = collapseTitle
                     icon = collapseIcon
                     order = COLLAPSE_ORDER
-                    setOnClickListener { toggleExpansion() }
+                    setOnClickListener { v -> toggleExpansion(v) }
+                    isVisible = activeSection.isExpanded
                     super.addPreference(this)
                 }
             }
@@ -321,21 +435,21 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
     }
 
     private fun maybeCreateExpandCollapseDismissedPreference() {
-        if (dismissedPreferences.size > 0) {
-            if (expandDismissedPreference == null) {
-                expandDismissedPreference =
+        if (dismissedSection.list.size > 0) {
+            if (dismissedSection.expandPref == null) {
+                dismissedSection.expandPref =
                     NumberButtonPreference(context).apply {
                         key = expandDismissedKey
                         title = expandDismissedTitle
-                        count = dismissedPreferences.size
+                        count = dismissedSection.list.size
                         btnContentDescription = expandDismissedContentDescription
                         order = EXPAND_DISMISSED_ORDER
-                        clickListener = View.OnClickListener { toggleDismissedExpansion() }
+                        clickListener = View.OnClickListener { v -> toggleDismissedExpansion(v) }
                     }
-                super.addPreference(expandDismissedPreference!!)
+                super.addPreference(dismissedSection.expandPref!!)
             }
-            if (collapseDismissedPreference == null) {
-                collapseDismissedPreference =
+            if (dismissedSection.collapsePref == null) {
+                dismissedSection.collapsePref =
                     SectionButtonPreference(context).apply {
                         key = collapseDismissedKey
                         title =
@@ -345,49 +459,105 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
                             if (collapseDismissedIcon == null) collapseIcon
                             else collapseDismissedIcon
                         order = COLLAPSE_DISMISSED_ORDER
-                        setOnClickListener { toggleDismissedExpansion() }
+                        setOnClickListener { v -> toggleDismissedExpansion(v) }
                     }
-                super.addPreference(collapseDismissedPreference!!)
+                super.addPreference(dismissedSection.collapsePref!!)
             }
         }
     }
 
-    private fun updateVisibilities() {
-        childPreferences.sortBy { it.order }
-        childPreferences.forEachIndexed { i, childBanner ->
-            childBanner.isVisible = i < visiblePreferencesWhenCollapsedCount || isExpanded
-        }
-
-        expandPreference?.isVisible = !isExpanded && collapsiblePreferenceCount > 0
-        collapsePreference?.isVisible = isExpanded && collapsiblePreferenceCount > 0
-        subsectionCategory?.isVisible = isExpanded && subsectionPreferenceCount > 0
-    }
-
     private fun updateCollapsedItemCount() {
-        expandPreference?.let {
+        activeSection.expandPref?.count = collapsiblePreferenceCount
+        activeSection.expandPref?.let {
             it.count = collapsiblePreferenceCount
         }
     }
 
     private fun updateDismissedChildrenVisibility() {
-        for (i in 0..<dismissedPreferences.size) {
-            val child = dismissedPreferences[i]
-            child.isVisible = isDismissedExpanded
+        for (i in 0..<dismissedSection.list.size) {
+            val child = dismissedSection.list[i]
+            child.isVisible = dismissedSection.isExpanded
         }
 
-        expandDismissedPreference?.isVisible = !isDismissedExpanded && dismissedPreferences.size > 0
-        collapseDismissedPreference?.isVisible =
-            isDismissedExpanded && dismissedPreferences.size > 0
+        dismissedSection.expandPref?.isVisible =
+            !dismissedSection.isExpanded && dismissedSection.list.isNotEmpty()
+        dismissedSection.collapsePref?.isVisible =
+            dismissedSection.isExpanded && dismissedSection.list.isNotEmpty()
     }
 
-    private fun toggleExpansion() {
-        isExpanded = !isExpanded
-        updateVisibilities()
-    }
+    private fun toggleDismissedExpansion(anchorView: View?) {
+        handler.removeCallbacksAndMessages(null)
 
-    private fun toggleDismissedExpansion() {
-        isDismissedExpanded = !isDismissedExpanded
-        updateDismissedChildrenVisibility()
+        if (!dismissedSection.isExpanded) {
+            dismissedSection.isExpanded = true
+            dismissedSection.expandPref?.isVisible = false
+            dismissedSection.collapsePref?.isVisible = true
+            dismissedSection.list.forEach { child ->
+                child.isVisible = true
+                child.signalExpand()
+            }
+            return
+        }
+
+        val recyclerView = getParentRecyclerView(anchorView)
+        dismissedSection.list.sortBy { it.order }
+
+        val anchorItem: Preference? = if (activeSection.collapsePref?.isVisible == true) {
+            activeSection.collapsePref
+        } else if (activeSection.expandPref?.isVisible == true) {
+            activeSection.expandPref
+        } else if (activeSection.list.isNotEmpty()) {
+            activeSection.list.last()
+        } else {
+            dismissedSection.list.firstOrNull()
+        }
+
+        var isFenceVisible = false
+
+        if (recyclerView != null && anchorItem != null) {
+            val adapter = recyclerView.adapter as? PreferenceGroupAdapter
+            val layoutManager = recyclerView.layoutManager as? LinearLayoutManager
+
+            if (adapter != null && layoutManager != null) {
+                val fencePos = adapter.getPreferenceAdapterPosition(anchorItem)
+                if (fencePos != RecyclerView.NO_POSITION) {
+                    val fenceView = layoutManager.findViewByPosition(fencePos)
+                    isFenceVisible = fenceView != null &&
+                            (layoutManager.getDecoratedTop(fenceView) >= 0)
+
+                    if (!isFenceVisible) {
+                        val scroller = ForcedStartSmoothScroller(context)
+                        scroller.targetPosition = fencePos
+                        layoutManager.startSmoothScroll(scroller)
+                    }
+                }
+            }
+        }
+
+        val totalVictims = dismissedSection.list.size
+        val lastAnimatedIndex = totalVictims - 1
+        val areAnimsEnabled = areAnimationsEnabled()
+        val startDelay = if (!isFenceVisible && areAnimsEnabled) 200L else 0L
+
+        handler.postDelayed({
+            dismissedSection.list.forEachIndexed { index, child ->
+                val bannerDelay = if (areAnimationsEnabled()) index * 1L else 0L
+
+                handler.postDelayed({
+                    if (index == lastAnimatedIndex) {
+                        child.signalCollapse(false) {
+                            dismissedSection.isExpanded = false
+
+                            dismissedSection.list.forEach { it.isVisible = false }
+                            dismissedSection.collapsePref?.isVisible = false
+                            dismissedSection.expandPref?.isVisible = true
+                        }
+                    } else {
+                        child.signalCollapse(false, null)
+                    }
+                }, bannerDelay)
+            }
+        }, startDelay)
     }
 
     private fun initAttributes(context: Context, attrs: AttributeSet?, defStyleAttr: Int) {
@@ -402,7 +572,8 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
             collapseIcon = getDrawable(R.styleable.BannerMessagePreferenceGroup_collapseIcon)
             showDismissedPreferences =
                 getBoolean(R.styleable.BannerMessagePreferenceGroup_showDismissedPreferences, false)
-            expandDismissedKey = getString(R.styleable.BannerMessagePreferenceGroup_expandDismissedKey)
+            expandDismissedKey =
+                getString(R.styleable.BannerMessagePreferenceGroup_expandDismissedKey)
             expandDismissedTitle =
                 getString(R.styleable.BannerMessagePreferenceGroup_expandDismissedTitle)
             collapseDismissedKey =
@@ -415,16 +586,54 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
         }
     }
 
-    companion object {
-        private const val SUBSECTION_KEY = "banner_message_preference_group_subsection"
-        private const val DEFAULT_VISIBLE_PREFERENCES_WHEN_COLLAPSED = 1
+    private fun areAnimationsEnabled(): Boolean {
+        val durationScale = android.provider.Settings.Global.getFloat(
+            context.contentResolver,
+            android.provider.Settings.Global.ANIMATOR_DURATION_SCALE,
+            1f
+        )
+        return durationScale > 0f
+    }
 
-        // Arbitrary large order numbers for the three preferences
-        // needed to make sure any Banners are added above them
-        private const val SUBSECTION_ORDER = 999
+    companion object {
+        private const val DEFAULT_VISIBLE_PREFERENCES_WHEN_COLLAPSED = 1
+        private const val MAX_BANNERS_COUNT = 10
         private const val EXPAND_ORDER = 1000
         private const val COLLAPSE_ORDER = 2000
         private const val EXPAND_DISMISSED_ORDER = 10000
         private const val COLLAPSE_DISMISSED_ORDER = 20000
+    }
+}
+
+/**
+ * A LinearSmoothScroller that strictly enforces SNAP_TO_START and calculates
+ * exact scroll offsets, ensuring the target view aligns precisely with the top container padding.
+ */
+private class ForcedStartSmoothScroller(context: Context) : LinearSmoothScroller(context) {
+    override fun getVerticalSnapPreference(): Int {
+        return SNAP_TO_START
+    }
+
+    override fun calculateTimeForScrolling(dx: Int): Int {
+        return 300
+    }
+
+    override fun calculateDyToMakeVisible(view: View, snapPreference: Int): Int {
+        val layoutManager = layoutManager ?: return 0
+        val params = view.layoutParams as RecyclerView.LayoutParams
+        val viewTop = layoutManager.getDecoratedTop(view) - params.topMargin
+        val containerTop = layoutManager.paddingTop
+        return viewTop - containerTop
+    }
+
+    override fun onTargetFound(targetView: View, state: RecyclerView.State, action: Action) {
+        val dy = calculateDyToMakeVisible(targetView, SNAP_TO_START)
+        if (Math.abs(dy) > 0) {
+            action.update(0, dy, 400, SCROLL_INTERPOLATOR)
+        }
+    }
+
+    companion object {
+        private val SCROLL_INTERPOLATOR = PathInterpolator(0.05f, 0.7f, 0.1f, 1f)
     }
 }

@@ -25,6 +25,7 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.content.pm.PackageManagerInternal
 import android.platform.test.annotations.EnableFlags
+import android.platform.test.flag.junit.SetFlagsRule
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.CheckFlagsRule
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
@@ -45,6 +46,7 @@ import org.mockito.kotlin.mock
 @RunWith(JUnit4::class)
 class VisibilityHelperImplTest {
     @get:Rule val checkFlagsRule: CheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
+    @get:Rule val setFlagsRule: SetFlagsRule = SetFlagsRule()
 
     @get:Rule
     val testableContext = TestableContext(InstrumentationRegistry.getInstrumentation().context)

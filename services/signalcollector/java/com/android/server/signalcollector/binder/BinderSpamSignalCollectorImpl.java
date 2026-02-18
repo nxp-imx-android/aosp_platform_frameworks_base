@@ -41,43 +41,79 @@ public class BinderSpamSignalCollectorImpl extends BinderSpamSignalCollector {
             Pair<BinderSpamConfigList, OutcomeReceiver<BinderSpamData, Throwable>>> mSubscriptions =
             new ArrayMap<>();
     private volatile ArrayMap<BinderStatsKey, Set<OutcomeReceiver<BinderSpamData, Throwable>>>
-            mReceivers;
+            mReceivers = new ArrayMap<>();
 
     @Override
     public void onBinderStatsReported(BinderCallsStats[] statsArray) {
+        if (mReceivers.isEmpty()) {
+            return;
+        }
+
         final int serverUid = Binder.getCallingUid();
+        BinderSpamData.Builder builder = new BinderSpamData.Builder()
+                .setServerUid(serverUid)
+                .setTimespan(Duration.ofSeconds(5));
         for (var stats : statsArray) {
-            BinderSpamData data = new BinderSpamData.Builder()
-                    .setInterfaceName(stats.interfaceDescriptor)
-                    .setMethodName(stats.aidlMethod)
-                    .setCallCount((int) stats.callCount)
-                    .setCallingUid(stats.clientUid)
-                    .setServerUid(serverUid)
-                    .setTimespan(Duration.ofSeconds(5))
-                    .build();
-            handleData(data);
+            handleData(builder,
+                    stats.interfaceDescriptor,
+                    stats.aidlMethod,
+                    stats.clientUid,
+                    (int) stats.callCount);
         }
     }
 
     @Override
     public void onBinderStatsReported(SingleSecondBinderStats[] statsArray) {
+        if (mReceivers.isEmpty()) {
+            return;
+        }
+
         final int serverUid = Binder.getCallingUid();
+        BinderSpamData.Builder builder = new BinderSpamData.Builder()
+                .setServerUid(serverUid)
+                .setTimespan(Duration.ofSeconds(1));
         for (var stats : statsArray) {
-            BinderSpamData data = new BinderSpamData.Builder()
-                    .setInterfaceName(stats.interfaceDescriptor)
-                    .setMethodName(stats.aidlMethod)
-                    .setCallCount(stats.callCount)
-                    .setCallingUid(stats.clientUid)
-                    .setServerUid(serverUid)
-                    .setTimespan(Duration.ofSeconds(1))
-                    .build();
-            handleData(data);
+            handleData(builder,
+                    stats.interfaceDescriptor,
+                    stats.aidlMethod,
+                    stats.clientUid,
+                    stats.callCount);
         }
     }
 
-    private void handleData(BinderSpamData data) {
-        BinderStatsKey key = new BinderStatsKey(data.getInterfaceName(), data.getMethodName());
-        mReceivers.getOrDefault(key, Collections.emptySet()).forEach(r -> r.onResult(data));
+    /**
+     * Handle the incoming binder stats data. This method finds the correct receivers that
+     * {@link #subscribe(BinderSpamConfigList, OutcomeReceiver)} to this particular data entry and
+     * pass to them.
+     *
+     * @param builder       The builder to build {@link BinderSpamData} with server uid and timespan
+     *                      set.
+     * @param interfaceName The name of interface of the binder stats data.
+     * @param methodName    The name of the method of the binder stats data.
+     * @param clientUid     The client UID of the binder stats data.
+     * @param callCount     The total call count included in this data entry.
+     */
+    private void handleData(
+            BinderSpamData.Builder builder,
+            String interfaceName,
+            String methodName,
+            int clientUid,
+            int callCount) {
+        mReceivers.getOrDefault(
+                        new BinderStatsKey(interfaceName, methodName),
+                        Collections.emptySet())
+                .forEach((OutcomeReceiver<BinderSpamData, Throwable> receiver) -> {
+                    try {
+                        receiver.onResult(
+                                builder.setInterfaceName(interfaceName)
+                                        .setMethodName(methodName)
+                                        .setCallingUid(clientUid)
+                                        .setCallCount(callCount)
+                                        .build());
+                    } catch (Exception e) {
+                        receiver.onError(e);
+                    }
+                });
     }
 
     @Override

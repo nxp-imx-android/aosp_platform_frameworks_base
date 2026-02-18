@@ -22,16 +22,16 @@ import android.annotation.FlaggedApi;
 /**
  * Result of {@link AppFunctionManager#observeAppFunctions}.
  *
- * <p>The caller should retain a reference to this object and call {@link #cancel()} when receiving
+ * <p>The caller should retain a reference to this object and call {@link #cancel} when receiving
  * updates to app functions is no longer required.
  */
 @FlaggedApi(FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
 public interface AppFunctionObservation {
     /**
-     * Cancels an observation previously started using {@link
-     * AppFunctionManager#observeAppFunctions} from receiving updates.
+     * Stops the observation previously started using {@link AppFunctionManager#observeAppFunctions}
+     * from receiving updates.
      *
-     * <p>If the {@link AppFunctionObserver} is already canceled, this method has no effect.
+     * <p>If the observation is already canceled, this method has no effect.
      */
     void cancel();
 }

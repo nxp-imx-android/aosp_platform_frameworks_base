@@ -16,12 +16,15 @@
 
 package com.android.systemui.statusbar.chips.ui.viewmodel
 
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.view.View
 import android.view.ViewRootImpl
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.jank.Cuj
 import com.android.internal.logging.InstanceId
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.DialogCuj
 import com.android.systemui.animation.DialogTransitionAnimator
@@ -37,6 +40,7 @@ import kotlin.test.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyBoolean
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -68,6 +72,7 @@ class OngoingActivityChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableFlags(Flags.FLAG_ANIMATION_LIBRARY_DYNAMIC_TARGET_RESOLUTION)
     fun createDialogLaunchOnClickCallback_showsDialogOnClick() {
         val cuj = DialogCuj(Cuj.CUJ_STATUS_BAR_LAUNCH_DIALOG_FROM_CHIP, tag = "Test")
         val clickCallback =
@@ -84,5 +89,26 @@ class OngoingActivityChipViewModelTest : SysuiTestCase() {
 
         clickCallback.invoke(mockExpandable)
         verify(dialogTransitionAnimator).show(eq(mockSystemUIDialog), any(), anyBoolean())
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ANIMATION_LIBRARY_DYNAMIC_TARGET_RESOLUTION)
+    fun createDialogLaunchOnClickCallback_showsDialogOnClick_withDyamicResolution() {
+        val cuj = DialogCuj(Cuj.CUJ_STATUS_BAR_LAUNCH_DIALOG_FROM_CHIP, tag = "Test")
+        val clickCallback =
+            createDialogLaunchOnClickCallback(
+                { _ -> dialogDelegate },
+                dialogTransitionAnimator,
+                cuj,
+                key = "key",
+                instanceId = InstanceId.fakeInstanceId(0),
+                uiEventLogger = kosmos.statusBarChipsUiEventLogger,
+                logger = logcatLogBuffer("OngoingActivityChipViewModelTest"),
+                tag = "tag",
+            )
+
+        clickCallback.invoke(mockExpandable)
+        verify(dialogTransitionAnimator)
+            .show(eq(mockSystemUIDialog), anyOrNull(), anyOrNull(), anyBoolean())
     }
 }

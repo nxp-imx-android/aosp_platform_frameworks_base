@@ -19,6 +19,7 @@ android_test {
         "platform-test-annotations",
         "services.core",
         "services.lskfreset",
+        "tink-java",
     ],
     test_suites: ["general-tests"],
 }

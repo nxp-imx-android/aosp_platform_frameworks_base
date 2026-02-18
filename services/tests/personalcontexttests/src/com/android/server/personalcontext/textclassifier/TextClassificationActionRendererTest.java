@@ -16,6 +16,8 @@
 
 package com.android.server.personalcontext.textclassifier;
 
+import static com.android.server.personalcontext.util.InsightUtils.fakePublishInsight;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -67,7 +69,7 @@ public class TextClassificationActionRendererTest {
     @Test
     public void testRender_notActionableInsight_noMerge() {
         ContextInsight insight = new BundleInsight.Builder().build();
-        mRenderer.render(insight, null);
+        mRenderer.render(fakePublishInsight(insight), null);
 
         verify(mPersonalContextBridge, never()).merge(anyString(), any());
     }
@@ -80,7 +82,7 @@ public class TextClassificationActionRendererTest {
                 new InsightDisplayDetails.Builder("title", TEST_ICON).build();
         ActionableInsight insight =
                 new ActionableInsight.Builder(actionDetails, displayDetails).build();
-        mRenderer.render(insight, null);
+        mRenderer.render(fakePublishInsight(insight), null);
 
         verify(mPersonalContextBridge, never()).merge(anyString(), any());
     }
@@ -89,7 +91,7 @@ public class TextClassificationActionRendererTest {
     public void testRender_actionableInsight_merge() throws Exception {
         ActionableInsight insight = buildActionableInsight("title", "sessionId");
 
-        mRenderer.render(insight, null);
+        mRenderer.render(fakePublishInsight(insight), null);
 
         ArgumentCaptor<TextClassification> captor =
                 ArgumentCaptor.forClass(TextClassification.class);
@@ -107,7 +109,7 @@ public class TextClassificationActionRendererTest {
         InsightCollection insightCollection =
                 new InsightCollection.Builder().addInsight(insight).build();
 
-        mRenderer.render(insightCollection, null);
+        mRenderer.render(fakePublishInsight(insightCollection), null);
 
         ArgumentCaptor<TextClassification> captor =
                 ArgumentCaptor.forClass(TextClassification.class);

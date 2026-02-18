@@ -27,6 +27,7 @@ import android.service.personalcontext.insight.ActionableInsight;
 import android.service.personalcontext.insight.ContextInsight;
 import android.service.personalcontext.insight.InsightTraverser;
 import android.service.personalcontext.insight.InsightVisitor;
+import android.service.personalcontext.insight.PublishedContextInsight;
 import android.util.Log;
 import android.util.Slog;
 import android.view.textclassifier.TextClassification;
@@ -60,16 +61,18 @@ public class TextClassificationActionRenderer implements Renderer {
      * so {@link isInterestedInInsight} is passed through. Return false as default
      */
     @Override
-    public boolean isInterestedInInsight(ContextInsight insight) {
+    public boolean isInterestedInInsight(PublishedContextInsight insight) {
         return false;
     }
 
     @Override
-    public void render(@NonNull ContextInsight insight, RenderToken renderToken) {
+    public void render(@NonNull PublishedContextInsight publishedContextInsight,
+            RenderToken renderToken) {
         Map<String, TextClassification.Builder> textClassificationSessionToBuilders =
                 new LinkedHashMap<>();
         InsightTraverser.traverse(
-                insight, new InsightCollector(textClassificationSessionToBuilders));
+                publishedContextInsight.getInsight(),
+                new InsightCollector(textClassificationSessionToBuilders));
 
         if (DEBUG) {
             Slog.w(TAG, textClassificationSessionToBuilders.size() + "valid insights received");

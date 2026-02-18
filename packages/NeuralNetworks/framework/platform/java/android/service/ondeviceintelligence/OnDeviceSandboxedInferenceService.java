@@ -486,6 +486,9 @@ public abstract class OnDeviceSandboxedInferenceService extends Service {
             @NonNull Content request,
             @Nullable CancellationSignal cancellationSignal,
             @NonNull OutcomeReceiver<TokenInfo, OnDeviceIntelligenceException> callback) {
+        callback.onError(new OnDeviceIntelligenceException(
+                OnDeviceIntelligenceException.PROCESSING_ERROR_SERVICE_UNAVAILABLE,
+                "onTokenInfoRequest is not implemented."));
     }
 
     /**

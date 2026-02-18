@@ -255,6 +255,8 @@ abstract class BaseCommunalViewModel(
     /** Called when the user finishes or cancels adding a new widget. */
     open fun onAddWidgetDragAndDropEnd() {}
 
+    open fun allocateWidgets() {}
+
     val savedFirstScrollIndex: Int
         get() = communalInteractor.firstVisibleItemIndex
 

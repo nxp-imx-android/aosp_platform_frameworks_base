@@ -27,8 +27,6 @@ import static android.view.Surface.ROTATION_90;
 
 import static com.android.internal.policy.DesktopModeCompatUtils.shouldExcludeCaptionFromAppBounds;
 import static com.android.internal.policy.SystemBarUtils.getDesktopViewAppHeaderHeightPx;
-import static com.android.server.wm.AppCompatUtils.isInDesktopMode;
-import static com.android.server.wm.DesktopModeHelper.canEnterDesktopMode;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -51,10 +49,15 @@ class AppCompatSandboxingPolicy {
     private final ActivityRecord mActivityRecord;
 
     @NonNull
+    private final AppCompatConfiguration mAppCompatConfiguration;
+
+    @NonNull
     private final ConfigOverrideHint mResolveConfigHint;
 
-    AppCompatSandboxingPolicy(@NonNull ActivityRecord activityRecord) {
+    AppCompatSandboxingPolicy(@NonNull ActivityRecord activityRecord,
+            @NonNull AppCompatConfiguration appCompatConfiguration) {
         mActivityRecord = activityRecord;
+        mAppCompatConfiguration = appCompatConfiguration;
         mResolveConfigHint = new ConfigOverrideHint();
         final ActivityInfo info = mActivityRecord.info;
         // When the stable configuration is the default behavior, override for the legacy apps
@@ -76,7 +79,7 @@ class AppCompatSandboxingPolicy {
      */
     void sandboxBoundsIfNeeded(@NonNull Configuration resolvedConfig,
             @WindowingMode int windowingMode) {
-        if (isInDesktopMode(mActivityRecord.mAtmService.mContext, windowingMode)) {
+        if (shouldExcludeFreeformCaptionInsets(windowingMode)) {
             Rect appBounds = resolvedConfig.windowConfiguration.getAppBounds();
             if (appBounds == null || appBounds.isEmpty()) {
                 // When there is no override bounds, the activity will inherit the bounds from
@@ -87,6 +90,15 @@ class AppCompatSandboxingPolicy {
                 resolvedConfig.windowConfiguration.setBounds(appBounds);
             }
         }
+    }
+
+    private boolean shouldExcludeFreeformCaptionInsets(@WindowingMode int windowingMode) {
+        final Task task = mActivityRecord.getTask();
+        if (task == null) {
+            return mAppCompatConfiguration.canEnterDesktopMode()
+                    && windowingMode == WINDOWING_MODE_FREEFORM;
+        }
+        return task.getIsCaptionInsetsExcluded() && windowingMode == WINDOWING_MODE_FREEFORM;
     }
 
     @NonNull
@@ -129,7 +141,7 @@ class AppCompatSandboxingPolicy {
             return isOverrideAllowed;
         }
 
-        if (!canEnterDesktopMode(mActivityRecord.mAtmService.mContext)) {
+        if (!mAppCompatConfiguration.canEnterDesktopMode()) {
             return false;
         }
 
@@ -139,8 +151,8 @@ class AppCompatSandboxingPolicy {
 
     @Nullable
     private Rect sandboxContainerBoundsIfNeeded(@NonNull Configuration parentConfig) {
-        if (mActivityRecord.getTask() != null
-                && !mActivityRecord.getTask().getIsCaptionInsetsExcluded()) {
+        final Task task = mActivityRecord.getTask();
+        if (task != null && !task.getIsCaptionInsetsExcluded()) {
             return null;
         }
 

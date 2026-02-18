@@ -22,6 +22,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.RemoteException;
 import android.service.personalcontext.insight.BundleInsight;
@@ -61,7 +62,7 @@ public class InsightSurfaceClientInfoTest {
         final int nestedScrollingAxes = View.SCROLL_AXIS_HORIZONTAL | View.SCROLL_AXIS_VERTICAL;
         final boolean nestedScrollAxisLocked = true;
         final boolean shouldBlur = true;
-        final String themeResourceName = "theme";
+        final int themeResourceId = 7;
         final String packageName = "package.name";
         final Configuration configuration = new Configuration();
 
@@ -75,7 +76,7 @@ public class InsightSurfaceClientInfoTest {
                         nestedScrollingAxes,
                         nestedScrollAxisLocked,
                         shouldBlur,
-                        themeResourceName,
+                        themeResourceId,
                         packageName,
                         configuration,
                         mClient);
@@ -88,7 +89,7 @@ public class InsightSurfaceClientInfoTest {
         assertThat(clientInfo.getBackgroundColor()).isEqualTo(backgroundColor);
         assertThat(clientInfo.getNestedScrollAxes()).isEqualTo(nestedScrollingAxes);
         assertThat(clientInfo.shouldBlur()).isEqualTo(shouldBlur);
-        assertThat(clientInfo.getThemeResourceName()).isEqualTo(themeResourceName);
+        assertThat(clientInfo.getThemeResourceId()).isEqualTo(themeResourceId);
         assertThat(clientInfo.getPackageName()).isEqualTo(packageName);
         assertThat(clientInfo.getNestedScrollAxisLocked()).isEqualTo(nestedScrollAxisLocked);
     }
@@ -105,7 +106,7 @@ public class InsightSurfaceClientInfoTest {
                         View.SCROLL_AXIS_NONE,
                         false,
                         false,
-                        null,
+                        Resources.ID_NULL,
                         "package.name",
                         new Configuration(),
                         mClient);
@@ -125,7 +126,7 @@ public class InsightSurfaceClientInfoTest {
                         View.SCROLL_AXIS_NONE,
                         false,
                         false,
-                        null,
+                        Resources.ID_NULL,
                         "package.name",
                         new Configuration(),
                         mClient);
@@ -145,7 +146,7 @@ public class InsightSurfaceClientInfoTest {
                         View.SCROLL_AXIS_NONE,
                         false,
                         false,
-                        null,
+                        Resources.ID_NULL,
                         "package.name",
                         new Configuration(),
                         mClient);

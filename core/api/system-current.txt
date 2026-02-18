@@ -15047,8 +15047,6 @@ package android.service.persistentdata {
 package android.service.personalcontext {
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class PersonalContextManager {
-    method @NonNull public android.app.assist.AssistStructure.ViewNode getFocusedViewNode(@NonNull android.service.personalcontext.hint.AutofillInlineRequestHint);
-    method @NonNull public android.graphics.Rect getViewCoordinates(@NonNull android.service.personalcontext.hint.AutofillInlineRequestHint);
     method public boolean isEnabled();
     method @NonNull public android.service.personalcontext.Token mintToken();
     method public void publishTriggeringHint(@NonNull java.util.List<android.service.personalcontext.hint.ContextHint>, @Nullable java.util.List<android.service.personalcontext.RenderToken>);
@@ -15075,13 +15073,13 @@ package android.service.personalcontext.embedded {
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public class InsightSurfaceClient implements java.lang.AutoCloseable {
     method public void close();
     method @NonNull public android.graphics.Color getBackgroundColor();
-    method @NonNull public java.util.List<android.service.personalcontext.hint.ContextHint> getHints();
     method public int getMeasureSpecHeight();
     method public int getMeasureSpecWidth();
     method public int getNestedScrollAxes();
     method @NonNull public java.util.List<android.service.personalcontext.embedded.InsightSurfaceClient.InsightReceiver> getReceivers();
-    method @Nullable public String getThemeResourceName();
+    method @StyleRes public int getThemeResourceId();
     method public boolean isNestedScrollAxisLocked();
+    method public void publishHints(@NonNull java.util.Set<android.service.personalcontext.hint.ContextHint>);
     method public void register(@Nullable java.util.concurrent.Executor, @NonNull android.service.personalcontext.embedded.InsightSurfaceClient.ClientCallback);
     method public boolean shouldBlur();
     method public void unregister();
@@ -15089,7 +15087,6 @@ package android.service.personalcontext.embedded {
 
   public static final class InsightSurfaceClient.Builder {
     ctor public InsightSurfaceClient.Builder(@NonNull android.content.Context);
-    method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClient.Builder addHint(@NonNull android.service.personalcontext.hint.ContextHint);
     method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClient.Builder addReceiver(@NonNull android.service.personalcontext.embedded.InsightSurfaceClient.InsightReceiver);
     method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClient build();
     method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClient.Builder setBackgroundColor(@NonNull android.graphics.Color);
@@ -15097,7 +15094,7 @@ package android.service.personalcontext.embedded {
     method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClient.Builder setNestedScrollAxes(int);
     method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClient.Builder setNestedScrollAxisLocked(boolean);
     method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClient.Builder setShouldBlur(boolean);
-    method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClient.Builder setThemeResourceName(@Nullable String);
+    method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClient.Builder setThemeResourceId(@StyleRes int);
   }
 
   public static interface InsightSurfaceClient.ClientCallback {
@@ -15123,7 +15120,7 @@ package android.service.personalcontext.embedded {
     method public int getNestedScrollAxes();
     method public boolean getNestedScrollAxisLocked();
     method @NonNull public String getPackageName();
-    method @Nullable public String getThemeResourceName();
+    method @StyleRes public int getThemeResourceId();
     method public void onReceiveInsight(@NonNull android.service.personalcontext.insight.ContextInsight);
     method public void onSizeChanged(int, int);
     method public boolean shouldBlur();
@@ -15135,11 +15132,10 @@ package android.service.personalcontext.embedded {
     method public int describeContents();
     method @Nullable public android.graphics.Color getBackgroundColor();
     method @Nullable public android.content.res.Configuration getConfiguration();
-    method @NonNull public java.util.Set<android.service.personalcontext.hint.ContextHint> getHints();
     method public int getMeasureSpecHeight();
     method public int getMeasureSpecWidth();
     method public int getNestedScrollAxes();
-    method @Nullable public String getThemeResourceName();
+    method @StyleRes public int getThemeResourceId();
     method public boolean hasUpdate(@NonNull String);
     method public boolean isNestedScrollAxisLocked();
     method public boolean shouldBlur();
@@ -15147,7 +15143,6 @@ package android.service.personalcontext.embedded {
     field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.embedded.InsightSurfaceClientUpdate> CREATOR;
     field public static final String KEY_BACKGROUND_COLOR = "key_background_color";
     field public static final String KEY_CONFIGURATION = "key_configuration";
-    field public static final String KEY_HINTS = "key_hints";
     field public static final String KEY_MEASURE_SPEC_HEIGHT = "key_measure_spec_height";
     field public static final String KEY_MEASURE_SPEC_WIDTH = "key_measure_spec_width";
     field public static final String KEY_NESTED_SCROLL_AXES = "key_nested_scroll_axes";
@@ -15158,7 +15153,6 @@ package android.service.personalcontext.embedded {
 
   public static final class InsightSurfaceClientUpdate.Builder {
     ctor public InsightSurfaceClientUpdate.Builder();
-    method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClientUpdate.Builder addHint(@NonNull android.service.personalcontext.hint.ContextHint);
     method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClientUpdate build();
     method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClientUpdate.Builder setBackgroundColor(@NonNull android.graphics.Color);
     method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClientUpdate.Builder setConfiguration(@NonNull android.content.res.Configuration);
@@ -15167,7 +15161,7 @@ package android.service.personalcontext.embedded {
     method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClientUpdate.Builder setNestedScrollAxes(int);
     method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClientUpdate.Builder setNestedScrollAxisLocked(boolean);
     method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClientUpdate.Builder setShouldBlur(boolean);
-    method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClientUpdate.Builder setThemeResourceName(@Nullable String);
+    method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClientUpdate.Builder setThemeResourceId(@StyleRes int);
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public class InsightSurfaceSession implements java.lang.AutoCloseable {
@@ -15189,7 +15183,7 @@ package android.service.personalcontext.embedded {
     method public abstract void onClientConnected(@NonNull android.service.personalcontext.embedded.InsightSurfaceClientInfo);
     method public abstract void onClientDisconnected(@NonNull android.service.personalcontext.embedded.InsightSurfaceClientInfo);
     method public boolean onClientUpdated(@NonNull android.service.personalcontext.embedded.InsightSurfaceClientInfo, @NonNull android.service.personalcontext.embedded.InsightSurfaceClientInfo);
-    method @Nullable public abstract android.view.View onCreateEmbeddedView(@NonNull android.content.Context, @NonNull android.service.personalcontext.insight.ContextInsight, @Nullable android.service.personalcontext.RenderToken, @NonNull android.service.personalcontext.embedded.InsightSurfaceClientInfo);
+    method @Nullable public abstract android.view.View onCreateEmbeddedView(@NonNull android.content.Context, @NonNull android.service.personalcontext.insight.PublishedContextInsight, @Nullable android.service.personalcontext.RenderToken, @NonNull android.service.personalcontext.embedded.InsightSurfaceClientInfo);
     field public static final String SERVICE_INTERFACE = "android.service.personalcontext.embedded.InsightSurfaceVisualizerService";
   }
 
@@ -15230,27 +15224,17 @@ package android.service.personalcontext.hint {
 
 }
 
+package android.service.personalcontext.hint.autofill {
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class AutofillInlineRequestHintConsumer {
+    ctor public AutofillInlineRequestHintConsumer(@NonNull android.service.personalcontext.hint.AutofillInlineRequestHint);
+    method @NonNull @WorkerThread public android.app.assist.AssistStructure.ViewNode fetchFocusedViewNode();
+    method @NonNull @WorkerThread public android.graphics.Rect fetchViewCoordinates();
+  }
+
+}
+
 package android.service.personalcontext.insight {
-
-  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class ActionableInsight.Builder {
-    method @NonNull public android.service.personalcontext.insight.ActionableInsight.Builder setOriginatingComponentId(@Nullable android.service.personalcontext.ComponentIdProvider);
-  }
-
-  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class BundleInsight.Builder {
-    method @NonNull public android.service.personalcontext.insight.BundleInsight.Builder setOriginatingComponentId(@Nullable android.service.personalcontext.ComponentIdProvider);
-  }
-
-  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class ContextInsight {
-    method @Nullable public java.util.UUID getOriginatingComponentId();
-  }
-
-  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class DisplayInsight.Builder {
-    method @NonNull public android.service.personalcontext.insight.DisplayInsight.Builder setOriginatingComponentId(@Nullable android.service.personalcontext.ComponentIdProvider);
-  }
-
-  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class InsightCollection.Builder {
-    method @NonNull public android.service.personalcontext.insight.InsightCollection.Builder setOriginatingComponentId(@Nullable android.service.personalcontext.ComponentIdProvider);
-  }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class InsightFilter implements android.os.Parcelable {
     method public int describeContents();
@@ -15275,7 +15259,7 @@ package android.service.personalcontext.insight.interaction {
     method public int describeContents();
     method public int getEventType();
     method @NonNull public android.os.Bundle getExtras();
-    method @NonNull public android.service.personalcontext.insight.ContextInsight getInsight();
+    method @NonNull public android.service.personalcontext.insight.PublishedContextInsight getInsight();
     method @NonNull public android.service.personalcontext.RenderToken getRenderToken();
     method public long getTimestamp();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
@@ -15314,7 +15298,7 @@ package android.service.personalcontext.renderer {
     method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
     method public void onConnected();
     method @NonNull public abstract android.service.personalcontext.insight.InsightFilter onInitializeFilter();
-    method public abstract void onRender(@NonNull android.service.personalcontext.insight.ContextInsight, @NonNull android.service.personalcontext.RenderToken);
+    method public abstract void onRender(@NonNull android.service.personalcontext.insight.PublishedContextInsight, @NonNull android.service.personalcontext.RenderToken);
     field public static final String SERVICE_INTERFACE = "android.service.personalcontext.renderer.InsightRendererService";
   }
 
@@ -15324,12 +15308,10 @@ package android.service.personalcontext.understander {
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class ContextUnderstanderService extends android.app.Service {
     ctor public ContextUnderstanderService();
-    method @NonNull public final java.util.UUID getComponentId();
-    method @NonNull public final android.service.personalcontext.ComponentIdProvider getComponentIdProvider();
     method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
     method public void onConnected();
     method public void onHandleEvent(@NonNull String, @NonNull android.service.personalcontext.insight.interaction.InsightEvent);
-    method public void onHandleUserFeedback(@NonNull android.service.personalcontext.insight.ContextInsight, @NonNull android.os.Bundle);
+    method public void onHandleUserFeedback(@NonNull android.service.personalcontext.insight.PublishedContextInsight, @NonNull android.os.Bundle);
     method @NonNull public abstract android.service.personalcontext.hint.HintFilter onInitializeFilter();
     method public abstract void onUnderstand(@NonNull java.util.List<android.service.personalcontext.hint.ContextHintWithSignature>);
     method public final void understood(@NonNull android.service.personalcontext.insight.ContextInsight);

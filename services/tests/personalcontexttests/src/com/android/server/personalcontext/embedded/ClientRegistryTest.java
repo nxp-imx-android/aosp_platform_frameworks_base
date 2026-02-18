@@ -19,6 +19,7 @@ package com.android.server.personalcontext.embedded;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.embedded.IInsightSurfaceClient;
@@ -97,7 +98,7 @@ public class ClientRegistryTest {
                 View.SCROLL_AXIS_NONE,
                 false,
                 false,
-                null,
+                Resources.ID_NULL,
                 "package.name",
                 new Configuration(),
                 mClient);
