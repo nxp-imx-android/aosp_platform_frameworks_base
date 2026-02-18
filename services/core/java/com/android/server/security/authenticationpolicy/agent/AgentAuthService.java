@@ -20,6 +20,7 @@ import android.annotation.IntRange;
 import android.annotation.NonNull;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
+import android.app.KeyguardManager;
 import android.companion.CompanionDeviceManager;
 import android.companion.DeviceId;
 import android.content.Context;
@@ -54,7 +55,6 @@ import java.util.concurrent.TimeUnit;
  */
 @SuppressLint("MissingPermission")
 public class AgentAuthService implements AgentAuthServiceInternal {
-
     private static final String TAG = "AgentAuthService";
 
     private final Context mContext;
@@ -63,6 +63,7 @@ public class AgentAuthService implements AgentAuthServiceInternal {
 
     private LockSettingsInternal mLockSettings;
     private BiometricManager mBiometricManager;
+    private KeyguardManager mKeyguardManager;
     private CompanionDeviceManager mCompanionDeviceManager;
 
     private final Clock mClock;
@@ -115,9 +116,11 @@ public class AgentAuthService implements AgentAuthServiceInternal {
     /** Start the service start monitoring for connected agents and init for current user. */
     void start(@NonNull LockSettingsInternal lockSettings,
             @NonNull BiometricManager biometricManager,
+            @NonNull KeyguardManager keyguardManager,
             @NonNull CompanionDeviceManager companionDeviceManager) {
         mLockSettings = lockSettings;
         mBiometricManager = biometricManager;
+        mKeyguardManager = keyguardManager;
         mCompanionDeviceManager = companionDeviceManager;
 
         mHandler.post(() -> {
@@ -168,9 +171,7 @@ public class AgentAuthService implements AgentAuthServiceInternal {
                     mCompanionDeviceManager, new CDMAgentMonitor.Listener() {
                 @Override
                 public void onAgentConnectionStarted(int associationId) {
-                    // no custom interval yet, but this may need to become dynamic
-                    // instead of relying only on the overlay config
-                    final boolean authorized = hasRecentStrongAuth(0);
+                    final boolean authorized = isAuthorizedAtConnection();
                     if (authorized) {
                         Slog.d(TAG, "Start session (authorized): " + associationId);
 
@@ -198,6 +199,15 @@ public class AgentAuthService implements AgentAuthServiceInternal {
         }
 
         mAgentSessionList.authorizeAll();
+    }
+
+    private boolean isAuthorizedAtConnection() {
+        if (!mKeyguardManager.isDeviceLocked(mCurrentUserId)) {
+            return true;
+        }
+
+        // no custom interval for the normal case
+        return hasRecentStrongAuth(0);
     }
 
     private boolean hasRecentStrongAuth(@IntRange(from = 0) int intervalMillis) {
@@ -238,6 +248,7 @@ public class AgentAuthService implements AgentAuthServiceInternal {
                             LocalServices.getService(LockSettingsInternal.class)),
                     Objects.requireNonNull(
                             mService.mContext.getSystemService(BiometricManager.class)),
+                    (KeyguardManager) mService.mContext.getSystemService(Context.KEYGUARD_SERVICE),
                     (CompanionDeviceManager) mService.mContext.getSystemService(
                             Context.COMPANION_DEVICE_SERVICE));
         }

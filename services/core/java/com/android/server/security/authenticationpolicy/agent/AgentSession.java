@@ -57,7 +57,7 @@ public class AgentSession {
     }
 
     /**
-     * Update an existing session to authorized and return a new copy.
+     * Update an existing session to not authorized and return a new copy.
      *
      * @param session existing session to copy from
      */
