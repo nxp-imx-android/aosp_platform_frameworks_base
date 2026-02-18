@@ -42,6 +42,7 @@ import static com.android.wm.shell.common.split.SplitLayout.PARALLAX_ALIGN_CENTE
 import static com.android.wm.shell.common.split.SplitLayout.PARALLAX_FLEX_HYBRID;
 import static com.android.wm.shell.common.split.SplitLayout.RESTING_DIM_LAYER;
 import static com.android.wm.shell.common.split.SplitScreenUtils.getNewParentTokenForStage;
+import static com.android.wm.shell.common.split.SplitScreenUtils.getTargetWindowingModeWhenExitSplit;
 import static com.android.wm.shell.common.split.SplitScreenUtils.reverseSplitPosition;
 import static com.android.wm.shell.common.split.SplitScreenUtils.splitFailureMessage;
 import static com.android.wm.shell.common.split.SplitScreenUtils.updateSplitLayoutConfig;
@@ -191,7 +192,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Executor;
@@ -2082,15 +2082,8 @@ public class StageCoordinator extends StageCoordinatorAbstract {
                         .filter(stage -> stage.getId() == stageToTop)
                         .findFirst().orElse(null);
             }
-            final DisplayAreaInfo tdaInfo = mRootTDAOrganizer.getDisplayAreaInfo(mDisplayId);
-            Objects.requireNonNull(tdaInfo);
-            final int displayWindowingMode =
-                    tdaInfo.configuration.windowConfiguration.getWindowingMode();
-            // In a freeform-first environment (like desktop), explicitly set the windowing mode to
-            // fullscreen when leaving split-screen. On a standard display, setting it to UNDEFINED
-            // allows the task to inherit the display's default windowing mode (usually fullscreen).
-            final int targetWindowingMode = displayWindowingMode == WINDOWING_MODE_FREEFORM
-                    ? WINDOWING_MODE_FULLSCREEN : WINDOWING_MODE_UNDEFINED;
+            final int targetWindowingMode = getTargetWindowingModeWhenExitSplit(
+                    mRootTDAOrganizer, mDisplayId);
             toTopStage.doForAllChildTaskInfos(taskInfo -> {
                 wct.setWindowingMode(taskInfo.token, targetWindowingMode);
             });
@@ -3323,8 +3316,11 @@ public class StageCoordinator extends StageCoordinatorAbstract {
             } else {
                 return null;
             }
-        } else if (triggerTask.displayId != mDisplayId) {
-            // Skip handling task on the other display.
+        } else if (triggerTask.displayId != mDisplayId
+                && getStageOfTask(triggerTask.taskId) == STAGE_TYPE_UNDEFINED
+                && !isPendingEnter(transition)) {
+            // Skip handling tasks on other displays unless they are already in a split stage
+            // or are part of a pending split entry.
             return null;
         }
 
@@ -3369,7 +3365,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
                     ? mStageOrderOperator.getActiveStages().get(1)
                     : mSideStage;
             // Try to handle everything while in split-screen, so return a WCT even if it's empty.
-            ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, "  split is active so using split"
+            ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, "split is active so using split"
                             + "Transition to handle request. triggerTask=%d type=%s mainChildren=%d"
                             + " sideChildren=%d", triggerTask.taskId, transitTypeToString(type),
                     primaryStage.getChildCount(), secondaryStage.getChildCount());
@@ -3420,10 +3416,28 @@ public class StageCoordinator extends StageCoordinatorAbstract {
                 boolean anyStageContainsSingleFullscreenTask = isLastTaskInAnyStage(
                         triggerTask.taskId);
                 if (anyStageContainsSingleFullscreenTask) {
-                    // A splitting task is opening to fullscreen causes one side of the split empty,
-                    // so appends operations to exit split.
-                    prepareExitSplitScreen(STAGE_TYPE_UNDEFINED, out,
-                            EXIT_REASON_FULLSCREEN_REQUEST);
+                    if (triggerTask.displayId == mDisplayId) {
+                        // A splitting task is opening to fullscreen causes one side of the split
+                        // empty, so appends operations to exit split.
+                        prepareExitSplitScreen(STAGE_TYPE_UNDEFINED, out,
+                                EXIT_REASON_FULLSCREEN_REQUEST);
+                    } else {
+                        // The task is moving to a different display.
+                        // We must dismiss the split, keep the other stage on this display.
+                        int dismissTop = getStageOfTask(triggerTask.taskId) == STAGE_TYPE_MAIN
+                                ? STAGE_TYPE_SIDE : STAGE_TYPE_MAIN;
+
+                        prepareExitSplitScreen(dismissTop, out, EXIT_REASON_FULLSCREEN_REQUEST);
+                        mSplitTransitions.setDismissTransition(transition, dismissTop,
+                                EXIT_REASON_FULLSCREEN_REQUEST);
+
+                        final int targetWindowingMode = getTargetWindowingModeWhenExitSplit(
+                                mRootTDAOrganizer, triggerTask.displayId);
+
+                        out.setWindowingMode(triggerTask.token, targetWindowingMode);
+                        out.setBounds(triggerTask.token, null);
+                        return out;
+                    }
                 }
             } else if (type == TRANSIT_KEYGUARD_OCCLUDE && triggerTask.topActivity != null
                     && isSplitScreenVisible()) {
