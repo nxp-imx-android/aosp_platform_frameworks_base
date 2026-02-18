@@ -26,6 +26,10 @@ import android.telecom.TelecomManager;
  */
 public class DependencyAdapter {
 
+    public static boolean isMainlineBuildFlagEnabled() {
+        return false;
+    }
+
     /** Use the @hide constructor to create the TelecomManager */
     public static TelecomManager createTelecomManager(Context context) {
         return new TelecomManager(context);
@@ -33,10 +37,6 @@ public class DependencyAdapter {
 
     /** This method should not be called if we are not building Telecom as a mainline module. */
     public static void registerServiceWrapper() {
-        if (android.telecom.flags.Flags.telecomMainlineApi()) {
-            TelecomFrameworkInitializer.registerServiceWrapper();
-        } else {
-            throw new UnsupportedOperationException("telecomMainlineApi is not enabled");
-        }
+        TelecomFrameworkInitializer.registerServiceWrapper();
     }
 }
