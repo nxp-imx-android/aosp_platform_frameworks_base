@@ -276,11 +276,13 @@ public class AndroidKeyStoreProvider extends Provider {
         } else if (X25519_ALIAS.equalsIgnoreCase(jcaKeyAlgorithm)) {
             return new AndroidKeyStoreXDHPublicKey(descriptor, metadata, X25519_ALIAS,
                     iSecurityLevel, publicKey.getEncoded());
+        } else if (KeyProperties.KEY_ALGORITHM_ML_DSA_87.equalsIgnoreCase(jcaKeyAlgorithm)) {
+            return new AndroidKeyStoreMlDsaPublicKey(descriptor, metadata, iSecurityLevel,
+                    publicKey.getEncoded(), KeyProperties.KEY_ALGORITHM_ML_DSA_87);
         } else if (KeyProperties.KEY_ALGORITHM_ML_DSA.equalsIgnoreCase(jcaKeyAlgorithm)
-                || KeyProperties.KEY_ALGORITHM_ML_DSA_65.equalsIgnoreCase(jcaKeyAlgorithm)
-                || KeyProperties.KEY_ALGORITHM_ML_DSA_87.equalsIgnoreCase(jcaKeyAlgorithm)) {
-            return new AndroidKeyStoreMlDsaPublicKey(
-                    descriptor, metadata, iSecurityLevel, parsedX509Certificate);
+                || KeyProperties.KEY_ALGORITHM_ML_DSA_65.equalsIgnoreCase(jcaKeyAlgorithm)) {
+            return new AndroidKeyStoreMlDsaPublicKey(descriptor, metadata, iSecurityLevel,
+                    publicKey.getEncoded(), KeyProperties.KEY_ALGORITHM_ML_DSA_65);
         } else {
             throw new ProviderException("Unsupported Android Keystore public key algorithm: "
                     + jcaKeyAlgorithm);
