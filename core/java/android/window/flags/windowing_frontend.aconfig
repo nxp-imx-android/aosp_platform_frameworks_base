@@ -527,13 +527,3 @@ flag {
     description: "Synchronize the applied insets to a view with the ongoing system insets animation."
     bug: "463899193"
 }
-
-flag {
-    name: "cross_display_transition"
-    namespace: "windowing_frontend"
-    description: "Cross fade transition between two displays"
-    bug: "481219379"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
