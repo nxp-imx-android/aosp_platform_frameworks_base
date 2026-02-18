@@ -92,6 +92,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
@@ -820,7 +821,12 @@ private fun StatusMessage(viewModel: BouncerMessageViewModel, modifier: Modifier
                     maxLines = 2,
                     textAlign = TextAlign.Center,
                     modifier =
-                        Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite },
+                        Modifier.fillMaxWidth().semantics {
+                            liveRegion = LiveRegionMode.Polite
+                            if (it.isNullOrEmpty()) {
+                                hideFromAccessibility()
+                            }
+                        },
                 )
             }
         }
