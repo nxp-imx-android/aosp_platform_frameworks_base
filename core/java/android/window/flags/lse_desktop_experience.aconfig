@@ -1113,6 +1113,16 @@ flag {
 }
 
 flag {
+    name: "fix_wallpaper_dim_issues_26q2"
+    namespace: "lse_desktop_experience"
+    description: "Fixes the issues around wallpaper dimming in 26Q2."
+    bug: "482102679"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "form_factor_based_desktop_first_switch"
     namespace: "lse_desktop_experience"
     description: "Enables the desktop-first mode switching logic based on its form factor."
