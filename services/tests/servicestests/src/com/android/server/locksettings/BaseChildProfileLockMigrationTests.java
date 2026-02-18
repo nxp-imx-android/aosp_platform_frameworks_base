@@ -32,33 +32,4 @@ public abstract class BaseChildProfileLockMigrationTests extends BaseLockSetting
         mService.initializeSyntheticPassword(PRIMARY_USER_ID);
         mService.initializeSyntheticPassword(MANAGED_PROFILE_USER_ID);
     }
-
-    protected void setUpChildProfileLockFileIfNeeded(
-            boolean hasChildProfileLockBefore, LockscreenCredential unifiedProfilePassword) {
-        if (!hasChildProfileLockBefore) {
-            mStorage.removeChildProfileLock(MANAGED_PROFILE_USER_ID);
-        } else {
-            if (!mStorage.hasChildProfileLock(MANAGED_PROFILE_USER_ID)) {
-                mService.tieProfilePasswordToParent(
-                        MANAGED_PROFILE_USER_ID, PRIMARY_USER_ID, unifiedProfilePassword);
-            }
-        }
-    }
-
-    protected void setUpSpProtectorPasswordIfNeeded(
-            boolean hasSpProtectorPasswordBefore, LockscreenCredential unifiedProfilePassword) {
-        if (hasSpProtectorPasswordBefore) {
-            mSpManager.tieProtectorToParent(
-                    mGateKeeperService,
-                    MANAGED_PROFILE_USER_ID,
-                    mService.getCurrentLskfBasedProtectorId(MANAGED_PROFILE_USER_ID),
-                    PRIMARY_USER_ID,
-                    unifiedProfilePassword);
-        }
-    }
-
-    protected boolean hasSpProtectorPassword(int profileUserId) {
-        return mSpManager.hasProfilePassword(
-                profileUserId, mService.getCurrentLskfBasedProtectorId(profileUserId));
-    }
 }

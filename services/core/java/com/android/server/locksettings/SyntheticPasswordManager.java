@@ -2401,6 +2401,11 @@ class SyntheticPasswordManager {
         saveState(PROFILE_PASSWORD_NAME, encryptedPassword, protectorId, profileUserId);
     }
 
+    @VisibleForTesting
+    void removeProfilePassword(int profileUserId, long protectorId) {
+        destroyState(PROFILE_PASSWORD_NAME, protectorId, profileUserId);
+    }
+
     public boolean hasProfilePassword(int profileUserId, long protectorId) {
         byte[] profilePassword = loadProfilePassword(profileUserId, protectorId);
         return profilePassword != null;

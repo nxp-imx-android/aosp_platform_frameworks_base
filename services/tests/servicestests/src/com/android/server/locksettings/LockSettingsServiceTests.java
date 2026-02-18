@@ -70,10 +70,21 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 
 /** atest FrameworksServicesTests:LockSettingsServiceTests */
 @SmallTest
@@ -219,13 +230,11 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
     @Test
     public void testManagedProfileUnifiedChallenge_useSpProtectorPasswordAfterMigration()
             throws Exception {
-        mSetFlagsRule.disableFlags(android.security.Flags.FLAG_ENABLE_ATOMIC_CHILD_PROFILE_LSKF);
         final LockscreenCredential unifiedPassword = newPassword("pwd-1");
-        setUpUnifiedPassword(unifiedPassword);
+        setUpUnifiedPassword(unifiedPassword, /* isLegacy= */ true);
         assertTrue(mStorage.hasChildProfileLock(MANAGED_PROFILE_USER_ID));
         assertFalse(hasSpProtectorPassword(MANAGED_PROFILE_USER_ID));
 
-        mSetFlagsRule.enableFlags(android.security.Flags.FLAG_ENABLE_ATOMIC_CHILD_PROFILE_LSKF);
         VerifyCredentialResponse response =
                 mService.verifyTiedProfileChallenge(
                         unifiedPassword, MANAGED_PROFILE_USER_ID, 0 /* flags */);
@@ -299,11 +308,6 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         assertTrue(mStorage.hasChildProfileLock(MANAGED_PROFILE_USER_ID));
         assertFalse(hasSpProtectorPassword(MANAGED_PROFILE_USER_ID));
         assertTrue(response.isMatched());
-    }
-
-    private boolean hasSpProtectorPassword(int profileUserId) {
-        return mSpManager.hasProfilePassword(
-                profileUserId, mService.getCurrentLskfBasedProtectorId(profileUserId));
     }
 
     @Test
@@ -1292,8 +1296,34 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
     }
 
     private void setUpUnifiedPassword(LockscreenCredential unifiedPassword) throws RemoteException {
+        setUpUnifiedPassword(unifiedPassword, /* isLegacy= */ false);
+    }
+
+    private void setUpUnifiedPassword(LockscreenCredential unifiedPassword, boolean isLegacy)
+            throws RemoteException {
         setCredential(PRIMARY_USER_ID, unifiedPassword);
         mService.setSeparateProfileChallengeEnabled(MANAGED_PROFILE_USER_ID, false, null);
+        LockscreenCredential unifiedProfilePassword = null;
+        try {
+            unifiedProfilePassword =
+                    mService.getDecryptedPasswordForUnifiedProfile(MANAGED_PROFILE_USER_ID);
+        } catch (KeyStoreException
+                | UnrecoverableKeyException
+                | NoSuchAlgorithmException
+                | NoSuchPaddingException
+                | InvalidKeyException
+                | InvalidAlgorithmParameterException
+                | IllegalBlockSizeException
+                | BadPaddingException
+                | CertificateException
+                | IOException e) {
+            throw new IllegalStateException("Unexpected failure to get profile password", e);
+        }
+        assertTrue(unifiedProfilePassword.isUnifiedProfilePassword());
+        setUpChildProfileLockFileIfNeeded(
+                /* hasChildProfileLockBefore= */ isLegacy, unifiedProfilePassword);
+        setUpSpProtectorPasswordIfNeeded(
+                /* hasSpProtectorPasswordBefore= */ !isLegacy, unifiedProfilePassword);
     }
 
     private void setAndVerifyCredential(int userId, LockscreenCredential newCredential)
