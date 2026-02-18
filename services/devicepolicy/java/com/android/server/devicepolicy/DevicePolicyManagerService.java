@@ -8435,7 +8435,21 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         Integer state = mDevicePolicyEngine.getGlobalPolicySetByAdmin(
                 getPolicyDefinitionForIdentifier(PolicyIdentifier.AUTO_TIME),
                 enforcingAdmin);
-        return state != null ? state : DevicePolicyManager.AUTO_TIME_NOT_CONTROLLED_BY_POLICY;
+        if (state == null) {
+            return DevicePolicyManager.AUTO_TIME_NOT_CONTROLLED_BY_POLICY;
+        }
+
+        switch (state) {
+            case PolicyIdentifier.AUTO_TIME_ENABLED:
+            case PolicyIdentifier.AUTO_TIME_ENABLED_UNENFORCED:
+                return DevicePolicyManager.AUTO_TIME_ENABLED;
+            case PolicyIdentifier.AUTO_TIME_DISABLED:
+            case PolicyIdentifier.AUTO_TIME_DISABLED_UNENFORCED:
+                return DevicePolicyManager.AUTO_TIME_DISABLED;
+            case PolicyIdentifier.AUTO_TIME_USER_CHOICE:
+            default:
+                return DevicePolicyManager.AUTO_TIME_NOT_CONTROLLED_BY_POLICY;
+        }
     }
 
     /**
