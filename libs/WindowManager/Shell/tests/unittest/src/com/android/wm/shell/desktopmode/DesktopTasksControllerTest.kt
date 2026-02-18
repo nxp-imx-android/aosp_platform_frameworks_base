@@ -622,6 +622,150 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    fun isAnyTaskMaximizedOrDoubleTiled_maximized_returnTrue() {
+        val stableBounds = Rect().also { displayLayout.getStableBounds(it) }
+        val task = setUpFreeformTask(bounds = stableBounds)
+
+        assertTrue(
+            controller.isAnyTaskMaximizedOrDoubleTiled(
+                displayId = DEFAULT_DISPLAY,
+                userId = taskRepository.userId,
+            )
+        )
+    }
+
+    @Test
+    fun isAnyTaskMaximizedOrDoubleTiled_maximizedButExcluded_returnFalse() {
+        val stableBounds = Rect().also { displayLayout.getStableBounds(it) }
+        val task = setUpFreeformTask(bounds = stableBounds)
+
+        assertFalse(
+            controller.isAnyTaskMaximizedOrDoubleTiled(
+                displayId = DEFAULT_DISPLAY,
+                userId = taskRepository.userId,
+                excludeTaskId = task.taskId,
+            )
+        )
+    }
+
+    @Test
+    fun isAnyTaskMaximizedOrDoubleTiled_maximizedButInvisible_returnFalse() {
+        val stableBounds = Rect().also { displayLayout.getStableBounds(it) }
+        val task = setUpFreeformTask(bounds = stableBounds)
+        taskRepository.updateTask(
+            displayId = DEFAULT_DISPLAY,
+            taskId = task.taskId,
+            isVisible = false,
+            taskBounds = stableBounds,
+        )
+
+        assertFalse(
+            controller.isAnyTaskMaximizedOrDoubleTiled(
+                displayId = DEFAULT_DISPLAY,
+                userId = taskRepository.userId,
+            )
+        )
+    }
+
+    @Test
+    fun isAnyTaskMaximizedOrDoubleTiled_singleTiled_returnFalse() {
+        val task1 = setUpFreeformTask(bounds = TASK_BOUNDS)
+
+        val task2 = setUpFreeformTask(bounds = TASK_BOUNDS)
+        taskRepository.addLeftTiledTaskToDesk(
+            displayId = DEFAULT_DISPLAY,
+            taskId = task2.taskId,
+            deskId = DEFAULT_DISPLAY,
+        )
+
+        assertFalse(
+            controller.isAnyTaskMaximizedOrDoubleTiled(
+                displayId = DEFAULT_DISPLAY,
+                userId = taskRepository.userId,
+            )
+        )
+    }
+
+    @Test
+    fun isAnyTaskMaximizedOrDoubleTiled_doubleTiled_returnTrue() {
+        val task1 = setUpFreeformTask(bounds = TASK_BOUNDS)
+        taskRepository.addLeftTiledTaskToDesk(
+            displayId = DEFAULT_DISPLAY,
+            taskId = task1.taskId,
+            deskId = DEFAULT_DISPLAY,
+        )
+
+        val task2 = setUpFreeformTask(bounds = TASK_BOUNDS)
+        taskRepository.addRightTiledTaskToDesk(
+            displayId = DEFAULT_DISPLAY,
+            taskId = task2.taskId,
+            deskId = DEFAULT_DISPLAY,
+        )
+
+        assertTrue(
+            controller.isAnyTaskMaximizedOrDoubleTiled(
+                displayId = DEFAULT_DISPLAY,
+                userId = taskRepository.userId,
+            )
+        )
+    }
+
+    @Test
+    fun isAnyTaskMaximizedOrDoubleTiled_doubleTiledButExcluded_returnFalse() {
+        val task1 = setUpFreeformTask(bounds = TASK_BOUNDS)
+        taskRepository.addLeftTiledTaskToDesk(
+            displayId = DEFAULT_DISPLAY,
+            taskId = task1.taskId,
+            deskId = DEFAULT_DISPLAY,
+        )
+
+        val task2 = setUpFreeformTask(bounds = TASK_BOUNDS)
+        taskRepository.addRightTiledTaskToDesk(
+            displayId = DEFAULT_DISPLAY,
+            taskId = task2.taskId,
+            deskId = DEFAULT_DISPLAY,
+        )
+
+        assertFalse(
+            controller.isAnyTaskMaximizedOrDoubleTiled(
+                displayId = DEFAULT_DISPLAY,
+                userId = taskRepository.userId,
+                excludeTaskId = task1.taskId,
+            )
+        )
+    }
+
+    @Test
+    fun isAnyTaskMaximizedOrDoubleTiled_doubleTiledButInvisible_returnFalse() {
+        val task1 = setUpFreeformTask(bounds = TASK_BOUNDS)
+        taskRepository.addLeftTiledTaskToDesk(
+            displayId = DEFAULT_DISPLAY,
+            taskId = task1.taskId,
+            deskId = DEFAULT_DISPLAY,
+        )
+
+        val task2 = setUpFreeformTask(bounds = TASK_BOUNDS)
+        taskRepository.addRightTiledTaskToDesk(
+            displayId = DEFAULT_DISPLAY,
+            taskId = task2.taskId,
+            deskId = DEFAULT_DISPLAY,
+        )
+        taskRepository.updateTask(
+            displayId = DEFAULT_DISPLAY,
+            taskId = task2.taskId,
+            isVisible = false,
+            taskBounds = TASK_BOUNDS,
+        )
+
+        assertFalse(
+            controller.isAnyTaskMaximizedOrDoubleTiled(
+                displayId = DEFAULT_DISPLAY,
+                userId = taskRepository.userId,
+            )
+        )
+    }
+
+    @Test
     fun doesAnyTaskRequireTaskbarRounding_onlyFreeFormTaskIsRunning_returnFalse() {
         setUpFreeformTask()
 
@@ -12413,6 +12557,130 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 TransitionRequestInfo.RequestedLocation(requestedDisplayId, requestedBounds)
             )
         }
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_FIX_WALLPAPER_DIM_ISSUES_26Q2)
+    fun snapToHalfScreen_singleTiled_taskbarCornerNotRounded() {
+        whenever(snapEventHandler.snapToHalfScreen(any(), any(), any())).thenReturn(true)
+
+        val task1 = setUpFreeformTask(bounds = TASK_BOUNDS)
+        val task2 = setUpFreeformTask(bounds = TASK_BOUNDS)
+
+        // Mock that task2 is left-tiled after snapping.
+        taskRepository.addLeftTiledTaskToDesk(
+            displayId = DEFAULT_DISPLAY,
+            taskId = task2.taskId,
+            deskId = DEFAULT_DISPLAY,
+        )
+
+        controller.snapToHalfScreen(
+            task2,
+            mockSurface,
+            TASK_BOUNDS,
+            SnapPosition.LEFT,
+            ResizeTrigger.SNAP_LEFT_MENU,
+            InputMethod.TOUCH,
+        )
+
+        // Verify that onTaskbarCornerRoundingUpdate(false) is called because it's just
+        // single-tiled.
+        verify(desktopRemoteListener).onTaskbarCornerRoundingUpdate(eq(false), eq(DEFAULT_DISPLAY))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_FIX_WALLPAPER_DIM_ISSUES_26Q2)
+    fun snapToHalfScreen_doubleTiled_taskbarCornerRounded() {
+        whenever(snapEventHandler.snapToHalfScreen(any(), any(), any())).thenReturn(true)
+
+        val task1 = setUpFreeformTask(bounds = TASK_BOUNDS)
+        val task2 = setUpFreeformTask(bounds = TASK_BOUNDS)
+
+        // Mock that task1 is already right-tiled.
+        taskRepository.addRightTiledTaskToDesk(
+            displayId = DEFAULT_DISPLAY,
+            taskId = task1.taskId,
+            deskId = DEFAULT_DISPLAY,
+        )
+
+        // Mock that task2 is left-tiled after snapping.
+        taskRepository.addLeftTiledTaskToDesk(
+            displayId = DEFAULT_DISPLAY,
+            taskId = task2.taskId,
+            deskId = DEFAULT_DISPLAY,
+        )
+
+        controller.snapToHalfScreen(
+            task2,
+            mockSurface,
+            TASK_BOUNDS,
+            SnapPosition.LEFT,
+            ResizeTrigger.SNAP_LEFT_MENU,
+            InputMethod.TOUCH,
+        )
+
+        // Verify that onTaskbarCornerRoundingUpdate(true) is called because it's now double-tiled.
+        verify(desktopRemoteListener).onTaskbarCornerRoundingUpdate(eq(true), eq(DEFAULT_DISPLAY))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_FIX_WALLPAPER_DIM_ISSUES_26Q2)
+    fun snapToHalfScreen_singleTiledButAnotherTaskIsMaximized_taskbarCornerRounded() {
+        whenever(snapEventHandler.snapToHalfScreen(any(), any(), any())).thenReturn(true)
+
+        val stableBounds = Rect().also { displayLayout.getStableBounds(it) }
+        val task1 = setUpFreeformTask(bounds = stableBounds)
+        val task2 = setUpFreeformTask(bounds = TASK_BOUNDS)
+
+        // Mock that task2 is left-tiled after snapping.
+        taskRepository.addLeftTiledTaskToDesk(
+            displayId = DEFAULT_DISPLAY,
+            taskId = task2.taskId,
+            deskId = DEFAULT_DISPLAY,
+        )
+
+        controller.snapToHalfScreen(
+            task2,
+            mockSurface,
+            TASK_BOUNDS,
+            SnapPosition.LEFT,
+            ResizeTrigger.SNAP_LEFT_MENU,
+            InputMethod.TOUCH,
+        )
+
+        // Verify that onTaskbarCornerRoundingUpdate(true) is called although it's single-tiled
+        // because another task is maximized.
+        verify(desktopRemoteListener).onTaskbarCornerRoundingUpdate(eq(true), eq(DEFAULT_DISPLAY))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_FIX_WALLPAPER_DIM_ISSUES_26Q2)
+    fun snapToHalfScreen_maximizedTaskIsSnappedToSingleTiled_taskbarCornerNotRounded() {
+        whenever(snapEventHandler.snapToHalfScreen(any(), any(), any())).thenReturn(true)
+
+        val stableBounds = Rect().also { displayLayout.getStableBounds(it) }
+        val task1 = setUpFreeformTask(bounds = stableBounds)
+        val task2 = setUpFreeformTask(bounds = TASK_BOUNDS)
+
+        // Mock that task1 is left-tiled after snapping.
+        taskRepository.addLeftTiledTaskToDesk(
+            displayId = DEFAULT_DISPLAY,
+            taskId = task1.taskId,
+            deskId = DEFAULT_DISPLAY,
+        )
+
+        controller.snapToHalfScreen(
+            task1,
+            mockSurface,
+            TASK_BOUNDS,
+            SnapPosition.LEFT,
+            ResizeTrigger.SNAP_LEFT_MENU,
+            InputMethod.TOUCH,
+        )
+
+        // Verify that onTaskbarCornerRoundingUpdate(false) is called because it's now just
+        // single-tiled.
+        verify(desktopRemoteListener).onTaskbarCornerRoundingUpdate(eq(false), eq(DEFAULT_DISPLAY))
     }
 
     private companion object {
