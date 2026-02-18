@@ -114,6 +114,20 @@ public class Header extends Operation implements RemoteComposeOperation {
     /** Specify touch implementation version */
     public static final short FEATURE_TOUCH_VERSION = 18;
 
+    /** Test capture at time in ms since epoch */
+    public static final short TEST_TIME =  19;
+
+    /** Test capture after this seconds float time in seconds */
+    public static final short TEST_AFTER = 20;
+
+    /** Simulate color theme "color.system_accent1_100 = 2324323, system.textColor = 32323" */
+    public static final short TEST_COLOR_THEME = 21;
+
+    /** Support for actions like "DOWN(time,x,y), MOVE(duration,x,y), UP(x,y)" */
+    public static final short TEST_ACTIONS = 22;
+
+    /** Fix priority logic in collapsible layouts */
+    public static final short FEATURE_PRIORITY_FIX = 23;
 
     /** The object is an integer */
     private static final short DATA_TYPE_INT = 0;
@@ -140,7 +154,8 @@ public class Header extends Operation implements RemoteComposeOperation {
             FEATURE_PAINT_MEASURE,
             DEBUG,
             FEATURE_MEASURE_VERSION,
-            FEATURE_TOUCH_VERSION
+            FEATURE_TOUCH_VERSION,
+            FEATURE_PRIORITY_FIX
     };
     private static final String[] KEY_NAMES = {
             "DOC_WIDTH",
@@ -155,7 +170,8 @@ public class Header extends Operation implements RemoteComposeOperation {
             "PAINT_MEASURE",
             "DEBUG",
             "MEASURE_VERSION",
-            "TOUCH_VERSION"
+            "TOUCH_VERSION",
+            "PRIORITY_FIX"
     };
 
     /**

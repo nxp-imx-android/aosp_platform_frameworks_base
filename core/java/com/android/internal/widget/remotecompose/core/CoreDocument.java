@@ -77,7 +77,7 @@ public class CoreDocument implements Serializable {
 
     // We also keep a more fine-grained BUILD number, exposed as
     // ID_API_LEVEL = DOCUMENT_API_LEVEL + BUILD
-    static final float BUILD = 0.65f;
+    static final float BUILD = 0.66f;
 
     private static final boolean UPDATE_VARIABLES_BEFORE_LAYOUT = false;
 
@@ -86,6 +86,7 @@ public class CoreDocument implements Serializable {
     /// /////////////////////////////////////////////////////////////////////////////////////////
 
     private static final int DEFAULT_FEATURE_PAINT_MEASURE = 1;
+    private static final int DEFAULT_FEATURE_PRIORITY_FIX = 1;
     private static final int DEFAULT_FEATURE_MEASURE_VERSION = LayoutManager.DEFAULT_MEASURE_TYPE;
     private static final int DEFAULT_FEATURE_TOUCH_VERSION = LayoutManager.DEFAULT_TOUCH_VERSION;
 
@@ -98,6 +99,7 @@ public class CoreDocument implements Serializable {
     @Nullable Header mHeader = null;
 
     boolean mUseFeaturePaintMeasure = false;
+    boolean mUseFeaturePriorityFix = false;
     int mMeasureVersion = DEFAULT_FEATURE_MEASURE_VERSION;
     int mTouchVersion = DEFAULT_FEATURE_TOUCH_VERSION;
 
@@ -638,6 +640,9 @@ public class CoreDocument implements Serializable {
         if (featureId == Header.FEATURE_PAINT_MEASURE) {
             return useFeature(featureId, DEFAULT_FEATURE_PAINT_MEASURE);
         }
+        if (featureId == Header.FEATURE_PRIORITY_FIX) {
+            return useFeature(featureId, DEFAULT_FEATURE_PRIORITY_FIX);
+        }
         return useFeature(featureId, 0);
     }
 
@@ -921,6 +926,7 @@ public class CoreDocument implements Serializable {
             }
         }
         mUseFeaturePaintMeasure = useFeature(Header.FEATURE_PAINT_MEASURE);
+        mUseFeaturePriorityFix = useFeature(Header.FEATURE_PRIORITY_FIX);
         mMeasureVersion = featureIntValue(Header.FEATURE_MEASURE_VERSION);
         mTouchVersion = featureIntValue(Header.FEATURE_TOUCH_VERSION);
         mBitmapMemory = 0;

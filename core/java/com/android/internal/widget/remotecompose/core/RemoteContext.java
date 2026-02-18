@@ -58,6 +58,10 @@ public abstract class RemoteContext {
 
     public float mWidth = 0f;
     public float mHeight = 0f;
+
+    public float mViewportWidth = 0f;
+    public float mViewportHeight = 0f;
+
     private float mAnimationTime;
 
     private boolean mAnimate = true;
@@ -103,6 +107,7 @@ public abstract class RemoteContext {
     public void setDensity(float density) {
         if (!Float.isNaN(density) && density > 0) {
             mDensity = density;
+            loadFloat(ID_DENSITY, density);
         }
     }
 
@@ -441,6 +446,15 @@ public abstract class RemoteContext {
      */
     public int getTouchVersion() {
         return mTouchVersion;
+    }
+
+    /**
+     * Return true if the provided feature is enabled in the document
+     * @param feature feature id
+     * @return
+     */
+    public boolean useFeature(short feature) {
+        return mDocument.useFeature(feature);
     }
 
     /** The font information */
