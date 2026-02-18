@@ -17,8 +17,6 @@
 package com.android.systemui.notifications.intelligence.rules.ui.composable
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -202,32 +200,6 @@ private sealed interface EditDialogType {
 
     data object IncludedApps : EditDialogType
     // TODO: b/478225883 - Add more edit types.
-}
-
-/**
- * Renders a dropdown menu to choose one rule action.
- *
- * @param onActionSelected invoked when the user selects an action in the menu.
- *
- * TODO: b/478225883 - Move to a separate file.
- */
-@Composable
-private fun ActionChoiceDialog(
-    onDismissRequest: () -> Unit,
-    onActionSelected: (ActionModel) -> Unit,
-) {
-    DropdownMenu(expanded = true, onDismissRequest = onDismissRequest) {
-        for (action in ActionModel.entries) {
-            DropdownMenuItem(
-                // TODO: b/478225883 - Add translated strings describing the actions.
-                text = { Text(text = action.name) },
-                onClick = {
-                    onActionSelected.invoke(action)
-                    onDismissRequest.invoke()
-                },
-            )
-        }
-    }
 }
 
 /** Creates annotated text for the included apps filter field. */

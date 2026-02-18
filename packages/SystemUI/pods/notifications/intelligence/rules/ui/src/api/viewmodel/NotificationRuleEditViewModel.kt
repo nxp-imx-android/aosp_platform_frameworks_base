@@ -16,7 +16,11 @@
 
 package com.android.systemui.notifications.intelligence.rules.ui.viewmodel
 
+import android.annotation.Px
 import android.content.ContentResolver
+import android.content.Context
+import android.graphics.Bitmap
+import android.net.Uri
 import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
 
@@ -31,6 +35,17 @@ public interface NotificationRuleEditViewModel {
         searchQuery: String,
         contentResolver: ContentResolver,
     ): List<ContactModel>
+
+    /**
+     * Loads the photo thumbnail for a contact from the given [uri].
+     *
+     * @param userContext a context specific to the user that owns the notification rule.
+     */
+    public suspend fun loadContactBitmapFromUri(
+        uri: Uri,
+        userContext: Context,
+        @Px sizePx: Int,
+    ): Bitmap?
 
     /** Fetches all apps installed on the device. */
     public suspend fun fetchInstalledApps(): List<AppModel>
