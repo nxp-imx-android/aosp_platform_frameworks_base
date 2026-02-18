@@ -47,6 +47,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ui.compose.LoadingIcon
@@ -142,7 +143,8 @@ private fun ItemPreview(
             Text(
                 text = text,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
-                style = MaterialTheme.typography.labelMedium,
+                style = MaterialTheme.typography.labelMedium.copy(textAlign = TextAlign.Center),
+                modifier = Modifier.padding(horizontal = 52.dp),
             )
         }
     }
