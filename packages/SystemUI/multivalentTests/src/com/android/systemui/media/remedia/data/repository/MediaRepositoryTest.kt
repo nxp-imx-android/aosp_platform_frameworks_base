@@ -55,6 +55,8 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
+import org.mockito.kotlin.reset
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -391,6 +393,49 @@ class MediaRepositoryTest : SysuiTestCase() {
             assertThat(entry).isNotNull()
             assertThat(entry!!.canShowSeekbar).isTrue()
             assertThat(entry.canBeScrubbed).isTrue()
+        }
+
+    @Test
+    fun addNewMedia_registerCallback_updateMedia_callbackIsNotRegistered() =
+        testScope.runTest {
+            val state =
+                PlaybackState.Builder().run {
+                    setState(PlaybackState.STATE_PAUSED, 200L, 1f)
+                    setActions(PlaybackState.ACTION_SEEK_TO)
+                    build()
+                }
+            val metadata =
+                MediaMetadata.Builder().run {
+                    putLong(MediaMetadata.METADATA_KEY_DURATION, 400L)
+                    build()
+                }
+
+            val mockController = mock<MediaController>()
+            whenever(mockController.metadata).thenReturn(metadata)
+            whenever(mockController.playbackState).thenReturn(state)
+            kosmos.fakeMediaControllerFactory.setControllerForToken(
+                session.sessionToken,
+                mockController,
+            )
+
+            val instanceId = InstanceId.fakeInstanceId(123)
+            val userMedia =
+                createMediaData(
+                        app = "TEST_APP",
+                        playing = false,
+                        playbackLocation = LOCAL,
+                        isResume = false,
+                        instanceId = instanceId,
+                    )
+                    .copy(token = session.sessionToken)
+            addCurrentUserMediaEntry(userMedia)
+
+            val callbackCaptor = argumentCaptor<MediaController.Callback>()
+            verify(mockController).registerCallback(callbackCaptor.capture())
+            reset(mockController)
+
+            addCurrentUserMediaEntry(userMedia.copy(isPlaying = true))
+            verify(mockController, never()).registerCallback(callbackCaptor.capture())
         }
 
     @Test
