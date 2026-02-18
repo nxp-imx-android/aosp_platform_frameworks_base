@@ -435,23 +435,12 @@ public class MenuViewLayerTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FLOATING_MENU_TUCK_SKIPS_TOOLTIP)
     public void onMoveToTuckedChanged_updatesDockTooltipVisibility() {
         mMenuViewModel.updateDockTooltipVisibility(false);
 
         mMenuView.updateMenuMoveToTucked(/* isMoveToTucked= */ true);
 
         assertThat(mMenuViewModel.getDockTooltipVisibilityData().getValue()).isTrue();
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_FLOATING_MENU_TUCK_SKIPS_TOOLTIP)
-    public void onMoveToTuckedChanged_doesNotUpdateDockTooltipVisibility() {
-        mMenuViewModel.updateDockTooltipVisibility(false);
-
-        mMenuView.updateMenuMoveToTucked(/* isMoveToTucked= */ true);
-
-        assertThat(mMenuViewModel.getDockTooltipVisibilityData().getValue()).isFalse();
     }
 
     @Test

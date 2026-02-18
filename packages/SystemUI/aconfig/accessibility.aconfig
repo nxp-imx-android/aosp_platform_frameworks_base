@@ -48,16 +48,6 @@ flag {
 }
 
 flag {
-    name: "floating_menu_tuck_skips_tooltip"
-    namespace: "accessibility"
-    description: "If the user performs a tuck, the tucking tooltip is skipped."
-    bug: "396466246"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "floating_menu_uniform_padding"
     namespace: "accessibility"
     description: "Normalizes padding across all FAB buttons to ensure a minimum touch target size"
