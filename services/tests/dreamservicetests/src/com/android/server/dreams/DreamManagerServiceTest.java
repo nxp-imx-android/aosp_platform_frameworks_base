@@ -75,6 +75,7 @@ import android.service.dreams.IDreamManagerListener;
 import android.testing.TestableContext;
 import android.testing.TestableResources;
 import androidx.test.filters.SmallTest;
+import java.util.Arrays;
 import java.util.Collections;
 import androidx.test.runner.AndroidJUnit4;
 import org.mockito.ArgumentCaptor;
@@ -85,8 +86,10 @@ import com.android.internal.util.test.LocalServiceKeeperRule;
 import com.android.server.SystemService;
 import com.android.server.input.InputManagerInternal;
 import com.android.server.pm.UserManagerInternal;
-import com.android.server.testutils.TestHandler;
 import com.android.server.wm.ActivityTaskManagerInternal;
+
+import android.os.Handler;
+import android.os.test.TestLooper;
 
 import org.junit.After;
 import org.junit.Before;
@@ -147,13 +150,13 @@ public class DreamManagerServiceTest {
     @Rule
     public final TestableContext mContext = new TestableContext(getInstrumentation().getContext());
 
-    private TestHandler mTestHandler;
+    private TestLooper mTestLooper;
     private TestableResources mResources;
     private UserHandle mCurrentUser = UserHandle.of(0);
 
     @Before
     public void setUp() throws Exception {
-        mTestHandler = new TestHandler(/* callback= */ null);
+        mTestLooper = new TestLooper();
         MockitoAnnotations.initMocks(this);
 
         mContext.getTestablePermissions().setPermission(
@@ -215,7 +218,7 @@ public class DreamManagerServiceTest {
         return new DreamManagerService(
                 new TestInjector(
                         mContextSpy,
-                        mTestHandler,
+                        new Handler(mTestLooper.getLooper()),
                         mDreamControllerMock,
                         mDozeConfigMock,
                         mDreamValidatorMock,
@@ -711,18 +714,21 @@ public class DreamManagerServiceTest {
         final ComponentName dream1 = ComponentName.unflattenFromString("com.test/.Dream1");
         setupDreamComponent(Settings.Secure.SCREENSAVER_COMPONENTS, dream1, true);
 
-        service.refreshSettings(mCurrentUser.getIdentifier(),
+        service.refreshSettings(
+                mCurrentUser.getIdentifier(),
                 Settings.Secure.getUriFor(Settings.Secure.SCREENSAVER_COMPONENTS));
 
         when(mDreamComponentsResolver.getDreamPlaylist(anyInt(), any()))
                 .thenReturn(new DreamPlaylist(Collections.singletonList(dream1), 0));
 
         // Flush handler
-        mTestHandler.flush();
+        mTestLooper.dispatchAll();
+        mTestLooper.moveTimeForward(1000); // Wait for debounce
+        mTestLooper.dispatchAll();
 
         // Verify updated playlist callback
-        verify(listener).onPlaylistChanged(eq(new DreamPlaylist(
-                Collections.singletonList(dream1), 0)));
+        verify(listener)
+                .onPlaylistChanged(eq(new DreamPlaylist(Collections.singletonList(dream1), 0)));
     }
 
     @Test
@@ -736,11 +742,12 @@ public class DreamManagerServiceTest {
         final IDreamManagerListener listener = registerListener(service);
 
         // Change an irrelevant setting
-        service.refreshSettings(mCurrentUser.getIdentifier(),
+        service.refreshSettings(
+                mCurrentUser.getIdentifier(),
                 Settings.Secure.getUriFor(Settings.Secure.SCREENSAVER_ENABLED));
 
         // Flush handler
-        mTestHandler.flush();
+        mTestLooper.dispatchAll();
 
         // Verify NO updated playlist callback
         verify(listener, never()).onPlaylistChanged(any());
@@ -763,11 +770,14 @@ public class DreamManagerServiceTest {
         final ComponentName dream1 = ComponentName.unflattenFromString("com.test/.Dream1");
         setupDreamComponent(Settings.Secure.SCREENSAVER_COMPONENTS, dream1, true);
 
-        service.refreshSettings(mCurrentUser.getIdentifier(),
+        service.refreshSettings(
+                mCurrentUser.getIdentifier(),
                 Settings.Secure.getUriFor(Settings.Secure.SCREENSAVER_COMPONENTS));
 
         // Flush handler
-        mTestHandler.flush();
+        mTestLooper.dispatchAll();
+        mTestLooper.moveTimeForward(1000); // Wait for debounce
+        mTestLooper.dispatchAll();
 
         // Verify NO updated playlist callback
         verify(listener, never()).onPlaylistChanged(any(DreamPlaylist.class));
@@ -789,17 +799,23 @@ public class DreamManagerServiceTest {
         when(mDreamComponentsResolver.getDreamPlaylist(anyInt(), any()))
                 .thenReturn(new DreamPlaylist(Collections.singletonList(dream1), 0));
 
-        service.refreshSettings(mCurrentUser.getIdentifier(),
+        service.refreshSettings(
+                mCurrentUser.getIdentifier(),
                 Settings.Secure.getUriFor(Settings.Secure.SCREENSAVER_COMPONENTS));
-        mTestHandler.flush();
+        mTestLooper.dispatchAll();
+        mTestLooper.moveTimeForward(1000);
+        mTestLooper.dispatchAll();
 
         verify(listener).onPlaylistChanged(any(DreamPlaylist.class));
         clearInvocations(listener);
 
         // Trigger change 1 again (same settings)
-        service.refreshSettings(mCurrentUser.getIdentifier(),
+        service.refreshSettings(
+                mCurrentUser.getIdentifier(),
                 Settings.Secure.getUriFor(Settings.Secure.SCREENSAVER_COMPONENTS));
-        mTestHandler.flush();
+        mTestLooper.dispatchAll();
+        mTestLooper.moveTimeForward(1000);
+        mTestLooper.dispatchAll();
 
         // Verify NO callback
         verify(listener, never()).onPlaylistChanged(any(DreamPlaylist.class));
@@ -821,9 +837,12 @@ public class DreamManagerServiceTest {
         when(mDreamComponentsResolver.getDreamPlaylist(anyInt(), any()))
                 .thenReturn(new DreamPlaylist(Collections.singletonList(dream1), 0));
 
-        service.refreshSettings(mCurrentUser.getIdentifier(),
+        service.refreshSettings(
+                mCurrentUser.getIdentifier(),
                 Settings.Secure.getUriFor(Settings.Secure.SCREENSAVER_COMPONENTS));
-        mTestHandler.flush();
+        mTestLooper.dispatchAll();
+        mTestLooper.moveTimeForward(1000);
+        mTestLooper.dispatchAll();
 
         verify(listener).onPlaylistChanged(any(DreamPlaylist.class));
         clearInvocations(listener);
@@ -834,9 +853,12 @@ public class DreamManagerServiceTest {
         when(mDreamComponentsResolver.getDreamPlaylist(anyInt(), any()))
                 .thenReturn(new DreamPlaylist(Collections.singletonList(dream2), 0));
 
-        service.refreshSettings(mCurrentUser.getIdentifier(),
+        service.refreshSettings(
+                mCurrentUser.getIdentifier(),
                 Settings.Secure.getUriFor(Settings.Secure.SCREENSAVER_COMPONENTS));
-        mTestHandler.flush();
+        mTestLooper.dispatchAll();
+        mTestLooper.moveTimeForward(1000);
+        mTestLooper.dispatchAll();
 
         verify(listener).onPlaylistChanged(any(DreamPlaylist.class));
     }
@@ -856,9 +878,12 @@ public class DreamManagerServiceTest {
         setupDreamComponent(Settings.Secure.SCREENSAVER_COMPONENTS, dream1, true);
         when(mDreamComponentsResolver.getDreamPlaylist(anyInt(), any()))
                 .thenReturn(new DreamPlaylist(Collections.singletonList(dream1), 0));
-        service.refreshSettings(mCurrentUser.getIdentifier(),
+        service.refreshSettings(
+                mCurrentUser.getIdentifier(),
                 Settings.Secure.getUriFor(Settings.Secure.SCREENSAVER_COMPONENTS));
-        mTestHandler.flush();
+        mTestLooper.dispatchAll();
+        mTestLooper.moveTimeForward(1000);
+        mTestLooper.dispatchAll();
 
         verify(listener).onPlaylistChanged(any(DreamPlaylist.class));
         clearInvocations(listener);
@@ -875,9 +900,12 @@ public class DreamManagerServiceTest {
         when(mDreamComponentsResolver.getDreamPlaylist(anyInt(), any()))
                 .thenReturn(new DreamPlaylist(Collections.singletonList(dream1), 0));
 
-        service.refreshSettings(mCurrentUser.getIdentifier(),
+        service.refreshSettings(
+                mCurrentUser.getIdentifier(),
                 Settings.Secure.getUriFor(Settings.Secure.SCREENSAVER_COMPONENTS));
-        mTestHandler.flush();
+        mTestLooper.dispatchAll();
+        mTestLooper.moveTimeForward(1000);
+        mTestLooper.dispatchAll();
 
         verify(listener).onPlaylistChanged(any(DreamPlaylist.class));
     }
@@ -898,12 +926,176 @@ public class DreamManagerServiceTest {
                 .thenReturn(new DreamPlaylist(Collections.singletonList(systemDream), 0));
 
         service.setSystemDreamComponentInternal(systemDream, mock(IBinder.class));
-        mTestHandler.flush();
+        mTestLooper.dispatchAll();
+        mTestLooper.moveTimeForward(1000);
+        mTestLooper.dispatchAll();
 
         // Verify updated playlist callback
         ArgumentCaptor<DreamPlaylist> playlistCaptor = ArgumentCaptor.forClass(DreamPlaylist.class);
         verify(listener).onPlaylistChanged(playlistCaptor.capture());
         assertThat(playlistCaptor.getValue().getActiveDream()).isEqualTo(systemDream);
+    }
+
+    @Test
+    @EnableFlags(FLAG_DREAMS_SWITCHER)
+    public void testSetActiveDream_failsWhenComponentNotInPlaylist() {
+        final DreamManagerService service = createService();
+        final ComponentName validDream = ComponentName.unflattenFromString("com.test/.ValidDream");
+        final ComponentName invalidDream =
+                ComponentName.unflattenFromString("com.test/.InvalidDream");
+
+        // Setup: Playlist only contains 'validDream'
+        when(mDreamComponentsResolver.getDreamPlaylist(anyInt(), any()))
+                .thenReturn(new DreamPlaylist(Collections.singletonList(validDream), 0));
+
+        // Act: Try to set 'invalidDream' as active
+        boolean result = service.setActiveDreamInternal(invalidDream, mCurrentUser.getIdentifier());
+
+        // Assert: Should return false
+        assertThat(result).isFalse();
+    }
+
+    @Test
+    @EnableFlags(FLAG_DREAMS_SWITCHER)
+    public void testDreamSwitcher_restartsDreamWhenActiveDreamChanges() {
+        final DreamManagerService service = createService();
+        service.onBootPhase(SystemService.PHASE_THIRD_PARTY_APPS_CAN_START);
+
+        // 1. Setup: Device is currently dreaming "Dream A"
+        final ComponentName dreamA = ComponentName.unflattenFromString("com.test/.DreamA");
+        final ComponentName dreamB = ComponentName.unflattenFromString("com.test/.DreamB");
+        setupDreamComponent(Settings.Secure.SCREENSAVER_COMPONENTS, dreamA, true);
+        when(mDreamComponentsResolver.resolve(anyBoolean(), anyInt(), anyBoolean(), any()))
+                .thenReturn(dreamA);
+
+        // Start dream A
+        service.startDreamInternal(false, "test_start");
+        mTestLooper.dispatchAll();
+        verify(mDreamControllerMock)
+                .startDream(
+                        any(),
+                        eq(dreamA),
+                        anyBoolean(),
+                        anyBoolean(),
+                        anyInt(),
+                        any(),
+                        any(),
+                        eq("test_start"));
+        clearInvocations(mDreamControllerMock);
+
+        // 2. Act: Trigger a playlist update where "Dream B" becomes the active dream
+        DreamPlaylist newPlaylist =
+                new DreamPlaylist(Arrays.asList(dreamA, dreamB), 1); // 1 is index of DreamB
+
+        // Trigger the callback directly
+        service.onDreamPlaylistChanged(mCurrentUser.getIdentifier(), newPlaylist);
+        mTestLooper.dispatchAll();
+
+        // 3. Assert: Verify startDream was called for Dream B
+        verify(mDreamControllerMock)
+                .startDream(
+                        any(),
+                        eq(dreamB), // Verify it switched to B
+                        anyBoolean(),
+                        anyBoolean(),
+                        anyInt(),
+                        any(),
+                        any(),
+                        eq("playlist changed") // Verify the reason string
+                        );
+    }
+
+    @Test
+    @EnableFlags(FLAG_DREAMS_SWITCHER)
+    public void testDreamSwitcher_doesNotSwitchWhenDozing() {
+        final DreamManagerService service = createService();
+        service.onBootPhase(SystemService.PHASE_THIRD_PARTY_APPS_CAN_START);
+
+        // 1. Setup: Device is currently dozing
+        final ComponentName dreamA = ComponentName.unflattenFromString("com.test/.DreamA");
+        final ComponentName dreamB = ComponentName.unflattenFromString("com.test/.DreamB");
+        setupDreamComponent(Settings.Secure.SCREENSAVER_COMPONENTS, dreamA, true);
+        when(mDreamComponentsResolver.resolve(anyBoolean(), anyInt(), anyBoolean(), any()))
+                .thenReturn(dreamA);
+
+        // Start dozing (startDream with doze=true)
+        service.startDreamInternal(true, "test_start_doze");
+        mTestLooper.dispatchAll();
+        verify(mDreamControllerMock)
+                .startDream(
+                        any(),
+                        eq(dreamA),
+                        anyBoolean(),
+                        eq(true), // doze=true
+                        anyInt(),
+                        any(),
+                        any(),
+                        eq("test_start_doze"));
+        clearInvocations(mDreamControllerMock);
+
+        // 2. Act: Trigger a playlist update where "Dream B" becomes the active dream
+        DreamPlaylist newPlaylist = new DreamPlaylist(Arrays.asList(dreamA, dreamB), 1);
+
+        service.onDreamPlaylistChanged(mCurrentUser.getIdentifier(), newPlaylist);
+        mTestLooper.dispatchAll();
+
+        // 3. Assert: Verify startDream was NOT called
+        verify(mDreamControllerMock, never())
+                .startDream(
+                        any(),
+                        any(),
+                        anyBoolean(),
+                        anyBoolean(),
+                        anyInt(),
+                        any(),
+                        any(),
+                        anyString());
+    }
+
+    @Test
+    @EnableFlags(FLAG_DREAMS_SWITCHER)
+    public void testDreamSwitcher_doesNotSwitchIfActiveDreamIsUnchanged() {
+        final DreamManagerService service = createService();
+        service.onBootPhase(SystemService.PHASE_THIRD_PARTY_APPS_CAN_START);
+
+        // 1. Setup: Device is currently dreaming "Dream A"
+        final ComponentName dreamA = ComponentName.unflattenFromString("com.test/.DreamA");
+        setupDreamComponent(Settings.Secure.SCREENSAVER_COMPONENTS, dreamA, true);
+        when(mDreamComponentsResolver.resolve(anyBoolean(), anyInt(), anyBoolean(), any()))
+                .thenReturn(dreamA);
+
+        service.startDreamInternal(false, "test_start");
+        mTestLooper.dispatchAll();
+        verify(mDreamControllerMock)
+                .startDream(
+                        any(),
+                        eq(dreamA),
+                        anyBoolean(),
+                        anyBoolean(),
+                        anyInt(),
+                        any(),
+                        any(),
+                        eq("test_start"));
+        clearInvocations(mDreamControllerMock);
+
+        // 2. Act: Trigger a playlist update where "Dream A" is STILL the active dream
+        // but maybe the list order changed or something else changed.
+        DreamPlaylist newPlaylist = new DreamPlaylist(Collections.singletonList(dreamA), 0);
+
+        service.onDreamPlaylistChanged(mCurrentUser.getIdentifier(), newPlaylist);
+        mTestLooper.dispatchAll();
+
+        // 3. Assert: Verify startDream was NOT called
+        verify(mDreamControllerMock, never())
+                .startDream(
+                        any(),
+                        any(),
+                        anyBoolean(),
+                        anyBoolean(),
+                        anyInt(),
+                        any(),
+                        any(),
+                        anyString());
     }
 
     private IDreamManagerListener registerListener(DreamManagerService service) {
@@ -916,7 +1108,7 @@ public class DreamManagerServiceTest {
 
     private void registerListener(DreamManagerService service, IDreamManagerListener listener) {
         service.registerListener(listener, mCurrentUser.getIdentifier());
-        mTestHandler.flush();
+        mTestLooper.dispatchAll();
         clearInvocations(listener);
     }
 
