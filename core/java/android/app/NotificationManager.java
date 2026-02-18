@@ -3803,7 +3803,9 @@ public class NotificationManager {
      *
      * @hide
      */
-    public List<NotificationRule> getNotificationRules() {
+    @TestApi
+    @FlaggedApi(android.app.Flags.FLAG_NM_CONTEXTUAL_DISPLAY_LAUNCH)
+    public @NonNull List<NotificationRule> getNotificationRules() {
         INotificationManager service = service();
         try {
             return service.getNotificationRules(null, mContext.getUserId()).getList();
@@ -3817,6 +3819,7 @@ public class NotificationManager {
      * be created.
      * @hide
      */
+    @TestApi
     @FlaggedApi(android.app.Flags.FLAG_NM_CONTEXTUAL_DISPLAY_LAUNCH)
     public @Nullable NotificationRule addNotificationRule(@NonNull NotificationRule rule,
             int position) {

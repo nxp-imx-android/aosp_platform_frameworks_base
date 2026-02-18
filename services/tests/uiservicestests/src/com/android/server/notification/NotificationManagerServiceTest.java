@@ -20359,9 +20359,13 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         NotificationRule first = NotificationRuleManagerTest.createFullRule(101, "first", true);
         NotificationRule second = NotificationRuleManagerTest.createFullRule(102, "second", false);
 
+        final Intent intent = new Intent(Intent.ACTION_USER_ADDED);
+        intent.putExtra(Intent.EXTRA_USER_HANDLE, mUser);
+        mUserIntentReceiver.onReceive(mContext, intent);
+
         assertThat(mBinderService.addNotificationRule(mUserId, first, 0)).isEqualTo(first);
         assertThat(mBinderService.addNotificationRule(mUserId, second, 0)).isEqualTo(second);
         assertThat(mBinderService.getNotificationRules(null, mUserId).getList())
-                .containsExactly(first, second);
+                .containsAtLeastElementsIn(List.of(first, second));
     }
 }

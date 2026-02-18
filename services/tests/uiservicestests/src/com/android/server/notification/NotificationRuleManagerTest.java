@@ -34,6 +34,7 @@ import static android.app.NotificationRule.RESERVED_ID_IMPORTANT_NOTIFICATIONS;
 import static android.app.NotificationRule.RESERVED_ID_PRIORITY_CONVERSATIONS;
 import static android.app.NotificationRule.RESERVED_ID_PROMOTED;
 import static android.app.NotificationRule.RESERVED_ID_STATIC_BUNDLES;
+import static android.os.UserHandle.USER_ALL;
 import static android.service.notification.Adjustment.KEY_HIGHLIGHT;
 import static android.service.notification.Adjustment.KEY_IMPORTANCE;
 import static android.service.notification.Adjustment.KEY_LIGHT;
@@ -59,6 +60,7 @@ import android.app.backup.BackupRestoreEventLogger;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcel;
 import android.os.UserHandle;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
@@ -656,9 +658,22 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
         assertThat(actual.getFilters().getFirst().getStaticBundleTypes())
                 .containsExactly(TYPE_NEWS, TYPE_PROMOTION);
         assertThat(actual.getAction().getPrimaryAction()).isEqualTo(PRIMARY_ACTION_BUNDLE);
+        assertThat(actual.getAction().getModeBreakthroughIds()).isEmpty();
+        assertThat(actual.getAction().getDynamicBundleEmojiIcon()).isNull();
+        assertThat(actual.getAction().getDynamicBundleName()).isNull();
+        assertThat(actual.getAction().getLightColorOverride()).isEqualTo(0);
+        assertThat(actual.getAction().getSoundHapticOverride()).isNull();
         assertThat(actual.canBeDisabled()).isTrue();
         assertThat(actual.isEnabled()).isTrue();
         assertThat(actual.getEditIntentAction()).contains("BUNDLE");
+
+        Parcel parcel = Parcel.obtain();
+
+        actual.writeToParcel(parcel, 0);
+        parcel.setDataPosition(0);
+
+        NotificationRule fromParcel = NotificationRule.CREATOR.createFromParcel(parcel);
+        assertThat(fromParcel).isEqualTo(actual);
     }
 
     @Test
@@ -674,6 +689,14 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
         assertThat(actual.canBeDisabled()).isTrue();
         assertThat(actual.isEnabled()).isTrue();
         assertThat(actual.getEditIntentAction()).isNull();
+
+        Parcel parcel = Parcel.obtain();
+
+        actual.writeToParcel(parcel, 0);
+        parcel.setDataPosition(0);
+
+        NotificationRule fromParcel = NotificationRule.CREATOR.createFromParcel(parcel);
+        assertThat(fromParcel).isEqualTo(actual);
     }
 
     @Test
@@ -690,6 +713,14 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
         assertThat(actual.canBeDisabled()).isFalse();
         assertThat(actual.isEnabled()).isTrue();
         assertThat(actual.getEditIntentAction()).contains("PROMOTED");
+
+        Parcel parcel = Parcel.obtain();
+
+        actual.writeToParcel(parcel, 0);
+        parcel.setDataPosition(0);
+
+        NotificationRule fromParcel = NotificationRule.CREATOR.createFromParcel(parcel);
+        assertThat(fromParcel).isEqualTo(actual);
     }
 
     @Test
@@ -707,5 +738,13 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
         assertThat(actual.canBeDisabled()).isFalse();
         assertThat(actual.isEnabled()).isTrue();
         assertThat(actual.getEditIntentAction()).contains("CONVERSATION");
+
+        Parcel parcel = Parcel.obtain();
+
+        actual.writeToParcel(parcel, 0);
+        parcel.setDataPosition(0);
+
+        NotificationRule fromParcel = NotificationRule.CREATOR.createFromParcel(parcel);
+        assertThat(fromParcel).isEqualTo(actual);
     }
 }
