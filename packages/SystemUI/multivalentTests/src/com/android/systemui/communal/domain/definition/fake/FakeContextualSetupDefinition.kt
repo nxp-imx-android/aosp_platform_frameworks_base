@@ -29,6 +29,8 @@ class FakeContextualSetupDefinition(override val id: String) : ContextualSetupDe
 
     override val target: SetupTarget = SetupTarget.Activity(ComponentName("", ""))
 
+    override var priority: Int = 0
+
     override fun dump(pw: PrintWriter, args: Array<String>) {}
 
     fun setIsReady(value: Boolean) {

@@ -15,11 +15,14 @@
  */
 package com.android.systemui.communal.domain.definition
 
+import android.content.res.Resources
 import com.android.systemui.communal.data.repository.ContextualSetupRepository
 import com.android.systemui.communal.data.repository.SetupState
 import com.android.systemui.communal.domain.interactor.UprightChargingInteractor
 import com.android.systemui.communal.domain.preconditions.CommonSetupPreconditions
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.res.R
 import com.android.systemui.util.kotlin.FlowDumper
 import java.io.PrintWriter
 import javax.inject.Inject
@@ -37,10 +40,15 @@ constructor(
     private val uprightChargingInteractor: UprightChargingInteractor,
     private val contextualSetupRepo: ContextualSetupRepository,
     private val flowDumper: FlowDumper,
+    @Main private val resources: Resources,
     override val target: SetupTarget,
 ) : ContextualSetupDefinition {
 
     override val id = FLOW_ID
+
+    override val priority: Int by lazy {
+        resources.getInteger(R.integer.config_communalUprightChargingPriority)
+    }
 
     // Power Optimization:
     // We strictly gate the expensive trigger (accelerometer) behind the cheap preconditions.
