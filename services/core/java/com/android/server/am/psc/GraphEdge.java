@@ -17,6 +17,7 @@ package com.android.server.am.psc;
 
 import static android.app.ActivityManager.PROCESS_CAPABILITY_NONE;
 
+import android.annotation.Nullable;
 import android.app.ActivityManager.ProcessCapability;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 
@@ -50,6 +51,17 @@ abstract class GraphEdge {
     void updateCachedCapabilityFilter() {
         mCachedCapabilityFilter = evaluateCapabilityFilter();
     }
+
+    /**
+     * Returns the source node of the edge.
+     */
+    abstract @Nullable GraphNode getSource();
+
+    /**
+     * Returns the target node of the edge. For binding edges, returns {@code null} if the host
+     * process record is {@code null}.
+     */
+    abstract @Nullable GraphNode getTarget();
 
     /**
      * Evaluates whether the edge propagates each capability.

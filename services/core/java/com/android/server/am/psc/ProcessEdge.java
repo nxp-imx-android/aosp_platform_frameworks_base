@@ -18,6 +18,7 @@ package com.android.server.am.psc;
 import static com.android.server.am.psc.OomAdjuster.CPU_TIME_REASON_NONE;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.app.ActivityManager.ProcessCapability;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
@@ -57,12 +58,14 @@ final class ProcessEdge extends GraphEdge {
         mCpuTimeReasons = CPU_TIME_REASON_NONE;
     }
 
-    /**
-     * Returns the target node of the edge.
-     *
-     * Note: The source node of a {@link ProcessEdge} is always the system (represented by
-     * {@code null}).
-     */
+    /** Returns {@code null} since the source is always the system. */
+    @Override
+    @Nullable
+    GraphNode getSource() {
+        return null;
+    }
+
+    @Override
     @NonNull
     GraphNode getTarget() {
         return mNode;
