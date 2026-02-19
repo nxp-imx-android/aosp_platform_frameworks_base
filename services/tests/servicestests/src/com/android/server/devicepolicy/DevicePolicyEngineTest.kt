@@ -28,6 +28,7 @@ import android.app.usage.UsageStatsManagerInternal
 import android.content.ComponentName
 import android.content.pm.PackageManagerInternal
 import android.os.UserHandle
+import android.os.UserHandle.USER_ALL
 import android.os.UserManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -46,7 +47,15 @@ import org.junit.ClassRule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
+import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.isNull
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
 
 @RunWith(AndroidJUnit4::class)
@@ -122,12 +131,7 @@ class DevicePolicyEngineTest {
         enforcingAdmin: EnforcingAdmin = DEVICE_OWNER_ADMIN,
     ) {
         val result =
-            devicePolicyEngine.setLocalPolicy(
-                policyDefinition,
-                enforcingAdmin,
-                value,
-                userId,
-            )
+            devicePolicyEngine.setLocalPolicy(policyDefinition, enforcingAdmin, value, userId)
         assertThat(result.get()).isEqualTo(POLICY_SET)
     }
 
@@ -140,13 +144,17 @@ class DevicePolicyEngineTest {
         assertThat(result.get()).isEqualTo(POLICY_SET)
     }
 
-    private fun <T> ensurePolicyIsRemovedLocally(policyDefinition: PolicyDefinition<T>) {
+    private fun <T> ensurePolicyIsRemovedLocally(
+        policyDefinition: PolicyDefinition<T>,
+        userId: Int = SYSTEM_USER_ID,
+    ) {
         val result =
-            devicePolicyEngine.removeLocalPolicy(
-                policyDefinition,
-                DEVICE_OWNER_ADMIN,
-                SYSTEM_USER_ID,
-            )
+            devicePolicyEngine.removeLocalPolicy(policyDefinition, DEVICE_OWNER_ADMIN, userId)
+        assertThat(result.get()).isEqualTo(POLICY_CLEARED)
+    }
+
+    private fun <T> ensurePolicyIsRemovedGlobally(policyDefinition: PolicyDefinition<T>) {
+        val result = devicePolicyEngine.removeGlobalPolicy(policyDefinition, DEVICE_OWNER_ADMIN)
         assertThat(result.get()).isEqualTo(POLICY_CLEARED)
     }
 
@@ -348,13 +356,13 @@ class DevicePolicyEngineTest {
             PASSWORD_COMPLEXITY_POLICY,
             HIGH_PASSWORD_COMPLEXITY,
             SYSTEM_USER_ID,
-            DEVICE_OWNER_ADMIN
+            DEVICE_OWNER_ADMIN,
         )
 
         val enforcingAdmins =
             devicePolicyEngine.getEnforcingAdminsForResolvedPolicy(
                 PASSWORD_COMPLEXITY_POLICY,
-                SYSTEM_USER_ID
+                SYSTEM_USER_ID,
             )
 
         assertThat(enforcingAdmins).containsExactly(DEVICE_OWNER_ADMIN)
@@ -362,24 +370,20 @@ class DevicePolicyEngineTest {
 
     @Test
     fun getEnforcingAdminsForResolvedPolicy_multipleAdminsSetPolicy_singleEnforcingAdminForResolvedValue() {
-        ensurePolicyIsSetLocally(
-            PASSWORD_COMPLEXITY_POLICY,
-            LOW_PASSWORD_COMPLEXITY,
-            SYSTEM_USER_ID,
-            SYSTEM_ADMIN
-        )
-        // Only this policy value set by this admin will take effect because of the resolution mechanism.
+        ensurePolicyIsSetLocally(PASSWORD_COMPLEXITY_POLICY, LOW_PASSWORD_COMPLEXITY)
+        // Only this policy value set by this admin will take effect because of the resolution
+        // mechanism.
         ensurePolicyIsSetLocally(
             PASSWORD_COMPLEXITY_POLICY,
             HIGH_PASSWORD_COMPLEXITY,
             SYSTEM_USER_ID,
-            DEVICE_OWNER_ADMIN
+            DEVICE_OWNER_ADMIN,
         )
 
         val enforcingAdmins =
             devicePolicyEngine.getEnforcingAdminsForResolvedPolicy(
                 PASSWORD_COMPLEXITY_POLICY,
-                SYSTEM_USER_ID
+                SYSTEM_USER_ID,
             )
 
         assertThat(enforcingAdmins).containsExactly(DEVICE_OWNER_ADMIN)
@@ -391,19 +395,19 @@ class DevicePolicyEngineTest {
             PASSWORD_COMPLEXITY_POLICY,
             HIGH_PASSWORD_COMPLEXITY,
             SYSTEM_USER_ID,
-            DEVICE_OWNER_ADMIN
+            DEVICE_OWNER_ADMIN,
         )
         ensurePolicyIsSetLocally(
             PASSWORD_COMPLEXITY_POLICY,
             HIGH_PASSWORD_COMPLEXITY,
             SYSTEM_USER_ID,
-            SYSTEM_ADMIN
+            SYSTEM_ADMIN,
         )
 
         val enforcingAdmins =
             devicePolicyEngine.getEnforcingAdminsForResolvedPolicy(
                 PASSWORD_COMPLEXITY_POLICY,
-                SYSTEM_USER_ID
+                SYSTEM_USER_ID,
             )
 
         assertThat(enforcingAdmins).containsExactly(DEVICE_OWNER_ADMIN, SYSTEM_ADMIN)
@@ -415,18 +419,18 @@ class DevicePolicyEngineTest {
             USER_CONTROLLED_DISABLED_PACKAGES_POLICY,
             PACKAGE_SET_POLICY_VALUE_1,
             SYSTEM_USER_ID,
-            DEVICE_OWNER_ADMIN
+            DEVICE_OWNER_ADMIN,
         )
         ensurePolicyIsSetGlobally(
             USER_CONTROLLED_DISABLED_PACKAGES_POLICY,
             PACKAGE_SET_POLICY_VALUE_2,
-            SYSTEM_ADMIN
+            SYSTEM_ADMIN,
         )
 
         val enforcingAdmins =
             devicePolicyEngine.getEnforcingAdminsForResolvedPolicy(
                 USER_CONTROLLED_DISABLED_PACKAGES_POLICY,
-                SYSTEM_USER_ID
+                SYSTEM_USER_ID,
             )
 
         assertThat(enforcingAdmins).containsExactly(DEVICE_OWNER_ADMIN, SYSTEM_ADMIN)
@@ -438,24 +442,24 @@ class DevicePolicyEngineTest {
             USER_CONTROLLED_DISABLED_PACKAGES_POLICY,
             PACKAGE_SET_POLICY_VALUE_1,
             SYSTEM_USER_ID,
-            DEVICE_OWNER_ADMIN
+            DEVICE_OWNER_ADMIN,
         )
         ensurePolicyIsSetLocally(
             USER_CONTROLLED_DISABLED_PACKAGES_POLICY,
             PACKAGE_SET_POLICY_VALUE_1_SUBSET,
             SYSTEM_USER_ID,
-            DEVICE_OWNER_ADMIN
+            DEVICE_OWNER_ADMIN,
         )
         ensurePolicyIsSetGlobally(
             USER_CONTROLLED_DISABLED_PACKAGES_POLICY,
             PACKAGE_SET_POLICY_VALUE_2,
-            SYSTEM_ADMIN
+            SYSTEM_ADMIN,
         )
 
         val enforcingAdmins =
             devicePolicyEngine.getEnforcingAdminsForResolvedPolicy(
                 USER_CONTROLLED_DISABLED_PACKAGES_POLICY,
-                SYSTEM_USER_ID
+                SYSTEM_USER_ID,
             )
 
         assertThat(enforcingAdmins).containsExactly(DEVICE_OWNER_ADMIN, SYSTEM_ADMIN)
@@ -466,32 +470,35 @@ class DevicePolicyEngineTest {
         val enforcingAdmins =
             devicePolicyEngine.getEnforcingAdminsForResolvedPolicy(
                 PASSWORD_COMPLEXITY_POLICY,
-                SYSTEM_USER_ID
+                SYSTEM_USER_ID,
             )
 
         assertThat(enforcingAdmins).isEmpty()
     }
 
-    private val stringPolicyDefinition = PolicyDefinition<String>(
-        NoArgsPolicyKey("testStringPolicy"),
-        MostRecent<String>(),
-        PolicyEnforcerCallbacks::noOp,
-        StringPolicySerializer()
-    )
-
-    private val stringListPolicyDefinition = PolicyDefinition<MutableList<String>>(
-        NoArgsPolicyKey("testStringListPolicy"),
-        MostRecent<MutableList<String>>(),
-        PolicyEnforcerCallbacks::noOp,
-        ListOfStringPolicySerializer()
-    )
-
-    val testingPolicyMap = PolicyDefinitionMap(
-        mapOf(
-            stringPolicyDefinition.policyKey.identifier to stringPolicyDefinition,
-            stringListPolicyDefinition.policyKey.identifier to stringListPolicyDefinition,
+    private val stringPolicyDefinition =
+        PolicyDefinition<String>(
+            NoArgsPolicyKey("testStringPolicy"),
+            MostRecent<String>(),
+            PolicyEnforcerCallbacks::noOp,
+            StringPolicySerializer(),
         )
-    )
+
+    private val stringListPolicyDefinition =
+        PolicyDefinition<MutableList<String>>(
+            NoArgsPolicyKey("testStringListPolicy"),
+            MostRecent<MutableList<String>>(),
+            PolicyEnforcerCallbacks::noOp,
+            ListOfStringPolicySerializer(),
+        )
+
+    val testingPolicyMap =
+        PolicyDefinitionMap(
+            mapOf(
+                stringPolicyDefinition.policyKey.identifier to stringPolicyDefinition,
+                stringListPolicyDefinition.policyKey.identifier to stringListPolicyDefinition,
+            )
+        )
 
     @Test
     fun persistentPolicyStorage_shouldPersistEmptyString() {
@@ -499,10 +506,7 @@ class DevicePolicyEngineTest {
 
         usePolicyMap(testingPolicyMap)
 
-        ensurePolicyIsSetLocally(
-            stringPolicyDefinition,
-            emptyString
-        )
+        ensurePolicyIsSetLocally(stringPolicyDefinition, emptyString)
 
         resetDevicePolicyEngine()
 
@@ -518,10 +522,7 @@ class DevicePolicyEngineTest {
 
         usePolicyMap(testingPolicyMap)
 
-        ensurePolicyIsSetLocally(
-            stringPolicyDefinition,
-            stringValue
-        )
+        ensurePolicyIsSetLocally(stringPolicyDefinition, stringValue)
 
         resetDevicePolicyEngine()
 
@@ -537,10 +538,7 @@ class DevicePolicyEngineTest {
 
         usePolicyMap(testingPolicyMap)
 
-        ensurePolicyIsSetLocally(
-            stringListPolicyDefinition,
-            emptyList
-        )
+        ensurePolicyIsSetLocally(stringListPolicyDefinition, emptyList)
 
         resetDevicePolicyEngine()
 
@@ -552,17 +550,11 @@ class DevicePolicyEngineTest {
 
     @Test
     fun persistentPolicyStorage_shouldPersistList() {
-        val listValue = ListOfStringPolicyValue(listOf(
-            "testValue1",
-            "testValue2",
-        ))
+        val listValue = ListOfStringPolicyValue(listOf("testValue1", "testValue2"))
 
         usePolicyMap(testingPolicyMap)
 
-        ensurePolicyIsSetLocally(
-            stringListPolicyDefinition,
-            listValue
-        )
+        ensurePolicyIsSetLocally(stringListPolicyDefinition, listValue)
 
         resetDevicePolicyEngine()
 
@@ -574,20 +566,20 @@ class DevicePolicyEngineTest {
 
     @Test
     fun persistentPolicyStorage_shouldPersistEmptyListWithSpecialCharacters() {
-        val listValue = ListOfStringPolicyValue(listOf(
-            "test<WithLessThan",
-            "test>GreaterLessThan",
-            "test\"Quote",
-            "test\nNewline",
-            "test=Equals",
-        ))
+        val listValue =
+            ListOfStringPolicyValue(
+                listOf(
+                    "test<WithLessThan",
+                    "test>GreaterLessThan",
+                    "test\"Quote",
+                    "test\nNewline",
+                    "test=Equals",
+                )
+            )
 
         usePolicyMap(testingPolicyMap)
 
-        ensurePolicyIsSetLocally(
-            stringListPolicyDefinition,
-            listValue
-        )
+        ensurePolicyIsSetLocally(stringListPolicyDefinition, listValue)
 
         resetDevicePolicyEngine()
 
@@ -671,6 +663,87 @@ class DevicePolicyEngineTest {
         val resolvedPolicy =
             devicePolicyEngine.getResolvedPolicy(AUTO_TIME_ZONE_POLICY, SYSTEM_USER_ID)
         assertThat(resolvedPolicy).isNull()
+    }
+
+    @Test
+    fun globalPolicy_shouldSentUpdateOnSetAndClear() {
+        val testStringValue = StringPolicyValue("testValue")
+
+        val mockListener = mock<DevicePolicyEngine.PolicyChangeListener>()
+        devicePolicyEngine.setPolicyChangedListener(mockListener)
+
+        ensurePolicyIsSetGlobally(stringPolicyDefinition, testStringValue)
+        ensurePolicyIsRemovedGlobally(stringPolicyDefinition)
+
+        verify(mockListener, times(1))
+            .onPolicyChanged(
+                eq(stringPolicyDefinition),
+                eq(USER_ALL),
+                eq(testStringValue),
+                isNull(),
+            )
+        verify(mockListener, times(1))
+            .onPolicyChanged(
+                eq(stringPolicyDefinition),
+                eq(USER_ALL),
+                isNull(),
+                eq(testStringValue),
+            )
+        verifyNoMoreInteractions(mockListener)
+    }
+
+    @Test
+    fun globalPolicy_noChange_shouldNotSendUpdate() {
+        ensurePolicyIsSetGlobally(stringPolicyDefinition, StringPolicyValue("testValue"))
+
+        val mockListener = mock<DevicePolicyEngine.PolicyChangeListener>()
+        devicePolicyEngine.setPolicyChangedListener(mockListener)
+
+        ensurePolicyIsSetGlobally(stringPolicyDefinition, StringPolicyValue("testValue"))
+
+        verify(mockListener, never()).onPolicyChanged(any(), any(), anyOrNull(), anyOrNull())
+    }
+
+    @Test
+    fun localPolicy_shouldSentUpdateOnSetAndClear() {
+        val testStringValue = StringPolicyValue("testValue")
+        val testUserId = 5
+
+        val mockListener = mock<DevicePolicyEngine.PolicyChangeListener>()
+        devicePolicyEngine.setPolicyChangedListener(mockListener)
+
+        ensurePolicyIsSetLocally(stringPolicyDefinition, testStringValue, testUserId)
+        ensurePolicyIsRemovedLocally(stringPolicyDefinition, testUserId)
+
+        verify(mockListener, times(1))
+            .onPolicyChanged(
+                eq(stringPolicyDefinition),
+                eq(testUserId),
+                eq(testStringValue),
+                isNull(),
+            )
+        verify(mockListener, times(1))
+            .onPolicyChanged(
+                eq(stringPolicyDefinition),
+                eq(testUserId),
+                isNull(),
+                eq(testStringValue),
+            )
+        verifyNoMoreInteractions(mockListener)
+    }
+
+    @Test
+    fun localPolicy_noChange_shouldNotSendUpdate() {
+        val testUserId = 5
+
+        ensurePolicyIsSetLocally(stringPolicyDefinition, StringPolicyValue("testValue"), testUserId)
+
+        val mockListener = mock<DevicePolicyEngine.PolicyChangeListener>()
+        devicePolicyEngine.setPolicyChangedListener(mockListener)
+
+        ensurePolicyIsSetLocally(stringPolicyDefinition, StringPolicyValue("testValue"), testUserId)
+
+        verify(mockListener, never()).onPolicyChanged(any(), any(), anyOrNull(), anyOrNull())
     }
 
     companion object {
