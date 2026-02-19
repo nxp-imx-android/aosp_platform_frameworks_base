@@ -81,7 +81,7 @@ with_tools_tests=1
 no_experimental_api=0
 target_args=()
 
-while getopts "sx:f:dtbLa:rDRhXcTtwPF:Im:E" opt; do
+while getopts "sx:f:dltbLa:rDRhXcTtwPF:Im:E" opt; do
 case "$opt" in
 # OPTIONS-START
     s) # Remove slow tests
@@ -362,4 +362,3 @@ if [[ "$(ls -A $RAVENWOOD_BUGREPORT_DIR >&1 )" != "" ]] ; then
     echo "Generated bugreports:"
     find $RAVENWOOD_BUGREPORT_DIR -type f | sort
 fi
-
