@@ -153,16 +153,6 @@ flag {
 }
 
 flag {
-    name: "enable_app_handle_position_reporting"
-    namespace: "lse_desktop_experience"
-    description: "Report app handle position to the SysUi."
-    bug: "412444130"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_app_restart_after_update"
     namespace: "lse_desktop_experience"
     description: "Enables the app restart after update feature."

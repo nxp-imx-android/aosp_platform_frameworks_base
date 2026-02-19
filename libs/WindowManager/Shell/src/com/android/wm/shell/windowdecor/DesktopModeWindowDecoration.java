@@ -83,7 +83,6 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.policy.DesktopModeCompatPolicy;
 import com.android.internal.policy.SystemBarUtils;
 import com.android.internal.protolog.ProtoLog;
-import com.android.window.flags.Flags;
 import com.android.wm.shell.R;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTaskOrganizer;
@@ -571,9 +570,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         if (mResult.mRootView == null) {
             // This means something blocks the window decor from showing, e.g. the task is hidden.
             // Nothing is set up in this case including the decoration surface.
-            if (mDesktopState.canEnterDesktopMode() && isEducationOrHandleReportingEnabled()) {
-                notifyNoCaptionHandle();
-            }
+            notifyNoCaptionHandle();
             mExclusionRegionListener.onExclusionRegionDismissed(mTaskInfo.taskId);
             disposeStatusBarInputLayer();
             Trace.endSection(); // DesktopModeWindowDecoration#relayout
@@ -589,19 +586,13 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 if (appHeader != null) {
                     appHeader.setAppName(name);
                     appHeader.setAppIcon(icon);
-                    if (mDesktopState.canEnterDesktopMode()
-                            && isEducationOrHandleReportingEnabled()) {
-                        notifyCaptionStateChanged();
-                    }
+                    notifyCaptionStateChanged();
                 }
                 return Unit.INSTANCE;
             });
         }
 
-        if (mDesktopState.canEnterDesktopMode() && isEducationOrHandleReportingEnabled()) {
-            notifyCaptionStateChanged();
-        }
-
+        notifyCaptionStateChanged();
         Trace.beginSection("DesktopModeWindowDecoration#relayout-bindData");
         if (isAppHandle(mWindowDecorViewHolder)) {
             updateAppHandleViewHolder();
@@ -616,9 +607,6 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             closeHandleMenu();
             closeManageWindowsMenu();
             closeLayoutMenu();
-            if (!DesktopExperienceFlags.ENABLE_APP_HANDLE_POSITION_REPORTING.isTrue()) {
-                notifyNoCaptionHandle();
-            }
         }
         updateDragResizeListenerIfNeeded(oldDecorationSurface, inFullImmersive);
         updateLayoutMenu(startT, inFullImmersive);
@@ -786,9 +774,6 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     }
 
     private void notifyCaptionStateChanged() {
-        if (!mDesktopState.canEnterDesktopMode() || !isEducationOrHandleReportingEnabled()) {
-            return;
-        }
         if (!isCaptionVisible()) {
             notifyNoCaptionHandle();
         } else if (isAppHandle(mWindowDecorViewHolder)) {
@@ -839,9 +824,6 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     }
 
     private void notifyNoCaptionHandle() {
-        if (!mDesktopState.canEnterDesktopMode() || !isEducationOrHandleReportingEnabled()) {
-            return;
-        }
         mWindowDecorCaptionRepository.notifyCaptionChanged(
                 new CaptionState.NoCaption(mTaskInfo.taskId));
     }
@@ -850,14 +832,6 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
      * Returns app handle bounds if app handle is visible. Otherwise, returns empty Rect.
      */
     private Rect getCurrentAppHandleBounds() {
-        if (!DesktopExperienceFlags.ENABLE_APP_HANDLE_POSITION_REPORTING.isTrue()) {
-            return new Rect(
-                    mResult.mCaptionX,
-                    /* top= */ 0,
-                    mResult.mCaptionX + mResult.mCaptionWidth,
-                    mResult.mCaptionHeight);
-        }
-
         if (!isAppHandle(mWindowDecorViewHolder) || !isCaptionVisible()) {
             return new Rect();
         }
@@ -1674,9 +1648,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 /* onHandleMenuClickedListener= */ mCloseHandleMenuFunction,
                 /* forceShowSystemBars= */ inDesktopImmersive
         );
-        if (mDesktopState.canEnterDesktopMode() && isEducationOrHandleReportingEnabled()) {
-            notifyCaptionStateChanged();
-        }
+        notifyCaptionStateChanged();
         mMinimumInstancesFound = false;
     }
 
@@ -1757,9 +1729,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         mWindowDecorViewHolder.onHandleMenuClosed();
         mHandleMenu.close();
         mHandleMenu = null;
-        if (mDesktopState.canEnterDesktopMode() && isEducationOrHandleReportingEnabled()) {
-            notifyCaptionStateChanged();
-        }
+        notifyCaptionStateChanged();
     }
 
     @Override
@@ -1923,17 +1893,6 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 && v.getTop() <= y && v.getBottom() >= y;
     }
 
-    /**
-     * Returns true if caption state should be updated either due to education or app handle
-     * reporting being enabled.
-     */
-    private boolean isEducationOrHandleReportingEnabled() {
-        return Flags.enableDesktopWindowingAppHandleEducation()
-                || DesktopExperienceFlags
-                .ENABLE_DESKTOP_WINDOWING_APP_TO_WEB_EDUCATION_INTEGRATION.isTrue()
-                || DesktopExperienceFlags.ENABLE_APP_HANDLE_POSITION_REPORTING.isTrue();
-    }
-
     @Override
     public void close() {
         mTaskResourceLoader.onWindowDecorClosed(mTaskInfo);
@@ -1947,9 +1906,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             mWindowDecorViewHolder.close();
             mWindowDecorViewHolder = null;
         }
-        if (mDesktopState.canEnterDesktopMode() && isEducationOrHandleReportingEnabled()) {
-            notifyNoCaptionHandle();
-        }
+        notifyNoCaptionHandle();
         super.close();
     }
 
