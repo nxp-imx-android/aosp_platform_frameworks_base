@@ -129,8 +129,7 @@ import com.android.wm.shell.freeform.FreeformTaskTransitionStarter;
 import com.android.wm.shell.gamecontrols.GameControlsHelper;
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController;
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerUiState;
-import com.android.wm.shell.recents.RecentsTransitionHandler;
-import com.android.wm.shell.recents.RecentsTransitionStateListener;
+import com.android.wm.shell.recents.PerDisplayRecentsTransitionStateListener;
 import com.android.wm.shell.shared.FocusTransitionListener;
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
@@ -171,10 +170,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -275,10 +272,10 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     private final WindowDecorationActions mWindowDecorationActions;
     private final TaskPositionerFactory mTaskPositionerFactory;
     private final FocusTransitionObserver mFocusTransitionObserver;
+    private final PerDisplayRecentsTransitionStateListener mRecentsTransitionStateListener;
     private final DesktopModeEventLogger mDesktopModeEventLogger;
     private final DesktopModeUiEventLogger mDesktopModeUiEventLogger;
     private final WindowDecorTaskResourceLoader mTaskResourceLoader;
-    private final RecentsTransitionHandler mRecentsTransitionHandler;
     private final DesktopModeCompatPolicy mDesktopModeCompatPolicy;
     private final DesktopTilingDecorViewModel mDesktopTilingDecorViewModel;
     private final MultiDisplayDragMoveIndicatorController mMultiDisplayDragMoveIndicatorController;
@@ -326,7 +323,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             DesktopModeEventLogger desktopModeEventLogger,
             DesktopModeUiEventLogger desktopModeUiEventLogger,
             WindowDecorTaskResourceLoader taskResourceLoader,
-            RecentsTransitionHandler recentsTransitionHandler,
+            PerDisplayRecentsTransitionStateListener perDisplayRecentsTransitionStateListener,
             DesktopModeCompatPolicy desktopModeCompatPolicy,
             DesktopTilingDecorViewModel desktopTilingDecorViewModel,
             MultiDisplayDragMoveIndicatorController multiDisplayDragMoveIndicatorController,
@@ -386,7 +383,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 desktopModeEventLogger,
                 desktopModeUiEventLogger,
                 taskResourceLoader,
-                recentsTransitionHandler,
+                perDisplayRecentsTransitionStateListener,
                 desktopModeCompatPolicy,
                 desktopTilingDecorViewModel,
                 multiDisplayDragMoveIndicatorController,
@@ -449,7 +446,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             DesktopModeEventLogger desktopModeEventLogger,
             DesktopModeUiEventLogger desktopModeUiEventLogger,
             WindowDecorTaskResourceLoader taskResourceLoader,
-            RecentsTransitionHandler recentsTransitionHandler,
+            PerDisplayRecentsTransitionStateListener perDisplayRecentsTransitionStateListener,
             DesktopModeCompatPolicy desktopModeCompatPolicy,
             DesktopTilingDecorViewModel desktopTilingDecorViewModel,
             MultiDisplayDragMoveIndicatorController multiDisplayDragMoveIndicatorController,
@@ -540,7 +537,6 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         mDesktopModeEventLogger = desktopModeEventLogger;
         mDesktopModeUiEventLogger = desktopModeUiEventLogger;
         mTaskResourceLoader = taskResourceLoader;
-        mRecentsTransitionHandler = recentsTransitionHandler;
         mDesktopModeCompatPolicy = desktopModeCompatPolicy;
         mDesktopTilingDecorViewModel = desktopTilingDecorViewModel;
         // TODO(b/467367552): Remove handling dependency in Dagger.
@@ -565,6 +561,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         mFluidTaskResizer = fluidTaskResizer;
         mVeiledTaskResizer = veiledTaskResizer;
         mMultiDisplayTaskMover = multiDisplayTaskMover;
+        mRecentsTransitionStateListener = perDisplayRecentsTransitionStateListener;
         shellInit.addInitCallback(this::onInit, this);
     }
 
@@ -588,8 +585,6 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     new DesktopModeOnTaskResizeAnimationListener()
             );
         }
-        mRecentsTransitionHandler.addTransitionStateListener(
-                new DesktopModeRecentsTransitionStateListener());
         mDisplayController.addDisplayChangingController(mOnDisplayChangingListener);
         if (mShellDesktopState.canEnterDesktopModeOrShowAppHandle()
                 && Flags.enableDesktopWindowingAppHandleEducation()) {
@@ -1850,6 +1845,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     mAppToWebRepository,
                     mCaptionVisibilityHelper,
                     mFocusTransitionObserver,
+                    mRecentsTransitionStateListener,
                     mLockTaskChangeListener,
                     mPinnedLayerController);
             windowDecoration =
@@ -2012,38 +2008,6 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             decoration.hideResizeVeil();
             decoration.setAnimatingTaskResizeOrReposition(false);
             decoration.requestFocusMaximizeButton();
-        }
-    }
-
-    private class DesktopModeRecentsTransitionStateListener
-            implements RecentsTransitionStateListener {
-        final Set<Integer> mAnimatingTaskIds = new HashSet<>();
-
-        @Override
-        public void onTransitionStateChanged(int state) {
-            switch (state) {
-                case RecentsTransitionStateListener.TRANSITION_STATE_REQUESTED:
-                    for (int n = 0; n < mWindowDecorByTaskId.size(); n++) {
-                        int taskId = mWindowDecorByTaskId.keyAt(n);
-                        mAnimatingTaskIds.add(taskId);
-                        setIsRecentsTransitionRunningForTask(taskId, true);
-                    }
-                    return;
-                case RecentsTransitionStateListener.TRANSITION_STATE_NOT_RUNNING:
-                    // No Recents transition running - clean up window decorations
-                    for (int taskId : mAnimatingTaskIds) {
-                        setIsRecentsTransitionRunningForTask(taskId, false);
-                    }
-                    mAnimatingTaskIds.clear();
-                    return;
-                default:
-            }
-        }
-
-        private void setIsRecentsTransitionRunningForTask(int taskId, boolean isRecentsRunning) {
-            final WindowDecorationWrapper decoration = mWindowDecorByTaskId.get(taskId);
-            if (decoration == null) return;
-            decoration.setIsRecentsTransitionRunning(isRecentsRunning);
         }
     }
 

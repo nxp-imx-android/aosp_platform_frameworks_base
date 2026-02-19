@@ -232,7 +232,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
         }
 
         for (int i = 0; i < mStateListeners.size(); i++) {
-            mStateListeners.get(i).onTransitionStateChanged(TRANSITION_STATE_REQUESTED);
+            mStateListeners.get(i).onTransitionStateChanged(TRANSITION_STATE_REQUESTED, displayId);
         }
         if (isSyntheticRequest) {
             transition = startSyntheticRecentsTransition(listener, displayId);
@@ -681,7 +681,8 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
             mPendingFinishTransaction = null;
             mControllers.remove(this);
             for (int i = 0; i < mStateListeners.size(); i++) {
-                mStateListeners.get(i).onTransitionStateChanged(TRANSITION_STATE_NOT_RUNNING);
+                mStateListeners.get(i).onTransitionStateChanged(TRANSITION_STATE_NOT_RUNNING,
+                        mDisplayId);
             }
         }
 
@@ -717,7 +718,8 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                         apps.toArray(new RemoteAnimationTarget[apps.size()]),
                         new RemoteAnimationTarget[0], new Rect(), new Bundle(), null);
                 for (int i = 0; i < mStateListeners.size(); i++) {
-                    mStateListeners.get(i).onTransitionStateChanged(TRANSITION_STATE_ANIMATING);
+                    mStateListeners.get(i).onTransitionStateChanged(TRANSITION_STATE_ANIMATING,
+                            displayId);
                 }
             } catch (RemoteException e) {
                 Slog.e(TAG, "Error starting recents animation", e);
@@ -991,7 +993,8 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                         wallpapers.toArray(new RemoteAnimationTarget[wallpapers.size()]),
                         new Rect(), b, info);
                 for (int i = 0; i < mStateListeners.size(); i++) {
-                    mStateListeners.get(i).onTransitionStateChanged(TRANSITION_STATE_ANIMATING);
+                    mStateListeners.get(i).onTransitionStateChanged(TRANSITION_STATE_ANIMATING,
+                            mDisplayId);
                 }
             } catch (RemoteException e) {
                 Slog.e(TAG, "Error starting recents animation", e);

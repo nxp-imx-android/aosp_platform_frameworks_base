@@ -6264,7 +6264,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         markTaskVisible(freeformTask)
 
         // Mark recents animation running
-        recentsTransitionStateListener.onTransitionStateChanged(TRANSITION_STATE_ANIMATING)
+        recentsTransitionStateListener.onTransitionStateChanged(
+            TRANSITION_STATE_ANIMATING,
+            DEFAULT_DISPLAY,
+        )
 
         // Open a fullscreen task, check that it does not result in a WCT with changes to it
         val fullscreenTask = createFullscreenTask()
@@ -6274,7 +6277,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Test
     fun onRecentsInDesktopAnimationFinishing_launchOccurred_skipsDeactivation() {
         val activeDeskId = 1
-        recentsTransitionStateListener.onTransitionStateChanged(TRANSITION_STATE_ANIMATING)
+        recentsTransitionStateListener.onTransitionStateChanged(
+            TRANSITION_STATE_ANIMATING,
+            DEFAULT_DISPLAY,
+        )
 
         val task = setUpFreeformTask()
         val request = createTransition(task, type = TRANSIT_OPEN)
@@ -6298,7 +6304,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         markTaskVisible(freeformTask)
 
         // Mark recents animation running
-        recentsTransitionStateListener.onTransitionStateChanged(TRANSITION_STATE_ANIMATING)
+        recentsTransitionStateListener.onTransitionStateChanged(
+            TRANSITION_STATE_ANIMATING,
+            DEFAULT_DISPLAY,
+        )
 
         val transition = Binder()
         controller.handleRequest(transition, createTransition(freeformTask))
@@ -9865,7 +9874,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     fun onTaskInfoChanged_inImmersiveUnrequestsImmersive_inRecentsTransition_noExit() {
         val task = setUpFreeformTask(DEFAULT_DISPLAY)
         taskRepository.setTaskInFullImmersiveState(DEFAULT_DISPLAY, task.taskId, immersive = true)
-        recentsTransitionStateListener.onTransitionStateChanged(TRANSITION_STATE_REQUESTED)
+        recentsTransitionStateListener.onTransitionStateChanged(
+            TRANSITION_STATE_REQUESTED,
+            DEFAULT_DISPLAY,
+        )
 
         task.requestedVisibleTypes = WindowInsets.Type.statusBars()
         controller.onTaskInfoChanged(task)

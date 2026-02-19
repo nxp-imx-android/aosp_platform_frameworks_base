@@ -907,7 +907,7 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
         private int mState = TRANSITION_STATE_NOT_RUNNING;
 
         @Override
-        public void onTransitionStateChanged(int state) {
+        public void onTransitionStateChanged(int state, int displayId) {
             mState = state;
         }
 

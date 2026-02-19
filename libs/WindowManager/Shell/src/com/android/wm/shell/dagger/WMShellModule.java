@@ -186,6 +186,7 @@ import com.android.wm.shell.pip2.phone.PipDisplayDisconnectHandler;
 import com.android.wm.shell.pip2.phone.PipDisplayTransferHandler;
 import com.android.wm.shell.pip2.phone.PipScheduler;
 import com.android.wm.shell.pip2.phone.PipTransitionState;
+import com.android.wm.shell.recents.PerDisplayRecentsTransitionStateListener;
 import com.android.wm.shell.recents.RecentTasksController;
 import com.android.wm.shell.recents.RecentsTransitionHandler;
 import com.android.wm.shell.scrolltotop.ScrollToTopController;
@@ -1334,7 +1335,7 @@ public abstract class WMShellModule {
             DesktopModeEventLogger desktopModeEventLogger,
             DesktopModeUiEventLogger desktopModeUiEventLogger,
             WindowDecorTaskResourceLoader taskResourceLoader,
-            RecentsTransitionHandler recentsTransitionHandler,
+            PerDisplayRecentsTransitionStateListener perDisplayRecentsTransitionStateListener,
             DesktopModeCompatPolicy desktopModeCompatPolicy,
             DesktopTilingDecorViewModel desktopTilingDecorViewModel,
             MultiDisplayDragMoveIndicatorController multiDisplayDragMoveIndicatorController,
@@ -1365,7 +1366,8 @@ public abstract class WMShellModule {
                 multiInstanceHelper, appHandleEducationController,
                 captionVisibilityHelper, windowDecorCaptionRepository,
                 activityOrientationChangeHandler, focusTransitionObserver, desktopModeEventLogger,
-                desktopModeUiEventLogger, taskResourceLoader, recentsTransitionHandler,
+                desktopModeUiEventLogger, taskResourceLoader,
+                perDisplayRecentsTransitionStateListener,
                 desktopModeCompatPolicy, desktopTilingDecorViewModel,
                 multiDisplayDragMoveIndicatorController, compatUI.orElse(null),
                 desksOrganizer, shelldesktopState, desktopConfig, userProfileContexts,

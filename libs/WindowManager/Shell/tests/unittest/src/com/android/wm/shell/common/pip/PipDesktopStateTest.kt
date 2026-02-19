@@ -23,6 +23,7 @@ import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.testing.TestableLooper.RunWithLooper
+import android.view.Display.DEFAULT_DISPLAY
 import android.window.DisplayAreaInfo
 import android.window.WindowContainerToken
 import androidx.test.filters.SmallTest
@@ -89,7 +90,10 @@ class PipDesktopStateTest : ShellTestCase() {
         val captor = argumentCaptor<RecentsTransitionStateListener>()
         verify(mockRecentsTransitionHandler).addTransitionStateListener(captor.capture())
         recentsTransitionStateListener = captor.firstValue
-        recentsTransitionStateListener.onTransitionStateChanged(TRANSITION_STATE_NOT_RUNNING)
+        recentsTransitionStateListener.onTransitionStateChanged(
+            TRANSITION_STATE_NOT_RUNNING,
+            DEFAULT_DISPLAY,
+        )
 
         whenever(mockDesktopRepository.isAnyDeskActive(DISPLAY_ID)).thenReturn(true)
     }
@@ -180,7 +184,10 @@ class PipDesktopStateTest : ShellTestCase() {
 
     @Test
     fun outPipWindowingMode_midRecents_inDesktop_returnsFullscreen() {
-        recentsTransitionStateListener.onTransitionStateChanged(TRANSITION_STATE_ANIMATING)
+        recentsTransitionStateListener.onTransitionStateChanged(
+            TRANSITION_STATE_ANIMATING,
+            DEFAULT_DISPLAY,
+        )
 
         assertThat(pipDesktopState.getOutPipWindowingMode()).isEqualTo(WINDOWING_MODE_FULLSCREEN)
     }

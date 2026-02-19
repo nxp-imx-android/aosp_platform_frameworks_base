@@ -74,7 +74,6 @@ import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger
 import com.android.wm.shell.desktopmode.DesktopTasksController
 import com.android.wm.shell.desktopmode.DesktopTasksController.SnapPosition
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction
-import com.android.wm.shell.recents.RecentsTransitionStateListener
 import com.android.wm.shell.shared.bubbles.BubbleFlagHelper
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource
 import com.android.wm.shell.splitscreen.SplitScreenController
@@ -1262,51 +1261,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
-    fun testRecentsTransitionStateListener_requestedState_setsTransitionRunning() {
-        val task = createTask(windowingMode = WINDOWING_MODE_FREEFORM)
-        val decoration = setUpMockDecorationForTask(task)
-        onTaskOpening(task, SurfaceControl())
-
-        desktopModeRecentsTransitionStateListener.onTransitionStateChanged(
-            RecentsTransitionStateListener.TRANSITION_STATE_REQUESTED
-        )
-
-        verify(decoration).setIsRecentsTransitionRunning(true)
-    }
-
-    @Test
-    fun testRecentsTransitionStateListener_nonRunningState_setsTransitionNotRunning() {
-        val task = createTask(windowingMode = WINDOWING_MODE_FREEFORM)
-        val decoration = setUpMockDecorationForTask(task)
-        onTaskOpening(task, SurfaceControl())
-        desktopModeRecentsTransitionStateListener.onTransitionStateChanged(
-            RecentsTransitionStateListener.TRANSITION_STATE_REQUESTED
-        )
-
-        desktopModeRecentsTransitionStateListener.onTransitionStateChanged(
-            RecentsTransitionStateListener.TRANSITION_STATE_NOT_RUNNING
-        )
-
-        verify(decoration).setIsRecentsTransitionRunning(false)
-    }
-
-    @Test
-    fun testRecentsTransitionStateListener_requestedAndAnimating_setsTransitionRunningOnce() {
-        val task = createTask(windowingMode = WINDOWING_MODE_FREEFORM)
-        val decoration = setUpMockDecorationForTask(task)
-        onTaskOpening(task, SurfaceControl())
-
-        desktopModeRecentsTransitionStateListener.onTransitionStateChanged(
-            RecentsTransitionStateListener.TRANSITION_STATE_REQUESTED
-        )
-        desktopModeRecentsTransitionStateListener.onTransitionStateChanged(
-            RecentsTransitionStateListener.TRANSITION_STATE_ANIMATING
-        )
-
-        verify(decoration, times(1)).setIsRecentsTransitionRunning(true)
-    }
-
-    @Test
     @EnableFlags(Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK)
     @DisableFlags(Flags.FLAG_ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS)
     fun testOnTaskOpening_startingAppBubbleTask_skipsWindowDecorationCreation() {
@@ -1635,7 +1589,8 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
         // Capture the listener set on DesktopTasksController during initialization.
         val listenerCaptor = argumentCaptor<OnTaskResizeAnimationListener>()
         shellInit.init()
-        verify(mockDesktopTasksController).setOnTaskResizeAnimationListener(listenerCaptor.capture())
+        verify(mockDesktopTasksController)
+            .setOnTaskResizeAnimationListener(listenerCaptor.capture())
         val listener = listenerCaptor.firstValue
 
         // Create a task with a window decoration.
