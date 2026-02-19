@@ -41,6 +41,7 @@ import com.android.systemui.keyguard.domain.interactor.biometricUnlockInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardEnabledInteractor
 import com.android.systemui.keyguard.shared.model.AuthenticationFlags
 import com.android.systemui.keyguard.shared.model.BiometricUnlockSource
+import com.android.systemui.keyguard.shared.model.LockAfterScreenTimeoutTimerState
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAsleepForTest
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAwakeForTest
@@ -58,7 +59,6 @@ import com.android.systemui.util.settings.fakeSettings
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -268,6 +268,33 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
         testScope.runTest {
             val delay = 5000
             setLockAfterScreenTimeout(delay)
+            val deviceUnlockStatus by collectLastValue(underTest.deviceUnlockStatus)
+
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
+            )
+            runCurrent()
+            assertThat(deviceUnlockStatus?.isUnlocked).isTrue()
+
+            kosmos.powerInteractor.setAsleepForTest(
+                sleepReason = PowerManager.GO_TO_SLEEP_REASON_TIMEOUT
+            )
+            kosmos.fakeKeyguardRepository.lockAfterScreenTimeoutState.value =
+                LockAfterScreenTimeoutTimerState.RUNNING
+            runCurrent()
+            assertThat(deviceUnlockStatus?.isUnlocked).isTrue()
+
+            kosmos.fakeKeyguardRepository.lockAfterScreenTimeoutState.value =
+                LockAfterScreenTimeoutTimerState.ELAPSED
+            runCurrent()
+            assertThat(deviceUnlockStatus?.isUnlocked).isFalse()
+        }
+
+    @Test
+    fun deviceUnlockStatus_whenDeviceGoesToSleep_thenWakesUpBeforeLockTimerElapses_isTrue() =
+        testScope.runTest {
+            setLockAfterScreenTimeout(5000)
             kosmos.fakeAuthenticationRepository.fakePowerButtonInstantlyLocks = false
             val deviceUnlockStatus by collectLastValue(underTest.deviceUnlockStatus)
 
@@ -278,11 +305,53 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
             runCurrent()
             assertThat(deviceUnlockStatus?.isUnlocked).isTrue()
 
-            kosmos.powerInteractor.setAsleepForTest()
+            kosmos.powerInteractor.setAsleepForTest(
+                sleepReason = PowerManager.GO_TO_SLEEP_REASON_TIMEOUT
+            )
+            kosmos.fakeKeyguardRepository.lockAfterScreenTimeoutState.value =
+                LockAfterScreenTimeoutTimerState.RUNNING
             runCurrent()
             assertThat(deviceUnlockStatus?.isUnlocked).isTrue()
 
-            advanceTimeBy(delay.toLong())
+            kosmos.powerInteractor.setAwakeForTest()
+            kosmos.fakeKeyguardRepository.lockAfterScreenTimeoutState.value =
+                LockAfterScreenTimeoutTimerState.INACTIVE
+            runCurrent()
+            assertThat(deviceUnlockStatus?.isUnlocked).isTrue()
+        }
+
+    @Test
+    fun deviceUnlockStatus_whenDeviceGoesToSleep_thenLockTimerElapses_isFalse() =
+        testScope.runTest {
+            setLockAfterScreenTimeout(5000)
+            val deviceUnlockStatus by collectLastValue(underTest.deviceUnlockStatus)
+
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
+            )
+            runCurrent()
+            assertThat(deviceUnlockStatus?.isUnlocked).isTrue()
+
+            kosmos.powerInteractor.setAsleepForTest(
+                sleepReason = PowerManager.GO_TO_SLEEP_REASON_TIMEOUT
+            )
+            kosmos.fakeKeyguardRepository.lockAfterScreenTimeoutState.value =
+                LockAfterScreenTimeoutTimerState.RUNNING
+            runCurrent()
+            assertThat(deviceUnlockStatus?.isUnlocked).isTrue()
+
+            // Lock timer elapses - device locks
+            kosmos.fakeKeyguardRepository.lockAfterScreenTimeoutState.value =
+                LockAfterScreenTimeoutTimerState.ELAPSED
+            runCurrent()
+            assertThat(deviceUnlockStatus?.isUnlocked).isFalse()
+
+            // Device wakes up after lock timer has elapsed - device still locked
+            kosmos.powerInteractor.setAwakeForTest()
+            kosmos.fakeKeyguardRepository.lockAfterScreenTimeoutState.value =
+                LockAfterScreenTimeoutTimerState.INACTIVE
+            runCurrent()
             assertThat(deviceUnlockStatus?.isUnlocked).isFalse()
         }
 
@@ -577,66 +646,46 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun deviceUnlockStatus_locksImmediately_whenDreamStarts_noTimeout() =
-        testScope.runTest {
-            setLockAfterScreenTimeout(0)
-            val isUnlocked by collectLastValue(underTest.deviceUnlockStatus.map { it.isUnlocked })
-            unlockDevice()
-
-            startDreaming()
-
-            assertThat(isUnlocked).isFalse()
-        }
-
-    @Test
     fun deviceUnlockStatus_locksWithDelay_afterDreamStarts_withTimeout() =
         testScope.runTest {
-            val delay = 5000
-            setLockAfterScreenTimeout(delay)
             val isUnlocked by collectLastValue(underTest.deviceUnlockStatus.map { it.isUnlocked })
             unlockDevice()
 
             startDreaming()
             assertThat(isUnlocked).isTrue()
 
-            advanceTimeBy(delay - 1L)
+            kosmos.fakeKeyguardRepository.lockAfterScreenTimeoutState.value =
+                LockAfterScreenTimeoutTimerState.RUNNING
+            runCurrent()
             assertThat(isUnlocked).isTrue()
 
-            advanceTimeBy(1L)
+            kosmos.fakeKeyguardRepository.lockAfterScreenTimeoutState.value =
+                LockAfterScreenTimeoutTimerState.ELAPSED
+            runCurrent()
             assertThat(isUnlocked).isFalse()
         }
 
     @Test
     fun deviceUnlockStatus_doesNotLockWithDelay_whenDreamStopsBeforeTimeout() =
         testScope.runTest {
-            val delay = 5000
-            setLockAfterScreenTimeout(delay)
             val isUnlocked by collectLastValue(underTest.deviceUnlockStatus.map { it.isUnlocked })
             unlockDevice()
 
             startDreaming()
             assertThat(isUnlocked).isTrue()
 
-            advanceTimeBy(delay - 1L)
+            kosmos.fakeKeyguardRepository.lockAfterScreenTimeoutState.value =
+                LockAfterScreenTimeoutTimerState.RUNNING
+            runCurrent()
             assertThat(isUnlocked).isTrue()
 
             stopDreaming()
             assertThat(isUnlocked).isTrue()
 
-            advanceTimeBy(1L)
+            kosmos.fakeKeyguardRepository.lockAfterScreenTimeoutState.value =
+                LockAfterScreenTimeoutTimerState.INACTIVE
+            runCurrent()
             assertThat(isUnlocked).isTrue()
-        }
-
-    @Test
-    fun deviceUnlockStatus_doesNotLock_whenDreamStarts_ifNotInteractive() =
-        testScope.runTest {
-            setLockAfterScreenTimeout(0)
-            val isUnlocked by collectLastValue(underTest.deviceUnlockStatus.map { it.isUnlocked })
-            unlockDevice()
-
-            startDreaming()
-
-            assertThat(isUnlocked).isFalse()
         }
 
     @Test
