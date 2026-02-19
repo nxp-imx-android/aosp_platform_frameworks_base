@@ -2870,6 +2870,19 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS)
+    fun setRememberedBoundsRatio_clearRememberedBoundsRatio_noChange() = runTest {
+        val packageName = "com.test.app"
+        assertThat(repo.getRememberedBoundsRatio(packageName)).isNull()
+
+        repo.clearRememberedBoundsRatio(packageName)
+        bgScope.testScheduler.advanceUntilIdle()
+
+        verify(persistentRepository, never())
+            .addOrUpdateRepository(any(), any(), any(), any(), any())
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS)
     fun clearAllRememberedBoundsRatio_flagEnabled_clearsAllBoundsAndPersists() = runTest {
         // GIVEN that remembered bounds are stored for multiple packages
         val packageName1 = "com.test.app1"
