@@ -333,9 +333,6 @@ public class StorageNotification implements CoreStartable {
 
         final Notification notif;
         switch (vol.getState()) {
-            case VolumeInfo.STATE_UNMOUNTED:
-                notif = onVolumeUnmounted(vol);
-                break;
             case VolumeInfo.STATE_CHECKING:
                 notif = onVolumeChecking(vol);
                 break;
@@ -358,23 +355,26 @@ public class StorageNotification implements CoreStartable {
             case VolumeInfo.STATE_BAD_REMOVAL:
                 notif = onVolumeBadRemoval(vol);
                 break;
+            case VolumeInfo.STATE_UNMOUNTED:
             default:
                 notif = null;
                 break;
         }
 
         if (notif != null) {
-            mNotificationManager.notifyAsUser(vol.getId(), SystemMessage.NOTE_STORAGE_PUBLIC,
-                    notif, UserHandle.of(vol.getMountUserId()));
+            try {
+                mNotificationManager.notifyAsUser(vol.getId(), SystemMessage.NOTE_STORAGE_PUBLIC,
+                        notif, UserHandle.of(vol.getMountUserId()));
+            } catch (SecurityException e) {
+                // When a user is being removed, the volume may go into the EJECTING state, but the
+                // user removal may complete before the notification is posted, causing a
+                // SecurityException, which we catch here.
+                Log.e(TAG, "Failed to post notification.", e);
+            }
         } else {
             mNotificationManager.cancelAsUser(vol.getId(), SystemMessage.NOTE_STORAGE_PUBLIC,
                     UserHandle.of(vol.getMountUserId()));
         }
-    }
-
-    private Notification onVolumeUnmounted(VolumeInfo vol) {
-        // Ignored
-        return null;
     }
 
     private Notification onVolumeChecking(VolumeInfo vol) {
