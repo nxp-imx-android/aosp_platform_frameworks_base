@@ -43,7 +43,7 @@ android:orientation="horizontal">
             android:visibility="gone"
             style="@style/NotificationMetricValue"
             />
-        <TextView
+        <com.android.internal.widget.NotificationMetricTextView
             android:id="@+id/metric_value_0"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -81,7 +81,7 @@ android:orientation="horizontal">
             android:visibility="gone"
             style="@style/NotificationMetricValue"
             />
-        <TextView
+        <com.android.internal.widget.NotificationMetricTextView
             android:id="@+id/metric_value_1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -119,7 +119,7 @@ android:orientation="horizontal">
             android:visibility="gone"
             style="@style/NotificationMetricValue"
             />
-        <TextView
+        <com.android.internal.widget.NotificationMetricTextView
             android:id="@+id/metric_value_2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
