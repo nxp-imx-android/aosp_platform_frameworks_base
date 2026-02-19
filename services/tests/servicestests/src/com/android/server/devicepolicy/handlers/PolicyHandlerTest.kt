@@ -87,6 +87,7 @@ open class PolicyHandlerTest {
                 /*requiredPermission=*/ "testPermission",
                 /*requiredCrossUserPermission=*/ "testCrossUserPermission",
                 /*allowedDpcTypes=*/ setOf(),
+                /*resolutionMechanism=*/ null,
                 /*allowedValues=*/ setOf(VALUE_1),
             )
         val anyTransportValue: PolicyValueTransport = PolicyValueTransport.integerField(VALUE_1)
@@ -200,6 +201,7 @@ open class PolicyHandlerTest {
             requiredPermission ?: source.requiredPermission,
             requiredCrossUserPermission ?: source.requiredCrossUserPermission,
             allowedDpcTypes ?: source.allowedDpcTypes,
+            source.resolutionMechanism,
             source.allowedValues,
         )
 
@@ -446,6 +448,7 @@ open class PolicyHandlerTest {
                 /* requiredPermission= */ null,
                 /* requiredCrossUserPermission= */ "testCrossUserPermission",
                 /* allowedDpcTypes= */ setOf(),
+                /*resolutionMechanism=*/ null,
                 /* allowedValues= */ setOf(Policy.VALUE_1),
             )
 
@@ -471,6 +474,7 @@ open class PolicyHandlerTest {
                 /* requiredPermission= */ "thePermission",
                 /* requiredCrossUserPermission= */ null,
                 /* allowedDpcTypes= */ setOf(),
+                /*resolutionMechanism=*/ null,
                 /* allowedValues= */ setOf(Policy.VALUE_1),
             )
 
@@ -879,6 +883,7 @@ open class PolicyHandlerTest {
                 /* requiredPermission= */ null,
                 /* requiredCrossUserPermission= */ "testCrossUserPermission",
                 /* allowedDpcTypes= */ setOf(),
+                /* resolutionMechanism= */ null,
                 /* allowedValues= */ setOf(Policy.VALUE_1),
             )
 
@@ -906,6 +911,7 @@ open class PolicyHandlerTest {
                 /* requiredPermission= */ null,
                 /* requiredCrossUserPermission= */ "testCrossUserPermission",
                 /* allowedDpcTypes= */ setOf(),
+                /* resolutionMechanism= */ null,
                 /* allowedValues= */ setOf(Policy.VALUE_1),
             )
 

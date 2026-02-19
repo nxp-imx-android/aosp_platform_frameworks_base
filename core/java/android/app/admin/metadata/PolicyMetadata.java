@@ -35,6 +35,7 @@ public abstract class PolicyMetadata<T> {
     @Nullable private final String mRequiredPermission;
     @Nullable private final String mRequiredCrossUserPermission;
     @NonNull private final Set<Integer> mAllowedDpcTypes;
+    @Nullable private final ResolutionMechanismMetadata<T> mResolutionMechanism;
 
     public PolicyMetadata(
             @NonNull PolicyIdentifier<T> id,
@@ -42,13 +43,15 @@ public abstract class PolicyMetadata<T> {
             int affectedResource,
             @Nullable String requiredPermission,
             @Nullable String requiredCrossUserPermission,
-            @NonNull Set<Integer> allowedDpcTypes) {
+            @NonNull Set<Integer> allowedDpcTypes,
+            @Nullable ResolutionMechanismMetadata<T> resolutionMechanism) {
         this.mId = id;
         this.mAllowedScopes = allowedScopes;
         this.mAffectedResource = affectedResource;
         this.mRequiredPermission = requiredPermission;
         this.mRequiredCrossUserPermission = requiredCrossUserPermission;
         this.mAllowedDpcTypes = allowedDpcTypes;
+        this.mResolutionMechanism = resolutionMechanism;
     }
 
     @NonNull
@@ -80,20 +83,32 @@ public abstract class PolicyMetadata<T> {
         return mAllowedDpcTypes;
     }
 
+    @Nullable
+    public ResolutionMechanismMetadata<T> getResolutionMechanism() {
+        return mResolutionMechanism;
+    }
+
     protected String toAttributes() {
-        return "mId=" + mId
-                + ", mAllowedScopes=" + mAllowedScopes
-                + ", mAffectedResource=" + mAffectedResource
-                + ", mRequiredPermission=" + mRequiredPermission
-                + ", mRequiredCrossUserPermission=" + mRequiredCrossUserPermission
-                + ", mAllowedScopes=" + mAllowedScopes
-                + ", mAllowedDpcTypes=" + mAllowedDpcTypes;
+        return "mId="
+                + mId
+                + ", mAllowedScopes="
+                + mAllowedScopes
+                + ", mAffectedResource="
+                + mAffectedResource
+                + ", mRequiredPermission="
+                + mRequiredPermission
+                + ", mRequiredCrossUserPermission="
+                + mRequiredCrossUserPermission
+                + ", mAllowedScopes="
+                + mAllowedScopes
+                + ", mAllowedDpcTypes="
+                + mAllowedDpcTypes
+                + ", mResolutionMechanism="
+                + mResolutionMechanism;
     }
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "{"
-                + toAttributes()
-                + '}';
+        return getClass().getSimpleName() + "{" + toAttributes() + '}';
     }
 }

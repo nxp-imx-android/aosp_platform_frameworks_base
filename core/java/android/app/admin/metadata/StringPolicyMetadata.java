@@ -45,8 +45,8 @@ public class StringPolicyMetadata extends PolicyMetadata<String> {
                 affectedResource,
                 requiredPermission,
                 requiredCrossUserPermission,
-                allowedDpcTypes
-        );
+                allowedDpcTypes,
+                null);
 
         mEmptyStringAllowed = emptyStringAllowed;
     }

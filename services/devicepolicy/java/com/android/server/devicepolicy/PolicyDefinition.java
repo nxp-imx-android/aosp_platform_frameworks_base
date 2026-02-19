@@ -412,7 +412,7 @@ public final class PolicyDefinition<V> {
     }
 
     @NonNull
-    ResolutionMechanism<V> getResolutionMechanism() {
+    public ResolutionMechanism<V> getResolutionMechanism() {
         return mResolutionMechanism;
     }
 

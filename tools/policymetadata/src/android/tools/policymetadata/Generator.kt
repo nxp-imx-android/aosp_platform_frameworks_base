@@ -19,6 +19,7 @@ package android.tools.policymetadata
 import android.processor.devicepolicy.protos.PolicyMetadata
 import android.processor.devicepolicy.protos.PolicyMetadataList
 import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.EnumPolicyMetadata
+import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.EnumPolicyMetadata.ResolutionMechanism as EnumResolutionMechanismProto
 import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.IntegerPolicyMetadata
 import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.ListPolicyMetadata.ListElementMetadataCase
 import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.LongPolicyMetadata
@@ -260,6 +261,10 @@ object Generator {
             .addPolicyArguments(policy, policyId)
             .add(",\n")
             .add(
+                "/* resolutionMechanism= */ \$L,\n",
+                generateEnumResolutionMechanism(enumMetadata.resolutionMechanism),
+            )
+            .add(
                 "/* allowedValues= */ \$L\n",
                 generateSetBuilder(enumMetadata.valuesList.map { it.intValue }),
             )
@@ -290,21 +295,24 @@ object Generator {
         policyId: CodeBlock = policy.getPolicyIdCodeBlock(),
         integerMetadata: IntegerPolicyMetadata = policy.typeSpecificMetadata.integerMetadata,
     ): CodeBlock {
-        val builder = CodeBlock.builder()
-            .add("new \$T(\n", integerPolicyMetadataType)
-            .indent()
-            .addPolicyArguments(policy, policyId)
-            .add(",\n")
-        val minValue = if (integerMetadata.hasMinValue()) {
-            CodeBlock.of("\$L", integerMetadata.minValue)
-        } else {
-            CodeBlock.of("Integer.MIN_VALUE")
-        }
-        val maxValue = if (integerMetadata.hasMaxValue()) {
-            CodeBlock.of("\$L", integerMetadata.maxValue)
-        } else {
-            CodeBlock.of("Integer.MAX_VALUE")
-        }
+        val builder =
+            CodeBlock.builder()
+                .add("new \$T(\n", integerPolicyMetadataType)
+                .indent()
+                .addPolicyArguments(policy, policyId)
+                .add(",\n")
+        val minValue =
+            if (integerMetadata.hasMinValue()) {
+                CodeBlock.of("\$L", integerMetadata.minValue)
+            } else {
+                CodeBlock.of("Integer.MIN_VALUE")
+            }
+        val maxValue =
+            if (integerMetadata.hasMaxValue()) {
+                CodeBlock.of("\$L", integerMetadata.maxValue)
+            } else {
+                CodeBlock.of("Integer.MAX_VALUE")
+            }
         builder.add("/* minValue= */ \$L,\n", minValue)
         builder.add("/* maxValue= */ \$L", maxValue)
         builder.add("\n")
@@ -319,21 +327,24 @@ object Generator {
         policyId: CodeBlock = policy.getPolicyIdCodeBlock(),
         longMetadata: LongPolicyMetadata = policy.typeSpecificMetadata.longMetadata,
     ): CodeBlock {
-        val builder = CodeBlock.builder()
-            .add("new \$T(\n", longPolicyMetadataType)
-            .indent()
-            .addPolicyArguments(policy, policyId)
-            .add(",\n")
-        val minValue = if (longMetadata.hasMinValue()) {
-            CodeBlock.of("\$LL", longMetadata.minValue)
-        } else {
-            CodeBlock.of("Long.MIN_VALUE")
-        }
-        val maxValue = if (longMetadata.hasMaxValue()) {
-            CodeBlock.of("\$LL", longMetadata.maxValue)
-        } else {
-            CodeBlock.of("Long.MAX_VALUE")
-        }
+        val builder =
+            CodeBlock.builder()
+                .add("new \$T(\n", longPolicyMetadataType)
+                .indent()
+                .addPolicyArguments(policy, policyId)
+                .add(",\n")
+        val minValue =
+            if (longMetadata.hasMinValue()) {
+                CodeBlock.of("\$LL", longMetadata.minValue)
+            } else {
+                CodeBlock.of("Long.MIN_VALUE")
+            }
+        val maxValue =
+            if (longMetadata.hasMaxValue()) {
+                CodeBlock.of("\$LL", longMetadata.maxValue)
+            } else {
+                CodeBlock.of("Long.MAX_VALUE")
+            }
         builder.add("/* minValue= */ \$L,\n", minValue)
         builder.add("/* maxValue= */ \$L", maxValue)
         builder.add("\n")
@@ -400,7 +411,7 @@ object Generator {
                 generateIntegerPolicyMetadata(
                     policy,
                     policyId,
-                    policy.typeSpecificMetadata.listMetadata.integerMetadata
+                    policy.typeSpecificMetadata.listMetadata.integerMetadata,
                 )
             ListElementMetadataCase.STRING_METADATA ->
                 generateStringPolicyMetadata(
@@ -432,6 +443,39 @@ object Generator {
             )
             .build()
 
+    private fun generateEnumResolutionMechanism(proto: EnumResolutionMechanismProto): CodeBlock {
+        return when (proto.mechanismCase) {
+            EnumResolutionMechanismProto.MechanismCase.MOST_RESTRICTIVE ->
+                generateMostRestrictiveResolutionMechanism(
+                    proto.mostRestrictive.mostToLeastRestrictiveList
+                )
+            EnumResolutionMechanismProto.MechanismCase.CUSTOM -> CodeBlock.of("null")
+            EnumResolutionMechanismProto.MechanismCase.MECHANISM_NOT_SET ->
+                throw IllegalArgumentException("Resolution mechanism not set")
+        }
+    }
+
+    private fun generateMostRestrictiveResolutionMechanism(values: List<Int>): CodeBlock {
+        val parameterizedMostRestrictiveType =
+            ParameterizedTypeName.get(mostRestrictiveType, integerType)
+
+        val policyValues = values.map { CodeBlock.of("new \$T(\$L)", integerType, it) }
+
+        return CodeBlock.builder()
+            .add("new \$T(\n", parameterizedMostRestrictiveType)
+            .indent()
+            .add("\$T.of(\n", listType)
+            .indent()
+            .add(CodeBlock.join(policyValues, ",\n"))
+            .add("\n")
+            .unindent()
+            .add(")\n")
+            .unindent()
+            .add(")")
+            .build()
+    }
+
+    private val integerType = ClassName.get(Integer::class.javaObjectType)
     private val setType = ClassName.get(Set::class.java)
     private val listType = ClassName.get(List::class.java)
     private val arrayListType = ClassName.get(ArrayList::class.java)
@@ -445,4 +489,10 @@ object Generator {
         ParameterizedTypeName.get(arrayListType, policyMetadataType)
 
     private val policyIdentifierType = ClassName.get("android.app.admin", "PolicyIdentifier")
+    private val mostRestrictiveType =
+        ClassName.get(
+            "android.app.admin.metadata",
+            "ResolutionMechanismMetadata",
+            "MostRestrictive",
+        )
 }

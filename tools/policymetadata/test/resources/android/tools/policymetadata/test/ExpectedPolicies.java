@@ -16,6 +16,7 @@
 
 package android.app.admin.metadata;
 
+import static android.app.admin.PolicyIdentifier.MOST_RESTRICTIVE_ENUM_POLICY;
 import static android.app.admin.PolicyIdentifier.SIMPLE_BOOLEAN_POLICY;
 import static android.app.admin.PolicyIdentifier.SIMPLE_ENUM_POLICY;
 import static android.app.admin.PolicyIdentifier.SIMPLE_INTEGER_POLICY;
@@ -36,6 +37,7 @@ import static android.app.admin.PolicyIdentifier.TEST_PROFILE_OWNER_ON_USER0_ALL
 import static android.app.admin.PolicyIdentifier.TEST_PROFILE_OWNER_ON_USER_ALLOWED;
 
 import android.app.admin.PolicyIdentifier;
+import java.lang.Integer;
 import java.lang.String;
 import java.util.ArrayList;
 import java.util.List;
@@ -73,6 +75,30 @@ public class Policies {
             /* requiredPermission= */ "android.permission.MANAGE_POLICY_SIMPLE_ENUM",
             /* requiredCrossUserPermission= */ "android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS",
             /* allowedDpcTypes= */ Set.of(),
+            /* resolutionMechanism= */ null,
+            /* allowedValues= */ Set.of(
+                0,
+                1,
+                2
+            )
+        ));
+        policies.add(new EnumPolicyMetadata(
+            /* id= */ MOST_RESTRICTIVE_ENUM_POLICY,
+            /* allowedScopes= */ Set.of(
+                2,
+                3
+            ),
+            /* affectedResource= */ 1,
+            /* requiredPermission= */ "android.permission.MANAGE_POLICY_SIMPLE_ENUM",
+            /* requiredCrossUserPermission= */ "android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS",
+            /* allowedDpcTypes= */ Set.of(),
+            /* resolutionMechanism= */ new ResolutionMechanismMetadata.MostRestrictive<Integer>(
+                List.of(
+                    new Integer(0),
+                    new Integer(1),
+                    new Integer(2)
+                )
+            ),
             /* allowedValues= */ Set.of(
                 0,
                 1,

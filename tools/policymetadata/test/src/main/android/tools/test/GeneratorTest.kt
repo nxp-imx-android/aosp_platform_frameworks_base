@@ -20,6 +20,7 @@ import android.processor.devicepolicy.protos.FullyQualifiedFieldName
 import android.processor.devicepolicy.protos.PolicyMetadata
 import android.processor.devicepolicy.protos.PolicyMetadataList
 import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata
+import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.EnumPolicyMetadata
 import android.tools.policymetadata.Generator
 import com.google.common.truth.Truth.assertThat
 import com.squareup.javapoet.JavaFile
@@ -400,21 +401,26 @@ class GeneratorTest {
             )
     }
 
-    private fun enumTestPolicy(name: String, allowedValues: Set<Int>): PolicyMetadata.Builder =
+    private fun enumTestPolicy(
+        name: String,
+        allowedValues: Set<Int>,
+        resolutionMechanism: EnumPolicyMetadata.ResolutionMechanism =
+            EnumPolicyMetadata.ResolutionMechanism.newBuilder().setCustom(true).build(),
+    ): PolicyMetadata.Builder =
         PolicyMetadata.newBuilder()
             .setIdentifier(simpleNameToFieldName(name))
             .setTypeSpecificMetadata(
                 TypeSpecificPolicyMetadata.newBuilder()
                     .setEnumMetadata(
-                        TypeSpecificPolicyMetadata.EnumPolicyMetadata.newBuilder()
+                        EnumPolicyMetadata.newBuilder()
                             .addAllValues(
                                 allowedValues.map {
-                                    TypeSpecificPolicyMetadata.EnumPolicyMetadata.EnumValue
-                                        .newBuilder()
+                                    EnumPolicyMetadata.EnumValue.newBuilder()
                                         .setIntValue(it)
                                         .build()
                                 }
                             )
+                            .setResolutionMechanism(resolutionMechanism)
                     )
             )
 
@@ -449,6 +455,7 @@ class GeneratorTest {
                     /* requiredPermission= */ null,
                     /* requiredCrossUserPermission= */ null,
                     /* allowedDpcTypes= */ Set.of(),
+                    /* resolutionMechanism= */ null,
                     /* allowedValues= */ Set.of(
                         1,
                         5,
@@ -456,6 +463,64 @@ class GeneratorTest {
                     )
                 ));
                 """,
+                )
+            )
+    }
+
+    @Test
+    fun test_enumPolicyWithMostRestrictive_outputMatches() {
+        val policyList =
+            PolicyMetadataList.newBuilder()
+                .addPolicyMetadata(
+                    enumTestPolicy(
+                            "test.package.PolicyContainer.MY_TEST_ENUM_POLICY",
+                            setOf(1, 5, 7),
+                            resolutionMechanism =
+                                EnumPolicyMetadata.ResolutionMechanism.newBuilder()
+                                    .setMostRestrictive(
+                                        EnumPolicyMetadata.ResolutionMechanism.MostRestrictive
+                                            .newBuilder()
+                                            .addAllMostToLeastRestrictive(listOf(1, 7, 5))
+                                    )
+                                    .build(),
+                        )
+                        .addAllAllowedScopes(listOf(PolicyMetadata.PolicyScope.POLICY_SCOPE_DEVICE))
+                        .setAffectedResource(PolicyMetadata.ResourceType.RESOURCE_DEVICE_WIDE)
+                )
+                .build()
+
+        val javaFile = Generator.generate(policyList)
+
+        assertThat(javaFileToString(javaFile))
+            .isEqualTo(
+                fillInFile(
+                    staticImports = listOf("test.package.PolicyContainer.MY_TEST_ENUM_POLICY"),
+                    includes = listOf("java.lang.Integer"),
+                    code =
+                        """
+                          policies.add(new EnumPolicyMetadata(
+                              /* id= */ MY_TEST_ENUM_POLICY,
+                              /* allowedScopes= */ Set.of(
+                                  2
+                              ),
+                              /* affectedResource= */ 1,
+                              /* requiredPermission= */ null,
+                              /* requiredCrossUserPermission= */ null,
+                              /* allowedDpcTypes= */ Set.of(),
+                              /* resolutionMechanism= */ new ResolutionMechanismMetadata.MostRestrictive<Integer>(
+                                  List.of(
+                                      new Integer(1),
+                                      new Integer(7),
+                                      new Integer(5)
+                                  )
+                              ),
+                              /* allowedValues= */ Set.of(
+                                  1,
+                                  5,
+                                  7
+                              )
+                          ));
+                        """,
                 )
             )
     }
@@ -629,14 +694,18 @@ class GeneratorTest {
                     .setListMetadata(
                         TypeSpecificPolicyMetadata.ListPolicyMetadata.newBuilder()
                             .setEnumMetadata(
-                                TypeSpecificPolicyMetadata.EnumPolicyMetadata.newBuilder()
+                                EnumPolicyMetadata.newBuilder()
                                     .addAllValues(
                                         enumValues.map {
-                                            TypeSpecificPolicyMetadata.EnumPolicyMetadata.EnumValue
-                                                .newBuilder()
+                                            EnumPolicyMetadata.EnumValue.newBuilder()
                                                 .setIntValue(it)
                                                 .build()
                                         }
+                                    )
+                                    .setResolutionMechanism(
+                                        EnumPolicyMetadata.ResolutionMechanism.newBuilder()
+                                            .setCustom(true)
+                                            .build()
                                     )
                             )
                     )
@@ -676,6 +745,7 @@ class GeneratorTest {
                         /* requiredPermission= */ null,
                         /* requiredCrossUserPermission= */ null,
                         /* allowedDpcTypes= */ Set.of(),
+                        /* resolutionMechanism= */ null,
                         /* allowedValues= */ Set.of(
                           1,
                           9,
@@ -769,6 +839,7 @@ class GeneratorTest {
                         1, // DEVICE_OWNER
                         5  // MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE
                     ),
+                    /* resolutionMechanism= */ null,
                     /* allowedValues= */ Set.of()
                 ));
                 """,
@@ -826,6 +897,7 @@ class GeneratorTest {
                         6, // UNAFFILIATED_FULL_USER_PROFILE_OWNER
                         7  // AFFILIATED_FULL_USER_PROFILE_OWNER
                     ),
+                    /* resolutionMechanism= */ null,
                     /* allowedValues= */ Set.of()
                 ));
                 """,

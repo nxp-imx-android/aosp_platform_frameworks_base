@@ -41,7 +41,7 @@ public class BooleanPolicyMetadata extends PolicyMetadata<Boolean> {
                 affectedResource,
                 requiredPermission,
                 requiredCrossUserPermission,
-                allowedDpcTypes
-        );
+                allowedDpcTypes,
+                null);
     }
 }
