@@ -23,22 +23,24 @@ import android.annotation.SdkConstant;
 import android.annotation.SystemApi;
 import android.app.Service;
 import android.content.Intent;
+import android.os.Handler;
+import android.os.HandlerExecutor;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.ParcelUuid;
-import android.os.RemoteException;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.IOpCallback;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.insight.InsightFilter;
 import android.service.personalcontext.insight.PublishedContextInsight;
 import android.service.personalcontext.insight.PublishedContextInsightWrapper;
-import android.util.Log;
+import android.service.personalcontext.util.BinderRequestProcessor;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import java.lang.ref.WeakReference;
 import java.util.UUID;
+import java.util.concurrent.Executor;
 
 /**
  * The base insight renderer service, which is a service responsible for rendering
@@ -86,10 +88,15 @@ public abstract class InsightRendererService extends Service {
 
     private UUID mComponentId = null;
 
+    private Executor mBinderExecutor = null;
+
     @Nullable
     @Override
     public final IBinder onBind(@Nullable Intent intent) {
-        return new Binder(this);
+        final Executor executor = mBinderExecutor != null
+                ? mBinderExecutor
+                : new HandlerExecutor(new Handler(Looper.getMainLooper()));
+        return new Binder(this, executor);
     }
 
     /**
@@ -102,9 +109,6 @@ public abstract class InsightRendererService extends Service {
      *
      * @param tag An optional {@link String} value that can be associated with the token for future
      *            identification.
-     *
-     * @throws IllegalStateException if called before {@link #onConnected} has been called.
-     *
      * @return a token that uniquely identifies this renderer
      * @throws IllegalStateException if {@link #onConnected()} has not yet been called
      */
@@ -120,8 +124,8 @@ public abstract class InsightRendererService extends Service {
     /**
      * Mint and return a new {@link RenderToken} without a specified tag.
      *
-     * @see #mintRenderToken(String)
      * @return a token that uniquely identifies this renderer
+     * @see #mintRenderToken(String)
      * @throws IllegalStateException if {@link #onConnected()} has not yet been called
      */
     @NonNull
@@ -143,6 +147,17 @@ public abstract class InsightRendererService extends Service {
     /** Called when the renderer has been configured and is ready to receive insights. */
     public void onConnected() {
         // Default implementation does nothing.
+    }
+
+    /**
+     * Sets the executor to be used when methods are invoked on this service. By default, an
+     * Executor running on the main looper is used. This method should be called within
+     * {@link #onCreate()}.
+     *
+     * @param executor The {@link Executor} to run calls on.
+     */
+    public final void setExecutor(@androidx.annotation.NonNull Executor executor) {
+        mBinderExecutor = executor;
     }
 
     /**
@@ -173,51 +188,38 @@ public abstract class InsightRendererService extends Service {
             @NonNull PublishedContextInsight insight, @NonNull RenderToken renderToken);
 
     private static final class Binder extends IInsightRenderer.Stub {
-        private final WeakReference<InsightRendererService> mService;
+        private final BinderRequestProcessor<InsightRendererService> mRequestProcessor;
 
-        Binder(InsightRendererService service) {
-            mService = new WeakReference<>(service);
-        }
-
-        private InsightRendererService getServiceOrThrow() throws RemoteException {
-            final InsightRendererService service = mService.get();
-            if (service == null) {
-                RemoteException error = new RemoteException("Service is no longer available");
-                Log.e(TAG, "Service is no longer available", error);
-                throw error;
-            } else {
-                return service;
-            }
+        Binder(InsightRendererService service, Executor executor) {
+            mRequestProcessor = new BinderRequestProcessor.Builder<>(service, executor)
+                    .setInitializer(InsightRendererService::configure)
+                    .build();
         }
 
         @Override
         public void render(ParcelUuid componentId, PublishedContextInsightWrapper insight,
-                RenderToken renderToken, IOpCallback opCallback) throws RemoteException {
-            try {
-                configureInternal(componentId);
-                getServiceOrThrow().onRender(insight.getPublishedContextInsight(), renderToken);
-            } finally {
-                opCallback.signalCompletion();
-            }
+                RenderToken renderToken, IOpCallback opCallback) {
+            mRequestProcessor.execute(
+                    new BinderRequestProcessor.ExecutionParams.Builder<InsightRendererService>(
+                            opCallback, serviceInstance ->
+                            serviceInstance.onRender(insight.getPublishedContextInsight(),
+                                    renderToken)
+                    ).setComponentId(componentId).build());
         }
 
         @Override
-        public void configure(ParcelUuid componentId) throws RemoteException {
-            configureInternal(componentId);
-        }
-        private void configureInternal(ParcelUuid componentId) throws RemoteException {
-            getServiceOrThrow().configure(componentId.getUuid());
+        public void configure(ParcelUuid componentId) {
+            // This should no longer be called and will be removed soon.
         }
 
         @Override
         public void getFilter(ParcelUuid componentId, IGetFilterCallback callback,
-                IOpCallback opCallback) throws RemoteException {
-            try {
-                configureInternal(componentId);
-                callback.updateFilter(getServiceOrThrow().onInitializeFilter());
-            } finally {
-                opCallback.signalCompletion();
-            }
+                IOpCallback opCallback) {
+            mRequestProcessor.execute(
+                    new BinderRequestProcessor.ExecutionParams.Builder<InsightRendererService>(
+                            opCallback, serviceInstance ->
+                            callback.updateFilter(serviceInstance.onInitializeFilter())
+                    ).setComponentId(componentId).build());
         }
     }
 }

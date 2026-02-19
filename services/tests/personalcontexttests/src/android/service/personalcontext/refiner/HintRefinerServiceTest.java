@@ -18,27 +18,28 @@ package android.service.personalcontext.refiner;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import static org.junit.Assert.assertThrows;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import android.os.RemoteException;
-import android.service.personalcontext.hint.BundleHint;
+import android.os.ParcelUuid;
+import android.service.personalcontext.IOpCallback;
 import android.service.personalcontext.hint.ContextHint;
+import android.service.personalcontext.hint.ContextHintWithSignature;
+import android.service.personalcontext.hint.ContextHintWithSignatureWrapper;
+import android.service.personalcontext.hint.ContextHintWrapper;
+import android.service.personalcontext.hint.HintFilter;
+import android.service.personalcontext.testutil.FakeExecutor;
 
+import androidx.annotation.NonNull;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Answers;
+import org.mockito.ArgumentCaptor;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -46,81 +47,94 @@ import java.util.function.Consumer;
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 public class HintRefinerServiceTest {
-    private UUID mComponentId;
-    private HintRefinerService mService;
-    private IRefiner mBinder;
+    private final FakeExecutor mFakeExecutor = new FakeExecutor();
 
-    @Before
-    public void setup() throws RemoteException {
-        mComponentId = UUID.randomUUID();
-        mService = mock(HintRefinerService.class, Answers.CALLS_REAL_METHODS);
-        mBinder = (IRefiner) mService.onBind(null);
+    @Test
+    public void testComponentId() throws Exception {
+        final UUID componentId = UUID.randomUUID();
+
+        final HintRefinerService service = new HintRefinerService() {
+            @NonNull
+            @Override
+            public HintFilter onInitializeFilter() {
+                return null;
+            }
+
+            @Override
+            public void onRefine(@NonNull List<ContextHint> inputHints,
+                    @NonNull Consumer<List<ContextHint>> callback) {
+                assertThat(getComponentId()).isEqualTo(componentId);
+            }
+        };
+
+        service.setExecutor(mFakeExecutor);
+        final IRefiner refiner = (IRefiner) service.onBind(null);
+
+        final IRefineCallback refineCallback = mock(IRefineCallback.class);
+        final IOpCallback callback = mock(IOpCallback.class);
+        refiner.refine(new ParcelUuid(componentId), new ArrayList<>(), refineCallback,
+                callback);
+        mFakeExecutor.runAll();
+        verify(callback).signalCompletion();
+    }
+
+    private void verifyCallbackFromInput(List<ContextHint> inHints, List<ContextHint> outputHints)
+            throws Exception {
+        ArrayList<ContextHintWithSignature> signedHints = new ArrayList<>();
+
+        for (ContextHint inHint : inHints) {
+            final ContextHintWithSignature contextHintWithSignature = mock(
+                    ContextHintWithSignature.class);
+            when(contextHintWithSignature.getContextHint()).thenReturn(inHint);
+            signedHints.add(contextHintWithSignature);
+        }
+
+        final HintRefinerService service = new HintRefinerService() {
+            @NonNull
+            @Override
+            public HintFilter onInitializeFilter() {
+                return null;
+            }
+
+            @Override
+            public void onRefine(@NonNull List<ContextHint> inputHints,
+                    @NonNull Consumer<List<ContextHint>> callback) {
+                assertThat(inputHints).containsExactlyElementsIn(inHints);
+                callback.accept(outputHints);
+            }
+        };
+
+        service.setExecutor(mFakeExecutor);
+        final IRefiner refiner = (IRefiner) service.onBind(null);
+
+        final IRefineCallback refineCallback = mock(IRefineCallback.class);
+        final IOpCallback callback = mock(IOpCallback.class);
+        refiner.refine(new ParcelUuid(UUID.randomUUID()),
+                ContextHintWithSignatureWrapper.wrapList(signedHints),
+                refineCallback, callback);
+        mFakeExecutor.runAll();
+        verify(callback).signalCompletion();
+        ArgumentCaptor<List<ContextHintWrapper>> outputCaptor = ArgumentCaptor.forClass(List.class);
+        verify(refineCallback).onHintsRefined(outputCaptor.capture());
+
+        assertThat(ContextHintWrapper.unwrapList(
+                outputCaptor.getValue())).containsExactlyElementsIn(
+                outputHints != null ? outputHints : new ArrayList());
     }
 
     @Test
-    public void testComponentId() {
-        // Cannot access component id before other calls have occurred.
-        assertThrows(Exception.class, () -> mService.getComponentId());
+    public void testOnRefineList() throws Exception {
+        verifyCallbackFromInput(List.of(mock(ContextHint.class)),
+                List.of(mock(ContextHint.class), mock(ContextHint.class)));
     }
 
     @Test
-    public void testOnRefineList() throws RemoteException {
-        final List<ContextHint> inputHints =
-                Arrays.asList(new BundleHint.Builder().build(), new BundleHint.Builder().build());
-        final List<ContextHint> outputHints =
-                Arrays.asList(new BundleHint.Builder().build(), new BundleHint.Builder().build());
-
-        doAnswer(invocation -> {
-            assertThat(inputHints).containsExactlyElementsIn((List<?>) invocation.getArgument(0));
-
-            Consumer<List<ContextHint>> callback = invocation.getArgument(1);
-            callback.accept(outputHints);
-
-            return null;
-        }).when(mService).onRefine(any(), any());
-
-        final Consumer<List<ContextHint>> callback = mock(Consumer.class);
-        mService.onRefine(inputHints, callback);
-
-        verify(callback).accept(eq(outputHints));
+    public void testOnRefineEmptyLists() throws Exception {
+        verifyCallbackFromInput(new ArrayList<>(), new ArrayList<>());
     }
 
     @Test
-    public void testOnRefineEmptyLists() throws RemoteException {
-        final List<ContextHint> inputHints = Arrays.asList();
-        final List<ContextHint> outputHints = Arrays.asList();
-
-        doAnswer(invocation -> {
-            assertThat(inputHints).containsExactlyElementsIn((List<?>) invocation.getArgument(0));
-
-            Consumer<List<ContextHint>> callback = invocation.getArgument(1);
-            callback.accept(outputHints);
-
-            return null;
-        }).when(mService).onRefine(any(), any());
-
-        final Consumer<List<ContextHint>> callback = mock(Consumer.class);
-        mService.onRefine(inputHints, callback);
-
-        verify(callback).accept(eq(outputHints));
-    }
-
-    @Test
-    public void testOnRefineNull() throws RemoteException {
-        final List<ContextHint> inputHints = Arrays.asList();
-
-        doAnswer(invocation -> {
-            assertThat(inputHints).containsExactlyElementsIn((List<?>) invocation.getArgument(0));
-
-            Consumer<List<ContextHint>> callback = invocation.getArgument(1);
-            callback.accept(null);
-
-            return null;
-        }).when(mService).onRefine(any(), any());
-
-        final Consumer<List<ContextHint>> callback = mock(Consumer.class);
-        mService.onRefine(inputHints, callback);
-
-        verify(callback).accept(isNull());
+    public void testOnRefineNull() throws Exception {
+        verifyCallbackFromInput(new ArrayList<>(), null);
     }
 }

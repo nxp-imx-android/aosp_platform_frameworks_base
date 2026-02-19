@@ -18,6 +18,9 @@ package android.service.personalcontext.embedded;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -79,7 +82,8 @@ public class InsightSurfaceSessionTest {
         when(mClient.getClientInfo()).thenReturn(newClientInfo);
 
         mSession.update(mUpdate, null);
-        verify(mSessionInterface).onClientUpdated(oldClientInfo, newClientInfo, null);
+        verify(mSessionInterface).onClientUpdated(eq(oldClientInfo), eq(newClientInfo), isNull(),
+                any());
         verify(mPersonalContextManager).updateEmbeddedClientInfo(oldClientInfo, newClientInfo);
     }
 }
