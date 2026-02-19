@@ -23,10 +23,11 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.android.internal.logging.UiEventLogger
 import com.android.systemui.communal.data.repository.ContextualSetupRepository
-import com.android.systemui.communal.data.repository.SetupState
 import com.android.systemui.communal.domain.definition.UprightChargingSetupDefinition
 import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.dreams.ui.metrics.DreamSetupUiEvent
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
 import javax.inject.Inject
@@ -51,6 +52,7 @@ class DreamSetupViewModel(
     private val activityStarter: ActivityStarter,
     private val contextualSetupRepository: ContextualSetupRepository,
     @Main private val resources: Resources,
+    private val uiEventLogger: UiEventLogger,
 ) : ViewModel() {
 
     class Factory
@@ -59,11 +61,17 @@ class DreamSetupViewModel(
         private val activityStarter: ActivityStarter,
         private val contextualSetupRepository: ContextualSetupRepository,
         @Main private val resources: Resources,
+        private val uiEventLogger: UiEventLogger,
     ) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(DreamSetupViewModel::class.java)) {
                 @Suppress("UNCHECKED_CAST")
-                return DreamSetupViewModel(activityStarter, contextualSetupRepository, resources)
+                return DreamSetupViewModel(
+                    activityStarter,
+                    contextualSetupRepository,
+                    resources,
+                    uiEventLogger,
+                )
                     as T
             }
             throw IllegalArgumentException("Unknown ViewModel class: $modelClass")
@@ -80,30 +88,23 @@ class DreamSetupViewModel(
 
     private fun handleDismiss() {
         Log.d(TAG, "User dismissed the setup flow.")
-        // TODO(b/475511585): Add UI Event logging for dismiss event.
+        uiEventLogger.log(DreamSetupUiEvent.DREAM_SETUP_DISMISSED)
         viewModelScope.launch {
             val count =
                 contextualSetupRepository.incrementFailureCount(
                     UprightChargingSetupDefinition.FLOW_ID
                 )
             if (count >= maxDismissCount) {
-                contextualSetupRepository.updateState(
-                    UprightChargingSetupDefinition.FLOW_ID,
-                    SetupState.Dismissed,
-                )
+                contextualSetupRepository.dismiss(UprightChargingSetupDefinition.FLOW_ID)
             }
         }
     }
 
     private fun handleNotNow() {
         Log.d(TAG, "User clicked 'Not now'.")
-        // TODO(b/475511585): Add UI Event logging for not now event.
+        uiEventLogger.log(DreamSetupUiEvent.DREAM_SETUP_SNOOZED)
         viewModelScope.launch {
-            val expirationTime = System.currentTimeMillis() + snoozeDuration.inWholeMilliseconds
-            contextualSetupRepository.updateState(
-                UprightChargingSetupDefinition.FLOW_ID,
-                SetupState.Snoozed(expirationTime),
-            )
+            contextualSetupRepository.snooze(UprightChargingSetupDefinition.FLOW_ID, snoozeDuration)
         }
     }
 
@@ -119,7 +120,7 @@ class DreamSetupViewModel(
 
     private fun handleSetUp() {
         Log.d(TAG, "User clicked 'Set up'.")
-        // TODO(b/475511585): Add UI Event logging for set up event.
+        uiEventLogger.log(DreamSetupUiEvent.DREAM_SETUP_TRIGGERED)
         activityStarter.postStartActivityDismissingKeyguard(
             Intent(Settings.ACTION_DREAM_SETTINGS)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP),

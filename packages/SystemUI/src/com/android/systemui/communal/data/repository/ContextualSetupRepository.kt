@@ -17,13 +17,15 @@
 package com.android.systemui.communal.data.repository
 
 import android.content.Context
-import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.domain.interactor.SharedPreferencesInteractor
 import com.android.systemui.util.kotlin.SharedPreferencesExt.observeString
+import com.android.systemui.util.time.SystemClock
+import java.time.Instant
 import javax.inject.Inject
+import kotlin.time.Duration
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -39,8 +41,21 @@ interface ContextualSetupRepository {
     /** Emits the current [SetupState] for a given flow ID. */
     fun setupState(id: String): Flow<SetupState>
 
-    /** Updates the state for a given flow ID. */
-    suspend fun updateState(id: String, state: SetupState)
+    /**
+     * Snoozes the flow for the given [duration].
+     *
+     * The flow will remain in the [SetupState.Snoozed] state until the duration has elapsed.
+     */
+    suspend fun snooze(id: String, duration: Duration)
+
+    /** Marks the flow as dismissed by the user. */
+    suspend fun dismiss(id: String)
+
+    /** Marks the flow as completed. */
+    suspend fun complete(id: String)
+
+    /** Resets the flow state to [SetupState.NotStarted]. */
+    suspend fun reset(id: String)
 
     /** Increments the failure count for a given flow ID. */
     suspend fun incrementFailureCount(id: String): Int
@@ -52,6 +67,7 @@ class ContextualSetupRepositoryImpl
 constructor(
     private val sharedPreferencesInteractor: SharedPreferencesInteractor,
     @Background private val backgroundDispatcher: CoroutineDispatcher,
+    private val systemClock: SystemClock,
 ) : ContextualSetupRepository {
 
     private val failureCountMutex = Mutex()
@@ -66,13 +82,22 @@ constructor(
             .sharedPreferences(CONTEXTUAL_SETUP_PREFS, Context.MODE_PRIVATE)
             .flatMapLatest { prefs ->
                 prefs.observeString(stateKey(id), "").map { value ->
-                    SetupState.deserialize(value)
+                    val state = SetupState.deserialize(value)
+                    if (
+                        state is SetupState.Snoozed &&
+                            state.expirationTime <=
+                                Instant.ofEpochMilli(systemClock.currentTimeMillis())
+                    ) {
+                        SetupState.NotStarted
+                    } else {
+                        state
+                    }
                 }
             }
             .flowOn(backgroundDispatcher)
     }
 
-    override suspend fun updateState(id: String, state: SetupState) {
+    private suspend fun updateState(id: String, state: SetupState) {
         withContext(backgroundDispatcher) {
             getPrefs().edit {
                 val key = stateKey(id)
@@ -84,6 +109,25 @@ constructor(
                 }
             }
         }
+    }
+
+    override suspend fun snooze(id: String, duration: Duration) {
+        val expirationTime =
+            Instant.ofEpochMilli(systemClock.currentTimeMillis())
+                .plusMillis(duration.inWholeMilliseconds)
+        updateState(id, SetupState.Snoozed(expirationTime))
+    }
+
+    override suspend fun dismiss(id: String) {
+        updateState(id, SetupState.Dismissed)
+    }
+
+    override suspend fun complete(id: String) {
+        updateState(id, SetupState.Completed)
+    }
+
+    override suspend fun reset(id: String) {
+        updateState(id, SetupState.NotStarted)
     }
 
     override suspend fun incrementFailureCount(id: String): Int {
@@ -113,10 +157,8 @@ sealed interface SetupState {
     /** The flow is eligible to be shown. */
     data object NotStarted : SetupState
 
-    /**
-     * The flow has been snoozed by the user and should not be shown until [expirationTimeMillis].
-     */
-    data class Snoozed(val expirationTimeMillis: Long) : SetupState
+    /** The flow has been snoozed by the user and should not be shown until [expirationTime]. */
+    data class Snoozed(val expirationTime: Instant) : SetupState
 
     /** The flow has been successfully completed and should not be shown again. */
     data object Completed : SetupState
@@ -127,7 +169,7 @@ sealed interface SetupState {
     fun toStorageValue(): String? =
         when (this) {
             is NotStarted -> null
-            is Snoozed -> "$SNOOZED_PREFIX$expirationTimeMillis"
+            is Snoozed -> "$SNOOZED_PREFIX${expirationTime.toEpochMilli()}"
             is Completed -> COMPLETED
             is Dismissed -> DISMISSED
         }
@@ -139,8 +181,8 @@ sealed interface SetupState {
 
         fun deserialize(value: String): SetupState {
             return if (value.startsWith(SNOOZED_PREFIX)) {
-                val expirationTime = value.removePrefix(SNOOZED_PREFIX).toLongOrNull() ?: 0L
-                Snoozed(expirationTime)
+                val millis = value.removePrefix(SNOOZED_PREFIX).toLongOrNull() ?: 0L
+                Snoozed(Instant.ofEpochMilli(millis))
             } else {
                 when (value) {
                     COMPLETED -> Completed

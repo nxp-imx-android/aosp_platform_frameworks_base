@@ -30,6 +30,7 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.testKosmos
 import com.android.systemui.util.kotlin.SimpleFlowDumper
 import com.google.common.truth.Truth.assertThat
+import java.time.Instant
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -138,7 +139,7 @@ class UprightChargingSetupDefinitionTest : SysuiTestCase() {
 
             contextualSetupRepo.setSetupState(
                 underTest.id,
-                SetupState.Snoozed(expirationTimeMillis = 100L),
+                SetupState.Snoozed(expirationTime = Instant.ofEpochMilli(100L)),
             )
             assertThat(isReady).isFalse()
         }
