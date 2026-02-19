@@ -42,6 +42,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
@@ -180,8 +181,11 @@ private fun Item(
                 leadingIconColor = contentColor,
             ),
         modifier =
-            modifier.clip(shape).thenIf(selected) {
-                Modifier.background(color = selectedBackgroundColor, shape = shape)
-            },
+            modifier
+                .clip(shape)
+                .thenIf(selected) {
+                    Modifier.background(color = selectedBackgroundColor, shape = shape)
+                }
+                .semantics { this.selected = selected },
     )
 }
