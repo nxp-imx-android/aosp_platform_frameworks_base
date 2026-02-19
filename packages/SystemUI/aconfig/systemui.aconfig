@@ -1008,6 +1008,17 @@ flag {
 }
 
 flag {
+    name: "launcher_proxy_service_short_reconnect"
+    namespace: "systemui"
+    description: "Marks previous launcher proxy service as cleanup when it gets disconnected"
+            " the connection to the service had time to get established."
+    bug: "459609903"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
   name: "low_light_clock_dream"
   namespace: "systemui"
   description: "Enables low light clock dream experience on mobile phones"
