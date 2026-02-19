@@ -5905,8 +5905,17 @@ public class NotificationStackScrollLayout
             println(pw, "shouldUseSplitNotificationShade", mShouldUseSplitNotificationShade);
             println(pw, "isAnimating", isCurrentlyAnimating());
             mNotificationStackSizeCalculator.dump(pw, args);
-            mScrollViewFields.dump(pw);
-            if (!SceneContainerFlag.isEnabled()) {
+            if (SceneContainerFlag.isEnabled()) {
+                mScrollViewFields.dump(pw);
+                pw.println("Touch states:");
+                DumpUtilsKt.withIncreasedIndent(pw, () -> {
+                            println(pw, "sendingTouchesToSceneFramework",
+                                    mSendingTouchesToSceneFramework);
+                            println(pw, "isBeingDragged", mIsBeingDragged);
+                            println(pw, "activePointerId", mActivePointerId);
+                        }
+                );
+            } else {
                 // fields which will be removed with SceneContainer
                 println(pw, "intrinsicContentHeight", getIntrinsicContentHeight());
                 println(pw, "contentHeight", getContentHeight());
