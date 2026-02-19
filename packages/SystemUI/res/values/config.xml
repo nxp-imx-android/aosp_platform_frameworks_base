@@ -1222,4 +1222,9 @@
 
     <!-- Duration in minutes for the dream setup snooze action. -->
     <integer name="config_dream_setup_snooze_duration_minutes">20160</integer> <!-- 14 days -->
+
+    <!--
+    Indicates whether to include Scenes.QuickSettings and Scenes.Shade in the scene container flag.
+    -->
+    <bool name="config_includeQSAndShadeScenes">true</bool>
 </resources>
