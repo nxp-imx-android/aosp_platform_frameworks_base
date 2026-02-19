@@ -214,4 +214,12 @@ to pre-existing users, but cannot uninstall pre-existing system packages from pr
         <install-in user-type="FULL" />
         <install-in user-type="PROFILE" />
     </install-in-user-type>
+
+    <!--  PackageInstaller is the default package installer that allows users to
+      install and uninstall apps (PackageInstaller) -->
+    <install-in-user-type package="com.android.packageinstaller">
+        <install-in user-type="FULL" />
+        <!-- Need to install for all profiles so users can install/uninstall apps there -->
+        <install-in user-type="PROFILE" />
+    </install-in-user-type>
 </config>
