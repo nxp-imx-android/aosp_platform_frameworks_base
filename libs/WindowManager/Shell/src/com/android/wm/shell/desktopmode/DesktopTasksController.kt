@@ -2033,9 +2033,6 @@ class DesktopTasksController(
     enum class CloseTaskResult {
         // Did not close task because the device is in lock task mode.
         NOT_CLOSED_TASK_LOCKED,
-        // Did not close task because the task cannot enter desktop mode, implying the task cannot
-        // be closed via the desktop mode decoration.
-        NOT_CLOSED_DISABLED_DESKTOP_ENTRY,
         // Did not close task because the task is minimized.
         NOT_CLOESD_MINIMIZED,
         // Did not close task because the split screen divider is currently flinging, implying the
@@ -2070,16 +2067,6 @@ class DesktopTasksController(
         ) {
             logW("closeTask(taskId=%d): ${CloseTaskResult.NOT_CLOSED_TASK_LOCKED}", taskId)
             return CloseTaskResult.NOT_CLOSED_TASK_LOCKED
-        }
-        if (
-            DesktopExperienceFlags.CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT.isTrue() &&
-                desktopModeCompatPolicy.shouldDisableDesktopEntryPoints(task)
-        ) {
-            logW(
-                "closeTask(taskId=%d): ${CloseTaskResult.NOT_CLOSED_DISABLED_DESKTOP_ENTRY}",
-                taskId,
-            )
-            return CloseTaskResult.NOT_CLOSED_DISABLED_DESKTOP_ENTRY
         }
         if (splitScreenController.isTaskInSplitScreen(taskId)) {
             if (Flags.closeSplitTaskInsteadOfMovingToBack()) {
