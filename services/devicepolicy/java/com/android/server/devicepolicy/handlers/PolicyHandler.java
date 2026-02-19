@@ -115,7 +115,7 @@ public class PolicyHandler<T> {
 
     /** Constructor that uses the generated {@link PolicyDefinition}. */
     protected PolicyHandler(@NonNull PolicyIdentifier<T> key, @NonNull PolicyMetadata<T> metadata) {
-        this(key, metadata, PolicyDefinitionFactory.build(key, metadata));
+        this(key, metadata, PolicyDefinitionFactory.build(metadata));
     }
 
     protected PolicyHandler(
