@@ -132,7 +132,8 @@ public class VirtualDisplayAdapterTest {
 
         DisplayDevice result = mAdapter.createVirtualDisplayLocked(mMockCallback,
                 /* projection= */ null, /* ownerUid= */ 10, /* packageName= */ "testpackage",
-                /* uniqueId= */ "uniqueId", /* surface= */ null, /* flags= */ 0, config);
+                /* uniqueId= */ "uniqueId", /* surface= */ null, /* flags= */ 0, config,
+                /* includeEmbeddedContent= */ true);
         assertNotNull(result);
 
         result = mAdapter.releaseVirtualDisplayLocked(mMockBinder);
@@ -148,7 +149,8 @@ public class VirtualDisplayAdapterTest {
         // Create a device with an initial surface
         DisplayDevice device = mAdapter.createVirtualDisplayLocked(mMockCallback,
                 /* projection= */ null, /* ownerUid= */ 10, /* packageName= */ "testpackage",
-                /* uniqueId= */ "uniqueId", /* surface= */ mSurfaceMock, /* flags= */ 0, config);
+                /* uniqueId= */ "uniqueId", /* surface= */ mSurfaceMock, /* flags= */ 0, config,
+                /* includeEmbeddedContent= */ true);
         assertNotNull(device);
 
         // Set a new surface
@@ -167,7 +169,8 @@ public class VirtualDisplayAdapterTest {
         // Create a device with an initial surface
         DisplayDevice device = mAdapter.createVirtualDisplayLocked(mMockCallback,
                 /* projection= */ null, /* ownerUid= */ 10, /* packageName= */ "testpackage",
-                /* uniqueId= */ "uniqueId", /* surface= */ mSurfaceMock, /* flags= */ 0, config);
+                /* uniqueId= */ "uniqueId", /* surface= */ mSurfaceMock, /* flags= */ 0, config,
+                /* includeEmbeddedContent= */ true);
         assertNotNull(device);
 
         // Set the same surface
@@ -188,7 +191,8 @@ public class VirtualDisplayAdapterTest {
 
         DisplayDevice displayDevice = mAdapter.createVirtualDisplayLocked(
                 mMockCallback, /* projection= */ null, /* ownerUid= */ 10,
-                packageName, displayUniqueId, /* surface= */ null, /* flags= */ 0, config);
+                packageName, displayUniqueId, /* surface= */ null, /* flags= */ 0, config,
+                /* includeEmbeddedContent= */ true);
 
         assertNotNull(displayDevice);
         DisplayDeviceInfo info = displayDevice.getDisplayDeviceInfoLocked();
@@ -224,7 +228,8 @@ public class VirtualDisplayAdapterTest {
 
         DisplayDevice displayDevice = mAdapter.createVirtualDisplayLocked(
                 mMockCallback, /* projection= */ null, /* ownerUid= */ 10,
-                packageName, displayUniqueId, /* surface= */ null, /* flags= */ 0, config);
+                packageName, displayUniqueId, /* surface= */ null, /* flags= */ 0, config,
+                /* includeEmbeddedContent= */ true);
 
         assertNotNull(displayDevice);
         DisplayDeviceInfo info = displayDevice.getDisplayDeviceInfoLocked();
@@ -245,7 +250,8 @@ public class VirtualDisplayAdapterTest {
 
         DisplayDevice result = mAdapter.createVirtualDisplayLocked(
                 mMockCallback, /* projection= */ null, /* ownerUid= */ 10,
-                packageName, displayUniqueId, /* surface= */ null, /* flags= */ 0, config);
+                packageName, displayUniqueId, /* surface= */ null, /* flags= */ 0, config,
+                /* includeEmbeddedContent= */ true);
 
         assertNotNull(result);
 
@@ -262,12 +268,14 @@ public class VirtualDisplayAdapterTest {
 
         DisplayDevice result = mAdapter.createVirtualDisplayLocked(mMockCallback,
                 /* projection= */ null, /* ownerUid= */ 10, /* packageName= */ "testpackage",
-                /* uniqueId= */ "uniqueId1", /* surface= */ null, /* flags= */ 0, config1);
+                /* uniqueId= */ "uniqueId1", /* surface= */ null, /* flags= */ 0, config1,
+                /* includeEmbeddedContent= */ true);
         assertNotNull(result);
 
         result = mAdapter.createVirtualDisplayLocked(mMockCallback,
                 /* projection= */ null, /* ownerUid= */ 10, /* packageName= */ "testpackage",
-                /* uniqueId= */ "uniqueId2", /* surface= */ null, /* flags= */ 0, config2);
+                /* uniqueId= */ "uniqueId2", /* surface= */ null, /* flags= */ 0, config2,
+                /* includeEmbeddedContent= */ true);
         assertNull(result);
     }
 
@@ -281,7 +289,8 @@ public class VirtualDisplayAdapterTest {
             IVirtualDisplayCallback callback = createCallback();
             DisplayDevice device = mAdapter.createVirtualDisplayLocked(callback,
                     mMediaProjectionMock, ownerUid, "test.package", "123",
-                    mSurfaceMock, /* flags= */ 0, mVirtualDisplayConfigMock);
+                    mSurfaceMock, /* flags= */ 0, mVirtualDisplayConfigMock,
+                    /* includeEmbeddedContent= */ true);
             if (i < MAX_DEVICES_PER_PACKAGE) {
                 assertNotNull(device);
                 callbacks.add(callback);
@@ -299,7 +308,7 @@ public class VirtualDisplayAdapterTest {
         IVirtualDisplayCallback callback = createCallback();
         device = mAdapter.createVirtualDisplayLocked(callback, mMediaProjectionMock, ownerUid,
                 "test.package", "123", mSurfaceMock, /* flags= */ 0,
-                mVirtualDisplayConfigMock);
+                mVirtualDisplayConfigMock, /* includeEmbeddedContent= */ true);
         assertNotNull(device);
         callbacks.add(callback);
 
@@ -307,7 +316,7 @@ public class VirtualDisplayAdapterTest {
         callback = createCallback();
         device = mAdapter.createVirtualDisplayLocked(callback, mMediaProjectionMock, ownerUid,
                 "test.package", "123", mSurfaceMock, /* flags= */ 0,
-                mVirtualDisplayConfigMock);
+                mVirtualDisplayConfigMock, /* includeEmbeddedContent= */ true);
         assertNull(device);
 
         // Release all the displays
@@ -323,7 +332,7 @@ public class VirtualDisplayAdapterTest {
             callback = createCallback();
             device = mAdapter.createVirtualDisplayLocked(callback, mMediaProjectionMock, ownerUid,
                     "test.package", "123", mSurfaceMock, /* flags= */ 0,
-                    mVirtualDisplayConfigMock);
+                    mVirtualDisplayConfigMock, /* includeEmbeddedContent= */ true);
             if (i < MAX_DEVICES_PER_PACKAGE) {
                 assertNotNull(device);
                 callbacks.add(callback);
@@ -336,7 +345,7 @@ public class VirtualDisplayAdapterTest {
         callback = createCallback();
         device = mAdapter.createVirtualDisplayLocked(callback, mMediaProjectionMock, ownerUid + 1,
                 "test.package", "123", mSurfaceMock, /* flags= */ 0,
-                mVirtualDisplayConfigMock);
+                mVirtualDisplayConfigMock, /* includeEmbeddedContent= */ true);
         assertNotNull(device);
         callbacks.add(callback);
     }
@@ -351,7 +360,8 @@ public class VirtualDisplayAdapterTest {
             IVirtualDisplayCallback callback = createCallback();
             DisplayDevice device = mAdapter.createVirtualDisplayLocked(callback,
                     mMediaProjectionMock, firstOwnerUid + i, "test.package",
-                    "123", mSurfaceMock, /* flags= */ 0, mVirtualDisplayConfigMock);
+                    "123", mSurfaceMock, /* flags= */ 0, mVirtualDisplayConfigMock,
+                    /* includeEmbeddedContent= */ true);
             if (i < MAX_DEVICES) {
                 assertNotNull(device);
                 callbacks.add(callback);
@@ -369,7 +379,7 @@ public class VirtualDisplayAdapterTest {
         IVirtualDisplayCallback callback = createCallback();
         device = mAdapter.createVirtualDisplayLocked(callback, mMediaProjectionMock,
                 firstOwnerUid, "test.package", "123", mSurfaceMock, /* flags= */ 0,
-                mVirtualDisplayConfigMock);
+                mVirtualDisplayConfigMock, /* includeEmbeddedContent= */ true);
         assertNotNull(device);
         callbacks.add(callback);
 
@@ -377,7 +387,7 @@ public class VirtualDisplayAdapterTest {
         callback = createCallback();
         device = mAdapter.createVirtualDisplayLocked(callback, mMediaProjectionMock,
                 firstOwnerUid, "test.package", "123", mSurfaceMock, /* flags= */ 0,
-                mVirtualDisplayConfigMock);
+                mVirtualDisplayConfigMock, /* includeEmbeddedContent= */ true);
         assertNull(device);
 
         // Release all the displays
@@ -393,7 +403,7 @@ public class VirtualDisplayAdapterTest {
             callback = createCallback();
             device = mAdapter.createVirtualDisplayLocked(callback, mMediaProjectionMock,
                     firstOwnerUid + i, "test.package", "123", mSurfaceMock,
-                    /* flags= */ 0, mVirtualDisplayConfigMock);
+                    /* flags= */ 0, mVirtualDisplayConfigMock, /* includeEmbeddedContent= */ true);
             if (i < MAX_DEVICES) {
                 assertNotNull(device);
                 callbacks.add(callback);
@@ -408,7 +418,8 @@ public class VirtualDisplayAdapterTest {
         DisplayDevice device = mAdapter.createVirtualDisplayLocked(mMockCallback,
                 /* projection= */ null, /* ownerUid= */ 10, /* packageName= */ "testpackage",
                 "uniqueId", /* surface= */ mSurfaceMock,
-                DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_DISPLAY_GROUP, mVirtualDisplayConfigMock);
+                DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_DISPLAY_GROUP, mVirtualDisplayConfigMock,
+                /* includeEmbeddedContent= */ true);
 
         DisplayDeviceInfo info = device.getDisplayDeviceInfoLocked();
         assertThat(info.state).isEqualTo(Display.STATE_UNKNOWN);
@@ -421,7 +432,7 @@ public class VirtualDisplayAdapterTest {
                 /* projection= */ null, /* ownerUid= */ 10, /* packageName= */ "testpackage",
                 "uniqueId", /* surface= */ mSurfaceMock,
                 DisplayManager.VIRTUAL_DISPLAY_FLAG_DEVICE_DISPLAY_GROUP,
-                mVirtualDisplayConfigMock);
+                mVirtualDisplayConfigMock, /* includeEmbeddedContent= */ true);
 
         DisplayDeviceInfo info = device.getDisplayDeviceInfoLocked();
         assertThat(info.state).isEqualTo(Display.STATE_UNKNOWN);
@@ -434,7 +445,7 @@ public class VirtualDisplayAdapterTest {
         DisplayDevice device = mAdapter.createVirtualDisplayLocked(mMockCallback,
                 /* projection= */ null, /* ownerUid= */ 10, /* packageName= */ "testpackage",
                 "uniqueId", /* surface= */ mSurfaceMock, /* flags= */ 0,
-                mVirtualDisplayConfigMock);
+                mVirtualDisplayConfigMock, /* includeEmbeddedContent= */ true);
 
         DisplayDeviceInfo info = device.getDisplayDeviceInfoLocked();
         assertThat(info.state).isEqualTo(Display.STATE_ON);
@@ -447,14 +458,14 @@ public class VirtualDisplayAdapterTest {
         final String uniqueId = "uniqueId";
         final IBinder displayToken = new Binder();
         when(mMockSufaceControlDisplayFactory.createDisplay(
-                any(), anyBoolean(), anyBoolean(), eq(uniqueId), anyInt(), anyFloat()))
-                .thenReturn(displayToken);
+                any(), anyBoolean(), anyBoolean(), eq(uniqueId), anyInt(), anyBoolean(),
+                anyFloat())).thenReturn(displayToken);
 
         // The display needs to be public, otherwise it will be considered never blank.
         DisplayDevice device = mAdapter.createVirtualDisplayLocked(mMockCallback,
                 /* projection= */ null, /* ownerUid= */ 10, /* packageName= */ "testpackage",
                 uniqueId, /* surface= */ mSurfaceMock, DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC,
-                mVirtualDisplayConfigMock);
+                mVirtualDisplayConfigMock, /* includeEmbeddedContent= */ true);
 
         DisplayDeviceInfo info = device.getDisplayDeviceInfoLocked();
         assertThat(info.state).isEqualTo(Display.STATE_UNKNOWN);
@@ -494,16 +505,17 @@ public class VirtualDisplayAdapterTest {
         final String name = "name";
         when(mVirtualDisplayConfigMock.getName()).thenReturn(name);
         when(mMockSufaceControlDisplayFactory.createDisplay(
-                any(), anyBoolean(), anyBoolean(), eq(uniqueId), anyInt(), anyFloat()))
-                .thenReturn(displayToken);
+                any(), anyBoolean(), anyBoolean(), eq(uniqueId), anyInt(), anyBoolean(),
+                anyFloat())).thenReturn(displayToken);
 
         // Use a private display to cause the display to be never blank.
         mAdapter.createVirtualDisplayLocked(mMockCallback,
                 /* projection= */ null, /* ownerUid= */ 10, /* packageName= */ "testpackage",
-                uniqueId, /* surface= */ mSurfaceMock, 0, mVirtualDisplayConfigMock);
+                uniqueId, /* surface= */ mSurfaceMock, 0, mVirtualDisplayConfigMock,
+                /* includeEmbeddedContent= */ true);
 
         verify(mMockSufaceControlDisplayFactory).createDisplay(eq(name), eq(false), eq(true),
-                eq(uniqueId), anyInt(), anyFloat());
+                eq(uniqueId), anyInt(), anyBoolean(), anyFloat());
     }
 
     @Test
@@ -513,17 +525,17 @@ public class VirtualDisplayAdapterTest {
         final String name = "name";
         when(mVirtualDisplayConfigMock.getName()).thenReturn(name);
         when(mMockSufaceControlDisplayFactory.createDisplay(
-                any(), anyBoolean(), anyBoolean(), eq(uniqueId), anyInt(), anyFloat()))
-                .thenReturn(displayToken);
+                any(), anyBoolean(), anyBoolean(), eq(uniqueId), anyInt(), anyBoolean(),
+                anyFloat())).thenReturn(displayToken);
 
         // Use a public display to cause the display to be blankable
         mAdapter.createVirtualDisplayLocked(mMockCallback,
                 /* projection= */ null, /* ownerUid= */ 10, /* packageName= */ "testpackage",
                 uniqueId, /* surface= */ mSurfaceMock, DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC,
-                mVirtualDisplayConfigMock);
+                mVirtualDisplayConfigMock, /* includeEmbeddedContent= */ true);
 
         verify(mMockSufaceControlDisplayFactory).createDisplay(eq(name), eq(false), eq(false),
-                eq(uniqueId), anyInt(), anyFloat());
+                eq(uniqueId), anyInt(), anyBoolean(), anyFloat());
     }
 
     private IVirtualDisplayCallback createCallback() {
