@@ -24,6 +24,7 @@ import android.annotation.IntDef;
 import android.processor.devicepolicy.AllowedDpcTypes;
 import android.processor.devicepolicy.BooleanPolicyDefinition;
 import android.processor.devicepolicy.EnumPolicyDefinition;
+import android.processor.devicepolicy.EnumResolutionMechanism;
 import android.processor.devicepolicy.IntegerPolicyDefinition;
 import android.processor.devicepolicy.LongPolicyDefinition;
 import android.processor.devicepolicy.ListOfStringPolicyDefinition;
@@ -109,7 +110,8 @@ public final class PolicyIdentifier<T> {
                                             managedProfileOwnerOfPersonalOwnedDevice = DISALLOWED,
                                             unaffiliatedFullUserProfileOwner = DISALLOWED)),
             defaultValue = ENUM_ENTRY_2,
-            intDef = SimpleEnumPolicyEnum.class)
+            intDef = SimpleEnumPolicyEnum.class,
+            resolutionMechanism = @EnumResolutionMechanism(custom = true))
     public static final PolicyIdentifier<Integer> SIMPLE_ENUM_POLICY =
             new PolicyIdentifier<>("SIMPLE_ENUM_POLICY");
 
@@ -437,8 +439,7 @@ public final class PolicyIdentifier<T> {
     public static final PolicyIdentifier<Integer>
             TEST_AFFILIATED_PROFILE_OWNER_ON_USER_SAME_AS_UNAFFILIATED_DISALLOWED =
                     new PolicyIdentifier<>(
-                            "TEST_AFFILIATED_PROFILE_OWNER_ON_USER_SAME_AS_UNAFFILIATED_DISALLOWED"
-                    );
+                            "TEST_AFFILIATED_PROFILE_OWNER_ON_USER_SAME_AS_UNAFFILIATED_DISALLOWED");
 
     /** Test policy verifying processing of multiple allowed DPC types. */
     @IntegerPolicyDefinition(
@@ -459,4 +460,31 @@ public final class PolicyIdentifier<T> {
                                             affiliatedFullUserProfileOwner = ALLOWED)))
     public static final PolicyIdentifier<Integer> TEST_MULTIPLE_DPC_TYPES_ALLOWED =
             new PolicyIdentifier<>("TEST_MULTIPLE_DPC_TYPES_ALLOWED");
+
+    /** Enum policy with mostRestrictive resolution mechanism. */
+    @EnumPolicyDefinition(
+            base =
+                    @PolicyDefinition(
+                            allowedScopes = {
+                                2, // POLICY_SCOPE_DEVICE
+                                3 // POLICY_SCOPE_PARENT_USER
+                            },
+                            affectedResource = 1, // RESOURCE_DEVICE_WIDE
+                            requiredPermission = "android.permission.MANAGE_POLICY_SIMPLE_ENUM",
+                            requiredCrossUserPermission =
+                                    "android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS",
+                            allowedDpcTypes =
+                                    @AllowedDpcTypes(
+                                            deviceOwner = DISALLOWED,
+                                            managedProfileOwnerOfOrganizationOwnedDevice =
+                                                    DISALLOWED,
+                                            managedProfileOwnerOfPersonalOwnedDevice = DISALLOWED,
+                                            unaffiliatedFullUserProfileOwner = DISALLOWED)),
+            defaultValue = ENUM_ENTRY_2,
+            intDef = SimpleEnumPolicyEnum.class,
+            resolutionMechanism =
+                    @EnumResolutionMechanism(
+                            mostRestrictive = {ENUM_ENTRY_1, ENUM_ENTRY_2, ENUM_ENTRY_3}))
+    public static final PolicyIdentifier<Integer> MOST_RESTRICTIVE_ENUM_POLICY =
+            new PolicyIdentifier<>("MOST_RESTRICTIVE_ENUM_POLICY");
 }

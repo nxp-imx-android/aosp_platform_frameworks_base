@@ -401,12 +401,12 @@ abstract class PolicyProcessor<T : Annotation>(protected val processingEnv: Proc
      *
      * @param elementToString: Method used to format the values in the error message.
      */
-    private fun ensureNoDuplicates(
+    public fun ensureNoDuplicates(
         element: Element,
-        values: List<Int>,
+        values: Collection<Int>,
         listName: String,
         elementToString: (Int) -> String,
-    ) {
+    ): Boolean {
         val duplicates = getDuplicates(values)
         if (!duplicates.isEmpty()) {
             val duplicateNames = duplicates.map(elementToString)
@@ -414,7 +414,54 @@ abstract class PolicyProcessor<T : Annotation>(protected val processingEnv: Proc
                 element,
                 "$listName contains duplicate values: ${duplicateNames.joinToString(",")}",
             )
+            return false
         }
+        return true
+    }
+
+    /**
+     * Checks for unknown values in `values`, and prints an error if any are found.
+     *
+     * @param elementToString: Method used to format the values in the error message.
+     */
+    public fun ensureNoUnexpectedValues(
+        element: Element,
+        values: Collection<Int>,
+        expectedValues: Collection<Int>,
+        listName: String,
+    ): Boolean {
+        val unexpectedValues = values.filter { !expectedValues.contains(it) }
+
+        if (!unexpectedValues.isEmpty()) {
+            printError(
+                element,
+                "$listName contains unexpected values: ${unexpectedValues.joinToString(",")}",
+            )
+            return false
+        }
+        return true
+    }
+
+    /**
+     * Checks that every value inside `expectedValues` is present in `values`, and prints an error
+     * if any are missing.
+     *
+     * @param elementToString: Method used to format the values in the error message.
+     */
+    public fun ensureNoMissingValues(
+        element: Element,
+        values: Collection<Int>,
+        expectedValues: Collection<Int>,
+        listName: String,
+        elementToString: (Int) -> String,
+    ): Boolean {
+        val missingValues = expectedValues.filter { !values.contains(it) }.map(elementToString)
+
+        if (!missingValues.isEmpty()) {
+            printError(element, "$listName must also contain: ${missingValues.joinToString(",")}")
+            return false
+        }
+        return true
     }
 
     private fun scopeToString(value: Int): String {
@@ -422,7 +469,7 @@ abstract class PolicyProcessor<T : Annotation>(protected val processingEnv: Proc
         return enumValue?.name ?: "$value"
     }
 
-    private fun getDuplicates(values: List<Int>) =
+    private fun getDuplicates(values: Collection<Int>) =
         values.groupingBy { it }.eachCount().filter { it.value > 1 }.keys
 
     fun convertResourceType(element: Element, affectedResource: Int): PolicyMetadata.ResourceType? =

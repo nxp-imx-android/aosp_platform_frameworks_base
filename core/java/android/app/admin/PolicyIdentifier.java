@@ -36,6 +36,7 @@ import android.content.Intent;
 import android.os.UserManager;
 import android.processor.devicepolicy.AllowedDpcTypes;
 import android.processor.devicepolicy.EnumPolicyDefinition;
+import android.processor.devicepolicy.EnumResolutionMechanism;
 import android.processor.devicepolicy.PolicyDefinition;
 import android.processor.devicepolicy.StringPolicyDefinition;
 
@@ -157,7 +158,8 @@ public final class PolicyIdentifier<T> {
                                             profileOwnerOnUser0 = ALLOWED,
                                             affiliatedFullUserProfileOwner = ALLOWED)),
             intDef = ScreenCaptureValue.class,
-            defaultValue = SCREEN_CAPTURE_ALLOWED)
+            defaultValue = SCREEN_CAPTURE_ALLOWED,
+            resolutionMechanism = @EnumResolutionMechanism(custom = true))
     public static final PolicyIdentifier<Integer> SCREEN_CAPTURE =
             new PolicyIdentifier<>("SCREEN_CAPTURE");
 
@@ -230,7 +232,8 @@ public final class PolicyIdentifier<T> {
                                             unaffiliatedFullUserProfileOwner = DISALLOWED,
                                             profileOwnerOnUser0 = ALLOWED)),
             intDef = AutoTimeValue.class,
-            defaultValue = AUTO_TIME_USER_CHOICE)
+            defaultValue = AUTO_TIME_USER_CHOICE,
+            resolutionMechanism = @EnumResolutionMechanism(custom = true))
     public static final PolicyIdentifier<Integer> AUTO_TIME = new PolicyIdentifier<>("AUTO_TIME");
 
     /**
