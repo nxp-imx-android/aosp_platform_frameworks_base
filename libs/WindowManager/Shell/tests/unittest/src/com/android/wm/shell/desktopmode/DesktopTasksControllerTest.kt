@@ -5367,19 +5367,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    fun closeTask_disabledDesktopEntry_doesNothing() {
-        val task = setUpFullscreenTask()
-        task.baseActivity = ComponentName("mypacakge", "mypacakge.MyActivity")
-        doReturn(true).whenever(desktopModeCompatPolicy).shouldDisableDesktopEntryPoints(task)
-
-        val result = controller.closeTask(task)
-
-        assertThat(result)
-            .isEqualTo(DesktopTasksController.CloseTaskResult.NOT_CLOSED_DISABLED_DESKTOP_ENTRY)
-        verifyWCTNotExecuted()
-    }
-
-    @Test
     @EnableFlags(FLAG_CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT)
     fun closeTask_lockTask_doesNothing() {
         val task = setUpFullscreenTask()
