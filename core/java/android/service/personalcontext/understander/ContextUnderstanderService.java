@@ -136,8 +136,7 @@ public abstract class ContextUnderstanderService extends Service {
      *
      * <p>As each hint is provided to the Personal Context system it will be forwarded on to
      * understanding components. The understander can take these hints, cache them between calls,
-     * and use one or more hints together to generate {@link ContextInsight}s. These insights are
-     * then fed back into the system via {@link #understood}.
+     * and use one or more hints together to generate {@link ContextInsight}s.
      *
      * @param hints new hints that this understander has not seen before
      * @return a list of {@link ContextInsight} that this {@link ContextUnderstanderService}
@@ -147,32 +146,6 @@ public abstract class ContextUnderstanderService extends Service {
     @RequiresPermission(Manifest.permission.PERSONAL_CONTEXT_PUBLISH_INSIGHTS)
     public abstract List<ContextInsight> onUnderstand(@NonNull List<ContextHintWithSignature>
             hints);
-
-    /**
-     * Feeds a {@link ContextInsight} into the Personal Context system.
-     *
-     * <p>Most understanders will want to respond to calls to {@link #onUnderstand} inline when all
-     * insights have been prepared, but this is not a requirement. Understanders may want to call
-     * {@link #understood} more than once (e.g. once early with preliminary results, and a second
-     * time with more in-depth results), not at all (e.g. no insights were generated), on a
-     * different thread (e.g. insight generation is moved to a background thread), or spontaneously
-     * (e.g. new information is available that is relevant, but not in response to new hints). All
-     * of these models are allowed.
-     *
-     * @throws IllegalStateException when called before the system service has started. The call
-     *                               can be re-attempted in a few seconds, once system services have
-     *                               started.
-     */
-    @RequiresPermission(Manifest.permission.PERSONAL_CONTEXT_PUBLISH_INSIGHTS)
-    public final void understood(@NonNull ContextInsight insight) {
-        if (mPersonalContextManager == null) {
-            mPersonalContextManager = getSystemService(PersonalContextManager.class);
-        }
-        if (mPersonalContextManager == null) {
-            throw new IllegalStateException("Personal Context Manager service is not running");
-        }
-        mPersonalContextManager.publishInsight(List.of(insight), getComponentId());
-    }
 
     /**
      * Override this method to receive logging events for actions taken on the insight.
@@ -188,7 +161,7 @@ public abstract class ContextUnderstanderService extends Service {
     }
 
     /**
-     * Override this method to revieve user feedback on an insight.
+     * Override this method to receive user feedback on an insight.
      *
      * @param insight  {@link ContextInsight} that the user feedback is related to
      * @param feedback information about the requested feedback and user responses

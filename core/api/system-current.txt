@@ -15780,7 +15780,6 @@ package android.service.personalcontext.understander {
     method @NonNull public abstract android.service.personalcontext.hint.HintFilter onInitializeFilter();
     method @NonNull @RequiresPermission(android.Manifest.permission.PERSONAL_CONTEXT_PUBLISH_INSIGHTS) public abstract java.util.List<android.service.personalcontext.insight.ContextInsight> onUnderstand(@NonNull java.util.List<android.service.personalcontext.hint.ContextHintWithSignature>);
     method public final void setExecutor(@NonNull java.util.concurrent.Executor);
-    method @RequiresPermission(android.Manifest.permission.PERSONAL_CONTEXT_PUBLISH_INSIGHTS) public final void understood(@NonNull android.service.personalcontext.insight.ContextInsight);
   }
 
 }
