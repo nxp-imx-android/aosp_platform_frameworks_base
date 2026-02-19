@@ -142,11 +142,23 @@ object GameControlsHelper {
         }
 
         val packageName = taskInfo.baseActivity?.packageName ?: return false
-        val appInfo = context.packageManager.getApplicationInfo(
-            packageName,
-            PackageManager.GET_META_DATA,
-        )
 
-        return appInfo.metaData?.getBoolean(gameControlsOptOutMetadataKey) ?: false
+        try {
+            val appInfo = context.packageManager.getApplicationInfoAsUser(
+                packageName,
+                PackageManager.GET_META_DATA,
+                UserHandle.of(taskInfo.userId),
+            )
+
+            return appInfo.metaData?.getBoolean(gameControlsOptOutMetadataKey) ?: false
+        } catch (_: PackageManager.NameNotFoundException) {
+            ProtoLog.w(
+                WM_SHELL_WINDOW_DECORATION,
+                "GameControlsHelper: Could not get ApplicationInfo for %s with user %d",
+                packageName,
+                taskInfo.userId,
+            )
+            return false
+        }
     }
 }
