@@ -31,7 +31,12 @@ import com.android.wm.shell.bubbles.appinfo.BubbleAppInfoProvider
 /** A fake implementation of [BubbleAppInfoProvider]. */
 class FakeBubbleAppInfoProvider : BubbleAppInfoProvider {
     override fun resolveAppInfo(context: Context, bubble: Bubble): BubbleAppInfo {
-        return BubbleAppInfo("app name", ColorDrawable(Color.RED), Process.myUserHandle())
+        return BubbleAppInfo(
+            "app name",
+            ColorDrawable(Color.RED),
+            ColorDrawable(Color.RED),
+            Process.myUserHandle(),
+        )
     }
 
     override fun getActivityInfoIcon(pm: PackageManager, intent: Intent?): Icon? {

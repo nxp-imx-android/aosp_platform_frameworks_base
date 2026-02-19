@@ -41,7 +41,20 @@ class PackageManagerBubbleAppInfoProvider @Inject constructor() : BubbleAppInfoP
         // App name & app icon
         val pm = BubbleController.getPackageManagerForUser(context, bubble.user.identifier)
         try {
-            // Try to load name and icon from the activity info if the component is available
+            // Load the name and icon from application info
+            val appInfo =
+                pm.getApplicationInfo(
+                    bubble.packageName,
+                    (PackageManager.MATCH_UNINSTALLED_PACKAGES or
+                        PackageManager.MATCH_DISABLED_COMPONENTS or
+                        PackageManager.MATCH_DIRECT_BOOT_UNAWARE or
+                        PackageManager.MATCH_DIRECT_BOOT_AWARE),
+                )
+            val appName = pm.getApplicationLabel(appInfo)?.toString()
+            val appIcon = appInfo.loadUnbadgedIcon(pm)
+
+            // Try to use the name and icon from the activity info if the component is available.
+            // The badge icon should still be from application info.
             if (Flags.useBubbleIconFromActivityInfo()) {
                 val intent = bubble.intent
                 val component = intent?.component
@@ -54,24 +67,18 @@ class PackageManagerBubbleAppInfoProvider @Inject constructor() : BubbleAppInfoP
                         return BubbleAppInfo(
                             appName = activityName,
                             appIcon = activityInfoIcon,
+                            badgeIcon = appIcon,
                             user = bubble.user,
                         )
                     }
                 }
             }
-            // Fallback to name and icon from application info
-            val appInfo =
-                pm.getApplicationInfo(
-                    bubble.packageName,
-                    (PackageManager.MATCH_UNINSTALLED_PACKAGES or
-                        PackageManager.MATCH_DISABLED_COMPONENTS or
-                        PackageManager.MATCH_DIRECT_BOOT_UNAWARE or
-                        PackageManager.MATCH_DIRECT_BOOT_AWARE),
-                )
-            val appName = if (appInfo != null) pm.getApplicationLabel(appInfo)?.toString() else null
-
-            val appIcon = appInfo.loadUnbadgedIcon(pm)
-            return BubbleAppInfo(appName = appName, appIcon = appIcon, user = bubble.user)
+            return BubbleAppInfo(
+                appName = appName,
+                appIcon = appIcon,
+                badgeIcon = appIcon,
+                user = bubble.user,
+            )
         } catch (exception: PackageManager.NameNotFoundException) {
             // If we can't find package... don't think we should show the bubble.
             Log.w(TAG, "Unable to find package: ${bubble.packageName}")

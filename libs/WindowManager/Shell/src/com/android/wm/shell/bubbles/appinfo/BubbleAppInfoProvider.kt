@@ -50,4 +50,9 @@ interface BubbleAppInfoProvider {
 }
 
 /** Data object for the resolved app info. */
-data class BubbleAppInfo(val appName: String?, val appIcon: Drawable, val user: UserHandle)
+data class BubbleAppInfo(
+    val appName: String?,
+    val appIcon: Drawable,
+    val badgeIcon: Drawable,
+    val user: UserHandle,
+)
