@@ -18069,6 +18069,8 @@ public class DevicePolicyManager {
      * <p>The method {@link #checkProvisioningPrecondition} must be returning {@link #STATUS_OK}
      * before calling this method.
      *
+     * <p>This will be removed soon. Please use {@link #provisionMultiuserManagedDevice} instead.
+     *
      * @param provisioningParams Params required to provision a managed full user, see
      *                           {@link MultiUserManagedUserProvisioningParams}.
      * @throws ProvisioningException if an error occurred during provisioning.
@@ -18081,12 +18083,39 @@ public class DevicePolicyManager {
     public void provisionMultiUserManagedUser(
             @NonNull MultiUserManagedUserProvisioningParams provisioningParams)
             throws ProvisioningException {
+        MultiuserManagedUserProvisioningParams newProvisioningParams =
+                new MultiuserManagedUserProvisioningParams.Builder(
+                                provisioningParams.getProfileAdminComponentName())
+                        .setLeaveAllSystemAppsEnabled(
+                                provisioningParams.isLeaveAllSystemAppsEnabled())
+                        .build();
+        provisionMultiuserManagedUser(newProvisioningParams);
+    }
+
+    /**
+     * Provisions a managed full user on a multi-user device.
+     *
+     * <p>The method {@link #checkProvisioningPrecondition} must be returning {@link #STATUS_OK}
+     * before calling this method.
+     *
+     * @param provisioningParams Params required to provision a managed full user, see
+     *                           {@link MultiuserManagedUserProvisioningParams}.
+     * @throws ProvisioningException if an error occurred during provisioning.
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(FLAG_MULTI_USER_MANAGEMENT_USER_PROVISIONING)
+    @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS)
+    public void provisionMultiuserManagedUser(
+            @NonNull MultiuserManagedUserProvisioningParams provisioningParams)
+            throws ProvisioningException {
         if (mService == null) {
             return;
         }
 
         try {
-            mService.provisionMultiUserManagedUser(provisioningParams.getTransportParams(),
+            mService.provisionMultiuserManagedUser(provisioningParams.getTransportParams(),
                     mContext.getPackageName());
         } catch (ServiceSpecificException e) {
             throw new ProvisioningException(e, e.errorCode, getErrorMessage(e));

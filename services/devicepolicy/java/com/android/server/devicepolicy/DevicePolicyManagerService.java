@@ -340,8 +340,8 @@ import android.app.admin.LongPolicyValue;
 import android.app.admin.ManagedProfileProvisioningParams;
 import android.app.admin.ManagedSubscriptionsPolicy;
 import android.app.admin.MultiuserManagedDeviceProvisioningParamsTransport;
-import android.app.admin.MultiUserManagedUserProvisioningParams;
-import android.app.admin.MultiUserManagedUserProvisioningParamsTransport;
+import android.app.admin.MultiuserManagedUserProvisioningParams;
+import android.app.admin.MultiuserManagedUserProvisioningParamsTransport;
 import android.app.admin.NetworkEvent;
 import android.app.admin.PackagePolicy;
 import android.app.admin.PackagePolicyKey;
@@ -16544,7 +16544,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         }
         if (Flags.multiUserManagementUserProvisioning()
                 && DevicePolicyManager.ACTION_PROVISION_MULTIUSER_MANAGED_USER.equals(action)) {
-            return checkMultiUserManagedUserProvisioningPreCondition(userId);
+            return checkMultiuserManagedUserProvisioningPreCondition(userId);
         }
         if (!mHasFeature && !shouldEnableForRetailDemoPackage(packageName)) {
             logMissingFeatureAction("Cannot check provisioning for action " + action);
@@ -16916,7 +16916,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         return STATUS_OK;
     }
 
-    private int checkMultiUserManagedUserProvisioningPreCondition(@UserIdInt int userId) {
+    private int checkMultiuserManagedUserProvisioningPreCondition(@UserIdInt int userId) {
         // Device needs to support multi-user management.
         if (!isMultiuserManagementEnabledUnchecked()) {
             return STATUS_MULTIUSER_MANAGEMENT_NOT_SUPPORTED;
@@ -21685,13 +21685,13 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
     }
 
     @Override
-    public void provisionMultiUserManagedUser(
-            @NonNull MultiUserManagedUserProvisioningParamsTransport provisioningParamsTransport,
+    public void provisionMultiuserManagedUser(
+            @NonNull MultiuserManagedUserProvisioningParamsTransport provisioningParamsTransport,
             @NonNull String callerPackage) {
-        MultiUserManagedUserProvisioningParams provisioningParams =
-                new MultiUserManagedUserProvisioningParams(provisioningParamsTransport);
+        MultiuserManagedUserProvisioningParams provisioningParams =
+                new MultiuserManagedUserProvisioningParams(provisioningParamsTransport);
 
-        Slogf.d(LOG_TAG, "provisionMultiUserManagedUser(pkg=%s, params=%s)", callerPackage,
+        Slogf.d(LOG_TAG, "provisionMultiuserManagedUser(pkg=%s, params=%s)", callerPackage,
                 provisioningParams);
 
         Objects.requireNonNull(provisioningParams, "provisioningParams is null");
@@ -21715,16 +21715,16 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
 
             provisioningParams.logParams(callerPackage);
 
-            provisionMultiUserManagedUserInternal(
+            provisionMultiuserManagedUserInternal(
                     /* profileAdmin= */ admin,
                     /* userId= */ userId);
         });
     }
 
-    private void provisionMultiUserManagedUserInternal(@NonNull ComponentName profileAdmin,
+    private void provisionMultiuserManagedUserInternal(@NonNull ComponentName profileAdmin,
             @UserIdInt int userId) {
         if (VERBOSE_LOG) {
-            Slogf.v(LOG_TAG, "provisionMultiUserManagedUserInternal(): profileAdmin=" + profileAdmin
+            Slogf.v(LOG_TAG, "provisionMultiuserManagedUserInternal(): profileAdmin=" + profileAdmin
                     + ", userId=" + userId);
         }
 

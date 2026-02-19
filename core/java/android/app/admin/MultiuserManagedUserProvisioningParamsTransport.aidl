@@ -22,15 +22,15 @@ import android.os.PersistableBundle;
 
 /**
  * Params required to provision a multi-user managed user, see {@link
- * DevicePolicyManager#provisionMultiUserManagedUser}.
+ * DevicePolicyManager#provisionMultiuserManagedUser}.
  *
  * This is a transport representation used to communicate between {@link
  * DevicePolicyManager} and its service. For public version, please see {@link
- * MultiUserManagedUserProvisioningParams}.
+ * MultiuserManagedUserProvisioningParams}.
  *
  * @hide
  */
-parcelable MultiUserManagedUserProvisioningParamsTransport {
+parcelable MultiuserManagedUserProvisioningParamsTransport {
     ComponentName profileAdminComponentName;
     boolean leaveAllSystemAppsEnabled;
 }
