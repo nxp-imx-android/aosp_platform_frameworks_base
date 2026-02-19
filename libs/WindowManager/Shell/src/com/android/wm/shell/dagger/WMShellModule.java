@@ -45,6 +45,7 @@ import com.android.internal.logging.UiEventLogger;
 import com.android.internal.policy.DesktopModeCompatPolicy;
 import com.android.internal.util.LatencyTracker;
 import com.android.launcher3.icons.IconProvider;
+import com.android.window.flags.Flags;
 import com.android.wm.shell.RootDisplayAreaOrganizer;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTaskOrganizer;
@@ -205,6 +206,8 @@ import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.DefaultMixedHandler;
 import com.android.wm.shell.transition.FocusTransitionObserver;
 import com.android.wm.shell.transition.HomeTransitionObserver;
+import com.android.wm.shell.transition.InteractiveTasksRepository;
+import com.android.wm.shell.transition.InteractiveTasksTransitionObserver;
 import com.android.wm.shell.transition.MixedTransitionHandler;
 import com.android.wm.shell.transition.Transitions;
 import com.android.wm.shell.unfold.ShellUnfoldProgressProvider;
@@ -2274,5 +2277,28 @@ public abstract class WMShellModule {
     @Provides
     static HomeIntentProvider provideHomeIntentProvider(Context context) {
         return new HomeIntentProvider(context);
+    }
+
+    @WMSingleton
+    @Provides
+    static Optional<InteractiveTasksRepository> provideInteractiveTasksRepository() {
+        if (Flags.allowDragAndDropWhenInteractiveBugfix()) {
+            return Optional.of(new InteractiveTasksRepository());
+        }
+        return Optional.empty();
+    }
+
+    @WMSingleton
+    @Provides
+    @DynamicOverride
+    static InteractiveTasksTransitionObserver provideInteractiveTasksTransitionObserver(
+            ShellInit shellInit,
+            Transitions transitions,
+            Optional<InteractiveTasksRepository> repository) {
+        // As a dynamic override it's binded as optional in the base module. Since that creates a
+        // optional multi-binding situation, we need to provide here a real instance and rely on
+        // lazy inject.
+        return new InteractiveTasksTransitionObserver(shellInit, transitions,
+                repository.get());
     }
 }
