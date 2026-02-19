@@ -146,7 +146,8 @@ public final class ContextualModeManagerService extends SystemService {
     @Override
     public void onStart() {
         mModeSyncSupported =
-                mResources.getBoolean(com.android.internal.R.bool.config_supportContextualModeSync);
+                mResources.getBoolean(com.android.internal.R.bool.config_supportContextualModeSync)
+                        && com.android.crossdevicesync.flags.Flags.startSyncServiceOnBoot();
         mUserManagerInternal = LocalServices.getService(UserManagerInternal.class);
         mActivityManagerInternal = LocalServices.getService(ActivityManagerInternal.class);
         // We can't get notification manager here since it initializes after contextual mode
