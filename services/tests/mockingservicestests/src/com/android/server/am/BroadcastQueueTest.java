@@ -96,7 +96,8 @@ import androidx.test.filters.MediumTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.dx.mockito.inline.extended.ExtendedMockito;
-import com.android.server.am.psc.ProcessStateValidator;
+import com.android.server.am.psc.ProcessImportanceAssert;
+import com.android.server.am.psc.ProcessImportanceExpectations;
 
 import org.junit.After;
 import org.junit.Before;
@@ -131,11 +132,12 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
      * A process with a running receiver should be unfrozen and have an elevated importance for
      * procState and oomAdjScore.
      */
-    private final ProcessStateValidator mRunningReceiverValidator =
-            new ProcessStateValidator()
-                    .expectedProcState(PROCESS_STATE_RECEIVER)
-                    .expectedOomAdjScore(FOREGROUND_APP_ADJ)
-                    .expectedFreezability(false);
+    private static final ProcessImportanceExpectations RUNNING_RECEIVER_EXPECTATIONS =
+            new ProcessImportanceExpectations.Builder()
+                    .setProcState(PROCESS_STATE_RECEIVER)
+                    .setOomAdjScore(FOREGROUND_APP_ADJ)
+                    .setFreezability(false)
+                    .build();
 
     private BroadcastQueue mQueue;
     private UidObserver mUidObserver;
@@ -426,7 +428,7 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
                 mScheduledBroadcasts.add(makeScheduledBroadcast(r, intent));
                 if (Flags.pscAutoUpdateBroadcastState()) {
                     // Running receivers are expected to have an elevated process importance.
-                    mRunningReceiverValidator.validate(r);
+                    ProcessImportanceAssert.assertThat(r).matches(RUNNING_RECEIVER_EXPECTATIONS);
                 } else {
                     // Do not validate for legacy behavior, which does not guarantee the
                     // timeliness of the process elevation.
@@ -461,7 +463,8 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
                     // Running receivers are expected to have an elevated process importance.
                     // TODO: b/477660488 - Validate resultTo expectations.
                     if (!mResultToReceivers.contains(iIntentReceiver)) {
-                        mRunningReceiverValidator.validate(r);
+                        ProcessImportanceAssert.assertThat(r)
+                                .matches(RUNNING_RECEIVER_EXPECTATIONS);
                     }
                 } else {
                     // Do not validate for legacy behavior, which does not guarantee the
