@@ -1131,10 +1131,12 @@ public abstract class WMShellModule {
             Transitions transitions,
             DisplayController displayController,
             @ShellMainThread Handler shellMainHandler,
-            InteractionJankMonitor interactionJankMonitor
+            InteractionJankMonitor interactionJankMonitor,
+            SnapController snapController
     ) {
         return new DeskSwitchTransitionHandler(context, desktopUserRepositories, desktopState,
-                transitions, displayController, shellMainHandler, interactionJankMonitor);
+                transitions, displayController, shellMainHandler, interactionJankMonitor,
+                snapController);
 
     }
 

@@ -1303,6 +1303,16 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     }
 
     @Override
+    public void onDeskSwitchAnimationStarting(int displayId, int fromDeskId, int toDeskId) {
+        mDesktopTilingDecorViewModel.onDeskSwitchAnimationStarting(displayId, fromDeskId, toDeskId);
+    }
+
+    @Override
+    public void onDeskSwitchAnimationEnded(int displayId, int deskId) {
+        mDesktopTilingDecorViewModel.onDeskSwitchAnimationEnded(displayId, deskId);
+    }
+
+    @Override
     public void onDeskDeactivated(int deskId) {
         mDesktopTilingDecorViewModel.onDeskDeactivated(deskId);
     }

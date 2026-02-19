@@ -161,6 +161,17 @@ class DesktopTilingDecorViewModel(
         }
     }
 
+    fun onDeskSwitchAnimationStarting(displayId: Int, fromDeskId: Int, toDeskId: Int) {
+        val userHandlers = tilingHandlerByUserAndDeskId[currentUserId] ?: return
+        userHandlers[fromDeskId]?.hideDividerBar()
+        userHandlers[toDeskId]?.hideDividerBar()
+    }
+
+    fun onDeskSwitchAnimationEnded(displayId: Int, deskId: Int) {
+        val userHandlers = tilingHandlerByUserAndDeskId[currentUserId] ?: return
+        userHandlers[deskId]?.showDividerBar(isTilingVisibleAfterRecents = false)
+    }
+
     fun onOverviewAnimationEndedToSameDesk() {
         val activeUserHandlers = tilingHandlerByUserAndDeskId[currentUserId] ?: return
         for (tilingHandler in activeUserHandlers.valueIterator()) {

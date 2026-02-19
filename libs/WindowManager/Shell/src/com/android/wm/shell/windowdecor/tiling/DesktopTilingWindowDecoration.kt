@@ -872,6 +872,10 @@ class DesktopTilingWindowDecoration(
         desktopTilingDividerWindowManager?.hideDividerBar()
     }
 
+    fun showDividerBar(isTilingVisibleAfterRecents: Boolean) {
+        desktopTilingDividerWindowManager?.showDividerBar(isTilingVisibleAfterRecents)
+    }
+
     /**
      * Moves the tiled pair to the front of the task stack, if the [taskInfo] is focused and one of
      * the two tiled tasks.
