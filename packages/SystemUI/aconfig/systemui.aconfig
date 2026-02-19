@@ -1434,16 +1434,6 @@ flag {
 }
 
 flag {
-   name: "register_wallpaper_notifier_background"
-   namespace: "systemui"
-   description: "Decide whether to register wallpaper change broadcast receiver on background executor."
-   bug: "327315860"
-   metadata {
-     purpose: PURPOSE_BUGFIX
-   }
-}
-
-flag {
     name: "remove_launch_display_id_override"
     namespace: "systemui"
     description: "Remove the launchDisplayId override when launching pending intents, allowing launches on secondary displays"
