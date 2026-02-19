@@ -23,6 +23,7 @@ import static com.android.server.personalcontext.util.InsightUtils.fakePublishIn
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -119,7 +120,8 @@ public class NotificationActionRendererTest {
         InsightDisplayDetails displayDetails =
                 new InsightDisplayDetails.Builder("title", FAKE_ICON).build();
         InsightActionDetails actionDetails =
-                new InsightActionDetails.Builder().setIntent(new Intent()).build();
+                new InsightActionDetails.Builder().setPendingIntent(mock(PendingIntent.class))
+                        .build();
         ActionableInsight insight =
                 new ActionableInsight.Builder(actionDetails, displayDetails).build();
 
@@ -398,7 +400,8 @@ public class NotificationActionRendererTest {
             StatusBarNotification sbn, @Nullable String title, @Nullable Icon icon)
             throws GeneralSecurityException {
         InsightActionDetails actionDetails =
-                new InsightActionDetails.Builder().setIntent(new Intent("ACTION")).build();
+                new InsightActionDetails.Builder().setPendingIntent(mock(PendingIntent.class))
+                        .build();
         return createActionableInsight(sbn, title, icon, actionDetails);
     }
 

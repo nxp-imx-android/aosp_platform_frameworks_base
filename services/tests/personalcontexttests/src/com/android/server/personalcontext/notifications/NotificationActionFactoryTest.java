@@ -17,9 +17,11 @@
 package com.android.server.personalcontext.notifications;
 
 import static com.google.common.truth.Truth.assertThat;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import android.app.Notification;
@@ -128,7 +130,8 @@ public class NotificationActionFactoryTest {
         InsightDisplayDetails displayDetails = displayDetailsBuilder.build();
 
         InsightActionDetails actionDetails =
-                new InsightActionDetails.Builder().setIntent(new Intent("ACTION")).build();
+                new InsightActionDetails.Builder().setPendingIntent(mock(PendingIntent.class))
+                        .build();
         return new ActionableInsight.Builder(actionDetails, displayDetails).build();
     }
 

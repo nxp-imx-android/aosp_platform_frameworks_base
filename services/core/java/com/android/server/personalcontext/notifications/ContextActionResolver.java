@@ -94,7 +94,7 @@ public class ContextActionResolver {
     @Nullable
     public ResolutionResult resolveActionIntent(
             @NonNull ActionableInsight insight, boolean needsComponentInfo) {
-        final Intent actionIntent = insight.getActionDetails().getIntent();
+        final PendingIntent actionIntent = insight.getActionDetails().getPendingIntent();
         final RemoteAction remoteAction = insight.getActionDetails().getRemoteAction();
 
         // Strategy 1: RemoteAction
@@ -103,8 +103,8 @@ public class ContextActionResolver {
             return result;
         }
 
-        // Strategy 2: Raw Intent
-        result = resolveFromRawIntent(actionIntent);
+        // Strategy 2: Pending Intent
+        result = resolveFromPendingIntent(actionIntent);
         if (result != null) {
             return result;
         }
@@ -165,26 +165,20 @@ public class ContextActionResolver {
     }
 
     @Nullable
-    private ResolutionResult resolveFromRawIntent(@Nullable Intent actionIntent) {
-        if (actionIntent == null) {
+    private ResolutionResult resolveFromPendingIntent(@Nullable PendingIntent pendingIntent) {
+        if (pendingIntent == null) {
             return null;
         }
 
-        final ResolutionResult resolution = resolveComponent(actionIntent, null);
+        final ResolutionResult resolution = resolveComponent(
+                pendingIntent.getIntent(), getActionTypeFromPendingIntent(pendingIntent));
+
         if (resolution != null
                 && resolution.resolveInfo != null
                 && resolution.actionType != ActionType.UNKNOWN) {
             ResolveInfo resolveInfo = resolution.resolveInfo;
             ActionType actionType = resolution.actionType;
-            int requestCode = actionIntent.hashCode();
-            PendingIntent pendingIntent =
-                    mPendingIntentFactory.create(
-                            mContext, requestCode, actionIntent, PENDING_INTENT_FLAGS, actionType);
 
-            if (pendingIntent == null) {
-                Slog.w(TAG, "Could not create PendingIntent for raw intent: " + actionIntent);
-                return null;
-            }
             return new ResolutionResult(pendingIntent, resolveInfo, actionType);
         }
         return null;
