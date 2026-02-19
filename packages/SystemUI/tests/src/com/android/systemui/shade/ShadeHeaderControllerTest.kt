@@ -24,7 +24,6 @@ import android.content.res.Resources
 import android.content.res.XmlResourceParser
 import android.graphics.Insets
 import android.graphics.Rect
-import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.view.Display
 import android.view.DisplayCutout
@@ -37,7 +36,6 @@ import androidx.constraintlayout.motion.widget.MotionLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.test.filters.SmallTest
 import com.android.app.animation.Interpolators
-import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.ShadeInterpolation
 import com.android.systemui.demomode.DemoMode
@@ -304,7 +302,6 @@ class ShadeHeaderControllerTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FIX_SHADE_HEADER_WRONG_DND_ICON_SIZE)
     fun updateConfig_reloadIconGroupLayoutParams() {
         configurationController.notifyDensityOrFontScaleChanged()
 

@@ -739,16 +739,6 @@ flag {
 }
 
 flag {
-    name: "fix_shade_header_wrong_dnd_icon_size"
-    namespace: "lse_desktop_experience"
-    description: "Fix DnD icon size in shade header on connected displays"
-    bug: "445347372"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
    name: "flashlight_strength"
    namespace: "systemui"
    description: "Enable the flashlight strength feature in systemui, allowing QS flashlight tile to"

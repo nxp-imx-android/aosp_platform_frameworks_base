@@ -18,11 +18,9 @@ package com.android.systemui.statusbar.phone.ui
 
 import android.graphics.drawable.ColorDrawable
 import android.os.UserHandle
-import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.statusbar.StatusBarIcon
-import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.statusbar.CommandQueue
 import com.android.systemui.statusbar.phone.StatusBarIconHolder
@@ -446,7 +444,6 @@ class StatusBarIconControllerImplTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FIX_SHADE_HEADER_WRONG_DND_ICON_SIZE)
     fun testReloadIconGroupLayoutParams_reloadsAllIconLayoutParams() {
         val slotName = "slot"
         underTest.setIcon(slotName, /* resourceId= */ 123, "description")
