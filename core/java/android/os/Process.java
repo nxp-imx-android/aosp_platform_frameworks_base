@@ -1735,7 +1735,7 @@ public class Process {
      * pid.
      * @hide
      */
-    public static final native int killProcessGroup(int uid, int pid);
+    public static final native boolean killProcessGroup(int uid, int pid);
 
     /**
      * Send a signal to all processes in a group under the given PID, but do not wait for the
