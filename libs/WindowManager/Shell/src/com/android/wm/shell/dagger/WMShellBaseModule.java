@@ -108,6 +108,7 @@ import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.desktopmode.api.DesktopMode;
 import com.android.wm.shell.desktopmode.common.DefaultHomePackageSupplier;
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider;
+import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer;
 import com.android.wm.shell.displayareahelper.DisplayAreaHelper;
 import com.android.wm.shell.displayareahelper.DisplayAreaHelperController;
 import com.android.wm.shell.freeform.FreeformComponents;
@@ -874,9 +875,12 @@ public abstract class WMShellBaseModule {
     static HomeTransitionObserver provideHomeTransitionObserver(Context context,
             @ShellMainThread ShellExecutor mainExecutor,
             DisplayInsetsController displayInsetsController,
-            ShellInit shellInit) {
+            ShellController shellController,
+            ShellInit shellInit,
+            DesktopState desktopState,
+            Optional<DesksOrganizer> desksOrganizer) {
         return new HomeTransitionObserver(context, mainExecutor, displayInsetsController,
-                shellInit);
+                shellController, shellInit, desktopState, desksOrganizer);
     }
 
     @WMSingleton
@@ -1167,6 +1171,26 @@ public abstract class WMShellBaseModule {
         // Lazy ensures that this provider will not be the cause the dependency is created
         // when it will not be returned due to the condition below.
         return desktopUserRepositories.flatMap((lazy) -> {
+            if (desktopState.canEnterDesktopMode()) {
+                return Optional.of(lazy.get());
+            }
+            return Optional.empty();
+        });
+    }
+
+    @BindsOptionalOf
+    @DynamicOverride
+    abstract DesksOrganizer optionalDesksOrganizer();
+
+    @WMSingleton
+    @Provides
+    static Optional<DesksOrganizer> provideDesksOrganizer(
+            DesktopState desktopState,
+            @DynamicOverride Optional<Lazy<DesksOrganizer>> desksOrganizer) {
+        // Use optional-of-lazy for the dependency that this provider relies on.
+        // Lazy ensures that this provider will not be the cause the dependency is created
+        // when it will not be returned due to the condition below.
+        return desksOrganizer.flatMap((lazy) -> {
             if (desktopState.canEnterDesktopMode()) {
                 return Optional.of(lazy.get());
             }
