@@ -953,10 +953,6 @@ static int android_view_ThreadedRenderer_preload(JNIEnv*, jclass) {
     return RenderProxy::preload();
 }
 
-static void android_view_ThreadedRenderer_waitForRenderThreadPriorityInitialized(JNIEnv*, jclass) {
-    RenderThread::getInstance().waitForRenderThreadPriorityInitialized();
-}
-
 static void android_view_ThreadedRenderer_preInitBufferAllocator(JNIEnv*, jclass) {
 #ifdef __ANDROID__
     CommonPool::async([] {
@@ -1189,8 +1185,6 @@ static const JNINativeMethod gMethods[] = {
          (void*)android_view_ThreadedRenderer_setDisplayDensityDpi},
         {"nInitDisplayInfo", "(IIFIJJZZZ)V", (void*)android_view_ThreadedRenderer_initDisplayInfo},
         {"preload", "()I", (void*)android_view_ThreadedRenderer_preload},
-        {"waitForRenderThreadPriorityInitialized", "()V",
-         (void*)android_view_ThreadedRenderer_waitForRenderThreadPriorityInitialized},
         {"preInitBufferAllocator", "()V",
          (void*)android_view_ThreadedRenderer_preInitBufferAllocator},
         {"isWebViewOverlaysEnabled", "()Z",

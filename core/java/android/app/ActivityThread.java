@@ -4725,14 +4725,11 @@ public final class ActivityThread extends ClientTransactionHandler
             final int tid = HardwareRenderer.preload();
             // Adjust the RenderThread priority as soon as it's created.
             if (tid > 0) {
-                AsyncTask.THREAD_POOL_EXECUTOR.execute(() -> {
-                    HardwareRenderer.waitForRenderThreadPriorityInitialized();
-                    try {
-                        ActivityManager.getService().setRenderThread(tid);
-                    } catch (Throwable t) {
-                        Log.w(TAG, "Failed to set scheduler for RenderThread", t);
-                    }
-                });
+                try {
+                    ActivityManager.getService().setRenderThread(tid);
+                } catch (Throwable t) {
+                    Log.w(TAG, "Failed to set scheduler for RenderThread", t);
+                }
             }
         }
 

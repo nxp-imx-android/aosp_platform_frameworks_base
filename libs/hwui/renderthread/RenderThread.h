@@ -24,7 +24,6 @@
 #include <utils/Thread.h>
 
 #include <memory>
-#include <condition_variable>
 #include <mutex>
 #include <set>
 
@@ -88,8 +87,6 @@ class RenderThread : private ThreadBase {
     PREVENT_COPY_AND_ASSIGN(RenderThread);
 
 public:
-    static RenderThread& getInstance();
-
     // Sets a callback that fires before any RenderThread setup has occurred.
     static void setOnStartHook(JVMAttachHook onStartHook);
     static JVMAttachHook getOnStartHook();
@@ -102,13 +99,6 @@ public:
     // If the callback is currently registered, it will be pushed back until
     // the next vsync. If it is not currently registered this does nothing.
     void pushBackFrameCallback(IFrameCallback* callback);
-
-#ifdef __ANDROID__
-    void waitForRenderThreadPriorityInitialized();
-#else
-    void waitForRenderThreadPriorityInitialized() { /* NO-OP */
-    }
-#endif
 
     TimeLord& timeLord() { return mTimeLord; }
     RenderState& renderState() const { return *mRenderState; }
@@ -166,6 +156,7 @@ private:
     virtual ~RenderThread();
 
     static bool hasInstance();
+    static RenderThread& getInstance();
 
     void initThreadLocals();
     void initializeChoreographer();
@@ -209,11 +200,6 @@ private:
     sp<VulkanManager> mVkManager;
 
     std::mutex mJankDataMutex;
-
-    // Mutex protection for the initialization of the RenderThread priority.
-    std::mutex mPriorityInitializedMutex;
-    std::condition_variable mPriorityInitializedCondition;
-    bool mPriorityInitialized = false;
 };
 
 } /* namespace renderthread */
