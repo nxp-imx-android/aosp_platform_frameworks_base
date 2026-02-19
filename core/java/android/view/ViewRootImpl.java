@@ -1654,6 +1654,12 @@ public final class ViewRootImpl implements ViewParent,
                 // Keep track of the actual window flags supplied by the client.
                 mClientWindowLayoutFlags = attrs.flags;
 
+                if ((attrs.privateFlags
+                        & WindowManager.LayoutParams.PRIVATE_FLAG_IS_ROUNDED_CORNERS_OVERLAY) != 0) {
+                    // Disable IPC Rendering
+                    mIpcRenderingEnabled = false;
+                }
+
                 adjustLayoutInDisplayCutoutMode(attrs);
                 setAccessibilityFocus(null, null);
 
