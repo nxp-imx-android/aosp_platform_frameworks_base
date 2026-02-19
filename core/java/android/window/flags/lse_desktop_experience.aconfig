@@ -389,16 +389,6 @@ flag {
 }
 
 flag {
-    name: "enable_desktop_first_policy_fullscreen_decision_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Fix desktop-first policy bug for fullscreen tasks."
-    bug: "383617953"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_desktop_first_policy_in_lpm"
     namespace: "lse_desktop_experience"
     description: "Enables desktop-first policy in DesktopModeLaunchParamsModifier."
