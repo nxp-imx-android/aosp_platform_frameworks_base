@@ -27,7 +27,6 @@ import static com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE
 import static com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_UNDEFINED;
 
 import android.annotation.NonNull;
-import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -139,8 +138,7 @@ public final class DragResizeWindowGeometry {
     /**
      * Returns if this MotionEvent should be handled, based on its source and position.
      */
-    boolean shouldHandleEvent(@NonNull Context context, @NonNull MotionEvent e,
-            @NonNull Point offset) {
+    boolean shouldHandleEvent(@NonNull MotionEvent e, @NonNull Point offset) {
         final float x = e.getX(0) + offset.x;
         final float y = e.getY(0) + offset.y;
 
