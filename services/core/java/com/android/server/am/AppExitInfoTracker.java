@@ -400,11 +400,12 @@ public final class AppExitInfoTracker {
                     raw.getPid(), raw.getRealUid());
             Pair<Long, Object> lmkd = mAppExitInfoSourceLmkd.remove(
                     raw.getPid(), raw.getRealUid());
-            mIsolatedUidRecords.removeIsolatedUidLocked(raw.getRealUid());
 
             if (info == null) {
                 info = addExitInfoLocked(raw);
             }
+
+            mIsolatedUidRecords.removeIsolatedUidLocked(raw.getRealUid());
 
             if (lmkd != null) {
                 updateExistingExitInfoRecordLocked(info, null,
