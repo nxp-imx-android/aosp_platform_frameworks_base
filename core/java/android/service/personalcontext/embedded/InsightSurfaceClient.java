@@ -18,7 +18,9 @@ package android.service.personalcontext.embedded;
 
 import static android.annotation.SystemApi.Client.PRIVILEGED_APPS;
 
+import android.Manifest;
 import android.annotation.FlaggedApi;
+import android.annotation.RequiresPermission;
 import android.annotation.StyleRes;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
@@ -351,6 +353,7 @@ public class InsightSurfaceClient implements AutoCloseable {
      * @param callbacksExecutor an optional {@link Executor} with which to execute callback methods
      * @param callbacks {@link ClientCallback} to be notified of connection events
      */
+    @RequiresPermission(Manifest.permission.PERSONAL_CONTEXT_HOST_INSIGHT_SURFACE)
     public void register(
             @Nullable Executor callbacksExecutor,
             @NonNull ClientCallback callbacks) {

@@ -16,11 +16,14 @@
 
 package com.android.server.personalcontext.component.client;
 
+import android.Manifest;
 import android.annotation.PermissionManuallyEnforced;
 import android.content.Context;
 import android.content.pm.ServiceInfo;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.service.personalcontext.hint.ContextHint;
@@ -44,6 +47,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 /**
@@ -56,7 +61,18 @@ public class ServiceClientRefiner extends BaseServiceClientComponent<IRefiner> i
 
     public ServiceClientRefiner(Context context, UUID componentId, ServiceInfo serviceInfo,
             UserHandle userHandle) {
-        super(context, componentId, serviceInfo, userHandle);
+        this(
+                context,
+                componentId,
+                serviceInfo,
+                userHandle,
+                Executors.newSingleThreadExecutor(),
+                new Handler(Looper.getMainLooper()));
+    }
+
+    protected ServiceClientRefiner(Context context, UUID componentId, ServiceInfo serviceInfo,
+            UserHandle userHandle, Executor executor, Handler handler) {
+        super(context, componentId, serviceInfo, userHandle, executor, handler);
 
         runWithScopedBinder((binder, opCallback) -> {
             try {
@@ -98,6 +114,18 @@ public class ServiceClientRefiner extends BaseServiceClientComponent<IRefiner> i
     public void refine(
             @NonNull Set<ContextHintWithSignature> inputHints,
             @NonNull Consumer<Set<ContextHint>> callback) {
+        if (android.service.personalcontext.Flags.enforcePersonalContextPermissions()
+                && !checkPermission(Manifest.permission.PERSONAL_CONTEXT_RECEIVE_HINTS)) {
+            Slog.e(
+                    TAG,
+                    "Service "
+                            + getComponentName()
+                            + " missing permission "
+                            + Manifest.permission.PERSONAL_CONTEXT_RECEIVE_HINTS);
+            callback.accept(Collections.emptySet());
+            return;
+        }
+
         final IRefineCallback.Stub binderCallback = new IRefineCallback.Stub() {
             @PermissionManuallyEnforced
             @Override

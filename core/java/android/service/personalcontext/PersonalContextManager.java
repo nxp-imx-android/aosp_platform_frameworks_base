@@ -31,7 +31,6 @@ import android.annotation.UserHandleAware;
 import android.content.Context;
 import android.os.ParcelUuid;
 import android.os.RemoteException;
-import android.provider.Settings;
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWithSignature;
@@ -137,26 +136,28 @@ public final class PersonalContextManager {
      */
     @UserHandleAware(
             requiresPermissionIfNotCaller = android.Manifest.permission.INTERACT_ACROSS_USERS)
+    @RequiresPermission(Manifest.permission.PERSONAL_CONTEXT_READ_SETTINGS)
     public boolean isEnabled() {
-        // TODO(b/477958468): Correctly handle enabling/disabling the service and then make the
-        // default "disabled".
-        return Settings.Secure.getIntForUser(
-                mContext.getContentResolver(),
-                Settings.Secure.PERSONAL_CONTEXT_ENABLED,
-                1, mContext.getUserId()) == 1;
+        try {
+            return mService.isEnabled(mContext.getUserId());
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
     }
 
     /**
      * Set whether the Personal Context service is enabled.
-     * @param enable whether to enable or disable the service
+     * @param enabled whether to enable or disable the service
      */
     @UserHandleAware(
             requiresPermissionIfNotCaller = android.Manifest.permission.INTERACT_ACROSS_USERS)
-    public void setEnabled(boolean enable) {
-        Settings.Secure.putIntForUser(
-                mContext.getContentResolver(),
-                Settings.Secure.PERSONAL_CONTEXT_ENABLED,
-                enable ? 1 : 0, mContext.getUserId());
+    @RequiresPermission(Manifest.permission.PERSONAL_CONTEXT_WRITE_SETTINGS)
+    public void setEnabled(boolean enabled) {
+        try {
+            mService.setEnabled(mContext.getUserId(), enabled);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
     }
 
     /**
@@ -252,6 +253,7 @@ public final class PersonalContextManager {
      * @param returnHintReport Routing information from an insight that these hints are related to
      * @param hints raw data to be injected into the context flow
      */
+    @RequiresPermission(Manifest.permission.PERSONAL_CONTEXT_PUBLISH_HINTS)
     @UserHandleAware(
             requiresPermissionIfNotCaller = android.Manifest.permission.INTERACT_ACROSS_USERS)
     public void publishTriggeringHint(
@@ -288,6 +290,7 @@ public final class PersonalContextManager {
      *                    {@link ContextInsight} back to the publisher.
      * @hide
      */
+    @RequiresPermission(Manifest.permission.PERSONAL_CONTEXT_PUBLISH_INSIGHTS)
     @UserHandleAware(
             requiresPermissionIfNotCaller = android.Manifest.permission.INTERACT_ACROSS_USERS)
     public void publishInsight(@NonNull List<ContextInsight> insights, @NonNull UUID componentId) {
@@ -334,6 +337,7 @@ public final class PersonalContextManager {
      */
     @UserHandleAware(
             requiresPermissionIfNotCaller = android.Manifest.permission.INTERACT_ACROSS_USERS)
+    @RequiresPermission(Manifest.permission.PERSONAL_CONTEXT_HOST_INSIGHT_SURFACE)
     @Nullable
     public void registerInsightSurfaceClient(@NonNull InsightSurfaceClientInfo clientInfo) {
         try {
