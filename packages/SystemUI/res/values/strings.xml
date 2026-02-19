@@ -579,9 +579,10 @@
     <string name="screen_capture_microphone_audio">Microphone</string>
     <!-- Screen capture setting to include the front camera when recording [CHAR LIMIT=35] -->
     <string name="screen_capture_front_camera">Front camera</string>
-
     <!-- Text shown beneath partial screenshot region displaying the dimensions (width and height) of the area to be captured. [CHAR LIMIT=NONE] [SCREENSHOT=screen/7ytguTQdu3cEn4f] -->
     <string name="screen_capture_region_dimensions"><xliff:g example="210" id="width">%1$d</xliff:g> x <xliff:g example="129" id="height">%2$d</xliff:g></string>
+    <!-- Description for the click action of the selectable radio buttons in the screen capture toolbar. [CHAR LIMIT=NONE] -->
+    <string name="screen_capture_a11y_toolbar_radio_button_action">select</string>
 
     <!-- Text of the button popup on the share screen privacy indicator to stop screen sharing. -->
     <string name="screen_share_privacy_indicator_stop_sharing">Stop sharing</string>
