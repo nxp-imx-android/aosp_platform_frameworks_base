@@ -26,7 +26,6 @@ import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.hierarchy.ContainerHierarchy
 import com.android.wm.shell.hierarchy.containers.StubContainer
 import com.android.wm.shell.hierarchy.modes.StubMode
-import com.android.wm.shell.hierarchy.utils.HierarchyUtils
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith

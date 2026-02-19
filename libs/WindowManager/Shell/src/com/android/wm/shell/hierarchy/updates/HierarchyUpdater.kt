@@ -38,7 +38,6 @@ import com.android.wm.shell.hierarchy.properties.ActivityContainerProperties
 import com.android.wm.shell.hierarchy.properties.ContainerProperties
 import com.android.wm.shell.hierarchy.properties.DisplayAreaContainerProperties
 import com.android.wm.shell.hierarchy.properties.DisplayContainerProperties
-import com.android.wm.shell.hierarchy.properties.RootContainerProperties
 import com.android.wm.shell.hierarchy.properties.TaskContainerProperties
 import com.android.wm.shell.hierarchy.properties.WallpaperContainerProperties
 import com.android.wm.shell.hierarchy.utils.HierarchyDebugUtils
@@ -118,7 +117,7 @@ class HierarchyUpdater(
         val removedDisplays = preUpdateDisplays - postUpdateDisplays
         for (display in removedDisplays) {
             val modes = formFactorModes.getAvailableModesForDisplay(
-                display.props<DisplayContainerProperties>().displayId
+                display.displayProps().displayId
             )
             for (mode in modes) {
                 mode.cleanupForDisplay(updateContext, display)
@@ -130,7 +129,7 @@ class HierarchyUpdater(
         val addedDisplays = postUpdateDisplays - preUpdateDisplays
         for (display in addedDisplays) {
             val modes = formFactorModes.getAvailableModesForDisplay(
-                display.props<DisplayContainerProperties>().displayId
+                display.displayProps().displayId
             )
             for (mode in modes) {
                 mode.prepareForDisplay(updateContext, display)
@@ -167,7 +166,7 @@ class HierarchyUpdater(
                     }
                 } else {
                     // This container is indirectly associated wit the mode
-                    if (!snapshot.getChanges(container).isEmpty) {
+                    if (snapshot.hasChanges(container)) {
                         // The container has still changed, so notify that mode
                         ProtoLog.v(
                             WM_SHELL_MODES,
@@ -253,10 +252,9 @@ class HierarchyUpdater(
         }
 
         val snapshot = HierarchySnapshot(hierarchy.toContainerList())
-        val taskProps = container.props<TaskContainerProperties>()
-        taskProps.updateFromTaskInfoChanged(taskInfo)
+        container.taskProps().updateFromTaskInfoChanged(taskInfo)
 
-        if (!snapshot.getChanges(container).isEmpty) {
+        if (snapshot.hasChanges(container)) {
             notifyModes(
                 Mode.UpdateContext(
                     reason = "${container.name} info change",
@@ -280,7 +278,7 @@ class HierarchyUpdater(
         val snapshot = HierarchySnapshot(hierarchy.toContainerList())
 
         // Update the root first
-        hierarchy.root.props<RootContainerProperties>().updateFromTransition(info)
+        hierarchy.root.rootProps().updateFromTransition(info)
 
         // Update the rest of the hierarchy
         // We iterate the changes in reverse order to handle parent containers first (especially
@@ -326,8 +324,7 @@ class HierarchyUpdater(
         }
 
         val snapshot = HierarchySnapshot(hierarchy.toContainerList())
-        val displayProps = display.props<DisplayContainerProperties>()
-        if (displayProps.updateInsetsState(insetsState)) {
+        if (display.displayProps().updateInsetsState(insetsState)) {
             notifyModes(Mode.UpdateContext(reason = "${display.name} insets changed"), snapshot)
         }
     }
@@ -455,10 +452,8 @@ class HierarchyUpdater(
         val display = hierarchy.getDisplay(displayId)!!
         ProtoLog.v(WM_SHELL_MODES, "Updating display: %s", display.name)
 
-        val snapshot = HierarchySnapshot(hierarchy.toContainerList())
-
         // Apply the display changes to the hierarchy first
-        val newDisplayProps = display.props<DisplayContainerProperties>().copy()
+        val newDisplayProps = display.displayProps().copy()
         newDisplayProps.updateFromDisplayLayout(displayLayout)
 
         // Notify the modes associated with this display (ancestors & descendants) of the change
@@ -468,7 +463,7 @@ class HierarchyUpdater(
             if (c.mode != null) {
                 c.mode!!.requestUpdateForDisplayChange(
                     c,
-                    display.props<DisplayContainerProperties>(),
+                    display.displayProps(),
                     newDisplayProps,
                     outWct
                 )
