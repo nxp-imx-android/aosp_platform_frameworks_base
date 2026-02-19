@@ -16843,12 +16843,6 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
             if (!mInjector.userManagerIsHeadlessSystemUserMode()) {
                 return STATUS_HEADLESS_SYSTEM_USER_MODE_REQUIRED;
             }
-            if (!isProvisioningAllowed()) {
-                return STATUS_PROVISIONING_NOT_ALLOWED_FOR_NON_DEVELOPER_USERS;
-            }
-            if (callingUserId != UserHandle.USER_SYSTEM) {
-                return STATUS_NOT_SYSTEM_USER;
-            }
             // There must be no users that have completed setup.
             int userId = mDeviceAdmins.getUserWithSetupCompleted();
             if (userId != UserHandle.USER_NULL) {
