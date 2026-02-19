@@ -36,9 +36,10 @@ class FakeScreenCaptureAppContentRepository : ScreenCaptureAppContentRepository 
         user: UserHandle,
         thumbnailWidthPx: Int,
         thumbnailHeightPx: Int,
+        iconSizePx: Int,
     ): Flow<Result<RawAppContent>> {
         appContentsForCalls.add(
-            AppContentsForCall(packageName, user, thumbnailWidthPx, thumbnailHeightPx)
+            AppContentsForCall(packageName, user, thumbnailWidthPx, thumbnailHeightPx, iconSizePx)
         )
         return channelFor(packageName, user).receiveAsFlow()
     }
@@ -81,5 +82,6 @@ class FakeScreenCaptureAppContentRepository : ScreenCaptureAppContentRepository 
         val user: UserHandle,
         val thumbnailWidthPx: Int,
         val thumbnailHeightPx: Int,
+        val iconSizePx: Int,
     )
 }

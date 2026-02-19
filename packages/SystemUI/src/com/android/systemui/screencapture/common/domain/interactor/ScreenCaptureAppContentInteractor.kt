@@ -67,12 +67,14 @@ constructor(
     /**
      * Fetch app content info for the given [packageName].
      *
-     * Thumbnails will be fetched at the given [thumbnailWidthPx] and [thumbnailHeightPx].
+     * Thumbnails will be fetched at the given [thumbnailWidthPx] and [thumbnailHeightPx]. Icons
+     * will be fetched at the given [iconSizePx].
      */
     fun appContentsFor(
         packageName: String,
         thumbnailWidthPx: Int,
         thumbnailHeightPx: Int,
+        iconSizePx: Int,
     ): Flow<Result<SingleAppContent>> =
         repository
             .appContentsFor(
@@ -80,6 +82,7 @@ constructor(
                 user = (parameters as ScreenCaptureUiParameters.ShareScreen).hostAppUserHandle,
                 thumbnailWidthPx = thumbnailWidthPx,
                 thumbnailHeightPx = thumbnailHeightPx,
+                iconSizePx = iconSizePx,
             )
             .map { result ->
                 result.map { appContentResult ->
@@ -96,13 +99,15 @@ constructor(
     /**
      * Fetch app content info for all the given [packageNames].
      *
-     * Thumbnails will be fetched at the given [thumbnailWidthPx] and [thumbnailHeightPx]. Only
-     * includes entries for packages that have app content that was successfully fetched.
+     * Thumbnails will be fetched at the given [thumbnailWidthPx] and [thumbnailHeightPx]. Icons
+     * will be fetched at the given [iconSizePx]. Only includes entries for packages that have app
+     * content that was successfully fetched.
      */
     fun appContentsFor(
         packageNames: List<String>,
         thumbnailWidthPx: Int,
         thumbnailHeightPx: Int,
+        iconSizePx: Int,
     ): Flow<MultiAppContent> =
         combine(
             packageNames.distinct().map { packageName ->
@@ -110,6 +115,7 @@ constructor(
                         packageName = packageName,
                         thumbnailWidthPx = thumbnailWidthPx,
                         thumbnailHeightPx = thumbnailHeightPx,
+                        iconSizePx = iconSizePx,
                     )
                     .map { result -> packageName to result }
             }

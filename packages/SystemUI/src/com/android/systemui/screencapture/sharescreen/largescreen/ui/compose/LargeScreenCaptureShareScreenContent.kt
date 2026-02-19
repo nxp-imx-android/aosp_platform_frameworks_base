@@ -32,12 +32,18 @@ constructor(
 
     @Composable
     override fun Content() {
-        val (thumbnailWidthPx, thumbnailHeightPx) =
-            with(LocalDensity.current) { 230.dp.toPx().toInt() to 140.dp.toPx().toInt() }
+        val density = LocalDensity.current
+        val thumbnailWidthPx = with(density) { 230.dp.toPx().toInt() }
+        val thumbnailHeightPx = with(density) { 140.dp.toPx().toInt() }
+        val iconSizePx = with(density) { 24.dp.toPx().toInt() }
 
         val screenCaptureShareScreenViewModel: ScreenCaptureShareScreenViewModel =
             rememberViewModel("ScreenCaptureShareScreenViewModel") {
-                screenCaptureShareScreenViewModelFactory.create(thumbnailWidthPx, thumbnailHeightPx)
+                screenCaptureShareScreenViewModelFactory.create(
+                    thumbnailWidthPx,
+                    thumbnailHeightPx,
+                    iconSizePx,
+                )
             }
 
         if (!screenCaptureShareScreenViewModel.isUiVisible) {

@@ -40,7 +40,7 @@ import java.lang.ref.WeakReference
  *     viewModelFactory: AppContentsViewModel.Factory,
  * ) : HydratedActivatable() {
  *
- *     private val viewModel = viewModelFactory.create(200, 100)
+ *     private val viewModel = viewModelFactory.create(200, 100, 24)
  *
  *     override suspend fun onActivated() {
  *         coroutineScope {
@@ -55,7 +55,7 @@ import java.lang.ref.WeakReference
  * ```
  * @Composable
  * fun Foo(viewModelFactory: AppContentsViewModel.Factory) {
- *     val viewModel = rememberViewModel("FooTraceName") {  viewModelFactory.create(200, 100) }
+ *     val viewModel = rememberViewModel("FooTraceName") {  viewModelFactory.create(200, 100, 24) }
  * }
  * ```
  */
@@ -73,7 +73,11 @@ interface AppContentsViewModel : TargetsViewModel {
     override fun createViewModelFor(target: TargetModel): AppContentViewModel
 
     interface Factory {
-        fun create(thumbnailWidthPx: Int, thumbnailHeightPx: Int): AppContentsViewModel
+        fun create(
+            thumbnailWidthPx: Int,
+            thumbnailHeightPx: Int,
+            iconSizePx: Int,
+        ): AppContentsViewModel
     }
 }
 
@@ -87,6 +91,7 @@ constructor(
     audioSwitchViewModel: AudioSwitchViewModel,
     @Assisted("thumbnailWidthPx") private val thumbnailWidthPx: Int,
     @Assisted("thumbnailHeightPx") private val thumbnailHeightPx: Int,
+    @Assisted("iconSizePx") private val iconSizePx: Int,
 ) :
     AppContentsViewModel,
     DrawableLoaderViewModel by drawableLoaderViewModel,
@@ -104,6 +109,7 @@ constructor(
                     packageNames = tasks.mapNotNull { it.component?.packageName },
                     thumbnailWidthPx = thumbnailWidthPx,
                     thumbnailHeightPx = thumbnailHeightPx,
+                    iconSizePx = iconSizePx,
                 )
             }
             .hydratedStateOf("AppContentsViewModel#getAppContents", null)
@@ -134,6 +140,7 @@ constructor(
         override fun create(
             @Assisted("thumbnailWidthPx") thumbnailWidthPx: Int,
             @Assisted("thumbnailHeightPx") thumbnailHeightPx: Int,
+            @Assisted("iconSizePx") iconSizePx: Int,
         ): AppContentsViewModelImpl
     }
 }

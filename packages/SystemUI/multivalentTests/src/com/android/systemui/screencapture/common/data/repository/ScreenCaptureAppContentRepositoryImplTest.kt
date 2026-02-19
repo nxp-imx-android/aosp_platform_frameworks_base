@@ -449,11 +449,12 @@ class ScreenCaptureAppContentRepositoryImplTest : SysuiTestCase() {
             verify(mockedContext, never()).unbindService(any())
             assertThat(fakeAppContentProjectionCallback.onContentRequestCalls).hasSize(1)
             assertThat(fakeAppContentProjectionCallback.onSessionStoppedCallCount).isEqualTo(0)
-            fakeAppContentProjectionCallback.onContentRequestCalls.last().let {
-                (listener, width, height) ->
-                assertThat(listener).isNotNull()
-                assertThat(width).isEqualTo(200)
-                assertThat(height).isEqualTo(100)
+            fakeAppContentProjectionCallback.onContentRequestCalls.last().let { call ->
+                assertThat(call.newContentConsumer).isNotNull()
+                assertThat(call.thumbnailWidth).isEqualTo(200)
+                assertThat(call.thumbnailHeight).isEqualTo(100)
+                assertThat(call.iconWidth).isEqualTo(50)
+                assertThat(call.iconHeight).isEqualTo(50)
             }
             assertThat(result).isNull()
 
@@ -592,7 +593,8 @@ class ScreenCaptureAppContentRepositoryImplTest : SysuiTestCase() {
                 /* service= */ fakeAppContentProjectionCallback.asBinder(),
             )
             assertThat(fakeAppContentProjectionCallback.onContentRequestCalls).hasSize(1)
-            val remoteCallback = fakeAppContentProjectionCallback.onContentRequestCalls.last().first
+            val remoteCallback =
+                fakeAppContentProjectionCallback.onContentRequestCalls.last().newContentConsumer
             assertThat(result).isNull()
 
             // Act
@@ -639,7 +641,8 @@ class ScreenCaptureAppContentRepositoryImplTest : SysuiTestCase() {
                 /* service= */ fakeAppContentProjectionCallback.asBinder(),
             )
             assertThat(fakeAppContentProjectionCallback.onContentRequestCalls).hasSize(1)
-            val callback = fakeAppContentProjectionCallback.onContentRequestCalls.last().first
+            val callback =
+                fakeAppContentProjectionCallback.onContentRequestCalls.last().newContentConsumer
             assertThat(result).isNull()
 
             // Act
@@ -681,7 +684,8 @@ class ScreenCaptureAppContentRepositoryImplTest : SysuiTestCase() {
                 /* service= */ fakeAppContentProjectionCallback.asBinder(),
             )
             assertThat(fakeAppContentProjectionCallback.onContentRequestCalls).hasSize(1)
-            val remoteCallback = fakeAppContentProjectionCallback.onContentRequestCalls.last().first
+            val remoteCallback =
+                fakeAppContentProjectionCallback.onContentRequestCalls.last().newContentConsumer
             assertThat(result).isNull()
 
             // Act
@@ -700,6 +704,7 @@ class ScreenCaptureAppContentRepositoryImplTest : SysuiTestCase() {
         user: UserHandle = fakeUserHandle,
         thumbnailWidthPx: Int = 200,
         thumbnailHeightPx: Int = 100,
+        iconSizePx: Int = 50,
     ): Job =
         testScope.launch {
             repository
@@ -708,6 +713,7 @@ class ScreenCaptureAppContentRepositoryImplTest : SysuiTestCase() {
                     user = user,
                     thumbnailWidthPx = thumbnailWidthPx,
                     thumbnailHeightPx = thumbnailHeightPx,
+                    iconSizePx = iconSizePx,
                 )
                 .collect { result = it }
         }

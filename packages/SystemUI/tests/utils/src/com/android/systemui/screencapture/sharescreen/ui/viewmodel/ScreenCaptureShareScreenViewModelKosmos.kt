@@ -35,6 +35,7 @@ val Kosmos.screenCaptureShareScreenViewModelFactory by Fixture {
         override fun create(
             thumbnailWidthPx: Int,
             thumbnailHeightPx: Int,
+            iconSizePx: Int,
         ): ScreenCaptureShareScreenViewModel {
             return ScreenCaptureShareScreenViewModel(
                 packageManager,
@@ -43,6 +44,7 @@ val Kosmos.screenCaptureShareScreenViewModelFactory by Fixture {
                 mock<MediaProjectionMetricsLogger>(),
                 thumbnailWidthPx,
                 thumbnailHeightPx,
+                iconSizePx,
                 appContentsViewModelFactory,
                 recentTasksViewModel,
                 displaysViewModel,
@@ -55,5 +57,5 @@ val Kosmos.screenCaptureShareScreenViewModelFactory by Fixture {
 }
 
 val Kosmos.screenCaptureShareScreenViewModel by Fixture {
-    screenCaptureShareScreenViewModelFactory.create(200, 100)
+    screenCaptureShareScreenViewModelFactory.create(200, 100, 50)
 }
