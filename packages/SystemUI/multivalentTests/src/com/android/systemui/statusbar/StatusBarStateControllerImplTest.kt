@@ -44,6 +44,7 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.plugins.statusbar.StatusBarStateController
 import com.android.systemui.plugins.statusbar.statusBarStateController
+import com.android.systemui.scene.SceneHelper.setDeviceEntered
 import com.android.systemui.scene.data.repository.Idle
 import com.android.systemui.scene.data.repository.Transition
 import com.android.systemui.scene.data.repository.setSceneTransition
@@ -586,6 +587,7 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
         }
 
     @Test
+    @DisableSceneContainer
     fun leaveOpenOnKeyguard_whenGone_isFalse() =
         kosmos.runTest {
             underTest.start()
@@ -607,6 +609,19 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
                     TransitionStep(from = KeyguardState.LOCKSCREEN, to = KeyguardState.GONE),
             )
 
+            assertThat(underTest.leaveOpenOnKeyguardHide()).isEqualTo(false)
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun whenDeviceEnteredFalse_leaveOpenOnKeyguardResetToFalse() =
+        kosmos.runTest {
+            underTest.start()
+            this.setDeviceEntered(true)
+            underTest.setLeaveOpenOnKeyguardHide(true)
+            assertThat(underTest.leaveOpenOnKeyguardHide()).isEqualTo(true)
+
+            this.setDeviceEntered(false)
             assertThat(underTest.leaveOpenOnKeyguardHide()).isEqualTo(false)
         }
 }

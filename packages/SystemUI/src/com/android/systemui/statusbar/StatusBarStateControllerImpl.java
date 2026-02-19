@@ -41,6 +41,7 @@ import com.android.internal.logging.UiEventLogger;
 import com.android.systemui.DejankUtils;
 import com.android.systemui.bouncer.domain.interactor.AlternateBouncerInteractor;
 import com.android.systemui.dagger.SysUISingleton;
+import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor;
 import com.android.systemui.deviceentry.domain.interactor.DeviceUnlockedInteractor;
 import com.android.systemui.deviceentry.shared.model.DeviceUnlockStatus;
 import com.android.systemui.keyguard.domain.interactor.KeyguardClockInteractor;
@@ -111,6 +112,7 @@ public class StatusBarStateControllerImpl implements
     private final Lazy<KeyguardClockInteractor> mKeyguardClockInteractorLazy;
     private final Lazy<SceneBackInteractor> mSceneBackInteractorLazy;
     private final Lazy<AlternateBouncerInteractor> mAlternateBouncerInteractorLazy;
+    private final Lazy<DeviceEntryInteractor> mDeviceEntryInteractorLazy;
     private int mState;
     private int mLastState;
     private int mUpcomingState;
@@ -174,7 +176,8 @@ public class StatusBarStateControllerImpl implements
             Lazy<SceneInteractor> sceneInteractorLazy,
             Lazy<KeyguardClockInteractor> keyguardClockInteractorLazy,
             Lazy<SceneBackInteractor> sceneBackInteractorLazy,
-            Lazy<AlternateBouncerInteractor> alternateBouncerInteractorLazy) {
+            Lazy<AlternateBouncerInteractor> alternateBouncerInteractorLazy,
+            Lazy<DeviceEntryInteractor> deviceEntryInteractorLazy) {
         mUiEventLogger = uiEventLogger;
         mJavaAdapter = javaAdapter;
         mKeyguardInteractorLazy = keyguardInteractor;
@@ -185,6 +188,7 @@ public class StatusBarStateControllerImpl implements
         mKeyguardClockInteractorLazy = keyguardClockInteractorLazy;
         mSceneBackInteractorLazy = sceneBackInteractorLazy;
         mAlternateBouncerInteractorLazy = alternateBouncerInteractorLazy;
+        mDeviceEntryInteractorLazy = deviceEntryInteractorLazy;
         for (int i = 0; i < HISTORY_SIZE; i++) {
             mHistoricalRecords[i] = new HistoricalState();
         }
@@ -192,17 +196,15 @@ public class StatusBarStateControllerImpl implements
 
     @Override
     public void start() {
-        mJavaAdapter.alwaysCollectFlowInBackground(
-                mKeyguardTransitionInteractorLazy.get().isFinishedIn(
-                        /* scene */ Scenes.Gone,
-                        /* stateWithoutSceneContainer */ GONE),
-                (Boolean isFinishedInState) -> {
-                    if (isFinishedInState) {
-                        setLeaveOpenOnKeyguardHide(false);
-                    }
-                });
-
         if (SceneContainerFlag.isEnabled()) {
+            mJavaAdapter.alwaysCollectFlowInBackground(
+                    mDeviceEntryInteractorLazy.get().isDeviceEntered(),
+                    (Boolean isDeviceEntered) -> {
+                        if (!isDeviceEntered) {
+                            setLeaveOpenOnKeyguardHide(false);
+                        }
+                    });
+
             mJavaAdapter.alwaysCollectFlow(
                     combineFlows(
                         mDeviceUnlockedInteractorLazy.get().getDeviceUnlockStatus(),
@@ -225,6 +227,16 @@ public class StatusBarStateControllerImpl implements
             // opening/closing the bouncer
             mJavaAdapter.alwaysCollectFlow(mShadeInteractorLazy.get().getAnyExpansion(),
                     this::onShadeOrQsExpanded);
+
+            mJavaAdapter.alwaysCollectFlowInBackground(
+                    mKeyguardTransitionInteractorLazy.get().isFinishedIn(
+                            /* scene */ Scenes.Gone,
+                            /* stateWithoutSceneContainer */ GONE),
+                    (Boolean isFinishedInState) -> {
+                        if (isFinishedInState) {
+                            setLeaveOpenOnKeyguardHide(false);
+                        }
+                    });
         }
     }
 
