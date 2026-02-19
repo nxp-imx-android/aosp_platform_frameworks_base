@@ -1093,6 +1093,15 @@
     <bool name="config_useDesktopStatusBar">false</bool>
 
     <!--
+    Whether to draw the BrightnessDialog at the end of the screen
+
+    By default, the BrightnessDialog is drawn at the start
+    -If true, draw BrightnessDialog at the end
+    -If false (default), draw BrightnessDialog at the start
+    -->
+    <bool name="config_endSideBrightnessDialog">false</bool>
+
+    <!--
     Whether this is a desktop device for purposes of falsing.
 
     By default, Falsing is enabled. This should be overridden to true by desktop.
