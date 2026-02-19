@@ -39,6 +39,7 @@ import com.android.settingslib.metadata.preferencesapi.preconditions.ApiPrecondi
 import com.android.settingslib.metadata.preferencesapi.types.ApiType
 import com.android.settingslib.metadata.preferencesapi.types.FiniteOptionsType
 import com.android.settingslib.metadata.preferenceHierarchy
+import com.android.settingslib.metadata.preferencesapi.multiusers.ManagementScope
 import com.android.settingslib.metadata.preferencesapi.multiusers.ManagementScope.OWN_USER
 import com.android.settingslib.metadata.preferencesapi.multiusers.PreferenceTarget
 import com.android.settingslib.metadata.preferencesapi.multiusers.PreferenceTarget.USER
@@ -134,6 +135,7 @@ abstract class PreferencesApiScreen private constructor(
     val fragment: KClass<out Fragment>?,
     override val purpose: Int,
     val alreadyPartiallyMigrated: KClass<*>? = null,
+    val canManage: ManagementScope = OWN_USER,
     /**
      * The route prefix for screens implemented using the Settings Platform Architecture (SPA).
      * This is only relevant if this screen's UI is implemented using SPA.
@@ -157,7 +159,16 @@ abstract class PreferencesApiScreen private constructor(
         fragment: KClass<out Fragment>,
         purpose: Int,
         alreadyPartiallyMigrated: KClass<*>? = null,
-    ) : this(key, topLevelSettingsCategory, fragment, purpose, alreadyPartiallyMigrated, null)
+        canManage: ManagementScope = OWN_USER,
+    ) : this(
+        key,
+        topLevelSettingsCategory,
+        fragment,
+        purpose,
+        alreadyPartiallyMigrated,
+        canManage,
+        null
+    )
 
     /**
      * Constructor for screens implemented using the Settings Platform Architecture (SPA) with a
@@ -169,7 +180,16 @@ abstract class PreferencesApiScreen private constructor(
         spaRoutePrefix: String,
         purpose: Int,
         alreadyPartiallyMigrated: KClass<*>? = null,
-    ) : this(key, topLevelSettingsCategory, null, purpose, alreadyPartiallyMigrated, spaRoutePrefix)
+        canManage: ManagementScope = OWN_USER,
+    ) : this(
+        key,
+        topLevelSettingsCategory,
+        null,
+        purpose,
+        alreadyPartiallyMigrated,
+        canManage,
+        spaRoutePrefix
+    )
 
     /**
      * Constructor for screens implemented using the Settings Platform Architecture (SPA) with a
@@ -180,7 +200,16 @@ abstract class PreferencesApiScreen private constructor(
         topLevelSettingsCategory: Category,
         purpose: Int,
         alreadyPartiallyMigrated: KClass<*>? = null,
-    ) : this(key, topLevelSettingsCategory, null, purpose, alreadyPartiallyMigrated, null)
+        canManage: ManagementScope = OWN_USER,
+    ) : this(
+        key,
+        topLevelSettingsCategory,
+        null,
+        purpose,
+        alreadyPartiallyMigrated,
+        canManage,
+        null
+    )
 
     override fun fragmentClass(): Class<out Fragment>? {
         // If it's a valid fragment screen, return the class
