@@ -49,6 +49,7 @@ class UprightChargingSetupDefinitionTest : SysuiTestCase() {
             uprightChargingInteractor = uprightChargingInteractor,
             contextualSetupRepo = contextualSetupRepo,
             flowDumper = SimpleFlowDumper(),
+            resources = context.resources,
             target = SetupTarget.Activity(ComponentName("package", "class")),
         )
 

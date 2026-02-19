@@ -28,8 +28,9 @@ import java.io.PrintWriter
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.merge
 
 /**
  * Orchestrates all registered contextual setup flows, producing a single stream of valid launch
@@ -49,22 +50,40 @@ constructor(
      * Emits a [ContextualSetupDefinition] only when its specific trigger and preconditions are met
      * AND its persistent state is [SetupState.NotStarted]. This represents a valid request to
      * launch a setup flow.
+     *
+     * The flow emits the highest priority definition that is ready to launch. If multiple
+     * definitions are ready with the same priority, the one with the lexicographically smallest
+     * [id] is emitted.
      */
     val launchRequest: Flow<ContextualSetupDefinition> =
-        definitions
-            .map { definition ->
-                combine(repository.setupState(definition.id), definition.isReady) { state, isReady
-                    ->
-                    if (state is SetupState.NotStarted && isReady) {
-                        definition
-                    } else {
-                        null
+        if (definitions.isEmpty()) {
+            emptyFlow()
+        } else {
+            combine(
+                    definitions.map { definition ->
+                        combine(repository.setupState(definition.id), definition.isReady) {
+                            state,
+                            isReady ->
+                            if (state is SetupState.NotStarted && isReady) {
+                                definition
+                            } else {
+                                null
+                            }
+                        }
                     }
+                ) { candidates ->
+                    candidates
+                        .filterNotNull()
+                        .sortedWith(
+                            compareByDescending<ContextualSetupDefinition> { it.priority }
+                                .thenBy { it.id }
+                        )
+                        .firstOrNull()
                 }
-            }
-            .merge()
-            .filterNotNull()
-            .dumpWhileCollecting("launchRequest")
+                .filterNotNull()
+                .distinctUntilChanged()
+                .dumpWhileCollecting("launchRequest")
+        }
 
     /** Must be called to register the interactor with the dump manager. */
     fun init() {
