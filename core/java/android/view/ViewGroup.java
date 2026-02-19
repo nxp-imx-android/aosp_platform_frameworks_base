@@ -1808,34 +1808,32 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
             // Find the [possibly new] drag target
             View target = findFrontmostDroppableChildAt(event.mX, event.mY, localPoint);
 
-            if (target != mCurrentDragChild) {
-                if (sCascadedDragDrop) {
-                    // For pre-Nougat apps, make sure that the whole hierarchy of views that contain
-                    // the drag location is kept in the state between ENTERED and EXITED events.
-                    // (Starting with N, only the innermost view will be in that state).
+            if (target != mCurrentDragChild && sCascadedDragDrop) {
+                // For pre-Nougat apps, make sure that the whole hierarchy of views that contain
+                // the drag location is kept in the state between ENTERED and EXITED events.
+                // (Starting with N, only the innermost view will be in that state).
 
-                    final int action = event.mAction;
-                    // Position should not be available for ACTION_DRAG_ENTERED and
-                    // ACTION_DRAG_EXITED.
-                    event.mX = 0;
-                    event.mY = 0;
-                    event.mClipData = null;
+                final int action = event.mAction;
+                // Position should not be available for ACTION_DRAG_ENTERED and
+                // ACTION_DRAG_EXITED.
+                event.mX = 0;
+                event.mY = 0;
+                event.mClipData = null;
 
-                    if (mCurrentDragChild != null) {
-                        event.mAction = DragEvent.ACTION_DRAG_EXITED;
-                        mCurrentDragChild.dispatchDragEnterExitInPreN(event);
-                    }
-
-                    if (target != null) {
-                        event.mAction = DragEvent.ACTION_DRAG_ENTERED;
-                        target.dispatchDragEnterExitInPreN(event);
-                    }
-
-                    event.mAction = action;
-                    event.mX = tx;
-                    event.mY = ty;
-                    event.mClipData = td;
+                if (mCurrentDragChild != null) {
+                    event.mAction = DragEvent.ACTION_DRAG_EXITED;
+                    mCurrentDragChild.dispatchDragEnterExitInPreN(event);
                 }
+
+                if (target != null) {
+                    event.mAction = DragEvent.ACTION_DRAG_ENTERED;
+                    target.dispatchDragEnterExitInPreN(event);
+                }
+
+                event.mAction = action;
+                event.mX = tx;
+                event.mY = ty;
+                event.mClipData = td;
                 mCurrentDragChild = target;
             }
 
