@@ -24,12 +24,14 @@ import static android.text.format.DateUtils.MINUTE_IN_MILLIS;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doNothing;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.doThrow;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mock;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spy;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.server.job.Flags.FLAG_BATCH_ACTIVE_BUCKET_JOBS;
 import static com.android.server.job.Flags.FLAG_BATCH_CONNECTIVITY_JOBS_PER_NETWORK;
+import static com.android.server.job.Flags.FLAG_ENFORCE_PROXIED_JOBS_LIMIT;
 import static com.android.server.job.JobSchedulerService.ACTIVE_INDEX;
 import static com.android.server.job.JobSchedulerService.RARE_INDEX;
 import static com.android.server.job.JobSchedulerService.sElapsedRealtimeClock;
@@ -92,6 +94,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.PermissionChecker;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.IPackageManager;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
 import android.content.pm.ServiceInfo;
@@ -112,6 +115,7 @@ import android.os.SystemClock;
 import android.os.UserHandle;
 import android.os.WorkSource;
 import android.os.WorkSource.WorkChain;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.platform.test.annotations.RequiresFlagsEnabled;
@@ -160,6 +164,7 @@ public class JobSchedulerServiceTest {
     private static final String TEST_PCC_PACKAGE = "com.example.pcc";
     private static final ComponentName TEST_PCC_COMPONENT =
             new ComponentName(TEST_PCC_PACKAGE, "PccJobService");
+    private static final int TEST_MAX_PROXIED_JOBS_PER_APP = 2;
 
     private JobSchedulerService mService;
     private JobStore mJobStore;
@@ -173,6 +178,8 @@ public class JobSchedulerServiceTest {
     private Context mContext;
     @Mock
     private PackageManagerInternal mPackageManagerInternal;
+    @Mock
+    private IPackageManager mIPackageManager;
 
     @Rule
     public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
@@ -204,7 +211,16 @@ public class JobSchedulerServiceTest {
                 .mockStatic(LocalServices.class)
                 .mockStatic(PermissionChecker.class)
                 .mockStatic(ServiceManager.class)
+                .mockStatic(AppGlobals.class)
                 .startMocking();
+
+        when(AppGlobals.getPackageManager()).thenReturn(mIPackageManager);
+        // Default to not finding the package to keep sourceUid == callingUid (1234)
+        // for existing tests which might rely on this behavior.
+        doThrow(new RemoteException("Not found")).when(mIPackageManager)
+                .getPackageUid(anyString(), anyLong(), anyInt());
+        doReturn(TEST_UID).when(mIPackageManager)
+                .getPackageUid(eq(SOURCE_PACKAGE), anyLong(), anyInt());
 
         // Called in JobSchedulerService constructor.
         when(mContext.getMainLooper()).thenReturn(Looper.getMainLooper());
@@ -2814,8 +2830,6 @@ public class JobSchedulerServiceTest {
         }
     }
 
-
-
     @Test
     public void testSchedule_jobCountLimit_regularUid() throws Exception {
         // Schedule up to and including the max number of jobs.
@@ -2836,6 +2850,61 @@ public class JobSchedulerServiceTest {
             final String expected = "Apps may not schedule more than "
                     + TEST_MAX_JOBS_PER_APP + " distinct jobs";
             assertEquals(expected, e.getMessage());
+        }
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENFORCE_PROXIED_JOBS_LIMIT)
+    public void testProxiedJobLimit_enforced() throws Exception {
+        mService.mConstants.MAX_NUM_PROXIED_JOBS_PER_APP = TEST_MAX_PROXIED_JOBS_PER_APP;
+        final String sourcePackage = "test.source.pkg";
+        final int sourceUid = 10001;
+        final int sourceUserId = 0;
+
+        doReturn(sourceUid).when(mIPackageManager)
+                .getPackageUid(eq(sourcePackage), anyLong(), eq(sourceUserId));
+
+        // Schedule up to the limit.
+        for (int i = 0; i < TEST_MAX_PROXIED_JOBS_PER_APP; i++) {
+            final JobInfo job = createJobInfo(i)
+                    .setMinimumLatency(3600_000).build();
+            assertEquals("Job " + i + " should succeed", JobScheduler.RESULT_SUCCESS,
+                    mService.scheduleAsPackage(
+                            job, null, Process.SYSTEM_UID, sourcePackage,
+                            sourceUserId, TEST_NAMESPACE, ""));
+        }
+
+        // Try to schedule one more, it should fail.
+        try {
+            final JobInfo extraJob =
+                    createJobInfo(TEST_MAX_PROXIED_JOBS_PER_APP)
+                            .setMinimumLatency(3600_000).build();
+            mService.scheduleAsPackage(
+                    extraJob, null, Process.SYSTEM_UID, sourcePackage,
+                    sourceUserId, TEST_NAMESPACE, "");
+            fail("Scheduling proxied job beyond limit should have failed");
+        } catch (IllegalStateException e) {
+            // Expected
+            assertTrue(e.getMessage().contains("Too many proxied sync jobs"));
+        }
+    }
+
+    @Test
+    @DisableFlags(FLAG_ENFORCE_PROXIED_JOBS_LIMIT)
+    public void testProxiedJobLimit_notEnforced() throws Exception {
+        mService.mConstants.MAX_NUM_PROXIED_JOBS_PER_APP = TEST_MAX_PROXIED_JOBS_PER_APP;
+        final String sourcePackage = "test.source.pkg";
+        final int sourceUid = 10001;
+        final int sourceUserId = 0;
+
+        // Schedule up to the limit and then some more. All should succeed.
+        for (int i = 0; i < TEST_MAX_PROXIED_JOBS_PER_APP + 5; i++) {
+            final JobInfo job = createJobInfo(i)
+                    .setMinimumLatency(3600_000).build();
+            assertEquals("Job " + i + " should succeed", JobScheduler.RESULT_SUCCESS,
+                    mService.scheduleAsPackage(
+                            job, null, Process.SYSTEM_UID, sourcePackage,
+                            sourceUserId, TEST_NAMESPACE, ""));
         }
     }
 
@@ -2923,7 +2992,6 @@ public class JobSchedulerServiceTest {
                 .addField(eq((long) PERFETTO_TRACE_FIELD_JOB_STATE_FLAGS), eq(expectedFlags));
         verify(mMockPerfettoTracer).emit();
     }
-
 
     @Test
     public void testPerfettoTracing_CancelJob() {
