@@ -19019,7 +19019,7 @@ public class DevicePolicyManager {
      *     scope.
      */
     @FlaggedApi(FLAG_POLICY_STREAMLINING)
-    public <T> @Nullable T getPolicy(@NonNull PolicyIdentifier<T> id, @PolicyScope int scope) {
+    public @Nullable <T> T getPolicy(@NonNull PolicyIdentifier<T> id, @PolicyScope int scope) {
         throwIfParentInstance("getPolicy");
         if (mService == null) {
             return null;
