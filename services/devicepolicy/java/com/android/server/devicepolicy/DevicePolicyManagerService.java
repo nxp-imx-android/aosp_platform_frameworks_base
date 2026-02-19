@@ -87,8 +87,8 @@ import static android.app.admin.DevicePolicyManager.ACTION_MANAGED_PROFILE_PROVI
 import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MANAGED_DEVICE;
 import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE;
 import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MANAGED_USER;
-import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MULTI_USER_DEVICE;
-import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MULTI_USER_MANAGED_USER;
+import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MULTIUSER_MANAGED_DEVICE;
+import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MULTIUSER_MANAGED_USER;
 import static android.app.admin.DevicePolicyManager.ACTION_SYSTEM_UPDATE_POLICY_CHANGED;
 import static android.app.admin.DevicePolicyManager.APP_FUNCTIONS_NOT_CONTROLLED_BY_POLICY;
 import static android.app.admin.DevicePolicyManager.CONTENT_PROTECTION_DISABLED;
@@ -175,7 +175,7 @@ import static android.app.admin.DevicePolicyManager.STATUS_HEADLESS_SINGLE_USER_
 import static android.app.admin.DevicePolicyManager.STATUS_HEADLESS_SYSTEM_USER_MODE_NOT_SUPPORTED;
 import static android.app.admin.DevicePolicyManager.STATUS_HEADLESS_SYSTEM_USER_MODE_REQUIRED;
 import static android.app.admin.DevicePolicyManager.STATUS_MANAGED_USERS_NOT_SUPPORTED;
-import static android.app.admin.DevicePolicyManager.STATUS_MULTI_USER_MANAGEMENT_NOT_SUPPORTED;
+import static android.app.admin.DevicePolicyManager.STATUS_MULTIUSER_MANAGEMENT_NOT_SUPPORTED;
 import static android.app.admin.DevicePolicyManager.STATUS_NONSYSTEM_USER_EXISTS;
 import static android.app.admin.DevicePolicyManager.STATUS_NON_DEFAULT_DEVICE_POLICY_MANAGEMENT_ROLE_HOLDER_EXISTS;
 import static android.app.admin.DevicePolicyManager.STATUS_NOT_FULL_USER;
@@ -16539,11 +16539,11 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
     private int checkProvisioningPreconditionSkipPermission(
             String action, String packageName, @Nullable ComponentName componentName, int userId) {
         if (Flags.multiUserManagementDeviceProvisioning()
-                && DevicePolicyManager.ACTION_PROVISION_MULTI_USER_DEVICE.equals(action)) {
+                && DevicePolicyManager.ACTION_PROVISION_MULTIUSER_MANAGED_DEVICE.equals(action)) {
             return checkMultiuserManagedDeviceProvisioningPreCondition(userId);
         }
         if (Flags.multiUserManagementUserProvisioning()
-                && DevicePolicyManager.ACTION_PROVISION_MULTI_USER_MANAGED_USER.equals(action)) {
+                && DevicePolicyManager.ACTION_PROVISION_MULTIUSER_MANAGED_USER.equals(action)) {
             return checkMultiUserManagedUserProvisioningPreCondition(userId);
         }
         if (!mHasFeature && !shouldEnableForRetailDemoPackage(packageName)) {
@@ -16838,7 +16838,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         synchronized (getLockObject()) {
             // Device needs to support multi-user management.
             if (!isMultiuserManagementEnabledUnchecked()) {
-                return STATUS_MULTI_USER_MANAGEMENT_NOT_SUPPORTED;
+                return STATUS_MULTIUSER_MANAGEMENT_NOT_SUPPORTED;
             }
             if (!mInjector.userManagerIsHeadlessSystemUserMode()) {
                 return STATUS_HEADLESS_SYSTEM_USER_MODE_REQUIRED;
@@ -16919,7 +16919,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
     private int checkMultiUserManagedUserProvisioningPreCondition(@UserIdInt int userId) {
         // Device needs to support multi-user management.
         if (!isMultiuserManagementEnabledUnchecked()) {
-            return STATUS_MULTI_USER_MANAGEMENT_NOT_SUPPORTED;
+            return STATUS_MULTIUSER_MANAGEMENT_NOT_SUPPORTED;
         }
 
         // Cannot provision non-HSUM.
@@ -21707,7 +21707,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
 
         mInjector.binderWithCleanCallingIdentity(() -> {
             final int preconditionResult = checkProvisioningPreconditionSkipPermission(
-                    ACTION_PROVISION_MULTI_USER_MANAGED_USER, admin, userId);
+                    ACTION_PROVISION_MULTIUSER_MANAGED_USER, admin, userId);
             if (preconditionResult != STATUS_OK) {
                 throw new ServiceSpecificException(ERROR_PRE_CONDITION_FAILED,
                         "Provisioning preconditions failed with result: " + preconditionResult);

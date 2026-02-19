@@ -1632,8 +1632,8 @@ package android.app.admin {
     field public static final String ACTION_PROVISION_FINALIZATION = "android.app.action.PROVISION_FINALIZATION";
     field public static final String ACTION_PROVISION_FINANCED_DEVICE = "android.app.action.PROVISION_FINANCED_DEVICE";
     field public static final String ACTION_PROVISION_MANAGED_DEVICE_FROM_TRUSTED_SOURCE = "android.app.action.PROVISION_MANAGED_DEVICE_FROM_TRUSTED_SOURCE";
-    field @FlaggedApi("android.app.admin.flags.multi_user_management_device_provisioning") public static final String ACTION_PROVISION_MULTI_USER_DEVICE = "android.app.admin.action.PROVISION_MULTI_USER_DEVICE";
-    field @FlaggedApi("android.app.admin.flags.multi_user_management_user_provisioning") public static final String ACTION_PROVISION_MULTI_USER_MANAGED_USER = "android.app.admin.action.PROVISION_MULTI_USER_MANAGED_USER";
+    field @FlaggedApi("android.app.admin.flags.multi_user_management_device_provisioning") public static final String ACTION_PROVISION_MULTIUSER_MANAGED_DEVICE = "android.app.admin.action.PROVISION_MULTIUSER_MANAGED_DEVICE";
+    field @FlaggedApi("android.app.admin.flags.multi_user_management_user_provisioning") public static final String ACTION_PROVISION_MULTIUSER_MANAGED_USER = "android.app.admin.action.PROVISION_MULTIUSER_MANAGED_USER";
     field @RequiresPermission(android.Manifest.permission.MANAGE_FACTORY_RESET_PROTECTION) public static final String ACTION_RESET_PROTECTION_POLICY_CHANGED = "android.app.action.RESET_PROTECTION_POLICY_CHANGED";
     field @RequiresPermission(android.Manifest.permission.LAUNCH_DEVICE_MANAGER_SETUP) public static final String ACTION_ROLE_HOLDER_PROVISION_FINALIZATION = "android.app.action.ROLE_HOLDER_PROVISION_FINALIZATION";
     field @RequiresPermission(android.Manifest.permission.LAUNCH_DEVICE_MANAGER_SETUP) public static final String ACTION_ROLE_HOLDER_PROVISION_MANAGED_DEVICE_FROM_TRUSTED_SOURCE = "android.app.action.ROLE_HOLDER_PROVISION_MANAGED_DEVICE_FROM_TRUSTED_SOURCE";
@@ -1681,6 +1681,7 @@ package android.app.admin {
     field public static final String REQUIRED_APP_MANAGED_PROFILE = "android.app.REQUIRED_APP_MANAGED_PROFILE";
     field public static final String REQUIRED_APP_MANAGED_USER = "android.app.REQUIRED_APP_MANAGED_USER";
     field public static final int RESULT_DEVICE_OWNER_SET = 123; // 0x7b
+    field @FlaggedApi("android.app.admin.flags.multi_user_management_device_provisioning") public static final int RESULT_MULTIUSER_MANAGED_DEVICE_PROVISIONED = 124; // 0x7c
     field @FlaggedApi("android.app.admin.flags.multi_user_management_device_provisioning") public static final int RESULT_MULTI_USER_DEVICE_PROVISIONED = 124; // 0x7c
     field public static final int RESULT_UPDATE_DEVICE_POLICY_MANAGEMENT_ROLE_HOLDER_PROVISIONING_DISABLED = 3; // 0x3
     field public static final int RESULT_UPDATE_DEVICE_POLICY_MANAGEMENT_ROLE_HOLDER_RECOVERABLE_ERROR = 1; // 0x1
@@ -1702,7 +1703,7 @@ package android.app.admin {
     field public static final int STATUS_HEADLESS_SYSTEM_USER_MODE_NOT_SUPPORTED = 16; // 0x10
     field @FlaggedApi("android.app.admin.flags.multi_user_management_device_provisioning") public static final int STATUS_HEADLESS_SYSTEM_USER_MODE_REQUIRED = 19; // 0x13
     field public static final int STATUS_MANAGED_USERS_NOT_SUPPORTED = 9; // 0x9
-    field @FlaggedApi("android.app.admin.flags.multi_user_management_device_provisioning") public static final int STATUS_MULTI_USER_MANAGEMENT_NOT_SUPPORTED = 23; // 0x17
+    field @FlaggedApi("android.app.admin.flags.multi_user_management_device_provisioning") public static final int STATUS_MULTIUSER_MANAGEMENT_NOT_SUPPORTED = 23; // 0x17
     field public static final int STATUS_NONSYSTEM_USER_EXISTS = 5; // 0x5
     field @FlaggedApi("android.app.admin.flags.secure_adb_role_bypassing") public static final int STATUS_NON_DEFAULT_DEVICE_POLICY_MANAGEMENT_ROLE_HOLDER_EXISTS = 23; // 0x17
     field @FlaggedApi("android.app.admin.flags.multi_user_management_user_provisioning") public static final int STATUS_NOT_FULL_USER = 21; // 0x15
