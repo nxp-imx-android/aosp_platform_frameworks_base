@@ -45,3 +45,10 @@ flag {
     description: "Enable CPU energy attribution for x86 platforms using eBPF and RAPL."
     bug: "452123601"
 }
+
+flag {
+    name: "uid_parent_attribution_prevent_overwrite"
+    namespace: "backstage_power"
+    description: "Prevents overwriting power attribution data when a child UID's power consumption is attributed to its parent UID."
+    bug: "473977284"
+}
