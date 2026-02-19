@@ -642,7 +642,8 @@ final class ActivityRecord extends WindowToken {
 
     boolean firstWindowDrawn;
     /** Whether the visible window(s) of this activity is drawn. */
-    private boolean mReportedDrawn;
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
+    boolean mReportedDrawn;
     private final WindowState.UpdateReportedVisibilityResults mReportedVisibilityResults =
             new WindowState.UpdateReportedVisibilityResults();
 

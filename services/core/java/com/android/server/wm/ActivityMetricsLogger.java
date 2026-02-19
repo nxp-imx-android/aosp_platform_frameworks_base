@@ -9,6 +9,7 @@ import static android.app.WaitResult.LAUNCH_STATE_COLD;
 import static android.app.WaitResult.LAUNCH_STATE_HOT;
 import static android.app.WaitResult.LAUNCH_STATE_RELAUNCH;
 import static android.app.WaitResult.LAUNCH_STATE_WARM;
+import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
@@ -75,6 +76,7 @@ import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_WITH_CLAS
 import static com.android.server.wm.ActivityTaskManagerInternal.APP_TRANSITION_RECENTS_ANIM;
 import static com.android.server.wm.ActivityTaskManagerInternal.APP_TRANSITION_TIMEOUT;
 import static com.android.server.wm.EventLogTags.WM_ACTIVITY_LAUNCH_TIME;
+import static com.android.window.flags.Flags.inheritConsecutiveLaunchCallerUid;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -83,9 +85,11 @@ import android.app.ActivityOptions.SourceInfo;
 import android.app.ApplicationExitInfo;
 import android.app.ApplicationStartInfo;
 import android.app.WaitResult;
+import android.app.WindowConfiguration;
 import android.app.WindowConfiguration.WindowingMode;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.IncrementalStatesInfo;
 import android.content.pm.dex.ArtManagerInternal;
@@ -117,6 +121,7 @@ import com.android.server.apphibernation.AppHibernationService;
 
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
+import java.util.function.IntSupplier;
 
 /**
  * Listens to activity launches, transitions, visibility changes and window drawn callbacks to
@@ -288,16 +293,18 @@ class ActivityMetricsLogger {
         /**
          * Tracks the original caller UID for the launch sequence.
          *
-         * <p>If the original caller UID is not set yet, it will be set to the given
-         * {@code callingUid}. This is used by {@link ActivityStarter#execute()} to track the
-         * originator of the launch, especially for trampoline launches.
+         * <p>If the original caller UID is already set, this method simply returns it. If it is
+         * not set, this method sets it using the provided {@code originatorSupplier}. This is
+         * used by {@link ActivityStarter#execute()} to track the originator of the launch,
+         * especially for trampoline launches.
          *
-         * @param callingUid the UID of the caller.
+         * @param originatorSupplier a provider that resolves the original caller UID if it is not
+         *                           already tracked.
          * @return the original caller UID.
          */
-        int tracksOriginator(int callingUid) {
+        int tracksOriginator(@NonNull IntSupplier originatorSupplier) {
             if (mOriginalCallerUid == ActivityStarter.Request.DEFAULT_REAL_CALLING_UID) {
-                mOriginalCallerUid = callingUid;
+                mOriginalCallerUid = originatorSupplier.getAsInt();
             }
             return mOriginalCallerUid;
         }
@@ -779,6 +786,53 @@ class ActivityMetricsLogger {
             return launchingState;
         }
         return existingInfo.mLaunchingState;
+    }
+
+    /**
+     * Resolves the original caller UID for a trampoline launch.
+     *
+     * <p>This method checks if the current launch is a consecutive (trampoline) launch
+     * that should inherit the originator UID from a previous state. This is specifically
+     * targeted at cases where an app is launched from home but passes through an internal
+     * trampoline, which would otherwise obscure the original home caller.
+     *
+     * <p>A launch is considered consecutive only if all the following conditions are met:
+     * <ul>
+     *   <li>Valid caller and target: the caller {@link ActivityRecord} and its {@code packageName}
+     *       are non-null, and the target {@link ActivityInfo} is non-null.</li>
+     *   <li>Package-internal trampoline: the caller and target belong to the same package,
+     *       indicating an internal trampoline.</li>
+     *   <li>Focused fullscreen task: a top focused leaf task exists and is in
+     *       {@link WindowConfiguration#WINDOWING_MODE_FULLSCREEN}.</li>
+     *   <li>Standard activity type: the top running activity in that task of
+     *       {@link WindowConfiguration#ACTIVITY_TYPE_STANDARD}.</li>
+     *   <li>Available last transition: the top running activity has an entry in
+     *       {@code mLastTransitionInfo}, ensuring the activity has not been removed.</li>
+     * </ul>
+     *
+     * @param caller the {@link ActivityRecord} starting the new activity.
+     * @param callingActivityInfo the {@link ActivityInfo} of the target activity.
+     * @param callingUid the UID of the current caller, used as the fallback return value.
+     * @return the original caller UID {@link LaunchingState#mOriginalCallerUid} if a valid
+     *         trampoline is detected; otherwise the launch is treated as a new, independent
+     *         launch, {@code callingUid}.
+     */
+    int getOriginatorForConsecutiveLaunch(@Nullable ActivityRecord caller,
+            @Nullable ActivityInfo callingActivityInfo, int callingUid) {
+        if (!inheritConsecutiveLaunchCallerUid()) return callingUid;
+
+        if (caller == null || caller.packageName == null) return callingUid;
+        if (callingActivityInfo == null) return callingUid;
+        if (!caller.packageName.equals(callingActivityInfo.packageName)) return callingUid;
+
+        final ActivityRecord r = mSupervisor.mRootWindowContainer.getTopResumedActivity();
+        if (r != caller || r.getActivityType() != ACTIVITY_TYPE_STANDARD) return callingUid;
+
+        @WindowingMode final int windowingMode = r.getWindowingMode();
+        if (windowingMode != WINDOWING_MODE_FULLSCREEN) return callingUid;
+
+        final TransitionInfo info = mLastTransitionInfo.get(r);
+        return info != null ? info.mLaunchingState.mOriginalCallerUid : callingUid;
     }
 
     /**

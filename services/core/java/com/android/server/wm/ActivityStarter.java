@@ -167,6 +167,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
 /**
@@ -840,22 +841,16 @@ class ActivityStarter {
                 mRequest.intent.removeExtendedFlags(Intent.EXTENDED_FLAG_FILTER_MISMATCH);
             }
 
+            final ActivityRecord caller;
+            final int callingUid;
             final LaunchingState launchingState;
-            final int originalCallerUid;
             synchronized (mService.mGlobalLock) {
-                final ActivityRecord caller = ActivityRecord.forTokenLocked(mRequest.resultTo);
-                final int callingUid = mRequest.realCallingUid == Request.DEFAULT_REAL_CALLING_UID
+                caller = ActivityRecord.forTokenLocked(mRequest.resultTo);
+                callingUid = mRequest.realCallingUid == Request.DEFAULT_REAL_CALLING_UID
                         ?  Binder.getCallingUid() : mRequest.realCallingUid;
                 launchingState = mSupervisor.getActivityMetricsLogger().notifyActivityLaunching(
                         mRequest.intent, caller, callingUid);
                 callerActivityName = caller != null ? caller.info.name : null;
-                originalCallerUid = trackLaunchOriginator() ? launchingState.tracksOriginator(
-                        callingUid) : Request.DEFAULT_REAL_CALLING_UID;
-            }
-
-            if (trackLaunchOriginator() && mService.mHomeProcess != null) {
-                mRequest.mLaunchOriginatedFromHome =
-                        (originalCallerUid == mService.mHomeProcess.mUid);
             }
 
             if (mRequest.intent != null) {
@@ -868,6 +863,17 @@ class ActivityStarter {
             // to assume those permissions are denied to avoid deadlocking.
             if (mRequest.activityInfo == null) {
                 mRequest.resolveActivity(mSupervisor);
+            }
+
+            if (trackLaunchOriginator()) {
+                synchronized (mService.mGlobalLock) {
+                    final IntSupplier origUidSupplier = () -> mSupervisor.getActivityMetricsLogger()
+                            .getOriginatorForConsecutiveLaunch(caller, mRequest.activityInfo,
+                                    callingUid);
+                    final int originalCallerUid = launchingState.tracksOriginator(origUidSupplier);
+                    mRequest.mLaunchOriginatedFromHome = (mService.mHomeProcess != null
+                            && mService.mHomeProcess.mUid == originalCallerUid);
+                }
             }
 
             // Add checkpoint for this shutdown or reboot attempt, so we can record the original
