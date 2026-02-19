@@ -21,6 +21,7 @@ import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.hint.HintFilter;
 import android.service.personalcontext.hint.HintInvalidationHint;
+import android.service.personalcontext.insight.ContextInsight;
 import android.service.personalcontext.insight.HintInvalidationInsight;
 import android.service.personalcontext.insight.PublishedContextInsight;
 import android.service.personalcontext.insight.interaction.InsightEvent;
@@ -30,6 +31,7 @@ import androidx.annotation.Nullable;
 
 import com.android.server.personalcontext.component.Refiner;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -75,11 +77,13 @@ public class HintInvalidationUnderstander implements Refiner {
 
     @Override
     public void refine(@NonNull Set<ContextHintWithSignature> inputHints,
-            @NonNull Consumer<Set<ContextHint>> callback) {
+            @NonNull Consumer<Set<ContextHint>> callback,
+            @NonNull RefinerWorkflow.InsightConsumer insightCallback) {
+        final HashSet<ContextInsight> insights = new HashSet<>();
         for (ContextHintWithSignature hint : inputHints) {
-            mPublishInsightCallback.consume(
-                    new HintInvalidationInsight.Builder(hint).build(), getComponentId());
+            insights.add(new HintInvalidationInsight.Builder(hint).build());
         }
+        insightCallback.accept(mComponentId, insights);
     }
 
     @Override

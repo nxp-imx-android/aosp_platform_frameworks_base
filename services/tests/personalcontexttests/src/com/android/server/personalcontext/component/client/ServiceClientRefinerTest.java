@@ -106,7 +106,9 @@ public class ServiceClientRefinerTest {
         final Set<ContextHintWithSignature> signedHints = Set.of(hint);
 
         // Submit hints to refine.
-        mServiceClientRefiner.refine(signedHints, (hints) -> {});
+        mServiceClientRefiner.refine(signedHints, (hints) -> {},
+                (componentId, insights) -> {
+            });
         mFakeExecutor.runAll();
         mServiceClientRefiner.onStarted(mIRefiner);
         mFakeExecutor.runAll();
@@ -137,7 +139,10 @@ public class ServiceClientRefinerTest {
 
         // Submit hints to refine
         AtomicReference<Set<ContextHint>> refinedHints = new AtomicReference<>();
-        mServiceClientRefiner.refine(signedHints, (hints) -> refinedHints.set(hints));
+        mServiceClientRefiner.refine(signedHints, (hints) -> refinedHints.set(hints),
+                (componentId, insights) -> {
+
+                });
         mFakeExecutor.runAll();
         mServiceClientRefiner.onStarted(mIRefiner);
         mFakeExecutor.runAll();

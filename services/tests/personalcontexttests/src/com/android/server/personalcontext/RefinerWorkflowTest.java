@@ -125,7 +125,8 @@ public class RefinerWorkflowTest {
                 /* renderToken= */ emptySet(),
                 key,
                 listener,
-                INLINE_EXECUTOR);
+                INLINE_EXECUTOR,
+                mock(RefinerWorkflow.InsightConsumer.class));
 
         verify(listener).onRefinerWorkflowStarted(anyLong(), any());
         verify(listener).onRefinerWorkflowFinished(anyLong());
@@ -145,7 +146,7 @@ public class RefinerWorkflowTest {
             invocation.getArgument(1, Consumer.class).accept(emptySet());
             return null;
         })
-                .when(refiner).refine(any(), any());
+                .when(refiner).refine(any(), any(), any());
 
         RefinerWorkflow.start(
                 provider,
@@ -157,7 +158,8 @@ public class RefinerWorkflowTest {
                 /* renderToken= */ emptySet(),
                 key,
                 listener,
-                INLINE_EXECUTOR);
+                INLINE_EXECUTOR,
+                mock(RefinerWorkflow.InsightConsumer.class));
 
         verify(listener).onRefinerWorkflowStarted(anyLong(), any());
         verify(listener).onHintsSentToRefiner(anyLong(), any(), eq(refiner));
@@ -178,7 +180,7 @@ public class RefinerWorkflowTest {
             invocation.getArgument(1, Consumer.class).accept(emptySet());
             return null;
         })
-                .when(refiner).refine(any(), any());
+                .when(refiner).refine(any(), any(), any());
 
         RefinerWorkflow.start(
                 provider,
@@ -190,7 +192,8 @@ public class RefinerWorkflowTest {
                 /* renderToken= */ emptySet(),
                 key,
                 listener,
-                INLINE_EXECUTOR);
+                INLINE_EXECUTOR,
+                mock(RefinerWorkflow.InsightConsumer.class));
 
         verify(listener).onRefinerWorkflowStarted(anyLong(), any());
         verify(listener, times(2)).onHintsSentToRefiner(anyLong(), any(), eq(refiner));
@@ -224,7 +227,7 @@ public class RefinerWorkflowTest {
             }
             return null;
         })
-                .when(refiner1).refine(any(), any());
+                .when(refiner1).refine(any(), any(), any());
 
         doAnswer(invocation -> {
             final Set<ContextHintWithSignature> hints = invocation.getArgument(0, Set.class);
@@ -242,7 +245,7 @@ public class RefinerWorkflowTest {
             callback.accept(emptySet());
             return null;
         })
-                .when(refiner2).refine(any(), any());
+                .when(refiner2).refine(any(), any(), any());
 
         doReturn(Set.of(refiner1, refiner2)).when(provider).getRefiners();
 
@@ -252,7 +255,8 @@ public class RefinerWorkflowTest {
                 /* renderToken= */ emptySet(),
                 ContextHintTestUtils.generateSignedHintKey(),
                 listener,
-                INLINE_EXECUTOR);
+                INLINE_EXECUTOR,
+                mock(RefinerWorkflow.InsightConsumer.class));
 
         verify(listener).onRefinerWorkflowStarted(anyLong(), any());
         verify(listener).onHintsSentToRefiner(anyLong(), any(), eq(refiner1));
@@ -284,7 +288,8 @@ public class RefinerWorkflowTest {
                 /* renderToken= */ emptySet(),
                 key,
                 listener,
-                INLINE_EXECUTOR);
+                INLINE_EXECUTOR,
+                mock(RefinerWorkflow.InsightConsumer.class));
 
         verify(listener).onRefinerWorkflowStarted(anyLong(), any());
         verify(listener).onHintsSentToRefiner(anyLong(), any(), eq(refiner));

@@ -144,7 +144,10 @@ public abstract class InsightRendererService extends Service {
         }
     }
 
-    /** Called when the renderer has been configured and is ready to receive insights. */
+    /**
+     * Called when the renderer has been configured and is ready to receive insights.
+     * Any actions related to this method should complete before returning.
+     */
     public void onConnected() {
         // Default implementation does nothing.
     }
@@ -184,8 +187,8 @@ public abstract class InsightRendererService extends Service {
      *                to render
      * @param renderToken the {@link RenderToken} that was used to select this renderer
      */
-    public abstract void onRender(
-            @NonNull PublishedContextInsight insight, @NonNull RenderToken renderToken);
+    public abstract void onRender(@NonNull PublishedContextInsight insight,
+            @NonNull RenderToken renderToken);
 
     private static final class Binder extends IInsightRenderer.Stub {
         private final BinderRequestProcessor<InsightRendererService> mRequestProcessor;

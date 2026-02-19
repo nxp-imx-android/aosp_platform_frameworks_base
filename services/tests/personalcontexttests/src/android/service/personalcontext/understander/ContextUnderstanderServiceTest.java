@@ -29,6 +29,7 @@ import android.service.personalcontext.hint.ContextHintTestUtils;
 import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.hint.ContextHintWithSignatureWrapper;
 import android.service.personalcontext.hint.HintFilter;
+import android.service.personalcontext.insight.ContextInsight;
 import android.service.personalcontext.refiner.IRefineCallback;
 import android.service.personalcontext.refiner.IRefiner;
 import android.service.personalcontext.testutil.FakeExecutor;
@@ -72,12 +73,14 @@ public class ContextUnderstanderServiceTest {
             @NonNull
             @Override
             public HintFilter onInitializeFilter() {
-                return null;
+                return new HintFilter.Builder().build();
             }
 
             @Override
-            public void onUnderstand(@NonNull List<ContextHintWithSignature> hints) {
+            public List<ContextInsight> onUnderstand(
+                    @NonNull List<ContextHintWithSignature> hints) {
                 capturedHints.addAll(hints);
+                return new ArrayList();
             }
         };
         service.setExecutor(mFakeExecutor);
