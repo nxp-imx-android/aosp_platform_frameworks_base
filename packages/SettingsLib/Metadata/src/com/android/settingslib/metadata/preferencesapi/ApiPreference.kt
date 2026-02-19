@@ -17,6 +17,8 @@
 package com.android.settingslib.metadata.preferencesapi
 
 import android.content.Context
+import android.os.Process
+import android.os.UserHandle
 import android.provider.Settings
 import androidx.annotation.StringRes
 import com.android.settingslib.utils.applications.AppUtils
@@ -43,12 +45,16 @@ import kotlinx.coroutines.runBlocking
  * operations, ensuring that each operation has a consistent and secure context to run in.
  *
  * @property context The application context, used for accessing system services and resources.
+ * @property userId The user id of the user to which the preference belongs.
+ * @property userHandle The user handle of the user to which the preference belongs.
  * @property parameters A map of validated key-value pairs that can be used to parameterize
  *   the behavior of the preference. These parameters are derived from the preference screen's
  *   configuration and are guaranteed to be valid.
  */
 class ApiOperationContext(
     val context: Context,
+    val userId: Int = Process.myUserHandle().hashCode(),
+    val userHandle: UserHandle = Process.myUserHandle(),
     val parameters: ValidatedKeyParameters
 )
 
@@ -182,7 +188,7 @@ abstract class ApiPreference<V : Any>(
      * @return An initialized [ApiOperationContext] instance.
      */
     private fun getApiOperationContext(context: Context) =
-        ApiOperationContext(context, cachedKeyParameters)
+        ApiOperationContext(context = context, parameters = cachedKeyParameters)
 
     /**
      * Evaluates preconditions in order: screen-level, common, and operation-specific.
