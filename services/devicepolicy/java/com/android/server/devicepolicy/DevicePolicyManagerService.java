@@ -8145,11 +8145,9 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
             CallerIdentity caller = getCallerIdentity(who, callerPackage);
             boolean deviceScope = parent || mDeviceAdmins.isDefaultDeviceOwner(caller);
             int scope = deviceScope ? POLICY_SCOPE_DEVICE : POLICY_SCOPE_USER;
-            int enumValue = disabled ? PolicyIdentifier.SCREEN_CAPTURE_DISALLOWED
-                    : PolicyIdentifier.SCREEN_CAPTURE_ALLOWED;
-
-            setPolicy(caller, PolicyIdentifier.SCREEN_CAPTURE.getId(), scope,
-                    PolicyValueTransport.integerField(enumValue));
+            setEnumPolicyStoredAsBoolean(caller, PolicyIdentifier.SCREEN_CAPTURE, scope,
+                    /* booleanValue= */ disabled,
+                    /* trueValue= */ PolicyIdentifier.SCREEN_CAPTURE_DISALLOWED);
             return;
         }
 
@@ -23673,6 +23671,24 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
             return result;
         }
     }
+
+    /* Helper method to call `setPolicy` from the hand-written handler of an enum policy that's
+     * stored as a boolean inside DPE.
+     */
+    private void setEnumPolicyStoredAsBoolean(
+            CallerIdentity caller,
+            PolicyIdentifier<Integer> id,
+            int scope,
+            boolean booleanValue,
+            int trueValue) {
+        // Setting the value to `false` should clear the policy from the DevicePolicyEngine.
+        if (booleanValue == false) {
+            setPolicy(caller, id.getId(), scope, null);
+        } else {
+            setPolicy(caller, id.getId(), scope, PolicyValueTransport.integerField(trueValue));
+        }
+    }
+
 
     @Override
     public void setPolicy(
