@@ -25,6 +25,7 @@ import android.service.personalcontext.insight.ContextInsightWrapper;
  * @hide
  */
 interface IRefineCallback {
+    @EnforcePermission("PERSONAL_CONTEXT_PUBLISH_HINTS")
     oneway void onHintsRefined(in List<ContextHintWrapper> hints);
 
     oneway void onUnderstood(in List<ContextInsightWrapper> insights);

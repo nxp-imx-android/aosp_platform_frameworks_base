@@ -59,7 +59,7 @@ public abstract class BaseServiceClientComponent<C> implements Component {
 
     private final UserHandle mUserHandle;
 
-    private final Context mContext;
+    protected final Context mContext;
     private final UUID mComponentId;
     private final Intent mServiceIntent;
     private final ComponentName mComponentName;

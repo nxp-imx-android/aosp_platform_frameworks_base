@@ -17,6 +17,7 @@
 package com.android.server.personalcontext.component.client;
 
 import android.Manifest;
+import android.annotation.EnforcePermission;
 import android.annotation.PermissionManuallyEnforced;
 import android.content.Context;
 import android.content.pm.ServiceInfo;
@@ -24,6 +25,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.os.PermissionEnforcer;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.service.personalcontext.hint.ContextHint;
@@ -129,20 +131,28 @@ public class ServiceClientRefiner extends BaseServiceClientComponent<IRefiner> i
             return;
         }
 
-        final IRefineCallback.Stub refinerCallback = new IRefineCallback.Stub() {
-            @PermissionManuallyEnforced
-            @Override
-            public void onHintsRefined(List<ContextHintWrapper> hints) {
-                callback.accept(ContextHintWrapper.unwrapInto(hints, new HashSet<>()));
-            }
+        final IRefineCallback.Stub refinerCallback =
+                new IRefineCallback.Stub(PermissionEnforcer.fromContext(mContext)) {
+                    // Suppressing warning as enforcement is currently behind a flag
+                    @SuppressWarnings("MissingEnforcePermissionHelper")
+                    @EnforcePermission(android.Manifest.permission.PERSONAL_CONTEXT_PUBLISH_HINTS)
+                    @Override
+                    public void onHintsRefined(List<ContextHintWrapper> hints) {
+                        if (android.service.personalcontext.Flags
+                                .enforcePersonalContextPermissions()) {
+                            onHintsRefined_enforcePermission();
+                        }
+                        callback.accept(ContextHintWrapper.unwrapInto(hints, new HashSet<>()));
+                    }
 
-            @PermissionManuallyEnforced
-            @Override
-            public void onUnderstood(List<ContextInsightWrapper> insights) {
-                insightCallback.accept(getComponentId(),
-                        ContextInsightWrapper.unwrapInto(insights, new HashSet<>()));
-            }
-        };
+                    @PermissionManuallyEnforced
+                    @Override
+                    public void onUnderstood(List<ContextInsightWrapper> insights) {
+                        insightCallback.accept(
+                                getComponentId(),
+                                ContextInsightWrapper.unwrapInto(insights, new HashSet<>()));
+                    }
+                };
 
         final List<PublishedContextHintWrapper> hints =
                 PublishedContextHintWrapper.wrapList(inputHints);
