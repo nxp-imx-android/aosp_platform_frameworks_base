@@ -266,16 +266,14 @@ public class LskfResetKeyManager {
      */
 
     public boolean generateDeviceAndAccountKeys(@NonNull String keyAlias) {
-        try (AutoZeroedBuffer localKey =
-                        new AutoZeroedBuffer(generateRandomBytes(LOCAL_KEY_SIZE_BYTES));
-                AutoZeroedBuffer accountKey =
-                        new AutoZeroedBuffer(generateRandomBytes(ACCOUNT_KEY_SIZE_BYTES));
-                AutoZeroedBuffer derivedLocalKey =
+        try (var localKey = new AutoZeroedBuffer(generateRandomBytes(LOCAL_KEY_SIZE_BYTES));
+                var accountKey = new AutoZeroedBuffer(generateRandomBytes(ACCOUNT_KEY_SIZE_BYTES));
+                var derivedLocalKey =
                         new AutoZeroedBuffer(deriveLocalKey(localKey.getBuffer(), USER_ID));
-                AutoZeroedBuffer wrappedLocalKey =
+                var wrappedLocalKey =
                         new AutoZeroedBuffer(
                                 mGscEncrypter.encrypt(derivedLocalKey.getBuffer(), null));
-                AutoZeroedBuffer wrappedAccountKey =
+                var wrappedAccountKey =
                         new AutoZeroedBuffer(mHsmEncrypter.encrypt(accountKey.getBuffer(), null))) {
             // TODO: Save the keys to files/Android KeyStore.
             Slog.i(TAG, "Successfully generated, derived, wrapped key");
