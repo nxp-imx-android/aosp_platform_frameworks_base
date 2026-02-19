@@ -16,6 +16,7 @@
 
 package com.android.server.allowlist;
 
+import static android.Manifest.permission.DUMP;
 import static android.Manifest.permission.QUERY_ALLOWLIST;
 
 import android.annotation.EnforcePermission;
@@ -36,6 +37,7 @@ import android.os.allowlist.IOnAllowlistChangedListener;
 import android.os.allowlist.IProviderOnAllowlistChangedListener;
 import android.util.ArrayMap;
 import android.util.ArraySet;
+import android.util.IndentingPrintWriter;
 import android.util.Slog;
 
 import com.android.internal.annotations.GuardedBy;
@@ -45,6 +47,8 @@ import com.android.server.SystemService;
 import com.android.server.appbinding.AppBindingService;
 import com.android.server.appbinding.finders.AllowlistProviderServiceFinder;
 
+import java.io.FileDescriptor;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -53,7 +57,7 @@ import java.util.Objects;
  * A system service which interfaces with allowlist clients via the AllowlistManager, and the
  * AllowlistProviderService, which serves requests made to the Allowlist.
  */
-public class AllowlistService extends SystemService {
+public final class AllowlistService extends SystemService {
 
     private static final String LOG_TAG = AllowlistService.class.getSimpleName();
 
@@ -236,6 +240,14 @@ public class AllowlistService extends SystemService {
                 });
     }
 
+    private void dumpUnchecked(IndentingPrintWriter ipw) {
+        ipw.printf("mAppBindingService: %s\n", mAppBindingService);
+        ipw.printf("mTestProviderService: %s\n", mTestProviderService);
+        // TODO(b/461828838): dump the map contents instead
+        ipw.printf("mListenerRecords: %d entries\n", mListenerRecords.size());
+        ipw.printf("mRequestListeners: %d entries\n", mRequestListeners.size());
+    }
+
     private class ListenerRecord implements IBinder.DeathRecipient {
         final ArraySet<AllowlistRequest> mRequests = new ArraySet<>();
         final IOnAllowlistChangedListener mListener;
@@ -347,6 +359,25 @@ public class AllowlistService extends SystemService {
                             + "AllowlistProvider", e);
                 }
             }
+        }
+
+        @Override
+        @EnforcePermission(DUMP)
+        @SuppressWarnings("MissingEnforcePermissionAnnotation")
+        protected void dump(FileDescriptor fd, PrintWriter pw, String[] args) {
+            // NOTE: must call dump_enforcePermission() on first line to avoid one
+            // MissingEnforcePermissionAnnotation violation from ErrorProne, but still need to be
+            // annotated with @SuppressWarnings, because Binder.dump() itself isn't annotated
+            dump_enforcePermission();
+            try (IndentingPrintWriter ipw = new IndentingPrintWriter(pw)) {
+                dumpUnchecked(ipw);
+            }
+        }
+
+        @SuppressWarnings("AndroidFrameworkRequiresPermission")
+        private void dump_enforcePermission() {
+            getContext().enforceCallingPermission(DUMP,
+                    "Caller does not hold android.permission.DUMP");
         }
     }
 }
