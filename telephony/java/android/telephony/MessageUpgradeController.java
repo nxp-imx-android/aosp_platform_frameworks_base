@@ -29,7 +29,6 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
-import android.os.Binder;
 import android.service.messaging.AlternativeMessageTransportService;
 import android.service.messaging.AlternativeMessageTransportServiceWrapper;
 import android.text.TextUtils;
@@ -43,8 +42,6 @@ import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 /**
@@ -58,15 +55,10 @@ import java.util.function.Consumer;
 public final class MessageUpgradeController {
 
     private static final String TAG = "MsgUpgradeController";
-    private static final boolean VDBG = Log.isLoggable(TAG, Log.VERBOSE);
-    private static final int SERVICE_BIND_TIMEOUT = 10; // Seconds
-
     private final ScheduledExecutorService mScheduler =
             Executors.newSingleThreadScheduledExecutor();
     private final Object mMessageUpgradeLock = new Object();
     private final Context mContext;
-    private final AlternativeMessageTransportServiceWrapper mServiceWrapper =
-            new AlternativeMessageTransportServiceWrapper();
 
     private final BroadcastReceiver mDefaultSmsAppChangedReceiver = new BroadcastReceiver() {
         @Override
@@ -80,8 +72,7 @@ public final class MessageUpgradeController {
         }
     };
 
-    @GuardedBy("mMessageUpgradeLock")
-    @Nullable private ScheduledFuture<?> mServiceCloseFuture;
+    private final AlternativeMessageTransportServiceWrapper mServiceWrapper;
 
     @GuardedBy("mMessageUpgradeLock")
     private String mCachedDefaultSmsPackage;
@@ -91,6 +82,7 @@ public final class MessageUpgradeController {
     /** @hide */
     public MessageUpgradeController(@NonNull Context context) {
         mContext = Objects.requireNonNull(context);
+        mServiceWrapper = new AlternativeMessageTransportServiceWrapper(context, mScheduler);
         updateCachedDefaultSmsPackageData();
         registerOnSmsAppChangedReceiver();
     }
@@ -98,59 +90,32 @@ public final class MessageUpgradeController {
     /**
      * Upgrades a SMS/MMS message.
      *
-     * @param contentUri The content URI of the SMS/MMS message.
+     * @param messageUri The URI of the SMS/MMS message.
      * @param clientCallbackExecutor The executor to run the callback on.
      * @param clientCallback The callback to report the upgrade status.
      */
-    // TODO(b/473520736): Add timeout logic if service doesn't respond within specified duration
     public void upgradeMessage(
-            @NonNull Uri contentUri,
+            @NonNull Uri messageUri,
             @NonNull Executor clientCallbackExecutor,
             @NonNull Consumer<Integer> clientCallback) {
-        Objects.requireNonNull(contentUri, "contentUri cannot be null");
+        Objects.requireNonNull(messageUri, "messageUri cannot be null");
         Objects.requireNonNull(clientCallbackExecutor, "clientCallbackExecutor cannot be null");
         Objects.requireNonNull(clientCallback, "clientCallback cannot be null");
 
         if (!isMessageUpgradeSupported()) {
-            clientCallbackExecutor.execute(() -> clientCallback.accept(UPGRADE_STATUS_REJECTED));
+            rejectUpgradeRequest(clientCallbackExecutor, clientCallback);
             return;
         }
 
-        final long identity = Binder.clearCallingIdentity();
-        try {
-            String smsAppPackage = getCachedDefaultSmsAppPackage();
-            if (mServiceWrapper.bindToService(
-                    mContext, smsAppPackage, Runnable::run,
-                    () -> onServiceReady(contentUri, clientCallbackExecutor, clientCallback))) {
-                if (VDBG) {
-                    Log.v(TAG, "bindService() to the message upgrade service: "
-                            + smsAppPackage + " succeeded.");
-                }
-                scheduleServiceClose();
-            } else {
-                Log.e(TAG, "bindService() to the message upgrade service: "
-                        + smsAppPackage + " failed.");
-                clientCallbackExecutor.execute(() ->
-                        clientCallback.accept(UPGRADE_STATUS_REJECTED));
-            }
-        } finally {
-            Binder.restoreCallingIdentity(identity);
+        String smsAppPackage = getCachedDefaultSmsAppPackage();
+        if (TextUtils.isEmpty(smsAppPackage)) {
+            Log.e(TAG, "No default SMS app found for user");
+            rejectUpgradeRequest(clientCallbackExecutor, clientCallback);
+            return;
         }
-    }
 
-    private void scheduleServiceClose() {
-        synchronized (mMessageUpgradeLock) {
-            if (mServiceCloseFuture != null) {
-                Log.w(TAG, "Cancelling previous hard service close timer.");
-                mServiceCloseFuture.cancel(false);
-            }
-
-            mServiceCloseFuture = mScheduler.schedule(
-                    this::disposeServiceConnection,
-                    SERVICE_BIND_TIMEOUT,
-                    TimeUnit.SECONDS);
-            Log.d(TAG, "Scheduled hard service close in " + SERVICE_BIND_TIMEOUT + "s.");
-        }
+        mServiceWrapper.upgradeMessage(
+                messageUri, smsAppPackage, clientCallbackExecutor, clientCallback);
     }
 
     /**
@@ -190,38 +155,14 @@ public final class MessageUpgradeController {
     public void close() {
         Log.i(TAG, "Closing MessageUpgradeController for user " + mContext.getUserId());
         mContext.unregisterReceiver(mDefaultSmsAppChangedReceiver);
-        mScheduler.shutdown();
-        disposeServiceConnection();
-    }
-
-    /**
-     * Disposes the service connection to the AlternativeMessageTransportService.
-     */
-    private void disposeServiceConnection() {
-        Log.i(TAG, "disposeServiceConnection() called. Closing wrapper.");
         mServiceWrapper.close();
-        synchronized (mMessageUpgradeLock) {
-            mServiceCloseFuture = null;
-        }
+        mScheduler.shutdown();
     }
 
     @Nullable
     private String getCachedDefaultSmsAppPackage() {
         synchronized (mMessageUpgradeLock) {
             return mCachedDefaultSmsPackage;
-        }
-    }
-
-    private void onServiceReady(
-            Uri contentUri, Executor clientCallbackExecutor,
-            Consumer<Integer> clientCallback) {
-        MessageUpgradeCallback controllerCallback = new MessageUpgradeControllerCallback(
-                clientCallbackExecutor, clientCallback);
-        try {
-            mServiceWrapper.upgradeMessage(contentUri, Runnable::run, controllerCallback);
-        } catch (RuntimeException e) {
-            Log.e(TAG, "Exception while upgrading message.", e);
-            controllerCallback.onUpgradeStatusAvailable(UPGRADE_STATUS_REJECTED);
         }
     }
 
@@ -273,38 +214,8 @@ public final class MessageUpgradeController {
         }
     }
 
-    /**
-     * Callback wrapper used by {@link MessageUpgradeController} to report the message upgrade
-     * status to the caller and manage service lifecycle.
-     *
-     * @hide
-     */
-    public interface MessageUpgradeCallback {
-        /**
-         * Called when the upgrade status is available.
-         *
-         * @param status the status of the upgrade request.
-         */
-        default void onUpgradeStatusAvailable(int status) {
-
-        }
-    }
-
-    private final class MessageUpgradeControllerCallback implements MessageUpgradeCallback {
-        private final Executor mClientCallbackExecutor;
-        private final Consumer<Integer> mClientCallback;
-
-        private MessageUpgradeControllerCallback(
-                Executor executor, Consumer<Integer> callback) {
-            mClientCallbackExecutor = executor;
-            mClientCallback = callback;
-        }
-
-        @Override
-        public void onUpgradeStatusAvailable(int status) {
-            Binder.withCleanCallingIdentity(() ->
-                    mClientCallbackExecutor.execute(() -> mClientCallback.accept(status))
-            );
-        }
+    private void rejectUpgradeRequest(
+            Executor callbackExecutor, Consumer<Integer> callback) {
+        callbackExecutor.execute(() -> callback.accept(UPGRADE_STATUS_REJECTED));
     }
 }
