@@ -754,6 +754,7 @@ com.android.server.am.psc.GraphEdge
 com.android.server.am.psc.GraphNode
 com.android.server.am.psc.OomAdjuster
 com.android.server.am.psc.ProcessEdge
+com.android.server.am.psc.ProcessServiceRecordInternal
 com.android.server.am.psc.SyncBatchSession
 com.android.server.utils.TimingsTraceAndSlog
 com.google.android.collect.Lists

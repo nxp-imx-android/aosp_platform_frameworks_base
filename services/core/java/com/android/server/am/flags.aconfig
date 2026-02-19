@@ -423,3 +423,13 @@ flag {
     description: "Defer service restart if all its binding clients are frozen."
     bug: "478967958"
 }
+
+flag {
+    name: "incremental_has_above_client"
+    namespace: "backstage_power"
+    description: "Enable incremental reference counting (O(1)) for hasAboveClient state management for shadow-verification against existing connection scanning (O(N))."
+    bug: "434001398"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
