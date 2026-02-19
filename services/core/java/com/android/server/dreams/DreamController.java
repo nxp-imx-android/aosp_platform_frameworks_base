@@ -368,21 +368,22 @@ final class DreamController {
 
             // Current dream stopped, device no longer dreaming.
             if (dream == mCurrentDream) {
+                if (dream.mAppTask != null) {
+                    try {
+                        dream.mAppTask.finishAndRemoveTask();
+                    } catch (RemoteException | RuntimeException e) {
+                        Slog.e(TAG, "Unable to stop dream activity.", e);
+                    }
+                } else {
+                    Slog.e(TAG, "Dream activity is null.");
+                }
+
                 mCurrentDream = null;
 
                 if (mSentStartBroadcast) {
                     mContext.sendBroadcastAsUser(mDreamingStoppedIntent, UserHandle.ALL,
                             null /* receiverPermission */, mDreamingStartedStoppedOptions);
                     mSentStartBroadcast = false;
-                }
-
-                if (mCurrentDream != null && mCurrentDream.mAppTask != null) {
-                    // Finish the dream task in case it hasn't finished by itself already.
-                    try {
-                        mCurrentDream.mAppTask.finishAndRemoveTask();
-                    } catch (RemoteException | RuntimeException e) {
-                        Slog.e(TAG, "Unable to stop dream activity.");
-                    }
                 }
 
                 mListener.onDreamStopped(dream.mToken);
