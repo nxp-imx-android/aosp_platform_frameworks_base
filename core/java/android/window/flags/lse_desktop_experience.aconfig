@@ -891,16 +891,6 @@ flag {
 }
 
 flag {
-    name: "enable_request_fullscreen_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Fixes split to fullscreen restoration using the Activity#requestFullscreenMode API"
-    bug: "402973271"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_request_fullscreen_refactor"
     namespace: "lse_desktop_experience"
     description: "Refactors Activity#requestFullscreenMode internal implementation."

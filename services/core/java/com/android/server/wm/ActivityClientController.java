@@ -106,7 +106,6 @@ import android.os.UserHandle;
 import android.service.voice.VoiceInteractionManagerInternal;
 import android.util.Slog;
 import android.view.RemoteAnimationDefinition;
-import android.window.DesktopModeFlags;
 import android.window.SizeConfigurationBuckets;
 import android.window.TransitionInfo;
 import android.window.TransitionRequestInfo;
@@ -1363,10 +1362,8 @@ class ActivityClientController extends IActivityClientController.Stub {
             }
             return RESULT_APPROVED;
         }
-        if (DesktopModeFlags.ENABLE_REQUEST_FULLSCREEN_BUGFIX.isTrue()) {
-            if (taskWindowingMode == WINDOWING_MODE_MULTI_WINDOW) {
-                return RESULT_FAILED_NOT_SUPPORTED;
-            }
+        if (taskWindowingMode == WINDOWING_MODE_MULTI_WINDOW) {
+            return RESULT_FAILED_NOT_SUPPORTED;
         }
         return RESULT_APPROVED;
     }
@@ -1486,8 +1483,7 @@ class ActivityClientController extends IActivityClientController.Stub {
                     requester.getParent().mRemoteToken.toWindowContainerToken();
         } else {
             targetWindowingMode = requester.mMultiWindowRestoreWindowingMode;
-            if (DesktopModeFlags.ENABLE_REQUEST_FULLSCREEN_BUGFIX.isTrue()
-                    && targetWindowingMode == WINDOWING_MODE_PINNED) {
+            if (targetWindowingMode == WINDOWING_MODE_PINNED) {
                 final ActivityRecord r = requester.topRunningActivity();
                 enterPictureInPictureMode(r.token, r.pictureInPictureArgs);
             } else {
