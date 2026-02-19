@@ -106,6 +106,16 @@ flag {
 }
 
 flag {
+    name: "flash_notifications_torch_callback_handler"
+    namespace: "accessibility"
+    description: "Provides an explicit handler for Flash Notifications torch callback"
+    bug: "484142373"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "fullscreen_fling_gesture"
     namespace: "accessibility"
     description: "When true, adds a fling gesture animation for fullscreen magnification"
