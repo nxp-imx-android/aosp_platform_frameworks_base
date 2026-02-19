@@ -330,6 +330,8 @@ public final class CameraAdvancedExtensionSessionImpl extends CameraExtensionSes
             return;
         }
 
+        Log.v(TAG, "extensionType " + mExtensionType);
+
         OutputSurface previewSurface = initializeParcelable(mClientRepeatingRequestOutputConfig);
         OutputSurface captureSurface = initializeParcelable(mClientCaptureOutputConfig);
         OutputSurface postviewSurface = initializeParcelable(mClientPostviewOutputConfig);
