@@ -1443,6 +1443,15 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             @NonNull UserHandle userHandle,
             @AppFunctionManager.EnabledState int requestedRuntimeState)
             throws Exception {
+        boolean isDynamicFunction =
+                mAppFunctionMetadataReader.isDynamicFunction(
+                        callingPackage, functionIdentifier, userHandle);
+        if (isDynamicFunction) {
+            throw new IllegalArgumentException(
+                    "setAppFunctionEnabled is not supported for runtime-registered functions. Use"
+                        + " AppFunctionManager.registerAppFunction and"
+                        + " AppFunctionRegistration.unregister instead.");
+        }
         AppSearchManager perUserAppSearchManager = getAppSearchManagerAsUser(userHandle);
 
         if (perUserAppSearchManager == null) {

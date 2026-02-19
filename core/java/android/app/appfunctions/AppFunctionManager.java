@@ -743,7 +743,7 @@ public final class AppFunctionManager {
     }
 
     /**
-     * Retrieves whether an app function is enabled.
+     * Retrieves whether an app function is enabled (allows execution).
      *
      * <p>This is equivalent to calling {@link #getAppFunctionStates} and checking the {@link
      * AppFunctionState#isEnabled} property of the result. Consider using {@link
@@ -890,7 +890,7 @@ public final class AppFunctionManager {
     }
 
     /**
-     * Retrieves whether an app function owned by the calling package is enabled.
+     * Retrieves whether an app function owned by the calling package is enabled (allows execution).
      *
      * <p>Same as {@link #isAppFunctionEnabled(String, String, Executor, OutcomeReceiver)} but only
      * for checking functions owned by the calling package.
@@ -915,6 +915,11 @@ public final class AppFunctionManager {
     /**
      * Sets the enabled state of the app function owned by the calling package.
      *
+     * <p><b>Important:</b> This method only applies to functions backed by an {@link
+     * AppFunctionService}. It cannot be used to modify the state of functions registered at
+     * runtime. For runtime-registered app functions, use {@link #registerAppFunction} to register
+     * them and {@link AppFunctionRegistration#unregister} to unregister them instead.
+     *
      * @param functionIdentifier the identifier of the app function to enable (unique within the
      *     calling package).
      * @param newEnabledState the new state of the app function
@@ -922,6 +927,7 @@ public final class AppFunctionManager {
      * @param callback the callback to receive the result of the function enablement. Can return
      *     {@link IllegalArgumentException} if the function is not found or the caller does not have
      *     access to it.
+     * @throws IllegalArgumentException if the function is runtime-registered.
      */
     @UserHandleAware
     public void setAppFunctionEnabled(
