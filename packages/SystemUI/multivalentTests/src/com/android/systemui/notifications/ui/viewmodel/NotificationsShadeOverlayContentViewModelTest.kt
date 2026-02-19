@@ -27,6 +27,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.systemui.Flags.FLAG_DUAL_SHADE
+import com.android.systemui.Flags.FLAG_NOTIFICATION_SHADE_BLUR
 import com.android.systemui.Flags.FLAG_SCENE_CONTAINER
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.FakeAuthenticationRepository
@@ -213,7 +214,17 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun transparencyEnabled_blurSupported_isEnabled() =
+    @DisableFlags(FLAG_NOTIFICATION_SHADE_BLUR)
+    fun transparencyEnabled_shadeBlurFlagOff_isDisabled() =
+        kosmos.runTest {
+            fakeWindowRootViewBlurRepository.isBlurSupported.value = true
+
+            assertThat(underTest.isTransparencyEnabled).isFalse()
+        }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_SHADE_BLUR)
+    fun transparencyEnabled_shadeBlurFlagOn_blurSupported_isEnabled() =
         kosmos.runTest {
             fakeWindowRootViewBlurRepository.isBlurSupported.value = true
 
@@ -221,7 +232,8 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun transparencyEnabled_blurUnsupported_isDisabled() =
+    @EnableFlags(FLAG_NOTIFICATION_SHADE_BLUR)
+    fun transparencyEnabled_shadeBlurFlagOn_blurUnsupported_isDisabled() =
         kosmos.runTest {
             fakeWindowRootViewBlurRepository.isBlurSupported.value = false
 
@@ -229,6 +241,7 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_NOTIFICATION_SHADE_BLUR)
     fun calculateTargetBlurRadius() =
         kosmos.runTest {
             // Only bouncer shown: no blur.

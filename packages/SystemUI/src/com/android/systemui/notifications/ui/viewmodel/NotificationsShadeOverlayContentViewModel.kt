@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.geometry.Rect
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.compose.animation.scene.content.state.TransitionState
+import com.android.systemui.Flags
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.desktop.domain.interactor.DesktopInteractor
 import com.android.systemui.keyguard.ui.transitions.BlurConfig
@@ -118,8 +119,15 @@ constructor(
     val isTransparencyEnabled: Boolean by
         hydrator.hydratedStateOf(
             traceName = "transparencyEnabled",
-            initialValue = windowRootViewBlurInteractor.isBlurCurrentlySupported.value,
-            source = windowRootViewBlurInteractor.isBlurCurrentlySupported,
+            initialValue =
+                Flags.notificationShadeBlur() &&
+                    windowRootViewBlurInteractor.isBlurCurrentlySupported.value,
+            source =
+                if (Flags.notificationShadeBlur()) {
+                    windowRootViewBlurInteractor.isBlurCurrentlySupported
+                } else {
+                    flowOf(false)
+                },
         )
 
     /**
