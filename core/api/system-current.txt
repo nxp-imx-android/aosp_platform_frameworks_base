@@ -15326,28 +15326,25 @@ package android.service.personalcontext.hint {
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class ContentCaptureConversationEvent {
     method @NonNull public java.time.Instant getClientEventTimestamp();
     method @NonNull public String getConversationSessionId();
+    method @NonNull public java.time.Instant getTimestamp();
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class ContentCaptureConversationEvent.ConversationEnterEvent extends android.service.personalcontext.hint.ContentCaptureConversationEvent {
     ctor public ContentCaptureConversationEvent.ConversationEnterEvent(@NonNull String, @NonNull java.time.Instant, @NonNull java.time.Instant);
-    method @NonNull public java.time.Instant getTimestamp();
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class ContentCaptureConversationEvent.ConversationExitEvent extends android.service.personalcontext.hint.ContentCaptureConversationEvent {
     ctor public ContentCaptureConversationEvent.ConversationExitEvent(@NonNull String, @NonNull java.time.Instant, @NonNull java.time.Instant);
-    method @NonNull public java.time.Instant getTimestamp();
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class ContentCaptureConversationEvent.ConversationProcessingEvent extends android.service.personalcontext.hint.ContentCaptureConversationEvent {
     ctor public ContentCaptureConversationEvent.ConversationProcessingEvent(@NonNull String, @NonNull java.time.Instant, @NonNull java.time.Instant, @NonNull android.view.autofill.AutofillId);
     method @NonNull public android.view.autofill.AutofillId getMessageAutofillId();
-    method @NonNull public java.time.Instant getStartProcessingTimestamp();
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class ContentCaptureConversationEvent.ConversationUpdateEvent extends android.service.personalcontext.hint.ContentCaptureConversationEvent {
     ctor public ContentCaptureConversationEvent.ConversationUpdateEvent(@NonNull String, @NonNull java.time.Instant, @NonNull java.time.Instant, @NonNull android.service.personalcontext.hint.ConversationData);
     method @NonNull public android.service.personalcontext.hint.ConversationData getConversationData();
-    method @NonNull public java.time.Instant getConversationUpdateTimestamp();
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ContentCaptureConversationHint extends android.service.personalcontext.hint.ContextHint {

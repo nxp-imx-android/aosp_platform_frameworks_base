@@ -50,6 +50,7 @@ public abstract class ContentCaptureConversationEvent {
     private static final String KEY_EVENT_TYPE = "key_event_type";
     private static final String KEY_CONVERSATION_SESSION_ID = "key_conversation_session_id";
     private static final String KEY_CLIENT_EVENT_TIMESTAMP = "key_client_event_timestamp";
+    private static final String KEY_TIMESTAMP = "key_timestamp";
     private static final String KEY_EVENT_DATA = "key_event_data";
 
     /** Indicates an unknown event type. */
@@ -97,10 +98,16 @@ public abstract class ContentCaptureConversationEvent {
      */
     private final @NonNull Instant mClientEventTimestamp;
 
+    /** The timestamp of when the relevant event occurred. */
+    private final @NonNull Instant mTimestamp;
+
     ContentCaptureConversationEvent(
-            @NonNull String conversationSessionId, @NonNull Instant clientEventTimestamp) {
+            @NonNull String conversationSessionId,
+            @NonNull Instant clientEventTimestamp,
+            @NonNull Instant timestamp) {
         mConversationSessionId = conversationSessionId;
         mClientEventTimestamp = clientEventTimestamp;
+        mTimestamp = timestamp;
     }
 
     /**
@@ -118,6 +125,17 @@ public abstract class ContentCaptureConversationEvent {
     @NonNull
     public Instant getClientEventTimestamp() {
         return mClientEventTimestamp;
+    }
+
+    /**
+     * Returns a timestamp of when the relevant event occurred.
+     *
+     * <p>Subclasses should to override to provide their own documentation on the meaning of the
+     * timestamp.
+     */
+    @NonNull
+    public Instant getTimestamp() {
+        return mTimestamp;
     }
 
     /** Returns the {@link EventType} of this conversation event. */
@@ -149,6 +167,7 @@ public abstract class ContentCaptureConversationEvent {
         bundle.putInt(KEY_EVENT_TYPE, getEventType());
         bundle.putString(KEY_CONVERSATION_SESSION_ID, mConversationSessionId);
         bundle.putLong(KEY_CLIENT_EVENT_TIMESTAMP, mClientEventTimestamp.toEpochMilli());
+        bundle.putLong(KEY_TIMESTAMP, mTimestamp.toEpochMilli());
         return bundle;
     }
 
@@ -180,6 +199,7 @@ public abstract class ContentCaptureConversationEvent {
         final String conversationSessionId = bundle.getString(KEY_CONVERSATION_SESSION_ID);
         final Instant clientEventTimestamp =
                 Instant.ofEpochMilli(bundle.getLong(KEY_CLIENT_EVENT_TIMESTAMP));
+        final Instant timestamp = Instant.ofEpochMilli(bundle.getLong(KEY_TIMESTAMP));
         final Bundle eventData = bundle.getBundle(KEY_EVENT_DATA);
         Objects.requireNonNull(eventData);
         Objects.requireNonNull(conversationSessionId);
@@ -188,20 +208,20 @@ public abstract class ContentCaptureConversationEvent {
         return switch (eventType) {
             case EVENT_TYPE_ENTER ->
                     new ConversationEnterEvent(
-                            conversationSessionId, clientEventTimestamp, eventData);
+                            conversationSessionId, clientEventTimestamp, timestamp);
             case EVENT_TYPE_EXIT ->
                     new ConversationExitEvent(
-                            conversationSessionId, clientEventTimestamp, eventData);
+                            conversationSessionId, clientEventTimestamp, timestamp);
             case EVENT_TYPE_PROCESSING ->
                     new ConversationProcessingEvent(
-                            conversationSessionId, clientEventTimestamp, eventData);
+                            conversationSessionId, clientEventTimestamp, timestamp, eventData);
             case EVENT_TYPE_UPDATE ->
                     new ConversationUpdateEvent(
-                            conversationSessionId, clientEventTimestamp, eventData);
+                            conversationSessionId, clientEventTimestamp, timestamp, eventData);
             default -> {
                 Log.wtf(TAG, "Unknown event type: " + eventType);
                 yield new ContentCaptureConversationEvent(
-                        conversationSessionId, clientEventTimestamp) {
+                        conversationSessionId, clientEventTimestamp, timestamp) {
                     @Override
                     int getEventType() {
                         return EVENT_TYPE_UNKNOWN;
@@ -225,16 +245,6 @@ public abstract class ContentCaptureConversationEvent {
      */
     @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
     public static final class ConversationEnterEvent extends ContentCaptureConversationEvent {
-        private static final String KEY_ENTER_TIMESTAMP = "key_enter_timestamp";
-
-        /**
-         * The timestamp when the conversation was entered.
-         *
-         * <p>If the event is from Content Capture, this is the timestamp when System Intelligence
-         * detected the conversation was entered.
-         */
-        private final @NonNull Instant mTimestamp;
-
         /**
          * Creates a new {@link ConversationEnterEvent}.
          *
@@ -248,22 +258,19 @@ public abstract class ContentCaptureConversationEvent {
                 @NonNull String conversationSessionId,
                 @NonNull Instant clientEventTimestamp,
                 @NonNull Instant timestamp) {
-            super(conversationSessionId, clientEventTimestamp);
-            mTimestamp = timestamp;
+            super(conversationSessionId, clientEventTimestamp, timestamp);
         }
 
-        ConversationEnterEvent(
-                @NonNull String conversationSessionId,
-                @NonNull Instant clientEventTimestamp,
-                @NonNull Bundle bundle) {
-            super(conversationSessionId, clientEventTimestamp);
-            mTimestamp = Instant.ofEpochMilli(bundle.getLong(KEY_ENTER_TIMESTAMP));
-        }
-
-        /** Returns the timestamp when the conversation was entered. */
+        /**
+         * Returns the timestamp when the conversation was entered.
+         *
+         * <p>If the event is from Content Capture, this is the timestamp when System Intelligence
+         * detected the conversation was entered.
+         */
+        @Override
         @NonNull
         public Instant getTimestamp() {
-            return mTimestamp;
+            return super.getTimestamp();
         }
 
         @Override
@@ -274,9 +281,7 @@ public abstract class ContentCaptureConversationEvent {
         @NonNull
         @Override
         Bundle toBundleImpl() {
-            final Bundle bundle = new Bundle();
-            bundle.putLong(KEY_ENTER_TIMESTAMP, mTimestamp.toEpochMilli());
-            return bundle;
+            return new Bundle();
         }
 
         @Override
@@ -286,7 +291,7 @@ public abstract class ContentCaptureConversationEvent {
             ConversationEnterEvent that = (ConversationEnterEvent) o;
             return Objects.equals(getConversationSessionId(), that.getConversationSessionId())
                     && Objects.equals(getClientEventTimestamp(), that.getClientEventTimestamp())
-                    && Objects.equals(mTimestamp, that.mTimestamp);
+                    && Objects.equals(getTimestamp(), that.getTimestamp());
         }
 
         @Override
@@ -295,7 +300,7 @@ public abstract class ContentCaptureConversationEvent {
                     getEventType(),
                     getConversationSessionId(),
                     getClientEventTimestamp(),
-                    mTimestamp);
+                    getTimestamp());
         }
 
         @Override
@@ -306,8 +311,8 @@ public abstract class ContentCaptureConversationEvent {
                     + "',"
                     + " mClientEventTimestamp="
                     + getClientEventTimestamp()
-                    + ", mConversationEnterTimestamp="
-                    + mTimestamp
+                    + ", mTimestamp="
+                    + getTimestamp()
                     + '}';
         }
     }
@@ -320,16 +325,6 @@ public abstract class ContentCaptureConversationEvent {
      */
     @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
     public static final class ConversationExitEvent extends ContentCaptureConversationEvent {
-        private static final String KEY_EXIT_TIMESTAMP = "key_exit_timestamp";
-
-        /**
-         * The timestamp when the conversation was exited.
-         *
-         * <p>If the event is from Content Capture, this is the timestamp when System Intelligence
-         * detected the conversation was exited.
-         */
-        private final @NonNull Instant mTimestamp;
-
         /**
          * Creates a new {@link ConversationExitEvent}.
          *
@@ -343,16 +338,7 @@ public abstract class ContentCaptureConversationEvent {
                 @NonNull String conversationSessionId,
                 @NonNull Instant clientEventTimestamp,
                 @NonNull Instant timestamp) {
-            super(conversationSessionId, clientEventTimestamp);
-            mTimestamp = timestamp;
-        }
-
-        ConversationExitEvent(
-                @NonNull String conversationSessionId,
-                @NonNull Instant clientEventTimestamp,
-                @NonNull Bundle bundle) {
-            super(conversationSessionId, clientEventTimestamp);
-            mTimestamp = Instant.ofEpochMilli(bundle.getLong(KEY_EXIT_TIMESTAMP));
+            super(conversationSessionId, clientEventTimestamp, timestamp);
         }
 
         @Override
@@ -360,18 +346,21 @@ public abstract class ContentCaptureConversationEvent {
             return EVENT_TYPE_EXIT;
         }
 
-        /** Returns the timestamp when the conversation was exited. */
+        /**
+         * Returns the timestamp when the conversation was exited.
+         *
+         * <p>If the event is from Content Capture, this is the timestamp when System Intelligence
+         * detected the conversation was exited.
+         */
         @NonNull
         public Instant getTimestamp() {
-            return mTimestamp;
+            return super.getTimestamp();
         }
 
         @NonNull
         @Override
         Bundle toBundleImpl() {
-            final Bundle bundle = new Bundle();
-            bundle.putLong(KEY_EXIT_TIMESTAMP, mTimestamp.toEpochMilli());
-            return bundle;
+            return new Bundle();
         }
 
         @Override
@@ -381,7 +370,7 @@ public abstract class ContentCaptureConversationEvent {
             ConversationExitEvent that = (ConversationExitEvent) o;
             return Objects.equals(getConversationSessionId(), that.getConversationSessionId())
                     && Objects.equals(getClientEventTimestamp(), that.getClientEventTimestamp())
-                    && Objects.equals(mTimestamp, that.mTimestamp);
+                    && Objects.equals(getTimestamp(), that.getTimestamp());
         }
 
         @Override
@@ -401,7 +390,7 @@ public abstract class ContentCaptureConversationEvent {
                     + "',"
                     + " mClientEventTimestamp="
                     + getClientEventTimestamp()
-                    + ", mConversationExitTimestamp="
+                    + ", mTimestamp="
                     + getTimestamp()
                     + '}';
         }
@@ -415,16 +404,7 @@ public abstract class ContentCaptureConversationEvent {
      */
     @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
     public static final class ConversationProcessingEvent extends ContentCaptureConversationEvent {
-        private static final String KEY_START_TIMESTAMP = "key_start_timestamp";
         private static final String KEY_MESSAGE_AUTOFILL_ID = "key_message_autofill_id";
-
-        /**
-         * The timestamp when the processing started.
-         *
-         * <p>If the event is from Content Capture, this is the timestamp when System Intelligence
-         * detected the conversation was being processed.
-         */
-        private final @NonNull Instant mStartProcessingTimestamp;
 
         private final @NonNull AutofillId mMessageAutofillId;
 
@@ -434,33 +414,38 @@ public abstract class ContentCaptureConversationEvent {
          * @param conversationSessionId the session ID of the conversation
          * @param clientEventTimestamp the timestamp of the event being created in the ACE client,
          *     e.g. the Content Capture event timestamp
-         * @param startProcessingTimestamp the timestamp when the Device Intelligence detected the
-         *     conversation was being processed
+         * @param timestamp the timestamp when the Device Intelligence detected the conversation was
+         *     being processed
          * @param messageAutofillId the autofill id of the message being processed
          */
         public ConversationProcessingEvent(
                 @NonNull String conversationSessionId,
                 @NonNull Instant clientEventTimestamp,
-                @NonNull Instant startProcessingTimestamp,
+                @NonNull Instant timestamp,
                 @NonNull AutofillId messageAutofillId) {
-            super(conversationSessionId, clientEventTimestamp);
-            mStartProcessingTimestamp = startProcessingTimestamp;
+            super(conversationSessionId, clientEventTimestamp, timestamp);
             mMessageAutofillId = messageAutofillId;
         }
 
         ConversationProcessingEvent(
                 @NonNull String conversationSessionId,
                 @NonNull Instant clientEventTimestamp,
+                @NonNull Instant timestamp,
                 @NonNull Bundle bundle) {
-            super(conversationSessionId, clientEventTimestamp);
-            mStartProcessingTimestamp = Instant.ofEpochMilli(bundle.getLong(KEY_START_TIMESTAMP));
+            super(conversationSessionId, clientEventTimestamp, timestamp);
             mMessageAutofillId = bundle.getParcelable(KEY_MESSAGE_AUTOFILL_ID, AutofillId.class);
         }
 
-        /** Returns the timestamp when the processing starts. */
+        /**
+         * Returns the timestamp when the processing started.
+         *
+         * <p>If the event is from Content Capture, this is the timestamp when System Intelligence
+         * detected the conversation was being processed.
+         */
+        @Override
         @NonNull
-        public Instant getStartProcessingTimestamp() {
-            return mStartProcessingTimestamp;
+        public Instant getTimestamp() {
+            return super.getTimestamp();
         }
 
         /** Returns the autofill id of the message. */
@@ -478,7 +463,6 @@ public abstract class ContentCaptureConversationEvent {
         @Override
         Bundle toBundleImpl() {
             final Bundle bundle = new Bundle();
-            bundle.putLong(KEY_START_TIMESTAMP, mStartProcessingTimestamp.toEpochMilli());
             bundle.putParcelable(KEY_MESSAGE_AUTOFILL_ID, mMessageAutofillId);
             return bundle;
         }
@@ -490,7 +474,7 @@ public abstract class ContentCaptureConversationEvent {
             ConversationProcessingEvent that = (ConversationProcessingEvent) o;
             return Objects.equals(getConversationSessionId(), that.getConversationSessionId())
                     && Objects.equals(getClientEventTimestamp(), that.getClientEventTimestamp())
-                    && Objects.equals(mStartProcessingTimestamp, that.mStartProcessingTimestamp)
+                    && Objects.equals(getTimestamp(), that.getTimestamp())
                     && Objects.equals(mMessageAutofillId, that.mMessageAutofillId);
         }
 
@@ -500,7 +484,7 @@ public abstract class ContentCaptureConversationEvent {
                     getEventType(),
                     getConversationSessionId(),
                     getClientEventTimestamp(),
-                    mStartProcessingTimestamp,
+                    getTimestamp(),
                     mMessageAutofillId);
         }
 
@@ -512,8 +496,8 @@ public abstract class ContentCaptureConversationEvent {
                     + "',"
                     + " mClientEventTimestamp="
                     + getClientEventTimestamp()
-                    + ", mStartProcessingTimestamp="
-                    + mStartProcessingTimestamp
+                    + ", mTimestamp="
+                    + getTimestamp()
                     + ", mMessageAutofillId="
                     + mMessageAutofillId
                     + '}';
@@ -529,18 +513,8 @@ public abstract class ContentCaptureConversationEvent {
     @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
     public static final class ConversationUpdateEvent extends ContentCaptureConversationEvent {
         private static final String KEY_CONVERSATION_DATA = "key_conversation_data";
-        private static final String KEY_CONVERSATION_UPDATE_TIMESTAMP =
-                "key_conversation_update_timestamp";
 
         private final @NonNull ConversationData mConversationData;
-
-        /**
-         * The timestamp when the conversation was updated.
-         *
-         * <p>If the event is from Content Capture, this is the timestamp when System Intelligence
-         * detected the conversation was updated.
-         */
-        private final @NonNull Instant mConversationUpdateTimestamp;
 
         /**
          * Creates a new {@link ConversationUpdateEvent}.
@@ -548,28 +522,26 @@ public abstract class ContentCaptureConversationEvent {
          * @param conversationSessionId the session ID of the conversation
          * @param clientEventTimestamp the timestamp of the event being created in the ACE client,
          *     e.g. the Content Capture event timestamp
-         * @param conversationUpdateTimestamp the timestamp when the Device Intelligence detected
-         *     the conversation was updated
+         * @param timestamp the timestamp when the Device Intelligence detected the conversation was
+         *     updated
          * @param conversationData the data of the conversation
          */
         public ConversationUpdateEvent(
                 @NonNull String conversationSessionId,
                 @NonNull Instant clientEventTimestamp,
-                @NonNull Instant conversationUpdateTimestamp,
+                @NonNull Instant timestamp,
                 @NonNull ConversationData conversationData) {
-            super(conversationSessionId, clientEventTimestamp);
+            super(conversationSessionId, clientEventTimestamp, timestamp);
             mConversationData = conversationData;
-            mConversationUpdateTimestamp = conversationUpdateTimestamp;
         }
 
         ConversationUpdateEvent(
                 @NonNull String conversationSessionId,
                 @NonNull Instant clientEventTimestamp,
+                @NonNull Instant timestamp,
                 @NonNull Bundle bundle) {
-            super(conversationSessionId, clientEventTimestamp);
+            super(conversationSessionId, clientEventTimestamp, timestamp);
             mConversationData = bundle.getParcelable(KEY_CONVERSATION_DATA, ConversationData.class);
-            mConversationUpdateTimestamp =
-                    Instant.ofEpochMilli(bundle.getLong(KEY_CONVERSATION_UPDATE_TIMESTAMP));
         }
 
         /** Returns the data of the conversation. */
@@ -578,10 +550,16 @@ public abstract class ContentCaptureConversationEvent {
             return mConversationData;
         }
 
-        /** Returns the timestamp when the conversation was updated. */
+        /**
+         * Returns the timestamp when the conversation was updated.
+         *
+         * <p>If the event is from Content Capture, this is the timestamp when System Intelligence
+         * detected the conversation was updated.
+         */
+        @Override
         @NonNull
-        public Instant getConversationUpdateTimestamp() {
-            return mConversationUpdateTimestamp;
+        public Instant getTimestamp() {
+            return super.getTimestamp();
         }
 
         @Override
@@ -594,8 +572,6 @@ public abstract class ContentCaptureConversationEvent {
         Bundle toBundleImpl() {
             final Bundle bundle = new Bundle();
             bundle.putParcelable(KEY_CONVERSATION_DATA, mConversationData);
-            bundle.putLong(
-                    KEY_CONVERSATION_UPDATE_TIMESTAMP, mConversationUpdateTimestamp.toEpochMilli());
             return bundle;
         }
 
@@ -611,8 +587,7 @@ public abstract class ContentCaptureConversationEvent {
             ConversationUpdateEvent that = (ConversationUpdateEvent) o;
             return Objects.equals(getConversationSessionId(), that.getConversationSessionId())
                     && Objects.equals(getClientEventTimestamp(), that.getClientEventTimestamp())
-                    && Objects.equals(
-                            mConversationUpdateTimestamp, that.mConversationUpdateTimestamp)
+                    && Objects.equals(getTimestamp(), that.getTimestamp())
                     && Objects.equals(mConversationData, that.mConversationData);
         }
 
@@ -622,7 +597,7 @@ public abstract class ContentCaptureConversationEvent {
                     getEventType(),
                     getConversationSessionId(),
                     getClientEventTimestamp(),
-                    getConversationUpdateTimestamp(),
+                    getTimestamp(),
                     mConversationData);
         }
 
@@ -634,8 +609,8 @@ public abstract class ContentCaptureConversationEvent {
                     + "',"
                     + " mClientEventTimestamp="
                     + getClientEventTimestamp()
-                    + ", mConversationUpdateTimestamp="
-                    + mConversationUpdateTimestamp
+                    + ", mTimestamp="
+                    + getTimestamp()
                     + ", mConversationData="
                     + mConversationData
                     + '}';
