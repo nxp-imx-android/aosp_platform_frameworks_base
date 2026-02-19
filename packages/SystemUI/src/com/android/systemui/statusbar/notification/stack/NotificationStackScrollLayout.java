@@ -3590,8 +3590,8 @@ public class NotificationStackScrollLayout
             boolean isTransient = child instanceof ExpandableNotificationRow
                     && child.getTransientContainer() != null;
             Log.e(TAG, "Attempting to re-position "
-                    + (isTransient ? "transient" : "")
-                    + " view {"
+                    + (isTransient ? "transient " : "")
+                    + "view {"
                     + child
                     + "}");
             return;
@@ -4037,7 +4037,7 @@ public class NotificationStackScrollLayout
             return false;
         }
         ShadeScrimBounds bounds = shape.getBounds();
-        Log.d("NSSL", "bounds=" + bounds.toString() + " x: " + x + " y: " + y);
+        Log.d("NSSL", "bounds=" + bounds + " x: " + x + " y: " + y);
         return x < bounds.getLeft()
                 || x > bounds.getRight()
                 || y < bounds.getTop()
