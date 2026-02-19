@@ -113,9 +113,10 @@ public class VirtualDisplayAdapter extends DisplayAdapter {
         this(syncRoot, context, handler, listener, new SurfaceControlDisplayFactory() {
             @Override
             public IBinder createDisplay(String name, boolean secure, boolean optimizeForPower,
-                    String uniqueId, int ownerUid, float requestedRefreshRate) {
+                    String uniqueId, int ownerUid, boolean includeContentFromAllUids,
+                    float requestedRefreshRate) {
                 return DisplayControl.createVirtualDisplay(name, secure, optimizeForPower, uniqueId,
-                        ownerUid, requestedRefreshRate);
+                        ownerUid, includeContentFromAllUids, requestedRefreshRate);
             }
 
             @Override
@@ -153,6 +154,7 @@ public class VirtualDisplayAdapter extends DisplayAdapter {
 
     /**
      * Create a virtual display
+     *
      * @param callback The callback
      * @param projection The media projection
      * @param ownerUid The UID of the package creating a display
@@ -161,11 +163,14 @@ public class VirtualDisplayAdapter extends DisplayAdapter {
      * @param surface The surface
      * @param flags The flags
      * @param virtualDisplayConfig The config
+     * @param includeContentFromAllUids The flag that controls whether the content from
+     *                               another app should be included in the display.
      * @return The display device created
      */
     public DisplayDevice createVirtualDisplayLocked(IVirtualDisplayCallback callback,
             IMediaProjection projection, int ownerUid, String ownerPackageName, String uniqueId,
-            Surface surface, int flags, VirtualDisplayConfig virtualDisplayConfig) {
+            Surface surface, int flags, VirtualDisplayConfig virtualDisplayConfig,
+            boolean includeContentFromAllUids) {
         IBinder appToken = callback.asBinder();
         if (mVirtualDisplayDevices.containsKey(appToken)) {
             Slog.wtfStack(TAG,
@@ -195,7 +200,8 @@ public class VirtualDisplayAdapter extends DisplayAdapter {
         // As a result, such displays should optimize for power instead of performance when it is
         // powered on.
         IBinder displayToken = mSurfaceControlDisplayFactory.createDisplay(name, secure, neverBlank,
-                uniqueId, ownerUid, virtualDisplayConfig.getRequestedRefreshRate());
+                uniqueId, ownerUid, includeContentFromAllUids,
+                virtualDisplayConfig.getRequestedRefreshRate());
         MediaProjectionCallback mediaProjectionCallback =  null;
         if (projection != null) {
             mediaProjectionCallback = new MediaProjectionCallback(appToken);
@@ -816,6 +822,8 @@ public class VirtualDisplayAdapter extends DisplayAdapter {
          *                         performance when it is on.
          * @param uniqueId The unique ID for the display.
          * @param ownerUid The owner Uid for the display.
+         * @param includeContentFromAllUids The flag that controls whether the content that are
+         *                              owned by another app is included in the display.
          * @param requestedRefreshRate
          *     The refresh rate, frames per second, to request on the virtual display.
          *     It should be a divisor of refresh rate of the leader physical display
@@ -825,7 +833,8 @@ public class VirtualDisplayAdapter extends DisplayAdapter {
          * @return The token reference for the display in SurfaceFlinger.
          */
         IBinder createDisplay(String name, boolean secure, boolean optimizeForPower,
-                String uniqueId, int ownerUid, float requestedRefreshRate);
+                String uniqueId, int ownerUid, boolean includeContentFromAllUids,
+                float requestedRefreshRate);
 
         /**
          * Destroy a display in SurfaceFlinger.
