@@ -45,7 +45,6 @@ import javax.crypto.spec.SecretKeySpec;
 public class ContentCaptureConversationHintTest {
     private static final String CONVERSATION_SESSION_ID = "session_id";
     private static final AutofillId AUTOFILL_ID = new AutofillId(1);
-    private static final String CONTENT_DESCRIPTION = "content description";
     private static final Instant REFERENCE_TIME = Instant.now().truncatedTo(ChronoUnit.MILLIS);
     private static final Instant CLIENT_EVENT_TIMESTAMP = REFERENCE_TIME.minusSeconds(1);
     private static final ChatMessageContentCaptureData CHAT_MESSAGE_CONTENT_CAPTURE_DATA =
@@ -129,7 +128,7 @@ public class ContentCaptureConversationHintTest {
 
         final ConversationProcessingEvent outputProcessingEvent =
                 (ConversationProcessingEvent) outputEvent;
-        assertThat(outputProcessingEvent.getStartProcessingTimestamp())
+        assertThat(outputProcessingEvent.getTimestamp())
                 .isEqualTo(processingTimestamp);
         assertThat(outputProcessingEvent.getMessageAutofillId()).isEqualTo(messageAutofillId);
         assertThat(outputProcessingEvent.getConversationSessionId())
@@ -177,7 +176,7 @@ public class ContentCaptureConversationHintTest {
 
         final ConversationUpdateEvent outputUpdateEvent = (ConversationUpdateEvent) outputEvent;
         assertThat(outputUpdateEvent.getConversationData()).isEqualTo(conversationData);
-        assertThat(outputUpdateEvent.getConversationUpdateTimestamp()).isEqualTo(REFERENCE_TIME);
+        assertThat(outputUpdateEvent.getTimestamp()).isEqualTo(REFERENCE_TIME);
         assertThat(outputUpdateEvent.getConversationSessionId()).isEqualTo(CONVERSATION_SESSION_ID);
         assertThat(outputUpdateEvent.getClientEventTimestamp()).isEqualTo(clientEventTimestamp);
     }

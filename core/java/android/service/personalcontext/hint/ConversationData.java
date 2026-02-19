@@ -132,7 +132,12 @@ public final class ConversationData implements Parcelable {
         return mComponentName;
     }
 
-    /** Returns the autofill id of the input box in the conversation. */
+    /**
+     * Returns the autofill id of the input box in the conversation.
+     *
+     * <p>This may be null if Content Capture failed to find the input box or if autofill is
+     * disabled.
+     */
     @Nullable
     public AutofillId getInputBoxAutofillId() {
         return mInputBoxAutofillId;
