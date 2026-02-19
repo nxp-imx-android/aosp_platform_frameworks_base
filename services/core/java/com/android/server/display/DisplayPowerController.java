@@ -456,6 +456,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
 
     private final BrightnessEvent mLastBrightnessEvent;
     private final BrightnessEvent mTempBrightnessEvent;
+    private final BrightnessEvent mLastLoggedBrightnessEvent;
 
     final DisplayBrightnessController mDisplayBrightnessController;
 
@@ -581,6 +582,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
 
         mLastBrightnessEvent = new BrightnessEvent(mDisplayId);
         mTempBrightnessEvent = new BrightnessEvent(mDisplayId);
+        mLastLoggedBrightnessEvent = new BrightnessEvent(mDisplayId);
 
         if (flags.isBatteryStatsEnabledForAllDisplays()
                 && isDisplaySupportedForBatteryStats(displayDeviceInfo)) {
@@ -1706,7 +1708,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
 
         if ((!mTempBrightnessEvent.equalsMainData(mLastBrightnessEvent) && !tempToTempTransition)
                 || brightnessAdjustmentFlags != 0) {
-            mTempBrightnessEvent.setInitialBrightness(mLastBrightnessEvent.getBrightness());
+            mTempBrightnessEvent.setInitialBrightness(mLastLoggedBrightnessEvent.getBrightness());
             mLastBrightnessEvent.copyFrom(mTempBrightnessEvent);
             BrightnessEvent newEvent = new BrightnessEvent(mTempBrightnessEvent);
             // Adjustment flags (and user-set flag) only get added after the equality checks since
@@ -1718,6 +1720,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
 
             if (newEvent.getReason().getReason() != BrightnessReason.REASON_TEMPORARY) {
                 logBrightnessEvent(newEvent, unthrottledBrightnessState, clampedState);
+                mLastLoggedBrightnessEvent.copyFrom(newEvent);
             }
             if (mBrightnessEventRingBuffer != null) {
                 mBrightnessEventRingBuffer.append(newEvent);
