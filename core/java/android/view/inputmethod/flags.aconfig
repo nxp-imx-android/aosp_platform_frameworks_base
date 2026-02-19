@@ -195,16 +195,6 @@ flag {
 }
 
 flag {
-  name: "fix_navbar_dead_zone"
-  namespace: "input_method"
-  description: "Fix DeadZone consuming events for navbar"
-  bug: "364856257"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "unify_skip_animation_once_with_initially_visible"
   namespace: "input_method"
   description: "Deprecating skipAnimationOnce and using initiallyVisible instead."
