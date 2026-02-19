@@ -24,7 +24,6 @@ import android.util.proto.ProtoOutputStream;
 import android.view.KeyEvent;
 import android.view.KeyboardShortcutGroup;
 import android.view.WindowManager;
-import android.view.animation.Animation;
 
 import androidx.annotation.NonNull;
 
@@ -89,17 +88,6 @@ class FakeWindowManagerPolicy implements WindowManagerPolicy {
     @Override
     public boolean isKeyguardHostWindow(WindowManager.LayoutParams attrs) {
         return false;
-    }
-
-    @Override
-    public Animation createHiddenByKeyguardExit(boolean onWallpaper,
-            boolean goingToNotificationShade, boolean subtleAnimation) {
-        return null;
-    }
-
-    @Override
-    public Animation createKeyguardWallpaperExit(boolean goingToNotificationShade) {
-        return null;
     }
 
     @Override

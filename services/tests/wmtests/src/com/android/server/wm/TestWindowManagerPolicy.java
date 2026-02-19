@@ -29,7 +29,6 @@ import android.util.proto.ProtoOutputStream;
 import android.view.KeyEvent;
 import android.view.KeyboardShortcutGroup;
 import android.view.WindowManager;
-import android.view.animation.Animation;
 
 import com.android.internal.policy.IKeyguardDismissCallback;
 import com.android.internal.policy.IShortcutService;
@@ -75,17 +74,6 @@ class TestWindowManagerPolicy implements WindowManagerPolicy {
     @Override
     public boolean isKeyguardHostWindow(WindowManager.LayoutParams attrs) {
         return attrs.type == TYPE_NOTIFICATION_SHADE;
-    }
-
-    @Override
-    public Animation createHiddenByKeyguardExit(boolean onWallpaper,
-            boolean goingToNotificationShade, boolean subtleAnimation) {
-        return null;
-    }
-
-    @Override
-    public Animation createKeyguardWallpaperExit(boolean goingToNotificationShade) {
-        return null;
     }
 
     @Override

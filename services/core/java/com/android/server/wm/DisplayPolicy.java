@@ -1416,9 +1416,8 @@ public class DisplayPolicy {
      * @param win The window that is changing.
      * @param transit What is happening to the window:
      *                {@link com.android.server.policy.WindowManagerPolicy#TRANSIT_ENTER},
-     *                {@link com.android.server.policy.WindowManagerPolicy#TRANSIT_EXIT},
-     *                {@link com.android.server.policy.WindowManagerPolicy#TRANSIT_SHOW}, or
-     *                {@link com.android.server.policy.WindowManagerPolicy#TRANSIT_HIDE}.
+     *                {@link com.android.server.policy.WindowManagerPolicy#TRANSIT_EXIT}, or
+     *                {@link com.android.server.policy.WindowManagerPolicy#TRANSIT_SHOW}.
      *
      * @return Resource ID of the actual animation to use, or {@link #ANIMATION_NONE} for none.
      */

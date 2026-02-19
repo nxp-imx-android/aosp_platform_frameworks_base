@@ -63,8 +63,6 @@ import static android.view.WindowManager.LayoutParams.TYPE_VOLUME_OVERLAY;
 import static android.view.WindowManager.LayoutParams.TYPE_WALLPAPER;
 import static android.view.WindowManager.LayoutParams.isSystemAlertWindowType;
 
-import static java.lang.annotation.RetentionPolicy.SOURCE;
-
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -87,7 +85,6 @@ import android.view.KeyboardShortcutGroup;
 import android.view.WindowManager;
 import android.view.WindowManagerGlobal;
 import android.view.WindowManagerPolicyConstants;
-import android.view.animation.Animation;
 
 import com.android.internal.policy.IKeyguardDismissCallback;
 import com.android.internal.policy.IShortcutService;
@@ -140,9 +137,6 @@ import java.util.function.Consumer;
  * </dl>
  */
 public interface WindowManagerPolicy extends WindowManagerPolicyConstants {
-    @Retention(SOURCE)
-    @IntDef({NAV_BAR_LEFT, NAV_BAR_RIGHT, NAV_BAR_BOTTOM})
-    @interface NavigationBarPosition {}
 
     /**
      * Pass this event to the user / app.  To be returned from
@@ -395,9 +389,6 @@ public interface WindowManagerPolicy extends WindowManagerPolicyConstants {
     public static final int TRANSIT_EXIT = 2;
     /** Window has been made visible. */
     public static final int TRANSIT_SHOW = 3;
-    /** Window has been made invisible.
-     * TODO: Consider removal as this is unused. */
-    public static final int TRANSIT_HIDE = 4;
     /** The "application starting" preview window is no longer needed, and will
      * animate away to show the real window. */
     public static final int TRANSIT_PREVIEW_DONE = 5;
@@ -689,18 +680,6 @@ public interface WindowManagerPolicy extends WindowManagerPolicyConstants {
      * the StatusBar.
      */
     public boolean isKeyguardHostWindow(WindowManager.LayoutParams attrs);
-
-    /**
-     * Create and return an animation to re-display a window that was force hidden by Keyguard.
-     */
-    public Animation createHiddenByKeyguardExit(boolean onWallpaper,
-            boolean goingToNotificationShade, boolean subtleAnimation);
-
-    /**
-     * Create and return an animation to let the wallpaper disappear after being shown behind
-     * Keyguard.
-     */
-    public Animation createKeyguardWallpaperExit(boolean goingToNotificationShade);
 
     /**
      * Called from the input reader thread before a key is enqueued.

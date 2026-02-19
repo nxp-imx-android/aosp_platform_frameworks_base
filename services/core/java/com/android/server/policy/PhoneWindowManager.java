@@ -109,8 +109,8 @@ import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.L
 import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.LID_CLOSED;
 import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.LID_OPEN;
 import static com.android.server.power.feature.flags.Flags.interactiveDozeExperience;
-import static com.android.window.flags.Flags.commitKeyguardOcclusionBeforeWakingUp;
 import static com.android.systemui.shared.Flags.brightnessDialogOnSystemUser;
+import static com.android.window.flags.Flags.commitKeyguardOcclusionBeforeWakingUp;
 
 import android.accessibilityservice.AccessibilityService;
 import android.annotation.NonNull;
@@ -215,8 +215,6 @@ import android.view.WindowManagerGlobal;
 import android.view.WindowManagerPolicyConstants;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.view.autofill.AutofillManagerInternal;
 import android.widget.Toast;
 
@@ -233,9 +231,7 @@ import com.android.internal.policy.IKeyguardDismissCallback;
 import com.android.internal.policy.IKeyguardService;
 import com.android.internal.policy.IShortcutService;
 import com.android.internal.policy.KeyInterceptionInfo;
-import com.android.internal.policy.LogDecelerateInterpolator;
 import com.android.internal.policy.PhoneWindow;
-import com.android.internal.policy.TransitionAnimation;
 import com.android.internal.statusbar.IStatusBarService;
 import com.android.internal.util.NamedLock;
 import com.android.internal.widget.LockPatternUtils;
@@ -388,7 +384,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     static public final String SYSTEM_DIALOG_REASON_RECENT_APPS = "recentapps";
     static public final String SYSTEM_DIALOG_REASON_HOME_KEY = "homekey";
     static public final String SYSTEM_DIALOG_REASON_ASSIST = "assist";
-    static public final String SYSTEM_DIALOG_REASON_GESTURE_NAV = "gestureNav";
 
     public static final String TRACE_WAIT_FOR_ALL_WINDOWS_DRAWN_METHOD = "waitForAllWindowsDrawn";
 
@@ -424,12 +419,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
       * removed by window manager.
       */
     public static final int TOAST_WINDOW_TIMEOUT = 3500 + TOAST_WINDOW_ANIM_BUFFER;
-
-    /**
-     * Action for launching assistant in retail mode
-     */
-    private static final String ACTION_VOICE_ASSIST_RETAIL =
-            "android.intent.action.VOICE_ASSIST_RETAIL";
 
     /**
      * Maximum amount of time in milliseconds between consecutive power onKeyDown events to be
@@ -699,8 +688,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     // Maps global key codes to the components that will handle them.
     private GlobalKeyManager mGlobalKeyManager;
 
-    private final com.android.internal.policy.LogDecelerateInterpolator mLogDecelerateInterpolator
-            = new LogDecelerateInterpolator(100, 0);
     private final DeferredKeyActionExecutor mDeferredKeyActionExecutor =
             new DeferredKeyActionExecutor();
 
@@ -3288,23 +3275,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         return attrs.type == TYPE_NOTIFICATION_SHADE;
     }
 
-    @Override
-    public Animation createHiddenByKeyguardExit(boolean onWallpaper,
-            boolean goingToNotificationShade, boolean subtleAnimation) {
-        return TransitionAnimation.createHiddenByKeyguardExit(mContext,
-                mLogDecelerateInterpolator, onWallpaper, goingToNotificationShade, subtleAnimation);
-    }
-
-
-    @Override
-    public Animation createKeyguardWallpaperExit(boolean goingToNotificationShade) {
-        if (goingToNotificationShade) {
-            return null;
-        } else {
-            return AnimationUtils.loadAnimation(mContext, R.anim.lock_screen_wallpaper_exit);
-        }
-    }
-
     private static void awakenDreams() {
         IDreamManager dreamManager = getDreamManager();
         if (dreamManager != null) {
@@ -4114,8 +4084,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     }
 
     /**
-     * Launches ACTION_VOICE_ASSIST_RETAIL if in retail mode, or ACTION_VOICE_ASSIST otherwise
-     * Does nothing on keyguard except for watches. Delegates it to keyguard if present on watch.
+     * Launches ACTION_VOICE_ASSIST. Does nothing on keyguard except for watches. Delegates it to
+     * keyguard if present on watch.
      */
     private void launchVoiceAssist(boolean allowDuringSetup) {
         final boolean keyguardActive = mKeyguardDelegate.isShowing();
@@ -4127,11 +4097,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         } else {
             mKeyguardDelegate.dismissKeyguardToLaunch(new Intent(Intent.ACTION_VOICE_ASSIST));
         }
-    }
-
-    private boolean isInRetailMode() {
-        return Settings.Global.getInt(mContext.getContentResolver(),
-                Settings.Global.DEVICE_DEMO_MODE, 0) == 1;
     }
 
     private void startActivityAsUser(Intent intent, UserHandle handle) {
@@ -6835,7 +6800,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     private class HdmiVideoExtconUEventObserver extends ExtconStateObserver<Boolean> {
         private static final String HDMI_EXIST = "HDMI=1";
         private static final String DP_EXIST = "DP=1";
-        private static final String NAME = "hdmi";
 
         private boolean init(ExtconInfo hdmi) {
             boolean plugged = false;
