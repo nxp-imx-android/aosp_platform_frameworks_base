@@ -1,10 +1,6 @@
 {
   "wm": [
     {
-      "name": "WMShellExplicitFlickerTestsBubbles-CatchAll",
-      "keywords": ["device"]
-    },
-    {
       "name": "WMShellExplicitFlickerTestsBubbles-BubbleBarMovesTest",
       "keywords": ["device"]
     },
