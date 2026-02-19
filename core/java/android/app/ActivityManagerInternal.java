@@ -1465,4 +1465,13 @@ public abstract class ActivityManagerInternal {
      * @hide
      */
     public abstract void addCreatorToken(Intent intent, String creatorPackage);
+
+    /**
+     * Returns whether {@code clientUid} has a service binding or provider client to
+     * {@code uid}.
+     *
+     * @param uid the UID that is running a service or provider
+     * @param clientUid the UID that has a bound client
+     */
+    public abstract boolean hasServiceBindingOrProviderUse(int uid, int clientUid);
 }

@@ -31,6 +31,7 @@ import android.annotation.PermissionManuallyEnforced;
 import android.annotation.RequiresPermission;
 import android.annotation.SuppressLint;
 import android.annotation.UserIdInt;
+import android.app.ActivityManagerInternal;
 import android.app.ActivityOptions;
 import android.app.IApplicationThread;
 import android.app.compat.CompatChanges;
@@ -156,6 +157,8 @@ public class VirtualDeviceManagerService extends SystemService {
 
     @SuppressWarnings("NullAway") // Initialized on start, not in constructor
     private ActivityTaskManagerInternal mActivityTaskManagerInternal;
+    @SuppressWarnings("NullAway") // Initialized on start, not in constructor
+    private ActivityManagerInternal mActivityManagerInternal;
     private final VirtualDeviceManagerImpl mImpl;
     private final VirtualDeviceManagerNativeImpl mNativeImpl;
     private final VirtualDeviceManagerInternal mLocalService;
@@ -286,6 +289,7 @@ public class VirtualDeviceManagerService extends SystemService {
         mActivityTaskManagerInternal.registerActivityStartInterceptor(
                 VIRTUAL_DEVICE_SERVICE_ORDERED_ID,
                 mActivityInterceptorCallback);
+        mActivityManagerInternal = getLocalService(ActivityManagerInternal.class);
 
         CompanionDeviceManager cdm = getContext().getSystemService(CompanionDeviceManager.class);
         if (cdm != null) {
@@ -985,6 +989,24 @@ public class VirtualDeviceManagerService extends SystemService {
                 }
             }
             return result;
+        }
+
+        @Override
+        public boolean isDeviceIdAssociationValid(int uid, int deviceId) {
+            if (getDeviceIdsForUid(uid).contains(deviceId)) {
+                return true;
+            }
+            VirtualDeviceImpl virtualDevice = getVirtualDeviceForId(deviceId);
+            if (virtualDevice == null) {
+                return false;
+            }
+            // Allow the device owners to be associated with their devices without having to run
+            // activities there.
+            if (uid == virtualDevice.getOwnerUid()) {
+                return true;
+            }
+            return mActivityManagerInternal.hasServiceBindingOrProviderUse(
+                    uid, virtualDevice.getOwnerUid());
         }
 
         @Override
