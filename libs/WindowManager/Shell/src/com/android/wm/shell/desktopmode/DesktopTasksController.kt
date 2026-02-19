@@ -1196,6 +1196,7 @@ class DesktopTasksController(
             val globallyFocusedTask =
                 shellTaskOrganizer.getRunningTaskInfo(focusTransitionObserver.globallyFocusedTaskId)
             var focusedTaskRestoredToInactiveDesk = false
+            val restoredTaskIds = mutableSetOf<Int>()
             preservedTaskIdsByDeskId.forEach { (preservedDeskId, preservedTaskIds) ->
                 val newDeskId =
                     createDeskSuspending(
@@ -1220,6 +1221,7 @@ class DesktopTasksController(
                 }
 
                 val pipTask = pipTransitionState.getOrNull()?.pipTaskInfo
+                val defaultDisplayActiveDesk = repository.getActiveDeskId(DEFAULT_DISPLAY)
                 preservedTaskIds.asReversed().forEach { taskId ->
                     if (!excludedTasks.contains(taskId)) {
                         if (taskId == pipTask?.taskId) {
@@ -1228,6 +1230,7 @@ class DesktopTasksController(
                                 displayId,
                             )
                         }
+                        val oldDeskId = repository.getDeskIdForTask(taskId)
                         addRestoreTaskToDeskChanges(
                                 wct = wct,
                                 deskId = newDeskId,
@@ -1238,6 +1241,21 @@ class DesktopTasksController(
                                 taskBounds = boundsByTaskId[taskId],
                             )
                             ?.let { runOnTransitStartList.add(it) }
+                        restoredTaskIds.add(taskId)
+                        // If this empties an inactive desk, it's no longer needed; remove it.
+                        if (
+                            oldDeskId != null &&
+                                oldDeskId != defaultDisplayActiveDesk &&
+                                repository.containsAllDeskTasks(restoredTaskIds, oldDeskId)
+                        ) {
+                            runOnTransitStartList.add { _ ->
+                                removeDesk(
+                                    deskId = oldDeskId,
+                                    exitReason = ExitReason.TASK_MOVED_FROM_DESK,
+                                    removeTasks = false,
+                                )
+                            }
+                        }
                     }
                     if (!isActiveDesk && globallyFocusedTask?.taskId in preservedTaskIds) {
                         focusedTaskRestoredToInactiveDesk = true
@@ -5744,11 +5762,15 @@ class DesktopTasksController(
         userId: Int,
         excludingTaskId: Int? = null,
         exitReason: ExitReason,
+        removeTasks: Boolean = true,
     ): RunOnTransitStart? {
         if (deskId == null) return null
         val repository = userRepositories.getProfile(userId)
         val tasksToRemove =
-            if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+            // In some situations (i.e., restoreDisplay), we may want to reparent tasks rather
+            // than remove them. In this case, the caller is responsible for reparent destination.
+            if (!removeTasks) emptySet()
+            else if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
                 repository
                     .getActiveTaskIdsInDesk(deskId)
                     .filterNot { taskId -> taskId == excludingTaskId }
@@ -5884,6 +5906,7 @@ class DesktopTasksController(
         exitReason: ExitReason,
         shouldEndUpAtHome: Boolean = false,
         skipWallpaperAndHomeOrdering: Boolean = false,
+        removeTasks: Boolean = true,
     ) {
         val repository = userRepositories.getProfile(userId)
         if (!repository.getAllDeskIds().contains(deskId)) {
@@ -5898,6 +5921,7 @@ class DesktopTasksController(
             exitReason = exitReason,
             shouldEndUpAtHome = shouldEndUpAtHome,
             skipWallpaperAndHomeOrdering = skipWallpaperAndHomeOrdering,
+            removeTasks = removeTasks,
         )
     }
 
@@ -5975,6 +5999,7 @@ class DesktopTasksController(
         exitReason: ExitReason,
         shouldEndUpAtHome: Boolean = false,
         skipWallpaperAndHomeOrdering: Boolean = false,
+        removeTasks: Boolean = true,
     ) {
         if (!DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION.isTrue) return
         logV(
@@ -6010,6 +6035,7 @@ class DesktopTasksController(
                     displayId = displayId,
                     userId = userId,
                     exitReason = exitReason,
+                    removeTasks = removeTasks,
                 )
             }
 

@@ -737,6 +737,11 @@ class DesktopRepository(
         return desk.activeTasks.size == 1 && desk.activeTasks.single() == taskId
     }
 
+    /** Whether the provided set of taskIds contains all tasks in a given desk. */
+    fun containsAllDeskTasks(taskIds: Set<Int>, deskId: Int): Boolean {
+        return desktopData.getDesk(deskId)?.activeTasks?.let { taskIds.containsAll(it) } == true
+    }
+
     /** Whether the task is the only visible desktop task in the display. */
     fun isOnlyVisibleTask(taskId: Int, displayId: Int): Boolean {
         val desk = desktopData.getActiveDesk(displayId) ?: return false
