@@ -23,6 +23,7 @@ import android.system.keystore2.KeyDescriptor;
 import android.system.keystore2.KeyMetadata;
 
 import java.security.ProviderException;
+import java.security.cert.X509Certificate;
 
 /**
  * {@link java.security.PublicKey} implementation for ML-DSA public keys backed by Android Keystore.
@@ -52,6 +53,12 @@ import java.security.ProviderException;
  */
 public class AndroidKeyStoreMlDsaPublicKey extends AndroidKeyStorePublicKey
         implements AndroidKeyStoreMlDsaKey {
+    // OID value for ML-DSA-65. See RFC 9881 section 2.
+    private static final String ML_DSA_65_OID = "2.16.840.1.101.3.4.3.18";
+
+    // OID value for ML-DSA-87. See RFC 9881 section 2.
+    private static final String ML_DSA_87_OID = "2.16.840.1.101.3.4.3.19";
+
     // Java Security Standard Algorithm Name for the key's ML-DSA parameter set (e.g. "ML-DSA-65").
     private final String mMlDsaAlgorithm;
 
@@ -61,29 +68,41 @@ public class AndroidKeyStoreMlDsaPublicKey extends AndroidKeyStorePublicKey
      * @param descriptor Key descriptor.
      * @param metadata Key metadata.
      * @param securityLevel Security level of the key.
-     * @param x509EncodedForm X.509/SPKI encoded public key.
-     * @param algorithm Java Security Standard Algorithm Name for the ML-DSA-65 or ML-DSA-87
-     *        parameter set.
+     * @param x509Certificate X.509 certificate for the public key.
      */
+    // Implementation note: The X.509 certificate is passed as a parameter instead of the algorithm
+    // name as a String to prevent callers from passing the incorrect value (e.g. the family name
+    // "ML-DSA") and therefore avoiding the need for input parameter validation.
     public AndroidKeyStoreMlDsaPublicKey(
             @NonNull KeyDescriptor descriptor,
             @NonNull KeyMetadata metadata,
             @NonNull KeyStoreSecurityLevel securityLevel,
-            @NonNull byte[] x509EncodedForm,
-            @NonNull String algorithm) {
+            @NonNull X509Certificate x509Certificate) {
         super(
                 descriptor,
                 metadata,
-                x509EncodedForm,
+                x509Certificate.getPublicKey().getEncoded(),
                 KeyProperties.KEY_ALGORITHM_ML_DSA,
                 securityLevel);
 
-        if (!algorithm.equals(KeyProperties.KEY_ALGORITHM_ML_DSA_65)
-                && !algorithm.equals(KeyProperties.KEY_ALGORITHM_ML_DSA_87)) {
-            throw new ProviderException("Unsupported algorithm: " + algorithm);
+        // Get the algorithm name that the OID maps to, or the OID if no mapping exists.
+        String mlDsaAlgorithm = x509Certificate.getSigAlgName();
+
+        // If the OID is returned, it means Conscrypt's mapping is incomplete. We explicitly
+        // override this fallback and do the mapping ourselves since
+        // {@link android.security.keystore2.AndroidKeyStoreMlDsaKey#getMlDsaAlgorithm()} must
+        // return the Java Security Standard Algorithm Name for the ML-DSA parameter set. See
+        // RFC 9881 section 2.
+        if (mlDsaAlgorithm.equals(ML_DSA_65_OID)) {
+            mlDsaAlgorithm = KeyProperties.KEY_ALGORITHM_ML_DSA_65;
+        } else if (mlDsaAlgorithm.equals(ML_DSA_87_OID)) {
+            mlDsaAlgorithm = KeyProperties.KEY_ALGORITHM_ML_DSA_87;
+        } else if (!mlDsaAlgorithm.equalsIgnoreCase(KeyProperties.KEY_ALGORITHM_ML_DSA_65)
+                && !mlDsaAlgorithm.equalsIgnoreCase(KeyProperties.KEY_ALGORITHM_ML_DSA_87)) {
+            throw new ProviderException("Unsupported algorithm: " + mlDsaAlgorithm);
         }
 
-        mMlDsaAlgorithm = algorithm;
+        mMlDsaAlgorithm = mlDsaAlgorithm;
     }
 
     @Override
