@@ -28,6 +28,7 @@ import org.json.JSONObject;
 import org.json.JSONException;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.WorkerThread;
 
 /**
  * A logger for AppFunction request and response.
@@ -48,6 +49,7 @@ public class AppFunctionRequestResponseLogger {
                 new AppFunctionPersistentLogger(logDir, "app_functions_request_response.log");
     }
 
+    @WorkerThread
     public void log(
             @NonNull ExecuteAppFunctionRequest request,
             @Nullable ExecuteAppFunctionResponse response,
