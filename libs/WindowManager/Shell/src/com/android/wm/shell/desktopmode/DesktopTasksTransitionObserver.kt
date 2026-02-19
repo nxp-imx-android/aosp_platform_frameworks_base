@@ -274,6 +274,27 @@ class DesktopTasksTransitionObserver(
         if (!Flags.enableRememberedBounds()) {
             return
         }
+
+        // Clears remembered bounds if needed.
+        run forEachLoop@{
+            info.changes.forEach { change ->
+                change.taskInfo?.let { taskInfo ->
+                    // TODO: b/477848767 - Remember only position if the task is unresizable.
+                    if (change.mode == TRANSIT_OPEN && !taskInfo.isResizeable) {
+                        val desktopRepository = desktopUserRepositories.getProfile(taskInfo.userId)
+                        val packageName =
+                            taskInfo.componentNameForRememberedBounds?.packageName
+                                ?: return@forEachLoop
+                        desktopRepository.clearRememberedBoundsRatio(packageName)
+                        logV(
+                            "Remembered bounds is cleared as task#%d is unresizable",
+                            taskInfo.taskId,
+                        )
+                    }
+                }
+            }
+        }
+
         if (!pendingUserBoundsChangeTransitions.contains(transition)) return
         pendingUserBoundsChangeTransitions.remove(transition)
 
