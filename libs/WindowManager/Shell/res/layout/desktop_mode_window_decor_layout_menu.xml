@@ -42,12 +42,12 @@
     <!-- TODO: b/452575901- Finalize UI spec details.  -->
     <com.android.wm.shell.windowdecor.WindowingPillView
         android:id="@+id/windowing_pill"
-        android:layout_width="@dimen/desktop_mode_layout_menu_windowing_pill_width"
+        android:layout_width="match_parent"
         android:layout_height="@dimen/desktop_mode_layout_menu_windowing_pill_height"
         android:layout_marginTop="@dimen/desktop_mode_layout_menu_pill_spacing_margin"
         android:layout_gravity="center_horizontal"
         android:orientation="horizontal"
         android:elevation="1dp"
-        android:background="@drawable/desktop_mode_layout_menu_background"
+        android:background="@drawable/desktop_mode_layout_menu_pill_background"
         android:gravity="center_vertical"/>
 </com.android.wm.shell.windowdecor.CaptionMenuLayout>
