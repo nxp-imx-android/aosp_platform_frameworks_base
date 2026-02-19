@@ -29,22 +29,28 @@ import com.android.systemui.keyguard.data.repository.KeyguardRepository
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.log.table.logDiffsForTable
+import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
+import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import com.android.systemui.util.kotlin.sample
 import dagger.Binds
+import dagger.Lazy
 import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
 
 /**
@@ -71,12 +77,12 @@ constructor(
     val biometricSettingsRepository: BiometricSettingsRepository,
     private val selectedUserInteractor: SelectedUserInteractor,
     private val lockPatternUtils: LockPatternUtils,
-    private val keyguardDismissTransitionInteractor:
-        dagger.Lazy<KeyguardDismissTransitionInteractor>,
+    private val keyguardDismissTransitionInteractor: Lazy<KeyguardDismissTransitionInteractor>,
     private val internalTransitionInteractor: InternalKeyguardTransitionInteractor,
-    deviceEntryInteractor: DeviceEntryInteractor,
+    deviceEntryInteractor: Lazy<DeviceEntryInteractor>,
     authenticationInteractor: AuthenticationInteractor,
     keyguardServiceShowLockscreenInteractor: KeyguardServiceShowLockscreenInteractor,
+    private val sceneInteractor: Lazy<SceneInteractor>,
 ) : CoreStartable {
 
     /**
@@ -91,22 +97,38 @@ constructor(
      * locked when it was disabled.
      *
      * Even if the keyguard is enabled, it's possible for it to be suppressed temporarily via adb.
-     * If you need to respect that adb command, you will need to use
-     * [isKeyguardEnabledAndNotSuppressed] instead of using this flow.
      */
-    val isKeyguardEnabled: StateFlow<Boolean> = repository.isKeyguardEnabled
+    val isKeyguardEnabled: StateFlow<Boolean> =
+        combine(
+                repository.isKeyguardEnabled,
+                // Since there is no way to listen for suppression events, check any time the device
+                // is going to lockscreen
+                sceneInteractor
+                    .get()
+                    .transitionStateFlow
+                    .map { it.isTransitioning(to = Scenes.Lockscreen) }
+                    .distinctUntilChanged()
+                    .map { isKeyguardSuppressed() },
+            ) { enabled, suppressed ->
+                enabled && !suppressed
+            }
+            .stateIn(
+                scope = scope,
+                started = SharingStarted.WhileSubscribed(),
+                initialValue = repository.isKeyguardEnabled.value,
+            )
 
     /** Whether we need to show the keyguard when the keyguard is re-enabled. */
     val showKeyguardWhenReenabled: Flow<Boolean> =
         merge(
             // If the keyguard is disabled while we were locked/showing keyguard, we want to re-show
             // it when the keyguard is re-enabled.
-            repository.isKeyguardEnabled
+            isKeyguardEnabled
                 .filter { enabled -> !enabled }
                 .sample(biometricSettingsRepository.isCurrentUserInLockdown, ::Pair)
                 .map { (_, inLockdown) ->
                     if (SceneContainerFlag.isEnabled) {
-                        !deviceEntryInteractor.isDeviceEntered.value && !inLockdown
+                        !deviceEntryInteractor.get().isDeviceEntered.value && !inLockdown
                     } else {
                         val transitionInfo =
                             internalTransitionInteractor.currentTransitionInfoInternal()
@@ -165,7 +187,7 @@ constructor(
      * flow, since it's ambiguous when we would query the latest suppression value.
      */
     suspend fun isKeyguardEnabledAndNotSuppressed(): Boolean {
-        return isKeyguardEnabled.value && !isKeyguardSuppressed()
+        return repository.isKeyguardEnabled.value && !isKeyguardSuppressed()
     }
 
     /**
@@ -187,7 +209,7 @@ constructor(
         // as possible, only return true if keyguard is suppressed when it otherwise would have
         // been enabled.
         return withContext(backgroundDispatcher) {
-            isKeyguardEnabled.value && lockPatternUtils.isLockScreenDisabled(userId)
+            repository.isKeyguardEnabled.value && lockPatternUtils.isLockScreenDisabled(userId)
         }
     }
 

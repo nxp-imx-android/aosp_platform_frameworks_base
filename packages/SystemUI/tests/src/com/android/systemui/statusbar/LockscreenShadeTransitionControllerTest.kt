@@ -11,12 +11,12 @@ import com.android.systemui.authentication.data.repository.fakeAuthenticationRep
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.classifier.FalsingCollectorFake
 import com.android.systemui.classifier.FalsingManagerFake
-import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryRepository
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.flags.Flags
 import com.android.systemui.flags.fakeFeatureFlagsClassic
+import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.domain.interactor.NaturalScrollingSettingObserver
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.media.controls.ui.controller.KeyguardMediaController
@@ -231,7 +231,7 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
             whenever(childView.getEntryAdapter()).thenReturn(mockEntryAdapter)
             whenever(mockEntryAdapter.isSensitive()).thenReturn(MutableStateFlow(true))
 
-            kosmos.fakeDeviceEntryRepository.setLockscreenEnabled(true)
+            kosmos.fakeKeyguardRepository.setKeyguardEnabled(true)
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(
                 AuthenticationMethodModel.Pin
             )
@@ -250,7 +250,7 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
             whenever(childView.getEntryAdapter()).thenReturn(mockEntryAdapter)
             whenever(mockEntryAdapter.isSensitive()).thenReturn(MutableStateFlow(true))
 
-            kosmos.fakeDeviceEntryRepository.setLockscreenEnabled(true)
+            kosmos.fakeKeyguardRepository.setKeyguardEnabled(true)
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(
                 AuthenticationMethodModel.Pin
             )
@@ -269,7 +269,7 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
             whenever(childView.getEntryAdapter()).thenReturn(mockEntryAdapter)
             whenever(mockEntryAdapter.isSensitive()).thenReturn(MutableStateFlow(false))
 
-            kosmos.fakeDeviceEntryRepository.setLockscreenEnabled(true)
+            kosmos.fakeKeyguardRepository.setKeyguardEnabled(true)
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(
                 AuthenticationMethodModel.Pin
             )
@@ -289,7 +289,7 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
             whenever(expandCallback.getChildAtRawPosition(any(), any())).thenReturn(childView)
 
             // Set shade expanded and screen locked
-            kosmos.fakeDeviceEntryRepository.setLockscreenEnabled(true)
+            kosmos.fakeKeyguardRepository.setKeyguardEnabled(true)
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(
                 AuthenticationMethodModel.Pin
             )
@@ -337,7 +337,7 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
             whenever(expandCallback.getChildAtRawPosition(any(), any())).thenReturn(childView)
 
             // Set shade not expanded and screen locked
-            kosmos.fakeDeviceEntryRepository.setLockscreenEnabled(true)
+            kosmos.fakeKeyguardRepository.setKeyguardEnabled(true)
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(
                 AuthenticationMethodModel.Pin
             )
@@ -383,7 +383,7 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
             transitionController.touchHelper.expandCallback = expandCallback
             whenever(expandCallback.getChildAtRawPosition(any(), any())).thenReturn(childView)
 
-            kosmos.fakeDeviceEntryRepository.setLockscreenEnabled(true)
+            kosmos.fakeKeyguardRepository.setKeyguardEnabled(true)
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(
                 AuthenticationMethodModel.Pin
             )
@@ -428,7 +428,7 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
             transitionController.touchHelper.expandCallback = expandCallback
             whenever(expandCallback.getChildAtRawPosition(any(), any())).thenReturn(childView)
 
-            kosmos.fakeDeviceEntryRepository.setLockscreenEnabled(true)
+            kosmos.fakeKeyguardRepository.setKeyguardEnabled(true)
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(
                 AuthenticationMethodModel.Pin
             )

@@ -23,7 +23,7 @@ import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.fakeAuthenticationRepository
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
-import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryRepository
+import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.TransitionStep
 import com.android.systemui.kosmos.Kosmos
@@ -138,13 +138,13 @@ class ManagedProfileInteractorTest : SysuiTestCase() {
 
     private fun Kosmos.setDeviceAsEntered() {
         fakeAuthenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.None)
-        fakeDeviceEntryRepository.setLockscreenEnabled(false)
+        fakeKeyguardRepository.setKeyguardEnabled(false)
         setCurrentScene(Scenes.Gone)
     }
 
     private fun Kosmos.setDeviceAsLocked() {
         fakeAuthenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Password)
-        fakeDeviceEntryRepository.setLockscreenEnabled(true)
+        fakeKeyguardRepository.setKeyguardEnabled(true)
         setCurrentScene(Scenes.Lockscreen)
     }
 

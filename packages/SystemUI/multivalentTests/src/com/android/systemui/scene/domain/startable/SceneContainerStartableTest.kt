@@ -1266,7 +1266,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
             prepareState(
                 initialSceneKey = Scenes.Lockscreen,
                 authenticationMethod = AuthenticationMethodModel.None,
-                isLockscreenEnabled = true,
+                isKeyguardEnabled = true,
             )
 
             // Do not suppress keyguard at start
@@ -1301,7 +1301,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
             prepareState(
                 initialSceneKey = Scenes.Lockscreen,
                 authenticationMethod = AuthenticationMethodModel.None,
-                isLockscreenEnabled = true,
+                isKeyguardEnabled = true,
             )
             powerInteractor.setAsleepForTest()
             underTest.start()
@@ -1333,7 +1333,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
                 prepareState(
                     initialSceneKey = Scenes.Shade,
                     authenticationMethod = AuthenticationMethodModel.None,
-                    isLockscreenEnabled = false,
+                    isKeyguardEnabled = false,
                     startsAwake = false,
                 )
             underTest.start()
@@ -1372,7 +1372,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
             prepareState(
                 initialSceneKey = Scenes.Lockscreen,
                 authenticationMethod = AuthenticationMethodModel.None,
-                isLockscreenEnabled = true,
+                isKeyguardEnabled = true,
             )
             powerInteractor.setAsleepForTest()
             kosmos.keyguardRepository.setCanIgnoreAuthAndReturnToGone(false)
@@ -1393,7 +1393,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
             prepareState(
                 initialSceneKey = Scenes.Lockscreen,
                 authenticationMethod = AuthenticationMethodModel.None,
-                isLockscreenEnabled = true,
+                isKeyguardEnabled = true,
             )
             assertThat(currentSceneKey).isEqualTo(Scenes.Lockscreen)
             underTest.start()
@@ -1734,7 +1734,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
                 initialSceneKey = Scenes.Lockscreen,
                 authenticationMethod = AuthenticationMethodModel.None,
                 isDeviceUnlocked = true,
-                isLockscreenEnabled = false,
+                isKeyguardEnabled = false,
             )
             underTest.start()
             runCurrent()
@@ -2682,57 +2682,6 @@ class SceneContainerStartableTest : SysuiTestCase() {
         }
 
     @Test
-    fun refreshLockscreenEnabled() =
-        kosmos.runTest {
-            val transitionState =
-                prepareState(isDeviceUnlocked = true, initialSceneKey = Scenes.Gone)
-            underTest.start()
-            val isLockscreenEnabled by collectLastValue(deviceEntryInteractor.isLockscreenEnabled)
-            assertThat(isLockscreenEnabled).isTrue()
-
-            fakeDeviceEntryRepository.setPendingLockscreenEnabled(false)
-            runCurrent()
-            // Pending value didn't propagate yet.
-            assertThat(isLockscreenEnabled).isTrue()
-
-            // Starting a transition to Lockscreen should refresh the value, causing the pending
-            // value to propagate to the real flow:
-            transitionState.value =
-                ObservableTransitionState.Transition(
-                    fromScene = Scenes.Gone,
-                    toScene = Scenes.Lockscreen,
-                    currentScene = flowOf(Scenes.Gone),
-                    progress = flowOf(0.1f),
-                    isInitiatedByUserInput = false,
-                    isUserInputOngoing = flowOf(false),
-                )
-            runCurrent()
-            assertThat(isLockscreenEnabled).isFalse()
-
-            fakeDeviceEntryRepository.setPendingLockscreenEnabled(true)
-            runCurrent()
-            // Pending value didn't propagate yet.
-            assertThat(isLockscreenEnabled).isFalse()
-            transitionState.value = ObservableTransitionState.Idle(Scenes.Gone)
-            runCurrent()
-            assertThat(isLockscreenEnabled).isFalse()
-
-            // Starting another transition to Lockscreen should refresh the value, causing the
-            // pending value to propagate to the real flow:
-            transitionState.value =
-                ObservableTransitionState.Transition(
-                    fromScene = Scenes.Gone,
-                    toScene = Scenes.Lockscreen,
-                    currentScene = flowOf(Scenes.Gone),
-                    progress = flowOf(0.1f),
-                    isInitiatedByUserInput = false,
-                    isUserInputOngoing = flowOf(false),
-                )
-            runCurrent()
-            assertThat(isLockscreenEnabled).isTrue()
-        }
-
-    @Test
     fun replacesLockscreenSceneOnBackStack_whenUnlockedViaAlternateBouncer_fromShade() =
         kosmos.runTest {
             enableSingleShade()
@@ -3422,7 +3371,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
         initialSceneKey: SceneKey? = null,
         initialOverlays: Set<OverlayKey> = emptySet(),
         authenticationMethod: AuthenticationMethodModel? = null,
-        isLockscreenEnabled: Boolean = true,
+        isKeyguardEnabled: Boolean = true,
         startsAwake: Boolean = true,
         isDeviceProvisioned: Boolean = true,
         isInteractive: Boolean = true,
@@ -3441,9 +3390,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
         fakeDeviceEntryBypassRepository.setBypassEnabled(isBypassEnabled)
         authenticationMethod?.let {
             fakeAuthenticationRepository.setAuthenticationMethod(authenticationMethod)
-            fakeDeviceEntryRepository.setLockscreenEnabled(
-                isLockscreenEnabled = isLockscreenEnabled
-            )
+            fakeKeyguardRepository.setKeyguardEnabled(isKeyguardEnabled)
         }
         runCurrent()
         val transitionStateFlow =

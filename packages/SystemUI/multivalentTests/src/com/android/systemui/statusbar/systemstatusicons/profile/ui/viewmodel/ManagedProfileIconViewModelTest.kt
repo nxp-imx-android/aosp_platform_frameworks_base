@@ -26,7 +26,7 @@ import com.android.systemui.authentication.data.repository.fakeAuthenticationRep
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
-import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryRepository
+import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
@@ -102,7 +102,7 @@ class ManagedProfileIconViewModelTest : SysuiTestCase() {
 
     private fun Kosmos.setDeviceAsEntered() {
         fakeAuthenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.None)
-        fakeDeviceEntryRepository.setLockscreenEnabled(false)
+        fakeKeyguardRepository.setKeyguardEnabled(false)
         setCurrentScene(Scenes.Gone)
     }
 

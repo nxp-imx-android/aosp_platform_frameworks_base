@@ -36,7 +36,6 @@ import com.android.systemui.authentication.shared.model.AuthenticationMethodMode
 import com.android.systemui.biometrics.data.repository.fakeFingerprintPropertyRepository
 import com.android.systemui.bouncer.data.repository.keyguardBouncerRepository
 import com.android.systemui.bouncer.domain.interactor.alternateBouncerInteractor
-import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryRepository
 import com.android.systemui.dreams.dreamStartable
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.keyguard.data.repository.biometricSettingsRepository
@@ -110,7 +109,7 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
     fun isUnlocked_whenAuthMethodIsNoneAndLockscreenDisabled_isTrue() =
         kosmos.runTest {
             fakeAuthenticationRepository.setAuthenticationMethod(None)
-            fakeDeviceEntryRepository.setLockscreenEnabled(false)
+            fakeKeyguardRepository.setKeyguardEnabled(false)
 
             val isUnlocked by collectLastValue(underTest.isUnlocked)
             assertThat(isUnlocked).isTrue()
@@ -188,7 +187,7 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
     fun isDeviceEntered_onBouncer_isFalse() =
         kosmos.runTest {
             fakeAuthenticationRepository.setAuthenticationMethod(Pattern)
-            fakeDeviceEntryRepository.setLockscreenEnabled(true)
+            fakeKeyguardRepository.setKeyguardEnabled(true)
             switchToScene(Scenes.Lockscreen)
             showBouncer()
 
@@ -248,7 +247,7 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
     fun canSwipeToEnter_onLockscreenWithPin_isFalse() =
         kosmos.runTest {
             fakeAuthenticationRepository.setAuthenticationMethod(Pin)
-            fakeDeviceEntryRepository.setLockscreenEnabled(true)
+            fakeKeyguardRepository.setKeyguardEnabled(true)
             switchToScene(Scenes.Lockscreen)
 
             val canSwipeToEnter by collectLastValue(underTest.canSwipeToEnter)
@@ -599,7 +598,7 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
             switchToScene(Scenes.Lockscreen)
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
 
-            fakeDeviceEntryRepository.setLockscreenEnabled(true)
+            fakeKeyguardRepository.setKeyguardEnabled(true)
             fakeAuthenticationRepository.setAuthenticationMethod(None)
 
             underTest.attemptDeviceEntry("test")
@@ -618,7 +617,7 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
             assertThat(currentScene).isEqualTo(Scenes.Shade)
             assertThat(backStack!!.asIterable()).containsExactly(Scenes.Lockscreen)
 
-            fakeDeviceEntryRepository.setLockscreenEnabled(true)
+            fakeKeyguardRepository.setKeyguardEnabled(true)
             fakeAuthenticationRepository.setAuthenticationMethod(None)
 
             underTest.attemptDeviceEntry("test")
@@ -663,7 +662,7 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
         kosmos.runTest {
             val isUnlocked by collectLastValue(underTest.isUnlocked)
             fakeAuthenticationRepository.setAuthenticationMethod(Pin)
-            fakeDeviceEntryRepository.setLockscreenEnabled(true)
+            fakeKeyguardRepository.setKeyguardEnabled(true)
             assertThat(isUnlocked).isFalse()
 
             authenticationInteractor.authenticate(FakeAuthenticationRepository.DEFAULT_PIN)
@@ -799,7 +798,7 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
         kosmos.runTest {
             val isUnlocked by collectLastValue(underTest.isUnlocked)
             val currentScene by collectLastValue(sceneInteractor.currentScene)
-            fakeDeviceEntryRepository.setLockscreenEnabled(false)
+            fakeKeyguardRepository.setKeyguardEnabled(false)
             fakeAuthenticationRepository.setAuthenticationMethod(None)
             switchToScene(Scenes.Gone)
             assertThat(isUnlocked).isTrue()
@@ -813,7 +812,7 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
 
     private fun Kosmos.setupSwipeDeviceEntryMethod() {
         fakeAuthenticationRepository.setAuthenticationMethod(None)
-        fakeDeviceEntryRepository.setLockscreenEnabled(true)
+        fakeKeyguardRepository.setKeyguardEnabled(true)
     }
 
     private fun Kosmos.switchToScene(sceneKey: SceneKey) {
