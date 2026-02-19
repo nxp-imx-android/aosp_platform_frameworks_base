@@ -350,6 +350,9 @@ class ExpandableNotificationRowBuilder(
                 NotificationManager.IMPORTANCE_DEFAULT,
             )
         channel.isBlockable = true
+        if (notification.isImportantConversation) {
+            channel.setImportantConversation(true)
+        }
 
         val promoted = notification.isOngoingEvent && notification.isRequestPromotedOngoing
         val packageName = fakePackage?.packageName ?: PKG
@@ -476,14 +479,23 @@ class ExpandableNotificationRowBuilder(
         private val USER_HANDLE = UserHandle.of(ActivityManager.getCurrentUser())
         private const val INFLATION_FLAGS = FLAG_CONTENT_VIEW_ALL
         private const val IS_CONVERSATION_FLAG = "test.isConversation"
+        private const val IS_IMPORTANT_CONVERSATION_FLAG = "test.isImportantConversation"
 
         private val Notification.isConversationStyleNotification
             get() = extras.getBoolean(IS_CONVERSATION_FLAG, false)
 
+        private val Notification.isImportantConversation
+            get() = extras.getBoolean(IS_IMPORTANT_CONVERSATION_FLAG, false)
+
         private val STUB_ONLY = Mockito.withSettings().stubOnly()
 
-        fun markAsConversation(builder: Notification.Builder) {
-            builder.addExtras(bundleOf(IS_CONVERSATION_FLAG to true))
+        fun markAsConversation(builder: Notification.Builder, isImportant: Boolean = false) {
+            builder.addExtras(
+                bundleOf(
+                    IS_CONVERSATION_FLAG to true,
+                    IS_IMPORTANT_CONVERSATION_FLAG to isImportant,
+                )
+            )
         }
     }
 }
