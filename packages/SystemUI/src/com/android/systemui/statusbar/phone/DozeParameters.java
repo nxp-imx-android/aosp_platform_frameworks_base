@@ -50,6 +50,7 @@ import com.android.systemui.minmode.MinModeManager;
 import com.android.systemui.minmode.MinModeManagerUtilsKt;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.res.R;
+import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.statusbar.policy.BatteryController;
 import com.android.systemui.statusbar.policy.BatteryController.BatteryStateChangeCallback;
@@ -92,6 +93,7 @@ public class DozeParameters implements
     private final KeyguardTransitionInteractor mTransitionInteractor;
     private final FoldAodAnimationController mFoldAodAnimationController;
     private final UnlockedScreenOffAnimationController mUnlockedScreenOffAnimationController;
+    private final StatusBarStateController mStatusBarStateController;
     private final UserTracker mUserTracker;
     private final SecureSettings mSecureSettings;
     private final Optional<MinModeManager> mMinModeManager;
@@ -155,6 +157,7 @@ public class DozeParameters implements
         mPowerManager.setDozeAfterScreenOff(!mControlScreenOffAnimation);
         mScreenOffAnimationController = screenOffAnimationController;
         mUnlockedScreenOffAnimationController = unlockedScreenOffAnimationController;
+        mStatusBarStateController = statusBarStateController;
         mUserTracker = userTracker;
         mDozeInteractor = dozeInteractor;
         mTransitionInteractor = transitionInteractor;
@@ -332,7 +335,12 @@ public class DozeParameters implements
         if (!getDisplayNeedsBlanking()) {
             final boolean controlScreenOff =
                     getAlwaysOn() && (mKeyguardVisible || shouldControlUnlockedScreenOff());
-            setControlScreenOffAnimation(controlScreenOff);
+            if (SceneContainerFlag.isEnabled()) {
+                setControlScreenOffAnimation(controlScreenOff
+                        && !mStatusBarStateController.isExpanded());
+            } else {
+                setControlScreenOffAnimation(controlScreenOff);
+            }
         }
     }
 
