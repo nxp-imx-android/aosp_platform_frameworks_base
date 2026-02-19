@@ -25,6 +25,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.app.KeyguardManager;
 import android.companion.AssociationInfo;
 import android.companion.CompanionDeviceManager;
 import android.companion.DeviceId;
@@ -81,6 +82,8 @@ public class AgentAuthServiceTest {
     @Mock
     private BiometricManager mBiometricManager;
     @Mock
+    private KeyguardManager mKeyguardManager;
+    @Mock
     private LockSettingsInternal mLockSettings;
     private CompanionDeviceManager mCompanionDeviceManager;
     private Handler mHandler;
@@ -118,6 +121,8 @@ public class AgentAuthServiceTest {
             return null;
         }).when(mMockCDMService).setOnDevicePresenceEventListener(any(), any(), any(), anyInt());
 
+        when(mKeyguardManager.isDeviceLocked(anyInt())).thenReturn(true);
+
         mCompanionDeviceManager = new CompanionDeviceManager(mMockCDMService, mMockContext);
         mHandler = new Handler(TestableLooper.get(this).getLooper());
 
@@ -126,7 +131,7 @@ public class AgentAuthServiceTest {
         mService = new AgentAuthService(mMockContext, mHandler, mClock, AUTH_INTERVAL);
 
         // Initialize for USER_ID, flushing each step to avoid task removal
-        mService.start(mLockSettings, mBiometricManager, mCompanionDeviceManager);
+        mService.start(mLockSettings, mBiometricManager, mKeyguardManager, mCompanionDeviceManager);
         TestableLooper.get(this).processAllMessages();
 
         mService.initInBackgroundForUser(USER_ID);
@@ -141,6 +146,17 @@ public class AgentAuthServiceTest {
     @Test
     public void testIsAgentAuthorized_noSession_returnsFalse() {
         assertThat(mService.isAgentAuthorized(USER_ID, createDeviceId("1"))).isFalse();
+    }
+
+    @Test
+    public void testIsAgentAuthorized_unlockedConnection_returnsTrue() throws RemoteException {
+        // Simulate device is UNLOCKED
+        when(mKeyguardManager.isDeviceLocked(USER_ID)).thenReturn(false);
+
+        DeviceId deviceId = createDeviceId("123");
+        triggerAgentConnected(123, deviceId);
+
+        assertThat(mService.isAgentAuthorized(USER_ID, deviceId)).isTrue();
     }
 
     @Test
