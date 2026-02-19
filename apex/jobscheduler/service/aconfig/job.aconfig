@@ -31,3 +31,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enforce_proxied_jobs_limit"
+    namespace: "backstage_power"
+    description: "Enforce a limit on the number of proxied jobs that can be scheduled indirectly (e.g. via SyncManager)"
+    bug: "299930087"
+}

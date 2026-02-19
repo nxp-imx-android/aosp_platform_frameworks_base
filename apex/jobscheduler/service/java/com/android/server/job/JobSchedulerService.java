@@ -214,6 +214,10 @@ public class JobSchedulerService extends com.android.server.SystemService
     /** The number of the most recently completed jobs to keep track of for debugging purposes. */
     private static final int NUM_COMPLETED_JOB_HISTORY = 20;
 
+    @GuardedBy("mLock")
+    private final ArrayMap<String, SparseIntArray> mProxiedJobsCounts =
+            new ArrayMap<>();
+
     /**
      * Require the hosting job to specify a network constraint if the included
      * {@link android.app.job.JobWorkItem} indicates network usage.
@@ -636,6 +640,9 @@ public class JobSchedulerService extends com.android.server.SystemService
                                 persistenceUpdated = true;
                             }
                             break;
+                        case Constants.KEY_MAX_NUM_PROXIED_JOBS_PER_APP:
+                            mConstants.updateProxiedJobsConstantsLocked();
+                            break;
                         default:
                             if (name.startsWith(JobConcurrencyManager.CONFIG_KEY_PREFIX_CONCURRENCY)
                                     && !concurrencyUpdated) {
@@ -768,6 +775,9 @@ public class JobSchedulerService extends com.android.server.SystemService
         private static final String KEY_MAX_NUM_PERSISTED_JOB_WORK_ITEMS =
                 "max_num_persisted_job_work_items";
 
+        private static final String KEY_MAX_NUM_PROXIED_JOBS_PER_APP =
+                "max_num_proxied_jobs_per_app";
+
         private static final int DEFAULT_MIN_READY_CPU_ONLY_JOBS_COUNT =
                 Math.min(3, JobConcurrencyManager.DEFAULT_CONCURRENCY_LIMIT / 3);
         private static final int DEFAULT_MIN_READY_NON_ACTIVE_JOBS_COUNT =
@@ -829,6 +839,7 @@ public class JobSchedulerService extends com.android.server.SystemService
         public static final boolean DEFAULT_RUNTIME_USE_DATA_ESTIMATES_FOR_LIMITS = false;
         static final boolean DEFAULT_PERSIST_IN_SPLIT_FILES = true;
         static final int DEFAULT_MAX_NUM_PERSISTED_JOB_WORK_ITEMS = 100_000;
+        static final int DEFAULT_MAX_NUM_PROXIED_JOBS_PER_APP = 150;
 
         /**
          * Minimum # of jobs that have to be ready for JS to be happy running work.
@@ -1062,6 +1073,12 @@ public class JobSchedulerService extends com.android.server.SystemService
          * The maximum number of {@link JobWorkItem JobWorkItems} that can be persisted per job.
          */
         public int MAX_NUM_PERSISTED_JOB_WORK_ITEMS = DEFAULT_MAX_NUM_PERSISTED_JOB_WORK_ITEMS;
+
+        /**
+        * The maximum number of jobs allowed to be scheduled indirectly (e.g. using SyncManager)
+        * by an app.
+        */
+        public int MAX_NUM_PROXIED_JOBS_PER_APP = DEFAULT_MAX_NUM_PROXIED_JOBS_PER_APP;
 
         public Constants() {
             copyTransportBatchThresholdDefaults();
@@ -1310,6 +1327,13 @@ public class JobSchedulerService extends com.android.server.SystemService
                     DEFAULT_RUNTIME_USE_DATA_ESTIMATES_FOR_LIMITS);
         }
 
+        private void updateProxiedJobsConstantsLocked() {
+            MAX_NUM_PROXIED_JOBS_PER_APP = DeviceConfig.getInt(
+                    DeviceConfig.NAMESPACE_JOB_SCHEDULER,
+                    KEY_MAX_NUM_PROXIED_JOBS_PER_APP,
+                    DEFAULT_MAX_NUM_PROXIED_JOBS_PER_APP);
+        }
+
         void dump(IndentingPrintWriter pw) {
             pw.println("Settings:");
             pw.increaseIndent();
@@ -1384,6 +1408,8 @@ public class JobSchedulerService extends com.android.server.SystemService
             pw.print(KEY_PERSIST_IN_SPLIT_FILES, PERSIST_IN_SPLIT_FILES).println();
             pw.print(KEY_MAX_NUM_PERSISTED_JOB_WORK_ITEMS, MAX_NUM_PERSISTED_JOB_WORK_ITEMS)
                     .println();
+
+            pw.print(KEY_MAX_NUM_PROXIED_JOBS_PER_APP, MAX_NUM_PROXIED_JOBS_PER_APP).println();
 
             pw.decreaseIndent();
         }
@@ -1826,6 +1852,7 @@ public class JobSchedulerService extends com.android.server.SystemService
         synchronized (mLock) {
             final JobStatus toCancel =
                     mJobs.getJobByUidAndJobId(callingUid, namespace, job.getId());
+            final boolean isNewJob = toCancel == null;
 
             if (work != null && toCancel != null) {
                 // Fast path: we are adding work to an existing job, and the JobInfo is not
@@ -1911,6 +1938,8 @@ public class JobSchedulerService extends com.android.server.SystemService
 
             // This may throw a SecurityException.
             jobStatus.prepareLocked();
+
+            checkProxiedJobCountsLocked(jobStatus, toCancel, isNewJob);
 
             if (toCancel != null) {
                 // On T and below, JobWorkItem count was unlimited but they could not be
@@ -3058,6 +3087,10 @@ public class JobSchedulerService extends com.android.server.SystemService
         jobStatus.enqueueTime = sElapsedRealtimeClock.millis();
         final boolean update = lastJob != null;
         mJobs.add(jobStatus);
+        if (isSystemProxiedJob(jobStatus)) {
+            incrementProxiedJobCountLocked(
+                jobStatus.getSourceUid(), jobStatus.getSourcePackageName());
+        }
         // Clear potentially cached INVALID_JOB_ID reason.
         resetPendingJobReasonsCache(jobStatus);
         if (mReadyToRock) {
@@ -3091,6 +3124,10 @@ public class JobSchedulerService extends com.android.server.SystemService
 
         // Remove from store as well as controllers.
         final boolean removed = mJobs.remove(jobStatus, removeFromPersisted);
+        if (isSystemProxiedJob(jobStatus)) {
+            decrementProxiedJobCountLocked(
+                jobStatus.getSourceUid(), jobStatus.getSourcePackageName());
+        }
         if (!removed) {
             // We never create JobStatus objects for the express purpose of removing them, and this
             // method is only ever called for jobs that were saved in the JobStore at some point,
@@ -6136,6 +6173,70 @@ public class JobSchedulerService extends com.android.server.SystemService
                 return id1 < id2 ? -1 : (id1 > id2 ? 1 : 0);
             }
         });
+    }
+
+    @GuardedBy("mLock")
+    private void checkProxiedJobCountsLocked(JobStatus jobStatus, JobStatus toCancel,
+            boolean isNewJob) {
+        if (!Flags.enforceProxiedJobsLimit()) {
+            return;
+        }
+        final boolean systemProxiedNewJob = isSystemProxiedJob(jobStatus);
+        final boolean systemProxiedToCancelJob = !isNewJob && isSystemProxiedJob(toCancel);
+        if (systemProxiedNewJob && !systemProxiedToCancelJob) {
+            if (isOverProxiedJobCountLimitLocked(jobStatus.getSourceUid(),
+                    jobStatus.getSourcePackageName())) {
+                Slog.w(TAG, "Too many proxied sync jobs for " + jobStatus.getSourcePackageName()
+                        + " (uid " + jobStatus.getSourceUid() + ") - REJECTED");
+                throw new IllegalStateException("Too many proxied sync jobs");
+            }
+        }
+    }
+
+    @GuardedBy("mLock")
+    private boolean isOverProxiedJobCountLimitLocked(int sourceUid, String sourcePackageName) {
+        final SparseIntArray uidCounts = mProxiedJobsCounts.get(sourcePackageName);
+        if (uidCounts == null) {
+            // No count for this package yet.
+            return false;
+        }
+        return uidCounts.get(sourceUid, 0) >= mConstants.MAX_NUM_PROXIED_JOBS_PER_APP;
+    }
+
+    @GuardedBy("mLock")
+    private void incrementProxiedJobCountLocked(int sourceUid, String sourcePackageName) {
+        if (!Flags.enforceProxiedJobsLimit()) {
+            return;
+        }
+        SparseIntArray uidCounts = mProxiedJobsCounts.get(sourcePackageName);
+        if (uidCounts == null) {
+            uidCounts = new SparseIntArray();
+            mProxiedJobsCounts.put(sourcePackageName, uidCounts);
+        }
+        uidCounts.put(sourceUid, uidCounts.get(sourceUid, 0) + 1);
+    }
+
+    @GuardedBy("mLock")
+    private void decrementProxiedJobCountLocked(int sourceUid, String sourcePackageName) {
+        if (!Flags.enforceProxiedJobsLimit()) {
+            return;
+        }
+        final SparseIntArray uidCounts = mProxiedJobsCounts.get(sourcePackageName);
+        if (uidCounts != null) {
+            final int uidIndex = uidCounts.indexOfKey(sourceUid);
+            if (uidIndex >= 0) {
+                uidCounts.setValueAt(uidIndex, Math.max(uidCounts.valueAt(uidIndex) - 1, 0));
+            } else {
+                Slog.w(TAG, "Decrementing count for non-tracked UID: " + sourceUid + " in package: "
+                        + sourcePackageName);
+            }
+        } else {
+            Slog.wtf(TAG, "Decrementing count for non-tracked package: " + sourcePackageName);
+        }
+    }
+
+    private static boolean isSystemProxiedJob(JobStatus job) {
+        return job.getUid() == Process.SYSTEM_UID && job.getUid() != job.getSourceUid();
     }
 
     @NeverCompile // Avoid size overhead of debugging code.
