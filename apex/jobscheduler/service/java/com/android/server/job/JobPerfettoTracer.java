@@ -36,9 +36,6 @@ public abstract class JobPerfettoTracer {
      * Creates a new instance of the appropriate {@link JobPerfettoTracer} implementation.
      */
     public static JobPerfettoTracer create() {
-        if (!Flags.usePerfettoSdkForTracing()) {
-            return new JobPerfettoTracerNoOp();
-        }
         return PerfettoTrace.IS_USE_SDK_TRACING_API_V3
                 ? new JobPerfettoTracer.JobPerfettoTracerV3()
                 : new JobPerfettoTracer.JobPerfettoTracerLegacy();
@@ -73,28 +70,6 @@ public abstract class JobPerfettoTracer {
     @VisibleForTesting
     protected boolean isTraceEnabled() {
         return PerfettoTrace.isJobSchedulerCategoryEnabled();
-    }
-
-    static final class JobPerfettoTracerNoOp extends JobPerfettoTracer {
-        @Override
-        public JobPerfettoTracer startEvent(String eventName) {
-            return this;
-        }
-
-        @Override
-        public JobPerfettoTracer addField(long fieldId, long value) {
-            return this;
-        }
-
-        @Override
-        public void emit() {
-            // No-op
-        }
-
-        @Override
-        protected boolean isTraceEnabled() {
-            return false;
-        }
     }
 
     static final class JobPerfettoTracerV3 extends JobPerfettoTracer {
