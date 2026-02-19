@@ -177,6 +177,9 @@ final class DreamComponentsResolver {
     }
 
     boolean isValid(ComponentName component) {
+        if (component == null) {
+            return false;
+        }
         return mDreamRepository.getDreamItem(component).isPresent();
     }
 

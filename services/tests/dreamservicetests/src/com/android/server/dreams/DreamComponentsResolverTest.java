@@ -245,6 +245,11 @@ public class DreamComponentsResolverTest {
         assertThat(playlist.getActiveDream().componentName).isEqualTo(DREAM_COMPONENT);
     }
 
+    @Test
+    public void isValid_nullComponent_returnsFalse() {
+        assertThat(mResolver.isValid(null)).isFalse();
+    }
+
     private DreamItem createDreamItem(ComponentName component) {
         return new DreamItem.Builder(component).build();
     }

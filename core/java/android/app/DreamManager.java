@@ -277,16 +277,17 @@ public class DreamManager {
      * <p>Note that this differs from {@link DreamManager#setActiveDream(ComponentName)}, which
      * changes the "allowed" list of dreams rather than the "active" dream.
      *
+     * @return Whether the active dream was successfully set.
+     *
      * @hide
      */
     @RequiresPermission(android.Manifest.permission.WRITE_DREAM_STATE)
     @UserHandleAware(
             requiresPermissionIfNotCaller = android.Manifest.permission.INTERACT_ACROSS_USERS)
-    public void setActiveDreamComponent(@Nullable ComponentName dreamComponent) {
+    public boolean setActiveDreamComponent(@Nullable ComponentName dreamComponent) {
         assertDreamSwitcherFlag();
         try {
-            mService.setActiveDream(dreamComponent, mContext.getUserId());
-            return;
+            return mService.setActiveDream(dreamComponent, mContext.getUserId());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

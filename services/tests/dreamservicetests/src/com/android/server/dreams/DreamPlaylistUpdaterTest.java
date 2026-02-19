@@ -32,6 +32,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.test.TestLooper;
+import android.service.dreams.DreamItem;
 import android.service.dreams.DreamPlaylist;
 import android.service.dreams.IDreamManagerListener;
 
@@ -70,15 +71,21 @@ public class DreamPlaylistUpdaterTest {
         mLooper = new TestLooper();
         mUpdater =
                 new DreamPlaylistUpdater(
-                        mResolver, new Handler(mLooper.getLooper()), null, TEST_DEBOUNCE_DELAY_MS);
+                        (id) -> mResolver,
+                        new Handler(mLooper.getLooper()),
+                        null,
+                        TEST_DEBOUNCE_DELAY_MS);
         when(mListener.asBinder()).thenReturn(mBinder);
     }
 
     @Test
     public void refresh_debouncesUpdates() throws RemoteException {
         // Setup initial state
-        when(mResolver.getDreamPlaylist(anyInt(), any()))
-                .thenReturn(new DreamPlaylist(Collections.singletonList(DREAM_1), 0));
+        when(mResolver.getDreamPlaylist(any()))
+                .thenReturn(
+                        new DreamPlaylist(
+                                Collections.singletonList(new DreamItem.Builder(DREAM_1).build()),
+                                0));
         mUpdater.registerListener(mListener, USER_ID);
         mLooper.dispatchAll();
 
@@ -106,8 +113,11 @@ public class DreamPlaylistUpdaterTest {
     @Test
     public void refresh_cancelsPreviousDebounce() throws RemoteException {
         // Initial setup
-        when(mResolver.getDreamPlaylist(anyInt(), any()))
-                .thenReturn(new DreamPlaylist(Collections.singletonList(DREAM_1), 0));
+        when(mResolver.getDreamPlaylist(any()))
+                .thenReturn(
+                        new DreamPlaylist(
+                                Collections.singletonList(new DreamItem.Builder(DREAM_1).build()),
+                                0));
         mUpdater.registerListener(mListener, USER_ID);
         mLooper.dispatchAll();
         clearInvocations(mListener);
@@ -138,8 +148,11 @@ public class DreamPlaylistUpdaterTest {
 
     @Test
     public void refreshImmediately_bypassesDebounce() throws RemoteException {
-        when(mResolver.getDreamPlaylist(anyInt(), any()))
-                .thenReturn(new DreamPlaylist(Collections.singletonList(DREAM_1), 0));
+        when(mResolver.getDreamPlaylist(any()))
+                .thenReturn(
+                        new DreamPlaylist(
+                                Collections.singletonList(new DreamItem.Builder(DREAM_1).build()),
+                                0));
         mUpdater.registerListener(mListener, USER_ID);
         clearInvocations(mListener);
 
@@ -167,8 +180,11 @@ public class DreamPlaylistUpdaterTest {
     @Test
     public void refresh_handlesMultipleUsersIndependently() throws RemoteException {
         // Prepare mock setup for multiple users
-        when(mResolver.getDreamPlaylist(anyInt(), any()))
-                .thenReturn(new DreamPlaylist(Collections.singletonList(DREAM_1), 0));
+        when(mResolver.getDreamPlaylist(any()))
+                .thenReturn(
+                        new DreamPlaylist(
+                                Collections.singletonList(new DreamItem.Builder(DREAM_1).build()),
+                                0));
 
         int user1 = 10;
         int user2 = 11;
@@ -208,8 +224,8 @@ public class DreamPlaylistUpdaterTest {
         mLooper.dispatchAll();
 
         // 4. Verify the resolver was called with System B
-        verify(mResolver).getDreamPlaylist(eq(USER_ID), eq(systemB));
+        verify(mResolver).getDreamPlaylist(eq(systemB));
         // Verify it was NOT called with System A
-        verify(mResolver, never()).getDreamPlaylist(eq(USER_ID), eq(systemA));
+        verify(mResolver, never()).getDreamPlaylist(eq(systemA));
     }
 }
