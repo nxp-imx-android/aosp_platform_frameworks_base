@@ -90,7 +90,7 @@ constructor(
         animationOut?.addListener(
             object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animator: Animator) {
-                    delegate.onWakeUp()
+                    delegate.finish()
                 }
             }
         )

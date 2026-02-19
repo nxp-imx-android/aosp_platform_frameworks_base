@@ -16,6 +16,7 @@
 package com.android.systemui.lowlightclock
 
 import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.widget.TextClock
 import android.widget.TextView
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -32,6 +33,7 @@ import javax.inject.Provider
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.clearInvocations
 import org.mockito.kotlin.mock
@@ -146,6 +148,22 @@ class LowLightClockDreamServiceTest : SysuiTestCase() {
 
             // Exit animation started.
             verify(animationOutAnimator).start()
+        }
+
+    @Test
+    fun testFinishCalledOnWakeUpAnimationEnd() =
+        kosmos.runTest {
+            underTest.onAttachedToWindow()
+            underTest.onDreamingStarted()
+            underTest.onWakeUp()
+
+            val listenerCaptor = ArgumentCaptor.forClass(Animator.AnimatorListener::class.java)
+            verify(animationOutAnimator).addListener(listenerCaptor.capture())
+
+            // Simulate animation end
+            (listenerCaptor.value as AnimatorListenerAdapter).onAnimationEnd(animationOutAnimator)
+
+            assertThat(dreamServiceDelegate.fake.finished).isTrue()
         }
 
     @Test

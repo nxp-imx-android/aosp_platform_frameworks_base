@@ -47,7 +47,9 @@ class FakeDreamServiceDelegate : DreamServiceDelegate {
         screenBrightness = brightness
     }
 
-    override fun onWakeUp() {
+    override fun onWakeUp() {}
+
+    override fun finish() {
         finished = true
     }
 
