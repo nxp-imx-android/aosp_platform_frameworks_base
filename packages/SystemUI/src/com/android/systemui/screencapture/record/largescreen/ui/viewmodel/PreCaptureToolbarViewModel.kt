@@ -30,6 +30,7 @@ import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.screencapture.ScreenCaptureEvent
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
+import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.LargeScreenCaptureFeaturesInteractor
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.LargeScreenCaptureParametersInteractor
@@ -52,18 +53,16 @@ constructor(
     @Background private val backgroundScope: CoroutineScope,
     private val uiEventLogger: UiEventLogger,
     private val userTracker: UserTracker,
-    private val iconProvider: ScreenCaptureIconProvider,
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
     private val largeScreenCaptureParametersInteractor: LargeScreenCaptureParametersInteractor,
+    private val drawableLoaderViewModel: DrawableLoaderViewModel,
     featuresInteractor: LargeScreenCaptureFeaturesInteractor,
     recordParametersViewModelFactory: ScreenCaptureRecordParametersViewModel.Factory,
-) : HydratedActivatable() {
+) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModel {
     private val toolbarBoundsSource = MutableStateFlow(Rect())
     private val toolbarOpacitySource = MutableStateFlow(1f)
 
     val recordParametersViewModel = recordParametersViewModelFactory.create()
-
-    val icons: ScreenCaptureIcons? by iconProvider.icons.hydratedStateOf()
 
     val appWindowRegionSupported = featuresInteractor.appWindowRegionSupported
 
@@ -171,10 +170,7 @@ constructor(
     }
 
     override suspend fun onActivated() {
-        coroutineScope {
-            launch { iconProvider.collectIcons() }
-            launch { recordParametersViewModel.activate() }
-        }
+        coroutineScope { launch { recordParametersViewModel.activate() } }
     }
 
     @AssistedFactory
