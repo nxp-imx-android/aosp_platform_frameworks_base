@@ -46,8 +46,8 @@ public class LongPolicyMetadata extends PolicyMetadata<Long> {
                 affectedResource,
                 requiredPermission,
                 requiredCrossUserPermission,
-                allowedDpcTypes
-        );
+                allowedDpcTypes,
+                null);
         mMinValue = minValue;
         mMaxValue = maxValue;
     }

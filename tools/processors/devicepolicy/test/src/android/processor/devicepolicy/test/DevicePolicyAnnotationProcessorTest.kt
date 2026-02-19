@@ -56,19 +56,23 @@ class DevicePolicyAnnotationProcessorTest {
 
         val METADATA_FILES_JAVA =
             setOf(
-                    "PolicyMetadata",
                     "BooleanPolicyMetadata",
-                    "IntegerPolicyMetadata",
-                    "LongPolicyMetadata",
                     "EnumPolicyMetadata",
-                    "StringPolicyMetadata",
+                    "IntegerPolicyMetadata",
                     "ListPolicyMetadata",
+                    "LongPolicyMetadata",
+                    "PolicyMetadata",
+                    "ResolutionMechanismMetadata",
+                    "StringPolicyMetadata",
                 )
                 .map { "android/app/admin/metadata/$it.java" }
                 .toSet()
 
-        /** Comes from the actual IntDef.java in the source, located in a different folder. */
-        const val INT_DEF_JAVA = "android/annotation/IntDef.java"
+        // A set of source files required to compile `POLICY_IDENTIFIER_JAVA`
+        val REQUIRED_SOURCE_FILES =
+            setOf(
+                "android/annotation/IntDef.java",
+            ) + METADATA_FILES_JAVA
 
         /** Build path for the output. */
         const val POLICIES_TEXTPROTO_LOCATION = "android/processor/devicepolicy/policies.textproto"
@@ -131,8 +135,8 @@ class DevicePolicyAnnotationProcessorTest {
     fun test_policyIdentifierFake_generates() {
         val expectedOutput = loadTextResource(POLICY_IDENTIFIER_TEXTPROTO)
 
-        val metadataSources =
-            METADATA_FILES_JAVA.map { JavaFileObjects.forResource(it) }.toTypedArray()
+        val requiredSources =
+            REQUIRED_SOURCE_FILES.map { JavaFileObjects.forResource(it) }.toTypedArray()
 
         val compilation: Compilation =
             mCompiler.compile(
@@ -140,8 +144,7 @@ class DevicePolicyAnnotationProcessorTest {
                     POLICY_IDENTIFIER_LOCATION,
                     loadTextResource(POLICY_IDENTIFIER_JAVA),
                 ),
-                JavaFileObjects.forResource(INT_DEF_JAVA),
-                *metadataSources,
+                *requiredSources,
             )
 
         assertThat(compilation).succeeded()

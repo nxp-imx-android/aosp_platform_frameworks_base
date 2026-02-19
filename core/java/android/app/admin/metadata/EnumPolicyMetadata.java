@@ -37,25 +37,22 @@ public class EnumPolicyMetadata extends PolicyMetadata<Integer> {
             @Nullable String requiredPermission,
             @Nullable String requiredCrossUserPermission,
             @NonNull Set<Integer> allowedDpcTypes,
-            @NonNull Set<Integer> allowedValues
-    ) {
+            @Nullable ResolutionMechanismMetadata resolutionMechanism,
+            @NonNull Set<Integer> allowedValues) {
         super(
                 id,
                 allowedScopes,
                 affectedResource,
                 requiredPermission,
                 requiredCrossUserPermission,
-                allowedDpcTypes
-        );
+                allowedDpcTypes,
+                resolutionMechanism);
         mAllowedValues = allowedValues;
     }
 
     @Override
     public String toString() {
-        return "EnumPolicyMetadata{"
-                + toAttributes()
-                + "mAllowedValues=" + mAllowedValues
-                + "} ";
+        return "EnumPolicyMetadata{" + toAttributes() + "mAllowedValues=" + mAllowedValues + "} ";
     }
 
     @NonNull

@@ -68,6 +68,7 @@ open class EnumStoredAsBooleanPolicyHandlerTest {
                 /*requiredPermission=*/ "testPermission",
                 /*requiredCrossUserPermission=*/ "testCrossUserPermission",
                 /*allowedDpcTypes=*/ setOf(),
+                /*resolutionMechanism=*/ null,
                 /*allowedValues=*/ setOf(VALUE_TRUE, VALUE_FALSE),
             )
         // The policy definition used for storing the policy value in DevicePolicyEngine.
@@ -103,6 +104,7 @@ open class EnumStoredAsBooleanPolicyHandlerTest {
             metadata.requiredPermission,
             metadata.requiredCrossUserPermission,
             metadata.allowedDpcTypes,
+            metadata.resolutionMechanism,
             metadata.allowedValues,
         )
 

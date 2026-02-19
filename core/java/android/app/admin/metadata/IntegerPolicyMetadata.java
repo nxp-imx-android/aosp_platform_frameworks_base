@@ -46,7 +46,8 @@ public class IntegerPolicyMetadata extends PolicyMetadata<Integer> {
                 affectedResource,
                 requiredPermission,
                 requiredCrossUserPermission,
-                allowedDpcTypes);
+                allowedDpcTypes,
+                null);
         mMinValue = minValue;
         mMaxValue = maxValue;
     }
@@ -58,5 +59,4 @@ public class IntegerPolicyMetadata extends PolicyMetadata<Integer> {
     public int getMaxValue() {
         return mMaxValue;
     }
-
 }
