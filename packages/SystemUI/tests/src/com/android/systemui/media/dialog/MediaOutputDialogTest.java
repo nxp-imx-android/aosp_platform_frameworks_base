@@ -21,6 +21,7 @@ import static android.permission.flags.Flags.FLAG_ACCESS_LOCAL_NETWORK_PERMISSIO
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -45,6 +46,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
 import com.android.internal.logging.UiEventLogger;
+import com.android.media.flags.Flags;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.animation.DialogTransitionAnimator;
 import com.android.systemui.broadcast.BroadcastSender;
@@ -317,15 +319,49 @@ public class MediaOutputDialogTest extends SysuiTestCase {
         assertThat(mMediaOutputDialog.isShowing()).isFalse();
     }
 
-    private MediaOutputDialog createDialog() {
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_MEDIA_OUTPUT_SWITCHER_ENTRY_POINT_THEMING)
+    public void refresh_withoutUsingSystemColors_updatesColorScheme() {
+        mMediaOutputDialog = createDialog(/* useSystemColors= */ false);
+        mMediaOutputDialog.onCreate(new Bundle());
+        IconCompat icon = IconCompat.createWithBitmap(
+                Bitmap.createBitmap(/* width= */ 1, /* height= */ 1, Bitmap.Config.ARGB_8888));
+        when(mMediaSwitchingController.getHeaderIcon()).thenReturn(icon);
+
+        mMediaOutputDialog.refresh();
+
+        verify(mMediaSwitchingController).updateCurrentColorScheme(any(), anyBoolean());
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_MEDIA_OUTPUT_SWITCHER_ENTRY_POINT_THEMING)
+    public void refresh_withUsingSystemColors_doesNotUpdateColorScheme() {
+        mMediaOutputDialog = createDialog(/* useSystemColors= */ true);
+        mMediaOutputDialog.onCreate(new Bundle());
+        IconCompat icon = IconCompat.createWithBitmap(
+                Bitmap.createBitmap(/* width= */ 1, /* height= */ 1, Bitmap.Config.ARGB_8888));
+        when(mMediaSwitchingController.getHeaderIcon()).thenReturn(icon);
+
+        mMediaOutputDialog.refresh();
+
+        verify(mMediaSwitchingController, never()).updateCurrentColorScheme(any(), anyBoolean());
+    }
+
+    private MediaOutputDialog createDialog(boolean useSystemColors) {
         return new MediaOutputDialog(
                 mContext,
-                false,
+                /* aboveStatusBar= */ false,
                 mBroadcastSender,
                 mMediaSwitchingController,
                 mDialogTransitionAnimator,
                 mUiEventLogger,
-                true,
-                null);
+                /* mIncludePlaybackAndAppMetadata= */ true,
+                /* mOnDialogEventListener= */ null,
+                useSystemColors
+        );
+    }
+
+    private MediaOutputDialog createDialog() {
+        return createDialog(/* useSystemColors= */ true);
     }
 }

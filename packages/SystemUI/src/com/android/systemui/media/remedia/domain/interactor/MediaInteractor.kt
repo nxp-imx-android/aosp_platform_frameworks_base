@@ -440,7 +440,7 @@ constructor(
     ) {
         mediaOutputDialogManager.createAndShowWithController(
             packageName,
-            true,
+            aboveStatusBar = true,
             expandable?.dialogController(),
             token = token,
         )
