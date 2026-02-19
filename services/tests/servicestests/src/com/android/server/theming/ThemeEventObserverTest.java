@@ -16,9 +16,6 @@
 
 package com.android.server.theming;
 
-import static android.content.theming.FieldColorSource.VALUE_HOME_WALLPAPER;
-import static android.content.theming.FieldColorSource.VALUE_PRESET;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -27,12 +24,11 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.app.ActivityManagerInternal;
 import android.app.KeyguardManager;
 import android.app.WallpaperColors;
 import android.content.Context;
 import android.content.Intent;
-import android.content.theming.ThemeSettings;
-import android.content.theming.ThemeStyle;
 import android.graphics.Color;
 import android.net.Uri;
 import android.testing.TestableContext;
@@ -68,6 +64,7 @@ public class ThemeEventObserverTest {
 
     @Mock
     private ThemeStateManager mThemeStateManager;
+            // Not used by Observer anymore, but maybe for setup? No.
     @Mock
     private ThemeSettingsManager mThemeSettingsManager;
     @Mock
@@ -80,6 +77,8 @@ public class ThemeEventObserverTest {
     private KeyguardManager mKeyguardManager;
     @Mock
     private UserManagerInternal mUserManagerInternal;
+    @Mock
+    private ActivityManagerInternal mActivityManagerInternal;
 
     @Mock
     private ThemeManagerImpl mThemeManagerImpl;
@@ -99,6 +98,8 @@ public class ThemeEventObserverTest {
 
         LocalServices.removeServiceForTest(UiModeManagerInternal.class);
         LocalServices.addService(UiModeManagerInternal.class, mUiModeManagerInternal);
+        LocalServices.removeServiceForTest(UserManagerInternal.class);
+        LocalServices.addService(UserManagerInternal.class, mUserManagerInternal);
 
         mContext.addMockSystemService(Context.KEYGUARD_SERVICE, mKeyguardManager);
 
@@ -110,22 +111,21 @@ public class ThemeEventObserverTest {
         when(mUserManagerInternal.getProfileParentId(anyInt()))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        mEnvironment = new ThemeEnvironment(mContext, mUserManagerInternal, (key, def) -> def);
+        mEnvironment = new ThemeEnvironment(mContext, (key, def) -> def);
+        mEnvironment.setBootingComplete(mThemeUserLifecycle);
 
-        mThemeEventObserver = new ThemeEventObserver(mContext, mThemeStateManager,
-                mThemeSettingsManager, mThemeUserLifecycle, mThemeManagerImpl, mEnvironment);
-        mThemeEventObserver.onServicesReady(mThemeWallpaperManager,
-                mUiModeManagerInternal, mKeyguardManager);
+        mThemeEventObserver = new ThemeEventObserver(mContext, mThemeManagerImpl, mEnvironment);
+        mThemeEventObserver.onServicesReady(mThemeWallpaperManager);
         mThemeEventObserver.registerListeners();
 
         // Ground truth behavior: assume user is parent (not profile) and can be loaded
-        when(mThemeStateManager.parentOf(USER_ID)).thenReturn(null);
         when(mThemeUserLifecycle.loadUserStateAndNotifyStateManager(USER_ID)).thenReturn(true);
     }
 
     @After
     public void tearDown() {
         LocalServices.removeServiceForTest(UiModeManagerInternal.class);
+        LocalServices.removeServiceForTest(UserManagerInternal.class);
     }
 
     @Test
@@ -151,122 +151,45 @@ public class ThemeEventObserverTest {
     }
 
     @Test
-    public void testWallpaperColorsChanged_callsStateManager_ifNotPreset() {
-        ThemeSettings settings = new ThemeSettings.Builder()
-                .setColorSource(VALUE_HOME_WALLPAPER)
-                .setThemeStyle(ThemeStyle.TONAL_SPOT)
-                .setSystemPalette(Color.valueOf(Color.BLUE))
-                .build();
-        when(mThemeSettingsManager.getSettingsOrDefault(eq(USER_ID), any())).thenReturn(settings);
-
+    public void testWallpaperColorsChanged_callsImpl() {
+        // Logic moved to Impl, Observer just forwards
         WallpaperColors colors = new WallpaperColors(Color.valueOf(Color.RED), null, null);
         mWallpaperListener.onColorsChanged(colors, 0, 0, USER_ID, true);
 
-        verify(mThemeStateManager).onSeedColorChange(eq(USER_ID), anyInt(), eq(true));
+        verify(mThemeManagerImpl).onWallpaperColorsChanged(eq(USER_ID), eq(colors), anyBoolean());
     }
 
     @Test
-    public void testWallpaperColorsChanged_ignored_ifPreset() {
-        ThemeSettings settings = new ThemeSettings.Builder()
-                .setColorSource(VALUE_PRESET)
-                .setThemeStyle(ThemeStyle.TONAL_SPOT)
-                .setSystemPalette(Color.valueOf(Color.BLUE))
-                .build();
-        when(mThemeSettingsManager.getSettingsOrDefault(eq(USER_ID), any())).thenReturn(settings);
-
-        WallpaperColors colors = new WallpaperColors(Color.valueOf(Color.RED), null, null);
-        mWallpaperListener.onColorsChanged(colors, 0, 0, USER_ID, true);
-
-        verify(mThemeStateManager, never()).onSeedColorChange(anyInt(), anyInt(), anyBoolean());
-    }
-
-    @Test
-    public void testContrastChanged_callsStateManager() {
+    public void testContrastChanged_callsImpl() {
         verify(mUiModeManagerInternal).addContrastListener(mContrastListenerCaptor.capture(),
                 any(Executor.class));
 
         mContrastListenerCaptor.getValue().onContrastChange(USER_ID, 0.5f);
 
-        verify(mThemeStateManager).onContrastChange(USER_ID, 0.5f);
+        verify(mThemeManagerImpl).onContrastChanged(USER_ID, 0.5f);
     }
 
     @Test
-    public void testKeyguardLockedStateChanged_callsStateManager() {
+    public void testKeyguardLockedStateChanged_callsImpl() {
         verify(mKeyguardManager).addKeyguardLockedStateListener(any(Executor.class),
                 mKeyguardListenerCaptor.capture());
 
         mKeyguardListenerCaptor.getValue().onKeyguardLockedStateChanged(true);
 
-        verify(mThemeStateManager).onLockStateChange(true);
+        verify(mThemeManagerImpl).onDeviceLocked();
     }
 
     @Test
-    public void testUserSetupComplete_callsStateManager() {
+    public void testUserSetupComplete_callsImpl() {
         mThemeEventObserver.mUserSetupObserver.onChange(false, null, 0, USER_ID);
 
-        verify(mThemeStateManager).onFinishSetup(USER_ID);
+        verify(mThemeManagerImpl).onUserStart(USER_ID);
     }
 
     @Test
-    public void testUserSetupComplete_lazyLoadsState_ifMissing() {
-        // Mockito verify will check that loadUserStateAndNotifyStateManager was called
-        mThemeEventObserver.mUserSetupObserver.onChange(false, null, 0, USER_ID);
-
-        verify(mThemeUserLifecycle).loadUserStateAndNotifyStateManager(USER_ID);
-        verify(mThemeStateManager).onFinishSetup(USER_ID);
-    }
-
-    @Test
-    public void testUserSetupComplete_lazyLoadsState_fails_ignored() {
-        // Override default stub for this specific test
-        when(mThemeUserLifecycle.loadUserStateAndNotifyStateManager(USER_ID)).thenReturn(false);
-
-        mThemeEventObserver.mUserSetupObserver.onChange(false, null, 0, USER_ID);
-
-        verify(mThemeUserLifecycle).loadUserStateAndNotifyStateManager(USER_ID);
-        verify(mThemeStateManager, never()).onFinishSetup(USER_ID);
-    }
-
-    @Test
-    public void testThemeCustomizationChanged_styleChange() {
-        ThemeSettings settings = new ThemeSettings.Builder()
-                .setThemeStyle(ThemeStyle.EXPRESSIVE)
-                .setColorSource(VALUE_HOME_WALLPAPER)
-                .setSystemPalette(Color.valueOf(Color.BLUE))
-                .build();
-        when(mThemeSettingsManager.getSettingsOrDefault(eq(USER_ID), any())).thenReturn(settings);
-
+    public void testThemeCustomizationChanged_callsImpl() {
         mThemeEventObserver.handleThemeCustomizationChanged(USER_ID);
 
-        verify(mThemeSettingsManager).invalidateCache(USER_ID);
-        verify(mThemeStateManager).onStyleChange(USER_ID, ThemeStyle.EXPRESSIVE);
-    }
-
-    @Test
-    public void testThemeCustomizationChanged_presetColorChange() {
-        ThemeSettings settings = new ThemeSettings.Builder()
-                .setThemeStyle(ThemeStyle.TONAL_SPOT)
-                .setColorSource(VALUE_PRESET)
-                .setSystemPalette(Color.valueOf(Color.RED))
-                .build();
-        when(mThemeSettingsManager.getSettingsOrDefault(eq(USER_ID), any())).thenReturn(settings);
-
-        mThemeEventObserver.handleThemeCustomizationChanged(USER_ID);
-
-        verify(mThemeStateManager).onSeedColorChange(USER_ID, Color.RED, true);
-    }
-
-    @Test
-    public void testThemeCustomizationChanged_forcesReloadSettings() {
-        ThemeSettings settings = new ThemeSettings.Builder()
-                .setThemeStyle(ThemeStyle.TONAL_SPOT)
-                .setColorSource(VALUE_PRESET)
-                .setSystemPalette(Color.valueOf(Color.BLUE))
-                .build();
-        when(mThemeSettingsManager.getSettingsOrDefault(eq(USER_ID), any())).thenReturn(settings);
-
-        mThemeEventObserver.handleThemeCustomizationChanged(USER_ID);
-
-        verify(mThemeSettingsManager).invalidateCache(USER_ID);
+        verify(mThemeManagerImpl).onThemeSettingsChanged(USER_ID);
     }
 }

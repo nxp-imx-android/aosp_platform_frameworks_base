@@ -23,12 +23,17 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.app.ActivityManagerInternal;
+import android.app.KeyguardManager;
 import android.app.WallpaperColors;
+import android.content.Context;
+import android.content.om.FabricatedOverlay;
 import android.content.theming.IThemeChangedCallback;
 import android.content.theming.IThemeSettingsCallback;
 import android.content.theming.ThemeInfo;
@@ -57,6 +62,9 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RunWith(AndroidJUnit4.class)
 @HardwareColors(color = "", options = {"*|TONAL_SPOT|#00FF00"})
 public class ThemeManagerImplTests {
@@ -77,7 +85,8 @@ public class ThemeManagerImplTests {
 
     private final int mUserId = 0;
     private ThemeManagerImpl mUnderTest;
-    private TestableContext mContext;
+    private Context mContext; // Spy
+    @Mock
     private ThemeSettingsManager mThemeSettingsManager;
     private ThemeEnvironment mEnvironment;
 
@@ -95,9 +104,16 @@ public class ThemeManagerImplTests {
     private ActivityManagerInternal mActivityManagerInternal;
     @Mock
     private ThemeOverlayHelper mOverlayHelper;
+    @Mock
+    private ThemeUserLifecycle mUserLifecycle;
+    @Mock
+    private KeyguardManager mKeyguardManager;
+    @Mock
+    private FabricatedOverlay mMockFabricatedOverlay;
 
     private FakeScheduledExecutorService mSchedulerExecutor;
     private ThemeStateManager mStateManager;
+    private Map<Integer, ThemeSettings> mFakeSettingsMap;
 
     @Before
     public void setup() {
@@ -113,9 +129,20 @@ public class ThemeManagerImplTests {
         LocalServices.addService(WallpaperManagerInternal.class, mWallpaperManagerInternal);
         LocalServices.addService(ActivityManagerInternal.class, mActivityManagerInternal);
 
-        mContext = new TestableContext(InstrumentationRegistry.getTargetContext(), null);
-        TestableResources testableResources = mContext.getOrCreateTestableResources();
+        TestableContext testableContext = new TestableContext(
+                InstrumentationRegistry.getTargetContext(), null);
+        TestableResources testableResources = testableContext.getOrCreateTestableResources();
         testableResources.addOverride(R.array.theming_defaults, mHardwareColorRule.options);
+
+        testableContext.addMockSystemService(KeyguardManager.class, mKeyguardManager);
+
+        // Create a spy of the context to handle createContextAsUser for non-existent users
+        mContext = org.mockito.Mockito.spy(testableContext);
+        doReturn(mContext).when(mContext).createContextAsUser(any(), anyInt());
+
+        // Default device state to LOCKED to allow background updates to proceed immediately
+        // (ThemeStateManager logic: if !foreground && !locked -> defer. So we want locked=true).
+        when(mKeyguardManager.isDeviceLocked()).thenReturn(true);
 
         Settings.Secure.putStringForUser(mContext.getContentResolver(),
                 Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, null, mUserId);
@@ -126,25 +153,48 @@ public class ThemeManagerImplTests {
             int requestedUserId = invocation.getArgument(0);
             return new int[]{requestedUserId};
         });
+        when(mUserLifecycle.loadUserStateAndNotifyStateManager(anyInt())).thenReturn(true);
 
-        mEnvironment = new ThemeEnvironment(mContext, mUserManager,
-                mHardwareColorRule.sysPropReader);
+        mEnvironment = new ThemeEnvironment(mContext, mHardwareColorRule.sysPropReader);
+        mEnvironment.setBootingComplete(mUserLifecycle);
+        mEnvironment.onServicesReady(mKeyguardManager);
 
-        ThemeWallpaperManager themeWallpaperManager = new ThemeWallpaperManager(
-                mWallpaperManagerInternal);
-        mThemeSettingsManager = new ThemeSettingsManager(themeWallpaperManager,
-                mHardwareColorRule.sysPropReader, mEnvironment);
+        ThemeWallpaperManager themeWallpaperManager = new ThemeWallpaperManager();
         mSchedulerExecutor = new FakeScheduledExecutorService();
 
         mStateManager = new ThemeStateManager(mContext, mSchedulerExecutor, mEnvironment);
         mUnderTest = new ThemeManagerImpl(mContext, mThemeSettingsManager,
-                mStateManager, mOverlayHelper, mEnvironment) {
-            @Override
-            public void onBootAnimationDismissing() {
-            }
-        };
+                mStateManager, mOverlayHelper, mEnvironment, themeWallpaperManager);
+        mUnderTest.setup(mUserLifecycle);
+
+        // Fake ThemeSettingsManager behavior
+        mFakeSettingsMap = new HashMap<>();
+        when(mThemeSettingsManager.createDefaultThemeSettings(anyInt())).thenAnswer(invocation -> {
+            int userId = invocation.getArgument(0);
+            return new ThemeSettings.Builder()
+                    .setColorSource(VALUE_PRESET)
+                    .setThemeStyle(TEST_STYLE)
+                    .setSystemPalette(Color.valueOf(TEST_SEED_COLOR))
+                    .build();
+        });
+        when(mThemeSettingsManager.getSettings(anyInt(), any())).thenAnswer(invocation -> {
+            int userId = invocation.getArgument(0);
+            return mFakeSettingsMap.get(userId);
+        });
+        when(mThemeSettingsManager.setSettings(anyInt(), any(), any())).thenAnswer(invocation -> {
+            int userId = invocation.getArgument(0);
+            ThemeSettings settings = invocation.getArgument(2);
+            mFakeSettingsMap.put(userId, settings);
+            return true;
+        });
+        when(mThemeSettingsManager.getSettingsOrDefault(anyInt(), any())).thenAnswer(invocation -> {
+            int userId = invocation.getArgument(0);
+            ThemeSettings s = mFakeSettingsMap.get(userId);
+            return s != null ? s : mThemeSettingsManager.createDefaultThemeSettings(userId);
+        });
 
         mStateManager.onServicesReady();
+        startUser(mUserId, true, TEST_SEED_COLOR, TEST_CONTRAST, TEST_STYLE);
     }
 
     private void startUser(int userId, boolean isSetup, int seedColor, float contrast, int style) {
@@ -377,8 +427,8 @@ public class ThemeManagerImplTests {
 
         // Mock the overlay helper to return a dummy overlay
         FabricatedOverlayInternal mockOverlay = new FabricatedOverlayInternal();
-        android.content.om.FabricatedOverlay mockFabricatedOverlay =
-                mock(android.content.om.FabricatedOverlay.class);
+        FabricatedOverlay mockFabricatedOverlay =
+                mock(FabricatedOverlay.class);
         when(mockFabricatedOverlay.getInternal()).thenReturn(mockOverlay);
         doReturn(mockFabricatedOverlay).when(mOverlayHelper).createDynamicOverlay(any(), any(),
                 anyInt());
@@ -396,8 +446,8 @@ public class ThemeManagerImplTests {
 
         // Mock the overlay helper to return a dummy overlay
         FabricatedOverlayInternal mockOverlay = new FabricatedOverlayInternal();
-        android.content.om.FabricatedOverlay mockFabricatedOverlay =
-                mock(android.content.om.FabricatedOverlay.class);
+        FabricatedOverlay mockFabricatedOverlay =
+                mock(FabricatedOverlay.class);
         when(mockFabricatedOverlay.getInternal()).thenReturn(mockOverlay);
         doReturn(mockFabricatedOverlay).when(mOverlayHelper).createDynamicOverlay(any(), any(),
                 anyInt());
@@ -418,8 +468,8 @@ public class ThemeManagerImplTests {
 
         // Mock the overlay helper to return a dummy overlay
         FabricatedOverlayInternal mockOverlay = new FabricatedOverlayInternal();
-        android.content.om.FabricatedOverlay mockFabricatedOverlay =
-                mock(android.content.om.FabricatedOverlay.class);
+        FabricatedOverlay mockFabricatedOverlay =
+                mock(FabricatedOverlay.class);
         when(mockFabricatedOverlay.getInternal()).thenReturn(mockOverlay);
         doReturn(mockFabricatedOverlay).when(mOverlayHelper).createDynamicOverlay(any(), any(),
                 anyInt());
@@ -431,4 +481,219 @@ public class ThemeManagerImplTests {
     }
 
 
+    @Test
+    public void apiCallsDuringBoot_registrationSucceeds_othersFail() {
+        // Create a fresh environment that is still booting
+        ThemeEnvironment bootingEnv = new ThemeEnvironment(mContext,
+                mHardwareColorRule.sysPropReader);
+
+        // Re-instantiate ThemeManagerImpl with the booting environment
+        ThemeManagerImpl bootingImpl = new ThemeManagerImpl(mContext, mThemeSettingsManager,
+                mStateManager, mOverlayHelper, bootingEnv, new ThemeWallpaperManager()) {
+            @Override
+            public boolean onBootAnimationDismissing() {
+                return false;
+            }
+        };
+        bootingImpl.setup(mUserLifecycle);
+
+        assertThat(bootingImpl.getUserThemeInfo(mUserId)).isNull();
+        assertThat(bootingImpl.getThemeSettings(mUserId)).isNull();
+        assertThat(bootingImpl.getThemeSettingsOrDefault(mUserId)).isNull();
+        assertThat(bootingImpl.generateDynamicColorOverlay(mUserId,
+                new ThemeInfo.Builder().build())).isNull();
+
+        assertThat(bootingImpl.updateThemeSettings(mUserId, new ThemeSettings.Builder()
+                .setThemeStyle(ThemeStyle.TONAL_SPOT)
+                .setColorSource(VALUE_PRESET)
+                .setSystemPalette(Color.valueOf(Color.BLUE))
+                .build())).isFalse();
+
+        // Registration should succeed even during boot
+        assertThat(bootingImpl.registerThemeSettingsCallback(mUserId, mSettingsCallback)).isTrue();
+        assertThat(
+                bootingImpl.unregisterThemeSettingsCallback(mUserId, mSettingsCallback)).isTrue();
+        assertThat(
+                bootingImpl.registerThemeChangedCallback(mUserId, mThemeChangedCallback)).isTrue();
+        assertThat(bootingImpl.unregisterThemeChangedCallback(mUserId,
+                mThemeChangedCallback)).isTrue();
+    }
+
+    @Test
+    public void callbackRegisteredDuringBoot_receivesEventAfterInit() {
+        // 1. Setup a booting environment
+        ThemeEnvironment bootingEnv = new ThemeEnvironment(mContext,
+                mHardwareColorRule.sysPropReader);
+        ThemeManagerImpl bootingImpl = new ThemeManagerImpl(mContext, mThemeSettingsManager,
+                mStateManager, mOverlayHelper, bootingEnv, new ThemeWallpaperManager());
+        bootingImpl.setup(mUserLifecycle);
+
+        // 2. Register callback during boot (should succeed now)
+        final ThemeInfo[] returnedValue = {null};
+        boolean registered = bootingImpl.registerThemeChangedCallback(mUserId,
+                new IThemeChangedCallback.Stub() {
+                    @Override
+                    public void onThemeChanged(ThemeInfo newTheme) {
+                        returnedValue[0] = newTheme;
+                    }
+                });
+        assertThat(registered).isTrue();
+
+        // 3. Initialize system (simulate boot complete)
+        bootingImpl.onBootAnimationDismissing();
+        // Force state manager to process
+        mSchedulerExecutor.fastForwardTime(ThemeStateManager.DEBOUNCE_MS + 100L);
+
+        // 4. Trigger an event
+        bootingImpl.notifyThemeChanged(mUserId);
+
+        // 5. Verify callback received
+        assertThat(returnedValue[0]).isNotNull();
+    }
+
+    @Test
+    public void onBootAnimationDismissing_initializesSystem() {
+        // Create a fresh environment that is still booting
+        ThemeEnvironment bootingEnv = new ThemeEnvironment(mContext,
+                mHardwareColorRule.sysPropReader);
+        ThemeManagerImpl bootingImpl = new ThemeManagerImpl(mContext, mThemeSettingsManager,
+                mStateManager, mOverlayHelper, bootingEnv, new ThemeWallpaperManager());
+        bootingImpl.setup(mUserLifecycle);
+
+        // Act
+        boolean result = bootingImpl.onBootAnimationDismissing();
+
+        // Verify
+        assertThat(result).isTrue();
+        // Since initialization posts to handler, we can't verify everything synchronously unless
+        // we mock handler
+        // But we can verify synchronous steps like initializeDefaults
+        org.mockito.Mockito.verify(mThemeSettingsManager).initializeDefaults();
+    }
+
+    @Test
+    public void onWallpaperColorsChanged_presetSource_ignored() {
+        int userId = 100;
+        startUser(userId, true, Color.BLUE, 0f, ThemeStyle.TONAL_SPOT);
+
+        // Setup: Preset source
+        ThemeSettings settings = new ThemeSettings.Builder()
+                .setThemeStyle(ThemeStyle.TONAL_SPOT)
+                .setColorSource(VALUE_PRESET)
+                .setSystemPalette(Color.valueOf(Color.BLUE))
+                .build();
+        mUnderTest.updateThemeSettings(userId, settings);
+
+        // Action: Wallpaper changed
+        mUnderTest.onWallpaperColorsChanged(userId,
+                new WallpaperColors(Color.valueOf(Color.RED), null, null), false);
+        mSchedulerExecutor.fastForwardTime(ThemeStateManager.DEBOUNCE_MS + 100L);
+
+        // Verify: State did NOT update to RED (remains BLUE from preset)
+        assertThat(mStateManager.getState(userId).getCurrentState().seedColor()).isEqualTo(
+                Color.BLUE);
+    }
+
+    @Test
+    public void onWallpaperColorsChanged_wallpaperSource_updatesState() {
+        int userId = 101;
+        startUser(userId, true, Color.BLUE, 0f, ThemeStyle.TONAL_SPOT);
+
+        // Setup: Wallpaper source
+        ThemeSettings settings = new ThemeSettings.Builder()
+                .setThemeStyle(ThemeStyle.TONAL_SPOT)
+                .setColorSource(android.content.theming.FieldColorSource.VALUE_HOME_WALLPAPER)
+                .setSystemPalette(Color.valueOf(Color.BLUE))
+                .build();
+        mUnderTest.updateThemeSettings(userId, settings);
+
+        // Verify settings are correctly stored in fake
+        assertThat(mThemeSettingsManager.getSettingsOrDefault(userId, null).colorSource())
+                .isEqualTo(android.content.theming.FieldColorSource.VALUE_HOME_WALLPAPER);
+
+        // Action: Wallpaper changed to GREEN
+        mUnderTest.onWallpaperColorsChanged(userId,
+                new WallpaperColors(Color.valueOf(Color.GREEN), null, null), false);
+        mSchedulerExecutor.fastForwardTime(ThemeStateManager.DEBOUNCE_MS + 100L);
+
+        // Verify: State UPDATED to GREEN
+        assertThat(mStateManager.getState(userId).getCurrentState().seedColor()).isEqualTo(
+                Color.GREEN);
+    }
+
+    @Test
+    public void onUserStart_presetSource_usesSystemPalette() {
+        int userId = 102;
+        // Do NOT start user in advance.
+
+        // Setup: Preset source in settings (simulated via SettingsManager mock behavior or pre-set)
+        ThemeSettings settings = new ThemeSettings.Builder()
+                .setThemeStyle(ThemeStyle.VIBRANT)
+                .setColorSource(VALUE_PRESET)
+                .setSystemPalette(Color.valueOf(Color.GREEN))
+                .build();
+        mFakeSettingsMap.put(userId, settings);
+
+        // Action
+        mUnderTest.onUserStart(userId);
+        mSchedulerExecutor.fastForwardTime(ThemeStateManager.DEBOUNCE_MS + 100L);
+
+        // Verify
+        assertThat(mStateManager.getState(userId).getCurrentState().seedColor()).isEqualTo(
+                Color.GREEN);
+    }
+
+    @Test
+    public void onThemeSettingsChanged_reloadsAndUpdates() {
+        int userId = 103;
+        startUser(userId, true, Color.BLUE, 0f, ThemeStyle.TONAL_SPOT);
+
+        // Setup: Initial state
+        ThemeSettings initialSettings = new ThemeSettings.Builder()
+                .setThemeStyle(ThemeStyle.TONAL_SPOT)
+                .setColorSource(VALUE_PRESET)
+                .setSystemPalette(Color.valueOf(Color.BLUE))
+                .build();
+        mUnderTest.updateThemeSettings(userId, initialSettings);
+
+        // Verify initial state
+        assertThat(mStateManager.getState(userId).getCurrentState().seedColor()).isEqualTo(
+                Color.BLUE);
+
+        // Simulate external change to settings provider (e.g. by another process)
+        ThemeSettings newSettings = new ThemeSettings.Builder()
+                .setThemeStyle(ThemeStyle.EXPRESSIVE)
+                .setColorSource(VALUE_PRESET)
+                .setSystemPalette(Color.valueOf(Color.RED))
+                .build();
+        mFakeSettingsMap.put(userId, newSettings);
+
+        // Action
+        mUnderTest.onThemeSettingsChanged(userId);
+        mSchedulerExecutor.fastForwardTime(ThemeStateManager.DEBOUNCE_MS + 100L);
+
+        // Verify state updated
+        assertThat(mStateManager.getState(userId).getCurrentState().seedColor()).isEqualTo(
+                Color.RED);
+        assertThat(mStateManager.getState(userId).getCurrentState().style()).isEqualTo(
+                ThemeStyle.EXPRESSIVE);
+    }
+
+    // New test porting the persistence verification from ThemeUserLifecycleTest
+    @Test
+    public void onUserStart_persistsDefaults_ifSettingsMissing() {
+        int userId = 104;
+        // Ensure no settings exist for this user initially
+        mFakeSettingsMap.remove(userId);
+
+        // Action
+        mUnderTest.onUserStart(userId);
+
+        // Verify that settings were created and persisted via ThemeSettingsManager
+        verify(mThemeSettingsManager).createDefaultThemeSettings(userId);
+        verify(mThemeSettingsManager).setSettings(eq(userId), any(), any());
+
+        ThemeSettings stored = mFakeSettingsMap.get(userId);
+        assertThat(stored).isNotNull();
+    }
 }

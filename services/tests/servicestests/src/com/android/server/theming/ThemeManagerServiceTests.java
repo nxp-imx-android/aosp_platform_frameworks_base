@@ -22,13 +22,13 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.annotation.SuppressLint;
+import android.app.ActivityManagerInternal;
 import android.content.pm.UserInfo;
 import android.content.theming.ThemeStyle;
 import android.os.UserHandle;
@@ -38,6 +38,7 @@ import android.testing.TestableResources;
 import androidx.test.runner.AndroidJUnit4;
 
 import com.android.internal.R;
+import com.android.internal.os.BackgroundThread;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
 import com.android.server.UiModeManagerInternal;
@@ -55,19 +56,22 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.HashMap;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
 @RunWith(AndroidJUnit4.class)
+@HardwareColors(color = "", options = {"*|TONAL_SPOT|home_wallpaper"})
 public class ThemeManagerServiceTests {
 
     @Rule
     public final HardwareColorRule mHardwareColorRule = new HardwareColorRule();
 
     private static final int DEFAULT_USER_ID = 11;
+    private static final int TEST_USER_ID = 10;
     private static final int DEFAULT_SEED_COLOR = 0xFFFF0000; // RED
     private static final float DEFAULT_CONTRAST = 0.0f;
     private static final int DEFAULT_STYLE = ThemeStyle.TONAL_SPOT;
-    private static final int PROFILE_ID = 10;
 
     @Mock
     private UserManagerInternal mUserManager;
@@ -78,6 +82,8 @@ public class ThemeManagerServiceTests {
     private WallpaperManagerInternal mWallpaperManager;
     @Mock
     private UiModeManagerInternal mUiModeManagerInternal;
+    @Mock
+    private ActivityManagerInternal mActivityManagerInternal;
     @Mock
     private Executor mMainExecutor;
 
@@ -124,11 +130,14 @@ public class ThemeManagerServiceTests {
         LocalServices.removeServiceForTest(UserManagerInternal.class);
         LocalServices.removeServiceForTest(WallpaperManagerInternal.class);
         LocalServices.removeServiceForTest(UiModeManagerInternal.class);
+        LocalServices.removeServiceForTest(ThemeManagerInternal.class);
+        LocalServices.removeServiceForTest(ActivityManagerInternal.class);
 
         LocalServices.addService(OverlayManagerInternal.class, mOverlayManager);
         LocalServices.addService(UserManagerInternal.class, mUserManager);
         LocalServices.addService(WallpaperManagerInternal.class, mWallpaperManager);
         LocalServices.addService(UiModeManagerInternal.class, mUiModeManagerInternal);
+        LocalServices.addService(ActivityManagerInternal.class, mActivityManagerInternal);
 
         // create main testable resources and apply overrides
         TestableResources mainResources = mMainContext.getOrCreateTestableResources();
@@ -145,12 +154,11 @@ public class ThemeManagerServiceTests {
                 anyInt());
         doReturn(mMainExecutor).when(mMainContext).getMainExecutor();
 
-        when(mUserManager.getProfileParentId(eq(DEFAULT_USER_ID))).thenReturn(DEFAULT_USER_ID);
-        when(mUserManager.getProfileParentId(eq(PROFILE_ID))).thenReturn(DEFAULT_USER_ID);
+        when(mUserManager.getProfileParentId(anyInt())).thenAnswer(inv -> inv.getArgument(0));
         when(mUserManager.getUserIds()).thenReturn(new int[]{DEFAULT_USER_ID});
+        when(mUserManager.isHeadlessSystemUserMode()).thenReturn(false);
 
-        mEnvironment = new ThemeEnvironment(mMainContext, mUserManager,
-                mHardwareColorRule.sysPropReader);
+        mEnvironment = new ThemeEnvironment(mMainContext, mHardwareColorRule.sysPropReader);
 
         FakeScheduledExecutorService schedulerExecutor = new FakeScheduledExecutorService();
         mThemeStateManager = new ThemeStateManager(mMainContext, schedulerExecutor, mEnvironment);
@@ -160,33 +168,70 @@ public class ThemeManagerServiceTests {
     @Test
     @HardwareColors(color = "", options = {"*|TONAL_SPOT|#00FF00"})
     @SuppressLint("MissingPermission")
-    public void test_onBootPhase_complete_colorSchemeNotApplied_shouldForceUpdate() {
+    public void test_initialization_colorSchemeNotApplied_shouldForceUpdate() {
         mThemeManagerService = testableServiceStart();
 
         // creates user with seed color red, not the same as the default google_blue
         ThemeStatePair pair = startProvisionedUser();
+        long originalTime = pair.getCurrentState().timeStamp();
 
         // Simulate boot phases
         mThemeManagerService.onBootPhase(SystemService.PHASE_SYSTEM_SERVICES_READY);
-        mThemeManagerService.onBootPhase(SystemService.PHASE_ACTIVITY_MANAGER_READY);
 
-        assertThat(pair.getPendingState()).isNotNull(); // there is an update
-        assertThat(pair.getPendingState().timeStamp()).isNotEqualTo(
-                pair.getCurrentState().timeStamp());
+        // Simulate boot animation dismissal using the internal local service
+        ThemeManagerInternal internal = LocalServices.getService(ThemeManagerInternal.class);
+        internal.onBootAnimationDismissing();
 
-        verify(mThemeUserLifecycle).onServicesReady(any(), any(), any());
-        verify(mThemeEventObserver).onServicesReady(any(), any(), any());
+        // Ensure asynchronous initialization completes
+        waitForBackgroundThread();
+
+        assertThat(pair.getPendingState()).isNull(); // there is an update
+        assertThat(pair.getCurrentState().timeStamp()).isNotEqualTo(originalTime);
+
+        verify(mThemeEventObserver).onServicesReady(any());
+        verify(mThemeUserLifecycle).loadCurrentUser();
         verify(mThemeEventObserver).registerListeners();
     }
 
     @Test
-    public void test_onUserStarting_delegatesToLifecycle() {
+    @SuppressLint("MissingPermission")
+    public void test_onUserStarting_delegatesToLifecycle_afterInitialization() {
         mThemeManagerService = testableServiceStart();
-        SystemService.TargetUser user = new SystemService.TargetUser(new UserInfo(10, "test", 0));
+        mThemeManagerService.onBootPhase(SystemService.PHASE_SYSTEM_SERVICES_READY);
 
+        // Dismiss boot animation to initialize
+        ThemeManagerInternal internal = LocalServices.getService(ThemeManagerInternal.class);
+        internal.onBootAnimationDismissing();
+
+        // Ensure asynchronous initialization completes
+        waitForBackgroundThread();
+
+        SystemService.TargetUser user = new SystemService.TargetUser(
+                new UserInfo(TEST_USER_ID, "test", 0));
         mThemeManagerService.onUserStarting(user);
 
         verify(mThemeUserLifecycle).onUserStarting(user);
+    }
+
+    @Test
+    public void test_onUserStarting_ignored_beforeInitialization() {
+        mThemeManagerService = testableServiceStart();
+
+        SystemService.TargetUser user = new SystemService.TargetUser(
+                new UserInfo(TEST_USER_ID, "test", 0));
+        mThemeManagerService.onUserStarting(user);
+
+        // Should not delegate yet
+        verify(mThemeUserLifecycle, org.mockito.Mockito.never()).onUserStarting(any());
+    }
+
+    private void waitForBackgroundThread() {
+        final CompletableFuture<Void> future = new CompletableFuture<>();
+        BackgroundThread.getHandler().post(() -> future.complete(null));
+        try {
+            future.get();
+        } catch (InterruptedException | ExecutionException ignore) {
+        }
     }
 
     private ThemeStatePair startProvisionedUser() {
@@ -197,8 +242,12 @@ public class ThemeManagerServiceTests {
 
     private ThemeManagerService testableServiceStart() {
         // The context used here should match the one used for resource overrides.
-        return new ThemeManagerService(mMainContext, mHardwareColorRule.sysPropReader,
-                mWallpaperManager, mOverlayManager, mUserManager, mThemeStateManager,
+        ThemeManagerService service = new ThemeManagerService(mMainContext,
+                mHardwareColorRule.sysPropReader, mThemeStateManager,
                 mThemeUserLifecycle, mThemeEventObserver);
+
+        LocalServices.addService(ThemeManagerInternal.class, service.getLocalService());
+
+        return service;
     }
 }

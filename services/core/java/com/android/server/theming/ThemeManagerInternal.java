@@ -17,6 +17,7 @@
 package com.android.server.theming;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.content.theming.IThemeChangedCallback;
 import android.content.theming.IThemeSettingsCallback;
@@ -45,7 +46,9 @@ public interface ThemeManagerInternal {
      * @param options The {@link ThemeInfo} with the desired seed color, style, and contrast.
      * @return The generated {@link FabricatedOverlayInternal}.
      */
-    FabricatedOverlayInternal generateDynamicColorOverlay(int userId, ThemeInfo options);
+    @Nullable
+    FabricatedOverlayInternal generateDynamicColorOverlay(@UserIdInt int userId,
+            @NonNull ThemeInfo options);
 
     /**
      * Returns the current {@link ThemeInfo} for a given user.
@@ -53,7 +56,8 @@ public interface ThemeManagerInternal {
      * @param userId The ID of a Full User for whom to retrieve the theme information.
      * @return The {@link ThemeInfo} containing the user's current theme settings.
      */
-    ThemeInfo getUserThemeInfo(int userId);
+    @Nullable
+    ThemeInfo getUserThemeInfo(@UserIdInt int userId);
 
     /**
      * Registers a callback to receive notifications of theme settings changes.
@@ -65,7 +69,8 @@ public interface ThemeManagerInternal {
      * @param cb     final IThemeSettingsCallback to register.
      * @return {@code true} if the callback was successfully registered, {@code false} otherwise.
      */
-    boolean registerThemeSettingsCallback(@UserIdInt int userId, IThemeSettingsCallback cb);
+    boolean registerThemeSettingsCallback(@UserIdInt int userId,
+            @NonNull IThemeSettingsCallback cb);
 
     /**
      * Unregisters a previously registered theme settings change callback.
@@ -78,7 +83,8 @@ public interface ThemeManagerInternal {
      * @param cb     The {@link IThemeSettingsCallback} to unregister.
      * @return {@code true} if the callback was successfully unregistered, {@code false} otherwise.
      */
-    boolean unregisterThemeSettingsCallback(@UserIdInt int userId, IThemeSettingsCallback cb);
+    boolean unregisterThemeSettingsCallback(@UserIdInt int userId,
+            @NonNull IThemeSettingsCallback cb);
 
     /**
      * Registers a callback for theme changed events.
@@ -86,7 +92,7 @@ public interface ThemeManagerInternal {
      * @param userId   The ID of a Full User to register the callback for.
      * @param callback The {@link IThemeChangedCallback}  to add.
      */
-    void registerThemeChangedCallback(@UserIdInt int userId,
+    boolean registerThemeChangedCallback(@UserIdInt int userId,
             @NonNull IThemeChangedCallback callback);
 
     /**
@@ -95,7 +101,7 @@ public interface ThemeManagerInternal {
      * @param userId   The ID of a Full User to unregister the callback from.
      * @param callback The {@link IThemeChangedCallback}  to remove.
      */
-    void unregisterThemeChangedCallback(@UserIdInt int userId,
+    boolean unregisterThemeChangedCallback(@UserIdInt int userId,
             @NonNull IThemeChangedCallback callback);
 
     /**
@@ -123,6 +129,7 @@ public interface ThemeManagerInternal {
      * @return The {@link ThemeSettings} object containing the current theme settings,
      * or {@code null} if an error occurs or no settings are found.
      */
+    @Nullable
     ThemeSettings getThemeSettings(@UserIdInt int userId);
 
     /**
@@ -133,12 +140,13 @@ public interface ThemeManagerInternal {
      * @return The {@link ThemeSettings} object containing the current theme settings,
      * or the default settings if no custom settings are found.
      */
-    ThemeSettings getThemeSettingsOrDefault(int userId);
+    @Nullable
+    ThemeSettings getThemeSettingsOrDefault(@UserIdInt int userId);
 
     /**
      * Called when the boot animation is dismissed.
      */
-    void onBootAnimationDismissing();
+    boolean onBootAnimationDismissing();
 
     /**
      * Dumps the current state of the ThemeManager service.

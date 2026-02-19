@@ -97,6 +97,8 @@ public class ThemeBinderServiceTests {
     private ActivityManagerInternal mActivityManagerInternal;
     @Mock
     private ThemeOverlayHelper mOverlayHelper;
+    @Mock
+    private ThemeUserLifecycle mUserLifecycle;
 
     @Before
     public void setup() {
@@ -132,8 +134,9 @@ public class ThemeBinderServiceTests {
             return new int[]{requestedUserId};
         });
         when(mActivityManagerInternal.getCurrentUserId()).thenReturn(mUserId);
+        when(mUserLifecycle.loadUserStateAndNotifyStateManager(anyInt())).thenReturn(true);
 
-        ThemeWallpaperManager themeWallpaperManager = new ThemeWallpaperManager(mMockWmi);
+        ThemeWallpaperManager themeWallpaperManager = new ThemeWallpaperManager();
         SystemPropertiesReader systemPropertiesReader = new SystemPropertiesReader() {
             @NonNull
             @Override
@@ -142,18 +145,23 @@ public class ThemeBinderServiceTests {
             }
         };
 
-        mEnvironment = new ThemeEnvironment(context, mUserManager, systemPropertiesReader);
+        mEnvironment = new ThemeEnvironment(context, systemPropertiesReader);
+        mEnvironment.setBootingComplete(mUserLifecycle);
         ThemeSettingsManager themeSettingsManager = new ThemeSettingsManager(themeWallpaperManager,
-                systemPropertiesReader, mEnvironment);
+                mEnvironment);
         mSchedulerExecutor = new FakeScheduledExecutorService();
         mThemeStateManager = new ThemeStateManager(context, mSchedulerExecutor, mEnvironment);
         mThemeStateManager.onServicesReady();
+        mThemeStateManager.onUserStart(UserHandle.of(mUserId), true, Color.BLUE, 0.5f,
+                ThemeStyle.VIBRANT);
         mInternal = new ThemeManagerImpl(context, themeSettingsManager,
-                mThemeStateManager, mOverlayHelper, mEnvironment) {
+                mThemeStateManager, mOverlayHelper, mEnvironment, themeWallpaperManager) {
             @Override
-            public void onBootAnimationDismissing() {
+            public boolean onBootAnimationDismissing() {
+                return true;
             }
         };
+        // mInternal.setup() is not called here in the provided snippet.
         mUnderTest = new ThemeBinderService(context, mInternal);
         mDefaultSettings = themeSettingsManager.createDefaultThemeSettings(mUserId);
     }

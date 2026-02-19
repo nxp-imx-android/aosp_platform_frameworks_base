@@ -78,6 +78,10 @@ public class ThemeStateManagerTest {
     private ActivityManagerInternal mActivityManagerInternal;
     @Mock
     private ThemeOverlayHelper mThemeOverlayHelper;
+    @Mock
+    private ThemeUserLifecycle mUserLifecycle;
+    @Mock
+    private android.app.KeyguardManager mKeyguardManager;
     @Captor
     private ArgumentCaptor<OverlayManagerTransaction> mTransactionCaptor;
 
@@ -136,8 +140,9 @@ public class ThemeStateManagerTest {
             return new int[]{requestedUserId};
         });
 
-        mEnvironment = new ThemeEnvironment(mMainContext, mUserManager, (key, def) -> def);
-        mEnvironment.setBootingComplete();
+        mEnvironment = new ThemeEnvironment(mMainContext, (key, def) -> def);
+        mEnvironment.setBootingComplete(mUserLifecycle);
+        mEnvironment.onServicesReady(mKeyguardManager);
 
         mSchedulerExecutor = new FakeScheduledExecutorService();
         mThemeStateManager = new ThemeStateManager(mMainContext, mSchedulerExecutor, mEnvironment);
@@ -206,14 +211,14 @@ public class ThemeStateManagerTest {
         assertThat(pair.getPendingState()).isNotNull(); // there is an update
         assertThat(pair.getPendingState().seedColor()).isEqualTo(newSeedColor);
         assertThat(pair.getPendingState()).isNotEqualTo(pair.getCurrentState());
-        assertThat(pair.shouldUpdate(/* isBooting */ false)).isTrue();
+        assertThat(pair.shouldUpdate()).isTrue();
 
         waitForThemeUpdate();
 
         // checks new state and there are no pending updates.
         assertThat(pair.getPendingState()).isNull(); // nothing to update
         assertThat(pair.getCurrentState().seedColor()).isEqualTo(newSeedColor);
-        assertThat(pair.shouldUpdate(/* isBooting */ false)).isFalse();
+        assertThat(pair.shouldUpdate()).isFalse();
 
         // Verify that the overlays were actually applied.
         verify(mThemeOverlayHelper).applyCurrentStateOverlays(any(), anyBoolean(), anyBoolean());
@@ -229,14 +234,14 @@ public class ThemeStateManagerTest {
         assertThat(pair.getPendingState()).isNotNull(); // there is an update
         assertThat(pair.getPendingState().seedColor()).isEqualTo(newSeedColor);
         assertThat(pair.getPendingState()).isNotEqualTo(pair.getCurrentState());
-        assertThat(pair.shouldUpdate(/* isBooting */ false)).isFalse();
+        assertThat(pair.shouldUpdate()).isFalse();
 
         waitForThemeUpdate();
 
         // checks state is the same but there is a pending update that CANNOT be applied yet.
         assertThat(pair.getPendingState().seedColor()).isEqualTo(newSeedColor);
         assertThat(pair.getPendingState()).isNotEqualTo(pair.getCurrentState());
-        assertThat(pair.shouldUpdate(/* isBooting */ false)).isFalse();
+        assertThat(pair.shouldUpdate()).isFalse();
 
         mThemeStateManager.onFinishSetup(DEFAULT_USER_ID);
         waitForThemeUpdate();
@@ -244,7 +249,7 @@ public class ThemeStateManagerTest {
         // checks new state and there are no pending updates.
         assertThat(pair.getPendingState()).isNull();
         assertThat(pair.getCurrentState().seedColor()).isEqualTo(newSeedColor);
-        assertThat(pair.shouldUpdate(/* isBooting */ false)).isFalse();
+        assertThat(pair.shouldUpdate()).isFalse();
 
         // Verify that the overlays were actually applied.
         verify(mThemeOverlayHelper).applyCurrentStateOverlays(any(), anyBoolean(), anyBoolean());
@@ -261,14 +266,14 @@ public class ThemeStateManagerTest {
         assertThat(pair.getPendingState()).isNotNull(); // there is an update
         assertThat(pair.getPendingState().style()).isEqualTo(newStyle);
         assertThat(pair.getPendingState()).isNotEqualTo(pair.getCurrentState());
-        assertThat(pair.shouldUpdate(/* isBooting */ false)).isTrue();
+        assertThat(pair.shouldUpdate()).isTrue();
 
         waitForThemeUpdate();
 
         // checks new state and there are no pending updates.
         assertThat(pair.getPendingState()).isNull();
         assertThat(pair.getCurrentState().style()).isEqualTo(newStyle);
-        assertThat(pair.shouldUpdate(/* isBooting */ false)).isFalse();
+        assertThat(pair.shouldUpdate()).isFalse();
 
         // Verify that the overlays were actually applied.
         verify(mThemeOverlayHelper).applyCurrentStateOverlays(any(), anyBoolean(), anyBoolean());
@@ -285,14 +290,14 @@ public class ThemeStateManagerTest {
         assertThat(pair.getPendingState()).isNotNull(); // there is an update
         assertThat(pair.getPendingState().style()).isEqualTo(newStyle);
         assertThat(pair.getPendingState()).isNotEqualTo(pair.getCurrentState());
-        assertThat(pair.shouldUpdate(/* isBooting */ false)).isFalse();
+        assertThat(pair.shouldUpdate()).isFalse();
 
         waitForThemeUpdate();
 
         // checks state is the same but there is a pending update that CANNOT be applied yet.
         assertThat(pair.getPendingState().style()).isEqualTo(newStyle);
         assertThat(pair.getPendingState()).isNotEqualTo(pair.getCurrentState());
-        assertThat(pair.shouldUpdate(/* isBooting */ false)).isFalse();
+        assertThat(pair.shouldUpdate()).isFalse();
 
         mThemeStateManager.onFinishSetup(DEFAULT_USER_ID);
         waitForThemeUpdate();
@@ -300,7 +305,7 @@ public class ThemeStateManagerTest {
         // checks new state and there are no pending updates.
         assertThat(pair.getPendingState()).isNull();
         assertThat(pair.getCurrentState().style()).isEqualTo(newStyle);
-        assertThat(pair.shouldUpdate(/* isBooting */ false)).isFalse();
+        assertThat(pair.shouldUpdate()).isFalse();
 
         // Verify that the overlays were actually applied.
         verify(mThemeOverlayHelper).applyCurrentStateOverlays(any(), anyBoolean(), anyBoolean());
@@ -318,7 +323,7 @@ public class ThemeStateManagerTest {
         assertThat(pair.getPendingState().contrast()).isWithin(DELTA_CHECK_RESOLUTION).of(
                 newContrast);
         assertThat(pair.getPendingState()).isNotEqualTo(pair.getCurrentState());
-        assertThat(pair.shouldUpdate(/* isBooting */ false)).isTrue();
+        assertThat(pair.shouldUpdate()).isTrue();
 
         waitForThemeUpdate();
 
@@ -326,7 +331,7 @@ public class ThemeStateManagerTest {
         assertThat(pair.getPendingState()).isNull(); // nothing to update
         assertThat(pair.getCurrentState().contrast()).isWithin(DELTA_CHECK_RESOLUTION).of(
                 newContrast);
-        assertThat(pair.shouldUpdate(/* isBooting */ false)).isFalse();
+        assertThat(pair.shouldUpdate()).isFalse();
 
         // Verify that the overlays were actually applied.
         verify(mThemeOverlayHelper).applyCurrentStateOverlays(any(), anyBoolean(), anyBoolean());
@@ -344,7 +349,7 @@ public class ThemeStateManagerTest {
         assertThat(pair.getPendingState().contrast()).isWithin(DELTA_CHECK_RESOLUTION).of(
                 newContrast);
         assertThat(pair.getPendingState()).isNotEqualTo(pair.getCurrentState());
-        assertThat(pair.shouldUpdate(/* isBooting */ false)).isFalse();
+        assertThat(pair.shouldUpdate()).isFalse();
 
         waitForThemeUpdate();
 
@@ -352,7 +357,7 @@ public class ThemeStateManagerTest {
         assertThat(pair.getPendingState().contrast()).isWithin(DELTA_CHECK_RESOLUTION).of(
                 newContrast);
         assertThat(pair.getPendingState()).isNotEqualTo(pair.getCurrentState());
-        assertThat(pair.shouldUpdate(/* isBooting */ false)).isFalse();
+        assertThat(pair.shouldUpdate()).isFalse();
 
         mThemeStateManager.onFinishSetup(DEFAULT_USER_ID);
         waitForThemeUpdate();
@@ -361,7 +366,7 @@ public class ThemeStateManagerTest {
         assertThat(pair.getPendingState()).isNull();
         assertThat(pair.getCurrentState().contrast()).isWithin(DELTA_CHECK_RESOLUTION).of(
                 newContrast);
-        assertThat(pair.shouldUpdate(/* isBooting */ false)).isFalse();
+        assertThat(pair.shouldUpdate()).isFalse();
 
         // Verify that the overlays were actually applied.
         verify(mThemeOverlayHelper).applyCurrentStateOverlays(any(), anyBoolean(), anyBoolean());
@@ -380,7 +385,7 @@ public class ThemeStateManagerTest {
         waitForThemeUpdate();
 
         assertThat(pair.getCurrentState().isSetup()).isTrue();
-        assertThat(pair.shouldUpdate(/* isBooting */ false)).isFalse();
+        assertThat(pair.shouldUpdate()).isFalse();
         assertThat(pair.getPendingState()).isNull();
 
         // Verify that the overlays were actually applied.
@@ -396,7 +401,7 @@ public class ThemeStateManagerTest {
 
         assertThat(pair.getPendingState()).isNotNull(); // there is an update
         assertThat(pair.getPendingChildProfiles()).contains(profileId);
-        assertThat(pair.shouldUpdate(/* isBooting */ false)).isTrue();
+        assertThat(pair.shouldUpdate()).isTrue();
 
         waitForThemeUpdate();
 
@@ -413,7 +418,7 @@ public class ThemeStateManagerTest {
         mThemeStateManager.reevaluateSystemTheme();
         assertThat(mSchedulerExecutor.getFutures()).isEmpty();
         assertThat(pair.getPendingState()).isNull();
-        assertThat(pair.shouldUpdate(/* isBooting */ false)).isFalse();
+        assertThat(pair.shouldUpdate()).isFalse();
     }
 
     @Test
@@ -427,13 +432,13 @@ public class ThemeStateManagerTest {
         assertThat(pair.getPendingState()).isNotNull(); // there is an update
         assertThat(pair.getPendingState().seedColor()).isEqualTo(newSeedColor);
         assertThat(pair.getPendingState()).isNotEqualTo(pair.getCurrentState());
-        assertThat(pair.shouldUpdate(/* isBooting */ false)).isTrue();
+        assertThat(pair.shouldUpdate()).isTrue();
 
         waitForThemeUpdate();
 
         assertThat(pair.getPendingState()).isNull();
         assertThat(pair.getCurrentState().seedColor()).isEqualTo(newSeedColor);
-        assertThat(pair.shouldUpdate(/* isBooting */ false)).isFalse();
+        assertThat(pair.shouldUpdate()).isFalse();
 
         // Verify that the overlays were actually applied.
         verify(mThemeOverlayHelper).applyCurrentStateOverlays(any(), anyBoolean(), anyBoolean());
@@ -451,14 +456,14 @@ public class ThemeStateManagerTest {
         mThemeStateManager.reevaluateSystemTheme();
         mThemeStateManager.reevaluateSystemTheme();
 
-        assertThat(pair.shouldUpdate(/* isBooting */ false)).isTrue();
+        assertThat(pair.shouldUpdate()).isTrue();
         assertThat(mSchedulerExecutor.getFutures()).hasSize(1);
 
         waitForThemeUpdate();
 
         assertThat(pair.getPendingState()).isNull();
         assertThat(pair.getCurrentState().seedColor()).isEqualTo(newSeedColor);
-        assertThat(pair.shouldUpdate(/* isBooting */ false)).isFalse();
+        assertThat(pair.shouldUpdate()).isFalse();
     }
 
     @Test
@@ -473,14 +478,14 @@ public class ThemeStateManagerTest {
         assertThat(pair.getPendingState()).isNotNull(); // there is an update
         assertThat(pair.getPendingState().seedColor()).isEqualTo(newSeedColor);
         assertThat(pair.getPendingState()).isNotEqualTo(pair.getCurrentState());
-        assertThat(pair.shouldUpdate(/* isBooting */ false)).isFalse();
+        assertThat(pair.shouldUpdate()).isFalse();
 
         mThemeStateManager.onLockStateChange(true);
         waitForThemeUpdate();
 
         // The change is applied immediately.
         assertThat(pair.getCurrentState().seedColor()).isEqualTo(newSeedColor);
-        assertThat(pair.shouldUpdate(/* isBooting */ false)).isFalse();
+        assertThat(pair.shouldUpdate()).isFalse();
         assertThat(pair.getPendingState()).isNull();
 
         // Verify that the overlays were actually applied.
@@ -499,7 +504,7 @@ public class ThemeStateManagerTest {
         assertThat(pair.getPendingState()).isNotNull(); // there is an update
         assertThat(pair.getPendingState().seedColor()).isEqualTo(newSeedColor);
         assertThat(pair.getPendingState()).isNotEqualTo(pair.getCurrentState());
-        assertThat(pair.shouldUpdate(/* isBooting */ false)).isFalse();
+        assertThat(pair.shouldUpdate()).isFalse();
 
         mThemeStateManager.onLockStateChange(false);
         waitForThemeUpdate();
@@ -507,7 +512,7 @@ public class ThemeStateManagerTest {
         // The change is still deferred.
         assertThat(pair.getPendingState().seedColor()).isEqualTo(newSeedColor);
         assertThat(pair.getPendingState()).isNotEqualTo(pair.getCurrentState());
-        assertThat(pair.shouldUpdate(/* isBooting */ false)).isFalse();
+        assertThat(pair.shouldUpdate()).isFalse();
     }
 
     @Test
@@ -542,7 +547,7 @@ public class ThemeStateManagerTest {
         assertThat(pair.getPendingState()).isNotNull(); // there is an update
         assertThat(pair.getPendingState().seedColor()).isEqualTo(newSeedColor);
         assertThat(pair.getPendingState()).isNotEqualTo(pair.getCurrentState());
-        assertThat(pair.shouldUpdate(/* isBooting */ false)).isFalse(); // Change deferred
+        assertThat(pair.shouldUpdate()).isFalse(); // Change deferred
     }
 
     @Test
@@ -555,7 +560,7 @@ public class ThemeStateManagerTest {
         assertThat(pair.getPendingState()).isNotNull(); // there is an update
         assertThat(pair.getPendingState().seedColor()).isEqualTo(newSeedColor);
         assertThat(pair.getPendingState()).isNotEqualTo(pair.getCurrentState());
-        assertThat(pair.shouldUpdate(/* isBooting */ false)).isTrue(); // Change not deferred
+        assertThat(pair.shouldUpdate()).isTrue(); // Change not deferred
     }
 
     @Test
@@ -565,10 +570,10 @@ public class ThemeStateManagerTest {
 
         int newSeedColor = 0xFF0000FF; // Blue
         mThemeStateManager.onSeedColorChange(DEFAULT_USER_ID, newSeedColor, false);
-        assertThat(pair.shouldUpdate(/* isBooting */ false)).isFalse(); // Change deferred
+        assertThat(pair.shouldUpdate()).isFalse(); // Change deferred
 
         pair.setDeferUpdatesOnLock(false); // Simulate unlock
-        assertThat(pair.shouldUpdate(/* isBooting */ false)).isTrue(); // Should be applied now
+        assertThat(pair.shouldUpdate()).isTrue(); // Should be applied now
     }
 
     @Test
@@ -582,7 +587,7 @@ public class ThemeStateManagerTest {
         when(mThemeOverlayHelper.isColorSchemeApplied(any(), anyInt(), any(), any())).thenReturn(
                 true);
 
-        mThemeStateManager.onBootComplete(false);
+        mThemeStateManager.evaluateAllUsers(false, false);
         assertThat(pair.getPendingState()).isNull(); // there is no update
     }
 
@@ -595,7 +600,7 @@ public class ThemeStateManagerTest {
         when(mThemeOverlayHelper.isColorSchemeApplied(any(), anyInt(), any(), any())).thenReturn(
                 false);
 
-        mThemeStateManager.onBootComplete(false);
+        mThemeStateManager.evaluateAllUsers(false, false);
         assertThat(pair.getPendingState()).isNotNull(); // there is an update
         assertThat(pair.getPendingState().timeStamp()).isNotEqualTo(
                 pair.getCurrentState().timeStamp());
@@ -608,7 +613,7 @@ public class ThemeStateManagerTest {
                 DEFAULT_CONTRAST, DEFAULT_STYLE);
         ThemeStatePair pair = mThemeStateManager.getState(DEFAULT_USER_ID);
 
-        mThemeStateManager.onBootComplete(true);
+        mThemeStateManager.evaluateAllUsers(true, false);
 
         assertThat(pair.getPendingState()).isNotNull(); // there is an update
         assertThat(pair.getPendingState().timeStamp()).isNotEqualTo(
