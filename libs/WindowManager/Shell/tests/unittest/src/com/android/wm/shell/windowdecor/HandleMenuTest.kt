@@ -294,6 +294,24 @@ class HandleMenuTest : ShellTestCase() {
         assertThat(splitButton.visibility).isEqualTo(View.VISIBLE)
     }
 
+    @Test
+    fun testWindowingPill_shownWhenConfigured() = runTest {
+        createTaskInfo(WINDOWING_MODE_FREEFORM)
+        handleMenu = createAndShowHandleMenu(shouldShowWindowingPill = true)
+
+        val windowingPill = handleMenu.handleMenuView!!.windowingPillView
+        assertThat(windowingPill.visibility).isEqualTo(View.VISIBLE)
+    }
+
+    @Test
+    fun testWindowingPill_hiddenWhenConfigured() = runTest {
+        createTaskInfo(WINDOWING_MODE_FREEFORM)
+        handleMenu = createAndShowHandleMenu(shouldShowWindowingPill = false)
+
+        val windowingPill = handleMenu.handleMenuView!!.windowingPillView
+        assertThat(windowingPill.visibility).isEqualTo(View.GONE)
+    }
+
     private suspend fun createTaskInfo(
         windowingMode: Int,
         splitPosition: Int? = null,
@@ -337,6 +355,7 @@ class HandleMenuTest : ShellTestCase() {
     private fun TestScope.createAndShowHandleMenu(
         splitPosition: Int? = null,
         forceShowSystemBars: Boolean = false,
+        shouldShowWindowingPill: Boolean = true,
     ): HandleMenu {
         val layoutId =
             if (mockDesktopWindowDecoration.mTaskInfo.isFreeform) {
@@ -374,7 +393,7 @@ class HandleMenuTest : ShellTestCase() {
                     mockTaskResourceLoader,
                     layoutId,
                     splitScreenController,
-                    shouldShowWindowingPill = true,
+                    shouldShowWindowingPill = shouldShowWindowingPill,
                     shouldShowNewWindowButton = true,
                     shouldShowManageWindowsButton = false,
                     shouldShowChangeAspectRatioButton = false,
@@ -400,7 +419,7 @@ class HandleMenuTest : ShellTestCase() {
                     mockTaskResourceLoader,
                     layoutId,
                     splitScreenController,
-                    shouldShowWindowingPill = true,
+                    shouldShowWindowingPill = shouldShowWindowingPill,
                     shouldShowNewWindowButton = true,
                     shouldShowManageWindowsButton = false,
                     shouldShowChangeAspectRatioButton = false,
