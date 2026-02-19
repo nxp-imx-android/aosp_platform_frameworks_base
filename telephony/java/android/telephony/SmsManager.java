@@ -315,9 +315,11 @@ public final class SmsManager {
      * SMS: To handle basic SMS tasks
      * ASSISTANT: To perform actions with all SMS messages
      * DIALER: The Dialer role has SMS permissions, and is considered trusted
+     * DEVICE_POLICY_MANAGEMENT: For enterprise device policy management
      */
     private static final List<String> SMS_OTP_READING_ROLES = List.of(RoleManager.ROLE_SMS,
-            RoleManager.ROLE_ASSISTANT, RoleManager.ROLE_DIALER);
+            RoleManager.ROLE_ASSISTANT, RoleManager.ROLE_DIALER,
+            RoleManager.ROLE_DEVICE_POLICY_MANAGEMENT);
 
     /**
      * 3gpp2 SMS priority is not specified
