@@ -2921,8 +2921,8 @@ public class DevicePolicyManager {
      * <p>Returned for {@link #ACTION_PROVISION_MANAGED_DEVICE} if the device has already been setup
      * and for {@link #ACTION_PROVISION_MANAGED_USER} if the user has already been setup.
      *
-     * <p>Returned for {@link #ACTION_PROVISION_MULTIUSER_MANAGED_USER} if the user has already
-     * been setup.
+     * <p>Returned for {@link #ACTION_PROVISION_MULTIUSER_MANAGED_USER} and {@link
+     * #ACTION_PROVISION_MULTIUSER_MANAGED_DEVICE} if the user has already been setup.
      *
      * @hide
      */
@@ -14760,6 +14760,7 @@ public class DevicePolicyManager {
      *
      * @param action One of {@link #ACTION_PROVISION_MANAGED_DEVICE},
      *               {@link #ACTION_PROVISION_MANAGED_PROFILE},
+     *               {@link #ACTION_PROVISION_MULTIUSER_MANAGED_DEVICE},
      *               {@link #ACTION_PROVISION_MULTIUSER_MANAGED_USER}
      * @param packageName The package of the component that would be set as device, user, or profile
      *        owner.
