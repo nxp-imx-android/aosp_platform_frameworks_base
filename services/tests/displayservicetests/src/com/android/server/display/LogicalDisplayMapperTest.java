@@ -141,15 +141,18 @@ public class LogicalDisplayMapperTest {
 
     private static final DeviceState DEVICE_STATE_FOLDABLE_CLOSED = createDeviceState(0,
             "Foldable closed", Set.of(DeviceState.PROPERTY_POWER_CONFIGURATION_TRIGGER_SLEEP,
-                    DeviceState.PROPERTY_FOLDABLE_HARDWARE_CONFIGURATION_FOLD_IN_CLOSED),
+                    DeviceState.PROPERTY_FOLDABLE_HARDWARE_CONFIGURATION_FOLD_IN_CLOSED,
+                    DeviceState.PROPERTY_FOLDABLE_DISPLAY_CONFIGURATION_OUTER_PRIMARY),
             Collections.emptySet());
     private static final DeviceState DEVICE_STATE_FOLDABLE_HALF_OPEN = createDeviceState(1,
             "Foldable half-open", Set.of(DeviceState.PROPERTY_POWER_CONFIGURATION_TRIGGER_WAKE,
-                    DeviceState.PROPERTY_FOLDABLE_HARDWARE_CONFIGURATION_FOLD_IN_HALF_OPEN),
+                    DeviceState.PROPERTY_FOLDABLE_HARDWARE_CONFIGURATION_FOLD_IN_HALF_OPEN,
+                    DeviceState.PROPERTY_FOLDABLE_DISPLAY_CONFIGURATION_INNER_PRIMARY),
             Collections.emptySet());
     private static final DeviceState DEVICE_STATE_FOLDABLE_OPEN = createDeviceState(2,
             "Foldable open", Set.of(DeviceState.PROPERTY_POWER_CONFIGURATION_TRIGGER_WAKE,
-                    DeviceState.PROPERTY_FOLDABLE_HARDWARE_CONFIGURATION_FOLD_IN_OPEN),
+                    DeviceState.PROPERTY_FOLDABLE_HARDWARE_CONFIGURATION_FOLD_IN_OPEN,
+                    DeviceState.PROPERTY_FOLDABLE_DISPLAY_CONFIGURATION_INNER_PRIMARY),
             Collections.emptySet());
     private static final DeviceState DEVICE_STATE_EMULATED = createDeviceState(3, "Emulated",
             Set.of(DeviceState.PROPERTY_EMULATED_ONLY), Collections.emptySet());
