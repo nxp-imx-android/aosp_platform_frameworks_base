@@ -104,7 +104,7 @@ public class BluetoothDeviceRoutesManagerTest {
         AtomicBoolean getBondedDevicesLockHeld = new AtomicBoolean(false);
         doAnswer(
                         invocation -> {
-                            getBondedDevicesLockHeld.set(Thread.holdsLock(mManager));
+                            getBondedDevicesLockHeld.set(Thread.holdsLock(mManager.mLock));
                             return Set.of(mMockBluetoothDevice);
                         })
                 .when(mMockBluetoothAdapter)
@@ -112,7 +112,7 @@ public class BluetoothDeviceRoutesManagerTest {
         AtomicBoolean getAddressLockHeld = new AtomicBoolean(false);
         doAnswer(
                         invocation -> {
-                            getAddressLockHeld.set(Thread.holdsLock(mManager));
+                            getAddressLockHeld.set(Thread.holdsLock(mManager.mLock));
                             return FAKE_ADDRESS;
                         })
                 .when(mMockBluetoothDevice)
@@ -120,7 +120,7 @@ public class BluetoothDeviceRoutesManagerTest {
         AtomicBoolean isConnectedLockHeld = new AtomicBoolean(false);
         doAnswer(
                         invocation -> {
-                            isConnectedLockHeld.set(Thread.holdsLock(mManager));
+                            isConnectedLockHeld.set(Thread.holdsLock(mManager.mLock));
                             return true;
                         })
                 .when(mMockBluetoothDevice)
@@ -128,7 +128,7 @@ public class BluetoothDeviceRoutesManagerTest {
         AtomicBoolean getAliasLockHeld = new AtomicBoolean(false);
         doAnswer(
                         invocation -> {
-                            getAliasLockHeld.set(Thread.holdsLock(mManager));
+                            getAliasLockHeld.set(Thread.holdsLock(mManager.mLock));
                             return FAKE_ALIAS;
                         })
                 .when(mMockBluetoothDevice)
@@ -136,7 +136,7 @@ public class BluetoothDeviceRoutesManagerTest {
         AtomicBoolean isProfileSupportedLockHeld = new AtomicBoolean(false);
         doAnswer(
                         invocation -> {
-                            isProfileSupportedLockHeld.set(Thread.holdsLock(mManager));
+                            isProfileSupportedLockHeld.set(Thread.holdsLock(mManager.mLock));
                             return invocation.getArgument(0).equals(BluetoothProfile.A2DP);
                         })
                 .when(mMockBluetoothProfileMonitor)
@@ -176,7 +176,7 @@ public class BluetoothDeviceRoutesManagerTest {
         AtomicBoolean setActiveDeviceLockHeld = new AtomicBoolean(false);
         doAnswer(
                         invocation -> {
-                            setActiveDeviceLockHeld.set(Thread.holdsLock(mManager));
+                            setActiveDeviceLockHeld.set(Thread.holdsLock(mManager.mLock));
                             return null;
                         })
                 .when(mMockBluetoothAdapter)
@@ -196,7 +196,7 @@ public class BluetoothDeviceRoutesManagerTest {
         AtomicBoolean isMediaOnlyLockHeld = new AtomicBoolean(false);
         doAnswer(
                         invocation -> {
-                            isMediaOnlyLockHeld.set(Thread.holdsLock(mManager));
+                            isMediaOnlyLockHeld.set(Thread.holdsLock(mManager.mLock));
                             return false;
                         })
                 .when(mMockBluetoothProfileMonitor)
@@ -216,7 +216,7 @@ public class BluetoothDeviceRoutesManagerTest {
         AtomicBoolean setDeviceVolumeLockHeld = new AtomicBoolean(false);
         doAnswer(
                         invocation -> {
-                            setDeviceVolumeLockHeld.set(Thread.holdsLock(mManager));
+                            setDeviceVolumeLockHeld.set(Thread.holdsLock(mManager.mLock));
                             return null;
                         })
                 .when(mMockBluetoothProfileMonitor)
@@ -237,7 +237,7 @@ public class BluetoothDeviceRoutesManagerTest {
         AtomicBoolean isProfileSupportedLockHeld = new AtomicBoolean(false);
         doAnswer(
                         invocation -> {
-                            isProfileSupportedLockHeld.set(Thread.holdsLock(mManager));
+                            isProfileSupportedLockHeld.set(Thread.holdsLock(mManager.mLock));
                             return invocation.getArgument(0).equals(BluetoothProfile.A2DP);
                         })
                 .when(mMockBluetoothProfileMonitor)
@@ -273,7 +273,8 @@ public class BluetoothDeviceRoutesManagerTest {
         AtomicBoolean getDevicesWithBroadcastSourceLockHeld = new AtomicBoolean(false);
         doAnswer(
                         invocation -> {
-                            getDevicesWithBroadcastSourceLockHeld.set(Thread.holdsLock(mManager));
+                            getDevicesWithBroadcastSourceLockHeld.set(
+                                    Thread.holdsLock(mManager.mLock));
                             return java.util.List.of(mMockBluetoothDevice);
                         })
                 .when(mMockBluetoothProfileMonitor)
@@ -281,7 +282,7 @@ public class BluetoothDeviceRoutesManagerTest {
         AtomicBoolean isMediaOnlyLockHeld = new AtomicBoolean(false);
         doAnswer(
                         invocation -> {
-                            isMediaOnlyLockHeld.set(Thread.holdsLock(mManager));
+                            isMediaOnlyLockHeld.set(Thread.holdsLock(mManager.mLock));
                             return false;
                         })
                 .when(mMockBluetoothProfileMonitor)
@@ -304,7 +305,7 @@ public class BluetoothDeviceRoutesManagerTest {
         doAnswer(
                         invocation -> {
                             isLeAudioBroadcastAssistantSupportedLockHeld.set(
-                                    Thread.holdsLock(mManager));
+                                    Thread.holdsLock(mManager.mLock));
                             return android.bluetooth.BluetoothStatusCodes.FEATURE_SUPPORTED;
                         })
                 .when(mMockBluetoothAdapter)
