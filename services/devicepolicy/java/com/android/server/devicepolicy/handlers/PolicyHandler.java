@@ -96,38 +96,19 @@ import java.util.stream.Collectors;
 public class PolicyHandler<T> {
 
     private final PolicyIdentifier<T> mKey;
-    private final PolicyMetadata<T> mPolicyMetadata;
-    private final PolicyDefinition<T> mPolicyDefinition;
-    private final PolicyValidator<T> mValidator;
-    private final PolicyValueConvertor<T> mValueConvertor;
-    private final PolicyTransportValueConvertor<T> mTransportValueConvertor;
 
-    /**
-     * Helper class that provides access to methods used while processing policies. Must be
-     * initialized by calling {@code setDelegate()} before using the policy handler.
-     */
+    // These must be initialized by calling {@code initialize()} before using the policy handler.
+    private PolicyMetadata<T> mPolicyMetadata = null;
+    private PolicyValidator<T> mValidator = null;
+    private PolicyValueConvertor<T> mValueConvertor = null;
+    private PolicyTransportValueConvertor<T> mTransportValueConvertor = null;
+    private PolicyDefinition<T> mPolicyDefinition = null;
+
+    /** Helper class that provides access to methods used while processing policies. */
     private Delegate mDelegate = null;
 
-    /** Constructor that uses the generated {@link PolicyMetadata} and {@link PolicyDefinition}. */
     public PolicyHandler(@NonNull PolicyIdentifier<T> key) {
-        this(key, GeneratedPolicyMetadata.getPolicyMetadata(key));
-    }
-
-    /** Constructor that uses the generated {@link PolicyDefinition}. */
-    protected PolicyHandler(@NonNull PolicyIdentifier<T> key, @NonNull PolicyMetadata<T> metadata) {
-        this(key, metadata, PolicyDefinitionFactory.build(metadata));
-    }
-
-    protected PolicyHandler(
-            @NonNull PolicyIdentifier<T> key,
-            @NonNull PolicyMetadata<T> policyMetadata,
-            @Nullable PolicyDefinition<T> policyDefinition) {
-        mKey = key;
-        mPolicyMetadata = policyMetadata;
-        mPolicyDefinition = policyDefinition;
-        mValidator = PolicyValidator.getInstance(mPolicyMetadata);
-        mTransportValueConvertor = PolicyTransportValueConvertor.getInstance(mPolicyMetadata);
-        mValueConvertor = PolicyValueConvertor.getInstance(mPolicyMetadata);
+        this.mKey = key;
     }
 
     /** Convenience constructor used by unittests */
@@ -136,8 +117,8 @@ public class PolicyHandler<T> {
             @NonNull PolicyMetadata<T> policyMetadata,
             @Nullable PolicyDefinition<T> policyDefinition,
             @NonNull Delegate delegate) {
-        this(key, policyMetadata, policyDefinition);
-        setDelegate(delegate);
+        this(key);
+        initialize(delegate, policyDefinition, policyMetadata);
     }
 
     public PolicyIdentifier<T> getKey() {
@@ -171,8 +152,16 @@ public class PolicyHandler<T> {
         return mDelegate;
     }
 
-    public void setDelegate(@NonNull Delegate delegate) {
+    public void initialize(
+            @NonNull Delegate delegate,
+            @Nullable PolicyDefinition<T> definition,
+            @NonNull PolicyMetadata<T> metadata) {
         mDelegate = delegate;
+        mPolicyDefinition = definition;
+        mPolicyMetadata = metadata;
+        mValidator = PolicyValidator.getInstance(metadata);
+        mTransportValueConvertor = PolicyTransportValueConvertor.getInstance(metadata);
+        mValueConvertor = PolicyValueConvertor.getInstance(metadata);
     }
 
     /******************************************************************************************

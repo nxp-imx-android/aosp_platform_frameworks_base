@@ -89,9 +89,8 @@ open class EnumStoredAsBooleanPolicyHandlerTest {
                 Policy.definition,
                 /*trueValue=*/ Policy.VALUE_TRUE,
                 /*falseValue=*/ Policy.VALUE_FALSE,
-                metadata,
             )
-        handler.setDelegate(mockDelegate)
+        handler.initialize(mockDelegate, null, metadata)
         return handler
     }
 

@@ -19,6 +19,7 @@ package android.app.admin.metadata;
 import android.annotation.NonNull;
 import android.app.admin.PolicyIdentifier;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -49,6 +50,11 @@ public class GeneratedPolicyMetadata {
         }
 
         return metadata;
+    }
+
+    @NonNull
+    public static Collection<PolicyMetadata<?>> getAllPolicyMetadata() {
+        return PolicyHolder.POLICIES.values();
     }
 
     // Initialize policies as late as possible by relying on the class loader loading them late.

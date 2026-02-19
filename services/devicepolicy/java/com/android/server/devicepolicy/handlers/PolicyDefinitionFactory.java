@@ -30,10 +30,12 @@ import android.app.admin.DevicePolicyIdentifiers;
 import android.app.admin.NoArgsPolicyKey;
 import android.app.admin.PolicyIdentifier;
 import android.app.admin.metadata.EnumPolicyMetadata;
+import android.app.admin.metadata.GeneratedPolicyMetadata;
 import android.app.admin.metadata.IntegerPolicyMetadata;
 import android.app.admin.metadata.ListPolicyMetadata;
 import android.app.admin.metadata.PolicyMetadata;
 import android.app.admin.metadata.StringPolicyMetadata;
+import android.util.Pair;
 import androidx.annotation.VisibleForTesting;
 import com.android.server.devicepolicy.EnforcingAdmin;
 import com.android.server.devicepolicy.IntegerPolicySerializer;
@@ -44,8 +46,10 @@ import com.android.server.devicepolicy.PolicyEnforcerCallbacks;
 import com.android.server.devicepolicy.PolicySerializer;
 import com.android.server.devicepolicy.StringPolicySerializer;
 import com.android.server.devicepolicy.TopPriority;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Creates a {@link PolicyDefinition.Builder} based on the information from the {@link
@@ -85,6 +89,14 @@ public class PolicyDefinitionFactory {
      */
     static {
         addFactory(
+                PolicyIdentifier.SCREEN_CAPTURE,
+                builder -> {
+                    // This (pre-existing) enum policy is stored as a boolean inside DPE, so return
+                    // null here and pass the pre-existing PolicyDefinition into the constructor
+                    // of `EnumStoredAsBooleanPolicyHandler`.
+                    return null;
+                });
+        addFactory(
                 PolicyIdentifier.AUTO_TIME,
                 builder -> {
                     return builder
@@ -115,8 +127,21 @@ public class PolicyDefinitionFactory {
                 });
     }
 
+    public static Map<PolicyIdentifier<?>, PolicyDefinition<?>> buildAll() {
+        return buildAll(GeneratedPolicyMetadata.getAllPolicyMetadata());
+    }
+
+    /** Builds the {@link PolicyDefinition}s for every {@link PolicyMetadata} passed in. */
+    public static Map<PolicyIdentifier<?>, PolicyDefinition<?>> buildAll(
+            Collection<PolicyMetadata<?>> allPolicyMetadata) {
+        return allPolicyMetadata.stream()
+                .map(m -> new Pair<>(m.getId(), build(m)))
+                .filter(pair -> pair.second != null)
+                .collect(Collectors.toMap(pair -> pair.first, pair -> pair.second));
+    }
+
     @Nullable
-    public static <T> PolicyDefinition<T> build(@NonNull PolicyMetadata<T> metadata) {
+    private static <T> PolicyDefinition<T> build(@NonNull PolicyMetadata<T> metadata) {
         var builder = createPrePopulatedBuilder(metadata);
 
         if (FACTORIES.containsKey(metadata.getId())) {
