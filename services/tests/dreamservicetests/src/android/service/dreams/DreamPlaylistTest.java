@@ -221,4 +221,13 @@ public class DreamPlaylistTest {
 
         assertThat(playlist).isNotEqualTo("Not a DreamPlaylist object");
     }
+
+    @Test
+    public void testToString() {
+        List<ComponentName> dreams = Arrays.asList(DREAM_1, DREAM_2);
+        DreamPlaylist playlist = new DreamPlaylist(dreams, 1);
+        String expected = "DreamPlaylist{dreams=[" + DREAM_1.flattenToString() + ", "
+                + DREAM_2.flattenToString() + "], activeIndex=1}";
+        assertThat(playlist.toString()).isEqualTo(expected);
+    }
 }

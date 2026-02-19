@@ -272,6 +272,27 @@ public class DreamManager {
     }
 
     /**
+     * Sets the active dream on the device to the dream component, or null to clear it.
+     *
+     * <p>Note that this differs from {@link DreamManager#setActiveDream(ComponentName)}, which
+     * changes the "allowed" list of dreams rather than the "active" dream.
+     *
+     * @hide
+     */
+    @RequiresPermission(android.Manifest.permission.WRITE_DREAM_STATE)
+    @UserHandleAware(
+            requiresPermissionIfNotCaller = android.Manifest.permission.INTERACT_ACROSS_USERS)
+    public void setActiveDreamComponent(@Nullable ComponentName dreamComponent) {
+        assertDreamSwitcherFlag();
+        try {
+            mService.setActiveDream(dreamComponent, mContext.getUserId());
+            return;
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Returns the current dream playlist.
      *
      * @hide
@@ -285,9 +306,8 @@ public class DreamManager {
         try {
             return mService.getDreamPlaylist(mContext.getUserId());
         } catch (RemoteException e) {
-            e.rethrowFromSystemServer();
+            throw e.rethrowFromSystemServer();
         }
-        return DreamPlaylist.EMPTY;
     }
 
     /**

@@ -1,0 +1,217 @@
+/*
+ * Copyright (C) 2026 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.android.server.dreams;
+
+import android.annotation.NonNull;
+import android.annotation.Nullable;
+import android.content.ComponentName;
+import android.os.Handler;
+import android.os.RemoteCallbackList;
+import android.os.RemoteException;
+import android.service.dreams.DreamPlaylist;
+import android.service.dreams.IDreamManagerListener;
+import android.util.SparseArray;
+import android.util.Slog;
+
+import com.android.internal.annotations.GuardedBy;
+
+import android.util.IndentingPrintWriter;
+
+import java.io.PrintWriter;
+import java.util.Objects;
+
+/**
+ * Manages the dream playlist state, caching, and notification distribution. Handles debouncing of
+ * updates to prevent listener churn.
+ */
+class DreamPlaylistUpdater {
+    private static final int DEFAULT_UPDATE_DEBOUNCE_DELAY_MS = 100;
+    private static final String TAG = "DreamPlaylistUpdater";
+
+    private final DreamComponentsResolver mResolver;
+    private final Handler mHandler;
+    private final int mDebounceDelayMs;
+
+    private final Object mLock = new Object();
+
+    @GuardedBy("mLock")
+    private final SparseArray<RemoteCallbackList<IDreamManagerListener>> mListeners =
+            new SparseArray<>();
+
+    @GuardedBy("mLock")
+    private final SparseArray<DreamPlaylist> mCache = new SparseArray<>();
+
+    @GuardedBy("mLock")
+    private final SparseArray<Runnable> mPendingUpdateTasks = new SparseArray<>();
+
+    interface Callback {
+        void onPlaylistChanged(int userId, DreamPlaylist playlist);
+    }
+
+    private final Callback mCallback;
+
+    DreamPlaylistUpdater(
+            @NonNull DreamComponentsResolver resolver,
+            @NonNull Handler handler,
+            @Nullable Callback callback) {
+        this(resolver, handler, callback, DEFAULT_UPDATE_DEBOUNCE_DELAY_MS);
+    }
+
+    DreamPlaylistUpdater(
+            @NonNull DreamComponentsResolver resolver,
+            @NonNull Handler handler,
+            @Nullable Callback callback,
+            int debounceDelayMs) {
+        mResolver = resolver;
+        mHandler = handler;
+        mCallback = callback;
+        mDebounceDelayMs = debounceDelayMs;
+    }
+
+    void registerListener(@NonNull IDreamManagerListener listener, int userId) {
+        synchronized (mLock) {
+            RemoteCallbackList<IDreamManagerListener> listeners = mListeners.get(userId);
+            if (listeners == null) {
+                listeners = new RemoteCallbackList<>();
+                mListeners.put(userId, listeners);
+            }
+            listeners.register(listener);
+        }
+    }
+
+    void unregisterListener(@NonNull IDreamManagerListener listener, int userId) {
+        synchronized (mLock) {
+            final RemoteCallbackList<IDreamManagerListener> listeners = mListeners.get(userId);
+            if (listeners != null) {
+                listeners.unregister(listener);
+            }
+        }
+    }
+
+    void refresh(int userId, @Nullable ComponentName systemDreamComponent) {
+        synchronized (mLock) {
+            Runnable existingTask = mPendingUpdateTasks.get(userId);
+            if (existingTask != null) {
+                mHandler.removeCallbacks(existingTask);
+            }
+
+            Runnable newTask = new Runnable() {
+                @Override
+                public void run() {
+                    boolean shouldRun = false;
+                    synchronized (mLock) {
+                        if (mPendingUpdateTasks.get(userId) == this) {
+                            mPendingUpdateTasks.remove(userId);
+                            shouldRun = true;
+                        }
+                    }
+                    if (shouldRun) {
+                        refreshImmediately(userId, systemDreamComponent);
+                    }
+                }
+            };
+            mPendingUpdateTasks.put(userId, newTask);
+            mHandler.postDelayed(newTask, mDebounceDelayMs);
+        }
+    }
+
+    void refreshImmediately(int userId, @Nullable ComponentName systemDreamComponent) {
+        final DreamPlaylist playlist = mResolver.getDreamPlaylist(userId, systemDreamComponent);
+        final RemoteCallbackList<IDreamManagerListener> listenersForUser;
+
+        synchronized (mLock) {
+            final DreamPlaylist cached = mCache.get(userId);
+            if (Objects.equals(cached, playlist)) {
+                return;
+            }
+            mCache.put(userId, playlist);
+            listenersForUser = mListeners.get(userId);
+        }
+
+        if (mCallback != null) {
+            mCallback.onPlaylistChanged(userId, playlist);
+        }
+
+        if (listenersForUser != null) {
+            notifyListeners(listenersForUser, playlist);
+        }
+    }
+
+    @Nullable
+    DreamPlaylist getDreamPlaylist(int userId, @Nullable ComponentName systemDreamComponent) {
+        return mResolver.getDreamPlaylist(userId, systemDreamComponent);
+    }
+
+    void clearCache(int userId) {
+        synchronized (mLock) {
+            mCache.remove(userId);
+            final RemoteCallbackList<IDreamManagerListener> listeners = mListeners.get(userId);
+            if (listeners != null) {
+                listeners.kill();
+                mListeners.remove(userId);
+            }
+            Runnable pendingTask = mPendingUpdateTasks.get(userId);
+            if (pendingTask != null) {
+                mHandler.removeCallbacks(pendingTask);
+                mPendingUpdateTasks.remove(userId);
+            }
+        }
+    }
+
+    private void notifyListeners(
+            RemoteCallbackList<IDreamManagerListener> listeners, DreamPlaylist playlist) {
+        if (listeners == null) {
+            return;
+        }
+        Slog.i(TAG, "Notifying listeners for with playlist " + playlist);
+        int n = listeners.beginBroadcast();
+        for (int i = 0; i < n; i++) {
+            notifyListener(listeners.getBroadcastItem(i), playlist);
+        }
+        listeners.finishBroadcast();
+    }
+
+    private void notifyListener(IDreamManagerListener listener, DreamPlaylist playlist) {
+        try {
+            listener.onPlaylistChanged(playlist);
+        } catch (RemoteException e) {
+            // ignore
+        }
+    }
+
+    void dump(PrintWriter pw) {
+        IndentingPrintWriter ipw = new IndentingPrintWriter(pw, "  ");
+        synchronized (mLock) {
+            ipw.println("DreamPlaylistUpdater:");
+            ipw.increaseIndent();
+            for (int i = 0; i < mCache.size(); i++) {
+                int userId = mCache.keyAt(i);
+                DreamPlaylist playlist = mCache.valueAt(i);
+                ipw.println("User " + userId + ":");
+                ipw.increaseIndent();
+                ipw.println("Playlist: " + playlist);
+                RemoteCallbackList<IDreamManagerListener> listeners = mListeners.get(userId);
+                ipw.println(
+                        "Listeners: "
+                                + (listeners != null ? listeners.getRegisteredCallbackCount() : 0));
+                ipw.println("Pending Update: " + (mPendingUpdateTasks.get(userId) != null));
+                ipw.decreaseIndent();
+            }
+            ipw.decreaseIndent();
+        }
+    }
+}
