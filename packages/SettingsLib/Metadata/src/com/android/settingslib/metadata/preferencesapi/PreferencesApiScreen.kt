@@ -39,6 +39,9 @@ import com.android.settingslib.metadata.preferencesapi.preconditions.ApiPrecondi
 import com.android.settingslib.metadata.preferencesapi.types.ApiType
 import com.android.settingslib.metadata.preferencesapi.types.FiniteOptionsType
 import com.android.settingslib.metadata.preferenceHierarchy
+import com.android.settingslib.metadata.preferencesapi.multiusers.ManagementScope.OWN_USER
+import com.android.settingslib.metadata.preferencesapi.multiusers.PreferenceTarget
+import com.android.settingslib.metadata.preferencesapi.multiusers.PreferenceTarget.USER
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
@@ -267,7 +270,8 @@ abstract class PreferencesApiScreen private constructor(
      * preference(
      *     key = "PREFERENCE_KEY",
      *     purpose = R.string.my_preference_purpose,
-     *     type = AnyString
+     *     type = AnyString,
+     *     appliesTo = DEVICE
      * ) {
      *     flag { Flags.FooBarFlag() }
      *     permissions(Manifest.permission.PERMISSION)
@@ -324,6 +328,7 @@ abstract class PreferencesApiScreen private constructor(
         key: String,
         purpose: Int,
         type: ApiType<V>,
+        appliesTo: PreferenceTarget = USER(canManage = OWN_USER),
         lambda: ApiPreferenceConfigBuilder<V>.() -> Unit
     ) {
         val builder = ApiPreferenceConfigBuilder(
@@ -331,6 +336,7 @@ abstract class PreferencesApiScreen private constructor(
             purpose,
             type,
             V::class.java,
+            appliesTo,
             screenPermissions,
             screenPreconditions,
             { keyParameters },
