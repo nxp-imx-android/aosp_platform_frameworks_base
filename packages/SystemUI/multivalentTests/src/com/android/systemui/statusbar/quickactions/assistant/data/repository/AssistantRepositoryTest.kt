@@ -38,6 +38,7 @@ import org.junit.runner.RunWith
 import org.mockito.Mockito.argThat
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.whenever
 
 @SmallTest
@@ -84,13 +85,14 @@ class AssistantRepositoryTest : SysuiTestCase() {
     @Test
     fun assistantInfo_verifyInvocationType() =
         kosmos.runTest {
-            underTest.startAssistant()
+            underTest.startAssistant(context)
             verify(assistManager)
                 .startAssist(
-                    argThat { bundle ->
+                    /* context = */ eq(context),
+                    /* args = */ argThat { bundle ->
                         bundle.getInt(AssistManager.INVOCATION_TYPE_KEY) ==
                             AssistManager.INVOCATION_TYPE_STATUS_BAR_ICON
-                    }
+                    },
                 )
         }
 
