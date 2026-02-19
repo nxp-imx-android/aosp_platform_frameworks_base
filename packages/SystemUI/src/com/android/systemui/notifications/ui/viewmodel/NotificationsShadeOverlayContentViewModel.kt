@@ -75,7 +75,7 @@ constructor(
     private val mediaCarouselInteractor: MediaCarouselInteractor,
     val mediaViewModelFactory: MediaViewModel.Factory,
     private val blurConfig: BlurConfig,
-    windowRootViewBlurInteractor: WindowRootViewBlurInteractor,
+    private val windowRootViewBlurInteractor: WindowRootViewBlurInteractor,
     shadeStatusBarComponentsInteractor: ShadeStatusBarComponentsInteractor,
 ) : ExclusiveActivatable() {
 
@@ -149,7 +149,7 @@ constructor(
      */
     fun calculateTargetBlurRadius(transitionState: TransitionState): Float {
         return when {
-            !isTransparencyEnabled -> 0f
+            !windowRootViewBlurInteractor.isBlurCurrentlySupported.value -> 0f
             Overlays.NotificationsShade !in transitionState.currentOverlays -> 0f
             Overlays.Bouncer in transitionState.currentOverlays -> blurConfig.maxBlurRadiusPx
             else -> 0f

@@ -298,6 +298,25 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableFlags(FLAG_NOTIFICATION_SHADE_BLUR)
+    fun calculateTargetBlurRadius_shadeBlurFlagOff_stillBlurOnBouncer() =
+        // Notifications shade and bouncer shown: apply blur.
+        kosmos.runTest {
+            fakeWindowRootViewBlurRepository.isBlurSupported.value = true
+            assertThat(
+                    underTest.calculateTargetBlurRadius(
+                        transitionState =
+                            TransitionState.Idle(
+                                currentScene = Scenes.Lockscreen,
+                                currentOverlays =
+                                    setOf(Overlays.Bouncer, Overlays.NotificationsShade),
+                            )
+                    )
+                )
+                .isEqualTo(blurConfig.maxBlurRadiusPx)
+        }
+
+    @Test
     fun shadeModeChanged_single_switchesToShadeScene() =
         kosmos.runTest {
             val currentScene by collectLastValue(sceneInteractor.currentScene)
