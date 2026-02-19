@@ -424,6 +424,10 @@
     <string name="screen_record_should_show_touches_label">Show touches</string>
     <!-- Header for the carousel to choose an app for screen recording. [CHAR LIMIT=50] -->
     <string name="screen_record_capture_target_choose_app">Choose an app to record</string>
+    <!-- Label for accessibility action to show the next app to choose. [CHAR LIMIT=NONE] -->
+    <string name="screen_record_accessibility_label_show_next">Show next</string>
+    <!-- Label for accessibility action to show the previous app to choose. [CHAR LIMIT=NONE] -->
+    <string name="screen_record_accessibility_label_show_previous">Show previous</string>
     <!-- Header for the carousel to choose an app for screen recording. [CHAR LIMIT=NONE] -->
     <string name="screen_record_settings">Screen recording settings</string>
     <!-- Label for markup functionality in screen recording. [CHAR LIMIT=NONE] -->
