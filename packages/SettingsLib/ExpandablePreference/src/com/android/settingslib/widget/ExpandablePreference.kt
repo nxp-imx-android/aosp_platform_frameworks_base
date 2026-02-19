@@ -140,6 +140,19 @@ constructor(
         notifyChanged()
     }
 
+    override fun setExpanded(expanded: Boolean) {
+        if (isExpanded == expanded) {
+            return
+        }
+
+        isExpanded = expanded
+        isDirty = true
+        updateExpandedState()
+        notifyChanged()
+
+        onPreferenceExpansionStateChangeListener?.onExpansionStateChange(isExpanded)
+    }
+
     private fun updateExpandedState() {
         expandIcon?.rotation =
             when (isExpanded) {
