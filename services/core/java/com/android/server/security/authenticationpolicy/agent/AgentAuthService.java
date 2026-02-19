@@ -86,7 +86,7 @@ public class AgentAuthService implements AgentAuthServiceInternal {
     @Override
     public boolean isAgentAuthorized(int userId, DeviceId deviceId) {
         final var association = mCompanionDeviceManager != null ?
-                mCompanionDeviceManager.getAssociationByDeviceId(deviceId) : null;
+                mCompanionDeviceManager.getAssociationByDeviceId(userId, deviceId) : null;
         if (association == null) {
             Slog.w(TAG, "No matching association found for deviceId: " + deviceId);
             return false;
@@ -205,7 +205,7 @@ public class AgentAuthService implements AgentAuthServiceInternal {
             final long now = mClock.millis();
             final long interval = intervalMillis > 0 ? Math.min(intervalMillis,
                     mLastAuthTimeIntervalMillis) : mLastAuthTimeIntervalMillis;
-            final long lastAuthTime = mBiometricManager.getLastAuthenticationTime(
+            final long lastAuthTime = mBiometricManager.getLastAuthenticationTime(mCurrentUserId,
                     BiometricManager.Authenticators.DEVICE_CREDENTIAL
                             | BiometricManager.Authenticators.BIOMETRIC_STRONG);
             return lastAuthTime > 0 && (now - lastAuthTime) < interval;
