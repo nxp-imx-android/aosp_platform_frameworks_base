@@ -15,6 +15,7 @@
  */
 package com.android.systemui.statusbar.notification.collection.coordinator
 
+import android.multiuser.Flags
 import com.android.systemui.statusbar.notification.collection.NotifPipeline
 import com.android.systemui.statusbar.notification.collection.PipelineDumpable
 import com.android.systemui.statusbar.notification.collection.PipelineDumper
@@ -67,6 +68,7 @@ constructor(
     bundleCoordinator: BundleCoordinator,
     summarizationCoordinator: SummarizationCoordinator,
     highlightsCoordinator: HighlightsCoordinator,
+    hideNotifsForHsuCoordinator: HideNotifsForHsuCoordinator,
 ) : NotifCoordinators {
 
     private val mCoreCoordinators: MutableList<CoreCoordinator> = ArrayList()
@@ -110,6 +112,9 @@ constructor(
         mCoordinators.add(statsLoggerCoordinator)
         if (NmHighlights.isEnabled) {
             mCoordinators.add(highlightsCoordinator)
+        }
+        if (Flags.hsuDisableNotifications()) {
+            mCoordinators.add(hideNotifsForHsuCoordinator)
         }
 
         // Manually add Ordered Sections
