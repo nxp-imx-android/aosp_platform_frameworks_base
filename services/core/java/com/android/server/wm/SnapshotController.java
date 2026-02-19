@@ -408,7 +408,7 @@ class SnapshotController {
 
         @Override
         public TaskSnapshot takeTaskSnapshot(int taskId, boolean updateCache,
-                boolean lowResolution) {
+                boolean lowResolution, boolean includeDecors) {
             final long ident = Binder.clearCallingIdentity();
             try {
                 Supplier<TaskSnapshot> supplier = null;
@@ -443,7 +443,7 @@ class SnapshotController {
                             Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
                         }
                     } else {
-                        freshSnapshot = mTaskSnapshotController.snapshot(task);
+                        freshSnapshot = mTaskSnapshotController.snapshot(task, includeDecors);
                     }
                 }
                 // Don't call supplier.get while holding the lock.

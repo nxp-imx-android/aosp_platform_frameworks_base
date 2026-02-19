@@ -223,11 +223,21 @@ abstract class AbsAppSnapshotController<TYPE extends WindowContainer<?>,
 
     @Nullable
     TaskSnapshot snapshot(TYPE source) {
-        return snapshot(source, mHighResSnapshotScale);
+        return snapshot(source, mHighResSnapshotScale, false /* includeDecors */);
+    }
+
+    @Nullable
+    TaskSnapshot snapshot(TYPE source, boolean includeDecors) {
+        return snapshot(source, mHighResSnapshotScale, includeDecors);
     }
 
     @Nullable
     TaskSnapshot snapshot(TYPE source, float scale) {
+        return snapshot(source, scale, false /* includeDecors */);
+    }
+
+    @Nullable
+    TaskSnapshot snapshot(TYPE source, float scale, boolean includeDecors) {
         TaskSnapshot.Builder builder = new TaskSnapshot.Builder();
         final Rect crop = prepareTaskSnapshot(source, builder);
         if (crop == null) {
@@ -236,7 +246,7 @@ abstract class AbsAppSnapshotController<TYPE extends WindowContainer<?>,
         }
         Trace.traceBegin(Trace.TRACE_TAG_WINDOW_MANAGER, "createSnapshot");
         final ScreenCaptureInternal.ScreenshotHardwareBuffer screenshotBuffer =
-                createSnapshot(source, scale, crop, builder);
+                createSnapshot(source, scale, crop, builder, includeDecors);
         Trace.traceEnd(Trace.TRACE_TAG_WINDOW_MANAGER);
         if (screenshotBuffer == null) {
             // Failed to acquire image. Has been logged.
@@ -269,8 +279,15 @@ abstract class AbsAppSnapshotController<TYPE extends WindowContainer<?>,
     }
 
     @Nullable
+    ScreenCaptureInternal.ScreenshotHardwareBuffer createSnapshot(@NonNull TYPE source,
+            float scaleFraction, Rect crop, TaskSnapshot.Builder builder) {
+        return createSnapshot(source, scaleFraction, crop, builder, false /* includeDecors */);
+    }
+
+    @Nullable
     ScreenCaptureInternal.ScreenshotHardwareBuffer createSnapshot(
-            @NonNull TYPE source, float scaleFraction, Rect crop, TaskSnapshot.Builder builder) {
+            @NonNull TYPE source, float scaleFraction, Rect crop, TaskSnapshot.Builder builder,
+            boolean includeDecors) {
         if (source.getSurfaceControl() == null) {
             if (DEBUG_SCREENSHOT) {
                 Slog.w(TAG_WM, "Failed to take screenshot. No surface control for " + source);
@@ -293,16 +310,19 @@ abstract class AbsAppSnapshotController<TYPE extends WindowContainer<?>,
         if (navWindow != null) {
             excludeSurfaces.add(navWindow.getSurfaceControl());
         }
-        source.forAllWindows(w -> {
-            if (w.mAnimatingExit && !w.mRemoved && w.mAttrs.type != TYPE_BASE_APPLICATION) {
-                excludeSurfaces.add(w.getSurfaceControl());
-            }
-        }, true /* traverseTopToBottom */);
+        if (!includeDecors) {
+            source.forAllWindows(w -> {
+                if (w.mAnimatingExit && !w.mRemoved && w.mAttrs.type != TYPE_BASE_APPLICATION) {
+                    excludeSurfaces.add(w.getSurfaceControl());
+                }
+            }, true /* traverseTopToBottom */);
 
-        if (source instanceof Task) {
-            final SurfaceControl[] excludeLayers = ((Task) source).mExcludeLayersFromTaskSnapshot;
-            if (excludeLayers != null) {
-                Collections.addAll(excludeSurfaces, excludeLayers);
+            if (source instanceof Task) {
+                final SurfaceControl[] excludeLayers =
+                        ((Task) source).mExcludeLayersFromTaskSnapshot;
+                if (excludeLayers != null) {
+                    Collections.addAll(excludeSurfaces, excludeLayers);
+                }
             }
         }
         final SurfaceControl[] excludeLayers =
