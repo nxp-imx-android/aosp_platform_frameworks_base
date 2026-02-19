@@ -15623,11 +15623,11 @@ package android.service.personalcontext.insight {
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class InsightActionDetails implements android.os.Parcelable {
     method public int describeContents();
     method public int getActionTypes();
-    method @Nullable public android.content.Intent getIntent();
+    method @Nullable public android.app.PendingIntent getPendingIntent();
     method @Nullable public android.app.RemoteAction getRemoteAction();
     method public boolean hasActionType(int);
     method public void writeToParcel(@NonNull android.os.Parcel, int);
-    field public static final int ACTION_TYPE_INTENT = 1; // 0x1
+    field public static final int ACTION_TYPE_PENDING_INTENT = 1; // 0x1
     field public static final int ACTION_TYPE_REMOTE_ACTION = 2; // 0x2
     field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.insight.InsightActionDetails> CREATOR;
   }
@@ -15635,7 +15635,7 @@ package android.service.personalcontext.insight {
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class InsightActionDetails.Builder {
     ctor public InsightActionDetails.Builder();
     method @NonNull public android.service.personalcontext.insight.InsightActionDetails build();
-    method @NonNull public android.service.personalcontext.insight.InsightActionDetails.Builder setIntent(@NonNull android.content.Intent);
+    method @NonNull public android.service.personalcontext.insight.InsightActionDetails.Builder setPendingIntent(@NonNull android.app.PendingIntent);
     method @NonNull public android.service.personalcontext.insight.InsightActionDetails.Builder setRemoteAction(@NonNull android.app.RemoteAction);
   }
 

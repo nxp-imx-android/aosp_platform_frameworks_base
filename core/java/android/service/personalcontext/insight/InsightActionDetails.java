@@ -20,10 +20,9 @@ import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
+import android.app.PendingIntent;
 import android.app.RemoteAction;
-import android.content.Intent;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.service.personalcontext.Flags;
@@ -35,7 +34,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.Objects;
 
 /**
- * Contains the details of an action to be performed, either as an {@link Intent} or a {@link
+ * Contains the details of an action to be performed, either as an {@link PendingIntent} or a {@link
  * RemoteAction}. Note that multiple actions can be specified, in which case it is up to the
  * receiver to decide which action to perform. Use {@link #hasActionType} to determine if a
  * particular action type has been specified. It is an error for no action type to be specified.
@@ -49,28 +48,28 @@ public final class InsightActionDetails implements Parcelable {
     @IntDef(
             flag = true,
             prefix = {"ACTION_TYPE_"},
-            value = {ACTION_TYPE_INTENT, ACTION_TYPE_REMOTE_ACTION})
+            value = {ACTION_TYPE_PENDING_INTENT, ACTION_TYPE_REMOTE_ACTION})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ActionType {}
 
-    /** The action details contain an {@link Intent}. */
-    public static final int ACTION_TYPE_INTENT = 1 << 0;
+    /** The action details contain an {@link PendingIntent}. */
+    public static final int ACTION_TYPE_PENDING_INTENT = 1 << 0;
 
     /** The action details contain a {@link RemoteAction}. */
     public static final int ACTION_TYPE_REMOTE_ACTION = 1 << 1;
 
     private final int mActionTypes;
-    private final Intent mActionIntent;
+    private final PendingIntent mPendingIntent;
     private final RemoteAction mRemoteAction;
 
     private InsightActionDetails(
-            @Nullable Intent actionIntent, @Nullable RemoteAction remoteAction) {
-        mActionIntent = actionIntent;
+            @Nullable PendingIntent actionPendingIntent, @Nullable RemoteAction remoteAction) {
+        mPendingIntent = actionPendingIntent;
         mRemoteAction = remoteAction;
 
         int actionTypes = 0;
-        if (actionIntent != null) {
-            actionTypes |= ACTION_TYPE_INTENT;
+        if (actionPendingIntent != null) {
+            actionTypes |= ACTION_TYPE_PENDING_INTENT;
         }
         if (remoteAction != null) {
             actionTypes |= ACTION_TYPE_REMOTE_ACTION;
@@ -80,7 +79,7 @@ public final class InsightActionDetails implements Parcelable {
 
     private InsightActionDetails(@NonNull Parcel in) {
         mActionTypes = in.readInt();
-        mActionIntent = in.readTypedObject(Intent.CREATOR);
+        mPendingIntent = in.readTypedObject(PendingIntent.CREATOR);
         mRemoteAction = in.readTypedObject(RemoteAction.CREATOR);
     }
 
@@ -98,12 +97,12 @@ public final class InsightActionDetails implements Parcelable {
     }
 
     /**
-     * Returns the {@link Intent} these details contain, or null if there is no intent.
+     * Returns the {@link PendingIntent} these details contain, or null if there is no
+     * {@link PendingIntent}.
      */
-    @SuppressLint("IntentBuilderName")
     @Nullable
-    public Intent getIntent() {
-        return mActionIntent;
+    public PendingIntent getPendingIntent() {
+        return mPendingIntent;
     }
 
     /**
@@ -120,15 +119,16 @@ public final class InsightActionDetails implements Parcelable {
         if (o == null || getClass() != o.getClass()) return false;
 
         final InsightActionDetails that = (InsightActionDetails) o;
-        final boolean intentsEqual = (mActionIntent == null && that.mActionIntent == null)
-                || (mActionIntent != null && mActionIntent.filterEquals(that.mActionIntent));
+        final boolean pendingIntentEquals = (mPendingIntent == null && that.mPendingIntent == null)
+                || (mPendingIntent
+                != null && mPendingIntent.intentFilterEquals(that.mPendingIntent));
 
-        return intentsEqual && Objects.equals(mRemoteAction, that.mRemoteAction);
+        return pendingIntentEquals && Objects.equals(mRemoteAction, that.mRemoteAction);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(mActionIntent, mRemoteAction);
+        return Objects.hash(mPendingIntent, mRemoteAction);
     }
 
     @Override
@@ -139,15 +139,15 @@ public final class InsightActionDetails implements Parcelable {
     @Override
     public void writeToParcel(@NonNull Parcel dest, @WriteFlags int flags) {
         dest.writeInt(mActionTypes);
-        dest.writeTypedObject(mActionIntent, flags);
+        dest.writeTypedObject(mPendingIntent, flags);
         dest.writeTypedObject(mRemoteAction, flags);
     }
 
     @Override
     public String toString() {
         return "InsightActionDetails{"
-                + "mActionIntent="
-                + mActionIntent
+                + "mPendingIntent="
+                + mPendingIntent
                 + ", mRemoteAction="
                 + mRemoteAction
                 + '}';
@@ -170,7 +170,7 @@ public final class InsightActionDetails implements Parcelable {
     /** Builder for {@link InsightActionDetails}. */
     @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
     public static final class Builder {
-        private Intent mActionIntent;
+        private PendingIntent mPendingIntent;
         private RemoteAction mRemoteAction;
 
         /**
@@ -180,14 +180,14 @@ public final class InsightActionDetails implements Parcelable {
         }
 
         /**
-         * Sets the {@link Intent} for the insight action details.
+         * Sets the {@link PendingIntent} for the insight action details.
          *
-         * @param intent the {@link Intent} to set
+         * @param pendingIntent the {@link PendingIntent} to set
          */
         @NonNull
-        public Builder setIntent(@NonNull Intent intent) {
-            Objects.requireNonNull(intent, "intent is null");
-            mActionIntent = intent;
+        public Builder setPendingIntent(@NonNull PendingIntent pendingIntent) {
+            Objects.requireNonNull(pendingIntent, "pending intent is null");
+            mPendingIntent = pendingIntent;
             return this;
         }
 
@@ -210,9 +210,9 @@ public final class InsightActionDetails implements Parcelable {
          */
         @NonNull
         public InsightActionDetails build() {
-            Preconditions.checkState(mActionIntent != null || mRemoteAction != null,
-                    "Neither action intent nor remote action have been set.");
-            return new InsightActionDetails(mActionIntent, mRemoteAction);
+            Preconditions.checkState(mPendingIntent != null || mRemoteAction != null,
+                    "Neither pending intent nor remote action have been set.");
+            return new InsightActionDetails(mPendingIntent, mRemoteAction);
         }
     }
 }

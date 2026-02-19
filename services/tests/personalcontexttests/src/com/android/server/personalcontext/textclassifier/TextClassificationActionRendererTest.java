@@ -23,6 +23,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -77,7 +78,8 @@ public class TextClassificationActionRendererTest {
     @Test
     public void testRender_actionableInsightWithNoTextClassificationHint_noMerge() {
         InsightActionDetails actionDetails =
-                new InsightActionDetails.Builder().setIntent(new Intent()).build();
+                new InsightActionDetails.Builder()
+                        .setPendingIntent(mock(PendingIntent.class)).build();
         InsightDisplayDetails displayDetails =
                 new InsightDisplayDetails.Builder("title", TEST_ICON).build();
         ActionableInsight insight =
