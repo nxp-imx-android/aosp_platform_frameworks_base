@@ -564,7 +564,7 @@ public class PersonalContextManagerServiceTest {
     }
 
     private static void assertSecureSetting(Context context, String key, int value) {
-        assertWithMessage(key + " should be " + value).that(Settings.Secure.getIntForUser(
+        assertWithMessage("%s should be %s", key, value).that(Settings.Secure.getIntForUser(
                 context.getContentResolver(),
                 key,
                 1, context.getUserId())).isEqualTo(value);
