@@ -2007,8 +2007,7 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
-            Flags.FLAG_ENABLE_DESKTOP_FIRST_PERSISTED_LAUNCH_PARAMS_BUGFIX})
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
     public void testDoesntInheritWindowingModeFromCurrentParams() {
         setupDesktopModeLaunchParamsModifier();
         doCallRealMethod().when(mTarget).isEnteringDesktopMode(any(), any(), any(), any());
@@ -2293,8 +2292,7 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM,
-            Flags.FLAG_ENABLE_DESKTOP_FIRST_PERSISTED_LAUNCH_PARAMS_BUGFIX})
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM)
     public void testCalculate_desktopFirstPolicy_clearCurrentParams() {
         setupDesktopModeLaunchParamsModifier();
         when(mTarget.isEnteringDesktopMode(any(), any(), any(), any())).thenCallRealMethod();
