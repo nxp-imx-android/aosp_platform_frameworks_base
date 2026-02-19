@@ -1343,16 +1343,21 @@ public class SigningDetailsTest {
                 HYBRID_CLASSICAL_1, HYBRID_PQC_1);
         SigningDetails singleRotatedDetails = createSigningDetailsWithLineage(FIRST_SIGNATURE,
                 HYBRID_CLASSICAL_1, HYBRID_PQC_1, SECOND_SIGNATURE);
-        SigningDetails hybridRotatedDetails = createSigningDetailsWithLineage(FIRST_SIGNATURE,
+        SigningDetails hybridRotatedDetails = createHybridSigningDetails(FIRST_SIGNATURE,
                 HYBRID_CLASSICAL_1, HYBRID_PQC_1, HYBRID_CLASSICAL_2, HYBRID_PQC_2);
-        SigningDetails multiHybridRotatedDetails = createSigningDetailsWithLineage(FIRST_SIGNATURE,
+        SigningDetails multiHybridRotatedDetails = createHybridSigningDetails(FIRST_SIGNATURE,
                 HYBRID_CLASSICAL_1, HYBRID_PQC_1, SECOND_SIGNATURE, HYBRID_CLASSICAL_2,
                 HYBRID_PQC_2);
+        SigningDetails multiSingleRotatedDetails = createSigningDetailsWithLineage(FIRST_SIGNATURE,
+                HYBRID_CLASSICAL_1, HYBRID_PQC_1, SECOND_SIGNATURE, HYBRID_CLASSICAL_2,
+                HYBRID_PQC_2, THIRD_SIGNATURE);
 
         assertTrue(singleRotatedDetails.checkCapability(originalHybridDetails, INSTALLED_DATA));
         assertTrue(hybridRotatedDetails.checkCapability(originalHybridDetails, INSTALLED_DATA));
         assertTrue(
                 multiHybridRotatedDetails.checkCapability(originalHybridDetails, INSTALLED_DATA));
+        assertTrue(
+                multiSingleRotatedDetails.checkCapability(originalHybridDetails, INSTALLED_DATA));
     }
 
     @Test
@@ -1368,14 +1373,14 @@ public class SigningDetailsTest {
                 HYBRID_CLASSICAL_1, SECOND_SIGNATURE);
         SigningDetails singleRotatedDetails2 = createSigningDetailsWithLineage(FIRST_SIGNATURE,
                 HYBRID_PQC_1, SECOND_SIGNATURE);
-        SigningDetails hybridRotatedDetails1 = createSigningDetailsWithLineage(FIRST_SIGNATURE,
+        SigningDetails hybridRotatedDetails1 = createHybridSigningDetails(FIRST_SIGNATURE,
                 HYBRID_CLASSICAL_1, HYBRID_CLASSICAL_2, HYBRID_PQC_2);
-        SigningDetails hybridRotatedDetails2 = createSigningDetailsWithLineage(FIRST_SIGNATURE,
+        SigningDetails hybridRotatedDetails2 = createHybridSigningDetails(FIRST_SIGNATURE,
                 HYBRID_PQC_1, HYBRID_CLASSICAL_2, HYBRID_PQC_2);
-        SigningDetails multiHybridRotatedDetails1 = createSigningDetailsWithLineage(FIRST_SIGNATURE,
+        SigningDetails multiHybridRotatedDetails1 = createHybridSigningDetails(FIRST_SIGNATURE,
                 HYBRID_CLASSICAL_1, SECOND_SIGNATURE, HYBRID_CLASSICAL_2,
                 HYBRID_PQC_2);
-        SigningDetails multiHybridRotatedDetails2 = createSigningDetailsWithLineage(FIRST_SIGNATURE,
+        SigningDetails multiHybridRotatedDetails2 = createHybridSigningDetails(FIRST_SIGNATURE,
                 HYBRID_PQC_1, SECOND_SIGNATURE, HYBRID_CLASSICAL_2,
                 HYBRID_PQC_2);
 
@@ -1405,6 +1410,85 @@ public class SigningDetailsTest {
 
         assertFalse(originalDetails.checkCapability(hybridDetails, INSTALLED_DATA));
         assertTrue(hybridDetails.checkCapability(originalDetails, ROLLBACK));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.security.Flags.FLAG_APK_PQC_HYBRID_SIGNING)
+    public void checkCapability_hybridSignerToSingleCommonSigner_returnsFalse() throws Exception {
+        // When an app rotates from hybrid signed to a single signer config, the rotated single
+        // signing key must be a new key; this test verifies neither of the hybrid keys can be
+        // reused as the new single signer.
+        SigningDetails hybridDetails = createHybridSigningDetails(FIRST_SIGNATURE,
+                HYBRID_CLASSICAL_1, HYBRID_PQC_1);
+        SigningDetails rotatedClassicalDetails = createSigningDetailsWithLineage(FIRST_SIGNATURE,
+                HYBRID_PQC_1, HYBRID_CLASSICAL_1);
+        SigningDetails rotatedPqcDetails = createSigningDetailsWithLineage(FIRST_SIGNATURE,
+                HYBRID_CLASSICAL_1, HYBRID_PQC_1);
+
+        assertFalse(rotatedClassicalDetails.checkCapability(hybridDetails, INSTALLED_DATA));
+        assertFalse(rotatedPqcDetails.checkCapability(hybridDetails, INSTALLED_DATA));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.security.Flags.FLAG_APK_PQC_HYBRID_SIGNING)
+    public void checkCapability_hybridSignerToHybridCommonSigner_returnsFalse() throws Exception {
+        // When an app rotates from hybrid signed to a new hybrid signing config, neither of the
+        // previous hybrid signing keys can be used as one of the new hybrid keys. This test
+        // verifies that if either of the hybrid keys is reused in a rotated hybrid  config, the
+        // update is not allowed.
+        SigningDetails hybridDetails = createHybridSigningDetails(FIRST_SIGNATURE,
+                HYBRID_CLASSICAL_1, HYBRID_PQC_1);
+        SigningDetails rotatedClassicalReusedDetails = createHybridSigningDetails(
+                FIRST_SIGNATURE, HYBRID_PQC_1, HYBRID_CLASSICAL_1, HYBRID_PQC_2);
+        SigningDetails rotatedPqcReusedDetails = createHybridSigningDetails(FIRST_SIGNATURE,
+                HYBRID_CLASSICAL_1, HYBRID_CLASSICAL_2, HYBRID_PQC_1);
+
+        assertFalse(rotatedClassicalReusedDetails.checkCapability(hybridDetails, INSTALLED_DATA));
+        assertFalse(rotatedPqcReusedDetails.checkCapability(hybridDetails, INSTALLED_DATA));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.security.Flags.FLAG_APK_PQC_HYBRID_SIGNING)
+    public void checkCapability_singleSignerToHybridCommonSigner_returnsFalse() throws Exception {
+        // When an app rotates from a single signer config to a rotated signer, the previous single
+        // signer cannot be reused in the hybrid block. This test verifies if the single signer
+        // is reused when rotating to a hybrid block, the update is not allowed.
+        SigningDetails originalDetails = createSigningDetails(FIRST_SIGNATURE);
+        SigningDetails hybridReusedOriginalDetails = createHybridSigningDetails(FIRST_SIGNATURE,
+                HYBRID_PQC_1);
+        SigningDetails rotatedDetails = createSigningDetailsWithLineage(FIRST_SIGNATURE,
+                SECOND_SIGNATURE);
+        SigningDetails hybridReusedRotatedDetails = createHybridSigningDetails(FIRST_SIGNATURE,
+                SECOND_SIGNATURE, HYBRID_PQC_1);
+        SigningDetails rotatedPqcDetails = createSigningDetailsWithLineage(FIRST_SIGNATURE,
+                HYBRID_PQC_1);
+        SigningDetails hybridReusedRotatedPqcDetails = createHybridSigningDetails(FIRST_SIGNATURE,
+                HYBRID_CLASSICAL_1, HYBRID_PQC_1);
+
+        assertFalse(hybridReusedOriginalDetails.checkCapability(originalDetails, INSTALLED_DATA));
+        assertFalse(hybridReusedRotatedDetails.checkCapability(rotatedDetails, INSTALLED_DATA));
+        assertFalse(
+                hybridReusedRotatedPqcDetails.checkCapability(rotatedPqcDetails, INSTALLED_DATA));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.security.Flags.FLAG_APK_PQC_HYBRID_SIGNING)
+    public void checkCapability_hybridSignerToSingleCommonPqcSignerRollback_returnsFalse()
+            throws Exception {
+        // The platform grants the current signer all capabilities. During an update, the platform
+        // will first check if the signing key for the app on the device is granted the
+        // INSTALLED_DATA capability in the lineage of the update APK; if this check fails, the
+        // platform will then check if the update APK's signer has been granted the ROLLBACK
+        // capability in the lineage of the app on the device. Since the PQC key is the current
+        // signer, it's possible that the ROLLBACK check would be successful because it's the
+        // current signer, but the platform should reject this since this is a case of key reuse
+        // from the hybrid block.
+        SigningDetails hybridDetails = createHybridSigningDetails(FIRST_SIGNATURE,
+                HYBRID_CLASSICAL_1, HYBRID_PQC_1);
+        SigningDetails pqcDetails = createSigningDetails(HYBRID_PQC_1);
+
+        assertFalse(pqcDetails.checkCapability(hybridDetails, INSTALLED_DATA));
+        assertFalse(hybridDetails.checkCapability(pqcDetails, ROLLBACK));
     }
 
     private SigningDetails createSigningDetailsWithLineage(String... signers) throws Exception {
