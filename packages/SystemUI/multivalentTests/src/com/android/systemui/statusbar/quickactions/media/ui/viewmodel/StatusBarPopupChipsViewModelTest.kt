@@ -83,7 +83,7 @@ class StatusBarPopupChipsViewModelTest : SysuiTestCase() {
             val mediaChip = underTest.shownQuickActionChips.first()
             assertThat(mediaChip.isPopupShown).isFalse()
 
-            mediaChip.showPopup.invoke()
+            mediaChip.showPopup.invoke(context)
             assertThat(underTest.shownQuickActionChips.first().isPopupShown).isTrue()
         }
 
@@ -97,7 +97,7 @@ class StatusBarPopupChipsViewModelTest : SysuiTestCase() {
             var mediaChip = underTest.shownQuickActionChips.first()
             assertThat(mediaChip.isPopupShown).isFalse()
 
-            mediaChip.showPopup.invoke()
+            mediaChip.showPopup.invoke(context)
 
             assertThat(underTest.shownQuickActionChips.first().isPopupShown).isTrue()
 
