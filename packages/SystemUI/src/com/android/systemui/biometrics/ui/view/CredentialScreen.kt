@@ -32,6 +32,12 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -41,6 +47,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.theme.PlatformTheme
@@ -203,6 +210,7 @@ fun CredentialScreen(
                     header = header,
                     content = credentialInput,
                     footer = footer,
+                    onCancel = onCancel,
                     isReversed = isSeascape,
                 )
             } else {
@@ -210,6 +218,7 @@ fun CredentialScreen(
                     header = header,
                     content = credentialInput,
                     footer = footer,
+                    onCancel = onCancel,
                 )
             }
         }
@@ -221,26 +230,41 @@ private fun PortraitCredentialLayout(
     header: CredentialHeaderViewModel,
     content: @Composable () -> Unit,
     footer: @Composable () -> Unit,
+    onCancel: () -> Unit,
 ) {
-    Column(
-        modifier =
-            Modifier.fillMaxWidth()
-                .wrapContentHeight()
-                .padding(horizontal = 24.dp, vertical = 32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        Box(
-            modifier =
-                Modifier.fillMaxWidth()
-                    .weight(weight = 1f, fill = false)
-                    .verticalScroll(rememberScrollState()),
-            contentAlignment = Alignment.TopCenter,
+    Box(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            PromptHeader(header = header)
+            Box(
+                modifier =
+                    Modifier.fillMaxWidth()
+                        .weight(weight = 1f, fill = false)
+                        .verticalScroll(rememberScrollState()),
+                contentAlignment = Alignment.TopCenter,
+            ) {
+                PromptHeader(header = header)
+            }
+            content()
+            footer()
         }
-        content()
-        footer()
+
+        FilledIconButton(
+            onClick = onCancel,
+            colors =
+                IconButtonDefaults.filledIconButtonColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                ),
+            modifier = Modifier.align(Alignment.TopEnd).padding(top = 16.dp, end = 16.dp),
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Close,
+                contentDescription = stringResource(R.string.cancel),
+            )
+        }
     }
 }
 
@@ -249,6 +273,7 @@ private fun LandscapeCredentialLayout(
     header: CredentialHeaderViewModel,
     content: @Composable () -> Unit,
     footer: @Composable () -> Unit,
+    onCancel: () -> Unit,
     isReversed: Boolean,
 ) {
     Row(
@@ -258,19 +283,40 @@ private fun LandscapeCredentialLayout(
     ) {
         val headerPane =
             @Composable {
-                Column(
-                    modifier =
-                        Modifier.weight(1f)
-                            .padding(
-                                end = if (isReversed) 0.dp else 24.dp,
-                                start = if (isReversed) 24.dp else 0.dp,
-                            ),
-                    horizontalAlignment = Alignment.Start,
-                ) {
-                    Column(modifier = Modifier.weight(1f).verticalScroll(rememberScrollState())) {
-                        PromptHeaderLandscape(header = header)
+                Box(modifier = Modifier.weight(1f)) {
+                    Column(
+                        modifier =
+                            Modifier.fillMaxHeight()
+                                .padding(
+                                    end = if (isReversed) 0.dp else 24.dp,
+                                    start = if (isReversed) 24.dp else 0.dp,
+                                ),
+                        horizontalAlignment = Alignment.Start,
+                    ) {
+                        Column(
+                            modifier = Modifier.weight(1f).verticalScroll(rememberScrollState())
+                        ) {
+                            PromptHeaderLandscape(header = header)
+                        }
+                        footer()
                     }
-                    footer()
+
+                    FilledIconButton(
+                        onClick = onCancel,
+                        colors =
+                            IconButtonDefaults.filledIconButtonColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                                contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            ),
+                        modifier =
+                            Modifier.align(Alignment.TopEnd)
+                                .padding(end = if (isReversed) 0.dp else 24.dp),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = stringResource(R.string.cancel),
+                        )
+                    }
                 }
             }
 

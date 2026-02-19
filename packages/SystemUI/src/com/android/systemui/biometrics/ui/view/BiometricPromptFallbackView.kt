@@ -34,6 +34,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.Chat
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Password
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.LockReset
@@ -137,6 +138,21 @@ fun BiometricPromptFallbackView(promptViewModel: PromptViewModel, callback: Spag
                             liveRegion = LiveRegionMode.Polite
                         },
                 )
+                Spacer(modifier = Modifier.weight(1f))
+
+                FilledIconButton(
+                    onClick = { callback.onUserCanceled() },
+                    colors =
+                        IconButtonDefaults.filledIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        ),
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Close,
+                        contentDescription = stringResource(R.string.cancel),
+                    )
+                }
             }
             Spacer(modifier = Modifier.height(16.dp))
             Column(

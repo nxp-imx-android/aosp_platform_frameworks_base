@@ -423,6 +423,17 @@ object BiometricViewSizeBinder {
                             R.id.rightGuideline,
                             ConstraintSet.RIGHT,
                         )
+
+                        // Reattach close button
+                        nextConstraintSet.clear(R.id.close_button, ConstraintSet.END)
+                        nextConstraintSet.clear(R.id.close_button, ConstraintSet.RIGHT)
+                        nextConstraintSet.connect(
+                            R.id.close_button,
+                            ConstraintSet.END,
+                            R.id.scrollView,
+                            ConstraintSet.END,
+                            (24 * pxToDp).toInt(),
+                        )
                     }
 
                     // Handle animation
