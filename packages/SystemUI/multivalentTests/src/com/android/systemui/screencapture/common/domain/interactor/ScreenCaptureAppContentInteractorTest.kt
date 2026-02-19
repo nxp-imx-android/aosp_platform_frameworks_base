@@ -67,7 +67,7 @@ class ScreenCaptureAppContentInteractorTest : SysuiTestCase() {
             var result: Result<SingleAppContent>? = null
 
             // Act
-            val appContents = interactor.appContentsFor("FakePackage", 200, 150)
+            val appContents = interactor.appContentsFor("FakePackage", 200, 150, 50)
             val job = testScope.launch { appContents.collect { result = it } }
             assertThat(result).isNull()
             val fakeCallback = FakeAppContentProjectionCallback(context)
@@ -85,6 +85,7 @@ class ScreenCaptureAppContentInteractorTest : SysuiTestCase() {
                 assertThat(user).isEqualTo(fakeUserHandle)
                 assertThat(thumbnailWidthPx).isEqualTo(200)
                 assertThat(thumbnailHeightPx).isEqualTo(150)
+                assertThat(iconSizePx).isEqualTo(50)
             }
             assertThat(result?.isSuccess).isTrue()
             val (appContentList, callback) = result?.getOrNull()!!
@@ -111,7 +112,7 @@ class ScreenCaptureAppContentInteractorTest : SysuiTestCase() {
             var result: Result<SingleAppContent>? = null
 
             // Act
-            val appContents = interactor.appContentsFor("FakePackage", 200, 150)
+            val appContents = interactor.appContentsFor("FakePackage", 200, 150, 50)
             val job = testScope.launch { appContents.collect { result = it } }
             assertThat(result).isNull()
             fakeScreenCaptureAppContentRepository.setAppContentFailure(
@@ -127,6 +128,7 @@ class ScreenCaptureAppContentInteractorTest : SysuiTestCase() {
                 assertThat(user).isEqualTo(fakeUserHandle)
                 assertThat(thumbnailWidthPx).isEqualTo(200)
                 assertThat(thumbnailHeightPx).isEqualTo(150)
+                assertThat(iconSizePx).isEqualTo(50)
             }
             assertThat(result?.isFailure).isTrue()
             assertThat(result?.exceptionOrNull()).isSameInstanceAs(fakeThrowable)
@@ -153,6 +155,7 @@ class ScreenCaptureAppContentInteractorTest : SysuiTestCase() {
                     listOf("FakePackage1", "FakePackage2", "FakePackage3"),
                     200,
                     150,
+                    50,
                 )
             val job = testScope.launch { appContents.collect { result = it } }
             assertThat(result).isNull()
@@ -187,6 +190,7 @@ class ScreenCaptureAppContentInteractorTest : SysuiTestCase() {
                     assertThat(user).isEqualTo(fakeUserHandle)
                     assertThat(thumbnailWidthPx).isEqualTo(200)
                     assertThat(thumbnailHeightPx).isEqualTo(150)
+                    assertThat(iconSizePx).isEqualTo(50)
                 }
             }
             val (contents, callbacks) = result!!

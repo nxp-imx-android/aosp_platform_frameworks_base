@@ -21,7 +21,7 @@ import com.android.systemui.screencapture.common.domain.interactor.screenCapture
 import com.android.systemui.screencapture.common.domain.interactor.screenCaptureRecentTaskInteractor
 
 var Kosmos.appContentsViewModel: AppContentsViewModel by
-    Kosmos.Fixture { appContentsViewModelFactory.create(200, 100) }
+    Kosmos.Fixture { appContentsViewModelFactory.create(200, 100, 50) }
 
 val Kosmos.fakeAppContentsViewModel by
     Kosmos.Fixture { FakeAppContentsViewModel(appContentViewModelFactory, drawableLoaderViewModel) }
@@ -32,6 +32,7 @@ var Kosmos.appContentsViewModelFactory: AppContentsViewModel.Factory by
             override fun create(
                 thumbnailWidthPx: Int,
                 thumbnailHeightPx: Int,
+                iconSizePx: Int,
             ): AppContentsViewModel =
                 AppContentsViewModelImpl(
                     appContentInteractor = screenCaptureAppContentInteractor,
@@ -41,6 +42,7 @@ var Kosmos.appContentsViewModelFactory: AppContentsViewModel.Factory by
                     audioSwitchViewModel = AudioSwitchViewModelImpl(),
                     thumbnailWidthPx = thumbnailWidthPx,
                     thumbnailHeightPx = thumbnailHeightPx,
+                    iconSizePx = iconSizePx,
                 )
         }
     }
@@ -51,6 +53,7 @@ val Kosmos.fakeAppContentsViewModelFactory: AppContentsViewModel.Factory by
             override fun create(
                 thumbnailWidthPx: Int,
                 thumbnailHeightPx: Int,
+                iconSizePx: Int,
             ): AppContentsViewModel = fakeAppContentsViewModel
         }
     }

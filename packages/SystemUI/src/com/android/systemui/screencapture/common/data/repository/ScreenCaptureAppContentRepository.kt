@@ -62,13 +62,15 @@ interface ScreenCaptureAppContentRepository {
     /**
      * The currently available app content for the given [packageName] and [user].
      *
-     * Thumbnails will be fetched at the given [thumbnailWidthPx] and [thumbnailHeightPx].
+     * Thumbnails will be fetched at the given [thumbnailWidthPx] and [thumbnailHeightPx]. Icons
+     * will be fetched at the given [iconSizePx].
      */
     fun appContentsFor(
         packageName: String,
         user: UserHandle,
         thumbnailWidthPx: Int,
         thumbnailHeightPx: Int,
+        iconSizePx: Int,
     ): Flow<Result<RawAppContent>>
 }
 
@@ -91,6 +93,7 @@ constructor(
         user: UserHandle,
         thumbnailWidthPx: Int,
         thumbnailHeightPx: Int,
+        iconSizePx: Int,
     ): Flow<Result<RawAppContent>> =
         flow {
                 val intent =
@@ -139,7 +142,7 @@ constructor(
                 emitAll(
                     conflatedCallbackFlow {
                         val serviceConnection =
-                            makeServiceConnection(thumbnailWidthPx, thumbnailHeightPx) {
+                            makeServiceConnection(thumbnailWidthPx, thumbnailHeightPx, iconSizePx) {
                                 trySend(it)
                             }
                         val bound =
@@ -171,6 +174,7 @@ constructor(
     private fun makeServiceConnection(
         thumbnailWidthPx: Int,
         thumbnailHeightPx: Int,
+        iconSizePx: Int,
         onResult: (Result<RawAppContent>) -> Unit,
     ): ServiceConnection =
         object : ServiceConnection {
@@ -216,8 +220,8 @@ constructor(
                             listener,
                             thumbnailWidthPx,
                             thumbnailHeightPx,
-                            0,
-                            0,
+                            iconSizePx,
+                            iconSizePx,
                         )
                     } catch (e: RemoteException) {
                         Log.e(TAG, "App content request failed", e)

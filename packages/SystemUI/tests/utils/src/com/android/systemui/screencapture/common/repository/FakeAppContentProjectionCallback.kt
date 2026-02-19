@@ -27,7 +27,15 @@ import android.os.RemoteException
 
 class FakeAppContentProjectionCallback(context: Context) :
     IAppContentProjectionCallback.Stub(PermissionEnforcer(context)) {
-    val onContentRequestCalls = mutableListOf<Triple<RemoteCallback, Int, Int>>()
+    data class ContentRequestCall(
+        val newContentConsumer: RemoteCallback,
+        val thumbnailWidth: Int,
+        val thumbnailHeight: Int,
+        val iconWidth: Int,
+        val iconHeight: Int,
+    )
+
+    val onContentRequestCalls = mutableListOf<ContentRequestCall>()
 
     @EnforcePermission(allOf = [Manifest.permission.MANAGE_MEDIA_PROJECTION])
     @Throws(RemoteException::class)
@@ -39,7 +47,15 @@ class FakeAppContentProjectionCallback(context: Context) :
         iconHeight: Int,
     ) {
         onContentRequest_enforcePermission()
-        onContentRequestCalls.add(Triple(newContentConsumer, thumbnailWidth, thumbnailHeight))
+        onContentRequestCalls.add(
+            ContentRequestCall(
+                newContentConsumer,
+                thumbnailWidth,
+                thumbnailHeight,
+                iconWidth,
+                iconHeight,
+            )
+        )
     }
 
     @EnforcePermission(allOf = [Manifest.permission.MANAGE_MEDIA_PROJECTION])
