@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  ~ Copyright (C) 2023 The Android Open Source Project
+  ~ Copyright (C) 2026 The Android Open Source Project
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -19,8 +19,10 @@
     android:id="@+id/layout_menu"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:background="@drawable/desktop_mode_layout_menu_background"
-    android:elevation="1dp">
+    android:clipToPadding="false"
+    android:paddingHorizontal="2dp"
+    android:paddingVertical="2dp"
+    android:orientation="vertical">
 
     <LinearLayout
         android:id="@+id/container"
@@ -30,130 +32,22 @@
         android:paddingHorizontal="12dp"
         android:paddingVertical="16dp"
         android:measureWithLargestChild="true"
-        android:gravity="center">
-
-        <LinearLayout
-            android:id="@+id/layout_menu_immersive_toggle_container"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center_horizontal"
-            android:layout_marginHorizontal="4dp">
-
-            <Button
-                android:layout_width="108dp"
-                android:layout_height="60dp"
-                android:id="@+id/layout_menu_immersive_toggle_button"
-                style="?android:attr/buttonBarButtonStyle"
-                android:stateListAnimator="@null"
-                android:importantForAccessibility="yes"
-                android:contentDescription="@string/desktop_mode_layout_menu_immersive_button_text"
-                android:layout_marginBottom="4dp"
-                android:alpha="0"/>
-
-            <TextView
-                android:id="@+id/layout_menu_immersive_toggle_button_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="11sp"
-                android:lineHeight="16sp"
-                android:gravity="center"
-                android:fontFamily="@*android:string/config_headlineFontFamilyMedium"
-                android:importantForAccessibility="no"
-                android:text="@string/desktop_mode_layout_menu_immersive_button_text"
-                android:textColor="@color/materialColorOnSurface"
-                android:singleLine="true"
-                android:alpha="0"/>
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/layout_menu_size_toggle_container"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center_horizontal"
-            android:layout_marginHorizontal="4dp">
-
-            <Button
-                android:layout_width="108dp"
-                android:layout_height="60dp"
-                android:id="@+id/layout_menu_size_toggle_button"
-                style="?android:attr/buttonBarButtonStyle"
-                android:stateListAnimator="@null"
-                android:importantForAccessibility="yes"
-                android:contentDescription="@string/desktop_mode_layout_menu_maximize_button_text"
-                android:layout_marginBottom="4dp"
-                android:alpha="0"/>
-
-            <TextView
-                android:id="@+id/layout_menu_size_toggle_button_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="11sp"
-                android:lineHeight="16sp"
-                android:gravity="center"
-                android:fontFamily="@*android:string/config_headlineFontFamilyMedium"
-                android:importantForAccessibility="no"
-                android:text="@string/desktop_mode_layout_menu_maximize_text"
-                android:textColor="@color/materialColorOnSurface"
-                android:singleLine="true"
-                android:alpha="0"/>
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/layout_menu_snap_container"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center_horizontal"
-            android:layout_marginHorizontal="4dp">
-            <LinearLayout
-                android:id="@+id/layout_menu_snap_menu_layout"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layoutDirection="ltr"
-                android:orientation="horizontal"
-                android:padding="4dp"
-                android:background="@drawable/desktop_mode_layout_menu_layout_background"
-                android:layout_marginBottom="4dp"
-                android:alpha="0">
-                <Button
-                    android:id="@+id/layout_menu_snap_left_button"
-                    style="?android:attr/buttonBarButtonStyle"
-                    android:layout_width="48dp"
-                    android:layout_height="@dimen/desktop_mode_layout_menu_button_height"
-                    android:layout_marginEnd="4dp"
-                    android:background="@drawable/desktop_mode_layout_menu_button_background"
-                    android:importantForAccessibility="yes"
-                    android:contentDescription="@string/desktop_mode_layout_menu_snap_left_button_text"
-                    android:stateListAnimator="@null"/>
-
-                <Button
-                    android:id="@+id/layout_menu_snap_right_button"
-                    style="?android:attr/buttonBarButtonStyle"
-                    android:layout_width="48dp"
-                    android:layout_height="@dimen/desktop_mode_layout_menu_button_height"
-                    android:background="@drawable/desktop_mode_layout_menu_button_background"
-                    android:importantForAccessibility="yes"
-                    android:contentDescription="@string/desktop_mode_layout_menu_snap_right_button_text"
-                    android:stateListAnimator="@null"/>
-            </LinearLayout>
-            <TextView
-                android:id="@+id/layout_menu_snap_window_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="11sp"
-                android:lineHeight="16sp"
-                android:gravity="center"
-                android:importantForAccessibility="no"
-                android:fontFamily="@*android:string/config_headlineFontFamilyMedium"
-                android:text="@string/desktop_mode_layout_menu_snap_text"
-                android:textColor="@color/materialColorOnSurface"
-                android:singleLine="true"
-                android:alpha="0"/>
-        </LinearLayout>
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:elevation="1dp"
+        android:background="@drawable/desktop_mode_layout_menu_background">
+        <include layout="@layout/desktop_mode_window_decor_resize_controls"/>
     </LinearLayout>
+
+    <!-- TODO: b/452575901- Finalize UI spec details.  -->
+    <com.android.wm.shell.windowdecor.WindowingPillView
+        android:id="@+id/windowing_pill"
+        android:layout_width="@dimen/desktop_mode_layout_menu_windowing_pill_width"
+        android:layout_height="@dimen/desktop_mode_layout_menu_windowing_pill_height"
+        android:layout_marginTop="@dimen/desktop_mode_layout_menu_pill_spacing_margin"
+        android:layout_gravity="center_horizontal"
+        android:orientation="horizontal"
+        android:elevation="1dp"
+        android:background="@drawable/desktop_mode_layout_menu_background"
+        android:gravity="center_vertical"/>
 </com.android.wm.shell.windowdecor.CaptionMenuLayout>
