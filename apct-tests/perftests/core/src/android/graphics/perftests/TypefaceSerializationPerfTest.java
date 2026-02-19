@@ -29,7 +29,6 @@ import androidx.test.filters.LargeTest;
 import androidx.test.runner.AndroidJUnit4;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -62,7 +61,6 @@ public class TypefaceSerializationPerfTest {
 
     // testSerializeFontMap uses the default targetTestDurationNs, which is much longer than
     // TARGET_TEST_DURATION_NS, in order to stabilize test results.
-    @Ignore("b/438387874: Temporarily disabled due to consistent failures")
     @Test
     public void testSerializeFontMap() throws Exception {
         Map<String, Typeface> systemFontMap = Typeface.getSystemFontMap();
@@ -80,7 +78,6 @@ public class TypefaceSerializationPerfTest {
         }
     }
 
-    @Ignore("b/438387874: Temporarily disabled due to consistent failures")
     @ManualBenchmarkState.ManualBenchmarkTest(
             warmupDurationNs = WARMUP_DURATION_NS,
             targetTestDurationNs = TARGET_TEST_DURATION_NS)
@@ -96,7 +93,6 @@ public class TypefaceSerializationPerfTest {
         }
     }
 
-    @Ignore("b/438387874: Temporarily disabled due to consistent failures")
     @ManualBenchmarkState.ManualBenchmarkTest(
             warmupDurationNs = WARMUP_DURATION_NS,
             targetTestDurationNs = TARGET_TEST_DURATION_NS)
@@ -120,7 +116,6 @@ public class TypefaceSerializationPerfTest {
         }
     }
 
-    @Ignore("b/438387874: Temporarily disabled due to consistent failures")
     @ManualBenchmarkState.ManualBenchmarkTest(
             warmupDurationNs = WARMUP_DURATION_NS,
             targetTestDurationNs = TARGET_TEST_DURATION_NS)
