@@ -2888,21 +2888,28 @@ public class ActivityManagerService extends IActivityManager.Stub
             }
 
             // Check for association on both source and target packages.
-            PackageAssociationInfo pai = mAllowedAssociations.get(pkg1);
-            if (pai != null && !pai.isPackageAssociationAllowed(pkg2)) {
-                return false;
-            }
-            pai = mAllowedAssociations.get(pkg2);
-            if (pai != null && !pai.isPackageAssociationAllowed(pkg1)) {
-                return false;
-            }
+            PackageAssociationInfo associationsOfPkg1 = mAllowedAssociations.get(pkg1);
+            PackageAssociationInfo associationsOfPkg2 = mAllowedAssociations.get(pkg2);
 
             if (isPccFrameworkSupportEnabled && callerOrTargetIsPcc) {
-                // No generalized rules applicable, and no OEM defined associations.
+                // Framework requires explicit allow associations in sysconfig from PCC
+                // with non-PCC packages.
+                if (associationsOfPkg1 == null && associationsOfPkg2 == null) {
+                    return false;
+                }
+            }
+
+            if (associationsOfPkg1 != null
+                    && !associationsOfPkg1.isPackageAssociationAllowed(pkg2)) {
                 return false;
             }
 
-            // If no explicit associations are provided in the manifest at this
+            if (associationsOfPkg2 != null
+                    && !associationsOfPkg2.isPackageAssociationAllowed(pkg1)) {
+                return false;
+            }
+
+            // For non-PCC: If no explicit associations are provided in the manifest at this
             // stage, then the app is allowed associations with any package.
             return true;
         } finally {
