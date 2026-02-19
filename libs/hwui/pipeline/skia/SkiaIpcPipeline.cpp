@@ -168,6 +168,18 @@ IRenderPipeline::DrawResult SkiaIpcPipeline::draw(
     renderFrameImpl(dirty, renderNodes, opaque, contentDrawBounds, canvas, SkMatrix::I());
     mIPCRecordingCanvas->endRecording();
 
+    return {true, IRenderPipeline::DrawResult::kUnknownTime, android::base::unique_fd{}};
+}
+
+bool SkiaIpcPipeline::swapBuffers(const Frame& frame, IRenderPipeline::DrawResult& drawResult,
+                                     const SkRect& screenDirty, FrameInfo* currentFrameInfo,
+                                     bool* requireSwap) {
+    currentFrameInfo->markSwapBuffers();
+    *requireSwap = drawResult.success;
+    if (!drawResult.success) {
+        return false;
+    }
+
     SurfaceComposerClient::Transaction pendingTransactions;
     std::function<void(SurfaceComposerClient::Transaction*)> syncCallback;
     SurfaceComposerClient::Transaction* syncTransaction = nullptr;
@@ -193,8 +205,7 @@ IRenderPipeline::DrawResult SkiaIpcPipeline::draw(
         transaction.setApplyToken(mApplyToken);
         transaction.apply(false, true);
     }
-
-    return {true, IRenderPipeline::DrawResult::kUnknownTime, android::base::unique_fd{}};
+    return true;
 }
 
 bool SkiaIpcPipeline::setSurface(ANativeWindow* surface, SwapBehavior swapBehavior) {
