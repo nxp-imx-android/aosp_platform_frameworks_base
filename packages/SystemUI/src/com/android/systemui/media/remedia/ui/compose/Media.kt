@@ -98,6 +98,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
@@ -314,7 +315,7 @@ private fun CardCarouselContent(
 
     Box(
         modifier =
-            modifier.pointerInput(behavior) {
+            modifier.clip(roundedCornerShape).clipToBounds().pointerInput(behavior) {
                 if (behavior.isCarouselScrollFalseTouch != null) {
                     awaitEachGesture {
                         awaitFirstDown(false, PointerEventPass.Initial)
