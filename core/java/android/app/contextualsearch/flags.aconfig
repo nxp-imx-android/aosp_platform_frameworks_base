@@ -46,6 +46,8 @@ flag {
     description: "Allow invocation parameters to be passed to Contextual Search, including from apps."
     bug: "371552433"
     is_exported: true
+    # This flag has been launched and code references have been cleaned up.
+    # It must be kept for client compatibility as it is an exported flag.
     metadata {
         purpose: PURPOSE_BUGFIX
     }
@@ -63,12 +65,4 @@ flag {
     namespace: "sysui_integrations"
     description: "This flags a feature for enabling or disabling AssistStructure fetching through setUiHints"
     bug: "420404310"
-}
-
-flag {
-    name: "on_demand_screenshot_and_assist_state"
-    namespace: "sysui_integrations"
-    description: "Allow the Circle to Search companion to request and receive fresh screenshot and assist state."
-    bug: "474429707"
-    is_exported: true
 }

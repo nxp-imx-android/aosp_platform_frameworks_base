@@ -20,6 +20,7 @@ import static android.Manifest.permission.ACCESS_CONTEXTUAL_SEARCH;
 
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
+import android.annotation.SuppressLint;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
@@ -434,7 +435,7 @@ public final class ContextualSearchManager {
      *
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_ON_DEMAND_SCREENSHOT_AND_ASSIST_STATE)
+    @SuppressLint("UnflaggedApi")
     @SystemApi
     public void startContextualSearch(@NonNull ContextualSearchConfig config) {
         Objects.requireNonNull(config);
