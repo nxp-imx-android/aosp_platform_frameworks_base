@@ -57,7 +57,6 @@ import java.security.interfaces.ECPrivateKey;
 import java.security.spec.ECFieldFp;
 import java.security.spec.ECGenParameterSpec;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -267,30 +266,23 @@ public class LskfResetKeyManager {
      */
 
     public boolean generateDeviceAndAccountKeys(@NonNull String keyAlias) {
-        byte[] localKey = generateRandomBytes(LOCAL_KEY_SIZE_BYTES);
-        byte[] accountKey = generateRandomBytes(ACCOUNT_KEY_SIZE_BYTES);
-        byte[] wrappedLocalKey = null;
-        byte[] wrappedAccountKey = null;
-        try {
-            localKey = deriveLocalKey(localKey, USER_ID);
-            wrappedLocalKey = mGscEncrypter.encrypt(localKey, null);
-            wrappedAccountKey = mHsmEncrypter.encrypt(accountKey, null);
-
+        try (AutoZeroedBuffer localKey =
+                        new AutoZeroedBuffer(generateRandomBytes(LOCAL_KEY_SIZE_BYTES));
+                AutoZeroedBuffer accountKey =
+                        new AutoZeroedBuffer(generateRandomBytes(ACCOUNT_KEY_SIZE_BYTES));
+                AutoZeroedBuffer derivedLocalKey =
+                        new AutoZeroedBuffer(deriveLocalKey(localKey.getBuffer(), USER_ID));
+                AutoZeroedBuffer wrappedLocalKey =
+                        new AutoZeroedBuffer(
+                                mGscEncrypter.encrypt(derivedLocalKey.getBuffer(), null));
+                AutoZeroedBuffer wrappedAccountKey =
+                        new AutoZeroedBuffer(mHsmEncrypter.encrypt(accountKey.getBuffer(), null))) {
             // TODO: Save the keys to files/Android KeyStore.
-
             Slog.i(TAG, "Successfully generated, derived, wrapped key");
             return true;
         } catch (Exception e) {
             Slog.e(TAG, "Key generation/wrapping failed for " +  e);
             return false;
-        } finally {
-            // These arrays contain sensitive keys and should be cleared. We cannot
-            // trust the garbage collector to clear them in time, so we manually clear
-            // them.
-            Arrays.fill(localKey, (byte) 0);
-            Arrays.fill(accountKey, (byte) 0);
-            if (wrappedLocalKey != null) Arrays.fill(wrappedLocalKey, (byte) 0);
-            if (wrappedAccountKey != null) Arrays.fill(wrappedAccountKey, (byte) 0);
         }
     }
 
