@@ -22,7 +22,7 @@ use native_activity_thread_bindgen::{tzset, PF_X};
 use nix::{
     errno::Errno,
     sys::resource::{getrlimit, setrlimit, Resource},
-    unistd::getuid,
+    unistd::{getuid, sysconf, SysconfVar},
 };
 use rustutils::android::process::android_mallopt;
 use rustutils::android::process::MalloptOpcode;
@@ -46,6 +46,14 @@ pub fn reset_time_zone() {
 
 fn get_debuggable() -> bool {
     system_properties::read_bool(PROP_DEBUGGABLE, false).unwrap_or(false)
+}
+
+fn get_page_size() -> usize {
+    match sysconf(SysconfVar::PAGE_SIZE) {
+        Ok(Some(size)) => size as usize,
+        Ok(None) => panic!("sysconf(PAGE_SIZE) returned None"),
+        Err(e) => panic!("sysconf(PAGE_SIZE) returned an error: {e}"),
+    }
 }
 
 #[allow(non_camel_case_types)]
@@ -78,17 +86,21 @@ unsafe extern "C" fn disable_execute_only(
     // SAFETY: `phdr_ptr` points to a valid ElfW_Phdr array of `phdr_count` elements.
     let program_headers: &[ElfW_Phdr] = unsafe { slice::from_raw_parts(phdr_ptr, phdr_count) };
 
+    let page_mask = !(get_page_size() - 1);
+
     // Search for any execute-only segments and mark them read+execute.
     // This operation only affects RWX flags because of the implementation
     // of mprotect, so other architectural flags (like PROT_BTI) will not be cleared.
     for phdr in program_headers {
         if phdr.p_type == PT_LOAD && phdr.p_flags == PF_X {
-            let addr = (info_ref.dlpi_addr + phdr.p_vaddr) as *mut c_void;
+            let addr = (info_ref.dlpi_addr + phdr.p_vaddr) as usize;
+            let aligned_addr = (addr & page_mask) as *mut c_void;
             let len = phdr.p_memsz as size_t;
+            let adjusted_len = addr + len - aligned_addr as usize;
 
-            // SAFETY: Callers guarantee that `addr` is an address of a page-aligned memory region
-            // and `len` is the size of the region.
-            let ret = unsafe { mprotect(addr, len, PROT_READ | PROT_EXEC) };
+            // SAFETY: `aligned_addr` is aligned to a page boundary and `adjusted_len` is a valid
+            // size of the region including the XO segment.
+            let ret = unsafe { mprotect(aligned_addr, adjusted_len, PROT_READ | PROT_EXEC) };
             if ret != 0 {
                 log::warn!("Failed to mprotect(): {}", Error::last_os_error());
             }
