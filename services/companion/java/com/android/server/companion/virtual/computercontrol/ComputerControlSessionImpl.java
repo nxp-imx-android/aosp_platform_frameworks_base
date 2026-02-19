@@ -308,6 +308,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     // Whether a window draw as a result of a screenshot request is in progress.
     @GuardedBy("mWindowDrawLock")
     private boolean mIsWaitingForWindowDraw = false;
+    @GuardedBy("mWindowDrawLock")
+    private boolean mIsWaitingForScreenshotResult = false;
 
     private final InteractiveMirrorImpl.InteractiveMirrorImplCallback mInteractiveMirrorCallback =
             new InteractiveMirrorImpl.InteractiveMirrorImplCallback() {
@@ -990,14 +992,34 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 Slog.w(TAG, "Cannot request screenshot: Window draw is already in progress");
                 return false;
             }
-            mIsWaitingForWindowDraw = mWindowManagerInternal.requestHardwareRendererOutputEnabled(
+            if (mIsWaitingForScreenshotResult) {
+                Slog.w(TAG, "Cannot request screenshot: Awaiting result for previous request");
+                return false;
+            }
+            final boolean success = mWindowManagerInternal.requestHardwareRendererOutputEnabled(
                     mVirtualDisplayId, WINDOW_DRAW_TIMEOUT_MS, this::onWindowsDrawnCallback,
                     mScheduler);
-            if (mIsWaitingForWindowDraw) {
-                Trace.asyncTraceForTrackBegin(mTraceTrack, "isWaitingForWindowDraw",
-                        TRACE_COOKIE_WINDOW_DRAW);
+            if (!success) {
+                return false;
             }
-            return mIsWaitingForWindowDraw;
+            mIsWaitingForWindowDraw = true;
+            mIsWaitingForScreenshotResult = true;
+            Trace.asyncTraceForTrackBegin(mTraceTrack, "isWaitingForWindowDraw",
+                    TRACE_COOKIE_WINDOW_DRAW);
+            return true;
+        }
+    }
+
+    @Override
+    public void notifyScreenshotResult() {
+        synchronized (mInteractiveMirrors) {
+            synchronized (mWindowDrawLock) {
+                if (!mIsWaitingForScreenshotResult) {
+                    return;
+                }
+                mIsWaitingForScreenshotResult = false;
+                trackWindowDrawFinishLocked();
+            }
         }
     }
 
@@ -1016,15 +1038,23 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             Slog.w(TAG, "Timed out waiting for windows to be drawn!");
         }
         synchronized (mInteractiveMirrors) {
-            if (mInteractiveMirrors.isEmpty()) {
-                mWindowManagerInternal.requestHardwareRendererOutputDisabled(
-                        mVirtualDisplayId);
-            }
             synchronized (mWindowDrawLock) {
                 mIsWaitingForWindowDraw = false;
-                Trace.asyncTraceForTrackEnd(mTraceTrack, TRACE_COOKIE_WINDOW_DRAW);
+                trackWindowDrawFinishLocked();
             }
         }
+    }
+
+    @GuardedBy({"mInteractiveMirrors", "mWindowDrawLock"})
+    private void trackWindowDrawFinishLocked() {
+        if (mIsWaitingForWindowDraw || mIsWaitingForScreenshotResult) {
+            return;
+        }
+        if (mInteractiveMirrors.isEmpty()) {
+            mWindowManagerInternal.requestHardwareRendererOutputDisabled(
+                    mVirtualDisplayId);
+        }
+        Trace.asyncTraceForTrackEnd(mTraceTrack, TRACE_COOKIE_WINDOW_DRAW);
     }
 
     @Override

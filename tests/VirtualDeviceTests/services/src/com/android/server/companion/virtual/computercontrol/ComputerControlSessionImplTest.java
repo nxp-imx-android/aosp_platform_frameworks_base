@@ -1469,7 +1469,24 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
-    public void requestScreenshot_alreadyWaiting_returnsFalse() throws RemoteException {
+    public void requestScreenshot_waitingForCallback_returnsFalse() throws RemoteException {
+        createComputerControlSession(mDefaultParams);
+        startAppAndAdoptTask(ALLOWED_TASK_ID);
+
+        when(mWindowManagerInternal.requestHardwareRendererOutputEnabled(anyInt(), anyLong(), any(),
+                any())).thenReturn(true);
+
+        mSession.requestScreenshot();
+        mSession.notifyScreenshotResult();
+        boolean result = mSession.requestScreenshot();
+
+        assertThat(result).isFalse();
+        verify(mWindowManagerInternal, times(1)).requestHardwareRendererOutputEnabled(
+                anyInt(), anyLong(), any(), any());
+    }
+
+    @Test
+    public void requestScreenshot_waitingForClientResult_returnsFalse() throws RemoteException {
         createComputerControlSession(mDefaultParams);
         startAppAndAdoptTask(ALLOWED_TASK_ID);
 
@@ -1479,9 +1496,13 @@ public class ComputerControlSessionImplTest {
         mSession.requestScreenshot();
         boolean result = mSession.requestScreenshot();
 
+        verify(mWindowManagerInternal).requestHardwareRendererOutputEnabled(anyInt(), anyLong(),
+                mWindowsDrawnCallbackCaptor.capture(), any());
+
+        Consumer<Boolean> callback = mWindowsDrawnCallbackCaptor.getValue();
+        callback.accept(true);
+
         assertThat(result).isFalse();
-        verify(mWindowManagerInternal, times(1)).requestHardwareRendererOutputEnabled(
-                anyInt(), anyLong(), any(), any());
     }
 
     @Test
@@ -1499,6 +1520,7 @@ public class ComputerControlSessionImplTest {
 
         Consumer<Boolean> callback = mWindowsDrawnCallbackCaptor.getValue();
         callback.accept(true);
+        mSession.notifyScreenshotResult();
 
         verify(mWindowManagerInternal)
                 .requestHardwareRendererOutputDisabled(eq(VIRTUAL_DISPLAY_ID));
@@ -1527,6 +1549,7 @@ public class ComputerControlSessionImplTest {
 
         Consumer<Boolean> callback = mWindowsDrawnCallbackCaptor.getValue();
         callback.accept(true);
+        mSession.notifyScreenshotResult();
 
         verify(mWindowManagerInternal, never()).requestHardwareRendererOutputDisabled(anyInt());
     }

@@ -90,6 +90,11 @@ interface IComputerControlSession {
     boolean requestScreenshot();
 
     /**
+     * Notifies the system that a previous screenshot result has been resolved.
+     */
+    void notifyScreenshotResult();
+
+    /**
      * Notifies the system that the caller is blocked and unable to perform any further
      * interactions in the session.
      */

@@ -62,6 +62,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 /**
@@ -537,6 +538,19 @@ public final class ComputerControlSession implements AutoCloseable {
             onScreenshotError(callback, ScreenshotException.ERROR_REMOTE, "Remote exception");
             return;
         }
+
+        synchronized (mImageReaderLock) {
+            callback.isRequestSuccess.set(true);
+            // If the callback has already been fired, ensure we notify the server that the request
+            // is complete.
+            if (mOneShotPendingScreenshotCallback != callback) {
+                try {
+                    mSession.notifyScreenshotResult();
+                } catch (RemoteException e) {
+                    e.rethrowFromSystemServer();
+                }
+            }
+        }
     }
 
     /** Local adapter for making screenshot requests synchronous. */
@@ -842,7 +856,17 @@ public final class ComputerControlSession implements AutoCloseable {
             String traceTrack,
             @CallbackExecutor Executor executor,
             OutcomeReceiver<Image, ScreenshotException> receiver,
-            @Nullable CancellationSignal cancellationSignal) {
+            @Nullable CancellationSignal cancellationSignal,
+            AtomicBoolean isRequestSuccess) {
+
+        ScreenshotCallbackRecord(
+                String traceTrack,
+                @CallbackExecutor Executor executor,
+                OutcomeReceiver<Image, ScreenshotException> receiver,
+                @Nullable CancellationSignal cancellationSignal) {
+            this(traceTrack, executor, receiver, cancellationSignal, new AtomicBoolean());
+        }
+
         ScreenshotCallbackRecord {
             Trace.asyncTraceForTrackBegin(traceTrack, "ScreenshotCallbackRecord",
                     TRACE_COOKIE_REQUEST_SCREENSHOT);
@@ -903,6 +927,13 @@ public final class ComputerControlSession implements AutoCloseable {
             mHandler.removeCallbacks(Objects.requireNonNull(mScreenshotTimeoutRunnable));
             if (mOneShotPendingScreenshotCallback.cancellationSignal != null) {
                 mOneShotPendingScreenshotCallback.cancellationSignal.setOnCancelListener(null);
+            }
+            if (mOneShotPendingScreenshotCallback.isRequestSuccess.get()) {
+                try {
+                    mSession.notifyScreenshotResult();
+                } catch (RemoteException e) {
+                    e.rethrowFromSystemServer();
+                }
             }
         }
         mOneShotPendingScreenshotCallback = null;
