@@ -20,7 +20,6 @@ import static com.android.hardware.input.Flags.enableCustomizableInputGestures;
 import static com.android.hardware.input.Flags.mouseScrollingAcceleration;
 import static com.android.hardware.input.Flags.mouseReverseVerticalScrolling;
 import static com.android.hardware.input.Flags.mouseSwapPrimaryButton;
-import static com.android.hardware.input.Flags.pointerAcceleration;
 import static com.android.hardware.input.Flags.touchpadDisable;
 import static com.android.hardware.input.Flags.touchpadVisualizer;
 
@@ -391,10 +390,6 @@ public class InputSettings {
      * @hide
      */
     public static boolean isTouchpadAccelerationEnabled(@NonNull Context context) {
-        if (!isPointerAccelerationFeatureFlagEnabled()) {
-            return true;
-        }
-
         return Settings.System.getIntForUser(context.getContentResolver(),
                 Settings.System.TOUCHPAD_ACCELERATION_ENABLED, 1, UserHandle.USER_CURRENT)
                 == 1;
@@ -411,9 +406,6 @@ public class InputSettings {
     @RequiresPermission(Manifest.permission.WRITE_SETTINGS)
     public static void setTouchpadAccelerationEnabled(@NonNull Context context,
             boolean enabled) {
-        if (!isPointerAccelerationFeatureFlagEnabled()) {
-            return;
-        }
         Settings.System.putIntForUser(context.getContentResolver(),
                 Settings.System.TOUCHPAD_ACCELERATION_ENABLED, enabled ? 1 : 0,
                 UserHandle.USER_CURRENT);
@@ -460,15 +452,6 @@ public class InputSettings {
      */
     public static boolean isMouseSwapPrimaryButtonFeatureFlagEnabled() {
         return mouseSwapPrimaryButton();
-    }
-
-    /**
-     * Returns true if the feature flag for the pointer acceleration toggle is
-     * enabled.
-     * @hide
-     */
-    public static boolean isPointerAccelerationFeatureFlagEnabled() {
-        return pointerAcceleration();
     }
 
     /**
@@ -855,10 +838,6 @@ public class InputSettings {
      * @hide
      */
     public static boolean isMousePointerAccelerationEnabled(@NonNull Context context) {
-        if (!isPointerAccelerationFeatureFlagEnabled()) {
-            return true;
-        }
-
         return Settings.System.getIntForUser(context.getContentResolver(),
                 Settings.System.MOUSE_POINTER_ACCELERATION_ENABLED, 1, UserHandle.USER_CURRENT)
                 == 1;
@@ -879,9 +858,6 @@ public class InputSettings {
     @RequiresPermission(Manifest.permission.WRITE_SETTINGS)
     public static void setMouseAccelerationEnabled(@NonNull Context context,
             boolean enabled) {
-        if (!isPointerAccelerationFeatureFlagEnabled()) {
-            return;
-        }
         Settings.System.putIntForUser(context.getContentResolver(),
                 Settings.System.MOUSE_POINTER_ACCELERATION_ENABLED, enabled ? 1 : 0,
                 UserHandle.USER_CURRENT);
