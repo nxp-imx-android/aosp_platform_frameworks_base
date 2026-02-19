@@ -63,6 +63,7 @@ import org.mockito.kotlin.whenever
 class DesktopImeHandlerTest : ShellTestCase() {
 
     private val testExecutor = mock<ShellExecutor>()
+    private val animExecutor = mock<ShellExecutor>()
     private val transitions = mock<Transitions>()
     private val context = mock<Context>()
     private val shellTaskOrganizer = mock<ShellTaskOrganizer>()
@@ -85,6 +86,9 @@ class DesktopImeHandlerTest : ShellTestCase() {
 
         whenever(shellController.currentUserId).thenReturn(DEFAULT_USER_ID)
         whenever(displayController.getDisplayLayout(any())).thenReturn(displayLayout)
+        whenever(displayController.getDisplayContext(any())).thenReturn(context)
+        whenever(context.resources).thenReturn(mock())
+        whenever(context.resources.displayMetrics).thenReturn(mock())
 
         desktopUserRepositories =
             DesktopUserRepositories(
@@ -113,7 +117,7 @@ class DesktopImeHandlerTest : ShellTestCase() {
                 displayController,
                 transitions,
                 mainExecutor = mock(),
-                animExecutor = mock(),
+                animExecutor = animExecutor,
                 context,
                 shellInit,
             )
@@ -323,6 +327,119 @@ class DesktopImeHandlerTest : ShellTestCase() {
         verify(transitions, never()).startTransition(eq(TRANSIT_CHANGE), wct.capture(), anyOrNull())
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_IME_BUGFIX)
+    fun onImeStartPositioning_whenCaptionIsPressed_doesNotMoveTask() {
+        setUpLandscapeDisplay()
+        val taskBounds = Rect(0, 400, 500, 1600)
+        setUpFreeformTask(DEFAULT_DISPLAY, taskBounds, focused = true)
+
+        // Simulate caption press, which should prevent task movement.
+        imeHandler.onCaptionPressed()
+
+        imeHandler.onImeStartPositioning(
+            DEFAULT_DISPLAY,
+            hiddenTop = DISPLAY_DIMENSION_SHORT,
+            shownTop = IME_HEIGHT,
+            showing = true,
+            isFloating = false,
+            t = mock(),
+        )
+
+        // Verify task is not moved because caption is pressed.
+        verify(transitions, never()).startTransition(any(), any(), anyOrNull())
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_IME_BUGFIX)
+    fun onImeStartPositioning_whenCaptionIsReleased_movesTask() {
+        setUpLandscapeDisplay()
+        val taskBounds = Rect(0, 400, 500, 1600)
+        setUpFreeformTask(DEFAULT_DISPLAY, taskBounds, focused = true)
+
+        // Simulate caption press.
+        imeHandler.onCaptionPressed()
+        // Simulate caption release, which should allow task movement again.
+        imeHandler.onCaptionReleased()
+
+        imeHandler.onImeStartPositioning(
+            DEFAULT_DISPLAY,
+            hiddenTop = DISPLAY_DIMENSION_SHORT,
+            shownTop = IME_HEIGHT,
+            showing = true,
+            isFloating = false,
+            t = mock(),
+        )
+
+        // Verify task is moved now that caption is released.
+        verify(transitions).startTransition(eq(TRANSIT_CHANGE), any(), anyOrNull())
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_IME_BUGFIX)
+    fun startAnimation_withValidTaskChange_executesAnimation() {
+        // Set up a valid task that is part of the active desktop.
+        val freeformTask = setUpFreeformTask(DEFAULT_DISPLAY, Rect(), focused = true)
+        val transitionInfo = createChangeTransition(freeformTask)
+
+        // Call startAnimation with a valid transition.
+        val result =
+            imeHandler.startAnimation(
+                transition = mock(),
+                info = transitionInfo,
+                startTransaction = mock(),
+                finishTransaction = mock(),
+                finishCallback = mock()
+            )
+
+        // Assert that the animation is executed and the method returns true.
+        assertThat(result).isTrue()
+        verify(animExecutor).execute(any())
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_IME_BUGFIX)
+    fun startAnimation_withInvalidTransitionMode_doesNotExecuteAnimation() {
+        val freeformTask = setUpFreeformTask(DEFAULT_DISPLAY, Rect(), focused = true)
+
+        // Transition mode is not TRANSIT_CHANGE.
+        val toBackTransitionInfo = createToBackTransition(freeformTask)
+
+        val result =
+            imeHandler.startAnimation(
+                transition = mock(),
+                info = toBackTransitionInfo,
+                startTransaction = mock(),
+                finishTransaction = mock(),
+                finishCallback = mock()
+            )
+
+        // Assert that animation is not executed and method returns false.
+        assertThat(result).isFalse()
+        verify(animExecutor, never()).execute(any())
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_IME_BUGFIX)
+    fun startAnimation_withNonDesktopTask_doesNotExecuteAnimation() {
+        // Task is not an active desktop task.
+        val nonDesktopTask = createFreeformTask(DEFAULT_DISPLAY, Rect())
+        val changeTransitionInfo = createChangeTransition(nonDesktopTask)
+
+        val result =
+            imeHandler.startAnimation(
+                transition = mock(),
+                info = changeTransitionInfo,
+                startTransaction = mock(),
+                finishTransaction = mock(),
+                finishCallback = mock()
+            )
+
+        // Assert that animation is not executed and method returns false.
+        assertThat(result).isFalse()
+        verify(animExecutor, never()).execute(any())
+    }
+
     private fun setUpFreeformTask(displayId: Int, bounds: Rect, focused: Boolean): RunningTaskInfo {
         val task = createFreeformTask(displayId, bounds)
         task.isFocused = focused
@@ -365,6 +482,18 @@ class DesktopImeHandlerTest : ShellTestCase() {
             (i.arguments.first() as Rect).set(stableBounds)
         }
     }
+
+    private fun createChangeTransition(task: RunningTaskInfo?) =
+        TransitionInfo(TRANSIT_CHANGE, /* flags= */ 0).apply {
+            addChange(
+                Change(mock(), mock()).apply {
+                    mode = TRANSIT_CHANGE
+                    parent = null
+                    taskInfo = task
+                    flags = flags
+                }
+            )
+        }
 
     private fun createToBackTransition(task: RunningTaskInfo?) =
         TransitionInfo(TRANSIT_TO_BACK, /* flags= */ 0).apply {
