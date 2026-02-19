@@ -18,25 +18,15 @@
 
 #include <SkPicture.h>
 #include <SkRefCnt.h>
-#include <gui/TraceUtils.h>
-#ifdef __linux__
 #include <com_android_graphics_hwui_flags.h>
-#endif
+#include <gui/TraceUtils.h>
 
 #include <optional>
 
 #include "AnimatedImageThread.h"
 #include "pipeline/skia/SkiaUtils.h"
 
-#ifdef __linux__
 namespace hwui_flags = com::android::graphics::hwui::flags;
-#else
-namespace hwui_flags {
-constexpr bool animated_image_frame_rate_hint() {
-    return false;
-}
-}  // namespace hwui_flags
-#endif
 
 namespace android {
 

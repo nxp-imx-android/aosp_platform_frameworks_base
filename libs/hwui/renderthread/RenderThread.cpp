@@ -17,6 +17,7 @@
 #include "RenderThread.h"
 
 #include <android-base/properties.h>
+#include <com_android_graphics_hwui_flags.h>
 #include <dlfcn.h>
 #include <gui/TraceUtils.h>
 #include <include/gpu/ganesh/GrContextOptions.h>
@@ -47,10 +48,7 @@
 #include "renderstate/RenderState.h"
 #include "utils/TimeUtils.h"
 
-#ifdef __linux__
-#include <com_android_graphics_hwui_flags.h>
 namespace hwui_flags = com::android::graphics::hwui::flags;
-#endif  // __linux__
 
 namespace android {
 namespace uirenderer {

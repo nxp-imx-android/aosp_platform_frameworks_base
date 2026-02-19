@@ -15,14 +15,13 @@
  */
 
 #define ATRACE_TAG ATRACE_TAG_VIEW
-#ifdef __linux__
-#include <com_android_graphics_hwui_flags.h>
-#endif
+
 #include <Animator.h>
 #include <DamageAccumulator.h>
 #include <Matrix.h>
 #include <RenderNode.h>
 #include <TreeInfo.h>
+#include <com_android_graphics_hwui_flags.h>
 #include <effects/StretchEffect.h>
 #include <gui/TraceUtils.h>
 #include <hwui/Paint.h>
@@ -41,11 +40,7 @@ using namespace uirenderer;
         : false)
 
 bool surfaceview_stretch_alignment() {
-#ifdef __linux__
     return com::android::graphics::hwui::flags::surfaceview_stretch_alignment();
-#else
-    return true;
-#endif
 }
 
 // ----------------------------------------------------------------------------
